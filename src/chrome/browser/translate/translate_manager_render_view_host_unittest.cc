@@ -54,6 +54,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -581,7 +582,7 @@ TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
     const std::string& lang = server_languages[i];
     if (lang == "xx")
       continue;
-    EXPECT_TRUE(base::ContainsValue(current_supported_languages, lang))
+    EXPECT_TRUE(base::Contains(current_supported_languages, lang))
         << "lang=" << lang;
   }
 }

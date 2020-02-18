@@ -10,8 +10,10 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/resources/returned_resource.h"
@@ -78,6 +80,12 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   ~Display() override;
 
+  static constexpr base::TimeDelta kDrawToSwapMin =
+      base::TimeDelta::FromMicroseconds(5);
+  static constexpr base::TimeDelta kDrawToSwapMax =
+      base::TimeDelta::FromMilliseconds(50);
+  static constexpr uint32_t kDrawToSwapUsBuckets = 50;
+
   // TODO(cblume, crbug.com/900973): |enable_shared_images| is a temporary
   // solution that unblocks us until SharedImages are threadsafe in WebView.
 #if defined(ANDROID)
@@ -98,12 +106,21 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void SetVisible(bool visible);
   void Resize(const gfx::Size& new_size);
 
+  // Stop drawing until Resize() is called with a new size. If the display
+  // hasn't drawn a frame at the current size *and* it's possible to immediately
+  // draw then this will run DrawAndSwap() first.
+  //
+  // |no_pending_swaps_callback| will be run there are no more swaps pending and
+  // may be run immediately.
+  void DisableSwapUntilResize(base::OnceClosure no_pending_swaps_callback);
+
   // Sets the color matrix that will be used to transform the output of this
   // display. This is only supported for GPU compositing.
   void SetColorMatrix(const SkMatrix44& matrix);
 
-  void SetColorSpace(const gfx::ColorSpace& blending_color_space,
-                     const gfx::ColorSpace& device_color_space);
+  void SetColorSpace(
+      const gfx::ColorSpace& device_color_space,
+      float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
   void SetOutputIsSecure(bool secure);
 
   const SurfaceId& CurrentSurfaceId();
@@ -118,7 +135,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   // OutputSurfaceClient implementation.
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
-  void DidReceiveSwapBuffersAck() override;
+  void DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) override;
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override;
   void DidReceiveCALayerParams(
@@ -174,8 +191,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;
   float device_scale_factor_ = 1.f;
-  gfx::ColorSpace blending_color_space_ = gfx::ColorSpace::CreateSRGB();
   gfx::ColorSpace device_color_space_ = gfx::ColorSpace::CreateSRGB();
+  float sdr_white_level_ = gfx::ColorSpace::kDefaultSDRWhiteLevel;
   bool visible_ = false;
   bool swapped_since_resize_ = false;
   bool output_is_secure_ = false;
@@ -193,12 +210,22 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   std::vector<ui::LatencyInfo> stored_latency_info_;
   std::vector<SurfaceId> surfaces_to_ack_on_next_draw_;
 
+  // |pending_surfaces_with_presentation_helpers_| is a list of lists of
+  // Surface::PresentationHelpers. The lists are grouped by swap (each surface
+  // involved in an individual Swap is added to the list. These are then
+  // notified of presentation after the appropriate Swap is completed.
   base::circular_deque<
-      std::pair<base::TimeTicks, std::vector<Surface::PresentedCallback>>>
-      pending_presented_callbacks_;
+      std::pair<base::TimeTicks,
+                std::vector<std::unique_ptr<Surface::PresentationHelper>>>>
+      pending_surfaces_with_presentation_helpers_;
+
+  // Callback that will be run after all pending swaps have acked.
+  base::OnceClosure no_pending_swaps_callback_;
 
   int64_t swapped_trace_id_ = 0;
   int64_t last_presented_trace_id_ = 0;
+
+  base::circular_deque<base::TimeTicks> draw_start_times_pending_swap_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "core/fpdfapi/page/cpdf_colorspace.h"
-#include "core/fxcodec/codec/ccodec_jpxmodule.h"
-#include "core/fxcodec/codec/cjpx_decoder.h"
+#include "core/fxcodec/jpx/cjpx_decoder.h"
+#include "core/fxcodec/jpx/jpxmodule.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/fx_dib.h"
@@ -28,8 +28,12 @@ bool CheckImageSize(uint32_t width, uint32_t height, uint32_t components) {
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  std::unique_ptr<CJPX_Decoder> decoder =
-      CCodec_JpxModule::CreateDecoder({data, size}, nullptr);
+  if (size < 1)
+    return 0;
+
+  std::unique_ptr<CJPX_Decoder> decoder = JpxModule::CreateDecoder(
+      {data + 1, size - 1},
+      static_cast<CJPX_Decoder::ColorSpaceOption>(data[0] % 3));
   if (!decoder)
     return 0;
 

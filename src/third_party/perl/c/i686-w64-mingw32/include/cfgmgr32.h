@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _CFGMGR32_H_
@@ -9,15 +9,10 @@
 #include <_mingw_unicode.h>
 #include <cfg.h>
 #include <guiddef.h>
+#include <apisetcconv.h>
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-#ifndef _CFGMGR32_
-#define CMAPI DECLSPEC_IMPORT
-#else
-#define CMAPI
 #endif
 
   typedef CONST VOID *PCVOID;

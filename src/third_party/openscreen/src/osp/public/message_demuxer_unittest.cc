@@ -4,11 +4,11 @@
 
 #include "osp/public/message_demuxer.h"
 
-#include "osp/impl/testing/fake_clock.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "osp/msgs/osp_messages.h"
 #include "osp/public/testing/message_demuxer_test_support.h"
-#include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "platform/test/fake_clock.h"
 #include "third_party/tinycbor/src/src/cbor.h"
 
 namespace openscreen {
@@ -47,13 +47,14 @@ class MessageDemuxerTest : public ::testing::Test {
 
   const uint64_t endpoint_id_ = 13;
   const uint64_t connection_id_ = 45;
-  FakeClock fake_clock_{
+  platform::FakeClock fake_clock_{
       platform::Clock::time_point(std::chrono::milliseconds(1298424))};
   msgs::CborEncodeBuffer buffer_;
   msgs::PresentationConnectionOpenRequest request_{1, "fry-am-the-egg-man",
                                                    "url"};
   MockMessageCallback mock_callback_;
-  MessageDemuxer demuxer_{FakeClock::now, MessageDemuxer::kDefaultBufferLimit};
+  MessageDemuxer demuxer_{platform::FakeClock::now,
+                          MessageDemuxer::kDefaultBufferLimit};
 };
 
 }  // namespace
@@ -312,7 +313,7 @@ TEST_F(MessageDemuxerTest, GlobalWatchAfterData) {
 }
 
 TEST_F(MessageDemuxerTest, BufferLimit) {
-  MessageDemuxer demuxer(FakeClock::now, 10);
+  MessageDemuxer demuxer(platform::FakeClock::now, 10);
 
   demuxer.OnStreamData(endpoint_id_, connection_id_, buffer_.data(),
                        buffer_.size());

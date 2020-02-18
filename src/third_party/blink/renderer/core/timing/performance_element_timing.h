@@ -22,18 +22,21 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
 
  public:
   static PerformanceElementTiming* Create(const AtomicString& name,
+                                          const String& url,
                                           const FloatRect& intersection_rect,
-                                          DOMHighResTimeStamp start_time,
-                                          DOMHighResTimeStamp response_end,
+                                          DOMHighResTimeStamp render_time,
+                                          DOMHighResTimeStamp load_time,
                                           const AtomicString& identifier,
                                           int naturalWidth,
                                           int naturalHeight,
                                           const AtomicString& id,
                                           Element*);
   PerformanceElementTiming(const AtomicString& name,
-                           const FloatRect& intersection_rect,
                            DOMHighResTimeStamp start_time,
-                           DOMHighResTimeStamp response_end,
+                           const String& url,
+                           const FloatRect& intersection_rect,
+                           DOMHighResTimeStamp render_time,
+                           DOMHighResTimeStamp load_time,
                            const AtomicString& identifier,
                            int naturalWidth,
                            int naturalHeight,
@@ -46,17 +49,13 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
   PerformanceEntryType EntryTypeEnum() const override;
 
   DOMRectReadOnly* intersectionRect() const { return intersection_rect_; }
-
-  DOMHighResTimeStamp responseEnd() const { return response_end_; }
-
+  DOMHighResTimeStamp renderTime() const { return render_time_; }
+  DOMHighResTimeStamp loadTime() const { return load_time_; }
   AtomicString identifier() const { return identifier_; }
-
   unsigned naturalWidth() const { return naturalWidth_; }
-
   unsigned naturalHeight() const { return naturalHeight_; }
-
   AtomicString id() const { return id_; }
-
+  String url() const { return url_; }
   Element* element() const;
 
   void Trace(blink::Visitor*) override;
@@ -66,11 +65,13 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
 
   WeakMember<Element> element_;
   Member<DOMRectReadOnly> intersection_rect_;
-  DOMHighResTimeStamp response_end_;
+  DOMHighResTimeStamp render_time_;
+  DOMHighResTimeStamp load_time_;
   AtomicString identifier_;
   unsigned naturalWidth_;
   unsigned naturalHeight_;
   AtomicString id_;
+  String url_;
 };
 
 }  // namespace blink

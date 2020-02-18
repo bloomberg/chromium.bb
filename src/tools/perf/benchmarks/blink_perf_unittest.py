@@ -45,7 +45,7 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
         ps=self._CreateStorySetForTestFile('append-child-measure-time.html'),
         options=self._options)
     self.assertFalse(results.had_failures)
-    self.assertEquals(len(results.FindAllTraceValues()), 1)
+    self.assertEquals(len(list(results.IterRunsWithTraces())), 1)
 
     frame_view_layouts = results.FindAllPageSpecificValuesNamed(
         'LocalFrameView::layout')
@@ -67,7 +67,7 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
             'color-changes-measure-frame-time.html'),
         options=self._options)
     self.assertFalse(results.had_failures)
-    self.assertEquals(len(results.FindAllTraceValues()), 1)
+    self.assertEquals(len(list(results.IterRunsWithTraces())), 1)
 
     frame_view_prepaints = results.FindAllPageSpecificValuesNamed(
         'LocalFrameView::RunPrePaintLifecyclePhase')
@@ -90,7 +90,7 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
             'simple-html-measure-page-load-time.html'),
         options=self._options)
     self.assertFalse(results.had_failures)
-    self.assertEquals(len(results.FindAllTraceValues()), 1)
+    self.assertEquals(len(list(results.IterRunsWithTraces())), 1)
 
     create_child_frame = results.FindAllPageSpecificValuesNamed(
         'WebLocalFrameImpl::createChildframe')
@@ -113,8 +113,8 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
         ps=self._CreateStorySetForTestFile(
             'simple-blob-measure-async.html'),
         options=self._options)
-    self.assertFalse(results.failures)
-    self.assertEquals(len(results.FindAllTraceValues()), 1)
+    self.assertFalse(results.had_failures)
+    self.assertEquals(len(list(results.IterRunsWithTraces())), 1)
 
     blob_requests = results.FindAllPageSpecificValuesNamed(
         'BlobRequest')
@@ -151,7 +151,17 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
         ps=self._CreateStorySetForTestFile(
             'lifecycle-methods.html'),
         options=self._options)
-    self.assertFalse(results.failures)
+    self.assertFalse(results.had_failures)
+    self.assertEquals(len(list(results.IterRunsWithTraces())), 0)
+
+  def testExtraChromeCategories(self):
+    self._options.extra_chrome_categories = 'cc,blink'
+    results = self.RunMeasurement(measurement=self._measurement,
+        ps=self._CreateStorySetForTestFile(
+            'lifecycle-methods.html'),
+        options=self._options)
+    self.assertFalse(results.had_failures)
+    self.assertEquals(len(list(results.IterRunsWithTraces())), 1)
 
 
 # pylint: disable=protected-access

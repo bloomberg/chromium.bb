@@ -33,8 +33,7 @@ std::pair<absl::Span<uint8_t>, StatusReportId> SenderReportBuilder::BuildPacket(
   } else {
     header.with.report_count = 0;
   }
-  header.Serialize(buffer);
-  buffer.remove_prefix(kRtcpCommonHeaderSize);
+  header.AppendFields(&buffer);
 
   AppendField<uint32_t>(session_->sender_ssrc(), &buffer);
   const NtpTimestamp ntp_timestamp =
@@ -44,8 +43,7 @@ std::pair<absl::Span<uint8_t>, StatusReportId> SenderReportBuilder::BuildPacket(
   AppendField<uint32_t>(sender_report.send_packet_count, &buffer);
   AppendField<uint32_t>(sender_report.send_octet_count, &buffer);
   if (sender_report.report_block) {
-    sender_report.report_block->Serialize(buffer);
-    buffer.remove_prefix(kRtcpReportBlockSize);
+    sender_report.report_block->AppendFields(&buffer);
   }
 
   uint8_t* const packet_end = buffer.data();

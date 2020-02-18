@@ -29,9 +29,7 @@
 // UnloadController, public:
 
 UnloadController::UnloadController(Browser* browser)
-    : browser_(browser),
-      is_attempting_to_close_browser_(false),
-      weak_factory_(this) {
+    : browser_(browser), is_attempting_to_close_browser_(false) {
   browser_->tab_strip_model()->AddObserver(this);
 }
 
@@ -197,7 +195,7 @@ bool UnloadController::TabsNeedBeforeUnloadFired() {
       bool should_fire_beforeunload =
           contents->NeedToFireBeforeUnload() ||
           DevToolsWindow::NeedsToInterceptBeforeUnload(contents);
-      if (!ContainsKey(tabs_needing_unload_fired_, contents) &&
+      if (!base::Contains(tabs_needing_unload_fired_, contents) &&
           should_fire_beforeunload) {
         tabs_needing_before_unload_fired_.insert(contents);
       }

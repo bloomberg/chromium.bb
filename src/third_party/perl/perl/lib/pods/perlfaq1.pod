@@ -2,6 +2,10 @@
 
 perlfaq1 - General Questions About Perl
 
+=head1 VERSION
+
+version 5.20190126
+
 =head1 DESCRIPTION
 
 This section of the FAQ answers very general, high-level questions
@@ -38,7 +42,6 @@ are a group of highly altruistic individuals committed to
 producing better software for free than you could hope to purchase for
 money. You may snoop on pending developments via the
 L<archives|http://www.nntp.perl.org/group/perl.perl5.porters/>
-or read the L<faq|http://dev.perl.org/perl5/docs/p5p-faq.html>,
 or you can subscribe to the mailing list by sending
 perl5-porters-subscribe@perl.org a subscription request
 (an empty message with no subject is fine).
@@ -54,12 +57,11 @@ users the informal support will more than suffice. See the answer to
 
 =head2 Which version of Perl should I use?
 
-(contributed by brian d foy)
+(contributed by brian d foy with updates from others)
 
 There is often a matter of opinion and taste, and there isn't any one
 answer that fits everyone. In general, you want to use either the current
 stable release, or the stable release immediately prior to that one.
-Currently, those are perl5.14.x and perl5.12.x, respectively.
 
 Beyond that, you have to consider several things and decide which is best
 for you.
@@ -77,14 +79,21 @@ The latest versions of perl have more bug fixes.
 
 =item *
 
+The latest versions of perl may contain performance improvements and
+features not present in older versions.  There have been many changes
+in perl since perl5 was first introduced.
+
+=item *
+
 The Perl community is geared toward supporting the most recent releases,
 so you'll have an easier time finding help for those.
 
 =item *
 
-Versions prior to perl5.004 had serious security problems with buffer
-overflows, and in some cases have CERT advisories (for instance,
-L<http://www.cert.org/advisories/CA-1997-17.html> ).
+Older versions of perl may have security vulnerabilities, some of which
+are serious (see L<perlsec> and search
+L<CVEs|https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=Perl> for more
+information).
 
 =item *
 
@@ -94,29 +103,23 @@ problems others have if you are risk averse.
 
 =item *
 
-The immediate, previous releases (i.e. perl5.8.x ) are usually maintained
-for a while, although not at the same level as the current releases.
-
-=item *
-
-No one is actively supporting Perl 4. Ten years ago it was a dead
-camel carcass (according to this document). Now it's barely a skeleton
-as its whitewashed bones have fractured or eroded.
-
-=item *
-
-The current leading implementation of Perl 6, Rakudo, released a "useful,
-usable, 'early adopter'" distribution of Perl 6 (called Rakudo Star) in July of
-2010. Please see L<http://rakudo.org/> for more information.
+The immediate, in addition to the current stable release, the previous
+stable release is maintained.  See
+L<perlpolicy/"MAINTENANCE AND SUPPORT"> for more information.
 
 =item *
 
 There are really two tracks of perl development: a maintenance version
 and an experimental version. The maintenance versions are stable, and
-have an even number as the minor release (i.e. perl5.10.x, where 10 is the
+have an even number as the minor release (i.e. perl5.24.x, where 24 is the
 minor release). The experimental versions may include features that
 don't make it into the stable versions, and have an odd number as the
-minor release (i.e. perl5.9.x, where 9 is the minor release).
+minor release (i.e. perl5.25.x, where 25 is the minor release).
+
+=item *
+
+You can consult L<releases|http://dev.perl.org/perl5> to determine the
+current stable release of Perl.
 
 =back
 
@@ -144,21 +147,21 @@ See L<perlhist> for a history of Perl revisions.
 
 =head2 What is Perl 6?
 
-Perl 6 was I<originally> described as the community's rewrite of Perl 5.
-Development started in 2002; syntax and design work continue to this day.
-As the language has evolved, it has become clear that it is a separate
-language, incompatible with Perl 5 but in the same language family.
+Perl 6 was I<originally> described as the community's rewrite of Perl 5,
+however as the language evolved, it became clear that it is a separate
+language, but in the same language family as Perl 5.
+
+Perl 6 is not intended primarily as a replacement for Perl 5, but as its
+own thing - and libraries exist to allow you to call Perl 5 code from Perl
+6 programs and vice versa.
 
 Contrary to popular belief, Perl 6 and Perl 5 peacefully coexist with one
 another. Perl 6 has proven to be a fascinating source of ideas for those
 using Perl 5 (the L<Moose> object system is a well-known example). There is
 overlap in the communities, and this overlap fosters the tradition of sharing
-and borrowing that have been instrumental to Perl's success. The current
-leading implementation of Perl 6 is Rakudo, and you can learn more about
-it at L<http://rakudo.org>.
+and borrowing that have been instrumental to Perl's success.
 
-If you want to learn more about Perl 6, or have a desire to help in
-the crusade to make Perl a better place then read the Perl 6 developers
+If you want to learn more about Perl 6 read the Perl 6 developers
 page at L<http://www.perl6.org/> and get involved.
 
 "We're really serious about reinventing everything that needs reinventing."
@@ -173,6 +176,23 @@ averaged about one production release per year.
 The Perl development team occasionally make changes to the
 internal core of the language, but all possible efforts are made toward
 backward compatibility.
+
+=head2 How often are new versions of Perl released?
+
+Recently, the plan has been to release a new version of Perl roughly every
+April, but getting the release right is more important than sticking rigidly to
+a calendar date, so the release date is somewhat flexible.  The historical
+release dates can be viewed at L<http://www.cpan.org/src/README.html>.
+
+Even numbered minor versions (5.14, 5.16, 5.18) are production versions, and
+odd numbered minor versions (5.15, 5.17, 5.19) are development versions. Unless
+you want to try out an experimental feature, you probably never want to install
+a development version of Perl.
+
+The Perl development team are called Perl 5 Porters, and their
+organization is described at L<http://perldoc.perl.org/perlpolicy.html>.
+The organizational rules really just boil down to one: Larry is always
+right, even when he was wrong.
 
 =head2 Is Perl difficult to learn?
 

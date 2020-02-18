@@ -7,16 +7,16 @@
 
 #include "src/gpu/GrResourceAllocator.h"
 
-#include "include/private/GrOpList.h"
-#include "include/private/GrRenderTargetProxy.h"
-#include "include/private/GrSurfaceProxy.h"
-#include "include/private/GrTextureProxy.h"
 #include "src/gpu/GrDeinstantiateProxyTracker.h"
 #include "src/gpu/GrGpuResourcePriv.h"
+#include "src/gpu/GrOpList.h"
+#include "src/gpu/GrRenderTargetProxy.h"
 #include "src/gpu/GrResourceCache.h"
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrSurfacePriv.h"
+#include "src/gpu/GrSurfaceProxy.h"
 #include "src/gpu/GrSurfaceProxyPriv.h"
+#include "src/gpu/GrTextureProxy.h"
 
 #if GR_TRACK_INTERVAL_CREATION
     #include <atomic>
@@ -44,10 +44,10 @@ void GrResourceAllocator::determineRecyclability() {
             continue;
         }
 
-        if (cur->uses() >= cur->proxy()->priv().getTotalRefs()) {
+        if (cur->uses() >= cur->proxy()->priv().getProxyRefCnt()) {
             // All the refs on the proxy are known to the resource allocator thus no one
             // should be holding onto it outside of Ganesh.
-            SkASSERT(cur->uses() == cur->proxy()->priv().getTotalRefs());
+            SkASSERT(cur->uses() == cur->proxy()->priv().getProxyRefCnt());
             cur->markAsRecyclable();
         }
     }
@@ -75,15 +75,21 @@ void GrResourceAllocator::addInterval(GrSurfaceProxy* proxy, unsigned int start,
                                       ActualUse actualUse
                                       SkDEBUGCODE(, bool isDirectDstRead)) {
 
-    bool needsStencil = proxy->asRenderTargetProxy()
-                                        ? proxy->asRenderTargetProxy()->needsStencil()
-                                        : false;
-
-    // If we're going to need to add a stencil buffer in assign, we
-    // need to add at least a symbolic interval
-    // TODO: adding this interval just to add a stencil buffer is
-    // a bit heavy weight. Is there a simpler way to accomplish this?
-    if (!needsStencil && proxy->canSkipResourceAllocator()) {
+    if (proxy->canSkipResourceAllocator()) {
+        // If the proxy is still not instantiated at this point but will need stencil, it will
+        // attach its own stencil buffer upon onFlush instantiation.
+        if (proxy->isInstantiated()) {
+            int minStencilSampleCount = (proxy->asRenderTargetProxy())
+                    ? proxy->asRenderTargetProxy()->numStencilSamples()
+                    : 0;
+            if (minStencilSampleCount) {
+                if (!GrSurfaceProxyPriv::AttachStencilIfNeeded(
+                        fResourceProvider, proxy->peekSurface(), minStencilSampleCount)) {
+                    SkDebugf("WARNING: failed to attach stencil buffer. "
+                             "Rendering may be incorrect.\n");
+                }
+            }
+        }
         return;
     }
 
@@ -150,6 +156,8 @@ void GrResourceAllocator::addInterval(GrSurfaceProxy* proxy, unsigned int start,
                     GrSurfaceProxy::LazyInstantiationType::kDeinstantiate) {
                     fDeinstantiateTracker->addProxy(proxy);
                 }
+            } else {
+                fLazyInstantiationError = true;
             }
         }
     }
@@ -277,7 +285,7 @@ void GrResourceAllocator::recycleSurface(sk_sp<GrSurface> surface) {
 // First try to reuse one of the recently allocated/used GrSurfaces in the free pool.
 // If we can't find a useable one, create a new one.
 sk_sp<GrSurface> GrResourceAllocator::findSurfaceFor(const GrSurfaceProxy* proxy,
-                                                     bool needsStencil) {
+                                                     int minStencilSampleCount) {
 
     if (proxy->asTextureProxy() && proxy->asTextureProxy()->getUniqueKey().isValid()) {
         // First try to reattach to a cached version if the proxy is uniquely keyed
@@ -285,7 +293,7 @@ sk_sp<GrSurface> GrResourceAllocator::findSurfaceFor(const GrSurfaceProxy* proxy
                                                         proxy->asTextureProxy()->getUniqueKey());
         if (surface) {
             if (!GrSurfaceProxyPriv::AttachStencilIfNeeded(fResourceProvider, surface.get(),
-                                                           needsStencil)) {
+                                                           minStencilSampleCount)) {
                 return nullptr;
             }
 
@@ -311,7 +319,7 @@ sk_sp<GrSurface> GrResourceAllocator::findSurfaceFor(const GrSurfaceProxy* proxy
         }
 
         if (!GrSurfaceProxyPriv::AttachStencilIfNeeded(fResourceProvider, surface.get(),
-                                                       needsStencil)) {
+                                                       minStencilSampleCount)) {
             return nullptr;
         }
         SkASSERT(!surface->getUniqueKey().isValid());
@@ -374,7 +382,8 @@ void GrResourceAllocator::forceIntermediateFlush(int* stopIndex) {
 
 bool GrResourceAllocator::assign(int* startIndex, int* stopIndex, AssignError* outError) {
     SkASSERT(outError);
-    *outError = AssignError::kNoError;
+    *outError = fLazyInstantiationError ? AssignError::kFailedProxyInstantiation
+                                        : AssignError::kNoError;
 
     SkASSERT(fNumOpLists == fEndOfOpListOpIndices.count());
 
@@ -415,13 +424,13 @@ bool GrResourceAllocator::assign(int* startIndex, int* stopIndex, AssignError* o
 
         this->expire(cur->start());
 
-        bool needsStencil = cur->proxy()->asRenderTargetProxy()
-                                            ? cur->proxy()->asRenderTargetProxy()->needsStencil()
-                                            : false;
+        int minStencilSampleCount = (cur->proxy()->asRenderTargetProxy())
+                ? cur->proxy()->asRenderTargetProxy()->numStencilSamples()
+                : 0;
 
         if (cur->proxy()->isInstantiated()) {
             if (!GrSurfaceProxyPriv::AttachStencilIfNeeded(
-                        fResourceProvider, cur->proxy()->peekSurface(), needsStencil)) {
+                        fResourceProvider, cur->proxy()->peekSurface(), minStencilSampleCount)) {
                 *outError = AssignError::kFailedProxyInstantiation;
             }
 
@@ -447,7 +456,8 @@ bool GrResourceAllocator::assign(int* startIndex, int* stopIndex, AssignError* o
                     fDeinstantiateTracker->addProxy(cur->proxy());
                 }
             }
-        } else if (sk_sp<GrSurface> surface = this->findSurfaceFor(cur->proxy(), needsStencil)) {
+        } else if (sk_sp<GrSurface> surface = this->findSurfaceFor(
+                cur->proxy(), minStencilSampleCount)) {
             // TODO: make getUniqueKey virtual on GrSurfaceProxy
             GrTextureProxy* texProxy = cur->proxy()->asTextureProxy();
 
@@ -494,15 +504,13 @@ void GrResourceAllocator::dumpIntervals() {
     unsigned int min = std::numeric_limits<unsigned int>::max();
     unsigned int max = 0;
     for(const Interval* cur = fIntvlList.peekHead(); cur; cur = cur->next()) {
-        SkDebugf("{ %3d,%3d }: [%2d, %2d] - proxyRefs:%d surfaceRefs:%d R:%d W:%d\n",
+        SkDebugf("{ %3d,%3d }: [%2d, %2d] - proxyRefs:%d surfaceRefs:%d\n",
                  cur->proxy()->uniqueID().asUInt(),
                  cur->proxy()->isInstantiated() ? cur->proxy()->underlyingUniqueID().asUInt() : -1,
                  cur->start(),
                  cur->end(),
                  cur->proxy()->priv().getProxyRefCnt(),
-                 cur->proxy()->getBackingRefCnt_TestOnly(),
-                 cur->proxy()->getPendingReadCnt_TestOnly(),
-                 cur->proxy()->getPendingWriteCnt_TestOnly());
+                 cur->proxy()->testingOnly_getBackingRefCnt());
         min = SkTMin(min, cur->start());
         max = SkTMax(max, cur->end());
     }

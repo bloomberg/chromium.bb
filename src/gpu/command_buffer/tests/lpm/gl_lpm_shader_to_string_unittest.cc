@@ -21,30 +21,28 @@ TEST_P(LpmShaderTest, CheckTranslation) {
   ASSERT_EQ(gl_lpm_fuzzer::GetShader(shader), param.second);
 }
 
-INSTANTIATE_TEST_SUITE_P(LpmFuzzer,
-                         LpmShaderTest,
-                         ::testing::Values(std::make_pair(R"(functions {
-        function_name: MAIN
-        block {
-            statements {
-            assignment {
-                lvalue {
-                var: VAR_0
-                }
-                rvalue {
-                }
-            }
-            }
-        }
-        return_stmt {
-        }
-        type: VOID_TYPE
-        })",
-                                                          R"(void main() {
+static const char* kProtoAssignment = R"(
+functions {
+  function_name: MAIN
+  block {
+    statements {
+      assignment {
+        lvalue { var: VAR_0 }
+        rvalue {}
+      }
+    }
+  }
+  return_stmt {}
+  type: VOID_TYPE
+})";
+
+static const char* kShaderAssignment = R"(#version 300 es
+void main() {
 var0 = 1;
 return 1;
-})"),
-                                           std::make_pair(R"(functions {
+})";
+
+static const char* kProtoLoop = R"(functions {
   function_name: MAIN
   block {
     statements {
@@ -54,7 +52,7 @@ return 1;
             op: PLUS
             left {
               cons {
-                val: 0
+                int32: 0
               }
             }
             right {
@@ -69,13 +67,16 @@ return 1;
   return_stmt {
   }
   type: VOID_TYPE
-})",
-                                                          R"(void main() {
+})";
+
+static const char* kShaderLoop = R"(#version 300 es
+void main() {
 while ((0 + 1)) {
 }
 return 1;
-})"),
-                                           std::make_pair(R"(functions {
+})";
+
+static const char* kProtoTwoFunctions = R"(functions {
   function_name: MAIN
   block {
     statements {
@@ -101,16 +102,19 @@ functions {
   return_stmt {
   }
   type: VOID_TYPE
-})",
-                                                          R"(void main() {
+})";
+
+static const char* kShaderTwoFunctions = R"(#version 300 es
+void main() {
 while (0) {
 }
 return 1;
 }
 void main() {
 return 1;
-})"),
-                                           std::make_pair(R"(functions {
+})";
+
+static const char* kProtoDeclareFloat = R"(functions {
   function_name: NAME_2
   block {
   }
@@ -131,15 +135,18 @@ functions {
   return_stmt {
   }
   type: VOID_TYPE
-})",
-                                                          R"(void f2() {
+})";
+
+static const char* kShaderDeclareFloat = R"(#version 300 es
+void f2() {
 return 1;
 }
 void f1() {
-void var2;
+float var2;
 return 1;
-})"),
-                                           std::make_pair(R"(functions {
+})";
+
+static const char* kProtoIfElse = R"(functions {
   function_name: NAME_2
   block {
   }
@@ -154,7 +161,7 @@ functions {
       ifelse {
         cond {
           cons {
-            val: 0
+            int32: 0
           }
         }
         if_body {
@@ -166,12 +173,14 @@ functions {
   }
   return_stmt {
     cons {
-      val: 0
+      int32: 0
     }
   }
   type: VOID_TYPE
-})",
-                                                          R"(void f2() {
+})";
+
+static const char* kShaderIfElse = R"(#version 300 es
+void f2() {
 return 1;
 }
 void main() {
@@ -179,4 +188,54 @@ if (0) {
 } else {
 }
 return 0;
-})")));
+})";
+
+static const char* kProtoConstInt32 = R"(functions {
+  return_stmt {
+    cons {
+      int32: 117506048
+    }
+  }
+})";
+
+static const char* kShaderConstInt32 = R"(#version 300 es
+void main() {
+return 117506048;
+})";
+
+// Uniform only applies at global scope
+static const char* kProtoNoLocalUniform = R"(functions {
+  block {
+    statements {
+      while_stmt {
+        body {
+          statements {
+            declare {
+              qualifier: UNIFORM_QUALIFIER
+            }
+          }
+        }
+      }
+    }
+  }
+})";
+
+static const char* kShaderNoLocalUniform = R"(#version 300 es
+void main() {
+while (1) {
+float var0;
+}
+return;
+})";
+
+INSTANTIATE_TEST_SUITE_P(
+    LpmFuzzer,
+    LpmShaderTest,
+    ::testing::Values(std::make_pair(kProtoAssignment, kShaderAssignment),
+                      std::make_pair(kProtoLoop, kShaderLoop),
+                      std::make_pair(kProtoTwoFunctions, kShaderTwoFunctions),
+                      std::make_pair(kProtoDeclareFloat, kShaderDeclareFloat),
+                      std::make_pair(kProtoIfElse, kShaderIfElse),
+                      std::make_pair(kProtoConstInt32, kShaderConstInt32),
+                      std::make_pair(kProtoNoLocalUniform,
+                                     kShaderNoLocalUniform)));

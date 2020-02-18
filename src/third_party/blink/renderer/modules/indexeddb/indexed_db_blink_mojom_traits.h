@@ -37,6 +37,9 @@ struct MODULES_EXPORT StructTraits<blink::mojom::IDBDatabaseMetadataDataView,
   object_stores(const blink::IDBDatabaseMetadata& metadata) {
     return metadata.object_stores;
   }
+  static bool was_cold_open(const blink::IDBDatabaseMetadata& metadata) {
+    return metadata.was_cold_open;
+  }
   static bool Read(blink::mojom::IDBDatabaseMetadataDataView data,
                    blink::IDBDatabaseMetadata* out);
 };
@@ -45,11 +48,11 @@ template <>
 struct MODULES_EXPORT
     StructTraits<blink::mojom::IDBIndexKeysDataView, blink::IDBIndexKeys> {
   static int64_t index_id(const blink::IDBIndexKeys& index_keys) {
-    return index_keys.first;
+    return index_keys.id;
   }
   static const Vector<std::unique_ptr<blink::IDBKey>>& index_keys(
       const blink::IDBIndexKeys& index_keys) {
-    return index_keys.second;
+    return index_keys.keys;
   }
   static bool Read(blink::mojom::IDBIndexKeysDataView data,
                    blink::IDBIndexKeys* out);

@@ -70,7 +70,8 @@ class PepperMediaDeviceManager
   int GetSessionID(PP_DeviceType_Dev type, const std::string& label);
 
   // Stream type conversion.
-  static blink::MediaStreamType FromPepperDeviceType(PP_DeviceType_Dev type);
+  static blink::mojom::MediaStreamType FromPepperDeviceType(
+      PP_DeviceType_Dev type);
 
  private:
   explicit PepperMediaDeviceManager(RenderFrame* render_frame);

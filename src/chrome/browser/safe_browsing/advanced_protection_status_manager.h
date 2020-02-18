@@ -7,11 +7,11 @@
 
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/account_info.h"
-#include "services/identity/public/cpp/access_token_info.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
-namespace identity {
+namespace signin {
 class PrimaryAccountAccessTokenFetcher;
 }
 
@@ -27,7 +27,7 @@ namespace safe_browsing {
 // of its original profile.
 class AdvancedProtectionStatusManager
     : public KeyedService,
-      public identity::IdentityManager::Observer {
+      public signin::IdentityManager::Observer {
  public:
   explicit AdvancedProtectionStatusManager(Profile* profile);
   ~AdvancedProtectionStatusManager() override;
@@ -101,7 +101,7 @@ class AdvancedProtectionStatusManager
 
   void OnAccessTokenFetchComplete(std::string account_id,
                                   GoogleServiceAuthError error,
-                                  identity::AccessTokenInfo token_info);
+                                  signin::AccessTokenInfo token_info);
 
   // Requests Gaia refresh token to obtain advanced protection status.
   void RefreshAdvancedProtectionStatus();
@@ -133,8 +133,8 @@ class AdvancedProtectionStatusManager
 
   Profile* const profile_;
 
-  identity::IdentityManager* identity_manager_;
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+  signin::IdentityManager* identity_manager_;
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       access_token_fetcher_;
   AccountTrackerService* account_tracker_service_;
 

@@ -639,6 +639,12 @@ std::string AppIdToArcPackageName(const std::string& app_id, Profile* profile) {
   return app_info->package_name;
 }
 
+std::string ArcPackageNameToAppId(const std::string& package_name,
+                                  Profile* profile) {
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
+  return arc_prefs->GetAppIdByPackageName(package_name);
+}
+
 bool IsArcAppSticky(const std::string& app_id, Profile* profile) {
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
@@ -658,7 +664,7 @@ void Intent::AddExtraParam(const std::string& extra_param) {
 }
 
 bool Intent::HasExtraParam(const std::string& extra_param) const {
-  return base::ContainsValue(extra_params_, extra_param);
+  return base::Contains(extra_params_, extra_param);
 }
 
 }  // namespace arc

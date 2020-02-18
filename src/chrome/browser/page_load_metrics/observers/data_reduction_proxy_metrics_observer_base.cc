@@ -4,15 +4,20 @@
 
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_base.h"
 
+#include <stdint.h>
+#include <algorithm>
+#include <iterator>
 #include <string>
+#include <vector>
 
+#include "base/big_endian.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -25,13 +30,16 @@
 #include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
 #include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
+#include "crypto/sha2.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "url/gurl.h"
 
 namespace data_reduction_proxy {
@@ -64,6 +72,28 @@ PageloadMetrics_PageEndReason ConvertPLMPageEndReasonToProto(
   }
 }
 
+uint64_t ComputeDataReductionProxyUUID(
+    data_reduction_proxy::DataReductionProxyData* data) {
+  if (!data || data->session_key().empty() || !data->page_id().has_value() ||
+      data->page_id().value() == 0) {
+    return 0;
+  }
+
+  uint64_t page_id = data->page_id().value();
+  char buf[8];
+  base::WriteBigEndian<uint64_t>(buf, page_id);
+
+  std::string to_hash(data->session_key());
+  to_hash.append(std::begin(buf), std::end(buf));
+
+  char hash[32];
+  crypto::SHA256HashString(base::StringPiece(to_hash), hash, 32);
+
+  uint64_t uuid;
+  base::ReadBigEndian<uint64_t>(hash, &uuid);
+  return uuid;
+}
+
 }  // namespace
 
 DataReductionProxyMetricsObserverBase::DataReductionProxyMetricsObserverBase()
@@ -83,8 +113,7 @@ DataReductionProxyMetricsObserverBase::DataReductionProxyMetricsObserverBase()
       render_process_host_id_(content::ChildProcessHost::kInvalidUniqueID),
       touch_count_(0),
       scroll_count_(0),
-      redirect_count_(0),
-      weak_ptr_factory_(this) {}
+      redirect_count_(0) {}
 
 DataReductionProxyMetricsObserverBase::
     ~DataReductionProxyMetricsObserverBase() {}
@@ -131,11 +160,6 @@ DataReductionProxyMetricsObserverBase::OnCommitCalled(
     ukm::SourceId source_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // As documented in content/public/browser/navigation_handle.h, this
-  // NavigationData is a clone of the NavigationData instance returned from
-  // ResourceDispatcherHostDelegate::GetNavigationData during commit.
-  // Because ChromeResourceDispatcherHostDelegate always returns a
-  // ChromeNavigationData, it is safe to static_cast here.
   std::unique_ptr<DataReductionProxyData> data;
   auto* settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
@@ -189,6 +213,7 @@ DataReductionProxyMetricsObserverBase::FlushMetricsOnAppEnterBackground(
   // notification, so we send a pingback with data collected up to this point.
   if (info.did_commit) {
     SendPingback(timing, info, true /* app_background_occurred */);
+    RecordUKM(info);
   }
   return STOP_OBSERVING;
 }
@@ -198,6 +223,7 @@ void DataReductionProxyMetricsObserverBase::OnComplete(
     const page_load_metrics::PageLoadExtraInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SendPingback(timing, info, false /* app_background_occurred */);
+  RecordUKM(info);
 }
 
 // static
@@ -208,6 +234,27 @@ int64_t DataReductionProxyMetricsObserverBase::ExponentiallyBucketBytes(
     return 0;
   }
   return ukm::GetExponentialBucketMin(bytes, 1.16);
+}
+
+void DataReductionProxyMetricsObserverBase::RecordUKM(
+    const page_load_metrics::PageLoadExtraInfo& info) const {
+  if (!data())
+    return;
+
+  if (!data()->used_data_reduction_proxy())
+    return;
+
+  int64_t original_network_bytes =
+      insecure_original_network_bytes() + secure_original_network_bytes();
+  uint64_t uuid = ComputeDataReductionProxyUUID(data());
+
+  ukm::builders::DataReductionProxy builder(info.source_id);
+
+  builder.SetEstimatedOriginalNetworkBytes(
+      ExponentiallyBucketBytes(original_network_bytes));
+  builder.SetDataSaverPageUUID(uuid);
+
+  builder.Record(ukm::UkmRecorder::Get());
 }
 
 void DataReductionProxyMetricsObserverBase::SendPingback(
@@ -341,11 +388,6 @@ void DataReductionProxyMetricsObserverBase::OnLoadedResource(
     const page_load_metrics::ExtraRequestCompleteInfo&
         extra_request_complete_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (extra_request_complete_info.data_reduction_proxy_data &&
-      extra_request_complete_info.data_reduction_proxy_data->lofi_received()) {
-    data_->set_lofi_received(true);
-  }
-
   if (extra_request_complete_info.resource_type ==
       content::ResourceType::kMainFrame) {
     main_frame_fetch_start_ =
@@ -359,7 +401,10 @@ void DataReductionProxyMetricsObserverBase::OnResourceDataUseObserved(
         resources) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto const& resource : resources) {
-    if (resource->was_fetched_via_cache) {
+    if (resource->cache_type == page_load_metrics::mojom::CacheType::kMemory)
+      continue;
+    if (resource->cache_type !=
+        page_load_metrics::mojom::CacheType::kNotCached) {
       if (resource->is_complete) {
         if (resource->is_secure_scheme) {
           secure_cached_bytes_ += resource->encoded_body_length;

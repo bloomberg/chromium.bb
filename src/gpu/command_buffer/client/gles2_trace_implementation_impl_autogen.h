@@ -1843,6 +1843,11 @@ void GLES2TraceImplementation::DispatchCompute(GLuint num_groups_x,
   gl_->DispatchCompute(num_groups_x, num_groups_y, num_groups_z);
 }
 
+void GLES2TraceImplementation::DispatchComputeIndirect(GLintptr offset) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::DispatchComputeIndirect");
+  gl_->DispatchComputeIndirect(offset);
+}
+
 void GLES2TraceImplementation::GetProgramInterfaceiv(GLuint program,
                                                      GLenum program_interface,
                                                      GLenum pname,
@@ -2260,11 +2265,13 @@ void GLES2TraceImplementation::ScheduleCALayerSharedStateCHROMIUM(
     GLfloat opacity,
     GLboolean is_clipped,
     const GLfloat* clip_rect,
+    const GLfloat* rounded_corner_bounds,
     GLint sorting_context_id,
     const GLfloat* transform) {
   TRACE_EVENT_BINARY_EFFICIENT0(
       "gpu", "GLES2Trace::ScheduleCALayerSharedStateCHROMIUM");
   gl_->ScheduleCALayerSharedStateCHROMIUM(opacity, is_clipped, clip_rect,
+                                          rounded_corner_bounds,
                                           sorting_context_id, transform);
 }
 

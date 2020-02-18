@@ -32,9 +32,10 @@ class DepthStencilStateTest : public DawnTest {
             renderTargetDescriptor.size.depth = 1;
             renderTargetDescriptor.arrayLayerCount = 1;
             renderTargetDescriptor.sampleCount = 1;
-            renderTargetDescriptor.format = dawn::TextureFormat::R8G8B8A8Unorm;
+            renderTargetDescriptor.format = dawn::TextureFormat::RGBA8Unorm;
             renderTargetDescriptor.mipLevelCount = 1;
-            renderTargetDescriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::TransferSrc;
+            renderTargetDescriptor.usage =
+                dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
             renderTarget = device.CreateTexture(&renderTargetDescriptor);
 
             renderTargetView = renderTarget.CreateDefaultView();
@@ -46,14 +47,14 @@ class DepthStencilStateTest : public DawnTest {
             depthDescriptor.size.depth = 1;
             depthDescriptor.arrayLayerCount = 1;
             depthDescriptor.sampleCount = 1;
-            depthDescriptor.format = dawn::TextureFormat::D32FloatS8Uint;
+            depthDescriptor.format = dawn::TextureFormat::Depth24PlusStencil8;
             depthDescriptor.mipLevelCount = 1;
             depthDescriptor.usage = dawn::TextureUsageBit::OutputAttachment;
             depthTexture = device.CreateTexture(&depthDescriptor);
 
             depthTextureView = depthTexture.CreateDefaultView();
 
-            vsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
+            vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
                 #version 450
                 layout(set = 0, binding = 0) uniform myBlock {
                     vec3 color;
@@ -68,7 +69,7 @@ class DepthStencilStateTest : public DawnTest {
                 }
             )");
 
-            fsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+            fsModule = utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
                 #version 450
                 layout(set = 0, binding = 0) uniform myBlock {
                     vec3 color;
@@ -276,7 +277,7 @@ class DepthStencilStateTest : public DawnTest {
                 descriptor.cVertexStage.module = vsModule;
                 descriptor.cFragmentStage.module = fsModule;
                 descriptor.cDepthStencilState = test.depthStencilState;
-                descriptor.cDepthStencilState.format = dawn::TextureFormat::D32FloatS8Uint;
+                descriptor.cDepthStencilState.format = dawn::TextureFormat::Depth24PlusStencil8;
                 descriptor.depthStencilState = &descriptor.cDepthStencilState;
 
                 dawn::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);

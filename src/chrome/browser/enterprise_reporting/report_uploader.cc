@@ -31,8 +31,7 @@ ReportUploader::ReportUploader(policy::CloudPolicyClient* client,
                                int maximum_number_of_retries)
     : client_(client),
       backoff_entry_(&kDefaultReportUploadBackoffPolicy),
-      maximum_number_of_retries_(maximum_number_of_retries),
-      weak_ptr_factory_(this) {}
+      maximum_number_of_retries_(maximum_number_of_retries) {}
 ReportUploader::~ReportUploader() = default;
 
 void ReportUploader::SetRequestAndUpload(
@@ -52,14 +51,7 @@ void ReportUploader::Upload() {
 
 void ReportUploader::OnRequestFinished(bool status) {
   if (status) {
-    // We don't reset the backoff in case there are multiple requests in a row
-    // and we don't start from 1 minute again.
-    backoff_entry_.InformOfRequest(true);
-    requests_.pop();
-    if (requests_.size() == 0)
-      SendResponse(ReportStatus::kSuccess);
-    else
-      Upload();
+    NextRequest();
     return;
   }
 
@@ -74,8 +66,13 @@ void ReportUploader::OnRequestFinished(bool status) {
     case policy::DM_STATUS_SERVICE_DEVICE_ID_CONFLICT:
       Retry();
       break;
+    case policy::DM_STATUS_REQUEST_TOO_LARGE:
+      // Treats the REQUEST_TOO_LARGE error as a success upload. It's likely
+      // a calculation error during request generating and there is nothing
+      // can be done here.
+      NextRequest();
+      break;
     default:
-      // TODO(zmin): Handle error 413.
       SendResponse(ReportStatus::kPersistentError);
       break;
   }
@@ -99,6 +96,18 @@ bool ReportUploader::HasRetriedTooOften() {
 
 void ReportUploader::SendResponse(const ReportStatus status) {
   std::move(callback_).Run(status);
+}
+
+void ReportUploader::NextRequest() {
+  // We don't reset the backoff in case there are multiple requests in a row
+  // and we don't start from 1 minute again.
+  backoff_entry_.InformOfRequest(true);
+  requests_.pop();
+  if (requests_.size() == 0)
+    SendResponse(ReportStatus::kSuccess);
+  else
+    Upload();
+  return;
 }
 
 }  // namespace enterprise_reporting

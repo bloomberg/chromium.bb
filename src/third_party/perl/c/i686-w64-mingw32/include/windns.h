@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _WINDNS_INCLUDED_
@@ -713,8 +713,11 @@ extern "C" {
     } Data;
   } DNS_RECORDA,*PDNS_RECORDA;
 
-  __MINGW_TYPEDEF_AW(DNS_RECORD)
-  __MINGW_TYPEDEF_AW(PDNS_RECORD)
+#ifdef UNICODE
+  typedef DNS_RECORDW DNS_RECORD, *PDNS_RECORD;
+#else
+  typedef DNS_RECORDA DNS_RECORD, *PDNS_RECORD;
+#endif
 
 #define DNS_RECORD_FIXED_SIZE FIELD_OFFSET(DNS_RECORD,Data)
 #define SIZEOF_DNS_RECORD_HEADER DNS_RECORD_FIXED_SIZE
@@ -755,7 +758,11 @@ extern "C" {
 
 #define DnsFreeRecordListDeep DnsFreeRecordList
 
+#if(_WIN32_WINNT >= 0x0501)
+  #define DnsRecordListFree(p,t)  DnsFree(p,DnsFreeRecordList)
+#else
   VOID WINAPI DnsRecordListFree(PDNS_RECORD pRecordList,DNS_FREE_TYPE FreeType);
+#endif /* _WIN32_WINNT >= 0x0501 */
 
 #define DNS_QUERY_STANDARD 0x00000000
 #define DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE 0x00000001
@@ -768,13 +775,16 @@ extern "C" {
 #define DNS_QUERY_NO_NETBT 0x00000080
 #define DNS_QUERY_WIRE_ONLY 0x00000100
 #define DNS_QUERY_RETURN_MESSAGE 0x00000200
+#define DNS_QUERY_MULTICAST_ONLY 0x00000400
+#define DNS_QUERY_NO_MULTICAST 0x00000800
 #define DNS_QUERY_TREAT_AS_FQDN 0x00001000
+#define DNS_QUERY_APPEND_MULTILABEL 0x00800000
 #define DNS_QUERY_DONT_RESET_TTL_VALUES 0x00100000
 #define DNS_QUERY_RESERVED 0xff000000
 #define DNS_QUERY_CACHE_ONLY DNS_QUERY_NO_WIRE_QUERY
 
   DNS_STATUS WINAPI DnsQuery_A(PCSTR pszName,WORD wType,DWORD Options,PIP4_ARRAY aipServers,PDNS_RECORD *ppQueryResults,PVOID *pReserved);
-  DNS_STATUS WINAPI DnsQuery_UTF8(PCSTR pszName,WORD wType,DWORD Options,PIP4_ARRAY aipServers,PDNS_RECORD *ppQueryResults,PVOID *pReserved);
+  DNS_STATUS WINAPI DnsQuery_UTF8(PCSTR pszName,WORD wType,DWORD Options,PIP4_ARRAY aipServers,PDNS_RECORDA *ppQueryResults,PVOID *pReserved);
   DNS_STATUS WINAPI DnsQuery_W(PCWSTR pszName,WORD wType,DWORD Options,PIP4_ARRAY aipServers,PDNS_RECORD *ppQueryResults,PVOID *pReserved);
 
 #define DnsQuery __MINGW_NAME_UAW(DnsQuery)
@@ -802,10 +812,10 @@ extern "C" {
   VOID WINAPI DnsReleaseContextHandle(HANDLE hContext);
   DNS_STATUS WINAPI DnsModifyRecordsInSet_W(PDNS_RECORD pAddRecords,PDNS_RECORD pDeleteRecords,DWORD Options,HANDLE hContext,PIP4_ARRAY pServerList,PVOID pReserved);
   DNS_STATUS WINAPI DnsModifyRecordsInSet_A(PDNS_RECORD pAddRecords,PDNS_RECORD pDeleteRecords,DWORD Options,HANDLE hContext,PIP4_ARRAY pServerList,PVOID pReserved);
-  DNS_STATUS WINAPI DnsModifyRecordsInSet_UTF8(PDNS_RECORD pAddRecords,PDNS_RECORD pDeleteRecords,DWORD Options,HANDLE hContext,PIP4_ARRAY pServerList,PVOID pReserved);
+  DNS_STATUS WINAPI DnsModifyRecordsInSet_UTF8(PDNS_RECORDA pAddRecords,PDNS_RECORDA pDeleteRecords,DWORD Options,HANDLE hContext,PIP4_ARRAY pServerList,PVOID pReserved);
   DNS_STATUS WINAPI DnsReplaceRecordSetW(PDNS_RECORD pNewSet,DWORD Options,HANDLE hContext,PIP4_ARRAY pServerList,PVOID pReserved);
   DNS_STATUS WINAPI DnsReplaceRecordSetA(PDNS_RECORD pNewSet,DWORD Options,HANDLE hContext,PIP4_ARRAY pServerList,PVOID pReserved);
-  DNS_STATUS WINAPI DnsReplaceRecordSetUTF8(PDNS_RECORD pNewSet,DWORD Options,HANDLE hContext,PIP4_ARRAY pServerList,PVOID pReserved);
+  DNS_STATUS WINAPI DnsReplaceRecordSetUTF8(PDNS_RECORDA pNewSet,DWORD Options,HANDLE hContext,PIP4_ARRAY pServerList,PVOID pReserved);
 
   typedef enum _DNS_NAME_FORMAT {
     DnsNameDomain,DnsNameDomainLabel,DnsNameHostnameFull,DnsNameHostnameLabel,DnsNameWildcard,DnsNameSrvRecord
@@ -825,7 +835,7 @@ extern "C" {
   WINBOOL WINAPI DnsWriteQuestionToBuffer_W(PDNS_MESSAGE_BUFFER pDnsBuffer,PDWORD pdwBufferSize,LPWSTR pszName,WORD wType,WORD Xid,WINBOOL fRecursionDesired);
   WINBOOL WINAPI DnsWriteQuestionToBuffer_UTF8(PDNS_MESSAGE_BUFFER pDnsBuffer,LPDWORD pdwBufferSize,LPSTR pszName,WORD wType,WORD Xid,WINBOOL fRecursionDesired);
   DNS_STATUS WINAPI DnsExtractRecordsFromMessage_W(PDNS_MESSAGE_BUFFER pDnsBuffer,WORD wMessageLength,PDNS_RECORD *ppRecord);
-  DNS_STATUS WINAPI DnsExtractRecordsFromMessage_UTF8(PDNS_MESSAGE_BUFFER pDnsBuffer,WORD wMessageLength,PDNS_RECORD *ppRecord);
+  DNS_STATUS WINAPI DnsExtractRecordsFromMessage_UTF8(PDNS_MESSAGE_BUFFER pDnsBuffer,WORD wMessageLength,PDNS_RECORDA *ppRecord);
 
 #ifdef __cplusplus
 }

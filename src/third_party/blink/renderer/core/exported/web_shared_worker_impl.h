@@ -40,7 +40,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/csp/content_security_policy.mojom-blink.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-shared.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-blink.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -60,8 +60,6 @@ class SharedURLLoaderFactory;
 namespace blink {
 
 class SharedWorkerThread;
-class WebApplicationCacheHost;
-class WebApplicationCacheHostClient;
 class WebSharedWorkerClient;
 class WebString;
 class WebURL;
@@ -76,13 +74,15 @@ class WorkerClassicScriptLoader;
 class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
                                               public WorkerShadowPage::Client {
  public:
-  explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
+  WebSharedWorkerImpl(WebSharedWorkerClient*,
+                      const base::UnguessableToken& appcache_host_id);
   ~WebSharedWorkerImpl() override;
 
   // WorkerShadowPage::Client overrides.
-  std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
-      WebApplicationCacheHostClient*) override;
   void OnShadowPageInitialized() override;
+  WebLocalFrameClient::AppCacheType GetAppCacheType() override {
+    return WebLocalFrameClient::AppCacheType::kAppCacheForSharedWorker;
+  }
 
   // WebDevToolsAgentImpl::Client overrides.
   void ResumeStartup() override;
@@ -169,8 +169,9 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   // document.
   Persistent<ParentExecutionContextTaskRunners>
       parent_execution_context_task_runners_;
+  const base::UnguessableToken appcache_host_id_;
 
-  base::WeakPtrFactory<WebSharedWorkerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<WebSharedWorkerImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace blink

@@ -8,9 +8,9 @@ found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
 part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
-import '../../polymer/polymer-legacy.js';
+import '../../polymer/polymer_bundled.min.js';
 
-import {Polymer} from '../../polymer/lib/legacy/polymer-fn.js';
+import {Polymer} from '../../polymer/polymer_bundled.min.js';
 import {NeonAnimationBehavior} from '../neon-animation-behavior.js';
 /*
 `<fade-in-animation>` animates the opacity of an element from 0 to 1.

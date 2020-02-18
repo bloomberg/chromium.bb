@@ -21,10 +21,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-namespace ui {
-class Shadow;
-}
-
 namespace views {
 class Widget;
 }
@@ -54,7 +50,7 @@ class OverviewItem;
 // The selector is switched to the next window grid (if available) or wrapped if
 // it reaches the end of its movement sequence.
 class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
-                                public wm::WindowStateObserver,
+                                public WindowStateObserver,
                                 public ScreenRotationAnimatorObserver {
  public:
   OverviewGrid(aura::Window* root_window,
@@ -79,14 +75,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
                        const base::flat_set<OverviewItem*>& ignored_items = {},
                        OverviewSession::OverviewTransition transition =
                            OverviewSession::OverviewTransition::kInOverview);
-
-  // Updates |selected_index_| according to the specified |direction| and calls
-  // MoveSelectionWidget(). Returns |true| if the new selection index is out of
-  // this window grid bounds.
-  bool Move(OverviewSession::Direction direction, bool animate);
-
-  // Returns the target selected window, or NULL if there is none selected.
-  OverviewItem* SelectedWindow() const;
 
   // Returns the OverviewItem if a window is contained in any of the
   // OverviewItems this grid owns. Returns nullptr if no such a OverviewItem
@@ -146,10 +134,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
       OverviewItem* dragged_item,
       const gfx::PointF& location_in_screen);
 
-  // Shows or hides the selection widget. To be called by an overview item when
-  // it is dragged.
-  void SetSelectionWidgetVisibility(bool visible);
-
   void UpdateCannotSnapWarningVisibility();
 
   // Called when any OverviewItem on any OverviewGrid has started/ended being
@@ -187,8 +171,8 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
                                const void* key,
                                intptr_t old) override;
 
-  // wm::WindowStateObserver:
-  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
+  // WindowStateObserver:
+  void OnPostWindowStateTypeChange(WindowState* window_state,
                                    WindowStateType old_type) override;
 
   // ScreenRotationAnimatorObserver:
@@ -260,11 +244,19 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // show them once it is created).
   bool IsDesksBarViewActive() const;
 
-  // Called when a window is being dragged in Overview Mode to update the drag
-  // details (screen_location, and whether that location intersects with the
-  // desks bar widget.
+  // Gets the effective bounds of this grid (the area in which the windows are
+  // positioned, taking into account the availability of the Desks bar).
+  gfx::Rect GetGridEffectiveBounds() const;
+
+  // Called when a window is being dragged in Overview Mode. If
+  // |update_desks_bar_drag_details| is true, it will update the drag details
+  // (screen_location, and whether that location intersects with the
+  // desks bar widget). |for_drop| should be set to true if this is called when
+  // the item is being dropped when the drag is complete.
   // Returns true if |screen_location| does intersect with the DesksBarView.
-  bool UpdateDesksBarDragDetails(const gfx::Point& screen_location);
+  bool IntersectsWithDesksBar(const gfx::Point& screen_location,
+                              bool update_desks_bar_drag_details,
+                              bool for_drop);
 
   // Updates the drag details for DesksBarView to end the drag and move the
   // window of |drag_item| to another desk if it was dropped on a mini_view of
@@ -279,17 +271,16 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Returns how many overview items are in the grid.
   size_t size() const { return window_list_.size(); }
 
-  // Returns true if the selection widget is active.
-  bool is_selecting() const { return selection_widget_ != nullptr; }
-
   // Returns the root window in which the grid displays the windows.
   const aura::Window* root_window() const { return root_window_; }
+
+  OverviewSession* overview_session() { return overview_session_; }
 
   const std::vector<std::unique_ptr<OverviewItem>>& window_list() const {
     return window_list_;
   }
 
-  OverviewSession* overview_session() { return overview_session_; }
+  const DesksBarView* desks_bar_view() const { return desks_bar_view_; }
 
   const gfx::Rect bounds() const { return bounds_; }
 
@@ -300,10 +291,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   void set_suspend_reposition(bool value) { suspend_reposition_ = value; }
 
   views::Widget* drop_target_widget() { return drop_target_widget_.get(); }
-
-  const DesksBarView* GetDesksBarViewForTesting() const {
-    return desks_bar_view_;
-  }
 
  private:
   class TargetWindowObserver;
@@ -319,18 +306,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // If the Virtual Desks feature is enabled, it initializes the widget that
   // contains the DeskBarView contents.
   void MaybeInitDesksWidget();
-
-  // Internal function to initialize the selection widget.
-  void InitSelectionWidget(OverviewSession::Direction direction);
-
-  // Moves the selection widget to the specified |direction|.
-  void MoveSelectionWidget(OverviewSession::Direction direction,
-                           bool recreate_selection_widget,
-                           bool out_of_bounds,
-                           bool animate);
-
-  // Moves the selection widget to the targeted window.
-  void MoveSelectionWidgetToTarget(bool animate);
 
   // Gets the layout of the overview items. Layout is done in 2 stages
   // maintaining fixed MRU ordering.
@@ -385,19 +360,13 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   std::vector<std::unique_ptr<OverviewItem>> window_list_;
 
   ScopedObserver<aura::Window, OverviewGrid> window_observer_;
-  ScopedObserver<wm::WindowState, OverviewGrid> window_state_observer_;
+  ScopedObserver<WindowState, OverviewGrid> window_state_observer_;
 
   // Widget that contains the DeskBarView contents when the Virtual Desks
   // feature is enabled.
   std::unique_ptr<views::Widget> desks_widget_;
   // The contents view of the above |desks_widget_| if created.
   DesksBarView* desks_bar_view_ = nullptr;
-
-  // Widget that indicates to the user which is the selected window.
-  std::unique_ptr<views::Widget> selection_widget_;
-
-  // Shadow around the selector.
-  std::unique_ptr<ui::Shadow> selector_shadow_;
 
   // The drop target widget. The drop target is created when a window or
   // overview item is being dragged, and is destroyed when the drag ends or
@@ -413,12 +382,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // window in overview and is not destroyed yet, we need to update the overview
   // minimized widget's content view so that it reflects the merge.
   std::unique_ptr<TargetWindowObserver> target_window_observer_;
-
-  // Current selected window position.
-  size_t selected_index_ = 0;
-
-  // Number of columns in the grid.
-  size_t num_columns_ = 0;
 
   // True only after all windows have been prepared for overview.
   bool prepared_for_overview_ = false;

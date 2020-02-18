@@ -10,6 +10,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
+#include "base/optional.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -39,6 +40,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/overlay_transform_utils.h"
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/gfx/swap_result.h"
 
 namespace viz {
 
@@ -120,6 +122,9 @@ gfx::RectF GetOccludingRectForRRectF(const gfx::RRectF& bounds) {
 
 }  // namespace
 
+constexpr base::TimeDelta Display::kDrawToSwapMin;
+constexpr base::TimeDelta Display::kDrawToSwapMax;
+
 Display::Display(
     SharedBitmapManager* bitmap_manager,
     const RendererSettings& settings,
@@ -153,14 +158,16 @@ Display::~Display() {
   }
 #endif
 
+  if (no_pending_swaps_callback_)
+    std::move(no_pending_swaps_callback_).Run();
+
   for (auto& observer : observers_)
     observer.OnDisplayDestroyed();
   observers_.Clear();
 
-  for (auto& callback_list : pending_presented_callbacks_) {
-    for (auto& callback : callback_list.second)
-      std::move(callback).Run(gfx::PresentationFeedback::Failure());
-  }
+  // Send gfx::PresentationFeedback::Failure() to any surfaces expecting
+  // feedback.
+  pending_surfaces_with_presentation_helpers_.clear();
 
   // Only do this if Initialize() happened.
   if (client_) {
@@ -250,19 +257,39 @@ void Display::Resize(const gfx::Size& size) {
 
   TRACE_EVENT0("viz", "Display::Resize");
 
-  // Need to ensure all pending swaps have executed before the window is
-  // resized, or D3D11 will scale the swap output.
-  if (settings_.finish_rendering_on_resize) {
-    if (!swapped_since_resize_ && scheduler_)
-      scheduler_->ForceImmediateSwapIfPossible();
-    if (swapped_since_resize_ && output_surface_ &&
-        output_surface_->context_provider())
-      output_surface_->context_provider()->ContextGL()->ShallowFinishCHROMIUM();
-  }
+  // Resize() shouldn't be called while waiting for pending swaps to ack unless
+  // it's being called with size (0, 0) to disable DrawAndSwap().
+  DCHECK(no_pending_swaps_callback_.is_null() || size.IsEmpty());
+
   swapped_since_resize_ = false;
   current_surface_size_ = size;
   if (scheduler_)
     scheduler_->DisplayResized();
+}
+
+void Display::DisableSwapUntilResize(
+    base::OnceClosure no_pending_swaps_callback) {
+  TRACE_EVENT0("viz", "Display::DisableSwapUntilResize");
+  DCHECK(no_pending_swaps_callback_.is_null());
+
+  if (!current_surface_size_.IsEmpty()) {
+    DCHECK(scheduler_);
+
+    if (!swapped_since_resize_)
+      scheduler_->ForceImmediateSwapIfPossible();
+
+    if (no_pending_swaps_callback && scheduler_->pending_swaps() > 0 &&
+        (output_surface_->context_provider() ||
+         output_surface_->AsSkiaOutputSurface())) {
+      no_pending_swaps_callback_ = std::move(no_pending_swaps_callback);
+    }
+
+    Resize(gfx::Size());
+  }
+
+  // There are no pending swaps for current size so immediately run callback.
+  if (no_pending_swaps_callback)
+    std::move(no_pending_swaps_callback).Run();
 }
 
 void Display::SetColorMatrix(const SkMatrix44& matrix) {
@@ -282,13 +309,12 @@ void Display::SetColorMatrix(const SkMatrix44& matrix) {
   }
 }
 
-void Display::SetColorSpace(const gfx::ColorSpace& blending_color_space,
-                            const gfx::ColorSpace& device_color_space) {
-  blending_color_space_ = blending_color_space;
+void Display::SetColorSpace(const gfx::ColorSpace& device_color_space,
+                            float sdr_white_level) {
   device_color_space_ = device_color_space;
-  if (aggregator_) {
-    aggregator_->SetOutputColorSpace(blending_color_space, device_color_space_);
-  }
+  sdr_white_level_ = sdr_white_level;
+  if (aggregator_)
+    aggregator_->SetOutputColorSpace(device_color_space_);
 }
 
 void Display::SetOutputIsSecure(bool secure) {
@@ -311,9 +337,7 @@ void Display::InitializeRenderer(bool enable_shared_images) {
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
       mode, output_surface_->context_provider(), bitmap_manager_,
       enable_shared_images);
-  const bool use_skia_renderer =
-      settings_.use_skia_renderer || settings_.use_skia_renderer_non_ddl;
-  if (use_skia_renderer && mode == DisplayResourceProvider::kGpu) {
+  if (settings_.use_skia_renderer && mode == DisplayResourceProvider::kGpu) {
     // Default to use DDL if skia_output_surface is not null.
     if (skia_output_surface_) {
       renderer_ = std::make_unique<SkiaRenderer>(
@@ -352,7 +376,14 @@ void Display::InitializeRenderer(bool enable_shared_images) {
       surface_manager_, resource_provider_.get(), output_partial_list,
       needs_surface_occluding_damage_rect));
   aggregator_->set_output_is_secure(output_is_secure_);
-  aggregator_->SetOutputColorSpace(blending_color_space_, device_color_space_);
+  aggregator_->SetOutputColorSpace(device_color_space_);
+  // Consider adding a softare limit as well.
+  aggregator_->SetMaximumTextureSize(
+      (output_surface_ && output_surface_->context_provider())
+          ? output_surface_->context_provider()
+                ->ContextCapabilities()
+                .max_texture_size
+          : 0);
 }
 
 void Display::UpdateRootFrameMissing() {
@@ -381,6 +412,11 @@ bool Display::DrawAndSwap() {
   if (!output_surface_) {
     TRACE_EVENT_INSTANT0("viz", "No output surface", TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
+
+  if (output_surface_->capabilities().skips_draw) {
+    TRACE_EVENT_INSTANT0("viz", "Skip draw", TRACE_EVENT_SCOPE_THREAD);
+    return true;
   }
 
   // During aggregation, SurfaceAggregator marks all resources used for a draw
@@ -427,12 +463,8 @@ bool Display::DrawAndSwap() {
                                      stored_latency_info_.end());
   stored_latency_info_.clear();
   bool have_copy_requests = false;
-  size_t total_quad_count = 0;
-  for (const auto& pass : frame.render_pass_list) {
+  for (const auto& pass : frame.render_pass_list)
     have_copy_requests |= !pass->copy_requests.empty();
-    total_quad_count += pass->quad_list.size();
-  }
-  UMA_HISTOGRAM_COUNTS_1000("Compositing.Display.Draw.Quads", total_quad_count);
 
   gfx::Size surface_size;
   bool have_damage = false;
@@ -466,6 +498,7 @@ bool Display::DrawAndSwap() {
   bool should_draw = have_copy_requests || (have_damage && size_matches);
   client_->DisplayWillDrawAndSwap(should_draw, &frame.render_pass_list);
 
+  base::Optional<base::ElapsedTimer> draw_timer;
   if (should_draw) {
     TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
                                  "Graphics.Pipeline.DrawAndSwap",
@@ -486,16 +519,16 @@ bool Display::DrawAndSwap() {
       DCHECK(!disable_image_filtering);
     }
 
-    base::ElapsedTimer draw_timer;
+    draw_timer.emplace();
     renderer_->DecideRenderPassAllocationsForFrame(frame.render_pass_list);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
-                         current_surface_size);
+                         current_surface_size, sdr_white_level_);
     if (software_renderer_) {
       UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.Software.DrawFrameUs",
-                              draw_timer.Elapsed().InMicroseconds());
+                              draw_timer->Elapsed().InMicroseconds());
     } else {
       UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.GL.DrawFrameUs",
-                              draw_timer.Elapsed().InMicroseconds());
+                              draw_timer->Elapsed().InMicroseconds());
     }
   } else {
     TRACE_EVENT_INSTANT0("viz", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
@@ -506,25 +539,27 @@ bool Display::DrawAndSwap() {
     TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
                                  "Graphics.Pipeline.DrawAndSwap",
                                  swapped_trace_id_, "Swap");
+    draw_start_times_pending_swap_ack_.emplace_back(draw_timer->Begin());
     swapped_since_resize_ = true;
 
     if (scheduler_) {
       frame.metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);
       frame.metadata.latency_info.back().AddLatencyNumberWithTimestamp(
           ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT,
-          scheduler_->current_frame_time(), 1);
+          scheduler_->current_frame_time());
     }
 
-    std::vector<Surface::PresentedCallback> callbacks;
+    std::vector<std::unique_ptr<Surface::PresentationHelper>>
+        presentation_helper_list;
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
       Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
-      Surface::PresentedCallback callback;
-      if (surface && surface->TakePresentedCallback(&callback)) {
-        callbacks.emplace_back(std::move(callback));
+      if (surface) {
+        presentation_helper_list.push_back(
+            surface->TakePresentationHelperForPresentNotification());
       }
     }
-    pending_presented_callbacks_.emplace_back(
-        std::make_pair(now_time, std::move(callbacks)));
+    pending_surfaces_with_presentation_helpers_.emplace_back(
+        std::make_pair(now_time, std::move(presentation_helper_list)));
 
     ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
                                                  "Display::DrawAndSwap");
@@ -576,11 +611,38 @@ bool Display::DrawAndSwap() {
   return true;
 }
 
-void Display::DidReceiveSwapBuffersAck() {
-  if (scheduler_)
+void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
+  DCHECK(!draw_start_times_pending_swap_ack_.empty());
+
+  if (scheduler_) {
     scheduler_->DidReceiveSwapBuffersAck();
+    if (no_pending_swaps_callback_ && scheduler_->pending_swaps() == 0)
+      std::move(no_pending_swaps_callback_).Run();
+  }
+
   if (renderer_)
     renderer_->SwapBuffersComplete();
+
+  // Adding to pending_presented_callbacks_ must have been done in DrawAndSwap,
+  // and should not be popped until DidReceivePresentationFeedback. Therefore
+  // we must not have an empty list when getting the SwapBuffers ACK (this is
+  // required to happen between those two events).
+  DCHECK(!pending_surfaces_with_presentation_helpers_.empty());
+
+  // Check that the swap timings correspond with the timestamp from when
+  // the swap was triggered. Note that not all output surfaces provide timing
+  // information, hence the check for a valid swap_start.
+  const auto swap_time =
+      pending_surfaces_with_presentation_helpers_.front().first;
+  if (!timings.swap_start.is_null()) {
+    DCHECK_LE(swap_time, timings.swap_start);
+    base::TimeDelta delta =
+        timings.swap_start - draw_start_times_pending_swap_ack_.front();
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Compositing.Display.DrawToSwapUs", delta, kDrawToSwapMin,
+        kDrawToSwapMax, kDrawToSwapUsBuckets);
+  }
+  draw_start_times_pending_swap_ack_.pop_front();
 }
 
 void Display::DidReceiveTextureInUseResponses(
@@ -602,7 +664,7 @@ void Display::DidSwapWithSize(const gfx::Size& pixel_size) {
 
 void Display::DidReceivePresentationFeedback(
     const gfx::PresentationFeedback& feedback) {
-  if (pending_presented_callbacks_.empty()) {
+  if (pending_surfaces_with_presentation_helpers_.empty()) {
     DLOG(ERROR) << "Received unexpected PresentationFeedback";
     return;
   }
@@ -610,16 +672,19 @@ void Display::DidReceivePresentationFeedback(
   TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
       "viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
       last_presented_trace_id_, feedback.timestamp);
-  auto& callbacks = pending_presented_callbacks_.front().second;
-  const auto swap_time = pending_presented_callbacks_.front().first;
+  auto& presentation_helper_list =
+      pending_surfaces_with_presentation_helpers_.front().second;
+  const auto swap_time =
+      pending_surfaces_with_presentation_helpers_.front().first;
   auto copy_feedback = SanitizePresentationFeedback(feedback, swap_time);
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
       "benchmark,viz", "Display::FrameDisplayed", TRACE_EVENT_SCOPE_THREAD,
       copy_feedback.timestamp);
-  for (auto& callback : callbacks) {
-    std::move(callback).Run(copy_feedback);
+  for (auto& presentation_helper : presentation_helper_list) {
+    if (presentation_helper)
+      presentation_helper->DidPresent(feedback);
   }
-  pending_presented_callbacks_.pop_front();
+  pending_surfaces_with_presentation_helpers_.pop_front();
 }
 
 void Display::DidFinishLatencyInfo(

@@ -62,20 +62,20 @@
 #include "components/printing/browser/printer_capabilities.h"
 #include "components/printing/common/cloud_print_cdd_conversion.h"
 #include "components/printing/common/print_messages.h"
-#include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
+#include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/url_util.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/print_settings.h"
-#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 #if defined(OS_CHROMEOS)
@@ -144,6 +144,7 @@ enum PrintSettingsBuckets {
   FIT_TO_PAGE,
   DEFAULT_DPI,
   NON_DEFAULT_DPI,
+  PIN,
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
@@ -184,44 +185,6 @@ void ReportPrintDocumentTypeAndSizeHistograms(PrintDocumentTypeBuckets doctype,
   }
 }
 
-bool ReportPageCountHistogram(UserActionBuckets user_action, int page_count) {
-  switch (user_action) {
-    case PRINT_TO_PRINTER:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintToPrinter",
-                              page_count);
-      return true;
-    case PRINT_TO_PDF:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintToPDF", page_count);
-      return true;
-    case FALLBACK_TO_ADVANCED_SETTINGS_DIALOG:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.SystemDialog",
-                              page_count);
-      return true;
-    case PRINT_WITH_CLOUD_PRINT:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintToCloudPrint",
-                              page_count);
-      return true;
-    case PRINT_WITH_PRIVET:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintWithPrivet",
-                              page_count);
-      return true;
-    case PRINT_WITH_EXTENSION:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintWithExtension",
-                              page_count);
-      return true;
-    case OPEN_IN_MAC_PREVIEW:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.OpenInMacPreview",
-                              page_count);
-      return true;
-    case PRINT_TO_GOOGLE_DRIVE:
-      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintToGoogleDrive",
-                              page_count);
-      return true;
-    default:
-      return false;
-  }
-}
-
 PrinterType GetPrinterTypeForUserAction(UserActionBuckets user_action) {
   switch (user_action) {
     case PRINT_WITH_PRIVET:
@@ -256,6 +219,8 @@ const char kIsInKioskAutoPrintMode[] = "isInKioskAutoPrintMode";
 // Dictionary field to indicate whether Chrome is running in forced app (app
 // kiosk) mode. It's not the same as desktop Chrome kiosk (the one above).
 const char kIsInAppKioskMode[] = "isInAppKioskMode";
+// Name of a dictionary field holding the UI locale.
+const char kUiLocale[] = "uiLocale";
 // Name of a dictionary field holding the thousands delimeter according to the
 // locale.
 const char kThousandsDelimeter[] = "thousandsDelimeter";
@@ -401,6 +366,11 @@ void ReportPrintSettingsStats(const base::Value& print_settings,
                                                          : NON_DEFAULT_DPI);
     }
   }
+
+#if defined(OS_CHROMEOS)
+  if (print_settings.FindStringKey(kSettingPinValue))
+    ReportPrintSettingHistogram(PIN);
+#endif  // defined(OS_CHROMEOS)
 }
 
 UserActionBuckets DetermineUserAction(const base::Value& settings) {
@@ -436,9 +406,9 @@ StickySettings* GetStickySettings() {
 
 #if defined(OS_CHROMEOS)
 class PrintPreviewHandler::AccessTokenService
-    : public OAuth2TokenService::Consumer {
+    : public OAuth2AccessTokenManager::Consumer {
  public:
-  AccessTokenService() : OAuth2TokenService::Consumer("print_preview") {}
+  AccessTokenService() : OAuth2AccessTokenManager::Consumer("print_preview") {}
 
   void RequestToken(base::OnceCallback<void(const std::string&)> callback) {
     // There can only be one pending request at a time. See
@@ -450,30 +420,31 @@ class PrintPreviewHandler::AccessTokenService
         chromeos::DeviceOAuth2TokenServiceFactory::Get();
     std::string account_id = token_service->GetRobotAccountId();
 
-    device_request_ = token_service->StartRequest(account_id, scopes, this);
+    device_request_ =
+        token_service->StartAccessTokenRequest(account_id, scopes, this);
     device_request_callback_ = std::move(callback);
   }
 
   void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenManager::Request* request,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response) override {
     OnServiceResponse(request, token_response.access_token);
   }
 
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+  void OnGetTokenFailure(const OAuth2AccessTokenManager::Request* request,
                          const GoogleServiceAuthError& error) override {
     OnServiceResponse(request, std::string());
   }
 
  private:
-  void OnServiceResponse(const OAuth2TokenService::Request* request,
+  void OnServiceResponse(const OAuth2AccessTokenManager::Request* request,
                          const std::string& access_token) {
     DCHECK_EQ(request, device_request_.get());
     std::move(device_request_callback_).Run(access_token);
     device_request_.reset();
   }
 
-  std::unique_ptr<OAuth2TokenService::Request> device_request_;
+  std::unique_ptr<OAuth2AccessTokenManager::Request> device_request_;
   base::OnceCallback<void(const std::string&)> device_request_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessTokenService);
@@ -485,8 +456,7 @@ PrintPreviewHandler::PrintPreviewHandler()
       manage_printers_dialog_request_count_(0),
       reported_failed_preview_(false),
       has_logged_printers_count_(false),
-      identity_manager_(nullptr),
-      weak_factory_(this) {
+      identity_manager_(nullptr) {
   ReportUserActionHistogram(PREVIEW_STARTED);
 }
 
@@ -600,7 +570,7 @@ bool PrintPreviewHandler::ShouldReceiveRendererMessage(int request_id) {
     return false;
   }
 
-  if (!base::ContainsKey(preview_callbacks_, request_id)) {
+  if (!base::Contains(preview_callbacks_, request_id)) {
     BadMessageReceived();
     return false;
   }
@@ -642,10 +612,10 @@ void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* args) {
   // starts.
   handler->Reset();
   handler->StartGetPrinters(
-      base::Bind(&PrintPreviewHandler::OnAddedPrinters,
-                 weak_factory_.GetWeakPtr(), printer_type),
-      base::Bind(&PrintPreviewHandler::OnGetPrintersDone,
-                 weak_factory_.GetWeakPtr(), callback_id));
+      base::BindRepeating(&PrintPreviewHandler::OnAddedPrinters,
+                          weak_factory_.GetWeakPtr(), printer_type),
+      base::BindOnce(&PrintPreviewHandler::OnGetPrintersDone,
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::HandleGrantExtensionPrinterAccess(
@@ -659,8 +629,8 @@ void PrintPreviewHandler::HandleGrantExtensionPrinterAccess(
   GetPrinterHandler(PrinterType::kExtensionPrinter)
       ->StartGrantPrinterAccess(
           printer_id,
-          base::Bind(&PrintPreviewHandler::OnGotExtensionPrinterInfo,
-                     weak_factory_.GetWeakPtr(), callback_id));
+          base::BindOnce(&PrintPreviewHandler::OnGotExtensionPrinterInfo,
+                         weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::HandleGetPrinterCapabilities(
@@ -703,7 +673,7 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   int request_id = settings.FindIntKey(kPreviewRequestID).value();
   CHECK_GT(request_id, -1);
 
-  CHECK(!base::ContainsKey(preview_callbacks_, request_id));
+  CHECK(!base::Contains(preview_callbacks_, request_id));
   preview_callbacks_[request_id] = callback_id;
   print_preview_ui()->OnPrintPreviewRequest(request_id);
   // Add an additional key in order to identify |print_preview_ui| later on
@@ -800,10 +770,6 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     ReportPrintDocumentTypeAndSizeHistograms(doc_type, average_page_size_in_kb);
   }
   ReportUserActionHistogram(user_action);
-  if (!ReportPageCountHistogram(user_action, page_count)) {
-    NOTREACHED();
-    return;
-  }
 
   if (user_action == PRINT_WITH_CLOUD_PRINT ||
       user_action == PRINT_TO_GOOGLE_DRIVE) {
@@ -927,18 +893,16 @@ void PrintPreviewHandler::HandleClosePreviewDialog(
 #if defined(OS_CHROMEOS)
 void PrintPreviewHandler::HandleOpenPrinterSettings(
     const base::ListValue* args) {
-  auto* const settings_manager = chrome::SettingsWindowManager::GetInstance();
-  settings_manager->ShowChromePageForProfile(
-      Profile::FromWebUI(web_ui()),
-      chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage));
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      Profile::FromWebUI(web_ui()), chrome::kPrintingSettingsSubPage);
 }
 #endif
 
-void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
-    base::Value* settings) {
+void PrintPreviewHandler::GetLocaleInformation(base::Value* settings) {
   // Getting the measurement system based on the locale.
   UErrorCode errorCode = U_ZERO_ERROR;
   const char* locale = g_browser_process->GetApplicationLocale().c_str();
+  settings->SetStringKey(kUiLocale, std::string(locale));
   UMeasurementSystem system = ulocdata_getMeasurementSystem(locale, &errorCode);
   // On error, assume the units are SI.
   // Since the only measurement units print preview's WebUI cares about are
@@ -963,8 +927,9 @@ void PrintPreviewHandler::HandleGetInitialSettings(
   AllowJavascript();
 
   GetPrinterHandler(PrinterType::kLocalPrinter)
-      ->GetDefaultPrinter(base::Bind(&PrintPreviewHandler::SendInitialSettings,
-                                     weak_factory_.GetWeakPtr(), callback_id));
+      ->GetDefaultPrinter(
+          base::BindOnce(&PrintPreviewHandler::SendInitialSettings,
+                         weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::GetUserAccountList(base::Value* settings) {
@@ -1033,7 +998,7 @@ void PrintPreviewHandler::SendInitialSettings(
     initial_settings.SetStringKey(kDefaultDestinationSelectionRules, rules_str);
   }
 
-  GetNumberFormatAndMeasurementSystem(&initial_settings);
+  GetLocaleInformation(&initial_settings);
   if (IsCloudPrintEnabled()) {
     GetUserAccountList(&initial_settings);
   }
@@ -1124,7 +1089,7 @@ WebContents* PrintPreviewHandler::GetInitiator() const {
 }
 
 void PrintPreviewHandler::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   base::Value account_list(base::Value::Type::LIST);
   const std::vector<gaia::ListedAccount>& accounts =
@@ -1208,7 +1173,7 @@ void PrintPreviewHandler::SendPagePreviewReady(int page_index,
   // gets called, the print preview may have failed. Since the failure message
   // may have arrived first, check for this case and bail out instead of
   // thinking this may be a bad IPC message.
-  if (base::ContainsKey(preview_failures_, preview_request_id))
+  if (base::Contains(preview_failures_, preview_request_id))
     return;
 
   if (!ShouldReceiveRendererMessage(preview_request_id))
@@ -1386,8 +1351,8 @@ void PrintPreviewHandler::FileSelectedForTesting(const base::FilePath& path,
 }
 
 void PrintPreviewHandler::SetPdfSavedClosureForTesting(
-    const base::Closure& closure) {
-  GetPdfPrinterHandler()->SetPdfSavedClosureForTesting(closure);
+    base::OnceClosure closure) {
+  GetPdfPrinterHandler()->SetPdfSavedClosureForTesting(std::move(closure));
 }
 
 void PrintPreviewHandler::SendEnableManipulateSettingsForTest() {

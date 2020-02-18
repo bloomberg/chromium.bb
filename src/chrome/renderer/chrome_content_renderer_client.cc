@@ -50,7 +50,7 @@
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/media/flash_embed_rewrite.h"
-#include "chrome/renderer/media/webrtc_logging_message_filter.h"
+#include "chrome/renderer/media/webrtc_logging_agent_impl.h"
 #include "chrome/renderer/net/net_error_helper.h"
 #include "chrome/renderer/net_benchmarking_extension.h"
 #include "chrome/renderer/page_load_metrics/metrics_render_frame_observer.h"
@@ -62,6 +62,7 @@
 #include "chrome/renderer/prerender/prerender_dispatcher.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/prerender/prerenderer_client.h"
+#include "chrome/renderer/previews/resource_loading_hints_agent.h"
 #include "chrome/renderer/tts_dispatcher.h"
 #include "chrome/renderer/url_loader_throttle_provider_impl.h"
 #include "chrome/renderer/v8_unwinder.h"
@@ -117,6 +118,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/scheduler/web_renderer_process_type.h"
 #include "third_party/blink/public/platform/url_conversion.h"
@@ -171,6 +173,9 @@
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 #include "extensions/renderer/renderer_extension_registry.h"
+#include "third_party/blink/public/common/css/preferred_color_scheme.h"
+#include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/public/web/web_view.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -367,8 +372,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   prerender_dispatcher_.reset(new prerender::PrerenderDispatcher());
   subresource_filter_ruleset_dealer_.reset(
       new subresource_filter::UnverifiedRulesetDealer());
-  webrtc_logging_message_filter_ =
-      new WebRtcLoggingMessageFilter(thread->GetIOTaskRunner());
+
+  registry_.AddInterface(base::BindRepeating(
+      &ChromeContentRendererClient::OnWebRtcLoggingAgentRequest,
+      base::Unretained(this)));
 
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(prerender_dispatcher_.get());
@@ -378,7 +385,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   thread->AddObserver(SearchBouncer::GetInstance());
 #endif
 
-  thread->AddFilter(webrtc_logging_message_filter_.get());
   thread->RegisterExtension(extensions_v8::LoadTimesExtension::Get());
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -433,10 +439,17 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   // This doesn't work in single-process mode.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess)) {
-    main_thread_profiler_->SetMainThreadTaskRunner(
+    ThreadProfiler::SetMainThreadTaskRunner(
         base::ThreadTaskRunnerHandle::Get());
-    ThreadProfiler::SetServiceManagerConnectorForChildProcess(
-        thread->GetConnector());
+    mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector;
+    service_manager::Connector* connector = nullptr;
+    if (content::ChildThread::Get())
+      connector = content::ChildThread::Get()->GetConnector();
+    if (connector) {
+      connector->Connect(content::mojom::kBrowserServiceName,
+                         collector.InitWithNewPipeAndPassReceiver());
+      ThreadProfiler::SetCollectorForChildProcess(std::move(collector));
+    }
   }
 }
 
@@ -552,6 +565,12 @@ void ChromeContentRendererClient::RenderFrameCreated(
     new subresource_filter::SubresourceFilterAgent(
         render_frame, subresource_filter_ruleset_dealer_.get(),
         std::move(ad_resource_tracker));
+  }
+  if (base::FeatureList::IsEnabled(
+          blink::features::kSendPreviewsLoadingHintsBeforeCommit) &&
+      render_frame->IsMainFrame()) {
+    new previews::ResourceLoadingHintsAgent(
+        render_frame_observer->associated_interfaces(), render_frame);
   }
 
 #if !defined(OS_ANDROID)
@@ -859,13 +878,21 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         }
 #endif  // BUILDFLAG(ENABLE_NACL) && BUILDFLAG(ENABLE_EXTENSIONS)
 
-        // Report PDF load metrics. Since the PDF plugin is comprised of an
-        // extension that loads a second plugin, avoid double counting by
-        // ignoring the creation of the second plugin.
-        if (info.name ==
-                ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName) &&
-            GURL(frame->GetDocument().Url()).host_piece() !=
-                extension_misc::kPdfExtensionId) {
+        if (GURL(frame->GetDocument().Url()).host_piece() ==
+            extension_misc::kPdfExtensionId) {
+          if (!base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
+            auto* render_view = render_frame->GetRenderView();
+            auto* web_view = render_view ? render_view->GetWebView() : nullptr;
+            if (web_view) {
+              web_view->GetSettings()->SetPreferredColorScheme(
+                  blink::PreferredColorScheme::kLight);
+            }
+          }
+        } else if (info.name ==
+                   ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName)) {
+          // Report PDF load metrics. Since the PDF plugin is comprised of an
+          // extension that loads a second plugin, avoid double counting by
+          // ignoring the creation of the second plugin.
           bool is_main_frame_plugin_document =
               render_frame->IsMainFrame() &&
               render_frame->GetWebFrame()->GetDocument().IsPluginDocument();
@@ -1445,26 +1472,6 @@ void ChromeContentRendererClient::RecordRapporURL(const std::string& metric,
   rappor_recorder_->RecordRapporURL(metric, url);
 }
 
-void ChromeContentRendererClient::AddImageContextMenuProperties(
-    const WebURLResponse& response,
-    bool is_image_in_context_a_placeholder_image,
-    std::map<std::string, std::string>* properties) {
-  DCHECK(properties);
-
-  WebString cpct_value = response.HttpHeaderField(WebString::FromASCII(
-      data_reduction_proxy::chrome_proxy_content_transform_header()));
-  WebString chrome_proxy_value = response.HttpHeaderField(
-      WebString::FromASCII(data_reduction_proxy::chrome_proxy_header()));
-
-  if (is_image_in_context_a_placeholder_image ||
-      data_reduction_proxy::IsEmptyImagePreview(cpct_value.Utf8(),
-                                                chrome_proxy_value.Utf8())) {
-    (*properties)
-        [data_reduction_proxy::chrome_proxy_content_transform_header()] =
-            data_reduction_proxy::empty_image_directive();
-  }
-}
-
 void ChromeContentRendererClient::RunScriptsAtDocumentStart(
     content::RenderFrame* render_frame) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1519,7 +1526,8 @@ void ChromeContentRendererClient::
 
 void ChromeContentRendererClient::
     DidInitializeServiceWorkerContextOnWorkerThread(
-        v8::Local<v8::Context> context,
+        blink::WebServiceWorkerContextProxy* context_proxy,
+        v8::Local<v8::Context> v8_context,
         int64_t service_worker_version_id,
         const GURL& service_worker_scope,
         const GURL& script_url) {
@@ -1527,7 +1535,8 @@ void ChromeContentRendererClient::
   ChromeExtensionsRendererClient::GetInstance()
       ->extension_dispatcher()
       ->DidInitializeServiceWorkerContextOnWorkerThread(
-          context, service_worker_version_id, service_worker_scope, script_url);
+          context_proxy, v8_context, service_worker_version_id,
+          service_worker_scope, script_url);
 #endif
 }
 
@@ -1630,4 +1639,13 @@ bool ChromeContentRendererClient::RequiresHtmlImports(const GURL& url) {
   can_use_polyfill |= url.host() == chrome::kChromeUIPrintHost;
 #endif
   return url.SchemeIs(content::kChromeUIScheme) && !can_use_polyfill;
+}
+
+void ChromeContentRendererClient::OnWebRtcLoggingAgentRequest(
+    mojo::InterfaceRequest<chrome::mojom::WebRtcLoggingAgent> request) {
+  if (!webrtc_logging_agent_impl_) {
+    webrtc_logging_agent_impl_ =
+        std::make_unique<chrome::WebRtcLoggingAgentImpl>();
+  }
+  webrtc_logging_agent_impl_->AddReceiver(std::move(request));
 }

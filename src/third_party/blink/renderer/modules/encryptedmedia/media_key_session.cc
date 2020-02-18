@@ -28,6 +28,7 @@
 #include <cmath>
 #include <limits>
 
+#include "media/base/eme_constants.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_decryption_module.h"
 #include "third_party/blink/public/platform/web_content_decryption_module_exception.h"
@@ -51,7 +52,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/content_decryption_module_result.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -145,7 +146,7 @@ class MediaKeySession::PendingAction final
     return data_;
   }
 
-  WebEncryptedMediaInitDataType InitDataType() const {
+  media::EmeInitDataType InitDataType() const {
     DCHECK_EQ(kGenerateRequest, type_);
     return init_data_type_;
   }
@@ -157,7 +158,7 @@ class MediaKeySession::PendingAction final
 
   static PendingAction* CreatePendingGenerateRequest(
       ContentDecryptionModuleResult* result,
-      WebEncryptedMediaInitDataType init_data_type,
+      media::EmeInitDataType init_data_type,
       DOMArrayBuffer* init_data) {
     DCHECK(result);
     DCHECK(init_data);
@@ -170,8 +171,7 @@ class MediaKeySession::PendingAction final
       const String& session_id) {
     DCHECK(result);
     return MakeGarbageCollected<PendingAction>(
-        kLoad, result, WebEncryptedMediaInitDataType::kUnknown, nullptr,
-        session_id);
+        kLoad, result, media::EmeInitDataType::UNKNOWN, nullptr, session_id);
   }
 
   static PendingAction* CreatePendingUpdate(
@@ -180,29 +180,26 @@ class MediaKeySession::PendingAction final
     DCHECK(result);
     DCHECK(data);
     return MakeGarbageCollected<PendingAction>(
-        kUpdate, result, WebEncryptedMediaInitDataType::kUnknown, data,
-        String());
+        kUpdate, result, media::EmeInitDataType::UNKNOWN, data, String());
   }
 
   static PendingAction* CreatePendingClose(
       ContentDecryptionModuleResult* result) {
     DCHECK(result);
     return MakeGarbageCollected<PendingAction>(
-        kClose, result, WebEncryptedMediaInitDataType::kUnknown, nullptr,
-        String());
+        kClose, result, media::EmeInitDataType::UNKNOWN, nullptr, String());
   }
 
   static PendingAction* CreatePendingRemove(
       ContentDecryptionModuleResult* result) {
     DCHECK(result);
     return MakeGarbageCollected<PendingAction>(
-        kRemove, result, WebEncryptedMediaInitDataType::kUnknown, nullptr,
-        String());
+        kRemove, result, media::EmeInitDataType::UNKNOWN, nullptr, String());
   }
 
   PendingAction(Type type,
                 ContentDecryptionModuleResult* result,
-                WebEncryptedMediaInitDataType init_data_type,
+                media::EmeInitDataType init_data_type,
                 DOMArrayBuffer* data,
                 const String& string_data)
       : type_(type),
@@ -220,7 +217,7 @@ class MediaKeySession::PendingAction final
  private:
   const Type type_;
   const Member<ContentDecryptionModuleResult> result_;
-  const WebEncryptedMediaInitDataType init_data_type_;
+  const media::EmeInitDataType init_data_type_;
   const Member<DOMArrayBuffer> data_;
   const String string_data_;
 };
@@ -478,9 +475,9 @@ ScriptPromise MediaKeySession::generateRequest(
   //    (blink side doesn't know what the CDM supports, so the proper check
   //     will be done on the Chromium side. However, we can verify that
   //     |initDataType| is one of the registered values.)
-  WebEncryptedMediaInitDataType init_data_type =
+  media::EmeInitDataType init_data_type =
       EncryptedMediaUtils::ConvertToInitDataType(init_data_type_string);
-  if (init_data_type == WebEncryptedMediaInitDataType::kUnknown) {
+  if (init_data_type == media::EmeInitDataType::UNKNOWN) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kNotSupportedError,
@@ -505,16 +502,15 @@ ScriptPromise MediaKeySession::generateRequest(
   pending_actions_.push_back(PendingAction::CreatePendingGenerateRequest(
       result, init_data_type, init_data_buffer));
   DCHECK(!action_timer_.IsActive());
-  action_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  action_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   // 11. Return promise.
   return promise;
 }
 
-void MediaKeySession::GenerateRequestTask(
-    ContentDecryptionModuleResult* result,
-    WebEncryptedMediaInitDataType init_data_type,
-    DOMArrayBuffer* init_data_buffer) {
+void MediaKeySession::GenerateRequestTask(ContentDecryptionModuleResult* result,
+                                          media::EmeInitDataType init_data_type,
+                                          DOMArrayBuffer* init_data_buffer) {
   // NOTE: Continue step 10 of MediaKeySession::generateRequest().
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
 
@@ -602,7 +598,7 @@ ScriptPromise MediaKeySession::load(ScriptState* script_state,
   pending_actions_.push_back(
       PendingAction::CreatePendingLoadRequest(result, session_id));
   DCHECK(!action_timer_.IsActive());
-  action_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  action_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   // 9. Return promise.
   return promise;
@@ -723,7 +719,7 @@ ScriptPromise MediaKeySession::update(ScriptState* script_state,
   pending_actions_.push_back(
       PendingAction::CreatePendingUpdate(result, response_copy));
   if (!action_timer_.IsActive())
-    action_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    action_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   // 7. Return promise.
   return promise;
@@ -771,7 +767,7 @@ ScriptPromise MediaKeySession::close(ScriptState* script_state) {
   // 5. Run the following steps in parallel (done in closeTask()).
   pending_actions_.push_back(PendingAction::CreatePendingClose(result));
   if (!action_timer_.IsActive())
-    action_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    action_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   // 6. Return promise.
   return promise;
@@ -812,7 +808,7 @@ ScriptPromise MediaKeySession::remove(ScriptState* script_state) {
   // 4. Run the following steps asynchronously (done in removeTask()).
   pending_actions_.push_back(PendingAction::CreatePendingRemove(result));
   if (!action_timer_.IsActive())
-    action_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    action_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   // 5. Return promise.
   return promise;

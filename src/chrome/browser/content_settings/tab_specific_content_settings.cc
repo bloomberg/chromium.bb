@@ -20,7 +20,6 @@
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -42,8 +41,6 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -139,33 +136,6 @@ TabSpecificContentSettings* TabSpecificContentSettings::GetForFrame(
     return nullptr;
 
   return TabSpecificContentSettings::FromWebContents(web_contents);
-}
-
-// static
-void TabSpecificContentSettings::CookiesRead(
-    const base::Callback<content::WebContents*(void)>& wc_getter,
-    const GURL& url,
-    const GURL& frame_url,
-    const net::CookieList& cookie_list,
-    bool blocked_by_policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TabSpecificContentSettings* settings = GetForWCGetter(wc_getter);
-  if (settings) {
-    settings->OnCookiesRead(url, frame_url, cookie_list, blocked_by_policy);
-  }
-}
-
-// static
-void TabSpecificContentSettings::CookieChanged(
-    const base::Callback<WebContents*(void)>& wc_getter,
-    const GURL& url,
-    const GURL& frame_url,
-    const net::CanonicalCookie& cookie,
-    bool blocked_by_policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TabSpecificContentSettings* settings = GetForWCGetter(wc_getter);
-  if (settings)
-    settings->OnCookieChange(url, frame_url, cookie, blocked_by_policy);
 }
 
 // static
@@ -335,11 +305,7 @@ void TabSpecificContentSettings::OnContentBlockedWithDetail(
 
   if (!status.blocked) {
     status.blocked = true;
-    // TODO: it would be nice to have a way of mocking this in tests.
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-        content::Source<WebContents>(web_contents()),
-        content::NotificationService::NoDetails());
+    content_settings::UpdateLocationBarUiForWebContents(web_contents());
 
     if (type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT) {
       content_settings::RecordMixedScriptAction(
@@ -394,12 +360,8 @@ void TabSpecificContentSettings::OnContentAllowed(ContentSettingsType type) {
     access_changed = true;
   }
 
-  if (access_changed) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-        content::Source<WebContents>(web_contents()),
-        content::NotificationService::NoDetails());
-  }
+  if (access_changed)
+    content_settings::UpdateLocationBarUiForWebContents(web_contents());
 }
 
 void TabSpecificContentSettings::OnCookiesRead(
@@ -564,10 +526,7 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
     const GURL& requesting_origin,
     bool allowed) {
   geolocation_usages_state_.OnPermissionSet(requesting_origin, allowed);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-      content::Source<WebContents>(web_contents()),
-      content::NotificationService::NoDetails());
+  content_settings::UpdateLocationBarUiForWebContents(web_contents());
 }
 
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
@@ -665,10 +624,7 @@ void TabSpecificContentSettings::OnMediaStreamPermissionSet(
 
   if (microphone_camera_state_ != new_microphone_camera_state) {
     microphone_camera_state_ = new_microphone_camera_state;
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-        content::Source<WebContents>(web_contents()),
-        content::NotificationService::NoDetails());
+    content_settings::UpdateLocationBarUiForWebContents(web_contents());
   }
 }
 
@@ -695,10 +651,7 @@ ClearContentSettingsExceptForNavigationRelatedSettings() {
   }
   microphone_camera_state_ = MICROPHONE_CAMERA_NOT_ACCESSED;
   load_plugins_link_enabled_ = true;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-      content::Source<WebContents>(web_contents()),
-      content::NotificationService::NoDetails());
+  content_settings::UpdateLocationBarUiForWebContents(web_contents());
 }
 
 void TabSpecificContentSettings::ClearNavigationRelatedContentSettings() {
@@ -711,10 +664,7 @@ void TabSpecificContentSettings::ClearNavigationRelatedContentSettings() {
     status.blocked = false;
     status.allowed = false;
   }
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-      content::Source<WebContents>(web_contents()),
-      content::NotificationService::NoDetails());
+  content_settings::UpdateLocationBarUiForWebContents(web_contents());
 }
 
 void TabSpecificContentSettings::FlashDownloadBlocked() {
@@ -726,10 +676,7 @@ void TabSpecificContentSettings::ClearPopupsBlocked() {
   ContentSettingsStatus& status =
       content_settings_status_[CONTENT_SETTINGS_TYPE_POPUPS];
   status.blocked = false;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-      content::Source<WebContents>(web_contents()),
-      content::NotificationService::NoDetails());
+  content_settings::UpdateLocationBarUiForWebContents(web_contents());
 }
 
 void TabSpecificContentSettings::OnAudioBlocked() {

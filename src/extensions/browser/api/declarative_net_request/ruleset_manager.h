@@ -14,13 +14,19 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
-class InfoMap;
+class ExtensionPrefs;
+class PermissionHelper;
 struct WebRequestInfo;
 
 namespace declarative_net_request {
@@ -63,7 +69,7 @@ class RulesetManager {
     DISALLOW_COPY_AND_ASSIGN(Action);
   };
 
-  explicit RulesetManager(const InfoMap* info_map);
+  explicit RulesetManager(content::BrowserContext* browser_context);
   ~RulesetManager();
 
   // An observer used for testing purposes.
@@ -141,8 +147,11 @@ class RulesetManager {
   base::Optional<Action> GetBlockOrCollapseAction(
       const std::vector<const ExtensionRulesetData*>& rulesets,
       const RequestParams& params) const;
-  base::Optional<Action> GetRedirectAction(
+  base::Optional<Action> GetRedirectOrUpgradeAction(
       const std::vector<const ExtensionRulesetData*>& rulesets,
+      const WebRequestInfo& request,
+      const int tab_id,
+      const bool crosses_incognito,
       const RequestParams& params) const;
   base::Optional<Action> GetRemoveHeadersAction(
       const std::vector<const ExtensionRulesetData*>& rulesets,
@@ -168,8 +177,12 @@ class RulesetManager {
   // small.
   base::flat_set<ExtensionRulesetData> rulesets_;
 
-  // Non-owning pointer to InfoMap. Owns us.
-  const InfoMap* const info_map_;
+  // Non-owning pointer to BrowserContext.
+  content::BrowserContext* const browser_context_;
+
+  // Guaranteed to be valid through-out the lifetime of this instance.
+  ExtensionPrefs* const prefs_;
+  PermissionHelper* const permission_helper_;
 
   // Non-owning pointer to TestObserver.
   TestObserver* test_observer_ = nullptr;

@@ -21,6 +21,7 @@
 #include "chrome/test/chromedriver/chrome/debugger_tracker.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/dom_tracker.h"
+#include "chrome/test/chromedriver/chrome/download_directory_override_manager.h"
 #include "chrome/test/chromedriver/chrome/frame_tracker.h"
 #include "chrome/test/chromedriver/chrome/geolocation_override_manager.h"
 #include "chrome/test/chromedriver/chrome/heap_snapshot_taker.h"
@@ -167,6 +168,13 @@ WebViewImpl::WebViewImpl(const std::string& id,
           new NetworkConditionsOverrideManager(client_.get())),
       heap_snapshot_taker_(new HeapSnapshotTaker(client_.get())),
       debugger_(new DebuggerTracker(client_.get())) {
+  // Downloading in headless mode requires the setting of
+  // Page.setDownloadBehavior. This is handled by the
+  // DownloadDirectoryOverrideManager, which is only instantiated
+  // in headless chrome.
+  if (browser_info->browser_name == "headless chrome")
+    download_directory_override_manager_ =
+        std::make_unique<DownloadDirectoryOverrideManager>(client_.get());
   client_->SetOwner(this);
 }
 
@@ -404,12 +412,17 @@ Status WebViewImpl::CallAsyncFunction(const std::string& frame,
       frame, function, args, false, timeout, result);
 }
 
-Status WebViewImpl::CallUserSyncFunction(const std::string& frame,
-                                         const std::string& function,
-                                         const base::ListValue& args,
-                                         const base::TimeDelta& timeout,
-                                         std::unique_ptr<base::Value>* result) {
-  return CallFunctionWithTimeout(frame, function, args, timeout, result);
+Status WebViewImpl::CallUserSyncScript(const std::string& frame,
+                                       const std::string& script,
+                                       const base::ListValue& args,
+                                       const base::TimeDelta& timeout,
+                                       std::unique_ptr<base::Value>* result) {
+  base::ListValue sync_args;
+  sync_args.AppendString(script);
+  // Deep-copy needed since ListValue only accepts unique_ptrs of Values.
+  sync_args.Append(args.CreateDeepCopy());
+  return CallFunctionWithTimeout(frame, kExecuteScriptScript, sync_args,
+                                 timeout, result);
 }
 
 Status WebViewImpl::CallUserAsyncFunction(
@@ -709,6 +722,14 @@ Status WebViewImpl::OverrideNetworkConditions(
       network_conditions);
 }
 
+Status WebViewImpl::OverrideDownloadDirectoryIfNeeded(
+    const std::string& download_directory) {
+  if (download_directory_override_manager_)
+    return download_directory_override_manager_
+        ->OverrideDownloadDirectoryWhenConnected(download_directory);
+  return Status(kOk);
+}
+
 Status WebViewImpl::CaptureScreenshot(
     std::string* screenshot,
     const base::DictionaryValue& params) {
@@ -941,45 +962,6 @@ Status WebViewImpl::SynthesizeScrollGesture(int x,
   return client_->SendCommand("Input.synthesizeScrollGesture", params);
 }
 
-Status WebViewImpl::SynthesizePinchGesture(int x, int y, double scale_factor) {
-  base::DictionaryValue params;
-  params.SetInteger("x", x);
-  params.SetInteger("y", y);
-  params.SetDouble("scaleFactor", scale_factor);
-  return client_->SendCommand("Input.synthesizePinchGesture", params);
-}
-
-Status WebViewImpl::GetScreenOrientation(std::string* orientation) {
-  base::DictionaryValue empty_params;
-  std::unique_ptr<base::DictionaryValue> result;
-  Status status =
-    client_->SendCommandAndGetResult("Emulation.getScreenOrientation",
-                                      empty_params,
-                                      &result);
-  if (status.IsError() || !result->GetString("orientation", orientation))
-    return status;
-  return Status(kOk);
-}
-
-Status WebViewImpl::SetScreenOrientation(std::string orientation) {
-  base::DictionaryValue params;
-  params.SetString("screenOrientation", orientation);
-  Status status =
-    client_->SendCommand("Emulation.lockScreenOrientation", params);
-  if (status.IsError())
-    return status;
-  return Status(kOk);
-}
-
-Status WebViewImpl::DeleteScreenOrientation() {
-  base::DictionaryValue params;
-  Status status =
-    client_->SendCommand("Emulation.unlockScreenOrientation", params);
-  if (status.IsError())
-    return status;
-  return Status(kOk);
-}
-
 Status WebViewImpl::CallAsyncFunctionInternal(
     const std::string& frame,
     const std::string& function,
@@ -991,8 +973,8 @@ Status WebViewImpl::CallAsyncFunctionInternal(
   async_args.AppendString("return (" + function + ").apply(null, arguments);");
   async_args.Append(args.CreateDeepCopy());
   async_args.AppendBoolean(is_user_supplied);
-  async_args.AppendInteger(timeout.InMilliseconds());
   std::unique_ptr<base::Value> tmp;
+  Timeout local_timeout(timeout);
   Status status = CallFunctionWithTimeout(frame, kExecuteAsyncScriptScript,
                                           async_args, timeout, &tmp);
   if (status.IsError())
@@ -1012,6 +994,7 @@ Status WebViewImpl::CallAsyncFunctionInternal(
       "}",
       kJavaScriptError,
       kDocUnloadError);
+  const base::TimeDelta kOneHundredMs = base::TimeDelta::FromMilliseconds(100);
 
   while (true) {
     base::ListValue no_args;
@@ -1041,7 +1024,12 @@ Status WebViewImpl::CallAsyncFunctionInternal(
       return Status(kOk);
     }
 
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+    // Since async-scripts return immediately, need to time period here instead.
+    if (local_timeout.IsExpired())
+      return Status(kTimeout);
+
+    base::PlatformThread::Sleep(
+        std::min(kOneHundredMs, local_timeout.GetRemainingTime()));
   }
 }
 
@@ -1137,6 +1125,7 @@ Status EvaluateScript(DevToolsClient* client,
   if (context_id)
     params.SetInteger("contextId", context_id);
   params.SetBoolean("returnByValue", return_type == ReturnByValue);
+  params.SetBoolean("awaitPromise", true);
   std::unique_ptr<base::DictionaryValue> cmd_result;
 
   Timeout local_timeout(timeout);

@@ -25,9 +25,13 @@ class TestPasswordGenerationPopupController
       content::WebContents* web_contents)
       : PasswordGenerationPopupControllerImpl(
             gfx::RectF(0, 0, 10, 10),
-            PasswordForm(),
-            base::string16(),
-            10,
+            autofill::password_generation::PasswordGenerationUIData(
+                gfx::RectF(0, 0, 10, 10),
+                10,
+                base::string16(),
+                100,
+                base::i18n::TextDirection(),
+                PasswordForm()),
             password_manager::ContentPasswordManagerDriverFactory::
                 FromWebContents(web_contents)
                     ->GetDriverForFrame(web_contents->GetMainFrame())

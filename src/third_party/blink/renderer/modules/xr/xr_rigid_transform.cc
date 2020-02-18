@@ -20,16 +20,6 @@ XRRigidTransform::XRRigidTransform(
   DecomposeMatrix();
 }
 
-// takes ownership of transformationMatrix instead of copying it
-XRRigidTransform::XRRigidTransform(
-    std::unique_ptr<TransformationMatrix> transformationMatrix)
-    : matrix_(std::move(transformationMatrix)) {
-  if (!matrix_) {
-    matrix_ = std::make_unique<TransformationMatrix>();
-  }
-  DecomposeMatrix();
-}
-
 void XRRigidTransform::DecomposeMatrix() {
   // decompose matrix to position and orientation
   TransformationMatrix::DecomposedType decomposed;
@@ -46,7 +36,7 @@ void XRRigidTransform::DecomposeMatrix() {
         -decomposed.quaternion_x, -decomposed.quaternion_y,
         -decomposed.quaternion_z, decomposed.quaternion_w);
   } else {
-    // TODO: Is this the correct way to handle a failure here?
+    // TODO(crbug.com/969149): Is this the correct way to handle a failure here?
     position_ = DOMPointReadOnly::Create(0.0, 0.0, 0.0, 1.0);
     orientation_ = DOMPointReadOnly::Create(0.0, 0.0, 0.0, 1.0);
   }

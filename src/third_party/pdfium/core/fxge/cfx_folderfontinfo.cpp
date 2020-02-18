@@ -227,11 +227,11 @@ void CFX_FolderFontInfo::ReportFace(const ByteString& path,
   if (names.IsEmpty())
     return;
 
-  ByteString facename = GetNameFromTT(names.raw_str(), names.GetLength(), 1);
+  ByteString facename = GetNameFromTT(names.raw_span(), 1);
   if (facename.IsEmpty())
     return;
 
-  ByteString style = GetNameFromTT(names.raw_str(), names.GetLength(), 2);
+  ByteString style = GetNameFromTT(names.raw_span(), 2);
   if (style != "Regular")
     facename += " " + style;
 
@@ -245,23 +245,23 @@ void CFX_FolderFontInfo::ReportFace(const ByteString& path,
   if (os2.GetLength() >= 86) {
     const uint8_t* p = os2.raw_str() + 78;
     uint32_t codepages = GET_TT_LONG(p);
-    if (codepages & (1 << 17)) {
+    if (codepages & (1U << 17)) {
       m_pMapper->AddInstalledFont(facename, FX_CHARSET_ShiftJIS);
       pInfo->m_Charsets |= CHARSET_FLAG_SHIFTJIS;
     }
-    if (codepages & (1 << 18)) {
+    if (codepages & (1U << 18)) {
       m_pMapper->AddInstalledFont(facename, FX_CHARSET_ChineseSimplified);
       pInfo->m_Charsets |= CHARSET_FLAG_GB;
     }
-    if (codepages & (1 << 20)) {
+    if (codepages & (1U << 20)) {
       m_pMapper->AddInstalledFont(facename, FX_CHARSET_ChineseTraditional);
       pInfo->m_Charsets |= CHARSET_FLAG_BIG5;
     }
-    if ((codepages & (1 << 19)) || (codepages & (1 << 21))) {
+    if ((codepages & (1U << 19)) || (codepages & (1U << 21))) {
       m_pMapper->AddInstalledFont(facename, FX_CHARSET_Hangul);
       pInfo->m_Charsets |= CHARSET_FLAG_KOREAN;
     }
-    if (codepages & (1 << 31)) {
+    if (codepages & (1U << 31)) {
       m_pMapper->AddInstalledFont(facename, FX_CHARSET_Symbol);
       pInfo->m_Charsets |= CHARSET_FLAG_SYMBOL;
     }
@@ -343,8 +343,7 @@ void* CFX_FolderFontInfo::GetFont(const char* face) {
 
 uint32_t CFX_FolderFontInfo::GetFontData(void* hFont,
                                          uint32_t table,
-                                         uint8_t* buffer,
-                                         uint32_t size) {
+                                         pdfium::span<uint8_t> buffer) {
   if (!hFont)
     return 0;
 
@@ -366,7 +365,7 @@ uint32_t CFX_FolderFontInfo::GetFontData(void* hFont,
     }
   }
 
-  if (!datasize || size < datasize)
+  if (!datasize || buffer.size() < datasize)
     return datasize;
 
   std::unique_ptr<FILE, FxFileCloser> pFile(
@@ -375,7 +374,7 @@ uint32_t CFX_FolderFontInfo::GetFontData(void* hFont,
     return 0;
 
   if (fseek(pFile.get(), offset, SEEK_SET) < 0 ||
-      fread(buffer, datasize, 1, pFile.get()) != 1) {
+      fread(buffer.data(), datasize, 1, pFile.get()) != 1) {
     return 0;
   }
   return datasize;

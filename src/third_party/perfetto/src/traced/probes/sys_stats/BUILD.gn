@@ -19,8 +19,8 @@ source_set("sys_stats") {
   deps = [
     "..:data_source",
     "../../../../gn:default_deps",
-    "../../../../include/perfetto/traced",
-    "../../../../include/perfetto/traced:sys_stats_counters",
+    "../../../../include/perfetto/ext/traced",
+    "../../../../include/perfetto/ext/traced:sys_stats_counters",
     "../../../../protos/perfetto/common:zero",
     "../../../../protos/perfetto/config:zero",
     "../../../../protos/perfetto/trace/sys_stats:zero",
@@ -37,7 +37,7 @@ source_set("unittests") {
   deps = [
     ":sys_stats",
     "../../../../gn:default_deps",
-    "../../../../gn:gtest_deps",
+    "../../../../gn:gtest_and_gmock",
     "../../../../protos/perfetto/common:zero",
     "../../../../protos/perfetto/config:zero",
     "../../../../protos/perfetto/trace/sys_stats:zero",

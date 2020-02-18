@@ -95,7 +95,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 #include "ui/wm/core/coordinate_conversion.h"
-#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/scoped_tooltip_disabler.h"
 #include "ui/wm/public/tooltip_client.h"
@@ -347,13 +346,11 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
       legacy_window_destroyed_(false),
       virtual_keyboard_requested_(false),
 #endif
-      has_snapped_to_boundary_(false),
       is_guest_view_hack_(is_guest_view_hack),
       device_scale_factor_(0.0f),
       event_handler_(new RenderWidgetHostViewEventHandler(host(), this, this)),
       frame_sink_id_(is_guest_view_hack_ ? AllocateFrameSinkIdForGuestViewHack()
-                                         : host()->GetFrameSinkId()),
-      weak_ptr_factory_(this) {
+                                         : host()->GetFrameSinkId()) {
   CreateDelegatedFrameHostClient();
 
   if (!is_guest_view_hack_)
@@ -582,7 +579,6 @@ RenderFrameHostImpl* RenderWidgetHostViewAura::GetFocusedFrame() const {
 }
 
 void RenderWidgetHostViewAura::HandleParentBoundsChanged() {
-  SnapToPhysicalPixelBoundary();
 #if defined(OS_WIN)
   if (legacy_render_widget_host_HWND_) {
     legacy_render_widget_host_HWND_->SetBounds(
@@ -669,11 +665,26 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
 void RenderWidgetHostViewAura::WasOccluded() {
   if (!host()->is_hidden()) {
     host()->WasHidden();
-    if (delegated_frame_host_)
-      delegated_frame_host_->WasHidden();
-
-#if defined(OS_WIN)
     aura::WindowTreeHost* host = window_->GetHost();
+    if (delegated_frame_host_) {
+      aura::Window* parent = window_->parent();
+      aura::Window::OcclusionState parent_occl_state =
+          parent ? parent->occlusion_state()
+                 : aura::Window::OcclusionState::UNKNOWN;
+      aura::Window::OcclusionState native_win_occlusion_state =
+          host ? host->GetNativeWindowOcclusionState()
+               : aura::Window::OcclusionState::UNKNOWN;
+      DelegatedFrameHost::HiddenCause cause;
+      if (parent_occl_state == aura::Window::OcclusionState::OCCLUDED &&
+          native_win_occlusion_state ==
+              aura::Window::OcclusionState::OCCLUDED) {
+        cause = DelegatedFrameHost::HiddenCause::kOccluded;
+      } else {
+        cause = DelegatedFrameHost::HiddenCause::kOther;
+      }
+      delegated_frame_host_->WasHidden(cause);
+    }
+#if defined(OS_WIN)
     if (host) {
       // We reparent the legacy Chrome_RenderWidgetHostHWND window to the global
       // hidden window on the same lines as Windowed plugin windows.
@@ -1125,7 +1136,8 @@ InputEventAckState RenderWidgetHostViewAura::FilterChildGestureEvent(
 
 BrowserAccessibilityManager*
 RenderWidgetHostViewAura::CreateBrowserAccessibilityManager(
-    BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
+    BrowserAccessibilityDelegate* delegate,
+    bool for_root_frame) {
   BrowserAccessibilityManager* manager = nullptr;
 #if defined(OS_WIN)
   manager = new BrowserAccessibilityManagerWin(
@@ -1171,7 +1183,7 @@ RenderWidgetHostViewAura::AccessibilityGetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewAura::SetMainFrameAXTreeID(ui::AXTreeID id) {
-  window_->SetProperty(ui::kChildAXTreeID, new std::string(id.ToString()));
+  window_->SetProperty(ui::kChildAXTreeID, id.ToString());
 }
 
 bool RenderWidgetHostViewAura::LockMouse() {
@@ -1417,8 +1429,10 @@ bool RenderWidgetHostViewAura::SetEditableSelectionRange(
   RenderFrameHostImpl* rfh = GetFocusedFrame();
   if (!rfh)
     return false;
-  rfh->GetFrameInputHandler()->SetEditableSelectionOffsets(range.start(),
-                                                           range.end());
+  auto* input_handler = rfh->GetFrameInputHandler();
+  if (!input_handler)
+    return false;
+  input_handler->SetEditableSelectionOffsets(range.start(), range.end());
   return true;
 }
 
@@ -1474,9 +1488,14 @@ bool RenderWidgetHostViewAura::ChangeTextDirectionAndLayoutAlignment(
 
 void RenderWidgetHostViewAura::ExtendSelectionAndDelete(
     size_t before, size_t after) {
-  RenderFrameHostImpl* rfh = GetFocusedFrame();
-  if (rfh)
-    rfh->GetFrameInputHandler()->ExtendSelectionAndDelete(before, after);
+  RenderFrameHostImpl* render_frame_host =
+      host()->delegate()->GetFocusedFrameFromFocusedDelegate();
+  if (!render_frame_host)
+    return;
+  auto* input_handler = render_frame_host->GetFrameInputHandler();
+  if (!input_handler)
+    return;
+  input_handler->ExtendSelectionAndDelete(before, after);
 }
 
 void RenderWidgetHostViewAura::EnsureCaretNotInRect(
@@ -1526,11 +1545,14 @@ bool RenderWidgetHostViewAura::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
   RenderFrameHostImpl* frame = GetFocusedFrame();
-  if (frame) {
-    frame->GetFrameInputHandler()->SetCompositionFromExistingText(
-        range.start(), range.end(), ui_ime_text_spans);
-    has_composition_text_ = true;
-  }
+  if (!frame)
+    return false;
+  auto* input_handler = frame->GetFrameInputHandler();
+  if (!input_handler)
+    return false;
+  input_handler->SetCompositionFromExistingText(range.start(), range.end(),
+                                                ui_ime_text_spans);
+  has_composition_text_ = true;
   return true;
 }
 
@@ -1650,7 +1672,6 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
       display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
   DCHECK_EQ(new_device_scale_factor, display.device_scale_factor());
   current_cursor_.SetDisplayInfo(display);
-  SnapToPhysicalPixelBoundary();
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroying(aura::Window* window) {
@@ -1723,25 +1744,6 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 #endif
   last_pointer_type_ = ui::EventPointerType::POINTER_TYPE_MOUSE;
   event_handler_->OnMouseEvent(event);
-}
-
-bool RenderWidgetHostViewAura::TransformPointToLocalCoordSpaceLegacy(
-    const gfx::PointF& point,
-    const viz::SurfaceId& original_surface,
-    gfx::PointF* transformed_point) {
-  // Transformations use physical pixels rather than DIP, so conversion
-  // is necessary.
-  gfx::PointF point_in_pixels =
-      gfx::ConvertPointToPixel(device_scale_factor_, point);
-  // TODO: this shouldn't be used with aura-mus, so that the null check so
-  // go away and become a DCHECK.
-  if (delegated_frame_host_ &&
-      !delegated_frame_host_->TransformPointToLocalCoordSpaceLegacy(
-          point_in_pixels, original_surface, transformed_point))
-    return false;
-  *transformed_point =
-      gfx::ConvertPointToDIP(device_scale_factor_, *transformed_point);
-  return true;
 }
 
 bool RenderWidgetHostViewAura::HasFallbackSurface() const {
@@ -2250,17 +2252,6 @@ void RenderWidgetHostViewAura::SetOverscrollControllerForTesting(
   overscroll_controller_ = std::move(controller);
 }
 
-void RenderWidgetHostViewAura::SnapToPhysicalPixelBoundary() {
-  // The top left corner of our view in window coordinates might not land on a
-  // device pixel boundary if we have a non-integer device scale. In that case,
-  // to avoid the web contents area looking blurry we translate the web contents
-  // in the +x, +y direction to land on the nearest pixel boundary. This may
-  // cause the bottom and right edges to be clipped slightly, but that's ok.
-  // We want to snap it to the nearest ancestor.
-  wm::SnapWindowToPixelBoundary(window_);
-  has_snapped_to_boundary_ = true;
-}
-
 void RenderWidgetHostViewAura::SetSelectionControllerClientForTest(
     std::unique_ptr<TouchSelectionControllerClientAura> client) {
   selection_controller_client_.swap(client);
@@ -2268,7 +2259,6 @@ void RenderWidgetHostViewAura::SetSelectionControllerClientForTest(
 }
 
 void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
-  SnapToPhysicalPixelBoundary();
   // Don't recursively call SetBounds if this bounds update is the result of
   // a Window::SetBoundsInternal call.
   if (!in_bounds_changed_)
@@ -2435,7 +2425,7 @@ void RenderWidgetHostViewAura::CreateSelectionController() {
 }
 
 void RenderWidgetHostViewAura::OnDidNavigateMainFrameToNewPage() {
-  aura::Env::GetInstance()->gesture_recognizer()->CancelActiveTouches(window_);
+  CancelActiveTouches();
 }
 
 const viz::FrameSinkId& RenderWidgetHostViewAura::GetFrameSinkId() const {
@@ -2540,8 +2530,8 @@ void RenderWidgetHostViewAura::OnTextSelectionChanged(
   const TextInputManager::TextSelection* selection =
       GetTextInputManager()->GetTextSelection(focused_view);
   if (selection->selected_text().length()) {
-    // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
-    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
+    // Set the ClipboardType::kSelection to the ui::Clipboard.
+    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kSelection);
     clipboard_writer.WriteText(selection->selected_text());
   }
 #endif  // defined(USE_X11)
@@ -2564,9 +2554,13 @@ void RenderWidgetHostViewAura::UpdateNeedsBeginFramesInternal() {
 void RenderWidgetHostViewAura::ScrollFocusedEditableNodeIntoRect(
     const gfx::Rect& node_rect) {
   RenderFrameHostImpl* rfh = GetFocusedFrame();
-  if (rfh) {
-    rfh->GetFrameInputHandler()->ScrollFocusedEditableNodeIntoRect(node_rect);
-  }
+  if (!rfh)
+    return;
+
+  auto* input_handler = rfh->GetFrameInputHandler();
+  if (!input_handler)
+    return;
+  input_handler->ScrollFocusedEditableNodeIntoRect(node_rect);
 }
 
 void RenderWidgetHostViewAura::OnSynchronizedDisplayPropertiesChanged() {
@@ -2638,6 +2632,11 @@ void RenderWidgetHostViewAura::TakeFallbackContentFrom(
 
 bool RenderWidgetHostViewAura::CanSynchronizeVisualProperties() {
   return !needs_to_update_display_metrics_;
+}
+
+void RenderWidgetHostViewAura::CancelActiveTouches() {
+  aura::Env* env = aura::Env::GetInstance();
+  env->gesture_recognizer()->CancelActiveTouches(window());
 }
 
 void RenderWidgetHostViewAura::InvalidateLocalSurfaceIdOnEviction() {

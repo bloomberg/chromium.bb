@@ -7,16 +7,13 @@
 #import <UIKit/UIKit.h>
 
 #include "base/bind.h"
-#include "ios/web/public/service_names.mojom.h"
+#include "ios/web/public/service/service_names.mojom.h"
 #include "ios/web/public/user_agent.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/shell/shell_web_main_parts.h"
 #import "ios/web/shell/web_usage_controller.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "services/test/echo/echo_service.h"
-#include "services/test/echo/public/cpp/manifest.h"
-#include "services/test/echo/public/mojom/echo.mojom.h"
 #include "services/test/user_id/public/cpp/manifest.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -89,32 +86,16 @@ bool ShellWebClient::IsDataResourceGzipped(int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
 }
 
-std::unique_ptr<service_manager::Service> ShellWebClient::HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
-  if (service_name == echo::mojom::kServiceName)
-    return std::make_unique<echo::EchoService>(std::move(request));
-
-  return nullptr;
-}
-
 base::Optional<service_manager::Manifest>
 ShellWebClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == mojom::kBrowserServiceName) {
     return service_manager::ManifestBuilder()
-        .RequireCapability(echo::mojom::kServiceName, "echo")
         .RequireCapability("user_id", "user_id")
         .PackageService(user_id::GetManifest())
         .Build();
   }
 
   return base::nullopt;
-}
-
-std::vector<service_manager::Manifest>
-ShellWebClient::GetExtraServiceManifests() {
-  return std::vector<service_manager::Manifest>{echo::GetManifest(
-      service_manager::Manifest::ExecutionMode::kInProcessBuiltin)};
 }
 
 void ShellWebClient::BindInterfaceRequestFromMainFrame(

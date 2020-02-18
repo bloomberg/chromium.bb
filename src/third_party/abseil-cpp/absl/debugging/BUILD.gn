@@ -64,6 +64,7 @@ source_set("symbolize") {
     ":demangle_internal",
     "../base",
     "../base:core_headers",
+    "../base:dynamic_annotations",
     "../base:malloc_internal",
   ]
 }

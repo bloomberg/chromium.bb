@@ -27,7 +27,7 @@ HitTestResult HitTestResultInFrame(
   if (!frame || !frame->ContentLayoutObject())
     return result;
   if (LocalFrameView* frame_view = frame->View()) {
-    LayoutRect rect(LayoutPoint(), LayoutSize(frame_view->Size()));
+    PhysicalRect rect(PhysicalOffset(), PhysicalSize(frame_view->Size()));
     if (!location.Intersects(rect))
       return result;
   }
@@ -104,13 +104,15 @@ ContainerNode* ParentForClickEvent(const Node& node) {
   return FlatTreeTraversal::Parent(node);
 }
 
-LayoutPoint ContentPointFromRootFrame(LocalFrame* frame,
-                                      const FloatPoint& point_in_root_frame) {
+PhysicalOffset ContentPointFromRootFrame(
+    LocalFrame* frame,
+    const FloatPoint& point_in_root_frame) {
   LocalFrameView* view = frame->View();
   // FIXME: Is it really OK to use the wrong coordinates here when view is 0?
   // Historically the code would just crash; this is clearly no worse than that.
-  return LayoutPoint(view ? view->ConvertFromRootFrame(point_in_root_frame)
-                          : point_in_root_frame);
+  return PhysicalOffset::FromFloatPointRound(
+      view ? view->ConvertFromRootFrame(point_in_root_frame)
+           : point_in_root_frame);
 }
 
 MouseEventWithHitTestResults PerformMouseEventHitTest(
@@ -123,6 +125,30 @@ MouseEventWithHitTestResults PerformMouseEventHitTest(
   return frame->GetDocument()->PerformMouseEventHitTest(
       request, ContentPointFromRootFrame(frame, mev.PositionInRootFrame()),
       mev);
+}
+
+bool ShouldDiscardEventTargetingFrame(const WebInputEvent& event,
+                                      const LocalFrame& frame) {
+  if (!RuntimeEnabledFeatures::DiscardInputToMovingIframesEnabled())
+    return false;
+
+  // There are two different mechanisms for tracking whether an iframe has moved
+  // recently, for OOPIF and in-process iframes. For OOPIF's, frame movement is
+  // tracked in the browser process using hit test data, and it's propagated
+  // in event.GetModifiers(). For in-process iframes, frame movement is tracked
+  // during lifecycle updates, in FrameView::UpdateViewportIntersection, and
+  // propagated via FrameView::RectInParentIsStable.
+  bool should_discard = false;
+  if (frame.NeedsOcclusionTracking() && frame.IsCrossOriginSubframe()) {
+    should_discard =
+        (event.GetModifiers() & WebInputEvent::kTargetFrameMovedRecently) ||
+        !frame.View()->RectInParentIsStable(event.TimeStamp());
+  }
+  if (should_discard) {
+    UseCounter::Count(frame.GetDocument(),
+                      WebFeature::kDiscardInputEventToMovingIframe);
+  }
+  return should_discard;
 }
 
 LocalFrame* SubframeForTargetNode(Node* node, bool* is_remote_frame) {

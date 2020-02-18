@@ -281,9 +281,7 @@ std::unique_ptr<JSONObject> ObjectForBitmapData(const SkBitmap& bitmap) {
   }
 
   auto data_item = std::make_unique<JSONObject>();
-  data_item->SetString(
-      "base64",
-      WTF::Base64Encode(reinterpret_cast<char*>(output.data()), output.size()));
+  data_item->SetString("base64", Base64Encode(output));
   data_item->SetString("mimeType", "image/png");
   return data_item;
 }
@@ -745,7 +743,7 @@ String RecordAsDebugString(const PaintRecord& record) {
 }
 
 void ShowPaintRecord(const PaintRecord& record) {
-  DLOG(INFO) << RecordAsDebugString(record).Utf8().data();
+  DLOG(INFO) << RecordAsDebugString(record).Utf8();
 }
 
 std::unique_ptr<JSONArray> SkPictureAsJSON(const SkPicture& picture) {
@@ -759,7 +757,7 @@ String SkPictureAsDebugString(const SkPicture& picture) {
 }
 
 void ShowSkPicture(const SkPicture& picture) {
-  DLOG(INFO) << SkPictureAsDebugString(picture).Utf8().data();
+  DLOG(INFO) << SkPictureAsDebugString(picture).Utf8();
 }
 
 }  // namespace blink

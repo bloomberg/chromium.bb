@@ -28,7 +28,7 @@ namespace dawn_native {
 
     class DeviceBase;
 
-    MaybeError ValidateRenderPipelineDescriptor(DeviceBase* device,
+    MaybeError ValidateRenderPipelineDescriptor(const DeviceBase* device,
                                                 const RenderPipelineDescriptor* descriptor);
     size_t IndexFormatSize(dawn::IndexFormat format);
     uint32_t VertexFormatNumComponents(dawn::VertexFormat format);
@@ -37,6 +37,18 @@ namespace dawn_native {
 
     bool StencilTestEnabled(const DepthStencilStateDescriptor* mDepthStencilState);
     bool BlendEnabled(const ColorStateDescriptor* mColorState);
+
+    struct VertexAttributeInfo {
+        uint32_t shaderLocation;
+        uint32_t inputSlot;
+        uint64_t offset;
+        dawn::VertexFormat format;
+    };
+
+    struct VertexBufferInfo {
+        uint64_t stride;
+        dawn::InputStepMode stepMode;
+    };
 
     class RenderPipelineBase : public PipelineBase {
       public:
@@ -49,9 +61,9 @@ namespace dawn_native {
 
         const VertexInputDescriptor* GetVertexInputDescriptor() const;
         const std::bitset<kMaxVertexAttributes>& GetAttributesSetMask() const;
-        const VertexAttributeDescriptor& GetAttribute(uint32_t location) const;
+        const VertexAttributeInfo& GetAttribute(uint32_t location) const;
         const std::bitset<kMaxVertexBuffers>& GetInputsSetMask() const;
-        const VertexBufferDescriptor& GetInput(uint32_t slot) const;
+        const VertexBufferInfo& GetInput(uint32_t slot) const;
 
         const ColorStateDescriptor* GetColorStateDescriptor(uint32_t attachmentSlot) const;
         const DepthStencilStateDescriptor* GetDepthStencilStateDescriptor() const;
@@ -67,7 +79,7 @@ namespace dawn_native {
 
         // A pipeline can be used in a render pass if its attachment info matches the actual
         // attachments in the render pass. This returns whether it is the case.
-        bool IsCompatibleWith(const BeginRenderPassCmd* renderPassCmd) const;
+        MaybeError ValidateCompatibleWith(const BeginRenderPassCmd* renderPassCmd) const;
         std::bitset<kMaxVertexAttributes> GetAttributesUsingInput(uint32_t slot) const;
         std::array<std::bitset<kMaxVertexAttributes>, kMaxVertexBuffers> attributesUsingInput;
 
@@ -85,9 +97,9 @@ namespace dawn_native {
         // Vertex input
         VertexInputDescriptor mVertexInput;
         std::bitset<kMaxVertexAttributes> mAttributesSetMask;
-        std::array<VertexAttributeDescriptor, kMaxVertexAttributes> mAttributeInfos;
+        std::array<VertexAttributeInfo, kMaxVertexAttributes> mAttributeInfos;
         std::bitset<kMaxVertexBuffers> mInputsSetMask;
-        std::array<VertexBufferDescriptor, kMaxVertexBuffers> mInputInfos;
+        std::array<VertexBufferInfo, kMaxVertexBuffers> mInputInfos;
 
         // Attachments
         bool mHasDepthStencilAttachment = false;
@@ -99,6 +111,8 @@ namespace dawn_native {
         dawn::PrimitiveTopology mPrimitiveTopology;
         RasterizationStateDescriptor mRasterizationState;
         uint32_t mSampleCount;
+        uint32_t mSampleMask;
+        bool mAlphaToCoverageEnabled;
 
         // Stage information
         // TODO(cwallez@chromium.org): Store a crypto hash of the modules instead.

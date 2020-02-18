@@ -46,13 +46,15 @@ SSLSocketParams::SSLSocketParams(
     scoped_refptr<HttpProxySocketParams> http_proxy_params,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
-    PrivacyMode privacy_mode)
+    PrivacyMode privacy_mode,
+    NetworkIsolationKey network_isolation_key)
     : direct_params_(std::move(direct_params)),
       socks_proxy_params_(std::move(socks_proxy_params)),
       http_proxy_params_(std::move(http_proxy_params)),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
-      privacy_mode_(privacy_mode) {
+      privacy_mode_(privacy_mode),
+      network_isolation_key_(network_isolation_key) {
   // Only one set of lower level ConnectJob params should be non-NULL.
   DCHECK((direct_params_ && !socks_proxy_params_ && !http_proxy_params_) ||
          (!direct_params_ && socks_proxy_params_ && !http_proxy_params_) ||
@@ -332,32 +334,26 @@ int SSLConnectJob::DoSSLConnect() {
   // Set the timeout to just the time allowed for the SSL handshake.
   ResetTimer(kSSLHandshakeTimeout);
 
-  // If the handle has a fresh socket, get its connect start and DNS times.
-  const LoadTimingInfo::ConnectTiming* socket_connect_timing = nullptr;
-  socket_connect_timing = &nested_connect_job_->connect_timing();
+  // Get the transport's connect start and DNS times.
+  const LoadTimingInfo::ConnectTiming& socket_connect_timing =
+      nested_connect_job_->connect_timing();
 
-  if (socket_connect_timing) {
-    // Overwriting |connect_start| serves two purposes - it adjusts timing so
-    // |connect_start| doesn't include dns times, and it adjusts the time so
-    // as not to include time spent waiting for an idle socket.
-    connect_timing_.connect_start = socket_connect_timing->connect_start;
-    connect_timing_.dns_start = socket_connect_timing->dns_start;
-    connect_timing_.dns_end = socket_connect_timing->dns_end;
-  }
+  // Overwriting |connect_start| serves two purposes - it adjusts timing so
+  // |connect_start| doesn't include dns times, and it adjusts the time so
+  // as not to include time spent waiting for an idle socket.
+  connect_timing_.connect_start = socket_connect_timing.connect_start;
+  connect_timing_.dns_start = socket_connect_timing.dns_start;
+  connect_timing_.dns_end = socket_connect_timing.dns_end;
 
   ssl_negotiation_started_ = true;
   connect_timing_.ssl_start = base::TimeTicks::Now();
 
-  // TODO(mmenke): Consider moving this up to the socket pool layer, after
-  // giving socket pools knowledge of privacy mode.
-  const SSLClientSocketContext& context =
-      params_->privacy_mode() == PRIVACY_MODE_ENABLED
-          ? ssl_client_socket_context_privacy_mode()
-          : ssl_client_socket_context();
-
+  SSLConfig ssl_config = params_->ssl_config();
+  ssl_config.network_isolation_key = params_->network_isolation_key();
+  ssl_config.privacy_mode = params_->privacy_mode();
   ssl_socket_ = client_socket_factory()->CreateSSLClientSocket(
-      std::move(nested_socket_), params_->host_and_port(),
-      params_->ssl_config(), context);
+      ssl_client_context(), std::move(nested_socket_), params_->host_and_port(),
+      ssl_config);
   nested_connect_job_.reset();
   return ssl_socket_->Connect(callback_);
 }

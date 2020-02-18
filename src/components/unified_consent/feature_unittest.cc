@@ -30,8 +30,8 @@ TEST(UnifiedConsentFeatureTest, FeatureState) {
 
 // Apple platforms
 #if defined(OS_IOS)
-  // Unified consent is disabled by default.
-  EXPECT_FALSE(IsUnifiedConsentFeatureEnabled());
+  // Unified consent is enabled by default.
+  EXPECT_TRUE(IsUnifiedConsentFeatureEnabled());
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

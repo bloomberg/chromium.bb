@@ -38,7 +38,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
@@ -54,7 +54,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
@@ -63,8 +62,8 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -73,6 +72,7 @@
 #include "third_party/blink/renderer/platform/loader/testing/mock_resource.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 
@@ -120,9 +120,23 @@ class FrameFetchContextTest : public testing::Test {
  protected:
   void SetUp() override { RecreateFetchContext(); }
 
-  void RecreateFetchContext() {
+  void RecreateFetchContext(const KURL& url = KURL(),
+                            const String& feature_policy_header = String()) {
     dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
     dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
+    if (url.IsValid()) {
+      auto params = WebNavigationParams::CreateWithHTMLBuffer(
+          SharedBuffer::Create(), url);
+      if (!feature_policy_header.IsEmpty()) {
+        params->response.SetHttpHeaderField(http_names::kFeaturePolicy,
+                                            feature_policy_header);
+      }
+      dummy_page_holder->GetFrame().Loader().CommitNavigation(
+          std::move(params), nullptr /* extra_data */);
+      blink::test::RunPendingTasks();
+      ASSERT_EQ(url.GetString(),
+                dummy_page_holder->GetDocument().Url().GetString());
+    }
     document = &dummy_page_holder->GetDocument();
     owner = MakeGarbageCollected<DummyFrameOwner>();
   }
@@ -260,9 +274,7 @@ class FrameFetchContextMockedLocalFrameClientTest
 class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
  public:
   FrameFetchContextModifyRequestTest()
-      : example_origin(SecurityOrigin::Create(KURL("https://example.test/"))),
-        secure_origin(SecurityOrigin::Create(
-            KURL("https://secureorigin.test/image.png"))) {}
+      : example_origin(SecurityOrigin::Create(KURL("https://example.test/"))) {}
 
  protected:
   void ModifyRequestForCSP(ResourceRequest& resource_request,
@@ -325,13 +337,16 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
 
   void ExpectIsAutomaticUpgradeSet(const char* input,
                                    const char* main_frame,
+                                   WebInsecureRequestPolicy policy,
                                    bool expected_value) {
     const KURL input_url(input);
     const KURL main_frame_url(main_frame);
     ResourceRequest resource_request(input_url);
     resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
 
-    document->SetSecurityOrigin(SecurityOrigin::Create(KURL(main_frame_url)));
+    RecreateFetchContext(main_frame_url);
+    document->SetInsecureRequestPolicy(policy);
+
     ModifyRequestForCSP(resource_request,
                         network::mojom::RequestContextFrameType::kNone);
 
@@ -366,7 +381,6 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
   }
 
   scoped_refptr<const SecurityOrigin> example_origin;
-  scoped_refptr<SecurityOrigin> secure_origin;
 };
 
 TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
@@ -439,7 +453,10 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
 
 TEST_F(FrameFetchContextModifyRequestTest,
        DoNotUpgradeInsecureResourceRequests) {
-  document->SetSecurityOrigin(secure_origin);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(blink::features::kMixedContentAutoupgrade);
+
+  RecreateFetchContext(KURL("https://secureorigin.test/image.png"));
   document->SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
 
   ExpectUpgrade("http://example.test/image.png",
@@ -466,26 +483,27 @@ TEST_F(FrameFetchContextModifyRequestTest,
 TEST_F(FrameFetchContextModifyRequestTest, IsAutomaticUpgradeSet) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kMixedContentAutoupgrade);
-  document->SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
   ExpectIsAutomaticUpgradeSet("http://example.test/image.png",
-                              "https://example.test", true);
+                              "https://example.test",
+                              kLeaveInsecureRequestsAlone, true);
 }
 
 TEST_F(FrameFetchContextModifyRequestTest, IsAutomaticUpgradeNotSet) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kMixedContentAutoupgrade);
-  document->SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
   // Upgrade shouldn't happen if the resource is already https.
   ExpectIsAutomaticUpgradeSet("https://example.test/image.png",
-                              "https://example.test", false);
+                              "https://example.test",
+                              kLeaveInsecureRequestsAlone, false);
   // Upgrade shouldn't happen if the site is http.
   ExpectIsAutomaticUpgradeSet("http://example.test/image.png",
-                              "http://example.test", false);
+                              "http://example.test",
+                              kLeaveInsecureRequestsAlone, false);
 
-  document->SetInsecureRequestPolicy(kUpgradeInsecureRequests);
   // Flag shouldn't be set if upgrade was due to upgrade-insecure-requests.
   ExpectIsAutomaticUpgradeSet("http://example.test/image.png",
-                              "https://example.test", false);
+                              "https://example.test", kUpgradeInsecureRequests,
+                              false);
 }
 
 TEST_F(FrameFetchContextModifyRequestTest, SendUpgradeInsecureRequestHeader) {
@@ -574,12 +592,8 @@ class FrameFetchContextHintsTest : public FrameFetchContextTest {
   FrameFetchContextHintsTest() = default;
 
   void SetUp() override {
-    FrameFetchContextTest::SetUp();
     // Set the document URL to a secure document.
-    document->SetURL(KURL("https://www.example.com/"));
-    document->SetSecurityOrigin(
-        SecurityOrigin::Create(KURL("https://www.example.com/")));
-    document->InitializeFeaturePolicy({}, {}, nullptr, nullptr);
+    RecreateFetchContext(KURL("https://www.example.com/"));
     Settings* settings = document->GetSettings();
     settings->SetScriptEnabled(true);
   }
@@ -658,10 +672,8 @@ TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemoryHintsInsecureContext) {
 // Verify that client hints are attched when the resources belong to a local
 // context.
 TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemoryHintsLocalContext) {
-  document->SetURL(KURL("http://localhost/"));
-  document->SetSecurityOrigin(
-      SecurityOrigin::Create(KURL("http://localhost/")));
-  document->InitializeFeaturePolicy({}, {}, nullptr, nullptr);
+  RecreateFetchContext(KURL("http://localhost/"));
+  document->GetSettings()->SetScriptEnabled(true);
   ExpectHeader("http://localhost/1.gif", "Device-Memory", false, "");
   ClientHintsPreferences preferences;
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
@@ -899,13 +911,12 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
 // Verify that the client hints should be attached for third-party subresources
 // fetched over secure transport, when specifically allowed by feature policy.
 TEST_F(FrameFetchContextHintsTest, MonitorAllHintsFeaturePolicy) {
-  ParsedFeaturePolicy policy = FeaturePolicyParser::ParseHeader(
+  RecreateFetchContext(
+      KURL("https://www.example.com/"),
       "ch-dpr *; ch-device-memory *; ch-downlink *; ch-ect *; ch-lang *;"
       "ch-rtt *; ch-ua *; ch-ua-arch *; ch-ua-platform *; ch-ua-model *;"
-      "ch-viewport-width *; ch-width *",
-      SecurityOrigin::CreateFromString("https://www.example.com/"), nullptr,
-      document);
-  document->InitializeFeaturePolicy(policy, {}, nullptr, nullptr);
+      "ch-viewport-width *; ch-width *");
+  document->GetSettings()->SetScriptEnabled(true);
   ClientHintsPreferences preferences;
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDpr);
@@ -961,11 +972,9 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHintsFeaturePolicy) {
 // Verify that only the specifically allowed client hints are attached for
 // third-party subresources fetched over secure transport.
 TEST_F(FrameFetchContextHintsTest, MonitorSomeHintsFeaturePolicy) {
-  ParsedFeaturePolicy policy = FeaturePolicyParser::ParseHeader(
-      "ch-device-memory 'self' https://www.example.net",
-      SecurityOrigin::CreateFromString("https://www.example.com/"), nullptr,
-      document);
-  document->InitializeFeaturePolicy(policy, {}, nullptr, nullptr);
+  RecreateFetchContext(KURL("https://www.example.com/"),
+                       "ch-device-memory 'self' https://www.example.net");
+  document->GetSettings()->SetScriptEnabled(true);
   ClientHintsPreferences preferences;
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDpr);
@@ -996,11 +1005,8 @@ TEST_F(FrameFetchContextHintsTest, MonitorSomeHintsFeaturePolicy) {
 // fetched over insecure transport, even when specifically allowed by feature
 // policy.
 TEST_F(FrameFetchContextHintsTest, MonitorHintsFeaturePolicyInsecureContext) {
-  ParsedFeaturePolicy policy = FeaturePolicyParser::ParseHeader(
-      "ch-device-memory *",
-      SecurityOrigin::CreateFromString("https://www.example.com/"), nullptr,
-      document);
-  document->InitializeFeaturePolicy(policy, {}, nullptr, nullptr);
+  RecreateFetchContext(KURL("https://www.example.com/"), "ch-device-memory *");
+  document->GetSettings()->SetScriptEnabled(true);
   ExpectHeader("https://www.example.com/1.gif", "Device-Memory", false, "");
   ClientHintsPreferences preferences;
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
@@ -1211,20 +1217,6 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   EXPECT_EQ("hi", request.HttpHeaderField(http_names::kUserAgent));
 }
 
-TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {
-  ResourceRequest request(KURL("https://www.example.com/"));
-
-  dummy_page_holder = nullptr;
-
-  GetFetchContext()->RecordLoadingActivity(
-      request, ResourceType::kRaw, fetch_initiator_type_names::kXmlhttprequest);
-  // Should not crash.
-
-  GetFetchContext()->RecordLoadingActivity(
-      request, ResourceType::kRaw, fetch_initiator_type_names::kDocument);
-  // Should not crash.
-}
-
 TEST_F(FrameFetchContextTest, AddResourceTimingWhenDetached) {
   scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
       "type", base::TimeTicks() + base::TimeDelta::FromSecondsD(0.3));
@@ -1278,13 +1270,11 @@ TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {
 }
 
 TEST_F(FrameFetchContextTest, SetFirstPartyCookieWhenDetached) {
+  const KURL document_url("https://www2.example.com/foo/bar");
+  RecreateFetchContext(document_url);
+
   const KURL url("https://www.example.com/hoge/fuga");
   ResourceRequest request(url);
-  const KURL document_url("https://www2.example.com/foo/bar");
-  scoped_refptr<SecurityOrigin> origin = SecurityOrigin::Create(document_url);
-
-  document->SetSecurityOrigin(origin);
-  document->SetURL(document_url);
 
   dummy_page_holder = nullptr;
 
@@ -1295,91 +1285,27 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieWhenDetached) {
 }
 
 TEST_F(FrameFetchContextTest, TopFrameOrigin) {
+  const KURL document_url("https://www2.example.com/foo/bar");
+  RecreateFetchContext(document_url);
+  const SecurityOrigin* origin = document->GetSecurityOrigin();
+
   const KURL url("https://www.example.com/hoge/fuga");
   ResourceRequest request(url);
-  const KURL document_url("https://www2.example.com/foo/bar");
-  scoped_refptr<SecurityOrigin> origin = SecurityOrigin::Create(document_url);
-
-  document->SetSecurityOrigin(origin);
-  document->SetURL(document_url);
 
   EXPECT_EQ(origin, GetTopFrameOrigin());
 }
 
 TEST_F(FrameFetchContextTest, TopFrameOriginDetached) {
+  const KURL document_url("https://www2.example.com/foo/bar");
+  RecreateFetchContext(document_url);
+  const SecurityOrigin* origin = document->GetSecurityOrigin();
+
   const KURL url("https://www.example.com/hoge/fuga");
   ResourceRequest request(url);
-  const KURL document_url("https://www2.example.com/foo/bar");
-  scoped_refptr<SecurityOrigin> origin = SecurityOrigin::Create(document_url);
-
-  document->SetSecurityOrigin(origin);
-  document->SetURL(document_url);
 
   dummy_page_holder = nullptr;
 
   EXPECT_EQ(origin, GetTopFrameOrigin());
-}
-
-// Tests if "Intervention" header is added for frame with Client Lo-Fi enabled.
-TEST_F(FrameFetchContextMockedLocalFrameClientTest,
-       ClientLoFiInterventionHeader) {
-  // Verify header not added if Lo-Fi not active.
-  EXPECT_CALL(*client, GetPreviewsStateForFrame())
-      .WillRepeatedly(testing::Return(WebURLRequest::kPreviewsOff));
-  ResourceRequest resource_request("http://www.example.com/style.css");
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
-  EXPECT_EQ(g_null_atom, resource_request.HttpHeaderField("Intervention"));
-
-  // Verify header is added if Lo-Fi is active.
-  EXPECT_CALL(*client, GetPreviewsStateForFrame())
-      .WillRepeatedly(testing::Return(WebURLRequest::kClientLoFiOn));
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
-  EXPECT_EQ(
-      "<https://www.chromestatus.com/features/6072546726248448>; "
-      "level=\"warning\"",
-      resource_request.HttpHeaderField("Intervention"));
-
-  // Verify appended to an existing "Intervention" header value.
-  ResourceRequest resource_request2("http://www.example.com/getad.js");
-  resource_request2.SetHttpHeaderField("Intervention",
-                                       "<https://otherintervention.org>");
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request2);
-  EXPECT_EQ(
-      "<https://otherintervention.org>, "
-      "<https://www.chromestatus.com/features/6072546726248448>; "
-      "level=\"warning\"",
-      resource_request2.HttpHeaderField("Intervention"));
-}
-
-// Tests if "Intervention" header is added for frame with NoScript enabled.
-TEST_F(FrameFetchContextMockedLocalFrameClientTest,
-       NoScriptInterventionHeader) {
-  // Verify header not added if NoScript not active.
-  EXPECT_CALL(*client, GetPreviewsStateForFrame())
-      .WillRepeatedly(testing::Return(WebURLRequest::kPreviewsOff));
-  ResourceRequest resource_request("http://www.example.com/style.css");
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
-  EXPECT_EQ(g_null_atom, resource_request.HttpHeaderField("Intervention"));
-
-  // Verify header is added if NoScript is active.
-  EXPECT_CALL(*client, GetPreviewsStateForFrame())
-      .WillRepeatedly(testing::Return(WebURLRequest::kNoScriptOn));
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
-  EXPECT_EQ(
-      "<https://www.chromestatus.com/features/4775088607985664>; "
-      "level=\"warning\"",
-      resource_request.HttpHeaderField("Intervention"));
-
-  // Verify appended to an existing "Intervention" header value.
-  ResourceRequest resource_request2("http://www.example.com/getad.js");
-  resource_request2.SetHttpHeaderField("Intervention",
-                                       "<https://otherintervention.org>");
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request2);
-  EXPECT_EQ(
-      "<https://otherintervention.org>, "
-      "<https://www.chromestatus.com/features/4775088607985664>; "
-      "level=\"warning\"",
-      resource_request2.HttpHeaderField("Intervention"));
 }
 
 }  // namespace blink

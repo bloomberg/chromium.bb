@@ -10,6 +10,7 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -93,8 +94,8 @@ class BasePinButton : public views::InkDropHostView {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetPreferredSize(size);
 
-    auto layout =
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+    auto layout = std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical);
     layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kCenter);
     SetLayoutManager(std::move(layout));
@@ -105,8 +106,8 @@ class BasePinButton : public views::InkDropHostView {
     layer()->SetFillsBoundsOpaquely(false);
     SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
 
-    focus_painter_ = views::Painter::CreateSolidFocusPainter(
-        kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF());
+    focus_ring_ = views::FocusRing::Install(this);
+    focus_ring_->SetColor(kShelfFocusBorderColor);
   }
 
   ~BasePinButton() override = default;
@@ -114,7 +115,6 @@ class BasePinButton : public views::InkDropHostView {
   // views::InkDropHostView:
   void OnPaint(gfx::Canvas* canvas) override {
     InkDropHostView::OnPaint(canvas);
-    views::Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
   }
   void OnFocus() override {
     InkDropHostView::OnFocus();
@@ -195,7 +195,7 @@ class BasePinButton : public views::InkDropHostView {
 
  private:
   const base::string16 accessible_name_;
-  std::unique_ptr<views::Painter> focus_painter_;
+  std::unique_ptr<views::FocusRing> focus_ring_;
 
   DISALLOW_COPY_AND_ASSIGN(BasePinButton);
 };
@@ -411,14 +411,14 @@ LoginPinView::LoginPinView(Style keyboard_style,
   // Builds and returns a new view which contains a row of the PIN keyboard.
   auto build_and_add_row = [this]() {
     auto* row = new NonAccessibleView();
-    row->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    row->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal));
     AddChildView(row);
     return row;
   };
 
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
   bool show_letters = keyboard_style == Style::kAlphanumeric;
   const gfx::Size button_size =

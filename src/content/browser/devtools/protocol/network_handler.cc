@@ -24,6 +24,7 @@
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_stream_pipe.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
+#include "content/browser/devtools/protocol/network.h"
 #include "content/browser/devtools/protocol/page.h"
 #include "content/browser/devtools/protocol/security.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
@@ -35,6 +36,7 @@
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/navigation_params.h"
+#include "content/common/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -52,6 +54,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -154,7 +157,7 @@ std::unique_ptr<ProtocolCookieArray> BuildCookieArray(
   auto cookies = std::make_unique<ProtocolCookieArray>();
 
   for (const net::CanonicalCookie& cookie : cookie_list)
-    cookies->addItem(BuildCookie(cookie));
+    cookies->emplace_back(BuildCookie(cookie));
 
   return cookies;
 }
@@ -287,7 +290,7 @@ class CookieRetrieverNetworkService
   ~CookieRetrieverNetworkService() {
     auto cookies = std::make_unique<ProtocolCookieArray>();
     for (const auto& entry : all_cookies_)
-      cookies->addItem(BuildCookie(entry.second));
+      cookies->emplace_back(BuildCookie(entry.second));
     callback_->sendSuccess(std::move(cookies));
   }
 
@@ -436,9 +439,20 @@ std::unique_ptr<net::CanonicalCookie> MakeCookieFromProtocolValues(
       normalized_domain = source_url.host();
   }
 
-  GURL url = GURL((secure ? "https://" : "http://") + normalized_domain);
-  if (!normalized_domain.empty() && normalized_domain[0] != '.')
-    normalized_domain = "";
+  std::string url_host = normalized_domain;
+  if (!normalized_domain.empty()) {
+    // The value of |url_host| may have trickled down from a cookie domain,
+    // where leading periods are legal. However, since we want to use it as a
+    // URL host, we must the leading period if it exists.
+    if (normalized_domain[0] == '.')
+      url_host.erase(0, 1);
+    // If there is no leading period, clear out |normalized_domain|, but keep
+    // the value of |url_host|. CreateSanitizedCookie will determine the proper
+    // domain from the URL we construct with |url_host|.
+    else
+      normalized_domain = "";
+  }
+  GURL url = GURL((secure ? "https://" : "http://") + url_host);
 
   base::Time expiration_date;
   if (expires >= 0) {
@@ -511,10 +525,8 @@ std::vector<GURL> ComputeCookieURLs(RenderFrameHostImpl* frame_host,
   std::vector<GURL> urls;
 
   if (protocol_urls.isJust()) {
-    std::unique_ptr<Array<std::string>> actual_urls = protocol_urls.takeJust();
-
-    for (size_t i = 0; i < actual_urls->length(); i++)
-      urls.push_back(GURL(actual_urls->get(i)));
+    for (const std::string& url : *protocol_urls.fromJust())
+      urls.emplace_back(url);
   } else {
     base::queue<FrameTreeNode*> queue;
     queue.push(frame_host->frame_tree_node());
@@ -636,6 +648,9 @@ double timeDelta(base::TimeTicks time,
 
 std::unique_ptr<Network::ResourceTiming> GetTiming(
     const net::LoadTimingInfo& load_timing) {
+  if (load_timing.receive_headers_end.is_null())
+    return nullptr;
+
   const base::TimeTicks kNullTicks;
   return Network::ResourceTiming::Create()
       .SetRequestTime((load_timing.request_start - kNullTicks).InSecondsF())
@@ -676,6 +691,19 @@ std::unique_ptr<Object> GetHeaders(const base::StringPairs& pairs) {
     headers_dict->setString(pair.first, merge_with_another
                                             ? value + '\n' + pair.second
                                             : pair.second);
+  }
+  return Object::fromValue(headers_dict.get(), nullptr);
+}
+
+std::unique_ptr<Object> GetRawHeaders(
+    const std::vector<network::mojom::HttpRawHeaderPairPtr>& headers) {
+  std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
+  for (const auto& header : headers) {
+    std::string value;
+    bool merge_with_another = headers_dict->getString(header->key, &value);
+    headers_dict->setString(header->key, merge_with_another
+                                             ? value + '\n' + header->value
+                                             : header->value);
   }
   return Object::fromValue(headers_dict.get(), nullptr);
 }
@@ -805,11 +833,157 @@ std::unique_ptr<Network::SignedExchangeError> BuildSignedExchangeError(
 
 std::unique_ptr<Array<Network::SignedExchangeError>> BuildSignedExchangeErrors(
     const std::vector<SignedExchangeError>& errors) {
-  std::unique_ptr<Array<Network::SignedExchangeError>> signed_exchange_errors =
-      Array<Network::SignedExchangeError>::create();
+  auto signed_exchange_errors =
+      std::make_unique<protocol::Array<Network::SignedExchangeError>>();
   for (const auto& error : errors)
-    signed_exchange_errors->addItem(BuildSignedExchangeError(error));
+    signed_exchange_errors->emplace_back(BuildSignedExchangeError(error));
   return signed_exchange_errors;
+}
+
+base::Optional<Network::SetCookieBlockedReason>
+GetProtocolBlockedSetCookieReason(
+    net::CanonicalCookie::CookieInclusionStatus status) {
+  switch (status) {
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY:
+      return Network::SetCookieBlockedReasonEnum::SecureOnly;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT:
+      return Network::SetCookieBlockedReasonEnum::SameSiteStrict;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX:
+      return Network::SetCookieBlockedReasonEnum::SameSiteLax;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_EXTENDED:
+      return Network::SetCookieBlockedReasonEnum::SameSiteExtended;
+    case net::CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX:
+      return Network::SetCookieBlockedReasonEnum::
+          SameSiteUnspecifiedTreatedAsLax;
+    case net::CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_SAMESITE_NONE_INSECURE:
+      return Network::SetCookieBlockedReasonEnum::SameSiteNoneInsecure;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES:
+      return Network::SetCookieBlockedReasonEnum::UserPreferences;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE:
+      return Network::SetCookieBlockedReasonEnum::SyntaxError;
+    case net::CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_NONCOOKIEABLE_SCHEME:
+      return Network::SetCookieBlockedReasonEnum::SchemeNotSupported;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE:
+      return Network::SetCookieBlockedReasonEnum::OverwriteSecure;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN:
+      return Network::SetCookieBlockedReasonEnum::InvalidDomain;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX:
+      return Network::SetCookieBlockedReasonEnum::InvalidPrefix;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR:
+      return Network::SetCookieBlockedReasonEnum::UnknownError;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY:
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH:
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH:
+    case net::CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_OVERWRITE_HTTP_ONLY:
+    case net::CanonicalCookie::CookieInclusionStatus::INCLUDE:
+      return base::nullopt;
+  }
+}
+
+base::Optional<Network::CookieBlockedReason> GetProtocolBlockedCookieReason(
+    net::CanonicalCookie::CookieInclusionStatus status) {
+  switch (status) {
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY:
+      return Network::CookieBlockedReasonEnum::SecureOnly;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH:
+      return Network::CookieBlockedReasonEnum::NotOnPath;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH:
+      return Network::CookieBlockedReasonEnum::DomainMismatch;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT:
+      return Network::CookieBlockedReasonEnum::SameSiteStrict;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX:
+      return Network::CookieBlockedReasonEnum::SameSiteLax;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_EXTENDED:
+      return Network::CookieBlockedReasonEnum::SameSiteExtended;
+    case net::CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX:
+      return Network::CookieBlockedReasonEnum::SameSiteUnspecifiedTreatedAsLax;
+    case net::CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_SAMESITE_NONE_INSECURE:
+      return Network::CookieBlockedReasonEnum::SameSiteNoneInsecure;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES:
+      return Network::CookieBlockedReasonEnum::UserPreferences;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR:
+      return Network::CookieBlockedReasonEnum::UnknownError;
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE:
+    case net::CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_NONCOOKIEABLE_SCHEME:
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE:
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN:
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX:
+    case net::CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_OVERWRITE_HTTP_ONLY:
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY:
+    case net::CanonicalCookie::CookieInclusionStatus::INCLUDE:
+      return base::nullopt;
+  }
+}
+
+std::unique_ptr<Array<Network::BlockedSetCookieWithReason>>
+BuildProtocolBlockedSetCookies(const net::CookieAndLineStatusList& net_list) {
+  std::unique_ptr<Array<Network::BlockedSetCookieWithReason>> protocol_list =
+      std::make_unique<Array<Network::BlockedSetCookieWithReason>>();
+
+  for (const net::CookieAndLineWithStatus& cookie : net_list) {
+    base::Optional<Network::SetCookieBlockedReason> blocked_reason =
+        GetProtocolBlockedSetCookieReason(cookie.status);
+    if (!blocked_reason.has_value())
+      continue;
+
+    protocol_list->push_back(
+        Network::BlockedSetCookieWithReason::Create()
+            .SetBlockedReason(blocked_reason.value())
+            .SetCookieLine(cookie.cookie_string)
+            .SetCookie(cookie.cookie.has_value()
+                           ? BuildCookie(cookie.cookie.value())
+                           : nullptr)
+            .Build());
+  }
+  return protocol_list;
+}
+
+std::unique_ptr<Array<Network::BlockedCookieWithReason>>
+BuildProtocolBlockedCookies(const net::CookieStatusList& net_list) {
+  std::unique_ptr<Array<Network::BlockedCookieWithReason>> protocol_list =
+      std::make_unique<Array<Network::BlockedCookieWithReason>>();
+
+  bool samesite_by_default_enabled = base::FeatureList::IsEnabled(
+      net::features::kSameSiteByDefaultCookies);
+  bool must_be_secure_enabled = base::FeatureList::IsEnabled(
+      net::features::kCookiesWithoutSameSiteMustBeSecure);
+
+  for (const net::CookieWithStatus& cookie : net_list) {
+    // These CookieInclusionStatus values will be passed to us from network
+    // service even if the cookies were actually included - the actual
+    // inclusion depends on these flags. If the flags are disabled, then don't
+    // forward them to the frontend because they were not actually blocked.
+    if (!samesite_by_default_enabled) {
+      if (cookie.status == net::CanonicalCookie::CookieInclusionStatus::
+                               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) {
+        continue;
+      }
+      if (!must_be_secure_enabled &&
+          cookie.status == net::CanonicalCookie::CookieInclusionStatus::
+                               EXCLUDE_SAMESITE_NONE_INSECURE) {
+        continue;
+      }
+    }
+
+    base::Optional<Network::CookieBlockedReason> blocked_reason =
+        GetProtocolBlockedCookieReason(cookie.status);
+    if (!blocked_reason.has_value())
+      continue;
+
+    protocol_list->push_back(Network::BlockedCookieWithReason::Create()
+                                 .SetBlockedReason(blocked_reason.value())
+                                 .SetCookie(BuildCookie(cookie.cookie))
+                                 .Build());
+  }
+  return protocol_list;
 }
 
 }  // namespace
@@ -915,8 +1089,7 @@ NetworkHandler::NetworkHandler(
       bypass_service_worker_(false),
       cache_disabled_(false),
       update_loader_factories_callback_(
-          std::move(update_loader_factories_callback)),
-      weak_factory_(this) {
+          std::move(update_loader_factories_callback)) {
   DCHECK(io_context_);
   static bool have_configured_service_worker_context = false;
   if (have_configured_service_worker_context)
@@ -1325,15 +1498,14 @@ void NetworkHandler::SetCookies(
   }
 
   std::vector<std::unique_ptr<net::CanonicalCookie>> net_cookies;
-  for (size_t i = 0; i < cookies->length(); i++) {
-    Network::CookieParam* cookie = cookies->get(i);
+  for (const std::unique_ptr<Network::CookieParam>& cookie : *cookies) {
     std::unique_ptr<net::CanonicalCookie> net_cookie =
         MakeCookieFromProtocolValues(
             cookie->GetName(), cookie->GetValue(), cookie->GetUrl(""),
             cookie->GetDomain(""), cookie->GetPath(""),
             cookie->GetSecure(false), cookie->GetHttpOnly(false),
             cookie->GetSameSite(""), cookie->GetExpires(-1));
-    if (!cookie) {
+    if (!net_cookie) {
       callback->sendFailure(Response::InvalidParams("Invalid cookie fields"));
       return;
     }
@@ -1473,10 +1645,8 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
     const net::SSLInfo& ssl_info) {
   if (!ssl_info.cert)
     return nullptr;
-  std::unique_ptr<
-      protocol::Array<protocol::Network::SignedCertificateTimestamp>>
-      signed_certificate_timestamp_list =
-          protocol::Array<Network::SignedCertificateTimestamp>::create();
+  auto signed_certificate_timestamp_list =
+      std::make_unique<protocol::Array<Network::SignedCertificateTimestamp>>();
   for (auto const& sct : ssl_info.signed_certificate_timestamps) {
     std::unique_ptr<protocol::Network::SignedCertificateTimestamp>
         signed_certificate_timestamp =
@@ -1496,17 +1666,15 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
                     base::HexEncode(sct.sct->signature.signature_data.c_str(),
                                     sct.sct->signature.signature_data.length()))
                 .Build();
-    signed_certificate_timestamp_list->addItem(
+    signed_certificate_timestamp_list->emplace_back(
         std::move(signed_certificate_timestamp));
   }
   std::vector<std::string> san_dns;
   std::vector<std::string> san_ip;
   ssl_info.cert->GetSubjectAltName(&san_dns, &san_ip);
-  std::unique_ptr<Array<String>> san_list = Array<String>::create();
-  for (const std::string& san : san_dns)
-    san_list->addItem(san);
+  auto san_list = std::make_unique<protocol::Array<String>>(std::move(san_dns));
   for (const std::string& san : san_ip) {
-    san_list->addItem(
+    san_list->emplace_back(
         net::IPAddress(reinterpret_cast<const uint8_t*>(san.data()), san.size())
             .ToString());
   }
@@ -1844,8 +2012,8 @@ void NetworkHandler::OnSignedExchangeReceived(
 
     const SignedExchangeSignatureHeaderField::Signature& sig =
         envelope->signature();
-    std::unique_ptr<Array<Network::SignedExchangeSignature>> signatures =
-        Array<Network::SignedExchangeSignature>::create();
+    auto signatures =
+        std::make_unique<protocol::Array<Network::SignedExchangeSignature>>();
     std::unique_ptr<Network::SignedExchangeSignature> signature =
         Network::SignedExchangeSignature::Create()
             .SetLabel(sig.label)
@@ -1861,21 +2029,20 @@ void NetworkHandler::OnSignedExchangeReceived(
                                                sizeof(sig.cert_sha256->data)));
     }
     if (certificate) {
-      std::unique_ptr<Array<String>> encoded_certificates =
-          Array<String>::create();
-      std::string encoded;
+      auto encoded_certificates = std::make_unique<protocol::Array<String>>();
+      encoded_certificates->emplace_back();
       base::Base64Encode(
           net::x509_util::CryptoBufferAsStringPiece(certificate->cert_buffer()),
-          &encoded);
-      encoded_certificates->addItem(std::move(encoded));
+          &encoded_certificates->back());
       for (const auto& cert : certificate->intermediate_buffers()) {
+        encoded_certificates->emplace_back();
         base::Base64Encode(
-            net::x509_util::CryptoBufferAsStringPiece(cert.get()), &encoded);
-        encoded_certificates->addItem(std::move(encoded));
+            net::x509_util::CryptoBufferAsStringPiece(cert.get()),
+            &encoded_certificates->back());
       }
       signature->SetCertificates(std::move(encoded_certificates));
     }
-    signatures->addItem(std::move(signature));
+    signatures->emplace_back(std::move(signature));
 
     signed_exchange_info->SetHeader(
         Network::SignedExchangeHeader::Create()
@@ -1883,6 +2050,9 @@ void NetworkHandler::OnSignedExchangeReceived(
             .SetResponseCode(envelope->response_code())
             .SetResponseHeaders(Object::fromValue(headers_dict.get(), nullptr))
             .SetSignatures(std::move(signatures))
+            .SetHeaderIntegrity(
+                signed_exchange_utils::CreateHeaderIntegrityHashString(
+                    envelope->ComputeHeaderIntegrity()))
             .Build());
   }
   if (ssl_info)
@@ -1898,7 +2068,7 @@ void NetworkHandler::OnSignedExchangeReceived(
 DispatchResponse NetworkHandler::SetRequestInterception(
     std::unique_ptr<protocol::Array<protocol::Network::RequestPattern>>
         patterns) {
-  if (!patterns->length()) {
+  if (patterns->empty()) {
     interception_handle_.reset();
     if (url_loader_interceptor_) {
       url_loader_interceptor_.reset();
@@ -1908,19 +2078,20 @@ DispatchResponse NetworkHandler::SetRequestInterception(
   }
 
   std::vector<DevToolsNetworkInterceptor::Pattern> interceptor_patterns;
-  for (size_t i = 0; i < patterns->length(); ++i) {
+  for (const std::unique_ptr<protocol::Network::RequestPattern>& pattern :
+       *patterns) {
     base::flat_set<ResourceType> resource_types;
-    std::string resource_type = patterns->get(i)->GetResourceType("");
+    std::string resource_type = pattern->GetResourceType("");
     if (!resource_type.empty()) {
       if (!AddInterceptedResourceType(resource_type, &resource_types)) {
         return Response::InvalidParams(base::StringPrintf(
             "Cannot intercept resources of type '%s'", resource_type.c_str()));
       }
     }
-    interceptor_patterns.push_back(DevToolsNetworkInterceptor::Pattern(
-        patterns->get(i)->GetUrlPattern("*"), std::move(resource_types),
-        ToInterceptorStage(patterns->get(i)->GetInterceptionStage(
-            protocol::Network::InterceptionStageEnum::Request))));
+    interceptor_patterns.emplace_back(
+        pattern->GetUrlPattern("*"), std::move(resource_types),
+        ToInterceptorStage(pattern->GetInterceptionStage(
+            protocol::Network::InterceptionStageEnum::Request)));
   }
 
   if (!host_)
@@ -2223,11 +2394,12 @@ bool NetworkHandler::MaybeCreateProxyForInterception(
     const base::UnguessableToken& frame_token,
     bool is_navigation,
     bool is_download,
-    network::mojom::URLLoaderFactoryRequest* target_factory_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+        target_factory_receiver) {
   return url_loader_interceptor_ &&
          url_loader_interceptor_->CreateProxyForInterception(
              rph, frame_token, is_navigation, is_download,
-             target_factory_request);
+             target_factory_receiver);
 }
 
 void NetworkHandler::ApplyOverrides(net::HttpRequestHeaders* headers,
@@ -2290,6 +2462,33 @@ void NetworkHandler::SetNetworkConditions(
   background_sync_restorer_.reset(
       offline ? new BackgroundSyncRestorer(host_id_, storage_partition_)
               : nullptr);
+}
+
+void NetworkHandler::OnRequestWillBeSentExtraInfo(
+    const std::string& devtools_request_id,
+    const net::CookieStatusList& request_cookie_list,
+    const std::vector<network::mojom::HttpRawHeaderPairPtr>& request_headers) {
+  if (!enabled_)
+    return;
+
+  frontend_->RequestWillBeSentExtraInfo(
+      devtools_request_id, BuildProtocolBlockedCookies(request_cookie_list),
+      GetRawHeaders(request_headers));
+}
+
+void NetworkHandler::OnResponseReceivedExtraInfo(
+    const std::string& devtools_request_id,
+    const net::CookieAndLineStatusList& response_cookie_list,
+    const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
+    const base::Optional<std::string>& response_headers_text) {
+  if (!enabled_)
+    return;
+
+  frontend_->ResponseReceivedExtraInfo(
+      devtools_request_id, BuildProtocolBlockedSetCookies(response_cookie_list),
+      GetRawHeaders(response_headers),
+      response_headers_text.has_value() ? response_headers_text.value()
+                                        : Maybe<String>());
 }
 
 }  // namespace protocol

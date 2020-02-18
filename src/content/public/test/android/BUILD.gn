@@ -2,13 +2,12 @@ import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
 generate_jni("test_support_content_jni_headers") {
-  jni_package = "content/public/test"
   sources = [
     "javatests/src/org/chromium/content_public/browser/test/NestedSystemMessageHandler.java",
   ]
 }
 
-android_library("web_test_java_support") {
+android_library("android_test_message_pump_support_java") {
   testonly = true
   deps = [
     "//base:base_java",
@@ -19,7 +18,7 @@ android_library("web_test_java_support") {
 android_library("content_java_test_support") {
   testonly = true
   deps = [
-    ":web_test_java_support",
+    ":android_test_message_pump_support_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//content/public/android:content_java",
@@ -63,7 +62,6 @@ android_library("content_java_test_support") {
 
 generate_jni("content_test_jni") {
   testonly = true
-  jni_package = "content/public/test"
   sources = [
     "javatests/src/org/chromium/content_public/browser/test/InterstitialPageDelegateAndroid.java",
     "javatests/src/org/chromium/content_public/browser/test/RenderFrameHostTestExt.java",

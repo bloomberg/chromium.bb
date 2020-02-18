@@ -134,16 +134,20 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd,
     logging.info('All changes already pushed for %s. Exiting', cwd)
     return
 
-  # Add a failsafe check here.  Only CLs from the 'chrome-bot' user should
-  # be involved here.  If any other CLs are found then complain.
-  # In dryruns extra CLs are normal, though, and can be ignored.
-  bad_cl_cmd = ['log', '--format=short', '--perl-regexp',
-                '--author', '^(?!chrome-bot)', '%s..%s' % (
-                    remote_ref.ref, stable_branch)]
+  # Add a failsafe check here.  Only CLs from the 'chrome-bot' or
+  # 'chromeos-ci-prod' user should be involved here.  If any other CLs are
+  # found then complain. In dryruns extra CLs are normal, though, and can
+  # be ignored.
+  bad_cl_cmd = [
+      'log', '--format=short', '--perl-regexp', '--author',
+      '^(?!chrome-bot|chromeos-ci-prod)',
+      '%s..%s' % (remote_ref.ref, stable_branch)
+  ]
   bad_cls = git.RunGit(cwd, bad_cl_cmd).output
   if bad_cls.strip() and not dryrun:
-    logging.error('The Uprev stage found changes from users other than '
-                  'chrome-bot:\n\n%s', bad_cls)
+    logging.error(
+        'The Uprev stage found changes from users other than '
+        'chrome-bot or chromeos-ci-prod:\n\n%s', bad_cls)
     raise AssertionError('Unexpected CLs found during uprev stage.')
 
   if staging_branch is not None:
@@ -317,7 +321,7 @@ def _WorkOnPush(options, overlay_tracking_branch, git_project_overlays):
       its overlays.
   """
   inputs = [[options, overlays_per_project, overlay_tracking_branch]
-            for overlays_per_project in git_project_overlays.itervalues()]
+            for overlays_per_project in git_project_overlays.values()]
   parallel.RunTasksInProcessPool(_PushOverlays, inputs)
 
 
@@ -363,7 +367,7 @@ def _WorkOnCommit(options, overlays, overlay_tracking_branch,
 
     inputs = [[options, manifest, overlays_per_project, overlay_tracking_branch,
                overlay_ebuilds, revved_packages, new_package_atoms]
-              for overlays_per_project in git_project_overlays.itervalues()]
+              for overlays_per_project in git_project_overlays.values()]
     parallel.RunTasksInProcessPool(_CommitOverlays, inputs)
 
     chroot_path = os.path.join(options.buildroot, constants.DEFAULT_CHROOT_DIR)

@@ -13,4 +13,10 @@
   METADATA_ACCESSORS_INTERNAL(class_name) \
   METADATA_CLASS_INTERNAL(class_name)
 
+// A version of METADATA_HEADER for View, the root of the metadata hierarchy.
+// Here METADATA_ACCESSORS_INTERNAL_BASE is called.
+#define METADATA_HEADER_BASE(class_name)       \
+  METADATA_ACCESSORS_INTERNAL_BASE(class_name) \
+  METADATA_CLASS_INTERNAL(class_name)
+
 #endif  // UI_VIEWS_METADATA_METADATA_HEADER_MACROS_H_

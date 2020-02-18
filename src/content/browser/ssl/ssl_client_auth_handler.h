@@ -64,6 +64,11 @@ class SSLClientAuthHandler {
   // Selects a certificate and resumes the URL request with that certificate.
   void SelectCertificate();
 
+  // Sets a UI-thread callback that can be used to close the UI associated with
+  // this certificate selection. The callback is run when SSLClientAuthHandler
+  // is destroyed.
+  void SetCancellationCallback(base::OnceClosure callback);
+
   // Called to continue the request associated with |handler| using |cert|. This
   // is static to avoid deleting |handler| while it is on the stack.
   static void ContinueWithCertificate(
@@ -87,6 +92,10 @@ class SSLClientAuthHandler {
   // ClientCertStore is in progress.
   scoped_refptr<Core> core_;
 
+  // A callback that may be set by the UI implementation. If set, the callback
+  // will cancel the dialog corresponding to this certificate request.
+  base::OnceClosure cancellation_callback_;
+
   ResourceRequestInfo::WebContentsGetter web_contents_getter_;
 
   // The certs to choose from.
@@ -95,7 +104,7 @@ class SSLClientAuthHandler {
   // The delegate to call back with the result.
   Delegate* delegate_;
 
-  base::WeakPtrFactory<SSLClientAuthHandler> weak_factory_;
+  base::WeakPtrFactory<SSLClientAuthHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientAuthHandler);
 };

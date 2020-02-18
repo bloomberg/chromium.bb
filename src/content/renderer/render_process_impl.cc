@@ -43,7 +43,9 @@
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
 #endif
-
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86_64)
+#include "v8/include/v8-wasm-trap-handler-posix.h"
+#endif
 namespace {
 
 void SetV8FlagIfFeature(const base::Feature& feature, const char* v8_flag) {
@@ -152,9 +154,6 @@ RenderProcessImpl::RenderProcessImpl()
                           "--no-harmony-sharedarraybuffer");
   }
 
-  SetV8FlagIfFeature(features::kBlinkHeapUnifiedGCScheduling,
-                     "--global-gc-scheduling");
-
   SetV8FlagIfNotFeature(features::kWebAssemblyTrapHandler,
                         "--no-wasm-trap-handler");
 #if defined(OS_LINUX) && defined(ARCH_CPU_X86_64)
@@ -164,7 +163,7 @@ RenderProcessImpl::RenderProcessImpl()
             service_manager::switches::kDisableInProcessStackTraces)) {
       // Only enable WebAssembly trap handler if we can set the callback.
       if (base::debug::SetStackDumpFirstChanceCallback(
-              v8::V8::TryHandleSignal)) {
+              v8::TryHandleWebAssemblyTrapPosix)) {
         // We registered the WebAssembly trap handler callback with the stack
         // dump signal handler successfully. We can tell V8 that it can enable
         // WebAssembly trap handler without using the V8 signal handler.

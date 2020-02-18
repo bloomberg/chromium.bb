@@ -59,7 +59,7 @@ static base::FilePath test_dir(const std::string& sub_dir) {
   return dir.AppendASCII(kWebAppDefaultApps).AppendASCII(sub_dir);
 }
 
-using InstallOptionsList = std::vector<web_app::InstallOptions>;
+using InstallOptionsList = std::vector<web_app::ExternalInstallOptions>;
 
 }  // namespace
 
@@ -107,7 +107,7 @@ class ScanDirForExternalWebAppsTest : public testing::Test {
     return result;
   }
 
-  std::vector<web_app::InstallOptions> ScanTestDirForExternalWebApps(
+  std::vector<web_app::ExternalInstallOptions> ScanTestDirForExternalWebApps(
       const std::string& dir) {
     return web_app::ScanDirForExternalWebAppsForTesting(test_dir(dir),
                                                         CreateProfile().get());
@@ -181,12 +181,12 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
   // chrome_platform_status.json and google_io_2016.json.
   // google_io_2016.json is missing a "create_shortcuts" field, so the default
   // value of false should be used.
-  std::vector<web_app::InstallOptions> test_install_options_list;
+  std::vector<web_app::ExternalInstallOptions> test_install_options_list;
   {
-    web_app::InstallOptions install_options(
+    web_app::ExternalInstallOptions install_options(
         GURL("https://www.chromestatus.com/features"),
         web_app::LaunchContainer::kTab,
-        web_app::InstallSource::kExternalDefault);
+        web_app::ExternalInstallSource::kExternalDefault);
     install_options.add_to_applications_menu = true;
     install_options.add_to_desktop = true;
     install_options.add_to_quick_launch_bar = true;
@@ -194,10 +194,10 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
     test_install_options_list.push_back(std::move(install_options));
   }
   {
-    web_app::InstallOptions install_options(
+    web_app::ExternalInstallOptions install_options(
         GURL("https://events.google.com/io2016/?utm_source=web_app_manifest"),
         web_app::LaunchContainer::kWindow,
-        web_app::InstallSource::kExternalDefault);
+        web_app::ExternalInstallSource::kExternalDefault);
     install_options.add_to_applications_menu = false;
     install_options.add_to_desktop = false;
     install_options.add_to_quick_launch_bar = false;
@@ -207,7 +207,7 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
 
   EXPECT_EQ(test_install_options_list.size(), install_options_list.size());
   for (const auto install_option : test_install_options_list) {
-    EXPECT_TRUE(base::ContainsValue(install_options_list, install_option));
+    EXPECT_TRUE(base::Contains(install_options_list, install_option));
   }
 }
 

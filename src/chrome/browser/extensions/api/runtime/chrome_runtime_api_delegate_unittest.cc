@@ -51,7 +51,7 @@ class TestEventRouter : public EventRouter {
 
   bool ExtensionHasEventListener(const std::string& extension_id,
                                  const std::string& event_name) const override {
-    return base::ContainsKey(fake_registry_, Entry(extension_id, event_name));
+    return base::Contains(fake_registry_, Entry(extension_id, event_name));
   }
 
   // Pretend that |extension_id| is listening for |event_name|.

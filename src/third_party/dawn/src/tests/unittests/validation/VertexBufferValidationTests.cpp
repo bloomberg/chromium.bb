@@ -24,7 +24,7 @@ class VertexBufferValidationTest : public ValidationTest {
         void SetUp() override {
             ValidationTest::SetUp();
 
-            fsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+            fsModule = utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) out vec4 fragColor;
                 void main() {
@@ -45,18 +45,18 @@ class VertexBufferValidationTest : public ValidationTest {
             return buffers;
         }
 
-        dawn::ShaderModule MakeVertexShader(unsigned int numBuffers) {
+        dawn::ShaderModule MakeVertexShader(unsigned int bufferCount) {
             std::ostringstream vs;
             vs << "#version 450\n";
-            for (unsigned int i = 0; i < numBuffers; ++i) {
+            for (unsigned int i = 0; i < bufferCount; ++i) {
                 vs << "layout(location = " << i << ") in vec3 a_position" << i << ";\n";
             }
             vs << "void main() {\n";
 
             vs << "gl_Position = vec4(";
-            for (unsigned int i = 0; i < numBuffers; ++i) {
+            for (unsigned int i = 0; i < bufferCount; ++i) {
                 vs << "a_position" << i;
-                if (i != numBuffers - 1) {
+                if (i != bufferCount - 1) {
                     vs << " + ";
                 }
             }
@@ -64,23 +64,23 @@ class VertexBufferValidationTest : public ValidationTest {
 
             vs << "}\n";
 
-            return utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, vs.str().c_str());
+            return utils::CreateShaderModule(device, utils::ShaderStage::Vertex, vs.str().c_str());
         }
 
         dawn::RenderPipeline MakeRenderPipeline(const dawn::ShaderModule& vsModule,
-                                                unsigned int numBuffers) {
+                                                unsigned int bufferCount) {
             utils::ComboRenderPipelineDescriptor descriptor(device);
             descriptor.cVertexStage.module = vsModule;
             descriptor.cFragmentStage.module = fsModule;
 
-            for (unsigned int i = 0; i < numBuffers; ++i) {
+            for (unsigned int i = 0; i < bufferCount; ++i) {
+                descriptor.cVertexInput.cBuffers[i].attributeCount = 1;
+                descriptor.cVertexInput.cBuffers[i].attributes =
+                    &descriptor.cVertexInput.cAttributes[i];
                 descriptor.cVertexInput.cAttributes[i].shaderLocation = i;
-                descriptor.cVertexInput.cAttributes[i].inputSlot = i;
                 descriptor.cVertexInput.cAttributes[i].format = dawn::VertexFormat::Float3;
-                descriptor.cVertexInput.cBuffers[i].inputSlot = i;
             }
-            descriptor.cVertexInput.numBuffers = numBuffers;
-            descriptor.cVertexInput.numAttributes = numBuffers;
+            descriptor.cVertexInput.bufferCount = bufferCount;
 
             return device.CreateRenderPipeline(&descriptor);
         }

@@ -23,7 +23,7 @@ class ProxyConnection(IntegrationTest):
         histogram_part)
       histogram = test_driver.GetBrowserHistogram(histogram_name)
       if histogram:
-        self.assertEqual(1, histogram['count'])
+        self.assertLessEqual(1, histogram['count'])
         is_histogram_found = True
     self.assertTrue(is_histogram_found)
 

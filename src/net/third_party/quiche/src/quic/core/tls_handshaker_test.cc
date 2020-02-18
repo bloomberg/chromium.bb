@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "net/third_party/quiche/src/quic/core/crypto/tls_client_connection.h"
+#include "net/third_party/quiche/src/quic/core/crypto/tls_server_connection.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quiche/src/quic/core/tls_server_handshaker.h"
@@ -84,9 +86,9 @@ class FakeProofVerifier : public ProofVerifier {
   // run.
   class FailingProofVerifierCallback : public ProofVerifierCallback {
    public:
-    void Run(bool ok,
-             const std::string& error_details,
-             std::unique_ptr<ProofVerifyDetails>* details) override {
+    void Run(bool /*ok*/,
+             const std::string& /*error_details*/,
+             std::unique_ptr<ProofVerifyDetails>* /*details*/) override {
       FAIL();
     }
   };
@@ -210,7 +212,7 @@ class TestQuicCryptoClientStream : public TestQuicCryptoStream {
   explicit TestQuicCryptoClientStream(QuicSession* session)
       : TestQuicCryptoStream(session),
         proof_verifier_(new FakeProofVerifier),
-        ssl_ctx_(TlsClientHandshaker::CreateSslCtx()),
+        ssl_ctx_(TlsClientConnection::CreateSslCtx()),
         handshaker_(new TlsClientHandshaker(
             this,
             session,
@@ -242,7 +244,7 @@ class TestQuicCryptoServerStream : public TestQuicCryptoStream {
                              FakeProofSource* proof_source)
       : TestQuicCryptoStream(session),
         proof_source_(proof_source),
-        ssl_ctx_(TlsServerHandshaker::CreateSslCtx()),
+        ssl_ctx_(TlsServerConnection::CreateSslCtx()),
         handshaker_(new TlsServerHandshaker(this,
                                             session,
                                             ssl_ctx_.get(),
@@ -273,33 +275,22 @@ void ExchangeHandshakeMessages(TestQuicCryptoStream* client,
   }
 }
 
-ParsedQuicVersionVector AllTlsSupportedVersions() {
-  SetQuicReloadableFlag(quic_enable_version_99, true);
-  SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
-  ParsedQuicVersionVector supported_versions;
-  for (QuicTransportVersion version : kSupportedTransportVersions) {
-    if (!QuicVersionUsesCryptoFrames(version)) {
-      // The TLS handshake is only deployable if CRYPTO frames are also used.
-      continue;
-    }
-    supported_versions.push_back(ParsedQuicVersion(PROTOCOL_TLS1_3, version));
-  }
-  return supported_versions;
-}
-
 class TlsHandshakerTest : public QuicTest {
  public:
   TlsHandshakerTest()
-      : client_conn_(new MockQuicConnection(&conn_helper_,
-                                            &alarm_factory_,
-                                            Perspective::IS_CLIENT,
-                                            AllTlsSupportedVersions())),
-        server_conn_(new MockQuicConnection(&conn_helper_,
-                                            &alarm_factory_,
-                                            Perspective::IS_SERVER,
-                                            AllTlsSupportedVersions())),
+      : client_conn_(new MockQuicConnection(
+            &conn_helper_,
+            &alarm_factory_,
+            Perspective::IS_CLIENT,
+            {ParsedQuicVersion(PROTOCOL_TLS1_3, QUIC_VERSION_99)})),
+        server_conn_(new MockQuicConnection(
+            &conn_helper_,
+            &alarm_factory_,
+            Perspective::IS_SERVER,
+            {ParsedQuicVersion(PROTOCOL_TLS1_3, QUIC_VERSION_99)})),
         client_session_(client_conn_, /*create_mock_crypto_stream=*/false),
         server_session_(server_conn_, /*create_mock_crypto_stream=*/false) {
+    SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
     client_stream_ = new TestQuicCryptoClientStream(&client_session_);
     client_session_.SetCryptoStream(client_stream_);
     server_stream_ =

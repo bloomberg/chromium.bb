@@ -34,6 +34,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_drag_dest_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -41,9 +42,12 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/dragdrop/drop_target_event.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_sink.h"
@@ -87,9 +91,26 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
         shell()->web_contents());
   }
 
+  void SetUpOnMainThread() override {
+    // Setup the server to allow serving separate sites, so we can perform
+    // cross-process navigation.
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitchASCII(switches::kTouchEventFeatureDetection,
                            switches::kTouchEventFeatureDetectionEnabled);
+  }
+
+  void OnDropComplete(RenderWidgetHostImpl* target_rwh,
+                      const DropData& drop_data,
+                      const gfx::PointF& client_pt,
+                      const gfx::PointF& screen_pt,
+                      int key_modifiers,
+                      bool drop_allowed) {
+    // Cache the data for verification.
+    drop_target_widget_ = target_rwh;
+    std::move(async_drop_closure_).Run();
   }
 
   void TestOverscrollNavigation(bool touch_handler) {
@@ -224,12 +245,37 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   void StopObserveringFrames() { frame_observer_.reset(); }
 
  protected:
+  class MockWebDragDestDelegate : public WebDragDestDelegate {
+   public:
+    void DragInitialize(WebContents* contents) override {
+      drag_initialize_called_ = true;
+    }
+    void OnDragOver() override {}
+    void OnDragEnter() override {}
+    void OnDrop() override {}
+    void OnDragLeave() override {}
+    void OnReceiveDragData(const ui::OSExchangeData& data) override {}
+
+    void Reset() { drag_initialize_called_ = false; }
+    bool GetDragInitializeCalled() { return drag_initialize_called_; }
+
+   private:
+    bool drag_initialize_called_ = false;
+  };
+
   // ContentBrowserTest:
   void PostRunTestOnMainThread() override {
     // Delete this before the WebContents is destroyed.
     StopObserveringFrames();
     ContentBrowserTest::PostRunTestOnMainThread();
   }
+
+  RenderWidgetHostImpl* drop_target_widget_;
+
+  // A closure indicating that async drop operation has completed.
+  base::OnceClosure async_drop_closure_;
+
+  MockWebDragDestDelegate drag_dest_delegate_;
 
  private:
   std::unique_ptr<RenderFrameSubmissionObserver> frame_observer_;
@@ -254,10 +300,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollNavigation) {
 // On Linux, the test frequently times out. (See crbug.com/440043).
 #if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_OverscrollNavigationWithTouchHandler \
-        DISABLED_OverscrollNavigationWithTouchHandler
+  DISABLED_OverscrollNavigationWithTouchHandler
 #else
 #define MAYBE_OverscrollNavigationWithTouchHandler \
-        OverscrollNavigationWithTouchHandler
+  OverscrollNavigationWithTouchHandler
 #endif
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        MAYBE_OverscrollNavigationWithTouchHandler) {
@@ -369,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 // Flaky on CrOS as well: https://crbug.com/856079
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_QuickOverscrollDirectionChange \
-        DISABLED_QuickOverscrollDirectionChange
+  DISABLED_QuickOverscrollDirectionChange
 #else
 #define MAYBE_QuickOverscrollDirectionChange QuickOverscrollDirectionChange
 #endif
@@ -487,6 +533,79 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   window->AddChild(shell()->web_contents()->GetContentNativeView());
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, DragDropOnOopif) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/overlapping_cross_site_iframe.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContentsImpl* contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  WebContentsViewAura* view =
+      static_cast<WebContentsViewAura*>(contents->GetView());
+
+  view->SetDragDestDelegateForTesting(&drag_dest_delegate_);
+
+  // Drop on the root frame.
+  {
+    drag_dest_delegate_.Reset();
+    std::unique_ptr<ui::OSExchangeData> data =
+        std::make_unique<ui::OSExchangeData>();
+    view->RegisterDropCallbackForTesting(base::BindOnce(
+        &WebContentsViewAuraTest::OnDropComplete, base::Unretained(this)));
+    base::RunLoop run_loop;
+    async_drop_closure_ = run_loop.QuitClosure();
+
+    gfx::PointF point = {10, 10};
+    ui::DropTargetEvent event(*data.get(), point, point,
+                              ui::DragDropTypes::DRAG_COPY);
+    view->OnDragEntered(event);
+    EXPECT_TRUE(drag_dest_delegate_.GetDragInitializeCalled());
+    view->OnPerformDrop(event, std::move(data));
+
+    run_loop.Run();
+
+    EXPECT_EQ(drop_target_widget_,
+              RenderWidgetHostImpl::From(contents->GetFrameTree()
+                                             ->root()
+                                             ->current_frame_host()
+                                             ->GetRenderWidgetHost()));
+  }
+  // Drop on the element in the root frame overlapping the embedded OOPIF.
+  {
+    drag_dest_delegate_.Reset();
+    std::unique_ptr<ui::OSExchangeData> data =
+        std::make_unique<ui::OSExchangeData>();
+    view->RegisterDropCallbackForTesting(base::BindOnce(
+        &WebContentsViewAuraTest::OnDropComplete, base::Unretained(this)));
+    base::RunLoop run_loop;
+    async_drop_closure_ = run_loop.QuitClosure();
+
+    int left =
+        EvalJs(contents,
+               "document.getElementById('target').getBoundingClientRect().left")
+            .ExtractInt();
+    int top =
+        EvalJs(contents,
+               "document.getElementById('target').getBoundingClientRect().top")
+            .ExtractInt();
+    gfx::PointF point = {left + 5, top + 5};
+    ui::DropTargetEvent event(*data.get(), point, point,
+                              ui::DragDropTypes::DRAG_COPY);
+    view->OnDragEntered(event);
+    EXPECT_TRUE(drag_dest_delegate_.GetDragInitializeCalled());
+    view->OnPerformDrop(event, std::move(data));
+
+    run_loop.Run();
+
+    EXPECT_EQ(drop_target_widget_,
+              RenderWidgetHostImpl::From(contents->GetFrameTree()
+                                             ->root()
+                                             ->current_frame_host()
+                                             ->GetRenderWidgetHost()));
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ContentWindowClose) {
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
 
@@ -584,14 +703,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
   std::unique_ptr<aura::Window> window(new aura::Window(nullptr));
   window->Init(ui::LAYER_NOT_DRAWN);
-
-  RenderWidgetHostViewAura* rwhva =
-      static_cast<RenderWidgetHostViewAura*>(
-          shell()->web_contents()->GetRenderWidgetHostView());
-  rwhva->ResetHasSnappedToBoundary();
-  EXPECT_FALSE(rwhva->has_snapped_to_boundary());
   window->AddChild(shell()->web_contents()->GetNativeView());
-  EXPECT_TRUE(rwhva->has_snapped_to_boundary());
 }
 
 // Flaky on some platforms, likely for the same reason as other flaky overscroll

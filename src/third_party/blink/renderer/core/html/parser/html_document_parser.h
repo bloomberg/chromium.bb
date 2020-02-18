@@ -159,8 +159,8 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool IsWaitingForScripts() const final;
   bool IsExecutingScript() const final;
   void ExecuteScriptsWaitingForResources() final;
-  void DidAddPendingStylesheetInBody() final;
-  void DidLoadAllBodyStylesheets() final;
+  void DidAddPendingParserBlockingStylesheet() final;
+  void DidLoadAllPendingParserBlockingStylesheets() final;
   void CheckIfBodyStylesheetAdded();
   void DocumentElementAvailable() override;
 
@@ -248,7 +248,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   base::WeakPtr<BackgroundHTMLParser> background_parser_;
   Member<HTMLResourcePreloader> preloader_;
   PreloadRequestStream queued_preloads_;
-  TimeTicks appcache_queueing_start_time_;
 
   // If this is non-null, then there is a meta CSP token somewhere in the
   // speculation buffer. Preloads will be deferred until a token matching this
@@ -268,10 +267,10 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   unsigned pump_speculations_session_nesting_level_;
   bool is_parsing_at_line_number_;
   bool tried_loading_link_headers_;
-  bool added_pending_stylesheet_in_body_;
+  bool added_pending_parser_blocking_stylesheet_;
   bool is_waiting_for_stylesheets_;
 
-  base::WeakPtrFactory<HTMLDocumentParser> weak_factory_;
+  base::WeakPtrFactory<HTMLDocumentParser> weak_factory_{this};
 };
 
 }  // namespace blink

@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/grit/renderer_resources.h"
+#include "chrome/renderer/extensions/accessibility_private_hooks_delegate.h"
 #include "chrome/renderer/extensions/app_hooks_delegate.h"
 #include "chrome/renderer/extensions/cast_streaming_native_handler.h"
 #include "chrome/renderer/extensions/extension_hooks_delegate.h"
@@ -111,6 +112,7 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
 void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
     extensions::ResourceBundleSourceMap* source_map) {
   // Custom bindings.
+  source_map->RegisterSource("action", IDR_ACTION_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("browserAction",
                              IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("declarativeContent",
@@ -270,4 +272,7 @@ void ChromeExtensionsDispatcherDelegate::InitializeBindingsSystem(
   bindings->GetHooksForAPI("tabs")->SetDelegate(
       std::make_unique<extensions::TabsHooksDelegate>(
           bindings_system->messaging_service()));
+  bindings->GetHooksForAPI("accessibilityPrivate")
+      ->SetDelegate(
+          std::make_unique<extensions::AccessibilityPrivateHooksDelegate>());
 }

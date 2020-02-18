@@ -226,6 +226,27 @@ def FindOverlays(overlay_type, board=None, buildroot=constants.SOURCE_ROOT):
     return []
 
 
+def FindOverlaysForBoards(overlay_type, boards):
+  """Convenience function to find the overlays for multiple boards.
+
+  Unlike FindOverlays, there is no guarantee about the overlay ordering.
+  Produces a unique list of overlays.
+
+  Args:
+    overlay_type (str): Type of overlays to search. See FindOverlays.
+    boards (list[str]): The list of boards to compile a the overlays for.
+
+  Returns:
+    list[str] - The list of unique overlays from all boards.
+  """
+  overlays = set()
+  for board in boards:
+    board_overlays = FindOverlays(overlay_type, board=board)
+    overlays |= set(board_overlays)
+
+  return list(overlays)
+
+
 def FindOverlayFile(filename, overlay_type='both', board=None,
                     buildroot=constants.SOURCE_ROOT):
   """Attempt to find a file in the overlay directories.
@@ -799,8 +820,8 @@ class EBuild(object):
 
     subdir_paths = []
     subtree_paths = []
-    rows = zip(localnames, projects, srcpaths, subdirs, subtrees)
-    for local, project, srcpath, subdir, subtree in rows:
+    for local, project, srcpath, subdir, subtree in zip(
+        localnames, projects, srcpaths, subdirs, subtrees):
 
       if srcpath:
         subdir_path = os.path.join(srcbase, srcpath)
@@ -990,8 +1011,8 @@ class EBuild(object):
     info = self.GetSourceInfo(srcroot, manifest)
     srcdirs = info.srcdirs
     subtrees = info.subtrees
-    commit_ids = map(self.GetCommitId, srcdirs)
-    tree_ids = map(self.GetTreeId, subtrees)
+    commit_ids = [self.GetCommitId(x) for x in srcdirs]
+    tree_ids = [self.GetTreeId(x) for x in subtrees]
     variables = dict(CROS_WORKON_COMMIT=self.FormatBashArray(commit_ids),
                      CROS_WORKON_TREE=self.FormatBashArray(tree_ids))
 
@@ -1798,7 +1819,7 @@ def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
   # Asserting the directory name of the ebuild matches the package name.
   mismatches = []
   ret = dict(zip(packages_list, ebuilds_results))
-  for full_package_name, ebuild_path in ret.iteritems():
+  for full_package_name, ebuild_path in ret.items():
     cpv = SplitCPV(full_package_name, strict=False)
     path_category, path_package_name, _ = SplitEbuildPath(ebuild_path)
     if not ((cpv.category is None or path_category == cpv.category) and

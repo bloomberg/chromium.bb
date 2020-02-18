@@ -142,7 +142,7 @@ A group of tasks can be executed in one of the following ways:
   at a time on any thread.
 * [Single Threaded](#Posting-Multiple-Tasks-to-the-Same-Thread): Tasks executed
   in posting order, one at a time on a single thread.
-   * [COM Single Threaded](#Posting-Tasks-to-a-COM-Single-Thread-Apartment-STA_Thread-Windows_):
+   * [COM Single Threaded](#Posting-Tasks-to-a-COM-Single_Thread-Apartment-STA_Thread-Windows):
      A variant of single threaded with COM initialized.
 
 ### Prefer Sequences to Physical Threads
@@ -369,7 +369,7 @@ be the main thread or the IO thread, post them to a `base::SingleThreadTaskRunne
 created by `base::CreateSingleThreadTaskRunnerWithTraits`.
 
 ```cpp
-scoped_refptr<SequencedTaskRunner> single_thread_task_runner =
+scoped_refptr<SingleThreadTaskRunner> single_thread_task_runner =
     base::CreateSingleThreadTaskRunnerWithTraits(...);
 
 // TaskB runs after TaskA completes. Both tasks run on the same thread.
@@ -588,8 +588,6 @@ int Compute() { … }
 
 class A {
  public:
-  A() : weak_ptr_factory_(this) {}
-
   void ComputeAndStore() {
     // Schedule a call to Compute() in a thread pool followed by
     // a call to A::Store() on the current sequence. The call to
@@ -604,7 +602,7 @@ class A {
   void Store(int value) { value_ = value; }
 
   int value_;
-  base::WeakPtrFactory<A> weak_ptr_factory_;
+  base::WeakPtrFactory<A> weak_ptr_factory_{this};
 };
 ```
 

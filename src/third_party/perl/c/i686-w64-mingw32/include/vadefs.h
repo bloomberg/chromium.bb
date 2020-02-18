@@ -1,18 +1,18 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_VADEFS
 #define _INC_VADEFS
 
-#ifndef _WIN32
-#error Only Win32 target is supported!
-#endif
-
 #include <_mingw.h>
 
+#ifndef __WIDL__
+#undef _CRT_PACKING
+#define _CRT_PACKING 8
 #pragma pack(push,_CRT_PACKING)
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,7 +31,7 @@ extern "C" {
   typedef __gnuc_va_list va_list;
 #elif defined(_MSC_VER)
   typedef char *  va_list;
-#else /* !gcc && !msvc */
+#elif !defined(__WIDL__)
 #error VARARGS not implemented for this compiler
 #endif
 #endif /* _VA_LIST_DEFINED */
@@ -99,7 +99,9 @@ extern "C" {
 }
 #endif
 
+#ifndef __WIDL__
 #pragma pack(pop)
+#endif
 
 #endif /* _INC_VADEFS */
 

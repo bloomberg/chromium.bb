@@ -485,7 +485,7 @@ public class DownloadNotificationService {
     void updateNotification(int id, Notification notification) {
         // TODO(b/65052774): Add back NOTIFICATION_NAMESPACE when able to.
         // Disabling StrictMode to avoid violations (crbug.com/789134).
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             mNotificationManager.notify(id, notification);
         }
     }
@@ -512,10 +512,6 @@ public class DownloadNotificationService {
                         ? NotificationUmaTracker.SystemNotificationType.DOWNLOAD_PAGES
                         : NotificationUmaTracker.SystemNotificationType.DOWNLOAD_FILES,
                 notification);
-
-        // Record the number of other notifications when there's a new notification.
-        DownloadNotificationUmaHelper.recordExistingNotificationsCountHistogram(
-                mDownloadSharedPreferenceHelper.getEntries().size(), true /* withForeground */);
     }
 
     private static boolean canResumeDownload(Context context, DownloadSharedPreferenceEntry entry) {
@@ -713,7 +709,7 @@ public class DownloadNotificationService {
     private void cancelOffTheRecordDownloads() {
         boolean cancelActualDownload =
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()
+                        .isFullBrowserStarted()
                 && Profile.getLastUsedProfile().hasOffTheRecordProfile();
 
         List<DownloadSharedPreferenceEntry> entries = mDownloadSharedPreferenceHelper.getEntries();

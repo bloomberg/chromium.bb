@@ -102,6 +102,15 @@ class ExpandedValueBase {
     }
   }
 
+  // Compute the smallest value greater than |this| value whose lower bits are
+  // those of |x|.
+  template <typename ShortUnsigned>
+  Subclass ExpandGreaterThan(ShortUnsigned x) const {
+    const Subclass maximum_possible_result(
+        value_ + std::numeric_limits<ShortUnsigned>::max() + 1);
+    return maximum_possible_result.ExpandLessThanOrEqual(x);
+  }
+
   // Compute the value closest to |this| value whose lower bits are those of
   // |x|.  The result is always within |max_distance_for_expansion()| of |this|
   // value.  The purpose of this method is to re-instantiate an original value

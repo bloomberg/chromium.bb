@@ -29,16 +29,9 @@ UIImage* FakeGetCachedAvatarForIdentity(ChromeIdentity*) {
   return provider ? provider->GetDefaultAvatar() : nil;
 }
 
-void FakeGetHostedDomainForIdentity(ChromeIdentity* identity,
-                                    ios::GetHostedDomainCallback callback) {
-  NSString* domain = base::SysUTF8ToNSString(gaia::ExtractDomainName(
+NSString* FakeGetHostedDomainForIdentity(ChromeIdentity* identity) {
+  return base::SysUTF8ToNSString(gaia::ExtractDomainName(
       gaia::CanonicalizeEmail(base::SysNSStringToUTF8(identity.userEmail))));
-
-  // |GetHostedDomainForIdentity| is normally an asynchronous operation , this
-  // is replicated here by dispatching it.
-  dispatch_async(dispatch_get_main_queue(), ^{
-    callback(domain, nil);
-  });
 }
 }
 
@@ -98,7 +91,7 @@ void FakeGetHostedDomainForIdentity(ChromeIdentity* identity,
 @end
 
 namespace ios {
-NSString* const kIdentityEmailFormat = @"%@@foo.com";
+NSString* const kIdentityEmailFormat = @"%@@gmail.com";
 NSString* const kIdentityGaiaIDFormat = @"%@ID";
 
 FakeChromeIdentityService::FakeChromeIdentityService()
@@ -113,15 +106,20 @@ FakeChromeIdentityService::GetInstanceFromChromeProvider() {
       ios::GetChromeBrowserProvider()->GetChromeIdentityService());
 }
 
-UINavigationController*
-FakeChromeIdentityService::CreateAccountDetailsController(
+DismissASMViewControllerBlock
+FakeChromeIdentityService::PresentAccountDetailsController(
     ChromeIdentity* identity,
-    id<ChromeIdentityBrowserOpener> browser_opener) {
+    UIViewController* viewController,
+    BOOL animated) {
   UIViewController* accountDetailsViewController =
       [[FakeAccountDetailsViewController alloc] initWithIdentity:identity];
-  UINavigationController* navigationController = [[UINavigationController alloc]
-      initWithRootViewController:accountDetailsViewController];
-  return navigationController;
+  [viewController presentViewController:accountDetailsViewController
+                               animated:animated
+                             completion:nil];
+  return ^(BOOL animated) {
+    [accountDetailsViewController dismissViewControllerAnimated:animated
+                                                     completion:nil];
+  };
 }
 
 ChromeIdentityInteractionManager*
@@ -234,7 +232,22 @@ void FakeChromeIdentityService::GetAvatarForIdentity(
 void FakeChromeIdentityService::GetHostedDomainForIdentity(
     ChromeIdentity* identity,
     GetHostedDomainCallback callback) {
-  FakeGetHostedDomainForIdentity(identity, callback);
+  NSString* domain = FakeGetHostedDomainForIdentity(identity);
+  // |GetHostedDomainForIdentity| is normally an asynchronous operation , this
+  // is replicated here by dispatching it.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    callback(domain, nil);
+  });
+}
+
+NSString* FakeChromeIdentityService::GetCachedHostedDomainForIdentity(
+    ChromeIdentity* identity) {
+  NSString* domain =
+      ChromeIdentityService::GetCachedHostedDomainForIdentity(identity);
+  if (domain) {
+    return domain;
+  }
+  return FakeGetHostedDomainForIdentity(identity);
 }
 
 void FakeChromeIdentityService::SetUpForIntegrationTests() {}

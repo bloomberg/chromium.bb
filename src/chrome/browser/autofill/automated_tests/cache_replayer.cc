@@ -14,6 +14,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/values.h"
 #include "services/network/public/cpp/data_element.h"
@@ -42,6 +43,12 @@ inline std::string MakeHTTPTextFromSplit(
 inline bool FailOnError(int options) {
   return static_cast<bool>(options &
                            ServerCacheReplayer::kOptionFailOnInvalidJsonRecord);
+}
+
+// Determines whether replayer should fail if there is nothing to fill the cache
+// with.
+inline bool FailOnEmpty(int options) {
+  return static_cast<bool>(options & ServerCacheReplayer::kOptionFailOnEmpty);
 }
 
 // Checks the validity of a json value node.
@@ -153,25 +160,55 @@ bool PopulateCacheFromJsonRequestsNode(const base::Value& requests_node,
   return true;
 }
 
+struct QueryNode {
+  // Query URL.
+  std::string url = "";
+  // Value node with requests mapped with |url|.
+  const base::Value* node = nullptr;
+};
+
+// TODO(crbug/958125): Add the possibility to retrieve nodes with different
+// Query URLs.
+// Finds the Autofill server Query node in dictionary node. Gives nullptr if
+// cannot find the node or |domain_dict| is invalid. The |domain_dict| has to
+// outlive any usage of the returned value node pointers.
+std::vector<QueryNode> FindAutofillQueryNodesInDomainDict(
+    const base::Value& domain_dict) {
+  if (!domain_dict.is_dict()) {
+    return {};
+  }
+  std::vector<QueryNode> nodes;
+  for (const auto& pair : domain_dict.DictItems()) {
+    if (pair.first.find("https://clients1.google.com/tbproxy/af/query") !=
+        std::string::npos) {
+      nodes.push_back(QueryNode{pair.first, &pair.second});
+    }
+  }
+  return nodes;
+}
+
 // Populates the cache mapping request keys to their corresponding compressed
 // response.
-bool PopulateCacheFromJSONFile(const base::FilePath& json_file_path,
-                               int options,
-                               ServerCache* cache_to_fill) {
+ServerCacheReplayer::Status PopulateCacheFromJSONFile(
+    const base::FilePath& json_file_path,
+    int options,
+    ServerCache* cache_to_fill) {
   // Read json file.
   std::string json_text;
   {
     if (!base::ReadFileToString(json_file_path, &json_text)) {
-      VLOG(1) << "Could not read json file: " << json_file_path;
-      return false;
+      return ServerCacheReplayer::Status{
+          ServerCacheReplayer::StatusCode::kBadRead,
+          "Could not read json file: "};
     }
   }
 
   // Decompress the json text from gzip.
   std::string decompressed_json_text;
   if (!compression::GzipUncompress(json_text, &decompressed_json_text)) {
-    VLOG(1) << "Could not gzip decompress json in file: " << json_file_path;
-    return false;
+    return ServerCacheReplayer::Status{
+        ServerCacheReplayer::StatusCode::kBadRead,
+        "Could not gzip decompress json in file: "};
   }
 
   // Parse json text content to json value node.
@@ -182,35 +219,74 @@ bool PopulateCacheFromJSONFile(const base::FilePath& json_file_path,
             decompressed_json_text, JSONParserOptions::JSON_PARSE_RFC);
     if (value_with_error.error_code !=
         JSONReader::JsonParseError::JSON_NO_ERROR) {
-      VLOG(1) << "Could not load cache from json file " << json_file_path
-              << " because: " << value_with_error.error_message;
-      return false;
+      return ServerCacheReplayer::Status{
+          ServerCacheReplayer::StatusCode::kBadRead,
+          base::StrCat({"Could not load cache from json file ",
+                        "because: ", value_with_error.error_message})};
     }
     if (value_with_error.value == base::nullopt) {
-      VLOG(1) << "JSON Reader could not give any node object from json file "
-              << json_file_path;
-      return false;
+      return ServerCacheReplayer::Status{
+          ServerCacheReplayer::StatusCode::kBadRead,
+          "JSON Reader could not give any node object from json file"};
     }
     root_node = std::move(value_with_error.value.value());
   }
 
-  // Get requests node and populate the cache.
   {
-    const base::Value* requests_node =
-        root_node.FindPath({"Requests", "clients1.google.com",
-                            "https://clients1.google.com/tbproxy/af/query?"});
-    if (!CheckNodeValidity(requests_node,
-                           "Requests->clients1.google.com->https://"
-                           "clients1.google.com/tbproxy/af/query?",
-                           base::Value::Type::LIST)) {
-      return false;
+    const char* const domain = "clients1.google.com";
+    const base::Value* domain_node = root_node.FindPath({"Requests", domain});
+    if (domain_node == nullptr) {
+      return ServerCacheReplayer::Status{
+          ServerCacheReplayer::StatusCode::kEmpty,
+          base::StrCat({"there were no nodes with autofill query content in "
+                        "domain node \"",
+                        domain, "\""})};
     }
+    std::vector<QueryNode> query_nodes =
+        FindAutofillQueryNodesInDomainDict(*domain_node);
 
-    // Populate cache.
-    PopulateCacheFromJsonRequestsNode(*requests_node, options, cache_to_fill);
+    // Fill cache with the content of each Query node. There are 3 possible
+    // situations: (1) there is a single Query node that contains POST requests
+    // that share the same URL, (2) there is one Query node per GET request
+    // were each Query node only contains one request, and (3) a mix of (1) and
+    // (2). Exit early with false whenever there is an error parsing a node.
+    for (auto query_node : query_nodes) {
+      if (!CheckNodeValidity(query_node.node,
+                             "Requests->clients1.google.com->clients1.google."
+                             "com/tbproxy/af/query*",
+                             base::Value::Type::LIST)) {
+        return ServerCacheReplayer::Status{
+            ServerCacheReplayer::StatusCode::kBadNode,
+            "could not read node content for node with URL " + query_node.url};
+      }
+
+      // Populate cache from Query node content.
+      PopulateCacheFromJsonRequestsNode(*query_node.node, options,
+                                        cache_to_fill);
+      VLOG(1) << "Filled cache with " << query_node.node->GetList().size()
+              << " requests for Query node with URL: " << query_node.url;
+    }
   }
 
-  return true;
+  // Return error iff there are no Query nodes and replayer is set to fail on
+  // empty.
+  if (cache_to_fill->empty() && FailOnEmpty(options)) {
+    return ServerCacheReplayer::Status{
+        ServerCacheReplayer::StatusCode::kEmpty,
+        "there were no nodes with autofill query content for autofill server "
+        "domains in JSON"};
+  }
+
+  return ServerCacheReplayer::Status{ServerCacheReplayer::StatusCode::kOk, ""};
+}
+
+// Gets a hexadecimal representation of a string.
+std::string GetHexString(const std::string& input) {
+  std::string output("0x");
+  for (auto byte : input) {
+    base::StringAppendF(&output, "%02x", static_cast<unsigned char>(byte));
+  }
+  return output;
 }
 
 // Decompressed HTTP response read from WPR capture file. Will set
@@ -226,7 +302,7 @@ bool DecompressHTTPResponse(const std::string& http_text,
   // Look if there is a body to decompress, if not just return HTTP text as is.
   if (header_and_body.second == "") {
     *decompressed_http = http_text;
-    VLOG(1) << "There is no HTTP body to decompress: " << http_text;
+    VLOG(1) << "There is no HTTP body to decompress" << http_text;
     return true;
   }
   // TODO(crbug.com/945925): Add compression format detection, return an
@@ -236,7 +312,7 @@ bool DecompressHTTPResponse(const std::string& http_text,
   if (!compression::GzipUncompress(header_and_body.second,
                                    &decompressed_body)) {
     VLOG(1) << "Could not gzip decompress HTTP response: "
-            << header_and_body.second;
+            << GetHexString(header_and_body.second);
     return false;
   }
   // Rebuild the response HTTP text by using the new decompressed body.
@@ -293,8 +369,12 @@ ServerCacheReplayer::~ServerCacheReplayer() {}
 
 ServerCacheReplayer::ServerCacheReplayer(const base::FilePath& json_file_path,
                                          int options) {
-  DCHECK(PopulateCacheFromJSONFile(json_file_path, options, &cache_))
-      << "could not populate cache from invalid json";
+  // Using CHECK is fine here since ServerCacheReplayer will only be used for
+  // testing and we prefer the test to crash than being in an inconsistent state
+  // when the cache could not be properly populated from the JSON file.
+  ServerCacheReplayer::Status status =
+      PopulateCacheFromJSONFile(json_file_path, options, &cache_);
+  CHECK(status.Ok()) << status.message;
 }
 
 ServerCacheReplayer::ServerCacheReplayer(ServerCache server_cache)
@@ -308,7 +388,7 @@ bool ServerCacheReplayer::GetResponseForQuery(
     return false;
   }
   std::string key = GetKeyFromQueryRequest(query);
-  if (!base::ContainsKey(const_cache_, key)) {
+  if (!base::Contains(const_cache_, key)) {
     VLOG(1) << "Did not match any response for " << key;
     return false;
   }
@@ -317,7 +397,7 @@ bool ServerCacheReplayer::GetResponseForQuery(
   // mutation done when there is concurrency.
   const std::string& http_response = const_cache_.at(key);
   if (!DecompressHTTPResponse(http_response, &decompressed_http_response)) {
-    VLOG(1) << "Could not decompress " << http_response;
+    VLOG(1) << "Could not decompress http response";
     return false;
   }
   *http_text = decompressed_http_response;
@@ -331,7 +411,10 @@ ServerUrlLoader::ServerUrlLoader(
           [&](content::URLLoaderInterceptor::RequestParams* params) -> bool {
             return InterceptAutofillRequest(params);
           })) {
-  DCHECK(cache_replayer_ != nullptr);
+  // Using CHECK is fine here since ServerCacheReplayer will only be used for
+  // testing and we prefer the test to crash with a CHECK rather than
+  // segfaulting with a stack trace that can be hard to read.
+  CHECK(cache_replayer_);
 }
 
 ServerUrlLoader::~ServerUrlLoader() {}
@@ -351,14 +434,32 @@ bool ServerUrlLoader::InterceptAutofillRequest(
   // Parse HTTP request body to proto.
   VLOG(1) << "Intercepted in-flight request to Autofill Server: "
           << resource_request.url.spec();
+
+  // TODO(crbug/958158): Extract URL content for GET Query requests.
+  // Look if the body has data.
+  if (resource_request.request_body == nullptr) {
+    constexpr char kNoBodyHTTPErrorHeaders[] = "HTTP/2.0 400 Bad Request";
+    constexpr char kNoBodyHTTPErrorBody[] =
+        "there is no body data in the request";
+    VLOG(1) << "Served Autofill error response: " << kNoBodyHTTPErrorBody;
+    content::URLLoaderInterceptor::WriteResponse(
+        std::string(kNoBodyHTTPErrorHeaders), std::string(kNoBodyHTTPErrorBody),
+        params->client.get());
+    return true;
+  }
+
   std::string http_body =
       GetStringFromDataElements(resource_request.request_body->elements());
   AutofillQueryContents query_request;
-  query_request.ParseFromString(http_body);
-  DCHECK(query_request.ParseFromString(http_body))
+  // Using CHECK is fine here since ServerCacheReplayer will only be used for
+  // testing and we prefer the test to crash rather than missing the cache
+  // because the HTTP body could not be parsed back to a Query request proto,
+  // which can be caused by bad data in the request from the browser during
+  // capture replay.
+  CHECK(query_request.ParseFromString(http_body))
       << "could not parse HTTP request body to AutofillQueryContents "
          "proto: "
-      << http_body;
+      << GetHexString(http_body);
 
   // Get response from cache using query request proto as key.
   std::string http_response;
@@ -367,7 +468,7 @@ bool ServerUrlLoader::InterceptAutofillRequest(
     constexpr char kNoKeyMatchHTTPErrorHeaders[] = "HTTP/2.0 404 Not Found";
     constexpr char kNoKeyMatchHTTPErrorBody[] =
         "could not find response matching request";
-    VLOG(1) << kNoKeyMatchHTTPErrorBody << ": " << http_body;
+    VLOG(1) << "Served Autofill error response: " << kNoKeyMatchHTTPErrorBody;
     content::URLLoaderInterceptor::WriteResponse(
         std::string(kNoKeyMatchHTTPErrorHeaders),
         std::string(kNoKeyMatchHTTPErrorBody), params->client.get());

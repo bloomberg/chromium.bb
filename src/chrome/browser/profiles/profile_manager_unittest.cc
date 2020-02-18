@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,7 +41,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/account_id/account_id.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -98,15 +97,16 @@ class UnittestProfileManager : public ProfileManagerWithoutInit {
     return new TestingProfile(file_path, nullptr);
   }
 
-  Profile* CreateProfileAsyncHelper(const base::FilePath& path,
-                                    Delegate* delegate) override {
+  std::unique_ptr<Profile> CreateProfileAsyncHelper(
+      const base::FilePath& path,
+      Delegate* delegate) override {
     // ThreadTaskRunnerHandle::Get() is TestingProfile's "async" IOTaskRunner
     // (ref. TestingProfile::GetIOTaskRunner()).
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(base::IgnoreResult(&base::CreateDirectory), path));
 
-    return new TestingProfile(path, this);
+    return std::make_unique<TestingProfile>(path, this);
   }
 };
 
@@ -522,22 +522,24 @@ TEST_F(ProfileManagerTest, AddProfileToStorageCheckOmitted) {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   const base::FilePath supervised_path =
       temp_dir_.GetPath().AppendASCII("Supervised");
-  TestingProfile* supervised_profile =
-      new TestingProfile(supervised_path, nullptr);
+  auto supervised_profile =
+      std::make_unique<TestingProfile>(supervised_path, nullptr);
   supervised_profile->GetPrefs()->SetString(
       prefs::kSupervisedUserId, supervised_users::kChildAccountSUID);
 
   // RegisterTestingProfile adds the profile to the cache and takes ownership.
-  profile_manager->RegisterTestingProfile(supervised_profile, true, false);
+  profile_manager->RegisterTestingProfile(std::move(supervised_profile), true,
+                                          false);
   ASSERT_EQ(1u, storage.GetNumberOfProfiles());
   EXPECT_TRUE(storage.GetAllProfilesAttributesSortedByName()[0]->IsOmitted());
 #endif
 
   const base::FilePath nonsupervised_path =
       temp_dir_.GetPath().AppendASCII("Non-Supervised");
-  TestingProfile* nonsupervised_profile =
-      new TestingProfile(nonsupervised_path, nullptr);
-  profile_manager->RegisterTestingProfile(nonsupervised_profile, true, false);
+  auto nonsupervised_profile =
+      std::make_unique<TestingProfile>(nonsupervised_path, nullptr);
+  profile_manager->RegisterTestingProfile(std::move(nonsupervised_profile),
+                                          true, false);
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   EXPECT_EQ(2u, storage.GetNumberOfProfiles());
@@ -897,7 +899,7 @@ TEST_F(ProfileManagerTest, GetLastUsedProfileAllowedByPolicy) {
   ASSERT_TRUE(profile);
   EXPECT_FALSE(profile->IsOffTheRecord());
   PrefService* prefs = profile->GetPrefs();
-  EXPECT_EQ(IncognitoModePrefs::ENABLED,
+  EXPECT_EQ(IncognitoModePrefs::kDefaultAvailability,
             IncognitoModePrefs::GetAvailability(prefs));
 
   ASSERT_TRUE(profile->GetOffTheRecordProfile());
@@ -1363,10 +1365,10 @@ TEST_F(ProfileManagerTest, LastProfileDeletedWithGuestActiveProfile) {
   TestingProfile::Builder builder;
   builder.SetGuestSession();
   builder.SetPath(ProfileManager::GetGuestProfilePath());
-  TestingProfile* guest_profile = builder.Build().release();
+  std::unique_ptr<TestingProfile> guest_profile = builder.Build();
   guest_profile->set_profile_name(guest_profile_name);
-  // Registering the profile passes ownership to the ProfileManager.
-  profile_manager->RegisterTestingProfile(guest_profile, false, false);
+  profile_manager->RegisterTestingProfile(std::move(guest_profile), false,
+                                          false);
 
   // The Guest profile does not get added to the ProfileAttributesStorage.
   EXPECT_EQ(2u, profile_manager->GetLoadedProfiles().size());

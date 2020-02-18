@@ -9,12 +9,8 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_impl.h"
-#include "chrome/browser/performance_manager/graph/node_attached_data_impl.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
+#include "chrome/browser/performance_manager/public/graph/node_attached_data.h"
 
 namespace performance_manager {
 
@@ -43,15 +39,17 @@ int GetSecondsSinceLastReportAndUpdate(const base::TimeTicks now,
 
 // Adds |count| samples of the given |value| to the linear histogram with the
 // provided |name|. Assumes the enum starts at 0, and ends at
-// EnumType::kMaxValue inclusively.
-template <typename EnumType>
-void AddCountsToHistogram(const char* name, EnumType value, int count) {
+// EnumType::kMaxValue inclusively. This is templated on the histogram name so
+// that each histogram gets a distinct static histogram pointer.
+template <const char* kName, typename EnumType>
+void AddCountsToHistogram(EnumType value, int count) {
   static constexpr int32_t kMaxValue =
       static_cast<int32_t>(EnumType::kMaxValue);
-  auto* histogram = base::LinearHistogram::FactoryGet(
-      name, 0, kMaxValue, kMaxValue + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->AddCount(static_cast<int32_t>(value), count);
+  STATIC_HISTOGRAM_POINTER_BLOCK(
+      kName, AddCount(static_cast<int32_t>(value), count),
+      base::LinearHistogram::FactoryGet(
+          kName, 0, kMaxValue, kMaxValue + 1,
+          base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
 }  // namespace
@@ -59,18 +57,13 @@ void AddCountsToHistogram(const char* name, EnumType value, int count) {
 // Wrapper around ProcessData providing storage. Keeps the impl details out of
 // the header.
 struct IsolationContextMetricsProcessDataImpl
-    : public NodeAttachedDataImpl<IsolationContextMetricsProcessDataImpl> {
-  struct Traits : public NodeAttachedDataInMap<ProcessNodeImpl> {};
-
+    : public ExternalNodeAttachedDataImpl<
+          IsolationContextMetricsProcessDataImpl> {
+  explicit IsolationContextMetricsProcessDataImpl(
+      const ProcessNode* process_node) {}
   ~IsolationContextMetricsProcessDataImpl() override = default;
 
   IsolationContextMetrics::ProcessData process_data;
-
- private:
-  friend class NodeAttachedDataImpl<IsolationContextMetricsProcessDataImpl>;
-
-  explicit IsolationContextMetricsProcessDataImpl(
-      const ProcessNodeImpl* process_node) {}
 
   DISALLOW_COPY_AND_ASSIGN(IsolationContextMetricsProcessDataImpl);
 };
@@ -80,11 +73,11 @@ constexpr base::TimeDelta IsolationContextMetrics::kReportingInterval;
 
 // static
 const char IsolationContextMetrics::kProcessDataByTimeHistogramName[] =
-    "PerformanceManager.FrameSiteInstanceProcessRelationship.ByTime";
+    "PerformanceManager.FrameSiteInstanceProcessRelationship.ByTime2";
 
 // static
 const char IsolationContextMetrics::kProcessDataByProcessHistogramName[] =
-    "PerformanceManager.FrameSiteInstanceProcessRelationship.ByProcess";
+    "PerformanceManager.FrameSiteInstanceProcessRelationship.ByProcess2";
 
 // static
 const char
@@ -95,6 +88,14 @@ const char
 // static
 const char IsolationContextMetrics::kBrowsingInstanceDataByTimeHistogramName[] =
     "PerformanceManager.BrowsingInstancePluralityVisibilityState.ByTime";
+
+// static
+const char IsolationContextMetrics::kFramesPerRendererByTimeHistogram[] =
+    "PerformanceManager.FramesPerRendererByTime";
+
+// static
+const char IsolationContextMetrics::kSiteInstancesPerRendererByTimeHistogram[] =
+    "PerformanceManager.SiteInstancesPerRendererByTime";
 
 IsolationContextMetrics::IsolationContextMetrics() = default;
 
@@ -109,98 +110,70 @@ void IsolationContextMetrics::StartTimer() {
                           base::Unretained(this)));
 }
 
-void IsolationContextMetrics::OnRegistered() {
-  StartTimer();
-}
-
-void IsolationContextMetrics::OnUnregistered() {
-  reporting_timer_.Stop();
-
-  // Drain all metrics on shutdown to avoid losing the tail.
-  OnReportingTimerFired();
-}
-
-bool IsolationContextMetrics::ShouldObserve(const NodeBase* node) {
-  // Track all pages, frames and processes.
-  if (node->type() == NodeTypeEnum::kFrame ||
-      node->type() == NodeTypeEnum::kPage ||
-      node->type() == NodeTypeEnum::kProcess) {
-    return true;
-  }
-  return false;
-}
-
-void IsolationContextMetrics::OnNodeAdded(NodeBase* node) {
+void IsolationContextMetrics::OnFrameNodeAdded(const FrameNode* frame_node) {
   // Track frame node births and use that to keep ProcessData up to date.
-  if (node->type() == NodeTypeEnum::kFrame) {
-    const auto* frame_node = FrameNodeImpl::FromNodeBase(node);
-    ChangeFrameCount(frame_node, 1);
+  ChangeFrameCount(frame_node, 1);
 
-    // This should be impossible, as frame nodes are created not current, and
-    // are added to the graph before |is_current| is set.
-    DCHECK(!frame_node->is_current());
-  }
+  // This should be impossible, as frame nodes are created not current, and
+  // are added to the graph before |IsCurrent| is set.
+  DCHECK(!frame_node->IsCurrent());
 }
 
-void IsolationContextMetrics::OnBeforeNodeRemoved(NodeBase* node) {
+void IsolationContextMetrics::OnBeforeFrameNodeRemoved(
+    const FrameNode* frame_node) {
   // Track frame node deaths and use that to keep ProcessData up to date.
-  if (node->type() == NodeTypeEnum::kFrame) {
-    const auto* frame_node = FrameNodeImpl::FromNodeBase(node);
-    ChangeFrameCount(frame_node, -1);
+  ChangeFrameCount(frame_node, -1);
 
-    // If the frame is the current main frame of a page, then remove the page
-    // from the browsing instance as well.
-    if (frame_node->IsMainFrame() && frame_node->is_current()) {
-      ChangePageCount(frame_node->page_node(),
-                      frame_node->browsing_instance_id(), -1);
-    }
-  } else if (node->type() == NodeTypeEnum::kProcess) {
-    // Track process death and use that to report whether or not the process
-    // ever hosted frames from the same site instance. The ProcessData will only
-    // exist for renderer processes that ever actually hosted frames.
-    const auto* process_node = ProcessNodeImpl::FromNodeBase(node);
-    if (auto* process_data = ProcessData::Get(process_node)) {
-      const auto state =
-          process_data->has_hosted_multiple_frames_with_same_site_instance
-              ? ProcessDataState::kSomeFramesHaveSameSiteInstance
-              : ProcessDataState::kAllFramesHaveDistinctSiteInstances;
-      UMA_HISTOGRAM_ENUMERATION(kProcessDataByProcessHistogramName, state);
-    }
+  // If the frame is the current main frame of a page, then remove the page
+  // from the browsing instance as well.
+  if (frame_node->IsMainFrame() && frame_node->IsCurrent()) {
+    ChangePageCount(frame_node->GetPageNode(),
+                    frame_node->GetBrowsingInstanceId(), -1);
   }
 }
 
-void IsolationContextMetrics::OnIsCurrentChanged(FrameNodeImpl* frame_node) {
+void IsolationContextMetrics::OnIsCurrentChanged(const FrameNode* frame_node) {
   if (!frame_node->IsMainFrame())
     return;
 
-  const auto* page_node = frame_node->page_node();
+  const auto* page_node = frame_node->GetPageNode();
   DCHECK(page_node);
-  const int32_t browsing_instance_id = frame_node->browsing_instance_id();
+  const int32_t browsing_instance_id = frame_node->GetBrowsingInstanceId();
 
-  const int delta = frame_node->is_current() ? 1 : -1;
+  const int delta = frame_node->IsCurrent() ? 1 : -1;
   ChangePageCount(page_node, browsing_instance_id, delta);
 }
 
-void IsolationContextMetrics::OnIsVisibleChanged(PageNodeImpl* page_node) {
+void IsolationContextMetrics::OnPassedToGraph(Graph* graph) {
+  graph_ = graph;
+  RegisterObservers(graph);
+}
+
+void IsolationContextMetrics::OnTakenFromGraph(Graph* graph) {
+  UnregisterObservers(graph);
+  graph_ = nullptr;
+}
+
+void IsolationContextMetrics::OnIsVisibleChanged(const PageNode* page_node) {
   // If there is no current main frame node associated with the page, we will
   // capture the visibility event when a node is added and made current via
   // "OnIsCurrentChanged".
   const auto* frame_node = page_node->GetMainFrameNode();
-  if (!frame_node || !frame_node->is_current())
+  if (!frame_node || !frame_node->IsCurrent())
     return;
 
   // Get the data related to this browsing instance. Since there is a current
   // main frame it must already have existed.
-  DCHECK(base::ContainsKey(browsing_instance_data_,
-                           frame_node->browsing_instance_id()));
-  auto* data = &browsing_instance_data_[frame_node->browsing_instance_id()];
+  DCHECK(base::Contains(browsing_instance_data_,
+                        frame_node->GetBrowsingInstanceId()));
+  auto* data = &browsing_instance_data_[frame_node->GetBrowsingInstanceId()];
   const BrowsingInstanceDataState old_state =
       GetBrowsingInstanceDataState(data);
   const int old_page_count = data->page_count;
   DCHECK_NE(BrowsingInstanceDataState::kUndefined, old_state);
   DCHECK_LT(0, data->page_count);
 
-  if (page_node->is_visible()) {
+  if (page_node->IsVisible()) {
     ++data->visible_page_count;
     DCHECK_LE(data->visible_page_count, data->page_count);
   } else {
@@ -221,14 +194,50 @@ void IsolationContextMetrics::OnIsVisibleChanged(PageNodeImpl* page_node) {
   }
 }
 
+void IsolationContextMetrics::OnBeforeProcessNodeRemoved(
+    const ProcessNode* process_node) {
+  // Track process death and use that to report whether or not the process
+  // ever hosted frames from the same site instance. The ProcessData will only
+  // exist for renderer processes that ever actually hosted frames.
+  if (auto* process_data = ProcessData::Get(process_node)) {
+    auto state = ProcessDataState::kOnlyOneFrameExists;
+    if (process_data->has_hosted_multiple_frames) {
+      state = process_data->has_hosted_multiple_frames_with_same_site_instance
+                  ? ProcessDataState::kSomeFramesHaveSameSiteInstance
+                  : ProcessDataState::kAllFramesHaveDistinctSiteInstances;
+    }
+    UMA_HISTOGRAM_ENUMERATION(kProcessDataByProcessHistogramName, state);
+  }
+}
+
+void IsolationContextMetrics::RegisterObservers(Graph* graph) {
+  graph->AddFrameNodeObserver(this);
+  graph->AddPageNodeObserver(this);
+  graph->AddProcessNodeObserver(this);
+  StartTimer();
+}
+
+void IsolationContextMetrics::UnregisterObservers(Graph* graph) {
+  graph->RemoveFrameNodeObserver(this);
+  graph->RemovePageNodeObserver(this);
+  graph->RemoveProcessNodeObserver(this);
+
+  // Drain all metrics on shutdown to avoid losing the tail.
+  reporting_timer_.Stop();
+  OnReportingTimerFired();
+}
+
 // static
 IsolationContextMetrics::ProcessDataState
 IsolationContextMetrics::GetProcessDataState(const ProcessData* process_data) {
   if (process_data->site_instance_frame_count.empty())
     return ProcessDataState::kUndefined;
 
-  if (process_data->multi_frame_site_instance_count == 0)
+  if (process_data->multi_frame_site_instance_count == 0) {
+    if (process_data->site_instance_frame_count.size() == 1)
+      return ProcessDataState::kOnlyOneFrameExists;
     return ProcessDataState::kAllFramesHaveDistinctSiteInstances;
+  }
 
   return ProcessDataState::kSomeFramesHaveSameSiteInstance;
 }
@@ -239,27 +248,51 @@ void IsolationContextMetrics::ReportProcessData(ProcessData* process_data,
                                                 base::TimeTicks now) {
   const int seconds =
       GetSecondsSinceLastReportAndUpdate(now, kReportingInterval, process_data);
-  if (seconds)
-    AddCountsToHistogram(kProcessDataByTimeHistogramName, state, seconds);
+  if (seconds) {
+    AddCountsToHistogram<kProcessDataByTimeHistogramName>(state, seconds);
+
+    // The following are effectively UMA_HISTOGRAM_COUNTS_100, but using
+    // AddCount rather than Add.
+    STATIC_HISTOGRAM_POINTER_BLOCK(
+        kFramesPerRendererByTimeHistogram,
+        AddCount(process_data->frame_count, seconds),
+        base::Histogram::FactoryGet(
+            kFramesPerRendererByTimeHistogram, 1, 100, 50,
+            base::HistogramBase::kUmaTargetedHistogramFlag));
+
+    STATIC_HISTOGRAM_POINTER_BLOCK(
+        kSiteInstancesPerRendererByTimeHistogram,
+        AddCount(process_data->site_instance_frame_count.size(), seconds),
+        base::Histogram::FactoryGet(
+            kSiteInstancesPerRendererByTimeHistogram, 1, 100, 50,
+            base::HistogramBase::kUmaTargetedHistogramFlag));
+  }
 }
 
 void IsolationContextMetrics::ReportAllProcessData(base::TimeTicks now) {
-  for (const auto* process_node : graph()->GetAllProcessNodes()) {
+  for (const auto* process_node : graph_->GetAllProcessNodes()) {
     auto* process_data = ProcessData::Get(process_node);
     if (process_data)
       ReportProcessData(process_data, GetProcessDataState(process_data), now);
   }
 }
 
-void IsolationContextMetrics::ChangeFrameCount(const FrameNodeImpl* frame_node,
+void IsolationContextMetrics::ChangeFrameCount(const FrameNode* frame_node,
                                                int delta) {
   DCHECK(delta == -1 || delta == 1);
-  const auto* process_node = frame_node->process_node();
+  const auto* process_node = frame_node->GetProcessNode();
   auto* data = ProcessData::GetOrCreate(process_node);
   const auto old_state = GetProcessDataState(data);
 
+  if (delta == 1) {
+    if (++data->frame_count > 1)
+      data->has_hosted_multiple_frames = true;
+  } else {
+    --data->frame_count;
+  }
+
   auto iter = data->site_instance_frame_count
-                  .insert(std::make_pair(frame_node->site_instance_id(), 0))
+                  .insert(std::make_pair(frame_node->GetSiteInstanceId(), 0))
                   .first;
 
   DCHECK_LE(0, iter->second);
@@ -316,10 +349,10 @@ void IsolationContextMetrics::ReportBrowsingInstanceData(
       now, kReportingInterval, browsing_instance_data);
   if (seconds) {
     DCHECK_LT(0, page_count);
-    AddCountsToHistogram(kBrowsingInstanceDataByPageTimeHistogramName, state,
-                         seconds * page_count);
-    AddCountsToHistogram(kBrowsingInstanceDataByTimeHistogramName, state,
-                         seconds);
+    AddCountsToHistogram<kBrowsingInstanceDataByPageTimeHistogramName>(
+        state, seconds * page_count);
+    AddCountsToHistogram<kBrowsingInstanceDataByTimeHistogramName>(state,
+                                                                   seconds);
   }
 }
 
@@ -332,7 +365,7 @@ void IsolationContextMetrics::ReportAllBrowsingInstanceData(
   }
 }
 
-void IsolationContextMetrics::ChangePageCount(const PageNodeImpl* page_node,
+void IsolationContextMetrics::ChangePageCount(const PageNode* page_node,
                                               int32_t browsing_instance_id,
                                               int delta) {
   DCHECK(delta == -1 || delta == 1);
@@ -351,7 +384,7 @@ void IsolationContextMetrics::ChangePageCount(const PageNodeImpl* page_node,
   DCHECK_LE(0, data->visible_page_count);
   DCHECK_LE(data->visible_page_count, data->page_count);
   data->page_count += delta;
-  if (page_node->is_visible())
+  if (page_node->IsVisible())
     data->visible_page_count += delta;
   DCHECK_LE(0, data->page_count);
   DCHECK_LE(0, data->visible_page_count);
@@ -390,7 +423,7 @@ IsolationContextMetrics::ProcessData::~ProcessData() = default;
 
 // static
 IsolationContextMetrics::ProcessData* IsolationContextMetrics::ProcessData::Get(
-    const ProcessNodeImpl* process_node) {
+    const ProcessNode* process_node) {
   auto* impl = IsolationContextMetricsProcessDataImpl::Get(process_node);
   if (!impl)
     return nullptr;
@@ -400,7 +433,7 @@ IsolationContextMetrics::ProcessData* IsolationContextMetrics::ProcessData::Get(
 // static
 IsolationContextMetrics::ProcessData*
 IsolationContextMetrics::ProcessData::GetOrCreate(
-    const ProcessNodeImpl* process_node) {
+    const ProcessNode* process_node) {
   return &IsolationContextMetricsProcessDataImpl::GetOrCreate(process_node)
               ->process_data;
 }

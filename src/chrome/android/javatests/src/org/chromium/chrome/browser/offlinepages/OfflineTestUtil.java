@@ -100,14 +100,26 @@ public class OfflineTestUtil {
         final AtomicReference<ArrayList<OfflineItem>> result =
                 new AtomicReference<ArrayList<OfflineItem>>();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            OfflineContentAggregatorFactory
-                    .forProfile(Profile.getLastUsedProfile().getOriginalProfile())
-                    .getAllItems(items -> {
-                        result.set(items);
-                        finished.notifyCalled();
-                    });
+            OfflineContentAggregatorFactory.get().getAllItems(items -> {
+                result.set(items);
+                finished.notifyCalled();
+            });
         });
         finished.waitForCallback(0);
+        return result.get();
+    }
+
+    public static byte[] getRawThumbnail(long offlineId)
+            throws TimeoutException, InterruptedException {
+        final AtomicReference<byte[]> result = new AtomicReference<>();
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            nativeGetRawThumbnail(offlineId, (byte[] rawThumbnail) -> {
+                result.set(rawThumbnail);
+                callbackHelper.notifyCalled();
+            });
+        });
+        callbackHelper.waitForCallback(0);
         return result.get();
     }
 
@@ -168,13 +180,19 @@ public class OfflineTestUtil {
                 () -> { nativeSetPrefetchingEnabledByServer(enabled); });
     }
 
+    public static void setGCMTokenForTesting(String gcmToken) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> { nativeSetGCMTokenForTesting(gcmToken); });
+    }
+
     private static native void nativeGetRequestsInQueue(Callback<SavePageRequest[]> callback);
     private static native void nativeGetAllPages(
             List<OfflinePageItem> offlinePages, final Callback<List<OfflinePageItem>> callback);
+    private static native void nativeGetRawThumbnail(long offlineId, Callback<byte[]> callback);
     private static native void nativeStartRequestCoordinatorProcessing();
     private static native void nativeInterceptWithOfflineError(String url, Runnable readyRunnable);
     private static native void nativeClearIntercepts();
     private static native void nativeDumpRequestCoordinatorState(Callback<String> callback);
     private static native void nativeWaitForConnectivityState(boolean connected, Runnable callback);
     private static native void nativeSetPrefetchingEnabledByServer(boolean enabled);
+    private static native void nativeSetGCMTokenForTesting(String gcmToken);
 }

@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -26,8 +25,7 @@ namespace {
 bool IsValidMimeType(const String& mime_type) {
   if (mime_type.StartsWith('.'))
     return true;
-  return net::ParseMimeTypeWithoutParameter(
-      StringUTF8Adaptor(mime_type).AsStdString(), nullptr, nullptr);
+  return net::ParseMimeTypeWithoutParameter(mime_type.Utf8(), nullptr, nullptr);
 }
 
 bool VerifyFiles(const Vector<mojom::blink::ManifestFileFilterPtr>& files) {
@@ -102,7 +100,6 @@ void ManifestParser::Parse() {
   if (manifest_->has_background_color)
     manifest_->background_color = *background_color;
 
-  manifest_->splash_screen_url = ParseSplashScreenURL(root_object.get());
   manifest_->gcm_sender_id = ParseGCMSenderID(root_object.get());
 
   ManifestUmaUtil::ParseSucceeded(manifest_);
@@ -247,8 +244,7 @@ WebDisplayMode ManifestParser::ParseDisplay(const JSONObject* object) {
   if (!display.has_value())
     return kWebDisplayModeUndefined;
 
-  WebDisplayMode display_enum =
-      WebDisplayModeFromString(StringUTF8Adaptor(*display).AsStdString());
+  WebDisplayMode display_enum = WebDisplayModeFromString(display->Utf8());
   if (display_enum == kWebDisplayModeUndefined)
     AddErrorInfo("unknown 'display' value ignored.");
   return display_enum;
@@ -262,8 +258,7 @@ WebScreenOrientationLockType ManifestParser::ParseOrientation(
     return kWebScreenOrientationLockDefault;
 
   WebScreenOrientationLockType orientation_enum =
-      WebScreenOrientationLockTypeFromString(
-          StringUTF8Adaptor(*orientation).AsStdString());
+      WebScreenOrientationLockTypeFromString(orientation->Utf8());
   if (orientation_enum == kWebScreenOrientationLockDefault)
     AddErrorInfo("unknown 'orientation' value ignored.");
   return orientation_enum;
@@ -321,11 +316,11 @@ ManifestParser::ParseIconPurpose(const JSONObject* icon) {
     if (keyword.IsEmpty())
       continue;
 
-    if (!CodePointCompareIgnoringASCIICase(keyword, "any")) {
+    if (!CodeUnitCompareIgnoringASCIICase(keyword, "any")) {
       purposes.push_back(mojom::blink::ManifestImageResource::Purpose::ANY);
-    } else if (!CodePointCompareIgnoringASCIICase(keyword, "badge")) {
+    } else if (!CodeUnitCompareIgnoringASCIICase(keyword, "badge")) {
       purposes.push_back(mojom::blink::ManifestImageResource::Purpose::BADGE);
-    } else if (!CodePointCompareIgnoringASCIICase(keyword, "maskable")) {
+    } else if (!CodeUnitCompareIgnoringASCIICase(keyword, "maskable")) {
       purposes.push_back(
           mojom::blink::ManifestImageResource::Purpose::MASKABLE);
     } else {
@@ -519,7 +514,7 @@ ManifestParser::ParseShareTargetEnctype(const JSONObject* share_target_object) {
         "Enctype should be set to either application/x-www-form-urlencoded or "
         "multipart/form-data. It currently defaults to "
         "application/x-www-form-urlencoded");
-    return mojom::blink::ManifestShareTarget::Enctype::kApplication;
+    return mojom::blink::ManifestShareTarget::Enctype::kFormUrlEncoded;
   }
 
   String value;
@@ -528,10 +523,10 @@ ManifestParser::ParseShareTargetEnctype(const JSONObject* share_target_object) {
 
   String enctype = value.LowerASCII();
   if (enctype == "application/x-www-form-urlencoded")
-    return mojom::blink::ManifestShareTarget::Enctype::kApplication;
+    return mojom::blink::ManifestShareTarget::Enctype::kFormUrlEncoded;
 
   if (enctype == "multipart/form-data")
-    return mojom::blink::ManifestShareTarget::Enctype::kMultipart;
+    return mojom::blink::ManifestShareTarget::Enctype::kMultipartFormData;
 
   return base::nullopt;
 }
@@ -603,7 +598,7 @@ ManifestParser::ParseShareTarget(const JSONObject* object) {
 
   if (share_target->method == mojom::blink::ManifestShareTarget::Method::kGet) {
     if (share_target->enctype ==
-        mojom::blink::ManifestShareTarget::Enctype::kMultipart) {
+        mojom::blink::ManifestShareTarget::Enctype::kMultipartFormData) {
       AddErrorInfo(
           "invalid enctype for GET method. Only "
           "application/x-www-form-urlencoded is allowed.");
@@ -615,7 +610,7 @@ ManifestParser::ParseShareTarget(const JSONObject* object) {
     if (share_target->method !=
             mojom::blink::ManifestShareTarget::Method::kPost ||
         share_target->enctype !=
-            mojom::blink::ManifestShareTarget::Enctype::kMultipart) {
+            mojom::blink::ManifestShareTarget::Enctype::kMultipartFormData) {
       AddErrorInfo("files are only supported with multipart/form-data POST.");
       return base::nullopt;
     }
@@ -736,11 +731,6 @@ base::Optional<RGBA32> ManifestParser::ParseThemeColor(
 base::Optional<RGBA32> ManifestParser::ParseBackgroundColor(
     const JSONObject* object) {
   return ParseColor(object, "background_color");
-}
-
-KURL ManifestParser::ParseSplashScreenURL(const JSONObject* object) {
-  return ParseURL(object, "splash_screen_url", manifest_url_,
-                  ParseURLOriginRestrictions::kSameOriginOnly);
 }
 
 String ManifestParser::ParseGCMSenderID(const JSONObject* object) {

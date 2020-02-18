@@ -53,6 +53,7 @@ void QuicStreamSequencerBuffer::Clear() {
   num_bytes_buffered_ = 0;
   bytes_received_.Clear();
   bytes_received_.Add(0, total_bytes_read_);
+  total_bytes_prefetched_ = total_bytes_read_;
 }
 
 bool QuicStreamSequencerBuffer::RetireBlock(size_t idx) {
@@ -334,27 +335,47 @@ bool QuicStreamSequencerBuffer::GetReadableRegion(iovec* iov) const {
   return GetReadableRegions(iov, 1) == 1;
 }
 
-bool QuicStreamSequencerBuffer::PrefetchNextRegion(iovec* iov) {
-  DCHECK(iov != nullptr);
+bool QuicStreamSequencerBuffer::PeekRegion(QuicStreamOffset offset,
+                                           iovec* iov) const {
+  DCHECK(iov);
 
-  if (total_bytes_prefetched_ == FirstMissingByte()) {
+  if (offset < total_bytes_read_) {
+    // Data at |offset| has already been consumed.
     return false;
   }
 
-  size_t start_block_idx = GetBlockIndex(total_bytes_prefetched_);
-  size_t start_block_offset = GetInBlockOffset(total_bytes_prefetched_);
-  QuicStreamOffset readable_offset_end = FirstMissingByte() - 1;
-  size_t end_block_offset = GetInBlockOffset(readable_offset_end);
-  size_t end_block_idx = GetBlockIndex(readable_offset_end);
-
-  if (start_block_idx != end_block_idx) {
-    iov->iov_base = blocks_[start_block_idx]->buffer + start_block_offset;
-    iov->iov_len = GetBlockCapacity(start_block_idx) - start_block_offset;
-    total_bytes_prefetched_ += iov->iov_len;
-    return true;
+  if (offset >= FirstMissingByte()) {
+    // Data at |offset| has not been received yet.
+    return false;
   }
-  iov->iov_base = blocks_[end_block_idx]->buffer + start_block_offset;
-  iov->iov_len = end_block_offset - start_block_offset + 1;
+
+  // Beginning of region.
+  size_t block_idx = GetBlockIndex(offset);
+  size_t block_offset = GetInBlockOffset(offset);
+  iov->iov_base = blocks_[block_idx]->buffer + block_offset;
+
+  // Determine if entire block has been received.
+  size_t end_block_idx = GetBlockIndex(FirstMissingByte());
+  if (block_idx == end_block_idx) {
+    // Only read part of block before FirstMissingByte().
+    iov->iov_len = GetInBlockOffset(FirstMissingByte()) - block_offset;
+  } else {
+    // Read entire block.
+    iov->iov_len = GetBlockCapacity(block_idx) - block_offset;
+  }
+
+  return true;
+}
+
+bool QuicStreamSequencerBuffer::PrefetchNextRegion(iovec* iov) {
+  DCHECK(iov);
+  DCHECK_LE(total_bytes_read_, total_bytes_prefetched_);
+  DCHECK_LE(total_bytes_prefetched_, FirstMissingByte());
+
+  if (!PeekRegion(total_bytes_prefetched_, iov)) {
+    return false;
+  }
+
   total_bytes_prefetched_ += iov->iov_len;
   return true;
 }
@@ -479,12 +500,12 @@ size_t QuicStreamSequencerBuffer::GetBlockCapacity(size_t block_index) const {
   }
 }
 
-std::string QuicStreamSequencerBuffer::GapsDebugString() {
+std::string QuicStreamSequencerBuffer::GapsDebugString() const {
   // TODO(vasilvv): this should return the complement of |bytes_received_|.
   return bytes_received_.ToString();
 }
 
-std::string QuicStreamSequencerBuffer::ReceivedFramesDebugString() {
+std::string QuicStreamSequencerBuffer::ReceivedFramesDebugString() const {
   return bytes_received_.ToString();
 }
 

@@ -90,13 +90,13 @@ def GenerateSourcePathMapping(packages, board):
       error_code_ok=False)
 
   # Source paths which are the directory of ebuild files.
-  for package, ebuild_path in packages_to_ebuild_paths.iteritems():
+  for package, ebuild_path in packages_to_ebuild_paths.items():
     results[package] = [ebuild_path]
 
   # Source paths which are cros workon source paths.
   buildroot = os.path.join(constants.CHROOT_SOURCE_ROOT, 'src')
   manifest = git.ManifestCheckout.Cached(buildroot)
-  for package, ebuild_path in packages_to_ebuild_paths.iteritems():
+  for package, ebuild_path in packages_to_ebuild_paths.items():
     is_workon, _, is_blacklisted, _ = portage_util.EBuild.Classify(ebuild_path)
     if (not is_workon or
         # Blacklisted ebuild is pinned to a specific git sha1, so change in
@@ -114,7 +114,7 @@ def GenerateSourcePathMapping(packages, board):
   # only the path to eclass files which the packakge depends on.
   _ECLASS_DIRS = [os.path.join(constants.CHROOT_SOURCE_ROOT,
                                constants.CHROMIUMOS_OVERLAY_DIR, 'eclass')]
-  for package, ebuild_path in packages_to_ebuild_paths.iteritems():
+  for package, ebuild_path in packages_to_ebuild_paths.items():
     use_inherit = False
     for line in fileinput.input(ebuild_path):
       if line.startswith('inherit '):
@@ -154,13 +154,16 @@ def GetBuildDependency(board):
   results['package_deps'] = {}
   results['source_path_mapping'] = {}
 
-  board_specific_packages = ['virtual/target-os', 'virtual/target-os-dev',
-                             'virtual/target-os-test']
+  board_specific_packages = [
+      'virtual/target-os', 'virtual/target-os-dev',
+      'virtual/target-os-test', 'virtual/target-os-factory']
   # Since we don’t have a clear mapping from autotests to git repos
   # and/or portage packages, we assume every board run all autotests.
   board_specific_packages += ['chromeos-base/autotest-all']
 
-  non_board_specific_packages = ['virtual/target-sdk', 'chromeos-base/chromite']
+  non_board_specific_packages = [
+      'virtual/target-sdk', 'chromeos-base/chromite',
+      'virtual/target-sdk-post-cross']
 
   board_specific_deps = cros_extract_deps.ExtractDeps(
       sysroot=cros_build_lib.GetSysroot(board),

@@ -26,9 +26,11 @@
     PROC(Context)                \
     PROC(Framebuffer)            \
     PROC(MemoryObject)           \
+    PROC(Query)                  \
     PROC(Program)                \
     PROC(Semaphore)              \
     PROC(Texture)                \
+    PROC(TransformFeedback)      \
     PROC(VertexArray)
 
 #define ANGLE_PRE_DECLARE_OBJECT(OBJ) class OBJ;
@@ -457,6 +459,23 @@ class Shared final : angle::NonCopyable
 
     void reset(VkDevice device) { set(device, nullptr); }
 
+    template <typename RecyclerT>
+    void resetAndRecycle(RecyclerT *recycler)
+    {
+        if (mRefCounted)
+        {
+            mRefCounted->releaseRef();
+            if (!mRefCounted->isReferenced())
+            {
+                ASSERT(mRefCounted->get().valid());
+                recycler->recyle(std::move(mRefCounted->get()));
+                SafeDelete(mRefCounted);
+            }
+
+            mRefCounted = nullptr;
+        }
+    }
+
     bool isReferenced() const
     {
         // If reference is zero, the object should have been deleted.  I.e. if the object is not
@@ -478,6 +497,35 @@ class Shared final : angle::NonCopyable
 
   private:
     RefCounted<T> *mRefCounted;
+};
+
+template <typename T>
+class Recycler final : angle::NonCopyable
+{
+  public:
+    Recycler() = default;
+
+    void recyle(T &&garbageObject) { mObjectFreeList.emplace_back(std::move(garbageObject)); }
+
+    void fetch(VkDevice device, T *outObject)
+    {
+        ASSERT(!empty());
+        *outObject = std::move(mObjectFreeList.back());
+        mObjectFreeList.pop_back();
+    }
+
+    void destroy(VkDevice device)
+    {
+        for (T &object : mObjectFreeList)
+        {
+            object.destroy(device);
+        }
+    }
+
+    bool empty() const { return mObjectFreeList.empty(); }
+
+  private:
+    std::vector<T> mObjectFreeList;
 };
 
 }  // namespace vk
@@ -531,6 +579,7 @@ VkCullModeFlags GetCullMode(const gl::RasterizerState &rasterState);
 VkFrontFace GetFrontFace(GLenum frontFace, bool invertCullFace);
 VkSampleCountFlagBits GetSamples(GLint sampleCount);
 VkComponentSwizzle GetSwizzle(const GLenum swizzle);
+VkCompareOp GetCompareOp(const GLenum compareFunc);
 
 constexpr angle::PackedEnumMap<gl::DrawElementsType, VkIndexType> kIndexTypeMap = {
     {gl::DrawElementsType::UnsignedByte, VK_INDEX_TYPE_UINT16},
@@ -538,11 +587,19 @@ constexpr angle::PackedEnumMap<gl::DrawElementsType, VkIndexType> kIndexTypeMap 
     {gl::DrawElementsType::UnsignedInt, VK_INDEX_TYPE_UINT32},
 };
 
+constexpr gl::ShaderMap<VkShaderStageFlagBits> kShaderStageMap = {
+    {gl::ShaderType::Vertex, VK_SHADER_STAGE_VERTEX_BIT},
+    {gl::ShaderType::Fragment, VK_SHADER_STAGE_FRAGMENT_BIT},
+    {gl::ShaderType::Geometry, VK_SHADER_STAGE_GEOMETRY_BIT},
+    {gl::ShaderType::Compute, VK_SHADER_STAGE_COMPUTE_BIT},
+};
+
 void GetOffset(const gl::Offset &glOffset, VkOffset3D *vkOffset);
 void GetExtent(const gl::Extents &glExtent, VkExtent3D *vkExtent);
 VkImageType GetImageType(gl::TextureType textureType);
 VkImageViewType GetImageViewType(gl::TextureType textureType);
 VkColorComponentFlags GetColorComponentFlags(bool red, bool green, bool blue, bool alpha);
+VkShaderStageFlags GetShaderStageFlags(gl::ShaderBitSet activeShaders);
 
 void GetViewport(const gl::Rectangle &viewport,
                  float nearPlane,

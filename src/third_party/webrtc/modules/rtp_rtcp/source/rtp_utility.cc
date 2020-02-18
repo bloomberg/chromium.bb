@@ -12,6 +12,7 @@
 
 #include <assert.h>
 #include <stddef.h>
+
 #include <string>
 
 #include "api/array_view.h"
@@ -245,8 +246,8 @@ bool RtpHeaderParser::Parse(RTPHeader* header,
   header->extension.video_timing = {0u, 0u, 0u, 0u, 0u, 0u, false};
 
   header->extension.has_frame_marking = false;
-  header->extension.frame_marking = {false, false, false, false, false,
-                                     kNoTemporalIdx, 0, 0};
+  header->extension.frame_marking = {false, false,          false, false,
+                                     false, kNoTemporalIdx, 0,     0};
 
   if (X) {
     /* RTP header extension, RFC 3550.
@@ -400,6 +401,17 @@ void RtpHeaderParser::ParseOneByteExtensionHeader(
           header->extension.hasAbsoluteSendTime = true;
           break;
         }
+        case kRtpExtensionAbsoluteCaptureTime: {
+          AbsoluteCaptureTime extension;
+          if (!AbsoluteCaptureTimeExtension::Parse(
+                  rtc::MakeArrayView(ptr, len + 1), &extension)) {
+            RTC_LOG(LS_WARNING)
+                << "Incorrect absolute capture time len: " << len;
+            return;
+          }
+          header->extension.absolute_capture_time = extension;
+          break;
+        }
         case kRtpExtensionVideoRotation: {
           if (len != 0) {
             RTC_LOG(LS_WARNING)
@@ -487,7 +499,7 @@ void RtpHeaderParser::ParseOneByteExtensionHeader(
         }
         case kRtpExtensionFrameMarking: {
           if (!FrameMarkingExtension::Parse(rtc::MakeArrayView(ptr, len + 1),
-              &header->extension.frame_marking)) {
+                                            &header->extension.frame_marking)) {
             RTC_LOG(LS_WARNING) << "Incorrect frame marking len: " << len;
             return;
           }
@@ -523,6 +535,7 @@ void RtpHeaderParser::ParseOneByteExtensionHeader(
         }
         case kRtpExtensionGenericFrameDescriptor00:
         case kRtpExtensionGenericFrameDescriptor01:
+        case kRtpExtensionGenericFrameDescriptor02:
           RTC_LOG(WARNING)
               << "RtpGenericFrameDescriptor unsupported by rtp header parser.";
           break;

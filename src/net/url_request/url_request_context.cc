@@ -89,12 +89,14 @@ const HttpNetworkSession::Context* URLRequestContext::GetNetworkSessionContext()
   return &network_session->context();
 }
 
+#if (!defined(OS_WIN) && !defined(OS_LINUX)) || defined(OS_CHROMEOS)
 std::unique_ptr<URLRequest> URLRequestContext::CreateRequest(
     const GURL& url,
     RequestPriority priority,
     URLRequest::Delegate* delegate) const {
   return CreateRequest(url, priority, delegate, MISSING_TRAFFIC_ANNOTATION);
 }
+#endif
 
 std::unique_ptr<URLRequest> URLRequestContext::CreateRequest(
     const GURL& url,
@@ -180,6 +182,9 @@ void URLRequestContext::CopyFrom(const URLRequestContext* other) {
 #endif  // BUILDFLAG(ENABLE_REPORTING)
   set_enable_brotli(other->enable_brotli_);
   set_check_cleartext_permitted(other->check_cleartext_permitted_);
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+  set_ftp_auth_cache(other->ftp_auth_cache_);
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 }
 
 }  // namespace net

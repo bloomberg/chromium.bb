@@ -9,6 +9,10 @@ use vars qw( %ALG %ALG_BY_NAME );
     1 => 'MD5',
     2 => 'SHA1',
     3 => 'RIPEMD160',
+    8 => 'SHA256',
+    9 => 'SHA384',
+    10 => 'SHA512',
+    11 => 'SHA224',
 );
 %ALG_BY_NAME = map { $ALG{$_} => $_ } keys %ALG;
 
@@ -64,8 +68,8 @@ use base qw( Crypt::OpenPGP::Digest );
 
 sub init {
     my $dig = shift;
-    require Digest::SHA1;
-    $dig->{md} = \&Digest::SHA1::sha1;
+    require Digest::SHA;
+    $dig->{md} = \&Digest::SHA::sha1;
     $dig;
 }
 
@@ -79,6 +83,51 @@ sub init {
     $dig->{md} = sub { Crypt::RIPEMD160->hash($_[0]) };
     $dig;
 }
+
+package Crypt::OpenPGP::Digest::SHA224;
+use strict;
+use base qw( Crypt::OpenPGP::Digest );
+
+sub init {
+    my $dig = shift;
+    require Digest::SHA;
+    $dig->{md} = \&Digest::SHA::sha224;
+    $dig;
+}
+
+package Crypt::OpenPGP::Digest::SHA256;
+use strict;
+use base qw( Crypt::OpenPGP::Digest );
+
+sub init {
+    my $dig = shift;
+    require Digest::SHA;
+    $dig->{md} = \&Digest::SHA::sha256;
+    $dig;
+}
+
+package Crypt::OpenPGP::Digest::SHA384;
+use strict;
+use base qw( Crypt::OpenPGP::Digest );
+
+sub init {
+    my $dig = shift;
+    require Digest::SHA;
+    $dig->{md} = \&Digest::SHA::sha384;
+    $dig;
+}
+
+package Crypt::OpenPGP::Digest::SHA512;
+use strict;
+use base qw( Crypt::OpenPGP::Digest );
+
+sub init {
+    my $dig = shift;
+    require Digest::SHA;
+    $dig->{md} = \&Digest::SHA::sha512;
+    $dig;
+}
+
 
 1;
 __END__

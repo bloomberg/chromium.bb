@@ -7,9 +7,9 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom-blink.h"
@@ -97,7 +97,7 @@ class InterfaceInvalidatorTest : public testing::Test {
   ~InterfaceInvalidatorTest() override {}
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceInvalidatorTest);
 };

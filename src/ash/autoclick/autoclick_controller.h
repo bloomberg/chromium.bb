@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/interfaces/accessibility_controller_enums.mojom.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/aura/client/cursor_client_observer.h"
@@ -27,8 +26,9 @@ namespace ash {
 
 class AccessibilityFeatureDisableDialog;
 class AutoclickDragEventRewriter;
-class AutoclickRingHandler;
 class AutoclickMenuBubbleController;
+class AutoclickRingHandler;
+class AutoclickScrollPositionHandler;
 
 // Autoclick is one of the accessibility features. If enabled, two circles will
 // animate at the mouse event location and an automatic mouse event event will
@@ -39,6 +39,15 @@ class ASH_EXPORT AutoclickController
       public aura::WindowObserver,
       public aura::client::CursorClientObserver {
  public:
+  // Autoclick's scroll event types.
+  enum ScrollPadAction {
+    kScrollUp = 1,
+    kScrollDown = 2,
+    kScrollLeft = 3,
+    kScrollRight = 4,
+    kScrollClose = 5,
+  };
+
   AutoclickController();
   ~AutoclickController() override;
 
@@ -58,14 +67,27 @@ class ASH_EXPORT AutoclickController
   static base::TimeDelta GetDefaultAutoclickDelay();
 
   // Sets the event type.
-  void SetAutoclickEventType(mojom::AutoclickEventType type);
+  void SetAutoclickEventType(AutoclickEventType type);
 
   // Sets the movement threshold beyond which mouse movements cancel or begin
   // a new Autoclick event.
   void SetMovementThreshold(int movement_threshold);
 
   // Sets the menu position and updates the UI.
-  void SetMenuPosition(mojom::AutoclickMenuPosition menu_position);
+  void SetMenuPosition(AutoclickMenuPosition menu_position);
+
+  // Performs the given ScrollPadAction at the current scrolling point.
+  void DoScrollAction(ScrollPadAction action);
+
+  // The cursor is over a scroll (up/down/left/right) button.
+  void OnEnteredScrollButton();
+
+  // The cursor has exited a scroll (up/down/left/right) button.
+  void OnExitedScrollButton();
+
+  // The Autoclick extension has found scrollble bounds at the current scroll
+  // point.
+  void OnAutoclickScrollableBoundsFound(gfx::Rect& bounds_in_screen);
 
   // Update the bubble menu bounds if necessary to avoid system UI.
   void UpdateAutoclickMenuBoundsIfNeeded();
@@ -98,19 +120,24 @@ class ASH_EXPORT AutoclickController
  private:
   void SetTapDownTarget(aura::Window* target);
   void CreateAutoclickRingWidget(const gfx::Point& point_in_screen);
-  void UpdateAutoclickRingWidget(views::Widget* widget,
-                                 const gfx::Point& point_in_screen);
+  void CreateAutoclickScrollPositionWidget(const gfx::Point& point_in_screen);
+  void UpdateAutoclickWidgetPosition(views::Widget* widget,
+                                     const gfx::Point& point_in_screen);
   void DoAutoclickAction();
   void StartAutoclickGesture();
   void CancelAutoclickAction();
-  void OnActionCompleted(mojom::AutoclickEventType event_type);
+  void OnActionCompleted(AutoclickEventType event_type);
   void InitClickTimers();
   void UpdateRingWidget(const gfx::Point& mouse_location);
   void UpdateRingSize();
-  void RecordUserAction(mojom::AutoclickEventType event_type) const;
+  void InitializeScrollLocation();
+  void UpdateScrollPosition(const gfx::Point& point_in_screen);
+  void HideScrollPosition();
+  void RecordUserAction(AutoclickEventType event_type) const;
   bool DragInProgress() const;
   void CreateMenuBubbleController();
   bool AutoclickMenuContainsPoint(const gfx::Point& point) const;
+  bool AutoclickScrollContainsPoint(const gfx::Point& point) const;
 
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -129,7 +156,7 @@ class ASH_EXPORT AutoclickController
 
   // Whether Autoclick is currently enabled.
   bool enabled_ = false;
-  mojom::AutoclickEventType event_type_ = kDefaultAutoclickEventType;
+  AutoclickEventType event_type_ = kDefaultAutoclickEventType;
   bool revert_to_left_click_ = true;
   bool stabilize_click_position_ = false;
   int movement_threshold_ = kDefaultAutoclickMovementThreshold;
@@ -139,7 +166,7 @@ class ASH_EXPORT AutoclickController
   // manually, the position will be fixed regardless of language direction and
   // shelf position. This probably means adding a new AutoclickMenuPostion
   // enum for "system default".
-  mojom::AutoclickMenuPosition menu_position_ = kDefaultAutoclickMenuPosition;
+  AutoclickMenuPosition menu_position_ = kDefaultAutoclickMenuPosition;
   int mouse_event_flags_ = ui::EF_NONE;
   // The target window is observed by AutoclickController for the duration
   // of a autoclick gesture.
@@ -159,9 +186,22 @@ class ASH_EXPORT AutoclickController
   // the most recent mose point.
   gfx::Point gesture_anchor_location_{-kDefaultAutoclickMovementThreshold,
                                       -kDefaultAutoclickMovementThreshold};
+  // The point at which the next scroll event will occur.
+  gfx::Point scroll_location_{-kDefaultAutoclickMovementThreshold,
+                              -kDefaultAutoclickMovementThreshold};
+  // Whether the current scroll_location_ is the initial one set automatically,
+  // or if false, it was chosen explicitly by the user. The scroll bubble
+  // positions are different in these two cases.
+  bool is_initial_scroll_location_ = true;
+  // Whether the cursor is currently over a scroll button. If true, new gestures
+  // will not be started. This ensures the autoclick ring is not drawn over
+  // the scroll position buttons, and extra clicks will not be generated there.
+  bool over_scroll_button_ = false;
 
   // The widget containing the autoclick ring.
-  std::unique_ptr<views::Widget> widget_;
+  std::unique_ptr<views::Widget> ring_widget_;
+  // The widget containing the autoclick scroll position indiciator.
+  std::unique_ptr<views::Widget> scroll_position_widget_;
   base::TimeDelta delay_;
   // The timer that counts down from the beginning of a gesture until a click.
   std::unique_ptr<base::RetainingOneShotTimer> autoclick_timer_;
@@ -171,6 +211,8 @@ class ASH_EXPORT AutoclickController
   // instead waiting for the mouse to begin a dwell.
   std::unique_ptr<base::RetainingOneShotTimer> start_gesture_timer_;
   std::unique_ptr<AutoclickRingHandler> autoclick_ring_handler_;
+  std::unique_ptr<AutoclickScrollPositionHandler>
+      autoclick_scroll_position_handler_;
   std::unique_ptr<AutoclickDragEventRewriter> drag_event_rewriter_;
   std::unique_ptr<AutoclickMenuBubbleController> menu_bubble_controller_;
 

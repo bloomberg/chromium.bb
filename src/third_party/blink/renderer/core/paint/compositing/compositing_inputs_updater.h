@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_INPUTS_UPDATER_H_
 
 #include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -78,6 +78,9 @@ class CompositingInputsUpdater {
   // This method takes care of updating AncestorInfo taking into account the
   // current value of AncestorInfo.
   void UpdateAncestorInfo(PaintLayer*, UpdateType&, AncestorInfo&);
+
+  // Combine all reasons for compositing a layer into a single boolean value
+  bool LayerOrDescendantShouldBeComposited(PaintLayer*);
 
   LayoutGeometryMap geometry_map_;
   PaintLayer* root_layer_;

@@ -264,25 +264,26 @@ class JsLanguageDetectionManagerDetectLanguageTest
     auto callback = base::Bind(
         &JsLanguageDetectionManagerDetectLanguageTest::CommandReceived,
         base::Unretained(this));
-    web_state()->AddScriptCommandCallback(callback, "languageDetection");
+    subscription_ =
+        web_state()->AddScriptCommandCallback(callback, "languageDetection");
   }
   void TearDown() override {
-    web_state()->RemoveScriptCommandCallback("languageDetection");
     JsLanguageDetectionManagerTest::TearDown();
   }
   // Called when "languageDetection" command is received.
-  bool CommandReceived(const base::DictionaryValue& command,
+  void CommandReceived(const base::DictionaryValue& command,
                        const GURL& url,
-                       bool interacting,
-                       bool is_main_frame,
+                       bool user_is_interacting,
                        web::WebFrame* sender_frame) {
     commands_received_.push_back(command.CreateDeepCopy());
-    return true;
   }
 
  protected:
   // Received "languageDetection" commands.
   std::vector<std::unique_ptr<base::DictionaryValue>> commands_received_;
+
+  // Subscription for JS message.
+  std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription_;
 };
 
 // Tests if |__gCrWeb.languageDetection.detectLanguage| correctly informs the

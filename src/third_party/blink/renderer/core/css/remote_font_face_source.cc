@@ -18,7 +18,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
@@ -321,14 +321,16 @@ void RemoteFontFaceSource::Trace(blink::Visitor* visitor) {
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::LoadStarted() {
-  if (!load_start_time_)
-    load_start_time_ = CurrentTimeMS();
+  if (load_start_time_.is_null())
+    load_start_time_ = base::TimeTicks::Now();
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::FallbackFontPainted(
     DisplayPeriod period) {
-  if (period == kBlockPeriod && !blank_paint_time_)
-    blank_paint_time_ = CurrentTimeMS();
+  if (period == kBlockPeriod && blank_paint_time_.is_null()) {
+    blank_paint_time_ = base::TimeTicks::Now();
+    blank_paint_time_recorded_ = false;
+  }
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::LongLimitExceeded() {
@@ -337,14 +339,16 @@ void RemoteFontFaceSource::FontLoadHistograms::LongLimitExceeded() {
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::RecordFallbackTime() {
-  if (blank_paint_time_ <= 0)
+  if (blank_paint_time_.is_null() || blank_paint_time_recorded_)
     return;
-  int duration = static_cast<int>(CurrentTimeMS() - blank_paint_time_);
+  base::TimeDelta duration = base::TimeTicks::Now() - blank_paint_time_;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram,
                                   blank_text_shown_time_histogram,
                                   ("WebFont.BlankTextShownTime", 0, 10000, 50));
-  blank_text_shown_time_histogram.Count(duration);
-  blank_paint_time_ = -1;
+  blank_text_shown_time_histogram.Count(
+      base::saturated_cast<base::HistogramBase::Sample>(
+          duration.InMilliseconds()));
+  blank_paint_time_recorded_ = true;
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::RecordRemoteFont(
@@ -356,16 +360,8 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordRemoteFont(
   cache_hit_histogram.Count(DataSourceMetricsValue());
 
   if (data_source_ == kFromDiskCache || data_source_ == kFromNetwork) {
-    DCHECK_NE(load_start_time_, 0);
-    int duration = static_cast<int>(CurrentTimeMS() - load_start_time_);
-    RecordLoadTimeHistogram(font, duration);
-
-    enum { kCorsFail, kCorsSuccess, kCorsEnumMax };
-    int cors_value =
-        font->GetResponse().IsCorsSameOrigin() ? kCorsSuccess : kCorsFail;
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, cors_histogram,
-                                    ("WebFont.CORSSuccess", kCorsEnumMax));
-    cors_histogram.Count(cors_value);
+    DCHECK(!load_start_time_.is_null());
+    RecordLoadTimeHistogram(font, base::TimeTicks::Now() - load_start_time_);
   }
 }
 
@@ -376,7 +372,7 @@ void RemoteFontFaceSource::FontLoadHistograms::MaySetDataSource(
   // Classify as memory cache hit if |load_start_time_| is not set, i.e.
   // this RemoteFontFaceSource instance didn't trigger FontResource
   // loading.
-  if (load_start_time_ == 0)
+  if (load_start_time_.is_null())
     data_source_ = kFromMemoryCache;
   else
     data_source_ = data_source;
@@ -384,9 +380,11 @@ void RemoteFontFaceSource::FontLoadHistograms::MaySetDataSource(
 
 void RemoteFontFaceSource::FontLoadHistograms::RecordLoadTimeHistogram(
     const FontResource* font,
-    int duration) {
+    base::TimeDelta delta) {
   CHECK_NE(kFromUnknown, data_source_);
 
+  int duration =
+      base::saturated_cast<base::HistogramBase::Sample>(delta.InMilliseconds());
   if (font->ErrorOccurred()) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, load_error_histogram,

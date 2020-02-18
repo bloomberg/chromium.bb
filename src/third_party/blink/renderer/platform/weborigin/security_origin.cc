@@ -219,13 +219,13 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateOpaque(
 scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromUrlOrigin(
     const url::Origin& origin) {
   const url::SchemeHostPort& tuple = origin.GetTupleOrPrecursorTupleIfOpaque();
-  DCHECK(String::FromUTF8(tuple.scheme().c_str()).ContainsOnlyASCIIOrEmpty());
-  DCHECK(String::FromUTF8(tuple.host().c_str()).ContainsOnlyASCIIOrEmpty());
+  DCHECK(String::FromUTF8(tuple.scheme()).ContainsOnlyASCIIOrEmpty());
+  DCHECK(String::FromUTF8(tuple.host()).ContainsOnlyASCIIOrEmpty());
 
   scoped_refptr<SecurityOrigin> tuple_origin;
   if (!tuple.IsInvalid()) {
-    String scheme = String::FromUTF8(tuple.scheme().c_str());
-    String host = String::FromUTF8(tuple.host().c_str());
+    String scheme = String::FromUTF8(tuple.scheme());
+    String host = String::FromUTF8(tuple.host());
     uint16_t port = tuple.port();
 
     // url::Origin is percent encoded and SecurityOrigin is percent decoded.
@@ -246,10 +246,8 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromUrlOrigin(
 
 url::Origin SecurityOrigin::ToUrlOrigin() const {
   const SecurityOrigin* unmasked = GetOriginOrPrecursorOriginIfOpaque();
-  std::string scheme =
-      StringUTF8Adaptor(unmasked->protocol_).AsStringPiece().as_string();
-  std::string host =
-      StringUTF8Adaptor(unmasked->host_).AsStringPiece().as_string();
+  std::string scheme = unmasked->protocol_.Utf8();
+  std::string host = unmasked->host_.Utf8();
   uint16_t port = unmasked->effective_port_;
   if (nonce_if_opaque_) {
     url::Origin result = url::Origin::CreateOpaqueFromNormalizedPrecursorTuple(
@@ -501,7 +499,7 @@ bool SecurityOrigin::IsLocalhost() const {
   // We special-case "[::1]" here because `net::HostStringIsLocalhost` expects a
   // canonicalization that excludes the braces; a simple string comparison is
   // simpler than trying to adjust Blink's canonicalization.
-  return host_ == "[::1]" || net::HostStringIsLocalhost(host_.Ascii().data());
+  return host_ == "[::1]" || net::HostStringIsLocalhost(host_.Ascii());
 }
 
 String SecurityOrigin::ToString() const {

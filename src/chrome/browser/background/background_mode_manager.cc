@@ -225,9 +225,7 @@ bool BackgroundModeManager::BackgroundModeData::BackgroundModeDataCompare(
 BackgroundModeManager::BackgroundModeManager(
     const base::CommandLine& command_line,
     ProfileAttributesStorage* profile_storage)
-    : profile_storage_(profile_storage),
-      task_runner_(CreateTaskRunner()),
-      weak_factory_(this) {
+    : profile_storage_(profile_storage), task_runner_(CreateTaskRunner()) {
   // We should never start up if there is no browser process or if we are
   // currently quitting.
   CHECK(g_browser_process);
@@ -308,7 +306,7 @@ void BackgroundModeManager::RegisterPrefs(PrefRegistrySimple* registry) {
 
 void BackgroundModeManager::RegisterProfile(Profile* profile) {
   // We don't want to register multiple times for one profile.
-  DCHECK(!base::ContainsKey(background_mode_data_, profile));
+  DCHECK(!base::Contains(background_mode_data_, profile));
   auto bmd = std::make_unique<BackgroundModeData>(profile,
                                                   &command_id_handler_vector_);
   BackgroundModeData* bmd_ptr = bmd.get();
@@ -344,7 +342,7 @@ void BackgroundModeManager::LaunchBackgroundApplication(
     const Extension* extension) {
   OpenApplication(CreateAppLaunchParamsUserContainer(
       profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      extensions::SOURCE_BACKGROUND));
+      extensions::AppLaunchSource::kSourceBackground));
 }
 
 // static
@@ -617,11 +615,6 @@ void BackgroundModeManager::StartBackgroundMode() {
   in_background_mode_ = true;
 
   UpdateKeepAliveAndTrayIcon();
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BACKGROUND_MODE_CHANGED,
-      content::Source<BackgroundModeManager>(this),
-      content::Details<bool>(&in_background_mode_));
 }
 
 void BackgroundModeManager::EndBackgroundMode() {
@@ -630,11 +623,6 @@ void BackgroundModeManager::EndBackgroundMode() {
   in_background_mode_ = false;
 
   UpdateKeepAliveAndTrayIcon();
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BACKGROUND_MODE_CHANGED,
-      content::Source<BackgroundModeManager>(this),
-      content::Details<bool>(&in_background_mode_));
 }
 
 void BackgroundModeManager::EnableBackgroundMode() {
@@ -779,10 +767,15 @@ gfx::ImageSkia GetStatusTrayIcon() {
     return gfx::ImageSkia();
 
   return family->CreateExact(size).AsImageSkia();
-#else
-  // On other platforms, just get a static resource image.
+#elif defined(OS_LINUX)
+  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      IDR_PRODUCT_LOGO_128);
+#elif defined(OS_MACOSX)
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_STATUS_TRAY_ICON);
+#else
+  NOTREACHED();
+  return gfx::ImageSkia();
 #endif
 }
 

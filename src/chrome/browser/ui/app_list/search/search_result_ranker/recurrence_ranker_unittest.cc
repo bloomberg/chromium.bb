@@ -61,14 +61,14 @@ class RecurrenceRankerTest : public testing::Test {
     // Even if empty, the setting of the oneof |predictor_config| in
     // RecurrenceRankerConfigProto is used to determine which predictor is
     // constructed.
-    config.mutable_fake_predictor();
+    config.mutable_predictor()->mutable_fake_predictor();
     return config;
   }
 
   // Returns a ranker using a fake predictor.
   std::unique_ptr<RecurrenceRanker> MakeSimpleRanker() {
-    auto ranker = std::make_unique<RecurrenceRanker>(ranker_filepath_,
-                                                     MakeSimpleConfig(), false);
+    auto ranker = std::make_unique<RecurrenceRanker>(
+        "MyModel", ranker_filepath_, MakeSimpleConfig(), false);
     Wait();
     return ranker;
   }
@@ -104,13 +104,19 @@ class RecurrenceRankerTest : public testing::Test {
     value_data.set_last_num_updates(4);
     (*target_values)["C"] = value_data;
 
-    // Make empty conditions frecency store.
+    // Make conditions frecency store.
     auto* conditions = proto.mutable_conditions();
-    conditions->set_value_limit(0u);
-    conditions->set_decay_coeff(0.0f);
+    conditions->set_value_limit(10u);
+    conditions->set_decay_coeff(0.5f);
     conditions->set_num_updates(0);
     conditions->set_next_id(0);
-    conditions->mutable_values();
+
+    auto* condition_values = conditions->mutable_values();
+
+    value_data.set_id(0u);
+    value_data.set_last_score(0.5f);
+    value_data.set_last_num_updates(1);
+    (*condition_values)[""] = value_data;
 
     // Make FakePredictor counts.
     auto* counts =
@@ -122,28 +128,48 @@ class RecurrenceRankerTest : public testing::Test {
     return proto;
   }
 
-  void ExpectErrors(bool fresh_model_created, bool using_fake_predictor) {
-    histogram_tester_.ExpectTotalCount("RecurrenceRanker.UsageError", 0);
+  void ExpectErrors(bool fresh_model_created = true,
+                    bool using_fake_predictor = true,
+                    bool has_saved = false) {
+    // Total count of serialization reports:
+    //  - one for either a kLoadOk or kModelReadError
+    //  - one if has_saved is true
+    histogram_tester_.ExpectTotalCount(
+        "RecurrenceRanker.SerializationStatus.MyModel",
+        static_cast<int>(has_saved) + 1);
 
     // If a model doesn't already exist, a read error is logged.
     if (fresh_model_created) {
-      histogram_tester_.ExpectUniqueSample(
-          "RecurrenceRanker.SerializationError",
-          SerializationError::kModelReadError, 1);
+      histogram_tester_.ExpectBucketCount(
+          "RecurrenceRanker.SerializationStatus.MyModel",
+          SerializationStatus::kModelReadError, 1);
     } else {
-      histogram_tester_.ExpectTotalCount("RecurrenceRanker.SerializationError",
-                                         0);
+      histogram_tester_.ExpectBucketCount(
+          "RecurrenceRanker.SerializationStatus.MyModel",
+          SerializationStatus::kLoadOk, 1);
+    }
+
+    if (has_saved) {
+      histogram_tester_.ExpectBucketCount(
+          "RecurrenceRanker.SerializationStatus.MyModel",
+          SerializationStatus::kSaveOk, 1);
     }
 
     // Initialising with the fake predictor logs an UMA error, because it should
     // be used only in tests and not in production.
     if (using_fake_predictor) {
-      histogram_tester_.ExpectUniqueSample(
-          "RecurrenceRanker.ConfigurationError",
-          ConfigurationError::kFakePredictorUsed, 1);
+      histogram_tester_.ExpectTotalCount(
+          "RecurrenceRanker.InitializationStatus.MyModel", 2);
+      histogram_tester_.ExpectBucketCount(
+          "RecurrenceRanker.InitializationStatus.MyModel",
+          InitializationStatus::kFakePredictorUsed, 1);
+      histogram_tester_.ExpectBucketCount(
+          "RecurrenceRanker.InitializationStatus.MyModel",
+          InitializationStatus::kInitialized, 1);
     } else {
-      histogram_tester_.ExpectTotalCount("RecurrenceRanker.ConfigurationError",
-                                         0);
+      histogram_tester_.ExpectUniqueSample(
+          "RecurrenceRanker.InitializationStatus.MyModel",
+          InitializationStatus::kInitialized, 1);
     }
   }
 
@@ -166,8 +192,8 @@ TEST_F(RecurrenceRankerTest, Record) {
 
   EXPECT_THAT(ranker->Rank(), UnorderedElementsAre(Pair("A", FloatEq(1.0f)),
                                                    Pair("B", FloatEq(2.0f))));
-  ExpectErrors(/*fresh_model_created = */ true,
-               /*using_fake_predictor = */ true);
+  ExpectErrors(/* fresh_model_created = */ true,
+               /* using_fake_predictor = */ true);
 }
 
 TEST_F(RecurrenceRankerTest, RenameTarget) {
@@ -179,8 +205,8 @@ TEST_F(RecurrenceRankerTest, RenameTarget) {
   ranker->RenameTarget("B", "A");
 
   EXPECT_THAT(ranker->Rank(), ElementsAre(Pair("A", FloatEq(2.0f))));
-  ExpectErrors(/*fresh_model_created = */ true,
-               /*using_fake_predictor = */ true);
+  ExpectErrors(/* fresh_model_created = */ true,
+               /* using_fake_predictor = */ true);
 }
 
 TEST_F(RecurrenceRankerTest, RemoveTarget) {
@@ -192,8 +218,8 @@ TEST_F(RecurrenceRankerTest, RemoveTarget) {
   ranker->RemoveTarget("A");
 
   EXPECT_THAT(ranker->Rank(), ElementsAre(Pair("B", FloatEq(2.0f))));
-  ExpectErrors(/*fresh_model_created = */ true,
-               /*using_fake_predictor = */ true);
+  ExpectErrors(/* fresh_model_created = */ true,
+               /* using_fake_predictor = */ true);
 }
 
 TEST_F(RecurrenceRankerTest, ComplexRecordAndRank) {
@@ -213,8 +239,8 @@ TEST_F(RecurrenceRankerTest, ComplexRecordAndRank) {
   EXPECT_THAT(ranker->Rank(), UnorderedElementsAre(Pair("A", FloatEq(1.0f)),
                                                    Pair("B", FloatEq(2.0f)),
                                                    Pair("F", FloatEq(1.0f))));
-  ExpectErrors(/*fresh_model_created = */ true,
-               /*using_fake_predictor = */ true);
+  ExpectErrors(/* fresh_model_created = */ true,
+               /* using_fake_predictor = */ true);
 }
 
 TEST_F(RecurrenceRankerTest, RankTopN) {
@@ -230,8 +256,8 @@ TEST_F(RecurrenceRankerTest, RankTopN) {
   EXPECT_THAT(ranker->RankTopN(100),
               ElementsAre(Pair("A", FloatEq(4.0f)), Pair("B", FloatEq(3.0f)),
                           Pair("C", FloatEq(2.0f)), Pair("D", FloatEq(1.0f))));
-  ExpectErrors(/*fresh_model_created = */ true,
-               /*using_fake_predictor = */ true);
+  ExpectErrors(/* fresh_model_created = */ true,
+               /* using_fake_predictor = */ true);
 }
 
 TEST_F(RecurrenceRankerTest, LoadFromDisk) {
@@ -243,7 +269,8 @@ TEST_F(RecurrenceRankerTest, LoadFromDisk) {
       -1);
 
   // Make a ranker.
-  RecurrenceRanker ranker(ranker_filepath_, MakeSimpleConfig(), false);
+  RecurrenceRanker ranker("MyModel", ranker_filepath_, MakeSimpleConfig(),
+                          false);
 
   // Check that the file loading is executed in non-blocking way.
   EXPECT_FALSE(ranker.load_from_disk_completed_);
@@ -254,8 +281,8 @@ TEST_F(RecurrenceRankerTest, LoadFromDisk) {
   EXPECT_THAT(ranker.Rank(), UnorderedElementsAre(Pair("A", FloatEq(1.0f)),
                                                   Pair("B", FloatEq(2.0f)),
                                                   Pair("C", FloatEq(1.0f))));
-  ExpectErrors(/*fresh_model_created = */ false,
-               /*using_fake_predictor = */ true);
+  ExpectErrors(/* fresh_model_created = */ false,
+               /* using_fake_predictor = */ true);
 }
 
 TEST_F(RecurrenceRankerTest, InitializeIfNoFileExists) {
@@ -265,14 +292,14 @@ TEST_F(RecurrenceRankerTest, InitializeIfNoFileExists) {
   base::FilePath filepath =
       temp_dir.GetPath().AppendASCII("recurrence_ranker_invalid");
 
-  RecurrenceRanker ranker(filepath, MakeSimpleConfig(), false);
+  RecurrenceRanker ranker("MyModel", filepath, MakeSimpleConfig(), false);
   Wait();
 
   EXPECT_TRUE(ranker.load_from_disk_completed_);
   EXPECT_TRUE(ranker.Rank().empty());
 
-  ExpectErrors(/*fresh_model_created = */ true,
-               /*using_fake_predictor = */ true);
+  ExpectErrors(/* fresh_model_created = */ true,
+               /* using_fake_predictor = */ true);
 }
 
 TEST_F(RecurrenceRankerTest, SaveToDisk) {
@@ -289,8 +316,8 @@ TEST_F(RecurrenceRankerTest, SaveToDisk) {
   ranker->Record("A");
   ranker->Record("B");
   ranker->Record("B");
-  ranker->ForceSaveOnNextUpdateForTesting();
   ranker->Record("C");
+  ranker->SaveToDisk();
   Wait();
 
   // Check the ranker file is created.
@@ -305,25 +332,27 @@ TEST_F(RecurrenceRankerTest, SaveToDisk) {
   // Expect the content to be proto_.
   EXPECT_TRUE(EquivToProtoLite(proto_written, MakeTestingProto()));
 
-  ExpectErrors(/*fresh_model_created = */ true,
-               /*using_fake_predictor = */ true);
+  ExpectErrors(/* fresh_model_created = */ true,
+               /* using_fake_predictor = */ true,
+               /* has_saved = */ true);
 }
 
 TEST_F(RecurrenceRankerTest, SavedRankerRejectedIfConfigMismatched) {
   auto ranker = MakeSimpleRanker();
 
   // Make the first ranker do a save.
-  ranker->ForceSaveOnNextUpdateForTesting();
   ranker->Record("A");
+  ranker->SaveToDisk();
   Wait();
 
   // Construct a second ranker with a slightly different config.
   RecurrenceRankerConfigProto other_config;
   PartiallyPopulateConfig(&other_config);
-  other_config.mutable_fake_predictor();
+  other_config.mutable_predictor()->mutable_fake_predictor();
   other_config.set_min_seconds_between_saves(1234);
 
-  RecurrenceRanker other_ranker(ranker_filepath_, other_config, false);
+  RecurrenceRanker other_ranker("MyModel", ranker_filepath_, other_config,
+                                false);
   Wait();
 
   // Expect that the second ranker doesn't return any rankings, because it
@@ -333,25 +362,64 @@ TEST_F(RecurrenceRankerTest, SavedRankerRejectedIfConfigMismatched) {
   // For comparison:
   EXPECT_THAT(ranker->Rank(), UnorderedElementsAre(Pair("A", FloatEq(1.0f))));
   // Should also log an error to UMA.
-  histogram_tester_.ExpectBucketCount("RecurrenceRanker.ConfigurationError",
-                                      ConfigurationError::kHashMismatch, 1);
+  histogram_tester_.ExpectBucketCount(
+      "RecurrenceRanker.InitializationStatus.MyModel",
+      InitializationStatus::kHashMismatch, 1);
+}
+
+TEST_F(RecurrenceRankerTest, Cleanup) {
+  auto ranker = MakeSimpleRanker();
+
+  // Targets to forget.
+  ranker->Record("A");
+  ranker->Record("B");
+  ranker->Record("C");
+
+  // Valid proportion is 1 so cleanup shouldn't be called. Rank is called once
+  // on the ranker to possibly trigger the cleanup, and a second time on the
+  // predictor to observe the effects without ever triggering a cleanup.
+  ranker->Rank();
+  EXPECT_THAT(ranker->predictor_->Rank(0u),
+              UnorderedElementsAre(Pair(0u, _), Pair(1u, _), Pair(2u, _)));
+
+  // Record enough times that A should be removed from the ranker's store.
+  for (int i = 0; i < 100; ++i) {
+    ranker->Record("B");
+    ranker->Record("C");
+  }
+
+  // Valid proportion is 2/3 so cleanup still shouldn't be called.
+  ranker->Rank();
+  EXPECT_THAT(ranker->predictor_->Rank(0u),
+              UnorderedElementsAre(Pair(0u, _), Pair(1u, _), Pair(2u, _)));
+
+  // Record enough times that B and C be removed from the ranker's store
+  for (int i = 0; i < 100; ++i)
+    ranker->Record("D");
+
+  // Valid proportion is 1/4 so cleanup should be called. Examining the internal
+  // state, the predictor should only contain the ID for D.
+  ranker->Rank();
+  EXPECT_THAT(ranker->predictor_->Rank(0u), UnorderedElementsAre(Pair(3u, _)));
 }
 
 TEST_F(RecurrenceRankerTest, EphemeralUsersUseDefaultPredictor) {
-  RecurrenceRanker ephemeral_ranker(ranker_filepath_, MakeSimpleConfig(), true);
+  RecurrenceRanker ephemeral_ranker("MyModel", ranker_filepath_,
+                                    MakeSimpleConfig(), true);
   Wait();
   EXPECT_THAT(ephemeral_ranker.GetPredictorNameForTesting(),
               StrEq(DefaultPredictor::kPredictorName));
-  ExpectErrors(/*fresh_model_created = */ false,
-               /*using_fake_predictor = */ false);
+  histogram_tester_.ExpectBucketCount(
+      "RecurrenceRanker.InitializationStatus.MyModel",
+      InitializationStatus::kEphemeralUser, 1);
 }
 
 TEST_F(RecurrenceRankerTest, IntegrationWithDefaultPredictor) {
   RecurrenceRankerConfigProto config;
   PartiallyPopulateConfig(&config);
-  config.mutable_default_predictor();
+  config.mutable_predictor()->mutable_default_predictor();
 
-  RecurrenceRanker ranker(ranker_filepath_, config, false);
+  RecurrenceRanker ranker("MyModel", ranker_filepath_, config, false);
   Wait();
 
   ranker.Record("A");
@@ -362,17 +430,17 @@ TEST_F(RecurrenceRankerTest, IntegrationWithDefaultPredictor) {
   EXPECT_THAT(ranker.Rank(), UnorderedElementsAre(Pair("A", FloatEq(0.2304f)),
                                                   Pair("B", FloatEq(0.16f)),
                                                   Pair("C", FloatEq(0.2f))));
-  ExpectErrors(/*fresh_model_created = */ true,
-               /*using_fake_predictor = */ false);
+  ExpectErrors(/* fresh_model_created = */ true,
+               /* using_fake_predictor = */ false);
 }
 
 TEST_F(RecurrenceRankerTest, IntegrationWithZeroStateFrecencyPredictor) {
   RecurrenceRankerConfigProto config;
   PartiallyPopulateConfig(&config);
-  auto* predictor = config.mutable_zero_state_frecency_predictor();
+  auto* predictor = config.mutable_predictor()->mutable_frecency_predictor();
   predictor->set_decay_coeff(0.5f);
 
-  RecurrenceRanker ranker(ranker_filepath_, config, false);
+  RecurrenceRanker ranker("MyModel", ranker_filepath_, config, false);
   Wait();
 
   ranker.Record("A");
@@ -387,8 +455,8 @@ TEST_F(RecurrenceRankerTest, IntegrationWithZeroStateFrecencyPredictor) {
   EXPECT_THAT(ranker.Rank(), UnorderedElementsAre(Pair("A", FloatEq(0.09375f)),
                                                   Pair("B", FloatEq(0.125f)),
                                                   Pair("C", FloatEq(0.25f))));
-  ExpectErrors(/*fresh_model_created = */ true,
-               /*using_fake_predictor = */ false);
+  ExpectErrors(/* fresh_model_created = */ true,
+               /* using_fake_predictor = */ false);
 }
 
 }  // namespace app_list

@@ -3161,7 +3161,9 @@ class TestSharedImageBacking : public SharedImageBacking {
 
   void SetCleared() override {}
 
-  void Update() override {}
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
+    DCHECK(!in_fence);
+  }
 
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
     return false;

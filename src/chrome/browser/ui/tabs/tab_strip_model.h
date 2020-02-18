@@ -34,7 +34,6 @@
 #endif
 
 class Profile;
-class TabGroupData;
 class TabStripModelDelegate;
 
 namespace content {
@@ -319,12 +318,14 @@ class TabStripModel {
   // Returns true if the tab at |index| is blocked by a tab modal dialog.
   bool IsTabBlocked(int index) const;
 
-  // Returns the group that contains the tab at |index|, or nullopt if it is not
-  // grouped. This feature is in development and gated behind a feature flag
-  // (see https://crbug.com/915956).
+  // Returns the group that contains the tab at |index|, or nullopt if the tab
+  // index is invalid or not grouped.
+  // This feature is in development and gated behind a feature flag (see
+  // https://crbug.com/915956).
   base::Optional<TabGroupId> GetTabGroupForTab(int index) const;
 
-  // Returns the TabGroupData instance for the given |group|.
+  // Returns the TabGroupData instance for the given |group|. The returned
+  // pointer is valid until all tabs in |group| are destroyed.
   const TabGroupData* GetDataForGroup(TabGroupId group) const;
 
   // Returns a list of tab groups that contain at least one tab in this strip.
@@ -392,10 +393,10 @@ class TabStripModel {
 
   // Create a new tab group and add the set of tabs pointed to be |indices| to
   // it. Pins all of the tabs if any of them were pinned, and reorders the tabs
-  // so they are contiguous and do not split an existing group in half.
-  // |indices| must be sorted in ascending order. This feature is in development
-  // and gated behind a feature flag. https://crbug.com/915956.
-  void AddToNewGroup(const std::vector<int>& indices);
+  // so they are contiguous and do not split an existing group in half. Returns
+  // the new group. |indices| must be sorted in ascending order. This feature is
+  // in development and gated behind a feature flag. https://crbug.com/915956.
+  TabGroupId AddToNewGroup(const std::vector<int>& indices);
 
   // Add the set of tabs pointed to by |indices| to the given tab group |group|.
   // The tabs take on the pinnedness of the tabs already in the group, and are
@@ -403,6 +404,11 @@ class TabStripModel {
   // be sorted in ascending order. This feature is in development and gated
   // behind a feature flag (see https://crbug.com/915956).
   void AddToExistingGroup(const std::vector<int>& indices, TabGroupId group);
+
+  // Similar to AddToExistingGroup(), but creates a group with id |group| if it
+  // doesn't exist. This is only intended to be called from session restore
+  // code.
+  void AddToGroupForRestore(const std::vector<int>& indices, TabGroupId group);
 
   // Removes the set of tabs pointed to by |indices| from the the groups they
   // are in, if any. The tabs are moved out of the group if necessary. |indices|
@@ -609,6 +615,15 @@ class TabStripModel {
   // starting at |start| to |index|. See MoveSelectedTabsTo for more details.
   void MoveSelectedTabsToImpl(int index, size_t start, size_t length);
 
+  // Adds tabs to newly-allocated group id |new_group|. This group must be new
+  // and have no tabs in it.
+  void AddToNewGroupImpl(const std::vector<int>& indices, TabGroupId new_group);
+
+  // Adds tabs to existing group |group|. This group must have been initialized
+  // by a previous call to |AddToNewGroupImpl()|.
+  void AddToExistingGroupImpl(const std::vector<int>& indices,
+                              TabGroupId group);
+
   // Moves the set of tabs indicated by |indices| to precede the tab at index
   // |destination_index|, maintaining their order and the order of tabs not
   // being moved, and adds them to the tab group |group|.
@@ -653,7 +668,7 @@ class TabStripModel {
 
   // The data for tab groups hosted within this TabStripModel, indexed by the
   // group ID.
-  std::map<TabGroupId, std::unique_ptr<TabGroupData>> group_data_;
+  std::map<TabGroupId, TabGroupData> group_data_;
 
   TabStripModelDelegate* delegate_;
 
@@ -694,7 +709,7 @@ class TabStripModel {
   // |tab_scrubbing_interval_timer_|.
   size_t tabs_scrubbed_by_key_press_count_ = 0;
 
-  base::WeakPtrFactory<TabStripModel> weak_factory_;
+  base::WeakPtrFactory<TabStripModel> weak_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TabStripModel);
 };

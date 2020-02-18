@@ -13,7 +13,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
+#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -22,43 +25,85 @@
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "chromeos/constants/chromeos_features.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace web_app {
 
 namespace {
 
-base::flat_map<SystemAppType, GURL> CreateSystemWebApps() {
-  base::flat_map<SystemAppType, GURL> urls;
+base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
+  base::flat_map<SystemAppType, SystemAppInfo> infos;
 // TODO(calamity): Split this into per-platform functions.
 #if defined(OS_CHROMEOS)
-  urls[SystemAppType::DISCOVER] = GURL(chrome::kChromeUIDiscoverURL);
-  constexpr char kChromeSettingsPWAURL[] = "chrome://settings/pwa.html";
-  urls[SystemAppType::SETTINGS] = GURL(kChromeSettingsPWAURL);
+  if (SystemWebAppManager::IsAppEnabled(SystemAppType::DISCOVER))
+    infos[SystemAppType::DISCOVER] = {GURL(chrome::kChromeUIDiscoverURL)};
+
+  if (SystemWebAppManager::IsAppEnabled(SystemAppType::CAMERA)) {
+    constexpr char kCameraAppPWAURL[] = "chrome://camera/pwa.html";
+    infos[SystemAppType::CAMERA] = {GURL(kCameraAppPWAURL),
+                                    app_list::kInternalAppIdCamera};
+  }
+
+  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
+    constexpr char kChromeSettingsPWAURL[] = "chrome://os-settings/pwa.html";
+    infos[SystemAppType::SETTINGS] = {GURL(kChromeSettingsPWAURL),
+                                      app_list::kInternalAppIdSettings};
+  } else {
+    constexpr char kChromeSettingsPWAURL[] = "chrome://settings/pwa.html";
+    infos[SystemAppType::SETTINGS] = {GURL(kChromeSettingsPWAURL),
+                                      app_list::kInternalAppIdSettings};
+  }
 #endif  // OS_CHROMEOS
 
-  return urls;
+  return infos;
 }
 
-InstallOptions CreateInstallOptionsForSystemApp(const GURL& url) {
-  DCHECK_EQ(content::kChromeUIScheme, url.scheme());
+ExternalInstallOptions CreateInstallOptionsForSystemApp(
+    const SystemAppInfo& info,
+    bool force_update) {
+  DCHECK_EQ(content::kChromeUIScheme, info.install_url.scheme());
 
-  web_app::InstallOptions install_options(url, LaunchContainer::kWindow,
-                                          InstallSource::kSystemInstalled);
+  web_app::ExternalInstallOptions install_options(
+      info.install_url, LaunchContainer::kWindow,
+      ExternalInstallSource::kSystemInstalled);
   install_options.add_to_applications_menu = false;
   install_options.add_to_desktop = false;
   install_options.add_to_quick_launch_bar = false;
   install_options.bypass_service_worker_check = true;
-  install_options.always_update = true;
+  install_options.force_reinstall = force_update;
   return install_options;
 }
 
 }  // namespace
 
-SystemWebAppManager::SystemWebAppManager(Profile* profile,
-                                         PendingAppManager* pending_app_manager)
+// static
+const char SystemWebAppManager::kInstallResultHistogramName[];
+
+// static
+bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
+#if defined(OS_CHROMEOS)
+  switch (type) {
+    case SystemAppType::SETTINGS:
+      return true;
+      break;
+    case SystemAppType::DISCOVER:
+      return base::FeatureList::IsEnabled(chromeos::features::kDiscoverApp);
+      break;
+    case SystemAppType::CAMERA:
+      return base::FeatureList::IsEnabled(
+          chromeos::features::kCameraSystemWebApp);
+      break;
+  }
+#else
+  return false;
+#endif  // OS_CHROMEOS
+}
+SystemWebAppManager::SystemWebAppManager(Profile* profile)
     : on_apps_synchronized_(new base::OneShotEvent()),
-      pref_service_(profile->GetPrefs()),
-      pending_app_manager_(pending_app_manager),
-      weak_ptr_factory_(this) {
+      pref_service_(profile->GetPrefs()) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kTestType)) {
     // Always update in tests, and return early to avoid populating with real
@@ -74,38 +119,52 @@ SystemWebAppManager::SystemWebAppManager(Profile* profile,
   // Dev builds should update every launch.
   update_policy_ = UpdatePolicy::kAlwaysUpdate;
 #endif
-  system_app_urls_ = CreateSystemWebApps();
+  system_app_infos_ = CreateSystemWebApps();
 }
 
 SystemWebAppManager::~SystemWebAppManager() = default;
 
+void SystemWebAppManager::SetSubsystems(PendingAppManager* pending_app_manager,
+                                        AppRegistrar* registrar,
+                                        WebAppUiManager* ui_manager) {
+  pending_app_manager_ = pending_app_manager;
+  registrar_ = registrar;
+  ui_manager_ = ui_manager;
+}
+
 void SystemWebAppManager::Start() {
-  // Clear the last update pref here to force uninstall, and to ensure that when
-  // the flag is enabled again, an update is triggered.
-  if (!IsEnabled())
-    pref_service_->ClearPref(prefs::kSystemWebAppLastUpdateVersion);
+  std::map<AppId, GURL> installed_apps = registrar_->GetExternallyInstalledApps(
+      ExternalInstallSource::kSystemInstalled);
 
-  if (!NeedsUpdate())
-    return;
+  std::set<SystemAppType> installed_app_types;
+  for (const auto& type_and_info : system_app_infos_) {
+    const GURL& install_url = type_and_info.second.install_url;
+    if (std::find_if(installed_apps.begin(), installed_apps.end(),
+                     [install_url](const std::pair<AppId, GURL> id_and_url) {
+                       return id_and_url.second == install_url;
+                     }) != installed_apps.end()) {
+      installed_app_types.insert(type_and_info.first);
+    }
+  }
 
-  std::vector<InstallOptions> install_options_list;
+  std::vector<ExternalInstallOptions> install_options_list;
   if (IsEnabled()) {
     // Skipping this will uninstall all System Apps currently installed.
-    for (const auto& app : system_app_urls_) {
+    for (const auto& app : system_app_infos_) {
       install_options_list.push_back(
-          CreateInstallOptionsForSystemApp(app.second));
+          CreateInstallOptionsForSystemApp(app.second, NeedsUpdate()));
     }
   }
 
   pending_app_manager_->SynchronizeInstalledApps(
-      std::move(install_options_list), InstallSource::kSystemInstalled,
+      std::move(install_options_list), ExternalInstallSource::kSystemInstalled,
       base::BindOnce(&SystemWebAppManager::OnAppsSynchronized,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), installed_app_types));
 }
 
 void SystemWebAppManager::InstallSystemAppsForTesting() {
   on_apps_synchronized_.reset(new base::OneShotEvent());
-  system_app_urls_ = CreateSystemWebApps();
+  system_app_infos_ = CreateSystemWebApps();
   Start();
 
   // Wait for the System Web Apps to install.
@@ -116,22 +175,22 @@ void SystemWebAppManager::InstallSystemAppsForTesting() {
 
 base::Optional<AppId> SystemWebAppManager::GetAppIdForSystemApp(
     SystemAppType id) const {
-  auto app_url_it = system_app_urls_.find(id);
+  auto app_url_it = system_app_infos_.find(id);
 
-  if (app_url_it == system_app_urls_.end())
+  if (app_url_it == system_app_infos_.end())
     return base::Optional<AppId>();
 
-  return pending_app_manager_->LookupAppId(app_url_it->second);
+  return registrar_->LookupExternalAppId(app_url_it->second.install_url);
 }
 
 bool SystemWebAppManager::IsSystemWebApp(const AppId& app_id) const {
-  return pending_app_manager_->HasAppIdWithInstallSource(
-      app_id, InstallSource::kSystemInstalled);
+  return registrar_->HasExternalAppWithInstallSource(
+      app_id, ExternalInstallSource::kSystemInstalled);
 }
 
 void SystemWebAppManager::SetSystemAppsForTesting(
-    base::flat_map<SystemAppType, GURL> system_app_urls) {
-  system_app_urls_ = std::move(system_app_urls);
+    base::flat_map<SystemAppType, SystemAppInfo> system_apps) {
+  system_app_infos_ = std::move(system_apps);
 }
 
 void SystemWebAppManager::SetUpdatePolicyForTesting(UpdatePolicy policy) {
@@ -154,12 +213,20 @@ const base::Version& SystemWebAppManager::CurrentVersion() const {
 }
 
 void SystemWebAppManager::OnAppsSynchronized(
-    PendingAppManager::SynchronizeResult result) {
+    std::set<SystemAppType> already_installed,
+    std::map<GURL, InstallResultCode> install_results,
+    std::map<GURL, bool> uninstall_results) {
   if (IsEnabled()) {
     pref_service_->SetString(prefs::kSystemWebAppLastUpdateVersion,
                              CurrentVersion().GetString());
   }
 
+  RecordExternalAppInstallResultCode(kInstallResultHistogramName,
+                                     install_results);
+
+  MigrateSystemWebApps(already_installed);
+
+  // May be called more than once in tests.
   if (!on_apps_synchronized_->is_signaled())
     on_apps_synchronized_->Signal();
 }
@@ -174,6 +241,31 @@ bool SystemWebAppManager::NeedsUpdate() const {
   // the System Web Apps are always in sync with the Chrome version.
   return !last_update_version.IsValid() ||
          last_update_version != CurrentVersion();
+}
+
+void SystemWebAppManager::MigrateSystemWebApps(
+    std::set<SystemAppType> already_installed) {
+  DCHECK(ui_manager_);
+
+  for (const auto& type_and_info : system_app_infos_) {
+    // Migrate if a migration source is specified and the app has been newly
+    // installed.
+    if (!type_and_info.second.migration_source.empty() &&
+        !base::Contains(already_installed, type_and_info.first)) {
+      base::Optional<AppId> system_app_id =
+          GetAppIdForSystemApp(type_and_info.first);
+      // TODO(crbug.com/977466): Replace with a DCHECK once we understand why
+      // this is happening.
+      if (!system_app_id) {
+        LOG(ERROR) << "System App Type "
+                   << static_cast<int>(type_and_info.first)
+                   << " could not be found when running migration.";
+        continue;
+      }
+      ui_manager_->MigrateOSAttributes(type_and_info.second.migration_source,
+                                       *system_app_id);
+    }
+  }
 }
 
 }  // namespace web_app

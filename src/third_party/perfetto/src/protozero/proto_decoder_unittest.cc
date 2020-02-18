@@ -16,9 +16,9 @@
 
 #include "perfetto/protozero/proto_decoder.h"
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-#include "perfetto/base/utils.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include "perfetto/ext/base/utils.h"
 #include "perfetto/protozero/message.h"
 #include "perfetto/protozero/proto_utils.h"
 #include "perfetto/protozero/scattered_heap_buffer.h"
@@ -157,10 +157,10 @@ TEST(ProtoDecoderTest, RepeatedFields) {
   EXPECT_FALSE(++it);
 
   it = tpd.GetRepeated(2);
-  EXPECT_EQ(it->as_int32(), 20);
-  EXPECT_EQ((++it)->as_int32(), 21);
-  EXPECT_EQ((++it)->as_int32(), 22);
-  EXPECT_FALSE(++it);
+  EXPECT_EQ((it++)->as_int32(), 20);
+  EXPECT_EQ((it++)->as_int32(), 21);
+  EXPECT_EQ((it++)->as_int32(), 22);
+  EXPECT_FALSE(it);
 
   it = tpd.GetRepeated(3);
   EXPECT_EQ(it->as_int32(), 30);

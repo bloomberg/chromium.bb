@@ -122,12 +122,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   // Avoid showing the Welcome page.
   profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
 
-#if defined(OS_WIN)
-  // Do not show the Windows 10 promo page.
-  g_browser_process->local_state()->SetBoolean(prefs::kHasSeenWin10PromoPage,
-                                               true);
-#endif
-
   // Set the startup preference to open these URLs.
   SessionStartupPref pref(SessionStartupPref::URLS);
   pref.urls = urls;
@@ -250,7 +244,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
         Profile::CreateProfile(path, nullptr, Profile::CREATE_MODE_SYNCHRONOUS);
   }
   Profile* other_profile_ptr = other_profile.get();
-  profile_manager->RegisterTestingProfile(other_profile.release(), true, false);
+  profile_manager->RegisterTestingProfile(std::move(other_profile), true,
+                                          false);
 
   // Use a couple same-site HTTP URLs.
   ASSERT_TRUE(embedded_test_server()->Start());

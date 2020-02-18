@@ -17,7 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local_storage.h"
 #include "build/build_config.h"
-#include "components/url_formatter/idn_spoof_checker.h"
+#include "components/url_formatter/spoof_checks/idn_spoof_checker.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/icu/source/common/unicode/uidna.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
@@ -196,6 +196,12 @@ base::string16 FormatViewSourceUrl(
   const char kViewSource[] = "view-source:";
   const size_t kViewSourceLength = base::size(kViewSource) - 1;
 
+  // The URL embedded within view-source should never have destructive elisions
+  // applied to it. Users of view-source likely want to see the full URL.
+  format_types &= ~kFormatUrlOmitHTTPS;
+  format_types &= ~kFormatUrlOmitTrivialSubdomains;
+  format_types &= ~kFormatUrlTrimAfterHost;
+
   // Format the underlying URL and record adjustments.
   const std::string& url_str(url.possibly_invalid_spec());
   adjustments->clear();
@@ -344,8 +350,12 @@ struct UIDNAWrapper {
     // TODO(jungshik): Change options as different parties (browsers,
     // registrars, search engines) converge toward a consensus.
     value = uidna_openUTS46(UIDNA_CHECK_BIDI, &err);
-    if (U_FAILURE(err))
-      value = nullptr;
+    CHECK(U_SUCCESS(err)) << "failed to open UTS46 data with error: "
+                          << u_errorName(err)
+                          << ". If you see this error message in a test "
+                          << "environment your test environment likely lacks "
+                          << "the required data tables for libicu. See "
+                          << "https://crbug.com/778929.";
   }
 
   UIDNA* value;

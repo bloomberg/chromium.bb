@@ -115,10 +115,6 @@ enum ShelfItemType {
   // Represents a pinned shortcut to an app, the app may be running or not.
   TYPE_PINNED_APP,
 
-  // Toggles visiblity of the app list.
-  // TODO(michaelpg): Rename App List item to Home Button.
-  TYPE_APP_LIST,
-
   // The browser shortcut button, the browser may be running or not.
   TYPE_BROWSER_SHORTCUT,
 
@@ -130,9 +126,6 @@ enum ShelfItemType {
 
   // Represents an open dialog.
   TYPE_DIALOG,
-
-  // Represents the back button, which is shown in tablet mode.
-  TYPE_BACK_BUTTON,
 
   // Default value.
   TYPE_UNDEFINED,

@@ -50,9 +50,6 @@ class FakeEmbeddedWorkerInstanceClient
   void BindDevToolsAgent(
       blink::mojom::DevToolsAgentHostAssociatedPtrInfo,
       blink::mojom::DevToolsAgentAssociatedRequest) override {}
-  void UpdateSubresourceLoaderFactories(
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          subresource_loader_factories) override {}
 
   virtual void EvaluateScript();
 
@@ -74,7 +71,7 @@ class FakeEmbeddedWorkerInstanceClient
   mojo::Binding<blink::mojom::EmbeddedWorkerInstanceClient> binding_;
   base::OnceClosure quit_closure_for_bind_;
 
-  base::WeakPtrFactory<FakeEmbeddedWorkerInstanceClient> weak_factory_;
+  base::WeakPtrFactory<FakeEmbeddedWorkerInstanceClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeEmbeddedWorkerInstanceClient);
 };

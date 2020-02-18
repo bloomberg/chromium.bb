@@ -10,14 +10,29 @@
 
 namespace content {
 
-// A URLLoaderFactory that returns 200 OK with a simple body to any request.
-// Any request path that ends in ".js" gets a body of
-// "/*this body came from the network*/". Other requests get
-// "this body came from the network".
+// A configurable URLLoaderFactory:
+// 1. By default, it returns 200 OK with a simple body to any request:
+//    If request path ends in ".js", body is:
+//    "/*this body came from the network*/". Otherwise, body is:
+//    "this body came from the network".
+// 2. The default response can be overridden through the non-default
+//    constructor.
+// 3. Call SetResponse() to set specific response for a url.
 class FakeNetworkURLLoaderFactory final
     : public network::mojom::URLLoaderFactory {
  public:
+  // If this constructor is used:
+  // A default response is used for any url request that is not configured
+  // through SetResponse().
   FakeNetworkURLLoaderFactory();
+
+  // If this constructor is used:
+  // The provided response is used for any url request that is not configured
+  // through SetResponse().
+  FakeNetworkURLLoaderFactory(const std::string& headers,
+                              const std::string& body,
+                              bool network_accessed,
+                              net::Error error_code);
   ~FakeNetworkURLLoaderFactory() override;
 
   // network::mojom::URLLoaderFactory implementation.
@@ -32,7 +47,46 @@ class FakeNetworkURLLoaderFactory final
 
   void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
+  // Sets the response for a specific url. CreateLoaderAndStart() uses this
+  // response instead of the default.
+  void SetResponse(const GURL& url,
+                   const std::string& headers,
+                   const std::string& body,
+                   bool network_accessed,
+                   net::Error error_code);
+
  private:
+  class ResponseInfo {
+   public:
+    ResponseInfo();
+    ResponseInfo(ResponseInfo&& info);
+    ResponseInfo(const std::string& headers,
+                 const std::string& body,
+                 bool network_accessed,
+                 net::Error error_code);
+    ~ResponseInfo();
+    ResponseInfo& operator=(ResponseInfo&& info);
+
+    GURL url;
+    std::string headers;
+    std::string body;
+    bool network_accessed = true;
+    net::Error error_code = net::OK;
+  };
+
+  // Returns the ResponseInfo for the |url|, it follows the order:
+  // 1. Returns the matching entry in |response_info_map_| if exists.
+  // 2. Returns |user_defined_default_response_info_| if it's set.
+  // 3. Returns default response info (defined inside this method).
+  const ResponseInfo& FindResponseInfo(const GURL& url) const;
+
+  // This is user-defined default response info, it overrides the default
+  // response info.
+  std::unique_ptr<ResponseInfo> user_defined_default_response_info_;
+
+  // User-defined URL => ResponseInfo map.
+  base::flat_map<GURL, ResponseInfo> response_info_map_;
+
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkURLLoaderFactory);

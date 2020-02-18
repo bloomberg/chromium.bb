@@ -20,10 +20,10 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/signin/core/browser/signin_buildflags.h"
+#include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 class LoginUIService;
 
@@ -43,7 +43,7 @@ class SyncSetupInProgressHandle;
 namespace settings {
 
 class PeopleHandler : public SettingsPageUIHandler,
-                      public identity::IdentityManager::Observer,
+                      public signin::IdentityManager::Observer,
                       public SyncStartupTracker::Observer,
                       public LoginUIService::LoginUI,
                       public syncer::SyncServiceObserver,
@@ -261,7 +261,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   PrefChangeRegistrar profile_pref_registrar_;
 
   // Manages observer lifetimes.
-  ScopedObserver<identity::IdentityManager, PeopleHandler>
+  ScopedObserver<signin::IdentityManager, PeopleHandler>
       identity_manager_observer_;
   ScopedObserver<syncer::SyncService, PeopleHandler> sync_service_observer_;
 

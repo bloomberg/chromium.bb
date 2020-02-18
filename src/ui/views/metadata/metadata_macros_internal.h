@@ -18,6 +18,16 @@
 
 // Metadata Accessors ---------------------------------------------------------
 #define METADATA_ACCESSORS_INTERNAL(class_name)      \
+  static const char kViewClassName[];                \
+  const char* GetClassName() const override;         \
+  static views::metadata::ClassMetaData* MetaData(); \
+  views::metadata::ClassMetaData* GetClassMetaData() override;
+
+// A version of METADATA_ACCESSORS_INTERNAL for View, the root of the metadata
+// hierarchy; here GetClassName() is not declared as an override.
+#define METADATA_ACCESSORS_INTERNAL_BASE(class_name) \
+  static const char kViewClassName[];                \
+  virtual const char* GetClassName() const;          \
   static views::metadata::ClassMetaData* MetaData(); \
   views::metadata::ClassMetaData* GetClassMetaData() override;
 

@@ -45,9 +45,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread.h"
-#include "ui/aura/env.h"
-#include "ui/aura/env_observer.h"
-#include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/test/ui_controls.h"
@@ -60,6 +57,12 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/widget.h"
+
+#if !defined(OS_MACOSX)
+#include "ui/aura/env.h"
+#include "ui/aura/env_observer.h"
+#include "ui/aura/window.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -368,12 +371,12 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
       size.set_width(size.width() - 25);
       bb_view_->SetBounds(0, 0, size.width(), size.height());
       bb_view_->Layout();
-    } while (bb_view_->GetBookmarkButton(6)->GetVisible());
+    } while (bb_view_->bookmark_buttons_[6]->GetVisible());
     return size;
   }
 
-  views::LabelButton* GetBookmarkButton(int view_index) {
-    return bb_view_->GetBookmarkButton(view_index);
+  views::LabelButton* GetBookmarkButton(size_t view_index) {
+    return bb_view_->bookmark_buttons_[view_index];
   }
 
   // See comment above class description for what this does.
@@ -393,7 +396,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     model_->AddURL(f11, 0, ASCIIToUTF16("f11a"), GURL(test_base + "f11a"));
     model_->AddURL(f1, 2, ASCIIToUTF16("f1b"), GURL(test_base + "f1b"));
     if (big_menu) {
-      for (int i = 1; i <= 100; ++i) {
+      for (size_t i = 1; i <= 100; ++i) {
         model_->AddURL(f1, i + 1, ASCIIToUTF16("f") + base::NumberToString16(i),
                        GURL(test_base + "f" + base::NumberToString(i)));
       }
@@ -454,7 +457,8 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase,
     bookmark_bar_observer_.Add(bb_view_.get());
 
     // Record the URL for node f1a.
-    f1a_url_ = model_->bookmark_bar_node()->GetChild(0)->GetChild(0)->url();
+    const auto& f1 = model_->bookmark_bar_node()->children().front();
+    f1a_url_ = f1->children().front()->url();
 
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
@@ -571,8 +575,8 @@ class BookmarkBarViewTest1 : public BookmarkBarViewEventTestBase {
 
   void Step3() {
     // We should have navigated to URL f1a.
-    ASSERT_EQ(navigator_.last_url(),
-              model_->bookmark_bar_node()->GetChild(0)->GetChild(0)->url());
+    const auto& f1 = model_->bookmark_bar_node()->children().front();
+    ASSERT_EQ(navigator_.last_url(), f1->children().front()->url());
     ASSERT_FALSE(PageTransitionIsWebTriggerable(navigator_.last_transition()));
 
     // Make sure button is no longer pushed.
@@ -793,7 +797,8 @@ class BookmarkBarViewTest4 : public BookmarkBarViewEventTestBase {
   }
 
   void Step4() {
-    EXPECT_EQ(navigator_.last_url(), model_->other_node()->GetChild(0)->url());
+    EXPECT_EQ(navigator_.last_url(),
+              model_->other_node()->children().front()->url());
     ASSERT_FALSE(PageTransitionIsWebTriggerable(navigator_.last_transition()));
     Done();
   }
@@ -815,7 +820,7 @@ class BookmarkBarViewTest5 : public BookmarkBarViewDragTestBase {
   }
 
   const BookmarkNode* GetDroppedNode() const override {
-    return model_->bookmark_bar_node()->GetChild(0)->GetChild(1);
+    return model_->bookmark_bar_node()->children()[0]->children()[1].get();
   }
 
   gfx::Point GetDragTargetInScreen() const override {
@@ -858,7 +863,7 @@ class BookmarkBarViewTest6 : public BookmarkBarViewEventTestBase {
 
   void Step3() {
     ASSERT_EQ(navigator_.last_url(),
-              model_->bookmark_bar_node()->GetChild(6)->url());
+              model_->bookmark_bar_node()->children()[6]->url());
     ASSERT_FALSE(PageTransitionIsWebTriggerable(navigator_.last_transition()));
     Done();
   }
@@ -905,7 +910,7 @@ class BookmarkBarViewTest7 : public BookmarkBarViewDragTestBase {
  protected:
   // BookmarkBarViewDragTestBase:
   const BookmarkNode* GetDroppedNode() const override {
-    return model_->other_node()->GetChild(0);
+    return model_->other_node()->children().front().get();
   }
 
   gfx::Point GetDragTargetInScreen() const override {
@@ -951,7 +956,8 @@ class BookmarkBarViewTest8 : public BookmarkBarViewDragTestBase {
  protected:
   // BookmarkBarViewDragTestBase:
   const BookmarkNode* GetDroppedNode() const override {
-    return model_->bookmark_bar_node()->GetChild(0)->GetChild(0)->GetChild(1);
+    const auto& f1 = model_->bookmark_bar_node()->children()[0];
+    return f1->children()[0]->children()[1].get();
   }
 
   gfx::Point GetDragTargetInScreen() const override {
@@ -1145,8 +1151,8 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
   }
 
   void Step9() {
-    ASSERT_EQ(navigator_.last_url(),
-              model_->bookmark_bar_node()->GetChild(0)->GetChild(0)->url());
+    const auto& f1 = model_->bookmark_bar_node()->children().front();
+    ASSERT_EQ(navigator_.last_url(), f1->children().front()->url());
     ASSERT_FALSE(PageTransitionIsWebTriggerable(navigator_.last_transition()));
     Done();
   }
@@ -2065,7 +2071,8 @@ class BookmarkBarViewTest23 : public BookmarkBarViewEventTestBase {
   }
 
   void Step5() {
-    EXPECT_EQ(navigator_.last_url(), model_->other_node()->GetChild(0)->url());
+    EXPECT_EQ(navigator_.last_url(),
+              model_->other_node()->children().front()->url());
     ASSERT_FALSE(PageTransitionIsWebTriggerable(navigator_.last_transition()));
     Done();
   }
@@ -2253,9 +2260,9 @@ class BookmarkBarViewTest27 : public BookmarkBarViewEventTestBase {
   void Step2() {
     ASSERT_EQ(2u, navigator_.urls().size());
     EXPECT_EQ(navigator_.urls()[0],
-              model_->bookmark_bar_node()->GetChild(0)->GetChild(0)->url());
+              model_->bookmark_bar_node()->children()[0]->children()[0]->url());
     EXPECT_EQ(navigator_.urls()[1],
-              model_->bookmark_bar_node()->GetChild(0)->GetChild(2)->url());
+              model_->bookmark_bar_node()->children()[0]->children()[2]->url());
     Done();
   }
 };
@@ -2283,9 +2290,9 @@ class BookmarkBarViewTest28 : public BookmarkBarViewEventTestBase {
   void Step2() {
     ASSERT_EQ(2u, navigator_.urls().size());
     EXPECT_EQ(navigator_.urls()[0],
-              model_->bookmark_bar_node()->GetChild(0)->GetChild(0)->url());
+              model_->bookmark_bar_node()->children()[0]->children()[0]->url());
     EXPECT_EQ(navigator_.urls()[1],
-              model_->bookmark_bar_node()->GetChild(0)->GetChild(2)->url());
+              model_->bookmark_bar_node()->children()[0]->children()[2]->url());
     Done();
   }
 };

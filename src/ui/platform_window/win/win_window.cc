@@ -122,7 +122,15 @@ void WinWindow::Minimize() {}
 void WinWindow::Restore() {}
 
 PlatformWindowState WinWindow::GetPlatformWindowState() const {
-  return PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN;
+  return PlatformWindowState::kUnknown;
+}
+
+void WinWindow::Activate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WinWindow::Deactivate() {
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WinWindow::SetCursor(PlatformCursor cursor) {
@@ -134,10 +142,6 @@ void WinWindow::MoveCursorTo(const gfx::Point& location) {
 }
 
 void WinWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
-}
-
-PlatformImeController* WinWindow::GetPlatformImeController() {
-  return nullptr;
 }
 
 void WinWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {}

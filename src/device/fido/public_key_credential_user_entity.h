@@ -6,6 +6,7 @@
 #define DEVICE_FIDO_PUBLIC_KEY_CREDENTIAL_USER_ENTITY_H_
 
 #include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -25,13 +26,19 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialUserEntity {
   static base::Optional<PublicKeyCredentialUserEntity> CreateFromCBORValue(
       const cbor::Value& cbor);
 
+  PublicKeyCredentialUserEntity();
   explicit PublicKeyCredentialUserEntity(std::vector<uint8_t> id);
+  PublicKeyCredentialUserEntity(std::vector<uint8_t> id,
+                                base::Optional<std::string> name,
+                                base::Optional<std::string> display_name,
+                                base::Optional<GURL> icon_url);
   PublicKeyCredentialUserEntity(const PublicKeyCredentialUserEntity& other);
   PublicKeyCredentialUserEntity(PublicKeyCredentialUserEntity&& other);
   PublicKeyCredentialUserEntity& operator=(
       const PublicKeyCredentialUserEntity& other);
   PublicKeyCredentialUserEntity& operator=(
       PublicKeyCredentialUserEntity&& other);
+  bool operator==(const PublicKeyCredentialUserEntity& other) const;
   ~PublicKeyCredentialUserEntity();
 
   std::vector<uint8_t> id;

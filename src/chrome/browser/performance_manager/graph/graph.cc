@@ -9,4 +9,13 @@ namespace performance_manager {
 Graph::Graph() = default;
 Graph::~Graph() = default;
 
+GraphObserver::GraphObserver() = default;
+GraphObserver::~GraphObserver() = default;
+
+GraphOwned::GraphOwned() = default;
+GraphOwned::~GraphOwned() = default;
+
+GraphOwnedDefaultImpl::GraphOwnedDefaultImpl() = default;
+GraphOwnedDefaultImpl::~GraphOwnedDefaultImpl() = default;
+
 }  // namespace performance_manager

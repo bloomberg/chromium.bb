@@ -20,6 +20,8 @@ namespace views {
 // Progress bar is a control that indicates progress visually.
 class VIEWS_EXPORT ProgressBar : public View, public gfx::AnimationDelegate {
  public:
+  METADATA_HEADER(ProgressBar);
+
   // The preferred height parameter makes it easier to use a ProgressBar with
   // layout managers that size to preferred size.
   explicit ProgressBar(int preferred_height = 5,
@@ -29,7 +31,6 @@ class VIEWS_EXPORT ProgressBar : public View, public gfx::AnimationDelegate {
   // Overridden from View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
-  const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
   double current_value() const { return current_value_; }
@@ -49,8 +50,6 @@ class VIEWS_EXPORT ProgressBar : public View, public gfx::AnimationDelegate {
   int preferred_height() const { return preferred_height_; }
 
  private:
-  static const char kViewClassName[];
-
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;

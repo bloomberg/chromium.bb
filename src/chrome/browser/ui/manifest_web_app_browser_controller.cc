@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/manifest_web_app_browser_controller.h"
 
+#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -37,17 +38,15 @@ bool ManifestWebAppBrowserController::ShouldShowToolbar() const {
   if (!content::IsOriginSecure(app_launch_url_))
     return true;
 
-  // Show toolbar if web_contents is not on the same origin as it was originally
-  // launched on.
-  if (!url::IsSameOriginWith(app_launch_url_,
-                             web_contents->GetLastCommittedURL()) ||
-      !url::IsSameOriginWith(app_launch_url_, web_contents->GetVisibleURL())) {
+  // Show toolbar if web_contents is not currently in scope.
+  if (!IsUrlInAppScope(web_contents->GetLastCommittedURL()) ||
+      !IsUrlInAppScope(web_contents->GetVisibleURL())) {
     return true;
   }
 
   // Show toolbar if on a insecure external website. This checks the security
   // level, different from IsOriginSecure which just checks the origin itself.
-  if (!IsSiteSecure(web_contents))
+  if (!InstallableManager::IsContentSecure(web_contents))
     return true;
 
   return false;
@@ -85,6 +84,11 @@ base::string16 ManifestWebAppBrowserController::GetFormattedUrlOrigin() const {
 
 GURL ManifestWebAppBrowserController::GetAppLaunchURL() const {
   return app_launch_url_;
+}
+
+bool ManifestWebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
+  // TODO(981703): Use the scope in the manifest instead of same origin check.
+  return url::IsSameOriginWith(GetAppLaunchURL(), url);
 }
 
 void ManifestWebAppBrowserController::OnTabInserted(

@@ -25,6 +25,7 @@
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
+#include "core/fpdfapi/render/cpdf_pagerendercache.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
@@ -619,9 +620,11 @@ bool CPDF_NPageToOneExporter::ExportNPagesToOne(
       if (!pSrcPageDict)
         return false;
 
-      auto srcPage = pdfium::MakeRetain<CPDF_Page>(src(), pSrcPageDict, true);
+      auto pSrcPage = pdfium::MakeRetain<CPDF_Page>(src(), pSrcPageDict);
+      pSrcPage->SetRenderCache(
+          pdfium::MakeUnique<CPDF_PageRenderCache>(pSrcPage.Get()));
       NupPageSettings settings =
-          nupState.CalculateNewPagePosition(srcPage->GetPageSize());
+          nupState.CalculateNewPagePosition(pSrcPage->GetPageSize());
       bsContent += AddSubPage(pSrcPageDict, settings);
     }
 
@@ -696,7 +699,7 @@ ByteString CPDF_NPageToOneExporter::MakeXObjectFromPage(
       pAcc->LoadAllDataFiltered();
       bsSrcContentStream = ByteString(pAcc->GetData(), pAcc->GetSize());
     }
-    pNewXObject->SetDataAndRemoveFilter(bsSrcContentStream.AsRawSpan());
+    pNewXObject->SetDataAndRemoveFilter(bsSrcContentStream.raw_span());
   }
 
   // TODO(xlou): A better name schema to avoid possible object name collision.
@@ -727,7 +730,7 @@ void CPDF_NPageToOneExporter::FinishPage(CPDF_Dictionary* pDestPageDict,
   auto pDict = dest()->New<CPDF_Dictionary>();
   CPDF_Stream* pStream =
       dest()->NewIndirect<CPDF_Stream>(nullptr, 0, std::move(pDict));
-  pStream->SetData(bsContent.AsRawSpan());
+  pStream->SetData(bsContent.raw_span());
   pDestPageDict->SetNewFor<CPDF_Reference>(pdfium::page_object::kContents,
                                            dest(), pStream->GetObjNum());
 }

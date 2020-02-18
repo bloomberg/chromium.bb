@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_READABLE_STREAM_READER_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "v8/include/v8.h"
 
@@ -25,7 +26,7 @@ class Visitor;
 // with the standard, ReadableStreamDefaultReader is implemented by the
 // ReadableStreamReader class.
 // TODO(ricea): Refactor this when implementing ReadableStreamBYOBReader.
-class ReadableStreamReader : public ScriptWrappable {
+class CORE_EXPORT ReadableStreamReader : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -80,12 +81,6 @@ class ReadableStreamReader : public ScriptWrappable {
   static void GenericInitialize(ScriptState*,
                                 ReadableStreamReader*,
                                 ReadableStreamNative*);
-
-  // Calls method |method_name| on |object|, passing no arguments, and ignoring
-  // errors. Used for Blink lock notifications.
-  static void CallNullaryMethod(ScriptState*,
-                                v8::Local<v8::Object> object,
-                                const char* method_name);
 
   Member<StreamPromiseResolver> closed_promise_;
   bool for_author_code_ = true;

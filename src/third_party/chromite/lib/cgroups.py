@@ -8,16 +8,17 @@
 from __future__ import print_function
 
 import errno
+import numbers
 import os
 import signal
 import time
 
 from chromite.lib import cros_build_lib
 from chromite.lib import locking
-from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import signals
 from chromite.lib import sudo
+from chromite.utils import memoize
 
 
 # Rough hierarchy sketch:
@@ -516,7 +517,7 @@ class Cgroup(object):
     # that's ultra rare, but the potential exists thus we ask the kernel
     # instead.  What sucks however is that python releases the GIL; thus
     # consuming code has to know of this, and protect against it.
-    return map(int, os.listdir('/proc/self/task'))
+    return [int(x) for x in os.listdir('/proc/self/task')]
 
   @EnsureInitialized
   def TransferPid(self, pid, allow_missing=False):
@@ -540,7 +541,7 @@ class Cgroup(object):
   def KillProcesses(self, poll_interval=0.05, remove=False, sigterm_timeout=10):
     """Kill all processes in this namespace."""
 
-    my_pids = set(map(str, self._GetCurrentProcessThreads()))
+    my_pids = set(str(x) for x in self._GetCurrentProcessThreads())
 
     def _SignalPids(pids, signum):
       cros_build_lib.SudoRunCommand(
@@ -636,7 +637,7 @@ class Cgroup(object):
     """
     if pid is None:
       pid = 'self'
-    elif not isinstance(pid, (long, int)):
+    elif not isinstance(pid, numbers.Integral):
       raise ValueError("pid must be None, or an integer/long.  Got %r" % (pid,))
 
     cpuset = None

@@ -1,8 +1,7 @@
 C:\strawberry\perl\vendor\lib\Net\SSLeay.pm
 C:\strawberry\perl\vendor\lib\Net\SSLeay.pod
 C:\strawberry\perl\vendor\lib\Net\SSLeay\Handle.pm
-C:\strawberry\perl\vendor\lib\auto\Net\SSLeay\SSLeay.bs
-C:\strawberry\perl\vendor\lib\auto\Net\SSLeay\SSLeay.dll
+C:\strawberry\perl\vendor\lib\auto\Net\SSLeay\SSLeay.xs.dll
 C:\strawberry\perl\vendor\lib\auto\Net\SSLeay\autosplit.ix
 C:\strawberry\perl\vendor\lib\auto\Net\SSLeay\debug_read.al
 C:\strawberry\perl\vendor\lib\auto\Net\SSLeay\do_https.al

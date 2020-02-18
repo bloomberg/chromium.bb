@@ -6,8 +6,12 @@
 
 #include "core/fxcodec/bmp/cfx_bmpcontext.h"
 
-CFX_BmpContext::CFX_BmpContext(CCodec_BmpModule* pModule,
-                               CCodec_BmpModule::Delegate* pDelegate)
-    : m_pModule(pModule), m_pDelegate(pDelegate) {}
+namespace fxcodec {
 
-CFX_BmpContext::~CFX_BmpContext() {}
+CFX_BmpContext::CFX_BmpContext(BmpModule* pModule,
+                               BmpModule::Delegate* pDelegate)
+    : m_Bmp(this), m_pModule(pModule), m_pDelegate(pDelegate) {}
+
+CFX_BmpContext::~CFX_BmpContext() = default;
+
+}  // namespace fxcodec

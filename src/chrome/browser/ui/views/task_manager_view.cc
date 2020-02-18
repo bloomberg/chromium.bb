@@ -101,7 +101,7 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
   // Generated as crx_file::id_util::GenerateId("org.chromium.taskmanager")
   static constexpr char kTaskManagerId[] = "ijaigheoohcacdnplfbdimmcfldnnhdi";
   const ash::ShelfID shelf_id(kTaskManagerId);
-  window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
+  window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
 #endif
   return g_task_manager_view->table_model_.get();
@@ -357,7 +357,9 @@ void TaskManagerView::Init() {
 
 void TaskManagerView::InitAlwaysOnTopState() {
   RetrieveSavedAlwaysOnTopState();
-  GetWidget()->SetAlwaysOnTop(is_always_on_top_);
+  GetWidget()->SetZOrderLevel(is_always_on_top_
+                                  ? ui::ZOrderLevel::kFloatingWindow
+                                  : ui::ZOrderLevel::kNormal);
 }
 
 void TaskManagerView::ActivateSelectedTab() {

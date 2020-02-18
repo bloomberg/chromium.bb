@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -61,6 +63,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   virtual bool GetEnableMyFilesVolume() const;
   virtual bool GetEnableDocumentsProvider() const;
   virtual bool GetEnableArc() const;
+  virtual bool GetEnableFormatDialog() const;
   virtual bool GetRequiresStartupBrowser() const;
   virtual bool GetNeedsZipSupport() const;
   virtual bool GetIsOffline() const;
@@ -89,6 +92,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   // Returns true if the test requires Android documents providers.
   bool IsDocumentsProviderTest() const { return GetEnableDocumentsProvider(); }
+
+  // Returns true if the test requires the FormatDialog feature enabled.
+  bool IsFormatDialogTest() const { return GetEnableFormatDialog(); }
 
   // Returns true if the test requires ARC++.
   bool IsArcTest() const { return GetEnableArc(); }
@@ -171,6 +177,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   std::unique_ptr<arc::FakeFileSystemInstance> arc_file_system_instance_;
 
   std::unique_ptr<MockFileTasksObserver> file_tasks_observer_;
+
+  base::HistogramTester histograms_;
+  base::UserActionTester user_actions_;
 
   // Not owned.
   SelectFileDialogExtensionTestFactory* select_factory_;

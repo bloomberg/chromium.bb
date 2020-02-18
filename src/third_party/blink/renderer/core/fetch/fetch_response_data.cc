@@ -89,7 +89,7 @@ FetchResponseData* FetchResponseData::CreateCorsFilteredResponse(
   for (const auto& header : header_list_->List()) {
     const String& name = header.first;
     if (cors::IsCorsSafelistedResponseHeader(name) ||
-        (exposed_headers.find(name.Ascii().data()) != exposed_headers.end() &&
+        (exposed_headers.find(name.Ascii()) != exposed_headers.end() &&
          !FetchUtils::IsForbiddenResponseHeaderName(name))) {
       response->header_list_->Append(name, header.second);
     }

@@ -21,6 +21,7 @@
 #include "device/fido/credential_management.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
+#include "device/fido/pin.h"
 
 namespace device {
 
@@ -69,9 +70,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   using DeleteCredentialCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               base::Optional<DeleteCredentialResponse>)>;
-  using GetBioEnrollmentInfoCallback =
+  using BioEnrollmentCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               base::Optional<BioEnrollmentResponse>)>;
+  using BioEnrollmentSampleCallback =
+      base::RepeatingCallback<void(BioEnrollmentSampleStatus, uint8_t)>;
 
   FidoAuthenticator() = default;
   virtual ~FidoAuthenticator() = default;
@@ -163,13 +166,27 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
                                       GetCredentialsMetadataCallback callback);
   virtual void EnumerateCredentials(base::span<const uint8_t> pin_token,
                                     EnumerateCredentialsCallback callback);
-  virtual void DeleteCredential(base::span<const uint8_t> pin_token,
-                                base::span<const uint8_t> credential_id,
-                                DeleteCredentialCallback callback);
+  virtual void DeleteCredential(
+      base::span<const uint8_t> pin_token,
+      const PublicKeyCredentialDescriptor& credential_id,
+      DeleteCredentialCallback callback);
 
-  // bio enrollment
-  virtual void GetModality(GetBioEnrollmentInfoCallback callback);
-  virtual void GetSensorInfo(GetBioEnrollmentInfoCallback callback);
+  // Biometric enrollment commands.
+  virtual void GetModality(BioEnrollmentCallback callback);
+  virtual void GetSensorInfo(BioEnrollmentCallback callback);
+  virtual void BioEnrollFingerprint(const pin::TokenResponse&,
+                                    BioEnrollmentSampleCallback,
+                                    BioEnrollmentCallback);
+  virtual void BioEnrollCancel(BioEnrollmentCallback);
+  virtual void BioEnrollEnumerate(const pin::TokenResponse&,
+                                  BioEnrollmentCallback);
+  virtual void BioEnrollRename(const pin::TokenResponse&,
+                               std::vector<uint8_t> template_id,
+                               std::string name,
+                               BioEnrollmentCallback);
+  virtual void BioEnrollDelete(const pin::TokenResponse&,
+                               std::vector<uint8_t> template_id,
+                               BioEnrollmentCallback);
 
   // Reset triggers a reset operation on the authenticator. This erases all
   // stored resident keys and any configured PIN.
@@ -184,6 +201,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
       const = 0;
   virtual bool IsInPairingMode() const = 0;
   virtual bool IsPaired() const = 0;
+  virtual bool RequiresBlePairingPin() const = 0;
 #if defined(OS_WIN)
   virtual bool IsWinNativeApiAuthenticator() const = 0;
 #endif  // defined(OS_WIN)

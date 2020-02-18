@@ -60,6 +60,8 @@ void GLVersionInfo::Initialize(const char* version_str,
     is_d3d = renderer_string.find("Direct3D") != std::string::npos;
     // (is_d3d should only be possible if is_angle is true.)
     DCHECK(!is_d3d || is_angle);
+    if (is_angle && driver_vendor == "ANGLE")
+      ExtractDriverVendorANGLE(renderer_str);
   }
   is_desktop_core_profile =
       DesktopCoreCommonCheck(is_es, major_version, minor_version) &&
@@ -179,6 +181,21 @@ void GLVersionInfo::ParseVersionString(const char* version_str) {
       return;
     }
   }
+}
+
+void GLVersionInfo::ExtractDriverVendorANGLE(const char* renderer_str) {
+  DCHECK(renderer_str);
+  DCHECK(is_angle);
+  DCHECK_EQ("ANGLE", driver_vendor);
+  base::StringPiece rstr(renderer_str);
+  DCHECK(base::StartsWith(rstr, "ANGLE (", base::CompareCase::SENSITIVE));
+  rstr = rstr.substr(sizeof("ANGLE (") - 1);
+  if (base::StartsWith(rstr, "NVIDIA ", base::CompareCase::SENSITIVE))
+    driver_vendor = "ANGLE (NVIDIA)";
+  else if (base::StartsWith(rstr, "Radeon ", base::CompareCase::SENSITIVE))
+    driver_vendor = "ANGLE (AMD)";
+  else if (base::StartsWith(rstr, "Intel(R) ", base::CompareCase::SENSITIVE))
+    driver_vendor = "ANGLE (Intel)";
 }
 
 bool GLVersionInfo::IsES3Capable(const gfx::ExtensionSet& extensions) const {

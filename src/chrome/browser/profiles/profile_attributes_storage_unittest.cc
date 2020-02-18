@@ -493,12 +493,14 @@ TEST_F(ProfileAttributesStorageTest, SupervisedUsersAccessors) {
   ASSERT_FALSE(entry->IsChild());
   ASSERT_TRUE(entry->IsLegacySupervised());
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   EXPECT_CALL(observer(), OnProfileSupervisedUserIdChanged(path)).Times(1);
   entry->SetSupervisedUserId(supervised_users::kChildAccountSUID);
   VerifyAndResetCallExpectations();
   ASSERT_TRUE(entry->IsSupervised());
   ASSERT_TRUE(entry->IsChild());
   ASSERT_FALSE(entry->IsLegacySupervised());
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 }
 
 TEST_F(ProfileAttributesStorageTest, ReSortTriggered) {
@@ -654,6 +656,8 @@ TEST_F(ProfileAttributesStorageTest, ProfileForceSigninLock) {
   ASSERT_FALSE(entry->IsSigninRequired());
 }
 
+// Avatar icons not used on Android.
+#if !defined(OS_ANDROID)
 TEST_F(ProfileAttributesStorageTest, AvatarIconIndex) {
   AddTestingProfile();
 
@@ -673,6 +677,7 @@ TEST_F(ProfileAttributesStorageTest, AvatarIconIndex) {
   VerifyAndResetCallExpectations();
   ASSERT_EQ(3U, entry->GetAvatarIconIndex());
 }
+#endif
 
 // High res avatar downloading is only supported on desktop.
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

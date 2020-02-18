@@ -99,7 +99,7 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
     std::unique_ptr<Vector<String>> outside_origin_trial_tokens)
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
   // Dedicated workers don't need to pause after script fetch.
-  ReadyToRunClassicScript();
+  ReadyToRunWorkerScript();
   // Inherit the outside's origin trial tokens.
   OriginTrialContext::AddTokens(this, outside_origin_trial_tokens.get());
 }
@@ -172,8 +172,8 @@ void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
       *this,
       CreateOutsideSettingsFetcher(outside_settings_object,
                                    outside_resource_timing_notifier),
-      script_url, destination, network::mojom::FetchRequestMode::kSameOrigin,
-      network::mojom::FetchCredentialsMode::kSameOrigin,
+      script_url, destination, network::mojom::RequestMode::kSameOrigin,
+      network::mojom::CredentialsMode::kSameOrigin,
       WTF::Bind(&DedicatedWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),
                 WrapPersistent(classic_script_loader)),
@@ -187,7 +187,7 @@ void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-    network::mojom::FetchCredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode) {
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."
   mojom::RequestContextType destination = mojom::RequestContextType::WORKER;

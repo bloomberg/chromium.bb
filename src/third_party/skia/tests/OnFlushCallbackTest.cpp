@@ -7,20 +7,19 @@
 
 #include "tests/Test.h"
 
+#include "include/core/SkBitmap.h"
 #include "include/gpu/GrBackendSemaphore.h"
 #include "include/gpu/GrTexture.h"
+#include "src/core/SkPointPriv.h"
 #include "src/gpu/GrClip.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrDefaultGeoProcFactory.h"
 #include "src/gpu/GrOnFlushResourceProvider.h"
 #include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrQuad.h"
 #include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/GrResourceProvider.h"
-
-#include "include/core/SkBitmap.h"
-#include "src/core/SkPointPriv.h"
 #include "src/gpu/effects/generated/GrSimpleTextureEffect.h"
+#include "src/gpu/geometry/GrQuad.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 
 namespace {
@@ -72,15 +71,16 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
 
-    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip*,
-                                      GrFSAAType fsaaType, GrClampType clampType) override {
+    GrProcessorSet::Analysis finalize(
+            const GrCaps& caps, const GrAppliedClip*, bool hasMixedSampledCoverage,
+            GrClampType clampType) override {
         // Set the color to unknown because the subclass may change the color later.
         GrProcessorAnalysisColor gpColor;
         gpColor.setToUnknown();
         // We ignore the clip so pass this rather than the GrAppliedClip param.
         static GrAppliedClip kNoClip;
-        return fHelper.finalizeProcessors(
-                caps, &kNoClip, fsaaType, clampType, GrProcessorAnalysisCoverage::kNone, &gpColor);
+        return fHelper.finalizeProcessors(caps, &kNoClip, hasMixedSampledCoverage, clampType,
+                                          GrProcessorAnalysisCoverage::kNone, &gpColor);
     }
 
 protected:
@@ -301,13 +301,12 @@ public:
             return fAtlasProxy;
         }
 
-        const GrBackendFormat format = caps->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
+        const GrBackendFormat format = caps->getBackendFormatFromColorType(GrColorType::kRGBA_8888);
 
         fAtlasProxy = GrProxyProvider::MakeFullyLazyProxy(
                 [](GrResourceProvider* resourceProvider)
                         -> GrSurfaceProxy::LazyInstantiationResult {
                     GrSurfaceDesc desc;
-                    desc.fFlags = kRenderTarget_GrSurfaceFlag;
                     // TODO: until partial flushes in MDB lands we're stuck having
                     // all 9 atlas draws occur
                     desc.fWidth = 9 /*this->numOps()*/ * kAtlasTileSize;
@@ -315,11 +314,14 @@ public:
                     desc.fConfig = kRGBA_8888_GrPixelConfig;
 
                     auto texture = resourceProvider->createTexture(
-                            desc, SkBudgeted::kYes, GrResourceProvider::Flags::kNoPendingIO);
+                            desc, GrRenderable::kYes, 1, SkBudgeted::kYes, GrProtected::kNo,
+                            GrResourceProvider::Flags::kNoPendingIO);
                     return std::move(texture);
                 },
                 format,
-                GrProxyProvider::Renderable::kYes,
+                GrRenderable::kYes,
+                1,
+                GrProtected::kNo,
                 kBottomLeft_GrSurfaceOrigin,
                 kRGBA_8888_GrPixelConfig,
                 *proxyProvider->caps());
@@ -352,14 +354,14 @@ public:
             return;
         }
 
-        // At this point all the GrAtlasedOp's should have lined up to read from 'atlasDest' and
-        // there should either be two writes to clear it or no writes.
-        SkASSERT(9 == fAtlasProxy->getPendingReadCnt_TestOnly());
-        SkASSERT(2 == fAtlasProxy->getPendingWriteCnt_TestOnly() ||
-                 0 == fAtlasProxy->getPendingWriteCnt_TestOnly());
+        // At this point 'fAtlasProxy' should be instantiated and have:
+        //    1 ref from the 'fAtlasProxy' sk_sp
+        //    9 refs from the 9 AtlasedRectOps
+        SkASSERT(10 == fAtlasProxy->priv().getProxyRefCnt());
+        // The backing GrSurface should have only 1 though bc there is only one proxy
+        SkASSERT(1 == fAtlasProxy->testingOnly_getBackingRefCnt());
         sk_sp<GrRenderTargetContext> rtc = resourceProvider->makeRenderTargetContext(
-                                                                           fAtlasProxy,
-                                                                           nullptr, nullptr);
+                fAtlasProxy, GrColorType::kRGBA_8888, nullptr, nullptr);
 
         // clear the atlas
         rtc->clear(nullptr, SK_PMColor4fTRANSPARENT,
@@ -433,16 +435,12 @@ private:
 // This creates an off-screen rendertarget whose ops which eventually pull from the atlas.
 static sk_sp<GrTextureProxy> make_upstream_image(GrContext* context, AtlasObject* object, int start,
                                                  sk_sp<GrTextureProxy> atlasProxy) {
-    const GrBackendFormat format =
-            context->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
-
-    sk_sp<GrRenderTargetContext> rtc(context->priv().makeDeferredRenderTargetContext(
-                                                                      format,
-                                                                      SkBackingFit::kApprox,
-                                                                      3*kDrawnTileSize,
-                                                                      kDrawnTileSize,
-                                                                      kRGBA_8888_GrPixelConfig,
-                                                                      nullptr));
+    sk_sp<GrRenderTargetContext> rtc(
+            context->priv().makeDeferredRenderTargetContext(SkBackingFit::kApprox,
+                                                            3*kDrawnTileSize,
+                                                            kDrawnTileSize,
+                                                            GrColorType::kRGBA_8888,
+                                                            nullptr));
 
     rtc->clear(nullptr, { 1, 0, 0, 1 }, GrRenderTargetContext::CanClearFullscreen::kYes);
 
@@ -555,16 +553,12 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(OnFlushCallbackTest, reporter, ctxInfo) {
     static const int kFinalWidth = 6*kDrawnTileSize;
     static const int kFinalHeight = kDrawnTileSize;
 
-    const GrBackendFormat format =
-            context->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
-
-    sk_sp<GrRenderTargetContext> rtc(context->priv().makeDeferredRenderTargetContext(
-                                                                      format,
-                                                                      SkBackingFit::kApprox,
-                                                                      kFinalWidth,
-                                                                      kFinalHeight,
-                                                                      kRGBA_8888_GrPixelConfig,
-                                                                      nullptr));
+    sk_sp<GrRenderTargetContext> rtc(
+            context->priv().makeDeferredRenderTargetContext(SkBackingFit::kApprox,
+                                                            kFinalWidth,
+                                                            kFinalHeight,
+                                                            GrColorType::kRGBA_8888,
+                                                            nullptr));
 
     rtc->clear(nullptr, SK_PMColor4fWHITE, GrRenderTargetContext::CanClearFullscreen::kYes);
 
@@ -588,7 +582,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(OnFlushCallbackTest, reporter, ctxInfo) {
     readBack.allocN32Pixels(kFinalWidth, kFinalHeight);
 
     SkDEBUGCODE(bool result =) rtc->readPixels(readBack.info(), readBack.getPixels(),
-                                               readBack.rowBytes(), 0, 0);
+                                               readBack.rowBytes(), {0, 0});
     SkASSERT(result);
 
     context->priv().testingOnly_flushAndRemoveOnFlushCallbackObject(&object);

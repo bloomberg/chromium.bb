@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/gfx/buffer_types.h"
-#include "ui/ozone/ozone_export.h"
 
 namespace display {
 class NativeDisplayDelegate;
@@ -21,10 +21,6 @@ class NativeDisplayDelegate;
 
 namespace IPC {
 class MessageFilter;
-}
-
-namespace service_manager {
-class Connector;
 }
 
 namespace ui {
@@ -39,6 +35,11 @@ class PlatformWindowDelegate;
 class SurfaceFactoryOzone;
 class SystemInputInjector;
 class PlatformClipboard;
+
+namespace internal {
+class InputMethodDelegate;
+}  // namespace internal
+class InputMethod;
 
 struct PlatformWindowInitProperties;
 
@@ -56,7 +57,7 @@ struct PlatformWindowInitProperties;
 // interface depending on the context. You can, for example, create
 // different objects depending on the underlying hardware, command
 // line flags, or whatever is appropriate for the platform.
-class OZONE_EXPORT OzonePlatform {
+class COMPONENT_EXPORT(OZONE) OzonePlatform {
  public:
   OzonePlatform();
   virtual ~OzonePlatform();
@@ -64,15 +65,6 @@ class OZONE_EXPORT OzonePlatform {
   // Additional initialization params for the platform. Platforms must not
   // retain a reference to this structure.
   struct InitParams {
-    // Ozone may retain this pointer for later use. An Ozone platform embedder
-    // may set this value if operating in the idiomatic mojo fashion with a
-    // service manager. Mojo transport does not require a service manager but in
-    // that case ozone will not be able to connect to the DRM and cursor
-    // services. Instead the host must invoke |OnGpuServiceLaunched| as
-    // described in ui/ozone/public/gpu_platform_support_host.h to inform the
-    // ozone host that a process containing these services is running.
-    service_manager::Connector* connector = nullptr;
-
     // Setting this to true indicates that the platform implementation should
     // operate as a single process for platforms (i.e. drm) that are usually
     // split between a host and viz specific portion.
@@ -99,17 +91,22 @@ class OZONE_EXPORT OzonePlatform {
     // in PlatformWindowInitProperties when creating a window.
     bool needs_view_token = false;
 
-    // Determine whether we should default to native decorations or the custom
+    // Determines whether we should default to native decorations or the custom
     // frame based on the currently-running window manager.
     bool custom_frame_pref_default = false;
 
-    // Determine whether switching between system and custom frames is
+    // Determines whether switching between system and custom frames is
     // supported.
     bool use_system_title_bar = false;
 
     // Determines if the platform requires mojo communication for the IPC.
     // Currently used only by the Ozone/Wayland platform.
     bool requires_mojo = false;
+
+    // Determines the type of message loop that should be used for GPU service
+    // and display compositor threads in the GPU process.
+    base::MessageLoop::Type message_loop_type_for_gpu =
+        base::MessageLoop::TYPE_DEFAULT;
   };
 
   // Properties available in the host process after initialization.
@@ -120,10 +117,10 @@ class OZONE_EXPORT OzonePlatform {
     bool supports_overlays = false;
   };
 
-  // Ensures the OzonePlatform instance without doing any initialization.
-  // No-op in case the instance is already created.
-  // This is useful in order call virtual methods that depend on the ozone
-  // platform selected at runtime, e.g. ::GetMessageLoopTypeForGpu.
+  // Ensures that the OzonePlatform instance exists, without doing any
+  // initialization. No-op in case the instance is already created. This is
+  // useful in order to call virtual methods that depend on the Ozone platform
+  // selected at runtime, e.g. IsNativePixmapConfigSupported().
   static OzonePlatform* EnsureInstance();
 
   // Initializes the subsystems/resources necessary for the UI process (e.g.
@@ -155,6 +152,8 @@ class OZONE_EXPORT OzonePlatform {
   CreateNativeDisplayDelegate() = 0;
   virtual std::unique_ptr<PlatformScreen> CreateScreen();
   virtual PlatformClipboard* GetPlatformClipboard();
+  virtual std::unique_ptr<InputMethod> CreateInputMethod(
+      internal::InputMethodDelegate* delegate) = 0;
 
   // Returns true if the specified buffer format is supported.
   virtual bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
@@ -168,10 +167,6 @@ class OZONE_EXPORT OzonePlatform {
   // Returns a struct that contains properties available in the host process
   // after InitializeForUI() runs.
   virtual const InitializedHostProperties& GetInitializedHostProperties();
-
-  // Returns the message loop type required for OzonePlatform instance that
-  // will be initialized for the GPU process.
-  virtual base::MessageLoop::Type GetMessageLoopTypeForGpu();
 
   // Ozone platform implementations may also choose to expose mojo interfaces to
   // internal functionality. Embedders wishing to take advantage of ozone mojo

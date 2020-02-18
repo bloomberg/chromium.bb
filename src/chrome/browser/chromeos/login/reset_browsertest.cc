@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/command_line.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/browser_process.h"
@@ -33,6 +34,7 @@
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_launcher.h"
@@ -187,6 +189,13 @@ class ResetFirstAfterBootTest : public ResetTest {
     ResetTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kFirstExecAfterBoot);
   }
+
+  void SetUpOnMainThread() override {
+    DBusThreadManager::Get()
+        ->GetShillManagerClient()
+        ->GetTestInterface()
+        ->SetupDefaultEnvironment();
+  }
 };
 
 class ResetFirstAfterBootTestWithRollback : public ResetTest {
@@ -256,20 +265,25 @@ class ResetTestWithTpmFirmwareUpdate : public ResetTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ResetTest, ShowAndCancel) {
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
   InvokeResetScreen();
   EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   test::OobeJS().ExpectVisible("reset");
 
   CloseResetScreen();
-  test::OobeJS().CreateVisibilityWaiter(false, {"reset"});
+  test::OobeJS().CreateVisibilityWaiter(false, {"reset"})->Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 }
 
 IN_PROC_BROWSER_TEST_F(ResetTest, RestartBeforePowerwash) {
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
   PrefService* prefs = g_browser_process->local_state();
 
   InvokeResetScreen();
   EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
@@ -278,14 +292,17 @@ IN_PROC_BROWSER_TEST_F(ResetTest, RestartBeforePowerwash) {
   ASSERT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
 
   EXPECT_TRUE(prefs->GetBoolean(prefs::kFactoryResetRequested));
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 }
 
 IN_PROC_BROWSER_TEST_F(ResetOobeTest, ResetOnWelcomeScreen) {
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
   InvokeResetScreen();
 
   OobeScreenWaiter(ResetView::kScreenId).Wait();
   test::OobeJS().ExpectVisible("reset");
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   ClickResetButton();
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
@@ -295,14 +312,17 @@ IN_PROC_BROWSER_TEST_F(ResetOobeTest, ResetOnWelcomeScreen) {
 
 IN_PROC_BROWSER_TEST_F(ResetOobeTest, RequestAndCancleResetOnWelcomeScreen) {
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
   InvokeResetScreen();
 
   OobeScreenWaiter(ResetView::kScreenId).Wait();
   test::OobeJS().ExpectVisible("reset");
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   CloseResetScreen();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().ExpectHidden("reset");
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
@@ -322,23 +342,28 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ViewsLogic) {
   update_engine_client_->set_can_rollback_check_result(false);
   InvokeResetScreen();
   EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
-  test::OobeJS().CreateVisibilityWaiter(true, {"reset"});
+  test::OobeJS().CreateVisibilityWaiter(true, {"reset"})->Wait();
   test::OobeJS().ExpectHidden("overlay-reset");
   CloseResetScreen();
-  test::OobeJS().CreateVisibilityWaiter(false, {"reset"});
+  test::OobeJS().CreateVisibilityWaiter(false, {"reset"})->Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   // Go to confirmation phase, cancel from there in 2 steps.
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   InvokeResetScreen();
-  test::OobeJS().CreateVisibilityWaiter(false, {"overlay-reset"});
+  test::OobeJS().CreateVisibilityWaiter(false, {"overlay-reset"})->Wait();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
   ClickToConfirmButton();
-  test::OobeJS().CreateVisibilityWaiter(true, {"overlay-reset"});
+  test::OobeJS().CreateVisibilityWaiter(true, {"overlay-reset"})->Wait();
   ClickDismissConfirmationButton();
-  test::OobeJS().CreateVisibilityWaiter(false, {"overlay-reset"});
-  test::OobeJS().CreateVisibilityWaiter(true, {"reset"});
+  test::OobeJS().CreateVisibilityWaiter(false, {"overlay-reset"})->Wait();
+  test::OobeJS().CreateVisibilityWaiter(true, {"reset"})->Wait();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
   CloseResetScreen();
-  test::OobeJS().CreateVisibilityWaiter(false, {"reset"});
+  test::OobeJS().CreateVisibilityWaiter(false, {"reset"})->Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   // Rollback available. Show and cancel from confirmation screen.
   update_engine_client_->set_can_rollback_check_result(true);
@@ -347,12 +372,12 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ViewsLogic) {
   InvokeRollbackOption();
   test::OobeJS().ExpectHidden("overlay-reset");
   ClickToConfirmButton();
-  test::OobeJS().CreateVisibilityWaiter(true, {"overlay-reset"});
+  test::OobeJS().CreateVisibilityWaiter(true, {"overlay-reset"})->Wait();
   ClickDismissConfirmationButton();
-  test::OobeJS().CreateVisibilityWaiter(false, {"overlay-reset"});
+  test::OobeJS().CreateVisibilityWaiter(false, {"overlay-reset"})->Wait();
   test::OobeJS().ExpectVisible("reset");
   CloseResetScreen();
-  test::OobeJS().CreateVisibilityWaiter(false, {"reset"});
+  test::OobeJS().CreateVisibilityWaiter(false, {"reset"})->Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_ShowAfterBootIfRequested) {
@@ -363,10 +388,13 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_ShowAfterBootIfRequested) {
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ShowAfterBootIfRequested) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
   EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   test::OobeJS().CreateVisibilityWaiter(true, {"reset"})->Wait();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
   CloseResetScreen();
   test::OobeJS().CreateVisibilityWaiter(false, {"reset"})->Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_RollbackUnavailable) {
@@ -377,6 +405,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_RollbackUnavailable) {
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RollbackUnavailable) {
   InvokeResetScreen();
   EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
@@ -389,6 +418,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RollbackUnavailable) {
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   CloseResetScreen();
   OobeScreenExitWaiter(ResetView::kScreenId).Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   // Next invocation leads to rollback view.
   PrefService* prefs = g_browser_process->local_state();
@@ -411,8 +441,12 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback, RollbackAvailable) {
   PrefService* prefs = g_browser_process->local_state();
 
-  InvokeResetScreen();
+  // PRE test triggers start with Reset screen.
+  OobeScreenWaiter(ResetView::kScreenId).Wait();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
+
   EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
@@ -424,14 +458,19 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback, RollbackAvailable) {
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   CloseResetScreen();
   OobeScreenExitWaiter(ResetView::kScreenId).Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   // Next invocation leads to simple reset, not rollback view.
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   InvokeResetScreen();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
   InvokeRollbackOption();  // Shows rollback.
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
   ClickDismissConfirmationButton();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
   CloseResetScreen();
   OobeScreenExitWaiter(ResetView::kScreenId).Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   InvokeResetScreen();
   ClickToConfirmButton();
@@ -441,6 +480,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback, RollbackAvailable) {
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   CloseResetScreen();
   OobeScreenExitWaiter(ResetView::kScreenId).Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
 
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   InvokeResetScreen();

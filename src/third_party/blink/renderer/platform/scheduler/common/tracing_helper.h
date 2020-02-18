@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -105,7 +105,7 @@ class StateTracer {
 
   // String will be copied before leaving this function.
   void TraceString(const String& state) {
-    TraceImpl(state.Utf8().data(), true);
+    TraceImpl(state.Utf8().c_str(), true);
   }
 
   // Trace compile-time defined const string, so no copy needed.

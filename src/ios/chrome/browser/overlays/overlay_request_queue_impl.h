@@ -66,17 +66,15 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
   // The number of requests in the queue.
   size_t size() const { return requests_.size(); }
 
-  // Removes the front or back request from the queue.  Must be called on a non-
-  // empty queue.
-  void PopFrontRequest();
-  void PopBackRequest();
-
-  // Cancels the UI for all requests in the queue then empties the queue.
-  void CancelAllRequests();
+  // Removes the front or back request from the queue, transferring ownership of
+  // the request to the caller.  Must be called on a non-empty queue.
+  std::unique_ptr<OverlayRequest> PopFrontRequest();
+  std::unique_ptr<OverlayRequest> PopBackRequest();
 
   // OverlayRequestQueue:
   void AddRequest(std::unique_ptr<OverlayRequest> request) override;
   OverlayRequest* front_request() const override;
+  void CancelAllRequests() override;
 
  private:
   // Private constructor called by container.

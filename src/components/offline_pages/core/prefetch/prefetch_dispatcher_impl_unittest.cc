@@ -305,6 +305,8 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
 
     taco_ = std::make_unique<PrefetchServiceTestTaco>(suggestion_source);
     prefetch_prefs::SetEnabledByServer(taco_->pref_service(), true);
+    prefetch_prefs::SetCachedPrefetchGCMToken(taco_->pref_service(),
+                                              "dummy_gcm_token");
     dispatcher_ = new PrefetchDispatcherImpl(taco_->pref_service());
     network_request_factory_ = new FakePrefetchNetworkRequestFactory(
         shared_url_loader_factory(), taco_->pref_service());

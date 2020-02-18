@@ -27,7 +27,7 @@ using blink::WebVector;
 // https://w3c.github.io/manifest/#sizes-member.
 WTF::Vector<WebSize> ParseSizes(const WTF::String& sizes) {
   WebVector<WebSize> parsed_sizes = blink::WebIconSizesParser::ParseIconSizes(
-      WebString::FromASCII(sizes.Ascii().data()));
+      WebString::FromASCII(sizes.Ascii()));
   WTF::HashSet<std::pair<int, int>, WTF::PairHash<int, int>,
                WTF::PairHashTraits<WTF::UnsignedWithZeroKeyHashTraits<int>,
                                    WTF::UnsignedWithZeroKeyHashTraits<int>>>
@@ -86,7 +86,7 @@ WTF::String ParseType(const WTF::String& type) {
   if (type.IsNull() || type.IsEmpty())
     return "";
 
-  if (!blink::IsSupportedMimeType(type.Ascii().data())) {
+  if (!blink::IsSupportedMimeType(type.Ascii())) {
     // TODO(rayankans): Issue developer warning.
     return "";
   }

@@ -29,7 +29,6 @@ class HttpResponseHeaders;
 namespace content {
 
 class BrowserContext;
-class NavigationData;
 class NavigationHandle;
 class RenderFrameHost;
 
@@ -112,11 +111,6 @@ class WebContentsTester {
                                const GURL& url,
                                ui::PageTransition transition) = 0;
 
-  // Sets NavgationData on |navigation_handle|.
-  virtual void SetNavigationData(
-      NavigationHandle* navigation_handle,
-      std::unique_ptr<NavigationData> navigation_data) = 0;
-
   // Sets HttpResponseData on |navigation_handle|.
   virtual void SetHttpResponseHeaders(
       NavigationHandle* navigation_handle,
@@ -128,10 +122,10 @@ class WebContentsTester {
 
   // Returns headers that were passed in the previous SaveFrameWithHeaders(...)
   // call.
-  virtual const std::string& GetSaveFrameHeaders() const = 0;
+  virtual const std::string& GetSaveFrameHeaders() = 0;
 
   // Returns the suggested file name passed in the SaveFrameWithHeaders call.
-  virtual const base::string16& GetSuggestedFileName() const = 0;
+  virtual const base::string16& GetSuggestedFileName() = 0;
 
   // Returns whether a download request triggered via DownloadImage() is in
   // progress for |url|.

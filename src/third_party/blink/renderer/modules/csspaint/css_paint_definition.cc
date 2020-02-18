@@ -57,7 +57,8 @@ sk_sp<PaintRecord> CSSPaintDefinition::Paint(
     const FloatSize& container_size,
     float zoom,
     StylePropertyMapReadOnly* style_map,
-    const CSSStyleValueVector* paint_arguments) {
+    const CSSStyleValueVector* paint_arguments,
+    float device_scale_factor) {
   const FloatSize specified_size = GetSpecifiedSize(container_size, zoom);
   ScriptState::Scope scope(script_state_);
 
@@ -69,14 +70,10 @@ sk_sp<PaintRecord> CSSPaintDefinition::Paint(
 
   v8::Isolate* isolate = script_state_->GetIsolate();
 
-  CanvasColorParams color_params;
-  if (!context_settings_->alpha()) {
-    color_params.SetOpacityMode(kOpaque);
-  }
-
   // Do subpixel snapping for the |container_size|.
   auto* rendering_context = MakeGarbageCollected<PaintRenderingContext2D>(
-      RoundedIntSize(container_size), color_params, context_settings_, zoom);
+      RoundedIntSize(container_size), context_settings_, zoom,
+      device_scale_factor);
   PaintSize* paint_size = MakeGarbageCollected<PaintSize>(specified_size);
 
   CSSStyleValueVector empty_paint_arguments;

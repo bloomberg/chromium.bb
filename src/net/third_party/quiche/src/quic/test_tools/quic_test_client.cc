@@ -90,14 +90,14 @@ class RecordingProofVerifier : public ProofVerifier {
   }
 
   QuicAsyncStatus VerifyCertChain(
-      const std::string& hostname,
-      const std::vector<std::string>& certs,
-      const std::string& ocsp_response,
-      const std::string& cert_sct,
-      const ProofVerifyContext* context,
-      std::string* error_details,
-      std::unique_ptr<ProofVerifyDetails>* details,
-      std::unique_ptr<ProofVerifierCallback> callback) override {
+      const std::string& /*hostname*/,
+      const std::vector<std::string>& /*certs*/,
+      const std::string& /*ocsp_response*/,
+      const std::string& /*cert_sct*/,
+      const ProofVerifyContext* /*context*/,
+      std::string* /*error_details*/,
+      std::unique_ptr<ProofVerifyDetails>* /*details*/,
+      std::unique_ptr<ProofVerifierCallback> /*callback*/) override {
     return QUIC_SUCCESS;
   }
 
@@ -210,7 +210,9 @@ MockableQuicClient::MockableQuicClient(
           QuicWrapUnique(
               new RecordingProofVerifier(std::move(proof_verifier)))),
       override_server_connection_id_(EmptyQuicConnectionId()),
-      server_connection_id_overridden_(false) {}
+      server_connection_id_overridden_(false),
+      override_client_connection_id_(EmptyQuicConnectionId()),
+      client_connection_id_overridden_(false) {}
 
 MockableQuicClient::~MockableQuicClient() {
   if (connected()) {
@@ -240,6 +242,17 @@ void MockableQuicClient::UseConnectionId(
     QuicConnectionId server_connection_id) {
   server_connection_id_overridden_ = true;
   override_server_connection_id_ = server_connection_id;
+}
+
+QuicConnectionId MockableQuicClient::GetClientConnectionId() {
+  return client_connection_id_overridden_ ? override_client_connection_id_
+                                          : QuicClient::GetClientConnectionId();
+}
+
+void MockableQuicClient::UseClientConnectionId(
+    QuicConnectionId client_connection_id) {
+  client_connection_id_overridden_ = true;
+  override_client_connection_id_ = client_connection_id;
 }
 
 void MockableQuicClient::UseWriter(QuicPacketWriterWrapper* writer) {
@@ -339,8 +352,7 @@ ssize_t QuicTestClient::SendRequestAndRstTogether(const std::string& uri) {
   }
 
   QuicSpdyClientSession* session = client()->client_session();
-  QuicConnection::ScopedPacketFlusher flusher(
-      session->connection(), QuicConnection::SEND_ACK_IF_PENDING);
+  QuicConnection::ScopedPacketFlusher flusher(session->connection());
   ssize_t ret = SendMessage(headers, "", /*fin=*/true, /*flush=*/false);
 
   QuicStreamId stream_id = GetNthClientInitiatedBidirectionalStreamId(
@@ -730,9 +742,10 @@ void QuicTestClient::OnClose(QuicSpdyStream* stream) {
   open_streams_.erase(id);
 }
 
-bool QuicTestClient::CheckVary(const spdy::SpdyHeaderBlock& client_request,
-                               const spdy::SpdyHeaderBlock& promise_request,
-                               const spdy::SpdyHeaderBlock& promise_response) {
+bool QuicTestClient::CheckVary(
+    const spdy::SpdyHeaderBlock& /*client_request*/,
+    const spdy::SpdyHeaderBlock& /*promise_request*/,
+    const spdy::SpdyHeaderBlock& /*promise_response*/) {
   return true;
 }
 
@@ -754,6 +767,12 @@ void QuicTestClient::UseWriter(QuicPacketWriterWrapper* writer) {
 void QuicTestClient::UseConnectionId(QuicConnectionId server_connection_id) {
   DCHECK(!connected());
   client_->UseConnectionId(server_connection_id);
+}
+
+void QuicTestClient::UseClientConnectionId(
+    QuicConnectionId client_connection_id) {
+  DCHECK(!connected());
+  client_->UseClientConnectionId(client_connection_id);
 }
 
 bool QuicTestClient::MigrateSocket(const QuicIpAddress& new_host) {

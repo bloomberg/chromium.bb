@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
@@ -51,16 +52,16 @@ bool ShouldCheckOptimizationHints(PreviewsType type) {
     case PreviewsType::NOSCRIPT:
     case PreviewsType::RESOURCE_LOADING_HINTS:
     case PreviewsType::LITE_PAGE_REDIRECT:
+    case PreviewsType::DEFER_ALL_SCRIPT:
       return true;
     // These types do not have server optimization hints.
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:
-    case PreviewsType::LOFI:
-    case PreviewsType::DEFER_ALL_SCRIPT:
       return false;
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
     case PreviewsType::DEPRECATED_AMP_REDIRECTION:
+    case PreviewsType::DEPRECATED_LOFI:
     case PreviewsType::LAST:
       break;
   }
@@ -76,7 +77,6 @@ bool CheckECTOnlyAtCommitTime(PreviewsType type) {
     case PreviewsType::RESOURCE_LOADING_HINTS:
     case PreviewsType::DEFER_ALL_SCRIPT:
       return true;
-    case PreviewsType::LOFI:
     case PreviewsType::LITE_PAGE_REDIRECT:
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:
@@ -84,6 +84,7 @@ bool CheckECTOnlyAtCommitTime(PreviewsType type) {
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
     case PreviewsType::DEPRECATED_AMP_REDIRECTION:
+    case PreviewsType::DEPRECATED_LOFI:
     case PreviewsType::LAST:
       break;
   }
@@ -105,8 +106,7 @@ bool ShouldCheckForUnknownECT(net::EffectiveConnectionType ect) {
 PreviewsDeciderImpl::PreviewsDeciderImpl(base::Clock* clock)
     : blacklist_ignored_(switches::ShouldIgnorePreviewsBlacklist()),
       clock_(clock),
-      page_id_(1u),
-      weak_factory_(this) {}
+      page_id_(1u) {}
 
 PreviewsDeciderImpl::~PreviewsDeciderImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -327,13 +327,14 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
 
   // Check server whitelist/blacklist, if provided.
   if (ShouldCheckOptimizationHints(type)) {
-    if (params::IsOptimizationHintsEnabled()) {
+    if (optimization_guide::features::IsOptimizationHintsEnabled()) {
       // Optimization hints are configured, so determine if those hints
       // allow the optimization type (as of start-of-navigation time anyway).
       return ShouldAllowPreviewPerOptimizationHints(previews_data, url, type,
                                                     passed_reasons);
     } else if (type == PreviewsType::RESOURCE_LOADING_HINTS ||
-               type == PreviewsType::NOSCRIPT) {
+               type == PreviewsType::NOSCRIPT ||
+               type == PreviewsType::DEFER_ALL_SCRIPT) {
       return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
     }
   }
@@ -373,7 +374,8 @@ bool PreviewsDeciderImpl::ShouldCommitPreview(PreviewsUserData* previews_data,
                                               PreviewsType type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(PreviewsType::NOSCRIPT == type ||
-         PreviewsType::RESOURCE_LOADING_HINTS == type);
+         PreviewsType::RESOURCE_LOADING_HINTS == type ||
+         PreviewsType::DEFER_ALL_SCRIPT == type);
   if (previews_black_list_ && !blacklist_ignored_) {
     std::vector<PreviewsEligibilityReason> passed_reasons;
     // The blacklist will disallow certain hosts for periods of time based on
@@ -389,7 +391,7 @@ bool PreviewsDeciderImpl::ShouldCommitPreview(PreviewsUserData* previews_data,
 
   // Re-check server optimization hints (if provided) on this commit-time URL.
   if (ShouldCheckOptimizationHints(type) &&
-      params::IsOptimizationHintsEnabled()) {
+      optimization_guide::features::IsOptimizationHintsEnabled()) {
     std::vector<PreviewsEligibilityReason> passed_reasons;
     PreviewsEligibilityReason status = ShouldCommitPreviewPerOptimizationHints(
         previews_data, committed_url, type, &passed_reasons);
@@ -412,7 +414,8 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(type == PreviewsType::LITE_PAGE_REDIRECT ||
          type == PreviewsType::NOSCRIPT ||
-         type == PreviewsType::RESOURCE_LOADING_HINTS);
+         type == PreviewsType::RESOURCE_LOADING_HINTS ||
+         type == PreviewsType::DEFER_ALL_SCRIPT);
   // For LitePageRedirect, ensure it is not blacklisted for this request, and
   // hints have been fully loaded.
   //
@@ -446,7 +449,17 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(type == PreviewsType::NOSCRIPT ||
-         type == PreviewsType::RESOURCE_LOADING_HINTS);
+         type == PreviewsType::RESOURCE_LOADING_HINTS ||
+         type == PreviewsType::DEFER_ALL_SCRIPT);
+
+  // If kEnableDeferAllScriptWithoutOptimizationHints switch is provided, then
+  // DEFER_ALL_SCRIPT is triggered on all pages irrespective of hints provided
+  // by optimization hints guide.
+  if (type == PreviewsType::DEFER_ALL_SCRIPT &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDeferAllScriptWithoutOptimizationHints)) {
+    return PreviewsEligibilityReason::ALLOWED;
+  }
 
   if (!previews_opt_guide_ || !previews_opt_guide_->has_hints())
     return PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE;

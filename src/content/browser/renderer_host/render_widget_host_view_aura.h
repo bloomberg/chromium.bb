@@ -155,7 +155,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   InputEventAckState FilterChildGestureEvent(
       const blink::WebGestureEvent& gesture_event) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
+      BrowserAccessibilityDelegate* delegate,
+      bool for_root_frame) override;
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
   void SetMainFrameAXTreeID(ui::AXTreeID id) override;
@@ -181,10 +182,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   const viz::FrameSinkId& GetFrameSinkId() const override;
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
       const override;
-  bool TransformPointToLocalCoordSpaceLegacy(
-      const gfx::PointF& point,
-      const viz::SurfaceId& original_surface,
-      gfx::PointF* transformed_point) override;
   bool TransformPointToCoordSpaceForView(
       const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,
@@ -199,6 +196,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void DidNavigate() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
   bool CanSynchronizeVisualProperties() override;
+  void CancelActiveTouches() override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
@@ -424,8 +422,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            VirtualKeyboardFocusEnsureCaretInRect);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
-                           HitTestRegionListSubmitted);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DiscardDelegatedFramesWithMemoryPressure);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraInputMethodTest,
                            OnCaretBoundsChanged);
@@ -433,30 +429,27 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            KeyboardObserverDestroyed);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
                            KeyboardObserverForOnlyTouchInput);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DropFallbackWhenHidden);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            CompositorFrameSinkChange);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
-                           SurfaceChanges);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, SurfaceChanges);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DeviceScaleFactorChanges);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
-                           HideThenShow);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, HideThenShow);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DropFallbackIfResizedWhileHidden);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DontDropFallbackIfNotResizedWhileHidden);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest, PopupMenuTest);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            NewContentRenderingTimeout);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            AllocateLocalSurfaceIdOnEviction);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
                            WebContentsViewReparent);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
-                           TakeFallbackContent);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, TakeFallbackContent);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DiscardDelegatedFrames);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
                            ScrollOOPIFEditableElement);
@@ -493,10 +486,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void OnDidUpdateVisualPropertiesComplete(
       const cc::RenderFrameMetadata& metadata);
-
-  // Tracks whether SnapToPhysicalPixelBoundary() has been called.
-  bool has_snapped_to_boundary() { return has_snapped_to_boundary_; }
-  void ResetHasSnappedToBoundary() { has_snapped_to_boundary_ = false; }
 
   // Set the bounds of the window and handle size changes.  Assumes the caller
   // has already adjusted the origin of |rect| to conform to whatever coordinate
@@ -668,8 +657,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   gfx::Point last_mouse_move_location_;
 #endif
 
-  bool has_snapped_to_boundary_;
-
   // The last selection bounds reported to the view.
   gfx::SelectionBound selection_start_;
   gfx::SelectionBound selection_end_;
@@ -718,7 +705,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // See OnDisplayMetricsChanged() for details.
   bool needs_to_update_display_metrics_ = false;
 
-  base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
+  base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };

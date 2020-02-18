@@ -13,8 +13,13 @@ import tempfile
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import path_util
 
 from chromite.lib.paygen import filelib
+
+
+DLC_IMAGE = 'dlc'
+CROS_IMAGE = 'cros'
 
 
 def ExtractPartition(filename, partition, out_part):
@@ -111,3 +116,53 @@ def ExtractRoot(image, root_out, truncate=True):
     logging.info('Truncated root to %d bytes.', root_out_size)
   else:
     raise IOError('Error truncating the rootfs to filesystem size.')
+
+
+def IsSquashfsImage(image):
+  """Returns true if the image is detected to be Squashfs."""
+  try:
+    # -s: Display file system superblock.
+    cros_build_lib.RunCommand(
+        ['unsquashfs', '-s', path_util.ToChrootPath(image)],
+        redirect_stdout=True,
+        enter_chroot=True)
+    return True
+  except cros_build_lib.RunCommandError:
+    return False
+
+
+def IsExt4Image(image):
+  """Returns true if the image is detected to be ext2/ext3/ext4."""
+  try:
+    # -l: Listing the content of the superblock structure.
+    cros_build_lib.SudoRunCommand(
+        ['tune2fs', '-l', path_util.ToChrootPath(image)], redirect_stdout=True,
+        enter_chroot=True)
+    return True
+  except cros_build_lib.RunCommandError:
+    return False
+
+
+def IsGptImage(image):
+  """Returns true if the image is a GPT image."""
+  try:
+    return bool(cros_build_lib.GetImageDiskPartitionInfo(image))
+  except cros_build_lib.RunCommandError:
+    return False
+
+
+def LookupImageType(image):
+  """Returns the image type given the path to an image.
+
+  Args:
+    image: The path to a GPT or Squashfs Image.
+
+  Returns:
+    The type of the image. None if it cannot detect the image type.
+  """
+  if IsGptImage(image):
+    return CROS_IMAGE
+  elif IsSquashfsImage(image) or IsExt4Image(image):
+    return DLC_IMAGE
+
+  return None

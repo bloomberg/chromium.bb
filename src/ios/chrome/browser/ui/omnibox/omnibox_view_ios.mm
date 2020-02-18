@@ -32,7 +32,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #import "net/base/mac/url_conversions.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "ui/base/page_transition_types.h"
@@ -438,13 +438,24 @@ bool OmniboxViewIOS::OnWillChange(NSRange range, NSString* new_text) {
     [field_ setClearingPreEditText:YES];
 
     // Exit the pre-editing state in OnWillChange() instead of OnDidChange(), as
-    // that allows IME to continue working.  The following code selects the text
-    // as if the pre-edit fake selection was real.
+    // that allows IME to continue working.
     [field_ exitPreEditState];
 
-    field_.selectedTextRange =
-        [field_ textRangeFromPosition:field_.beginningOfDocument
-                           toPosition:field_.endOfDocument];
+    if (@available(iOS 13, *)) {
+      // Exit pre-edit completely by setting the text to an empty string.
+      // On iOS 13, swiping keyboard acquires a lock that UITextField attempts
+      // to acquire when setSelectedTextRange: is called, causing a deadlock.
+      // Therefore this workaround is introduced. This probably introduces small
+      // issues with third-party keyboards, like crbug.com/875918 and
+      // crbug.com/873544. See crbug.com/988431 for more context.
+      [field_ setText:@""];
+    } else {
+      // The following code selects the text
+      // as if the pre-edit fake selection was real.
+      field_.selectedTextRange =
+          [field_ textRangeFromPosition:field_.beginningOfDocument
+                             toPosition:field_.endOfDocument];
+    }
 
     // Reset |range| to be of zero-length at location zero, as the field will be
     // now cleared.
@@ -575,7 +586,7 @@ void OmniboxViewIOS::OnAccept() {
 
   WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB;
   if (model()) {
-    model()->AcceptInput(disposition, false);
+    model()->AcceptInput(disposition);
   }
   RevertAll();
 }
@@ -630,6 +641,8 @@ bool OmniboxViewIOS::OnCopy() {
 void OmniboxViewIOS::WillPaste() {
   if (model())
     model()->OnPaste();
+
+  [field_ exitPreEditState];
 }
 
 // static

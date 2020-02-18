@@ -8,10 +8,10 @@
 #include "base/optional.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
-#include "third_party/blink/renderer/platform/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -21,17 +21,16 @@ class ModuleScriptCreationParams {
   DISALLOW_NEW();
 
  public:
-  ModuleScriptCreationParams(
-      const KURL& response_url,
-      const ParkableString& source_text,
-      SingleCachedMetadataHandler* cache_handler,
-      network::mojom::FetchCredentialsMode fetch_credentials_mode)
+  ModuleScriptCreationParams(const KURL& response_url,
+                             const ParkableString& source_text,
+                             SingleCachedMetadataHandler* cache_handler,
+                             network::mojom::CredentialsMode credentials_mode)
       : response_url_(response_url),
         is_isolated_(false),
         source_text_(source_text),
         isolated_source_text_(),
         cache_handler_(cache_handler),
-        fetch_credentials_mode_(fetch_credentials_mode) {}
+        credentials_mode_(credentials_mode) {}
 
   ~ModuleScriptCreationParams() = default;
 
@@ -54,8 +53,8 @@ class ModuleScriptCreationParams {
     return source_text_;
   }
   SingleCachedMetadataHandler* CacheHandler() const { return cache_handler_; }
-  network::mojom::FetchCredentialsMode GetFetchCredentialsMode() const {
-    return fetch_credentials_mode_;
+  network::mojom::CredentialsMode GetFetchCredentialsMode() const {
+    return credentials_mode_;
   }
 
   bool IsSafeToSendToAnotherThread() const {
@@ -64,15 +63,14 @@ class ModuleScriptCreationParams {
 
  private:
   // Creates an isolated copy.
-  ModuleScriptCreationParams(
-      const KURL& response_url,
-      const String& isolated_source_text,
-      network::mojom::FetchCredentialsMode fetch_credentials_mode)
+  ModuleScriptCreationParams(const KURL& response_url,
+                             const String& isolated_source_text,
+                             network::mojom::CredentialsMode credentials_mode)
       : response_url_(response_url),
         is_isolated_(true),
         source_text_(),
         isolated_source_text_(isolated_source_text),
-        fetch_credentials_mode_(fetch_credentials_mode) {}
+        credentials_mode_(credentials_mode) {}
 
   const KURL response_url_;
 
@@ -85,19 +83,23 @@ class ModuleScriptCreationParams {
   // |cache_handler_| is cleared when crossing thread boundaries.
   Persistent<SingleCachedMetadataHandler> cache_handler_;
 
-  const network::mojom::FetchCredentialsMode fetch_credentials_mode_;
+  const network::mojom::CredentialsMode credentials_mode_;
 };
+
+}  // namespace blink
+
+namespace WTF {
 
 // Creates a deep copy because |response_url_| and |source_text_| are not
 // cross-thread-transfer-safe.
 template <>
-struct CrossThreadCopier<ModuleScriptCreationParams> {
-  static ModuleScriptCreationParams Copy(
-      const ModuleScriptCreationParams& params) {
+struct CrossThreadCopier<blink::ModuleScriptCreationParams> {
+  static blink::ModuleScriptCreationParams Copy(
+      const blink::ModuleScriptCreationParams& params) {
     return params.IsolatedCopy();
   }
 };
 
-}  // namespace blink
+}  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_MODULE_SCRIPT_CREATION_PARAMS_H_

@@ -24,12 +24,12 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/web/public/browser_state.h"
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
-#import "ios/web/public/web_state/navigation_context.h"
+#import "ios/web/public/navigation/navigation_context.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
+#include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
-#include "ios/web/public/web_thread.h"
 #import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -77,7 +77,7 @@
 
 @end
 
-// TabModelObserver that some tabs stats to be sent to the crash server.
+// WebStateList Observer that some tabs stats to be sent to the crash server.
 @interface CrashReporterTabStateObserver
     : NSObject <CRWWebStateObserver, WebStateListObserving> {
  @private

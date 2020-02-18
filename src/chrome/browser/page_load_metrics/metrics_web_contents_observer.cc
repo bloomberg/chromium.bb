@@ -32,7 +32,6 @@
 #include "content/public/common/resource_load_info.mojom.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "services/network/public/cpp/features.h"
 #include "ui/base/page_transition_types.h"
 
 namespace page_load_metrics {
@@ -312,8 +311,6 @@ void MetricsWebContentsObserver::ResourceLoadComplete(
     content::RenderFrameHost* render_frame_host,
     const content::GlobalRequestID& request_id,
     const content::mojom::ResourceLoadInfo& resource_load_info) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
 
   if (!resource_load_info.url.SchemeIsHTTPOrHTTPS())
     return;
@@ -367,37 +364,24 @@ void MetricsWebContentsObserver::FrameSizeChanged(
     committed_load_->FrameSizeChanged(render_frame_host, frame_size);
 }
 
-void MetricsWebContentsObserver::OnRequestComplete(
+void MetricsWebContentsObserver::OnCookiesRead(
     const GURL& url,
-    const net::IPEndPoint& remote_endpoint,
-    int frame_tree_node_id,
-    const content::GlobalRequestID& request_id,
-    content::RenderFrameHost* render_frame_host_or_null,
-    content::ResourceType resource_type,
-    bool was_cached,
-    std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
-        data_reduction_proxy_data,
-    int64_t raw_body_bytes,
-    int64_t original_content_length,
-    base::TimeTicks creation_time,
-    int net_error,
-    std::unique_ptr<net::LoadTimingInfo> load_timing_info) {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+    const GURL& first_party_url,
+    const net::CookieList& cookie_list,
+    bool blocked_by_policy) {
+  if (committed_load_)
+    committed_load_->OnCookiesRead(url, first_party_url, cookie_list,
+                                   blocked_by_policy);
+}
 
-  // Ignore non-HTTP(S) resources (blobs, data uris, etc).
-  if (!url.SchemeIsHTTPOrHTTPS())
-    return;
-
-  PageLoadTracker* tracker = GetTrackerOrNullForRequest(
-      request_id, render_frame_host_or_null, resource_type, creation_time);
-  if (tracker) {
-    ExtraRequestCompleteInfo extra_request_complete_info(
-        url, remote_endpoint, frame_tree_node_id, was_cached, raw_body_bytes,
-        was_cached ? 0 : original_content_length,
-        std::move(data_reduction_proxy_data), resource_type, net_error,
-        std::move(load_timing_info));
-    tracker->OnLoadedResource(extra_request_complete_info);
-  }
+void MetricsWebContentsObserver::OnCookieChange(
+    const GURL& url,
+    const GURL& first_party_url,
+    const net::CanonicalCookie& cookie,
+    bool blocked_by_policy) {
+  if (committed_load_)
+    committed_load_->OnCookieChange(url, first_party_url, cookie,
+                                    blocked_by_policy);
 }
 
 const PageLoadExtraInfo

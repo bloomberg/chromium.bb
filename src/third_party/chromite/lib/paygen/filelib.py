@@ -31,35 +31,6 @@ def Copy(src_path, dest_path):
   shutil.copy2(src_path, dest_path)
 
 
-def MD5Sum(file_path):
-  """Computer the MD5Sum of a file.
-
-  Args:
-    file_path: The full path to the file to compute the sum.
-
-  Returns:
-    A string of the md5sum if the file exists or
-    None if the file does not exist or is actually a directory.
-  """
-  # For some reason pylint refuses to accept that md5 is a function in
-  # the hashlib module, hence this pylint disable.
-  if not os.path.exists(file_path):
-    return None
-
-  if os.path.isdir(file_path):
-    return None
-
-  # Note that there is anecdotal evidence in other code that not using the
-  # binary flag with this open (open(file_path, 'rb')) can malfunction.  The
-  # problem has not shown up here, but be aware.
-  md5_hash = hashlib.md5()
-  with open(file_path) as file_fobj:
-    for line in file_fobj:
-      md5_hash.update(line)
-
-  return md5_hash.hexdigest()
-
-
 def ReadBlock(file_obj, size=1024):
   """Generator function to Read and return a specificed number of bytes.
 

@@ -13,6 +13,7 @@
 #include "include/private/SkSafe_math.h"
 #include <float.h>
 #include <math.h>
+#include <cmath>
 #include <cstring>
 #include <limits>
 
@@ -168,6 +169,8 @@ static inline float sk_double_to_float(double x) {
 #define SK_FloatInfinity            (+std::numeric_limits<float>::infinity())
 #define SK_FloatNegativeInfinity    (-std::numeric_limits<float>::infinity())
 
+#define SK_DoubleNaN                std::numeric_limits<double>::quiet_NaN()
+
 // Returns false if any of the floats are outside of [0...1]
 // Returns true if count is 0
 bool sk_floats_are_unit(const float array[], size_t count);
@@ -244,6 +247,14 @@ static inline float sk_ieee_float_divide_TODO_IS_DIVIDE_BY_ZERO_SAFE_HERE(float 
 }
 static inline float sk_ieee_double_divide_TODO_IS_DIVIDE_BY_ZERO_SAFE_HERE(double n, double d) {
     return sk_ieee_double_divide(n,d);
+}
+
+static inline float sk_fmaf(float f, float m, float a) {
+#if defined(FP_FAST_FMA)
+    return std::fmaf(f,m,a);
+#else
+    return f*m+a;
+#endif
 }
 
 #endif

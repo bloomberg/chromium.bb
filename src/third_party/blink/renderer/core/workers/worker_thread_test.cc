@@ -23,6 +23,22 @@
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
+// TODO(crbug.com/960985): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_TerminateFrozenScript DISABLED_TerminateFrozenScript
+#define MAYBE_NestedPauseFreeze DISABLED_NestedPauseFreeze
+#define MAYBE_TerminateWhileWorkerPausedByDebugger \
+  DISABLED_TerminateWhileWorkerPausedByDebugger
+#define MAYBE_NestedPauseFreezeNoInterrupts \
+  DISABLED_NestedPauseFreezeNoInterrupts
+#else
+#define MAYBE_TerminateFrozenScript TerminateFrozenScript
+#define MAYBE_NestedPauseFreeze NestedPauseFreeze
+#define MAYBE_TerminateWhileWorkerPausedByDebugger \
+  TerminateWhileWorkerPausedByDebugger
+#define MAYBE_NestedPauseFreezeNoInterrupts NestedPauseFreezeNoInterrupts
+#endif
+
 using testing::_;
 using testing::AtMost;
 
@@ -172,7 +188,7 @@ class WorkerThreadTest : public testing::Test {
         ParentExecutionContextTaskRunners::Create());
   }
 
-  void SetForcibleTerminationDelay(TimeDelta forcible_termination_delay) {
+  void SetForcibleTerminationDelay(base::TimeDelta forcible_termination_delay) {
     worker_thread_->forcible_termination_delay_ = forcible_termination_delay;
   }
 
@@ -313,7 +329,7 @@ TEST_F(WorkerThreadTest, SyncTerminate_ImmediatelyAfterStart) {
 }
 
 TEST_F(WorkerThreadTest, AsyncTerminate_WhileTaskIsRunning) {
-  constexpr TimeDelta kDelay = TimeDelta::FromMilliseconds(10);
+  constexpr base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
   SetForcibleTerminationDelay(kDelay);
 
   ExpectReportingCallsForWorkerForciblyTerminated();
@@ -349,7 +365,7 @@ TEST_F(WorkerThreadTest, SyncTerminate_WhileTaskIsRunning) {
 
 TEST_F(WorkerThreadTest,
        AsyncTerminateAndThenSyncTerminate_WhileTaskIsRunning) {
-  SetForcibleTerminationDelay(TimeDelta::FromMilliseconds(10));
+  SetForcibleTerminationDelay(base::TimeDelta::FromMilliseconds(10));
 
   ExpectReportingCallsForWorkerForciblyTerminated();
   StartWithSourceCodeNotToFinish();
@@ -368,7 +384,7 @@ TEST_F(WorkerThreadTest,
 }
 
 TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
-  constexpr TimeDelta kDelay = TimeDelta::FromMilliseconds(10);
+  constexpr base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
   SetForcibleTerminationDelay(kDelay);
 
   EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
@@ -442,7 +458,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
 }
 
 TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning) {
-  constexpr TimeDelta kDelay = TimeDelta::FromMilliseconds(10);
+  constexpr base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
   SetForcibleTerminationDelay(kDelay);
 
   ExpectReportingCalls();
@@ -514,8 +530,8 @@ TEST_F(WorkerThreadTest, DISABLED_TerminateWorkerWhileChildIsLoading) {
 }
 
 // Tests terminating a worker when debugger is paused.
-TEST_F(WorkerThreadTest, TerminateWhileWorkerPausedByDebugger) {
-  constexpr TimeDelta kDelay = TimeDelta::FromMilliseconds(10);
+TEST_F(WorkerThreadTest, MAYBE_TerminateWhileWorkerPausedByDebugger) {
+  constexpr base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
   SetForcibleTerminationDelay(kDelay);
 
   ExpectReportingCallsForWorkerForciblyTerminated();
@@ -535,8 +551,8 @@ TEST_F(WorkerThreadTest, TerminateWhileWorkerPausedByDebugger) {
   EXPECT_EQ(ExitCode::kAsyncForciblyTerminated, GetExitCode());
 }
 
-TEST_F(WorkerThreadTest, TerminateFrozenScript) {
-  constexpr TimeDelta kDelay = TimeDelta::FromMilliseconds(10);
+TEST_F(WorkerThreadTest, MAYBE_TerminateFrozenScript) {
+  constexpr base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
   SetForcibleTerminationDelay(kDelay);
 
   ExpectReportingCallsForWorkerForciblyTerminated();
@@ -563,8 +579,8 @@ TEST_F(WorkerThreadTest, TerminateFrozenScript) {
   EXPECT_EQ(ExitCode::kAsyncForciblyTerminated, GetExitCode());
 }
 
-TEST_F(WorkerThreadTest, NestedPauseFreeze) {
-  constexpr TimeDelta kDelay = TimeDelta::FromMilliseconds(10);
+TEST_F(WorkerThreadTest, MAYBE_NestedPauseFreeze) {
+  constexpr base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
   SetForcibleTerminationDelay(kDelay);
 
   ExpectReportingCallsForWorkerForciblyTerminated();
@@ -602,8 +618,8 @@ TEST_F(WorkerThreadTest, NestedPauseFreeze) {
   EXPECT_EQ(ExitCode::kAsyncForciblyTerminated, GetExitCode());
 }
 
-TEST_F(WorkerThreadTest, NestedPauseFreezeNoInterrupts) {
-  constexpr TimeDelta kDelay = TimeDelta::FromMilliseconds(10);
+TEST_F(WorkerThreadTest, MAYBE_NestedPauseFreezeNoInterrupts) {
+  constexpr base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
   SetForcibleTerminationDelay(kDelay);
 
   ExpectReportingCalls();

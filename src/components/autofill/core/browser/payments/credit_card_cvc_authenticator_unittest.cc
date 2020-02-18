@@ -55,15 +55,12 @@
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/test_sync_service.h"
-#include "components/variations/variations_associated_data.h"
-#include "components/variations/variations_params_manager.h"
 #include "components/version_info/channel.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -171,47 +168,49 @@ class CreditCardCVCAuthenticatorTest : public testing::Test {
 TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardSuccess) {
   CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
 
-  EXPECT_CALL(*requester_, Success);
   cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
                                    &personal_data_manager_,
                                    base::TimeTicks::Now());
 
   OnDidGetRealPan(AutofillClient::SUCCESS, kTestNumber);
+  EXPECT_TRUE(requester_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), requester_->number());
 }
 
 TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardNetworkError) {
   CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
 
-  EXPECT_CALL(*requester_, Failure);
   cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
                                    &personal_data_manager_,
                                    base::TimeTicks::Now());
 
   OnDidGetRealPan(AutofillClient::NETWORK_ERROR, std::string());
+  EXPECT_FALSE(requester_->did_succeed());
 }
 
 TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardPermanentFailure) {
   CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
 
-  EXPECT_CALL(*requester_, Failure);
   cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
                                    &personal_data_manager_,
                                    base::TimeTicks::Now());
 
   OnDidGetRealPan(AutofillClient::PERMANENT_FAILURE, std::string());
+  EXPECT_FALSE(requester_->did_succeed());
 }
 
 TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardTryAgainFailure) {
   CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
 
-  EXPECT_CALL(*requester_, Success);
   cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
                                    &personal_data_manager_,
                                    base::TimeTicks::Now());
 
   OnDidGetRealPan(AutofillClient::TRY_AGAIN_FAILURE, std::string());
+  EXPECT_FALSE(requester_->did_succeed());
+
   OnDidGetRealPan(AutofillClient::SUCCESS, kTestNumber);
+  EXPECT_TRUE(requester_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), requester_->number());
 }
 

@@ -17,8 +17,8 @@
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -56,7 +56,12 @@ bool LocationBarModelDelegateIOS::GetURL(GURL* url) const {
   web::NavigationItem* item = GetNavigationItem();
   if (!item)
     return false;
-  *url = ShouldDisplayURL() ? item->GetVirtualURL() : GURL::EmptyGURL();
+  *url = item->GetVirtualURL();
+  // Return |false| for about scheme pages.  This will result in the location
+  // bar showing the default page, "about:blank". See crbug.com/989497 for
+  // details on why.
+  if (url->SchemeIs(url::kAboutScheme))
+    return false;
   return true;
 }
 

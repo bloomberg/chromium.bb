@@ -125,13 +125,13 @@ void PrintersMap::Remove(PrinterClass printer_class,
 }
 
 bool PrintersMap::HasPrintersInClass(PrinterClass printer_class) const {
-  return base::ContainsKey(printers_, printer_class);
+  return base::Contains(printers_, printer_class);
 }
 
 bool PrintersMap::IsPrinterInClass(PrinterClass printer_class,
                                    const std::string& printer_id) const {
   return HasPrintersInClass(printer_class) &&
-         base::ContainsKey(printers_.at(printer_class), printer_id);
+         base::Contains(printers_.at(printer_class), printer_id);
 }
 
 bool PrintersMap::IsExistingPrinter(const std::string& printer_id) const {

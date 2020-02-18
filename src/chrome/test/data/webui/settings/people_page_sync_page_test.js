@@ -586,7 +586,7 @@ cr.define('settings_people_page_sync_page', function() {
         assertTrue(toast.open);
 
         // At the end, confirm that setup can be cancelled.
-        toast.querySelector('paper-button').click();
+        toast.querySelector('cr-button').click();
 
         return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
             .then(abort => {
@@ -620,7 +620,7 @@ cr.define('settings_people_page_sync_page', function() {
 
         const cancelButton =
             syncPage.$$('settings-sync-account-control')
-                .shadowRoot.querySelector('#setup-buttons .secondary-button');
+                .shadowRoot.querySelector('#setup-buttons cr-button');
         assertTrue(!!cancelButton);
 
         // Clicking the setup cancel button aborts sync.

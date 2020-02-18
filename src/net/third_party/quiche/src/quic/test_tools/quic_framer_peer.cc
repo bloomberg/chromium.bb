@@ -29,6 +29,13 @@ void QuicFramerPeer::SetLastSerializedServerConnectionId(
 }
 
 // static
+void QuicFramerPeer::SetLastSerializedClientConnectionId(
+    QuicFramer* framer,
+    QuicConnectionId client_connection_id) {
+  framer->last_serialized_client_connection_id_ = client_connection_id;
+}
+
+// static
 void QuicFramerPeer::SetLargestPacketNumber(QuicFramer* framer,
                                             QuicPacketNumber packet_number) {
   framer->largest_packet_number_ = packet_number;
@@ -349,6 +356,23 @@ QuicPacketNumber QuicFramerPeer::GetLargestDecryptedPacketNumber(
     QuicFramer* framer,
     PacketNumberSpace packet_number_space) {
   return framer->largest_decrypted_packet_numbers_[packet_number_space];
+}
+
+// static
+bool QuicFramerPeer::ProcessAndValidateIetfConnectionIdLength(
+    QuicDataReader* reader,
+    ParsedQuicVersion version,
+    Perspective perspective,
+    bool should_update_expected_server_connection_id_length,
+    uint8_t* expected_server_connection_id_length,
+    uint8_t* destination_connection_id_length,
+    uint8_t* source_connection_id_length,
+    std::string* detailed_error) {
+  return QuicFramer::ProcessAndValidateIetfConnectionIdLength(
+      reader, version, perspective,
+      should_update_expected_server_connection_id_length,
+      expected_server_connection_id_length, destination_connection_id_length,
+      source_connection_id_length, detailed_error);
 }
 
 }  // namespace test

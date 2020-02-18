@@ -13,13 +13,14 @@
 #include <utility>
 
 #include "absl/memory/memory.h"
-#include "api/task_queue/global_task_queue_factory.h"
+#include "api/task_queue/default_task_queue_factory.h"
+#include "api/task_queue/task_queue_factory.h"
 #include "modules/audio_device/audio_device_buffer.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/ref_counted_object.h"
 #include "rtc_base/thread_checker.h"
-#include "sdk/android/generated_audio_device_module_base_jni/jni/WebRtcAudioManager_jni.h"
+#include "sdk/android/generated_audio_device_module_base_jni/WebRtcAudioManager_jni.h"
 #include "system_wrappers/include/metrics.h"
 
 namespace webrtc {
@@ -63,6 +64,7 @@ class AndroidAudioDeviceModule : public AudioDeviceModule {
         is_stereo_playout_supported_(is_stereo_playout_supported),
         is_stereo_record_supported_(is_stereo_record_supported),
         playout_delay_ms_(playout_delay_ms),
+        task_queue_factory_(CreateDefaultTaskQueueFactory()),
         input_(std::move(audio_input)),
         output_(std::move(audio_output)),
         initialized_(false) {
@@ -90,7 +92,7 @@ class AndroidAudioDeviceModule : public AudioDeviceModule {
     RTC_LOG(INFO) << __FUNCTION__;
     RTC_DCHECK(thread_checker_.IsCurrent());
     audio_device_buffer_ =
-        absl::make_unique<AudioDeviceBuffer>(&GlobalTaskQueueFactory());
+        absl::make_unique<AudioDeviceBuffer>(task_queue_factory_.get());
     AttachAudioBuffer();
     if (initialized_) {
       return 0;
@@ -596,6 +598,7 @@ class AndroidAudioDeviceModule : public AudioDeviceModule {
   const bool is_stereo_playout_supported_;
   const bool is_stereo_record_supported_;
   const uint16_t playout_delay_ms_;
+  const std::unique_ptr<TaskQueueFactory> task_queue_factory_;
   const std::unique_ptr<AudioInput> input_;
   const std::unique_ptr<AudioOutput> output_;
   std::unique_ptr<AudioDeviceBuffer> audio_device_buffer_;

@@ -5,11 +5,11 @@
 #include "streaming/cast/rtp_packetizer.h"
 
 #include "absl/types/optional.h"
+#include "gtest/gtest.h"
 #include "streaming/cast/frame_crypto.h"
 #include "streaming/cast/rtp_defines.h"
 #include "streaming/cast/rtp_packet_parser.h"
 #include "streaming/cast/ssrc.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 namespace openscreen {
 namespace cast_streaming {

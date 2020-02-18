@@ -14,7 +14,9 @@
 #include "build/build_config.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"
@@ -88,10 +90,14 @@ void ChromeContentGpuClient::GpuServiceInitialized(
           switches::kSingleProcess) &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kInProcessGPU)) {
-    main_thread_profiler_->SetMainThreadTaskRunner(
+    ThreadProfiler::SetMainThreadTaskRunner(
         base::ThreadTaskRunnerHandle::Get());
-    ThreadProfiler::SetServiceManagerConnectorForChildProcess(
-        content::ChildThread::Get()->GetConnector());
+
+    mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector;
+    content::ChildThread::Get()->GetConnector()->Connect(
+        content::mojom::kSystemServiceName,
+        collector.InitWithNewPipeAndPassReceiver());
+    ThreadProfiler::SetCollectorForChildProcess(std::move(collector));
   }
 }
 

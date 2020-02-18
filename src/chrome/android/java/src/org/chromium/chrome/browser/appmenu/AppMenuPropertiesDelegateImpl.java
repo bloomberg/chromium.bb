@@ -28,10 +28,10 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.webapk.lib.client.WebApkValidator;
@@ -264,24 +265,27 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 menu.findItem(R.id.close_all_tabs_menu_id)
                         .setEnabled(mTabModelSelector.getTotalTabCount() > 0);
             }
-            if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+            if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
+                    || DeviceClassManager.enableAccessibilityLayout()) {
                 menu.findItem(R.id.menu_group_tabs).setVisible(false);
+            } else {
+                boolean shouldEnabled = mTabModelSelector.getTabModelFilterProvider()
+                                                .getCurrentTabModelFilter()
+                                                .getTabsWithNoOtherRelatedTabs()
+                                                .size()
+                        > 1;
+                menu.findItem(R.id.menu_group_tabs).setEnabled(shouldEnabled);
             }
         }
 
         // We have to iterate all menu items since same menu item ID may be associated with more
         // than one menu items.
-        boolean useAlternativeIncognitoStrings =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS);
         for (int i = 0; i < menu.size(); ++i) {
             MenuItem item = menu.getItem(i);
             if (item.getItemId() == R.id.new_incognito_tab_menu_id) {
-                item.setTitle(useAlternativeIncognitoStrings ? R.string.menu_new_private_tab
-                                                             : R.string.menu_new_incognito_tab);
+                item.setTitle(R.string.menu_new_incognito_tab);
             } else if (item.getItemId() == R.id.close_all_incognito_tabs_menu_id) {
-                item.setTitle(useAlternativeIncognitoStrings
-                                ? R.string.menu_close_all_private_tabs
-                                : R.string.menu_close_all_incognito_tabs);
+                item.setTitle(R.string.menu_close_all_incognito_tabs);
             }
         }
 
@@ -299,11 +303,6 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      */
     protected void prepareAddToHomescreenMenuItem(
             Menu menu, Tab currentTab, boolean canShowHomeScreenMenuItem) {
-        // Record whether or not we have finished installability checks for this page when we're
-        // preparing the menu to be displayed. This will let us determine if it is feasible to
-        // change the add to homescreen menu item based on whether a site is a PWA.
-        AppBannerManager.forTab(currentTab).recordMenuOpen();
-
         MenuItem homescreenItem = menu.findItem(R.id.add_to_homescreen_id);
         MenuItem openWebApkItem = menu.findItem(R.id.open_webapk_id);
         if (canShowHomeScreenMenuItem) {

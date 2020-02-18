@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 from chromite.api import controller
+from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.lib import build_target_util
 from chromite.lib import cros_build_lib
@@ -19,6 +20,7 @@ from chromite.service import sysroot
 _ACCEPTED_LICENSES = '@CHROMEOS'
 
 
+@validate.require('build_target.name')
 def Create(input_proto, output_proto):
   """Create or replace a sysroot."""
   update_chroot = not input_proto.flags.chroot_current
@@ -26,9 +28,6 @@ def Create(input_proto, output_proto):
 
   build_target_name = input_proto.build_target.name
   profile = input_proto.profile.name or None
-
-  if not build_target_name:
-    cros_build_lib.Die('The build target must be provided.')
 
   build_target = build_target_util.BuildTarget(name=build_target_name,
                                                profile=profile)
@@ -45,16 +44,13 @@ def Create(input_proto, output_proto):
   output_proto.sysroot.build_target.name = build_target_name
 
 
+@validate.require('sysroot.path', 'sysroot.build_target.name')
 def InstallToolchain(input_proto, output_proto):
+  """Install the toolchain into a sysroot."""
   compile_source = input_proto.flags.compile_source
 
   sysroot_path = input_proto.sysroot.path
   build_target_name = input_proto.sysroot.build_target.name
-
-  if not sysroot_path:
-    cros_build_lib.Die('sysroot.path is required.')
-  if not build_target_name:
-    cros_build_lib.Die('sysroot.build_target.name is required.')
 
   build_target = build_target_util.BuildTarget(name=build_target_name)
   target_sysroot = sysroot_lib.Sysroot(sysroot_path)
@@ -76,18 +72,16 @@ def InstallToolchain(input_proto, output_proto):
     return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
 
 
+@validate.require('sysroot.path', 'sysroot.build_target.name')
 def InstallPackages(input_proto, output_proto):
+  """Install packages into a sysroot, building as necessary and permitted."""
   compile_source = input_proto.flags.compile_source
   event_file = input_proto.flags.event_file
 
   sysroot_path = input_proto.sysroot.path
   build_target_name = input_proto.sysroot.build_target.name
-  packages = map(controller_util.PackageInfoToString, input_proto.packages)
-
-  if not build_target_name:
-    cros_build_lib.Die('Build target name is required.')
-  if not sysroot_path:
-    cros_build_lib.Die('Sysroot path is required')
+  packages = [controller_util.PackageInfoToString(x)
+              for x in input_proto.packages]
 
   build_target = build_target_util.BuildTarget(build_target_name)
   target_sysroot = sysroot_lib.Sysroot(sysroot_path)
@@ -105,6 +99,11 @@ def InstallPackages(input_proto, output_proto):
   try:
     sysroot.BuildPackages(build_target, target_sysroot, build_packages_config)
   except sysroot_lib.PackageInstallError as e:
+    if not e.failed_packages:
+      # No packages to report, so just exit with an error code.
+      return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
+
+    # We need to report the failed packages.
     for package in e.failed_packages:
       package_info = output_proto.failed_packages.add()
       controller_util.CPVToPackageInfo(package, package_info)

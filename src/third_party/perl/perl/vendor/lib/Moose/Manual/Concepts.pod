@@ -1,10 +1,11 @@
-package Moose::Manual::Concepts;
-
+# PODNAME: Moose::Manual::Concepts
 # ABSTRACT: Moose OO concepts
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Manual::Concepts - Moose OO concepts
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 MOOSE CONCEPTS (VS "OLD SCHOOL" Perl)
 
@@ -356,7 +357,7 @@ extensions.
   package MyWay::User;
 
   use Moose;
-  use MooseX::StrictConstructor
+  use MooseX::StrictConstructor;
   use MooseX::MyWay;
 
   has ...;
@@ -382,19 +383,57 @@ After that, check out the Role recipes. If you're really curious, go
 on and read the Meta and Extending recipes, but those are mostly there
 for people who want to be Moose wizards and extend Moose itself.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

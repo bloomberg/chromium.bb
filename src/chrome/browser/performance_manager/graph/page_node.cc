@@ -12,4 +12,10 @@ namespace performance_manager {
 PageNode::PageNode() = default;
 PageNode::~PageNode() = default;
 
+PageNodeObserver::PageNodeObserver() = default;
+PageNodeObserver::~PageNodeObserver() = default;
+
+PageNode::ObserverDefaultImpl::ObserverDefaultImpl() = default;
+PageNode::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
+
 }  // namespace performance_manager

@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/domain_reliability/monitor.h"
@@ -40,6 +41,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_verify_result.h"
@@ -79,7 +81,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/resolve_host_request.h"
-#include "services/network/resource_scheduler_client.h"
+#include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/restricted_cookie_manager.h"
 #include "services/network/session_cleanup_cookie_store.h"
 #include "services/network/ssl_config_service_mojo.h"
@@ -98,13 +100,20 @@
 #include "services/network/expect_ct_reporter.h"
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+#include "net/ftp/ftp_auth_cache.h"
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+
 #if defined(OS_CHROMEOS)
 #include "crypto/nss_util_internal.h"
 #include "net/cert/caching_cert_verifier.h"
+#include "net/cert/cert_verify_proc_builtin.h"
+#include "net/cert/internal/system_trust_store.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #include "services/network/cert_verifier_with_trust_anchors.h"
 #include "services/network/cert_verify_proc_chromeos.h"
 #include "services/network/nss_temp_certs_cache_chromeos.h"
+#include "services/network/system_trust_store_provider_chromeos.h"
 #endif
 
 #if !defined(OS_IOS)
@@ -528,8 +537,7 @@ NetworkContext::NetworkContext(
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
 
-  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(
-      CreateUrlLoaderFactoryForNetworkService());
+  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(this);
 
   InitializeCorsParams();
 }
@@ -559,8 +567,7 @@ NetworkContext::NetworkContext(
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
 
-  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(
-      CreateUrlLoaderFactoryForNetworkService());
+  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(this);
 
   InitializeCorsParams();
 }
@@ -593,8 +600,7 @@ NetworkContext::NetworkContext(
   for (const auto& key : cors_exempt_header_list)
     cors_exempt_header_list_.insert(key);
 
-  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(
-      CreateUrlLoaderFactoryForNetworkService());
+  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(this);
 }
 
 NetworkContext::~NetworkContext() {
@@ -602,11 +608,13 @@ NetworkContext::~NetworkContext() {
   if (network_service_)
     network_service_->DeregisterNetworkContext(this);
 
-  if (IsPrimaryNetworkContext()) {
 #if defined(USE_NSS_CERTS)
+  if (IsPrimaryNetworkContext() &&
+      base::MessageLoopCurrentForIO::IsSet()) {  // null in some unit tests.
     net::SetURLRequestContextForNSSHttpIO(nullptr);
-#endif
   }
+#endif
+
   if (cert_net_fetcher_)
     cert_net_fetcher_->Shutdown();
 
@@ -691,11 +699,20 @@ void NetworkContext::GetCookieManager(mojom::CookieManagerRequest request) {
 
 void NetworkContext::GetRestrictedCookieManager(
     mojom::RestrictedCookieManagerRequest request,
-    const url::Origin& origin) {
+    mojom::RestrictedCookieManagerRole role,
+    const url::Origin& origin,
+    bool is_service_worker,
+    int32_t process_id,
+    int32_t routing_id) {
+  mojom::NetworkServiceClient* network_service_client = nullptr;
+  if (network_service())
+    network_service_client = network_service()->client();
+
   restricted_cookie_manager_bindings_.AddBinding(
       std::make_unique<RestrictedCookieManager>(
-          url_request_context_->cookie_store(),
-          &cookie_manager_->cookie_settings(), origin),
+          role, url_request_context_->cookie_store(),
+          &cookie_manager_->cookie_settings(), origin, client(),
+          is_service_worker, process_id, routing_id),
       std::move(request));
 }
 
@@ -746,18 +763,6 @@ size_t NetworkContext::GetNumOutstandingResolveHostRequestsForTesting() const {
 
 bool NetworkContext::SkipReportingPermissionCheck() const {
   return params_ && params_->skip_reporting_send_permission_check;
-}
-
-cors::PreflightCache::Metrics
-NetworkContext::ReportAndGatherCorsPreflightCacheSizeMetric() {
-  return cors_preflight_controller_.ReportAndGatherCacheSizeMetric();
-}
-
-size_t NetworkContext::GatherActiveLoaderCount() {
-  size_t count = 0;
-  for (const auto& factory : url_loader_factories_)
-    count += factory->GetActiveLoaderCount();
-  return count;
 }
 
 void NetworkContext::ClearNetworkingHistorySince(
@@ -1262,19 +1267,25 @@ void NetworkContext::ClearBadProxiesCache(
 }
 
 void NetworkContext::CreateWebSocket(
-    mojom::WebSocketRequest request,
+    const GURL& url,
+    const std::vector<std::string>& requested_protocols,
+    const GURL& site_for_cookies,
+    std::vector<mojom::HttpHeaderPtr> additional_headers,
     int32_t process_id,
     int32_t render_frame_id,
     const url::Origin& origin,
     uint32_t options,
+    mojom::WebSocketHandshakeClientPtr handshake_client,
+    mojom::WebSocketClientPtr client,
     mojom::AuthenticationHandlerPtr auth_handler,
     mojom::TrustedHeaderClientPtr header_client) {
 #if !defined(OS_IOS)
   if (!websocket_factory_)
     websocket_factory_ = std::make_unique<WebSocketFactory>(this);
   websocket_factory_->CreateWebSocket(
-      std::move(request), std::move(auth_handler), std::move(header_client),
-      process_id, render_frame_id, origin, options);
+      url, requested_protocols, site_for_cookies, std::move(additional_headers),
+      process_id, render_frame_id, origin, options, std::move(handshake_client),
+      std::move(client), std::move(auth_handler), std::move(header_client));
 #endif  // !defined(OS_IOS)
 }
 
@@ -1369,26 +1380,16 @@ void NetworkContext::VerifyCertForSignedExchange(
 void NetworkContext::NotifyExternalCacheHit(
     const GURL& url,
     const std::string& http_method,
-    const base::Optional<url::Origin>& top_frame_origin) {
+    const base::Optional<url::Origin>& top_frame_origin,
+    const url::Origin& frame_origin) {
   net::HttpCache* cache =
       url_request_context_->http_transaction_factory()->GetCache();
-  if (cache)
-    cache->OnExternalCacheHit(url, http_method, top_frame_origin);
-}
-
-void NetworkContext::WriteCacheMetadata(const GURL& url,
-                                        net::RequestPriority priority,
-                                        base::Time expected_response_time,
-                                        mojo_base::BigBuffer data) {
-  net::HttpCache* cache =
-      url_request_context_->http_transaction_factory()->GetCache();
-  if (!cache)
-    return;
-
-  auto buf = base::MakeRefCounted<net::IOBuffer>(data.size());
-  memcpy(buf->data(), data.data(), data.size());
-  cache->WriteMetadata(url, priority, expected_response_time, buf.get(),
-                       data.size());
+  net::NetworkIsolationKey key;
+  if (cache) {
+    if (top_frame_origin)
+      key = net::NetworkIsolationKey(*top_frame_origin, frame_origin);
+    cache->OnExternalCacheHit(url, http_method, key);
+  }
 }
 
 void NetworkContext::SetCorsOriginAccessListsForOrigin(
@@ -1559,10 +1560,12 @@ void NetworkContext::VerifyCertificateForTesting(
       request, net::NetLogWithSource());
 }
 
-void NetworkContext::PreconnectSockets(uint32_t num_streams,
-                                       const GURL& original_url,
-                                       int32_t load_flags,
-                                       bool privacy_mode_enabled) {
+void NetworkContext::PreconnectSockets(
+    uint32_t num_streams,
+    const GURL& original_url,
+    int32_t load_flags,
+    bool privacy_mode_enabled,
+    const net::NetworkIsolationKey& network_isolation_key) {
   GURL url = GetHSTSRedirect(original_url);
 
   // |PreconnectSockets| may receive arguments from the renderer, which is not
@@ -1581,9 +1584,10 @@ void NetworkContext::PreconnectSockets(uint32_t num_streams,
   request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
                                        user_agent);
 
+  request_info.load_flags = load_flags;
   request_info.privacy_mode = privacy_mode_enabled ? net::PRIVACY_MODE_ENABLED
                                                    : net::PRIVACY_MODE_DISABLED;
-  request_info.load_flags = load_flags;
+  request_info.network_isolation_key = network_isolation_key;
 
   net::HttpTransactionFactory* factory =
       url_request_context_->http_transaction_factory();
@@ -1661,6 +1665,28 @@ void NetworkContext::LoadHttpAuthCache(const base::UnguessableToken& cache_key,
   std::move(callback).Run();
 }
 
+void NetworkContext::AddAuthCacheEntry(const net::AuthChallengeInfo& challenge,
+                                       const net::AuthCredentials& credentials,
+                                       AddAuthCacheEntryCallback callback) {
+  if (challenge.challenger.scheme() == url::kFtpScheme) {
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+    net::FtpAuthCache* auth_cache = url_request_context_->ftp_auth_cache();
+    auth_cache->Add(challenge.challenger.GetURL(), credentials);
+#else
+    NOTREACHED();
+#endif  // BUILDFLAG(DISABLE_FTP_SUPPORT)
+  } else {
+    net::HttpAuthCache* http_auth_cache =
+        url_request_context_->http_transaction_factory()
+            ->GetSession()
+            ->http_auth_cache();
+    http_auth_cache->Add(challenge.challenger.GetURL(), challenge.realm,
+                         net::HttpAuth::StringToScheme(challenge.scheme),
+                         challenge.challenge, credentials, challenge.path);
+  }
+  std::move(callback).Run();
+}
+
 void NetworkContext::LookupBasicAuthCredentials(
     const GURL& url,
     LookupBasicAuthCredentialsCallback callback) {
@@ -1702,7 +1728,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store;
   if (params_->cookie_path) {
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
-        base::MessageLoopCurrent::Get()->task_runner();
+        base::ThreadTaskRunnerHandle::Get();
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), net::GetCookieStoreBackgroundSequencePriority(),
@@ -2022,13 +2048,14 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         result.url_request_context->proxy_resolution_service());
   }
 
+#if defined(USE_NSS_CERTS)
   // These must be matched by cleanup code just before the URLRequestContext is
   // destroyed.
-  if (params_->primary_network_context) {
-#if defined(USE_NSS_CERTS)
+  if (params_->primary_network_context &&
+      base::MessageLoopCurrentForIO::IsSet()) {  // null in some unit tests.
     net::SetURLRequestContextForNSSHttpIO(result.url_request_context.get());
-#endif
   }
+#endif
 
   cookie_manager_ = std::make_unique<CookieManager>(
       result.url_request_context->cookie_store(),
@@ -2083,7 +2110,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   if (g_cert_verifier_for_testing) {
     cert_verifier = std::make_unique<WrappedTestingCertVerifier>();
   } else {
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(OS_CHROMEOS) || \
     BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
     cert_net_fetcher_ = base::MakeRefCounted<net::CertNetFetcherImpl>();
 #endif
@@ -2091,7 +2118,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     if (params_->username_hash.empty()) {
       cert_verifier = std::make_unique<net::CachingCertVerifier>(
           std::make_unique<net::MultiThreadedCertVerifier>(
-              base::MakeRefCounted<CertVerifyProcChromeOS>()));
+              CreateCertVerifyProcWithoutUserSlots(cert_net_fetcher_)));
     } else {
       // Make sure NSS is initialized for the user.
       crypto::InitializeNSSForChromeOSUser(params_->username_hash,
@@ -2099,8 +2126,9 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
       crypto::ScopedPK11Slot public_slot =
           crypto::GetPublicSlotForChromeOSUser(params_->username_hash);
-      scoped_refptr<net::CertVerifyProc> verify_proc(
-          new CertVerifyProcChromeOS(std::move(public_slot)));
+      scoped_refptr<net::CertVerifyProc> verify_proc =
+          CreateCertVerifyProcForUser(cert_net_fetcher_,
+                                      std::move(public_slot));
 
       cert_verifier_with_trust_anchors_ = new CertVerifierWithTrustAnchors(
           base::Bind(&NetworkContext::TrustAnchorUsed, base::Unretained(this)));
@@ -2119,7 +2147,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
               std::move(params_->trial_comparison_cert_verifier_params
                             ->report_client),
               net::CertVerifyProc::CreateDefault(cert_net_fetcher_),
-              net::CreateCertVerifyProcBuiltin(cert_net_fetcher_)));
+              net::CreateCertVerifyProcBuiltin(
+                  cert_net_fetcher_, /*system_trust_store_provider=*/nullptr)));
     }
 #endif
     if (!cert_verifier)
@@ -2135,10 +2164,12 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
   if (params_->initial_custom_proxy_config ||
       params_->custom_proxy_config_client_request) {
-    proxy_delegate_ = std::make_unique<NetworkServiceProxyDelegate>(
-        std::move(params_->initial_custom_proxy_config),
-        std::move(params_->custom_proxy_config_client_request));
-    builder.set_shared_proxy_delegate(proxy_delegate_.get());
+    std::unique_ptr<NetworkServiceProxyDelegate> proxy_delegate =
+        std::make_unique<NetworkServiceProxyDelegate>(
+            std::move(params_->initial_custom_proxy_config),
+            std::move(params_->custom_proxy_config_client_request));
+    proxy_delegate_ = proxy_delegate.get();
+    builder.set_proxy_delegate(std::move(proxy_delegate));
   }
 
   // |network_service_| may be nullptr in tests.
@@ -2275,6 +2306,30 @@ void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,
 #if defined(OS_CHROMEOS)
 void NetworkContext::TrustAnchorUsed() {
   network_service_->client()->OnTrustAnchorUsed(params_->username_hash);
+}
+
+scoped_refptr<net::CertVerifyProc> NetworkContext::CreateCertVerifyProcForUser(
+    scoped_refptr<net::CertNetFetcher> net_fetcher,
+    crypto::ScopedPK11Slot user_public_slot) {
+  if (params_->use_builtin_cert_verifier) {
+    return net::CreateCertVerifyProcBuiltin(
+        std::move(net_fetcher),
+        std::make_unique<SystemTrustStoreProviderChromeOS>(
+            std::move(user_public_slot)));
+  }
+  return base::MakeRefCounted<CertVerifyProcChromeOS>(
+      std::move(user_public_slot));
+}
+
+scoped_refptr<net::CertVerifyProc>
+NetworkContext::CreateCertVerifyProcWithoutUserSlots(
+    scoped_refptr<net::CertNetFetcher> net_fetcher) {
+  if (params_->use_builtin_cert_verifier) {
+    return net::CreateCertVerifyProcBuiltin(
+        std::move(net_fetcher),
+        std::make_unique<SystemTrustStoreProviderChromeOS>());
+  }
+  return base::MakeRefCounted<CertVerifyProcChromeOS>();
 }
 #endif
 

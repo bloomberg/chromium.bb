@@ -351,7 +351,7 @@ MockPeerConnectionImpl::AddTrack(
       return webrtc::RTCError(webrtc::RTCErrorType::INVALID_PARAMETER);
   }
   for (const auto& stream_id : stream_ids) {
-    if (!base::ContainsValue(local_stream_ids_, stream_id)) {
+    if (!base::Contains(local_stream_ids_, stream_id)) {
       stream_label_ = stream_id;
       local_stream_ids_.push_back(stream_id);
     }

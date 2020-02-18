@@ -237,7 +237,6 @@ class DriveToggleOfflineAction {
       start: () => {
         // Check if all the entries are pinned or not.
         if (entries.length === 0) {
-          this.onExecute_();
           return;
         }
         currentEntry = entries.shift();
@@ -261,6 +260,11 @@ class DriveToggleOfflineAction {
 
       // Update the user interface according to the cache state.
       updateUI: () => {
+        // After execution of last entry call "onExecute_" to invalidate the
+        // model.
+        if (entries.length === 0) {
+          this.onExecute_();
+        }
         this.ui_.listContainer.currentView.updateListItemsMetadata(
             'external', [currentEntry]);
         if (!error) {
@@ -880,7 +884,7 @@ ActionsModel.CommonActionId = {
  * @enum {string}
  */
 ActionsModel.InternalActionId = {
-  CREATE_FOLDER_SHORTCUT: 'create-folder-shortcut',
-  REMOVE_FOLDER_SHORTCUT: 'remove-folder-shortcut',
+  CREATE_FOLDER_SHORTCUT: 'pin-folder',
+  REMOVE_FOLDER_SHORTCUT: 'unpin-folder',
   MANAGE_IN_DRIVE: 'manage-in-drive'
 };

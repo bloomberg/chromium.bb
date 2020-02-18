@@ -11,12 +11,13 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/vr/vr_controller.h"
 #include "third_party/blink/renderer/modules/vr/vr_pose.h"
 #include "third_party/blink/renderer/modules/xr/navigator_xr.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -109,7 +110,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
                                            kCannotUseBothNewAndOldAPIMessage));
   }
 
-  UseCounter::Count(*document, WebFeature::kVRGetDisplays);
+  Deprecation::CountDeprecation(*document, WebFeature::kVRGetDisplays);
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   if (!execution_context->IsSecureContext())
     UseCounter::Count(*document, WebFeature::kVRGetDisplaysInsecureOrigin);

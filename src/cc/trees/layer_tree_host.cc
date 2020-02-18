@@ -131,10 +131,8 @@ LayerTreeHost::LayerTreeHost(InitParams params, CompositorMode mode)
       debug_state_(settings_.initial_debug_state),
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
       task_graph_runner_(params.task_graph_runner),
-      content_source_id_(0),
       event_listener_properties_(),
-      mutator_host_(params.mutator_host),
-      defer_main_frame_update_weak_ptr_factory_(this) {
+      mutator_host_(params.mutator_host) {
   DCHECK(task_graph_runner_);
   DCHECK(!settings_.enable_checker_imaging || image_worker_task_runner_);
 
@@ -392,7 +390,11 @@ void LayerTreeHost::FinishCommitOnImplThread(
   // Dump property trees and layers if run with:
   //   --vmodule=layer_tree_host=3
   if (VLOG_IS_ON(3)) {
-    VLOG(3) << "After finishing commit on impl, the sync tree:"
+    const char* client_name = GetClientNameForMetrics();
+    if (!client_name)
+      client_name = "<unknown client>";
+    VLOG(3) << "After finishing (" << client_name
+            << ") commit on impl, the sync tree:"
             << "\nproperty_trees:\n"
             << sync_tree->property_trees()->ToString() << "\n"
             << "cc::LayerImpls:\n"
@@ -769,7 +771,7 @@ std::string LayerTreeHost::LayersAsString() const {
   return layers;
 }
 
-bool LayerTreeHost::CaptureContent(std::vector<NodeHolder>* content) {
+bool LayerTreeHost::CaptureContent(std::vector<NodeId>* content) {
   if (viewport_visible_rect_.IsEmpty())
     return false;
 
@@ -914,15 +916,9 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
   SetNeedsUpdateLayers();
 }
 
-void LayerTreeHost::RecordWheelAndTouchScrollingCount(
-    const ScrollAndScaleSet& info) {
-  bool has_scrolled_by_wheel = info.has_scrolled_by_wheel;
-  bool has_scrolled_by_touch = info.has_scrolled_by_touch;
-
-  if (has_scrolled_by_wheel || has_scrolled_by_touch) {
-    client_->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
-                                               has_scrolled_by_touch);
-  }
+void LayerTreeHost::RecordManipulationTypeCounts(
+    const ScrollAndScaleSet& scroll_info) {
+  client_->RecordManipulationTypeCounts(scroll_info.manipulation_info);
 }
 
 void LayerTreeHost::SendOverscrollAndScrollEndEventsFromImplSide(
@@ -972,7 +968,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   // on the main thread.
   ApplyViewportChanges(*info);
 
-  RecordWheelAndTouchScrollingCount(*info);
+  RecordManipulationTypeCounts(*info);
 }
 
 void LayerTreeHost::RecordStartOfFrameMetrics() {
@@ -1343,10 +1339,6 @@ void LayerTreeHost::SetExternalPageScaleFactor(
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetContentSourceId(uint32_t id) {
-  content_source_id_ = id;
-}
-
 void LayerTreeHost::ClearCachesOnNextCommit() {
   clear_caches_on_next_commit_ = true;
 }
@@ -1605,8 +1597,6 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
 
   tree_impl->SetRasterColorSpace(raster_color_space_id_, raster_color_space_);
   tree_impl->SetExternalPageScaleFactor(external_page_scale_factor_);
-
-  tree_impl->set_content_source_id(content_source_id_);
 
   tree_impl->set_painted_device_scale_factor(painted_device_scale_factor_);
   tree_impl->SetDeviceScaleFactor(device_scale_factor_);

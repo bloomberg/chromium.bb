@@ -117,7 +117,7 @@
 
 #undef  UNALIGNED	/* avoid redefinition warnings vs _mingw.h */
 #undef  UNALIGNED64
-#if defined(_M_MRX000) || defined(_M_ALPHA) || defined(_M_PPC) || defined(_M_IA64) || defined(_M_AMD64)
+#if defined(_M_MRX000) || defined(_M_ALPHA) || defined(_M_PPC) || defined(_M_IA64) || defined(_M_AMD64) || defined (_M_ARM)
 #define ALIGNMENT_MACHINE
 #define UNALIGNED __unaligned
 #if defined(_WIN64)
@@ -129,6 +129,14 @@
 #undef ALIGNMENT_MACHINE
 #define UNALIGNED
 #define UNALIGNED64
+#endif
+
+#if defined(_WIN64) || defined(_M_ALPHA)
+#define MAX_NATURAL_ALIGNMENT sizeof(ULONGLONG)
+#define MEMORY_ALLOCATION_ALIGNMENT 16
+#else
+#define MAX_NATURAL_ALIGNMENT sizeof(ULONG)
+#define MEMORY_ALLOCATION_ALIGNMENT 8
 #endif
 
 #if defined(_M_MRX000) && !(defined(MIDL_PASS) || defined(RC_INVOKED)) && defined(ENABLE_RESTRICTED)
@@ -161,6 +169,12 @@
 #define TYPE_ALIGNMENT(t) FIELD_OFFSET(struct { char x; t test; }, test)
 #endif
 
+#if defined (_X86_) || defined (_AMD64_)
+#define PROBE_ALIGNMENT(v) TYPE_ALIGNMENT(ULONG)
+#elif defined (_IA64_) || defined (_ARM_)
+#define PROBE_ALIGNMENT(v) (TYPE_ALIGNMENT(v) > TYPE_ALIGNMENT(ULONG) ? TYPE_ALIGNMENT(v) : TYPE_ALIGNMENT(ULONG))
+#endif
+
 /* Calling Conventions */
 #if defined(_M_IX86)
 #define FASTCALL __fastcall
@@ -168,7 +182,11 @@
 #define FASTCALL
 #endif
 
+#if defined(_ARM_)
+#define NTAPI
+#else
 #define NTAPI __stdcall
+#endif
 
 
 #ifndef NOP_FUNCTION
@@ -241,6 +259,26 @@
 #endif
 #endif /* DECLSPEC_ALIGN */
 
+#ifndef SYSTEM_CACHE_ALIGNMENT_SIZE
+#if defined(_AMD64_) || defined(_X86_)
+#define SYSTEM_CACHE_ALIGNMENT_SIZE 64
+#else
+#define SYSTEM_CACHE_ALIGNMENT_SIZE 128
+#endif
+#endif
+
+#ifndef DECLSPEC_CACHEALIGN
+#define DECLSPEC_CACHEALIGN DECLSPEC_ALIGN(SYSTEM_CACHE_ALIGNMENT_SIZE)
+#endif
+
+#ifndef DECLSPEC_SELECTANY
+#if (_MSC_VER >= 1100) || defined(__GNUC__)
+#define DECLSPEC_SELECTANY __declspec(selectany)
+#else
+#define DECLSPEC_SELECTANY
+#endif
+#endif
+
 /* Use to silence unused variable warnings when it is intentional */
 #define UNREFERENCED_PARAMETER(P) {(P) = (P);}
 #define UNREFERENCED_LOCAL_VARIABLE(L) {(L) = (L);}
@@ -282,8 +320,8 @@ typedef HANDLE *PHANDLE;
 #define VOID void
 typedef char CHAR;
 typedef short SHORT;
-typedef long LONG;
-#if !defined(MIDL_PASS)
+typedef __LONG32 LONG;
+#if !defined(MIDL_PASS) && !defined (__WIDL__)
 typedef int INT;
 #endif
 #endif
@@ -292,7 +330,7 @@ typedef double DOUBLE;
 /* Unsigned Types */
 typedef unsigned char UCHAR, *PUCHAR;
 typedef unsigned short USHORT, *PUSHORT;
-typedef unsigned long ULONG, *PULONG;
+typedef unsigned __LONG32 ULONG, *PULONG;
 typedef CONST UCHAR *PCUCHAR;
 typedef CONST USHORT *PCUSHORT;
 typedef CONST ULONG *PCULONG;
@@ -389,7 +427,7 @@ typedef struct _QUAD {
 #ifndef _LARGE_INTEGER_DEFINED
 #define _LARGE_INTEGER_DEFINED
 /* Large Integer Unions */
-#if defined(MIDL_PASS)
+#if defined(MIDL_PASS) || defined (__WIDL__)
 typedef struct _LARGE_INTEGER {
 #else
 typedef union _LARGE_INTEGER {
@@ -405,7 +443,7 @@ typedef union _LARGE_INTEGER {
   LONGLONG QuadPart;
 } LARGE_INTEGER, *PLARGE_INTEGER;
 
-#if defined(MIDL_PASS)
+#if defined(MIDL_PASS) || defined (__WIDL__)
 typedef struct _ULARGE_INTEGER {
 #else
 typedef union _ULARGE_INTEGER {
@@ -421,9 +459,6 @@ typedef union _ULARGE_INTEGER {
   ULONGLONG QuadPart;
 } ULARGE_INTEGER, *PULARGE_INTEGER;
 
-/* Physical Addresses are always treated as 64-bit wide */
-typedef LARGE_INTEGER PHYSICAL_ADDRESS, *PPHYSICAL_ADDRESS;
-
 /* Locally Unique Identifier */
 typedef struct _LUID {
   ULONG LowPart;
@@ -431,6 +466,9 @@ typedef struct _LUID {
 } LUID, *PLUID;
 
 #endif /* _LARGE_INTEGER_DEFINED */
+
+/* Physical Addresses are always treated as 64-bit wide */
+typedef LARGE_INTEGER PHYSICAL_ADDRESS, *PPHYSICAL_ADDRESS;
 
 /* Native API Return Value Macros */
 #define NT_SUCCESS(Status)              (((NTSTATUS)(Status)) >= 0)
@@ -509,6 +547,8 @@ typedef struct _STRING64 {
 
 
 /* Object Attributes */
+#ifndef __OBJECT_ATTRIBUTES_DEFINED
+#define __OBJECT_ATTRIBUTES_DEFINED
 typedef struct _OBJECT_ATTRIBUTES {
   ULONG Length;
   HANDLE RootDirectory;
@@ -517,6 +557,7 @@ typedef struct _OBJECT_ATTRIBUTES {
   PVOID SecurityDescriptor;
   PVOID SecurityQualityOfService;
 } OBJECT_ATTRIBUTES, *POBJECT_ATTRIBUTES;
+#endif
 typedef CONST OBJECT_ATTRIBUTES *PCOBJECT_ATTRIBUTES;
 
 /* Values for the Attributes member */
@@ -588,11 +629,14 @@ typedef struct _SINGLE_LIST_ENTRY {
 
 #endif /* _LIST_ENTRY_DEFINED */
 
+#ifndef ___PROCESSOR_NUMBER_DEFINED
+#define ___PROCESSOR_NUMBER_DEFINED
 typedef struct _PROCESSOR_NUMBER {
   USHORT Group;
   UCHAR Number;
   UCHAR Reserved;
 } PROCESSOR_NUMBER, *PPROCESSOR_NUMBER;
+#endif /* !___PROCESSOR_NUMBER_DEFINED */
 
 struct _CONTEXT;
 struct _EXCEPTION_RECORD;
@@ -607,13 +651,20 @@ typedef EXCEPTION_DISPOSITION
   PVOID DispatcherContext);
 #endif /* __PEXCEPTION_ROUTINE_DEFINED */
 
+#ifndef ___GROUP_AFFINITY_DEFINED
+#define ___GROUP_AFFINITY_DEFINED
 typedef struct _GROUP_AFFINITY {
   KAFFINITY Mask;
   USHORT Group;
   USHORT Reserved[3];
 } GROUP_AFFINITY, *PGROUP_AFFINITY;
+#endif /* !___GROUP_AFFINITY_DEFINED */
 
 /* Helper Macros */
+#define RTL_FIELD_TYPE(type, field)    (((type*)0)->field)
+#define RTL_BITS_OF(sizeOfArg)         (sizeof(sizeOfArg) * 8)
+#define RTL_BITS_OF_FIELD(type, field) (RTL_BITS_OF(RTL_FIELD_TYPE(type, field)))
+
 #define RTL_CONSTANT_STRING(s) { sizeof(s)-sizeof((s)[0]), sizeof(s), s }
 
 #define RTL_FIELD_SIZE(type, field) (sizeof(((type *)0)->field))
@@ -643,14 +694,14 @@ typedef struct _GROUP_AFFINITY {
 #define MAXUCHAR  0xff
 #define MAXUSHORT 0xffff
 #define MAXULONG  0xffffffff
-#define MAXLONGLONG (0x7fffffffffffffffLL)
+#define MAXLONGLONG (0x7fffffffffffffffll)
 
 /* Multiplication and Shift Operations */
-#define Int32x32To64(a,b) ((LONGLONG)(a)*(LONGLONG)(b))
-#define UInt32x32To64(a,b) ((ULONGLONG)(a)*(ULONGLONG)(b))
-#define Int64ShllMod32(a,b) ((ULONGLONG)(a)<<(b))
-#define Int64ShraMod32(a,b) ((LONGLONG)(a)>>(b))
-#define Int64ShrlMod32(a,b) ((ULONGLONG)(a)>>(b))
+#define Int32x32To64(a, b) (((LONGLONG) ((LONG) (a))) * ((LONGLONG) ((LONG) (b))))
+#define UInt32x32To64(a, b) (((ULONGLONG) ((unsigned int) (a))) *((ULONGLONG) ((unsigned int) (b))))
+#define Int64ShllMod32(a, b) (((ULONGLONG) (a)) << (b))
+#define Int64ShraMod32(a, b) (((LONGLONG) (a)) >> (b))
+#define Int64ShrlMod32(a, b) (((ULONGLONG) (a)) >> (b))
 
 /* C_ASSERT Definition */
 #define C_ASSERT(expr) extern char (*c_assert(void)) [(expr) ? 1 : -1]
@@ -804,6 +855,79 @@ typedef struct _GROUP_AFFINITY {
 #define LANG_YI                                   0x78
 #define LANG_YORUBA                               0x6a
 #define LANG_ZULU                                 0x35
+
+#ifndef NT_INCLUDED
+
+#define FILE_ATTRIBUTE_VALID_FLAGS 0x00007fb7
+#define FILE_SHARE_VALID_FLAGS (FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE)
+
+#define FILE_SUPERSEDE                    0x00000000
+#define FILE_OPEN                         0x00000001
+#define FILE_CREATE                       0x00000002
+#define FILE_OPEN_IF                      0x00000003
+#define FILE_OVERWRITE                    0x00000004
+#define FILE_OVERWRITE_IF                 0x00000005
+#define FILE_MAXIMUM_DISPOSITION          0x00000005
+
+#define FILE_DIRECTORY_FILE               0x00000001
+#define FILE_WRITE_THROUGH                0x00000002
+#define FILE_SEQUENTIAL_ONLY              0x00000004
+#define FILE_NO_INTERMEDIATE_BUFFERING    0x00000008
+#define FILE_SYNCHRONOUS_IO_ALERT         0x00000010
+#define FILE_SYNCHRONOUS_IO_NONALERT      0x00000020
+#define FILE_NON_DIRECTORY_FILE           0x00000040
+#define FILE_CREATE_TREE_CONNECTION       0x00000080
+#define FILE_COMPLETE_IF_OPLOCKED         0x00000100
+#define FILE_NO_EA_KNOWLEDGE              0x00000200
+#define FILE_OPEN_REMOTE_INSTANCE         0x00000400
+#define FILE_RANDOM_ACCESS                0x00000800
+#define FILE_DELETE_ON_CLOSE              0x00001000
+#define FILE_OPEN_BY_FILE_ID              0x00002000
+#define FILE_OPEN_FOR_BACKUP_INTENT       0x00004000
+#define FILE_NO_COMPRESSION               0x00008000
+#if (NTDDI_VERSION >= NTDDI_WIN7)
+#define FILE_OPEN_REQUIRING_OPLOCK        0x00010000
+#define FILE_DISALLOW_EXCLUSIVE           0x00020000
+#endif /* (NTDDI_VERSION >= NTDDI_WIN7) */
+#define FILE_RESERVE_OPFILTER             0x00100000
+#define FILE_OPEN_REPARSE_POINT           0x00200000
+#define FILE_OPEN_NO_RECALL               0x00400000
+#define FILE_OPEN_FOR_FREE_SPACE_QUERY    0x00800000
+
+typedef struct _REPARSE_DATA_BUFFER
+{
+  ULONG  ReparseTag;
+  USHORT ReparseDataLength;
+  USHORT Reserved;
+  union
+  {
+    struct
+    {
+      USHORT SubstituteNameOffset;
+      USHORT SubstituteNameLength;
+      USHORT PrintNameOffset;
+      USHORT PrintNameLength;
+      ULONG  Flags;
+      WCHAR  PathBuffer[1];
+    } SymbolicLinkReparseBuffer;
+    struct
+    {
+      USHORT SubstituteNameOffset;
+      USHORT SubstituteNameLength;
+      USHORT PrintNameOffset;
+      USHORT PrintNameLength;
+      WCHAR  PathBuffer[1];
+    } MountPointReparseBuffer;
+    struct
+    {
+      UCHAR  DataBuffer[1];
+    } GenericReparseBuffer;
+  };
+} REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
+
+#define REPARSE_DATA_BUFFER_HEADER_SIZE      FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
+
+#endif /* !NT_DEFINED */
 
 #endif /* _NTDEF_ */
 

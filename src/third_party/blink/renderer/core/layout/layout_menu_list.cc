@@ -54,10 +54,11 @@ LayoutMenuList::LayoutMenuList(Element* element)
 
 LayoutMenuList::~LayoutMenuList() = default;
 
-// FIXME: Instead of this hack we should add a ShadowRoot to <select> with no
-// insertion point to prevent children from rendering.
 bool LayoutMenuList::IsChildAllowed(LayoutObject* object,
                                     const ComputedStyle&) const {
+  // For a size=1 <select>, we only render the active option through the
+  // anonymous inner_block_ plus button_text_. We do not allow adding layout
+  // objects for options or optgroups.
   return object->IsAnonymous();
 }
 
@@ -98,7 +99,7 @@ void LayoutMenuList::CreateInnerBlock() {
                                                   CreateInnerStyle(), legacy);
 
   button_text_ =
-      LayoutText::CreateEmptyAnonymous(GetDocument(), MutableStyle(), legacy);
+      LayoutText::CreateEmptyAnonymous(GetDocument(), Style(), legacy);
   // We need to set the text explicitly though it was specified in the
   // constructor because LayoutText doesn't refer to the text
   // specified in the constructor in a case of re-transforming.
@@ -195,7 +196,7 @@ void LayoutMenuList::StyleDidChange(StyleDifference diff,
   if (!inner_block_)
     CreateInnerBlock();
 
-  button_text_->SetStyle(MutableStyle());
+  button_text_->SetStyle(Style());
   UpdateInnerStyle();
   UpdateInnerBlockHeight();
 }
@@ -208,6 +209,11 @@ void LayoutMenuList::UpdateInnerBlockHeight() {
 }
 
 void LayoutMenuList::UpdateOptionsWidth() const {
+  if (ShouldApplySizeContainment()) {
+    options_width_ = 0;
+    return;
+  }
+
   float max_option_width = 0;
 
   for (auto* const option : SelectElement()->GetOptionList()) {

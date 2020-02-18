@@ -801,8 +801,7 @@ TEST_F(VolumeManagerTest, OnExternalStorageDisabledChanged) {
       "failed_unmount",
   };
   for (const auto& request : disk_mount_manager_->unmount_requests()) {
-    EXPECT_TRUE(
-        base::ContainsKey(expected_unmount_requests, request.mount_path));
+    EXPECT_TRUE(base::Contains(expected_unmount_requests, request.mount_path));
     expected_unmount_requests.erase(request.mount_path);
   }
   EXPECT_TRUE(expected_unmount_requests.empty());

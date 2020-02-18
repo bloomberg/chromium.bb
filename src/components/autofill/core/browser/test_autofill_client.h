@@ -22,8 +22,9 @@
 #include "components/autofill/core/browser/test_form_data_importer.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 
 namespace autofill {
 
@@ -38,7 +39,7 @@ class TestAutofillClient : public AutofillClient {
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
-  identity::IdentityManager* GetIdentityManager() override;
+  signin::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
   payments::PaymentsClient* GetPaymentsClient() override;
   StrikeDatabase* GetStrikeDatabase() override;
@@ -82,6 +83,7 @@ class TestAutofillClient : public AutofillClient {
       std::unique_ptr<base::DictionaryValue> legal_message,
       SaveCreditCardOptions options,
       UploadSaveCardPromptCallback callback) override;
+  void CreditCardUploadCompleted(bool card_saved) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
   bool HasCreditCardScanFeature() override;
@@ -168,12 +170,11 @@ class TestAutofillClient : public AutofillClient {
 
   GURL form_origin() { return form_origin_; }
 
-  static void UpdateSourceURL(ukm::UkmRecorder* ukm_recorder,
-                              ukm::SourceId source_id,
-                              GURL url);
+  ukm::TestUkmRecorder* GetTestUkmRecorder();
 
  private:
-  identity::IdentityTestEnvironment identity_test_env_;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
+  signin::IdentityTestEnvironment identity_test_env_;
   syncer::SyncService* test_sync_service_ = nullptr;
   TestAddressNormalizer test_address_normalizer_;
   TestPersonalDataManager test_personal_data_manager_;

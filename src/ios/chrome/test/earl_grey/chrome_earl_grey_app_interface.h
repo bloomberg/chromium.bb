@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #import "components/content_settings/core/common/content_settings.h"
+#import "components/sync/base/model_type.h"
 
 @class ElementSelector;
 
@@ -21,9 +22,9 @@
 // operation failed.
 + (NSError*)clearBrowsingHistory;
 
-// Loads |URL| in the current WebState with transition type
+// Loads the URL |spec| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED and returns without waiting for the page to load.
-+ (void)startLoadingURL:(NSString*)URL;
++ (void)startLoadingURL:(NSString*)spec;
 
 // If the current WebState is HTML content, will wait until the window ID is
 // injected. Returns YES if the injection is successful or if the WebState is
@@ -36,7 +37,7 @@
 // Reloads the page without waiting for the page to load.
 + (void)startReloading;
 
-#pragma mark - Tab Utilities
+#pragma mark - Tab Utilities (EG2)
 
 // Selects tab with given index in current mode (incognito or main
 // (non-incognito)).
@@ -122,10 +123,25 @@
 // otherwise nil.
 + (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector;
 
-// Waits for there to be no web state containing |text|.
-// If not succeed returns an NSError indicating  why the operation failed,
-// otherwise nil.
-+ (NSError*)waitForWebStateNotContainingText:(NSString*)text;
+// Attempts to submit form with |formID| in the current WebState.
+// Returns nil on success, or else an NSError indicating why the operation
+// failed.
++ (NSError*)submitWebStateFormWithID:(NSString*)formID;
+
+// Returns YES if the current WebState contains |text|.
++ (BOOL)webStateContainsText:(NSString*)text;
+
+// Waits for the current WebState to contain loaded image with |imageID|.
+// When loaded, the image element will have the same size as actual image.
+// Returns nil if the condition is met within a timeout, or else an NSError
+// indicating why the operation failed.
++ (NSError*)waitForWebStateContainingLoadedImage:(NSString*)imageID;
+
+// Waits for the current WebState to contain a blocked image with |imageID|.
+// When blocked, the image element will be smaller than the actual image size.
+// Returns nil if the condition is met within a timeout, or else an NSError
+// indicating why the operation failed.
++ (NSError*)waitForWebStateContainingBlockedImage:(NSString*)imageID;
 
 // Sets value for content setting.
 + (void)setContentSettings:(ContentSetting)setting;
@@ -134,6 +150,8 @@
 // the accounts were correctly removed from the keychain. Returns nil on
 // success, or else an NSError indicating why the operation failed.
 + (NSError*)signOutAndClearAccounts;
+
+#pragma mark - Sync Utilities (EG2)
 
 // Clears the autofill profile for the given |GUID|.
 + (void)clearAutofillProfileWithGUID:(NSString*)GUID;
@@ -187,6 +205,46 @@
 // the real one.
 + (void)tearDownFakeSyncServer;
 
+// Gets the number of entities of the given |type|.
++ (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type;
+
+// Injects a bookmark into the fake sync server with |URL| and |title|.
++ (void)addFakeSyncServerBookmarkWithURL:(NSString*)URL title:(NSString*)title;
+
+// Injects typed URL to sync FakeServer.
++ (void)addFakeSyncServerTypedURL:(NSString*)URL;
+
+// Adds typed URL into HistoryService.
++ (void)addHistoryServiceTypedURL:(NSString*)URL;
+
+// Deletes typed URL from HistoryService.
++ (void)deleteHistoryServiceTypedURL:(NSString*)URL;
+
+// If the provided URL |spec| is either present or not present in HistoryService
+// (depending on |expectPresent|), return YES. If the present status of |spec|
+// is not what is expected, or there is an error, return NO.
++ (BOOL)isTypedURL:(NSString*)spec presentOnClient:(BOOL)expectPresent;
+
+// Triggers a sync cycle for a |type|.
++ (void)triggerSyncCycleForType:(syncer::ModelType)type;
+
+// Deletes an autofill profile from the fake sync server with |GUID|, if it
+// exists. If it doesn't exist, nothing is done.
++ (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(NSString*)GUID;
+
+// Verifies the sessions hierarchy on the Sync FakeServer. |specs| is
+// the collection of URLs that are to be expected for a single window. On
+// failure, returns a NSError describing the failure. See the
+// SessionsHierarchy class for documentation regarding the verification.
++ (NSError*)verifySessionsOnSyncServerWithSpecs:(NSArray<NSString*>*)specs;
+
+// Verifies that |count| entities of the given |type| and |name| exist on the
+// sync FakeServer. Folders are not included in this count. Returns NSError
+// if there is a failure or if the count does not match.
++ (NSError*)verifyNumberOfSyncEntitiesWithType:(NSUInteger)type
+                                          name:(NSString*)name
+                                         count:(NSUInteger)count;
+
 #pragma mark - JavaScript Utilities (EG2)
 
 // Executes JavaScript on current WebState, and waits for either the completion
@@ -194,6 +252,46 @@
 // exception is thrown, returns an NSError indicating why the operation failed,
 // otherwise returns object representing execution result.
 + (id)executeJavaScript:(NSString*)javaScript error:(NSError**)error;
+
+#pragma mark - Accessibility Utilities (EG2)
+
+// Verifies that all interactive elements on screen (or at least one of their
+// descendants) are accessible.
++ (NSError*)verifyAccessibilityForCurrentScreen WARN_UNUSED_RESULT;
+
+#pragma mark - Check features (EG2)
+
+// Helpers for checking feature state. These can't use FeatureList directly when
+// invoked from test code, as the EG test code runs in a separate process and
+// must query Chrome for the state.
+
+// Returns YES if SlimNavigationManager feature is enabled.
++ (BOOL)isSlimNavigationManagerEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if BlockNewTabPagePendingLoad feature is enabled.
++ (BOOL)isBlockNewTabPagePendingLoadEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if NewOmniboxPopupLayout feature is enabled.
++ (BOOL)isNewOmniboxPopupLayoutEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if UmaCellular feature is enabled.
++ (BOOL)isUMACellularEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if UKM feature is enabled.
++ (BOOL)isUKMEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if WebPaymentsModifiers feature is enabled.
++ (BOOL)isWebPaymentsModifiersEnabled WARN_UNUSED_RESULT;
+
+#pragma mark - Popup Blocking
+
+// Gets the current value of the popup content setting preference for the
+// original browser state.
++ (ContentSetting)popupPrefValue;
+
+// Sets the popup content setting preference to the given value for the original
+// browser state.
++ (void)setPopupPrefValue:(ContentSetting)value;
 
 @end
 

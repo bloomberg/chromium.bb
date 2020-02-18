@@ -17,6 +17,7 @@
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrGpu.h"
 #include "src/utils/SkOSPath.h"
+#include "tools/AutoreleasePool.h"
 #include "tools/CrashHandler.h"
 #include "tools/HashAndEncode.h"
 #include "tools/ToolUtils.h"
@@ -47,7 +48,6 @@ static DEFINE_string(tf    ,   "srgb", "The transfer function for any raster bac
 static DEFINE_bool  (legacy,    false, "Use a null SkColorSpace instead of --gamut and --tf?");
 
 static DEFINE_int   (samples ,         0, "Samples per pixel in GPU backends.");
-static DEFINE_bool  (nvpr    ,     false, "Use NV_path_rendering in GPU backends?");
 static DEFINE_bool  (stencils,      true, "If false, avoid stencil buffers in GPU backends.");
 static DEFINE_bool  (dit     ,     false, "Use device-independent text in GPU backends.");
 static DEFINE_string(surf    , "default", "Backing store for GPU backend surfaces.");
@@ -255,8 +255,7 @@ static sk_sp<SkImage> draw_with_gpu(std::function<bool(SkCanvas*)> draw,
         return nullptr;
     }
 
-    auto overrides = FLAGS_nvpr ? GrContextFactory::ContextOverrides::kRequireNVPRSupport
-                                : GrContextFactory::ContextOverrides::kDisableNVPR;
+    auto overrides = GrContextFactory::ContextOverrides::kNone;
     if (!FLAGS_stencils) { overrides |= GrContextFactory::ContextOverrides::kAvoidStencilBuffers; }
 
     GrContext* context = factory->getContextInfo(api, overrides)
@@ -284,7 +283,8 @@ static sk_sp<SkImage> draw_with_gpu(std::function<bool(SkCanvas*)> draw,
                                                            info.height(),
                                                            info.colorType(),
                                                            GrMipMapped::kNo,
-                                                           GrRenderable::kYes);
+                                                           GrRenderable::kYes,
+                                                           GrProtected::kNo);
             surface = SkSurface::MakeFromBackendTexture(context,
                                                         backendTexture,
                                                         kTopLeft_GrSurfaceOrigin,
@@ -494,6 +494,7 @@ int main(int argc, char** argv) {
                                           : SkColorSpace::MakeRGB(tf,gamut);
     const SkImageInfo unsized_info = SkImageInfo::Make(0,0, ct,at,cs);
 
+    AutoreleasePool pool;
     for (auto source : sources) {
         const auto start = std::chrono::steady_clock::now();
         fprintf(stdout, "%50s", source.name.c_str());
@@ -582,6 +583,7 @@ int main(int argc, char** argv) {
         fprintf(stdout, "\t%s\t%7dms\n",
                 md5.c_str(),
                 (int)std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count());
+        pool.drain();
     }
 
     if (!FLAGS_writeShaders.isEmpty()) {

@@ -37,7 +37,6 @@ from chromite.lib import patch as cros_patch
 from chromite.lib import portage_util
 from chromite.lib import results_lib
 from chromite.lib import retry_stats
-from chromite.lib import risk_report
 from chromite.lib import toolchain
 from chromite.lib import triage_lib
 from chromite.lib import uri_lib
@@ -884,10 +883,6 @@ class ReportStage(generic_stages.BuilderStage,
       if build_id is not None:
         details_link = uri_lib.ConstructViceroyBuildDetailsUri(build_id)
         logging.PrintBuildbotLink('Build details', details_link)
-        suite_details_link = uri_lib.ConstructGoldenEyeSuiteDetailsUri(
-            build_id=build_id)
-        logging.PrintBuildbotLink('Build details', details_link)
-        logging.PrintBuildbotLink('Suite details', suite_details_link)
 
       # Generate links to archived artifacts if there are any.  All the
       # archived artifacts for one run/config are in one location, so the link
@@ -1042,7 +1037,6 @@ class ReportStage(generic_stages.BuilderStage,
               fields=dict(mon_fields, builder_name=self._run.GetBuilderName()))
 
       if config_lib.IsMasterCQ(self._run.config):
-        self._RunRiskReport()
         self_destructed = self._run.attrs.metadata.GetValueWithDefault(
             constants.SELF_DESTRUCTED_BUILD, False)
         mon_fields = {'status': status_for_db,
@@ -1057,14 +1051,6 @@ class ReportStage(generic_stages.BuilderStage,
 
       # Dump report about things we retry.
       retry_stats.ReportStats(sys.stdout)
-
-  def _RunRiskReport(self):
-    """Fetches the CL-Scanner risk report and prints step text and links."""
-    build_identifier, _ = self._run.GetCIDBHandle()
-    build_id = build_identifier.cidb_id
-    report = risk_report.GetCLRiskReport(build_id)
-    for link_text, url in sorted(report.iteritems()):
-      logging.PrintBuildbotLink(link_text, url)
 
   def _GetBuildDuration(self):
     """Fetches the duration of this build in seconds, from cidb.

@@ -73,8 +73,7 @@ MojoCdm::MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       session_keys_change_cb_(session_keys_change_cb),
-      session_expiration_update_cb_(session_expiration_update_cb),
-      weak_factory_(this) {
+      session_expiration_update_cb_(session_expiration_update_cb) {
   DVLOG(1) << __func__;
   DCHECK(session_message_cb_);
   DCHECK(session_closed_cb_);
@@ -151,7 +150,8 @@ void MojoCdm::OnConnectionError(uint32_t custom_reason,
   // Handle initial connection error.
   if (pending_init_promise_) {
     DCHECK(!cdm_session_tracker_.HasRemainingSessions());
-    pending_init_promise_->reject(CdmPromise::Exception::INVALID_STATE_ERROR, 0,
+    pending_init_promise_->reject(CdmPromise::Exception::INVALID_STATE_ERROR,
+                                  CdmPromise::SystemCode::kConnectionError,
                                   "Mojo CDM creation failed.");
     // Dropping the promise could cause |this| to be destructed.
     pending_init_promise_.reset();
@@ -170,7 +170,8 @@ void MojoCdm::SetServerCertificate(const std::vector<uint8_t>& certificate,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!remote_cdm_) {
-    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
+    promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR,
+                    CdmPromise::SystemCode::kConnectionError,
                     "CDM connection lost.");
     return;
   }

@@ -66,10 +66,9 @@ class SSLHostStateDelegate {
 
   // Returns whether the specified host ran insecure content of the given
   // |content_type|.
-  virtual bool DidHostRunInsecureContent(
-      const std::string& host,
-      int child_id,
-      InsecureContentType content_type) const = 0;
+  virtual bool DidHostRunInsecureContent(const std::string& host,
+                                         int child_id,
+                                         InsecureContentType content_type) = 0;
 
   // Revokes all SSL certificate error allow exceptions made by the user for
   // |host|.
@@ -79,7 +78,7 @@ class SSLHostStateDelegate {
   // |host|. This does not mean that *all* certificate errors are allowed, just
   // that there exists an exception. To see if a particular certificate and
   // error combination exception is allowed, use QueryPolicy().
-  virtual bool HasAllowException(const std::string& host) const = 0;
+  virtual bool HasAllowException(const std::string& host) = 0;
 
  protected:
   virtual ~SSLHostStateDelegate() {}

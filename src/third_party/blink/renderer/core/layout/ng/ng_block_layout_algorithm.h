@@ -66,11 +66,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   inline scoped_refptr<const NGLayoutResult> Layout(
       NGInlineChildLayoutContext* inline_child_layout_context);
 
-  scoped_refptr<const NGLayoutResult> FinishLayout(
-      NGPreviousInflowPosition*,
-      LogicalSize border_box_size,
-      const NGBoxStrut& borders,
-      const NGBoxStrut& scrollbars);
+  scoped_refptr<const NGLayoutResult> FinishLayout(NGPreviousInflowPosition*);
 
   // Return the BFC block offset of this block.
   LayoutUnit BfcBlockOffset() const {
@@ -288,14 +284,15 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // need to abort layout.
   bool NeedsAbortOnBfcBlockOffsetChange() const;
 
-  // Positions pending floats starting from {@origin_block_offset}.
-  void PositionPendingFloats(LayoutUnit origin_block_offset);
-
   // Positions a list marker for the specified block content.
-  void PositionOrPropagateListMarker(const NGLayoutResult&, LogicalOffset*);
+  // Return false if it aborts when resolving BFC block offset for LI.
+  bool PositionOrPropagateListMarker(const NGLayoutResult&,
+                                     LogicalOffset*,
+                                     NGPreviousInflowPosition*);
 
   // Positions a list marker when the block does not have any line boxes.
-  void PositionListMarkerWithoutLineBoxes();
+  // Return false if it aborts when resolving BFC block offset for LI.
+  bool PositionListMarkerWithoutLineBoxes(NGPreviousInflowPosition*);
 
   // Calculates logical offset for the current fragment using either {@code
   // intrinsic_block_size_} when the fragment doesn't know it's offset or
@@ -344,7 +341,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   bool has_processed_first_child_ = false;
 
   NGExclusionSpace exclusion_space_;
-  Vector<NGUnpositionedFloat, 1> unpositioned_floats_;
 };
 
 }  // namespace blink

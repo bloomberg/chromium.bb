@@ -4,8 +4,6 @@
 
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 
-#include <utility>
-
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -32,7 +30,7 @@ ServiceWorkerNavigationHandleCore::~ServiceWorkerNavigationHandleCore() {
 
 void ServiceWorkerNavigationHandleCore::OnCreatedProviderHost(
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info) {
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(provider_host);
   provider_host_ = std::move(provider_host);
@@ -51,6 +49,12 @@ void ServiceWorkerNavigationHandleCore::OnBeginNavigationCommit(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (provider_host_)
     provider_host_->OnBeginNavigationCommit(render_process_id, render_frame_id);
+}
+
+void ServiceWorkerNavigationHandleCore::OnBeginWorkerCommit() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (provider_host_)
+    provider_host_->CompleteWebWorkerPreparation();
 }
 
 }  // namespace content

@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
+import pickle
 import unittest
 
 from oauth2client import client
@@ -27,7 +28,7 @@ class ExecutionException(_ExecutionStub):
   """This Execution always fails with a fatal exception on first Poll()."""
 
   def _Poll(self):
-    raise execution.FatalError('An unhandled, unexpected exception.')
+    raise errors.FatalError('An unhandled, unexpected exception.')
 
 
 class ExecutionException2(_ExecutionStub):
@@ -41,14 +42,14 @@ class ExecutionFail(_ExecutionStub):
   """This Execution always fails on first Poll()."""
 
   def _Poll(self):
-    raise execution.InformationalError('Expected error for testing.')
+    raise errors.InformationalError('Expected error for testing.')
 
 
 class ExecutionFail2(_ExecutionStub):
   """This Execution always fails on first Poll()."""
 
   def _Poll(self):
-    raise execution.InformationalError(
+    raise errors.InformationalError(
         'A different expected error for testing.')
 
 
@@ -109,13 +110,27 @@ class ExecutionTest(unittest.TestCase):
     self.assertTrue(e.completed)
     self.assertTrue(e.failed)
     expected = 'InformationalError: Expected error for testing.'
-    self.assertEqual(e.exception.splitlines()[-1], expected)
+    self.assertEqual(e.exception['traceback'].splitlines()[-1], expected)
     self.assertEqual(e.result_values, ())
     self.assertEqual(e.result_arguments, {})
 
+  def testExecutionFailed_FormatUpdated(self):
+    e = ExecutionFail()
+    e.Poll()
+
+    e._exception = 'line\nAssert'
+
+    self.assertTrue(e.completed)
+    self.assertTrue(e.failed)
+    self.assertTrue(isinstance(e.exception, basestring))
+
+    e = pickle.loads(pickle.dumps(e))
+
+    self.assertTrue(isinstance(e.exception, dict))
+
   def testExecutionException(self):
     e = ExecutionException()
-    with self.assertRaises(execution.FatalError):
+    with self.assertRaises(errors.FatalError):
       e.Poll()
 
   def testExecutionRecoverableException(self):

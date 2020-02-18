@@ -20,21 +20,22 @@ TabbedPaneExample::TabbedPaneExample() : ExampleBase("Tabbed Pane") {
 TabbedPaneExample::~TabbedPaneExample() = default;
 
 void TabbedPaneExample::CreateExampleView(View* container) {
-  tabbed_pane_ = new TabbedPane();
-  tabbed_pane_->set_listener(this);
-  add_ = new LabelButton(this, ASCIIToUTF16("Add"));
-  add_at_ = new LabelButton(this, ASCIIToUTF16("Add At 1"));
-  select_at_ = new LabelButton(this, ASCIIToUTF16("Select At 1"));
+  auto tabbed_pane = std::make_unique<TabbedPane>();
+  tabbed_pane->set_listener(this);
+  auto add = std::make_unique<LabelButton>(this, ASCIIToUTF16("Add"));
+  auto add_at = std::make_unique<LabelButton>(this, ASCIIToUTF16("Add At 1"));
+  auto select_at =
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Select At 1"));
 
-  GridLayout* layout = container->SetLayoutManager(
-      std::make_unique<views::GridLayout>(container));
+  GridLayout* layout =
+      container->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   const int tabbed_pane_column = 0;
   ColumnSet* column_set = layout->AddColumnSet(tabbed_pane_column);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
                         1.0f, GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1 /* expand */, tabbed_pane_column);
-  layout->AddView(tabbed_pane_);
+  tabbed_pane_ = layout->AddView(std::move(tabbed_pane));
 
   // Create a few tabs with a button first.
   AddButton("Tab 1");
@@ -50,9 +51,9 @@ void TabbedPaneExample::CreateExampleView(View* container) {
   }
 
   layout->StartRow(0 /* no expand */, button_column);
-  layout->AddView(add_);
-  layout->AddView(add_at_);
-  layout->AddView(select_at_);
+  add_ = layout->AddView(std::move(add));
+  add_at_ = layout->AddView(std::move(add_at));
+  select_at_ = layout->AddView(std::move(select_at));
 }
 
 void TabbedPaneExample::ButtonPressed(Button* sender, const ui::Event& event) {
@@ -60,7 +61,8 @@ void TabbedPaneExample::ButtonPressed(Button* sender, const ui::Event& event) {
     AddButton("Added");
   } else if (sender == add_at_) {
     const base::string16 label = ASCIIToUTF16("Added at 1");
-    tabbed_pane_->AddTabAtIndex(1, label, new LabelButton(nullptr, label));
+    tabbed_pane_->AddTabAtIndex(1, label,
+                                std::make_unique<LabelButton>(nullptr, label));
   } else if (sender == select_at_) {
     if (tabbed_pane_->GetTabCount() > 1)
       tabbed_pane_->SelectTabAt(1);
@@ -80,8 +82,8 @@ void TabbedPaneExample::PrintStatus() {
 }
 
 void TabbedPaneExample::AddButton(const std::string& label) {
-  LabelButton* button = new LabelButton(nullptr, ASCIIToUTF16(label));
-  tabbed_pane_->AddTab(ASCIIToUTF16(label), button);
+  tabbed_pane_->AddTab(ASCIIToUTF16(label), std::make_unique<LabelButton>(
+                                                nullptr, ASCIIToUTF16(label)));
 }
 
 }  // namespace examples

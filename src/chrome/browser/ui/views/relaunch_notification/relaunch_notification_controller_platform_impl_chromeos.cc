@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller_platform_impl_chromeos.h"
 
-#include "ash/public/interfaces/update.mojom.h"
+#include "ash/public/cpp/update_types.h"
 #include "base/bind.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_metrics.h"
@@ -52,8 +52,7 @@ void RelaunchNotificationControllerPlatformImpl::NotifyRelaunchRequired(
 
 void RelaunchNotificationControllerPlatformImpl::CloseRelaunchNotification() {
   SystemTrayClient::Get()->SetUpdateNotificationState(
-      ash::mojom::NotificationStyle::DEFAULT, base::string16(),
-      base::string16());
+      ash::NotificationStyle::kDefault, base::string16(), base::string16());
   recorded_shown_ = false;
   relaunch_required_timer_.reset();
 }
@@ -67,12 +66,12 @@ void RelaunchNotificationControllerPlatformImpl::
     RefreshRelaunchRecommendedTitle(bool past_deadline) {
   if (past_deadline) {
     SystemTrayClient::Get()->SetUpdateNotificationState(
-        ash::mojom::NotificationStyle::ADMIN_RECOMMENDED,
+        ash::NotificationStyle::kAdminRecommended,
         l10n_util::GetStringUTF16(IDS_RELAUNCH_RECOMMENDED_OVERDUE_TITLE),
         l10n_util::GetStringUTF16(IDS_RELAUNCH_RECOMMENDED_OVERDUE_BODY));
   } else {
     SystemTrayClient::Get()->SetUpdateNotificationState(
-        ash::mojom::NotificationStyle::ADMIN_RECOMMENDED,
+        ash::NotificationStyle::kAdminRecommended,
         l10n_util::GetStringUTF16(IDS_RELAUNCH_RECOMMENDED_TITLE),
         l10n_util::GetStringUTF16(IDS_RELAUNCH_RECOMMENDED_BODY));
   }
@@ -81,7 +80,7 @@ void RelaunchNotificationControllerPlatformImpl::
 void RelaunchNotificationControllerPlatformImpl::
     RefreshRelaunchRequiredTitle() {
   SystemTrayClient::Get()->SetUpdateNotificationState(
-      ash::mojom::NotificationStyle::ADMIN_REQUIRED,
+      ash::NotificationStyle::kAdminRequired,
       relaunch_required_timer_->GetWindowTitle(),
       l10n_util::GetStringUTF16(IDS_RELAUNCH_REQUIRED_BODY));
 }

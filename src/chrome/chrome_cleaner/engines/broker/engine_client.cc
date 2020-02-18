@@ -20,10 +20,11 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/constants/quarantine_constants.h"
-#include "chrome/chrome_cleaner/interfaces/engine_file_requests.mojom.h"
-#include "chrome/chrome_cleaner/interfaces/engine_requests.mojom.h"
-#include "chrome/chrome_cleaner/interfaces/engine_sandbox.mojom.h"
+#include "chrome/chrome_cleaner/mojom/engine_file_requests.mojom.h"
+#include "chrome/chrome_cleaner/mojom/engine_requests.mojom.h"
+#include "chrome/chrome_cleaner/mojom/engine_sandbox.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/logging/logging_service_api.h"
 #include "chrome/chrome_cleaner/os/layered_service_provider_wrapper.h"
@@ -293,7 +294,7 @@ void EngineClient::InitializeAsync(InitializeCallback result_callback) {
 
   // Expose the logging directory for writing debug logs.
   base::FilePath logging_path;
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
   if (!GetAppDataProductDirectory(&logging_path))
     LOG(ERROR) << "Couldn't get development log directory for sandboxed engine";
 #endif

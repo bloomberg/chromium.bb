@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/containers/queue.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -84,6 +85,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
     size_t length;
     size_t bytes_used;
     bool at_device;
+    // Request fd used for this input buffer if request API is used.
+    base::ScopedFD request_fd;
   };
 
   // Record for output buffers.
@@ -295,7 +298,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Attempt to start/stop device_poll_thread_.
   bool StartDevicePoll();
-  bool StopDevicePoll(bool keep_input_state);
+  bool StopDevicePoll();
 
   // Ran on device_poll_thread_ to wait for device events.
   void DevicePollTask(bool poll_device);
@@ -388,6 +391,10 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   std::list<int> free_input_buffers_;
   // Mapping of int index to an input buffer record.
   std::vector<InputRecord> input_buffer_map_;
+  // Set to true by CreateInputBuffers() if the codec driver supports requests
+  bool supports_requests_ = false;
+  // Stores the media file descriptor if request API is used
+  base::ScopedFD media_fd_;
 
   // Output queue state.
   bool output_streamon_;

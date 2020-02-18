@@ -4,17 +4,21 @@
 
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 
+#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/net/shill_error.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "components/login/localized_values_builder.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace network_element {
@@ -22,9 +26,10 @@ namespace network_element {
 namespace {
 
 constexpr LocalizedString kElementLocalizedStrings[] = {
-    {"OncTypeCellular", IDS_NETWORK_TYPE_MOBILE_DATA},
+    {"OncTypeCellular", IDS_NETWORK_TYPE_CELLULAR},
     {"OncTypeEthernet", IDS_NETWORK_TYPE_ETHERNET},
-    {"OncTypeTether", IDS_NETWORK_TYPE_MOBILE_DATA},
+    {"OncTypeMobile", IDS_NETWORK_TYPE_MOBILE_DATA},
+    {"OncTypeTether", IDS_NETWORK_TYPE_TETHER},
     {"OncTypeVPN", IDS_NETWORK_TYPE_VPN},
     {"OncTypeWiFi", IDS_NETWORK_TYPE_WIFI},
     {"OncTypeWiMAX", IDS_NETWORK_TYPE_WIMAX},
@@ -223,6 +228,16 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_NETWORK_SIM_RE_ENTER_NEW_PIN},
       {"networkSimReEnterNewPin",
        IDS_SETTINGS_INTERNET_NETWORK_SIM_RE_ENTER_NEW_PIN},
+      {"networkSimErrorIncorrectPin",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PIN},
+      {"networkSimErrorIncorrectPuk",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PUK},
+      {"networkSimErrorInvalidPin",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PIN},
+      {"networkSimErrorInvalidPuk",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PUK},
+      {"networkSimErrorPinMismatch",
+       IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_PIN_MISMATCH},
       {"networkSimUnlock", IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_UNLOCK},
       {"networkAccessPoint", IDS_SETTINGS_INTERNET_NETWORK_ACCESS_POINT},
       {"networkChooseMobile", IDS_SETTINGS_INTERNET_NETWORK_CHOOSE_MOBILE},
@@ -244,6 +259,7 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_GOOGLE},
       {"networkProxyWpad", IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD},
       {"networkProxyWpadNone", IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD_NONE},
+      {"remove", IDS_REMOVE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
@@ -263,11 +279,17 @@ void AddConfigLocalizedStrings(content::WebUIDataSource* html_source) {
       {"networkConfigSaveCredentials",
        IDS_SETTINGS_INTERNET_CONFIG_SAVE_CREDENTIALS},
       {"networkConfigShare", IDS_SETTINGS_INTERNET_CONFIG_SHARE},
+      {"networkAutoConnect", IDS_SETTINGS_INTERNET_NETWORK_AUTO_CONNECT},
+      {"hiddenNetworkWarning", IDS_SETTINGS_HIDDEN_NETWORK_WARNING},
       {"hidePassword", IDS_SETTINGS_PASSWORD_HIDE},
       {"showPassword", IDS_SETTINGS_PASSWORD_SHOW},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
+
+  html_source->AddBoolean(
+      "showHiddenNetworkWarning",
+      base::FeatureList::IsEnabled(features::kHiddenNetworkWarning));
 
   // Login screen and public account users can only create shared network
   // configurations. Other users default to unshared network configurations.

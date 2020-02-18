@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/script/document_write_intervention.h"
 
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -34,7 +34,7 @@ void EmitWarningMayBeBlocked(const String& url, Document& document) {
   document.AddConsoleMessage(
       ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
                              mojom::ConsoleMessageLevel::kWarning, message));
-  DVLOG(1) << message.Utf8().data();
+  DVLOG(1) << message.Utf8();
 }
 
 void EmitWarningNotBlocked(const String& url, Document& document) {

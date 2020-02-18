@@ -7,6 +7,8 @@
 
 package Crypt::IDEA;
 
+$VERSION="1.10";
+
 require Exporter;
 require DynaLoader;
 
@@ -20,10 +22,11 @@ require DynaLoader;
 
 bootstrap Crypt::IDEA;
 
+$VERSION="1.10";
 
 package IDEA;
 
-$VERSION="1.08";
+$VERSION="1.10";
 
 use strict;
 use Carp;

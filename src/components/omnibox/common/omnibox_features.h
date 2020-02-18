@@ -20,11 +20,11 @@ extern const base::Feature kOmniboxGroupSuggestionsBySearchVsUrl;
 extern const base::Feature kOmniboxLocalEntitySuggestions;
 extern const base::Feature kOmniboxMaxURLMatches;
 extern const base::Feature kOmniboxRichEntitySuggestions;
-extern const base::Feature kOmniboxNewAnswerLayout;
 extern const base::Feature kOmniboxReverseAnswers;
 extern const base::Feature kOmniboxShortBookmarkSuggestions;
 extern const base::Feature kOmniboxTailSuggestions;
 extern const base::Feature kOmniboxTabSwitchSuggestions;
+extern const base::Feature kOmniboxWrapPopupPosition;
 extern const base::Feature kOmniboxReverseTabSwitchLogic;
 extern const base::Feature kExperimentalKeywordMode;
 extern const base::Feature kOmniboxPedalSuggestions;
@@ -45,13 +45,14 @@ extern const base::Feature kUIExperimentVerticalMarginLimitToNonTouchOnly;
 extern const base::Feature kUIExperimentShowPlaceholderWhenCaretShowing;
 extern const base::Feature kSpeculativeServiceWorkerStartOnQueryInput;
 extern const base::Feature kDocumentProvider;
-extern const base::Feature kDedupeGoogleDriveURLs;
+extern const base::Feature kOnDeviceHeadProvider;
 extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
 extern const base::Feature kOmniboxMaterialDesignWeatherIcons;
+extern const base::Feature kOmniboxDisableInstantExtendedLimit;
+extern const base::Feature kOmniboxSearchEngineLogo;
 
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kOnFocusSuggestions;
-extern const base::Feature kZeroSuggestRedirectToChrome;
 extern const base::Feature kZeroSuggestionsOnNTP;
 
 }  // namespace omnibox

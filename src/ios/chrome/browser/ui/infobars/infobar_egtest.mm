@@ -10,12 +10,11 @@
 #include "components/infobars/core/infobar_manager.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -38,7 +37,9 @@ infobars::InfoBarManager* GetCurrentInfoBarManager() {
   MainController* main_controller = chrome_test_util::GetMainController();
   id<BrowserInterface> interface =
       main_controller.interfaceProvider.mainInterface;
-  web::WebState* web_state = interface.tabModel.currentTab.webState;
+  web::WebState* web_state =
+      interface.tabModel ? interface.tabModel.webStateList->GetActiveWebState()
+                         : nullptr;
   if (web_state) {
     return InfoBarManagerImpl::FromWebState(web_state);
   }
@@ -96,8 +97,8 @@ void VerifyNumberOfInfobarsInManager(size_t number_of_infobars) {
   // Open a new tab and navigate to the test page.
   const GURL testURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/pony.html");
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey loadURL:testURL];
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   // Infobar Message
   NSString* infoBarMessage = @"TestInfoBar";
@@ -111,7 +112,7 @@ void VerifyNumberOfInfobarsInManager(size_t number_of_infobars) {
 
   // Navigate to a different page.  Verify that the infobar is dismissed and no
   // longer visible on screen.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL(url::kAboutBlankURL)]);
+  [ChromeEarlGrey loadURL:GURL(url::kAboutBlankURL)];
   VerifyTestInfoBarVisibleForCurrentTab(false, infoBarMessage);
   VerifyNumberOfInfobarsInManager(0);
 }
@@ -126,16 +127,16 @@ void VerifyNumberOfInfobarsInManager(size_t number_of_infobars) {
   web::test::SetUpFileBasedHttpServer();
 
   // Create the first tab and navigate to the test page.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:destinationURL]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey loadURL:destinationURL];
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   // Infobar Message
   NSString* infoBarMessage = @"TestInfoBar";
 
   // Create the second tab, navigate to the test page, and add the test infobar.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:ponyURL]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:ponyURL];
+  [ChromeEarlGrey waitForMainTabCount:2];
   VerifyTestInfoBarVisibleForCurrentTab(false, infoBarMessage);
   VerifyNumberOfInfobarsInManager(0);
   GREYAssert(AddTestInfoBarToCurrentTabWithMessage(infoBarMessage),
@@ -150,12 +151,12 @@ void VerifyNumberOfInfobarsInManager(size_t number_of_infobars) {
 
   // Navigate to a different URL in the first tab, to verify that this
   // navigation does not hide the infobar in the second tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:ponyURL]);
+  [ChromeEarlGrey loadURL:ponyURL];
 
   // Close the first tab.  Verify that there is only one tab remaining and its
   // infobar is visible.
   [ChromeEarlGrey closeCurrentTab];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey waitForMainTabCount:1];
   VerifyTestInfoBarVisibleForCurrentTab(true, infoBarMessage);
   VerifyNumberOfInfobarsInManager(1);
 }
@@ -167,8 +168,8 @@ void VerifyNumberOfInfobarsInManager(size_t number_of_infobars) {
   // Open a new tab and navigate to the test page.
   const GURL testURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/pony.html");
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey loadURL:testURL];
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   // Infobar Message
   NSString* infoBarMessage = @"TestInfoBar";
@@ -196,8 +197,8 @@ void VerifyNumberOfInfobarsInManager(size_t number_of_infobars) {
   // Open a new tab and navigate to the test page.
   const GURL testURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/pony.html");
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey loadURL:testURL];
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   // First Infobar Message
   NSString* firstInfoBarMessage = @"TestFirstInfoBar";
@@ -229,8 +230,8 @@ void VerifyNumberOfInfobarsInManager(size_t number_of_infobars) {
   // Open a new tab and navigate to the test page.
   const GURL testURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/pony.html");
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey loadURL:testURL];
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   // Infobar Message
   NSString* firstInfoBarMessage =
@@ -263,8 +264,8 @@ void VerifyNumberOfInfobarsInManager(size_t number_of_infobars) {
   // Open a new tab and navigate to the test page.
   const GURL testURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/pony.html");
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey loadURL:testURL];
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   // First Infobar Message
   NSString* firstInfoBarMessage =

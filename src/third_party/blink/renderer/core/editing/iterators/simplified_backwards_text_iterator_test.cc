@@ -35,8 +35,7 @@ class SimplifiedBackwardsTextIteratorTest : public EditingTestBase {
       is_first = false;
       builder.Append(iterator.GetTextState().GetTextForTesting());
     }
-    CString utf8 = builder.ToString().Utf8();
-    return std::string(utf8.data(), utf8.length());
+    return builder.ToString().Utf8();
   }
 };
 

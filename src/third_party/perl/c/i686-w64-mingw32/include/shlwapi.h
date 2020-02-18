@@ -1,14 +1,17 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_SHLWAPI
 #define _INC_SHLWAPI
 
 #include <_mingw_unicode.h>
+#include <winapifamily.h>
 
 #ifndef NOSHLWAPI
+
+#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
 
 #include <objbase.h>
 #include <shtypes.h>
@@ -203,8 +206,8 @@ extern "C" {
 #define PathIsHTMLFileA(pszPath) PathIsContentTypeA(pszPath,SZ_CONTENTTYPE_HTMLA)
 #define PathIsHTMLFileW(pszPath) PathIsContentTypeW(pszPath,SZ_CONTENTTYPE_HTMLW)
 
-#define STIF_DEFAULT 0x00000000L
-#define STIF_SUPPORT_HEX 0x00000001L
+#define STIF_DEFAULT __MSABI_LONG(0x00000000)
+#define STIF_SUPPORT_HEX __MSABI_LONG(0x00000001)
 
 #define StrCatA lstrcatA
 #define StrCmpA lstrcmpA
@@ -797,22 +800,6 @@ extern "C" {
 #endif
 
 #if (_WIN32_IE >= 0x0603)
-  typedef enum {
-    PERCEIVED_TYPE_CUSTOM = -3,PERCEIVED_TYPE_UNSPECIFIED = -2,PERCEIVED_TYPE_FOLDER = -1,PERCEIVED_TYPE_UNKNOWN = 0,
-    PERCEIVED_TYPE_TEXT,PERCEIVED_TYPE_IMAGE,PERCEIVED_TYPE_AUDIO,PERCEIVED_TYPE_VIDEO,PERCEIVED_TYPE_COMPRESSED,PERCEIVED_TYPE_DOCUMENT,
-    PERCEIVED_TYPE_SYSTEM,PERCEIVED_TYPE_APPLICATION
-  } PERCEIVED;
-
-#define PERCEIVEDFLAG_UNDEFINED 0x0000
-#define PERCEIVEDFLAG_SOFTCODED 0x0001
-#define PERCEIVEDFLAG_HARDCODED 0x0002
-#define PERCEIVEDFLAG_NATIVESUPPORT 0x0004
-#define PERCEIVEDFLAG_GDIPLUS 0x0010
-#define PERCEIVEDFLAG_WMSDK 0x0020
-#define PERCEIVEDFLAG_ZIPFOLDER 0x0040
-
-  typedef DWORD PERCEIVEDFLAG;
-
   LWSTDAPI AssocGetPerceivedType(LPCWSTR pszExt,PERCEIVED *ptype,PERCEIVEDFLAG *pflag,LPWSTR *ppszType);
 #endif
 #endif
@@ -871,6 +858,40 @@ extern "C" {
   LWSTDAPI_(WINBOOL) SHUnlockShared(void *pvData);
 #endif
 
+#if (_WIN32_IE >= 0x0501)
+#define PLATFORM_UNKNOWN 0
+#define PLATFORM_IE3 1
+#define PLATFORM_BROWSERONLY 1
+#define PLATFORM_INTEGRATED 2
+
+  LWSTDAPI WhichPlatform(void);
+
+typedef struct {
+  const IID *piid;
+  int dwOffset;
+} QITAB, *LPQITAB;
+typedef const QITAB *LPCQITAB;
+
+#ifndef OFFSETOFCLASS
+#define OFFSETOFCLASS(base, derived) ((DWORD)(DWORD_PTR)(static_cast<base*>((derived*)8))-8)
+#endif
+
+#ifdef __cplusplus
+#define QITABENTMULTI(Cthis, Ifoo, Iimpl) { &__uuidof(Ifoo), OFFSETOFCLASS(Iimpl, Cthis) }
+#else
+#define QITABENTMULTI(Cthis, Ifoo, Iimpl) { (IID*) &IID_##Ifoo, OFFSETOFCLASS(Iimpl, Cthis) }
+#endif
+#define QITABENTMULTI2(Cthis, Ifoo, Iimpl) { (IID*) &Ifoo, OFFSETOFCLASS(Iimpl, Cthis) }
+#define QITABENT(Cthis, Ifoo) QITABENTMULTI(Cthis, Ifoo, Ifoo)
+
+  STDAPI QISearch(void *that, LPCQITAB pqit, REFIID riid, void **ppv);
+
+#define ILMM_IE4 0
+  LWSTDAPI_(BOOL) SHIsLowMemoryMachine(DWORD dwType);
+  LWSTDAPI_(int) GetMenuPosFromId(HMENU hMenu, UINT id);
+  LWSTDAPI SHGetInverseCMAP(__out_bcount(cbMap) BYTE *pbMap, ULONG cbMap);
+#endif
+
 #define SHACF_DEFAULT 0x00000000
 #define SHACF_FILESYSTEM 0x00000001
 #define SHACF_URLALL (SHACF_URLHISTORY | SHACF_URLMRU)
@@ -881,6 +902,10 @@ extern "C" {
 
 #if (_WIN32_IE >= 0x0600)
 #define SHACF_FILESYS_DIRS 0x00000020
+#endif
+
+#if (_WIN32_IE >= 0x0700)
+#define SHACF_VIRTUAL_NAMESPACE 0x00000040
 #endif
 
 #define SHACF_AUTOSUGGEST_FORCE_ON 0x10000000
@@ -948,10 +973,13 @@ extern "C" {
   LWSTDAPI_(WINBOOL) IsInternetESCEnabled();
 #endif
 
+LWSTDAPI_(IStream *) SHCreateMemStream(const BYTE *pInit, _In_ UINT cbInit);
+
 #ifdef __cplusplus
 }
 #endif
 
 #include <poppack.h>
+#endif
 #endif
 #endif

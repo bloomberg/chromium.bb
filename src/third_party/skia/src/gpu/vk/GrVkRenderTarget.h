@@ -34,7 +34,7 @@ struct GrVkImageInfo;
 class GrVkRenderTarget: public GrRenderTarget, public virtual GrVkImage {
 public:
     static sk_sp<GrVkRenderTarget> MakeWrappedRenderTarget(GrVkGpu*, const GrSurfaceDesc&,
-                                                           const GrVkImageInfo&,
+                                                           int sampleCnt, const GrVkImageInfo&,
                                                            sk_sp<GrVkImageLayout>);
 
     static sk_sp<GrVkRenderTarget> MakeSecondaryCBRenderTarget(GrVkGpu*, const GrSurfaceDesc&,
@@ -75,7 +75,7 @@ public:
 
     // override of GrRenderTarget
     ResolveType getResolveType() const override {
-        if (this->numColorSamples() > 1) {
+        if (this->numSamples() > 1) {
             return kCanResolve_ResolveType;
         }
         return kAutoResolves_ResolveType;
@@ -97,6 +97,7 @@ public:
 protected:
     GrVkRenderTarget(GrVkGpu* gpu,
                      const GrSurfaceDesc& desc,
+                     int sampleCnt,
                      const GrVkImageInfo& info,
                      sk_sp<GrVkImageLayout> layout,
                      const GrVkImageInfo& msaaInfo,
@@ -119,7 +120,7 @@ protected:
 
     // This accounts for the texture's memory and any MSAA renderbuffer's memory.
     size_t onGpuMemorySize() const override {
-        int numColorSamples = this->numColorSamples();
+        int numColorSamples = this->numSamples();
         if (numColorSamples > 1) {
             // Add one to account for the resolved VkImage.
             numColorSamples += 1;
@@ -137,6 +138,7 @@ protected:
 private:
     GrVkRenderTarget(GrVkGpu* gpu,
                      const GrSurfaceDesc& desc,
+                     int sampleCnt,
                      const GrVkImageInfo& info,
                      sk_sp<GrVkImageLayout> layout,
                      const GrVkImageInfo& msaaInfo,

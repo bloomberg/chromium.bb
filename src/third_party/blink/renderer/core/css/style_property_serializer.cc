@@ -228,8 +228,8 @@ String StylePropertySerializer::AsText() const {
     const CSSProperty& property_class = property.Property();
     CSSPropertyID property_id = property_class.PropertyID();
 
-    // Only enabled properties should be part of the style.
-    DCHECK(property_class.IsEnabled());
+    // Only web exposed properties should be part of the style.
+    DCHECK(property_class.IsWebExposed());
     // All shorthand properties should have been expanded at parse time.
     DCHECK(property_set_.IsDescriptorContext() ||
            (property_class.IsProperty() && !property_class.IsShorthand()));
@@ -1094,7 +1094,8 @@ static void AppendBackgroundRepeatValue(StringBuilder& builder,
                                         const CSSValue& repeat_xcss_value,
                                         const CSSValue& repeat_ycss_value) {
   // FIXME: Ensure initial values do not appear in CSS_VALUE_LISTS.
-  DEFINE_STATIC_LOCAL(Persistent<CSSIdentifierValue>, initial_repeat_value,
+  DEFINE_STATIC_LOCAL(const Persistent<CSSIdentifierValue>,
+                      initial_repeat_value,
                       (CSSIdentifierValue::Create(CSSValueID::kRepeat)));
   const CSSIdentifierValue& repeat_x =
       repeat_xcss_value.IsInitialValue()

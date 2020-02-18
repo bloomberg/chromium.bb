@@ -1,10 +1,11 @@
 package HTTP::Config;
 
 use strict;
-use URI;
-use vars qw($VERSION);
+use warnings;
 
-$VERSION = "6.00";
+our $VERSION = '6.18';
+
+use URI;
 
 sub new {
     my $class = shift;
@@ -39,6 +40,7 @@ sub find2 {
  ITEM:
     for my $item (@$self) {
         for my $k (keys %spec) {
+            no warnings 'uninitialized';
             if (!exists $item->{$k} || $spec{$k} ne $item->{$k}) {
                 push(@rest, $item);
                 next ITEM;
@@ -233,11 +235,17 @@ sub matching_items {
 
 1;
 
-__END__
+=pod
+
+=encoding UTF-8
 
 =head1 NAME
 
 HTTP::Config - Configuration for request and response objects
+
+=head1 VERSION
+
+version 6.18
 
 =head1 SYNOPSIS
 
@@ -291,7 +299,7 @@ You can either pass separate key/value pairs or a hash reference.
 =item $conf->remove( %spec )
 
 Removes (and returns) the entries that have matches for all the key/value pairs in %spec.
-If %spec is empty this will match all entries; so it will empty the configuation object.
+If %spec is empty this will match all entries; so it will empty the configuration object.
 
 =item $conf->matching( $uri, $request, $response )
 
@@ -426,11 +434,21 @@ Matches if the response object has that key, or the entry has the given value.
 
 L<URI>, L<HTTP::Request>, L<HTTP::Response>
 
-=head1 COPYRIGHT
+=head1 AUTHOR
 
-Copyright 2008, Gisle Aas
+Gisle Aas <gisle@activestate.com>
 
-This library is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 1994-2017 by Gisle Aas.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
+
+__END__
+
+
+#ABSTRACT: Configuration for request and response objects
+

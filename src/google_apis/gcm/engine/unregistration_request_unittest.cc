@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gcm/engine/gcm_request_test_base.h"
 #include "google_apis/gcm/engine/gcm_unregistration_request_handler.h"
 #include "google_apis/gcm/engine/instance_id_delete_token_request_handler.h"
@@ -102,7 +103,8 @@ void GCMUnregistrationRequestTest::CreateRequest() {
       GetBackoffPolicy(),
       base::Bind(&UnregistrationRequestTest::UnregistrationCallback,
                  base::Unretained(this)),
-      max_retry_count_, url_loader_factory(), &recorder_, std::string()));
+      max_retry_count_, url_loader_factory(),
+      base::ThreadTaskRunnerHandle::Get(), &recorder_, std::string()));
 }
 
 TEST_F(GCMUnregistrationRequestTest, RequestDataPassedToFetcher) {
@@ -318,7 +320,8 @@ void InstaceIDDeleteTokenRequestTest::CreateRequest(
       GetBackoffPolicy(),
       base::Bind(&UnregistrationRequestTest::UnregistrationCallback,
                  base::Unretained(this)),
-      max_retry_count(), url_loader_factory(), &recorder_, std::string()));
+      max_retry_count(), url_loader_factory(),
+      base::ThreadTaskRunnerHandle::Get(), &recorder_, std::string()));
 }
 
 TEST_F(InstaceIDDeleteTokenRequestTest, RequestDataPassedToFetcher) {

@@ -25,7 +25,7 @@
 #include <mutex>
 #include <vector>
 
-#include "perfetto/base/unix_socket.h"
+#include "perfetto/ext/base/unix_socket.h"
 #include "src/profiling/memory/sampler.h"
 #include "src/profiling/memory/shared_ring_buffer.h"
 #include "src/profiling/memory/unhooked_allocator.h"
@@ -65,8 +65,8 @@ class Client {
   static base::Optional<base::UnixSocketRaw> ConnectToHeapprofd(
       const std::string& sock_name);
 
-  bool RecordMalloc(uint64_t alloc_size,
-                    uint64_t total_size,
+  bool RecordMalloc(uint64_t sample_size,
+                    uint64_t alloc_size,
                     uint64_t alloc_address);
 
   // Add address to buffer of deallocations. Flushes the buffer if necessary.

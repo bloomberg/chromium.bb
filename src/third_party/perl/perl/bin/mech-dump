@@ -1,10 +1,7 @@
-#!/usr/bin/perl -w
+#!perl
 
-=head1 NAME
-
-mech-dump - Dumps information about a web page
-
-=cut
+# PODNAME: mech-dump
+# ABSTRACT: Dumps information about a web page
 
 use warnings;
 use strict;
@@ -15,6 +12,7 @@ use Pod::Usage;
 use HTTP::Cookies;
 my @actions;
 my $absolute;
+my $all;
 
 my $user;
 my $pass;
@@ -29,14 +27,111 @@ GetOptions(
     forms           => sub { push( @actions, \&dump_forms ) },
     links           => sub { push( @actions, \&dump_links ) },
     images          => sub { push( @actions, \&dump_images ) },
-    all             => sub { push( @actions, \&dump_headers, \&dump_forms, \&dump_links, \&dump_images ) },
+    all             => sub { $all++; push( @actions, \&dump_headers, \&dump_forms, \&dump_links, \&dump_images ) },
     text            => sub { push( @actions, \&dump_text ) },
     absolute        => \$absolute,
     'agent=s'       => \$agent,
     'agent-alias=s' => \$agent_alias,
     'cookie-file=s' => \$cookie_filename,
     help            => sub { pod2usage(1); },
+    version         => sub { print STDERR $WWW::Mechanize::VERSION, "\n"; exit 0; },
 ) or pod2usage(2);
+
+
+my @uris = @ARGV or die "Must specify a URL or file to check.  See --help for details.\n";
+
+@actions = (\&dump_forms) unless @actions;
+
+binmode(STDOUT, ':utf8');
+
+my $mech = WWW::Mechanize->new();
+if ( defined $agent ) {
+    $mech->agent( $agent );
+}
+elsif ( defined $agent_alias ) {
+    $mech->agent_alias( $agent_alias );
+}
+if ( defined $cookie_filename ) {
+    my $cookies = HTTP::Cookies->new( file => $cookie_filename, autosave => 1, ignore_discard => 1 );
+    $cookies->load() ;
+    $mech->cookie_jar($cookies);
+}
+else {
+    $mech->cookie_jar(undef) ;
+}
+
+$mech->env_proxy();
+foreach my $uri (@uris) {
+  if ( -e $uri ) {
+      require URI::file;
+      $uri = URI::file->new_abs( $uri )->as_string;
+  }
+
+  my $response = $mech->get( $uri );
+  if (!$response->is_success and defined ($response->www_authenticate)) {
+      if (!defined $user or !defined $pass) {
+          die("Page requires username and password, but none specified.\n");
+      }
+      $mech->credentials($user,$pass);
+      $response = $mech->get( $uri );
+      $response->is_success or die "Can't fetch $uri with username and password\n", $response->status_line, "\n";
+  }
+  $mech->is_html or die qq{$uri returns type "}, $mech->ct, qq{", not "text/html"\n};
+
+  foreach my $action (@actions ) {
+      $action->( $mech );
+      print "\n" if @actions;
+  }
+}
+
+
+sub dump_headers {
+    my $mech = shift;
+    print "--> Headers:\n" if $all;
+    $mech->dump_headers( undef );
+    return;
+}
+
+sub dump_forms {
+    my $mech = shift;
+    print "--> Forms:\n" if $all;
+    $mech->dump_forms( undef, $absolute );
+    return;
+}
+
+sub dump_links {
+    my $mech = shift;
+    print "--> Links:\n" if $all;
+    $mech->dump_links( undef, $absolute );
+    return;
+}
+
+sub dump_images {
+    my $mech = shift;
+    print "--> Images:\n" if $all;
+    $mech->dump_images( undef, $absolute );
+    return;
+}
+
+sub dump_text {
+    my $mech = shift;
+    $mech->dump_text();
+    return;
+}
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+mech-dump - Dumps information about a web page
+
+=head1 VERSION
+
+version 1.91
 
 =head1 SYNOPSIS
 
@@ -73,80 +168,22 @@ Options:
 The order of the options specified is relevant.  Repeated options
 get repeated dumps.
 
-=cut
-
-my $uri = shift or die "Must specify a URL or file to check.  See --help for details.\n";
-if ( -e $uri ) {
-    require URI::file;
-    $uri = URI::file->new_abs( $uri )->as_string;
-}
-
-@actions = (\&dump_forms) unless @actions;
-
-my $mech = WWW::Mechanize->new();
-if ( defined $agent ) {
-    $mech->agent( $agent );
-}
-elsif ( defined $agent_alias ) {
-    $mech->agent_alias( $agent_alias );
-}
-if ( defined $cookie_filename ) {
-    my $cookies = HTTP::Cookies->new( file => $cookie_filename, autosave => 1, ignore_discard => 1 );
-    $cookies->load() ;
-    $mech->cookie_jar($cookies);
-}
-else {
-    $mech->cookie_jar(undef) ;
-}
-
-$mech->env_proxy();
-my $response = $mech->get( $uri );
-if (!$response->is_success and defined ($response->www_authenticate)) {
-    if (!defined $user or !defined $pass) {
-        die("Page requires username and password, but none specified.\n");
-    }
-    $mech->credentials($user,$pass);
-    $response = $mech->get( $uri );
-    $response->is_success or die "Can't fetch $uri with username and password\n", $response->status_line, "\n";
-}
-$mech->is_html or die qq{$uri returns type "}, $mech->ct, qq{", not "text/html"\n};
-
-while ( my $action = shift @actions ) {
-    $action->( $mech );
-    print "\n" if @actions;
-}
-
-
-sub dump_headers {
-    my $mech = shift;
-    $mech->dump_headers( undef );
-    return;
-}
-
-sub dump_forms {
-    my $mech = shift;
-    $mech->dump_forms( undef, $absolute );
-    return;
-}
-
-sub dump_links {
-    my $mech = shift;
-    $mech->dump_links( undef, $absolute );
-    return;
-}
-
-sub dump_images {
-    my $mech = shift;
-    $mech->dump_images( undef, $absolute );
-    return;
-}
-
-sub dump_text {
-    my $mech = shift;
-    $mech->dump_text();
-    return;
-}
+Proxy settings are specified through the environment (e.g. C<http_proxy=http://proxy.my.place/>).
+See LWP::UserAgent for details.
 
 =head1 SEE ALSO
 
 L<WWW::Mechanize>
+
+=head1 AUTHOR
+
+Andy Lester <andy at petdance.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2004-2016 by Andy Lester.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

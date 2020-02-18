@@ -49,7 +49,7 @@ ImageSource::ImageSource() : weak_factory_(this) {
 ImageSource::~ImageSource() {
 }
 
-std::string ImageSource::GetSource() const {
+std::string ImageSource::GetSource() {
   return chrome::kChromeOSAssetHost;
 }
 
@@ -87,7 +87,7 @@ void ImageSource::StartDataRequestAfterPathExists(
   }
 }
 
-std::string ImageSource::GetMimeType(const std::string& path) const {
+std::string ImageSource::GetMimeType(const std::string& path) {
   std::string mime_type;
   std::string ext = base::FilePath(path).Extension();
   if (!ext.empty())

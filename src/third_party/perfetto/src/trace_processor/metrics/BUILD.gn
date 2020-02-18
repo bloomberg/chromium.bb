@@ -16,13 +16,26 @@ import("../../../gn/perfetto.gni")
 
 sql_files = [
   "error_statistics.sql",
+  "android/android_batt.sql",
+  "android/android_cpu.sql",
+  "android/android_cpu_agg.sql",
   "android/android_mem.sql",
-  "android/android_mem_lmk.sql",
-  "android/android_mem_proc_counters.sql",
+  "android/android_mem_unagg.sql",
+  "android/android_process_growth.sql",
+  "android/android_ion.sql",
+  "android/android_lmk.sql",
+  "android/android_powrails.sql",
   "android/android_startup_launches.sql",
   "android/android_task_state.sql",
   "android/android_startup.sql",
+  "android/android_startup_cpu.sql",
+  "android/android_package_list.sql",
   "android/heap_profile.sql",
+  "android/process_unagg_mem_view.sql",
+  "android/process_mem.sql",
+  "android/mem_stats_priority_breakdown.sql",
+  "android/span_view_stats.sql",
+  "android/upid_span_view.sql",
 ]
 
 config("gen_config") {
@@ -52,13 +65,14 @@ source_set("lib") {
     "metrics.h",
   ]
   deps = [
-    "../../../buildtools:sqlite",
+    "../:sqlite",
     "../../../gn:default_deps",
     "../../../include/perfetto/trace_processor",
     "../../../protos/perfetto/common:zero",
     "../../../protos/perfetto/metrics:zero",
     "../../../protos/perfetto/metrics/android:zero",
     "../../../protos/perfetto/trace_processor:metrics_impl_zero",
+    "../../base",
     "../../protozero:protozero",
   ]
   public_deps = [
@@ -73,9 +87,9 @@ source_set("unittests") {
   ]
   deps = [
     ":lib",
-    "../../../buildtools:sqlite",
     "../../../gn:default_deps",
-    "../../../gn:gtest_deps",
+    "../../../gn:gtest_and_gmock",
+    "../../../gn:sqlite",
     "../../../protos/perfetto/common:zero",
   ]
 }

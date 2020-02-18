@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/enter_picture_in_picture_event.h"
+#include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_options.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -87,6 +89,25 @@ PictureInPictureControllerImpl::IsDocumentAllowed() const {
 }
 
 PictureInPictureController::Status
+PictureInPictureControllerImpl::VerifyElementAndOptions(
+    const HTMLElement& element,
+    const PictureInPictureOptions* options) const {
+  if (!IsVideoElement(element) && options) {
+    // If either the width or height is present then we should make sure they
+    // are both present and valid.
+    if (options->hasWidth() || options->hasHeight()) {
+      if (!options->hasWidth() || options->width() <= 0)
+        return Status::kInvalidWidthOrHeightOption;
+
+      if (!options->hasHeight() || options->height() <= 0)
+        return Status::kInvalidWidthOrHeightOption;
+    }
+  }
+
+  return IsElementAllowed(element);
+}
+
+PictureInPictureController::Status
 PictureInPictureControllerImpl::IsElementAllowed(
     const HTMLElement& element) const {
   PictureInPictureController::Status status = IsDocumentAllowed();
@@ -143,13 +164,14 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
 
   video_element->GetWebMediaPlayer()->OnRequestPictureInPicture();
 
-  session_observer_binding_.Close();
+  session_observer_receiver_.reset();
 
-  mojom::blink::PictureInPictureSessionObserverPtr session_observer;
+  mojo::PendingRemote<mojom::blink::PictureInPictureSessionObserver>
+      session_observer;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       element->GetDocument().GetTaskRunner(TaskType::kMediaElementEvent);
-  session_observer_binding_.Bind(
-      mojo::MakeRequest(&session_observer, task_runner), task_runner);
+  session_observer_receiver_.Bind(
+      session_observer.InitWithNewPipeAndPassReceiver(), task_runner);
 
   picture_in_picture_service_->StartSession(
       video_element->GetWebMediaPlayer()->GetDelegateId(),
@@ -165,9 +187,24 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
 void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
     HTMLVideoElement* element,
     ScriptPromiseResolver* resolver,
-    mojom::blink::PictureInPictureSessionPtr session_ptr,
+    mojo::PendingRemote<mojom::blink::PictureInPictureSession> session_remote,
     const WebSize& picture_in_picture_window_size) {
-  picture_in_picture_session_ = std::move(session_ptr);
+  // If |session_ptr| is null then Picture-in-Picture is not supported by the
+  // browser. We should rarely see this because we should have already rejected
+  // with |kDisabledBySystem|.
+  if (!session_remote) {
+    if (resolver) {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "Picture-in-Picture is not available."));
+    }
+
+    return;
+  }
+
+  picture_in_picture_session_ =
+      mojo::Remote<mojom::blink::PictureInPictureSession>(
+          std::move(session_remote));
 
   if (IsElementAllowed(*element) != Status::kEnabled) {
     if (resolver) {
@@ -206,7 +243,7 @@ void PictureInPictureControllerImpl::ExitPictureInPicture(
   picture_in_picture_session_->Stop(
       WTF::Bind(&PictureInPictureControllerImpl::OnExitedPictureInPicture,
                 WrapPersistent(this), WrapPersistent(resolver)));
-  session_observer_binding_.Close();
+  session_observer_receiver_.reset();
 }
 
 void PictureInPictureControllerImpl::OnExitedPictureInPicture(
@@ -338,7 +375,7 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
 
 void PictureInPictureControllerImpl::ContextDestroyed(Document*) {
   picture_in_picture_service_.reset();
-  session_observer_binding_.Close();
+  session_observer_receiver_.reset();
 }
 
 void PictureInPictureControllerImpl::OnPictureInPictureStateChange() {
@@ -383,7 +420,7 @@ PictureInPictureControllerImpl::PictureInPictureControllerImpl(
     Document& document)
     : PictureInPictureController(document),
       PageVisibilityObserver(document.GetPage()),
-      session_observer_binding_(this) {}
+      session_observer_receiver_(this) {}
 
 bool PictureInPictureControllerImpl::EnsureService() {
   if (picture_in_picture_service_)
@@ -396,7 +433,7 @@ bool PictureInPictureControllerImpl::EnsureService() {
       GetSupplementable()->GetFrame()->GetTaskRunner(
           TaskType::kMediaElementEvent);
   GetSupplementable()->GetFrame()->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&picture_in_picture_service_, task_runner));
+      picture_in_picture_service_.BindNewPipeAndPassReceiver(task_runner));
   return true;
 }
 

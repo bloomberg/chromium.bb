@@ -11,6 +11,7 @@
 #include "modules/video_coding/utility/simulcast_rate_allocator.h"
 
 #include <stdio.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <numeric>
@@ -211,7 +212,8 @@ void SimulcastRateAllocator::DistributeAllocationToTemporalLayers(
     const bool conference_screenshare_mode =
         codec_.mode == VideoCodecMode::kScreensharing &&
         ((num_spatial_streams == 1 && num_temporal_streams == 2) ||  // Legacy.
-         (num_spatial_streams > 1 && simulcast_id == 0));  // Simulcast.
+         (num_spatial_streams > 1 && simulcast_id == 0 &&
+          num_temporal_streams == 2));  // Simulcast.
     if (conference_screenshare_mode) {
       // TODO(holmer): This is a "temporary" hack for screensharing, where we
       // interpret the startBitrate as the encoder target bitrate. This is

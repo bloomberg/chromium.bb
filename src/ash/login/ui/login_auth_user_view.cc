@@ -23,7 +23,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/night_light/time_of_day.h"
-#include "ash/system/toast/toast_manager.h"
+#include "ash/system/toast/toast_manager_impl.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
@@ -328,7 +328,7 @@ class LoginAuthUserView::FingerprintView : public views::View {
     SetBorder(views::CreateEmptyBorder(kFingerprintIconTopSpacingDp, 0, 0, 0));
 
     auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical, gfx::Insets(),
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
         kSpacingBetweenFingerprintIconAndLabelDp));
     layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kCenter);
@@ -441,7 +441,7 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
  public:
   DisabledAuthMessageView() {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical,
+        views::BoxLayout::Orientation::kVertical,
         gfx::Insets(kDisabledAuthMessageVerticalBorderDp,
                     kDisabledAuthMessageHorizontalBorderDp),
         kDisabledAuthMessageChildrenSpacingDp));
@@ -706,14 +706,14 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   // Use views::GridLayout instead of views::BoxLayout because views::BoxLayout
   // lays out children according to the view->children order.
   views::GridLayout* grid_layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* column_set = grid_layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
                         0 /*resize_percent*/, views::GridLayout::USE_PREF,
                         0 /*fixed_width*/, 0 /*min_width*/);
   auto add_view = [&](views::View* view) {
     grid_layout->StartRow(0 /*vertical_resize*/, 0 /*column_set_id*/);
-    grid_layout->AddView(view);
+    grid_layout->AddExistingView(view);
   };
   auto add_padding = [&](int amount) {
     grid_layout->AddPaddingRow(0 /*vertical_resize*/, amount /*size*/);

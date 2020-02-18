@@ -8,7 +8,7 @@ import "device/gamepad/public/mojom/gamepad.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
-import "ui/display/mojo/display.mojom";
+import "ui/display/mojom/display.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/gpu_fence_handle.mojom";
 import "ui/gfx/mojo/transform.mojom";
@@ -29,6 +29,7 @@ enum XRDeviceId {
   [EnableIf=enable_oculus_vr] OCULUS_DEVICE_ID = 5,
   [EnableIf=enable_windows_mr] WINDOWS_MIXED_REALITY_ID = 6,
   ARCORE_DEVICE_ID = 7,
+  [EnableIf=enable_openxr] OPENXR_DEVICE_ID = 8,
 };
 
 enum XRHandedness {
@@ -72,6 +73,10 @@ struct XRSession {
   // info to more sensible places so that this doesn't need to be sent here.
   VRDisplayInfo display_info;
   XRPresentationConnection? submit_frame_sink;
+
+  // Indicates whether the device backing this session sends input events solely
+  // via eventing (as opposed to polling).
+  bool uses_input_eventing;
 };
 
 // This structure contains the infomation and interfaces needed to create a two
@@ -127,21 +132,23 @@ struct XRInputSourceState {
 // For a typical field of view that contains the center point, all angles are
 // positive.
 struct VRFieldOfView {
-  float upDegrees;
-  float downDegrees;
-  float leftDegrees;
-  float rightDegrees;
+  float up_degrees;
+  float down_degrees;
+  float left_degrees;
+  float right_degrees;
 };
 
 // A display's position, orientation, velocity, and acceleration state at the
 // given timestamp.
 struct VRPose {
-  array<float, 4>? orientation;
-  array<float, 3>? position;
-  array<float, 3>? angularVelocity;
-  array<float, 3>? linearVelocity;
-  array<float, 3>? angularAcceleration;
-  array<float, 3>? linearAcceleration;
+  gfx.mojom.Quaternion? orientation;
+  gfx.mojom.Point3F? position;
+
+  // Velocity/Acceleration is in global coordinates, as rad/s.
+  gfx.mojom.Vector3dF? angular_velocity;
+  gfx.mojom.Vector3dF? linear_velocity;
+  gfx.mojom.Vector3dF? angular_acceleration;
+  gfx.mojom.Vector3dF? linear_acceleration;
 
   // For WebXR sessions only, reports the state of all active input devices
   // synced with the head pose.
@@ -159,56 +166,53 @@ struct XRRay {
 };
 
 struct XRHitResult {
-  // A 4x4 transformation matrix representing the position of the object hit
-  // and the orientation of the normal of the object at the hit location.
-  // TODO(https://crbug.com/845293): use gfx.mojom.Transform.
-  array<float, 16> hit_matrix;
+  gfx.mojom.Transform hit_matrix;
 };
 
 struct VRDisplayCapabilities {
-  bool hasPosition;
-  bool hasExternalDisplay;
+  bool has_position;
+  bool has_external_display;
 
   // Indicates whether the display can actively show imagery on a headset.
-  bool canPresent;
+  bool can_present;
 
   // Whether the display gathers data about the environment (for AR like
   // planes, point clouds, meshes, etc.). The backend will decide whether
   // it needs to provide camera frames or not based on whether it is a
   // see-through HMD or camera-based AR system.
-  bool canProvideEnvironmentIntegration;
+  bool can_provide_environment_integration;
 };
 
 // Information about the optical properties for an eye in a VRDisplay.
 struct VREyeParameters {
-  VRFieldOfView fieldOfView;
-  array<float, 3> offset;
-  uint32 renderWidth;
-  uint32 renderHeight;
+  VRFieldOfView field_of_view;
+  gfx.mojom.Vector3dF offset;
+  uint32 render_width;
+  uint32 render_height;
 };
 
 struct VRStageParameters {
-  array<float, 16> standingTransform;
-  float sizeX;
-  float sizeZ;
+  gfx.mojom.Transform standing_transform;
+  float size_x;
+  float size_z;
 
   // If present, indicates that the device supports a bounded reference space.
   // The points are expected to be in the "standing" space (i.e. there should be
   // no need to transform them by the accompanying standing transform) and
   // in a clockwise winding order.
-  // This should supersede sizeX/sizeZ if they are set.
+  // This should supersede size_x/size_z if they are set.
   array<gfx.mojom.Point3F>? bounds;
 };
 
 struct VRDisplayInfo {
   XRDeviceId id;
-  string displayName;
+  string display_name;
   VRDisplayCapabilities capabilities;
-  VRStageParameters? stageParameters;
+  VRStageParameters? stage_parameters;
   // Parameters required to distort a scene for viewing in a VR headset. Only
-  // required for devices which have the canPresent capability.
-  VREyeParameters? leftEye;
-  VREyeParameters? rightEye;
+  // required for devices which have the can_present capability.
+  VREyeParameters? left_eye;
+  VREyeParameters? right_eye;
   float webvr_default_framebuffer_scale = 1.0;
   float webxr_default_framebuffer_scale = 1.0;
 };
@@ -266,6 +270,17 @@ struct XRPlaneData {
   array<XRPlanePointData> polygon;
 };
 
+// Struct containing information about existing & updated planes in frame N.
+// If the plane was removed between frame N-1 and N, its ID will not be present
+// in all_plane_ids.
+struct XRPlaneDetectionData {
+  // Array with ids of all planes.
+  array<int32> all_planes_ids;
+
+  // Array with plane data for updated planes.
+  array<XRPlaneData> updated_planes_data;
+};
+
 // The data needed for each animation frame of an XRSession.
 struct XRFrameData {
   // General XRSession value
@@ -310,9 +325,8 @@ struct XRFrameData {
   bool stage_parameters_updated;
   VRStageParameters? stage_parameters;
 
-  // Array containing detected planes data. If plane was detected in frame N and
-  // is no longer detected in frame N+1, it will not be present in the array.
-  array<XRPlaneData>? detected_planes;
+  // Detected plane information. Only present if plane detection is enabled.
+  XRPlaneDetectionData? detected_planes_data;
 };
 
 enum VRDisplayEventReason {
@@ -345,12 +359,27 @@ interface VRServiceClient {
   OnDeviceChanged();
 };
 
+enum RequestSessionError {
+  ORIGIN_NOT_SECURE = 1,
+  IMMERSIVE_SESSION_REQUEST_FROM_OFF_FOCUS_PAGE = 2,
+  EXISTING_IMMERSIVE_SESSION = 3,
+  INVALID_CLIENT = 4,
+  USER_DENIED_CONSENT = 5,
+  NO_RUNTIME_FOUND = 6,
+  UNKNOWN_RUNTIME_ERROR = 7
+};
+
+union RequestSessionResult {
+  XRSession session;
+  RequestSessionError failure_reason;
+};
+
 // Supplies XRSessions and session support information. Implemented in the
 // browser process, consumed in the renderer process.
 interface XRDevice {
   // Request to initialize a session in the browser process. If successful, the
   // XRSession struct with the requisite interfaces will be returned.
-  RequestSession(XRSessionOptions options) => (XRSession? session);
+  RequestSession(XRSessionOptions options) => (RequestSessionResult result);
   SupportsSession(XRSessionOptions options) => (bool supports_session);
 
   // WebVR 1.1 functionality compatibility method. Returns VRDisplayInfo for an
@@ -375,6 +404,13 @@ interface XREnvironmentIntegrationProvider {
   RequestHitTest(XRRay ray) => (array<XRHitResult>? results);
 };
 
+// Provides a mechanism for a channel to plumb up any button click events
+// separately from polling, to provide better latency/position tracking for
+// those events.
+interface XRInputSourceButtonListener {
+  OnButtonEvent(XRInputSourceState input_source);
+};
+
 struct XRFrameDataRequestOptions {
   // Controls whether XRFrameData.detected_planes should be populated by the
   // request to XRFrameDataProvider.GetFrameData().
@@ -392,6 +428,8 @@ interface XRFrameDataProvider {
   GetFrameData(XRFrameDataRequestOptions? options) => (XRFrameData? frame_data);
   GetEnvironmentIntegrationProvider(
       associated XREnvironmentIntegrationProvider& environment_provider);
+  SetInputSourceButtonListener(
+      associated XRInputSourceButtonListener? event_listener);
 };
 
 // Provides the necessary functionality for sending frames to a headset.

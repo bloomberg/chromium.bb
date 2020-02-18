@@ -20,6 +20,8 @@ class SubmenuView;
 // the preferred height of the SubmenuView is bigger than our bounds.
 class MenuScrollViewContainer : public View {
  public:
+  METADATA_HEADER(MenuScrollViewContainer);
+
   explicit MenuScrollViewContainer(SubmenuView* content_view);
 
   // Returns the buttons for scrolling up/down.

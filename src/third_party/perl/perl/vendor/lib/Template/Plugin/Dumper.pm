@@ -27,7 +27,7 @@ use Data::Dumper;
 our $VERSION = 2.70;
 our $DEBUG   = 0 unless defined $DEBUG;
 our @DUMPER_ARGS = qw( Indent Pad Varname Purity Useqq Terse Freezer
-                       Toaster Deepcopy Quotekeys Bless Maxdepth );
+                       Toaster Deepcopy Quotekeys Bless Maxdepth Sortkeys );
 our $AUTOLOAD;
 
 #==============================================================================

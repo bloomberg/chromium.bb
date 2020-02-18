@@ -46,7 +46,7 @@ void RemoveObsoleteBluetoothDevicesFromList(
     const std::set<BluetoothAddress>& new_device_address_list) {
   base::EraseIf(*device_list, [&new_device_address_list](
                                   const BluetoothDeviceInfoPtr& info) {
-    return !base::ContainsKey(new_device_address_list, info->address);
+    return !base::Contains(new_device_address_list, info->address);
   });
 }
 

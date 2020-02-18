@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">デバイスを連携させると活用の幅が広がります</translation>
 <translation id="112308213915226829">シェルフを自動的に隠す</translation>
 <translation id="1153356358378277386">ペア設定されたデバイス</translation>
+<translation id="1175572348579024023">スクロール</translation>
 <translation id="1178581264944972037">一時停止</translation>
 <translation id="1195412055398077112">オーバースキャン</translation>
 <translation id="119944043368869598">すべて削除</translation>
-<translation id="123828989343052515">新しいデスク</translation>
 <translation id="1247372569136754018">マイク（内蔵）</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> から充電しています</translation>
 <translation id="1255033239764210633">今日の天気は？</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">入力方法は管理者によって設定されています。</translation>
 <translation id="1747827819627189109">画面キーボードが有効です</translation>
 <translation id="1761222317188459878">ネットワーク接続を切り替えます。<ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">右にスクロール</translation>
 <translation id="1812997170047690955">画面上のアイテムを検索します</translation>
+<translation id="1820355135508821526">このデバイスに適用されているポリシーにより <ph name="FEATURE_NAME" /> が無効にされています。管理者に連絡して、設定の変更をリクエストしてください。</translation>
 <translation id="1823873187264960516">イーサネット: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">アシスタント（読み込み中...）</translation>
 <translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">言語を設定</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />（USB）</translation>
+<translation id="1978498689038657292">テキストを入力</translation>
 <translation id="1993072747612765854"><ph name="SYSTEM_APP_NAME" /> の最新アップデートの詳細をご確認ください</translation>
 <translation id="1995660704900986789">電源を切る</translation>
 <translation id="2012624427112548395">Ctrl+検索+H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">縦</translation>
 <translation id="2067602449040652523">キーボードの明るさ</translation>
 <translation id="209965399369889474">ネットワークに接続されていません</translation>
+<translation id="2126242104232412123">新しいデスク</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
 <translation id="2135456203358955318">拡大鏡（ドッキング）</translation>
 <translation id="2144487987174258011">Adobe Flash Player を更新するには再起動してください</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">Google アシスタントは、公開セッションではご利用いただけません。</translation>
 <translation id="2575685495496069081">マルチログインは無効にされています</translation>
 <translation id="2582112259361606227">再起動して更新</translation>
-<translation id="2597972630681408282">夜間モード: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM カードはロックされています</translation>
+<translation id="2651765386227849097">このデバイスでは Google アシスタントが無効にされています。</translation>
 <translation id="2653659639078652383">送信</translation>
 <translation id="2658778018866295321">クリックしてドラッグ</translation>
 <translation id="2700493154570097719">キーボードを設定</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{1 台のデバイスと接続されています}other{# 台のデバイスと接続されています}}</translation>
 <translation id="3226991577105957773">他 <ph name="COUNT" /> 件</translation>
 <translation id="3236488194889173876">利用できるモバイル ネットワークがありません</translation>
+<translation id="3249513730522716925">ウィンドウ <ph name="WINDOW_TITLE" /> がデスク <ph name="ACTIVE_DESK" /> からデスク <ph name="TARGET_DESK" /> に移動されました</translation>
 <translation id="3255483164551725916">何ができる？</translation>
 <translation id="3294437725009624529">ゲスト</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> が後でログインすることは引き続き可能です。</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE" />」に戻します（再起動が必要です）</translation>
 <translation id="3576141592585647168">タイムゾーンを変更</translation>
 <translation id="3595596368722241419">バッテリー残量: フル</translation>
+<translation id="3604801046548457007">デスク <ph name="DESK_TITILE" /> が作成されました</translation>
 <translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
 <translation id="3621202678540785336">入力</translation>
 <translation id="3626281679859535460">輝度</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">電池残量は <ph name="PERCENTAGE" />% です（現在充電中）。</translation>
 <translation id="3995138139523574647">USB-C デバイス（右奥のポート）</translation>
 <translation id="4017989525502048489">レーザー ポインタ</translation>
+<translation id="4021716437419160885">下にスクロール</translation>
 <translation id="4042660782729322247">画面を共有しています</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{1 件のアプリでオフ}other{# 件のアプリでオフ}}</translation>
 <translation id="4072264167173457037">電波: 中程度</translation>
@@ -258,9 +265,11 @@
 <translation id="4895488851634969361">バッテリー残量: 満。</translation>
 <translation id="490375751687810070">縦</translation>
 <translation id="4905614135390995787">ハイ コントラスト モードを切り替えるショートカットが変わりました。これまでの <ph name="OLD_SHORTCUT" /> キーではなく <ph name="NEW_SHORTCUT" /> キーを使用してください。</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% のバッテリー残量</translation>
 <translation id="4917385247580444890">強い</translation>
 <translation id="4918086044614829423">同意する</translation>
 <translation id="4924411785043111640">再起動してリセット</translation>
+<translation id="495046168593986294">上にスクロール</translation>
 <translation id="4961318399572185831">画面をキャスト</translation>
 <translation id="5030687792513154421">時間切れです</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> が新しいスマートフォンに接続されました</translation>
@@ -294,6 +303,7 @@
 <translation id="5648021990716966815">マイク差込口</translation>
 <translation id="5669267381087807207">有効にしています</translation>
 <translation id="5673434351075758678">設定の同期後に「<ph name="FROM_LOCALE" />」から「<ph name="TO_LOCALE" />」に変更されました。</translation>
+<translation id="5682642926269496722">Google アシスタントは、現在のユーザー アカウントではご利用いただけません。</translation>
 <translation id="5691772641933328258">指紋を認識できません</translation>
 <translation id="5710450975648804523">サイレント モードがオンになっています</translation>
 <translation id="574392208103952083">中</translation>
@@ -318,6 +328,8 @@
 <translation id="598882571027504733">アップデートを取得するには、キーボードを接続した状態で Chromebook を再起動してください。</translation>
 <translation id="5992218262414051481">ハイコントラスト モードが有効になりました。無効にするには、Ctrl+検索+H キーをもう一度押します。</translation>
 <translation id="6018164090099858612">ミラーモードを終了しています</translation>
+<translation id="602001110135236999">左にスクロール</translation>
+<translation id="6040143037577758943">閉じる</translation>
 <translation id="6043212731627905357">このモニターは <ph name="DEVICE_TYPE" /> では使用できません（サポートされていません）。</translation>
 <translation id="6043994281159824495">ログアウト</translation>
 <translation id="6047696787498798094">別のユーザーに切り替えると画面の共有は解除されます。続行してもよろしいですか？</translation>
@@ -325,6 +337,7 @@
 <translation id="6064337552080329342">パスワードを確認できませんでした。もう一度お試しください。</translation>
 <translation id="607652042414456612">お使いのパソコンは近くの Bluetooth デバイスで検出可能です。名前「<ph name="NAME" />」、アドレス「<ph name="ADDRESS" />」のデバイスとして表示されます</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> を充電しています</translation>
+<translation id="612734058257491180">Google アシスタントは、ゲスト セッションではご利用いただけません。</translation>
 <translation id="615957422585914272">画面キーボードを表示する</translation>
 <translation id="6164005077879661055">この監視対象ユーザーを削除すると、このユーザーに関連付けられたすべてのファイルとローカル データも完全に削除されます。この監視対象ユーザーがアクセスしたウェブサイトやこのユーザーの設定は引き続き、管理者が <ph name="MANAGEMENT_URL" /> で見ることができます。</translation>
 <translation id="6165508094623778733">詳細</translation>
@@ -366,7 +379,9 @@
 <translation id="6713285437468012787">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定されました。すべてのユーザーはこのデバイスを使用できます。[設定] から、このペア設定を削除することもできます。</translation>
 <translation id="6715542151869432661">モバイル デバイスが見つかりませんでした。</translation>
 <translation id="6723839937902243910">電源</translation>
+<translation id="6727969043791803658">接続済み、<ph name="BATTERY_PERCENTAGE" />% のバッテリー残量</translation>
 <translation id="6751826523481687655">パフォーマンス追跡機能が有効になっています</translation>
+<translation id="6752912906630585008">デスク <ph name="REMOVED_DESK" /> が削除されデスク <ph name="RECEIVE_DESK" /> に統合されました</translation>
 <translation id="6790428901817661496">再生</translation>
 <translation id="6803622936009808957">サポートされている解像度が見つからなかったため、ディスプレイをミラーリングできませんでした。代わりに拡張デスクトップ モードに切り替えました。</translation>
 <translation id="6820676911989879663">休憩の時間です！</translation>
@@ -425,6 +440,7 @@
 <translation id="7692480393933218409">接続された USB-C デバイスを充電しています</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 件の通知}other{# 件の通知}}</translation>
+<translation id="7749443890790263709">デスクの数が上限に達しました。</translation>
 <translation id="776344839111254542">クリックしてアップデートの詳細を表示する</translation>
 <translation id="7780159184141939021">画面の回転</translation>
 <translation id="7796353162336583443">シェルフにあるタッチペン ボタンをタップして、メモやスクリーンショットをとったり、Google アシスタント、レーザー ポインタ、虫メガネを使用したりすることができます。</translation>
@@ -468,6 +484,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">メモを作成</translation>
 <translation id="8375916635258623388">この <ph name="DEVICE_NAME" /> とお使いのスマートフォンは自動的に接続されます</translation>
+<translation id="8388750414311082622">最後のデスクは削除できません。</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> のオプション メニュー</translation>
 <translation id="8394567579869570560">保護者の方がこのデバイスをロックしました</translation>
 <translation id="8406981827175133772">拡大鏡（全画面）</translation>
@@ -476,6 +493,7 @@
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433186206711564395">ネットワーク設定</translation>
 <translation id="8433977262951327081">シェルフに入力オプション メニューのふきだしを表示するためのショートカットが変わりました。今後は <ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> を使用してください。</translation>
+<translation id="8444246603146515890">デスク <ph name="DESK_TITILE" /> が有効になりました</translation>
 <translation id="8452135315243592079">SIM カードがありません</translation>
 <translation id="8454013096329229812">Wi-Fi が有効になりました。</translation>
 <translation id="847056008324733326">表示スケールの設定</translation>

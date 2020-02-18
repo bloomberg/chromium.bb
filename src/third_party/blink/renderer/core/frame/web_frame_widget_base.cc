@@ -77,7 +77,7 @@ WebRect WebFrameWidgetBase::ComputeBlockBound(
     const gfx::Point& point_in_root_frame,
     bool ignore_clipping) const {
   HitTestLocation location(local_root_->GetFrameView()->ConvertFromRootFrame(
-      LayoutPoint(IntPoint(point_in_root_frame))));
+      PhysicalOffset(IntPoint(point_in_root_frame))));
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kReadOnly | HitTestRequest::kActive |
       (ignore_clipping ? HitTestRequest::kIgnoreClipping : 0);
@@ -216,7 +216,7 @@ void WebFrameWidgetBase::DragSourceEndedAt(
   WebMouseEvent fake_mouse_move(
       WebInputEvent::kMouseMove, point_in_root_frame, screen_point,
       WebPointerProperties::Button::kLeft, 0, WebInputEvent::kNoModifiers,
-      CurrentTimeTicks());
+      base::TimeTicks::Now());
   fake_mouse_move.SetFrameScale(1);
   local_root_->GetFrame()->GetEventHandler().DragSourceEndedAt(
       fake_mouse_move, static_cast<DragOperation>(operation));
@@ -452,13 +452,19 @@ WebFrameWidgetBase::EnsureCompositorMutatorDispatcher(
   return mutator_dispatcher_;
 }
 
-scoped_refptr<PaintWorkletPaintDispatcher>
-WebFrameWidgetBase::EnsureCompositorPaintDispatcher() {
-  if (!paint_dispatcher_) {
+base::WeakPtr<PaintWorkletPaintDispatcher>
+WebFrameWidgetBase::EnsureCompositorPaintDispatcher(
+    scoped_refptr<base::SingleThreadTaskRunner>* paint_task_runner) {
+  // We check paint_task_runner_ not paint_dispatcher_ because the dispatcher is
+  // a base::WeakPtr that should only be used on the compositor thread.
+  if (!paint_task_runner_) {
     Client()->SetPaintWorkletLayerPainterClient(
         PaintWorkletPaintDispatcher::CreateCompositorThreadPainter(
-            paint_dispatcher_));
+            &paint_dispatcher_));
+    paint_task_runner_ = Thread::CompositorThread()->GetTaskRunner();
   }
+  DCHECK(paint_task_runner_);
+  *paint_task_runner = paint_task_runner_;
   return paint_dispatcher_;
 }
 

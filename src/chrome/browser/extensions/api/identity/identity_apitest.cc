@@ -47,17 +47,17 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/core/browser/list_accounts_test_utils.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/list_accounts_test_utils.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/extension_builder.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/identity/public/cpp/accounts_mutator.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -353,7 +353,7 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
 
   // Fix auth error on secondary account or add a new account.
   void FixOrAddSecondaryAccount() {
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(GetProfile());
     std::vector<CoreAccountInfo> accounts =
         identity_manager->GetAccountsWithRefreshTokens();
@@ -373,7 +373,7 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
       }
     }
     if (!fixed_auth_error) {
-      identity::MakeAccountAvailable(identity_manager, "secondary@example.com");
+      signin::MakeAccountAvailable(identity_manager, "secondary@example.com");
     }
   }
 
@@ -382,15 +382,15 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
     EXPECT_FALSE(login_ui_shown_);
     login_ui_shown_ = true;
     if (login_ui_result_) {
-      identity::IdentityManager* identity_manager =
+      signin::IdentityManager* identity_manager =
           IdentityManagerFactory::GetForProfile(GetProfile());
       if (IdentityAPI::GetFactoryInstance()
               ->Get(GetProfile())
               ->AreExtensionsRestrictedToPrimaryAccount()) {
         // Set a primary account.
         ASSERT_FALSE(identity_manager->HasPrimaryAccount());
-        identity::MakeAccountAvailable(identity_manager, "primary@example.com");
-        identity::SetPrimaryAccount(identity_manager, "primary@example.com");
+        signin::MakeAccountAvailable(identity_manager, "primary@example.com");
+        signin::SetPrimaryAccount(identity_manager, "primary@example.com");
       } else {
         FixOrAddSecondaryAccount();
       }
@@ -495,7 +495,7 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     return IdentityAPI::GetFactoryInstance()->Get(browser()->profile());
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_profile_adaptor_->identity_test_env();
   }
 
@@ -717,7 +717,7 @@ IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest,
 
 class GetAuthTokenFunctionTest
     : public IdentityTestWithSignin,
-      public identity::IdentityManager::DiagnosticsObserver {
+      public signin::IdentityManager::DiagnosticsObserver {
  public:
   GetAuthTokenFunctionTest() {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -814,8 +814,8 @@ class GetAuthTokenFunctionTest
   base::OnceClosure on_access_token_requested_;
 
  private:
-  // identity::IdentityManager::DiagnosticsObserver:
-  void OnAccessTokenRequested(const std::string& account_id,
+  // signin::IdentityManager::DiagnosticsObserver:
+  void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
                               const identity::ScopeSet& scopes) override {
     if (on_access_token_requested_.is_null())
@@ -1523,7 +1523,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   signin::SetListAccountsResponseOneAccount(
       account_info.email, account_info.gaia, &test_url_loader_factory_);
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  identity::SetFreshnessOfAccountsInGaiaCookie(identity_manager, false);
+  signin::SetFreshnessOfAccountsInGaiaCookie(identity_manager, false);
 
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
@@ -2001,8 +2001,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesDefault) {
 
   const ExtensionTokenKey* token_key = func->GetExtensionTokenKeyForTest();
   EXPECT_EQ(2ul, token_key->scopes.size());
-  EXPECT_TRUE(base::ContainsKey(token_key->scopes, "scope1"));
-  EXPECT_TRUE(base::ContainsKey(token_key->scopes, "scope2"));
+  EXPECT_TRUE(base::Contains(token_key->scopes, "scope1"));
+  EXPECT_TRUE(base::Contains(token_key->scopes, "scope2"));
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmpty) {
@@ -2030,7 +2030,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmail) {
 
   const ExtensionTokenKey* token_key = func->GetExtensionTokenKeyForTest();
   EXPECT_EQ(1ul, token_key->scopes.size());
-  EXPECT_TRUE(base::ContainsKey(token_key->scopes, "email"));
+  EXPECT_TRUE(base::Contains(token_key->scopes, "email"));
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmailFooBar) {
@@ -2047,9 +2047,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmailFooBar) {
 
   const ExtensionTokenKey* token_key = func->GetExtensionTokenKeyForTest();
   EXPECT_EQ(3ul, token_key->scopes.size());
-  EXPECT_TRUE(base::ContainsKey(token_key->scopes, "email"));
-  EXPECT_TRUE(base::ContainsKey(token_key->scopes, "foo"));
-  EXPECT_TRUE(base::ContainsKey(token_key->scopes, "bar"));
+  EXPECT_TRUE(base::Contains(token_key->scopes, "email"));
+  EXPECT_TRUE(base::Contains(token_key->scopes, "foo"));
+  EXPECT_TRUE(base::Contains(token_key->scopes, "bar"));
 }
 
 #if defined(OS_CHROMEOS)

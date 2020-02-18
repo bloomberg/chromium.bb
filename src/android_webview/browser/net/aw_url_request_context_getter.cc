@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/net/aw_cookie_store_wrapper.h"
@@ -196,14 +197,14 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
       prefs::kAuthServerWhitelist, user_pref_service,
       base::BindRepeating(&AwURLRequestContextGetter::UpdateServerWhitelist,
                           base::Unretained(this)));
-  auth_server_whitelist_.MoveToThread(io_thread_proxy);
+  auth_server_whitelist_.MoveToSequence(io_thread_proxy);
 
   auth_android_negotiate_account_type_.Init(
       prefs::kAuthAndroidNegotiateAccountType, user_pref_service,
       base::BindRepeating(
           &AwURLRequestContextGetter::UpdateAndroidAuthNegotiateAccountType,
           base::Unretained(this)));
-  auth_android_negotiate_account_type_.MoveToThread(io_thread_proxy);
+  auth_android_negotiate_account_type_.MoveToSequence(io_thread_proxy);
 
   // For net-log, use default capture mode and no channel information.
   // WebView can enable net-log only using commandline in userdebug
@@ -247,7 +248,7 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
     file_net_log_observer_ = net::FileNetLogObserver::CreateUnbounded(
         net_log_path, std::move(constants_dict));
     file_net_log_observer_->StartObserving(net_log_,
-                                           net::NetLogCaptureMode::Default());
+                                           net::NetLogCaptureMode::kDefault);
   }
 }
 
@@ -305,7 +306,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   ApplyCmdlineOverridesToNetworkSessionParams(&network_session_params);
   builder.set_http_network_session_params(network_session_params);
 
-  // Quic is not currently supported in WebView (http://crbug.com/763187).
+  // Quic is only supported when network service is enabled.
   builder.SetSpdyAndQuicEnabled(true, false);
 
   builder.SetHttpAuthHandlerFactory(CreateAuthHandlerFactory());

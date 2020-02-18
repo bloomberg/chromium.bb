@@ -185,6 +185,10 @@ const char kUserGestureRequiredPolicy[] = "user-gesture-required";
 
 namespace media {
 
+// Prefer FFmpeg to LibVPX for Vp8 decoding with opaque alpha mode.
+const base::Feature kFFmpegDecodeOpaqueVP8{"FFmpegDecodeOpaqueVP8",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Only used for disabling overlay fullscreen (aka SurfaceView) in Clank.
 const base::Feature kOverlayFullscreenVideo{"overlay-fullscreen-video",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
@@ -242,6 +246,11 @@ const base::Feature kBackgroundVideoPauseOptimization{
 const base::Feature kMemoryPressureBasedSourceBufferGC{
     "MemoryPressureBasedSourceBufferGC", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable the instance from ChromeosVideoDecoderFactory in
+// MojoVideoDecoderService, replacing VdaVideoDecoder at Chrome OS platform.
+const base::Feature kChromeosVideoDecoder{"ChromeosVideoDecoder",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable The D3D11 Video decoder.
 const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
@@ -258,6 +267,10 @@ const base::Feature kD3D11VideoDecoderIgnoreWorkarounds{
 // because the behavior is simpler and more predictable.
 const base::Feature kFallbackAfterDecodeError{"FallbackAfterDecodeError",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Show toolbar button that opens dialog for controlling media sessions.
+const base::Feature kGlobalMediaControls{"GlobalMediaControls",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable new cpu load estimator. Intended for evaluation in local
 // testing and origin-trial.
@@ -288,6 +301,10 @@ const base::Feature kUnifiedAutoplay{"UnifiedAutoplay",
 const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable VA-API hardware encode acceleration for H264 on AMD.
+const base::Feature kVaapiH264AMDEncoder{"VaapiH264AMDEncoder",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable VA-API hardware low power encoder for all codecs.
 const base::Feature kVaapiLowPowerEncoder{"VaapiLowPowerEncoder",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -299,6 +316,10 @@ const base::Feature kVaapiVP8Encoder{"VaapiVP8Encoder",
 // Enable VA-API hardware encode acceleration for VP9.
 const base::Feature kVaapiVP9Encoder{"VaapiVP9Encoder",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable VP9 k-SVC decoding with HW decoder for webrtc use case on ChromeOS.
+const base::Feature kVp9kSVCHWDecoding{"Vp9kSVCHWDecoding",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Inform video blitter of video color space.
 const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
@@ -394,6 +415,10 @@ const base::Feature kAImageReaderVideoOutput{"AImageReaderVideoOutput",
 // that cannot support SurfaceLayer at the moment.
 const base::Feature kDisableSurfaceLayerForVideo{
     "DisableSurfaceLayerForVideo", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable picture in picture web api for android.
+const base::Feature kPictureInPictureAPI{"PictureInPictureAPI",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables CanPlayType() (and other queries) for HLS MIME types. Note that
 // disabling this also causes navigation to .m3u8 files to trigger downloading

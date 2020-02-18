@@ -33,6 +33,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "perfetto/base/copyable_ptr.h"
 #include "perfetto/base/export.h"
 
 // Forward declarations for protobuf types.
@@ -44,6 +45,7 @@ class HeapprofdConfig_ContinuousDumpConfig;
 }  // namespace perfetto
 
 namespace perfetto {
+class HeapprofdConfig;
 
 class PERFETTO_EXPORT HeapprofdConfig {
  public:
@@ -74,8 +76,8 @@ class PERFETTO_EXPORT HeapprofdConfig {
     void set_dump_interval_ms(uint32_t value) { dump_interval_ms_ = value; }
 
    private:
-    uint32_t dump_phase_ms_ = {};
-    uint32_t dump_interval_ms_ = {};
+    uint32_t dump_phase_ms_{};
+    uint32_t dump_interval_ms_{};
 
     // Allows to preserve unknown protobuf fields for compatibility
     // with future versions of .proto files.
@@ -147,10 +149,10 @@ class PERFETTO_EXPORT HeapprofdConfig {
   }
 
   const ContinuousDumpConfig& continuous_dump_config() const {
-    return continuous_dump_config_;
+    return *continuous_dump_config_;
   }
   ContinuousDumpConfig* mutable_continuous_dump_config() {
-    return &continuous_dump_config_;
+    return continuous_dump_config_.get();
   }
 
   uint64_t shmem_size_bytes() const { return shmem_size_bytes_; }
@@ -168,18 +170,22 @@ class PERFETTO_EXPORT HeapprofdConfig {
   bool idle_allocations() const { return idle_allocations_; }
   void set_idle_allocations(bool value) { idle_allocations_ = value; }
 
+  bool dump_at_max() const { return dump_at_max_; }
+  void set_dump_at_max(bool value) { dump_at_max_ = value; }
+
  private:
-  uint64_t sampling_interval_bytes_ = {};
+  uint64_t sampling_interval_bytes_{};
   std::vector<std::string> process_cmdline_;
   std::vector<uint64_t> pid_;
-  bool all_ = {};
+  bool all_{};
   std::vector<std::string> skip_symbol_prefix_;
-  ContinuousDumpConfig continuous_dump_config_ = {};
-  uint64_t shmem_size_bytes_ = {};
-  bool block_client_ = {};
-  bool no_startup_ = {};
-  bool no_running_ = {};
-  bool idle_allocations_ = {};
+  ::perfetto::base::CopyablePtr<ContinuousDumpConfig> continuous_dump_config_;
+  uint64_t shmem_size_bytes_{};
+  bool block_client_{};
+  bool no_startup_{};
+  bool no_running_{};
+  bool idle_allocations_{};
+  bool dump_at_max_{};
 
   // Allows to preserve unknown protobuf fields for compatibility
   // with future versions of .proto files.

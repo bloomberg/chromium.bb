@@ -33,6 +33,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "extensions/common/extension.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -111,7 +112,7 @@ class NupPrintingTestDelegate : public PrintingMessageFilter::TestDelegate {
 class TestPrintFrameContentMsgFilter : public content::BrowserMessageFilter {
  public:
   TestPrintFrameContentMsgFilter(int document_cookie,
-                                 const base::RepeatingClosure& msg_callback)
+                                 base::RepeatingClosure msg_callback)
       : content::BrowserMessageFilter(PrintMsgStart),
         document_cookie_(document_cookie),
         task_runner_(base::SequencedTaskRunnerHandle::Get()),
@@ -523,6 +524,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
 
   auto filter =
       base::MakeRefCounted<KillPrintFrameContentMsgFilter>(subframe_rph);
+  content::ScopedAllowRendererCrashes allow_renderer_crashes(subframe_rph);
   subframe_rph->AddFilter(filter.get());
 
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);

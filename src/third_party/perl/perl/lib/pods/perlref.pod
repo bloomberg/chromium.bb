@@ -46,23 +46,10 @@ hard reference.
 X<reference, hard> X<hard reference>
 
 References are easy to use in Perl.  There is just one overriding
-principle: Perl does no implicit referencing or dereferencing.  When a
-scalar is holding a reference, it always behaves as a simple scalar.  It
-doesn't magically start being an array or hash or subroutine; you have to
-tell it explicitly to do so, by dereferencing it.
-
-References are easy to use in Perl.  There is just one overriding
 principle: in general, Perl does no implicit referencing or dereferencing.
 When a scalar is holding a reference, it always behaves as a simple scalar.
 It doesn't magically start being an array or hash or subroutine; you have to
 tell it explicitly to do so, by dereferencing it.
-
-That said, be aware that Perl version 5.14 introduces an exception
-to the rule, for syntactic convenience.  Experimental array and hash container
-function behavior allows array and hash references to be handled by Perl as
-if they had been explicitly syntactically dereferenced.  See
-L<perl5140delta/"Syntactical Enhancements">
-and L<perlfunc> for details.
 
 =head2 Making References
 X<reference, creation> X<referencing>
@@ -75,7 +62,7 @@ References can be created in several ways.
 X<\> X<backslash>
 
 By using the backslash operator on a variable, subroutine, or value.
-(This works much like the & (address-of) operator in C.)  
+(This works much like the & (address-of) operator in C.)
 This typically creates I<another> reference to a variable, because
 there's already a reference to the variable in the symbol table.  But
 the symbol table reference might go away, and you'll still have the
@@ -113,7 +100,7 @@ as using square brackets--instead it's the same as creating
 a list of references!
 
     @list = (\$a, \@b, \%c);
-    @list = \($a, @b, %c);	# same thing!
+    @list = \($a, @b, %c);      # same thing!
 
 As a special case, C<\(@foo)> returns a list of references to the contents
 of C<@foo>, not a reference to C<@foo> itself.  Likewise for C<%foo>,
@@ -128,8 +115,8 @@ A reference to an anonymous hash can be created using curly
 brackets:
 
     $hashref = {
-	'Adam'  => 'Eve',
-	'Clyde' => 'Bonnie',
+        'Adam'  => 'Eve',
+        'Clyde' => 'Bonnie',
     };
 
 Anonymous hash and array composers like these can be intermixed freely to
@@ -155,7 +142,8 @@ reference to it, you have these options:
 
 On the other hand, if you want the other meaning, you can do this:
 
-    sub showem {        { @_ } }   # ambiguous (currently ok, but may change)
+    sub showem {        { @_ } }   # ambiguous (currently ok,
+                                   # but may change)
     sub showem {       {; @_ } }   # ok
     sub showem { { return @_ } }   # ok
 
@@ -195,8 +183,8 @@ template without using eval().  Here's a small example of how
 closures work:
 
     sub newprint {
-	my $x = shift;
-	return sub { my $y = shift; print "$x, $y!\n"; };
+        my $x = shift;
+        return sub { my $y = shift; print "$x, $y!\n"; };
     }
     $h = newprint("Howdy");
     $g = newprint("Greetings");
@@ -268,19 +256,30 @@ known as foo).
     $ioref     = *STDIN{IO};
     $globref   = *foo{GLOB};
     $formatref = *foo{FORMAT};
+    $globname  = *foo{NAME};    # "foo"
+    $pkgname   = *foo{PACKAGE}; # "main"
 
-All of these are self-explanatory except for C<*foo{IO}>.  It returns
+Most of these are self-explanatory, but C<*foo{IO}>
+deserves special attention.  It returns
 the IO handle, used for file handles (L<perlfunc/open>), sockets
 (L<perlfunc/socket> and L<perlfunc/socketpair>), and directory
 handles (L<perlfunc/opendir>).  For compatibility with previous
 versions of Perl, C<*foo{FILEHANDLE}> is a synonym for C<*foo{IO}>, though it
-is deprecated as of 5.8.0.  If deprecation warnings are in effect, it will warn
-of its use.
+is discouraged, to encourage a consistent use of one name: IO.  On perls
+between v5.8 and v5.22, it will issue a deprecation warning, but this
+deprecation has since been rescinded.
 
 C<*foo{THING}> returns undef if that particular THING hasn't been used yet,
 except in the case of scalars.  C<*foo{SCALAR}> returns a reference to an
 anonymous scalar if $foo hasn't been used yet.  This might change in a
 future release.
+
+C<*foo{NAME}> and C<*foo{PACKAGE}> are the exception, in that they return
+strings, rather than references.  These return the package and name of the
+typeglob itself, rather than one that has been assigned to it.  So, after
+C<*foo=*Foo::bar>, C<*foo> will become "*Foo::bar" when used as a string,
+but C<*foo{PACKAGE}> and C<*foo{NAME}> will continue to produce "main" and
+"foo", respectively.
 
 C<*foo{IO}> is an alternative to the C<*HANDLE> mechanism given in
 L<perldata/"Typeglobs and Filehandles"> for passing filehandles
@@ -292,20 +291,20 @@ and directory handles, though.)  However, if you assign the incoming
 value to a scalar instead of a typeglob as we do in the examples
 below, there's no risk of that happening.
 
-    splutter(*STDOUT);		# pass the whole glob
-    splutter(*STDOUT{IO});	# pass both file and dir handles
+    splutter(*STDOUT);          # pass the whole glob
+    splutter(*STDOUT{IO});      # pass both file and dir handles
 
     sub splutter {
-	my $fh = shift;
-	print $fh "her um well a hmmm\n";
+        my $fh = shift;
+        print $fh "her um well a hmmm\n";
     }
 
-    $rec = get_rec(*STDIN);	# pass the whole glob
+    $rec = get_rec(*STDIN);     # pass the whole glob
     $rec = get_rec(*STDIN{IO}); # pass both file and dir handles
 
     sub get_rec {
-	my $fh = shift;
-	return scalar <$fh>;
+        my $fh = shift;
+        return scalar <$fh>;
     }
 
 =back
@@ -360,7 +359,7 @@ Admittedly, it's a little silly to use the curlies in this case, but
 the BLOCK can contain any arbitrary expression, in particular,
 subscripted expressions:
 
-    &{ $dispatch{$index} }(1,2,3);	# call correct routine
+    &{ $dispatch{$index} }(1,2,3);      # call correct routine
 
 Because of being able to omit the curlies for the simple case of C<$$x>,
 people often make the mistake of viewing the dereferencing symbols as
@@ -369,10 +368,10 @@ though, you could use parentheses instead of braces.  That's not the case.
 Consider the difference below; case 0 is a short-hand version of case 1,
 I<not> case 2:
 
-    $$hashref{"KEY"}   = "VALUE";	# CASE 0
-    ${$hashref}{"KEY"} = "VALUE";	# CASE 1
-    ${$hashref{"KEY"}} = "VALUE";	# CASE 2
-    ${$hashref->{"KEY"}} = "VALUE";	# CASE 3
+    $$hashref{"KEY"}   = "VALUE";       # CASE 0
+    ${$hashref}{"KEY"} = "VALUE";       # CASE 1
+    ${$hashref{"KEY"}} = "VALUE";       # CASE 2
+    ${$hashref->{"KEY"}} = "VALUE";     # CASE 3
 
 Case 2 is also deceptive in that you're accessing a variable
 called %hashref, not dereferencing through $hashref to the hash
@@ -435,7 +434,7 @@ numerically to see whether they refer to the same location.
 X<reference, numeric context>
 
     if ($ref1 == $ref2) {  # cheap numeric compare of references
-	print "refs 1 and 2 refer to the same thing\n";
+        print "refs 1 and 2 refer to the same thing\n";
     }
 
 Using a reference as a string produces both its referent's type,
@@ -538,14 +537,14 @@ value.
 People frequently expect it to work like this.  So it does.
 
     $name = "foo";
-    $$name = 1;			# Sets $foo
-    ${$name} = 2;		# Sets $foo
-    ${$name x 2} = 3;		# Sets $foofoo
-    $name->[0] = 4;		# Sets $foo[0]
-    @$name = ();		# Clears @foo
-    &$name();			# Calls &foo() (as in Perl 4)
+    $$name = 1;                 # Sets $foo
+    ${$name} = 2;               # Sets $foo
+    ${$name x 2} = 3;           # Sets $foofoo
+    $name->[0] = 4;             # Sets $foo[0]
+    @$name = ();                # Clears @foo
+    &$name();                   # Calls &foo()
     $pack = "THAT";
-    ${"${pack}::$name"} = 5;	# Sets $THAT::foo without eval
+    ${"${pack}::$name"} = 5;    # Sets $THAT::foo without eval
 
 This is powerful, and slightly dangerous, in that it's possible
 to intend (with the utmost sincerity) to use a hard reference, and
@@ -566,8 +565,8 @@ a symbol table, and thus are invisible to this mechanism.  For example:
     local $value = 10;
     $ref = "value";
     {
-	my $value = 20;
-	print $$ref;
+        my $value = 20;
+        print $$ref;
     }
 
 This will still print 10, not 20.  Remember that local() affects package
@@ -575,7 +574,7 @@ variables, which are all "global" to the package.
 
 =head2 Not-so-symbolic references
 
-Since Perl verion 5.001, brackets around a symbolic reference can simply
+Brackets around a symbolic reference can simply
 serve to isolate an identifier or variable name from the rest of an
 expression, just as they always have within a string.  For example,
 
@@ -583,7 +582,7 @@ expression, just as they always have within a string.  For example,
     print "${push}over";
 
 has always meant to print "pop on over", even though push is
-a reserved word.  In 5.001, this was generalized to work the same
+a reserved word.  This is generalized to work the same
 without the enclosing double quotes, so that
 
     print ${push} . "over";
@@ -592,36 +591,35 @@ and even
 
     print ${ push } . "over";
 
-will have the same effect.  (This would have been a syntax error in
-Perl 5.000, though Perl 4 allowed it in the spaceless form.)  This
+will have the same effect.  This
 construct is I<not> considered to be a symbolic reference when you're
 using strict refs:
 
     use strict 'refs';
-    ${ bareword };	# Okay, means $bareword.
-    ${ "bareword" };	# Error, symbolic reference.
+    ${ bareword };      # Okay, means $bareword.
+    ${ "bareword" };    # Error, symbolic reference.
 
 Similarly, because of all the subscripting that is done using single words,
 the same rule applies to any bareword that is used for subscripting a hash.
 So now, instead of writing
 
-    $array{ "aaa" }{ "bbb" }{ "ccc" }
+    $hash{ "aaa" }{ "bbb" }{ "ccc" }
 
 you can write just
 
-    $array{ aaa }{ bbb }{ ccc }
+    $hash{ aaa }{ bbb }{ ccc }
 
 and not worry about whether the subscripts are reserved words.  In the
 rare event that you do wish to do something like
 
-    $array{ shift }
+    $hash{ shift }
 
 you can force interpretation as a reserved word by adding anything that
 makes it more than a bareword:
 
-    $array{ shift() }
-    $array{ +shift }
-    $array{ shift @_ }
+    $hash{ shift() }
+    $hash{ +shift }
+    $hash{ shift @_ }
 
 The C<use warnings> pragma or the B<-w> switch will warn you if it
 interprets a reserved word as a string.
@@ -651,13 +649,13 @@ that generated HTML font changes for the various colors:
 
 The red() and green() functions would be similar.  To create these,
 we'll assign a closure to a typeglob of the name of the function we're
-trying to build.  
+trying to build.
 
     @colors = qw(red blue green yellow orange purple violet);
     for my $name (@colors) {
-        no strict 'refs';	# allow symbol table manipulation
+        no strict 'refs';       # allow symbol table manipulation
         *$name = *{uc $name} = sub { "<FONT COLOR='$name'>@_</FONT>" };
-    } 
+    }
 
 Now all those different functions appear to exist independently.  You can
 call red(), RED(), blue(), BLUE(), green(), etc.  This technique saves on
@@ -695,7 +693,7 @@ operator, as they are created on the fly. If you are accustomed to using
 nested subroutines in other programming languages with their own private
 variables, you'll have to work at it a bit in Perl.  The intuitive coding
 of this type of thing incurs mysterious warnings about "will not stay
-shared" due to the reasons explained above. 
+shared" due to the reasons explained above.
 For example, this won't work:
 
     sub outer {
@@ -720,7 +718,7 @@ outer() at the time outer is invoked.
 This has the interesting effect of creating a function local to another
 function, something not normally supported in Perl.
 
-=head1 WARNING
+=head1 WARNING: Don't use references as hash keys
 X<reference, string context> X<reference, use as hash key>
 
 You may not (usefully) use a reference as the key to a hash.  It will be
@@ -739,6 +737,200 @@ And then at least you can use the values(), which will be
 real refs, instead of the keys(), which won't.
 
 The standard Tie::RefHash module provides a convenient workaround to this.
+
+=head2 Postfix Dereference Syntax
+
+Beginning in v5.20.0, a postfix syntax for using references is
+available.  It behaves as described in L</Using References>, but instead
+of a prefixed sigil, a postfixed sigil-and-star is used.
+
+For example:
+
+    $r = \@a;
+    @b = $r->@*; # equivalent to @$r or @{ $r }
+
+    $r = [ 1, [ 2, 3 ], 4 ];
+    $r->[1]->@*;  # equivalent to @{ $r->[1] }
+
+In Perl 5.20 and 5.22, this syntax must be enabled with C<use feature
+'postderef'>. As of Perl 5.24, no feature declarations are required to make
+it available.
+
+Postfix dereference should work in all circumstances where block
+(circumfix) dereference worked, and should be entirely equivalent.  This
+syntax allows dereferencing to be written and read entirely
+left-to-right.  The following equivalencies are defined:
+
+  $sref->$*;  # same as  ${ $sref }
+  $aref->@*;  # same as  @{ $aref }
+  $aref->$#*; # same as $#{ $aref }
+  $href->%*;  # same as  %{ $href }
+  $cref->&*;  # same as  &{ $cref }
+  $gref->**;  # same as  *{ $gref }
+
+Note especially that C<< $cref->&* >> is I<not> equivalent to C<<
+$cref->() >>, and can serve different purposes.
+
+Glob elements can be extracted through the postfix dereferencing feature:
+
+  $gref->*{SCALAR}; # same as *{ $gref }{SCALAR}
+
+Postfix array and scalar dereferencing I<can> be used in interpolating
+strings (double quotes or the C<qq> operator), but only if the
+C<postderef_qq> feature is enabled.
+
+=head2 Postfix Reference Slicing
+
+Value slices of arrays and hashes may also be taken with postfix
+dereferencing notation, with the following equivalencies:
+
+  $aref->@[ ... ];  # same as @$aref[ ... ]
+  $href->@{ ... };  # same as @$href{ ... }
+
+Postfix key/value pair slicing, added in 5.20.0 and documented in
+L<the KeyE<sol>Value Hash Slices section of perldata|perldata/"Key/Value Hash
+Slices">, also behaves as expected:
+
+  $aref->%[ ... ];  # same as %$aref[ ... ]
+  $href->%{ ... };  # same as %$href{ ... }
+
+As with postfix array, postfix value slice dereferencing I<can> be used
+in interpolating strings (double quotes or the C<qq> operator), but only
+if the C<postderef_qq> L<feature> is enabled.
+
+=head2 Assigning to References
+
+Beginning in v5.22.0, the referencing operator can be assigned to.  It
+performs an aliasing operation, so that the variable name referenced on the
+left-hand side becomes an alias for the thing referenced on the right-hand
+side:
+
+    \$a = \$b; # $a and $b now point to the same scalar
+    \&foo = \&bar; # foo() now means bar()
+
+This syntax must be enabled with C<use feature 'refaliasing'>.  It is
+experimental, and will warn by default unless C<no warnings
+'experimental::refaliasing'> is in effect.
+
+These forms may be assigned to, and cause the right-hand side to be
+evaluated in scalar context:
+
+    \$scalar
+    \@array
+    \%hash
+    \&sub
+    \my $scalar
+    \my @array
+    \my %hash
+    \state $scalar # or @array, etc.
+    \our $scalar   # etc.
+    \local $scalar # etc.
+    \local our $scalar # etc.
+    \$some_array[$index]
+    \$some_hash{$key}
+    \local $some_array[$index]
+    \local $some_hash{$key}
+    condition ? \$this : \$that[0] # etc.
+
+Slicing operations and parentheses cause
+the right-hand side to be evaluated in
+list context:
+
+    \@array[5..7]
+    (\@array[5..7])
+    \(@array[5..7])
+    \@hash{'foo','bar'}
+    (\@hash{'foo','bar'})
+    \(@hash{'foo','bar'})
+    (\$scalar)
+    \($scalar)
+    \(my $scalar)
+    \my($scalar)
+    (\@array)
+    (\%hash)
+    (\&sub)
+    \(&sub)
+    \($foo, @bar, %baz)
+    (\$foo, \@bar, \%baz)
+
+Each element on the right-hand side must be a reference to a datum of the
+right type.  Parentheses immediately surrounding an array (and possibly
+also C<my>/C<state>/C<our>/C<local>) will make each element of the array an
+alias to the corresponding scalar referenced on the right-hand side:
+
+    \(@a) = \(@b); # @a and @b now have the same elements
+    \my(@a) = \(@b); # likewise
+    \(my @a) = \(@b); # likewise
+    push @a, 3; # but now @a has an extra element that @b lacks
+    \(@a) = (\$a, \$b, \$c); # @a now contains $a, $b, and $c
+
+Combining that form with C<local> and putting parentheses immediately
+around a hash are forbidden (because it is not clear what they should do):
+
+    \local(@array) = foo(); # WRONG
+    \(%hash)       = bar(); # WRONG
+
+Assignment to references and non-references may be combined in lists and
+conditional ternary expressions, as long as the values on the right-hand
+side are the right type for each element on the left, though this may make
+for obfuscated code:
+
+    (my $tom, \my $dick, \my @harry) = (\1, \2, [1..3]);
+    # $tom is now \1
+    # $dick is now 2 (read-only)
+    # @harry is (1,2,3)
+
+    my $type = ref $thingy;
+    ($type ? $type eq 'ARRAY' ? \@foo : \$bar : $baz) = $thingy;
+
+The C<foreach> loop can also take a reference constructor for its loop
+variable, though the syntax is limited to one of the following, with an
+optional C<my>, C<state>, or C<our> after the backslash:
+
+    \$s
+    \@a
+    \%h
+    \&c
+
+No parentheses are permitted.  This feature is particularly useful for
+arrays-of-arrays, or arrays-of-hashes:
+
+    foreach \my @a (@array_of_arrays) {
+        frobnicate($a[0], $a[-1]);
+    }
+
+    foreach \my %h (@array_of_hashes) {
+        $h{gelastic}++ if $h{type} eq 'funny';
+    }
+
+B<CAVEAT:> Aliasing does not work correctly with closures.  If you try to
+alias lexical variables from an inner subroutine or C<eval>, the aliasing
+will only be visible within that inner sub, and will not affect the outer
+subroutine where the variables are declared.  This bizarre behavior is
+subject to change.
+
+=head1 Declaring a Reference to a Variable
+
+Beginning in v5.26.0, the referencing operator can come after C<my>,
+C<state>, C<our>, or C<local>.  This syntax must be enabled with C<use
+feature 'declared_refs'>.  It is experimental, and will warn by default
+unless C<no warnings 'experimental::refaliasing'> is in effect.
+
+This feature makes these:
+
+    my \$x;
+    our \$y;
+
+equivalent to:
+
+    \my $x;
+    \our $x;
+
+It is intended mainly for use in assignments to references (see
+L</Assigning to References>, above).  It also allows the backslash to be
+used on just some items in a list of declared variables:
+
+    my ($foo, \@bar, \%baz); # equivalent to:  my $foo, \my(@bar, %baz);
 
 =head1 SEE ALSO
 

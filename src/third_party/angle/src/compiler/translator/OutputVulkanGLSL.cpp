@@ -84,7 +84,10 @@ void TOutputVulkanGLSL::writeLayoutQualifier(TIntermTyped *variable)
             storage = EbsStd140;
         }
 
-        blockStorage = getBlockStorageString(storage);
+        if (interfaceBlock->blockStorage() != EbsUnspecified)
+        {
+            blockStorage = getBlockStorageString(storage);
+        }
     }
 
     // Specify matrix packing if necessary.
@@ -133,8 +136,8 @@ void TOutputVulkanGLSL::writeQualifier(TQualifier qualifier,
                                        const TType &type,
                                        const TSymbol *symbol)
 {
-    if (qualifier != EvqUniform && qualifier != EvqAttribute && qualifier != EvqVertexIn &&
-        !sh::IsVarying(qualifier))
+    if (qualifier != EvqUniform && qualifier != EvqBuffer && qualifier != EvqAttribute &&
+        qualifier != EvqVertexIn && !sh::IsVarying(qualifier))
     {
         TOutputGLSLBase::writeQualifier(qualifier, type, symbol);
         return;
@@ -155,7 +158,7 @@ void TOutputVulkanGLSL::writeQualifier(TQualifier qualifier,
     }
 
     TInfoSinkBase &out = objSink();
-    out << "@@ QUALIFIER-" << name.data() << " @@ ";
+    out << "@@ QUALIFIER-" << name.data() << "(" << getMemoryQualifiers(type) << ") @@ ";
 }
 
 void TOutputVulkanGLSL::writeVariableType(const TType &type, const TSymbol *symbol)
@@ -177,6 +180,38 @@ void TOutputVulkanGLSL::writeStructType(const TStructure *structure)
     {
         declareStruct(structure);
         objSink() << ";\n";
+    }
+}
+
+void TOutputVulkanGLSL::visitSymbol(TIntermSymbol *node)
+{
+    TInfoSinkBase &out = objSink();
+
+    // All the special cases are built-ins, so if it's not a built-in we can return early.
+    if (node->variable().symbolType() != SymbolType::BuiltIn)
+    {
+        TOutputGLSL::visitSymbol(node);
+        return;
+    }
+
+    // Some built-ins get a special translation.
+    const ImmutableString &name = node->getName();
+    if (name == "gl_VertexID")
+    {
+        // gl_VertexIndex in Vulkan GLSL has the same semantics as gl_VertexID.
+        out << "gl_VertexIndex";
+    }
+    else if (name == "gl_InstanceID")
+    {
+        // gl_InstanceIndex in Vulkan GLSL is equal to
+        // gl_InstanceID + baseInstance, but in OpenGL ES,
+        // baseInstance is always zero.
+        // (OpenGL ES 3.2 spec page 278 footnote 3)
+        out << "gl_InstanceIndex";
+    }
+    else
+    {
+        TOutputGLSL::visitSymbol(node);
     }
 }
 }  // namespace sh

@@ -10,6 +10,8 @@ and inlines the specified file, producing one HTML file with no external
 dependencies. It recursively inlines the included files.
 """
 
+from __future__ import print_function
+
 import os
 import re
 import sys
@@ -301,8 +303,8 @@ def DoInline(
         filename_expansion_function=filename_expansion_function)
 
   def GetFilepath(src_match, base_path = input_filepath):
-    matches = src_match.groupdict().iteritems()
-    filename = [v for k, v in matches if k.startswith('file') and v][0]
+    filename = [v for k, v in src_match.groupdict().items()
+                if k.startswith('file') and v][0]
 
     if filename.find(':') != -1:
       # filename is probably a URL, which we don't want to bother inlining
@@ -502,10 +504,11 @@ def DoInline(
   # of the text we just inlined.
   flat_text = CheckConditionalElements(flat_text)
 
+  # Allow custom modifications before inlining images.
+  if rewrite_function:
+    flat_text = rewrite_function(input_filepath, flat_text, distribution)
+
   if not preprocess_only:
-    # Allow custom modifications before inlining images.
-    if rewrite_function:
-      flat_text = rewrite_function(input_filepath, flat_text, distribution)
     flat_text = _SRC_RE.sub(SrcReplace, flat_text)
     flat_text = _SRCSET_RE.sub(SrcsetReplace, flat_text)
 
@@ -539,7 +542,7 @@ def InlineToString(input_filename, grd_node, preprocess_only = False,
         strip_whitespace=strip_whitespace,
         rewrite_function=rewrite_function,
         filename_expansion_function=filename_expansion_function).inlined_data
-  except IOError, e:
+  except IOError as e:
     raise Exception("Failed to open %s while trying to flatten %s. (%s)" %
                     (e.filename, input_filename, e.strerror))
 
@@ -579,15 +582,15 @@ def GetResourceFilenames(filename,
         strip_whitespace=False,
         rewrite_function=rewrite_function,
         filename_expansion_function=filename_expansion_function).inlined_files
-  except IOError, e:
+  except IOError as e:
     raise Exception("Failed to open %s while trying to flatten %s. (%s)" %
                     (e.filename, filename, e.strerror))
 
 
 def main():
   if len(sys.argv) <= 2:
-    print "Flattens a HTML file by inlining its external resources.\n"
-    print "html_inline.py inputfile outputfile"
+    print("Flattens a HTML file by inlining its external resources.\n")
+    print("html_inline.py inputfile outputfile")
   else:
     InlineToFile(sys.argv[1], sys.argv[2], None)
 

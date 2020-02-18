@@ -56,16 +56,15 @@ void InsertColorRow(GridLayout* layout,
   color_view->SetSelectable(true);
 
   layout->StartRow(GridLayout::kFixedSize, 0);
-  layout->AddView(label_view.release());
-  layout->AddView(color_view.release());
+  layout->AddView(std::move(label_view));
+  layout->AddView(std::move(color_view));
 }
 
 // Returns a view of two columns where the first contains the identifier names
 // of ui::NativeTheme::ColorId and the second contains the color.
 std::unique_ptr<View> CreateAllColorsView() {
   auto container = std::make_unique<View>();
-  auto* layout = container->SetLayoutManager(
-      std::make_unique<GridLayout>(container.get()));
+  auto* layout = container->SetLayoutManager(std::make_unique<GridLayout>());
   auto* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
                         GridLayout::USE_PREF, 0, 0);
@@ -157,12 +156,6 @@ std::unique_ptr<View> CreateAllColorsView() {
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TableHeaderText));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TableHeaderBackground));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TableHeaderSeparator));
-  InsertColorRow(layout,
-                 COLOR_LABEL_ARGS(kColorId_ResultsTableNormalBackground));
-  InsertColorRow(layout,
-                 COLOR_LABEL_ARGS(kColorId_ResultsTableHoveredBackground));
-  InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ResultsTableNormalText));
-  InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ResultsTableDimmedText));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ThrobberSpinningColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ThrobberWaitingColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ThrobberLightColor));

@@ -67,8 +67,12 @@ grpc_grpclb_request* grpc_grpclb_request_create(const char* lb_service_name) {
   req->has_client_stats = false;
   req->has_initial_request = true;
   req->initial_request.has_name = true;
-  strncpy(req->initial_request.name, lb_service_name,
-          GRPC_GRPCLB_SERVICE_NAME_MAX_LENGTH);
+  // GCC warns (-Wstringop-truncation) because the destination
+  // buffer size is identical to max-size, leading to a potential
+  // char[] with no null terminator.  nanopb can handle it fine,
+  // and parantheses around strncpy silence that compiler warning.
+  (strncpy(req->initial_request.name, lb_service_name,
+           GRPC_GRPCLB_SERVICE_NAME_MAX_LENGTH));
   return req;
 }
 
@@ -107,7 +111,7 @@ static bool encode_drops(pb_ostream_t* stream, const pb_field_t* field,
   return true;
 }
 
-grpc_grpclb_request* grpc_grpclb_load_report_request_create_locked(
+grpc_grpclb_request* grpc_grpclb_load_report_request_create(
     grpc_core::GrpcLbClientStats* client_stats) {
   grpc_grpclb_request* req = static_cast<grpc_grpclb_request*>(
       gpr_zalloc(sizeof(grpc_grpclb_request)));
@@ -122,7 +126,7 @@ grpc_grpclb_request* grpc_grpclb_load_report_request_create_locked(
   req->client_stats.calls_finished_with_drop.funcs.encode = encode_drops;
   grpc_core::UniquePtr<grpc_core::GrpcLbClientStats::DroppedCallCounts>
       drop_counts;
-  client_stats->GetLocked(
+  client_stats->Get(
       &req->client_stats.num_calls_started,
       &req->client_stats.num_calls_finished,
       &req->client_stats.num_calls_finished_with_client_failed_to_send,

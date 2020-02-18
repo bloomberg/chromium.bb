@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "content/public/renderer/worker_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -70,6 +70,9 @@
       next();
     },
 
+    // Note:
+    // During this test expanded objects
+    // do not include the __proto__ property.
     async function testExpandingObjects(next) {
       await clearAndLog(`console.log("before");console.log("text", obj1, obj2);console.log("after");`, 3);
       forceSelect(1);
@@ -78,22 +81,19 @@
       press('ArrowRight');
       dumpFocus(true, 1, true /* skipObjectCheck */);
 
-      // Expand object.
+      // Expand obj1.
       press('ArrowRight');
       dumpFocus(true, 1, true /* skipObjectCheck */);
       await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
       press('ArrowDown');
       dumpFocus(true, 1, true /* skipObjectCheck */);
-      press('ArrowDown');
       press('ArrowDown');
       dumpFocus(true, 1, true /* skipObjectCheck */);
 
-      // Expand array.
+      // Expand obj2.
       press('ArrowRight');
       dumpFocus(true, 1, true /* skipObjectCheck */);
       await ConsoleTestRunner.waitForRemoteObjectsConsoleMessagesPromise();
-      press('ArrowDown');
-      press('ArrowDown');
       press('ArrowDown');
       press('ArrowDown');
       dumpFocus(true, 1, true /* skipObjectCheck */);

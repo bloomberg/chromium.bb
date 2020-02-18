@@ -102,6 +102,14 @@ public interface ToolbarDataProvider {
     int getSecurityLevel();
 
     /**
+     * @param isFocusedFromFakebox If the omnibox focus originated from the fakebox.
+     * @return The current page classification.
+     */
+    default int getPageClassification(boolean isFocusedFromFakebox) {
+        return 0;
+    }
+
+    /**
      * @return The resource ID of the icon that should be displayed or 0 if no icon should be shown.
      */
     @DrawableRes
@@ -135,7 +143,25 @@ public interface ToolbarDataProvider {
     int getSecurityIconColorStateList();
 
     /**
-     * @return Whether or not we should display search terms instead of a URL for query in omnibox.
+     * If the current tab state is eligible for displaying the search query terms instead of the
+     * URL, this extracts the query terms from the current URL.
+     *
+     * @return The search terms. Returns null if the tab is ineligible to display the search terms
+     *         instead of the URL.
      */
-    boolean shouldDisplaySearchTerms();
+    @Nullable
+    default public String getDisplaySearchTerms() {
+        return null;
+    }
+
+    /**
+     * Update the information required to display the search engine logo in the omnibox.
+     *
+     * @param shouldShowSearchEngineLogo True if we should show the search engine logo in the
+     *         omnibox.
+     * @param isSearchEngineGoogle True if the default search engine is Google.
+     * @param searchEngineUrl The url for the search engine, used to fetch the favicon.
+     */
+    void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+            boolean isSearchEngineGoogle, String searchEngineUrl);
 }

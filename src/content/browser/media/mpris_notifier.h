@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
 namespace mpris {
@@ -46,6 +46,8 @@ class CONTENT_EXPORT MprisNotifier
       override {}
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override {}
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override {}
 
   void SetMprisServiceForTesting(mpris::MprisService* service) {
     service_ = service;
@@ -63,8 +65,8 @@ class CONTENT_EXPORT MprisNotifier
   media_session::mojom::MediaSessionInfoPtr session_info_;
 
   // Used to receive updates to the active media controller.
-  mojo::Binding<media_session::mojom::MediaControllerObserver>
-      media_controller_observer_binding_{this};
+  mojo::Receiver<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MprisNotifier);
 };

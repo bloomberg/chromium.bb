@@ -56,12 +56,6 @@ struct CORE_EXPORT CachedDocumentParameters {
   USING_FAST_MALLOC(CachedDocumentParameters);
 
  public:
-  enum class LazyLoadImageEnabledState {
-    kDisabled,
-    kEnabledExplicit,
-    kEnabledAutomatic
-  };
-
   explicit CachedDocumentParameters(Document*);
   CachedDocumentParameters() = default;
 
@@ -72,7 +66,7 @@ struct CORE_EXPORT CachedDocumentParameters {
   network::mojom::ReferrerPolicy referrer_policy;
   SubresourceIntegrity::IntegrityFeatures integrity_features;
   bool lazyload_policy_enforced;
-  LocalFrame::LazyLoadImageEnabledState lazy_load_image_enabled_state;
+  LocalFrame::LazyLoadImageSetting lazy_load_image_setting;
 };
 
 class TokenPreloadScanner {

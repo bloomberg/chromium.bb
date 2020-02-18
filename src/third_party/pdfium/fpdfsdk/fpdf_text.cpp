@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "build/build_config.h"
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/page/cpdf_textobject.h"
@@ -27,7 +28,7 @@
 #include "fpdfsdk/fpdfxfa/cpdfxfa_page.h"
 #endif  // PDF_ENABLE_XFA
 
-#ifdef _WIN32
+#if defined(OS_WIN)
 #include <tchar.h>
 #endif
 
@@ -173,14 +174,14 @@ FPDFText_GetCharIndexAtPos(FPDF_TEXTPAGE text_page,
 }
 
 FPDF_EXPORT int FPDF_CALLCONV FPDFText_GetText(FPDF_TEXTPAGE page,
-                                               int char_start,
+                                               int start_index,
                                                int char_count,
                                                unsigned short* result) {
-  if (!page || char_start < 0 || char_count < 0 || !result)
+  if (!page || start_index < 0 || char_count < 0 || !result)
     return 0;
 
   CPDF_TextPage* textpage = CPDFTextPageFromFPDFTextPage(page);
-  int char_available = textpage->CountChars() - char_start;
+  int char_available = textpage->CountChars() - start_index;
   if (char_available <= 0)
     return 0;
 
@@ -191,7 +192,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFText_GetText(FPDF_TEXTPAGE page,
     return 1;
   }
 
-  WideString str = textpage->GetPageText(char_start, char_count);
+  WideString str = textpage->GetPageText(start_index, char_count);
 
   if (str.GetLength() > static_cast<size_t>(char_count))
     str = str.Left(static_cast<size_t>(char_count));
@@ -399,6 +400,18 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFLink_GetRect(FPDF_PAGELINK link_page,
   *top = rectArray[rect_index].top;
   *bottom = rectArray[rect_index].bottom;
   return true;
+}
+
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDFLink_GetTextRange(FPDF_PAGELINK link_page,
+                      int link_index,
+                      int* start_char_index,
+                      int* char_count) {
+  if (!link_page || link_index < 0)
+    return false;
+
+  CPDF_LinkExtract* page_link = CPDFLinkExtractFromFPDFPageLink(link_page);
+  return page_link->GetTextRange(link_index, start_char_index, char_count);
 }
 
 FPDF_EXPORT void FPDF_CALLCONV FPDFLink_CloseWebLinks(FPDF_PAGELINK link_page) {

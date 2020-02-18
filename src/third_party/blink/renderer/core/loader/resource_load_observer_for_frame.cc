@@ -4,11 +4,12 @@
 
 #include "third_party/blink/renderer/core/loader/resource_load_observer_for_frame.h"
 
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/core/core_probes_inl.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
@@ -21,8 +22,14 @@
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
@@ -34,6 +41,33 @@ ResourceLoadObserverForFrame::ResourceLoadObserverForFrame(
     : frame_or_imported_document_(frame_or_imported_document),
       fetcher_properties_(fetcher_properties) {}
 ResourceLoadObserverForFrame::~ResourceLoadObserverForFrame() = default;
+
+void ResourceLoadObserverForFrame::DidStartRequest(
+    const FetchParameters& params,
+    ResourceType resource_type) {
+  // TODO(yhirano): Consider removing ResourceLoadObserver::DidStartRequest
+  // completely when we remove V8DOMActivityLogger.
+  DocumentLoader* document_loader =
+      frame_or_imported_document_->GetDocumentLoader();
+  if (document_loader && !document_loader->Archive() &&
+      params.Url().IsValid() && !params.IsSpeculativePreload()) {
+    V8DOMActivityLogger* activity_logger = nullptr;
+    const AtomicString& initiator_name = params.Options().initiator_info.name;
+    if (initiator_name == fetch_initiator_type_names::kXmlhttprequest) {
+      activity_logger = V8DOMActivityLogger::CurrentActivityLogger();
+    } else {
+      activity_logger =
+          V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld();
+    }
+    if (activity_logger) {
+      Vector<String> argv = {
+          Resource::ResourceTypeToString(resource_type, initiator_name),
+          params.Url()};
+      activity_logger->LogEvent("blinkRequestResource", argv.size(),
+                                argv.data());
+    }
+  }
+}
 
 void ResourceLoadObserverForFrame::WillSendRequest(
     uint64_t identifier,
@@ -113,7 +147,8 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
                                                response.RemoteIPAddress());
 
   std::unique_ptr<AlternateSignedExchangeResourceInfo> alternate_resource_info;
-  if (RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled() &&
+  if (RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
+          &frame_or_imported_document_->GetDocument()) &&
       response.IsSignedExchangeInnerResponse() &&
       resource->GetType() == ResourceType::kLinkPrefetch &&
       resource->LastResourceResponse()) {
@@ -146,6 +181,14 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
   if (response.IsLegacyTLSVersion()) {
     CountUsage(WebFeature::kLegacyTLSVersionInSubresource);
     frame_client->ReportLegacyTLSVersion(response.CurrentRequestUrl());
+    // For non-main-frame loads, we have to use the main frame's document for
+    // the UKM recorder and source ID.
+    auto& root = frame.LocalFrameRoot();
+    ukm::builders::Net_LegacyTLSVersion(root.GetDocument()->UkmSourceID())
+        .SetIsMainFrame(frame.IsMainFrame())
+        .SetIsSubresource(true)
+        .SetIsAdResource(resource->GetResourceRequest().IsAdResource())
+        .Record(root.GetDocument()->UkmRecorder());
   }
 
   frame.Loader().Progress().IncrementProgress(identifier, response);
@@ -188,11 +231,10 @@ void ResourceLoadObserverForFrame::DidDownloadToBlob(uint64_t identifier,
 
 void ResourceLoadObserverForFrame::DidFinishLoading(
     uint64_t identifier,
-    TimeTicks finish_time,
+    base::TimeTicks finish_time,
     int64_t encoded_data_length,
     int64_t decoded_body_length,
-    bool should_report_corb_blocking,
-    ResponseSource response_source) {
+    bool should_report_corb_blocking) {
   LocalFrame& frame = frame_or_imported_document_->GetFrame();
   DocumentLoader& document_loader =
       frame_or_imported_document_->GetMasterDocumentLoader();
@@ -210,9 +252,7 @@ void ResourceLoadObserverForFrame::DidFinishLoading(
       idleness_detector->OnDidLoadResource();
     }
   }
-  if (response_source == ResponseSource::kNotFromMemoryCache) {
-    document.CheckCompleted();
-  }
+  document.CheckCompleted();
 }
 
 void ResourceLoadObserverForFrame::DidFailLoading(const KURL&,
@@ -234,7 +274,7 @@ void ResourceLoadObserverForFrame::DidFailLoading(const KURL&,
   Document& document = frame_or_imported_document_->GetDocument();
   if (auto* interactive_detector = InteractiveDetector::From(document)) {
     // We have not yet recorded load_finish_time. Pass nullopt here; we will
-    // call CurrentTimeTicksInSeconds lazily when we need it.
+    // call base::TimeTicks::Now() lazily when we need it.
     interactive_detector->OnResourceLoadEnd(base::nullopt);
   }
   if (LocalFrame* frame = document.GetFrame()) {

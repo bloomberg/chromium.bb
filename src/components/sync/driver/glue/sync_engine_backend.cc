@@ -17,6 +17,9 @@
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync/base/invalidation_adapter.h"
 #include "components/sync/base/sync_base_switches.h"
+#include "components/sync/driver/configure_context.h"
+#include "components/sync/driver/model_type_controller.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
@@ -27,6 +30,10 @@
 #include "components/sync/engine/sync_backend_registrar.h"
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/engine/sync_manager_factory.h"
+#include "components/sync/engine_impl/sync_encryption_handler_impl.h"
+#include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
+#include "components/sync/nigori/nigori_model_type_processor.h"
+#include "components/sync/nigori/nigori_sync_bridge_impl.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/user_share.h"
 
@@ -66,10 +73,7 @@ void RecordPerModelTypeInvalidation(int model_type, bool is_grouped) {
 SyncEngineBackend::SyncEngineBackend(const std::string& name,
                                      const base::FilePath& sync_data_folder,
                                      const base::WeakPtr<SyncEngineImpl>& host)
-    : name_(name),
-      sync_data_folder_(sync_data_folder),
-      host_(host),
-      weak_ptr_factory_(this) {
+    : name_(name), sync_data_folder_(sync_data_folder), host_(host) {
   DCHECK(host);
   // This is constructed on the UI thread but used from the sync thread.
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -104,8 +108,7 @@ void SyncEngineBackend::DoRefreshTypes(ModelTypeSet types) {
 void SyncEngineBackend::OnInitializationComplete(
     const WeakHandle<JsBackend>& js_backend,
     const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-    bool success,
-    const ModelTypeSet restored_types) {
+    bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!success) {
@@ -126,20 +129,49 @@ void SyncEngineBackend::OnInitializationComplete(
   js_backend_ = js_backend;
   debug_info_listener_ = debug_info_listener;
 
+  ModelTypeConnector* model_type_connector =
+      sync_manager_->GetModelTypeConnector();
+  if (nigori_controller_) {
+    // Having non-null |nigori_controller_| means that USS implementation of
+    // Nigori is enabled.
+    // The controller for Nigori is not exposed to the UI thread or the
+    // DataTypeManager, so we need to start it here manually.
+    ConfigureContext configure_context;
+    configure_context.authenticated_account_id = authenticated_account_id_;
+    configure_context.cache_guid = sync_manager_->cache_guid();
+    // TODO(crbug.com/922900): investigate whether we want to use
+    // STORAGE_IN_MEMORY in Butter mode.
+    configure_context.storage_option = STORAGE_ON_DISK;
+    configure_context.configuration_start_time = base::Time::Now();
+    nigori_controller_->LoadModels(configure_context, base::DoNothing());
+    DCHECK_EQ(nigori_controller_->state(), DataTypeController::MODEL_LOADED);
+    // TODO(crbug.com/922900): Do we need to call RegisterNonBlockingType() for
+    // Nigori?
+    model_type_connector->ConnectNonBlockingType(
+        NIGORI, nigori_controller_->ActivateManuallyForNigori());
+  } else {
+    // Control types don't have DataTypeControllers, but they need to have
+    // update handlers registered in ModelTypeRegistry.
+    for (ModelType control_type : ControlTypes()) {
+      model_type_connector->RegisterDirectoryType(control_type, GROUP_PASSIVE);
+    }
+  }
+
   // Before proceeding any further, we need to download the control types and
   // purge any partial data (ie. data downloaded for a type that was on its way
   // to being initially synced, but didn't quite make it.).  The following
   // configure cycle will take care of this.  It depends on the registrar state
   // which we initialize below to ensure that we don't perform any downloads if
   // all control types have already completed their initial sync.
-  registrar_->SetInitialTypes(restored_types);
+  registrar_->SetInitialTypes(sync_manager_->InitialSyncEndedTypes());
 
-  ConfigureReason reason = restored_types.Empty()
+  ConfigureReason reason = sync_manager_->InitialSyncEndedTypes().Empty()
                                ? CONFIGURE_REASON_NEW_CLIENT
                                : CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
 
-  ModelTypeSet new_control_types =
-      registrar_->ConfigureDataTypes(ControlTypes(), ModelTypeSet());
+  ModelTypeSet new_control_types = registrar_->ConfigureDataTypes(
+      /*types_to_add=*/ControlTypes(),
+      /*types_to_remove=*/ModelTypeSet());
 
   ModelSafeRoutingInfo routing_info;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
@@ -305,9 +337,25 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   // Load the previously persisted set of invalidation versions into memory.
   last_invalidation_versions_ = params.invalidation_versions;
 
+  authenticated_account_id_ = params.authenticated_account_id;
+
   DCHECK(!registrar_);
   DCHECK(params.registrar);
   registrar_ = std::move(params.registrar);
+
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSNigori)) {
+    auto nigori_processor = std::make_unique<NigoriModelTypeProcessor>();
+    nigori_controller_ = std::make_unique<ModelTypeController>(
+        NIGORI, std::make_unique<ForwardingModelTypeControllerDelegate>(
+                    nigori_processor->GetControllerDelegate().get()));
+    sync_encryption_handler_ = std::make_unique<NigoriSyncBridgeImpl>(
+        std::move(nigori_processor), &encryptor_);
+  } else {
+    sync_encryption_handler_ = std::make_unique<SyncEncryptionHandlerImpl>(
+        &user_share_, &encryptor_, params.restored_key_for_bootstrapping,
+        params.restored_keystore_key_for_bootstrapping,
+        base::BindRepeating(&Nigori::GenerateScryptSalt));
+  }
 
   sync_manager_ = params.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
@@ -329,11 +377,9 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   args.change_delegate = registrar_.get();  // as SyncManager::ChangeDelegate
   args.authenticated_account_id = params.authenticated_account_id;
   args.invalidator_client_id = params.invalidator_client_id;
-  args.restored_key_for_bootstrapping = params.restored_key_for_bootstrapping;
-  args.restored_keystore_key_for_bootstrapping =
-      params.restored_keystore_key_for_bootstrapping;
   args.engine_components_factory = std::move(params.engine_components_factory);
-  args.encryptor = &encryptor_;
+  args.user_share = &user_share_;
+  args.encryption_handler = sync_encryption_handler_.get();
   args.unrecoverable_error_handler = params.unrecoverable_error_handler;
   args.report_unrecoverable_error_function =
       params.report_unrecoverable_error_function;
@@ -387,7 +433,11 @@ void SyncEngineBackend::DoInitialProcessControlTypes() {
   DVLOG(1) << "Initilalizing Control Types";
 
   // Initialize encryption.
-  sync_manager_->GetEncryptionHandler()->Init();
+  if (!sync_manager_->GetEncryptionHandler()->Init()) {
+    host_.Call(FROM_HERE,
+               &SyncEngineImpl::HandleInitializationFailureOnFrontendLoop);
+    return;
+  }
 
   // Note: experiments are currently handled via SBH::AddExperimentalTypes,
   // which is called at the end of every sync cycle.
@@ -459,8 +509,11 @@ void SyncEngineBackend::DoShutdown(ShutdownReason reason) {
 
   registrar_ = nullptr;
 
-  if (reason == DISABLE_SYNC)
+  if (reason == DISABLE_SYNC) {
+    // TODO(crbug.com/922900): We may want to remove Nigori data from the
+    // storage if USS Nigori implementation is enabled.
     syncable::Directory::DeleteDirectoryFiles(sync_data_folder_);
+  }
 
   host_.Reset();
   weak_ptr_factory_.InvalidateWeakPtrs();

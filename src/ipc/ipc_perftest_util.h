@@ -10,9 +10,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/process_metrics.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_executor.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
@@ -89,7 +89,7 @@ class MojoPerfTestClient {
   int Run(MojoHandle handle);
 
  private:
-  base::MessageLoop main_message_loop_;
+  base::SingleThreadTaskExecutor main_task_executor_;
   std::unique_ptr<ChannelReflectorListener> listener_;
   std::unique_ptr<Channel> channel_;
   mojo::ScopedMessagePipeHandle handle_;

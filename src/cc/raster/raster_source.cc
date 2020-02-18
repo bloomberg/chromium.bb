@@ -245,6 +245,10 @@ gfx::Rect RasterSource::RecordedViewport() const {
   return recorded_viewport_;
 }
 
+bool RasterSource::HasText() const {
+  return display_list_ && display_list_->HasText();
+}
+
 void RasterSource::AsValueInto(base::trace_event::TracedValue* array) const {
   if (display_list_.get())
     viz::TracedValue::AppendIDRef(display_list_.get(), array);
@@ -253,6 +257,13 @@ void RasterSource::AsValueInto(base::trace_event::TracedValue* array) const {
 void RasterSource::DidBeginTracing() {
   if (display_list_.get())
     display_list_->EmitTraceSnapshot();
+}
+
+std::vector<scoped_refptr<PaintWorkletInput>>
+RasterSource::GetPaintWorkletInputs() const {
+  if (!display_list_)
+    return {};
+  return display_list_->discardable_image_map().paint_worklet_inputs();
 }
 
 RasterSource::PlaybackSettings::PlaybackSettings() = default;

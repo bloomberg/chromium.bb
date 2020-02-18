@@ -1,7 +1,6 @@
 package YAML::Error;
-use YAML::Mo;
 
-our $VERSION = '0.81';
+use YAML::Mo;
 
 has 'code';
 has 'type' => default => sub {'Error'};
@@ -33,11 +32,9 @@ sub error_messages {
     $error_messages;
 }
 
-%$error_messages = map {s/^\s+//;$_} split "\n", <<'...';
+%$error_messages = map {s/^\s+//;s/\\n/\n/;$_} split "\n", <<'...';
 YAML_PARSE_ERR_BAD_CHARS
   Invalid characters in stream. This parser only supports printable ASCII
-YAML_PARSE_ERR_NO_FINAL_NEWLINE
-  Stream does not end with newline character
 YAML_PARSE_ERR_BAD_MAJOR_VERSION
   Can't parse a %s document with a 1.0 parser
 YAML_PARSE_WARN_BAD_MINOR_VERSION
@@ -70,6 +67,8 @@ YAML_DUMP_ERR_FILE_CONCATENATE
   Can't concatenate to YAML file %s
 YAML_DUMP_ERR_FILE_OUTPUT
   Couldn't open %s for output:\n%s
+YAML_DUMP_ERR_FILE_OUTPUT_CLOSE
+  Error closing %s:\n%s
 YAML_DUMP_ERR_NO_HEADER
   With UseHeader=0, the node must be a plain hash or array
 YAML_DUMP_WARN_BAD_NODE_TYPE
@@ -107,7 +106,7 @@ YAML_DUMP_ERR_BAD_REGEXP
 YAML_LOAD_ERR_BAD_MAP_ELEMENT
   Invalid element in map
 YAML_LOAD_WARN_DUPLICATE_KEY
-  Duplicate map key found. Ignoring.
+  Duplicate map key '%s' found. Ignoring.
 YAML_LOAD_ERR_BAD_SEQ_ELEMENT
   Invalid element in sequence
 YAML_PARSE_ERR_INLINE_MAP
@@ -150,11 +149,11 @@ YAML_LOAD_WARN_GLOB_IO
   Can't load an IO filehandle. Yet!!!
 ...
 
-%line_adjust = map {($_, 1)} 
+%line_adjust = map {($_, 1)}
   qw(YAML_PARSE_ERR_BAD_MAJOR_VERSION
-     YAML_PARSE_WARN_BAD_MINOR_VERSION 
-     YAML_PARSE_ERR_TEXT_AFTER_INDICATOR 
-     YAML_PARSE_ERR_NO_ANCHOR 
+     YAML_PARSE_WARN_BAD_MINOR_VERSION
+     YAML_PARSE_ERR_TEXT_AFTER_INDICATOR
+     YAML_PARSE_ERR_NO_ANCHOR
      YAML_PARSE_ERR_MANY_EXPLICIT
      YAML_PARSE_ERR_MANY_IMPLICIT
      YAML_PARSE_ERR_MANY_ANCHOR
@@ -190,33 +189,3 @@ package YAML::Warning;
 our @ISA = 'YAML::Error';
 
 1;
-
-__END__
-
-=head1 NAME
-
-YAML::Error - Error formatting class for YAML modules
-
-=head1 SYNOPSIS
-
-    $self->die('YAML_PARSE_ERR_NO_ANCHOR', $alias);
-    $self->warn('YAML_LOAD_WARN_DUPLICATE_KEY');
-
-=head1 DESCRIPTION
-
-This module provides a C<die> and a C<warn> facility.
-
-=head1 AUTHOR
-
-Ingy döt Net <ingy@cpan.org>
-
-=head1 COPYRIGHT
-
-Copyright (c) 2006, 2011-2012. Ingy döt Net. All rights reserved.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
-
-See L<http://www.perl.com/perl/misc/Artistic.html>
-
-=cut

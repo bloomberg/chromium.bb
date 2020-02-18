@@ -29,11 +29,11 @@
 #include "components/prefs/pref_member.h"
 #include "components/security_state/core/security_state.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/drag_controller.h"
@@ -54,16 +54,12 @@ class StarView;
 namespace autofill {
 class LocalCardMigrationIconView;
 class SaveCardIconView;
-}
-
-namespace send_tab_to_self {
-class SendTabToSelfIconView;
-}
+}  // namespace autofill
 
 namespace views {
 class ImageButton;
 class Label;
-}
+}  // namespace views
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -77,7 +73,7 @@ class LocationBarView : public LocationBar,
                         public LocationBarTesting,
                         public views::View,
                         public views::DragController,
-                        public gfx::AnimationDelegate,
+                        public views::AnimationDelegateViews,
                         public ChromeOmniboxEditController,
                         public DropdownBarHostDelegate,
                         public views::ButtonListener,
@@ -96,7 +92,7 @@ class LocationBarView : public LocationBar,
 
     // Returns ContentSettingBubbleModelDelegate.
     virtual ContentSettingBubbleModelDelegate*
-        GetContentSettingBubbleModelDelegate() = 0;
+    GetContentSettingBubbleModelDelegate() = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -155,12 +151,6 @@ class LocationBarView : public LocationBar,
 
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view() {
     return local_card_migration_icon_view_;
-  }
-
-  // The send tab to self icon. It may not be visible.  It will be null when
-  // |browser_| is null.
-  send_tab_to_self::SendTabToSelfIconView* send_tab_to_self_icon_view() {
-    return send_tab_to_self_icon_view_;
   }
 
   OmniboxPageActionIconContainerView*
@@ -353,7 +343,7 @@ class LocationBarView : public LocationBar,
   content::WebContents* GetWebContentsForPageActionIconView() override;
   bool IsLocationBarUserInputInProgress() const override;
 
-  // gfx::AnimationDelegate:
+  // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
@@ -419,10 +409,6 @@ class LocationBarView : public LocationBar,
 
   // The icon for the local card migration prompt.
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
-      nullptr;
-
-  // The send tab to self icon. It will be null when |browser_| is null.
-  send_tab_to_self::SendTabToSelfIconView* send_tab_to_self_icon_view_ =
       nullptr;
 
   // The star for bookmarking.  It will be null when |browser_| is null.

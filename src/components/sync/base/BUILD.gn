@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 
@@ -62,6 +61,8 @@ jumbo_static_library("base") {
     "unrecoverable_error_handler.h",
     "unrecoverable_error_info.cc",
     "unrecoverable_error_info.h",
+    "user_demographics.cc",
+    "user_demographics.h",
     "user_selectable_type.cc",
     "user_selectable_type.h",
     "weak_handle.cc",
@@ -74,6 +75,7 @@ jumbo_static_library("base") {
     "//base",
     "//components/invalidation/public",
     "//components/sync/protocol",
+    "//third_party/metrics_proto",
   ]
   deps = [
     "//base:i18n",

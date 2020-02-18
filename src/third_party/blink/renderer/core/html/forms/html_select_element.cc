@@ -106,6 +106,9 @@ HTMLSelectElement::~HTMLSelectElement() = default;
 
 // static
 bool HTMLSelectElement::CanAssignToSelectSlot(const Node& node) {
+  // Even if options/optgroups are not rendered as children of LayoutMenuList,
+  // we still need to add them to the flat tree through slotting since we need
+  // their ComputedStyle for popup rendering.
   return node.HasTagName(kOptionTag) || node.HasTagName(kOptgroupTag) ||
          node.HasTagName(kHrTag);
 }
@@ -915,7 +918,7 @@ void HTMLSelectElement::ScrollToOptionTask() {
   GetDocument().UpdateStyleAndLayout();
   if (!GetLayoutObject() || !GetLayoutObject()->IsListBox())
     return;
-  LayoutRect bounds = option->BoundingBoxForScrollIntoView();
+  PhysicalRect bounds = option->BoundingBoxForScrollIntoView();
   ToLayoutListBox(GetLayoutObject())->ScrollToRect(bounds);
 }
 
@@ -2019,8 +2022,8 @@ void HTMLSelectElement::AttachLayoutTree(AttachContext& context) {
   }
 }
 
-void HTMLSelectElement::DetachLayoutTree(const AttachContext& context) {
-  HTMLFormControlElementWithState::DetachLayoutTree(context);
+void HTMLSelectElement::DetachLayoutTree(bool performing_reattach) {
+  HTMLFormControlElementWithState::DetachLayoutTree(performing_reattach);
   if (popup_)
     popup_->DisconnectClient();
   popup_is_visible_ = false;
@@ -2062,7 +2065,7 @@ class HTMLSelectElement::PopupUpdater : public MutationObserver::Delegate {
       return;
     for (const auto& record : records) {
       if (record->type() == "attributes") {
-        const Element& element = *ToElement(record->target());
+        const auto& element = *To<Element>(record->target());
         if (record->oldValue() == element.getAttribute(record->attributeName()))
           continue;
       } else if (record->type() == "characterData") {

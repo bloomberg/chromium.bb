@@ -11,6 +11,7 @@
 #include "modules/rtp_rtcp/source/rtp_packet_received.h"
 
 #include <stddef.h>
+
 #include <cstdint>
 #include <vector>
 
@@ -51,6 +52,8 @@ void RtpPacketReceived::GetHeader(RTPHeader* header) const {
           &header->extension.transmissionTimeOffset);
   header->extension.hasAbsoluteSendTime =
       GetExtension<AbsoluteSendTime>(&header->extension.absoluteSendTime);
+  header->extension.absolute_capture_time =
+      GetExtension<AbsoluteCaptureTimeExtension>();
   header->extension.hasTransportSequenceNumber =
       GetExtension<TransportSequenceNumberV2>(
           &header->extension.transportSequenceNumber,

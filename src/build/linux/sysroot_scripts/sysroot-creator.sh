@@ -45,6 +45,7 @@ if [ -z "${DEBIAN_PACKAGES:-}" ]; then
 fi
 
 readonly HAS_ARCH_AMD64=${HAS_ARCH_AMD64:=0}
+readonly HAS_ARCH_AMD64MULTILIB=${HAS_ARCH_AMD64MULTILIB:=0}
 readonly HAS_ARCH_I386=${HAS_ARCH_I386:=0}
 readonly HAS_ARCH_ARM=${HAS_ARCH_ARM:=0}
 readonly HAS_ARCH_ARM64=${HAS_ARCH_ARM64:=0}
@@ -62,6 +63,7 @@ readonly RELEASE_FILE="Release"
 readonly RELEASE_FILE_GPG="Release.gpg"
 
 readonly DEBIAN_DEP_LIST_AMD64="generated_package_lists/${DIST}.amd64"
+readonly DEBIAN_DEP_LIST_AMD64MULTILIB="generated_package_lists/${DIST}.amd64-multilib"
 readonly DEBIAN_DEP_LIST_I386="generated_package_lists/${DIST}.i386"
 readonly DEBIAN_DEP_LIST_ARM="generated_package_lists/${DIST}.arm"
 readonly DEBIAN_DEP_LIST_ARM64="generated_package_lists/${DIST}.arm64"
@@ -92,6 +94,19 @@ Usage() {
 }
 
 
+DownloadOrCopyNonUniqueFilename() {
+  # Use this function instead of DownloadOrCopy when the url uniquely
+  # identifies the file, but the filename (excluding the directory)
+  # does not.
+  local url="$1"
+  local dest="$2"
+
+  local hash="$(echo "$url" | sha256sum | cut -d' ' -f1)"
+
+  DownloadOrCopy "${url}" "${dest}.${hash}"
+  cp "${dest}.${hash}" "$dest"
+}
+
 DownloadOrCopy() {
   if [ -f "$2" ] ; then
     echo "$2 already in place"
@@ -116,27 +131,33 @@ DownloadOrCopy() {
 
 
 SetEnvironmentVariables() {
-  ARCH=""
-  echo $1 | grep -qs Amd64$ && ARCH=AMD64
-  if [ -z "$ARCH" ]; then
-    echo $1 | grep -qs I386$ && ARCH=I386
-  fi
-  if [ -z "$ARCH" ]; then
-    echo $1 | grep -qs Mips64el$ && ARCH=MIPS64EL
-  fi
-  if [ -z "$ARCH" ]; then
-    echo $1 | grep -qs Mips$ && ARCH=MIPS
-  fi
-  if [ -z "$ARCH" ]; then
-    echo $1 | grep -qs ARM$ && ARCH=ARM
-  fi
-  if [ -z "$ARCH" ]; then
-    echo $1 | grep -qs ARM64$ && ARCH=ARM64
-  fi
-  if [ -z "${ARCH}" ]; then
-    echo "ERROR: Unable to determine architecture based on: $1"
-    exit 1
-  fi
+  case $1 in
+    *Amd64)
+      ARCH=AMD64
+      ;;
+    *Amd64Multilib)
+      ARCH=AMD64MULTILIB
+      ;;
+    *I386)
+      ARCH=I386
+      ;;
+    *Mips64el)
+      ARCH=MIPS64EL
+      ;;
+    *Mips)
+      ARCH=MIPS
+      ;;
+    *ARM)
+      ARCH=ARM
+      ;;
+    *ARM64)
+      ARCH=ARM64
+      ;;
+    *)
+      echo "ERROR: Unable to determine architecture based on: $1"
+      exit 1
+      ;;
+  esac
   ARCH_LOWER=$(echo $ARCH | tr '[:upper:]' '[:lower:]')
 }
 
@@ -208,7 +229,7 @@ GeneratePackageListDist() {
   local package_file_arch="${repo_name}/binary-${arch}/Packages.${PACKAGES_EXT}"
   local package_list_arch="${repo_basedir}/${package_file_arch}"
 
-  DownloadOrCopy "${package_list_arch}" "${package_list}"
+  DownloadOrCopyNonUniqueFilename "${package_list_arch}" "${package_list}"
   VerifyPackageListing "${package_file_arch}" "${package_list}" ${repo} ${dist}
   ExtractPackageXz "${package_list}" "${TMP_PACKAGE_LIST}" ${repo}
 }
@@ -234,6 +255,12 @@ GeneratePackageListCommon() {
 GeneratePackageListAmd64() {
   GeneratePackageListCommon "$1" amd64 "${DEBIAN_PACKAGES}
     ${DEBIAN_PACKAGES_X86:=} ${DEBIAN_PACKAGES_AMD64:=}"
+}
+
+GeneratePackageListAmd64Multilib() {
+  GeneratePackageListCommon "$1" amd64 "${DEBIAN_PACKAGES}
+    ${DEBIAN_PACKAGES_X86:=} ${DEBIAN_PACKAGES_AMD64:=}
+    ${DEBIAN_PACKAGES_AMD64MULTILIB:=}"
 }
 
 GeneratePackageListI386() {
@@ -321,6 +348,11 @@ HacksAndPatchesCommon() {
 
 
 HacksAndPatchesAmd64() {
+  HacksAndPatchesCommon x86_64 linux-gnu strip
+}
+
+
+HacksAndPatchesAmd64Multilib() {
   HacksAndPatchesCommon x86_64 linux-gnu strip
 }
 
@@ -455,6 +487,11 @@ VerifyLibraryDepsAmd64() {
 }
 
 
+VerifyLibraryDepsAmd64Multilib() {
+  VerifyLibraryDepsCommon x86_64 linux-gnu
+}
+
+
 VerifyLibraryDepsI386() {
   VerifyLibraryDepsCommon i386 linux-gnu
 }
@@ -497,6 +534,26 @@ BuildSysrootAmd64() {
   CleanupJailSymlinks
   HacksAndPatchesAmd64
   VerifyLibraryDepsAmd64
+  CreateTarBall
+}
+
+#@
+#@ BuildSysrootAmd64Multilib
+#@
+#@    Build everything and package it
+BuildSysrootAmd64Multilib() {
+  if [ "$HAS_ARCH_AMD64MULTILIB" = "0" ]; then
+    return
+  fi
+  ClearInstallDir
+  local package_file="${DEBIAN_DEP_LIST_AMD64MULTILIB}"
+  GeneratePackageListAmd64Multilib "$package_file"
+  local files_and_sha256sums="$(cat ${package_file})"
+  StripChecksumsFromPackageList "$package_file"
+  InstallIntoSysroot ${files_and_sha256sums}
+  CleanupJailSymlinks
+  HacksAndPatchesAmd64Multilib
+  VerifyLibraryDepsAmd64Multilib
   CreateTarBall
 }
 
@@ -606,6 +663,7 @@ BuildSysrootMips64el() {
 #@    Build sysroot images for all architectures
 BuildSysrootAll() {
   RunCommand BuildSysrootAmd64
+  RunCommand BuildSysrootAmd64Multilib
   RunCommand BuildSysrootI386
   RunCommand BuildSysrootARM
   RunCommand BuildSysrootARM64
@@ -616,7 +674,7 @@ BuildSysrootAll() {
 UploadSysroot() {
   local sha=$(sha1sum "${TARBALL}" | awk '{print $1;}')
   set -x
-  gsutil cp -a public-read "${TARBALL}" \
+  gsutil.py cp -a public-read "${TARBALL}" \
       "gs://chrome-linux-sysroot/toolchain/$sha/"
   set +x
 }
@@ -626,6 +684,16 @@ UploadSysroot() {
 #@
 UploadSysrootAmd64() {
   if [ "$HAS_ARCH_AMD64" = "0" ]; then
+    return
+  fi
+  UploadSysroot "$@"
+}
+
+#@
+#@ UploadSysrootAmd64Multilib
+#@
+UploadSysrootAmd64Multilib() {
+  if [ "$HAS_ARCH_AMD64MULTILIB" = "0" ]; then
     return
   fi
   UploadSysroot "$@"
@@ -687,6 +755,7 @@ UploadSysrootMips64el() {
 #@    Upload sysroot image for all architectures
 UploadSysrootAll() {
   RunCommand UploadSysrootAmd64 "$@"
+  RunCommand UploadSysrootAmd64Multilib "$@"
   RunCommand UploadSysrootI386 "$@"
   RunCommand UploadSysrootARM "$@"
   RunCommand UploadSysrootARM64 "$@"
@@ -728,8 +797,8 @@ VerifyPackageListing() {
 
   CheckForDebianGPGKeyring
 
-  DownloadOrCopy ${release_list} ${release_file}
-  DownloadOrCopy ${release_list_gpg} ${release_file_gpg}
+  DownloadOrCopyNonUniqueFilename ${release_list} ${release_file}
+  DownloadOrCopyNonUniqueFilename ${release_list_gpg} ${release_file_gpg}
   echo "Verifying: ${release_file} with ${release_file_gpg}"
   set -x
   gpgv --keyring "${KEYRING_FILE}" "${release_file_gpg}" "${release_file}"
@@ -786,6 +855,9 @@ GeneratePackageList() {
 PrintArchitectures() {
   if [ "$HAS_ARCH_AMD64" = "1" ]; then
     echo Amd64
+  fi
+  if [ "$HAS_ARCH_AMD64MULTILIB" = "1" ]; then
+    echo Amd64Multilib
   fi
   if [ "$HAS_ARCH_I386" = "1" ]; then
     echo I386

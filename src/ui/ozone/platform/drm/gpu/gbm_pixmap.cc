@@ -36,12 +36,20 @@ int GbmPixmap::GetDmaBufFd(size_t plane) const {
   return buffer_->GetPlaneFd(plane);
 }
 
-int GbmPixmap::GetDmaBufPitch(size_t plane) const {
+uint32_t GbmPixmap::GetDmaBufPitch(size_t plane) const {
   return buffer_->GetPlaneStride(plane);
 }
 
-int GbmPixmap::GetDmaBufOffset(size_t plane) const {
+size_t GbmPixmap::GetDmaBufOffset(size_t plane) const {
   return buffer_->GetPlaneOffset(plane);
+}
+
+size_t GbmPixmap::GetDmaBufPlaneSize(size_t plane) const {
+  return buffer_->GetPlaneSize(plane);
+}
+
+size_t GbmPixmap::GetNumberOfPlanes() const {
+  return buffer_->GetNumPlanes();
 }
 
 uint64_t GbmPixmap::GetBufferFormatModifier() const {

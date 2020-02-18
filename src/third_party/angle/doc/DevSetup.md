@@ -78,14 +78,16 @@ Ensure `depot_tools` is in your path as it provides ninja.
 
 ### Building with Visual Studio
 
-Run `scripts/msvs_projects.py` to generate a Visual Studio solution in `out/sln/ANGLE.sln`.
-This script runs GN and consolidates all the targets in `out` into a single meta-solution.
+To generate the Visual Studio solution in `out/Debug/angle-debug.sln`:
+```
+gn gen out/Debug --sln=angle-debug --ide=vs<2017/2019>
+```
 
 In Visual Studio:
- 1. Open the ANGLE solution file `out/sln/ANGLE.sln`.
- 2. The configurations found in your `out` directory will be mapped to configurations in the configuration manager.  For compatibility reasons all configurations are listed as 64-bits.
- 3. Right click the "all" solution and select build.  "Build Solution" is not functional with GN; instead build one target at a time."
-Once the build completes the output directory for your selected configuration (e.g. `out/Release_x64`) will contain the required libraries and dlls to build and run an OpenGL ES 2.0 application.  ANGLE executables (tests and samples) are under out/sln.
+ 1. Open the ANGLE solution file `out/Debug/angle-debug.sln`.
+ 2. Right click the "all" solution and select build.  "Build Solution" is not functional with GN; instead build one target at a time."
+
+Once the build completes all ANGLE libraries, tests, and samples will be located in out/Debug.
 
 ### Building ANGLE for Android
 Building ANGLE for Android is heavily dependent on the Chromium toolchain. It is not currently possible to build ANGLE for Android without a Chromium checkout. See http://anglebug.com/2344 for more details on why.
@@ -125,8 +127,9 @@ adb shell am start -a android.intent.action.MAIN -n org.chromium.native_test/.Na
 ```
 After the tests finish, get the results with
 ```
-adb pull /sdcard/chromium_tests_root/third_party/deqp/src/data/TestResults.qpa .
+adb pull /sdcard/chromium_tests_root/third_party/angle/third_party/deqp/src/data/TestResults.qpa .
 ```
+Note: this location might change, one can double-check with `adb logcat -d | grep qpa`.
 
 In order to run GPU telemetry tests, build `chrome_public_apk` target. Then follow [GPU Testing](http://www.chromium.org/developers/testing/gpu-testing#TOC-Running-the-GPU-Tests-Locally) doc, using `--browser=android-chromium` argument. Make sure to set your `CHROMIUM_OUT_DIR` environment variable, so that your browser is found, otherwise the stock one will run.
 

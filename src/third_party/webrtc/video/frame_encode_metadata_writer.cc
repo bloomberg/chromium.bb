@@ -11,19 +11,36 @@
 #include "video/frame_encode_metadata_writer.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "absl/memory/memory.h"
 #include "common_video/h264/sps_vui_rewriter.h"
 #include "modules/include/module_common_types_public.h"
 #include "modules/video_coding/include/video_coding_defines.h"
-#include "rtc_base/copy_on_write_buffer.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/ref_counted_object.h"
 #include "rtc_base/time_utils.h"
 
 namespace webrtc {
 namespace {
 const int kMessagesThrottlingThreshold = 2;
 const int kThrottleRatio = 100000;
+
+class EncodedImageBufferWrapper : public EncodedImageBufferInterface {
+ public:
+  explicit EncodedImageBufferWrapper(rtc::Buffer&& buffer)
+      : buffer_(std::move(buffer)) {}
+
+  const uint8_t* data() const override { return buffer_.data(); }
+  uint8_t* data() override { return buffer_.data(); }
+  size_t size() const override { return buffer_.size(); }
+
+  void Realloc(size_t t) override { RTC_NOTREACHED(); }
+
+ private:
+  rtc::Buffer buffer_;
+};
+
 }  // namespace
 
 FrameEncodeMetadataWriter::TimingFramesLayerInfo::TimingFramesLayerInfo() =
@@ -80,6 +97,7 @@ void FrameEncodeMetadataWriter::OnEncodeStarted(const VideoFrame& frame) {
   metadata.timestamp_us = frame.timestamp_us();
   metadata.rotation = frame.rotation();
   metadata.color_space = frame.color_space();
+  metadata.packet_infos = frame.packet_infos();
   for (size_t si = 0; si < num_spatial_layers; ++si) {
     RTC_DCHECK(timing_frames_info_[si].frames.empty() ||
                rtc::TimeDiff(
@@ -197,7 +215,7 @@ FrameEncodeMetadataWriter::UpdateBitstream(
     return nullptr;
   }
 
-  rtc::CopyOnWriteBuffer modified_buffer;
+  rtc::Buffer modified_buffer;
   std::unique_ptr<RTPFragmentationHeader> modified_fragmentation =
       absl::make_unique<RTPFragmentationHeader>();
   modified_fragmentation->CopyFrom(*fragmentation);
@@ -207,17 +225,22 @@ FrameEncodeMetadataWriter::UpdateBitstream(
   SpsVuiRewriter::ParseOutgoingBitstreamAndRewriteSps(
       buffer, fragmentation->fragmentationVectorSize,
       fragmentation->fragmentationOffset, fragmentation->fragmentationLength,
-      &modified_buffer, modified_fragmentation->fragmentationOffset,
+      encoded_image->ColorSpace(), &modified_buffer,
+      modified_fragmentation->fragmentationOffset,
       modified_fragmentation->fragmentationLength);
 
-  encoded_image->SetEncodedData(modified_buffer);
+  encoded_image->SetEncodedData(
+      new rtc::RefCountedObject<EncodedImageBufferWrapper>(
+          std::move(modified_buffer)));
 
   return modified_fragmentation;
 }
 
 void FrameEncodeMetadataWriter::Reset() {
   rtc::CritScope cs(&lock_);
-  timing_frames_info_.clear();
+  for (auto& info : timing_frames_info_) {
+    info.frames.clear();
+  }
   last_timing_frame_time_ms_ = -1;
   reordered_frames_logged_messages_ = 0;
   stalled_encoder_logged_messages_ = 0;
@@ -242,20 +265,21 @@ FrameEncodeMetadataWriter::ExtractEncodeStartTimeAndFillMetadata(
           EncodedImageCallback::DropReason::kDroppedByEncoder);
       metadata_list->pop_front();
     }
+
+    encoded_image->content_type_ =
+        (codec_settings_.mode == VideoCodecMode::kScreensharing)
+            ? VideoContentType::SCREENSHARE
+            : VideoContentType::UNSPECIFIED;
+
     if (!metadata_list->empty() &&
         metadata_list->front().rtp_timestamp == encoded_image->Timestamp()) {
       result.emplace(metadata_list->front().encode_start_time_ms);
-
       encoded_image->capture_time_ms_ =
           metadata_list->front().timestamp_us / 1000;
       encoded_image->ntp_time_ms_ = metadata_list->front().ntp_time_ms;
       encoded_image->rotation_ = metadata_list->front().rotation;
       encoded_image->SetColorSpace(metadata_list->front().color_space);
-      encoded_image->content_type_ =
-          (codec_settings_.mode == VideoCodecMode::kScreensharing)
-              ? VideoContentType::SCREENSHARE
-              : VideoContentType::UNSPECIFIED;
-
+      encoded_image->SetPacketInfos(metadata_list->front().packet_infos);
       metadata_list->pop_front();
     } else {
       ++reordered_frames_logged_messages_;

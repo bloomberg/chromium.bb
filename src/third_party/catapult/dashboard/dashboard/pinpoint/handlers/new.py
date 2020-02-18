@@ -7,6 +7,7 @@ from __future__ import division
 from __future__ import absolute_import
 
 import json
+import logging
 
 from dashboard.api import api_request_handler
 from dashboard.common import bot_configurations
@@ -14,6 +15,7 @@ from dashboard.common import utils
 from dashboard.pinpoint.models import change
 from dashboard.pinpoint.models import job as job_module
 from dashboard.pinpoint.models import quest as quest_module
+from dashboard.pinpoint.models import scheduler
 
 
 _ERROR_BUG_ID = 'Bug ID must be an integer.'
@@ -33,7 +35,8 @@ class New(api_request_handler.ApiRequestHandler):
 
   def Post(self):
     job = _CreateJob(self.request)
-    job.Start()
+
+    scheduler.Schedule(job)
 
     return {
         'jobId': job.job_id,
@@ -44,7 +47,10 @@ class New(api_request_handler.ApiRequestHandler):
 def _CreateJob(request):
   """Creates a new Pinpoint job from WebOb request arguments."""
   original_arguments = request.params.mixed()
+  logging.debug('Received Params: %s', original_arguments)
+
   arguments = _ArgumentsWithConfiguration(original_arguments)
+  logging.debug('Updated Params: %s', arguments)
 
   # Validate arguments and convert them to canonical internal representation.
   quests = _GenerateQuests(arguments)
@@ -77,6 +83,8 @@ def _ArgumentsWithConfiguration(original_arguments):
   configuration = original_arguments.get('configuration')
   if configuration:
     default_arguments = bot_configurations.Get(configuration)
+    logging.info('Bot Config: %s', default_arguments)
+
     if default_arguments:
       for k, v in list(default_arguments.items()):
         new_arguments.setdefault(k, v)
@@ -169,6 +177,8 @@ def _GenerateQuests(arguments):
   else:
     # TODO: Require users to specify a list of quests. Do not imply defaults.
     target = arguments.get('target')
+    logging.debug('Target: %s', target)
+
     if target in ('performance_test_suite', 'performance_webview_test_suite',
                   'telemetry_perf_tests', 'telemetry_perf_webview_tests'):
       quest_classes = (quest_module.FindIsolate, quest_module.RunTelemetryTest,

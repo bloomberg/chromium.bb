@@ -10,8 +10,8 @@
 #include "chrome/common/content_settings_renderer.mojom.h"
 #include "chrome/common/prerender.mojom.h"
 #include "chrome/common/search.mojom.h"
-#include "components/autofill/content/common/autofill_agent.mojom.h"
-#include "components/dom_distiller/content/common/distiller_page_notifier_service.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
+#include "components/dom_distiller/content/common/mojom/distiller_page_notifier_service.mojom.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "components/subresource_filter/content/mojom/subresource_filter_agent.mojom.h"
@@ -26,13 +26,17 @@
 #include "third_party/blink/public/mojom/document_metadata/copyless_paste.mojom.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
+#endif
+
 #if defined(OS_MACOSX)
 #include "components/spellcheck/common/spellcheck_panel.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/common/mojo/app_window.mojom.h"
-#include "extensions/common/mojo/guest_view.mojom.h"
+#include "extensions/common/mojom/app_window.mojom.h"
+#include "extensions/common/mojom/guest_view.mojom.h"
 #endif
 
 const service_manager::Manifest& GetChromeContentRendererOverlayManifest() {
@@ -71,10 +75,15 @@ const service_manager::Manifest& GetChromeContentRendererOverlayManifest() {
                 spellcheck::mojom::SpellCheckPanel,
 #endif
                 subresource_filter::mojom::SubresourceFilterAgent>())
+#if defined(OS_CHROMEOS)
         .RequireInterfaceFilterCapability_Deprecated(
             "content_browser", "navigation:frame", "cellular_setup")
         .RequireInterfaceFilterCapability_Deprecated(
             "content_browser", "navigation:frame", "multidevice_setup")
+        .RequireInterfaceFilterCapability_Deprecated(
+            "content_browser", "navigation:frame",
+            chromeos::network_config::mojom::kNetworkConfigCapability)
+#endif
         .Build()
   };
   return *manifest;

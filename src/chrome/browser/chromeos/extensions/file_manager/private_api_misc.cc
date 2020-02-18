@@ -23,7 +23,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -35,6 +34,7 @@
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
 #include "chrome/browser/chromeos/fileapi/recent_model.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -62,17 +62,17 @@
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/zoom/page_zoom.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "google_apis/drive/auth_service.h"
 #include "net/base/hex_utils.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
@@ -341,8 +341,7 @@ FileManagerPrivateInternalZipSelectionFunction::Run() {
        base::Bind(&FileManagerPrivateInternalZipSelectionFunction::OnZipDone,
                   this),
        src_dir, src_relative_paths, dest_file))
-      ->Start(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      ->Start(content::GetSystemConnector());
   return RespondLater();
 }
 
@@ -386,7 +385,7 @@ FileManagerPrivateRequestWebStoreAccessTokenFunction::Run() {
   std::vector<std::string> scopes;
   scopes.emplace_back(kCWSScope);
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(chrome_details_.GetProfile());
 
   if (!identity_manager) {
@@ -730,7 +729,7 @@ FileManagerPrivateInternalSharePathsWithCrostiniFunction::Run() {
     paths.emplace_back(cracked.path());
   }
 
-  crostini::CrostiniSharePath::GetForProfile(profile)->SharePaths(
+  guest_os::GuestOsSharePath::GetForProfile(profile)->SharePaths(
       params->vm_name, std::move(paths), params->persist,
       base::BindOnce(&FileManagerPrivateInternalSharePathsWithCrostiniFunction::
                          SharePathsCallback,
@@ -757,7 +756,7 @@ FileManagerPrivateInternalUnsharePathWithCrostiniFunction::Run() {
           profile, render_frame_host());
   storage::FileSystemURL cracked =
       file_system_context->CrackURL(GURL(params->url));
-  crostini::CrostiniSharePath::GetForProfile(profile)->UnsharePath(
+  guest_os::GuestOsSharePath::GetForProfile(profile)->UnsharePath(
       params->vm_name, cracked.path(), /*unpersist=*/true,
       base::BindOnce(
           &FileManagerPrivateInternalUnsharePathWithCrostiniFunction::
@@ -780,12 +779,12 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   Profile* profile = Profile::FromBrowserContext(browser_context());
 
-  auto* crostini_share_path =
-      crostini::CrostiniSharePath::GetForProfile(profile);
+  auto* guest_os_share_path =
+      guest_os::GuestOsSharePath::GetForProfile(profile);
   bool first_for_session = params->observe_first_for_session &&
-                           crostini_share_path->GetAndSetFirstForSession();
+                           guest_os_share_path->GetAndSetFirstForSession();
   auto shared_paths =
-      crostini_share_path->GetPersistedSharedPaths(params->vm_name);
+      guest_os_share_path->GetPersistedSharedPaths(params->vm_name);
   auto entries = std::make_unique<base::ListValue>();
   for (const base::FilePath& path : shared_paths) {
     std::string mount_name;
@@ -808,7 +807,7 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
     // All shared paths should be directories.  Even if this is not true,
     // it is fine for foreground/js/crostini.js class to think so. We
     // verify that the paths are in fact valid directories before calling
-    // seneschal/9p in CrostiniSharePath::CallSeneschalSharePath().
+    // seneschal/9p in GuestOsSharePath::CallSeneschalSharePath().
     entry->SetBoolean("fileIsDirectory", true);
     entries->Append(std::move(entry));
   }
@@ -1087,8 +1086,8 @@ FileManagerPrivateDetectCharacterEncodingFunction::Run() {
   std::string input = net::HexDecode(params->bytes);
   std::string encoding;
   bool success = base::DetectEncoding(input, &encoding);
-  return RespondNow(OneArgument(
-      std::make_unique<base::Value>(success ? encoding : std::string())));
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
+      success ? std::move(encoding) : std::string())));
 }
 
 }  // namespace extensions

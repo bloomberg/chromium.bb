@@ -25,7 +25,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
@@ -188,11 +188,7 @@ class ServiceWorkerContainerTest : public PageTestBase {
   }
 
   void SetPageURL(const String& url) {
-    // For URL completion.
-    GetDocument().SetURL(KURL(NullURL(), url));
-
-    // The basis for security checks.
-    GetDocument().SetSecurityOrigin(SecurityOrigin::CreateFromString(url));
+    NavigateTo(KURL(NullURL(), url));
 
     if (url.StartsWith("https://") || url.StartsWith("http://localhost/")) {
       GetDocument().SetSecureContextStateForTesting(

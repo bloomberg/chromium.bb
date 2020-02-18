@@ -124,6 +124,7 @@ grpc_channel_credentials_release_type grpc_channel_credentials_release_import;
 grpc_google_default_credentials_create_type grpc_google_default_credentials_create_import;
 grpc_set_ssl_roots_override_callback_type grpc_set_ssl_roots_override_callback_import;
 grpc_ssl_credentials_create_type grpc_ssl_credentials_create_import;
+grpc_ssl_credentials_create_ex_type grpc_ssl_credentials_create_ex_import;
 grpc_call_credentials_release_type grpc_call_credentials_release_import;
 grpc_composite_channel_credentials_create_type grpc_composite_channel_credentials_create_import;
 grpc_composite_call_credentials_create_type grpc_composite_call_credentials_create_import;
@@ -133,6 +134,7 @@ grpc_service_account_jwt_access_credentials_create_type grpc_service_account_jwt
 grpc_google_refresh_token_credentials_create_type grpc_google_refresh_token_credentials_create_import;
 grpc_access_token_credentials_create_type grpc_access_token_credentials_create_import;
 grpc_google_iam_credentials_create_type grpc_google_iam_credentials_create_import;
+grpc_sts_credentials_create_type grpc_sts_credentials_create_import;
 grpc_metadata_credentials_create_from_plugin_type grpc_metadata_credentials_create_from_plugin_import;
 grpc_secure_channel_create_type grpc_secure_channel_create_import;
 grpc_server_credentials_release_type grpc_server_credentials_release_import;
@@ -172,6 +174,7 @@ grpc_byte_buffer_destroy_type grpc_byte_buffer_destroy_import;
 grpc_byte_buffer_reader_init_type grpc_byte_buffer_reader_init_import;
 grpc_byte_buffer_reader_destroy_type grpc_byte_buffer_reader_destroy_import;
 grpc_byte_buffer_reader_next_type grpc_byte_buffer_reader_next_import;
+grpc_byte_buffer_reader_peek_type grpc_byte_buffer_reader_peek_import;
 grpc_byte_buffer_reader_readall_type grpc_byte_buffer_reader_readall_import;
 grpc_raw_byte_buffer_from_reader_type grpc_raw_byte_buffer_from_reader_import;
 gpr_log_severity_string_type gpr_log_severity_string_import;
@@ -392,6 +395,7 @@ void grpc_rb_load_imports(HMODULE library) {
   grpc_google_default_credentials_create_import = (grpc_google_default_credentials_create_type) GetProcAddress(library, "grpc_google_default_credentials_create");
   grpc_set_ssl_roots_override_callback_import = (grpc_set_ssl_roots_override_callback_type) GetProcAddress(library, "grpc_set_ssl_roots_override_callback");
   grpc_ssl_credentials_create_import = (grpc_ssl_credentials_create_type) GetProcAddress(library, "grpc_ssl_credentials_create");
+  grpc_ssl_credentials_create_ex_import = (grpc_ssl_credentials_create_ex_type) GetProcAddress(library, "grpc_ssl_credentials_create_ex");
   grpc_call_credentials_release_import = (grpc_call_credentials_release_type) GetProcAddress(library, "grpc_call_credentials_release");
   grpc_composite_channel_credentials_create_import = (grpc_composite_channel_credentials_create_type) GetProcAddress(library, "grpc_composite_channel_credentials_create");
   grpc_composite_call_credentials_create_import = (grpc_composite_call_credentials_create_type) GetProcAddress(library, "grpc_composite_call_credentials_create");
@@ -401,6 +405,7 @@ void grpc_rb_load_imports(HMODULE library) {
   grpc_google_refresh_token_credentials_create_import = (grpc_google_refresh_token_credentials_create_type) GetProcAddress(library, "grpc_google_refresh_token_credentials_create");
   grpc_access_token_credentials_create_import = (grpc_access_token_credentials_create_type) GetProcAddress(library, "grpc_access_token_credentials_create");
   grpc_google_iam_credentials_create_import = (grpc_google_iam_credentials_create_type) GetProcAddress(library, "grpc_google_iam_credentials_create");
+  grpc_sts_credentials_create_import = (grpc_sts_credentials_create_type) GetProcAddress(library, "grpc_sts_credentials_create");
   grpc_metadata_credentials_create_from_plugin_import = (grpc_metadata_credentials_create_from_plugin_type) GetProcAddress(library, "grpc_metadata_credentials_create_from_plugin");
   grpc_secure_channel_create_import = (grpc_secure_channel_create_type) GetProcAddress(library, "grpc_secure_channel_create");
   grpc_server_credentials_release_import = (grpc_server_credentials_release_type) GetProcAddress(library, "grpc_server_credentials_release");
@@ -440,6 +445,7 @@ void grpc_rb_load_imports(HMODULE library) {
   grpc_byte_buffer_reader_init_import = (grpc_byte_buffer_reader_init_type) GetProcAddress(library, "grpc_byte_buffer_reader_init");
   grpc_byte_buffer_reader_destroy_import = (grpc_byte_buffer_reader_destroy_type) GetProcAddress(library, "grpc_byte_buffer_reader_destroy");
   grpc_byte_buffer_reader_next_import = (grpc_byte_buffer_reader_next_type) GetProcAddress(library, "grpc_byte_buffer_reader_next");
+  grpc_byte_buffer_reader_peek_import = (grpc_byte_buffer_reader_peek_type) GetProcAddress(library, "grpc_byte_buffer_reader_peek");
   grpc_byte_buffer_reader_readall_import = (grpc_byte_buffer_reader_readall_type) GetProcAddress(library, "grpc_byte_buffer_reader_readall");
   grpc_raw_byte_buffer_from_reader_import = (grpc_raw_byte_buffer_from_reader_type) GetProcAddress(library, "grpc_raw_byte_buffer_from_reader");
   gpr_log_severity_string_import = (gpr_log_severity_string_type) GetProcAddress(library, "gpr_log_severity_string");

@@ -137,8 +137,8 @@ void GrVkImage::setImageLayout(const GrVkGpu* gpu, VkImageLayout newLayout,
     VkImageMemoryBarrier imageMemoryBarrier = {
         VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,          // sType
         nullptr,                                         // pNext
-        srcAccessMask,                                   // outputMask
-        dstAccessMask,                                   // inputMask
+        srcAccessMask,                                   // srcAccessMask
+        dstAccessMask,                                   // dstAccessMask
         currentLayout,                                   // oldLayout
         newLayout,                                       // newLayout
         srcQueueFamilyIndex,                             // srcQueueFamilyIndex
@@ -157,7 +157,10 @@ bool GrVkImage::InitImageInfo(const GrVkGpu* gpu, const ImageDesc& imageDesc, Gr
     if (0 == imageDesc.fWidth || 0 == imageDesc.fHeight) {
         return false;
     }
-    VkImage image = 0;
+    if ((imageDesc.fIsProtected == GrProtected::kYes) && !gpu->vkCaps().supportsProtectedMemory()) {
+        return false;
+    }
+    VkImage image = VK_NULL_HANDLE;
     GrVkAlloc alloc;
 
     bool isLinear = VK_IMAGE_TILING_LINEAR == imageDesc.fImageTiling;
@@ -173,10 +176,14 @@ bool GrVkImage::InitImageInfo(const GrVkGpu* gpu, const ImageDesc& imageDesc, Gr
     SkASSERT(VK_IMAGE_TILING_OPTIMAL == imageDesc.fImageTiling ||
              VK_SAMPLE_COUNT_1_BIT == vkSamples);
 
+    VkImageCreateFlags createflags = 0;
+    if (imageDesc.fIsProtected == GrProtected::kYes || gpu->protectedContext()) {
+        createflags |= VK_IMAGE_CREATE_PROTECTED_BIT;
+    }
     const VkImageCreateInfo imageCreateInfo = {
         VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,         // sType
         nullptr,                                     // pNext
-        0,                                           // VkImageCreateFlags
+        createflags,                                 // VkImageCreateFlags
         imageDesc.fImageType,                        // VkImageType
         imageDesc.fFormat,                           // VkFormat
         { imageDesc.fWidth, imageDesc.fHeight, 1 },  // VkExtent3D
@@ -206,6 +213,8 @@ bool GrVkImage::InitImageInfo(const GrVkGpu* gpu, const ImageDesc& imageDesc, Gr
     info->fFormat = imageDesc.fFormat;
     info->fLevelCount = imageDesc.fLevels;
     info->fCurrentQueueFamily = VK_QUEUE_FAMILY_IGNORED;
+    info->fProtected =
+            (createflags & VK_IMAGE_CREATE_PROTECTED_BIT) ? GrProtected::kYes : GrProtected::kNo;
     return true;
 }
 

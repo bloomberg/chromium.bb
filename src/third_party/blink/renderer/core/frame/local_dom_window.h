@@ -61,7 +61,6 @@ class MessageEvent;
 class Modulator;
 class Navigator;
 class Screen;
-class ScriptedTaskQueueController;
 class ScriptPromise;
 class ScriptState;
 class ScrollToOptions;
@@ -218,8 +217,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // Acessibility Object Model
   ScriptPromise getComputedAccessibleNode(ScriptState*, Element*);
 
-  ScriptedTaskQueueController* taskQueue() const;
-
   // WebKit animation extensions
   int requestAnimationFrame(V8FrameRequestCallback*);
   int webkitRequestAnimationFrame(V8FrameRequestCallback*);
@@ -281,7 +278,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   void DispatchPostMessage(
       MessageEvent* event,
-      scoped_refptr<UserGestureToken> token,
       scoped_refptr<const SecurityOrigin> intended_target_origin,
       std::unique_ptr<SourceLocation> location);
 

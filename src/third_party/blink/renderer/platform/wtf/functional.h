@@ -31,7 +31,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread_checker.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
@@ -62,8 +62,8 @@ namespace WTF {
 // WTF::Bind(), WTF::BindRepeating and base::{Once,Repeating}Callback should
 // be used for same-thread closures only, i.e. the closures must be created,
 // executed and destructed on the same thread.
-// Use CrossThreadBind() and CrossThreadBindOnce() if the function/task is
-// called or destructed on a (potentially) different thread from the current
+// Use CrossThreadBindOnce() and CrossThreadBindRepeating() if the function/task
+// is called or destructed on a (potentially) different thread from the current
 // thread.
 
 // WTF::Bind() / WTF::BindRepeating() and move semantics

@@ -74,7 +74,7 @@
             {
                 "domain": "Page",
                 "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled",
-                            "getAppManifest", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot", "getInstallabilityErrors"],
+                            "getAppManifest", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot", "getInstallabilityErrors", "setInterceptFileChooserDialog", "handleFileChooser"],
                 "async": ["getResourceContent", "searchInResource"],
                 "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "navigationRequested"]
             },
@@ -127,7 +127,10 @@
     },
 
     "encoding_lib": {
-        "header": "third_party/inspector_protocol/encoding/encoding.h",
-        "namespace": ["inspector_protocol_encoding"]
+        "namespace": "inspector_protocol_encoding"
+    },
+
+    "bindings_lib": {
+        "namespace": "inspector_protocol_bindings"
     }
 }

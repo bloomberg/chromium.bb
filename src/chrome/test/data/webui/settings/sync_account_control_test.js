@@ -253,7 +253,7 @@ cr.define('settings_sync_account_control', function() {
       assertVisible(testElement.$$('#turn-off'), true);
       assertVisible(testElement.$$('#sync-error-button'), false);
 
-      testElement.$$('#avatar-row .secondary-button').click();
+      testElement.$$('#avatar-row #turn-off').click();
       Polymer.dom.flush();
 
       assertEquals(settings.getCurrentRoute(), settings.routes.SIGN_OUT);

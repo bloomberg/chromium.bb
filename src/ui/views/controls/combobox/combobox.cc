@@ -117,9 +117,6 @@ int GetAdjacentIndex(ui::ComboboxModel* model, int increment, int index) {
 
 }  // namespace
 
-// static
-const char Combobox::kViewClassName[] = "views/Combobox";
-
 // Adapts a ui::ComboboxModel to a ui::MenuModel.
 class Combobox::ComboboxMenuModel : public ui::MenuModel {
  public:
@@ -356,10 +353,6 @@ gfx::Size Combobox::CalculatePreferredSize() const {
   int total_width = std::max(kMinComboboxWidth, content_size_.width()) +
                     insets.width() + kComboboxArrowContainerWidth;
   return gfx::Size(total_width, content_size_.height() + insets.height());
-}
-
-const char* Combobox::GetClassName() const {
-  return kViewClassName;
 }
 
 bool Combobox::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {

@@ -11,10 +11,10 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/mojo_utils.h"
 #include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
 #include "net/base/net_errors.h"
@@ -150,7 +150,7 @@ class WilcoDtcSupportdWebRequestServiceTest : public testing::Test {
 
   std::unique_ptr<WilcoDtcSupportdWebRequestService> web_request_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 }  // namespace

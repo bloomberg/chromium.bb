@@ -8,7 +8,7 @@
 #include <limits>
 
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_constants.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_header_table.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_required_insert_count.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 
@@ -30,58 +30,9 @@ QpackProgressiveDecoder::QpackProgressiveDecoder(
       base_(0),
       required_insert_count_so_far_(0),
       prefix_decoded_(false),
+      blocked_(false),
       decoding_(true),
       error_detected_(false) {}
-
-// static
-bool QpackProgressiveDecoder::DecodeRequiredInsertCount(
-    uint64_t encoded_required_insert_count,
-    uint64_t max_entries,
-    uint64_t total_number_of_inserts,
-    uint64_t* required_insert_count) {
-  if (encoded_required_insert_count == 0) {
-    *required_insert_count = 0;
-    return true;
-  }
-
-  // |max_entries| is calculated by dividing an unsigned 64-bit integer by 32,
-  // precluding all calculations in this method from overflowing.
-  DCHECK_LE(max_entries, std::numeric_limits<uint64_t>::max() / 32);
-
-  if (encoded_required_insert_count > 2 * max_entries) {
-    return false;
-  }
-
-  *required_insert_count = encoded_required_insert_count - 1;
-  DCHECK_LT(*required_insert_count, std::numeric_limits<uint64_t>::max() / 16);
-
-  uint64_t current_wrapped = total_number_of_inserts % (2 * max_entries);
-  DCHECK_LT(current_wrapped, std::numeric_limits<uint64_t>::max() / 16);
-
-  if (current_wrapped >= *required_insert_count + max_entries) {
-    // Required Insert Count wrapped around 1 extra time.
-    *required_insert_count += 2 * max_entries;
-  } else if (current_wrapped + max_entries < *required_insert_count) {
-    // Decoder wrapped around 1 extra time.
-    current_wrapped += 2 * max_entries;
-  }
-
-  if (*required_insert_count >
-      std::numeric_limits<uint64_t>::max() - total_number_of_inserts) {
-    return false;
-  }
-
-  *required_insert_count += total_number_of_inserts;
-
-  // Prevent underflow, also disallow invalid value 0 for Required Insert Count.
-  if (current_wrapped >= *required_insert_count) {
-    return false;
-  }
-
-  *required_insert_count -= current_wrapped;
-
-  return true;
-}
 
 void QpackProgressiveDecoder::Decode(QuicStringPiece data) {
   DCHECK(decoding_);
@@ -93,45 +44,46 @@ void QpackProgressiveDecoder::Decode(QuicStringPiece data) {
   // Decode prefix byte by byte until the first (and only) instruction is
   // decoded.
   while (!prefix_decoded_) {
+    DCHECK(!blocked_);
+
     prefix_decoder_->Decode(data.substr(0, 1));
+    if (error_detected_) {
+      return;
+    }
+
     data = data.substr(1);
     if (data.empty()) {
       return;
     }
   }
 
-  instruction_decoder_.Decode(data);
+  if (blocked_) {
+    buffer_.append(data.data(), data.size());
+  } else {
+    DCHECK(buffer_.empty());
+
+    instruction_decoder_.Decode(data);
+  }
 }
 
 void QpackProgressiveDecoder::EndHeaderBlock() {
   DCHECK(decoding_);
   decoding_ = false;
 
-  if (error_detected_) {
-    return;
+  if (!blocked_) {
+    FinishDecoding();
   }
-
-  if (!instruction_decoder_.AtInstructionBoundary()) {
-    OnError("Incomplete header block.");
-    return;
-  }
-
-  if (!prefix_decoded_) {
-    OnError("Incomplete header data prefix.");
-    return;
-  }
-
-  if (required_insert_count_ != required_insert_count_so_far_) {
-    OnError("Required Insert Count too large.");
-    return;
-  }
-
-  decoder_stream_sender_->SendHeaderAcknowledgement(stream_id_);
-  handler_->OnDecodingCompleted();
 }
 
 bool QpackProgressiveDecoder::OnInstructionDecoded(
     const QpackInstruction* instruction) {
+  if (instruction == QpackPrefixInstruction()) {
+    return DoPrefixInstruction();
+  }
+
+  DCHECK(prefix_decoded_);
+  DCHECK_LE(required_insert_count_, header_table_->inserted_entry_count());
+
   if (instruction == QpackIndexedHeaderFieldInstruction()) {
     return DoIndexedHeaderFieldInstruction();
   }
@@ -144,11 +96,8 @@ bool QpackProgressiveDecoder::OnInstructionDecoded(
   if (instruction == QpackLiteralHeaderFieldPostBaseInstruction()) {
     return DoLiteralHeaderFieldPostBaseInstruction();
   }
-  if (instruction == QpackLiteralHeaderFieldInstruction()) {
-    return DoLiteralHeaderFieldInstruction();
-  }
-  DCHECK_EQ(instruction, QpackPrefixInstruction());
-  return DoPrefixInstruction();
+  DCHECK_EQ(instruction, QpackLiteralHeaderFieldInstruction());
+  return DoLiteralHeaderFieldInstruction();
 }
 
 void QpackProgressiveDecoder::OnError(QuicStringPiece error_message) {
@@ -156,6 +105,21 @@ void QpackProgressiveDecoder::OnError(QuicStringPiece error_message) {
 
   error_detected_ = true;
   handler_->OnDecodingErrorDetected(error_message);
+}
+
+void QpackProgressiveDecoder::OnInsertCountReachedThreshold() {
+  DCHECK(blocked_);
+
+  if (!buffer_.empty()) {
+    instruction_decoder_.Decode(buffer_);
+    buffer_.clear();
+  }
+
+  blocked_ = false;
+
+  if (!decoding_) {
+    FinishDecoding();
+  }
 }
 
 bool QpackProgressiveDecoder::DoIndexedHeaderFieldInstruction() {
@@ -179,7 +143,7 @@ bool QpackProgressiveDecoder::DoIndexedHeaderFieldInstruction() {
     auto entry =
         header_table_->LookupEntry(/* is_static = */ false, absolute_index);
     if (!entry) {
-      OnError("Dynamic table entry not found.");
+      OnError("Dynamic table entry already evicted.");
       return false;
     }
 
@@ -218,7 +182,7 @@ bool QpackProgressiveDecoder::DoIndexedHeaderFieldPostBaseInstruction() {
   auto entry =
       header_table_->LookupEntry(/* is_static = */ false, absolute_index);
   if (!entry) {
-    OnError("Dynamic table entry not found.");
+    OnError("Dynamic table entry already evicted.");
     return false;
   }
 
@@ -247,7 +211,7 @@ bool QpackProgressiveDecoder::DoLiteralHeaderFieldNameReferenceInstruction() {
     auto entry =
         header_table_->LookupEntry(/* is_static = */ false, absolute_index);
     if (!entry) {
-      OnError("Dynamic table entry not found.");
+      OnError("Dynamic table entry already evicted.");
       return false;
     }
 
@@ -286,7 +250,7 @@ bool QpackProgressiveDecoder::DoLiteralHeaderFieldPostBaseInstruction() {
   auto entry =
       header_table_->LookupEntry(/* is_static = */ false, absolute_index);
   if (!entry) {
-    OnError("Dynamic table entry not found.");
+    OnError("Dynamic table entry already evicted.");
     return false;
   }
 
@@ -304,7 +268,7 @@ bool QpackProgressiveDecoder::DoLiteralHeaderFieldInstruction() {
 bool QpackProgressiveDecoder::DoPrefixInstruction() {
   DCHECK(!prefix_decoded_);
 
-  if (!DecodeRequiredInsertCount(
+  if (!QpackDecodeRequiredInsertCount(
           prefix_decoder_->varint(), header_table_->max_entries(),
           header_table_->inserted_entry_count(), &required_insert_count_)) {
     OnError("Error decoding Required Insert Count.");
@@ -320,7 +284,40 @@ bool QpackProgressiveDecoder::DoPrefixInstruction() {
 
   prefix_decoded_ = true;
 
+  if (required_insert_count_ > header_table_->inserted_entry_count()) {
+    blocked_ = true;
+    header_table_->RegisterObserver(this, required_insert_count_);
+  }
+
   return true;
+}
+
+void QpackProgressiveDecoder::FinishDecoding() {
+  DCHECK(buffer_.empty());
+  DCHECK(!blocked_);
+  DCHECK(!decoding_);
+
+  if (error_detected_) {
+    return;
+  }
+
+  if (!instruction_decoder_.AtInstructionBoundary()) {
+    OnError("Incomplete header block.");
+    return;
+  }
+
+  if (!prefix_decoded_) {
+    OnError("Incomplete header data prefix.");
+    return;
+  }
+
+  if (required_insert_count_ != required_insert_count_so_far_) {
+    OnError("Required Insert Count too large.");
+    return;
+  }
+
+  decoder_stream_sender_->SendHeaderAcknowledgement(stream_id_);
+  handler_->OnDecodingCompleted();
 }
 
 bool QpackProgressiveDecoder::DeltaBaseToBase(bool sign,

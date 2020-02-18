@@ -16,12 +16,12 @@
 
 #include "src/trace_processor/sqlite3_str_split.h"
 
-#include <sqlite3.h>
 #include <string>
 #include "perfetto/base/logging.h"
 #include "src/trace_processor/scoped_db.h"
+#include "src/trace_processor/sqlite.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 namespace perfetto {
 namespace trace_processor {

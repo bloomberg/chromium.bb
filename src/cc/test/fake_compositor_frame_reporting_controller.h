@@ -15,7 +15,8 @@ namespace cc {
 class FakeCompositorFrameReportingController
     : public CompositorFrameReportingController {
  public:
-  FakeCompositorFrameReportingController();
+  explicit FakeCompositorFrameReportingController(
+      bool is_single_threaded = false);
 
   FakeCompositorFrameReportingController(
       const FakeCompositorFrameReportingController& controller) = delete;
@@ -28,6 +29,9 @@ class FakeCompositorFrameReportingController
   void DidCommit() override;
   void WillActivate() override;
   void DidActivate() override;
+  void DidSubmitCompositorFrame(uint32_t frame_token) override;
+  void DidPresentCompositorFrame(uint32_t frame_token,
+                                 base::TimeTicks presentation_time) override;
 };
 }  // namespace cc
 

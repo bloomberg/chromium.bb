@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_service_manager_listener.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/test_utils.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
@@ -60,8 +60,7 @@ class SafeXmlParserTest : public InProcessBrowserTest {
     }
 
     data_decoder::ParseXml(
-        content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-        xml.as_string(),
+        content::GetSystemConnector(), xml.as_string(),
         base::BindOnce(&SafeXmlParserTest::XmlParsingDone,
                        base::Unretained(this), run_loop.QuitClosure(),
                        std::move(expected_value)),
@@ -101,7 +100,13 @@ IN_PROC_BROWSER_TEST_F(SafeXmlParserTest, Parse) {
 }
 
 // Tests that a new service is created for each SafeXmlParser::Parse() call.
-IN_PROC_BROWSER_TEST_F(SafeXmlParserTest, Isolation) {
+// Flaky on ChromeOS. See https://crbug.com/979606
+#if defined(OS_CHROMEOS)
+#define MAYBE_Isolation DISABLED_Isolation
+#else
+#define MAYBE_Isolation Isolation
+#endif
+IN_PROC_BROWSER_TEST_F(SafeXmlParserTest, MAYBE_Isolation) {
   constexpr size_t kParseCount = 5;
   for (size_t i = 0; i < kParseCount; i++)
     TestParse(kTestXml, kTestJson);

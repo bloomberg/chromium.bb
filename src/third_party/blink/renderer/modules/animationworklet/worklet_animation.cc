@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/modules/animationworklet/css_animation_worklet.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -56,6 +57,12 @@ bool ConvertAnimationEffects(
 
   if (keyframe_effects.IsEmpty()) {
     error_string = "Effects array must be non-empty";
+    return false;
+  }
+
+  if (keyframe_effects.size() > 1 &&
+      !RuntimeEnabledFeatures::GroupEffectEnabled()) {
+    error_string = "Multiple effects are not currently supported";
     return false;
   }
 
@@ -262,7 +269,7 @@ WorkletAnimation::WorkletAnimation(
   effect_timings_ = std::make_unique<WorkletAnimationEffectTimings>(timings);
 
   if (timeline_->IsScrollTimeline())
-    ToScrollTimeline(timeline_)->AttachAnimation();
+    timeline_->AnimationAttached(nullptr);
 }
 
 String WorkletAnimation::playState() {
@@ -503,7 +510,7 @@ void WorkletAnimation::UpdateCompositingState() {
   } else if (play_state_ == Animation::kRunning) {
     // TODO(majidvp): If keyframes have changed then it may be possible to now
     // run the animation on compositor. The current logic does not allow this
-    // switch from main to compositor to happen.
+    // switch from main to compositor to happen. https://crbug.com/972691.
     if (!running_on_main_thread_) {
       if (!UpdateOnCompositor()) {
         // When an animation that is running on compositor loses the target, it
@@ -535,6 +542,14 @@ void WorkletAnimation::StartOnMain() {
 
 bool WorkletAnimation::StartOnCompositor() {
   DCHECK(IsMainThread());
+  // There is no need to proceed if an animation has already started on main
+  // thread.
+  // TODO(majidvp): If keyframes have changed then it may be possible to now
+  // run the animation on compositor. The current logic does not allow this
+  // switch from main to compositor to happen. https://crbug.com/972691.
+  if (running_on_main_thread_)
+    return false;
+
   if (effects_.size() > 1) {
     // Compositor doesn't support multiple effects but they can be run via main.
     return false;
@@ -677,6 +692,10 @@ bool WorkletAnimation::IsCurrentTimeInitialized() const {
 //
 // Changing scroll-linked animation start_time initialization is under
 // consideration here: https://github.com/w3c/csswg-drafts/issues/2075.
+//
+// TODO(https://crbug.com/986925): The playback rate should be taken into
+// consideration when calculating the initial current time.
+// https://drafts.csswg.org/web-animations/#playing-an-animation-section
 base::Optional<base::TimeDelta> WorkletAnimation::InitialCurrentTime() const {
   if (play_state_ == Animation::kIdle || play_state_ == Animation::kUnset ||
       !IsTimelineActive())
@@ -801,8 +820,8 @@ void WorkletAnimation::UpdateInputState(
   double current_time_ms = current_time.value().InMillisecondsF();
 
   if (!was_active && is_active) {
-    input_state->Add({id_, std::string(animator_name_.Utf8().data()),
-                      current_time_ms, CloneOptions(), CloneEffectTimings()});
+    input_state->Add({id_, animator_name_.Utf8(), current_time_ms,
+                      CloneOptions(), CloneEffectTimings()});
   } else if (was_active && is_active) {
     // Skip if the input time is not changed.
     if (did_time_change)
@@ -831,7 +850,7 @@ void WorkletAnimation::SetOutputState(
 void WorkletAnimation::Dispose() {
   DCHECK(IsMainThread());
   if (timeline_->IsScrollTimeline())
-    ToScrollTimeline(timeline_)->DetachAnimation();
+    timeline_->AnimationDetached(nullptr);
   DestroyCompositorAnimation();
 }
 

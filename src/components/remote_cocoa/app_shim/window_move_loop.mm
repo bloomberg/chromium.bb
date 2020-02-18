@@ -8,7 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/crash/core/common/crash_key.h"
-#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "ui/display/screen.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 
@@ -23,27 +23,27 @@
 // access.
 @interface WeakCocoaWindowMoveLoop : NSObject {
  @private
-  base::WeakPtr<views::CocoaWindowMoveLoop> weak_;
+  base::WeakPtr<remote_cocoa::CocoaWindowMoveLoop> weak_;
 }
 @end
 
 @implementation WeakCocoaWindowMoveLoop
 - (instancetype)initWithWeakPtr:
-    (const base::WeakPtr<views::CocoaWindowMoveLoop>&)weak {
+    (const base::WeakPtr<remote_cocoa::CocoaWindowMoveLoop>&)weak {
   if ((self = [super init])) {
     weak_ = weak;
   }
   return self;
 }
 
-- (base::WeakPtr<views::CocoaWindowMoveLoop>&)weak {
+- (base::WeakPtr<remote_cocoa::CocoaWindowMoveLoop>&)weak {
   return weak_;
 }
 @end
 
-namespace views {
+namespace remote_cocoa {
 
-CocoaWindowMoveLoop::CocoaWindowMoveLoop(BridgedNativeWidgetImpl* owner,
+CocoaWindowMoveLoop::CocoaWindowMoveLoop(NativeWidgetNSWindowBridge* owner,
                                          const NSPoint& initial_mouse_in_screen)
     : owner_(owner),
       initial_mouse_in_screen_(initial_mouse_in_screen),
@@ -136,4 +136,4 @@ void CocoaWindowMoveLoop::End() {
   }
 }
 
-}  // namespace views
+}  // namespace remote_cocoa

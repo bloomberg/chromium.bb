@@ -28,9 +28,15 @@ bool IsFuchsia();
 // Android devices
 bool IsNexus5X();
 bool IsNexus6P();
+bool IsNexus9();
 bool IsPixelXL();
 bool IsPixel2();
 bool IsNVIDIAShield();
+
+// Desktop devices.
+bool IsIntel();
+bool IsAMD();
+bool IsNVIDIA();
 
 bool IsPlatformAvailable(const PlatformParameters &param);
 

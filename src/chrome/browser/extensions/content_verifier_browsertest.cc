@@ -61,7 +61,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     // Override content verification mode before ExtensionSystemImpl initializes
     // ChromeContentVerifierDelegate.
     ChromeContentVerifierDelegate::SetDefaultModeForTesting(
-        ContentVerifierDelegate::ENFORCE);
+        ChromeContentVerifierDelegate::ENFORCE);
 
     ExtensionBrowserTest::SetUp();
   }
@@ -91,7 +91,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     EXPECT_EQ(id, extension->id());
 
     // Wait for the content verification code to finish processing the hashes.
-    if (!base::ContainsKey(verifier_observer.completed_fetches(), id))
+    if (!base::Contains(verifier_observer.completed_fetches(), id))
       verifier_observer.WaitForFetchComplete(id);
 
     // Now disable the extension, since content scripts are read at enable time,
@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
   // The content scripts might fail verification the first time since the
   // one-time processing might not be finished yet - if that's the case then
   // we want to wait until that work is done.
-  if (!base::ContainsKey(verifier_observer->completed_fetches(), id))
+  if (!base::Contains(verifier_observer->completed_fetches(), id))
     verifier_observer->WaitForFetchComplete(id);
 
   // It is important to destroy |verifier_observer| here so that it doesn't see
@@ -250,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, PolicyCorrupted) {
   TestExtensionRegistryObserver registry_observer(
       ExtensionRegistry::Get(profile()), kExtensionId);
   ContentVerifier* verifier = system->content_verifier();
-  verifier->VerifyFailed(kExtensionId, ContentVerifyJob::HASH_MISMATCH);
+  verifier->VerifyFailedForTest(kExtensionId, ContentVerifyJob::HASH_MISMATCH);
 
   // Make sure the extension first got disabled due to corruption.
   EXPECT_TRUE(registry_observer.WaitForExtensionUnloaded());
@@ -378,6 +378,26 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest,
   ASSERT_TRUE(extension);
 }
 
+// Tests that navigating to an extension resource with '/' at end does not
+// disable the extension.
+//
+// Regression test for: https://crbug.com/929578.
+IN_PROC_BROWSER_TEST_F(ContentVerifierTest,
+                       RemainsEnabledOnNavigateToPathEndingWithSlash) {
+  const Extension* extension = InstallExtensionFromWebstore(
+      test_data_dir_.AppendASCII("content_verifier/dot_slash_paths.crx"), 1);
+  ASSERT_TRUE(extension);
+  const ExtensionId kExtensionId = extension->id();
+
+  GURL page_url = extension->GetResourceURL("page.html/");
+  ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
+      browser(), page_url, 1, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  int reasons = prefs->GetDisableReasons(kExtensionId);
+  EXPECT_FALSE(reasons);
+}
+
 class ContentVerifierPolicyTest : public ContentVerifierTest {
  public:
   // We need to do this work here because the force-install policy values are
@@ -435,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest,
   // at startup in the non-PRE test.
   ExtensionSystem* system = ExtensionSystem::Get(profile());
   ContentVerifier* verifier = system->content_verifier();
-  verifier->VerifyFailed(id_, ContentVerifyJob::HASH_MISMATCH);
+  verifier->VerifyFailedForTest(id_, ContentVerifyJob::HASH_MISMATCH);
   EXPECT_TRUE(registry_observer.WaitForExtensionUnloaded());
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   int reasons = prefs->GetDisableReasons(id_);
@@ -481,7 +501,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, Backoff) {
   const size_t iterations = 4;
   for (size_t i = 0; i < iterations; i++) {
     TestExtensionRegistryObserver registry_observer(registry, id_);
-    verifier->VerifyFailed(id_, ContentVerifyJob::HASH_MISMATCH);
+    verifier->VerifyFailedForTest(id_, ContentVerifyJob::HASH_MISMATCH);
     EXPECT_TRUE(registry_observer.WaitForExtensionUnloaded());
     // Resolve the request to |delay_tracker|, so the reinstallation can
     // proceed.
@@ -524,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, FailedUpdateRetries) {
   content_verifier_test::DelayTracker delay_tracker;
   service->set_external_updates_disabled_for_test(true);
   TestExtensionRegistryObserver registry_observer(registry, id_);
-  verifier->VerifyFailed(id_, ContentVerifyJob::HASH_MISMATCH);
+  verifier->VerifyFailedForTest(id_, ContentVerifyJob::HASH_MISMATCH);
   EXPECT_TRUE(registry_observer.WaitForExtensionUnloaded());
 
   const std::vector<base::TimeDelta>& calls = delay_tracker.calls();

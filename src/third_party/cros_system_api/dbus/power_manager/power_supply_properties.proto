@@ -164,5 +164,16 @@ message PowerSupplyProperties {
   // sources or sinks (i.e. to either deliver or receive charge).
   optional bool supports_dual_role_devices = 19;
 
-  // Next ID to use: 20
+  // Current battery voltage level.
+  optional double battery_voltage = 20;
+
+  // Battery manufacturer reported in sysfs as either "manufacturer" or
+  // "vendor". Ex.: "SIMPLO"
+  optional string battery_vendor = 21;
+
+  // Battery cycle count representing the total number of times all the
+  // battery's power has been used.
+  optional int64 battery_cycle_count = 22;
+
+  // Next ID to use: 23
 }

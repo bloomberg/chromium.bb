@@ -91,6 +91,9 @@
       <message name="IDS_REAUTH_FID_DESCRIPTION" desc="">
         Your session has expired. Sign in using your work account.
       </message>
+      <message name="IDS_REAUTH_AD_NO_USER_FID_DESCRIPTION" desc="">
+        Sign in using your gsuite work account.
+      </message>
       <message name="IDS_AUTH_FID_PROVIDER_LABEL" desc="">
         Add work account
       </message>
@@ -102,6 +105,9 @@
       </message>
       <message name="IDS_NO_NETWORK" desc="">
         Make sure you have a network connection and try again.
+      </message>
+      <message name="IDS_FAILED_CREATE_LOGON_STUB" desc="">
+        Unable to load Google sign in screen. Please contact your administrator.
       </message>
       <message name="IDS_PASSWORD_UPDATE_NEEDED" desc="">
         Your account password has changed. Please enter your current Windows password in order to sync your Windows account with your work account.
@@ -135,6 +141,12 @@
       </message>
       <message name="IDS_WINDOWS_PASSWORD_FIELD_LABEL" desc="">
         Windows Password
+      </message>
+      <message name="IDS_EMPTY_ACCESS_TOKEN" desc="">
+        Only Gsuite Enterprise users are allowed to login.
+      </message>
+      <message name="IDS_INVALID_AD_UPN" desc="">
+        No Domain user could be found for your account. Please contact your administrator.
       </message>
     </messages>
   </release>

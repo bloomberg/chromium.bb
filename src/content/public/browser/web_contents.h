@@ -29,6 +29,7 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-forward.h"
@@ -91,8 +92,8 @@ struct PageImportanceSignals;
 //       content::WebContents::Create(
 //           content::WebContents::CreateParams(browser_context)));
 //   gfx::NativeView view = web_contents->GetNativeView();
-//   // |view| is an HWND, NSView*, GtkWidget*, etc.; insert it into the view
-//   // hierarchy wherever it needs to go.
+//   // |view| is an HWND, NSView*, etc.; insert it into the view hierarchy
+//   // wherever it needs to go.
 //
 // That's it; go to your kitchen, grab a scone, and chill. WebContents will do
 // all the multi-process stuff behind the scenes. More details are at
@@ -476,7 +477,19 @@ class WebContents : public PageNavigator,
 
   // Indicates whether any frame in the WebContents is connected to a serial
   // port.
-  virtual bool IsConnectedToSerialPort() const = 0;
+  virtual bool IsConnectedToSerialPort() = 0;
+
+  // Indicates whether any frame in the WebContents has native file system
+  // directory handles.
+  virtual bool HasNativeFileSystemDirectoryHandles() = 0;
+
+  // Returns the paths of all the native file system directory handles frames in
+  // this WebContents have access to.
+  virtual std::vector<base::FilePath> GetNativeFileSystemDirectoryHandles() = 0;
+
+  // Indicates whether any frame in the WebContents has writable native file
+  // system handles.
+  virtual bool HasWritableNativeFileSystemHandles() = 0;
 
   // Indicates whether a video is in Picture-in-Picture for |this|.
   virtual bool HasPictureInPictureVideo() = 0;
@@ -566,6 +579,19 @@ class WebContents : public PageNavigator,
   // Notify this WebContents that the preferences have changed. This will send
   // an IPC to all the renderer processes associated with this WebContents.
   virtual void NotifyPreferencesChanged() = 0;
+
+  // Notifies WebContents that an attempt has been made to read the cookies in
+  // |cookie_list|.
+  virtual void OnCookiesRead(const GURL& url,
+                             const GURL& first_party_url,
+                             const net::CookieList& cookie_list,
+                             bool blocked_by_policy) = 0;
+
+  // Notifies WebContents that an attempt has been made to set |cookie|.
+  virtual void OnCookieChange(const GURL& url,
+                              const GURL& first_party_url,
+                              const net::CanonicalCookie& cookie,
+                              bool blocked_by_policy) = 0;
 
   // Commands ------------------------------------------------------------------
 
@@ -864,6 +890,11 @@ class WebContents : public PageNavigator,
   // browser fullscreen.
   virtual void ExitFullscreen(bool will_cause_resize) = 0;
 
+  // The WebContents is trying to take some action that would cause user
+  // confusion if taken while in fullscreen. If this WebContents or any outer
+  // WebContents is in fullscreen, drop it.
+  virtual void ForSecurityDropFullscreen() = 0;
+
   // Unblocks requests from renderer for a newly created window. This is
   // used in showCreatedWindow() or sometimes later in cases where
   // delegate->ShouldResumeRequestsForCreatedWindow() indicated the requests
@@ -934,6 +965,9 @@ class WebContents : public PageNavigator,
   // WebContents. This can be used to determine if a AudioOutputStream was
   // created from a renderer that originated from this WebContents.
   virtual base::UnguessableToken GetAudioGroupId() = 0;
+
+  // The source ID of the last committed navigation.
+  virtual ukm::SourceId GetLastCommittedSourceId() = 0;
 
  private:
   // This interface should only be implemented inside content.

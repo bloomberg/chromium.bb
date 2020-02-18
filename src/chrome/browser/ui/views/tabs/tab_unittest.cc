@@ -78,7 +78,7 @@ class FakeTabController : public TabController {
   }
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override {}
-  void UpdateHoverCard(Tab* tab, bool hovered) override {}
+  void UpdateHoverCard(Tab* tab) override {}
   bool HoverCardIsShowingForTab(Tab* tab) override { return false; }
   bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) override {
     return true;
@@ -825,7 +825,7 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
     for (TabState state : {TAB_INACTIVE, TAB_ACTIVE}) {
       controller.set_active_tab(state == TAB_ACTIVE);
       tab.UpdateForegroundColors();
-      const SkColor fg_color = tab.title_->enabled_color();
+      const SkColor fg_color = tab.title_->GetEnabledColor();
       const SkColor bg_color = controller.GetTabBackgroundColor(state);
       const float contrast = color_utils::GetContrastRatio(fg_color, bg_color);
       EXPECT_GE(contrast, color_utils::kMinimumReadableContrastRatio);

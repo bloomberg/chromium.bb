@@ -30,8 +30,9 @@ device::mojom::VRPosePtr GetMojomPoseFromArPose(
 
   device::mojom::VRPosePtr result = device::mojom::VRPose::New();
 
-  result->orientation.emplace(pose_raw, pose_raw + 4);
-  result->position.emplace(pose_raw + 4, pose_raw + 7);
+  result->orientation =
+      gfx::Quaternion(pose_raw[0], pose_raw[1], pose_raw[2], pose_raw[3]);
+  result->position = gfx::Point3F(pose_raw[4], pose_raw[5], pose_raw[6]);
 
   return result;
 }
@@ -71,6 +72,11 @@ bool ArCoreImpl::Initialize(
     DLOG(ERROR) << "ArSession_create failed: " << status;
     return false;
   }
+
+  // Set incognito mode for ARCore session - this is done unconditionally as we
+  // always want to limit the amount of logging done by ARCore.
+  ArSession_enableIncognitoMode_private(session.get());
+  DVLOG(1) << __func__ << ": ARCore incognito mode enabled";
 
   internal::ScopedArCoreObject<ArConfig*> arcore_config;
   ArConfig_create(
@@ -186,9 +192,7 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
   return GetMojomPoseFromArPose(arcore_session_.get(), std::move(arcore_pose));
 }
 
-std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetDetectedPlanes() {
-  std::vector<mojom::XRPlaneDataPtr> result;
-
+void ArCoreImpl::EnsureArCorePlanesList() {
   if (!arcore_planes_.is_valid()) {
     ArTrackableList_create(
         arcore_session_.get(),
@@ -196,10 +200,11 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetDetectedPlanes() {
             .get());
     DCHECK(arcore_planes_.is_valid());
   }
+}
 
-  ArTrackableType plane_tracked_type = AR_TRACKABLE_PLANE;
-  ArSession_getAllTrackables(arcore_session_.get(), plane_tracked_type,
-                             arcore_planes_.get());
+template <typename FunctionType>
+void ArCoreImpl::ForEachArCorePlane(FunctionType fn) {
+  DCHECK(arcore_planes_.is_valid());
 
   int32_t trackable_list_size;
   ArTrackableList_getSize(arcore_session_.get(), arcore_planes_.get(),
@@ -220,6 +225,15 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetDetectedPlanes() {
       continue;
     }
 
+#if DCHECK_IS_ON()
+    {
+      ArTrackableType type;
+      ArTrackable_getType(arcore_session_.get(), trackable.get(), &type);
+      DCHECK(type == ArTrackableType::AR_TRACKABLE_PLANE)
+          << "arcore_planes_ contains a trackable that is not an ArPlane!";
+    }
+#endif
+
     ArPlane* ar_plane =
         ArAsPlane(trackable.get());  // Naked pointer is fine here, ArAsPlane
                                      // does not increase ref count.
@@ -236,6 +250,20 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetDetectedPlanes() {
       continue;
     }
 
+    fn(ar_plane);
+  }
+}  // namespace device
+
+std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetUpdatedPlanesData() {
+  EnsureArCorePlanesList();
+
+  std::vector<mojom::XRPlaneDataPtr> result;
+
+  ArTrackableType plane_tracked_type = AR_TRACKABLE_PLANE;
+  ArFrame_getUpdatedTrackables(arcore_session_.get(), arcore_frame_.get(),
+                               plane_tracked_type, arcore_planes_.get());
+
+  ForEachArCorePlane([this, &result](ArPlane* ar_plane) {
     // orientation
     ArPlaneType plane_type;
     ArPlane_getType(arcore_session_.get(), ar_plane, &plane_type);
@@ -267,30 +295,66 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetDetectedPlanes() {
     }
 
     // id
-    int32_t plane_id = CreateOrGetPlaneId(ar_plane);
+    int32_t plane_id;
+    bool created;
+    std::tie(plane_id, created) = CreateOrGetPlaneId(ar_plane);
 
     result.push_back(mojom::XRPlaneData::New(
         plane_id,
         mojo::ConvertTo<device::mojom::XRPlaneOrientation>(plane_type),
         std::move(pose), std::move(vertices)));
-  }
+  });
 
   return result;
 }
 
-int32_t ArCoreImpl::CreateOrGetPlaneId(void* plane_address) {
+std::vector<int32_t> ArCoreImpl::GetAllPlaneIds() {
+  EnsureArCorePlanesList();
+
+  std::vector<int32_t> result;
+
+  ArTrackableType plane_tracked_type = AR_TRACKABLE_PLANE;
+  ArSession_getAllTrackables(arcore_session_.get(), plane_tracked_type,
+                             arcore_planes_.get());
+
+  ForEachArCorePlane([this, &result](ArPlane* ar_plane) {
+    // id
+    int32_t plane_id;
+    bool created;
+    std::tie(plane_id, created) = CreateOrGetPlaneId(ar_plane);
+
+    // Newly detected planes should be handled by GetUpdatedPlanesData().
+    DCHECK(!created);
+
+    result.emplace_back(plane_id);
+  });
+
+  return result;
+}
+
+mojom::XRPlaneDetectionDataPtr ArCoreImpl::GetDetectedPlanesData() {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+
+  std::vector<mojom::XRPlaneDataPtr> updated_planes = GetUpdatedPlanesData();
+  std::vector<int32_t> all_plane_ids = GetAllPlaneIds();
+
+  return mojom::XRPlaneDetectionData::New(all_plane_ids,
+                                          std::move(updated_planes));
+}
+
+std::pair<int32_t, bool> ArCoreImpl::CreateOrGetPlaneId(void* plane_address) {
   auto it = ar_plane_address_to_id_.find(plane_address);
   if (it != ar_plane_address_to_id_.end()) {
-    return it->second;
+    return std::make_pair(it->second, false);
   }
 
   // Make sure that incrementing next_id_ won't cause an overflow.
   CHECK(next_id_ != std::numeric_limits<int32_t>::max());
 
   int32_t current_id = next_id_++;
-  ar_plane_address_to_id_[plane_address] = current_id;
+  ar_plane_address_to_id_.emplace(plane_address, current_id);
 
-  return current_id;
+  return std::make_pair(current_id, true);
 }
 
 void ArCoreImpl::Pause() {
@@ -440,10 +504,21 @@ bool ArCoreImpl::RequestHitTest(
       }
     }
 
+    std::array<float, 16> matrix;
+    ArPose_getMatrix(arcore_session_.get(), arcore_pose.get(), matrix.data());
+
     mojom::XRHitResultPtr mojo_hit = mojom::XRHitResult::New();
-    mojo_hit.get()->hit_matrix.resize(16);
-    ArPose_getMatrix(arcore_session_.get(), arcore_pose.get(),
-                     mojo_hit.get()->hit_matrix.data());
+
+    // ArPose_getMatrix returns the matrix in WebGL style column-major order
+    // and gfx::Transform expects row major order.
+    // clang-format off
+    mojo_hit->hit_matrix = gfx::Transform(
+      matrix[0], matrix[4], matrix[8],  matrix[12],
+      matrix[1], matrix[5], matrix[9],  matrix[13],
+      matrix[2], matrix[6], matrix[10], matrix[14],
+      matrix[3], matrix[7], matrix[11], matrix[15]
+    );
+    // clang-format on
 
     // Insert new results at head to preserver order from ArCore
     hit_results->insert(hit_results->begin(), std::move(mojo_hit));

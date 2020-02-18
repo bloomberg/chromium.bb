@@ -9,7 +9,7 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/services/printing/public/mojom/pdf_nup_converter.mojom.h"
-#include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
+#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -121,7 +121,7 @@ class PrintPreviewMessageHandler
                                    mojom::PdfNupConverter::Status status,
                                    base::ReadOnlySharedMemoryRegion region);
 
-  base::WeakPtrFactory<PrintPreviewMessageHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<PrintPreviewMessageHandler> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

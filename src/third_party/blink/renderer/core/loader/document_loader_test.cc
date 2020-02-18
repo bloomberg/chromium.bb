@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 
-#include <queue>
-#include <string>
 #include <utility>
 #include "base/auto_reset.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,9 +15,12 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/scoped_fake_plugin_registry.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace blink {
 
@@ -102,9 +103,9 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
       params->response.SetMimeType("application/pdf");
       params->response.SetHttpStatusCode(200);
 
-      std::string data("<html><body>foo</body></html>");
-      for (size_t i = 0; i < data.size(); i++)
-        data_.push(data[i]);
+      String data("<html><body>foo</body></html>");
+      for (wtf_size_t i = 0; i < data.length(); i++)
+        data_.push_back(data[i]);
 
       auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
       body_loader_ = body_loader.get();
@@ -122,8 +123,8 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
       }
 
       // Serve the remaining bytes to complete the load.
-      EXPECT_FALSE(data_.empty());
-      while (!data_.empty())
+      EXPECT_FALSE(data_.IsEmpty());
+      while (!data_.IsEmpty())
         DispatchOneByte();
 
       body_loader_->Finish();
@@ -147,15 +148,14 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
     }
 
     void DispatchOneByte() {
-      char c = data_.front();
-      data_.pop();
+      char c = data_.TakeFirst();
       body_loader_->Write(&c, 1);
     }
 
     bool ServedReentrantly() const { return served_reentrantly_; }
 
    private:
-    std::queue<char> data_;
+    Deque<char> data_;
     bool dispatching_did_receive_data_ = false;
     bool served_reentrantly_ = false;
     StaticDataNavigationBodyLoader* body_loader_ = nullptr;
@@ -219,6 +219,37 @@ TEST_F(DocumentLoaderTest, MixedContentOptOutNotSetIfNoHeaderReceived) {
                    ->GetFrame()
                    ->GetDocument()
                    ->GetMixedAutoUpgradeOptOut());
+}
+
+class DocumentLoaderSimTest : public SimTest {};
+
+TEST_F(DocumentLoaderSimTest, DocumentOpenUpdatesUrl) {
+  SimRequest main_resource("https://example.com", "text/html");
+  LoadURL("https://example.com");
+  main_resource.Write("<iframe src='javascript:42;'></iframe>");
+
+  auto* child_frame = To<WebLocalFrameImpl>(MainFrame().FirstChild());
+  auto* child_document = child_frame->GetFrame()->GetDocument();
+  EXPECT_TRUE(child_document->HasPendingJavaScriptUrlsForTest());
+
+  main_resource.Write(
+      "<script>"
+      "window[0].document.open();"
+      "window[0].document.write('hello');"
+      "window[0].document.close();"
+      "</script>");
+
+  main_resource.Finish();
+
+  // document.open() should have cancelled the pending JavaScript URLs.
+  EXPECT_FALSE(child_document->HasPendingJavaScriptUrlsForTest());
+
+  // Per https://whatwg.org/C/dynamic-markup-insertion.html#document-open-steps,
+  // the URL associated with the Document should match the URL of the entry
+  // Document.
+  EXPECT_EQ(KURL("https://example.com"), child_document->Url());
+  // Similarly, the URL of the DocumentLoader should also match.
+  EXPECT_EQ(KURL("https://example.com"), child_document->Loader()->Url());
 }
 
 }  // namespace blink

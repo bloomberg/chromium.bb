@@ -165,8 +165,8 @@ bool ContentSettingsObserver::IsPluginTemporarilyAllowed(
     const std::string& identifier) {
   // If the empty string is in here, it means all plugins are allowed.
   // TODO(bauerb): Remove this once we only pass in explicit identifiers.
-  return base::ContainsKey(temporarily_allowed_plugins_, identifier) ||
-         base::ContainsKey(temporarily_allowed_plugins_, std::string());
+  return base::Contains(temporarily_allowed_plugins_, identifier) ||
+         base::Contains(temporarily_allowed_plugins_, std::string());
 }
 
 void ContentSettingsObserver::DidBlockContentType(
@@ -420,7 +420,8 @@ bool ContentSettingsObserver::AllowWriteToClipboard(bool default_value) {
       extension_dispatcher_->script_context_set().GetCurrent();
   if (current_context) {
     if (current_context->effective_context_type() ==
-        extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
+            extensions::Feature::BLESSED_EXTENSION_CONTEXT &&
+        !current_context->IsForServiceWorker()) {
       allowed = true;
     } else {
       allowed |= current_context->HasAPIPermission(

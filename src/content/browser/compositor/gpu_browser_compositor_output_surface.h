@@ -13,10 +13,6 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/latency/latency_tracker.h"
 
-namespace viz {
-class OverlayCandidateValidator;
-}
-
 namespace gfx {
 struct PresentationFeedback;
 }
@@ -26,7 +22,7 @@ class CommandBufferProxyImpl;
 struct SwapBuffersCompleteParams;
 }
 
-namespace ws {
+namespace viz {
 class ContextProviderCommandBuffer;
 }
 
@@ -40,9 +36,7 @@ class GpuBrowserCompositorOutputSurface
     : public BrowserCompositorOutputSurface {
  public:
   GpuBrowserCompositorOutputSurface(
-      scoped_refptr<ws::ContextProviderCommandBuffer> context,
-      std::unique_ptr<viz::OverlayCandidateValidator>
-          overlay_candidate_validator);
+      scoped_refptr<viz::ContextProviderCommandBuffer> context);
 
   ~GpuBrowserCompositorOutputSurface() override;
 
@@ -89,7 +83,8 @@ class GpuBrowserCompositorOutputSurface
   ui::LatencyTracker latency_tracker_;
 
  private:
-  base::WeakPtrFactory<GpuBrowserCompositorOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<GpuBrowserCompositorOutputSurface> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuBrowserCompositorOutputSurface);
 };

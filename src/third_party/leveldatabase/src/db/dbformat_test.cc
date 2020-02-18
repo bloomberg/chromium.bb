@@ -65,6 +65,12 @@ TEST(FormatTest, InternalKey_EncodeDecode) {
   }
 }
 
+TEST(FormatTest, InternalKey_DecodeFromEmpty) {
+  InternalKey internal_key;
+
+  ASSERT_TRUE(!internal_key.DecodeFrom(""));
+}
+
 TEST(FormatTest, InternalKeyShortSeparator) {
   // When user keys are same
   ASSERT_EQ(IKey("foo", 100, kTypeValue),
@@ -104,6 +110,20 @@ TEST(FormatTest, InternalKeyShortestSuccessor) {
             ShortSuccessor(IKey("foo", 100, kTypeValue)));
   ASSERT_EQ(IKey("\xff\xff", 100, kTypeValue),
             ShortSuccessor(IKey("\xff\xff", 100, kTypeValue)));
+}
+
+TEST(FormatTest, ParsedInternalKeyDebugString) {
+  ParsedInternalKey key("The \"key\" in 'single quotes'", 42, kTypeValue);
+
+  ASSERT_EQ("'The \"key\" in 'single quotes'' @ 42 : 1", key.DebugString());
+}
+
+TEST(FormatTest, InternalKeyDebugString) {
+  InternalKey key("The \"key\" in 'single quotes'", 42, kTypeValue);
+  ASSERT_EQ("'The \"key\" in 'single quotes'' @ 42 : 1", key.DebugString());
+
+  InternalKey invalid_key;
+  ASSERT_EQ("(bad)", invalid_key.DebugString());
 }
 
 }  // namespace leveldb

@@ -15,6 +15,7 @@
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
+#include "core/fpdfapi/render/cpdf_pagerendercache.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fpdfdoc/cpdf_nametree.h"
 #include "fpdfsdk/cpdfsdk_annotiteration.h"
@@ -508,6 +509,11 @@ CJS_Result CJS_Document::print(
   if (!m_pFormFillEnv)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
+  CJS_EventRecorder* pHandler =
+      pRuntime->GetCurrentEventContext()->GetEventRecorder();
+  if (!pHandler->IsUserGesture())
+    return CJS_Result::Failure(JSMessage::kUserGestureRequiredError);
+
   m_pFormFillEnv->JS_docprint(bUI, nStart, nEnd, bSilent, bShrinkToFit,
                               bPrintAsImage, bReverse, bAnnotations);
   return CJS_Result::Success();
@@ -531,7 +537,7 @@ CJS_Result CJS_Document::removeField(
 
   WideString sFieldName = pRuntime->ToWideString(params[0]);
   CPDFSDK_InteractiveForm* pInteractiveForm = GetSDKInteractiveForm();
-  std::vector<CPDFSDK_Annot::ObservedPtr> widgets;
+  std::vector<ObservedPtr<CPDFSDK_Annot>> widgets;
   pInteractiveForm->GetWidgets(sFieldName, &widgets);
   if (widgets.empty())
     return CJS_Result::Success();
@@ -629,8 +635,8 @@ CJS_Result CJS_Document::submitForm(
   if (!m_pFormFillEnv)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  CJS_EventHandler* pHandler =
-      pRuntime->GetCurrentEventContext()->GetEventHandler();
+  CJS_EventRecorder* pHandler =
+      pRuntime->GetCurrentEventContext()->GetEventRecorder();
   if (!pHandler->IsUserGesture())
     return CJS_Result::Failure(JSMessage::kUserGestureRequiredError);
 
@@ -1304,7 +1310,8 @@ CJS_Result CJS_Document::getPageNthWord(
   if (!pPageDict)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  auto page = pdfium::MakeRetain<CPDF_Page>(pDocument, pPageDict, true);
+  auto page = pdfium::MakeRetain<CPDF_Page>(pDocument, pPageDict);
+  page->SetRenderCache(pdfium::MakeUnique<CPDF_PageRenderCache>(page.Get()));
   page->ParseContent();
 
   int nWords = 0;
@@ -1353,7 +1360,8 @@ CJS_Result CJS_Document::getPageNumWords(
   if (!pPageDict)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  auto page = pdfium::MakeRetain<CPDF_Page>(pDocument, pPageDict, true);
+  auto page = pdfium::MakeRetain<CPDF_Page>(pDocument, pPageDict);
+  page->SetRenderCache(pdfium::MakeUnique<CPDF_PageRenderCache>(page.Get()));
   page->ParseContent();
 
   int nWords = 0;

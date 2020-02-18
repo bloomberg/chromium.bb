@@ -17,11 +17,13 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/public/cpp/notification.h"
 
@@ -65,11 +67,11 @@ class SigninErrorNotifierTest : public BrowserWithTestWindowTest {
 
   void SetAuthError(const std::string& account_id,
                     const GoogleServiceAuthError& error) {
-    identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+    signin::UpdatePersistentErrorOfRefreshTokenForAccount(
         identity_test_env()->identity_manager(), account_id, error);
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_profile_adaptor_->identity_test_env();
   }
 
@@ -82,6 +84,27 @@ class SigninErrorNotifierTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(SigninErrorNotifierTest, NoNotification) {
+  EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
+}
+
+// Verify that if Supervision has just been added for the current user
+// the notification isn't shown.  This is because the Add Supervision
+// flow itself will prompt the user to sign out, so the notification
+// is unnecessary.
+TEST_F(SigninErrorNotifierTest, NoNotificationAfterAddSupervisionEnabled) {
+  std::string account_id =
+      identity_test_env()->MakeAccountAvailable(kTestEmail).account_id;
+  identity_test_env()->SetPrimaryAccount(kTestEmail);
+
+  // Mark signout required.
+  SupervisedUserService* service =
+      SupervisedUserServiceFactory::GetForProfile(profile());
+  service->set_signout_required_after_supervision_enabled();
+
+  SetAuthError(
+      identity_test_env()->identity_manager()->GetPrimaryAccountId(),
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+
   EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
 }
 
@@ -133,30 +156,23 @@ TEST_F(SigninErrorNotifierTest, AuthStatusEnumerateAllErrors) {
   } ErrorTableEntry;
 
   ErrorTableEntry table[] = {
-    { GoogleServiceAuthError::NONE, false },
-    { GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, true },
-    { GoogleServiceAuthError::USER_NOT_SIGNED_UP, true },
-    { GoogleServiceAuthError::CONNECTION_FAILED, false },
-    { GoogleServiceAuthError::CAPTCHA_REQUIRED, true },
-    { GoogleServiceAuthError::ACCOUNT_DELETED, true },
-    { GoogleServiceAuthError::ACCOUNT_DISABLED, true },
-    { GoogleServiceAuthError::SERVICE_UNAVAILABLE, false },
-    { GoogleServiceAuthError::TWO_FACTOR, true },
-    { GoogleServiceAuthError::REQUEST_CANCELED, false },
-    { GoogleServiceAuthError::HOSTED_NOT_ALLOWED_DEPRECATED, false },
-    { GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE, true },
-    { GoogleServiceAuthError::SERVICE_ERROR, true },
-    { GoogleServiceAuthError::WEB_LOGIN_REQUIRED, true },
+      {GoogleServiceAuthError::NONE, false},
+      {GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, true},
+      {GoogleServiceAuthError::USER_NOT_SIGNED_UP, true},
+      {GoogleServiceAuthError::CONNECTION_FAILED, false},
+      {GoogleServiceAuthError::SERVICE_UNAVAILABLE, false},
+      {GoogleServiceAuthError::REQUEST_CANCELED, false},
+      {GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE, true},
+      {GoogleServiceAuthError::SERVICE_ERROR, true},
   };
-  static_assert(base::size(table) == GoogleServiceAuthError::NUM_STATES,
-                "table size should match number of auth error types");
+  static_assert(
+      base::size(table) == GoogleServiceAuthError::NUM_STATES -
+                               GoogleServiceAuthError::kDeprecatedStateCount,
+      "table size should match number of auth error types");
   std::string account_id =
       identity_test_env()->MakeAccountAvailable(kTestEmail).account_id;
 
   for (size_t i = 0; i < base::size(table); ++i) {
-    if (GoogleServiceAuthError::IsDeprecated(table[i].error_state))
-      continue;
-
     SetAuthError(account_id, GoogleServiceAuthError(table[i].error_state));
     base::Optional<message_center::Notification> notification =
         display_service_->GetNotification(kNotificationId);

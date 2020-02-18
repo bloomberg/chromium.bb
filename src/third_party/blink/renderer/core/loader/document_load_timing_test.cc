@@ -18,12 +18,13 @@ TEST_F(DocumentLoadTimingTest, ensureValidNavigationStartAfterEmbedder) {
   DocumentLoadTiming timing(*(dummy_page->GetDocument().Loader()));
 
   double delta = -1000;
-  double embedder_navigation_start = CurrentTimeTicksInSeconds() + delta;
+  double embedder_navigation_start =
+      base::TimeTicks::Now().since_origin().InSecondsF() + delta;
   timing.SetNavigationStart(base::TimeTicks() + base::TimeDelta::FromSecondsD(
                                                     embedder_navigation_start));
 
-  double real_wall_time = CurrentTime();
-  TimeDelta adjusted_wall_time =
+  double real_wall_time = base::Time::Now().ToDoubleT();
+  base::TimeDelta adjusted_wall_time =
       timing.MonotonicTimeToPseudoWallTime(timing.NavigationStart());
 
   EXPECT_NEAR(adjusted_wall_time.InSecondsF(), real_wall_time + delta, .001);
@@ -34,7 +35,8 @@ TEST_F(DocumentLoadTimingTest, correctTimingDeltas) {
   DocumentLoadTiming timing(*(dummy_page->GetDocument().Loader()));
 
   double navigation_start_delta = -456;
-  double current_monotonic_time = CurrentTimeTicksInSeconds();
+  double current_monotonic_time =
+      base::TimeTicks::Now().since_origin().InSecondsF();
   double embedder_navigation_start =
       current_monotonic_time + navigation_start_delta;
 
@@ -44,14 +46,14 @@ TEST_F(DocumentLoadTimingTest, correctTimingDeltas) {
   // Super quick load! Expect the wall time reported by this event to be
   // dominated by the navigationStartDelta, but similar to currentTime().
   timing.MarkLoadEventEnd();
-  double real_wall_load_event_end = CurrentTime();
-  TimeDelta adjusted_load_event_end =
+  double real_wall_load_event_end = base::Time::Now().ToDoubleT();
+  base::TimeDelta adjusted_load_event_end =
       timing.MonotonicTimeToPseudoWallTime(timing.LoadEventEnd());
 
   EXPECT_NEAR(adjusted_load_event_end.InSecondsF(), real_wall_load_event_end,
               .001);
 
-  TimeDelta adjusted_navigation_start =
+  base::TimeDelta adjusted_navigation_start =
       timing.MonotonicTimeToPseudoWallTime(timing.NavigationStart());
   EXPECT_NEAR(
       (adjusted_load_event_end - adjusted_navigation_start).InSecondsF(),

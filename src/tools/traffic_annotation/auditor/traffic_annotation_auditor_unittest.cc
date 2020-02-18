@@ -203,11 +203,11 @@ TEST_F(TrafficAnnotationAuditorTest, GetFilesFromGit) {
 
   EXPECT_EQ(git_files.size(), base::size(kRelevantFiles));
   for (const char* filepath : kRelevantFiles) {
-    EXPECT_TRUE(base::ContainsValue(git_files, filepath));
+    EXPECT_TRUE(base::Contains(git_files, filepath));
   }
 
   for (const char* filepath : kIrrelevantFiles) {
-    EXPECT_FALSE(base::ContainsValue(git_files, filepath));
+    EXPECT_FALSE(base::Contains(git_files, filepath));
   }
 }
 
@@ -233,7 +233,7 @@ TEST_F(TrafficAnnotationAuditorTest, RelevantFilesReceived) {
   file_paths.clear();
   filter.GetRelevantFiles(base::FilePath(), ignore_list, "", &file_paths);
   EXPECT_EQ(file_paths.size(), git_files_count - 1);
-  EXPECT_FALSE(base::ContainsValue(file_paths, ignore_list[0]));
+  EXPECT_FALSE(base::Contains(file_paths, ignore_list[0]));
 
   // Check if files are filtered based on given directory.
   ignore_list.clear();
@@ -306,7 +306,6 @@ TEST_F(TrafficAnnotationAuditorTest, AnnotationDeserialization) {
        AnnotationInstance::Type::ANNOTATION_PARTIAL},
       {"good_test_annotation.txt", AuditorResult::Type::ERROR_TEST_ANNOTATION},
       {"missing_annotation.txt", AuditorResult::Type::ERROR_MISSING_TAG_USED},
-      {"no_annotation.txt", AuditorResult::Type::ERROR_NO_ANNOTATION},
       {"fatal_annotation1.txt", AuditorResult::Type::ERROR_FATAL},
       {"fatal_annotation2.txt", AuditorResult::Type::ERROR_FATAL},
       {"fatal_annotation3.txt", AuditorResult::Type::ERROR_FATAL},
@@ -402,15 +401,13 @@ TEST_F(TrafficAnnotationAuditorTest, GetReservedIDsCoverage) {
   int expected_ids[] = {
       TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code,
       PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code,
-      NO_TRAFFIC_ANNOTATION_YET.unique_id_hash_code,
-      NO_PARTIAL_TRAFFIC_ANNOTATION_YET.unique_id_hash_code,
       MISSING_TRAFFIC_ANNOTATION.unique_id_hash_code};
 
   std::map<int, std::string> reserved_words =
       TrafficAnnotationAuditor::GetReservedIDsMap();
 
   for (int id : expected_ids) {
-    EXPECT_TRUE(base::ContainsKey(reserved_words, id));
+    EXPECT_TRUE(base::Contains(reserved_words, id));
     EXPECT_EQ(id, TrafficAnnotationAuditor::ComputeHashValue(
                       reserved_words.find(id)->second));
   }

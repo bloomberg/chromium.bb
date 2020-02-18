@@ -1,45 +1,86 @@
 package MooseX::Declare::Syntax::Keyword::MethodModifier;
-BEGIN {
-  $MooseX::Declare::Syntax::Keyword::MethodModifier::AUTHORITY = 'cpan:FLORA';
-}
-{
-  $MooseX::Declare::Syntax::Keyword::MethodModifier::VERSION = '0.35';
-}
 # ABSTRACT: Handle method modifier declarations
+
+our $VERSION = '0.43';
 
 use Moose;
 use Moose::Util;
-use Moose::Util::TypeConstraints;
+use Moose::Util::TypeConstraints 'enum';
+use namespace::autoclean;
 
-use namespace::clean -except => 'meta';
-
+#pod =head1 DESCRIPTION
+#pod
+#pod Allows the implementation of method modification handlers like C<around> and
+#pod C<before>.
+#pod
+#pod =head1 CONSUMES
+#pod
+#pod =for :list
+#pod * L<MooseX::Declare::Syntax::MethodDeclaration>
+#pod
+#pod =cut
 
 with 'MooseX::Declare::Syntax::MethodDeclaration';
 
+#pod =attr modifier_type
+#pod
+#pod A required string that is one of:
+#pod
+#pod =for :list
+#pod * around
+#pod * after
+#pod * before
+#pod * override
+#pod * augment
+#pod
+#pod =cut
 
 has modifier_type => (
     is          => 'rw',
-    isa         => enum(undef, qw( around after before override augment )),
+    isa         => enum([qw( around after before override augment )]),
     required    => 1,
 );
 
+#pod =method register_method_declaration
+#pod
+#pod   Object->register_method_declaration (Object $metaclass, Str $name, Object $method)
+#pod
+#pod This will add the method modifier to the C<$metaclass> via L<Moose::Util>s
+#pod C<add_method_modifier>, whose return value will also be returned from this
+#pod method.
+#pod
+#pod =cut
 
 sub register_method_declaration {
     my ($self, $meta, $name, $method) = @_;
     return Moose::Util::add_method_modifier($meta->name, $self->modifier_type, [$name, $method->body]);
 }
 
+#pod =head1 SEE ALSO
+#pod
+#pod =for :list
+#pod * L<MooseX::Declare>
+#pod * L<MooseX::Declare::Syntax::MooseSetup>
+#pod * L<MooseX::Declare::Syntax::MethodDeclaration>
+#pod * L<MooseX::Method::Signatures>
+#pod
+#pod =cut
 
 1;
 
 __END__
+
 =pod
 
-=encoding utf-8
+=encoding UTF-8
 
 =head1 NAME
 
 MooseX::Declare::Syntax::Keyword::MethodModifier - Handle method modifier declarations
+
+=head1 VERSION
+
+version 0.43
 
 =head1 DESCRIPTION
 
@@ -118,90 +159,15 @@ L<MooseX::Method::Signatures>
 
 =back
 
-=head1 AUTHORS
-
-=over 4
-
-=item *
+=head1 AUTHOR
 
 Florian Ragwitz <rafl@debian.org>
 
-=item *
-
-Ash Berlin <ash@cpan.org>
-
-=item *
-
-Chas. J. Owens IV <chas.owens@gmail.com>
-
-=item *
-
-Chris Prather <chris@prather.org>
-
-=item *
-
-Dave Rolsky <autarch@urth.org>
-
-=item *
-
-Devin Austin <dhoss@cpan.org>
-
-=item *
-
-Hans Dieter Pearcey <hdp@cpan.org>
-
-=item *
-
-Justin Hunter <justin.d.hunter@gmail.com>
-
-=item *
-
-Matt Kraai <kraai@ftbfs.org>
-
-=item *
-
-Michele Beltrame <arthas@cpan.org>
-
-=item *
-
-Nelo Onyiah <nelo.onyiah@gmail.com>
-
-=item *
-
-nperez <nperez@cpan.org>
-
-=item *
-
-Piers Cawley <pdcawley@bofh.org.uk>
-
-=item *
-
-Rafael Kitover <rkitover@io.com>
-
-=item *
-
-Robert 'phaylon' Sedlacek <rs@474.at>
-
-=item *
-
-Stevan Little <stevan.little@iinteractive.com>
-
-=item *
-
-Tomas Doran <bobtfish@bobtfish.net>
-
-=item *
-
-Yanick Champoux <yanick@babyl.dyndns.org>
-
-=back
-
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by Florian Ragwitz.
+This software is copyright (c) 2008 by Florian Ragwitz.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

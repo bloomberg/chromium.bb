@@ -81,7 +81,7 @@ TEST_F(WireOptionalTests, OptionalStructPointer) {
     blendDescriptor.dstFactor = DAWN_BLEND_FACTOR_ONE;
     DawnColorStateDescriptor colorStateDescriptor;
     colorStateDescriptor.nextInChain = nullptr;
-    colorStateDescriptor.format = DAWN_TEXTURE_FORMAT_R8_G8_B8_A8_UNORM;
+    colorStateDescriptor.format = DAWN_TEXTURE_FORMAT_RGBA8_UNORM;
     colorStateDescriptor.alphaBlend = blendDescriptor;
     colorStateDescriptor.colorBlend = blendDescriptor;
     colorStateDescriptor.writeMask = DAWN_COLOR_WRITE_MASK_ALL;
@@ -90,10 +90,8 @@ TEST_F(WireOptionalTests, OptionalStructPointer) {
     DawnVertexInputDescriptor vertexInput;
     vertexInput.nextInChain = nullptr;
     vertexInput.indexFormat = DAWN_INDEX_FORMAT_UINT32;
-    vertexInput.numBuffers = 0;
+    vertexInput.bufferCount = 0;
     vertexInput.buffers = nullptr;
-    vertexInput.numAttributes = 0;
-    vertexInput.attributes = nullptr;
 
     // Create the rasterization state
     DawnRasterizationStateDescriptor rasterizationState;
@@ -113,7 +111,7 @@ TEST_F(WireOptionalTests, OptionalStructPointer) {
 
     DawnDepthStencilStateDescriptor depthStencilState;
     depthStencilState.nextInChain = nullptr;
-    depthStencilState.format = DAWN_TEXTURE_FORMAT_D32_FLOAT_S8_UINT;
+    depthStencilState.format = DAWN_TEXTURE_FORMAT_DEPTH24_PLUS_STENCIL8;
     depthStencilState.depthWriteEnabled = false;
     depthStencilState.depthCompare = DAWN_COMPARE_FUNCTION_ALWAYS;
     depthStencilState.stencilBack = stencilFace;
@@ -151,6 +149,8 @@ TEST_F(WireOptionalTests, OptionalStructPointer) {
     pipelineDescriptor.colorStates = colorStatesPtr;
 
     pipelineDescriptor.sampleCount = 1;
+    pipelineDescriptor.sampleMask = 0xFFFFFFFF;
+    pipelineDescriptor.alphaToCoverageEnabled = false;
     pipelineDescriptor.layout = layout;
     pipelineDescriptor.vertexInput = &vertexInput;
     pipelineDescriptor.primitiveTopology = DAWN_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;

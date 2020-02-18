@@ -94,6 +94,12 @@ static const char* kBadFlags[] = {
     switches::kEnableSpeechDispatcher,
 #endif
 
+#if defined(OS_MACOSX)
+    // This flag is only used for performance tests in mac, to ensure that
+    // calculated values are reliable. Should not be used elsewhere.
+    switches::kUseHighGPUThreadPriorityForPerfTests,
+#endif  // OS_MACOSX
+
     // These flags control Blink feature state, which is not supported and is
     // intended only for use by Chromium developers.
     switches::kDisableBlinkFeatures,
@@ -131,6 +137,10 @@ static const char* kBadFlags[] = {
     // GPU sanboxing isn't implemented for the Web GPU API yet meaning it would
     // be possible to read GPU data for other Chromium processes.
     switches::kEnableUnsafeWebGPU,
+
+    // A flag to support local file based BundledExchanges loading, only for
+    // testing purpose.
+    switches::kTrustableBundledExchangesFile,
 };
 #endif  // OS_ANDROID
 

@@ -34,7 +34,8 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "cc/input/browser_controls_state.h"
-#include "cc/trees/element_id.h"
+#include "cc/paint/element_id.h"
+#include "cc/trees/layer_tree_host_client.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_float_size.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
@@ -76,13 +77,6 @@ class WebWidget {
 
   // Called to resize the WebWidget.
   virtual void Resize(const WebSize&) {}
-
-  // Resizes the unscaled visual viewport. Normally the unscaled visual
-  // viewport is the same size as the main frame. The passed size becomes the
-  // size of the viewport when unscaled (i.e. scale = 1). This is used to
-  // shrink the visible viewport to allow things like the ChromeOS virtual
-  // keyboard to overlay over content but allow scrolling it into view.
-  virtual void ResizeVisualViewport(const WebSize&) {}
 
   // Called to notify the WebWidget of entering/exiting fullscreen mode.
   virtual void DidEnterFullscreen() {}
@@ -184,8 +178,7 @@ class WebWidget {
   // thread.
   virtual void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) {}
 
-  virtual void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
-                                                 bool has_scrolled_by_touch) {}
+  virtual void RecordManipulationTypeCounts(cc::ManipulationInfo info) {}
 
   virtual void SendOverscrollEventFromImplSide(
       const gfx::Vector2dF& overscroll_delta,

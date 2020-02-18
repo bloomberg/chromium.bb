@@ -17,20 +17,25 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
+#include "chrome/android/chrome_jni_headers/DownloadController_jni.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/download/dangerous_download_infobar_delegate.h"
 #include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/android/download/download_utils.h"
+#include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/download/download_offline_content_provider.h"
+#include "chrome/browser/download/download_offline_content_provider_factory.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/offline_pages/android/offline_page_bridge.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/download/public/common/auto_resumption_handler.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -41,7 +46,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/referrer.h"
-#include "jni/DownloadController_jni.h"
 #include "net/base/filename_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/android/view_android.h"
@@ -387,8 +391,12 @@ void DownloadController::OnDownloadStarted(
   if (download::AutoResumptionHandler::Get())
     download::AutoResumptionHandler::Get()->OnDownloadStarted(download_item);
 
-  DownloadUtils::GetDownloadOfflineContentProvider(
-      content::DownloadItemUtils::GetBrowserContext(download_item))
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(download_item));
+  ProfileKey* profile_key =
+      profile ? profile->GetProfileKey() : ::android::GetLastUsedProfileKey();
+
+  DownloadOfflineContentProviderFactory::GetForKey(profile_key)
       ->OnDownloadStarted(download_item);
 
   OnDownloadUpdated(download_item);
@@ -431,6 +439,8 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
           DownloadController::CANCEL_REASON_OTHER_NATIVE_RESONS);
       break;
     case DownloadItem::INTERRUPTED:
+      if (item->IsDone())
+        strong_validators_map_.erase(item->GetGuid());
       // When device loses/changes network, we get a NETWORK_TIMEOUT,
       // NETWORK_FAILED or NETWORK_DISCONNECTED error. Download should auto
       // resume in this case.
@@ -478,14 +488,17 @@ bool DownloadController::IsInterruptedDownloadAutoResumable(
     download::DownloadItem* download_item) {
   if (!download_item->GetURL().SchemeIsHTTPOrHTTPS())
     return false;
-
   static int size_limit = DownloadUtils::GetAutoResumptionSizeLimit();
   bool exceeds_size_limit = download_item->GetReceivedBytes() > size_limit;
   std::string etag = download_item->GetETag();
   std::string last_modified = download_item->GetLastModifiedTime();
 
-  if (exceeds_size_limit && etag.empty() && last_modified.empty())
+  if (exceeds_size_limit && etag.empty() && last_modified.empty() &&
+      !base::FeatureList::IsEnabled(
+          download::features::
+              kAllowDownloadResumptionWithoutStrongValidators)) {
     return false;
+  }
 
   // If the download has strong validators, but it caused a restart, stop auto
   // resumption as the server may always send new strong validators on

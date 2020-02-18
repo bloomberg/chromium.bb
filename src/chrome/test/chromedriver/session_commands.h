@@ -156,29 +156,9 @@ Status ExecuteUploadFile(Session* session,
                          const base::DictionaryValue& params,
                          std::unique_ptr<base::Value>* value);
 
-Status ExecuteIsAutoReporting(Session* session,
-                              const base::DictionaryValue& params,
-                              std::unique_ptr<base::Value>* value);
-
-Status ExecuteSetAutoReporting(Session* session,
-                               const base::DictionaryValue& params,
-                               std::unique_ptr<base::Value>* value);
-
 Status ExecuteUnimplementedCommand(Session* session,
                                    const base::DictionaryValue& params,
                                    std::unique_ptr<base::Value>* value);
-
-Status ExecuteGetScreenOrientation(Session* session,
-                                  const base::DictionaryValue& params,
-                                  std::unique_ptr<base::Value>* value);
-
-Status ExecuteSetScreenOrientation(Session* session,
-                                   const base::DictionaryValue& params,
-                                   std::unique_ptr<base::Value>* value);
-
-Status ExecuteDeleteScreenOrientation(Session* session,
-                                      const base::DictionaryValue& params,
-                                      std::unique_ptr<base::Value>* value);
 
 Status ExecuteGenerateTestReport(Session* session,
                                  const base::DictionaryValue& params,

@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -16,13 +17,14 @@
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/util.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
@@ -69,14 +71,14 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_prefs.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#import "services/identity/public/objc/identity_manager_observer_bridge.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -149,9 +151,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeArticlesForYou,
 };
 
-#if CHROMIUM_BUILD && !defined(NDEBUG)
+#if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 NSString* kDevViewSourceKey = @"DevViewSource";
-#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
+#endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 
 }  // namespace
 
@@ -173,7 +175,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   ios::ChromeBrowserState* _browserState;  // weak
   // Bridge for TemplateURLServiceObserver.
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserverBridge;
-  std::unique_ptr<identity::IdentityManagerObserverBridge>
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityObserverBridge;
   std::unique_ptr<SyncObserverBridge> _syncObserverBridge;
   // Whether the impression of the Signin button has already been recorded.
@@ -256,12 +258,13 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     _searchEngineObserverBridge.reset(new SearchEngineObserverBridge(
         self,
         ios::TemplateURLServiceFactory::GetForBrowserState(_browserState)));
-    identity::IdentityManager* identityManager =
+    signin::IdentityManager* identityManager =
         IdentityManagerFactory::GetForBrowserState(_browserState);
-    if (identityManager) {
-      _identityObserverBridge.reset(
-          new identity::IdentityManagerObserverBridge(identityManager, self));
-    }
+    // It is expected that |identityManager| should never be nil except in
+    // tests. In that case, the tests should be fixed.
+    DCHECK(identityManager);
+    _identityObserverBridge.reset(
+        new signin::IdentityManagerObserverBridge(identityManager, self));
     syncer::SyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserverBridge.reset(new SyncObserverBridge(self, syncService));
@@ -433,14 +436,14 @@ NSString* kDevViewSourceKey = @"DevViewSource";
         toSectionWithIdentifier:SectionIdentifierDebug];
   }
 
-#if CHROMIUM_BUILD && !defined(NDEBUG)
+#if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
   [model addItem:[self viewSourceSwitchItem]
       toSectionWithIdentifier:SectionIdentifierDebug];
   [model addItem:[self collectionViewCatalogDetailItem]
       toSectionWithIdentifier:SectionIdentifierDebug];
   [model addItem:[self tableViewCatalogDetailItem]
       toSectionWithIdentifier:SectionIdentifierDebug];
-#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
+#endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 }
 
 #pragma mark - Model Items
@@ -643,7 +646,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
   return articlesForYouSwitchItem;
 }
-#if CHROMIUM_BUILD && !defined(NDEBUG)
+#if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 
 - (SettingsSwitchItem*)viewSourceSwitchItem {
   return [self switchItemWithType:ItemTypeViewSource
@@ -665,7 +668,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                        detailText:nil
                     iconImageName:kSettingsDebugImageName];
 }
-#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
+#endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 
 #pragma mark Item Constructors
 
@@ -722,14 +725,13 @@ NSString* kDevViewSourceKey = @"DevViewSource";
         LOG(ERROR) << "Save passwords cell was disabled as the password store"
                       " cannot be created.";
         [detailCell setUserInteractionEnabled:NO];
-        detailCell.textLabel.textColor =
-            UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+        detailCell.textLabel.textColor = UIColor.cr_secondaryLabelColor;
         return cell;
       }
     }
 
     [detailCell setUserInteractionEnabled:YES];
-    detailCell.textLabel.textColor = UIColor.blackColor;
+    detailCell.textLabel.textColor = UIColor.cr_labelColor;
   }
 
   switch (itemType) {
@@ -750,7 +752,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
       break;
     }
     case ItemTypeViewSource: {
-#if CHROMIUM_BUILD && !defined(NDEBUG)
+#if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
       SettingsSwitchCell* switchCell =
           base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
       [switchCell.switchView addTarget:self
@@ -758,7 +760,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                       forControlEvents:UIControlEventValueChanged];
 #else
       NOTREACHED();
-#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
+#endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
       break;
     }
     default:
@@ -900,7 +902,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   [_articlesEnabled setValue:newSwitchValue];
 }
 
-#if CHROMIUM_BUILD && !defined(NDEBUG)
+#if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 - (void)viewSourceSwitchToggled:(UISwitch*)sender {
   NSIndexPath* switchPath =
       [self.tableViewModel indexPathForItemType:ItemTypeViewSource
@@ -914,7 +916,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   switchItem.on = newSwitchValue;
   [self setBooleanNSUserDefaultsValue:newSwitchValue forKey:kDevViewSourceKey];
 }
-#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
+#endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 
 #pragma mark Private methods
 
@@ -943,14 +945,14 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 // Chromium builds, but for official builds it is gated by an experimental flag
 // because the "Debug" section should never be showing in stable channel.
 - (BOOL)hasDebugSection {
-#if CHROMIUM_BUILD && !defined(NDEBUG)
+#if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
   return YES;
 #else
   if (experimental_flags::IsMemoryDebuggingEnabled()) {
     return YES;
   }
   return NO;
-#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
+#endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 }
 
 // Updates the identity cell.
@@ -1038,7 +1040,8 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     googleServicesItem.image =
         [UIImage imageNamed:kSyncAndGoogleServicesSyncOnImageName];
   } else if (!IsTransientSyncError(syncSetupService->GetSyncServiceState())) {
-    googleServicesItem.detailTextColor = UIColor.redColor;
+    googleServicesItem.detailTextColor =
+        [UIColor colorNamed:kDestructiveTintColor];
     googleServicesItem.detailText =
         GetSyncErrorDescriptionForSyncSetupService(syncSetupService);
     googleServicesItem.image =

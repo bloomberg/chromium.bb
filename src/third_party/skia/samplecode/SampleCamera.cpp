@@ -6,72 +6,59 @@
  */
 
 #include "include/core/SkCanvas.h"
-#include "include/core/SkPath.h"
-#include "include/core/SkRegion.h"
 #include "include/core/SkShader.h"
 #include "include/core/SkString.h"
-#include "include/effects/SkGradientShader.h"
 #include "include/utils/SkCamera.h"
-#include "include/utils/SkRandom.h"
 #include "samplecode/DecodeFile.h"
 #include "samplecode/Sample.h"
 #include "src/effects/SkEmbossMaskFilter.h"
-#include "src/utils/SkUTF.h"
-#include "tools/timer/AnimTimer.h"
+#include "tools/Resources.h"
+#include "tools/timer/TimeUtils.h"
 
+namespace {
 class CameraView : public Sample {
     SkTArray<sk_sp<SkShader>> fShaders;
-    int     fShaderIndex;
-    bool    fFrontFace;
-public:
-    CameraView() {
-        fRX = fRY = fRZ = 0;
-        fShaderIndex = 0;
-        fFrontFace = false;
+    int fShaderIndex = 0;
+    bool fFrontFace = false;
+    SkScalar fRX = 0;
+    SkScalar fRY = 0;
 
-        for (int i = 0;; i++) {
-            SkString str;
-            str.printf("/skimages/elephant%d.jpeg", i);
+    SkString name() override { return SkString("Camera"); }
+
+    void onOnceBeforeDraw() override {
+        for (const char* resource : {
+            "images/mandrill_512_q075.jpg",
+            "images/dog.jpg",
+            "images/gamut.png",
+        }) {
             SkBitmap bm;
-            if (decode_file(str.c_str(), &bm)) {
+            if (GetResourceAsBitmap(resource, &bm)) {
                 SkRect src = { 0, 0, SkIntToScalar(bm.width()), SkIntToScalar(bm.height()) };
                 SkRect dst = { -150, -150, 150, 150 };
                 SkMatrix matrix;
                 matrix.setRectToRect(src, dst, SkMatrix::kFill_ScaleToFit);
-
                 fShaders.push_back(bm.makeShader(&matrix));
-            } else {
-                break;
             }
         }
         this->setBGColor(0xFFDDDDDD);
     }
 
-protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "Camera");
-            return true;
-        }
-        return this->INHERITED::onQuery(evt);
-    }
-
     void onDrawContent(SkCanvas* canvas) override {
-        canvas->translate(this->width()/2, this->height()/2);
-
-        Sk3DView    view;
-        view.rotateX(fRX);
-        view.rotateY(fRY);
-        view.applyToCanvas(canvas);
-
-        SkPaint paint;
         if (fShaders.count() > 0) {
+            canvas->translate(this->width()/2, this->height()/2);
+
+            Sk3DView    view;
+            view.rotateX(fRX);
+            view.rotateY(fRY);
+            view.applyToCanvas(canvas);
+
             bool frontFace = view.dotWithNormal(0, 0, SK_Scalar1) < 0;
             if (frontFace != fFrontFace) {
                 fFrontFace = frontFace;
                 fShaderIndex = (fShaderIndex + 1) % fShaders.count();
             }
 
+            SkPaint paint;
             paint.setAntiAlias(true);
             paint.setShader(fShaders[fShaderIndex]);
             paint.setFilterQuality(kLow_SkFilterQuality);
@@ -80,20 +67,10 @@ protected:
         }
     }
 
-    bool onAnimate(const AnimTimer& timer) override {
-        if (timer.isStopped()) {
-            fRY = 0;
-        } else {
-            fRY = timer.scaled(90, 360);
-        }
+    bool onAnimate(double nanos) override {
+        fRY = nanos ? TimeUtils::Scaled(1e-9 * nanos, 90, 360) : 0;
         return true;
     }
-
-private:
-    SkScalar fRX, fRY, fRZ;
-    typedef Sample INHERITED;
 };
-
-//////////////////////////////////////////////////////////////////////////////
-
+}  // namespace
 DEF_SAMPLE( return new CameraView(); )

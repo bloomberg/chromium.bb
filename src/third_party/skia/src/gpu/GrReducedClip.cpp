@@ -5,10 +5,10 @@
  * found in the LICENSE file.
  */
 
-#include "include/private/GrColor.h"
 #include "src/core/SkClipOpPriv.h"
 #include "src/gpu/GrAppliedClip.h"
 #include "src/gpu/GrClip.h"
+#include "src/gpu/GrColor.h"
 #include "src/gpu/GrDrawingManager.h"
 #include "src/gpu/GrFixedClip.h"
 #include "src/gpu/GrPathRenderer.h"
@@ -16,7 +16,6 @@
 #include "src/gpu/GrReducedClip.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrRenderTargetContextPriv.h"
-#include "src/gpu/GrShape.h"
 #include "src/gpu/GrStencilClip.h"
 #include "src/gpu/GrStencilSettings.h"
 #include "src/gpu/GrStyle.h"
@@ -25,6 +24,7 @@
 #include "src/gpu/effects/GrConvexPolyEffect.h"
 #include "src/gpu/effects/GrRRectEffect.h"
 #include "src/gpu/effects/generated/GrAARectEffect.h"
+#include "src/gpu/geometry/GrShape.h"
 
 /**
  * There are plenty of optimizations that could be added here. Maybe flips could be folded into
@@ -837,13 +837,12 @@ bool GrReducedClip::drawStencilClipMask(GrRecordingContext* context,
 
     // walk through each clip element and perform its set op with the existing clip.
     for (ElementList::Iter iter(fMaskElements); iter.get(); iter.next()) {
-        using AATypeFlags = GrPathRenderer::AATypeFlags;
         const Element* element = iter.get();
-        bool doStencilMSAA =
-                element->isAA() && GrFSAAType::kNone != renderTargetContext->fsaaType();
+        // MIXED SAMPLES TODO: We can use stencil with mixed samples as well.
+        bool doStencilMSAA = element->isAA() && renderTargetContext->numSamples() > 1;
         // Since we are only drawing to the stencil buffer, we can use kMSAA even if the render
         // target is mixed sampled.
-        auto pathAATypeFlags = (doStencilMSAA) ? AATypeFlags::kMSAA : AATypeFlags::kNone;
+        auto pathAAType = (doStencilMSAA) ? GrAAType::kMSAA : GrAAType::kNone;
         bool fillInverted = false;
 
         // This will be used to determine whether the clip shape can be rendered into the
@@ -867,10 +866,11 @@ bool GrReducedClip::drawStencilClipMask(GrRecordingContext* context,
             GrShape shape(clipPath, GrStyle::SimpleFill());
             GrPathRenderer::CanDrawPathArgs canDrawArgs;
             canDrawArgs.fCaps = context->priv().caps();
+            canDrawArgs.fProxy = renderTargetContext->proxy();
             canDrawArgs.fClipConservativeBounds = &stencilClip.fixedClip().scissorRect();
             canDrawArgs.fViewMatrix = &SkMatrix::I();
             canDrawArgs.fShape = &shape;
-            canDrawArgs.fAATypeFlags = pathAATypeFlags;
+            canDrawArgs.fAAType = pathAAType;
             canDrawArgs.fHasUserStencilSettings = false;
             canDrawArgs.fTargetIsWrappedVkSecondaryCB = renderTargetContext->wrapsVkSecondaryCB();
 
@@ -921,7 +921,7 @@ bool GrReducedClip::drawStencilClipMask(GrRecordingContext* context,
                                                           &stencilClip.fixedClip().scissorRect(),
                                                           &SkMatrix::I(),
                                                           &shape,
-                                                          pathAATypeFlags,
+                                                          pathAAType,
                                                           false};
                         pr->drawPath(args);
                     } else {
@@ -958,7 +958,7 @@ bool GrReducedClip::drawStencilClipMask(GrRecordingContext* context,
                                                       &stencilClip.fixedClip().scissorRect(),
                                                       &SkMatrix::I(),
                                                       &shape,
-                                                      pathAATypeFlags,
+                                                      pathAAType,
                                                       false};
                     pr->drawPath(args);
                 }
@@ -974,7 +974,7 @@ bool GrReducedClip::drawStencilClipMask(GrRecordingContext* context,
 }
 
 std::unique_ptr<GrFragmentProcessor> GrReducedClip::finishAndDetachAnalyticFPs(
-        GrCoverageCountingPathRenderer* ccpr, uint32_t opListID, int rtWidth, int rtHeight) {
+        GrCoverageCountingPathRenderer* ccpr, uint32_t opListID) {
     // Make sure finishAndDetachAnalyticFPs hasn't been called already.
     SkDEBUGCODE(for (const auto& fp : fAnalyticFPs) { SkASSERT(fp); })
 
@@ -983,8 +983,7 @@ std::unique_ptr<GrFragmentProcessor> GrReducedClip::finishAndDetachAnalyticFPs(
         for (const SkPath& ccprClipPath : fCCPRClipPaths) {
             SkASSERT(ccpr);
             SkASSERT(fHasScissor);
-            auto fp = ccpr->makeClipProcessor(opListID, ccprClipPath, fScissor, rtWidth, rtHeight,
-                                              *fCaps);
+            auto fp = ccpr->makeClipProcessor(opListID, ccprClipPath, fScissor, *fCaps);
             fAnalyticFPs.push_back(std::move(fp));
         }
         fCCPRClipPaths.reset();

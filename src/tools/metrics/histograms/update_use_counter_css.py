@@ -21,7 +21,8 @@ import update_histogram_enum
 import update_use_counter_feature_enum
 
 
-USE_COUNTER_CPP_PATH = 'third_party/blink/renderer/core/frame/use_counter.cc'
+USE_COUNTER_CPP_PATH = 'third_party/blink/renderer/core/frame'\
+                       '/use_counter_helper.cc'
 
 
 def EnumToCssProperty(enum_name):

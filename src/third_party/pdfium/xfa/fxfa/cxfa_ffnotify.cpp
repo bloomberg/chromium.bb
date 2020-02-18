@@ -97,7 +97,7 @@ std::unique_ptr<CXFA_FFPageView> CXFA_FFNotify::OnCreateViewLayoutItem(
   if (pNode->GetElementType() != XFA_Element::PageArea)
     return nullptr;
 
-  CXFA_LayoutProcessor* pLayout = m_pDoc->GetXFADoc()->GetLayoutProcessor();
+  auto* pLayout = CXFA_LayoutProcessor::FromDocument(m_pDoc->GetXFADoc());
   return pdfium::MakeUnique<CXFA_FFPageView>(m_pDoc->GetDocView(pLayout),
                                              pNode);
 }
@@ -196,7 +196,7 @@ std::unique_ptr<CXFA_FFWidget> CXFA_FFNotify::OnCreateContentLayoutItem(
       return nullptr;
   }
   ASSERT(pWidget);
-  CXFA_LayoutProcessor* pLayout = m_pDoc->GetXFADoc()->GetLayoutProcessor();
+  auto* pLayout = CXFA_LayoutProcessor::FromDocument(m_pDoc->GetXFADoc());
   pWidget->SetDocView(m_pDoc->GetDocView(pLayout));
   return pWidget;
 }
@@ -215,19 +215,19 @@ bool CXFA_FFNotify::RunScript(CXFA_Script* script, CXFA_Node* item) {
   CXFA_EventParam EventParam;
   EventParam.m_eType = XFA_EVENT_Unknown;
 
-  int32_t iRet;
+  XFA_EventError iRet;
   bool bRet;
   std::tie(iRet, bRet) = item->ExecuteBoolScript(pDocView, script, &EventParam);
-  return iRet == XFA_EVENTERROR_Success && bRet;
+  return iRet == XFA_EventError::kSuccess && bRet;
 }
 
-int32_t CXFA_FFNotify::ExecEventByDeepFirst(CXFA_Node* pFormNode,
-                                            XFA_EVENTTYPE eEventType,
-                                            bool bIsFormReady,
-                                            bool bRecursive) {
+XFA_EventError CXFA_FFNotify::ExecEventByDeepFirst(CXFA_Node* pFormNode,
+                                                   XFA_EVENTTYPE eEventType,
+                                                   bool bIsFormReady,
+                                                   bool bRecursive) {
   CXFA_FFDocView* pDocView = m_pDoc->GetDocView();
   if (!pDocView)
-    return XFA_EVENTERROR_NotExist;
+    return XFA_EventError::kNotExist;
   return pDocView->ExecEventActivityByDeepFirst(pFormNode, eEventType,
                                                 bIsFormReady, bRecursive);
 }
@@ -410,7 +410,7 @@ void CXFA_FFNotify::OnValueChanged(CXFA_Node* pSender,
 }
 
 void CXFA_FFNotify::OnContainerChanged(CXFA_Node* pNode) {
-  CXFA_LayoutProcessor* pLayout = m_pDoc->GetXFADoc()->GetLayoutProcessor();
+  auto* pLayout = CXFA_LayoutProcessor::FromDocument(m_pDoc->GetXFADoc());
   pLayout->AddChangedContainer(pNode);
 }
 

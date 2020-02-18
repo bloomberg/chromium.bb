@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/fileapi/file_list.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -42,6 +41,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -323,16 +323,20 @@ void FileInputType::CreateShadowSubtree() {
 
 void FileInputType::DisabledAttributeChanged() {
   DCHECK(IsShadowHost(GetElement()));
+  CHECK(!GetElement().UserAgentShadowRoot()->firstChild() ||
+        IsA<Element>(GetElement().UserAgentShadowRoot()->firstChild()));
   if (Element* button =
-          ToElementOrDie(GetElement().UserAgentShadowRoot()->firstChild()))
+          To<Element>(GetElement().UserAgentShadowRoot()->firstChild()))
     button->SetBooleanAttribute(kDisabledAttr,
                                 GetElement().IsDisabledFormControl());
 }
 
 void FileInputType::MultipleAttributeChanged() {
   DCHECK(IsShadowHost(GetElement()));
+  CHECK(!GetElement().UserAgentShadowRoot()->firstChild() ||
+        IsA<Element>(GetElement().UserAgentShadowRoot()->firstChild()));
   if (Element* button =
-          ToElementOrDie(GetElement().UserAgentShadowRoot()->firstChild()))
+          To<Element>(GetElement().UserAgentShadowRoot()->firstChild()))
     button->setAttribute(
         kValueAttr,
         AtomicString(GetLocale().QueryString(

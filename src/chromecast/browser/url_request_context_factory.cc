@@ -29,7 +29,6 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/multi_log_ct_verifier.h"
-#include "net/cert_net/nss_ocsp.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
@@ -46,14 +45,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
-#include "services/network/public/cpp/features.h"
-
-#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
-#include "chromecast/browser/extension_request_protocol_handler.h"
-#include "extensions/browser/extension_protocols.h"  // nogncheck
-#include "extensions/browser/extension_system.h"     // nogncheck
-#include "extensions/common/constants.h"             // nogncheck
-#endif
 
 namespace chromecast {
 namespace shell {
@@ -88,14 +79,6 @@ class URLRequestContextFactory::URLRequestContextGetter
         request_context_.reset(factory_->CreateMediaRequestContext());
       } else {
         request_context_.reset(factory_->CreateSystemRequestContext());
-#if defined(USE_NSS_CERTS)
-        // TODO(juke): Migrate callsites of GetURLRequestContext() to
-        // network::NetworkContext.
-        if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-          // Set request context used by NSS for Crl requests.
-          net::SetURLRequestContextForNSSHttpIO(request_context_.get());
-        }
-#endif  // defined(USE_NSS_CERTS)
       }
     }
     return request_context_.get();
@@ -199,10 +182,6 @@ net::URLRequestContextGetter* URLRequestContextFactory::CreateMainGetter(
     content::URLRequestInterceptorScopedVector request_interceptors) {
   DCHECK(!main_getter_.get())
       << "Main URLRequestContextGetter already initialized";
-#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
-  (*protocol_handlers)[extensions::kExtensionScheme] =
-      std::make_unique<ExtensionRequestProtocolHandler>(browser_context);
-#endif
   main_getter_ =
       new MainURLRequestContextGetter(this, browser_context, protocol_handlers,
                                       std::move(request_interceptors));

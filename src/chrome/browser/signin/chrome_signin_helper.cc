@@ -33,11 +33,9 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/core/browser/chrome_connected_header_helper.h"
-#include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_header_helper.h"
+#include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
@@ -59,6 +57,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chromeos/constants/chromeos_switches.h"
 #endif
 
@@ -83,15 +82,12 @@ int g_dice_account_reconcilor_blocked_delay_ms = 1000;
 
 const char kGoogleSignoutResponseHeader[] = "Google-Accounts-SignOut";
 
-// Refcounted wrapper to allow creating and deleting a AccountReconcilor::Lock
-// from the IO thread.
+// Refcounted wrapper that facilitates creating and deleting a
+// AccountReconcilor::Lock on the UI thread.
 class AccountReconcilorLockWrapper
     : public base::RefCountedThreadSafe<AccountReconcilorLockWrapper> {
  public:
-  AccountReconcilorLockWrapper() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    // Do nothing on the IO thread. The real work is done in CreateLockOnUI().
-  }
+  AccountReconcilorLockWrapper() = default;
 
   // Creates the account reconcilor lock on the UI thread. The lock will be
   // deleted on the UI thread when this wrapper is deleted.
@@ -109,9 +105,21 @@ class AccountReconcilorLockWrapper
         new AccountReconcilor::Lock(account_reconcilor));
   }
 
+  void DestroyOnUIAfterDelay() {
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(base::DoNothing::Once<
+                           scoped_refptr<AccountReconcilorLockWrapper>>(),
+                       base::RetainedRef(this)),
+        base::TimeDelta::FromMilliseconds(
+            g_dice_account_reconcilor_blocked_delay_ms));
+  }
+
  private:
   friend class base::RefCountedThreadSafe<AccountReconcilorLockWrapper>;
-  ~AccountReconcilorLockWrapper() {}
+  ~AccountReconcilorLockWrapper() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  }
 
   // The account reconcilor lock is created and deleted on UI thread.
   std::unique_ptr<AccountReconcilor::Lock,
@@ -120,17 +128,6 @@ class AccountReconcilorLockWrapper
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilorLockWrapper);
 };
-
-void DestroyLockWrapperAfterDelay(
-    scoped_refptr<AccountReconcilorLockWrapper> lock_wrapper) {
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          base::DoNothing::Once<scoped_refptr<AccountReconcilorLockWrapper>>(),
-          std::move(lock_wrapper)),
-      base::TimeDelta::FromMilliseconds(
-          g_dice_account_reconcilor_blocked_delay_ms));
-}
 
 // Returns true if the account reconcilor needs be be blocked while a Gaia
 // sign-in request is in progress.
@@ -210,14 +207,26 @@ void ProcessMirrorHeaderUIThread(
     //
     // - Going Incognito (already handled in above switch-case).
     // - Displaying the Account Manager for managing accounts.
+    // - Displaying a reauthentication window: Enterprise GSuite Accounts could
+    // have been forced through an online in-browser sign-in for sensitive
+    // webpages, thereby decreasing their session validity. After their session
+    // expires, they will receive a "Mirror" re-authentication request for all
+    // Google web properties.
 
     // Do not display Account Manager if the navigation happened in the
     // "background".
     if (!chrome::FindBrowserWithWebContents(web_contents))
       return;
 
-    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-        profile, chrome::kAccountManagerSubPage);
+    if (manage_accounts_params.email.empty()) {
+      // Display Account Manager for managing accounts.
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+          profile, chrome::kAccountManagerSubPage);
+    } else {
+      // Display a re-authentication dialog.
+      chromeos::InlineLoginHandlerDialogChromeOS::Show(
+          manage_accounts_params.email);
+    }
     return;
   }
 
@@ -341,7 +350,6 @@ void ProcessDiceHeaderUIThread(
 // child/route id. Must be called on IO thread.
 void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
                                          bool is_off_the_record) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(gaia::IsGaiaSignonRealm(response->GetOrigin()));
 
   if (!response->IsMainFrame())
@@ -381,6 +389,8 @@ void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
       kManageAccountsHeaderReceivedUserDataKey,
       std::make_unique<ManageAccountsHeaderReceivedUserData>());
 
+  // Post a task even if we are already on the UI thread to avoid making any
+  // requests while processing a throttle event.
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                            base::BindOnce(ProcessMirrorHeaderUIThread, params,
                                           response->GetWebContentsGetter()));
@@ -389,7 +399,6 @@ void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
                                        bool is_off_the_record) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(gaia::IsGaiaSignonRealm(response->GetOrigin()));
 
   if (is_off_the_record)
@@ -417,6 +426,8 @@ void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
   if (params.user_intention == DiceAction::NONE)
     return;
 
+  // Post a task even if we are already on the UI thread to avoid making any
+  // requests while processing a throttle event.
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(ProcessDiceHeaderUIThread, std::move(params),
@@ -430,10 +441,6 @@ ChromeRequestAdapter::ChromeRequestAdapter(net::URLRequest* request)
     : RequestAdapter(request) {}
 
 ChromeRequestAdapter::~ChromeRequestAdapter() = default;
-
-bool ChromeRequestAdapter::IsMainRequestContext(ProfileIOData* io_data) {
-  return request_->context() == io_data->GetMainRequestContext();
-}
 
 content::ResourceRequestInfo::WebContentsGetter
 ChromeRequestAdapter::GetWebContentsGetter() const {
@@ -502,71 +509,72 @@ void SetDiceAccountReconcilorBlockDelayForTesting(int delay_ms) {
   g_dice_account_reconcilor_blocked_delay_ms = delay_ms;
 }
 
-void FixAccountConsistencyRequestHeader(ChromeRequestAdapter* request,
-                                        const GURL& redirect_url,
-                                        ProfileIOData* io_data) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  if (io_data->IsOffTheRecord())
+void FixAccountConsistencyRequestHeader(
+    ChromeRequestAdapter* request,
+    const GURL& redirect_url,
+    bool is_off_the_record,
+    int incognito_availibility,
+    AccountConsistencyMethod account_consistency,
+    std::string primary_account_id,
+#if defined(OS_CHROMEOS)
+    bool account_consistency_mirror_required,
+#endif
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+    bool is_sync_enabled,
+    std::string signin_scoped_device_id,
+#endif
+    content_settings::CookieSettings* cookie_settings) {
+  if (is_off_the_record)
     return;  // Account consistency is disabled in incognito.
 
-  if (!request->IsMainRequestContext(io_data)) {
-    // Account consistency requires the AccountReconcilor, which is only
-    // attached to the main request context.
-    // Note: InlineLoginUI uses an isolated request context and thus bypasses
-    // the account consistency flow here. See http://crbug.com/428396
-    return;
-  }
-
   int profile_mode_mask = PROFILE_MODE_DEFAULT;
-  if (io_data->incognito_availibility()->GetValue() ==
-          IncognitoModePrefs::DISABLED ||
+  if (incognito_availibility == IncognitoModePrefs::DISABLED ||
       IncognitoModePrefs::ArePlatformParentalControlsEnabled()) {
     profile_mode_mask |= PROFILE_MODE_INCOGNITO_DISABLED;
   }
 
-  AccountConsistencyMethod account_consistency = io_data->account_consistency();
-
 #if defined(OS_CHROMEOS)
   // Mirror account consistency required by profile.
-  if (io_data->account_consistency_mirror_required()->GetValue()) {
+  if (account_consistency_mirror_required) {
     account_consistency = AccountConsistencyMethod::kMirror;
     // Can't add new accounts.
     profile_mode_mask |= PROFILE_MODE_ADD_ACCOUNT_DISABLED;
   }
 #endif
 
-  std::string account_id = io_data->google_services_account_id()->GetValue();
-
   // If new url is eligible to have the header, add it, otherwise remove it.
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Dice header:
   bool dice_header_added = AppendOrRemoveDiceRequestHeader(
-      request, redirect_url, account_id, io_data->IsSyncEnabled(),
-      account_consistency, io_data->GetCookieSettings(),
-      io_data->GetSigninScopedDeviceId());
+      request, redirect_url, primary_account_id, is_sync_enabled,
+      account_consistency, cookie_settings, signin_scoped_device_id);
 
   // Block the AccountReconcilor while the Dice requests are in flight. This
   // allows the DiceReponseHandler to process the response before the reconcilor
   // starts.
   if (dice_header_added && ShouldBlockReconcilorForRequest(request)) {
     auto lock_wrapper = base::MakeRefCounted<AccountReconcilorLockWrapper>();
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&AccountReconcilorLockWrapper::CreateLockOnUI,
-                       lock_wrapper, request->GetWebContentsGetter()));
+    if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+      lock_wrapper->CreateLockOnUI(request->GetWebContentsGetter());
+    } else {
+      base::PostTaskWithTraits(
+          FROM_HERE, {content::BrowserThread::UI},
+          base::BindOnce(&AccountReconcilorLockWrapper::CreateLockOnUI,
+                         lock_wrapper, request->GetWebContentsGetter()));
+    }
 
     // On destruction of the request |lock_wrapper| will be released.
     request->SetDestructionCallback(
-        base::BindOnce(&DestroyLockWrapperAfterDelay, std::move(lock_wrapper)));
+        base::BindOnce(&AccountReconcilorLockWrapper::DestroyOnUIAfterDelay,
+                       std::move(lock_wrapper)));
   }
 #endif
 
   // Mirror header:
-  AppendOrRemoveMirrorRequestHeader(
-      request, redirect_url, account_id, account_consistency,
-      io_data->GetCookieSettings(), profile_mode_mask);
+  AppendOrRemoveMirrorRequestHeader(request, redirect_url, primary_account_id,
+                                    account_consistency, cookie_settings,
+                                    profile_mode_mask);
 }
 
 void ProcessAccountConsistencyResponseHeaders(ResponseAdapter* response,

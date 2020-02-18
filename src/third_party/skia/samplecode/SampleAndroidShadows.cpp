@@ -17,7 +17,7 @@
 #include "src/core/SkBlurMask.h"
 #include "src/utils/SkUTF.h"
 #include "tools/ToolUtils.h"
-#include "tools/timer/AnimTimer.h"
+#include "tools/timer/TimeUtils.h"
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -35,32 +35,18 @@ class ShadowsView : public Sample {
     SkPath    fTabPath;
 
     SkPoint3  fLightPos;
-    SkScalar  fZDelta;
-    SkScalar  fAnimTranslate;
-    SkScalar  fAnimAngle;
-    SkScalar  fAnimAlpha;
+    SkScalar  fZDelta = 0;
+    SkScalar  fAnimTranslate = 0;
+    SkScalar  fAnimAngle = 0;
+    SkScalar  fAnimAlpha = 1;
 
-    bool      fShowAmbient;
-    bool      fShowSpot;
-    bool      fUseAlt;
-    bool      fShowObject;
-    bool      fIgnoreShadowAlpha;
-    bool      fDoAlphaAnimation;
+    bool      fShowAmbient = true;
+    bool      fShowSpot = true;
+    bool      fUseAlt = false;
+    bool      fShowObject = true;
+    bool      fIgnoreShadowAlpha = false;
+    bool      fDoAlphaAnimation = false;
 
-public:
-    ShadowsView()
-        : fZDelta(0)
-        , fAnimTranslate(0)
-        , fAnimAngle(0)
-        , fAnimAlpha(1)
-        , fShowAmbient(true)
-        , fShowSpot(true)
-        , fUseAlt(false)
-        , fShowObject(true)
-        , fIgnoreShadowAlpha(false)
-        , fDoAlphaAnimation(false) {}
-
-protected:
     void onOnceBeforeDraw() override {
         fCirclePath.addCircle(0, 0, 50);
         fRectPath.addRect(SkRect::MakeXYWH(-100, -50, 200, 100));
@@ -106,14 +92,9 @@ protected:
         fLightPos = SkPoint3::Make(350, 0, 600);
     }
 
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "AndroidShadows");
-            return true;
-        }
+    SkString name() override { return SkString("AndroidShadows"); }
 
-        SkUnichar uni;
-        if (Sample::CharQ(*evt, &uni)) {
+    bool onChar(SkUnichar uni) override {
             bool handled = false;
             switch (uni) {
                 case 'W':
@@ -157,12 +138,7 @@ protected:
             if (handled) {
                 return true;
             }
-        }
-        return this->INHERITED::onQuery(evt);
-    }
-
-    void drawBG(SkCanvas* canvas) {
-        canvas->drawColor(0xFFDDDDDD);
+            return false;
     }
 
     void drawShadowedPath(SkCanvas* canvas, const SkPath& path,
@@ -202,7 +178,8 @@ protected:
     }
 
     void onDrawContent(SkCanvas* canvas) override {
-        this->drawBG(canvas);
+        canvas->drawColor(0xFFDDDDDD);
+
         const SkScalar kLightWidth = 800;
         const SkScalar kAmbientAlpha = 0.039f;
         const SkScalar kSpotAlpha = 0.19f;
@@ -341,11 +318,11 @@ protected:
                                lightPos, kLightWidth, .5f);
     }
 
-    bool onAnimate(const AnimTimer& timer) override {
-        fAnimTranslate = timer.pingPong(30, 0, 125, -125);
-        fAnimAngle = timer.pingPong(15, 0, 0, 20);
+    bool onAnimate(double nanos) override {
+        fAnimTranslate = TimeUtils::PingPong(1e-9 * nanos, 30, 0, 125, -125);
+        fAnimAngle = TimeUtils::PingPong(1e-9 * nanos, 15, 0, 0, 20);
         if (fDoAlphaAnimation) {
-            fAnimAlpha = timer.pingPong(5, 0, 1, 0);
+            fAnimAlpha = TimeUtils::PingPong(1e-9 * nanos, 5, 0, 1, 0);
         }
         return true;
     }

@@ -22,19 +22,15 @@ documentation within a Perl document.
 This class provides some additional methods beyond those provided by its
 L<PPI::Token> and L<PPI::Element> parent classes.
 
-Got any ideas for more methods? Submit a report to rt.cpan.org!
-
 =cut
 
 use strict;
 use Params::Util qw{_INSTANCE};
 use PPI::Token   ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Token';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = "PPI::Token";
 
 
 
@@ -52,21 +48,6 @@ and returns a new object that represents one combined POD block with
 the content of all of them.
 
 Returns a new C<PPI::Token::Pod> object, or C<undef> on error.
-
-=begin testing merge after PPI::Node 4
-
-# Create the test fragments
-my $one = PPI::Token::Pod->new("=pod\n\nOne\n\n=cut\n");
-my $two = PPI::Token::Pod->new("=pod\n\nTwo");
-isa_ok( $one, 'PPI::Token::Pod' );
-isa_ok( $two, 'PPI::Token::Pod' );
-
-# Create the combined Pod
-my $merged = PPI::Token::Pod->merge($one, $two);
-isa_ok( $merged, 'PPI::Token::Pod' );
-is( $merged->content, "=pod\n\nOne\n\nTwo\n\n=cut\n", 'Merged POD looks ok' );
-
-=end testing
 
 =cut
 
@@ -129,7 +110,7 @@ sub lines {
 # PPI::Element Methods
 
 ### XS -> PPI/XS.xs:_PPI_Token_Pod__significant 0.900+
-sub significant { '' }
+sub significant() { '' }
 
 
 
@@ -147,7 +128,7 @@ sub __TOKENIZER__on_line_start {
 	# Check the line to see if it is a =cut line
 	if ( $t->{line} =~ /^=(\w+)/ ) {
 		# End of the token
-		$t->_finalize_token if lc $1 eq 'cut';
+		$t->_finalize_token if $1 eq 'cut';
 	}
 
 	0;

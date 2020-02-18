@@ -81,7 +81,9 @@
   DISABLED_UsingRealWebcam_CheckPhotoCallbackRelease
 #elif defined(OS_ANDROID)
 #define MAYBE_UsingRealWebcam_AllocateBadSize UsingRealWebcam_AllocateBadSize
-#define MAYBE_UsingRealWebcam_CaptureMjpeg UsingRealWebcam_CaptureMjpeg
+// This format is not returned by VideoCaptureDeviceFactoryAndroid's
+// GetSupportedFormats
+#define MAYBE_UsingRealWebcam_CaptureMjpeg DISABLED_UsingRealWebcam_CaptureMjpeg
 #define MAYBE_UsingRealWebcam_TakePhoto UsingRealWebcam_TakePhoto
 #define MAYBE_UsingRealWebcam_GetPhotoState UsingRealWebcam_GetPhotoState
 #define MAYBE_UsingRealWebcam_CaptureWithSize UsingRealWebcam_CaptureWithSize
@@ -307,11 +309,11 @@ class VideoCaptureDeviceTest
     EXPECT_CALL(*result, DoOnIncomingCapturedBuffer(_, _, _, _)).Times(0);
     EXPECT_CALL(*result, DoOnIncomingCapturedBufferExt(_, _, _, _, _, _, _))
         .Times(0);
-    ON_CALL(*result, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
+    ON_CALL(*result, OnIncomingCapturedData(_, _, _, _, _, _, _, _, _))
         .WillByDefault(
             Invoke([this](const uint8_t* data, int length,
                           const media::VideoCaptureFormat& frame_format,
-                          const gfx::ColorSpace&, int, base::TimeTicks,
+                          const gfx::ColorSpace&, int, bool, base::TimeTicks,
                           base::TimeDelta, int) {
               ASSERT_GT(length, 0);
               ASSERT_TRUE(data);
@@ -338,7 +340,7 @@ class VideoCaptureDeviceTest
   void OnFrameCaptured(const VideoCaptureFormat& format) {
     last_format_ = format;
     if (run_loop_)
-      run_loop_->QuitClosure().Run();
+      run_loop_->Quit();
   }
 
   void WaitForCapturedFrame() {

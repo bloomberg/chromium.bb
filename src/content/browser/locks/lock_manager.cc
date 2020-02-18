@@ -142,7 +142,7 @@ class LockManager::Lock {
   mojo::StrongAssociatedBindingPtr<blink::mojom::LockHandle> handle_;
 };
 
-LockManager::LockManager() : weak_ptr_factory_(this) {}
+LockManager::LockManager() {}
 
 LockManager::~LockManager() = default;
 
@@ -336,7 +336,7 @@ void LockManager::RequestLock(
 
   const auto& context = bindings_.dispatch_context();
 
-  if (!base::ContainsKey(origins_, context.origin))
+  if (!base::Contains(origins_, context.origin))
     origins_.emplace(context.origin, this);
 
   int64_t lock_id = NextLockId();

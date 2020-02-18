@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_SCROLL_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_SCROLL_MANAGER_H_
 
-#include <deque>
 #include <memory>
 
 #include "base/macros.h"
@@ -19,7 +18,8 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace blink {
 
@@ -112,6 +112,10 @@ class CORE_EXPORT ScrollManager
   WebInputEventResult HandleGestureScrollUpdate(const WebGestureEvent&);
   WebInputEventResult HandleGestureScrollBegin(const WebGestureEvent&);
 
+  // Handling of GestureScrollEnd may be deferred if there's an outstanding
+  // scroll animation. This is the callback that invokes the deferred operation.
+  void HandleDeferredGestureScrollEnd(const WebGestureEvent& gesture_event);
+
   WebInputEventResult PassScrollGestureEvent(const WebGestureEvent&,
                                              LayoutObject*);
 
@@ -125,7 +129,7 @@ class CORE_EXPORT ScrollManager
 
   void RecomputeScrollChain(const Node& start_node,
                             const ScrollState&,
-                            std::deque<DOMNodeId>& scroll_chain);
+                            Deque<DOMNodeId>& scroll_chain);
   bool CanScroll(const ScrollState&, const Node& current_node);
 
   // scroller_size is set only when scrolling non root scroller.
@@ -136,7 +140,7 @@ class CORE_EXPORT ScrollManager
   WebGestureEvent SynthesizeGestureScrollBegin(
       const WebGestureEvent& update_event);
 
-  void SnapAtGestureScrollEnd();
+  bool SnapAtGestureScrollEnd();
 
   void NotifyScrollPhaseBeginForCustomizedScroll(const ScrollState&);
   void NotifyScrollPhaseEndForCustomizedScroll();
@@ -149,11 +153,9 @@ class CORE_EXPORT ScrollManager
   const Member<LocalFrame> frame_;
 
   // Only used with the ScrollCustomization runtime enabled feature.
-  std::deque<DOMNodeId> current_scroll_chain_;
+  Deque<DOMNodeId> current_scroll_chain_;
 
   Member<Node> scroll_gesture_handling_node_;
-
-  Member<Node> last_logical_scrolled_node_;
 
   bool last_gesture_scroll_over_embedded_content_view_;
 

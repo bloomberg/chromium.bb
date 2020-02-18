@@ -16,7 +16,14 @@
 namespace syncer {
 
 class Cryptographer;
+class KeystoreKeysHandler;
 enum class PassphraseType;
+
+namespace syncable {
+
+class NigoriHandler;
+
+}  // namespace syncable
 
 // Reasons due to which Cryptographer might require a passphrase.
 enum PassphraseRequiredReason {
@@ -141,10 +148,10 @@ class SyncEncryptionHandler {
   // Reads the nigori node, updates internal state as needed, and, if an
   // empty/stale nigori node is detected, overwrites the existing
   // nigori node. Upon completion, if the cryptographer is still ready
-  // attempts to re-encrypt all sync data.
+  // attempts to re-encrypt all sync data. Returns false in case of error.
   // Note: This method is expensive (it iterates through all encrypted types),
   // so should only be used sparingly (e.g. on startup).
-  virtual void Init() = 0;
+  virtual bool Init() = 0;
 
   // Attempts to re-encrypt encrypted data types using the passphrase provided.
   // Notifies observers of the result of the operation via OnPassphraseAccepted
@@ -172,6 +179,24 @@ class SyncEncryptionHandler {
   // initialized in case it happens after migration was introduced. Returns
   // base::Time() in case migration isn't completed.
   virtual base::Time GetKeystoreMigrationTime() const = 0;
+
+  // Unsafe getter. Use only if sync is not up and running and there is no risk
+  // of other threads calling this. Returns the original cryptographer. This
+  // Cryptographer will always reflect the actual state of
+  // SyncEncryptionHandler (no needs to call this method again in case
+  // cryptographer state was changed).
+  // TODO(crbug.com/970213): remove this method or replace with normal getter
+  // for const Cryptographer.
+  virtual Cryptographer* GetCryptographerUnsafe() = 0;
+
+  // Returns KeystoreKeysHandler, allowing to pass new keystore keys and to
+  // check whether keystore keys need to be requested from the server.
+  virtual KeystoreKeysHandler* GetKeystoreKeysHandler() = 0;
+
+  // Returns NigoriHandler, allowing directory-specific interaction with
+  // Nigori. Returns nullptr iff USS implementation of Nigori is enabled.
+  // TODO(crbug.com/970213): remove this method.
+  virtual syncable::NigoriHandler* GetNigoriHandler() = 0;
 
   // The set of types that are always encrypted.
   static ModelTypeSet SensitiveTypes();

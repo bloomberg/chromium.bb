@@ -113,7 +113,7 @@ class IOSurfaceValidationTests : public IOSurfaceTestBase {
         defaultIOSurface = CreateSinglePlaneIOSurface(10, 10, 'BGRA', 4);
 
         descriptor.dimension = dawn::TextureDimension::e2D;
-        descriptor.format = dawn::TextureFormat::B8G8R8A8Unorm;
+        descriptor.format = dawn::TextureFormat::BGRA8Unorm;
         descriptor.size = {10, 10, 1};
         descriptor.sampleCount = 1;
         descriptor.arrayLayerCount = 1;
@@ -268,7 +268,8 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
         // The simplest texture sampling pipeline.
         dawn::RenderPipeline pipeline;
         {
-            dawn::ShaderModule vs = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
+            dawn::ShaderModule vs =
+                utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
                 #version 450
                 layout (location = 0) out vec2 o_texCoord;
                 void main() {
@@ -289,7 +290,7 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
                 }
             )");
             dawn::ShaderModule fs =
-                utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+                utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
                 #version 450
                 layout(set = 0, binding = 0) uniform sampler sampler0;
                 layout(set = 0, binding = 1) uniform texture2D texture0;
@@ -305,7 +306,7 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
             descriptor.cVertexStage.module = vs;
             descriptor.cFragmentStage.module = fs;
             descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
-            descriptor.cColorStates[0]->format = dawn::TextureFormat::R8G8B8A8Unorm;
+            descriptor.cColorStates[0]->format = dawn::TextureFormat::RGBA8Unorm;
 
             pipeline = device.CreateRenderPipeline(&descriptor);
         }
@@ -392,7 +393,7 @@ TEST_P(IOSurfaceUsageTests, SampleFromRG8IOSurface) {
     ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, '2C08', 2);
 
     uint16_t data = 0x0102;  // Stored as (G, R)
-    DoSampleTest(ioSurface.get(), dawn::TextureFormat::R8G8Unorm, &data, sizeof(data),
+    DoSampleTest(ioSurface.get(), dawn::TextureFormat::RG8Unorm, &data, sizeof(data),
                  RGBA8(2, 1, 0, 255));
 }
 
@@ -402,7 +403,7 @@ TEST_P(IOSurfaceUsageTests, ClearRG8IOSurface) {
     ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, '2C08', 2);
 
     uint16_t data = 0x0201;
-    DoClearTest(ioSurface.get(), dawn::TextureFormat::R8G8Unorm, &data, sizeof(data));
+    DoClearTest(ioSurface.get(), dawn::TextureFormat::RG8Unorm, &data, sizeof(data));
 }
 
 // Test sampling from a BGRA8 IOSurface
@@ -411,7 +412,7 @@ TEST_P(IOSurfaceUsageTests, SampleFromBGRA8888IOSurface) {
     ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, 'BGRA', 4);
 
     uint32_t data = 0x01020304;  // Stored as (A, R, G, B)
-    DoSampleTest(ioSurface.get(), dawn::TextureFormat::B8G8R8A8Unorm, &data, sizeof(data),
+    DoSampleTest(ioSurface.get(), dawn::TextureFormat::BGRA8Unorm, &data, sizeof(data),
                  RGBA8(2, 3, 4, 1));
 }
 
@@ -421,7 +422,7 @@ TEST_P(IOSurfaceUsageTests, ClearBGRA8IOSurface) {
     ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(1, 1, 'BGRA', 4);
 
     uint32_t data = 0x04010203;
-    DoClearTest(ioSurface.get(), dawn::TextureFormat::B8G8R8A8Unorm, &data, sizeof(data));
+    DoClearTest(ioSurface.get(), dawn::TextureFormat::BGRA8Unorm, &data, sizeof(data));
 }
 
 DAWN_INSTANTIATE_TEST(IOSurfaceValidationTests, MetalBackend);

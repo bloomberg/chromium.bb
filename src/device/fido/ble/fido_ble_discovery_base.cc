@@ -60,8 +60,8 @@ void FidoBleDiscoveryBase::SetDiscoverySession(
 
 bool FidoBleDiscoveryBase::IsCableDevice(const BluetoothDevice* device) const {
   const auto& uuid = CableAdvertisementUUID();
-  return base::ContainsKey(device->GetServiceData(), uuid) ||
-         base::ContainsKey(device->GetUUIDs(), uuid);
+  return base::Contains(device->GetServiceData(), uuid) ||
+         base::Contains(device->GetUUIDs(), uuid);
 }
 
 void FidoBleDiscoveryBase::OnGetAdapter(

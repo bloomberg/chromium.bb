@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters.pb.h"
+#include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
@@ -80,10 +80,10 @@ void QuicServerSessionBase::OnConfigNegotiated() {
   }
 }
 
-void QuicServerSessionBase::OnConnectionClosed(QuicErrorCode error,
-                                               const std::string& error_details,
-                                               ConnectionCloseSource source) {
-  QuicSession::OnConnectionClosed(error, error_details, source);
+void QuicServerSessionBase::OnConnectionClosed(
+    const QuicConnectionCloseFrame& frame,
+    ConnectionCloseSource source) {
+  QuicSession::OnConnectionClosed(frame, source);
   // In the unlikely event we get a connection close while doing an asynchronous
   // crypto event, make sure we cancel the callback.
   if (crypto_stream_ != nullptr) {
@@ -224,7 +224,7 @@ bool QuicServerSessionBase::ShouldCreateOutgoingBidirectionalStream() {
   }
 
   if (!GetQuicReloadableFlag(quic_use_common_stream_check) &&
-      connection()->transport_version() != QUIC_VERSION_99) {
+      !VersionHasIetfQuicFrames(connection()->transport_version())) {
     if (GetNumOpenOutgoingStreams() >=
         stream_id_manager().max_open_outgoing_streams()) {
       QUIC_VLOG(1) << "No more streams should be created. "
@@ -248,7 +248,7 @@ bool QuicServerSessionBase::ShouldCreateOutgoingUnidirectionalStream() {
   }
 
   if (!GetQuicReloadableFlag(quic_use_common_stream_check) &&
-      connection()->transport_version() != QUIC_VERSION_99) {
+      !VersionHasIetfQuicFrames(connection()->transport_version())) {
     if (GetNumOpenOutgoingStreams() >=
         stream_id_manager().max_open_outgoing_streams()) {
       QUIC_VLOG(1) << "No more streams should be created. "

@@ -134,6 +134,9 @@ UI.ShortcutsScreen = class {
     debuggerSection.addAlternateKeys(
         UI.shortcutRegistry.shortcutDescriptorsForAction('debugger.toggle-breakpoints-active'),
         Common.UIString('Toggle all breakpoints'));
+    debuggerSection.addAlternateKeys(
+        UI.shortcutRegistry.shortcutDescriptorsForAction('debugger.breakpoint-input-window'),
+        ls`Open breakpoint editor`);
 
     // Editing
     const editingSection = UI.shortcutsScreen.section(Common.UIString('Text Editor'));
@@ -251,7 +254,7 @@ UI.ShortcutsScreen = class {
     const widget = new UI.Widget();
 
     widget.element.className = 'settings-tab-container';  // Override
-    widget.element.createChild('header').createChild('h3').createTextChild(Common.UIString('Shortcuts'));
+    widget.element.createChild('header').createChild('h1').createTextChild(ls`Shortcuts`);
     const scrollPane = widget.element.createChild('div', 'settings-container-wrapper');
     const container = scrollPane.createChild('div');
     container.className = 'settings-content settings-container';
@@ -326,6 +329,7 @@ UI.ShortcutsSection = class {
     const headLine = parent.createChild('div', 'settings-line');
     headLine.createChild('div', 'settings-key-cell');
     headLine.createChild('div', 'settings-section-title settings-cell').textContent = this.name;
+    UI.ARIAUtils.markAsHeading(headLine, /* level */ 2);
 
     for (let i = 0; i < this._lines.length; ++i) {
       const line = parent.createChild('div', 'settings-line');

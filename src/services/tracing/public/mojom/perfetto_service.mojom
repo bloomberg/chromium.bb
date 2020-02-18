@@ -9,6 +9,7 @@ const string kTraceEventDataSourceName = "org.chromium.trace_event";
 const string kMetaDataSourceName = "org.chromium.trace_metadata";
 const string kSystemTraceDataSourceName = "org.chromium.trace_system";
 const string kArcTraceDataSourceName = "org.chromium.trace_arc";
+const string kSamplerProfilerSourceName = "org.chromium.sampler_profiler";
 
 // Brief description of the flow: There's a per-process ProducerClient which
 // connects to the central PerfettoService and establishes a two-way connection
@@ -90,6 +91,7 @@ struct DataSourceRegistration {
   string name;
   bool will_notify_on_start;
   bool will_notify_on_stop;
+  bool handles_incremental_state_clear;
 };
 
 // This is implemented by the tracing service and represents the service-
@@ -101,8 +103,9 @@ interface ProducerHost {
   // 2) Patch data (i.e. apply diff) that has been previously copied into the
   //    tracing buffer (if it's not been overwritten).
   // The service is robust in terms of tolerating malformed or malicious
-  // requests.
-  CommitData(CommitDataRequest data_request);
+  // requests. The callback is run after the service has handled the commit
+  // request.
+  CommitData(CommitDataRequest data_request) => ();
 
   // Called by a ProducerClient to let the Host know it can provide a specific
   // datasource.
@@ -118,7 +121,8 @@ interface ProducerHost {
 // this interface and use the PerfettoService interface within the tracing
 // service to register itself.
 interface ProducerClient {
-  OnTracingStart(handle<shared_buffer> shared_memory);
+  OnTracingStart(handle<shared_buffer> shared_memory,
+                  uint64 shared_memory_buffer_page_size_bytes);
 
   // Called by Perfetto (via ProducerHost) to request a data source to start
   // logging.
@@ -127,6 +131,7 @@ interface ProducerClient {
   // sent in the StartDataSource call.
   StopDataSource(uint64 id) => ();
   Flush(uint64 flush_request_id, array<uint64> data_source_ids);
+  ClearIncrementalState();
 };
 
 // This is implemented by the tracing service, and is essentially a singleton
@@ -138,10 +143,20 @@ interface PerfettoService {
                         ProducerHost& producer_host);
 };
 
-// The size of a buffer that the Consumer can request Perfetto to allocate
-// and then configure specific data sources to be written into.
+// The policy for filling the trace buffer.
+enum BufferFillPolicy {
+  kUnspecified,
+  // Overwrite old chunks for new ones.
+  kRingBuffer,
+  // Discard all chunks once the buffer is full.
+  kDiscard
+};
+
 struct BufferConfig {
+  // The size of a buffer that the Consumer can request Perfetto to allocate
+  // and then configure specific data sources to be written into.
   uint32 size_kb;
+  BufferFillPolicy fill_policy;
 };
 
 struct DataSource {
@@ -155,6 +170,12 @@ struct PerfettoBuiltinDataSource {
   bool disable_system_info;
 };
 
+struct IncrementalStateConfig {
+  // If set to a value > 0, this enables periodical ClearIncrementalState
+  // messages to be sent to the producers registered for the session.
+  uint32 clear_period_ms;
+};
+
 // The configuration provided by a Consumer to the Perfetto service which
 // primarily configures which named data sources it would like to enable and
 // receive tracing data from, and how large the destination buffers should be.
@@ -162,6 +183,7 @@ struct TraceConfig {
   array<DataSource> data_sources;
   PerfettoBuiltinDataSource perfetto_builtin_data_source;
   array<BufferConfig> buffers;
+  IncrementalStateConfig incremental_state_config;
 
   uint32 duration_ms;
 };
@@ -217,8 +239,10 @@ interface TracingSessionHost {
   ReadBuffers(handle<data_pipe_producer> stream) => ();
 
   // Request current trace buffer usage of the active session. Will be returned
-  // as percentage value between 0.0f and 1.0f.
-  RequestBufferUsage() => (bool success, float percent_full);
+  // as percentage value between 0.0f and 1.0f. |data_loss| indicates whether
+  // any trace data is known to have been lost, e.g. because the ring buffer
+  // wrapped and data were overridden.
+  RequestBufferUsage() => (bool success, float percent_full, bool data_loss);
 
   // Disables tracing and converts the collected trace data converted into the
   // legacy JSON format before returning it via the data pipe. If

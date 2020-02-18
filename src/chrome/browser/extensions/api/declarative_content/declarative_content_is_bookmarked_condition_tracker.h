@@ -124,10 +124,10 @@ class DeclarativeContentIsBookmarkedConditionTracker
   void BookmarkModelChanged() override;
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* parent,
-                         int index) override;
+                         size_t index) override;
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const bookmarks::BookmarkNode* parent,
-                           int old_index,
+                           size_t old_index,
                            const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& no_longer_bookmarked) override;
   void ExtensiveBookmarkChangesBeginning(

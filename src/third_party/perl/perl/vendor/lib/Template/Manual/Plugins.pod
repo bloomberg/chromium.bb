@@ -118,7 +118,7 @@ distribution from CPAN.
 
 The L<Dumper|Template::Plugin::Dumper> plugin provides an interface to the
 Data::Dumper module. See L<Template::Plugin::Dumper> and L<Data::Dumper> for
-futher details.
+further details.
 
     [% USE dumper(indent=0, pad="<br>") %]
     [% dumper.dump(myvar, yourvar) %]
@@ -269,7 +269,7 @@ details.
 
 =head2 URL
 
-The L<URL|Template::Plugin::URL> plugin provides a simple way of contructing
+The L<URL|Template::Plugin::URL> plugin provides a simple way of constructing
 URLs from a base part and a variable set of parameters. See
 L<Template::Plugin::URL> for further details.
 

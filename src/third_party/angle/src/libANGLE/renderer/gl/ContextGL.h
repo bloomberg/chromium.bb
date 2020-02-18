@@ -13,10 +13,15 @@
 #include "libANGLE/renderer/ContextImpl.h"
 #include "libANGLE/renderer/gl/RendererGL.h"
 
+namespace angle
+{
+struct FeaturesGL;
+}  // namespace angle
+
 namespace sh
 {
 struct BlockMemberInfo;
-}
+}  // namespace sh
 
 namespace rx
 {
@@ -25,7 +30,6 @@ class ClearMultiviewGL;
 class FunctionsGL;
 class RendererGL;
 class StateManagerGL;
-struct WorkaroundsGL;
 
 class ContextGL : public ContextImpl
 {
@@ -84,22 +88,6 @@ class ContextGL : public ContextImpl
     // Flush and finish.
     angle::Result flush(const gl::Context *context) override;
     angle::Result finish(const gl::Context *context) override;
-
-    // Semaphore operations.
-    angle::Result waitSemaphore(const gl::Context *context,
-                                const gl::Semaphore *semaphore,
-                                GLuint numBufferBarriers,
-                                const GLuint *buffers,
-                                GLuint numTextureBarriers,
-                                const GLuint *textures,
-                                const GLenum *srcLayouts) override;
-    angle::Result signalSemaphore(const gl::Context *context,
-                                  const gl::Semaphore *semaphore,
-                                  GLuint numBufferBarriers,
-                                  const GLuint *buffers,
-                                  GLuint numTextureBarriers,
-                                  const GLuint *textures,
-                                  const GLenum *dstLayouts) override;
 
     // Drawing methods.
     angle::Result drawArrays(const gl::Context *context,
@@ -216,13 +204,11 @@ class ContextGL : public ContextImpl
     const gl::Extensions &getNativeExtensions() const override;
     const gl::Limitations &getNativeLimitations() const override;
 
-    void applyNativeWorkarounds(gl::Workarounds *workarounds) const override;
-
     // Handle helpers
     ANGLE_INLINE const FunctionsGL *getFunctions() const { return mRenderer->getFunctions(); }
 
     StateManagerGL *getStateManager();
-    const WorkaroundsGL &getWorkaroundsGL() const;
+    const angle::FeaturesGL &getFeaturesGL() const;
     BlitGL *getBlitter() const;
     ClearMultiviewGL *getMultiviewClearer() const;
 
@@ -236,6 +222,8 @@ class ContextGL : public ContextImpl
     angle::Result memoryBarrierByRegion(const gl::Context *context, GLbitfield barriers) override;
 
     void setMaxShaderCompilerThreads(GLuint count) override;
+
+    void invalidateTexture(gl::TextureType target) override;
 
   private:
     angle::Result setDrawArraysState(const gl::Context *context,

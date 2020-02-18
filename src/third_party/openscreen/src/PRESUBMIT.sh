@@ -10,7 +10,7 @@
 fail=0
 
 function check_clang_format() {
-  if ! cmp -s <(clang-format -style=file "$1") "$1"; then
+  if ! cmp -s <(./clang-format -style=file "$1") "$1"; then
     echo "Needs format: $1"
     fail=1
   fi
@@ -47,10 +47,21 @@ function check_gn_format() {
 if [[ "${BASH_VERSION:0:1}" -lt 4 ]]; then
   echo "This script requires at least bash version 4.0, please upgrade!"
   echo "Your version: " $BASH_VERSION
-  exit $fail
+  exit 1
 fi
 
-for f in $(git diff --name-only --diff-filter=d @{u}); do
+ppid=$(ps -o pid,ppid | awk -F ' ' "{ if (\$1 == $$) print \$2 }")
+invoker=$(ps -o pid,comm | awk -F ' ' "{ if (\$1 == $ppid) print \$2 }")
+
+if [[ "$invoker" != 'python' ]]; then
+  echo "This shouldn't be invoked directly, please use \`git cl presubmit\`."
+fi
+
+if [[ ! -e ./clang-format ]]; then
+  tools/install-build-tools.sh
+fi
+
+for f in $(git diff --name-only --diff-filter=d origin/master); do
   # Skip third party files, except our custom BUILD.gns
   if [[ $f =~ third_party/[^\/]*/src ]]; then
     continue;

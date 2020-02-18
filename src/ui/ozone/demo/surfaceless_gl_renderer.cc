@@ -266,9 +266,9 @@ void SurfacelessGlRenderer::RenderFrame() {
 
   back_buffer_ ^= 1;
   gl_surface_->SwapBuffersAsync(
-      base::Bind(&SurfacelessGlRenderer::PostRenderFrameTask,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind([](const gfx::PresentationFeedback&) {}));
+      base::BindOnce(&SurfacelessGlRenderer::PostRenderFrameTask,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::DoNothing());
 }
 
 void SurfacelessGlRenderer::PostRenderFrameTask(

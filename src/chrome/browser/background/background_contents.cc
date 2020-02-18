@@ -8,7 +8,6 @@
 
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -69,8 +68,6 @@ BackgroundContents::BackgroundContents(
       web_contents_.get(), extensions::VIEW_TYPE_BACKGROUND_CONTENTS);
   web_contents_->SetDelegate(this);
   content::WebContentsObserver::Observe(web_contents_.get());
-  data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
-      web_contents_.get());
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents_.get());
 
@@ -104,10 +101,7 @@ BackgroundContents::~BackgroundContents() {
   // (http://crbug.com/237781).
   registrar_.RemoveAll();
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
-      content::Source<Profile>(profile_),
-      content::Details<BackgroundContents>(this));
+  delegate_->OnBackgroundContentsDeleted(this);
   for (auto& observer : deferred_start_render_host_observer_list_)
     observer.OnDeferredStartRenderHostDestroyed(this);
 
@@ -124,10 +118,7 @@ void BackgroundContents::CreateRenderViewSoon(const GURL& url) {
 }
 
 void BackgroundContents::CloseContents(WebContents* source) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BACKGROUND_CONTENTS_CLOSED,
-      content::Source<Profile>(profile_),
-      content::Details<BackgroundContents>(this));
+  delegate_->OnBackgroundContentsClosed(this);
   delete this;
 }
 
@@ -143,10 +134,7 @@ void BackgroundContents::DidNavigateMainFramePostCommit(WebContents* tab) {
   // some way to scope navigation of a background page to its opener's security
   // origin. Note: if the first navigation is to a URL outside the app's
   // extent a background page will be opened but will remain at about:blank.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
-      content::Source<Profile>(profile_),
-      content::Details<BackgroundContents>(this));
+  delegate_->OnBackgroundContentsNavigated(this);
 }
 
 // Forward requests to add a new WebContents to our delegate.
@@ -168,10 +156,7 @@ bool BackgroundContents::IsNeverVisible(content::WebContents* web_contents) {
 }
 
 void BackgroundContents::RenderProcessGone(base::TerminationStatus status) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED,
-      content::Source<Profile>(profile_),
-      content::Details<BackgroundContents>(this));
+  delegate_->OnBackgroundContentsTerminated(this);
 
   // Our RenderView went away, so we should go away also, so killing the process
   // via the TaskManager doesn't permanently leave a BackgroundContents hanging

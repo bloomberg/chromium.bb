@@ -17,7 +17,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
 
 import java.net.URI;

@@ -23,6 +23,7 @@
 #include "modules/remote_bitrate_estimator/include/bwe_defines.h"
 #include "modules/remote_bitrate_estimator/include/remote_bitrate_estimator.h"
 #include "modules/rtp_rtcp/include/receive_statistics.h"
+#include "modules/rtp_rtcp/include/rtp_rtcp.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/rtcp_nack_stats.h"
 #include "modules/rtp_rtcp/source/rtcp_packet.h"
@@ -62,13 +63,7 @@ class RTCPSender {
     ModuleRtpRtcpImpl* module;
   };
 
-  RTCPSender(bool audio,
-             Clock* clock,
-             ReceiveStatisticsProvider* receive_statistics,
-             RtcpPacketTypeCounterObserver* packet_type_counter_observer,
-             RtcEventLog* event_log,
-             Transport* outgoing_transport,
-             int report_interval_ms);
+  explicit RTCPSender(const RtpRtcp::Configuration& config);
   virtual ~RTCPSender();
 
   RtcpMode Status() const;
@@ -117,7 +112,8 @@ class RTCPSender {
   int32_t SendLossNotification(const FeedbackState& feedback_state,
                                uint16_t last_decoded_seq_num,
                                uint16_t last_received_seq_num,
-                               bool decodability_flag);
+                               bool decodability_flag,
+                               bool buffering_allowed);
 
   void SetRemb(int64_t bitrate_bps, std::vector<uint32_t> ssrcs);
 
@@ -145,6 +141,7 @@ class RTCPSender {
   void SetTargetBitrate(unsigned int target_bitrate);
   void SetVideoBitrateAllocation(const VideoBitrateAllocation& bitrate);
   bool SendFeedbackPacket(const rtcp::TransportFeedback& packet);
+  bool SendNetworkStateEstimatePacket(const rtcp::RemoteEstimate& packet);
 
  private:
   class RtcpContext;

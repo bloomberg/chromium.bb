@@ -86,6 +86,7 @@ PROXY_CONSTMETHOD0(const SessionDescriptionInterface*,
                    pending_local_description)
 PROXY_CONSTMETHOD0(const SessionDescriptionInterface*,
                    pending_remote_description)
+PROXY_METHOD0(void, RestartIce)
 PROXY_METHOD2(void,
               CreateOffer,
               CreateSessionDescriptionObserver*,
@@ -117,9 +118,6 @@ PROXY_METHOD1(bool,
 PROXY_METHOD1(bool, AddIceCandidate, const IceCandidateInterface*)
 PROXY_METHOD1(bool, RemoveIceCandidates, const std::vector<cricket::Candidate>&)
 PROXY_METHOD1(RTCError, SetBitrate, const BitrateSettings&)
-PROXY_METHOD1(void,
-              SetBitrateAllocationStrategy,
-              std::unique_ptr<rtc::BitrateAllocationStrategy>)
 PROXY_METHOD1(void, SetAudioPlayout, bool)
 PROXY_METHOD1(void, SetAudioRecording, bool)
 PROXY_METHOD1(rtc::scoped_refptr<DtlsTransportInterface>,
@@ -131,11 +129,11 @@ PROXY_METHOD0(IceConnectionState, ice_connection_state)
 PROXY_METHOD0(IceConnectionState, standardized_ice_connection_state)
 PROXY_METHOD0(PeerConnectionState, peer_connection_state)
 PROXY_METHOD0(IceGatheringState, ice_gathering_state)
-PROXY_METHOD2(bool, StartRtcEventLog, rtc::PlatformFile, int64_t)
 PROXY_METHOD2(bool,
               StartRtcEventLog,
               std::unique_ptr<RtcEventLogOutput>,
               int64_t)
+PROXY_METHOD1(bool, StartRtcEventLog, std::unique_ptr<RtcEventLogOutput>)
 PROXY_METHOD0(void, StopRtcEventLog)
 PROXY_METHOD0(void, Close)
 END_PROXY_MAP()

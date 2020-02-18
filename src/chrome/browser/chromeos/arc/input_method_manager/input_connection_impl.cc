@@ -65,7 +65,6 @@ InputConnectionImpl::InputConnectionImpl(
       imm_bridge_(imm_bridge),
       input_context_id_(input_context_id),
       binding_(this),
-      composing_text_(),
       state_update_timer_() {}
 
 InputConnectionImpl::~InputConnectionImpl() = default;
@@ -130,7 +129,6 @@ void InputConnectionImpl::CommitText(const base::string16& text,
   if (!ime_engine_->CommitText(input_context_id_,
                                base::UTF16ToUTF8(text).c_str(), &error))
     LOG(ERROR) << "CommitText failed: error=\"" << error << "\"";
-  composing_text_.clear();
 }
 
 void InputConnectionImpl::DeleteSurroundingText(int before, int after) {
@@ -159,12 +157,6 @@ void InputConnectionImpl::DeleteSurroundingText(int before, int after) {
 void InputConnectionImpl::FinishComposingText() {
   StartStateUpdateTimer();
 
-  if (composing_text_.empty()) {
-    // There is no ongoing composing. Do nothing.
-    UpdateTextInputState(true);
-    return;
-  }
-
   ui::TextInputClient* client = GetTextInputClient();
   if (!client)
     return;
@@ -172,14 +164,22 @@ void InputConnectionImpl::FinishComposingText() {
   client->GetEditableSelectionRange(&selection_range);
   client->GetCompositionTextRange(&composition_range);
 
+  if (composition_range.is_empty()) {
+    // There is no ongoing composing. Do nothing.
+    UpdateTextInputState(true);
+    return;
+  }
+
+  base::string16 composing_text;
+  client->GetTextFromRange(composition_range, &composing_text);
+
   std::string error;
   if (!ime_engine_->CommitText(input_context_id_,
-                               base::UTF16ToUTF8(composing_text_).c_str(),
+                               base::UTF16ToUTF8(composing_text).c_str(),
                                &error)) {
     LOG(ERROR) << "FinishComposingText: CommitText() failed, error=\"" << error
                << "\"";
   }
-  composing_text_.clear();
 
   if (selection_range.start() == selection_range.end() &&
       selection_range.start() == composition_range.end()) {
@@ -229,7 +229,6 @@ void InputConnectionImpl::SetComposingText(
                << ", error=\"" << error << "\"";
     return;
   }
-  composing_text_ = text;
 }
 
 void InputConnectionImpl::RequestTextInputState(
@@ -273,6 +272,38 @@ void InputConnectionImpl::SendKeyEvent(mojom::KeyEventDataPtr data_ptr) {
   event.caps_lock = data_ptr->is_capslock_on;
 
   ime_engine_->SendKeyEvents(input_context_id_, {event});
+}
+
+void InputConnectionImpl::SetCompositionRange(
+    const gfx::Range& new_composition_range) {
+  ui::TextInputClient* client = GetTextInputClient();
+  if (!client)
+    return;
+
+  gfx::Range selection_range = gfx::Range();
+  if (!client->GetEditableSelectionRange(&selection_range)) {
+    LOG(ERROR)
+        << "SetCompositionRange failed: Editable text field is not focused";
+    return;
+  }
+
+  StartStateUpdateTimer();
+
+  const int before = selection_range.start() - new_composition_range.start();
+  const int after = new_composition_range.end() - selection_range.end();
+  input_method::InputMethodEngineBase::SegmentInfo segment_info;
+  segment_info.start = 0;
+  segment_info.end = new_composition_range.length();
+  segment_info.style =
+      input_method::InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+
+  std::string error;
+  if (!ime_engine_->input_method::InputMethodEngineBase::SetCompositionRange(
+          input_context_id_, before, after, {segment_info}, &error)) {
+    LOG(ERROR) << "SetCompositionRange failed: range="
+               << new_composition_range.ToString() << ", error=\"" << error
+               << "\"";
+  }
 }
 
 void InputConnectionImpl::StartStateUpdateTimer() {

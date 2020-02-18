@@ -111,6 +111,91 @@ cr.define('cr.login', function() {
     'realm',
   ];
 
+
+  /**
+   * Handlers for the HTML5 messages received from Gaia.
+   * Each handler is a function that receives the Authenticator as 'this',
+   * and the data field of the HTML5 Payload.
+   */
+  const messageHandlers = {
+    'attemptLogin': function(msg) {
+      this.email_ = msg.email;
+      if (this.authMode == AuthMode.DESKTOP) {
+        this.password_ = msg.password;
+      }
+      this.isSamlUserPasswordless_ = null;
+
+      this.chooseWhatToSync_ = msg.chooseWhatToSync;
+      // We need to dispatch only first event, before user enters password.
+      this.dispatchEvent(new CustomEvent('attemptLogin', {detail: msg.email}));
+    },
+    'dialogShown': function(msg) {
+      this.dispatchEvent(new Event('dialogShown'));
+    },
+    'dialogHidden': function(msg) {
+      this.dispatchEvent(new Event('dialogHidden'));
+    },
+    'backButton': function(msg) {
+      this.dispatchEvent(new CustomEvent('backButton', {detail: msg.show}));
+    },
+    'showView': function(msg) {
+      this.dispatchEvent(new Event('showView'));
+    },
+    'menuItemClicked': function(msg) {
+      this.dispatchEvent(
+          new CustomEvent('menuItemClicked', {detail: msg.item}));
+    },
+    'identifierEntered': function(msg) {
+      this.dispatchEvent(new CustomEvent(
+          'identifierEntered',
+          {detail: {accountIdentifier: msg.accountIdentifier}}));
+    },
+    'userInfo': function(msg) {
+      this.services_ = msg.services;
+      if (this.email_ && this.gaiaId_ && this.sessionIndex_) {
+        this.maybeCompleteAuth_();
+      }
+    },
+    'showIncognito': function(msg) {
+      this.dispatchEvent(new Event('showIncognito'));
+    },
+    'setPrimaryActionLabel': function(msg) {
+      if (!this.enableGaiaActionButtons_) {
+        return;
+      }
+      this.dispatchEvent(
+          new CustomEvent('setPrimaryActionLabel', {detail: msg.value}));
+    },
+    'setPrimaryActionEnabled': function(msg) {
+      if (!this.enableGaiaActionButtons_) {
+        return;
+      }
+      this.dispatchEvent(
+          new CustomEvent('setPrimaryActionEnabled', {detail: msg.value}));
+    },
+    'setSecondaryActionLabel': function(msg) {
+      if (!this.enableGaiaActionButtons_) {
+        return;
+      }
+      this.dispatchEvent(
+          new CustomEvent('setSecondaryActionLabel', {detail: msg.value}));
+    },
+    'setSecondaryActionEnabled': function(msg) {
+      if (!this.enableGaiaActionButtons_) {
+        return;
+      }
+      this.dispatchEvent(
+          new CustomEvent('setSecondaryActionEnabled', {detail: msg.value}));
+    },
+    'setAllActionsEnabled': function(msg) {
+      if (!this.enableGaiaActionButtons_) {
+        return;
+      }
+      this.dispatchEvent(
+          new CustomEvent('setAllActionsEnabled', {detail: msg.value}));
+    }
+  };
+
   /**
    * Initializes the authenticator component.
    */
@@ -143,6 +228,7 @@ cr.define('cr.login', function() {
       this.readyFired_ = false;
       this.webview_ = typeof webview == 'string' ? $(webview) : webview;
       assert(this.webview_);
+      this.enableGaiaActionButtons_ = false;
       this.webviewEventManager_ = WebviewEventManager.create();
 
       this.clientId_ = null;
@@ -291,8 +377,9 @@ cr.define('cr.login', function() {
     /**
      * Re-binds to another webview.
      * @param {Object} webview the new webview to be used by this Authenticator.
+     * @private
      */
-    rebindWebview(webview) {
+    rebindWebview_(webview) {
       if (!this.isDomLoaded_) {
         // We haven't bound to the previously set webview yet, so simply update
         // |webview_| to use the new element during the delayed initialization.
@@ -303,6 +390,51 @@ cr.define('cr.login', function() {
       assert(!this.webview_);
       this.webview_ = webview;
       this.bindToWebview_();
+    }
+
+    /**
+     * Copies attributes between nodes.
+     * @param {!Element} fromNode source to copy attributes from
+     * @param {!Element} toNode target to copy attributes to
+     * @param {!Set<string>} skipAttributes specifies attributes to be skipped
+     * @private
+     */
+    copyAttributes_(fromNode, toNode, skipAttributes) {
+      for (let i = 0; i < fromNode.attributes.length; ++i) {
+        const attribute = fromNode.attributes[i];
+        if (!skipAttributes.has(attribute.nodeName)) {
+          toNode.setAttribute(attribute.nodeName, attribute.nodeValue);
+        }
+      }
+    }
+
+    /**
+     * Changes the 'partition' attribute of |webview_|. If |webview_| has
+     * already navigated, this function re-creates it since the storage
+     * partition of an active renderer process cannot change.
+     * @param {string} newWebviewPartitionName the new partition
+     * @private
+     */
+    setWebviewPartition(newWebviewPartitionName) {
+      if (!this.webview_.src) {
+        // We have not navigated anywhere yet. Note that a webview's src
+        // attribute does not allow a change back to "".
+        this.webview_.partition = newWebviewPartitionName;
+      } else if (this.webview_.partition != newWebviewPartitionName) {
+        // The webview has already navigated. We have to re-create it.
+        const webivewParent = this.webview_.parentElement;
+
+        // Copy all attributes except for partition and src from the previous
+        // webview. Use the specified |newWebviewPartitionName|.
+        const newWebview = document.createElement('webview');
+        this.copyAttributes_(
+            this.webview_, newWebview, new Set(['src', 'partition']));
+        newWebview.partition = newWebviewPartitionName;
+
+        webivewParent.replaceChild(newWebview, this.webview_);
+
+        this.rebindWebview_(newWebview);
+      }
     }
 
     /**
@@ -319,6 +451,7 @@ cr.define('cr.login', function() {
       this.isConstrainedWindow_ = data.constrained == '1';
       this.clientId_ = data.clientId;
       this.dontResizeNonEmbeddedPages = data.dontResizeNonEmbeddedPages;
+      this.enableGaiaActionButtons_ = data.enableGaiaActionButtons;
 
       this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
       this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
@@ -605,42 +738,20 @@ cr.define('cr.login', function() {
       }
 
       const msg = e.data;
-      if (msg.method == 'attemptLogin') {
-        this.email_ = msg.email;
-        if (this.authMode == AuthMode.DESKTOP) {
-          this.password_ = msg.password;
-        }
-        this.isSamlUserPasswordless_ = null;
-
-        this.chooseWhatToSync_ = msg.chooseWhatToSync;
-        // We need to dispatch only first event, before user enters password.
-        this.dispatchEvent(
-            new CustomEvent('attemptLogin', {detail: msg.email}));
-      } else if (msg.method == 'dialogShown') {
-        this.dispatchEvent(new Event('dialogShown'));
-      } else if (msg.method == 'dialogHidden') {
-        this.dispatchEvent(new Event('dialogHidden'));
-      } else if (msg.method == 'backButton') {
-        this.dispatchEvent(new CustomEvent('backButton', {detail: msg.show}));
-      } else if (msg.method == 'showView') {
-        this.dispatchEvent(new Event('showView'));
-      } else if (msg.method == 'menuItemClicked') {
-        this.dispatchEvent(
-            new CustomEvent('menuItemClicked', {detail: msg.item}));
-      } else if (msg.method == 'identifierEntered') {
-        this.dispatchEvent(new CustomEvent(
-            'identifierEntered',
-            {detail: {accountIdentifier: msg.accountIdentifier}}));
-      } else if (msg.method == 'userInfo') {
-        this.services_ = msg.services;
-        if (this.email_ && this.gaiaId_ && this.sessionIndex_) {
-          this.maybeCompleteAuth_();
-        }
-      } else if (msg.method == 'showIncognito') {
-        this.dispatchEvent(new Event('showIncognito'));
+      if (msg.method in messageHandlers) {
+        messageHandlers[msg.method].call(this, msg);
       } else {
         console.warn('Unrecognized message from GAIA: ' + msg.method);
       }
+    }
+
+    /**
+     * Invoked to send a HTML5 message to the webview element.
+     * @param {object} e Payload of the HTML5 message.
+     */
+    sendMessageToWebview(payload) {
+      const currentUrl = this.webview_.src;
+      this.webview_.contentWindow.postMessage(payload, currentUrl);
     }
 
     /**
@@ -697,9 +808,9 @@ cr.define('cr.login', function() {
       if (this.isSamlUserPasswordless_ === null &&
           this.authFlow == AuthFlow.SAML && this.email_ && this.gaiaId_ &&
           this.getIsSamlUserPasswordlessCallback) {
-        // Start a request to obtain the |isSamlUserPasswordless_| value for the
-        // current user. Once the response arrives, maybeCompleteAuth_() will be
-        // called again.
+        // Start a request to obtain the |isSamlUserPasswordless_| value for
+        // the current user. Once the response arrives, maybeCompleteAuth_()
+        // will be called again.
         this.getIsSamlUserPasswordlessCallback(
             this.email_, this.gaiaId_,
             this.onGotIsSamlUserPasswordless_.bind(
@@ -735,8 +846,8 @@ cr.define('cr.login', function() {
         console.warn('Authenticator: No password scraped for SAML.');
       } else if (this.needPassword) {
         if (this.samlHandler_.scrapedPasswordCount == 1) {
-          // If we scraped exactly one password, we complete the authentication
-          // right away.
+          // If we scraped exactly one password, we complete the
+          // authentication right away.
           this.password_ = this.samlHandler_.firstScrapedPassword;
           this.onAuthCompleted_();
           return;
@@ -755,9 +866,9 @@ cr.define('cr.login', function() {
     }
 
     /**
-     * Invoked to complete the authentication using the password the user enters
-     * manually for non-principals API SAML IdPs that we couldn't scrape their
-     * password input.
+     * Invoked to complete the authentication using the password the user
+     * enters manually for non-principals API SAML IdPs that we couldn't
+     * scrape their password input.
      */
     completeAuthWithManualPassword(password) {
       this.password_ = password;
@@ -786,8 +897,8 @@ cr.define('cr.login', function() {
      * @private
      */
     assertStringArray_(arr, nameOfArr) {
-      console.assert(Array.isArray(arr),
-          'FATAL: Bad %s type: %s', nameOfArr, typeof arr);
+      console.assert(
+          Array.isArray(arr), 'FATAL: Bad %s type: %s', nameOfArr, typeof arr);
       for (let i = 0; i < arr.length; ++i) {
         this.assertStringElement_(arr[i], nameOfArr, i);
       }
@@ -798,8 +909,9 @@ cr.define('cr.login', function() {
      * @private
      */
     assertStringDict_(dict, nameOfDict) {
-      console.assert(typeof dict == 'object',
-          'FATAL: Bad %s type: %s', nameOfDict, typeof dict);
+      console.assert(
+          typeof dict == 'object', 'FATAL: Bad %s type: %s', nameOfDict,
+          typeof dict);
       for (const key in dict) {
         this.assertStringElement_(dict[key], nameOfDict, key);
       }
@@ -807,8 +919,9 @@ cr.define('cr.login', function() {
 
     /** Asserts an element |elem| in a certain collection is a string. */
     assertStringElement_(elem, nameOfCollection, index) {
-      console.assert(typeof elem == 'string',
-          'FATAL: Bad %s[%s] type: %s', nameOfCollection, index, typeof elem);
+      console.assert(
+          typeof elem == 'string', 'FATAL: Bad %s[%s] type: %s',
+          nameOfCollection, index, typeof elem);
     }
 
     /**
@@ -907,9 +1020,9 @@ cr.define('cr.login', function() {
      * @private
      */
     onSamlApiPasswordAdded_(e) {
-      // Saml API 'add' password might be received after the 'loadcommit' event.
-      // In such case, maybeCompleteAuth_ should be attempted again if GAIA ID
-      // is available.
+      // Saml API 'add' password might be received after the 'loadcommit'
+      // event. In such case, maybeCompleteAuth_ should be attempted again if
+      // GAIA ID is available.
       if (this.gaiaId_) {
         this.maybeCompleteAuth_();
       }
@@ -938,8 +1051,8 @@ cr.define('cr.login', function() {
     onContentLoad_(e) {
       if (this.isConstrainedWindow_) {
         // Signin content in constrained windows should not zoom. Isolate the
-        // webview from the zooming of other webviews using the 'per-view' zoom
-        // mode, and then set it to 100% zoom.
+        // webview from the zooming of other webviews using the 'per-view'
+        // zoom mode, and then set it to 100% zoom.
         this.webview_.setZoomMode('per-view');
         this.webview_.setZoom(1);
       }
@@ -951,8 +1064,8 @@ cr.define('cr.login', function() {
           'method': 'handshake',
         };
 
-        // |this.webview_.contentWindow| may be null after network error screen
-        // is shown. See crbug.com/770999.
+        // |this.webview_.contentWindow| may be null after network error
+        // screen is shown. See crbug.com/770999.
         if (this.webview_.contentWindow) {
           this.webview_.contentWindow.postMessage(msg, currentUrl);
         } else {
@@ -1029,7 +1142,5 @@ cr.define('cr.login', function() {
   Authenticator.AuthMode = AuthMode;
   Authenticator.SUPPORTED_PARAMS = SUPPORTED_PARAMS;
 
-  return {
-    Authenticator: Authenticator
-  };
+  return {Authenticator: Authenticator};
 });

@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/task/promise/abstract_promise.h"
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task/promise/dependent_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
 namespace base {
@@ -13,33 +15,40 @@ namespace internal {
 
 AbstractPromise::~AbstractPromise() {
 #if DCHECK_IS_ON()
-  CheckedAutoLock lock(GetCheckedLock());
+  {
+    CheckedAutoLock lock(GetCheckedLock());
 
-  DCHECK(!must_catch_ancestor_that_could_reject_ ||
-         passed_catch_responsibility_)
-      << "Promise chain ending at " << from_here_.ToString()
-      << " didn't have a catch for potentially rejecting promise here "
-      << must_catch_ancestor_that_could_reject_->from_here().ToString();
+    DCHECK(!must_catch_ancestor_that_could_reject_ ||
+           passed_catch_responsibility_)
+        << "Promise chain ending at " << from_here_.ToString()
+        << " didn't have a catch for potentially rejecting promise here "
+        << must_catch_ancestor_that_could_reject_->from_here().ToString();
 
-  DCHECK(!this_must_catch_ || passed_catch_responsibility_)
-      << "Potentially rejecting promise at " << from_here_.ToString()
-      << " doesn't have a catch .";
+    DCHECK(!this_must_catch_ || passed_catch_responsibility_)
+        << "Potentially rejecting promise at " << from_here_.ToString()
+        << " doesn't have a catch.";
+  }
 #endif
+
+  // If we're not settled we might be retaining some promises which need to be
+  // released to prevent memory leaks. If we are settled this does nothing.
+  OnCanceled();
 }
 
 bool AbstractPromise::IsCanceled() const {
   if (dependents_.IsCanceled())
     return true;
 
-  const Executor* executor = GetExecutor();
+  const PromiseExecutor* executor = GetExecutor();
   return executor && executor->IsCancelled();
 }
 
 const AbstractPromise* AbstractPromise::FindNonCurriedAncestor() const {
   const AbstractPromise* promise = this;
-  while (promise->IsResolvedWithPromise()) {
-    promise =
-        unique_any_cast<scoped_refptr<AbstractPromise>>(promise->value_).get();
+  while (
+      const scoped_refptr<AbstractPromise>* curried_promise =
+          unique_any_cast<scoped_refptr<AbstractPromise>>(&promise->value_)) {
+    promise = curried_promise->get();
   }
   return promise;
 }
@@ -53,23 +62,29 @@ void AbstractPromise::AddAsDependentForAllPrerequisites() {
   // although that'll be done lazily (only once they resolve/reject, so there
   // is a possibility the DCHECKs might be racy.
 
-  for (AdjacencyListNode& node : prerequisites_->prerequisite_list) {
-    node.dependent_node.dependent = this;
+  for (DependentList::Node& node : *prerequisites_->prerequisite_list()) {
+    node.dependent() = this;
 
-    // If |node.prerequisite| was canceled then early out because
+    // If |node.prerequisite()| was canceled then early out because
     // |prerequisites_->prerequisite_list| will have been cleared.
-    if (!node.prerequisite->InsertDependentOnAnyThread(&node.dependent_node))
+    DCHECK(node.prerequisite());
+    if (!node.prerequisite()->InsertDependentOnAnyThread(&node))
       break;
   }
 }
 
 bool AbstractPromise::InsertDependentOnAnyThread(DependentList::Node* node) {
-  scoped_refptr<AbstractPromise>& dependent = node->dependent;
+  scoped_refptr<AbstractPromise>& dependent = node->dependent();
+
+  // Used to ensure no reference to the dependent is kept in case the Promise is
+  // already settled.
+  scoped_refptr<AbstractPromise> dependent_to_release;
 
 #if DCHECK_IS_ON()
   {
     CheckedAutoLock lock(GetCheckedLock());
-    node->dependent->MaybeInheritChecks(this);
+    DCHECK(node->dependent()) << from_here_.ToString();
+    node->dependent()->MaybeInheritChecks(this);
   }
 #endif
 
@@ -79,16 +94,37 @@ bool AbstractPromise::InsertDependentOnAnyThread(DependentList::Node* node) {
     case DependentList::InsertResult::SUCCESS:
       break;
 
-    case DependentList::InsertResult::FAIL_PROMISE_RESOLVED:
-      dependent->OnPrerequisiteResolved();
+    case DependentList::InsertResult::FAIL_PROMISE_RESOLVED: {
+      AbstractPromise* curried_promise = GetCurriedPromise();
+      if (curried_promise) {
+        // Try and reinsert |node| in the curried ancestor.
+        node->SetPrerequisite(curried_promise);
+        return curried_promise->InsertDependentOnAnyThread(node);
+      } else {
+        dependent_to_release = std::move(dependent);
+        node->RetainSettledPrerequisite();
+        dependent_to_release->OnPrerequisiteResolved(this);
+      }
       break;
+    }
 
-    case DependentList::InsertResult::FAIL_PROMISE_REJECTED:
-      dependent->OnPrerequisiteRejected(this);
+    case DependentList::InsertResult::FAIL_PROMISE_REJECTED: {
+      AbstractPromise* curried_promise = GetCurriedPromise();
+      if (curried_promise) {
+        // Try and reinsert |node| in the curried ancestor.
+        node->SetPrerequisite(curried_promise);
+        return curried_promise->InsertDependentOnAnyThread(node);
+      } else {
+        dependent_to_release = std::move(dependent);
+        node->RetainSettledPrerequisite();
+        dependent_to_release->OnPrerequisiteRejected(this);
+      }
       break;
+    }
 
     case DependentList::InsertResult::FAIL_PROMISE_CANCELED:
-      return dependent->OnPrerequisiteCancelled();
+      dependent_to_release = std::move(dependent);
+      return dependent_to_release->OnPrerequisiteCancelled(this);
   }
 
   return true;
@@ -111,12 +147,12 @@ CheckedLock& AbstractPromise::GetCheckedLock() {
 
 void AbstractPromise::DoubleMoveDetector::CheckForDoubleMoveErrors(
     const base::Location& new_dependent_location,
-    Executor::ArgumentPassingType new_dependent_executor_type) {
+    PromiseExecutor::ArgumentPassingType new_dependent_executor_type) {
   switch (new_dependent_executor_type) {
-    case Executor::ArgumentPassingType::kNoCallback:
+    case PromiseExecutor::ArgumentPassingType::kNoCallback:
       return;
 
-    case Executor::ArgumentPassingType::kNormal:
+    case PromiseExecutor::ArgumentPassingType::kNormal:
       DCHECK(!dependent_move_only_promise_)
           << "Can't mix move only and non-move only " << callback_type_
           << "callback arguments for the same " << callback_type_
@@ -127,7 +163,7 @@ void AbstractPromise::DoubleMoveDetector::CheckForDoubleMoveErrors(
           std::make_unique<Location>(new_dependent_location);
       return;
 
-    case Executor::ArgumentPassingType::kMove:
+    case PromiseExecutor::ArgumentPassingType::kMove:
       DCHECK(!dependent_move_only_promise_ ||
              *dependent_move_only_promise_ == new_dependent_location)
           << "Can't have multiple move only " << callback_type_
@@ -152,7 +188,7 @@ void AbstractPromise::MaybeInheritChecks(AbstractPromise* prerequisite) {
     // Inherit |prerequisite|'s resolve ancestor if it doesn't have a resolve
     // callback.
     if (prerequisite->resolve_argument_passing_type_ ==
-        Executor::ArgumentPassingType::kNoCallback) {
+        PromiseExecutor::ArgumentPassingType::kNoCallback) {
       ancestor_that_could_resolve_ = prerequisite->ancestor_that_could_resolve_;
     }
 
@@ -167,7 +203,7 @@ void AbstractPromise::MaybeInheritChecks(AbstractPromise* prerequisite) {
   if (!ancestor_that_could_reject_) {
     // Inherit |prerequisite|'s reject ancestor if it doesn't have a Catch.
     if (prerequisite->reject_argument_passing_type_ ==
-        Executor::ArgumentPassingType::kNoCallback) {
+        PromiseExecutor::ArgumentPassingType::kNoCallback) {
       ancestor_that_could_reject_ = prerequisite->ancestor_that_could_reject_;
     }
 
@@ -182,7 +218,7 @@ void AbstractPromise::MaybeInheritChecks(AbstractPromise* prerequisite) {
   if (!must_catch_ancestor_that_could_reject_) {
     // Inherit |prerequisite|'s must catch ancestor if it doesn't have a Catch.
     if (prerequisite->reject_argument_passing_type_ ==
-        Executor::ArgumentPassingType::kNoCallback) {
+        PromiseExecutor::ArgumentPassingType::kNoCallback) {
       must_catch_ancestor_that_could_reject_ =
           prerequisite->must_catch_ancestor_that_could_reject_;
     }
@@ -224,33 +260,44 @@ AbstractPromise::DoubleMoveDetector::~DoubleMoveDetector() = default;
 
 #endif
 
-const AbstractPromise::Executor* AbstractPromise::GetExecutor() const {
-  return base::unique_any_cast<Executor>(&value_);
+AbstractPromise* AbstractPromise::GetCurriedPromise() {
+  if (scoped_refptr<AbstractPromise>* curried_promise_refptr =
+          unique_any_cast<scoped_refptr<AbstractPromise>>(&value_)) {
+    return curried_promise_refptr->get();
+  } else {
+    return nullptr;
+  }
 }
 
-AbstractPromise::Executor::PrerequisitePolicy
-AbstractPromise::GetPrerequisitePolicy() {
-  Executor* executor = GetExecutor();
+const PromiseExecutor* AbstractPromise::GetExecutor() const {
+  return base::unique_any_cast<PromiseExecutor>(&value_);
+}
+
+PromiseExecutor::PrerequisitePolicy AbstractPromise::GetPrerequisitePolicy() {
+  PromiseExecutor* executor = GetExecutor();
   if (!executor) {
     // If there's no executor it's because the promise has already run. We
     // can't run again however. The only circumstance in which we expect
     // GetPrerequisitePolicy() to be called after execution is when it was
-    // resolved with a promise.
-    DCHECK(IsResolvedWithPromise());
-    return Executor::PrerequisitePolicy::kNever;
+    // resolved with a promise or we're already settled.
+    DCHECK(IsSettled());
+    return PromiseExecutor::PrerequisitePolicy::kNever;
   }
   return executor->GetPrerequisitePolicy();
 }
 
-AbstractPromise* AbstractPromise::GetFirstRejectedPrerequisite() const {
+AbstractPromise* AbstractPromise::GetFirstSettledPrerequisite() const {
   if (!prerequisites_)
     return nullptr;
-  return reinterpret_cast<AbstractPromise*>(
-      prerequisites_->first_rejecting_promise.load(std::memory_order_acquire));
+  return prerequisites_->GetFirstSettledPrerequisite();
 }
 
 void AbstractPromise::Execute() {
-  if (IsCanceled()) {
+  const PromiseExecutor* executor = GetExecutor();
+  DCHECK(executor || dependents_.IsCanceled())
+      << from_here_.ToString() << " value_ contains " << value_.type();
+
+  if (!executor || executor->IsCancelled()) {
     OnCanceled();
     return;
   }
@@ -258,108 +305,90 @@ void AbstractPromise::Execute() {
 #if DCHECK_IS_ON()
   // Clear |must_catch_ancestor_that_could_reject_| if we can catch it.
   if (reject_argument_passing_type_ !=
-      Executor::ArgumentPassingType::kNoCallback) {
+      PromiseExecutor::ArgumentPassingType::kNoCallback) {
     CheckedAutoLock lock(GetCheckedLock());
     must_catch_ancestor_that_could_reject_ = nullptr;
   }
 #endif
 
-  if (IsResolvedWithPromise()) {
-    bool settled = DispatchIfNonCurriedRootSettled();
-    DCHECK(settled);
-
-    prerequisites_->prerequisite_list.clear();
-    return;
-  }
-
-  DCHECK(GetExecutor()) << from_here_.ToString() << " value_ contains "
-                        << value_.type();
+  DCHECK(!IsResolvedWithPromise());
 
   // This is likely to delete the executor.
   GetExecutor()->Execute(this);
 }
 
-bool AbstractPromise::DispatchIfNonCurriedRootSettled() {
-  AbstractPromise* curried_root = FindNonCurriedAncestor();
-  if (!curried_root->IsSettled())
-    return false;
-
-#if DCHECK_IS_ON()
-  {
-    CheckedAutoLock lock(GetCheckedLock());
-    MaybeInheritChecks(curried_root);
+void AbstractPromise::ReplaceCurriedPrerequisite(
+    AbstractPromise* curried_prerequisite,
+    AbstractPromise* replacement) {
+  DCHECK(curried_prerequisite->IsResolved() ||
+         curried_prerequisite->IsRejected());
+  DCHECK(curried_prerequisite->IsResolvedWithPromise());
+  DCHECK(replacement);
+  for (DependentList::Node& node : *prerequisites_->prerequisite_list()) {
+    if (node.prerequisite() == curried_prerequisite) {
+      node.Reset(replacement, this);
+      replacement->InsertDependentOnAnyThread(&node);
+      return;
+    }
   }
-#endif
-
-  if (curried_root->IsResolved()) {
-    OnResolveDispatchReadyDependents();
-  } else if (curried_root->IsRejected()) {
-    OnRejectDispatchReadyDependents();
-  } else {
-    DCHECK(curried_root->IsCanceled());
-    OnPrerequisiteCancelled();
-  }
-  return true;
+  NOTREACHED();
 }
 
-void AbstractPromise::OnPrerequisiteResolved() {
-  if (IsResolvedWithPromise()) {
-    bool settled = DispatchIfNonCurriedRootSettled();
-    DCHECK(settled);
-    return;
-  }
+void AbstractPromise::OnPrerequisiteResolved(
+    AbstractPromise* resolved_prerequisite) {
+  DCHECK(resolved_prerequisite->IsResolved());
 
   switch (GetPrerequisitePolicy()) {
-    case Executor::PrerequisitePolicy::kAll:
+    case PromiseExecutor::PrerequisitePolicy::kAll:
       if (prerequisites_->DecrementPrerequisiteCountAndCheckIfZero())
         DispatchPromise();
       break;
 
-    case Executor::PrerequisitePolicy::kAny:
+    case PromiseExecutor::PrerequisitePolicy::kAny:
       // PrerequisitePolicy::kAny should resolve immediately.
-      DispatchPromise();
+      if (prerequisites_->MarkPrerequisiteAsSettling(resolved_prerequisite))
+        DispatchPromise();
       break;
 
-    case Executor::PrerequisitePolicy::kNever:
+    case PromiseExecutor::PrerequisitePolicy::kNever:
       break;
   }
 }
 
 void AbstractPromise::OnPrerequisiteRejected(
-    AbstractPromise* rejected_promise) {
-  DCHECK(rejected_promise->IsRejected());
-  uintptr_t expected = 0;
-  // Promises::All (or Race if we add that) can have multiple prerequsites and
-  // it will reject as soon as any prerequsite rejects. Multiple prerequsites
-  // can reject, but we wish to record only the first one.
-  bool is_first_rejection =
-      prerequisites_->first_rejecting_promise.compare_exchange_strong(
-          expected, reinterpret_cast<uintptr_t>(rejected_promise),
-          std::memory_order_acq_rel);
-  // We only want to dispatch a promise the first time a prerequisite is
-  // rejected because the executors can only be invoked once.
-  if (is_first_rejection)
+    AbstractPromise* rejected_prerequisite) {
+  DCHECK(rejected_prerequisite->IsRejected());
+
+  // Promises::All (or Race if we add that) can have multiple prerequisites and
+  // it will reject as soon as any prerequisite rejects. Multiple prerequisites
+  // can reject, but we wish to record only the first one. Also we can only
+  // invoke executors once.
+  if (prerequisites_->MarkPrerequisiteAsSettling(rejected_prerequisite)) {
     DispatchPromise();
+  }
 }
 
-bool AbstractPromise::OnPrerequisiteCancelled() {
+bool AbstractPromise::OnPrerequisiteCancelled(
+    AbstractPromise* canceled_prerequisite) {
   switch (GetPrerequisitePolicy()) {
-    case Executor::PrerequisitePolicy::kAll:
+    case PromiseExecutor::PrerequisitePolicy::kAll:
       // PrerequisitePolicy::kAll should cancel immediately.
       OnCanceled();
       return false;
 
-    case Executor::PrerequisitePolicy::kAny:
+    case PromiseExecutor::PrerequisitePolicy::kAny:
       // PrerequisitePolicy::kAny should only cancel if all if it's
       // pre-requisites have been canceled.
       if (prerequisites_->DecrementPrerequisiteCountAndCheckIfZero()) {
         OnCanceled();
         return false;
+      } else {
+        prerequisites_->RemoveCanceledPrerequisite(canceled_prerequisite);
       }
       return true;
 
-    case Executor::PrerequisitePolicy::kNever:
-      // If we we where resolved with a promise then we can't have had
+    case PromiseExecutor::PrerequisitePolicy::kNever:
+      // If we where resolved with a promise then we can't have had
       // PrerequisitePolicy::kAny or PrerequisitePolicy::kNever before the
       // executor was replaced with the curried promise, so pass on
       // cancellation.
@@ -370,38 +399,81 @@ bool AbstractPromise::OnPrerequisiteCancelled() {
 }
 
 void AbstractPromise::OnResolveDispatchReadyDependents() {
-  DependentList::Node* dependent_list = dependents_.ConsumeOnceForResolve();
-  dependent_list = NonThreadSafeReverseList(dependent_list);
+  class Visitor : public DependentList::Visitor {
+   public:
+    explicit Visitor(AbstractPromise* resolved_prerequisite)
+        : resolved_prerequisite_(resolved_prerequisite) {}
 
-  // Propagate resolve to dependents.
-  DependentList::Node* next;
-  for (DependentList::Node* node = dependent_list; node; node = next) {
-    // We want to release |node->dependent| but we need to do so before
-    // we post a task to execute |dependent| on what might be another thread.
-    scoped_refptr<AbstractPromise> dependent = std::move(node->dependent);
-    // OnPrerequisiteResolved might post a task which destructs |node| on
-    // another thread so load |node->next| now.
-    next = node->next.load(std::memory_order_relaxed);
-    dependent->OnPrerequisiteResolved();
-  }
+   private:
+    void Visit(scoped_refptr<AbstractPromise> dependent) override {
+      dependent->OnPrerequisiteResolved(resolved_prerequisite_);
+    }
+    AbstractPromise* const resolved_prerequisite_;
+  };
+
+  Visitor visitor(this);
+  dependents_.ResolveAndConsumeAllDependents(&visitor);
 }
 
 void AbstractPromise::OnRejectDispatchReadyDependents() {
-  DependentList::Node* dependent_list = dependents_.ConsumeOnceForReject();
-  dependent_list = NonThreadSafeReverseList(dependent_list);
+  class Visitor : public DependentList::Visitor {
+   public:
+    explicit Visitor(AbstractPromise* rejected_prerequisite)
+        : rejected_prerequisite_(rejected_prerequisite) {}
 
-  // Propagate rejection to dependents. We always propagate rejection
-  // immediately.
-  DependentList::Node* next;
-  for (DependentList::Node* node = dependent_list; node; node = next) {
-    // We want to release |node->dependent| but we need to do so before
-    // we post a task to execute |dependent| on what might be another thread.
-    scoped_refptr<AbstractPromise> dependent = std::move(node->dependent);
-    // OnPrerequisiteRejected might post a task which destructs |node| on
-    // another thread so load |node->next| now.
-    next = node->next.load(std::memory_order_relaxed);
-    dependent->OnPrerequisiteRejected(this);
-  }
+   private:
+    void Visit(scoped_refptr<AbstractPromise> dependent) override {
+      dependent->OnPrerequisiteRejected(rejected_prerequisite_);
+    }
+    AbstractPromise* const rejected_prerequisite_;
+  };
+
+  Visitor visitor(this);
+  dependents_.RejectAndConsumeAllDependents(&visitor);
+}
+
+void AbstractPromise::OnResolveMakeDependantsUseCurriedPrerequisite(
+    AbstractPromise* non_curried_root) {
+  class Visitor : public DependentList::Visitor {
+   public:
+    explicit Visitor(AbstractPromise* resolved_prerequisite,
+                     AbstractPromise* non_curried_root)
+        : resolved_prerequisite_(resolved_prerequisite),
+          non_curried_root_(non_curried_root) {}
+
+   private:
+    void Visit(scoped_refptr<AbstractPromise> dependent) override {
+      dependent->ReplaceCurriedPrerequisite(resolved_prerequisite_,
+                                            non_curried_root_);
+    }
+    AbstractPromise* const resolved_prerequisite_;
+    AbstractPromise* const non_curried_root_;
+  };
+
+  Visitor visitor(this, non_curried_root);
+  dependents_.ResolveAndConsumeAllDependents(&visitor);
+}
+
+void AbstractPromise::OnRejectMakeDependantsUseCurriedPrerequisite(
+    AbstractPromise* non_curried_root) {
+  class Visitor : public DependentList::Visitor {
+   public:
+    explicit Visitor(AbstractPromise* rejected_prerequisite,
+                     AbstractPromise* non_curried_root)
+        : rejected_prerequisite_(rejected_prerequisite),
+          non_curried_root_(non_curried_root) {}
+
+   private:
+    void Visit(scoped_refptr<AbstractPromise> dependent) override {
+      dependent->ReplaceCurriedPrerequisite(rejected_prerequisite_,
+                                            non_curried_root_);
+    }
+    AbstractPromise* const rejected_prerequisite_;
+    AbstractPromise* const non_curried_root_;
+  };
+
+  Visitor visitor(this, non_curried_root);
+  dependents_.RejectAndConsumeAllDependents(&visitor);
 }
 
 void AbstractPromise::DispatchPromise() {
@@ -413,10 +485,22 @@ void AbstractPromise::DispatchPromise() {
 }
 
 void AbstractPromise::OnCanceled() {
-  if (dependents_.IsCanceled() || dependents_.IsResolved() ||
-      dependents_.IsRejected()) {
+  class Visitor : public DependentList::Visitor {
+   public:
+    explicit Visitor(AbstractPromise* canceled_prerequisite)
+        : canceled_prerequisite_(canceled_prerequisite) {}
+
+   private:
+    void Visit(scoped_refptr<AbstractPromise> dependent) override {
+      dependent->OnPrerequisiteCancelled(canceled_prerequisite_);
+    }
+
+    AbstractPromise* const canceled_prerequisite_;
+  };
+
+  Visitor visitor(this);
+  if (!dependents_.CancelAndConsumeAllDependents(&visitor))
     return;
-  }
 
   // The executor could be keeping a promise alive, but it's never going to run
   // so clear it.
@@ -429,28 +513,8 @@ void AbstractPromise::OnCanceled() {
   }
 #endif
 
-  DependentList::Node* dependent_list = dependents_.ConsumeOnceForCancel();
-
-  // Propagate cancellation to dependents.
-  while (dependent_list) {
-    scoped_refptr<AbstractPromise> dependent =
-        std::move(dependent_list->dependent);
-    dependent_list = dependent_list->next.load(std::memory_order_relaxed);
-    dependent->OnPrerequisiteCancelled();
-  }
-
-  // We need to release any AdjacencyListNodes we own to prevent memory leaks
-  // due to refcount cycles. We can't just clear |prerequisite_list| (which
-  // contains DependentList::Node) because in the case of multiple prerequisites
-  // they may not have all be settled, which means some will want to traverse
-  // their |dependent_list| which includes this promise. This is a problem
-  // because there isn't a conveniant way of removing ourself from their
-  // |dependent_list|. It's sufficient however to simply null our references.
-  if (prerequisites_) {
-    for (AdjacencyListNode& node : prerequisites_->prerequisite_list) {
-      node.prerequisite = nullptr;
-    }
-  }
+  if (prerequisites_)
+    prerequisites_->Clear();
 }
 
 void AbstractPromise::OnResolved() {
@@ -458,149 +522,136 @@ void AbstractPromise::OnResolved() {
   DCHECK(executor_can_resolve_ || IsResolvedWithPromise())
       << from_here_.ToString();
 #endif
-  if (IsResolvedWithPromise()) {
-    scoped_refptr<AbstractPromise> curried_promise =
-        unique_any_cast<scoped_refptr<AbstractPromise>>(value_);
-
-    if (DispatchIfNonCurriedRootSettled()) {
-      prerequisites_->prerequisite_list.clear();
-    } else {
-      // The curried promise isn't already settled we need to throw away any
-      // existing dependencies and make |curried_promise| the only dependency of
-      // this promise.
-
-      if (!curried_promise->prerequisites_)
-        curried_promise->prerequisites_ = std::make_unique<AdjacencyList>();
-
+  if (AbstractPromise* curried_promise = GetCurriedPromise()) {
 #if DCHECK_IS_ON()
-      {
-        CheckedAutoLock lock(GetCheckedLock());
-        ancestor_that_could_resolve_ = nullptr;
-        ancestor_that_could_reject_ = nullptr;
-      }
-#endif
-      prerequisites_->ResetWithSingleDependency(curried_promise);
-      AddAsDependentForAllPrerequisites();
+    {
+      CheckedAutoLock lock(GetCheckedLock());
+      MaybeInheritChecks(curried_promise);
     }
+#endif
+
+    // If there are settled curried ancestors we can skip then do so.
+    while (curried_promise->IsSettled()) {
+      if (curried_promise->IsCanceled()) {
+        OnCanceled();
+        return;
+      }
+      const scoped_refptr<AbstractPromise>* curried_ancestor =
+          unique_any_cast<scoped_refptr<AbstractPromise>>(
+              &curried_promise->value_);
+      if (curried_ancestor) {
+        curried_promise = curried_ancestor->get();
+      } else {
+        break;
+      }
+    }
+
+    OnResolveMakeDependantsUseCurriedPrerequisite(curried_promise);
   } else {
     OnResolveDispatchReadyDependents();
-
-    // We need to release any AdjacencyListNodes we own to prevent memory leaks
-    // due to refcount cycles.
-    if (prerequisites_)
-      prerequisites_->prerequisite_list.clear();
   }
+
+  if (prerequisites_)
+    prerequisites_->Clear();
 }
 
 void AbstractPromise::OnRejected() {
-  // Rejection with a rejected promise doesn't need special handling.
-  DCHECK(!IsResolvedWithPromise() ||
-         unique_any_cast<scoped_refptr<AbstractPromise>>(value_)->IsRejected());
 #if DCHECK_IS_ON()
   DCHECK(executor_can_reject_) << from_here_.ToString();
 #endif
-  OnRejectDispatchReadyDependents();
 
-  // We need to release any AdjacencyListNodes we own to prevent memory leaks
-  // due to refcount cycles. We can't just clear |prerequisite_list| (which
-  // contains DependentList::Node) because in the case of multiple prerequisites
-  // they may not have all be settled, which means some will want to traverse
-  // their |dependent_list| which includes this promise. This is a problem
-  // because there isn't a conveniant way of removing ourself from their
-  // |dependent_list|. It's sufficient however to simply null our references.
-  if (prerequisites_) {
-    for (AdjacencyListNode& node : prerequisites_->prerequisite_list) {
-      node.prerequisite = nullptr;
+  if (AbstractPromise* curried_promise = GetCurriedPromise()) {
+#if DCHECK_IS_ON()
+    {
+      CheckedAutoLock lock(GetCheckedLock());
+      MaybeInheritChecks(curried_promise);
     }
+#endif
+
+    // If there are settled curried ancestors we can skip then do so.
+    while (curried_promise->IsSettled()) {
+      if (curried_promise->IsCanceled()) {
+        OnCanceled();
+        return;
+      }
+      const scoped_refptr<AbstractPromise>* curried_ancestor =
+          unique_any_cast<scoped_refptr<AbstractPromise>>(
+              &curried_promise->value_);
+      if (curried_ancestor) {
+        curried_promise = curried_ancestor->get();
+      } else {
+        break;
+      }
+    }
+
+    OnRejectMakeDependantsUseCurriedPrerequisite(curried_promise);
+  } else {
+    OnRejectDispatchReadyDependents();
   }
+
+  if (prerequisites_)
+    prerequisites_->Clear();
 }
-
-// static
-DependentList::Node* AbstractPromise::NonThreadSafeReverseList(
-    DependentList::Node* list) {
-  DependentList::Node* prev = nullptr;
-  while (list) {
-    DependentList::Node* next = list->next.load(std::memory_order_relaxed);
-    list->next.store(prev, std::memory_order_relaxed);
-    prev = list;
-    list = next;
-  }
-  return prev;
-}
-
-AbstractPromise::AdjacencyListNode::AdjacencyListNode() = default;
-
-AbstractPromise::AdjacencyListNode::AdjacencyListNode(
-    scoped_refptr<AbstractPromise> promise)
-    : prerequisite(std::move(promise)) {}
-
-AbstractPromise::AdjacencyListNode::~AdjacencyListNode() = default;
-
-AbstractPromise::AdjacencyListNode::AdjacencyListNode(
-    AdjacencyListNode&& other) noexcept = default;
 
 AbstractPromise::AdjacencyList::AdjacencyList() = default;
 
-AbstractPromise::AdjacencyList::AdjacencyList(
-    scoped_refptr<AbstractPromise> prerequisite)
-    : prerequisite_list(1), action_prerequisite_count(1) {
-  prerequisite_list[0].prerequisite = std::move(prerequisite);
+AbstractPromise::AdjacencyList::AdjacencyList(AbstractPromise* prerequisite)
+    : prerequisite_list_(1), action_prerequisite_count_(1) {
+  prerequisite_list_[0].SetPrerequisite(prerequisite);
 }
 
 AbstractPromise::AdjacencyList::AdjacencyList(
-    std::vector<AdjacencyListNode> nodes)
-    : prerequisite_list(std::move(nodes)),
-      action_prerequisite_count(prerequisite_list.size()) {}
+    std::vector<DependentList::Node> nodes)
+    : prerequisite_list_(std::move(nodes)),
+      action_prerequisite_count_(prerequisite_list_.size()) {}
 
 AbstractPromise::AdjacencyList::~AdjacencyList() = default;
 
 bool AbstractPromise::AdjacencyList::
     DecrementPrerequisiteCountAndCheckIfZero() {
-  return action_prerequisite_count.fetch_sub(1, std::memory_order_acq_rel) == 1;
+  return action_prerequisite_count_.fetch_sub(1, std::memory_order_acq_rel) ==
+         1;
 }
 
-void AbstractPromise::AdjacencyList::ResetWithSingleDependency(
-    scoped_refptr<AbstractPromise> prerequisite) {
-  prerequisite_list.clear();
-  prerequisite_list.push_back(AdjacencyListNode{std::move(prerequisite)});
-  action_prerequisite_count = 1;
+// For PrerequisitePolicy::kAll this is called for the first rejected
+// prerequisite. For PrerequisitePolicy:kAny this is called for the first
+// resolving or rejecting prerequisite.
+bool AbstractPromise::AdjacencyList::MarkPrerequisiteAsSettling(
+    AbstractPromise* settled_prerequisite) {
+  DCHECK(settled_prerequisite->IsSettled());
+  uintptr_t expected = 0;
+  return first_settled_prerequisite_.compare_exchange_strong(
+      expected, reinterpret_cast<uintptr_t>(settled_prerequisite),
+      std::memory_order_acq_rel);
 }
 
-AbstractPromise::Executor::~Executor() {
-  vtable_->destructor(storage_);
+void AbstractPromise::AdjacencyList::RemoveCanceledPrerequisite(
+    AbstractPromise* canceled_prerequisite) {
+  DCHECK(canceled_prerequisite->IsCanceled());
+  for (DependentList::Node& node : prerequisite_list_) {
+    if (node.prerequisite() == canceled_prerequisite) {
+      node.ClearPrerequisite();
+      return;
+    }
+  }
+  NOTREACHED() << "Couldn't find canceled_prerequisite "
+               << canceled_prerequisite->from_here().ToString();
 }
 
-AbstractPromise::Executor::PrerequisitePolicy
-AbstractPromise::Executor::GetPrerequisitePolicy() const {
-  return vtable_->get_prerequsite_policy(storage_);
-}
-
-bool AbstractPromise::Executor::IsCancelled() const {
-  return vtable_->is_cancelled(storage_);
-}
-
-#if DCHECK_IS_ON()
-AbstractPromise::Executor::ArgumentPassingType
-AbstractPromise::Executor::ResolveArgumentPassingType() const {
-  return vtable_->resolve_argument_passing_type(storage_);
-}
-
-AbstractPromise::Executor::ArgumentPassingType
-AbstractPromise::Executor::RejectArgumentPassingType() const {
-  return vtable_->reject_argument_passing_type(storage_);
-}
-
-bool AbstractPromise::Executor::CanResolve() const {
-  return vtable_->can_resolve(storage_);
-}
-
-bool AbstractPromise::Executor::CanReject() const {
-  return vtable_->can_reject(storage_);
-}
-#endif
-
-void AbstractPromise::Executor::Execute(AbstractPromise* promise) {
-  return vtable_->execute(storage_, promise);
+void AbstractPromise::AdjacencyList::Clear() {
+  // If there's only one prerequisite we can just clear |prerequisite_list_|
+  // which deals with potential refcounting cycles due to curried promises.
+  if (prerequisite_list_.size() == 1) {
+    prerequisite_list_.clear();
+  } else {
+    // If there's multiple prerequisites we can't do that because the
+    // DependentList::Nodes may still be in use by some of them. Instead we
+    // release our prerequisite references and rely on refcounting to release
+    // the owning AbstractPromise.
+    for (DependentList::Node& node : prerequisite_list_) {
+      node.ClearPrerequisite();
+    }
+  }
 }
 
 }  // namespace internal

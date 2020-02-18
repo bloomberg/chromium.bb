@@ -47,9 +47,8 @@ namespace {
 
 const int kLayerAnimationsForMinimizeDurationMS = 200;
 
-// Durations for the cross-fade animation, in milliseconds.
-const float kCrossFadeDurationMinMs = 200.f;
-const float kCrossFadeDurationMaxMs = 400.f;
+constexpr base::TimeDelta kCrossFadeMaxDuration =
+    base::TimeDelta::FromMilliseconds(400);
 
 // Durations for the brightness/grayscale fade animation, in milliseconds.
 const int kBrightnessGrayscaleFadeDurationMs = 1000;
@@ -68,10 +67,6 @@ const float kWindowAnimation_ShowOpacity = 1.f;
 constexpr base::TimeDelta kZeroAnimationMs =
     base::TimeDelta::FromMilliseconds(300);
 
-int64_t Round64(float f) {
-  return static_cast<int64_t>(f + 0.5f);
-}
-
 base::TimeDelta GetCrossFadeDuration(aura::Window* window,
                                      const gfx::RectF& old_bounds,
                                      const gfx::Rect& new_bounds) {
@@ -83,17 +78,16 @@ base::TimeDelta GetCrossFadeDuration(aura::Window* window,
   int max_area = std::max(old_area, new_area);
   // Avoid divide by zero.
   if (max_area == 0)
-    return base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS);
+    return kCrossFadeDuration;
 
   int delta_area = std::abs(old_area - new_area);
   // If the area didn't change, the animation is instantaneous.
   if (delta_area == 0)
-    return base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS);
+    return kCrossFadeDuration;
 
   float factor = static_cast<float>(delta_area) / static_cast<float>(max_area);
-  const float kRange = kCrossFadeDurationMaxMs - kCrossFadeDurationMinMs;
-  return base::TimeDelta::FromMilliseconds(
-      Round64(kCrossFadeDurationMinMs + (factor * kRange)));
+  const auto kRange = kCrossFadeMaxDuration - kCrossFadeDuration;
+  return kCrossFadeDuration + factor * kRange;
 }
 
 class CrossFadeMetricsReporter : public ui::AnimationMetricsReporter {
@@ -113,8 +107,6 @@ base::LazyInstance<CrossFadeMetricsReporter>::Leaky g_reporter_cross_fade =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-const int kCrossFadeDurationMS = 200;
 
 void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   // Recalculate the transform at restore time since the launcher item may have
@@ -256,7 +248,7 @@ bool AnimateShowWindow_SlideDown(aura::Window* window) {
       Shell::Get()->tablet_mode_controller();
 
   if (home_screen_controller && tablet_mode_controller &&
-      tablet_mode_controller->IsTabletModeWindowManagerEnabled()) {
+      tablet_mode_controller->InTabletMode()) {
     // Slide down the window from above screen to show and, meanwhile, slide
     // down the home launcher off screen.
     HomeLauncherGestureHandler* handler =
@@ -322,19 +314,19 @@ bool AnimateShowWindow(aura::Window* window) {
   }
 
   switch (::wm::GetWindowVisibilityAnimationType(window)) {
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE:
       AnimateShowWindow_Minimize(window);
       return true;
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE:
       AnimateShowWindow_BrightnessGrayscale(window);
       return true;
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
       return AnimateShowWindow_SlideDown(window);
       return true;
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
       AnimateShowWindow_FadeIn(window);
       return true;
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
       AnimateShowWindow_StepEnd(window);
       return true;
     default:
@@ -350,18 +342,18 @@ bool AnimateHideWindow(aura::Window* window) {
   }
 
   switch (::wm::GetWindowVisibilityAnimationType(window)) {
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE:
       AnimateHideWindow_Minimize(window);
       return true;
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE:
       AnimateHideWindow_BrightnessGrayscale(window);
       return true;
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
       return AnimateHideWindow_SlideDown(window);
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
       AnimateHideWindow_SlideOut(window);
       return true;
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
       AnimateHideWindow_StepEnd(window);
       return true;
     default:
@@ -410,8 +402,7 @@ class CrossFadeObserver : public aura::WindowObserver,
 
 base::TimeDelta CrossFadeAnimation(
     aura::Window* window,
-    std::unique_ptr<ui::LayerTreeOwner> old_layer_owner,
-    gfx::Tween::Type tween_type) {
+    std::unique_ptr<ui::LayerTreeOwner> old_layer_owner) {
   ui::Layer* old_layer = old_layer_owner->root();
   ui::Layer* new_layer = window->layer();
 
@@ -448,7 +439,7 @@ base::TimeDelta CrossFadeAnimation(
     settings.AddObserver(
         new CrossFadeObserver(window, std::move(old_layer_owner)));
     settings.SetTransitionDuration(duration);
-    settings.SetTweenType(tween_type);
+    settings.SetTweenType(gfx::Tween::EASE_OUT);
     // Only add reporter to |old_layer|.
     settings.SetAnimationMetricsReporter(g_reporter_cross_fade.Pointer());
     settings.DeferPaint();
@@ -495,7 +486,7 @@ base::TimeDelta CrossFadeAnimation(
     // its newly set bounds.
     ui::ScopedLayerAnimationSettings settings(new_layer->GetAnimator());
     settings.SetTransitionDuration(duration);
-    settings.SetTweenType(tween_type);
+    settings.SetTweenType(gfx::Tween::EASE_OUT);
     settings.DeferPaint();
     if (!old_on_top) {
       // Only caching render surface when there is an opacity animation and

@@ -30,14 +30,13 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/style_property_serializer.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 #ifndef NDEBUG
 #include <stdio.h>
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #endif
 
 namespace blink {
@@ -132,7 +131,7 @@ static bool IsPropertyMatch(const CSSPropertyValueMetadata& metadata,
 // Only enabled properties should be part of the style.
 #if DCHECK_IS_ON()
   DCHECK(!result ||
-         CSSProperty::Get(resolveCSSPropertyID(property_id)).IsEnabled());
+         CSSProperty::Get(resolveCSSPropertyID(property_id)).IsWebExposed());
 #endif
   return result;
 }
@@ -381,7 +380,6 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
 
 MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
     const AtomicString& custom_property_name,
-    const PropertyRegistry* registry,
     const String& value,
     bool important,
     SecureContextMode secure_context_mode,
@@ -393,8 +391,8 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
     return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
   }
   return CSSParser::ParseValueForCustomProperty(
-      this, custom_property_name, registry, value, important,
-      secure_context_mode, context_style_sheet, is_animation_tainted);
+      this, custom_property_name, value, important, secure_context_mode,
+      context_style_sheet, is_animation_tainted);
 }
 
 void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
@@ -507,7 +505,7 @@ void MutableCSSPropertyValueSet::Clear() {
   property_vector_.clear();
 }
 
-inline bool ContainsId(const CSSProperty** set,
+inline bool ContainsId(const CSSProperty* const set[],
                        unsigned length,
                        CSSPropertyID id) {
   for (unsigned i = 0; i < length; ++i) {
@@ -517,8 +515,9 @@ inline bool ContainsId(const CSSProperty** set,
   return false;
 }
 
-bool MutableCSSPropertyValueSet::RemovePropertiesInSet(const CSSProperty** set,
-                                                       unsigned length) {
+bool MutableCSSPropertyValueSet::RemovePropertiesInSet(
+    const CSSProperty* const set[],
+    unsigned length) {
   if (property_vector_.IsEmpty())
     return false;
 
@@ -663,7 +662,7 @@ static_assert(sizeof(CSSPropertyValueSet) ==
 
 #ifndef NDEBUG
 void CSSPropertyValueSet::ShowStyle() {
-  fprintf(stderr, "%s\n", AsText().Ascii().data());
+  fprintf(stderr, "%s\n", AsText().Ascii().c_str());
 }
 #endif
 

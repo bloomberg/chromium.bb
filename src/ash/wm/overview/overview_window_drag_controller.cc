@@ -12,6 +12,8 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desk_preview_view.h"
+#include "ash/wm/desks/desks_bar_view.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -51,10 +53,6 @@ constexpr float kMinimumDragDistanceAlreadyInSnapRegionDp = 48.f;
 constexpr float kFlingToCloseVelocityThreshold = 2000.f;
 constexpr float kItemMinOpacity = 0.4f;
 
-// The opacity the dragged item uses once its dragged location intersects with
-// the DesksBarView.
-constexpr float kDragToDeskItemOpacity = 0.6f;
-
 // The UMA histogram that records presentation time for window dragging
 // operation in overview mode.
 constexpr char kOverviewWindowDragHistogram[] =
@@ -85,17 +83,33 @@ gfx::SizeF GetItemSizeWhenOnDesksBar(OverviewItem* item) {
   return scaled_size;
 }
 
+float GetManhattanDistanceX(float point_x, const gfx::RectF& rect) {
+  return std::max(rect.x() - point_x, point_x - rect.right());
+}
+
+float GetManhattanDistanceY(float point_y, const gfx::RectF& rect) {
+  return std::max(rect.y() - point_y, point_y - rect.bottom());
+}
+
+bool GetVirtualDesksBarEnabled(OverviewItem* item) {
+  return desks_util::ShouldDesksBarBeCreated() &&
+         item->overview_grid()->IsDesksBarViewActive();
+}
+
 }  // namespace
 
 OverviewWindowDragController::OverviewWindowDragController(
     OverviewSession* overview_session,
-    OverviewItem* item)
+    OverviewItem* item,
+    bool allow_drag_to_close)
     : overview_session_(overview_session),
       split_view_controller_(Shell::Get()->split_view_controller()),
       item_(item),
       on_desks_bar_item_size_(GetItemSizeWhenOnDesksBar(item)),
+      display_count_(Shell::GetAllRootWindows().size()),
+      should_allow_drag_to_close_(allow_drag_to_close),
       should_allow_split_view_(ShouldAllowSplitView()),
-      virtual_desks_enabled_(features::IsVirtualDesksEnabled()) {}
+      virtual_desks_bar_enabled_(GetVirtualDesksBarEnabled(item)) {}
 
 OverviewWindowDragController::~OverviewWindowDragController() = default;
 
@@ -127,28 +141,23 @@ void OverviewWindowDragController::Drag(const gfx::PointF& location_in_screen) {
       return;
     }
 
-    if (std::abs(distance.x()) < std::abs(distance.y())) {
-      current_drag_behavior_ = DragBehavior::kDragToClose;
-      overview_session_->GetGridWithRootWindow(item_->root_window())
-          ->StartNudge(item_);
-      did_move_ = true;
-    } else if (should_allow_split_view_ || virtual_desks_enabled_) {
+    if (should_allow_drag_to_close_ &&
+        (std::abs(distance.x()) < std::abs(distance.y()))) {
+      StartDragToCloseMode();
+    } else if (should_allow_split_view_ || virtual_desks_bar_enabled_) {
       StartNormalDragMode(location_in_screen);
+    } else {
+      return;
     }
   }
 
-  gfx::RectF bounds(item_->target_bounds());
   if (current_drag_behavior_ == DragBehavior::kDragToClose)
-    bounds = ContinueDragToClose(location_in_screen);
+    ContinueDragToClose(location_in_screen);
   else if (current_drag_behavior_ == DragBehavior::kNormalDrag)
-    bounds = ContinueNormalDrag(location_in_screen);
+    ContinueNormalDrag(location_in_screen);
 
   if (presentation_time_recorder_)
     presentation_time_recorder_->RequestNext();
-
-  item_->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
-  if (current_drag_behavior_ == DragBehavior::kNormalDrag)
-    item_->UpdatePhantomsForDragging(location_in_screen);
 }
 
 OverviewWindowDragController::DragResult
@@ -183,12 +192,14 @@ OverviewWindowDragController::CompleteDrag(
 
 void OverviewWindowDragController::StartNormalDragMode(
     const gfx::PointF& location_in_screen) {
-  DCHECK(should_allow_split_view_ || virtual_desks_enabled_);
+  DCHECK(should_allow_split_view_ || virtual_desks_bar_enabled_);
 
   did_move_ = true;
   current_drag_behavior_ = DragBehavior::kNormalDrag;
-  Shell::Get()->mouse_cursor_filter()->ShowSharedEdgeIndicator(
-      item_->root_window());
+  if (AreMultiDisplayOverviewAndSplitViewEnabled()) {
+    Shell::Get()->mouse_cursor_filter()->ShowSharedEdgeIndicator(
+        item_->root_window());
+  }
   item_->ScaleUpSelectedItem(
       OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW);
   original_scaled_size_ = item_->target_bounds().size();
@@ -204,6 +215,26 @@ void OverviewWindowDragController::StartNormalDragMode(
     // active when dragging the overview window, the split divider bar should be
     // placed below the dragged window during dragging.
     split_view_controller_->OnWindowDragStarted(item_->GetWindow());
+  }
+
+  if (virtual_desks_bar_enabled_) {
+    // Calculate the item bounds minus the header and margins (which are
+    // invisible). Use this for the shrink bounds so that the item starts
+    // shrinking when the visible top-edge of the item aligns with the
+    // bottom-edge of the desks bar (may be different edges if we are dragging
+    // from different directions).
+    gfx::SizeF item_no_header_size = original_scaled_size_;
+    item_no_header_size.Enlarge(float{-kWindowMargin * 2},
+                                float{-kWindowMargin * 2 - kHeaderHeightDp});
+
+    // Calculate cached values for usage during drag.
+    desks_bar_bounds_ = gfx::RectF(
+        item_->overview_grid()->desks_bar_view()->GetBoundsInScreen());
+    shrink_bounds_ = desks_bar_bounds_;
+    shrink_bounds_.Inset(-item_no_header_size.width() / 2,
+                         -item_no_header_size.height() / 2);
+    shrink_region_distance_ =
+        desks_bar_bounds_.origin() - shrink_bounds_.origin();
   }
 }
 
@@ -246,7 +277,7 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
   } else {
     split_view_controller_->EndSplitView();
     overview_session_->SelectWindow(item_);
-    split_view_controller_->ShowAppCannotSnapToast();
+    ShowAppCannotSnapToast();
   }
   current_drag_behavior_ = DragBehavior::kNoDrag;
   UnpauseOcclusionTracker();
@@ -256,8 +287,10 @@ void OverviewWindowDragController::ResetGesture() {
   if (current_drag_behavior_ == DragBehavior::kNormalDrag) {
     DCHECK(item_->overview_grid()->drop_target_widget());
 
-    Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
-    item_->DestroyPhantomsForDragging();
+    if (AreMultiDisplayOverviewAndSplitViewEnabled()) {
+      Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
+      item_->DestroyPhantomsForDragging();
+    }
     item_->overview_grid()->RemoveDropTarget();
     if (should_allow_split_view_) {
       overview_session_->SetSplitViewDragIndicatorsIndicatorState(
@@ -276,7 +309,16 @@ void OverviewWindowDragController::ResetOverviewSession() {
   overview_session_ = nullptr;
 }
 
-gfx::RectF OverviewWindowDragController::ContinueDragToClose(
+void OverviewWindowDragController::StartDragToCloseMode() {
+  DCHECK(should_allow_drag_to_close_);
+
+  did_move_ = true;
+  current_drag_behavior_ = DragBehavior::kDragToClose;
+  overview_session_->GetGridWithRootWindow(item_->root_window())
+      ->StartNudge(item_);
+}
+
+void OverviewWindowDragController::ContinueDragToClose(
     const gfx::PointF& location_in_screen) {
   DCHECK_EQ(current_drag_behavior_, DragBehavior::kDragToClose);
 
@@ -285,6 +327,18 @@ gfx::RectF OverviewWindowDragController::ContinueDragToClose(
   gfx::RectF bounds(item_->target_bounds());
   const gfx::PointF centerpoint =
       location_in_screen - (initial_event_location_ - initial_centerpoint_);
+
+  // If the drag location intersects with the desk bar, then we should cancel
+  // the drag-to-close mode and start the normal drag mode.
+  if (virtual_desks_bar_enabled_ &&
+      item_->overview_grid()->IntersectsWithDesksBar(
+          gfx::ToRoundedPoint(location_in_screen),
+          /*update_desks_bar_drag_details=*/false, /*for_drop=*/false)) {
+    item_->SetOpacity(original_opacity_);
+    StartNormalDragMode(location_in_screen);
+    ContinueNormalDrag(location_in_screen);
+    return;
+  }
 
   // Update |item_|'s opacity based on its distance. |item_|'s x coordinate
   // should not change while in drag to close state.
@@ -300,7 +354,7 @@ gfx::RectF OverviewWindowDragController::ContinueDragToClose(
 
   // When dragging to close, only update the y component.
   bounds.set_y(centerpoint.y() - bounds.height() / 2.f);
-  return bounds;
+  item_->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
 }
 
 OverviewWindowDragController::DragResult
@@ -322,7 +376,7 @@ OverviewWindowDragController::CompleteDragToClose(
   return DragResult::kCanceledDragToClose;
 }
 
-gfx::RectF OverviewWindowDragController::ContinueNormalDrag(
+void OverviewWindowDragController::ContinueNormalDrag(
     const gfx::PointF& location_in_screen) {
   DCHECK_EQ(current_drag_behavior_, DragBehavior::kNormalDrag);
 
@@ -334,23 +388,50 @@ gfx::RectF OverviewWindowDragController::ContinueNormalDrag(
   gfx::PointF centerpoint =
       location_in_screen - (initial_event_location_ - initial_centerpoint_);
 
-  if (virtual_desks_enabled_) {
-    if (item_->overview_grid()->UpdateDesksBarDragDetails(
-            gfx::ToRoundedPoint(location_in_screen))) {
-      // The drag location intersects the bounds of the DesksBarView, in this
-      // case we scale down the item, and center it around the drag location.
-      bounds.set_size(on_desks_bar_item_size_);
-      item_->SetOpacity(kDragToDeskItemOpacity);
-      centerpoint = location_in_screen;
-      // To make the dragged window contents appear centered around the drag
-      // location, we need to take into account the margins applied on the
-      // target bounds, and offset up the centerpoint by half that amount, so
-      // that the transformed bounds of the window contents move up to be
-      // centered around the cursor.
-      centerpoint.Offset(0, (-kWindowMargin - kHeaderHeightDp) / 2);
+  // If virtual desks is enabled, we want to gradually shrink the dragged item
+  // as it gets closer to get dropped into a desk mini view.
+  if (virtual_desks_bar_enabled_) {
+    // TODO(sammiequon): There is a slight jump especially if we drag from the
+    // corner of a larger overview item, but this is necessary for the time
+    // being to prevent jumps from happening while shrinking. Investigate if we
+    // can satisfy all cases.
+    centerpoint = location_in_screen;
+    // To make the dragged window contents appear centered around the drag
+    // location, we need to take into account the margins applied on the
+    // target bounds, and offset up the centerpoint by half that amount, so
+    // that the transformed bounds of the window contents move up to be
+    // centered around the cursor.
+    centerpoint.Offset(0, (-kWindowMargin - kHeaderHeightDp) / 2);
+
+    if (shrink_bounds_.Contains(location_in_screen)) {
+      // Update the mini views borders by checking if |location_in_screen|
+      // intersects.
+      item_->overview_grid()->IntersectsWithDesksBar(
+          gfx::ToRoundedPoint(location_in_screen),
+          /*update_desks_bar_drag_details=*/true, /*for_drop=*/false);
+
+      float value = 0.f;
+      if (centerpoint.y() < desks_bar_bounds_.y() ||
+          centerpoint.y() > desks_bar_bounds_.y()) {
+        // Coming vertically, this is the main use case. This is a ratio of the
+        // distance from |centerpoint| to the closest edge of |desk_bar_bounds|
+        // to the distance from |shrink_bounds| to |desk_bar_bounds|.
+        value = GetManhattanDistanceY(centerpoint.y(), desks_bar_bounds_) /
+                shrink_region_distance_.y();
+      } else if (centerpoint.x() < desks_bar_bounds_.x() ||
+                 centerpoint.x() > desks_bar_bounds_.right()) {
+        // Coming horizontally, this only happens if we are in landscape split
+        // view and someone drags an item to the other half, then up, then into
+        // the desks bar. Works same as vertically except using x-coordinates.
+        value = GetManhattanDistanceX(centerpoint.x(), desks_bar_bounds_) /
+                shrink_region_distance_.x();
+      }
+      value = base::ClampToRange(value, 0.f, 1.f);
+      const gfx::SizeF size_value = gfx::Tween::SizeFValueBetween(
+          1.f - value, original_scaled_size_, on_desks_bar_item_size_);
+      bounds.set_size(size_value);
     } else {
       bounds.set_size(original_scaled_size_);
-      item_->SetOpacity(original_opacity_);
     }
   }
 
@@ -361,7 +442,9 @@ gfx::RectF OverviewWindowDragController::ContinueNormalDrag(
 
   bounds.set_x(centerpoint.x() - bounds.width() / 2.f);
   bounds.set_y(centerpoint.y() - bounds.height() / 2.f);
-  return bounds;
+  item_->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
+  if (AreMultiDisplayOverviewAndSplitViewEnabled() && display_count_ > 1u)
+    item_->UpdatePhantomsForDragging(location_in_screen);
 }
 
 OverviewWindowDragController::DragResult
@@ -369,8 +452,10 @@ OverviewWindowDragController::CompleteNormalDrag(
     const gfx::PointF& location_in_screen) {
   DCHECK_EQ(current_drag_behavior_, DragBehavior::kNormalDrag);
   DCHECK(item_->overview_grid()->drop_target_widget());
-  Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
-  item_->DestroyPhantomsForDragging();
+  if (AreMultiDisplayOverviewAndSplitViewEnabled()) {
+    Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
+    item_->DestroyPhantomsForDragging();
+  }
   item_->overview_grid()->RemoveDropTarget();
 
   const gfx::Point rounded_screen_point =
@@ -391,7 +476,7 @@ OverviewWindowDragController::CompleteNormalDrag(
   }
 
   // Attempt to move a window to a different desk.
-  if (virtual_desks_enabled_) {
+  if (virtual_desks_bar_enabled_) {
     item_->SetOpacity(original_opacity_);
 
     if (item_->overview_grid()->MaybeDropItemOnDeskMiniView(

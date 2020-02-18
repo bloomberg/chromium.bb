@@ -1,11 +1,13 @@
 package Imager::Test;
 use strict;
+use Test::More;
 use Test::Builder;
 require Exporter;
 use vars qw(@ISA @EXPORT_OK $VERSION);
-use Carp qw(croak);
+use Carp qw(croak carp);
+use Config;
 
-$VERSION = "1.000";
+$VERSION = "1.004";
 
 @ISA = qw(Exporter);
 @EXPORT_OK = 
@@ -35,7 +37,11 @@ $VERSION = "1.000";
      mask_tests
      test_colorf_gpix
      test_color_gpix
-     test_colorf_glin);
+     test_colorf_glin
+     can_test_threads
+     std_font_tests
+     std_font_test_count
+     );
 
 sub diff_text_with_nul {
   my ($desc, $text1, $text2, @params) = @_;
@@ -566,14 +572,22 @@ sub image_bounds_checks {
   my $black = Imager::Color->new(0, 0, 0);
   require Imager::Color::Float;
   my $blackf = Imager::Color::Float->new(0, 0, 0);
-  $builder->ok(!$im->setpixel(x => -1, y => 0, color => $black), 'bounds check set (-1, 0)');
-  $builder->ok(!$im->setpixel(x => 10, y => 0, color => $black), 'bounds check set (10, 0)');
-  $builder->ok(!$im->setpixel(x => 0, y => -1, color => $black), 'bounds check set (0, -1)');
-  $builder->ok(!$im->setpixel(x => 0, y => 10, color => $black), 'bounds check set (0, 10)');
-  $builder->ok(!$im->setpixel(x => -1, y => 0, color => $blackf), 'bounds check set (-1, 0) float');
-  $builder->ok(!$im->setpixel(x => 10, y => 0, color => $blackf), 'bounds check set (10, 0) float');
-  $builder->ok(!$im->setpixel(x => 0, y => -1, color => $blackf), 'bounds check set (0, -1) float');
-  $builder->ok(!$im->setpixel(x => 0, y => 10, color => $blackf), 'bounds check set (0, 10) float');
+  $builder->ok($im->setpixel(x => -1, y => 0, color => $black) == 0,
+	       'bounds check set (-1, 0)');
+  $builder->ok($im->setpixel(x => 10, y => 0, color => $black) == 0,
+	       'bounds check set (10, 0)');
+  $builder->ok($im->setpixel(x => 0, y => -1, color => $black) == 0,
+	       'bounds check set (0, -1)');
+  $builder->ok($im->setpixel(x => 0, y => 10, color => $black) == 0,
+	       'bounds check set (0, 10)');
+  $builder->ok($im->setpixel(x => -1, y => 0, color => $blackf) == 0,
+	       'bounds check set (-1, 0) float');
+  $builder->ok($im->setpixel(x => 10, y => 0, color => $blackf) == 0,
+	       'bounds check set (10, 0) float');
+  $builder->ok($im->setpixel(x => 0, y => -1, color => $blackf) == 0,
+	       'bounds check set (0, -1) float');
+  $builder->ok($im->setpixel(x => 0, y => 10, color => $blackf) == 0,
+	       'bounds check set (0, 10) float');
 }
 
 sub test_colorf_gpix {
@@ -728,6 +742,158 @@ sub mask_tests {
 
 }
 
+sub std_font_test_count {
+  return 21;
+}
+
+sub std_font_tests {
+  my ($opts) = @_;
+
+  my $font = $opts->{font}
+    or carp "Missing font parameter";
+
+  my $name_font = $opts->{glyph_name_font} || $font;
+
+  my $has_chars = $opts->{has_chars} || [ 1, '', 1 ];
+
+  my $glyph_names = $opts->{glyph_names} || [ "A", undef, "A" ];
+
+ SKIP:
+  { # check magic is handled correctly
+    # https://rt.cpan.org/Ticket/Display.html?id=83438
+    skip("no native UTF8 support in this version of perl", 11) 
+      unless $] >= 5.006;
+    skip("overloading handling of magic is broken in this version of perl", 11)
+      unless $] >= 5.008;
+    Imager->log("utf8 magic tests\n");
+    my $over = bless {}, "Imager::Test::OverUtf8";
+    my $text = "A".chr(0x2010)."A";
+    my $white = Imager::Color->new("#FFF");
+    my $base_draw = Imager->new(xsize => 80, ysize => 20);
+    ok($base_draw->string(font => $font,
+			  text => $text,
+			  x => 2,
+			  y => 18,
+			  size => 15,
+			  color => $white,
+			  aa => 1),
+       "magic: make a base image");
+    my $test_draw = Imager->new(xsize => 80, ysize => 20);
+    ok($test_draw->string(font => $font,
+			  text => $over,
+			  x => 2,
+			  y => 18,
+			  size => 15,
+			  color => $white,
+			  aa => 1),
+       "magic: draw with overload");
+    is_image($base_draw, $test_draw, "check they match");
+    if ($opts->{files}) {
+      $test_draw->write(file => "testout/utf8tdr.ppm");
+      $base_draw->write(file => "testout/utf8bdr.ppm");
+    }
+
+    my $base_cp = Imager->new(xsize => 80, ysize => 20);
+    $base_cp->box(filled => 1, color => "#808080");
+    my $test_cp = $base_cp->copy;
+    ok($base_cp->string(font => $font,
+			text => $text,
+			y => 2,
+			y => 18,
+			size => 16,
+			channel => 2,
+			aa => 1),
+       "magic: make a base image (channel)");
+    Imager->log("magic: draw to channel with overload\n");
+    ok($test_cp->string(font => $font,
+			text => $over,
+			y => 2,
+			y => 18,
+			size => 16,
+			channel => 2,
+			aa => 1),
+       "magic: draw with overload (channel)");
+    is_image($test_cp, $base_cp, "check they match");
+    if ($opts->{files}) {
+      $test_cp->write(file => "testout/utf8tcp.ppm");
+      $base_cp->write(file => "testout/utf8bcp.ppm");
+    }
+
+  SKIP:
+    {
+      Imager->log("magic: has_chars\n");
+      $font->can("has_chars")
+	or skip "No has_chars aupport", 2;
+      is_deeply([ $font->has_chars(string => $text) ], $has_chars,
+		"magic: has_chars with normal utf8 text");
+      is_deeply([ $font->has_chars(string => $over) ], $has_chars,
+		"magic: has_chars with magic utf8 text");
+    }
+
+    Imager->log("magic: bounding_box\n");
+    my @base_bb = $font->bounding_box(string => $text, size => 30);
+    is_deeply([ $font->bounding_box(string => $over, size => 30) ],
+	      \@base_bb,
+	      "check bounding box magic");
+
+  SKIP:
+    {
+      $font->can_glyph_names
+	or skip "No glyph_names", 2;
+      Imager->log("magic: glyph_names\n");
+      my @text_names = $name_font->glyph_names(string => $text, reliable_only => 0);
+      is_deeply(\@text_names, $glyph_names,
+		"magic: glyph_names with normal utf8 text");
+      my @over_names = $name_font->glyph_names(string => $over, reliable_only => 0);
+      is_deeply(\@over_names, $glyph_names,
+		"magic: glyph_names with magic utf8 text");
+    }
+  }
+
+  { # invalid UTF8 handling at the OO level
+    my $im = Imager->new(xsize => 80, ysize => 20);
+    my $bad_utf8 = pack("C", 0xC0);
+    Imager->_set_error("");
+    ok(!$im->string(font => $font, size => 1, text => $bad_utf8, utf8 => 1,
+		    y => 18, x => 2),
+       "drawing invalid utf8 should fail");
+    is($im->errstr, "invalid UTF8 character", "check error message");
+    Imager->_set_error("");
+    ok(!$im->string(font => $font, size => 1, text => $bad_utf8, utf8 => 1,
+		    y => 18, x => 2, channel => 1),
+       "drawing invalid utf8 should fail (channel)");
+    is($im->errstr, "invalid UTF8 character", "check error message");
+    Imager->_set_error("");
+    ok(!$font->bounding_box(string => $bad_utf8, size => 30, utf8 => 1),
+       "bounding_box() bad utf8 should fail");
+    is(Imager->errstr, "invalid UTF8 character", "check error message");
+  SKIP:
+    {
+      $font->can_glyph_names
+	or skip "No glyph_names support", 2;
+      Imager->_set_error("");
+      is_deeply([ $font->glyph_names(string => $bad_utf8, utf8 => 1) ],
+		[ ],
+		"glyph_names returns empty list for bad string");
+      is(Imager->errstr, "invalid UTF8 character", "check error message");
+    }
+  SKIP:
+    {
+      $font->can("has_chars")
+	or skip "No has_chars support", 2;
+      Imager->_set_error("");
+      is_deeply([ $font->has_chars(string => $bad_utf8, utf8 => 1) ],
+		[ ],
+		"has_chars returns empty list for bad string");
+      is(Imager->errstr, "invalid UTF8 character", "check error message");
+    }
+  }
+}
+
+package Imager::Test::OverUtf8;
+use overload '""' => sub { "A".chr(0x2010)."A" };
+
+
 1;
 
 __END__
@@ -810,7 +976,7 @@ four.
 =item is_image_similar($im1, $im2, $maxdiff, $comment)
 
 Tests if the 2 images have similar content.  Both images must be
-defined, have the same width, height and channels.  The cum of the
+defined, have the same width, height and channels.  The sum of the
 squares of the differences of each sample are calculated and must be
 less than or equal to I<$maxdiff> for the test to pass.  The color
 comparison is done at 8-bits per pixel.  The color representation such
@@ -873,6 +1039,14 @@ Extra options that should be supplied include the font and either a
 color or channel parameter.
 
 This was explicitly created for regression tests on #21770.
+
+=item std_font_tests({ font => $font })
+
+Perform standard font interface tests.
+
+=item std_font_test_count()
+
+The number of tests performed by std_font_tests().
 
 =back
 

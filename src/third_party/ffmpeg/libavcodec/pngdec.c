@@ -1535,12 +1535,17 @@ static int decode_frame_lscr(AVCodecContext *avctx,
     AVFrame *frame = data;
     int ret, nb_blocks, offset = 0;
 
+    if (avpkt->size < 2)
+        return AVERROR_INVALIDDATA;
+
     bytestream2_init(gb, avpkt->data, avpkt->size);
 
     if ((ret = ff_get_buffer(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
         return ret;
 
     nb_blocks = bytestream2_get_le16(gb);
+    if (bytestream2_get_bytes_left(gb) < 2 + nb_blocks * 12)
+        return AVERROR_INVALIDDATA;
 
     if (s->last_picture.f->data[0]) {
         ret = av_frame_copy(frame, s->last_picture.f);

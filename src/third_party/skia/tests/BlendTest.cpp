@@ -92,15 +92,14 @@ static sk_sp<SkSurface> create_gpu_surface_backend_texture_as_render_target(
         GrPixelConfig config, GrSurfaceOrigin origin,
         sk_sp<GrTexture>* backingSurface) {
     GrSurfaceDesc backingDesc;
-    backingDesc.fFlags = kRenderTarget_GrSurfaceFlag;
     backingDesc.fWidth = width;
     backingDesc.fHeight = height;
     backingDesc.fConfig = config;
-    backingDesc.fSampleCnt = sampleCnt;
 
     auto resourceProvider = context->priv().resourceProvider();
 
-    *backingSurface = resourceProvider->createTexture(backingDesc, SkBudgeted::kNo,
+    *backingSurface = resourceProvider->createTexture(backingDesc, GrRenderable::kYes, sampleCnt,
+                                                      SkBudgeted::kNo, GrProtected::kNo,
                                                       GrResourceProvider::Flags::kNoPendingIO);
     if (!(*backingSurface)) {
         return nullptr;

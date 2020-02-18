@@ -31,26 +31,29 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldProcessDeleteMostVisitedItem() override;
   bool ShouldProcessUndoMostVisitedDeletion() override;
   bool ShouldProcessUndoAllMostVisitedDeletions() override;
-  bool ShouldProcessToggleMostVisitedOrCustomLinks() override;
   bool ShouldProcessAddCustomLink() override;
   bool ShouldProcessUpdateCustomLink() override;
   bool ShouldProcessReorderCustomLink() override;
   bool ShouldProcessDeleteCustomLink() override;
   bool ShouldProcessUndoCustomLinkAction() override;
   bool ShouldProcessResetCustomLinks() override;
+  bool ShouldProcessToggleMostVisitedOrCustomLinks() override;
+  bool ShouldProcessToggleShortcutsVisibility() override;
   bool ShouldProcessLogEvent() override;
   bool ShouldProcessLogSuggestionEventWithValue() override;
   bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) override;
   bool ShouldSendSetInputInProgress(bool is_active_tab) override;
   bool ShouldSendOmniboxFocusChanged() override;
-  bool ShouldSendMostVisitedItems() override;
+  bool ShouldSendMostVisitedInfo() override;
   bool ShouldSendThemeBackgroundInfo() override;
-  bool ShouldProcessSetCustomBackgroundURLWithAttributions() override;
+  bool ShouldSendLocalBackgroundSelected() override;
+  bool ShouldProcessSetCustomBackgroundInfo() override;
   bool ShouldProcessSelectLocalBackgroundImage() override;
   bool ShouldProcessBlocklistSearchSuggestion() override;
   bool ShouldProcessBlocklistSearchSuggestionWithHash() override;
   bool ShouldProcessSearchSuggestionSelected() override;
   bool ShouldProcessOptOutOfSearchSuggestions() override;
+  bool ShouldProcessThemeChangeMessages() override;
 
   // Used by unit tests.
   void set_is_incognito(bool is_incognito) {

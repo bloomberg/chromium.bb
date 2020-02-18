@@ -61,6 +61,7 @@
 /** @const */ var ACCELERATOR_SEND_FEEDBACK = "send_feedback";
 
 /* Signin UI state constants. Used to control header bar UI. */
+/* TODO(https://crbug.com/981544): Sync with login_types.h */
 /** @const */ var SIGNIN_UI_STATE = {
   HIDDEN: 0,
   GAIA_SIGNIN: 1,
@@ -398,7 +399,6 @@ cr.define('cr.ui.login', function() {
             currentStepId == SCREEN_ACCOUNT_PICKER) {
           chrome.send('toggleEnrollmentScreen');
         } else if (attributes.postponeEnrollmentAllowed ||
-            currentStepId == SCREEN_OOBE_WELCOME ||
             currentStepId == SCREEN_OOBE_NETWORK ||
             currentStepId == SCREEN_OOBE_EULA) {
           // In this case update check will be skipped and OOBE will
@@ -521,6 +521,9 @@ cr.define('cr.ui.login', function() {
 
       if (oldStep.onBeforeHide)
         oldStep.onBeforeHide();
+
+      if (oldStep.defaultControl && oldStep.defaultControl.onBeforeHide)
+        oldStep.defaultControl.onBeforeHide();
 
       $('oobe').className = nextStepId;
 
@@ -772,6 +775,10 @@ cr.define('cr.ui.login', function() {
           // Set screen dimensions to maximum dimensions within this group.
           for (let j = 0; j < screenGroup.length; ++j) {
             let screen2 = $(screenGroup[j]);
+            // Other screens in this screen group might be missing if we're not
+            // in OOBE.
+            if (!screen2)
+              continue;
             width = Math.max(width, screen2.getPreferredSize().width);
             height = Math.max(height, screen2.getPreferredSize().height);
           }

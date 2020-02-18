@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_resource_context.h"
@@ -21,7 +21,6 @@
 #include "base/task/post_task.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
 #include "components/safe_browsing/features.h"
-#include "components/web_restrictions/browser/web_restrictions_resource_throttle.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -260,9 +259,9 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
       content::ResourceThrottle* throttle =
           MaybeCreateAwSafeBrowsingResourceThrottle(
               request, resource_type,
-              AwBrowserContext::GetDefault()->GetSafeBrowsingDBManager(),
-              AwBrowserContext::GetDefault()->GetSafeBrowsingUIManager(),
-              AwBrowserContext::GetDefault()
+              AwBrowserProcess::GetInstance()->GetSafeBrowsingDBManager(),
+              AwBrowserProcess::GetInstance()->GetSafeBrowsingUIManager(),
+              AwBrowserProcess::GetInstance()
                   ->GetSafeBrowsingWhitelistManager());
       if (throttle == nullptr) {
         // Should not happen
@@ -279,12 +278,6 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
   // however io_client may or may not be ready at the time depending on whether
   // webcontents is created.
   throttles->push_back(std::move(ioThreadThrottle));
-
-  bool is_main_frame = resource_type == content::ResourceType::kMainFrame;
-  throttles->push_back(
-      std::make_unique<web_restrictions::WebRestrictionsResourceThrottle>(
-          AwBrowserContext::GetDefault()->GetWebRestrictionProvider(),
-          request->url(), is_main_frame));
 }
 
 void AwResourceDispatcherHostDelegate::RequestComplete(

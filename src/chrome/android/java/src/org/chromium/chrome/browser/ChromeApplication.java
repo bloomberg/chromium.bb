@@ -20,10 +20,9 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.DiscardableReferencePool;
-import org.chromium.base.EarlyTraceEvent;
 import org.chromium.base.JNIUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PathUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -50,6 +49,7 @@ import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
 import org.chromium.components.module_installer.ModuleInstaller;
+import org.chromium.ui.base.ResourceBundle;
 
 /**
  * Basic application functionality that should be shared among all browser applications that use
@@ -58,10 +58,8 @@ import org.chromium.components.module_installer.ModuleInstaller;
 public class ChromeApplication extends Application {
     private static final String COMMAND_LINE_FILE = "chrome-command-line";
     private static final String TAG = "ChromiumApplication";
-
-    private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
-    private static ChromeApplication sInstance;
-    private static EarlyTraceEvent.Event sFirstTraceEvent;
+    // Public to allow use in ChromeBackupAgent
+    public static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
 
     /** Lock on creation of sComponent. */
     private static final Object sLock = new Object();
@@ -70,37 +68,17 @@ public class ChromeApplication extends Application {
 
     @Override
     public void onCreate() {
-        EarlyTraceEvent.Event onCreateEvent =
-                new EarlyTraceEvent.Event("ChromeApplication.onCreate");
         super.onCreate();
-        // Cannot go in attachBaseContext() because it accesses SharedPreferences, which tests
-        // want to mock out.
-        // TODO(crbug.com/957569): Accessing SharedPreferences (via maybeEnableEarlyTracing) might
-        //     by slowing down start-up.
-        boolean isBrowserProcess = isBrowserProcess();
-        if (isBrowserProcess) {
-            TraceEvent.maybeEnableEarlyTracing();
-            EarlyTraceEvent.addEvent(sFirstTraceEvent);
-        }
-        sFirstTraceEvent = null;
-
         // These can't go in attachBaseContext because Context.getApplicationContext() (which they
         // use under-the-hood) does not work until after it returns.
         FontPreloadingWorkaround.maybeInstallWorkaround(this);
         MemoryPressureMonitor.INSTANCE.registerComponentCallbacks();
-
-        if (isBrowserProcess) {
-            onCreateEvent.end();
-            EarlyTraceEvent.addEvent(onCreateEvent);
-        }
     }
 
     // Called by the framework for ALL processes. Runs before ContentProviders are created.
     // Quirk: context.getApplicationContext() returns null during this method.
     @Override
     protected void attachBaseContext(Context context) {
-        sFirstTraceEvent = new EarlyTraceEvent.Event("ChromeApplication.attachBaseContext");
-        sInstance = this;
         boolean isBrowserProcess = isBrowserProcess();
         if (isBrowserProcess) UmaUtils.recordMainEntryPointTime();
         super.attachBaseContext(context);
@@ -112,11 +90,16 @@ public class ChromeApplication extends Application {
             }
             checkAppBeingReplaced();
 
+            PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
             // Renderer and GPU processes have command line passed to them via IPC
             // (see ChildProcessService.java).
             CommandLineInitUtil.initCommandLine(
                     COMMAND_LINE_FILE, ChromeApplication::shouldUseDebugFlags);
             AppHooks.get().initCommandLine(CommandLine.getInstance());
+
+            // Requires command-line flags.
+            TraceEvent.maybeEnableEarlyTracing();
+            TraceEvent.begin("ChromeApplication.attachBaseContext");
 
             // Register for activity lifecycle callbacks. Must be done before any activities are
             // created and is needed only by processes that use the ApplicationStatus api (which for
@@ -138,12 +121,12 @@ public class ChromeApplication extends Application {
 
             // Record via UMA all modules that have been requested and are currently installed. This
             // will tell us the install penetration of each module over time.
-            ModuleInstaller.recordModuleAvailability();
+            ModuleInstaller.getInstance().recordModuleAvailability();
         }
 
         // Write installed modules to crash keys. This needs to be done as early as possible so that
         // these values are set before any crashes are reported.
-        ModuleInstaller.updateCrashKeys();
+        ModuleInstaller.getInstance().updateCrashKeys();
 
         BuildInfo.setFirebaseAppId(FirebaseConfig.getFirebaseAppId());
 
@@ -158,7 +141,12 @@ public class ChromeApplication extends Application {
         }
         AsyncTask.takeOverAndroidThreadPool();
         JNIUtils.setClassLoader(getClassLoader());
-        sFirstTraceEvent.end();
+        ResourceBundle.setAvailablePakLocales(
+                LocaleConfig.COMPRESSED_LOCALES, LocaleConfig.UNCOMPRESSED_LOCALES);
+
+        if (isBrowserProcess) {
+            TraceEvent.end("ChromeApplication.attachBaseContext");
+        }
     }
 
     private static Boolean shouldUseDebugFlags() {
@@ -193,7 +181,10 @@ public class ChromeApplication extends Application {
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
-        if (isSevereMemorySignal(level) && mReferencePool != null) mReferencePool.drain();
+        if (isSevereMemorySignal(level)
+                && GlobalDiscardableReferencePool.getReferencePool() != null) {
+            GlobalDiscardableReferencePool.getReferencePool().drain();
+        }
         CustomTabsConnection.onTrimMemory(level);
     }
 
@@ -218,14 +209,6 @@ public class ChromeApplication extends Application {
             return;
         }
         InvalidStartupDialog.show(activity, e.getErrorCode());
-    }
-
-    /**
-     * @return The DiscardableReferencePool for the application.
-     */
-    @MainDex
-    public static DiscardableReferencePool getReferencePool() {
-        return sInstance.mReferencePool;
     }
 
     @Override

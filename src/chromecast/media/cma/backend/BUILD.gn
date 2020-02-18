@@ -24,6 +24,7 @@ cast_source_set("backend") {
     "cma_backend_factory.h",
     "cma_backend_factory_impl.cc",
     "cma_backend_factory_impl.h",
+    "extra_audio_stream.h",
     "media_pipeline_backend_manager.cc",
     "media_pipeline_backend_manager.h",
     "media_pipeline_backend_wrapper.cc",
@@ -44,18 +45,6 @@ cast_source_set("backend") {
     "//chromecast/media:libcast_media",
     "//chromecast/media/cma/base",
     "//chromecast/media/cma/decoder",
-  ]
-}
-
-cast_source_set("cast_media_android_dummy") {
-  sources = [
-    "cast_media_android_dummy.cc",
-  ]
-  deps = [
-    "//base",
-    "//chromecast:chromecast_buildflags",
-    "//chromecast/public",
-    "//chromecast/public/media",
   ]
 }
 
@@ -132,6 +121,7 @@ cast_source_set("audio_helpers") {
 
   deps = [
     "//base",
+    "//chromecast/public/media",
     "//media",
   ]
 }
@@ -251,6 +241,8 @@ cast_source_set("for_mixer_audio") {
     "cast_media_shlib_mixer_audio.cc",
     "direct_mixer_source.cc",
     "direct_mixer_source.h",
+    "loopback_handler.cc",
+    "loopback_handler.h",
     "media_pipeline_backend_for_mixer.cc",
     "media_pipeline_backend_for_mixer.h",
     "stream_mixer.cc",
@@ -269,6 +261,7 @@ cast_source_set("for_mixer_audio") {
     ":volume_map",
     "//base",
     "//chromecast/base",
+    "//chromecast/base:thread_health_checker",
     "//chromecast/media/audio:libcast_external_audio_pipeline_1.0",
     "//chromecast/media/base",
     "//chromecast/media/cma/base",

@@ -297,6 +297,29 @@ class D3D11DeviceMock : public MockCOMInterface<ID3D11Device> {
   MOCK_STDCALL_METHOD0(GetExceptionMode, UINT());
 };
 
+class DXGIDeviceMock : public MockCOMInterface<IDXGIDevice> {
+ public:
+  DXGIDeviceMock();
+  ~DXGIDeviceMock() override;
+
+  MOCK_STDCALL_METHOD5(CreateSurface,
+                       HRESULT(const DXGI_SURFACE_DESC*,
+                               UINT,
+                               DXGI_USAGE,
+                               const DXGI_SHARED_RESOURCE*,
+                               IDXGISurface**));
+  MOCK_STDCALL_METHOD1(GetAdapter, HRESULT(IDXGIAdapter**));
+  MOCK_STDCALL_METHOD1(GetGPUThreadPriority, HRESULT(INT*));
+  MOCK_STDCALL_METHOD3(QueryResourceResidency,
+                       HRESULT(IUnknown* const*, DXGI_RESIDENCY*, UINT));
+  MOCK_STDCALL_METHOD1(SetGPUThreadPriority, HRESULT(INT));
+  MOCK_STDCALL_METHOD3(SetPrivateData, HRESULT(REFGUID, UINT, const void*));
+  MOCK_STDCALL_METHOD2(SetPrivateDataInterface,
+                       HRESULT(REFGUID, const IUnknown*));
+  MOCK_STDCALL_METHOD2(GetParent, HRESULT(REFIID, void**));
+  MOCK_STDCALL_METHOD3(GetPrivateData, HRESULT(REFGUID, UINT*, void*));
+};
+
 class DXGIDevice2Mock : public MockCOMInterface<IDXGIDevice2> {
  public:
   DXGIDevice2Mock();
@@ -335,6 +358,37 @@ class DXGIAdapter3Mock : public MockCOMInterface<IDXGIAdapter3> {
  public:
   DXGIAdapter3Mock();
   ~DXGIAdapter3Mock() override;
+
+  MOCK_STDCALL_METHOD3(QueryVideoMemoryInfo,
+                       HRESULT(UINT,
+                               DXGI_MEMORY_SEGMENT_GROUP,
+                               DXGI_QUERY_VIDEO_MEMORY_INFO*));
+  MOCK_STDCALL_METHOD2(RegisterHardwareContentProtectionTeardownStatusEvent,
+                       HRESULT(HANDLE, DWORD*));
+  MOCK_STDCALL_METHOD2(RegisterVideoMemoryBudgetChangeNotificationEvent,
+                       HRESULT(HANDLE, DWORD*));
+  MOCK_STDCALL_METHOD3(SetVideoMemoryReservation,
+                       HRESULT(UINT, DXGI_MEMORY_SEGMENT_GROUP, UINT64));
+  MOCK_STDCALL_METHOD1(UnregisterHardwareContentProtectionTeardownStatus,
+                       void(DWORD));
+  MOCK_STDCALL_METHOD1(UnregisterVideoMemoryBudgetChangeNotification,
+                       void(DWORD));
+  MOCK_STDCALL_METHOD1(GetDesc2, HRESULT(DXGI_ADAPTER_DESC2*));
+  MOCK_STDCALL_METHOD1(GetDesc1, HRESULT(DXGI_ADAPTER_DESC1*));
+  MOCK_STDCALL_METHOD2(CheckInterfaceSupport, HRESULT(REFGUID, LARGE_INTEGER*));
+  MOCK_STDCALL_METHOD2(EnumOutputs, HRESULT(UINT, IDXGIOutput**));
+  MOCK_STDCALL_METHOD1(GetDesc, HRESULT(DXGI_ADAPTER_DESC*));
+  MOCK_STDCALL_METHOD2(GetParent, HRESULT(REFIID, void**));
+  MOCK_STDCALL_METHOD3(GetPrivateData, HRESULT(REFGUID, UINT*, void*));
+  MOCK_STDCALL_METHOD3(SetPrivateData, HRESULT(REFGUID, UINT, const void*));
+  MOCK_STDCALL_METHOD2(SetPrivateDataInterface,
+                       HRESULT(REFGUID, const IUnknown*));
+};
+
+class DXGIAdapterMock : public MockCOMInterface<IDXGIAdapter> {
+ public:
+  DXGIAdapterMock();
+  ~DXGIAdapterMock() override;
 
   MOCK_STDCALL_METHOD3(QueryVideoMemoryInfo,
                        HRESULT(UINT,
@@ -530,6 +584,56 @@ class D3D11VideoDevice1Mock : public MockCOMInterface<ID3D11VideoDevice1> {
   MOCK_STDCALL_METHOD3(SetPrivateData, HRESULT(const GUID&, UINT, const void*));
   MOCK_STDCALL_METHOD2(SetPrivateDataInterface,
                        HRESULT(const GUID&, const IUnknown*));
+};
+
+class D3D11VideoProcessorEnumeratorMock
+    : public MockCOMInterface<ID3D11VideoProcessorEnumerator> {
+ public:
+  D3D11VideoProcessorEnumeratorMock();
+  ~D3D11VideoProcessorEnumeratorMock() override;
+
+  MOCK_STDCALL_METHOD1(GetDevice, void(ID3D11Device**));
+  MOCK_STDCALL_METHOD3(GetPrivateData, HRESULT(const GUID&, UINT*, void*));
+  MOCK_STDCALL_METHOD3(SetPrivateData, HRESULT(const GUID&, UINT, const void*));
+  MOCK_STDCALL_METHOD2(SetPrivateDataInterface,
+                       HRESULT(const GUID&, const IUnknown*));
+
+  MOCK_STDCALL_METHOD2(GetVideoProcessorRateConversionCaps,
+                       HRESULT(UINT,
+                               D3D11_VIDEO_PROCESSOR_RATE_CONVERSION_CAPS*));
+
+  MOCK_STDCALL_METHOD2(GetVideoProcessorFilterRange,
+                       HRESULT(D3D11_VIDEO_PROCESSOR_FILTER,
+                               D3D11_VIDEO_PROCESSOR_FILTER_RANGE*));
+
+  MOCK_STDCALL_METHOD3(GetVideoProcessorCustomRate,
+                       HRESULT(UINT, UINT, D3D11_VIDEO_PROCESSOR_CUSTOM_RATE*));
+
+  MOCK_STDCALL_METHOD1(GetVideoProcessorContentDesc,
+                       HRESULT(D3D11_VIDEO_PROCESSOR_CONTENT_DESC*));
+
+  MOCK_STDCALL_METHOD1(GetVideoProcessorCaps,
+                       HRESULT(D3D11_VIDEO_PROCESSOR_CAPS*));
+
+  MOCK_STDCALL_METHOD2(CheckVideoProcessorFormat, HRESULT(DXGI_FORMAT, UINT*));
+};
+
+class D3D11VideoProcessorMock : public MockCOMInterface<ID3D11VideoProcessor> {
+ public:
+  D3D11VideoProcessorMock();
+  ~D3D11VideoProcessorMock() override;
+
+  MOCK_STDCALL_METHOD1(GetDevice, void(ID3D11Device**));
+  MOCK_STDCALL_METHOD3(GetPrivateData, HRESULT(const GUID&, UINT*, void*));
+  MOCK_STDCALL_METHOD3(SetPrivateData, HRESULT(const GUID&, UINT, const void*));
+  MOCK_STDCALL_METHOD2(SetPrivateDataInterface,
+                       HRESULT(const GUID&, const IUnknown*));
+
+  MOCK_STDCALL_METHOD1(GetContentDesc,
+                       void(D3D11_VIDEO_PROCESSOR_CONTENT_DESC*));
+
+  MOCK_STDCALL_METHOD1(GetRateConversionCaps,
+                       void(D3D11_VIDEO_PROCESSOR_RATE_CONVERSION_CAPS*));
 };
 
 class D3D11VideoContextMock : public MockCOMInterface<ID3D11VideoContext> {

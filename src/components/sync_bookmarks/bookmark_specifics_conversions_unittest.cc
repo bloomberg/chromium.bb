@@ -96,7 +96,7 @@ TEST(BookmarkSpecificsConversionsTest,
 
   const bookmarks::BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
   const std::vector<std::string> illegal_titles = {"", ".", ".."};
-  int index = 0;
+  size_t index = 0;
   for (const std::string& illegal_title : illegal_titles) {
     const bookmarks::BookmarkNode* node = model->AddURL(
         /*parent=*/bookmark_bar_node, index++, base::UTF8ToUTF16(illegal_title),
@@ -222,7 +222,7 @@ TEST(BookmarkSpecificsConversionsTest,
 
   const std::vector<std::string> illegal_titles = {"", ".", ".."};
 
-  int index = 0;
+  size_t index = 0;
   for (const std::string& illegal_title : illegal_titles) {
     sync_pb::EntitySpecifics specifics;
     sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();

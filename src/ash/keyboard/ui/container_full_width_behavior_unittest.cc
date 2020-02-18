@@ -9,12 +9,6 @@
 
 namespace keyboard {
 
-class ContainerFullWidthBehaviorTest : public testing::Test {
- public:
-  ContainerFullWidthBehaviorTest() {}
-  ~ContainerFullWidthBehaviorTest() override {}
-};
-
 TEST(ContainerFullWidthBehaviorTest, AdjustSetBoundsRequest) {
   ContainerFullWidthBehavior full_width_behavior(nullptr);
 

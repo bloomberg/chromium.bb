@@ -16,6 +16,7 @@
 
 #include <memory>
 
+#include "api/fec_controller_override.h"
 #include "api/video/encoded_image.h"
 #include "api/video_codecs/video_codec.h"
 #include "api/video_codecs/video_encoder.h"
@@ -37,8 +38,7 @@ class FakeVP8Encoder : public FakeEncoder {
   virtual ~FakeVP8Encoder() = default;
 
   int32_t InitEncode(const VideoCodec* config,
-                     int32_t number_of_cores,
-                     size_t max_payload_size) override;
+                     const Settings& settings) override;
 
   int32_t Release() override;
 
@@ -56,6 +56,16 @@ class FakeVP8Encoder : public FakeEncoder {
       CodecSpecificInfo* codec_specific) override;
 
   SequenceChecker sequence_checker_;
+
+  class FakeFecControllerOverride : public FecControllerOverride {
+   public:
+    ~FakeFecControllerOverride() override = default;
+
+    void SetFecAllowed(bool fec_allowed) override {}
+  };
+
+  FakeFecControllerOverride fec_controller_override_
+      RTC_GUARDED_BY(sequence_checker_);
 
   std::unique_ptr<Vp8FrameBufferController> frame_buffer_controller_
       RTC_GUARDED_BY(sequence_checker_);

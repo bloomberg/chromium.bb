@@ -17,75 +17,6 @@ class GrContext;
 
 //////////////////////////////////////////////////////////////////////////////
 
-Sample::Event::Event() : Event("") {}
-
-Sample::Event::Event(const Event& that) {
-    *this = that;
-}
-
-Sample::Event::Event(const char type[]) : fType(type), f32(0) {
-    SkASSERT(type);
-}
-
-Sample::Event::~Event() {}
-
-bool Sample::Event::isType(const char type[]) const {
-    return fType.equals(type);
-}
-
-const char* Sample::kCharEvtName = "SampleCode_Char_Event";
-const char* Sample::kTitleEvtName = "SampleCode_Title_Event";
-
-bool Sample::CharQ(const Event& evt, SkUnichar* outUni) {
-    if (evt.isType(kCharEvtName)) {
-        if (outUni) {
-            *outUni = evt.getFast32();
-        }
-        return true;
-    }
-    return false;
-}
-
-bool Sample::TitleQ(const Event& evt) {
-    return evt.isType(kTitleEvtName);
-}
-
-void Sample::TitleR(Event* evt, const char title[]) {
-    SkASSERT(evt && TitleQ(*evt));
-    evt->setString(kTitleEvtName, title);
-}
-
-bool Sample::RequestTitle(Sample* view, SkString* title) {
-    Event evt(kTitleEvtName);
-    if (view->doQuery(&evt)) {
-        title->set(evt.findString(kTitleEvtName));
-        return true;
-    }
-    return false;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-bool Sample::doEvent(const Event& evt) {
-    return this->onEvent(evt);
-}
-
-bool Sample::onEvent(const Event&) {
-    return false;
-}
-
-bool Sample::doQuery(Event* evt) {
-    SkASSERT(evt);
-    return this->onQuery(evt);
-}
-
-bool Sample::onQuery(Sample::Event* evt) {
-    return false;
-}
-
-////////////////////////////////////////////////////////////////////////
-
-
 void Sample::setSize(SkScalar width, SkScalar height) {
     width = SkMaxScalar(0, width);
     height = SkMaxScalar(0, height);
@@ -130,83 +61,52 @@ void Sample::draw(SkCanvas* canvas) {
 
 ////////////////////////////////////////////////////////////////////////////
 
-Sample::Click::Click(Sample* target) {
-    SkASSERT(target);
-    fTarget = sk_ref_sp(target);
-}
-
-Sample::Click::~Click() {}
-
-Sample::Click* Sample::findClickHandler(SkScalar x, SkScalar y, unsigned modi) {
-    if (x < 0 || y < 0 || x >= fWidth || y >= fHeight) {
-        return nullptr;
+bool Sample::mouse(SkPoint point, InputState clickState, ModifierKey modifierKeys) {
+    switch (clickState) {
+        case InputState::kDown:
+            fClick = nullptr;
+            if (point.x() < 0 || point.y() < 0 || point.x() >= fWidth || point.y() >= fHeight) {
+                return false;
+            }
+            fClick.reset(this->onFindClickHandler(point.x(), point.y(), modifierKeys));
+            if (!fClick) {
+                return false;
+            }
+            fClick->fPrev = fClick->fCurr = fClick->fOrig = point;
+            fClick->fState = InputState::kDown;
+            fClick->fModifierKeys = modifierKeys;
+            this->onClick(fClick.get());
+            return true;
+        case InputState::kMove:
+            if (fClick) {
+                fClick->fPrev = fClick->fCurr;
+                fClick->fCurr = point;
+                fClick->fState = InputState::kMove;
+                fClick->fModifierKeys = modifierKeys;
+                return this->onClick(fClick.get());
+            }
+            return false;
+        case InputState::kUp:
+            if (fClick) {
+                fClick->fPrev = fClick->fCurr;
+                fClick->fCurr = point;
+                fClick->fState = InputState::kUp;
+                fClick->fModifierKeys = modifierKeys;
+                bool result = this->onClick(fClick.get());
+                fClick = nullptr;
+                return result;
+            }
+            return false;
     }
-
-    return this->onFindClickHandler(x, y, modi);
-}
-
-void Sample::DoClickDown(Click* click, int x, int y, unsigned modi) {
-    SkASSERT(click);
-
-    Sample* target = click->fTarget.get();
-    if (nullptr == target) {
-        return;
-    }
-
-    click->fIOrig.set(x, y);
-    click->fICurr = click->fIPrev = click->fIOrig;
-
-    click->fOrig.iset(x, y);
-    click->fPrev = click->fCurr = click->fOrig;
-
-    click->fState = Click::kDown_State;
-    click->fModifierKeys = modi;
-    target->onClick(click);
-}
-
-void Sample::DoClickMoved(Click* click, int x, int y, unsigned modi) {
-    SkASSERT(click);
-
-    Sample* target = click->fTarget.get();
-    if (nullptr == target) {
-        return;
-    }
-
-    click->fIPrev = click->fICurr;
-    click->fICurr.set(x, y);
-
-    click->fPrev = click->fCurr;
-    click->fCurr.iset(x, y);
-
-    click->fState = Click::kMoved_State;
-    click->fModifierKeys = modi;
-    target->onClick(click);
-}
-
-void Sample::DoClickUp(Click* click, int x, int y, unsigned modi) {
-    SkASSERT(click);
-
-    Sample* target = click->fTarget.get();
-    if (nullptr == target) {
-        return;
-    }
-
-    click->fIPrev = click->fICurr;
-    click->fICurr.set(x, y);
-
-    click->fPrev = click->fCurr;
-    click->fCurr.iset(x, y);
-
-    click->fState = Click::kUp_State;
-    click->fModifierKeys = modi;
-    target->onClick(click);
+    SkASSERT(false);
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////
 
 void Sample::onSizeChange() {}
 
-Sample::Click* Sample::onFindClickHandler(SkScalar x, SkScalar y, unsigned modi) {
+Sample::Click* Sample::onFindClickHandler(SkScalar x, SkScalar y, ModifierKey modi) {
     return nullptr;
 }
 

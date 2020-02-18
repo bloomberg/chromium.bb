@@ -17,7 +17,7 @@ constexpr int kWindowMargin = 10;
 
 namespace keyboard {
 
-DisplayUtil::DisplayUtil() {}
+DisplayUtil::DisplayUtil() = default;
 
 display::Display DisplayUtil::GetNearestDisplayToWindow(
     aura::Window* window) const {

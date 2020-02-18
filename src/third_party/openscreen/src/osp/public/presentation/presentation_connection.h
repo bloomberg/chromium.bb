@@ -14,11 +14,11 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "osp/public/message_demuxer.h"
-#include "osp_base/error.h"
-#include "osp_base/ip_address.h"
-#include "osp_base/macros.h"
 #include "platform/api/logging.h"
 #include "platform/api/time.h"
+#include "platform/base/error.h"
+#include "platform/base/ip_address.h"
+#include "platform/base/macros.h"
 
 namespace openscreen {
 
@@ -153,6 +153,8 @@ class Connection {
   // Terminates the presentation associated with this connection.
   void Terminate(TerminationReason reason);
 
+  void OnConnecting();
+
   // Called by the receiver when the OnPresentationStarted logic happens. This
   // notifies the delegate and updates our internal stream and ids.
   void OnConnected(uint64_t connection_id,
@@ -200,7 +202,9 @@ class ConnectionManager final : public MessageDemuxer::MessageCallback {
   Connection* GetConnection(uint64_t connection_id);
 
  private:
-  // <presentation id, connection id> -> Connection
+  // TODO(btolsch): Connection IDs were changed to be per-endpoint, but this
+  // table then needs to be <endpoint id, connection id> since connection id is
+  // still not unique globally.
   std::map<uint64_t, Connection*> connections_;
 
   MessageDemuxer::MessageWatch message_watch_;

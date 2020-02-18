@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_options.h"
 #include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "v8/include/v8-inspector.h"
@@ -69,9 +70,9 @@ class CORE_EXPORT DedicatedWorker final
       public WebDedicatedWorker {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DedicatedWorker);
-  // Eager finalization is needed to notify the parent object destruction of the
+  // Pre-finalization is needed to notify the parent object destruction of the
   // GC-managed messaging proxy and to initiate worker termination.
-  EAGERLY_FINALIZE();
+  USING_PRE_FINALIZER(DedicatedWorker, Dispose);
 
  public:
   static DedicatedWorker* Create(ExecutionContext*,
@@ -83,6 +84,8 @@ class CORE_EXPORT DedicatedWorker final
                   const KURL& script_request_url,
                   const WorkerOptions*);
   ~DedicatedWorker() override;
+
+  void Dispose();
 
   void postMessage(ScriptState*,
                    const ScriptValue& message,
@@ -142,6 +145,8 @@ class CORE_EXPORT DedicatedWorker final
 
   const KURL script_request_url_;
   Member<const WorkerOptions> options_;
+  Member<const FetchClientSettingsObjectSnapshot>
+      outside_fetch_client_settings_object_;
   const Member<DedicatedWorkerMessagingProxy> context_proxy_;
 
   Member<WorkerClassicScriptLoader> classic_script_loader_;

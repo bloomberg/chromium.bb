@@ -17,6 +17,7 @@
 #include "media/base/video_frame.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/common/media/video_capture.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_types.h"
 #include "third_party/blink/public/platform/modules/mediastream/secure_display_link_tracker.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
@@ -42,7 +43,7 @@ class VideoTrackAdapterSettings;
 // MediaStreamVideoSources such as local video capture, video sources received
 // on a PeerConnection or a source created in NaCl.
 // All methods calls will be done from the main render thread.
-class BLINK_EXPORT MediaStreamVideoSource
+class BLINK_MODULES_EXPORT MediaStreamVideoSource
     : public WebPlatformMediaStreamSource {
  public:
   enum {
@@ -178,7 +179,7 @@ class BLINK_EXPORT MediaStreamVideoSource
   // captured frames.
   virtual void StartSourceImpl(
       const VideoCaptureDeliverFrameCB& frame_callback) = 0;
-  void OnStartDone(MediaStreamRequestResult result);
+  void OnStartDone(mojom::MediaStreamRequestResult result);
 
   // A subclass that supports restart must override this method such that it
   // immediately stop producing video frames after this method is called.
@@ -327,7 +328,7 @@ class BLINK_EXPORT MediaStreamVideoSource
   base::OnceClosure remove_last_track_callback_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_;
+  base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoSource);
 };

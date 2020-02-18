@@ -4,7 +4,7 @@
 
 #include "ash/wm/lock_layout_manager.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_window_state.h"
@@ -17,18 +17,18 @@
 namespace ash {
 
 LockLayoutManager::LockLayoutManager(aura::Window* window, Shelf* shelf)
-    : wm::WmSnapToPixelLayoutManager(),
+    : WmDefaultLayoutManager(),
       window_(window),
       root_window_(window->GetRootWindow()),
       shelf_observer_(this) {
   Shell::Get()->AddShellObserver(this);
   root_window_->AddObserver(this);
-  keyboard::KeyboardController::Get()->AddObserver(this);
+  keyboard::KeyboardUIController::Get()->AddObserver(this);
   shelf_observer_.Add(shelf);
 }
 
 LockLayoutManager::~LockLayoutManager() {
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
 
   if (root_window_)
     root_window_->RemoveObserver(this);
@@ -40,7 +40,7 @@ LockLayoutManager::~LockLayoutManager() {
 }
 
 void LockLayoutManager::OnWindowResized() {
-  const wm::WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
+  const WMEvent event(WM_EVENT_WORKAREA_BOUNDS_CHANGED);
   AdjustWindowsForWorkAreaChange(&event);
 }
 
@@ -48,8 +48,8 @@ void LockLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   child->AddObserver(this);
 
   // LockWindowState replaces default WindowState of a child.
-  wm::WindowState* window_state = LockWindowState::SetLockWindowState(child);
-  wm::WMEvent event(wm::WM_EVENT_ADDED_TO_WORKSPACE);
+  WindowState* window_state = LockWindowState::SetLockWindowState(child);
+  WMEvent event(WM_EVENT_ADDED_TO_WORKSPACE);
   window_state->OnWMEvent(&event);
 
   aura::Env::GetInstance()->gesture_recognizer()->CancelActiveTouchesExcept(
@@ -57,11 +57,10 @@ void LockLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 
   // Disable virtual keyboard overscroll because it interferes with scrolling
   // login/lock content. See crbug.com/363635.
-  keyboard::mojom::KeyboardConfig config =
-      keyboard::KeyboardController::Get()->keyboard_config();
-  config.overscroll_behavior =
-      keyboard::mojom::KeyboardOverscrollBehavior::kDisabled;
-  keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
+  keyboard::KeyboardConfig config =
+      keyboard::KeyboardUIController::Get()->keyboard_config();
+  config.overscroll_behavior = keyboard::KeyboardOverscrollBehavior::kDisabled;
+  keyboard::KeyboardUIController::Get()->UpdateKeyboardConfig(config);
 }
 
 void LockLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
@@ -69,11 +68,10 @@ void LockLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
 }
 
 void LockLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
-  keyboard::mojom::KeyboardConfig config =
-      keyboard::KeyboardController::Get()->keyboard_config();
-  config.overscroll_behavior =
-      keyboard::mojom::KeyboardOverscrollBehavior::kDefault;
-  keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
+  keyboard::KeyboardConfig config =
+      keyboard::KeyboardUIController::Get()->keyboard_config();
+  config.overscroll_behavior = keyboard::KeyboardOverscrollBehavior::kDefault;
+  keyboard::KeyboardUIController::Get()->UpdateKeyboardConfig(config);
 }
 
 void LockLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
@@ -81,8 +79,8 @@ void LockLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
 
 void LockLayoutManager::SetChildBounds(aura::Window* child,
                                        const gfx::Rect& requested_bounds) {
-  wm::WindowState* window_state = wm::GetWindowState(child);
-  wm::SetBoundsEvent event(requested_bounds);
+  WindowState* window_state = WindowState::Get(child);
+  SetBoundsWMEvent event(requested_bounds);
   window_state->OnWMEvent(&event);
 }
 
@@ -97,7 +95,7 @@ void LockLayoutManager::OnWindowBoundsChanged(aura::Window* window,
                                               const gfx::Rect& new_bounds,
                                               ui::PropertyChangeReason reason) {
   if (root_window_ == window) {
-    const wm::WMEvent wm_event(wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED);
+    const WMEvent wm_event(WM_EVENT_DISPLAY_BOUNDS_CHANGED);
     AdjustWindowsForWorkAreaChange(&wm_event);
   }
 }
@@ -112,22 +110,21 @@ void LockLayoutManager::WillChangeVisibilityState(
   //    screen_util::GetDisplayWorkAreaBoundsInParentForLockScreen).
   // In short, when shelf bounds change, the windows in this layout manager
   // should be updated, too.
-  const wm::WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
+  const WMEvent event(WM_EVENT_WORKAREA_BOUNDS_CHANGED);
   AdjustWindowsForWorkAreaChange(&event);
 }
 
-void LockLayoutManager::OnKeyboardWorkspaceOccludedBoundsChanged(
+void LockLayoutManager::OnKeyboardOccludedBoundsChanged(
     const gfx::Rect& new_bounds_in_screen) {
   OnWindowResized();
 }
 
-void LockLayoutManager::AdjustWindowsForWorkAreaChange(
-    const wm::WMEvent* event) {
-  DCHECK(event->type() == wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED ||
-         event->type() == wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
+void LockLayoutManager::AdjustWindowsForWorkAreaChange(const WMEvent* event) {
+  DCHECK(event->type() == WM_EVENT_DISPLAY_BOUNDS_CHANGED ||
+         event->type() == WM_EVENT_WORKAREA_BOUNDS_CHANGED);
 
   for (aura::Window* child : window_->children())
-    wm::GetWindowState(child)->OnWMEvent(event);
+    WindowState::Get(child)->OnWMEvent(event);
 }
 
 }  // namespace ash

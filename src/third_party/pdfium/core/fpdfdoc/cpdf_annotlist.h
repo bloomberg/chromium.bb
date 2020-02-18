@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "core/fpdfapi/render/cpdf_pagerendercontext.h"
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
@@ -21,10 +22,10 @@ class CPDF_Page;
 class CPDF_RenderContext;
 class CPDF_RenderOptions;
 
-class CPDF_AnnotList {
+class CPDF_AnnotList : public CPDF_PageRenderContext::AnnotListIface {
  public:
   explicit CPDF_AnnotList(CPDF_Page* pPage);
-  ~CPDF_AnnotList();
+  ~CPDF_AnnotList() override;
 
   void DisplayAnnots(CPDF_Page* pPage,
                      CPDF_RenderContext* pContext,
@@ -37,7 +38,7 @@ class CPDF_AnnotList {
                      CFX_RenderDevice* pDevice,
                      CPDF_RenderContext* pContext,
                      bool bPrinting,
-                     const CFX_Matrix* pMatrix,
+                     const CFX_Matrix* pUser2Device,
                      uint32_t dwAnnotFlags,
                      CPDF_RenderOptions* pOptions,
                      FX_RECT* pClipRect);

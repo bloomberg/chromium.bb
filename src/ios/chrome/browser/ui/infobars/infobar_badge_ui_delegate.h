@@ -7,12 +7,14 @@
 
 #import <UIKit/UIKit.h>
 
+enum class InfobarType;
+
 // Delegate that handles any followup actions to Infobar UI events.
 @protocol InfobarBadgeUIDelegate
 
-// Called whenever an Infobar accept/confirm button was tapped. It is
-// triggered by either the banner or modal button.
-- (void)infobarWasAccepted;
+// Called whenever an Infobar of type |infobarType| accept/confirm button was
+// tapped. It is triggered by either the banner or modal button.
+- (void)infobarWasAccepted:(InfobarType)infobarType;
 
 @end
 

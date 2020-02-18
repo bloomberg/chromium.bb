@@ -19,10 +19,10 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/storage_partition.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 
@@ -39,7 +39,7 @@ const int kMinUpdateIntervalSeconds = 5;
 
 GAIAInfoUpdateService::GAIAInfoUpdateService(Profile* profile)
     : profile_(profile) {
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   identity_manager->AddObserver(this);
 
@@ -61,7 +61,7 @@ GAIAInfoUpdateService::~GAIAInfoUpdateService() {
 
 void GAIAInfoUpdateService::Update() {
   // The user must be logged in.
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   if (!identity_manager->HasPrimaryAccount())
     return;
@@ -88,8 +88,14 @@ int GAIAInfoUpdateService::GetDesiredImageSideLength() const {
   return 256;
 }
 
-Profile* GAIAInfoUpdateService::GetBrowserProfile() {
-  return profile_;
+signin::IdentityManager* GAIAInfoUpdateService::GetIdentityManager() {
+  return IdentityManagerFactory::GetForProfile(profile_);
+}
+
+network::mojom::URLLoaderFactory* GAIAInfoUpdateService::GetURLLoaderFactory() {
+  return content::BrowserContext::GetDefaultStoragePartition(profile_)
+      ->GetURLLoaderFactoryForBrowserProcess()
+      .get();
 }
 
 std::string GAIAInfoUpdateService::GetCachedPictureURL() const {
@@ -179,7 +185,7 @@ void GAIAInfoUpdateService::OnUsernameChanged(const std::string& username) {
 void GAIAInfoUpdateService::Shutdown() {
   timer_.Stop();
   profile_image_downloader_.reset();
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   identity_manager->RemoveObserver(this);
 

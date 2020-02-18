@@ -97,10 +97,9 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Starts a navigation in a newly created subframe as part of a history
   // navigation. Returns true if the history navigation could start, false
   // otherwise.  If this returns false, the caller should do a regular
-  // navigation to |default_url| should be done instead.
+  // navigation to the default src URL for the frame instead.
   bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
-      const GURL& default_url,
       mojom::NavigationClientAssociatedPtrInfo* navigation_client);
 
   // Navigates to a specified offset from the "current entry". Currently records
@@ -414,7 +413,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       NavigationHandleImpl* handle);
   bool RendererDidNavigateAutoSubframe(
       RenderFrameHostImpl* rfh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      NavigationHandleImpl* handle);
 
   // Allows the derived class to issue notifications that a load has been
   // committed. This will fill in the active entry to the details structure.
@@ -581,13 +581,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // the timer resolution, leading to things sometimes showing up in
   // the wrong order in the history view.
   TimeSmoother time_smoother_;
-
-  // Used for tracking consecutive reload requests.  If the last user-initiated
-  // navigation (either browser-initiated or renderer-initiated with a user
-  // gesture) was a reload, these hold the ReloadType and timestamp.  Otherwise
-  // these are ReloadType::NONE and a null timestamp, respectively.
-  ReloadType last_committed_reload_type_;
-  base::Time last_committed_reload_time_;
 
   // BackForwardCache:
   //

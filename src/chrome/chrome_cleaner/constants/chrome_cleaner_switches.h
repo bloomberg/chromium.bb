@@ -5,6 +5,8 @@
 #ifndef CHROME_CHROME_CLEANER_CONSTANTS_CHROME_CLEANER_SWITCHES_H_
 #define CHROME_CHROME_CLEANER_CONSTANTS_CHROME_CLEANER_SWITCHES_H_
 
+#include "chrome/chrome_cleaner/buildflags.h"
+
 namespace chrome_cleaner {
 
 // Command line switches.
@@ -47,10 +49,10 @@ extern const char kUserResponseTimeoutMinutesSwitch[];
 extern const char kWithCleanupModeLogsSwitch[];
 
 // Unoffical build only switches.
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
 extern const char kAllowUnsecureDLLsSwitch[];
 extern const char kRunWithoutSandboxForTestingSwitch[];
-#endif  // CHROME_CLEANER_OFFICIAL_BUILD
+#endif
 
 }  // namespace chrome_cleaner
 

@@ -11,21 +11,23 @@
 
 #include <algorithm>
 
+#include "absl/flags/flag.h"
+#include "absl/flags/parse.h"
 #include "absl/memory/memory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
-#include "rtc_base/flags.h"
 #include "rtc_base/socket_address.h"
 #include "test/logging/file_log_writer.h"
-#include "test/scenario/network/network_emulation.h"
+#include "test/network/network_emulation.h"
 #include "test/testsupport/file_utils.h"
 #include "test/time_controller/real_time_controller.h"
 #include "test/time_controller/simulated_time_controller.h"
 
-WEBRTC_DEFINE_bool(scenario_logs, false, "Save logs from scenario framework.");
-WEBRTC_DEFINE_string(scenario_logs_root,
-                     "",
-                     "Output root path, based on project root if unset.");
+ABSL_FLAG(bool, scenario_logs, false, "Save logs from scenario framework.");
+ABSL_FLAG(std::string,
+          scenario_logs_root,
+          "",
+          "Output root path, based on project root if unset.");
 
 namespace webrtc {
 namespace test {
@@ -34,8 +36,8 @@ const Timestamp kSimulatedStartTime = Timestamp::seconds(100000);
 
 std::unique_ptr<FileLogWriterFactory> GetScenarioLogManager(
     std::string file_name) {
-  if (FLAG_scenario_logs && !file_name.empty()) {
-    std::string output_root = FLAG_scenario_logs_root;
+  if (absl::GetFlag(FLAGS_scenario_logs) && !file_name.empty()) {
+    std::string output_root = absl::GetFlag(FLAGS_scenario_logs_root);
     if (output_root.empty())
       output_root = OutputPath() + "output_data/";
 
@@ -53,7 +55,7 @@ std::unique_ptr<TimeController> CreateTimeController(bool real_time) {
         kSimulatedStartTime);
   }
 }
-}
+}  // namespace
 
 Scenario::Scenario()
     : Scenario(std::unique_ptr<LogWriterFactoryInterface>(),
@@ -86,12 +88,12 @@ Scenario::~Scenario() {
 }
 
 ColumnPrinter Scenario::TimePrinter() {
-  return ColumnPrinter::Lambda("time",
-                               [this](rtc::SimpleStringBuilder& sb) {
-                                 sb.AppendFormat("%.3lf",
-                                                 Now().seconds<double>());
-                               },
-                               32);
+  return ColumnPrinter::Lambda(
+      "time",
+      [this](rtc::SimpleStringBuilder& sb) {
+        sb.AppendFormat("%.3lf", Now().seconds<double>());
+      },
+      32);
 }
 
 StatesPrinter* Scenario::CreatePrinter(std::string name,
@@ -164,34 +166,6 @@ void Scenario::ChangeRoute(std::pair<CallClient*, CallClient*> clients,
   clients.second->route_overhead_.insert({route_ip, overhead});
   EmulatedNetworkNode::CreateRoute(route_ip, over_nodes, clients.second);
   clients.first->transport_->Connect(over_nodes.front(), route_ip, overhead);
-}
-
-SimulatedTimeClient* Scenario::CreateSimulatedTimeClient(
-    std::string name,
-    SimulatedTimeClientConfig config,
-    std::vector<PacketStreamConfig> stream_configs,
-    std::vector<EmulatedNetworkNode*> send_link,
-    std::vector<EmulatedNetworkNode*> return_link) {
-  rtc::IPAddress send_ip(next_route_id_++);
-  rtc::IPAddress return_ip(next_route_id_++);
-  SimulatedTimeClient* client = new SimulatedTimeClient(
-      time_controller_.get(), GetLogWriterFactory(name), config, stream_configs,
-      send_link, return_link, send_ip, return_ip, Now());
-  if (log_writer_factory_ && !name.empty() &&
-      config.transport.state_log_interval.IsFinite()) {
-    Every(config.transport.state_log_interval, [this, client]() {
-      client->network_controller_factory_.LogCongestionControllerStats(Now());
-    });
-  }
-  if (client->GetNetworkControllerProcessInterval().IsFinite()) {
-    Every(client->GetNetworkControllerProcessInterval(),
-          [this, client] { client->CongestionProcess(Now()); });
-  } else {
-    task_queue_.PostTask([this, client] { client->CongestionProcess(Now()); });
-  }
-  Every(TimeDelta::ms(5), [this, client] { client->PacerProcess(Now()); });
-  simulated_time_clients_.emplace_back(client);
-  return client;
 }
 
 EmulatedNetworkNode* Scenario::CreateSimulationNode(
@@ -320,7 +294,7 @@ void Scenario::RunUntil(TimeDelta target_time_since_start,
 }
 
 void Scenario::Start() {
-  start_time_ = Timestamp::us(clock_->TimeInMicroseconds());
+  start_time_ = clock_->CurrentTime();
   for (auto& stream_pair : video_streams_)
     stream_pair->receive()->Start();
   for (auto& stream_pair : audio_streams_)
@@ -352,7 +326,7 @@ void Scenario::Stop() {
 }
 
 Timestamp Scenario::Now() {
-  return Timestamp::us(clock_->TimeInMicroseconds());
+  return clock_->CurrentTime();
 }
 
 TimeDelta Scenario::TimeSinceStart() {

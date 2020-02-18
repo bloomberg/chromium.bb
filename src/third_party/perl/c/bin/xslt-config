@@ -1,6 +1,6 @@
 #! /bin/sh
 
-prefix=/mingw
+prefix=${pcfiledir}/../..
 exec_prefix=${prefix}
 exec_prefix_set=no
 includedir=${prefix}/include
@@ -60,12 +60,12 @@ while test $# -gt 0; do
 	;;
 
     --version)
-	echo 1.1.26
+	echo 1.1.33
 	exit 0
 	;;
 
     --plugins)
-	echo /mingw/lib/libxslt-plugins
+	echo ${pcfiledir}/../../lib/libxslt-plugins
 	exit 0
 	;;
 
@@ -89,11 +89,11 @@ while test $# -gt 0; do
     shift
 done
 
-the_libs="-L${libdir} -lxslt  -L/mingw/lib -lxml2 -lz -liconv -lws2_32 "
+the_libs="-L${libdir} -lxslt -L${pcfiledir}/../../lib -lxml2 -L${pcfiledir}/../../lib -lz -L${pcfiledir}/../../lib -llzma -L${pcfiledir}/../../lib -lws2_32  "
 if test "$includedir" != "/usr/include"; then
-    the_flags="$the_flags -I$includedir `xml2-config --cflags`"
+    the_flags="$the_flags -I$includedir `${pcfiledir}/../../bin/xml2-config --cflags`"
 else
-    the_flags="$the_flags `xml2-config --cflags`"
+    the_flags="$the_flags `${pcfiledir}/../../bin/xml2-config --cflags`"
 fi
 
 if $cflags; then

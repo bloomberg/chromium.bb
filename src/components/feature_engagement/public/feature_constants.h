@@ -17,6 +17,19 @@ extern const base::Feature kIPHDemoMode;
 // A feature to ensure all arrays can contain at least one feature.
 extern const base::Feature kIPHDummyFeature;
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+extern const base::Feature kIPHReopenTabFeature;
+extern const base::Feature kIPHFocusModeFeature;
+
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
+extern const base::Feature kIPHBookmarkFeature;
+extern const base::Feature kIPHIncognitoWindowFeature;
+extern const base::Feature kIPHNewTabFeature;
+#endif  // BUILDFLAG(ENABLE_LEGACY_DESKTOP_IPH)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
+
 // All the features declared for Android below that are also used in Java,
 // should also be declared in:
 // org.chromium.components.feature_engagement.FeatureConstants.
@@ -34,10 +47,10 @@ extern const base::Feature kIPHContextualSearchWebSearchFeature;
 extern const base::Feature kIPHContextualSearchPromoteTapFeature;
 extern const base::Feature kIPHContextualSearchPromotePanelOpenFeature;
 extern const base::Feature kIPHContextualSearchOptInFeature;
-extern const base::Feature kIPHContextualSuggestionsFeature;
 extern const base::Feature kIPHDownloadSettingsFeature;
 extern const base::Feature kIPHDownloadInfoBarDownloadContinuingFeature;
 extern const base::Feature kIPHDownloadInfoBarDownloadsAreFasterFeature;
+extern const base::Feature kIPHFeedCardMenuFeature;
 extern const base::Feature kIPHHomePageButtonFeature;
 extern const base::Feature kIPHHomepageTileFeature;
 extern const base::Feature kIPHIdentityDiscFeature;
@@ -49,17 +62,10 @@ extern const base::Feature kIPHPreviewsOmniboxUIFeature;
 extern const base::Feature kIPHTabGroupsQuicklyComparePagesFeature;
 extern const base::Feature kIPHTabGroupsTapToSeeAnotherTabFeature;
 extern const base::Feature kIPHTabGroupsYourTabsAreTogetherFeature;
+extern const base::Feature kIPHTabGroupsDragAndDropFeature;
 extern const base::Feature kIPHTranslateMenuButtonFeature;
 extern const base::Feature kIPHExploreSitesTileFeature;
 #endif  // defined(OS_ANDROID)
-
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-extern const base::Feature kIPHBookmarkFeature;
-extern const base::Feature kIPHIncognitoWindowFeature;
-extern const base::Feature kIPHNewTabFeature;
-extern const base::Feature kIPHReopenTabFeature;
-extern const base::Feature kIPHFocusModeFeature;
-#endif  // BUILDFLAG(ENABLE_DESKTOP_IPH)
 
 #if defined(OS_IOS)
 extern const base::Feature kIPHBottomToolbarTipFeature;

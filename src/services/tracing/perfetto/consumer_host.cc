@@ -24,10 +24,10 @@
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/perfetto/track_event_json_exporter.h"
 #include "services/tracing/public/cpp/trace_event_args_whitelist.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/observable_events.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/observable_events.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_stats.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_stats.h"
 #include "third_party/perfetto/protos/perfetto/config/trace_config.pb.h"
 
 namespace tracing {
@@ -274,7 +274,7 @@ void ConsumerHost::TracingSession::MaybeSendEnableTracingAck() {
 }
 
 bool ConsumerHost::TracingSession::IsExpectedPid(base::ProcessId pid) const {
-  return filtered_pids_.empty() || base::ContainsKey(filtered_pids_, pid);
+  return filtered_pids_.empty() || base::Contains(filtered_pids_, pid);
 }
 
 void ConsumerHost::TracingSession::ChangeTraceConfig(
@@ -330,7 +330,7 @@ void ConsumerHost::TracingSession::ReadBuffers(
 void ConsumerHost::TracingSession::RequestBufferUsage(
     RequestBufferUsageCallback callback) {
   if (!request_buffer_usage_callback_.is_null()) {
-    std::move(callback).Run(false, 0);
+    std::move(callback).Run(false, 0, false);
     return;
   }
 
@@ -433,7 +433,7 @@ void ConsumerHost::TracingSession::OnTraceStats(
   }
 
   if (!success || stats.buffer_stats_size() != 1) {
-    std::move(request_buffer_usage_callback_).Run(false, 0.0f);
+    std::move(request_buffer_usage_callback_).Run(false, 0.0f, false);
     return;
   }
 
@@ -445,7 +445,10 @@ void ConsumerHost::TracingSession::OnTraceStats(
   double percent_full =
       bytes_in_buffer / static_cast<double>(buf_stats.buffer_size());
   percent_full = std::min(std::max(0.0, percent_full), 1.0);
-  std::move(request_buffer_usage_callback_).Run(true, percent_full);
+  bool data_loss = buf_stats.chunks_overwritten() > 0 ||
+                   buf_stats.chunks_discarded() > 0 ||
+                   buf_stats.abi_violations() > 0;
+  std::move(request_buffer_usage_callback_).Run(true, percent_full, data_loss);
 }
 
 void ConsumerHost::TracingSession::Flush(

@@ -108,9 +108,11 @@ class CastActivityManager : public CastActivityManagerBase,
   const MediaRoute* GetRoute(const MediaRoute::Id& route_id) const;
   std::vector<MediaRoute> GetRoutes() const;
 
-  // cast_channel::CastMessageHandler::Observer override.
+  // cast_channel::CastMessageHandler::Observer overrides.
   void OnAppMessage(int channel_id,
                     const cast_channel::CastMessage& message) override;
+  void OnInternalMessage(int channel_id,
+                         const cast_channel::InternalMessage& message) override;
 
   // CastSessionTracker::Observer implementation.
   void OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
@@ -253,7 +255,7 @@ class CastActivityManager : public CastActivityManagerBase,
   const std::string hash_token_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<CastActivityManager> weak_ptr_factory_;
+  base::WeakPtrFactory<CastActivityManager> weak_ptr_factory_{this};
   FRIEND_TEST_ALL_PREFIXES(CastActivityManagerTest, SendMediaRequestToReceiver);
 };
 

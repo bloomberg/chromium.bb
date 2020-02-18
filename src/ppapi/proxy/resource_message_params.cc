@@ -113,6 +113,18 @@ bool ResourceMessageParams::TakeReadOnlySharedMemoryRegionAtIndex(
   return true;
 }
 
+bool ResourceMessageParams::TakeUnsafeSharedMemoryRegionAtIndex(
+    size_t index,
+    base::UnsafeSharedMemoryRegion* region) const {
+  SerializedHandle serialized =
+      TakeHandleOfTypeAtIndex(index, SerializedHandle::SHARED_MEMORY_REGION);
+  if (!serialized.is_shmem_region())
+    return false;
+  *region = base::UnsafeSharedMemoryRegion::Deserialize(
+      serialized.TakeSharedMemoryRegion());
+  return true;
+}
+
 bool ResourceMessageParams::TakeSocketHandleAtIndex(
     size_t index,
     IPC::PlatformFileForTransit* handle) const {

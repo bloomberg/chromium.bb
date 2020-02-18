@@ -1,7 +1,7 @@
 <!doctype html>
 <p>Here are two links that (due to their parent divs' limited width) split over two lines:</p>
 
-<div style="font: 6px Ahem;">
+<div style="font: 6px Ahem; line-height: 9px;">
   <a id="start" href="www">Random start link</a>.
   <div style="width: 230px; background: yellow; position: relative; margin-left: 20px;">
     <a id="fragmentedA" href="www">This is a long bla bla bla fragmented link.</a>
@@ -50,11 +50,13 @@ This bounding box covers another link. Here we test that SpatNav can reach that 
     ["Left", "B"],                // We don't go to the enclosing #fragmentedA. If we did, holding
                                   // Left would cause a loop inside #fragmentedA's bounding box.
     ["Right", "fragmentedA"],
-    ["Down", "now_reachableA"],   // We searched *inside* #fragmentedA's box.
-    ["Down", "short"],
-    ["Right", "now_reachableC"],
-    ["Right", "anotherC"],        // We don't go to #fragmentedB because Right from #fragmentedB goes back to #short.
+    // Down searches *inside* #fragmentedA's box.
+    ["Down", "now_reachableB"],   // #now_reachableB is wider than #now_reachableA.
+    ["Left", "now_reachableA"],
+    ["Right", "now_reachableB"],
+    ["Right", "anotherA"],        // We don't go to #fragmentedB because Right from #fragmentedB goes back to #short.
                                   // This avoids an endless loop between #fragmentedB and #short if Right is held.
+    ["Down", "anotherC"],
     ["Left", "fragmentedB"],
     ["Right", "short"],           // We searched *inside* #fragmentedB's box.
     ["Down", "end"],              // This avoids an endless loop between #fragmentedB and #short if Down is held.

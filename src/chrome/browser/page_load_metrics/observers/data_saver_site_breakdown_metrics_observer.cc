@@ -7,6 +7,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -14,7 +15,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
-#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 DataSaverSiteBreakdownMetricsObserver::DataSaverSiteBreakdownMetricsObserver() =
@@ -28,6 +28,13 @@ DataSaverSiteBreakdownMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  Profile* profile = Profile::FromBrowserContext(
+      navigation_handle->GetWebContents()->GetBrowserContext());
+  // Skip if Lite mode is not enabled.
+  if (!profile || !data_reduction_proxy::DataReductionProxySettings::
+                      IsDataSaverEnabledByUser(profile->GetPrefs())) {
+    return STOP_OBSERVING;
+  }
 
   // This BrowserContext is valid for the lifetime of
   // DataReductionProxyMetricsObserver. BrowserContext is always valid and
@@ -80,18 +87,16 @@ void DataSaverSiteBreakdownMetricsObserver::OnResourceDataUseObserved(
             received_data_length,
             received_data_length + data_reduction_proxy_bytes_saved,
             committed_host_);
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // TODO(rajendrant): Fix the |request_type| and |mime_type| sent below or
-      // remove the respective histograms.
-      data_reduction_proxy_settings->data_reduction_proxy_service()
-          ->UpdateContentLengths(
-              received_data_length,
-              received_data_length + data_reduction_proxy_bytes_saved,
-              data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
-              data_reduction_proxy::VIA_DATA_REDUCTION_PROXY,
-              std::string() /* mime_type */, true /*is_user_traffic*/,
-              data_use_measurement::DataUseUserData::OTHER, 0);
-    }
+    // TODO(rajendrant): Fix the |request_type| and |mime_type| sent below or
+    // remove the respective histograms.
+    data_reduction_proxy_settings->data_reduction_proxy_service()
+        ->UpdateContentLengths(
+            received_data_length,
+            received_data_length + data_reduction_proxy_bytes_saved,
+            data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
+            data_reduction_proxy::VIA_DATA_REDUCTION_PROXY,
+            std::string() /* mime_type */, true /*is_user_traffic*/,
+            data_use_measurement::DataUseUserData::OTHER, 0);
   }
 }
 

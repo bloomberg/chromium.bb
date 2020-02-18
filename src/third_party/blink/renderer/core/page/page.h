@@ -26,6 +26,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -318,6 +319,13 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   void SetInsidePortal(bool inside_portal);
   bool InsidePortal() const;
 
+  void SetTextAutosizePageInfo(const WebTextAutosizerPageInfo& page_info) {
+    web_text_autosizer_page_info_ = page_info;
+  }
+  const WebTextAutosizerPageInfo& TextAutosizerPageInfo() const {
+    return web_text_autosizer_page_info_;
+  }
+
  private:
   friend class ScopedPagePauser;
 
@@ -418,6 +426,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   // Accessed by frames to determine whether to expose the PortalHost object.
   bool inside_portal_ = false;
+
+  WebTextAutosizerPageInfo web_text_autosizer_page_info_;
 
   DISALLOW_COPY_AND_ASSIGN(Page);
 };

@@ -284,7 +284,11 @@ class FakeCanvasResourceProvider : public CanvasResourceProvider {
   FakeCanvasResourceProvider(const IntSize& size,
                              CanvasColorParams color_params,
                              AccelerationHint hint)
-      : CanvasResourceProvider(size, color_params, nullptr, nullptr),
+      : CanvasResourceProvider(CanvasResourceProvider::kBitmap,
+                               size,
+                               color_params,
+                               nullptr,
+                               nullptr),
         is_accelerated_(hint != kPreferNoAcceleration) {}
   ~FakeCanvasResourceProvider() override = default;
   bool IsAccelerated() const override { return is_accelerated_; }
@@ -855,10 +859,10 @@ static void TestDrawHighBitDepthPNGsOnWideGamutCanvas(
       canvas->GetCanvasRenderingContext("2d", attributes));
 
   // Prepare the png file path and call the test routine
-  std::vector<String> interlace_status = {"", "_interlaced"};
-  std::vector<String> color_profiles = {"_sRGB",      "_e-sRGB",   "_AdobeRGB",
-                                        "_DisplayP3", "_ProPhoto", "_Rec2020"};
-  std::vector<String> alpha_status = {"_opaque", "_transparent"};
+  Vector<String> interlace_status = {"", "_interlaced"};
+  Vector<String> color_profiles = {"_sRGB",      "_e-sRGB",   "_AdobeRGB",
+                                   "_DisplayP3", "_ProPhoto", "_Rec2020"};
+  Vector<String> alpha_status = {"_opaque", "_transparent"};
 
   StringBuilder path;
   path.Append(test::CoreTestDataPath());
@@ -935,6 +939,7 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
     ASSERT_TRUE(converted_image);
     SkPixmap converted_pixmap;
     converted_image->peekPixels(&converted_pixmap);
+    ASSERT_TRUE(converted_pixmap.addr());
 
     // Manual color convert for testing
     sk_sp<SkColorSpace> color_space =
@@ -1153,6 +1158,7 @@ class CanvasRenderingContext2DTestWithTestingPlatform
   }
 
   void SetUp() override {
+    EnableCompositing();
     CanvasRenderingContext2DTest::SetUp();
     GetDocument().View()->UpdateLayout();
   }
@@ -1165,9 +1171,6 @@ class CanvasRenderingContext2DTestWithTestingPlatform
 // In these cases, the element should request a compositing update.
 TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
        ElementRequestsCompositingUpdateOnHibernateAndWakeUp) {
-  // This Page is not actually being shown by a compositor, but we act like it
-  // will in order to test behaviour.
-  GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
   CreateContext(kNonOpaque);
   IntSize size(300, 300);
   std::unique_ptr<Canvas2DLayerBridge> bridge =

@@ -183,7 +183,7 @@ void DetermineDeviceCertificatePolicy(
   for (const auto& cert : result_path->certs) {
     if (cert->has_policy_oids()) {
       const std::vector<net::der::Input>& policies = cert->policy_oids();
-      if (base::ContainsValue(policies, AudioOnlyPolicyOid())) {
+      if (base::Contains(policies, AudioOnlyPolicyOid())) {
         audio_only = true;
         break;
       }

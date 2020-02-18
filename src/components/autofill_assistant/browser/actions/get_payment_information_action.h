@@ -11,27 +11,53 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/payment_request.h"
 
 namespace autofill_assistant {
 
 // Triggers PaymentRequest to collect user data.
-class GetPaymentInformationAction : public Action {
+class GetPaymentInformationAction
+    : public Action,
+      public autofill::PersonalDataManagerObserver {
  public:
-  explicit GetPaymentInformationAction(const ActionProto& proto);
+  explicit GetPaymentInformationAction(ActionDelegate* delegate,
+                                       const ActionProto& proto);
   ~GetPaymentInformationAction() override;
 
+  // From autofill::PersonalDataManagerObserver.
+  void OnPersonalDataChanged() override;
+
  private:
-  void InternalProcessAction(ActionDelegate* delegate,
-                             ProcessActionCallback callback) override;
+  void InternalProcessAction(ProcessActionCallback callback) override;
 
   void OnGetPaymentInformation(
-      ActionDelegate* delegate,
       const GetPaymentInformationProto& get_payment_information,
-      ProcessActionCallback callback,
       std::unique_ptr<PaymentInformation> payment_information);
+  void OnAdditionalActionTriggered(int index);
+  void OnTermsAndConditionsLinkClicked(int link);
 
+  // Creates a new instance of |PaymentRequestOptions| from |proto_|.
+  std::unique_ptr<PaymentRequestOptions> CreateOptionsFromProto() const;
+
+  bool IsInitialAutofillDataComplete(
+      autofill::PersonalDataManager* personal_data_manager,
+      const PaymentRequestOptions& payment_options) const;
+  static bool IsCompleteContact(const autofill::AutofillProfile& profile,
+                                const PaymentRequestOptions& payment_options);
+  static bool IsCompleteAddress(const autofill::AutofillProfile& profile,
+                                const PaymentRequestOptions& payment_options);
+  static bool IsCompleteCreditCard(
+      const autofill::CreditCard& credit_card,
+      const PaymentRequestOptions& payment_options);
+
+  bool presented_to_user_ = false;
+  bool initially_prefilled = false;
+  bool personal_data_changed_ = false;
+  bool action_successful_ = false;
+  ProcessActionCallback callback_;
   base::WeakPtrFactory<GetPaymentInformationAction> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GetPaymentInformationAction);

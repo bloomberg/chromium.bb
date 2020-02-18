@@ -1289,31 +1289,22 @@ util.validateFileName = (parentEntry, name, filterHiddenOn) => {
  * It also verifies that name length is in the limits of the filesystem.
  *
  * @param {string} name New external drive name.
- * @param {!VolumeInfo} volumeInfo
+ * @param {!VolumeManagerCommon.FileSystemType} fileSystem
  * @return {Promise} Promise fulfilled on success, or rejected with the error
  *     message.
  */
-util.validateExternalDriveName = (name, volumeInfo) => {
+util.validateExternalDriveName = (name, fileSystem) => {
   // Verify if entered name for external drive respects restrictions provided by
   // the target filesystem
 
-  const fileSystem = volumeInfo.diskFileSystemType;
   const nameLength = name.length;
+  const lengthLimit = VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit;
 
   // Verify length for the target file system type
-  if (fileSystem == VolumeManagerCommon.FileSystemType.VFAT &&
-      nameLength >
-          VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit.VFAT) {
-    return Promise.reject(strf(
-        'ERROR_EXTERNAL_DRIVE_LONG_NAME',
-        VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit.VFAT));
-  } else if (
-      fileSystem == VolumeManagerCommon.FileSystemType.EXFAT &&
-      nameLength >
-          VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit.EXFAT) {
-    return Promise.reject(strf(
-        'ERROR_EXTERNAL_DRIVE_LONG_NAME',
-        VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit.EXFAT));
+  if (lengthLimit.hasOwnProperty(fileSystem) &&
+      nameLength > lengthLimit[fileSystem]) {
+    return Promise.reject(
+        strf('ERROR_EXTERNAL_DRIVE_LONG_NAME', lengthLimit[fileSystem]));
   }
 
   // Checks if name contains only printable ASCII (from ' ' to '~')
@@ -1386,8 +1377,8 @@ util.timeoutPromise = (promise, ms, opt_message) => {
 };
 
 /**
- * Examines whether the new feedback panel mode is enabled.
- * @return {boolean} True if the new feedback panel UI mode is enabled.
+ * Examines whether the feedback panel mode is enabled.
+ * @return {boolean} True if the feedback panel UI mode is enabled.
  */
 util.isFeedbackPanelEnabled = () => {
   return loadTimeData.getBoolean('FEEDBACK_PANEL_ENABLED');

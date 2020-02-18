@@ -6,10 +6,10 @@
 
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/ipc/service/image_transport_surface.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -20,21 +20,16 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
-
 namespace viz {
 
 SkiaOutputDeviceGL::SkiaOutputDeviceGL(
-    gpu::SurfaceHandle surface_handle,
+    scoped_refptr<gl::GLSurface> gl_surface,
     scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback)
     : SkiaOutputDevice(false /*need_swap_semaphore */,
                        did_swap_buffer_complete_callback),
-      surface_handle_(surface_handle),
-      feature_info_(feature_info) {
-  DCHECK(surface_handle_);
-  gl_surface_ = gpu::ImageTransportSurface::CreateNativeSurface(
-      nullptr, surface_handle_, gl::GLSurfaceFormat());
-}
+      feature_info_(feature_info),
+      gl_surface_(gl_surface) {}
 
 void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
                                     gl::GLContext* gl_context) {
@@ -76,7 +71,10 @@ scoped_refptr<gl::GLSurface> SkiaOutputDeviceGL::gl_surface() {
 void SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
                                  float device_scale_factor,
                                  const gfx::ColorSpace& color_space,
-                                 bool has_alpha) {
+                                 bool has_alpha,
+                                 gfx::OverlayTransform transform) {
+  DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
+
   gl::GLSurface::ColorSpace surface_color_space =
       gl::ColorSpaceUtils::GetGLSurfaceColorSpace(color_space);
   if (!gl_surface_->Resize(size, device_scale_factor, surface_color_space,
@@ -96,28 +94,67 @@ void SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
                                                : kBottomLeft_GrSurfaceOrigin;
   auto color_type =
       supports_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType;
-  draw_surface_ = SkSurface::MakeFromBackendRenderTarget(
+  sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       gr_context_, render_target, origin, color_type,
       color_space.ToSkColorSpace(), &surface_props);
-  DCHECK(draw_surface_);
+  DCHECK(sk_surface_);
 }
 
-gfx::SwapResponse SkiaOutputDeviceGL::SwapBuffers(
-    const GrBackendSemaphore& semaphore,
-    BufferPresentedCallback feedback) {
-  // TODO(backer): Support SwapBuffersAsync
+void SkiaOutputDeviceGL::SwapBuffers(
+    BufferPresentedCallback feedback,
+    std::vector<ui::LatencyInfo> latency_info) {
   StartSwapBuffers({});
-  return FinishSwapBuffers(gl_surface_->SwapBuffers(std::move(feedback)));
+
+  gfx::Size surface_size =
+      gfx::Size(sk_surface_->width(), sk_surface_->height());
+
+  if (gl_surface_->SupportsAsyncSwap()) {
+    auto callback = base::BindOnce(&SkiaOutputDeviceGL::DoFinishSwapBuffers,
+                                   weak_ptr_factory_.GetWeakPtr(), surface_size,
+                                   std::move(latency_info));
+    gl_surface_->SwapBuffersAsync(std::move(callback), std::move(feedback));
+  } else {
+    FinishSwapBuffers(gl_surface_->SwapBuffers(std::move(feedback)),
+                      surface_size, std::move(latency_info));
+  }
 }
 
-gfx::SwapResponse SkiaOutputDeviceGL::PostSubBuffer(
+void SkiaOutputDeviceGL::PostSubBuffer(
     const gfx::Rect& rect,
-    const GrBackendSemaphore& semaphore,
-    BufferPresentedCallback feedback) {
-  // TODO(backer): Support PostSubBufferAsync
+    BufferPresentedCallback feedback,
+    std::vector<ui::LatencyInfo> latency_info) {
   StartSwapBuffers({});
-  return FinishSwapBuffers(gl_surface_->PostSubBuffer(
-      rect.x(), rect.y(), rect.width(), rect.height(), std::move(feedback)));
+
+  gfx::Size surface_size =
+      gfx::Size(sk_surface_->width(), sk_surface_->height());
+
+  if (gl_surface_->SupportsAsyncSwap()) {
+    auto callback = base::BindOnce(&SkiaOutputDeviceGL::DoFinishSwapBuffers,
+                                   weak_ptr_factory_.GetWeakPtr(), surface_size,
+                                   std::move(latency_info));
+    gl_surface_->PostSubBufferAsync(rect.x(), rect.y(), rect.width(),
+                                    rect.height(), std::move(callback),
+                                    std::move(feedback));
+
+  } else {
+    FinishSwapBuffers(
+        gl_surface_->PostSubBuffer(rect.x(), rect.y(), rect.width(),
+                                   rect.height(), std::move(feedback)),
+        surface_size, std::move(latency_info));
+  }
+}
+
+void SkiaOutputDeviceGL::DoFinishSwapBuffers(
+    const gfx::Size& size,
+    std::vector<ui::LatencyInfo> latency_info,
+    gfx::SwapResult result,
+    std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  DCHECK(!gpu_fence);
+  FinishSwapBuffers(result, size, latency_info);
+}
+
+void SkiaOutputDeviceGL::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
+  gl_surface_->SetDrawRectangle(draw_rectangle);
 }
 
 void SkiaOutputDeviceGL::EnsureBackbuffer() {
@@ -126,6 +163,45 @@ void SkiaOutputDeviceGL::EnsureBackbuffer() {
 
 void SkiaOutputDeviceGL::DiscardBackbuffer() {
   gl_surface_->SetBackbufferAllocation(false);
+}
+
+SkSurface* SkiaOutputDeviceGL::BeginPaint() {
+  DCHECK(sk_surface_);
+  return sk_surface_.get();
+}
+
+void SkiaOutputDeviceGL::EndPaint(const GrBackendSemaphore& semaphore) {}
+
+#if defined(OS_WIN)
+void SkiaOutputDeviceGL::DidCreateAcceleratedSurfaceChildWindow(
+    gpu::SurfaceHandle parent_window,
+    gpu::SurfaceHandle child_window) {
+  NOTREACHED();
+}
+#endif
+
+const gpu::gles2::FeatureInfo* SkiaOutputDeviceGL::GetFeatureInfo() const {
+  return feature_info_.get();
+}
+
+const gpu::GpuPreferences& SkiaOutputDeviceGL::GetGpuPreferences() const {
+  return gpu_preferences_;
+}
+
+void SkiaOutputDeviceGL::DidSwapBuffersComplete(
+    gpu::SwapBuffersCompleteParams params) {
+  // TODO(kylechar): Check if this is necessary.
+}
+
+void SkiaOutputDeviceGL::BufferPresented(
+    const gfx::PresentationFeedback& feedback) {
+  // TODO(kylechar): Check if this is necessary.
+}
+
+GpuVSyncCallback SkiaOutputDeviceGL::GetGpuVSyncCallback() {
+  // TODO(sunnyps): Implement GpuVSync with SkiaRenderer.
+  NOTIMPLEMENTED();
+  return base::DoNothing::Repeatedly<base::TimeTicks, base::TimeDelta>();
 }
 
 }  // namespace viz

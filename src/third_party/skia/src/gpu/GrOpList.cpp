@@ -5,13 +5,14 @@
  * found in the LICENSE file.
  */
 
-#include "include/private/GrOpList.h"
+#include "src/gpu/GrOpList.h"
 
 #include "include/gpu/GrContext.h"
-#include "include/private/GrSurfaceProxy.h"
 #include "src/gpu/GrDeferredProxyUploader.h"
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrRenderTargetPriv.h"
+#include "src/gpu/GrStencilAttachment.h"
+#include "src/gpu/GrSurfaceProxy.h"
 #include "src/gpu/GrTextureProxyPriv.h"
 #include <atomic>
 
@@ -32,28 +33,20 @@ GrOpList::GrOpList(sk_sp<GrOpMemoryPool> opMemoryPool,
         , fUniqueID(CreateUniqueID())
         , fFlags(0) {
     SkASSERT(fOpMemoryPool);
-    fTarget.setProxy(std::move(surfaceProxy), kWrite_GrIOType);
-    fTarget.get()->setLastOpList(this);
-
-    fTarget.markPendingIO();
+    fTarget = std::move(surfaceProxy);
+    fTarget->setLastOpList(this);
 }
 
 GrOpList::~GrOpList() {
-    if (fTarget.get() && this == fTarget.get()->getLastOpList()) {
+    if (fTarget && this == fTarget->getLastOpList()) {
         // Ensure the target proxy doesn't keep hold of a dangling back pointer.
-        fTarget.get()->setLastOpList(nullptr);
+        fTarget->setLastOpList(nullptr);
     }
 }
 
-// TODO: this can go away when explicit allocation has stuck
-bool GrOpList::instantiate(GrResourceProvider* resourceProvider) {
-    SkASSERT(fTarget.get()->isInstantiated());
-    return true;
-}
-
 void GrOpList::endFlush() {
-    if (fTarget.get() && this == fTarget.get()->getLastOpList()) {
-        fTarget.get()->setLastOpList(nullptr);
+    if (fTarget && this == fTarget->getLastOpList()) {
+        fTarget->setLastOpList(nullptr);
     }
 
     fTarget.reset();
@@ -61,11 +54,17 @@ void GrOpList::endFlush() {
     fAuditTrail = nullptr;
 }
 
-void GrOpList::instantiateDeferredProxies(GrResourceProvider* resourceProvider) {
+#ifdef SK_DEBUG
+bool GrOpList::deferredProxiesAreInstantiated() const {
     for (int i = 0; i < fDeferredProxies.count(); ++i) {
-        SkASSERT(fDeferredProxies[i]->isInstantiated());
+        if (!fDeferredProxies[i]->isInstantiated()) {
+            return false;
+        }
     }
+
+    return true;
 }
+#endif
 
 void GrOpList::prepare(GrOpFlushState* flushState) {
     for (int i = 0; i < fDeferredProxies.count(); ++i) {
@@ -150,8 +149,6 @@ void GrOpList::validate() const {
 }
 #endif
 
-bool GrOpList::isInstantiated() const { return fTarget.get()->isInstantiated(); }
-
 void GrOpList::closeThoseWhoDependOnMe(const GrCaps& caps) {
     for (int i = 0; i < fDependents.count(); ++i) {
         if (!fDependents[i]->isClosed()) {
@@ -160,25 +157,27 @@ void GrOpList::closeThoseWhoDependOnMe(const GrCaps& caps) {
     }
 }
 
-bool GrOpList::isFullyInstantiated() const {
-    if (!this->isInstantiated()) {
+bool GrOpList::isInstantiated() const {
+    if (!fTarget->isInstantiated()) {
         return false;
     }
 
-    GrSurfaceProxy* proxy = fTarget.get();
-    bool needsStencil = proxy->asRenderTargetProxy()
-                                        ? proxy->asRenderTargetProxy()->needsStencil()
-                                        : false;
+    int minStencilSampleCount = (fTarget->asRenderTargetProxy())
+            ? fTarget->asRenderTargetProxy()->numStencilSamples()
+            : 0;
 
-    if (needsStencil) {
-        GrRenderTarget* rt = proxy->peekRenderTarget();
+    if (minStencilSampleCount) {
+        GrRenderTarget* rt = fTarget->peekRenderTarget();
+        SkASSERT(rt);
 
-        if (!rt->renderTargetPriv().getStencilAttachment()) {
+        GrStencilAttachment* stencil = rt->renderTargetPriv().getStencilAttachment();
+        if (!stencil) {
             return false;
         }
+        SkASSERT(stencil->numSamples() >= minStencilSampleCount);
     }
 
-    GrSurface* surface = proxy->peekSurface();
+    GrSurface* surface = fTarget->peekSurface();
     if (surface->wasDestroyed()) {
         return false;
     }
@@ -194,9 +193,9 @@ static const char* op_to_name(GrLoadOp op) {
 void GrOpList::dump(bool printDependencies) const {
     SkDebugf("--------------------------------------------------------------\n");
     SkDebugf("opListID: %d - proxyID: %d - surfaceID: %d\n", fUniqueID,
-             fTarget.get() ? fTarget.get()->uniqueID().asUInt() : -1,
-             fTarget.get() && fTarget.get()->peekSurface()
-                     ? fTarget.get()->peekSurface()->uniqueID().asUInt()
+             fTarget ? fTarget->uniqueID().asUInt() : -1,
+             fTarget && fTarget->peekSurface()
+                     ? fTarget->peekSurface()->uniqueID().asUInt()
                      : -1);
     SkDebugf("ColorLoadOp: %s %x StencilLoadOp: %s\n",
              op_to_name(fColorLoadOp),

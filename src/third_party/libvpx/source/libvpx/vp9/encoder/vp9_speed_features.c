@@ -20,6 +20,7 @@ static MESH_PATTERN best_quality_mesh_pattern[MAX_MESH_STEP] = {
   { 64, 4 }, { 28, 2 }, { 15, 1 }, { 7, 1 }
 };
 
+#if !CONFIG_REALTIME_ONLY
 // Define 3 mesh density levels to control the number of searches.
 #define MESH_DENSITY_LEVELS 3
 static MESH_PATTERN
@@ -385,6 +386,7 @@ static void set_good_speed_feature_framesize_independent(VP9_COMP *cpi,
     sf->simple_model_rd_from_var = 1;
   }
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 static void set_rt_speed_feature_framesize_dependent(VP9_COMP *cpi,
                                                      SPEED_FEATURES *sf,
@@ -454,6 +456,7 @@ static void set_rt_speed_feature_framesize_independent(
   sf->variance_part_thresh_mult = 1;
   sf->cb_pred_filter_search = 0;
   sf->force_smooth_interpol = 0;
+  sf->rt_intra_dc_only_low_content = 0;
 
   if (speed >= 1) {
     sf->allow_txfm_domain_distortion = 1;
@@ -738,12 +741,7 @@ static void set_rt_speed_feature_framesize_independent(
       sf->nonrd_use_ml_partition = 0;
 #endif
     if (content == VP9E_CONTENT_SCREEN) sf->mv.subpel_force_stop = HALF_PEL;
-    // Only keep INTRA_DC mode for speed 8.
-    if (!is_keyframe) {
-      int i = 0;
-      for (i = 0; i < BLOCK_SIZES; ++i)
-        sf->intra_y_mode_bsize_mask[i] = INTRA_DC;
-    }
+    sf->rt_intra_dc_only_low_content = 1;
     if (!cpi->use_svc && cpi->oxcf.rc_mode == VPX_CBR &&
         content != VP9E_CONTENT_SCREEN) {
       // More aggressive short circuit for speed 8.
@@ -769,6 +767,12 @@ static void set_rt_speed_feature_framesize_independent(
   }
 
   if (speed >= 9) {
+    // Only keep INTRA_DC mode for speed 9.
+    if (!is_keyframe) {
+      int i = 0;
+      for (i = 0; i < BLOCK_SIZES; ++i)
+        sf->intra_y_mode_bsize_mask[i] = INTRA_DC;
+    }
     sf->cb_pred_filter_search = 1;
     sf->mv.enable_adaptive_subpel_force_stop = 1;
     sf->mv.adapt_subpel_force_stop.mv_thresh = 1;
@@ -832,11 +836,12 @@ void vp9_set_speed_features_framesize_dependent(VP9_COMP *cpi, int speed) {
   sf->rd_ml_partition.search_early_termination = 0;
   sf->rd_ml_partition.search_breakout = 0;
 
-  if (oxcf->mode == REALTIME) {
+  if (oxcf->mode == REALTIME)
     set_rt_speed_feature_framesize_dependent(cpi, sf, speed);
-  } else if (oxcf->mode == GOOD) {
+#if !CONFIG_REALTIME_ONLY
+  else if (oxcf->mode == GOOD)
     set_good_speed_feature_framesize_dependent(cpi, sf, speed);
-  }
+#endif
 
   if (sf->disable_split_mask == DISABLE_ALL_SPLIT) {
     sf->adaptive_pred_interp_filter = 0;
@@ -866,7 +871,9 @@ void vp9_set_speed_features_framesize_dependent(VP9_COMP *cpi, int speed) {
 
 void vp9_set_speed_features_framesize_independent(VP9_COMP *cpi, int speed) {
   SPEED_FEATURES *const sf = &cpi->sf;
+#if !CONFIG_REALTIME_ONLY
   VP9_COMMON *const cm = &cpi->common;
+#endif
   MACROBLOCK *const x = &cpi->td.mb;
   const VP9EncoderConfig *const oxcf = &cpi->oxcf;
   int i;
@@ -979,8 +986,10 @@ void vp9_set_speed_features_framesize_independent(VP9_COMP *cpi, int speed) {
 
   if (oxcf->mode == REALTIME)
     set_rt_speed_feature_framesize_independent(cpi, sf, speed, oxcf->content);
+#if !CONFIG_REALTIME_ONLY
   else if (oxcf->mode == GOOD)
     set_good_speed_feature_framesize_independent(cpi, cm, sf, speed);
+#endif
 
   cpi->diamond_search_sad = vp9_diamond_search_sad;
 

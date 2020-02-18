@@ -10,7 +10,9 @@
 #include <stddef.h>
 
 #include <list>
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -227,7 +229,7 @@ class ProfileManager : public content::NotificationObserver,
   // for testing. If |addToStorage|, adds to ProfileAttributesStorage as well.
   // If |start_deferred_task_runners|, starts the deferred task runners.
   // Use ONLY in tests.
-  void RegisterTestingProfile(Profile* profile,
+  void RegisterTestingProfile(std::unique_ptr<Profile> profile,
                               bool addToStorage,
                               bool start_deferred_task_runners);
 
@@ -260,8 +262,9 @@ class ProfileManager : public content::NotificationObserver,
   // Creates a new profile asynchronously by calling into the profile's
   // asynchronous profile creation method. Virtual so that unittests can return
   // a TestingProfile instead of the Profile's result.
-  virtual Profile* CreateProfileAsyncHelper(const base::FilePath& path,
-                                            Delegate* delegate);
+  virtual std::unique_ptr<Profile> CreateProfileAsyncHelper(
+      const base::FilePath& path,
+      Delegate* delegate);
 
  private:
   friend class TestingProfileManager;
@@ -271,7 +274,7 @@ class ProfileManager : public content::NotificationObserver,
   // This struct contains information about profiles which are being loaded or
   // were loaded.
   struct ProfileInfo {
-    ProfileInfo(Profile* profile, bool created);
+    ProfileInfo(std::unique_ptr<Profile> profile, bool created);
 
     ~ProfileInfo();
 
@@ -324,7 +327,7 @@ class ProfileManager : public content::NotificationObserver,
 
   // Registers profile with given info. Returns pointer to created ProfileInfo
   // entry.
-  ProfileInfo* RegisterProfile(Profile* profile, bool created);
+  ProfileInfo* RegisterProfile(std::unique_ptr<Profile> profile, bool created);
 
   // Returns ProfileInfo associated with given |path|, registered earlier with
   // RegisterProfile.
@@ -348,14 +351,19 @@ class ProfileManager : public content::NotificationObserver,
   // (desktop) Guest User profile and (desktop) System Profile.
   void SetNonPersonalProfilePrefs(Profile* profile);
 
-  // For ChromeOS, determines if profile should be otr.
+  // Determines if profile should be OTR.
   bool ShouldGoOffTheRecord(Profile* profile);
 
   void RunCallbacks(const std::vector<CreateCallback>& callbacks,
                     Profile* profile,
                     Profile::CreateStatus status);
 
+  void SaveActiveProfiles();
+
 #if !defined(OS_ANDROID)
+  void OnBrowserOpened(Browser* browser);
+  void OnBrowserClosed(Browser* browser);
+
   // Updates the last active user of the current session.
   // On Chrome OS updating this user will have no effect since when browser is
   // restored after crash there's another preference that is taken into account.

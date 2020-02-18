@@ -17,7 +17,7 @@
 #include "net/third_party/quiche/src/quic/core/congestion_control/rtt_stats.h"
 #include "net/third_party/quiche/src/quic/core/congestion_control/send_algorithm_interface.h"
 #include "net/third_party/quiche/src/quic/core/congestion_control/uber_loss_algorithm.h"
-#include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters.pb.h"
+#include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_pending_retransmission.h"
 #include "net/third_party/quiche/src/quic/core/quic_sustained_bandwidth_recorder.h"
@@ -54,25 +54,27 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
     // Called when a spurious retransmission is detected.
     virtual void OnSpuriousPacketRetransmission(
-        TransmissionType transmission_type,
-        QuicByteCount byte_size) {}
+        TransmissionType /*transmission_type*/,
+        QuicByteCount /*byte_size*/) {}
 
-    virtual void OnIncomingAck(const QuicAckFrame& ack_frame,
-                               QuicTime ack_receive_time,
-                               QuicPacketNumber largest_observed,
-                               bool rtt_updated,
-                               QuicPacketNumber least_unacked_sent_packet) {}
+    virtual void OnIncomingAck(QuicPacketNumber /*ack_packet_number*/,
+                               const QuicAckFrame& /*ack_frame*/,
+                               QuicTime /*ack_receive_time*/,
+                               QuicPacketNumber /*largest_observed*/,
+                               bool /*rtt_updated*/,
+                               QuicPacketNumber /*least_unacked_sent_packet*/) {
+    }
 
-    virtual void OnPacketLoss(QuicPacketNumber lost_packet_number,
-                              TransmissionType transmission_type,
-                              QuicTime detection_time) {}
+    virtual void OnPacketLoss(QuicPacketNumber /*lost_packet_number*/,
+                              TransmissionType /*transmission_type*/,
+                              QuicTime /*detection_time*/) {}
 
     virtual void OnApplicationLimited() {}
 
-    virtual void OnAdjustNetworkParameters(QuicBandwidth bandwidth,
-                                           QuicTime::Delta rtt,
-                                           QuicByteCount old_cwnd,
-                                           QuicByteCount new_cwnd) {}
+    virtual void OnAdjustNetworkParameters(QuicBandwidth /*bandwidth*/,
+                                           QuicTime::Delta /*rtt*/,
+                                           QuicByteCount /*old_cwnd*/,
+                                           QuicByteCount /*new_cwnd*/) {}
   };
 
   // Interface which gets callbacks from the QuicSentPacketManager when
@@ -143,8 +145,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Removes the retransmittable frames from all unencrypted packets to ensure
   // they don't get retransmitted.
-  // TODO(fayang): Consider remove this function when deprecating
-  // quic_use_uber_loss_algorithm.
+  // TODO(fayang): Consider replace this function with NeuterHandshakePackets.
   void NeuterUnencryptedPackets();
 
   // Returns true if there are pending retransmissions.
@@ -278,6 +279,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Called when an ack frame is parsed completely.
   AckResult OnAckFrameEnd(QuicTime ack_receive_time,
+                          QuicPacketNumber ack_packet_number,
                           EncryptionLevel ack_decrypted_level);
 
   // Called to enable/disable letting session decide what to write.
@@ -339,6 +341,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   }
 
   QuicPacketNumber largest_packet_peer_knows_is_acked() const {
+    DCHECK(!supports_multiple_packet_number_spaces());
     return largest_packet_peer_knows_is_acked_;
   }
 
@@ -352,21 +355,18 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     return pending_timer_transmission_count_;
   }
 
-  QuicTime::Delta delayed_ack_time() const { return delayed_ack_time_; }
+  QuicTime::Delta local_max_ack_delay() const { return local_max_ack_delay_; }
 
-  void set_delayed_ack_time(QuicTime::Delta delayed_ack_time) {
+  void set_local_max_ack_delay(QuicTime::Delta local_max_ack_delay) {
     // The delayed ack time should never be more than one half the min RTO time.
-    DCHECK_LE(delayed_ack_time, (min_rto_timeout_ * 0.5));
-    delayed_ack_time_ = delayed_ack_time;
+    DCHECK_LE(local_max_ack_delay, (min_rto_timeout_ * 0.5));
+    local_max_ack_delay_ = local_max_ack_delay;
   }
 
-  bool enable_half_rtt_tail_loss_probe() const {
-    return enable_half_rtt_tail_loss_probe_;
-  }
+  QuicTime::Delta peer_max_ack_delay() const { return peer_max_ack_delay_; }
 
-  void set_enable_half_rtt_tail_loss_probe(
-      bool enable_half_rtt_tail_loss_probe) {
-    enable_half_rtt_tail_loss_probe_ = enable_half_rtt_tail_loss_probe;
+  void set_peer_max_ack_delay(QuicTime::Delta peer_max_ack_delay) {
+    peer_max_ack_delay_ = peer_max_ack_delay;
   }
 
   const QuicUnackedPacketMap& unacked_packets() const {
@@ -383,15 +383,15 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // Setting the send algorithm once the connection is underway is dangerous.
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm);
 
-  bool tolerate_reneging() const { return tolerate_reneging_; }
-
   bool supports_multiple_packet_number_spaces() const {
     return unacked_packets_.supports_multiple_packet_number_spaces();
   }
 
-  bool use_uber_loss_algorithm() const {
-    return unacked_packets_.use_uber_loss_algorithm();
+  bool ignore_tlpr_if_no_pending_stream_data() const {
+    return ignore_tlpr_if_no_pending_stream_data_;
   }
+
+  bool fix_rto_retransmission() const { return fix_rto_retransmission_; }
 
  private:
   friend class test::QuicConnectionPeer;
@@ -481,7 +481,8 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // |info| due to receipt by the peer.
   void MarkPacketHandled(QuicPacketNumber packet_number,
                          QuicTransmissionInfo* info,
-                         QuicTime::Delta ack_delay_time);
+                         QuicTime::Delta ack_delay_time,
+                         QuicTime receive_timestamp);
 
   // Request that |packet_number| be retransmitted after the other pending
   // retransmissions.  Does not add it to the retransmissions if it's already
@@ -496,7 +497,8 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
                             QuicTransmissionInfo* transmission_info);
 
   // Called after packets have been marked handled with last received ack frame.
-  void PostProcessNewlyAckedPackets(const QuicAckFrame& ack_frame,
+  void PostProcessNewlyAckedPackets(QuicPacketNumber ack_packet_number,
+                                    const QuicAckFrame& ack_frame,
                                     QuicTime ack_receive_time,
                                     bool rtt_updated,
                                     QuicByteCount prior_bytes_in_flight);
@@ -521,9 +523,8 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // Called when handshake is confirmed to remove the retransmittable frames
   // from all packets of HANDSHAKE_DATA packet number space to ensure they don't
   // get retransmitted and will eventually be removed from unacked packets map.
-  // Only used when quic_use_uber_loss_algorithm is true. Please note, this only
-  // applies to QUIC Crypto and needs to be changed when switches to IETF QUIC
-  // with QUIC TLS.
+  // Please note, this only applies to QUIC Crypto and needs to be changed when
+  // switches to IETF QUIC with QUIC TLS.
   void NeuterHandshakePackets();
 
   // Newly serialized retransmittable packets are added to this map, which
@@ -550,9 +551,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   std::unique_ptr<SendAlgorithmInterface> send_algorithm_;
   // Not owned. Always points to |general_loss_algorithm_| outside of tests.
   LossDetectionInterface* loss_algorithm_;
-  // TODO(fayang): Remove general_loss_algorithm_ when deprecating
-  // quic_use_uber_loss_algorithm.
-  GeneralLossAlgorithm general_loss_algorithm_;
   UberLossAlgorithm uber_loss_algorithm_;
 
   // Tracks the first RTO packet.  If any packet before that packet gets acked,
@@ -617,9 +615,14 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   QuicPacketNumber
       largest_packets_peer_knows_is_acked_[NUM_PACKET_NUMBER_SPACES];
 
-  // The maximum amount of time to wait before sending an acknowledgement.
-  // The recovery code assumes the delayed ack time is the same on both sides.
-  QuicTime::Delta delayed_ack_time_;
+  // The local node's maximum ack delay time. This is the maximum amount of
+  // time to wait before sending an acknowledgement.
+  QuicTime::Delta local_max_ack_delay_;
+
+  // The maximum ACK delay time that the peer uses. Initialized to be the
+  // same as local_max_ack_delay_, may be changed via transport parameter
+  // negotiation.
+  QuicTime::Delta peer_max_ack_delay_;
 
   // Latest received ack frame.
   QuicAckFrame last_ack_frame_;
@@ -631,11 +634,14 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // OnAckRangeStart, and gradually moves in OnAckRange..
   PacketNumberQueue::const_reverse_iterator acked_packets_iter_;
 
-  // Latched value of quic_tolerate_reneging.
-  const bool tolerate_reneging_;
-
   // Latched value of quic_loss_removes_from_inflight.
   const bool loss_removes_from_inflight_;
+
+  // Latched value of quic_ignore_tlpr_if_no_pending_stream_data.
+  const bool ignore_tlpr_if_no_pending_stream_data_;
+
+  // Latched value of quic_fix_rto_retransmission.
+  const bool fix_rto_retransmission_;
 };
 
 }  // namespace quic

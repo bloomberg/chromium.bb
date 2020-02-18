@@ -62,6 +62,7 @@ class Page;
 class PaintArtifactCompositor;
 class RootFrameViewport;
 class ScrollPaintPropertyNode;
+class TracedValue;
 class TransformPaintPropertyNode;
 struct PaintPropertyTreeBuilderFragmentContext;
 
@@ -185,10 +186,13 @@ class CORE_EXPORT VisualViewport final
 
   // ScrollableArea implementation
   ChromeClient* GetChromeClient() const override;
+  SmoothScrollSequencer* GetSmoothScrollSequencer() const override;
   void SetScrollOffset(const ScrollOffset&,
                        ScrollType,
                        ScrollBehavior,
                        ScrollCallback on_finish) override;
+  PhysicalRect ScrollIntoView(const PhysicalRect&,
+                              const WebScrollIntoViewParams&) override;
   bool IsThrottled() const override {
     // VisualViewport is always in the main frame, so the frame does not get
     // throttled.
@@ -273,6 +277,8 @@ class CORE_EXPORT VisualViewport final
   void SetNeedsPaintPropertyUpdate() { needs_paint_property_update_ = true; }
   bool NeedsPaintPropertyUpdate() const { return needs_paint_property_update_; }
 
+  void DisposeImpl() override;
+
  private:
   bool DidSetScaleOrLocation(float scale,
                              bool is_pinch_gesture_active,
@@ -320,6 +326,8 @@ class CORE_EXPORT VisualViewport final
 
   PaintArtifactCompositor* GetPaintArtifactCompositor() const;
   CompositorElementId GetCompositorScrollElementId() const;
+
+  std::unique_ptr<TracedValue> ViewportToTracedValue() const;
 
   // Contracts the given size by the thickness of any visible scrollbars. Does
   // not contract the size if the scrollbar is overlay.

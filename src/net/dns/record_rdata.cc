@@ -4,6 +4,7 @@
 
 #include "net/dns/record_rdata.h"
 
+#include <algorithm>
 #include <numeric>
 
 #include "base/big_endian.h"
@@ -13,8 +14,6 @@
 namespace net {
 
 static const size_t kSrvRecordMinimumSize = 6;
-
-RecordRdata::RecordRdata() = default;
 
 bool RecordRdata::HasValidSize(const base::StringPiece& data, uint16_t type) {
   switch (type) {
@@ -288,7 +287,11 @@ bool NsecRecordRdata::GetBit(unsigned i) const {
 
 OptRecordRdata::OptRecordRdata() = default;
 
+OptRecordRdata::OptRecordRdata(OptRecordRdata&& other) = default;
+
 OptRecordRdata::~OptRecordRdata() = default;
+
+OptRecordRdata& OptRecordRdata::operator=(OptRecordRdata&& other) = default;
 
 // static
 std::unique_ptr<OptRecordRdata> OptRecordRdata::Create(
@@ -338,6 +341,17 @@ void OptRecordRdata::AddOpt(const Opt& opt) {
   DCHECK(success);
 
   opts_.push_back(opt);
+}
+
+void OptRecordRdata::AddOpts(const OptRecordRdata& other) {
+  buf_.insert(buf_.end(), other.buf_.begin(), other.buf_.end());
+  opts_.insert(opts_.end(), other.opts_.begin(), other.opts_.end());
+}
+
+bool OptRecordRdata::ContainsOptCode(uint16_t opt_code) const {
+  return std::any_of(
+      opts_.begin(), opts_.end(),
+      [=](const OptRecordRdata::Opt& opt) { return opt.code() == opt_code; });
 }
 
 OptRecordRdata::Opt::Opt(uint16_t code, base::StringPiece data) : code_(code) {

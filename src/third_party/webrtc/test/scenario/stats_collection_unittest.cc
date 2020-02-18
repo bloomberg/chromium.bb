@@ -8,6 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 #include "test/scenario/stats_collection.h"
+
 #include "test/gtest.h"
 #include "test/scenario/scenario.h"
 
@@ -53,7 +54,7 @@ TEST(ScenarioAnalyzerTest, PsnrIsHighWhenNetworkIsGood) {
   // might change due to changes in configuration and encoder etc. The main
   // purpose is to show how the stats can be used. To avoid being overly
   // sensistive to change, the ranges are chosen to be quite large.
-  EXPECT_NEAR(analyzer.stats().psnr.Mean(), 43, 10);
+  EXPECT_NEAR(analyzer.stats().psnr_with_freeze.Mean(), 43, 10);
   EXPECT_NEAR(stats.call.stats().target_rate.Mean().kbps(), 700, 300);
   EXPECT_NEAR(stats.video_send.stats().media_bitrate.Mean().kbps(), 500, 200);
   EXPECT_NEAR(stats.video_receive.stats().resolution.Mean(), 180, 10);
@@ -73,7 +74,7 @@ TEST(ScenarioAnalyzerTest, PsnrIsLowWhenNetworkIsBad) {
   }
   // This is a change detecting test, the targets are based on previous runs and
   // might change due to changes in configuration and encoder etc.
-  EXPECT_NEAR(analyzer.stats().psnr.Mean(), 16, 10);
+  EXPECT_NEAR(analyzer.stats().psnr_with_freeze.Mean(), 16, 10);
   EXPECT_NEAR(stats.call.stats().target_rate.Mean().kbps(), 75, 50);
   EXPECT_NEAR(stats.video_send.stats().media_bitrate.Mean().kbps(), 100, 50);
   EXPECT_NEAR(stats.video_receive.stats().resolution.Mean(), 180, 10);

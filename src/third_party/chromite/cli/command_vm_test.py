@@ -252,10 +252,9 @@ class CommandVMTest(object):
   def RunTests(self):
     """Calls the test functions."""
     self.TestShell()
-    # 'cros debug' is currently broken (https://crbug.com/863122)
-    # self.TestDebug()
+    # TestDebug broken (crbug.com/863122)
     self.TestFlash()
-    self.TestDeploy()
+    # TestDeploy broken (crbug.com/987298)
 
   def Run(self):
     """Runs the tests."""

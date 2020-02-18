@@ -17,7 +17,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 
 using bookmarks::BookmarkModel;
 
@@ -27,9 +27,13 @@ const char kTestBookmarkURL[] = "http://www.google.com";
 
 class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
  public:
+  // The test executes the UI code for displaying a window that should be
+  // executed on the UI thread. The test also hits the networking code that
+  // fails without the IO thread. We pass the REAL_IO_THREAD option to run UI
+  // and IO tasks on separate threads.
   BookmarkBubbleViewTest()
       : BrowserWithTestWindowTest(
-            content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+            content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
   // testing::Test:
   void SetUp() override {
@@ -62,7 +66,7 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
   }
 
   std::unique_ptr<views::View> CreateFootnoteView() {
-    return base::WrapUnique(bubble_->CreateFootnoteView());
+    return bubble_->CreateFootnoteView();
   }
 
   std::unique_ptr<BookmarkBubbleView> bubble_;
@@ -73,7 +77,7 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
 
 // Verifies that the sync promo is not displayed for a signed in user.
 TEST_F(BookmarkBubbleViewTest, SyncPromoSignedIn) {
-  identity::MakePrimaryAccountAvailable(
+  signin::MakePrimaryAccountAvailable(
       IdentityManagerFactory::GetForProfile(profile()), "fake_username");
   CreateBubbleView();
   std::unique_ptr<views::View> footnote = CreateFootnoteView();
@@ -81,14 +85,7 @@ TEST_F(BookmarkBubbleViewTest, SyncPromoSignedIn) {
 }
 
 // Verifies that the sync promo is displayed for a user that is not signed in.
-#if defined(OS_CHROMEOS)
-// TODO(https://crbug.com/966220): Consistently failing on trybot.
-#define MAYBE_SyncPromoNotSignedIn DISABLED_SyncPromoNotSignedIn
-#else
-#define MAYBE_SyncPromoNotSignedIn SyncPromoNotSignedIn
-#endif  // defined(OS_CHROMEOS)
-
-TEST_F(BookmarkBubbleViewTest, MAYBE_SyncPromoNotSignedIn) {
+TEST_F(BookmarkBubbleViewTest, SyncPromoNotSignedIn) {
   CreateBubbleView();
   std::unique_ptr<views::View> footnote = CreateFootnoteView();
 #if defined(OS_CHROMEOS)

@@ -5,11 +5,15 @@
 #include "third_party/blink/renderer/core/css/css_paint_value.h"
 
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
 #include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_deferred_image.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -18,7 +22,8 @@ namespace blink {
 CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name)
     : CSSImageGeneratorValue(kPaintClass),
       name_(name),
-      paint_image_generator_observer_(MakeGarbageCollected<Observer>(this)) {}
+      paint_image_generator_observer_(MakeGarbageCollected<Observer>(this)),
+      paint_off_thread_(true) {}
 
 CSSPaintValue::CSSPaintValue(
     CSSCustomIdentValue* name,
@@ -60,39 +65,70 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
         GetName(), document, paint_image_generator_observer_);
   }
 
-  // For Off-Thread PaintWorklet, we just collect the necessary inputs together
-  // and defer the actual JavaScript call until much later (during cc Raster).
-  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
-    // If the main-thread does not yet know about this painter, there is no
-    // point sending it to cc - they won't be able to paint it. Once (or if) a
-    // matching painter is registered the |paint_image_generator_observer_| will
-    // cause us to be repainted.
-    if (!generator_->IsImageGeneratorReady())
-      return nullptr;
-
-    // TODO(crbug.com/946515): Break dependency on LayoutObject.
-    const LayoutObject& layout_object =
-        static_cast<const LayoutObject&>(client);
-    Vector<CSSPropertyID> native_properties =
-        generator_->NativeInvalidationProperties();
-    Vector<AtomicString> custom_properties =
-        generator_->CustomInvalidationProperties();
-    float zoom = layout_object.StyleRef().EffectiveZoom();
-    PaintWorkletStylePropertyMap::CrossThreadData style_data =
-        PaintWorkletStylePropertyMap::BuildCrossThreadData(
-            document, style, layout_object.GetNode(), native_properties,
-            custom_properties);
-    scoped_refptr<PaintWorkletInput> input =
-        base::MakeRefCounted<PaintWorkletInput>(GetName(), target_size, zoom,
-                                                generator_->WorkletId(),
-                                                std::move(style_data));
-    return PaintWorkletDeferredImage::Create(std::move(input), target_size);
-  }
+  // If the generator isn't ready yet, we have nothing to paint. Our
+  // |paint_image_generator_observer_| will cause us to be called again once the
+  // generator is ready.
+  if (!generator_->IsImageGeneratorReady())
+    return nullptr;
 
   if (!ParseInputArguments(document))
     return nullptr;
 
-  return generator_->Paint(client, target_size, parsed_input_arguments_);
+  // TODO(crbug.com/946515): Break dependency on LayoutObject.
+  const LayoutObject& layout_object = static_cast<const LayoutObject&>(client);
+
+  // TODO(crbug.com/716231): Remove this hack once zoom_for_dsf is enabled on
+  // all platforms (currently not enabled on Mac).
+  float device_scale_factor = 1;
+  if (layout_object.GetFrame() && layout_object.GetFrame()->GetPage()) {
+    // The value of DeviceScaleFactorDeprecated would be 1 on a platform where
+    // zoom_for_dsf is enabled, even if we run chrome with
+    // --force-device-scale-factor with a value that is not 1.
+    device_scale_factor =
+        layout_object.GetFrame()->GetPage()->DeviceScaleFactorDeprecated();
+  }
+
+  // For Off-Thread PaintWorklet, we just collect the necessary inputs together
+  // and defer the actual JavaScript call until much later (during cc Raster).
+  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+    if (paint_off_thread_) {
+      Vector<CSSPropertyID> native_properties =
+          generator_->NativeInvalidationProperties();
+      Vector<AtomicString> custom_properties =
+          generator_->CustomInvalidationProperties();
+      float zoom = layout_object.StyleRef().EffectiveZoom();
+      auto style_data = PaintWorkletStylePropertyMap::BuildCrossThreadData(
+          document, style, layout_object.GetNode(), native_properties,
+          custom_properties);
+      paint_off_thread_ = style_data.has_value();
+      if (paint_off_thread_) {
+        Vector<std::unique_ptr<CrossThreadStyleValue>>
+            cross_thread_input_arguments;
+        BuildInputArgumentValues(cross_thread_input_arguments);
+        scoped_refptr<PaintWorkletInput> input =
+            base::MakeRefCounted<PaintWorkletInput>(
+                GetName(), target_size, zoom, generator_->WorkletId(),
+                std::move(style_data.value()),
+                std::move(cross_thread_input_arguments));
+        return PaintWorkletDeferredImage::Create(std::move(input), target_size);
+      }
+    }
+  }
+
+  return generator_->Paint(client, target_size, parsed_input_arguments_,
+                           device_scale_factor);
+}
+
+void CSSPaintValue::BuildInputArgumentValues(
+    Vector<std::unique_ptr<CrossThreadStyleValue>>&
+        cross_thread_input_arguments) {
+  if (!parsed_input_arguments_)
+    return;
+  for (const auto& style_value : *parsed_input_arguments_) {
+    std::unique_ptr<CrossThreadStyleValue> cross_thread_style =
+        ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(style_value);
+    cross_thread_input_arguments.push_back(std::move(cross_thread_style));
+  }
 }
 
 bool CSSPaintValue::ParseInputArguments(const Document& document) {
@@ -103,9 +139,7 @@ bool CSSPaintValue::ParseInputArguments(const Document& document) {
       !RuntimeEnabledFeatures::CSSPaintAPIArgumentsEnabled())
     return true;
 
-  if (!generator_->IsImageGeneratorReady())
-    return false;
-
+  DCHECK(generator_->IsImageGeneratorReady());
   const Vector<CSSSyntaxDescriptor>& input_argument_types =
       generator_->InputArgumentTypes();
   if (argument_variable_data_.size() != input_argument_types.size()) {

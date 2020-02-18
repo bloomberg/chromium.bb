@@ -13,7 +13,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 
 import org.chromium.base.CollectionUtil;
-import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.util.HashSet;

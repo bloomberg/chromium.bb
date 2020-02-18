@@ -540,6 +540,10 @@ class Internals final : public ScriptWrappable {
   String unscopableMethod();
 
   void setCapsLockState(bool enabled);
+  void setPseudoClassState(Element* element,
+                           const String& pseudo,
+                           bool enabled,
+                           ExceptionState& exception_state);
 
   bool setScrollbarVisibilityInScrollableArea(Node*, bool visible);
 
@@ -596,6 +600,8 @@ class Internals final : public ScriptWrappable {
   LocalFrame* GetFrame() const;
 
   void setDeviceEmulationScale(float scale, ExceptionState&);
+
+  String getDocumentAgentId(Document*);
 
  private:
   Document* ContextDocument() const;

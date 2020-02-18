@@ -60,22 +60,25 @@ const char* const kDefaultAppOrder[] = {
     app_list::kInternalAppIdCamera,
     extension_misc::kCameraAppId,
     extension_misc::kGooglePhotosAppId,
+    arc::kGoogleDuo,
     app_list::kDefaultPageBreak1,  // First default page break
     extension_misc::kGoogleMapsAppId,
     app_list::kInternalAppIdSettings,
+    default_web_apps::kSettingsAppId,
+    default_web_apps::kOsSettingsAppId,
     app_list::kInternalAppIdDiscover,
     extension_misc::kGeniusAppId,
     extension_misc::kCalculatorAppId,
     default_web_apps::kCanvasAppId,
     extension_misc::kTextEditorAppId,
-    arc::kGoogleDuo,
     default_web_apps::kYoutubeTVAppId,
+    default_web_apps::kGoogleNewsAppId,
+    extensions::kWebStoreAppId,
     arc::kLightRoom,
     arc::kInfinitePainter,
     default_web_apps::kShowtimeAppId,
     extension_misc::kGooglePlusAppId,
     extension_misc::kChromeRemoteDesktopAppId,
-    extensions::kWebStoreAppId,
 };
 
 // Reads external ordinal json file and returned the parsed value. Returns NULL

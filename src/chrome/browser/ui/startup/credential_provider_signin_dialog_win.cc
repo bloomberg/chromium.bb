@@ -22,7 +22,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -483,7 +483,7 @@ views::WebDialogView* ShowCredentialProviderSigninDialog(
       std::make_unique<ChromeWebContentsHandler>());
   views::Widget::InitParams init_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  init_params.keep_on_top = true;
+  init_params.z_order = ui::ZOrderLevel::kFloatingWindow;
   views::WebDialogView* web_view = view.release();
   init_params.name = "GCPW";  // Used for debugging only.
   init_params.delegate = web_view;

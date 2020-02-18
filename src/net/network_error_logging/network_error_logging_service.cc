@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/log/net_log.h"
 #include "net/reporting/reporting_service.h"
 #include "url/gurl.h"
@@ -109,8 +110,8 @@ const struct {
      "tls.unrecognized_name_alert"},
     // tls.failed?
 
-    {ERR_SPDY_PING_FAILED, kApplicationPhase, "h2.ping_failed"},
-    {ERR_SPDY_PROTOCOL_ERROR, kConnectionPhase, "h2.protocol.error"},
+    {ERR_HTTP2_PING_FAILED, kApplicationPhase, "h2.ping_failed"},
+    {ERR_HTTP2_PROTOCOL_ERROR, kConnectionPhase, "h2.protocol.error"},
 
     {ERR_QUIC_PROTOCOL_ERROR, kConnectionPhase, "h3.protocol.error"},
 
@@ -182,10 +183,7 @@ void RecordSignedExchangeRequestOutcome(
 class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
  public:
   explicit NetworkErrorLoggingServiceImpl(PersistentNelStore* store)
-      : store_(store),
-        started_loading_policies_(false),
-        initialized_(false),
-        weak_factory_(this) {
+      : store_(store), started_loading_policies_(false), initialized_(false) {
     if (!PoliciesArePersisted())
       initialized_ = true;
   }
@@ -345,7 +343,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   // Backlog of tasks waiting on initialization.
   std::vector<base::OnceClosure> task_backlog_;
 
-  base::WeakPtrFactory<NetworkErrorLoggingServiceImpl> weak_factory_;
+  base::WeakPtrFactory<NetworkErrorLoggingServiceImpl> weak_factory_{this};
 
   bool PoliciesArePersisted() const { return store_ != nullptr; }
 
@@ -386,11 +384,20 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     policy.received_ip_address = received_ip_address;
     policy.last_used = header_received_time;
     HeaderOutcome outcome = ParseHeader(value, clock_->Now(), &policy);
+    // Disallow eTLDs from setting include_subdomains policies.
+    if ((outcome == HeaderOutcome::SET || outcome == HeaderOutcome::REMOVED) &&
+        policy.include_subdomains &&
+        registry_controlled_domains::GetRegistryLength(
+            policy.origin.GetURL(),
+            registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
+            registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES) == 0) {
+      outcome = HeaderOutcome::DISCARDED_INCLUDE_SUBDOMAINS_NOT_ALLOWED;
+    }
     RecordHeaderOutcome(outcome);
     if (outcome != HeaderOutcome::SET && outcome != HeaderOutcome::REMOVED)
       return;
 
-    // If a policy for |origin| already existed, remove the old poliicy.
+    // If a policy for |origin| already existed, remove the old policy.
     auto it = policies_.find(origin);
     if (it != policies_.end())
       RemovePolicy(it);

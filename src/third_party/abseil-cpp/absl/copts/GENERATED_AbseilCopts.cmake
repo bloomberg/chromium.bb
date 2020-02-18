@@ -77,7 +77,6 @@ list(APPEND ABSL_CLANG_CL_TEST_FLAGS
     "-Wno-unused-template"
     "-Wno-used-but-marked-unused"
     "-Wno-zero-as-null-pointer-constant"
-    "-Wno-gnu-include-next"
     "-Wno-gnu-zero-variadic-macro-arguments"
 )
 
@@ -181,7 +180,6 @@ list(APPEND ABSL_LLVM_TEST_FLAGS
     "-Wno-unused-template"
     "-Wno-used-but-marked-unused"
     "-Wno-zero-as-null-pointer-constant"
-    "-Wno-gnu-include-next"
     "-Wno-gnu-zero-variadic-macro-arguments"
 )
 
@@ -217,4 +215,22 @@ list(APPEND ABSL_MSVC_TEST_FLAGS
     "/wd4503"
     "/wd4996"
     "/DNOMINMAX"
+)
+
+list(APPEND ABSL_RANDOM_HWAES_ARM32_FLAGS
+    "-mfpu=neon"
+)
+
+list(APPEND ABSL_RANDOM_HWAES_ARM64_FLAGS
+    "-march=armv8-a+crypto"
+)
+
+list(APPEND ABSL_RANDOM_HWAES_MSVC_X64_FLAGS
+    "/O2"
+    "/Ob2"
+)
+
+list(APPEND ABSL_RANDOM_HWAES_X64_FLAGS
+    "-maes"
+    "-msse4.1"
 )

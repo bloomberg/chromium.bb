@@ -12,9 +12,6 @@ import("//chrome/common/features.gni")
 android_library("animated_poodle_java") {
   deps = [
     ":animated_poodle_resources",
-  ]
-
-  classpath_deps = [
     "//base:base_java",
     "//chrome/android:chrome_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
@@ -32,11 +29,11 @@ android_resources("animated_poodle_resources") {
 android_library("java") {
   deps = [
     ":java_resources",
-  ]
-
-  classpath_deps = [
     "//base:base_java",
     "//chrome/android:chrome_java",
+    "//chrome/android:chrome_public_java",
+    "//chrome/android/public/profiles:java",
+    "//chrome/lib/image_fetcher/public/android:java",
     "//components/policy/android:policy_java",
     "//components/signin/core/browser/android:java",
     "//components/url_formatter/android:url_formatter_java",
@@ -65,15 +62,20 @@ android_library("java") {
   java_files = [
     "java/src/org/chromium/chrome/browser/autofill_assistant/AbstractListObserver.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantBottomBarCoordinator.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantBottomSheetContent.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantKeyboardCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantOnboardingCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantPeekHeightCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantSnackbar.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantTagsForTesting.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiController.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantClient.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantModuleEntryFactoryImpl.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantModuleEntryImpl.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantActionHandlerImpl.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantServiceInjector.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/BottomSheetUtils.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/EditDistance.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/FeedbackContext.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/SizeListenableLinearLayout.java",
@@ -118,6 +120,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestDelegate.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestModel.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestNativeDelegate.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestPaymentMethodSection.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestSection.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestShippingAddressSection.java",
@@ -143,33 +146,81 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/infobox/AssistantInfoBoxModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayDelegate.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayModel.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestDelegate.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestModel.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestNativeDelegate.java",
   ]
-  jni_package = "autofill_assistant"
+}
+
+generate_jni("test_support_jni_headers") {
+  sources = [
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantTestService.java",
+  ]
+}
+
+android_library("autofill_assistant_java_test_support") {
+  testonly = true
+
+  java_files = [
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantService.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantTestScript.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantTestService.java",
+  ]
+
+  deps = [
+    ":java",
+    ":test_support_jni_headers",
+    "//components/autofill_assistant/browser:proto_java",
+    "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
+  ]
 }
 
 android_library("test_java") {
   testonly = true
 
   java_files = [
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantActionsCarouselUiTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantAutostartTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantDetailsUiTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantDirectActionHandlerTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantHeaderUiTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantInfoBoxUiTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantOverlayUiTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPaymentRequestTestHelper.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPaymentRequestUiTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiTestUtil.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AssistantOnboardingCoordinatorTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/TestingAutofillAssistantModuleEntryProvider.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/EditDistanceTest.java",
   ]
 
   deps = [
+    ":autofill_assistant_java_test_support",
     ":java",
+    ":test_support_jni_headers",
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
     "//chrome/android:chrome_test_util_java",
+    "//chrome/lib/image_fetcher/public/android:java",
+    "//chrome/test/android:chrome_java_test_support",
+    "//components/autofill_assistant/browser:proto_java",
+    "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
+    "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
+    "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/espresso:espresso_all_java",
+    "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_full_java",
+  ]
+
+  data = [
+    "//components/test/data/autofill_assistant/",
   ]
 }
 

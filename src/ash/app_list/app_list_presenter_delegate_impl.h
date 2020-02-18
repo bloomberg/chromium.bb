@@ -9,7 +9,6 @@
 
 #include "ash/app_list/presenter/app_list_presenter_delegate.h"
 #include "ash/ash_export.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "ui/display/display_observer.h"
@@ -47,16 +46,10 @@ class ASH_EXPORT AppListPresenterDelegateImpl
 
   // app_list::AppListPresenterDelegate:
   void SetPresenter(app_list::AppListPresenterImpl* presenter) override;
-  void Init(app_list::AppListView* view,
-            int64_t display_id,
-            int current_apps_page) override;
-  void OnShown(int64_t display_id) override;
+  void Init(app_list::AppListView* view, int64_t display_id) override;
+  void ShowForDisplay(int64_t display_id) override;
   void OnClosing() override;
   void OnClosed() override;
-  gfx::Vector2d GetVisibilityAnimationOffset(
-      aura::Window* root_window) override;
-  base::TimeDelta GetVisibilityAnimationDuration(aura::Window* root_window,
-                                                 bool is_visible) override;
   bool IsTabletMode() const override;
   app_list::AppListViewDelegate* GetAppListViewDelegate() override;
   bool GetOnScreenKeyboardShown() override;

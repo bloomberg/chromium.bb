@@ -13,7 +13,10 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "absl/types/optional.h"
+#include "api/rtp_packet_infos.h"
 #include "api/scoped_refptr.h"
 #include "api/video/color_space.h"
 #include "api/video/hdr_metadata.h"
@@ -62,6 +65,7 @@ class RTC_EXPORT VideoFrame {
     Builder& set_color_space(const ColorSpace* color_space);
     Builder& set_id(uint16_t id);
     Builder& set_update_rect(const UpdateRect& update_rect);
+    Builder& set_packet_infos(RtpPacketInfos packet_infos);
 
    private:
     uint16_t id_ = 0;
@@ -72,6 +76,7 @@ class RTC_EXPORT VideoFrame {
     VideoRotation rotation_ = kVideoRotation_0;
     absl::optional<ColorSpace> color_space_;
     absl::optional<UpdateRect> update_rect_;
+    RtpPacketInfos packet_infos_;
   };
 
   // To be deprecated. Migrate all use to Builder.
@@ -126,11 +131,9 @@ class RTC_EXPORT VideoFrame {
   uint32_t transport_frame_id() const { return timestamp(); }
 
   // Set capture ntp time in milliseconds.
-  // TODO(nisse): Deprecated. Migrate all users to timestamp_us().
   void set_ntp_time_ms(int64_t ntp_time_ms) { ntp_time_ms_ = ntp_time_ms; }
 
   // Get capture ntp time in milliseconds.
-  // TODO(nisse): Deprecated. Migrate all users to timestamp_us().
   int64_t ntp_time_ms() const { return ntp_time_ms_; }
 
   // Naming convention for Coordination of Video Orientation. Please see
@@ -160,6 +163,9 @@ class RTC_EXPORT VideoFrame {
   // initialized VideoFrame.
   rtc::scoped_refptr<webrtc::VideoFrameBuffer> video_frame_buffer() const;
 
+  void set_video_frame_buffer(
+      const rtc::scoped_refptr<VideoFrameBuffer>& buffer);
+
   // TODO(nisse): Deprecated.
   // Return true if the frame is stored in a texture.
   bool is_texture() const {
@@ -178,6 +184,13 @@ class RTC_EXPORT VideoFrame {
     update_rect_ = update_rect;
   }
 
+  // Get information about packets used to assemble this video frame. Might be
+  // empty if the information isn't available.
+  const RtpPacketInfos& packet_infos() const { return packet_infos_; }
+  void set_packet_infos(RtpPacketInfos value) {
+    packet_infos_ = std::move(value);
+  }
+
  private:
   VideoFrame(uint16_t id,
              const rtc::scoped_refptr<VideoFrameBuffer>& buffer,
@@ -186,7 +199,8 @@ class RTC_EXPORT VideoFrame {
              int64_t ntp_time_ms,
              VideoRotation rotation,
              const absl::optional<ColorSpace>& color_space,
-             const absl::optional<UpdateRect>& update_rect);
+             const absl::optional<UpdateRect>& update_rect,
+             RtpPacketInfos packet_infos);
 
   uint16_t id_;
   // An opaque reference counted handle that stores the pixel data.
@@ -199,6 +213,11 @@ class RTC_EXPORT VideoFrame {
   // Updated since the last frame area. Unless set explicitly, will always be
   // a full frame rectangle.
   UpdateRect update_rect_;
+  // Information about packets used to assemble this video frame. This is needed
+  // by |SourceTracker| when the frame is delivered to the RTCRtpReceiver's
+  // MediaStreamTrack, in order to implement getContributingSources(). See:
+  // https://w3c.github.io/webrtc-pc/#dom-rtcrtpreceiver-getcontributingsources
+  RtpPacketInfos packet_infos_;
 };
 
 }  // namespace webrtc

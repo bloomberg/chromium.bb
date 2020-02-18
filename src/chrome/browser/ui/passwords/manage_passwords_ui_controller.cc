@@ -69,14 +69,23 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyFormVector(
   return result;
 }
 
+const password_manager::InteractionsStats* FindStatsByUsername(
+    base::span<const password_manager::InteractionsStats> stats,
+    const base::string16& username) {
+  auto it = std::find_if(stats.begin(), stats.end(),
+                         [&username](const auto& element) {
+                           return username == element.username_value;
+                         });
+  return it == stats.end() ? nullptr : &*it;
+}
+
 }  // namespace
 
 ManagePasswordsUIController::ManagePasswordsUIController(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       bubble_status_(NOT_SHOWN),
-      are_passwords_revealed_when_next_bubble_is_opened_(false),
-      weak_ptr_factory_(this) {
+      are_passwords_revealed_when_next_bubble_is_opened_(false) {
   passwords_data_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents));
   password_manager::PasswordStore* password_store =
@@ -326,8 +335,8 @@ ManagePasswordsUIController::GetCurrentInteractionStats() const {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, GetState());
   password_manager::PasswordFormManagerForUI* form_manager =
       passwords_data_.form_manager();
-  return password_manager::FindStatsByUsername(
-      form_manager->GetFormFetcher()->GetInteractionsStats(),
+  return FindStatsByUsername(
+      form_manager->GetInteractionsStats(),
       form_manager->GetPendingCredentials().username_value);
 }
 

@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "base/stl_util.h"
-#include "content/browser/webauth/authenticator_type_converters.h"
 #include "content/browser/webauth/virtual_authenticator.h"
 #include "content/browser/webauth/virtual_discovery.h"
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/virtual_ctap2_device.h"
+#include "device/fido/virtual_u2f_device.h"
 
 namespace content {
 
@@ -32,14 +32,57 @@ VirtualFidoDiscoveryFactory::VirtualFidoDiscoveryFactory()
 
 VirtualFidoDiscoveryFactory::~VirtualFidoDiscoveryFactory() = default;
 
-void VirtualFidoDiscoveryFactory::AddBinding(
-    blink::test::mojom::VirtualAuthenticatorManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+VirtualAuthenticator* VirtualFidoDiscoveryFactory::CreateAuthenticator(
+    device::ProtocolVersion protocol,
+    device::FidoTransportProtocol transport,
+    device::AuthenticatorAttachment attachment,
+    bool has_resident_key,
+    bool has_user_verification) {
+  if (protocol == device::ProtocolVersion::kU2f &&
+      !device::VirtualU2fDevice::IsTransportSupported(transport)) {
+    return nullptr;
+  }
+  auto authenticator = std::make_unique<VirtualAuthenticator>(
+      protocol, transport, attachment, has_resident_key, has_user_verification);
+  auto* authenticator_ptr = authenticator.get();
+  authenticators_.emplace(authenticator_ptr->unique_id(),
+                          std::move(authenticator));
+
+  for (auto* discovery : discoveries_) {
+    if (discovery->transport() != authenticator_ptr->transport())
+      continue;
+    discovery->AddVirtualDevice(authenticator_ptr->ConstructDevice());
+  }
+  return authenticator_ptr;
+}
+
+VirtualAuthenticator* VirtualFidoDiscoveryFactory::GetAuthenticator(
+    const std::string& id) {
+  auto authenticator = authenticators_.find(id);
+  if (authenticator == authenticators_.end())
+    return nullptr;
+  return authenticator->second.get();
+}
+
+bool VirtualFidoDiscoveryFactory::RemoveAuthenticator(const std::string& id) {
+  const bool removed = authenticators_.erase(id);
+  if (removed) {
+    for (auto* discovery : discoveries_)
+      discovery->RemoveVirtualDevice(id);
+  }
+
+  return removed;
+}
+
+void VirtualFidoDiscoveryFactory::AddReceiver(
+    mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
+        receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void VirtualFidoDiscoveryFactory::OnDiscoveryDestroyed(
     VirtualFidoDiscovery* discovery) {
-  if (base::ContainsKey(discoveries_, discovery))
+  if (base::Contains(discoveries_, discovery))
     discoveries_.erase(discovery);
 }
 
@@ -48,20 +91,21 @@ VirtualFidoDiscoveryFactory::Create(device::FidoTransportProtocol transport,
                                     ::service_manager::Connector* connector) {
   auto discovery = std::make_unique<VirtualFidoDiscovery>(transport);
 
-  if (bindings_.empty()) {
-    // If no bindings are active then create a virtual device. This is useful
-    // for web-platform tests which assume that they can make webauthn calls,
-    // but which don't implement the Chromium-specific mock Mojo interfaces.
-    device::VirtualCtap2Device::Config default_config;
-    auto device = std::make_unique<device::VirtualCtap2Device>(
-        virtual_device_state_, default_config);
-    discovery->AddVirtualDevice(std::move(device));
-  } else {
-    for (auto& authenticator : authenticators_) {
-      if (discovery->transport() != authenticator.second->transport())
-        continue;
-      discovery->AddVirtualDevice(authenticator.second->ConstructDevice());
-    }
+  if (receivers_.empty() && authenticators_.empty()) {
+    // If no bindings are active then create a virtual device. This is a
+    // stop-gap measure for web-platform tests which assume that they can make
+    // webauthn calls until the WebAuthn Testing API is released.
+    CreateAuthenticator(
+        ::device::ProtocolVersion::kCtap2,
+        ::device::FidoTransportProtocol::kUsbHumanInterfaceDevice,
+        ::device::AuthenticatorAttachment::kCrossPlatform,
+        false /* has_resident_key */, false /* has_user_verification */);
+  }
+
+  for (auto& authenticator : authenticators_) {
+    if (discovery->transport() != authenticator.second->transport())
+      continue;
+    discovery->AddVirtualDevice(authenticator.second->ConstructDevice());
   }
 
   discoveries_.insert(discovery.get());
@@ -78,22 +122,11 @@ VirtualFidoDiscoveryFactory::CreateCable(
 void VirtualFidoDiscoveryFactory::CreateAuthenticator(
     blink::test::mojom::VirtualAuthenticatorOptionsPtr options,
     CreateAuthenticatorCallback callback) {
-  auto authenticator = std::make_unique<VirtualAuthenticator>(
-      mojo::ConvertTo<::device::ProtocolVersion>(options->protocol),
-      mojo::ConvertTo<::device::FidoTransportProtocol>(options->transport),
-      mojo::ConvertTo<::device::AuthenticatorAttachment>(options->attachment),
+  auto* authenticator = CreateAuthenticator(
+      options->protocol, options->transport, options->attachment,
       options->has_resident_key, options->has_user_verification);
-  auto* authenticator_ptr = authenticator.get();
-  authenticators_.emplace(authenticator_ptr->unique_id(),
-                          std::move(authenticator));
 
-  for (auto* discovery : discoveries_) {
-    if (discovery->transport() != authenticator_ptr->transport())
-      continue;
-    discovery->AddVirtualDevice(authenticator_ptr->ConstructDevice());
-  }
-
-  std::move(callback).Run(GetMojoPtrToVirtualAuthenticator(authenticator_ptr));
+  std::move(callback).Run(GetMojoPtrToVirtualAuthenticator(authenticator));
 }
 
 void VirtualFidoDiscoveryFactory::GetAuthenticators(
@@ -112,13 +145,7 @@ void VirtualFidoDiscoveryFactory::GetAuthenticators(
 void VirtualFidoDiscoveryFactory::RemoveAuthenticator(
     const std::string& id,
     RemoveAuthenticatorCallback callback) {
-  const bool removed = authenticators_.erase(id);
-  if (removed) {
-    for (auto* discovery : discoveries_)
-      discovery->RemoveVirtualDevice(id);
-  }
-
-  std::move(callback).Run(removed);
+  std::move(callback).Run(RemoveAuthenticator(id));
 }
 
 void VirtualFidoDiscoveryFactory::ClearAuthenticators(

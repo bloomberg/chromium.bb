@@ -32,4 +32,5 @@ std::string ToString(TimeDelta value) {
   }
   return sb.str();
 }
+
 }  // namespace webrtc

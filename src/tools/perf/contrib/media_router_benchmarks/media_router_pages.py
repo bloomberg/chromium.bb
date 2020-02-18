@@ -5,6 +5,7 @@
 from telemetry import story
 from telemetry.page import shared_page_state
 from telemetry.util import js_template
+
 from contrib.media_router_benchmarks.media_router_base_page import MediaRouterBasePage
 
 
@@ -13,9 +14,9 @@ SESSION_TIME = 300  # 5 minutes
 class SharedState(shared_page_state.SharedPageState):
   """Shared state that restarts the browser for every single story."""
 
-  def __init__(self, test, finder_options, story_set):
+  def __init__(self, test, finder_options, story_set, possible_browser):
     super(SharedState, self).__init__(
-        test, finder_options, story_set)
+        test, finder_options, story_set, possible_browser)
 
   def DidRunStory(self, results):
     super(SharedState, self).DidRunStory(results)
@@ -52,30 +53,29 @@ class CastFlingingPage(MediaRouterBasePage):
 
   def RunPageInteractions(self, action_runner):
     sink_name = self._GetOSEnviron('RECEIVER_NAME')
+
+    # Enable Cast and start to discover all sinks.
+    action_runner.tab.EnableCast()
     # Wait for 5s after Chrome is opened in order to get consistent results.
     action_runner.Wait(5)
     with action_runner.CreateInteraction('flinging'):
+      action_runner.tab.StopCasting(sink_name)
 
       self._WaitForResult(
           action_runner,
           lambda: action_runner.EvaluateJavaScript('initialized'),
           'Failed to initialize',
           timeout=30)
-      self.CloseExistingRoute(action_runner, sink_name)
+
+      # Wait for the sinks to appear.
+      self.WaitForSink(
+          action_runner, sink_name,
+          'Targeted receiver "%s" did not showed up. Sink List: %s' % (
+              sink_name, str(action_runner.tab.GetCastSinks())))
+      action_runner.tab.SetCastSinkToUse(sink_name)
 
       # Start session
       action_runner.TapElement(selector='#start_session_button')
-      self._WaitForResult(
-          action_runner,
-          lambda: len(action_runner.tab.browser.tabs) >= 2,
-          'MR dialog never showed up.')
-
-      for tab in action_runner.tab.browser.tabs:
-        # Choose sink
-        if tab.url == 'chrome://media-router/':
-          self.WaitUntilDialogLoaded(action_runner, tab)
-          self.ChooseSink(tab, sink_name)
-
       self._WaitForResult(
         action_runner,
         lambda: action_runner.EvaluateJavaScript('currentSession'),
@@ -115,40 +115,29 @@ class CastMirroringPage(MediaRouterBasePage):
 
   def RunPageInteractions(self, action_runner):
     sink_name = self._GetOSEnviron('RECEIVER_NAME')
+
+    # Enable Cast and start to discover all sinks.
+    action_runner.tab.EnableCast()
     # Wait for 5s after Chrome is opened in order to get consistent results.
     action_runner.Wait(5)
     with action_runner.CreateInteraction('mirroring'):
-      self.CloseExistingRoute(action_runner, sink_name)
+      action_runner.tab.StopCasting(sink_name)
+
+      # Wait for the sinks to appear.
+      self.WaitForSink(
+          action_runner, sink_name,
+          'Targeted receiver "%s" did not showed up. Sink List: %s' % (
+              sink_name, str(action_runner.tab.GetCastSinks())))
 
       # Start session
-      action_runner.TapElement(selector='#start_session_button')
-      self._WaitForResult(
-          action_runner,
-          lambda: len(action_runner.tab.browser.tabs) >= 2,
-          'MR dialog never showed up.')
+      action_runner.tab.StartTabMirroring(sink_name)
 
-      for tab in action_runner.tab.browser.tabs:
-        # Choose sink
-        if tab.url == 'chrome://media-router/':
-          self.WaitUntilDialogLoaded(action_runner, tab)
-          self.ChooseSink(tab, sink_name)
-
-      # Wait for 5s to make sure the route is created.
-      action_runner.Wait(5)
-      action_runner.TapElement(selector='#start_session_button')
-      self._WaitForResult(
-          action_runner,
-          lambda: len(action_runner.tab.browser.tabs) >= 2,
-          'MR dialog never showed up.')
-
-      for tab in action_runner.tab.browser.tabs:
-        if tab.url == 'chrome://media-router/':
-          self.WaitUntilDialogLoaded(action_runner, tab)
-          if not self.CheckIfExistingRoute(tab, sink_name):
-            raise RuntimeError('Failed to start mirroring session.')
+      # Make sure the route is created.
+      if action_runner.tab.GetCastIssue():
+        raise RuntimeError(action_runner.tab.GetCastIssue())
       action_runner.ExecuteJavaScript('collectPerfData();')
       action_runner.Wait(SESSION_TIME)
-      self.CloseExistingRoute(action_runner, sink_name)
+      action_runner.tab.StopCasting(sink_name)
 
 
 class MediaRouterCPUMemoryPageSet(story.StorySet):

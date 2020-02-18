@@ -63,10 +63,10 @@ class CONTENT_EXPORT CdmStorageImpl final
   // After the file system is opened, called to create a CdmFile object.
   void CreateCdmFile(const std::string& file_name, OpenCallback callback);
 
-  // Called after the CdmFileImpl object has opened the file for reading.
+  // Called after the CdmFileImpl object has opened the file.
   void OnCdmFileInitialized(std::unique_ptr<CdmFileImpl> cdm_file_impl,
                             OpenCallback callback,
-                            base::File file);
+                            bool success);
 
   // Files are stored in the PluginPrivateFileSystem, so keep track of the
   // CDM file system ID in order to open the files in the correct context.
@@ -95,7 +95,7 @@ class CONTENT_EXPORT CdmStorageImpl final
   // all remaining CdmFile bindings will be closed.
   mojo::StrongAssociatedBindingSet<media::mojom::CdmFile> cdm_file_bindings_;
 
-  base::WeakPtrFactory<CdmStorageImpl> weak_factory_;
+  base::WeakPtrFactory<CdmStorageImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CdmStorageImpl);
 };

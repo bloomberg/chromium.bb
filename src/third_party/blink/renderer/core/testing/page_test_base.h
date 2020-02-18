@@ -9,6 +9,10 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace blink {
 
 class Document;
@@ -21,8 +25,12 @@ class PageTestBase : public testing::Test {
   PageTestBase();
   ~PageTestBase() override;
 
+  void EnableCompositing();
+
   void SetUp() override;
   void TearDown() override;
+
+  using FrameSettingOverrideFunction = void (*)(Settings&);
 
   void SetUp(IntSize);
   void SetupPageWithClients(Page::PageClients* = nullptr,
@@ -32,6 +40,12 @@ class PageTestBase : public testing::Test {
   void SetBodyContent(const std::string&);
   void SetBodyInnerHTML(const String&);
   void SetHtmlInnerHTML(const std::string&);
+
+  // Navigate to |url| providing an empty response but
+  // URL and security origin of the Document will be set to |url|.
+  void NavigateTo(const KURL& url,
+                  const String& feature_policy_header = String(),
+                  const String& csp_header = String());
 
   Document& GetDocument() const;
   Page& GetPage() const;
@@ -56,6 +70,13 @@ class PageTestBase : public testing::Test {
   void LoadAhem();
   void EnablePlatform();
 
+  // Used by subclasses to provide a different tick clock. At the moment is only
+  // used to initialize DummyPageHolder. Note that subclasses calling
+  // EnablePlatform() do not need to redefine this because the platform's mock
+  // tick clock will be automatically used (see the default implementation in
+  // the source file).
+  virtual const base::TickClock* GetTickClock();
+
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>&
   platform() {
     return *platform_;
@@ -68,6 +89,7 @@ class PageTestBase : public testing::Test {
       ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>>
       platform_;
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  bool enable_compositing_ = false;
 };
 
 }  // namespace blink

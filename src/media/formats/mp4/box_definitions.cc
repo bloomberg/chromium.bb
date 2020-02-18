@@ -30,6 +30,7 @@
 #include "media/video/h264_parser.h"  // nogncheck
 
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#include "base/optional.h"
 #include "media/formats/mp4/dolby_vision.h"
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
 
@@ -45,6 +46,30 @@ namespace {
 
 const size_t kKeyIdSize = 16;
 const size_t kFlacMetadataBlockStreaminfoSize = 34;
+
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+// Parse dvcC or dvvC box.
+base::Optional<DOVIDecoderConfigurationRecord> ParseDOVIConfig(
+    BoxReader* reader) {
+  {
+    DolbyVisionConfiguration dvcc;
+    if (reader->HasChild(&dvcc) && reader->ReadChild(&dvcc)) {
+      DCHECK_LE(dvcc.dovi_config.dv_profile, 7);
+      return dvcc.dovi_config;
+    }
+  }
+
+  {
+    DolbyVisionConfiguration8 dvvc;
+    if (reader->HasChild(&dvvc) && reader->ReadChild(&dvvc)) {
+      DCHECK_GT(dvvc.dovi_config.dv_profile, 7);
+      return dvvc.dovi_config;
+    }
+  }
+
+  return base::nullopt;
+}
+#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
 
 }  // namespace
 
@@ -840,13 +865,11 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
           base::MakeRefCounted<AVCBitstreamConverter>(std::move(avcConfig));
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
       // It can be Dolby Vision stream if there is DVCC box.
-      DolbyVisionConfiguration dvccConfig;
-      if (reader->HasChild(&dvccConfig) && reader->ReadChild(&dvccConfig)) {
-        DVLOG(2) << __func__ << " reading DolbyVisionConfiguration (dvcC)";
-        static_cast<AVCBitstreamConverter*>(frame_bitstream_converter.get())
-            ->disable_validation();
+      auto dv_config = ParseDOVIConfig(reader);
+      if (dv_config.has_value()) {
+        DVLOG(2) << __func__ << " reading DolbyVisionConfiguration (dvcC/dvvC)";
         video_codec = kCodecDolbyVision;
-        video_codec_profile = dvccConfig.codec_profile;
+        video_codec_profile = dv_config->codec_profile;
       }
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
       break;
@@ -864,11 +887,11 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
           base::MakeRefCounted<HEVCBitstreamConverter>(std::move(hevcConfig));
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
       // It can be Dolby Vision stream if there is DVCC box.
-      DolbyVisionConfiguration dvccConfig;
-      if (reader->HasChild(&dvccConfig) && reader->ReadChild(&dvccConfig)) {
-        DVLOG(2) << __func__ << " reading DolbyVisionConfiguration (dvcC)";
+      auto dv_config = ParseDOVIConfig(reader);
+      if (dv_config.has_value()) {
+        DVLOG(2) << __func__ << " reading DolbyVisionConfiguration (dvcC/dvvC)";
         video_codec = kCodecDolbyVision;
-        video_codec_profile = dvccConfig.codec_profile;
+        video_codec_profile = dv_config->codec_profile;
       }
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
       break;
@@ -883,11 +906,12 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       RCHECK(reader->ReadChild(avcConfig.get()));
       frame_bitstream_converter =
           base::MakeRefCounted<AVCBitstreamConverter>(std::move(avcConfig));
-      DVLOG(2) << __func__ << " reading DolbyVisionConfiguration (dvcC)";
-      DolbyVisionConfiguration dvccConfig;
-      RCHECK(reader->ReadChild(&dvccConfig));
+
+      DVLOG(2) << __func__ << " reading DolbyVisionConfiguration (dvcC/dvvC)";
+      auto dv_config = ParseDOVIConfig(reader);
+      RCHECK(dv_config.has_value());
       video_codec = kCodecDolbyVision;
-      video_codec_profile = dvccConfig.codec_profile;
+      video_codec_profile = dv_config->codec_profile;
       break;
     }
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
@@ -899,11 +923,11 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       RCHECK(reader->ReadChild(hevcConfig.get()));
       frame_bitstream_converter =
           base::MakeRefCounted<HEVCBitstreamConverter>(std::move(hevcConfig));
-      DVLOG(2) << __func__ << " reading DolbyVisionConfiguration (dvcC)";
-      DolbyVisionConfiguration dvccConfig;
-      RCHECK(reader->ReadChild(&dvccConfig));
+      DVLOG(2) << __func__ << " reading DolbyVisionConfiguration (dvcC/dvvC)";
+      auto dv_config = ParseDOVIConfig(reader);
+      RCHECK(dv_config.has_value());
       video_codec = kCodecDolbyVision;
-      video_codec_profile = dvccConfig.codec_profile;
+      video_codec_profile = dv_config->codec_profile;
       break;
     }
 #endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)

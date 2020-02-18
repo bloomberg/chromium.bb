@@ -1,43 +1,54 @@
-#!/usr/bin/perl -s
-##
+package Crypt::RSA::DataFormat; 
+use strict;
+use warnings;
+
 ## Crypt::RSA::DataFormat -- Functions for converting, shaping and 
 ##                           creating and reporting data formats.
 ##
 ## Copyright (c) 2001, Vipul Ved Prakash.  All rights reserved.
 ## This code is free software; you can redistribute it and/or modify
 ## it under the same terms as Perl itself.
-##
-## $Id: DataFormat.pm,v 1.13 2001/05/20 23:37:45 vipul Exp $
 
-package Crypt::RSA::DataFormat; 
 use vars qw(@ISA);
-use Math::Pari qw(PARI pari2pv floor pari2num);
-use Crypt::Random qw(makerandom);
-use Digest::SHA1 qw(sha1);
+use Math::BigInt try => 'GMP, Pari';
+use Math::Prime::Util qw/random_bytes/;
+use Digest::SHA qw(sha1);
 use Carp;
-require Exporter;
-@ISA = qw(Exporter);
 
-@EXPORT_OK = qw(i2osp os2ip h2osp octet_xor octet_len bitsize 
-                generate_random_octet mgf1 steak);
+use base qw(Exporter);
+our @EXPORT_OK = qw(i2osp os2ip h2osp octet_xor octet_len bitsize 
+                    generate_random_octet mgf1 steak);
 
 
 sub i2osp {
-    my $num = PARI(shift); 
-    my $d = $num;
-    my $l = shift || 0;
-    my $base = PARI(256); my $result = '';
-    if ($l) { return if $num > $base ** $l }
+    my ($num, $l) = @_;
+    $num = 0 if !defined $num;
+    $l   = 0 if !defined $l;
+    my $result;
 
-    do { 
-        my $r = $d % $base;
-        $d = ($d-$r) / $base;
-        $result = chr($r) . $result;
-    } until ($d < $base);
-    $result = chr($d) . $result if $d != 0;
+    if (ref($num) ne 'Math::BigInt' && $num <= ~0) {
+      $result = '';
+      do {
+        $result = chr($num & 0xFF) . $result;
+        $num >>= 8;
+      } while $num;
+    } else {
+      $num = Math::BigInt->new("$num") unless ref($num) eq 'Math::BigInt';
+      my $hex = $num->as_hex;
+      # Remove the 0x and any leading zeros (shouldn't be any)
+      $hex =~ s/^0x0*//;
+      # Add a leading zero if needed to line up bytes correctly.
+      substr($hex, 0, 0, '0') if length($hex) % 2;
+      # Pack hex string into a octet string.
+      $result = pack("H*", $hex);
+    }
 
-    if (length($result) < $l) { 
-        $result = chr(0)x($l-length($result)) . $result;
+    if ($l) {
+      my $rlen = length($result);
+      # Return undef if too large to fit
+      return if $l < $rlen;
+      # Zero pad the front if they want a longer string
+      substr( $result, 0, 0, chr(0) x ($l-$rlen) ) if $rlen < $l;
     }
     return $result;
 }
@@ -45,69 +56,71 @@ sub i2osp {
 
 sub os2ip {
     my $string = shift;
-    my $base = PARI(256);
-    my $result = 0;
-    my $l = length($string); 
-    for (0 .. $l-1) {
-        my ($c) = unpack "x$_ a", $string;
-        my $a = int(ord($c));
-        my $val = int($l-$_-1); 
-        $result += $a * ($base**$val);
-    }
-    return $result;
+    my($hex) = unpack('H*', $string);
+    return Math::BigInt->new("0x$hex");
 }
 
 
 sub h2osp { 
     my $hex = shift;
-    $hex =~ s/[ \n]//ig;
-    my $num = Math::Pari::_hex_cvt($hex);
-    return i2osp ($num);
+    $hex =~ s/\s//g;
+    $hex =~ s/^0x0*//;
+    # Add a leading zero if needed to line up bytes correctly.
+    substr($hex, 0, 0, '0') if length($hex) % 2;
+    # Pack into a string.
+    my $result = pack("H*", $hex);
+    return $result;
 }
 
 
 sub generate_random_octet {
-    my ( $l, $str ) = @_;
-    my $r = makerandom ( Size => int($l*8), Strength => $str );
-    return i2osp ($r, $l);
+  my $l = shift;   # Ignore the strength parameter, if any
+  return random_bytes($l);
 }
 
 
-sub bitsize ($) {
-    return pari2num(floor(Math::Pari::log(shift)/Math::Pari::log(2)) + 1);
+sub bitsize {
+  my $n = shift;
+  my $bits = 0;
+  if (ref($n) eq 'Math::BigInt') {
+    $bits = length($n->as_bin) - 2;
+  } else {
+    while ($n) { $bits++; $n >>= 1; }
+  }
+  $bits;
 }
 
 
 sub octet_len { 
-    return pari2num(floor(PARI((bitsize(shift)+7)/8)));
+  return int( (bitsize(shift) + 7) / 8 );
 }
 
 
-sub octet_xor { 
-    my ($a, $b) = @_; my @xor;
-    my @ba = split //, unpack "B*", $a; 
-    my @bb = split //, unpack "B*", $b; 
-    if (@ba != @bb) {
-        if (@ba < @bb) { 
-            for (1..@bb-@ba) { unshift @ba, '0' }
-        } else { 
-            for (1..@ba-@bb) { unshift @bb, '0' }
-        }
-    } 
-    for (0..$#ba) { 
-        $xor[$_] = ($ba[$_] xor $bb[$_]) || 0; 
-    }
-    return pack "B*", join '',@xor; 
+# This could be made even faster doing 4 bytes at a time
+sub octet_xor {
+    my ($a, $b) = @_;
+
+    # Ensure length($a) >= length($b)
+    ($a, $b) = ($b, $a) if length($b) > length($a);
+    my $alen = length($a);
+    # Prepend null bytes to the beginning of $b to make the lengths equal
+    substr($b, 0, 0, chr(0) x ($alen-length($b))) if $alen > length($b);
+
+    # xor all bytes
+    my $r = '';
+    $r .= chr( ord(substr($a,$_,1)) ^ ord(substr($b,$_,1)) ) for 0 .. $alen-1;
+    return $r;
 }
 
 
+# http://rfc-ref.org/RFC-TEXTS/3447/chapter11.html
 sub mgf1 {
     my ($seed, $l) = @_;
-    my $hlen = 20;  my ($T, $i) = ("",0);
-    while ($i <= $l) { 
-        my $C = i2osp (int($i), 4);
-        $T .= sha1("$seed$C");
-        $i += $hlen;
+    my $hlen = 20;  # SHA-1 is 160 bits
+    my $imax = int(($l + $hlen - 1) / $hlen) - 1;
+    my $T = "";
+    foreach my $i (0 .. $imax) {
+      $T .= sha1($seed . i2osp ($i, 4));
     }
     my ($output) = unpack "a$l", $T;
     return $output;
@@ -159,11 +172,9 @@ prefixed with C<0x>, etc.
 Octet String to Integer Primitive. Converts an octet string into its
 equivalent integer representation.
 
-=item B<generate_random_octet> Length, Strength
+=item B<generate_random_octet> Length
 
-Generates a random octet string of length B<Length>. B<Strength> specifies
-the degree of randomness. See Crypt::Random(3) for an explanation of the
-B<Strength> parameter.
+Generates a random octet string of length B<Length>.
 
 =item B<bitsize> Integer
 

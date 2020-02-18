@@ -115,8 +115,17 @@ static void draw_normal_geom(SkCanvas* canvas, const SkPoint& offset, int geom, 
 }
 
 class ClipDrawMatchView : public Sample {
+    SkInterpolator  fTrans;
+    Geometry        fGeom;
+    bool            fClipFirst = true;
+    int             fSign = 1;
+    const double    fStart = SkTime::GetMSecs();
+
 public:
-    ClipDrawMatchView() : fTrans(2, 5), fGeom(kRect_Geometry), fClipFirst(true), fSign(1) {
+    ClipDrawMatchView() : fTrans(2, 5), fGeom(kRect_Geometry) {}
+
+private:
+    void onOnceBeforeDraw() override {
         SkScalar values[2];
 
         fTrans.setRepeatCount(999);
@@ -132,14 +141,9 @@ public:
         fTrans.setKeyFrame(4, GetMSecs() + 5000, values);
     }
 
-protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "ClipDrawMatch");
-            return true;
-        }
-        SkUnichar uni;
-        if (Sample::CharQ(*evt, &uni)) {
+    SkString name() override { return SkString("ClipDrawMatch"); }
+
+    bool onChar(SkUnichar uni) override {
             switch (uni) {
                 case '1': fGeom = kRect_Geometry; return true;
                 case '2': fGeom = kRRect_Geometry; return true;
@@ -154,8 +158,7 @@ protected:
                 case 't': fClipFirst = !fClipFirst; return true;
                 default: break;
             }
-        }
-        return this->INHERITED::onQuery(evt);
+            return false;
     }
 
     void drawClippedGeom(SkCanvas* canvas, const SkPoint& offset, bool useAA) {
@@ -244,17 +247,6 @@ protected:
     SkMSec GetMSecs() const {
         return static_cast<SkMSec>(SkTime::GetMSecs() - fStart);
     }
-
-private:
-    SkInterpolator  fTrans;
-    Geometry        fGeom;
-    bool            fClipFirst;
-    int             fSign;
-    const double    fStart = SkTime::GetMSecs();
-
-    typedef Sample INHERITED;
 };
-
-//////////////////////////////////////////////////////////////////////////////
 
 DEF_SAMPLE( return new ClipDrawMatchView(); )

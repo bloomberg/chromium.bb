@@ -5,6 +5,7 @@
 #ifndef INSPECTOR_PROTOCOL_ENCODING_ENCODING_H_
 #define INSPECTOR_PROTOCOL_ENCODING_ENCODING_H_
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -14,6 +15,19 @@
 #include <vector>
 
 namespace inspector_protocol_encoding {
+// This library is designed to be portable. The only allowed dependency
+// are the C/C++ standard libraries, up to C++11. We support both 32 bit
+// and 64 architectures.
+//
+// Types used below:
+// uint8_t: a byte, e.g. for raw bytes or UTF8 characters
+// uint16_t: two bytes, e.g. for UTF16 characters
+// For input parameters:
+//   span<uint8_t>: pointer to bytes and length
+//   span<uint16_t>: pointer to UTF16 chars and length
+// For output parameters:
+//   std::vector<uint8_t> - Owned segment of bytes / utf8 characters and length.
+//   std::string - Same, for compatibility, even though char is signed.
 
 // =============================================================================
 // span - sequence of bytes
@@ -72,6 +86,22 @@ inline span<uint8_t> SpanFrom(const std::string& v) {
   return span<uint8_t>(reinterpret_cast<const uint8_t*>(v.data()), v.size());
 }
 
+// Less than / equality comparison functions for sorting / searching for byte
+// spans. These are similar to absl::string_view's < and == operators.
+inline bool SpanLessThan(span<uint8_t> x, span<uint8_t> y) noexcept {
+  auto min_size = std::min(x.size(), y.size());
+  const int r = min_size == 0 ? 0 : memcmp(x.data(), y.data(), min_size);
+  return (r < 0) || (r == 0 && x.size() < y.size());
+}
+
+inline bool SpanEquals(span<uint8_t> x, span<uint8_t> y) noexcept {
+  auto len = x.size();
+  if (len != y.size())
+    return false;
+  return x.data() == y.data() || len == 0 ||
+         std::memcmp(x.data(), y.data(), len) == 0;
+}
+
 // =============================================================================
 // Status and Error codes
 // =============================================================================
@@ -95,21 +125,23 @@ enum class Error {
   CBOR_INVALID_INT32 = 0x0e,
   CBOR_INVALID_DOUBLE = 0x0f,
   CBOR_INVALID_ENVELOPE = 0x10,
-  CBOR_INVALID_STRING8 = 0x11,
-  CBOR_INVALID_STRING16 = 0x12,
-  CBOR_INVALID_BINARY = 0x13,
-  CBOR_UNSUPPORTED_VALUE = 0x14,
-  CBOR_NO_INPUT = 0x15,
-  CBOR_INVALID_START_BYTE = 0x16,
-  CBOR_UNEXPECTED_EOF_EXPECTED_VALUE = 0x17,
-  CBOR_UNEXPECTED_EOF_IN_ARRAY = 0x18,
-  CBOR_UNEXPECTED_EOF_IN_MAP = 0x19,
-  CBOR_INVALID_MAP_KEY = 0x1a,
-  CBOR_STACK_LIMIT_EXCEEDED = 0x1b,
-  CBOR_TRAILING_JUNK = 0x1c,
-  CBOR_MAP_START_EXPECTED = 0x1d,
-  CBOR_MAP_STOP_EXPECTED = 0x1e,
-  CBOR_ENVELOPE_SIZE_LIMIT_EXCEEDED = 0x1f,
+  CBOR_ENVELOPE_CONTENTS_LENGTH_MISMATCH = 0x11,
+  CBOR_MAP_OR_ARRAY_EXPECTED_IN_ENVELOPE = 0x12,
+  CBOR_INVALID_STRING8 = 0x13,
+  CBOR_INVALID_STRING16 = 0x14,
+  CBOR_INVALID_BINARY = 0x15,
+  CBOR_UNSUPPORTED_VALUE = 0x16,
+  CBOR_NO_INPUT = 0x17,
+  CBOR_INVALID_START_BYTE = 0x18,
+  CBOR_UNEXPECTED_EOF_EXPECTED_VALUE = 0x19,
+  CBOR_UNEXPECTED_EOF_IN_ARRAY = 0x1a,
+  CBOR_UNEXPECTED_EOF_IN_MAP = 0x1b,
+  CBOR_INVALID_MAP_KEY = 0x1c,
+  CBOR_STACK_LIMIT_EXCEEDED = 0x1d,
+  CBOR_TRAILING_JUNK = 0x1e,
+  CBOR_MAP_START_EXPECTED = 0x1f,
+  CBOR_MAP_STOP_EXPECTED = 0x20,
+  CBOR_ENVELOPE_SIZE_LIMIT_EXCEEDED = 0x21,
 };
 
 // A status value with position that can be copied. The default status

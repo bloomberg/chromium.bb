@@ -45,7 +45,8 @@ QuicSpdyClientBase::QuicSpdyClientBase(
                      std::move(network_helper),
                      std::move(proof_verifier)),
       store_response_(false),
-      latest_response_code_(-1) {}
+      latest_response_code_(-1),
+      max_allowed_push_id_(0) {}
 
 QuicSpdyClientBase::~QuicSpdyClientBase() {
   // We own the push promise index. We need to explicitly kill
@@ -60,6 +61,9 @@ QuicSpdyClientSession* QuicSpdyClientBase::client_session() {
 void QuicSpdyClientBase::InitializeSession() {
   client_session()->Initialize();
   client_session()->CryptoConnect();
+  if (max_allowed_push_id_ > 0) {
+    client_session()->set_max_allowed_push_id(max_allowed_push_id_);
+  }
 }
 
 void QuicSpdyClientBase::OnClose(QuicSpdyStream* stream) {
@@ -103,14 +107,31 @@ std::unique_ptr<QuicSession> QuicSpdyClientBase::CreateQuicClientSession(
 void QuicSpdyClientBase::SendRequest(const SpdyHeaderBlock& headers,
                                      QuicStringPiece body,
                                      bool fin) {
+  if (GetQuicFlag(FLAGS_quic_client_convert_http_header_name_to_lowercase)) {
+    QUIC_CODE_COUNT(quic_client_convert_http_header_name_to_lowercase);
+    SpdyHeaderBlock sanitized_headers;
+    for (const auto& p : headers) {
+      sanitized_headers[QuicTextUtils::ToLower(p.first)] = p.second;
+    }
+
+    SendRequestInternal(std::move(sanitized_headers), body, fin);
+  } else {
+    SendRequestInternal(headers.Clone(), body, fin);
+  }
+}
+
+void QuicSpdyClientBase::SendRequestInternal(SpdyHeaderBlock sanitized_headers,
+                                             QuicStringPiece body,
+                                             bool fin) {
   QuicClientPushPromiseIndex::TryHandle* handle;
-  QuicAsyncStatus rv = push_promise_index()->Try(headers, this, &handle);
+  QuicAsyncStatus rv =
+      push_promise_index()->Try(sanitized_headers, this, &handle);
   if (rv == QUIC_SUCCESS)
     return;
 
   if (rv == QUIC_PENDING) {
     // May need to retry request if asynchronous rendezvous fails.
-    AddPromiseDataToResend(headers, body, fin);
+    AddPromiseDataToResend(sanitized_headers, body, fin);
     return;
   }
 
@@ -119,7 +140,7 @@ void QuicSpdyClientBase::SendRequest(const SpdyHeaderBlock& headers,
     QUIC_BUG << "stream creation failed!";
     return;
   }
-  stream->SendRequest(headers.Clone(), body, fin);
+  stream->SendRequest(std::move(sanitized_headers), body, fin);
 }
 
 void QuicSpdyClientBase::SendRequestAndWaitForResponse(
@@ -195,9 +216,10 @@ void QuicSpdyClientBase::AddPromiseDataToResend(const SpdyHeaderBlock& headers,
       new ClientQuicDataToResend(std::move(new_headers), body, fin, this));
 }
 
-bool QuicSpdyClientBase::CheckVary(const SpdyHeaderBlock& client_request,
-                                   const SpdyHeaderBlock& promise_request,
-                                   const SpdyHeaderBlock& promise_response) {
+bool QuicSpdyClientBase::CheckVary(
+    const SpdyHeaderBlock& /*client_request*/,
+    const SpdyHeaderBlock& /*promise_request*/,
+    const SpdyHeaderBlock& /*promise_response*/) {
   return true;
 }
 
@@ -212,7 +234,7 @@ void QuicSpdyClientBase::OnRendezvousResult(QuicSpdyStream* stream) {
   }
 }
 
-size_t QuicSpdyClientBase::latest_response_code() const {
+int QuicSpdyClientBase::latest_response_code() const {
   QUIC_BUG_IF(!store_response_) << "Response not stored!";
   return latest_response_code_;
 }

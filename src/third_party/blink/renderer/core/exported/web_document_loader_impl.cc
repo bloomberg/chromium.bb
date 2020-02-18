@@ -34,9 +34,11 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-shared.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
+#include "third_party/blink/public/platform/web_loading_hints_provider.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -143,6 +145,18 @@ void WebDocumentLoaderImpl::SetSubresourceFilter(
       *GetFrame()->GetDocument(), base::WrapUnique(subresource_filter)));
 }
 
+void WebDocumentLoaderImpl::SetLoadingHintsProvider(
+    std::unique_ptr<blink::WebLoadingHintsProvider> loading_hints_provider) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kSendPreviewsLoadingHintsBeforeCommit)) {
+    return;
+  }
+
+  DocumentLoader::SetPreviewsResourceLoadingHints(
+      PreviewsResourceLoadingHints::CreateFromLoadingHintsProvider(
+          *GetFrame()->GetDocument(), std::move(loading_hints_provider)));
+}
+
 void WebDocumentLoaderImpl::SetServiceWorkerNetworkProvider(
     std::unique_ptr<WebServiceWorkerNetworkProvider> provider) {
   DocumentLoader::SetServiceWorkerNetworkProvider(std::move(provider));
@@ -175,7 +189,7 @@ WebArchiveInfo WebDocumentLoaderImpl::GetArchiveInfo() const {
 }
 
 bool WebDocumentLoaderImpl::HadUserGesture() const {
-  return DocumentLoader::had_transient_activation();
+  return DocumentLoader::HadTransientActivation();
 }
 
 bool WebDocumentLoaderImpl::IsListingFtpDirectory() const {

@@ -13,6 +13,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <functional>
 #include <memory>
 #include <vector>
@@ -32,9 +33,11 @@ class ConfigurableFrameSizeEncoder : public VideoEncoder {
   explicit ConfigurableFrameSizeEncoder(size_t max_frame_size);
   ~ConfigurableFrameSizeEncoder() override;
 
+  void SetFecControllerOverride(
+      FecControllerOverride* fec_controller_override) override;
+
   int32_t InitEncode(const VideoCodec* codec_settings,
-                     int32_t number_of_cores,
-                     size_t max_payload_size) override;
+                     const Settings& settings) override;
 
   int32_t Encode(const VideoFrame& input_image,
                  const std::vector<VideoFrameType>* frame_types) override;

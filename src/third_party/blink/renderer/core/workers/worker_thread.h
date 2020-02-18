@@ -35,19 +35,19 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_annotations.h"
 #include "base/unguessable_token.h"
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "v8/include/v8-inspector.h"
@@ -129,7 +129,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-      network::mojom::FetchCredentialsMode);
+      network::mojom::CredentialsMode);
 
   // Posts a task to the worker thread to close the global scope and terminate
   // the underlying thread. This task may be blocked by JavaScript execution on
@@ -336,7 +336,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,
-      network::mojom::FetchCredentialsMode);
+      network::mojom::CredentialsMode);
 
   // These are called in this order during worker thread termination.
   void PrepareForShutdownOnWorkerThread() LOCKS_EXCLUDED(mutex_);
@@ -366,7 +366,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   ThreadState thread_state_ GUARDED_BY(mutex_) = ThreadState::kNotStarted;
   ExitCode exit_code_ GUARDED_BY(mutex_) = ExitCode::kNotTerminated;
 
-  TimeDelta forcible_termination_delay_;
+  base::TimeDelta forcible_termination_delay_;
 
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
   base::UnguessableToken devtools_worker_token_;

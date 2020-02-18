@@ -8,10 +8,9 @@
 #include "base/numerics/safe_conversions.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
-#include "third_party/skia/include/third_party/skcms/skcms.h"
 
 namespace blink {
 
@@ -72,19 +71,6 @@ void BitmapImageMetrics::CountImageJpegDensity(int image_min_side,
   }
 }
 
-void BitmapImageMetrics::CountImageGammaAndGamut(
-    const skcms_ICCProfile* color_profile) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, gamma_named_histogram,
-                                  ("Blink.ColorSpace.Source", kGammaEnd));
-  gamma_named_histogram.Count(GetColorSpaceGamma(color_profile));
-
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, gamut_named_histogram,
-      ("Blink.ColorGamut.Source", static_cast<int>(ColorSpaceGamut::kEnd)));
-  gamut_named_histogram.Count(static_cast<int>(
-      color_space_utilities::GetColorSpaceGamut(color_profile)));
-}
-
 void BitmapImageMetrics::CountJpegArea(const IntSize& size) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, image_area_histogram,
@@ -101,23 +87,6 @@ void BitmapImageMetrics::CountJpegColorSpace(JpegColorSpace color_space) {
       EnumerationHistogram, color_space_histogram,
       ("Blink.ImageDecoders.Jpeg.ColorSpace", JpegColorSpace::kMaxValue));
   color_space_histogram.Count(color_space);
-}
-
-BitmapImageMetrics::Gamma BitmapImageMetrics::GetColorSpaceGamma(
-    const skcms_ICCProfile* color_profile) {
-  Gamma gamma = kGammaNull;
-  if (color_profile) {
-    if (skcms_TRCs_AreApproximateInverse(
-            color_profile, skcms_sRGB_Inverse_TransferFunction())) {
-      gamma = kGammaSRGB;
-    } else if (skcms_TRCs_AreApproximateInverse(
-                   color_profile, skcms_Identity_TransferFunction())) {
-      gamma = kGammaLinear;
-    } else {
-      gamma = kGammaNonStandard;
-    }
-  }
-  return gamma;
 }
 
 }  // namespace blink

@@ -1079,8 +1079,8 @@ IN_PROC_BROWSER_TEST_P(IncognitoCommandsApiTest, IncognitoMode) {
                                               true, true, false, false));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(is_incognito_enabled,
-            base::ContainsKey(test_observer.dispatched_events(),
-                              "browserAction.onClicked"));
+            base::Contains(test_observer.dispatched_events(),
+                           "browserAction.onClicked"));
 
   test_observer.ClearEvents();
 
@@ -1088,9 +1088,9 @@ IN_PROC_BROWSER_TEST_P(IncognitoCommandsApiTest, IncognitoMode) {
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(incognito_browser, ui::VKEY_Y,
                                               true, true, false, false));
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(is_incognito_enabled,
-            base::ContainsKey(test_observer.dispatched_events(),
-                              "commands.onCommand"));
+  EXPECT_EQ(
+      is_incognito_enabled,
+      base::Contains(test_observer.dispatched_events(), "commands.onCommand"));
 }
 
 INSTANTIATE_TEST_SUITE_P(, IncognitoCommandsApiTest, testing::Bool());

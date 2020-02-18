@@ -8,8 +8,11 @@
 <translation id="2469311484561825731">Přihlášení k pracovnímu účtu se nezdařilo. Zkontrolujte, zda je počítač připojen k internetu, a potom to zkuste znovu.</translation>
 <translation id="2595469428674600431">Litujeme, heslo systému Windows se nepodařilo ověřit. Zkuste to znovu.</translation>
 <translation id="3306357053520292004">Pomocí tohoto účtu již byl do tohoto počítače uživatel přidán. Přihlaste se pomocí jiného účtu.</translation>
+<translation id="3643125608647220913">Přihlašovací obrazovku Google se nepodařilo načíst. Obraťte se na administrátora.</translation>
 <translation id="369030246015333661">Váš účet byl uzamčen. Kontaktujte administrátora systému.</translation>
+<translation id="3968372833844047539">Přihlásit se smějí pouze uživatelé G Suite Enterprise.</translation>
 <translation id="4057329986137569701">Došlo k interní chybě.</translation>
+<translation id="4267670563222825190">Pro váš účet nebyl nalezen žádný doménový uživatel. Obraťte se na administrátora.</translation>
 <translation id="4300229033992784001">Heslo vašeho účtu se změnilo. Chcete-li účet Windows synchronizovat se svým pracovním účtem, zadejte své aktuální heslo pro Windows.</translation>
 <translation id="4706454071748629324">Přidání nového uživatele se nezdařilo. Na tomto počítači lze pomocí pracovního účtu vytvořit jen jednoho uživatele.</translation>
 <translation id="6292766200512304540">Uživatel vytvořený z pracovního účtu</translation>
@@ -21,6 +24,7 @@
 <translation id="7385169832667457493">Heslo účtu Windows</translation>
 <translation id="7536769223115622137">Přidat pracovní účet</translation>
 <translation id="7856245195110636219">Bez zadání aktuálního hesla účtu Windows nelze pokračovat. Kontaktujte administrátora systému.</translation>
+<translation id="7996763357529480810">Přihlaste se pomocí pracovního účtu gsuite.</translation>
 <translation id="8474372283141585908">Poskytovatel identifikačních údajů Google</translation>
 <translation id="8639729688781680518">Zapomněl(a) jsem heslo účtu Windows</translation>
 <translation id="866458870819756755">Uživatele se nepodařilo vytvořit.</translation>

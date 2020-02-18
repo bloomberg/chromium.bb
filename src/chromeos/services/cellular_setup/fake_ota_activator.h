@@ -15,14 +15,23 @@ namespace chromeos {
 namespace cellular_setup {
 
 // Test OtaActivator implementation.
-class FakeOtaActivator : public OtaActivator, public FakeCarrierPortalHandler {
+class FakeOtaActivator : public OtaActivator {
  public:
   explicit FakeOtaActivator(base::OnceClosure on_finished_callback);
   ~FakeOtaActivator() override;
 
   using OtaActivator::InvokeOnFinishedCallback;
 
+  const std::vector<mojom::CarrierPortalStatus>& status_updates() const {
+    return fake_carrier_portal_handler_.status_updates();
+  }
+
  private:
+  // mojom::CarrierPortalHandler:
+  void OnCarrierPortalStatusChange(mojom::CarrierPortalStatus status) override;
+
+  FakeCarrierPortalHandler fake_carrier_portal_handler_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeOtaActivator);
 };
 

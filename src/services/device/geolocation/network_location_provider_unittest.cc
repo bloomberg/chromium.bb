@@ -15,12 +15,12 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "services/device/geolocation/fake_position_cache.h"
@@ -284,7 +284,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
     }
   }
 
-  const base::MessageLoop main_message_loop_;
+  const base::test::ScopedTaskEnvironment scoped_task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   const scoped_refptr<MockWifiDataProvider> wifi_data_provider_;
   FakePositionCache position_cache_;
@@ -292,7 +292,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
 
 // Tests that fixture members were SetUp correctly.
 TEST_F(GeolocationNetworkProviderTest, CreateDestroy) {
-  EXPECT_TRUE(main_message_loop_.task_runner()->RunsTasksInCurrentSequence());
   std::unique_ptr<LocationProvider> provider(CreateProvider(true));
   EXPECT_TRUE(provider);
   provider.reset();

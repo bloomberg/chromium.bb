@@ -163,15 +163,6 @@ const char* BrowserThreadImpl::GetThreadName(BrowserThread::ID thread) {
 }
 
 // static
-void BrowserThread::PostAfterStartupTask(
-    const base::Location& from_here,
-    const scoped_refptr<base::TaskRunner>& task_runner,
-    base::OnceClosure task) {
-  GetContentClient()->browser()->PostAfterStartupTask(from_here, task_runner,
-                                                      std::move(task));
-}
-
-// static
 bool BrowserThread::IsThreadInitialized(ID identifier) {
   DCHECK_GE(identifier, 0);
   DCHECK_LT(identifier, ID_COUNT);

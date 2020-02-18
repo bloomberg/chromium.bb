@@ -15,7 +15,7 @@
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/safe_browsing/features.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 
 namespace safe_browsing {
 
@@ -55,28 +55,24 @@ FileAnalyzer::Results ExtractFileFeatures(
   UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractSignatureFeaturesTime",
                       base::TimeTicks::Now() - start_time);
 
-  start_time = base::TimeTicks::Now();
   if (!binary_feature_extractor->ExtractImageFeatures(
           file_path, BinaryFeatureExtractor::kDefaultOptions,
           &results.image_headers, nullptr)) {
     results.image_headers = ClientDownloadRequest::ImageHeaders();
   }
-  UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractImageHeadersTime",
-                      base::TimeTicks::Now() - start_time);
 
   return results;
 }
 
 }  // namespace
 
-FileAnalyzer::Results::Results() : file_count(0), directory_count(0) {}
+FileAnalyzer::Results::Results() = default;
 FileAnalyzer::Results::~Results() {}
 FileAnalyzer::Results::Results(const FileAnalyzer::Results& other) = default;
 
 FileAnalyzer::FileAnalyzer(
     scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor)
-    : binary_feature_extractor_(binary_feature_extractor),
-      weakptr_factory_(this) {
+    : binary_feature_extractor_(binary_feature_extractor) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -151,7 +147,7 @@ void FileAnalyzer::StartExtractZipFeatures() {
       tmp_path_,
       base::BindRepeating(&FileAnalyzer::OnZipAnalysisFinished,
                           weakptr_factory_.GetWeakPtr()),
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      content::GetSystemConnector());
   zip_analyzer_->Start();
 }
 
@@ -224,7 +220,7 @@ void FileAnalyzer::StartExtractRarFeatures() {
       tmp_path_,
       base::BindRepeating(&FileAnalyzer::OnRarAnalysisFinished,
                           weakptr_factory_.GetWeakPtr()),
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      content::GetSystemConnector());
   rar_analyzer_->Start();
 }
 
@@ -287,7 +283,7 @@ void FileAnalyzer::StartExtractDmgFeatures() {
       FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("dmg"),
       base::BindRepeating(&FileAnalyzer::OnDmgAnalysisFinished,
                           weakptr_factory_.GetWeakPtr()),
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      content::GetSystemConnector());
   dmg_analyzer_->Start();
   dmg_analysis_start_time_ = base::TimeTicks::Now();
 }

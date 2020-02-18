@@ -12,23 +12,23 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
 
-CanvasRenderingContextHost::CanvasRenderingContextHost() = default;
+CanvasRenderingContextHost::CanvasRenderingContextHost(HostType host_type)
+    : host_type_(host_type) {}
 
-void CanvasRenderingContextHost::RecordCanvasSizeToUMA(const IntSize& size,
-                                                       HostType hostType) {
+void CanvasRenderingContextHost::RecordCanvasSizeToUMA(const IntSize& size) {
   if (did_record_canvas_size_to_uma_)
     return;
   did_record_canvas_size_to_uma_ = true;
 
-  if (hostType == kCanvasHost) {
+  if (host_type_ == kCanvasHost) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.Canvas.SqrtNumberOfPixels",
                                 std::sqrt(size.Area()), 1, 5000, 100);
-  } else if (hostType == kOffscreenCanvasHost) {
+  } else if (host_type_ == kOffscreenCanvasHost) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.OffscreenCanvas.SqrtNumberOfPixels",
                                 std::sqrt(size.Area()), 1, 5000, 100);
   } else {
@@ -96,23 +96,33 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
       if (Is3d()) {
         CanvasResourceProvider::ResourceUsage usage;
         if (SharedGpuContext::IsGpuCompositingEnabled()) {
-          if (LowLatencyEnabled())
-            usage = CanvasResourceProvider::kAcceleratedDirect3DResourceUsage;
-          else
-            usage = CanvasResourceProvider::kAcceleratedCompositedResourceUsage;
+          if (LowLatencyEnabled()) {
+            usage = CanvasResourceProvider::ResourceUsage::
+                kAcceleratedDirect3DResourceUsage;
+          } else {
+            usage = CanvasResourceProvider::ResourceUsage::
+                kAcceleratedCompositedResourceUsage;
+          }
         } else {
-          usage = CanvasResourceProvider::kSoftwareCompositedResourceUsage;
+          usage = CanvasResourceProvider::ResourceUsage::
+              kSoftwareCompositedResourceUsage;
         }
 
-        const CanvasResourceProvider::PresentationMode presentation_mode =
-            RuntimeEnabledFeatures::WebGLImageChromiumEnabled()
-                ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
-                : CanvasResourceProvider::kDefaultPresentationMode;
+        CanvasResourceProvider::PresentationMode presentation_mode;
+        if (RuntimeEnabledFeatures::WebGLSwapChainEnabled()) {
+          presentation_mode =
+              CanvasResourceProvider::kAllowSwapChainPresentationMode;
+        } else if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
+          presentation_mode =
+              CanvasResourceProvider::kAllowImageChromiumPresentationMode;
+        } else {
+          presentation_mode = CanvasResourceProvider::kDefaultPresentationMode;
+        }
 
         const bool is_origin_top_left =
             !SharedGpuContext::IsGpuCompositingEnabled();
 
-        ReplaceResourceProvider(CanvasResourceProvider::Create(
+        ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
             Size(), usage, SharedGpuContext::ContextProviderWrapper(),
             0 /* msaa_sample_count */, ColorParams(), presentation_mode,
             std::move(dispatcher), is_origin_top_left));
@@ -123,12 +133,16 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
 
         CanvasResourceProvider::ResourceUsage usage;
         if (want_acceleration) {
-          if (LowLatencyEnabled())
-            usage = CanvasResourceProvider::kAcceleratedDirect2DResourceUsage;
-          else
-            usage = CanvasResourceProvider::kAcceleratedCompositedResourceUsage;
+          if (LowLatencyEnabled()) {
+            usage = CanvasResourceProvider::ResourceUsage::
+                kAcceleratedDirect2DResourceUsage;
+          } else {
+            usage = CanvasResourceProvider::ResourceUsage::
+                kAcceleratedCompositedResourceUsage;
+          }
         } else {
-          usage = CanvasResourceProvider::kSoftwareCompositedResourceUsage;
+          usage = CanvasResourceProvider::ResourceUsage::
+              kSoftwareCompositedResourceUsage;
         }
 
         const CanvasResourceProvider::PresentationMode presentation_mode =
@@ -140,7 +154,7 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
         const bool is_origin_top_left =
             !want_acceleration || LowLatencyEnabled();
 
-        ReplaceResourceProvider(CanvasResourceProvider::Create(
+        ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
             Size(), usage, SharedGpuContext::ContextProviderWrapper(),
             GetMSAASampleCountFor2dContext(), ColorParams(), presentation_mode,
             std::move(dispatcher), is_origin_top_left));
@@ -201,7 +215,7 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
     return ScriptPromise();
   }
 
-  TimeTicks start_time = WTF::CurrentTimeTicks();
+  base::TimeTicks start_time = base::TimeTicks::Now();
   scoped_refptr<StaticBitmapImage> image_bitmap =
       RenderingContext()->GetImage(kPreferNoAcceleration);
   if (image_bitmap) {
@@ -221,6 +235,10 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
   exception_state.ThrowDOMException(DOMExceptionCode::kNotReadableError,
                                     "Readback of the source image has failed.");
   return ScriptPromise();
+}
+
+bool CanvasRenderingContextHost::IsOffscreenCanvas() const {
+  return host_type_ == kOffscreenCanvasHost;
 }
 
 }  // namespace blink

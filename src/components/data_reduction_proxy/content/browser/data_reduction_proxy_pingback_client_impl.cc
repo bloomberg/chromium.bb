@@ -194,10 +194,7 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
   }
 
   bool was_preview_shown = false;
-  if (request_data.lofi_received() || request_data.client_lofi_requested()) {
-    request->set_previews_type(PageloadMetrics_PreviewsType_LOFI);
-    was_preview_shown = true;
-  } else if (request_data.lite_page_received()) {
+  if (request_data.lite_page_received()) {
     request->set_previews_type(PageloadMetrics_PreviewsType_LITE_PAGE);
     was_preview_shown = true;
   } else if (request_data.black_listed()) {
@@ -252,15 +249,16 @@ DataReductionProxyPingbackClientImpl::DataReductionProxyPingbackClientImpl(
       current_loader_message_count_(0u),
       current_loader_crash_count_(0u),
       ui_task_runner_(std::move(ui_task_runner)),
-      channel_(channel),
+      channel_(channel)
 #if defined(OS_ANDROID)
+      ,
       scoped_observer_(this),
       weak_factory_(this) {
   auto* crash_manager = crash_reporter::CrashMetricsReporter::GetInstance();
   DCHECK(crash_manager);
   scoped_observer_.Add(crash_manager);
 #else
-      weak_factory_(this){
+          {
 #endif
 }
 

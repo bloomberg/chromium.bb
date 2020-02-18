@@ -42,7 +42,6 @@ ExtensionsMenuButton::ExtensionsMenuButton(
       controller_(std::move(controller)) {
   ConfigureSecondaryView();
   set_auto_compute_tooltip(false);
-  set_context_menu_controller(this);
   controller_->SetDelegate(this);
   UpdateState();
 }
@@ -56,7 +55,7 @@ const char* ExtensionsMenuButton::GetClassName() const {
 void ExtensionsMenuButton::ButtonPressed(Button* sender,
                                          const ui::Event& event) {
   if (sender->GetID() == EXTENSION_CONTEXT_MENU) {
-    ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
+    RunExtensionContextMenu(ui::MENU_SOURCE_MOUSE);
     return;
   }
   DCHECK_EQ(this, sender);
@@ -99,10 +98,7 @@ bool ExtensionsMenuButton::IsMenuRunning() const {
   return menu_runner_ && menu_runner_->IsRunning();
 }
 
-// views::ContextMenuController:
-void ExtensionsMenuButton::ShowContextMenuForViewImpl(
-    views::View* source,
-    const gfx::Point& point,
+void ExtensionsMenuButton::RunExtensionContextMenu(
     ui::MenuSourceType source_type) {
   ui::MenuModel* model = controller_->GetContextMenu();
   if (!model)
@@ -132,8 +128,8 @@ void ExtensionsMenuButton::OnMenuClosed() {
 void ExtensionsMenuButton::ConfigureSecondaryView() {
   views::View* container = secondary_view();
   DCHECK(container->children().empty());
-  container->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
 
   const SkColor icon_color =
       ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()

@@ -22,7 +22,6 @@
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
-#include "content/browser/loader/stream_resource_handler.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/plugin_service.h"
@@ -133,8 +132,7 @@ MimeSniffingResourceHandler::MimeSniffingResourceHandler(
       intercepting_handler_(intercepting_handler),
       request_context_type_(request_context_type),
       in_state_loop_(false),
-      advance_state_(false),
-      weak_ptr_factory_(this) {
+      advance_state_(false) {
 }
 
 MimeSniffingResourceHandler::~MimeSniffingResourceHandler() {}
@@ -469,7 +467,7 @@ bool MimeSniffingResourceHandler::MaybeStartInterception() {
   if (!must_download) {
     if (blink::IsSupportedMimeType(mime_type))
       return true;
-    if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
+    if (signed_exchange_utils::IsSignedExchangeHandlingEnabledOnIO(
             info->GetContext()) &&
         signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
             request()->url(), response_->head)) {
@@ -525,21 +523,8 @@ bool MimeSniffingResourceHandler::CheckForPluginHandler(
     return false;
   }
 
-  if (has_plugin && plugin.type != WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
+  if (has_plugin && plugin.type != WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN)
     *handled_by_plugin = true;
-    return true;
-  }
-
-  // Attempt to intercept the request as a stream.
-  std::string payload;
-  std::unique_ptr<ResourceHandler> handler(
-      host_->MaybeInterceptAsStream(request(), response_.get(), &payload));
-  if (handler) {
-    if (!CheckResponseIsNotProvisional())
-      return false;
-    *handled_by_plugin = true;
-    intercepting_handler_->UseNewHandler(std::move(handler), payload);
-  }
 #endif
   return true;
 }

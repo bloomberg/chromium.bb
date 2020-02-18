@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -35,7 +36,6 @@
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_table_caption_element.h"
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
 #include "third_party/blink/renderer/core/html/html_table_row_element.h"
@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -329,7 +330,8 @@ void HTMLTableElement::CollectStyleForPresentationAttribute(
       CSSImageValue* image_value =
           CSSImageValue::Create(url, GetDocument().CompleteURL(url),
                                 Referrer(GetDocument().OutgoingReferrer(),
-                                         GetDocument().GetReferrerPolicy()));
+                                         GetDocument().GetReferrerPolicy()),
+                                OriginClean::kTrue);
       style->SetProperty(
           CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));
     }
@@ -531,18 +533,18 @@ CSSPropertyValueSet* HTMLTableElement::CreateSharedCellStyle() {
                          *CSSInheritedValue::Create());
       break;
     case kSolidBorders:
-      style->SetProperty(
-          CSSPropertyID::kBorderWidth,
-          *CSSPrimitiveValue::Create(1, CSSPrimitiveValue::UnitType::kPixels));
+      style->SetProperty(CSSPropertyID::kBorderWidth,
+                         *CSSNumericLiteralValue::Create(
+                             1, CSSPrimitiveValue::UnitType::kPixels));
       style->SetProperty(CSSPropertyID::kBorderStyle,
                          *CSSIdentifierValue::Create(CSSValueID::kSolid));
       style->SetProperty(CSSPropertyID::kBorderColor,
                          *CSSInheritedValue::Create());
       break;
     case kInsetBorders:
-      style->SetProperty(
-          CSSPropertyID::kBorderWidth,
-          *CSSPrimitiveValue::Create(1, CSSPrimitiveValue::UnitType::kPixels));
+      style->SetProperty(CSSPropertyID::kBorderWidth,
+                         *CSSNumericLiteralValue::Create(
+                             1, CSSPrimitiveValue::UnitType::kPixels));
       style->SetProperty(CSSPropertyID::kBorderStyle,
                          *CSSIdentifierValue::Create(CSSValueID::kInset));
       style->SetProperty(CSSPropertyID::kBorderColor,
@@ -556,7 +558,7 @@ CSSPropertyValueSet* HTMLTableElement::CreateSharedCellStyle() {
 
   if (padding_)
     style->SetProperty(CSSPropertyID::kPadding,
-                       *CSSPrimitiveValue::Create(
+                       *CSSNumericLiteralValue::Create(
                            padding_, CSSPrimitiveValue::UnitType::kPixels));
 
   return style;

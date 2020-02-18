@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -98,7 +99,6 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_video_texture_enum.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
@@ -107,6 +107,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -121,7 +122,8 @@ unsigned WebGLRenderingContextBase::max_active_webgl_contexts_on_worker_ = 0;
 
 namespace {
 
-constexpr TimeDelta kDurationBetweenRestoreAttempts = TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kDurationBetweenRestoreAttempts =
+    base::TimeDelta::FromSeconds(1);
 const int kMaxGLErrorsAllowedToConsole = 256;
 
 Mutex& WebGLContextLimitMutex() {
@@ -323,27 +325,6 @@ GLint Clamp(GLint value, GLint min, GLint max) {
   if (value > max)
     value = max;
   return value;
-}
-
-// Return true if a character belongs to the ASCII subset as defined in
-// GLSL ES 1.0 spec section 3.1.
-bool ValidateCharacter(unsigned char c) {
-  // Printing characters are valid except " $ ` @ \ ' DEL.
-  if (c >= 32 && c <= 126 && c != '"' && c != '$' && c != '`' && c != '@' &&
-      c != '\\' && c != '\'')
-    return true;
-  // Horizontal tab, line feed, vertical tab, form feed, carriage return
-  // are also valid.
-  if (c >= 9 && c <= 13)
-    return true;
-  return false;
-}
-
-bool IsPrefixReserved(const String& name) {
-  if (name.StartsWith("gl_") || name.StartsWith("webgl_") ||
-      name.StartsWith("_webgl_"))
-    return true;
-  return false;
 }
 
 // Strips comments from shader text. This allows non-ASCII characters
@@ -603,9 +584,9 @@ static String ExtractWebGLContextCreationError(
                           builder);
   FormatWebGLStatusString(
       "Reset notification strategy",
-      String::Format("0x%04x", info.reset_notification_strategy).Utf8().data(),
+      String::Format("0x%04x", info.reset_notification_strategy).Utf8().c_str(),
       builder);
-  FormatWebGLStatusString("ErrorMessage", info.error_message.Utf8().data(),
+  FormatWebGLStatusString("ErrorMessage", info.error_message.Utf8().c_str(),
                           builder);
   builder.Append('.');
   return builder.ToString();
@@ -763,6 +744,9 @@ ImageBitmap* WebGLRenderingContextBase::TransferToImageBitmapBase(
 }
 
 void WebGLRenderingContextBase::commit() {
+  if (!GetDrawingBuffer() || (Host() && Host()->IsOffscreenCanvas()))
+    return;
+
   int width = GetDrawingBuffer()->Size().Width();
   int height = GetDrawingBuffer()->Size().Height();
 
@@ -802,7 +786,8 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
   // resources (e.g. GpuMemoryBuffer)
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
-          size, CanvasResourceProvider::kAcceleratedResourceUsage,
+          size,
+          CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(), 0, ColorParams(),
           CanvasResourceProvider::kDefaultPresentationMode,
           nullptr /* canvas_resource_dispatcher */, is_origin_top_left_);
@@ -1020,7 +1005,11 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       num_gl_errors_to_console_allowed_(kMaxGLErrorsAllowedToConsole),
       context_type_(context_type),
       program_completion_queries_(
-          base::MRUCache<WebGLProgram*, GLuint>::NO_AUTO_EVICT) {
+          base::MRUCache<WebGLProgram*, GLuint>::NO_AUTO_EVICT),
+      feature_handle_for_scheduler_(
+          host->GetTopExecutionContext()->GetScheduler()->RegisterFeature(
+              SchedulingPolicy::Feature::kWebGL,
+              {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
   DCHECK(context_provider);
 
   // TODO(http://crbug.com/876140) Make sure this is being created on a
@@ -1075,6 +1064,8 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
 scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     bool using_gpu_compositing) {
+  bool using_swap_chain = RuntimeEnabledFeatures::WebGLSwapChainEnabled() &&
+                          CreationAttributes().desynchronized;
   bool premultiplied_alpha = CreationAttributes().premultiplied_alpha;
   bool want_alpha_channel = CreationAttributes().alpha;
   bool want_depth_buffer = CreationAttributes().depth;
@@ -1107,8 +1098,8 @@ scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
                                   : DrawingBuffer::kAllowChromiumImage;
 
   return DrawingBuffer::Create(
-      std::move(context_provider), using_gpu_compositing, this,
-      ClampedCanvasSize(), premultiplied_alpha, want_alpha_channel,
+      std::move(context_provider), using_gpu_compositing, using_swap_chain,
+      this, ClampedCanvasSize(), premultiplied_alpha, want_alpha_channel,
       want_depth_buffer, want_stencil_buffer, want_antialiasing, preserve,
       web_gl_version, chromium_image_usage, ColorParams());
 }
@@ -1409,6 +1400,8 @@ void WebGLRenderingContextBase::PushFrame() {
 }
 
 void WebGLRenderingContextBase::FinalizeFrame() {
+  if (GetDrawingBuffer())
+    GetDrawingBuffer()->PresentSwapChain();
   marked_canvas_dirty_ = false;
 }
 
@@ -1546,7 +1539,7 @@ void WebGLRenderingContextBase::SetIsHidden(bool hidden) {
   if (!hidden && isContextLost() && restore_allowed_ &&
       auto_recovery_method_ == kAuto) {
     DCHECK(!restore_timer_.IsActive());
-    restore_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    restore_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   }
 }
 
@@ -1616,7 +1609,7 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
   if (resource_provider->IsAccelerated()) {
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> shared_context_wrapper =
         SharedGpuContext::ContextProviderWrapper();
-    if (!shared_context_wrapper)
+    if (!shared_context_wrapper || !shared_context_wrapper->ContextProvider())
       return false;
     gpu::gles2::GLES2Interface* gl =
         shared_context_wrapper->ContextProvider()->ContextGL();
@@ -1640,7 +1633,7 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
   // is a separate path for the accelerated case is that we assume texture
   // copying is faster than drawImage.
   scoped_refptr<StaticBitmapImage> image = GetImage(kPreferAcceleration);
-  if (!image)
+  if (!image || !image->PaintImageForCurrentFrame())
     return false;
   cc::PaintFlags paint_flags;
   paint_flags.setBlendMode(SkBlendMode::kSrc);
@@ -1760,7 +1753,7 @@ void WebGLRenderingContextBase::bindAttribLocation(WebGLProgram* program,
     return;
   }
   ContextGL()->BindAttribLocation(ObjectOrZero(program), index,
-                                  name.Utf8().data());
+                                  name.Utf8().c_str());
 }
 
 bool WebGLRenderingContextBase::ValidateAndUpdateBufferBindTarget(
@@ -2889,7 +2882,7 @@ GLint WebGLRenderingContextBase::getAttribLocation(WebGLProgram* program,
     return 0;
   }
   return ContextGL()->GetAttribLocation(ObjectOrZero(program),
-                                        name.Utf8().data());
+                                        name.Utf8().c_str());
 }
 
 bool WebGLRenderingContextBase::ValidateBufferTarget(const char* function_name,
@@ -3723,7 +3716,7 @@ ScriptValue WebGLRenderingContextBase::getUniform(
       }
       // Now need to look this up by name again to find its location
       GLint loc = ContextGL()->GetUniformLocation(
-          ObjectOrZero(program), name_builder.ToString().Utf8().data());
+          ObjectOrZero(program), name_builder.ToString().Utf8().c_str());
       if (loc == location) {
         // Found it. Use the type in the ActiveInfo to determine the return
         // type.
@@ -3962,7 +3955,7 @@ WebGLUniformLocation* WebGLRenderingContextBase::getUniformLocation(
     return nullptr;
   }
   GLint uniform_location = ContextGL()->GetUniformLocation(
-      ObjectOrZero(program), name.Utf8().data());
+      ObjectOrZero(program), name.Utf8().c_str());
   if (uniform_location == -1)
     return nullptr;
   return WebGLUniformLocation::Create(program, uniform_location);
@@ -4825,13 +4818,13 @@ bool WebGLRenderingContextBase::ValidateValueFitNonNegInt32(
   if (value < 0) {
     String error_msg = String(param_name) + " < 0";
     SynthesizeGLError(GL_INVALID_VALUE, function_name,
-                      error_msg.Ascii().data());
+                      error_msg.Ascii().c_str());
     return false;
   }
   if (value > static_cast<int64_t>(std::numeric_limits<int>::max())) {
     String error_msg = String(param_name) + " more than 32-bit";
     SynthesizeGLError(GL_INVALID_OPERATION, function_name,
-                      error_msg.Ascii().data());
+                      error_msg.Ascii().c_str());
     return false;
   }
   return true;
@@ -6623,7 +6616,7 @@ void WebGLRenderingContextBase::LoseContextImpl(
 
   // Always defer the dispatch of the context lost event, to implement
   // the spec behavior of queueing a task.
-  dispatch_context_lost_event_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  dispatch_context_lost_event_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void WebGLRenderingContextBase::HoldReferenceToDrawingBuffer(DrawingBuffer*) {
@@ -6645,7 +6638,7 @@ void WebGLRenderingContextBase::ForceRestoreContext() {
   }
 
   if (!restore_timer_.IsActive())
-    restore_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    restore_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 uint32_t WebGLRenderingContextBase::NumberOfContextLosses() const {
@@ -6971,6 +6964,18 @@ bool WebGLRenderingContextBase::ValidateSize(const char* function_name,
   return true;
 }
 
+bool WebGLRenderingContextBase::ValidateCharacter(unsigned char c) {
+  // Printing characters are valid except " $ ` @ \ ' DEL.
+  if (c >= 32 && c <= 126 && c != '"' && c != '$' && c != '`' && c != '@' &&
+      c != '\\' && c != '\'')
+    return true;
+  // Horizontal tab, line feed, vertical tab, form feed, carriage return
+  // are also valid.
+  if (c >= 9 && c <= 13)
+    return true;
+  return false;
+}
+
 bool WebGLRenderingContextBase::ValidateString(const char* function_name,
                                                const String& string) {
   for (wtf_size_t i = 0; i < string.length(); ++i) {
@@ -6980,6 +6985,13 @@ bool WebGLRenderingContextBase::ValidateString(const char* function_name,
     }
   }
   return true;
+}
+
+bool WebGLRenderingContextBase::IsPrefixReserved(const String& name) {
+  if (name.StartsWith("gl_") || name.StartsWith("webgl_") ||
+      name.StartsWith("_webgl_"))
+    return true;
+  return false;
 }
 
 bool WebGLRenderingContextBase::ValidateShaderSource(const String& string) {
@@ -7481,9 +7493,7 @@ void WebGLRenderingContextBase::PrintGLErrorToConsole(const String& message) {
 }
 
 void WebGLRenderingContextBase::PrintWarningToConsole(const String& message) {
-  if (!canvas())
-    return;
-  canvas()->GetDocument().AddConsoleMessage(
+  Host()->GetTopExecutionContext()->AddConsoleMessage(
       ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
                              mojom::ConsoleMessageLevel::kWarning, message));
 }
@@ -7819,7 +7829,7 @@ void WebGLRenderingContextBase::DispatchContextLostEvent(TimerBase*) {
   restore_allowed_ = event->defaultPrevented();
   if (restore_allowed_ && !is_hidden_) {
     if (auto_recovery_method_ == kAuto)
-      restore_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+      restore_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   }
 }
 
@@ -7935,8 +7945,9 @@ CanvasResourceProvider* WebGLRenderingContextBase::
     return resource_provider;
   }
 
+  // TODO(fserb): why is this software?
   std::unique_ptr<CanvasResourceProvider> temp(CanvasResourceProvider::Create(
-      size, CanvasResourceProvider::kSoftwareResourceUsage,
+      size, CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
       nullptr,              // context_provider_wrapper
       0,                    // msaa_sample_count,
       CanvasColorParams(),  // TODO: should this use the canvas's colorspace?

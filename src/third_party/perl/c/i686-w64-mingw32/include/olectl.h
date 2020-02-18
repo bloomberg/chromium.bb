@@ -1,10 +1,12 @@
 /**
- * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER.PD within this package.
+ * This file is part of the mingw-w64 runtime package.
+ * No warranty is given; refer to the file DISCLAIMER within this package.
  */
+
 #ifndef _OLECTL_H_
 #define _OLECTL_H_
+
+#if !defined (__WIDL__)
 
 #ifndef RC_INVOKED
 #include <pshpack8.h>
@@ -113,10 +115,10 @@ typedef struct tagPICTDESC {
   } DUMMYUNIONNAME;
 } PICTDESC,*LPPICTDESC;
 
-typedef long OLE_XPOS_PIXELS;
-typedef long OLE_YPOS_PIXELS;
-typedef long OLE_XSIZE_PIXELS;
-typedef long OLE_YSIZE_PIXELS;
+typedef __LONG32 OLE_XPOS_PIXELS;
+typedef __LONG32 OLE_YPOS_PIXELS;
+typedef __LONG32 OLE_XSIZE_PIXELS;
+typedef __LONG32 OLE_YSIZE_PIXELS;
 typedef float OLE_XPOS_CONTAINER;
 typedef float OLE_YPOS_CONTAINER;
 typedef float OLE_XSIZE_CONTAINER;
@@ -207,18 +209,18 @@ typedef VARIANT_BOOL OLE_ENABLEDEFAULTBOOL;
 
 #define PERPROP_E_NOPAGEAVAILABLE (PERPROP_E_FIRST+0)
 
-#define OLEMISC_INVISIBLEATRUNTIME 0x00000400L
-#define OLEMISC_ALWAYSRUN 0x00000800L
-#define OLEMISC_ACTSLIKEBUTTON 0x00001000L
-#define OLEMISC_ACTSLIKELABEL 0x00002000L
-#define OLEMISC_NOUIACTIVATE 0x00004000L
-#define OLEMISC_ALIGNABLE 0x00008000L
-#define OLEMISC_SIMPLEFRAME 0x00010000L
-#define OLEMISC_SETCLIENTSITEFIRST 0x00020000L
-#define OLEMISC_IMEMODE 0x00040000L
+#define OLEMISC_INVISIBLEATRUNTIME __MSABI_LONG(0x00000400)
+#define OLEMISC_ALWAYSRUN __MSABI_LONG(0x00000800)
+#define OLEMISC_ACTSLIKEBUTTON __MSABI_LONG(0x00001000)
+#define OLEMISC_ACTSLIKELABEL __MSABI_LONG(0x00002000)
+#define OLEMISC_NOUIACTIVATE __MSABI_LONG(0x00004000)
+#define OLEMISC_ALIGNABLE __MSABI_LONG(0x00008000)
+#define OLEMISC_SIMPLEFRAME __MSABI_LONG(0x00010000)
+#define OLEMISC_SETCLIENTSITEFIRST __MSABI_LONG(0x00020000)
+#define OLEMISC_IMEMODE __MSABI_LONG(0x00040000)
 
 #ifndef OLEIVERB_PROPERTIES
-#define OLEIVERB_PROPERTIES (-7L)
+#define OLEIVERB_PROPERTIES (__MSABI_LONG(-7))
 #endif
 
 #define VT_STREAMED_PROPSET 73
@@ -286,6 +288,7 @@ WINOLECTLAPI_(HCURSOR) OleIconToCursor(HINSTANCE hinstExe,HICON hIcon);
 
 #if !defined(RC_INVOKED)
 #include <poppack.h>
+#endif
 #endif
 
 #define DISPID_AUTOSIZE (-500)
@@ -404,4 +407,14 @@ WINOLECTLAPI_(HCURSOR) OleIconToCursor(HINSTANCE hinstExe,HICON hIcon);
 #define DISPID_PICT_WIDTH 4
 #define DISPID_PICT_HEIGHT 5
 #define DISPID_PICT_RENDER 6
+
+#if defined (__WIDL__)
+#define STDOLE_TLB "stdole2.tlb"
+#ifdef _WIN64
+#define STDTYPE_TLB "stdole2.tlb"
+#else
+#define STDTYPE_TLB "olepro32.dll"
+#endif
+#endif
+
 #endif

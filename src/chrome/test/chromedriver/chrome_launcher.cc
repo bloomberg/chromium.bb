@@ -52,6 +52,7 @@
 #include "chrome/test/chromedriver/log_replay/chrome_replay_impl.h"
 #include "chrome/test/chromedriver/log_replay/replay_http_client.h"
 #include "chrome/test/chromedriver/net/net_util.h"
+#include "components/crx_file/crx_verifier.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/sha2.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -797,24 +798,34 @@ Status ProcessExtension(const std::string& extension,
   if (!base::Base64Decode(extension_base64, &decoded_extension))
     return Status(kUnknownError, "cannot base64 decode");
 
+  base::ScopedTempDir temp_crx_dir;
+  if (!temp_crx_dir.CreateUniqueTempDir())
+    return Status(kUnknownError, "cannot create temp dir");
+  base::FilePath extension_crx = temp_crx_dir.GetPath().AppendASCII("temp.crx");
+  int size = static_cast<int>(decoded_extension.length());
+  if (base::WriteFile(extension_crx, decoded_extension.c_str(), size) != size) {
+    return Status(kUnknownError, "cannot write file");
+  }
+
   // If the file is a crx file, extract the extension's ID from its public key.
   // Otherwise generate a random public key and use its derived extension ID.
-  std::string public_key;
+  std::string public_key_base64;
   std::string magic_header = decoded_extension.substr(0, 4);
   if (magic_header.size() != 4)
     return Status(kUnknownError, "cannot extract magic number");
 
   const bool is_crx_file = magic_header == "Cr24";
+  std::string id;
 
   if (is_crx_file) {
-    // Assume a CRX v2 file - see https://developer.chrome.com/extensions/crx.
-    std::string key_len_str = decoded_extension.substr(8, 4);
-    if (key_len_str.size() != 4)
-      return Status(kUnknownError, "cannot extract public key length");
-    uint32_t key_len = *reinterpret_cast<const uint32_t*>(key_len_str.c_str());
-    public_key = decoded_extension.substr(16, key_len);
-    if (key_len != public_key.size())
-      return Status(kUnknownError, "invalid public key length");
+    crx_file::VerifierResult result =
+        crx_file::Verify(extension_crx, crx_file::VerifierFormat::CRX2_OR_CRX3,
+                         {} /** required_key_hashes */,
+                         {} /** required_file_hash */, &public_key_base64, &id);
+    if (result != crx_file::VerifierResult::OK_FULL) {
+      return Status(kUnknownError,
+                    base::StringPrintf("CRX verification failed: %d", result));
+    }
   } else {
     // Not a CRX file. Generate RSA keypair to get a valid extension id.
     std::unique_ptr<crypto::RSAPrivateKey> key_pair(
@@ -824,24 +835,14 @@ Status ProcessExtension(const std::string& extension,
     std::vector<uint8_t> public_key_vector;
     if (!key_pair->ExportPublicKey(&public_key_vector))
       return Status(kUnknownError, "cannot extract public key");
-    public_key =
+    std::string public_key =
         std::string(reinterpret_cast<char*>(&public_key_vector.front()),
                     public_key_vector.size());
+    id = GenerateExtensionId(public_key);
+    base::Base64Encode(public_key, &public_key_base64);
   }
-  std::string public_key_base64;
-  base::Base64Encode(public_key, &public_key_base64);
-  std::string id = GenerateExtensionId(public_key);
 
   // Unzip the crx file.
-  base::ScopedTempDir temp_crx_dir;
-  if (!temp_crx_dir.CreateUniqueTempDir())
-    return Status(kUnknownError, "cannot create temp dir");
-  base::FilePath extension_crx = temp_crx_dir.GetPath().AppendASCII("temp.crx");
-  int size = static_cast<int>(decoded_extension.length());
-  if (base::WriteFile(extension_crx, decoded_extension.c_str(), size) !=
-      size) {
-    return Status(kUnknownError, "cannot write file");
-  }
   base::FilePath extension_dir = temp_dir.AppendASCII("extension_" + id);
   if (!zip::Unzip(extension_crx, extension_dir))
     return Status(kUnknownError, "cannot unzip");

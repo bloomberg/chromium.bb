@@ -9,7 +9,6 @@
 
 #include "base/barrier_closure.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -25,9 +24,6 @@
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/features.h"
 
 namespace chromecast {
 namespace shell {
@@ -48,10 +44,8 @@ class CastBrowserContext::CastResourceContext
   DISALLOW_COPY_AND_ASSIGN(CastResourceContext);
 };
 
-CastBrowserContext::CastBrowserContext(
-    URLRequestContextFactory* url_request_context_factory)
-    : url_request_context_factory_(url_request_context_factory),
-      resource_context_(new CastResourceContext),
+CastBrowserContext::CastBrowserContext()
+    : resource_context_(new CastResourceContext),
       shared_cors_origin_access_list_(
           content::SharedCorsOriginAccessList::Create()) {
   InitWhileIOAllowed();
@@ -93,16 +87,12 @@ CastBrowserContext::CreateZoomLevelDelegate(
 }
 #endif  // !defined(OS_ANDROID)
 
-base::FilePath CastBrowserContext::GetPath() const {
+base::FilePath CastBrowserContext::GetPath() {
   return path_;
 }
 
-bool CastBrowserContext::IsOffTheRecord() const {
+bool CastBrowserContext::IsOffTheRecord() {
   return false;
-}
-
-net::URLRequestContextGetter* CastBrowserContext::GetSystemRequestContext() {
-  return url_request_context_factory_->GetSystemGetter();
 }
 
 content::ResourceContext* CastBrowserContext::GetResourceContext() {
@@ -165,27 +155,12 @@ CastBrowserContext::GetBrowsingDataRemoverDelegate() {
 net::URLRequestContextGetter* CastBrowserContext::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  return url_request_context_factory_->CreateMainGetter(
-      this, protocol_handlers, std::move(request_interceptors));
-}
-
-net::URLRequestContextGetter*
-CastBrowserContext::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
+  NOTREACHED();
   return nullptr;
 }
 
 net::URLRequestContextGetter* CastBrowserContext::CreateMediaRequestContext() {
-  return url_request_context_factory_->GetMediaGetter();
-}
-
-net::URLRequestContextGetter*
-CastBrowserContext::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
+  NOTREACHED();
   return nullptr;
 }
 
@@ -194,33 +169,26 @@ void CastBrowserContext::SetCorsOriginAccessListForOrigin(
     std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
     std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
     base::OnceClosure closure) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    shared_cors_origin_access_list_->SetForOrigin(
-        source_origin, std::move(allow_patterns), std::move(block_patterns),
-        std::move(closure));
-  } else {
-    auto barrier_closure = BarrierClosure(2, std::move(closure));
+  auto barrier_closure = BarrierClosure(2, std::move(closure));
 
-    // Keep profile storage partitions' NetworkContexts synchronized.
-    auto profile_setter = base::MakeRefCounted<CorsOriginPatternSetter>(
-        source_origin, CorsOriginPatternSetter::ClonePatterns(allow_patterns),
-        CorsOriginPatternSetter::ClonePatterns(block_patterns),
-        barrier_closure);
-    ForEachStoragePartition(
-        this, base::BindRepeating(&CorsOriginPatternSetter::SetLists,
-                                  base::RetainedRef(profile_setter.get())));
+  // Keep profile storage partitions' NetworkContexts synchronized.
+  auto profile_setter = base::MakeRefCounted<CorsOriginPatternSetter>(
+      source_origin, CorsOriginPatternSetter::ClonePatterns(allow_patterns),
+      CorsOriginPatternSetter::ClonePatterns(block_patterns), barrier_closure);
+  ForEachStoragePartition(
+      this, base::BindRepeating(&CorsOriginPatternSetter::SetLists,
+                                base::RetainedRef(profile_setter.get())));
 
-    // Keep the per-profile access list up to date so that we can use this to
-    // restore NetworkContext settings at anytime, e.g. on restarting the
-    // network service.
-    shared_cors_origin_access_list_->SetForOrigin(
-        source_origin, std::move(allow_patterns), std::move(block_patterns),
-        barrier_closure);
-  }
+  // Keep the per-profile access list up to date so that we can use this to
+  // restore NetworkContext settings at anytime, e.g. on restarting the
+  // network service.
+  shared_cors_origin_access_list_->SetForOrigin(
+      source_origin, std::move(allow_patterns), std::move(block_patterns),
+      barrier_closure);
 }
 
-const content::SharedCorsOriginAccessList*
-CastBrowserContext::GetSharedCorsOriginAccessList() const {
+content::SharedCorsOriginAccessList*
+CastBrowserContext::GetSharedCorsOriginAccessList() {
   return shared_cors_origin_access_list_.get();
 }
 

@@ -32,8 +32,7 @@ SelectedKeywordView::SelectedKeywordView(LocationBarView* location_bar,
   label()->SetElideBehavior(gfx::FADE_TAIL);
 }
 
-SelectedKeywordView::~SelectedKeywordView() {
-}
+SelectedKeywordView::~SelectedKeywordView() {}
 
 void SelectedKeywordView::ResetImage() {
   SetImage(gfx::CreateVectorIcon(vector_icons::kSearchIcon,
@@ -66,7 +65,7 @@ void SelectedKeywordView::Layout() {
   bool use_full_label =
       width() >
       GetSizeForLabelWidth(partial_label_.GetPreferredSize().width()).width();
-  SetLabel(use_full_label ? full_label_.text() : partial_label_.text());
+  SetLabel(use_full_label ? full_label_.GetText() : partial_label_.GetText());
 
   IconLabelBubbleView::Layout();
 }

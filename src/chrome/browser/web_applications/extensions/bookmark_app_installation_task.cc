@@ -47,7 +47,7 @@ BookmarkAppInstallationTask::BookmarkAppInstallationTask(
     Profile* profile,
     web_app::AppRegistrar* registrar,
     web_app::InstallFinalizer* install_finalizer,
-    web_app::InstallOptions install_options)
+    web_app::ExternalInstallOptions install_options)
     : profile_(profile),
       registrar_(registrar),
       install_finalizer_(install_finalizer),
@@ -170,7 +170,7 @@ void BookmarkAppInstallationTask::InstallPlaceholder(ResultCallback callback) {
   }
 
   web_app::InstallFinalizer::FinalizeOptions options;
-  options.source = web_app::InstallFinalizer::Source::kPolicyInstalled;
+  options.install_source = WebappInstallSource::EXTERNAL_POLICY;
 
   install_finalizer_->FinalizeInstall(
       web_app_info, options,
@@ -223,7 +223,10 @@ void BookmarkAppInstallationTask::OnWebAppInstalled(
               std::move(success_closure).Run();
             },
             std::move(success_closure)));
+    return;
   }
+
+  std::move(success_closure).Run();
 }
 
 }  // namespace extensions

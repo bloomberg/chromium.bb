@@ -37,7 +37,6 @@
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/assistant/buildflags.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/login/session/session_termination_manager.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -52,10 +51,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/image/image_skia.h"
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#include "chrome/browser/ui/ash/assistant/assistant_client.h"
-#endif
 
 using session_manager::Session;
 using session_manager::SessionManager;
@@ -104,9 +99,6 @@ std::unique_ptr<ash::UserSession> UserToUserSession(const User& user) {
   session->user_info.has_gaia_account = user.has_gaia_account();
   session->user_info.should_display_managed_ui =
       profile && chrome::ShouldDisplayManagedUi(profile);
-  const AccountId& owner_id = UserManager::Get()->GetOwnerAccountId();
-  session->user_info.is_device_owner =
-      owner_id.is_valid() && owner_id == user.GetAccountId();
   if (profile) {
     session->user_info.service_instance_group =
         content::BrowserContext::GetServiceInstanceGroupFor(profile);
@@ -175,7 +167,6 @@ SessionControllerClientImpl::SessionControllerClientImpl() {
   SessionManager::Get()->AddObserver(this);
   UserManager::Get()->AddSessionStateObserver(this);
   UserManager::Get()->AddObserver(this);
-  chromeos::LoginState::Get()->AddObserver(this);
 
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
@@ -212,7 +203,6 @@ SessionControllerClientImpl::~SessionControllerClientImpl() {
         ->RemoveObserver(this);
   }
 
-  chromeos::LoginState::Get()->RemoveObserver(this);
   SessionManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveSessionStateObserver(this);
@@ -502,17 +492,6 @@ void SessionControllerClientImpl::OnSessionStateChanged() {
     primary_user_session_sent_ = true;
     SendUserSession(*UserManager::Get()->GetPrimaryUser());
     SendUserSessionOrder();
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-    // Assistant is initialized only once when primary user logs in.
-    // Initialize Assistant when browser process restarts.
-    if (chromeos::switches::IsAssistantEnabled()) {
-      AssistantClient::Get()->MaybeInit(
-          ProfileManager::GetPrimaryUserProfile());
-      if (!chromeos::switches::ShouldSkipOobePostLogin())
-        AssistantClient::Get()->MaybeStartAssistantOptInFlow();
-    }
-#endif
   }
 
   SendSessionInfoIfChanged();
@@ -524,10 +503,6 @@ void SessionControllerClientImpl::OnCustodianInfoChanged() {
       supervised_user_profile_);
   if (user)
     SendUserSession(*user);
-}
-
-void SessionControllerClientImpl::LoggedInStateChanged() {
-  SendUserSession(*UserManager::Get()->GetActiveUser());
 }
 
 void SessionControllerClientImpl::Observe(

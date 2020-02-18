@@ -30,6 +30,23 @@ enum WilcoDtcSupportdWebRequestStatus {
   kHttpError,
 };
 
+[Extensible]
+enum WilcoDtcSupportdEvent {
+  // An unauthorized battery is connected.
+  kBatteryAuth,
+  // Charger is unauthorized, and battery will not charge.
+  kNonWilcoCharger,
+  // Attached dock is incompatible.
+  kIncompatibleDock,
+  // Attached dock presents hardware failures.
+  kDockError,
+  // HDMI and USB Type-C cannot be used for displays at the same time
+  // with the attached dock.
+  kDockDisplay,
+  // Attached dock will operate in USB Type-C compatible mode.
+  kDockThunderbolt,
+};
+
 // Factory interface exposed by the wilco_dtc_supportd daemon, which allows both
 // endpoints (the wilco_dtc_supportd and the browser) to exchange with their
 // interfaces (WilcoDtcSupportdService and WilcoDtcSupportdClient
@@ -124,9 +141,13 @@ interface WilcoDtcSupportdClient {
   // implemented by third parties (the wilco_dtc UI extension and the wilco_dtc
   // daemon).
   SendWilcoDtcMessageToUi@1(handle json_message)
-       => (handle? response_json_message);
+      => (handle? response_json_message);
 
   // Retrieves a JSON-formatted configuration data. The length of
   // |json_configuration_data| does not exceed 20'000 bytes.
   GetConfigurationData@2() => (string json_configuration_data);
+
+  // Handles actionable EC events related to power (i.e., battery,
+  // charger) and connected docking solutions.
+  HandleEvent@3(WilcoDtcSupportdEvent event);
 };

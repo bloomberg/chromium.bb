@@ -25,12 +25,11 @@
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
-#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
 namespace blink {
@@ -40,9 +39,7 @@ class AudioWorkletThreadTest : public PageTestBase {
   void SetUp() override {
     AudioWorkletThread::EnsureSharedBackingThread();
     PageTestBase::SetUp(IntSize());
-    Document* document = &GetDocument();
-    document->SetURL(KURL("https://example.com/"));
-    document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
+    NavigateTo(KURL("https://example.com/"));
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 
@@ -117,7 +114,7 @@ TEST_F(AudioWorkletThreadTest, CreateSecondAndTerminateFirst) {
   // Create the first worklet and wait until it is initialized.
   std::unique_ptr<AudioWorkletThread> first_worklet =
       CreateAudioWorkletThread();
-  WebThreadSupportingGC* first_thread =
+  Thread* first_thread =
       &first_worklet->GetWorkerBackingThread().BackingThread();
   CheckWorkletCanExecuteScript(first_worklet.get());
   v8::Isolate* first_isolate = first_worklet->GetIsolate();
@@ -132,7 +129,7 @@ TEST_F(AudioWorkletThreadTest, CreateSecondAndTerminateFirst) {
 
   // Wait until the second worklet is initialized. Verify that the second
   // worklet is using the same thread and Isolate as the first worklet.
-  WebThreadSupportingGC* second_thread =
+  Thread* second_thread =
       &second_worklet->GetWorkerBackingThread().BackingThread();
   ASSERT_EQ(first_thread, second_thread);
 
@@ -152,8 +149,7 @@ TEST_F(AudioWorkletThreadTest, CreateSecondAndTerminateFirst) {
 TEST_F(AudioWorkletThreadTest, TerminateFirstAndCreateSecond) {
   // Create the first worklet, wait until it is initialized, and terminate it.
   std::unique_ptr<AudioWorkletThread> worklet = CreateAudioWorkletThread();
-  WebThreadSupportingGC* first_thread =
-      &worklet->GetWorkerBackingThread().BackingThread();
+  Thread* first_thread = &worklet->GetWorkerBackingThread().BackingThread();
   CheckWorkletCanExecuteScript(worklet.get());
 
   // We don't use terminateAndWait here to avoid forcible termination.
@@ -162,8 +158,7 @@ TEST_F(AudioWorkletThreadTest, TerminateFirstAndCreateSecond) {
 
   // Create the second worklet. The backing thread is same.
   worklet = CreateAudioWorkletThread();
-  WebThreadSupportingGC* second_thread =
-      &worklet->GetWorkerBackingThread().BackingThread();
+  Thread* second_thread = &worklet->GetWorkerBackingThread().BackingThread();
   EXPECT_EQ(first_thread, second_thread);
   CheckWorkletCanExecuteScript(worklet.get());
 

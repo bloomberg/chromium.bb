@@ -8,8 +8,8 @@
 #ifndef GrTextureContext_DEFINED
 #define GrTextureContext_DEFINED
 
-#include "include/private/GrTextureProxy.h"
 #include "src/gpu/GrSurfaceContext.h"
+#include "src/gpu/GrTextureProxy.h"
 
 class GrContext;
 class GrDrawingManager;
@@ -39,7 +39,11 @@ public:
     sk_sp<GrRenderTargetProxy> asRenderTargetProxyRef() override;
 
 protected:
-    GrTextureContext(GrRecordingContext*, sk_sp<GrTextureProxy>, sk_sp<SkColorSpace>);
+    GrTextureContext(GrRecordingContext*,
+                     sk_sp<GrTextureProxy>,
+                     GrColorType,
+                     SkAlphaType,
+                     sk_sp<SkColorSpace>);
 
     SkDEBUGCODE(void validate() const override;)
 

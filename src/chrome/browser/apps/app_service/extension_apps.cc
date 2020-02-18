@@ -24,10 +24,13 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "extensions/browser/extension_prefs.h"
@@ -206,7 +209,7 @@ void ExtensionApps::SetPermission(const std::string& app_id,
 
   ContentSettingsType permission_type =
       static_cast<ContentSettingsType>(permission->permission_id);
-  if (!base::ContainsValue(kSupportedPermissionTypes, permission_type)) {
+  if (!base::Contains(kSupportedPermissionTypes, permission_type)) {
     return;
   }
 
@@ -277,7 +280,7 @@ void ExtensionApps::OnContentSettingChanged(
     ContentSettingsType content_type,
     const std::string& resource_identifier) {
   // If content_type is not one of the supported permissions, do nothing.
-  if (!base::ContainsValue(kSupportedPermissionTypes, content_type)) {
+  if (!base::Contains(kSupportedPermissionTypes, content_type)) {
     return;
   }
 
@@ -413,6 +416,22 @@ void ExtensionApps::SetShowInFields(apps::mojom::AppPtr& app,
     app->show_in_launcher = show;
     app->show_in_search = show;
     app->show_in_management = show;
+
+    if (show == apps::mojom::OptionalBool::kFalse) {
+      return;
+    }
+
+    auto* web_app_provider = web_app::WebAppProvider::Get(profile);
+
+    // WebAppProvider is null for SignInProfile
+    if (!web_app_provider) {
+      return;
+    }
+
+    if (web_app_provider->system_web_app_manager().IsSystemWebApp(
+            extension->id())) {
+      app->show_in_management = apps::mojom::OptionalBool::kFalse;
+    }
   } else {
     app->show_in_launcher = apps::mojom::OptionalBool::kFalse;
     app->show_in_search = apps::mojom::OptionalBool::kFalse;
@@ -467,10 +486,16 @@ void ExtensionApps::PopulatePermissions(
         setting_val = apps::mojom::TriState::kAsk;
     }
 
+    content_settings::SettingInfo setting_info;
+    host_content_settings_map->GetWebsiteSetting(url, url, type, std::string(),
+                                                 &setting_info);
+
     auto permission = apps::mojom::Permission::New();
     permission->permission_id = static_cast<uint32_t>(type);
     permission->value_type = apps::mojom::PermissionValueType::kTriState;
     permission->value = static_cast<uint32_t>(setting_val);
+    permission->is_managed =
+        setting_info.source == content_settings::SETTING_SOURCE_POLICY;
 
     target->push_back(std::move(permission));
   }
@@ -482,14 +507,14 @@ apps::mojom::InstallSource GetInstallSource(
   if (extensions::Manifest::IsComponentLocation(extension->location()) ||
       web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
           profile->GetPrefs(), extension->id(),
-          web_app::InstallSource::kSystemInstalled)) {
+          web_app::ExternalInstallSource::kSystemInstalled)) {
     return apps::mojom::InstallSource::kSystem;
   }
 
   if (extensions::Manifest::IsPolicyLocation(extension->location()) ||
       web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
           profile->GetPrefs(), extension->id(),
-          web_app::InstallSource::kExternalPolicy)) {
+          web_app::ExternalInstallSource::kExternalPolicy)) {
     return apps::mojom::InstallSource::kPolicy;
   }
 
@@ -500,7 +525,7 @@ apps::mojom::InstallSource GetInstallSource(
   if (extension->was_installed_by_default() ||
       web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
           profile->GetPrefs(), extension->id(),
-          web_app::InstallSource::kExternalDefault)) {
+          web_app::ExternalInstallSource::kExternalDefault)) {
     return apps::mojom::InstallSource::kDefault;
   }
 
@@ -518,6 +543,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->name = extension->name();
   app->short_name = extension->short_name();
   app->description = extension->description();
+  app->version = extension->GetVersionForDisplay();
 
   IconEffects icon_effects = IconEffects::kNone;
 #if defined(OS_CHROMEOS)

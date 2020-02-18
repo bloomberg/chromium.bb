@@ -17,10 +17,9 @@
 #include "net/third_party/quiche/src/quic/core/crypto/proof_source.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/proto/crypto_server_config.pb.h"
+#include "net/third_party/quiche/src/quic/core/proto/crypto_server_config_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_socket_address_coder.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_endian.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
@@ -45,9 +44,9 @@ class DummyProofVerifierCallback : public ProofVerifierCallback {
   DummyProofVerifierCallback() {}
   ~DummyProofVerifierCallback() override {}
 
-  void Run(bool ok,
-           const std::string& error_details,
-           std::unique_ptr<ProofVerifyDetails>* details) override {
+  void Run(bool /*ok*/,
+           const std::string& /*error_details*/,
+           std::unique_ptr<ProofVerifyDetails>* /*details*/) override {
     DCHECK(false);
   }
 };
@@ -93,8 +92,7 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
         config_(QuicCryptoServerConfig::TESTING,
                 rand_,
                 crypto_test_utils::ProofSourceForTesting(),
-                KeyExchangeSource::Default(),
-                TlsServerHandshaker::CreateSslCtx()),
+                KeyExchangeSource::Default()),
         peer_(&config_),
         compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
@@ -254,12 +252,12 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
       *called_ = false;
     }
 
-    void Run(
-        QuicErrorCode error,
-        const std::string& error_details,
-        std::unique_ptr<CryptoHandshakeMessage> message,
-        std::unique_ptr<DiversificationNonce> diversification_nonce,
-        std::unique_ptr<ProofSource::Details> proof_source_details) override {
+    void Run(QuicErrorCode error,
+             const std::string& error_details,
+             std::unique_ptr<CryptoHandshakeMessage> message,
+             std::unique_ptr<DiversificationNonce> /*diversification_nonce*/,
+             std::unique_ptr<ProofSource::Details> /*proof_source_details*/)
+        override {
       if (should_succeed_) {
         ASSERT_EQ(error, QUIC_NO_ERROR)
             << "Message failed with error " << error_details << ": "
@@ -290,15 +288,12 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
       bool should_succeed,
       const char* error_substr) {
     QuicSocketAddress server_address(QuicIpAddress::Any4(), 5);
-    QuicConnectionId server_designated_connection_id =
-        TestConnectionId(rand_for_id_generation_.RandUint64());
     bool called;
     config_.ProcessClientHello(
         result, /*reject_only=*/false,
         /*connection_id=*/TestConnectionId(1), server_address, client_address_,
-        supported_versions_.front(), supported_versions_,
-        /*use_stateless_rejects=*/false, server_designated_connection_id,
-        &clock_, rand_, &compressed_certs_cache_, params_, signed_config_,
+        supported_versions_.front(), supported_versions_, &clock_, rand_,
+        &compressed_certs_cache_, params_, signed_config_,
         /*total_framing_overhead=*/50, chlo_packet_size_,
         QuicMakeUnique<ProcessCallback>(result, should_succeed, error_substr,
                                         &called, &out_));
@@ -975,12 +970,10 @@ TEST_F(CryptoServerConfigGenerationTest, Determinism) {
 
   QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a,
                            crypto_test_utils::ProofSourceForTesting(),
-                           KeyExchangeSource::Default(),
-                           TlsServerHandshaker::CreateSslCtx());
+                           KeyExchangeSource::Default());
   QuicCryptoServerConfig b(QuicCryptoServerConfig::TESTING, &rand_b,
                            crypto_test_utils::ProofSourceForTesting(),
-                           KeyExchangeSource::Default(),
-                           TlsServerHandshaker::CreateSslCtx());
+                           KeyExchangeSource::Default());
   std::unique_ptr<CryptoHandshakeMessage> scfg_a(
       a.AddDefaultConfig(&rand_a, &clock, options));
   std::unique_ptr<CryptoHandshakeMessage> scfg_b(
@@ -999,13 +992,11 @@ TEST_F(CryptoServerConfigGenerationTest, SCIDVaries) {
 
   QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a,
                            crypto_test_utils::ProofSourceForTesting(),
-                           KeyExchangeSource::Default(),
-                           TlsServerHandshaker::CreateSslCtx());
+                           KeyExchangeSource::Default());
   rand_b.ChangeValue();
   QuicCryptoServerConfig b(QuicCryptoServerConfig::TESTING, &rand_b,
                            crypto_test_utils::ProofSourceForTesting(),
-                           KeyExchangeSource::Default(),
-                           TlsServerHandshaker::CreateSslCtx());
+                           KeyExchangeSource::Default());
   std::unique_ptr<CryptoHandshakeMessage> scfg_a(
       a.AddDefaultConfig(&rand_a, &clock, options));
   std::unique_ptr<CryptoHandshakeMessage> scfg_b(
@@ -1025,8 +1016,7 @@ TEST_F(CryptoServerConfigGenerationTest, SCIDIsHashOfServerConfig) {
 
   QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a,
                            crypto_test_utils::ProofSourceForTesting(),
-                           KeyExchangeSource::Default(),
-                           TlsServerHandshaker::CreateSslCtx());
+                           KeyExchangeSource::Default());
   std::unique_ptr<CryptoHandshakeMessage> scfg(
       a.AddDefaultConfig(&rand_a, &clock, options));
 

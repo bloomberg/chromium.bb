@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/bind_helpers.h"
@@ -25,7 +25,6 @@
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
@@ -34,6 +33,7 @@ namespace {
 
 const int kKeyboardHeightForTest = 100;
 
+// TODO(shend): Remove this since all calls are synchronous now.
 class KeyboardVisibleWaiter : public ChromeKeyboardControllerClient::Observer {
  public:
   explicit KeyboardVisibleWaiter(bool visible) : visible_(visible) {
@@ -43,7 +43,13 @@ class KeyboardVisibleWaiter : public ChromeKeyboardControllerClient::Observer {
     ChromeKeyboardControllerClient::Get()->RemoveObserver(this);
   }
 
-  void Wait() { run_loop_.Run(); }
+  void Wait() {
+    if (ChromeKeyboardControllerClient::Get()->is_keyboard_visible() ==
+        visible_) {
+      return;
+    }
+    run_loop_.Run();
+  }
 
   // ChromeKeyboardControllerClient::Observer
   void OnKeyboardVisibilityChanged(bool visible) override {
@@ -188,8 +194,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
   KeyboardVisibleWaiter(true).Wait();
 
   // Simulate hide keyboard by pressing hide key on the virtual keyboard.
-  ChromeKeyboardControllerClient::Get()->HideKeyboard(
-      ash::mojom::HideReason::kUser);
+  ChromeKeyboardControllerClient::Get()->HideKeyboard(ash::HideReason::kUser);
   KeyboardVisibleWaiter(false).Wait();
 
   MockEnableIMEInDifferentExtension("chrome-extension://domain-2", test_bounds);
@@ -202,14 +207,10 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
 // TODO(stevenjb/shend): Investigate/fix.
 IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
                        CanDragFloatingKeyboardWithMouse) {
-  if (::features::IsMultiProcessMash())
-    return;
-
   ChromeKeyboardControllerClient::Get()->SetContainerType(
-      keyboard::mojom::ContainerType::kFloating, base::nullopt,
-      base::DoNothing());
+      keyboard::ContainerType::kFloating, base::nullopt, base::DoNothing());
 
-  auto* controller = keyboard::KeyboardController::Get();
+  auto* controller = keyboard::KeyboardUIController::Get();
   controller->ShowKeyboard(false);
   KeyboardVisibleWaiter(true).Wait();
 
@@ -362,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest, OpenAndCloseAndOpen) {
   controller->ShowKeyboard();
   KeyboardVisibleWaiter(true).Wait();
 
-  controller->HideKeyboard(ash::mojom::HideReason::kSystem);
+  controller->HideKeyboard(ash::HideReason::kSystem);
   KeyboardVisibleWaiter(false).Wait();
 
   controller->ShowKeyboard();
@@ -374,10 +375,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest, OpenAndCloseAndOpen) {
 // whether this needs to be tested in a keyboard::KeyboardController unit test.
 
 IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest, StateResolvesAfterPreload) {
-  if (::features::IsMultiProcessMash())
-    return;
-
-  auto* controller = keyboard::KeyboardController::Get();
+  auto* controller = keyboard::KeyboardUIController::Get();
   EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kLoading);
   KeyboardLoadedWaiter().Wait();
   EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kHidden);
@@ -385,10 +383,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest, StateResolvesAfterPreload) {
 
 IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
                        OpenAndCloseAndOpenInternal) {
-  if (::features::IsMultiProcessMash())
-    return;
-
-  auto* controller = keyboard::KeyboardController::Get();
+  auto* controller = keyboard::KeyboardUIController::Get();
   controller->ShowKeyboard(false);
   // Need to wait the extension to be loaded. Hence LOADING_EXTENSION.
   EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kLoading);
@@ -405,10 +400,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
 // See crbug.com/755354.
 IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
                        DisablingKeyboardGoesToInitialState) {
-  if (::features::IsMultiProcessMash())
-    return;
-
-  auto* controller = keyboard::KeyboardController::Get();
+  auto* controller = keyboard::KeyboardUIController::Get();
 
   EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kLoading);
 

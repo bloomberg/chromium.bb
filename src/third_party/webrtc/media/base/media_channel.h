@@ -450,6 +450,8 @@ struct MediaReceiverInfo {
   int64_t bytes_rcvd = 0;
   int packets_rcvd = 0;
   int packets_lost = 0;
+  // TODO(bugs.webrtc.org/10679): Unused, delete as soon as downstream code is
+  // updated.
   float fraction_lost = 0.0f;
   // The timestamp at which the last packet was received, i.e. the time of the
   // local clock when it was received - not the RTP timestamp of that packet.
@@ -466,6 +468,7 @@ struct VoiceSenderInfo : public MediaSenderInfo {
   ~VoiceSenderInfo();
   int ext_seqnum = 0;
   int jitter_ms = 0;
+  // Current audio level, expressed linearly [0,32767].
   int audio_level = 0;
   // See description of "totalAudioEnergy" in the WebRTC stats spec:
   // https://w3c.github.io/webrtc-stats/#dom-rtcmediastreamtrackstats-totalaudioenergy
@@ -562,6 +565,7 @@ struct VideoSenderInfo : public MediaSenderInfo {
   int avg_encode_ms = 0;
   int encode_usage_percent = 0;
   uint32_t frames_encoded = 0;
+  uint32_t key_frames_encoded = 0;
   // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-totalencodetime
   uint64_t total_encode_time_ms = 0;
   // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-totalencodedbytestarget
@@ -595,8 +599,11 @@ struct VideoReceiverInfo : public MediaReceiverInfo {
   int framerate_render_output = 0;
   uint32_t frames_received = 0;
   uint32_t frames_decoded = 0;
+  uint32_t key_frames_decoded = 0;
   uint32_t frames_rendered = 0;
   absl::optional<uint64_t> qp_sum;
+  // https://w3c.github.io/webrtc-stats/#dom-rtcinboundrtpstreamstats-totaldecodetime
+  uint64_t total_decode_time_ms = 0;
   int64_t interframe_delay_max_ms = -1;
   uint32_t freeze_count = 0;
   uint32_t pause_count = 0;
@@ -712,6 +719,7 @@ struct DataMediaInfo {
 
 struct RtcpParameters {
   bool reduced_size = false;
+  bool remote_estimate = false;
 };
 
 template <class Codec>

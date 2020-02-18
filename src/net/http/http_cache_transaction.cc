@@ -42,6 +42,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache_writers.h"
+#include "net/http/http_log_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_util.h"
@@ -87,20 +88,9 @@ enum ExternallyConditionalizedType {
 
 }  // namespace
 
-#define CACHE_STATUS_HISTOGRAMS(type)                                        \
-  do {                                                                       \
-    UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern" type, cache_entry_status_, \
-                              CacheEntryStatus::ENTRY_MAX);                  \
-    if (validation_request) {                                                \
-      UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause" type,            \
-                                validation_cause_, VALIDATION_CAUSE_MAX);    \
-    }                                                                        \
-    if (stale_request) {                                                     \
-      UMA_HISTOGRAM_COUNTS_1M(                                               \
-          "HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed" type,         \
-          freshness_periods_since_last_used);                                \
-    }                                                                        \
-  } while (0)
+#define CACHE_STATUS_HISTOGRAMS(type)                                      \
+  UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern" type, cache_entry_status_, \
+                            CacheEntryStatus::ENTRY_MAX)
 
 struct HeaderNameAndValue {
   const char* name;
@@ -194,8 +184,7 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
       parallel_writing_pattern_(PARALLEL_WRITING_NONE),
       moved_network_transaction_to_writers_(false),
       websocket_handshake_stream_base_create_helper_(nullptr),
-      in_do_loop_(false),
-      weak_factory_(this) {
+      in_do_loop_(false) {
   TRACE_EVENT0("io", "HttpCacheTransaction::Transaction");
   static_assert(HttpCache::Transaction::kNumValidationHeaders ==
                     base::size(kValidationHeaders),
@@ -222,23 +211,6 @@ HttpCache::Transaction::~Transaction() {
 
 HttpCache::Transaction::Mode HttpCache::Transaction::mode() const {
   return mode_;
-}
-
-int HttpCache::Transaction::WriteMetadata(IOBuffer* buf,
-                                          int buf_len,
-                                          CompletionOnceCallback callback) {
-  DCHECK(buf);
-  DCHECK_GT(buf_len, 0);
-  DCHECK(!callback.is_null());
-  if (!cache_.get() || !entry_)
-    return ERR_UNEXPECTED;
-
-  // We don't need to track this operation for anything.
-  // It could be possible to check if there is something already written and
-  // avoid writing again (it should be the same, right?), but let's allow the
-  // caller to "update" the contents with something new.
-  return entry_->disk_entry->WriteData(kMetadataIndex, 0, buf, buf_len,
-                                       std::move(callback), true);
 }
 
 LoadState HttpCache::Transaction::GetWriterLoadState() const {
@@ -978,13 +950,6 @@ int HttpCache::Transaction::DoLoop(int result) {
         DCHECK_EQ(OK, rv);
         rv = DoPartialHeadersReceived();
         break;
-      case STATE_CACHE_READ_METADATA:
-        DCHECK_EQ(OK, rv);
-        rv = DoCacheReadMetadata();
-        break;
-      case STATE_CACHE_READ_METADATA_COMPLETE:
-        rv = DoCacheReadMetadataComplete(rv);
-        break;
       case STATE_HEADERS_PHASE_CANNOT_PROCEED:
         rv = DoHeadersPhaseCannotProceed(rv);
         break;
@@ -1055,7 +1020,7 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
   mode_ = NONE;
 
   // Keep track of the fraction of requests that we can double-key.
-  UMA_HISTOGRAM_BOOLEAN("HttpCache.TopFrameOriginPresent",
+  UMA_HISTOGRAM_BOOLEAN("HttpCache.NetworkIsolationKeyPresent",
                         request_->network_isolation_key.IsFullyPopulated());
 
   if (!ShouldPassThrough()) {
@@ -2079,17 +2044,7 @@ int HttpCache::Transaction::DoTruncateCachedMetadataComplete(int result) {
 int HttpCache::Transaction::DoPartialHeadersReceived() {
   new_response_ = nullptr;
 
-  if (!partial_) {
-    if (entry_ && entry_->disk_entry->GetDataSize(kMetadataIndex) &&
-        !base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache)) {
-      TransitionToState(STATE_CACHE_READ_METADATA);
-    } else {
-      TransitionToState(STATE_FINISH_HEADERS);
-    }
-    return OK;
-  }
-
-  if (mode_ != NONE && !reading_) {
+  if (partial_ && mode_ != NONE && !reading_) {
     // We are about to return the headers for a byte-range request to the user,
     // so let's fix them.
     partial_->FixResponseHeaders(response_.headers.get(), true);
@@ -2174,34 +2129,6 @@ int HttpCache::Transaction::DoFinishHeadersComplete(int rv) {
 
   TransitionToState(STATE_NONE);
   return rv;
-}
-
-int HttpCache::Transaction::DoCacheReadMetadata() {
-  TRACE_EVENT0("io", "HttpCacheTransaction::DoCacheReadMetadata");
-  DCHECK(entry_);
-  DCHECK(!response_.metadata.get());
-  DCHECK(!base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
-  TransitionToState(STATE_CACHE_READ_METADATA_COMPLETE);
-
-  response_.metadata = base::MakeRefCounted<IOBufferWithSize>(
-      entry_->disk_entry->GetDataSize(kMetadataIndex));
-
-  net_log_.BeginEvent(NetLogEventType::HTTP_CACHE_READ_INFO);
-  return entry_->disk_entry->ReadData(kMetadataIndex, 0,
-                                      response_.metadata.get(),
-                                      response_.metadata->size(),
-                                      io_callback_);
-}
-
-int HttpCache::Transaction::DoCacheReadMetadataComplete(int result) {
-  TRACE_EVENT0("io", "HttpCacheTransaction::DoCacheReadMetadataComplete");
-  net_log_.EndEventWithNetErrorCode(NetLogEventType::HTTP_CACHE_READ_INFO,
-                                    result);
-  if (result != response_.metadata->size())
-    return OnCacheReadError(result, false);
-
-  TransitionToState(STATE_FINISH_HEADERS);
-  return OK;
 }
 
 int HttpCache::Transaction::DoNetworkReadCacheWrite() {
@@ -2426,10 +2353,9 @@ void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log) {
   if (range_found || special_headers || external_validation_.initialized) {
     // Log the headers before request_ is modified.
     std::string empty;
-    net_log_.AddEvent(
-        NetLogEventType::HTTP_CACHE_CALLER_REQUEST_HEADERS,
-        base::Bind(&HttpRequestHeaders::NetLogCallback,
-                   base::Unretained(&request_->extra_headers), &empty));
+    NetLogRequestHeaders(net_log_,
+                         NetLogEventType::HTTP_CACHE_CALLER_REQUEST_HEADERS,
+                         empty, &request_->extra_headers);
   }
 
   // We don't support ranges and validation headers.
@@ -2482,7 +2408,8 @@ bool HttpCache::Transaction::ShouldPassThrough() {
   // again. Also, if the request does not have a top frame origin, bypass the
   // cache otherwise resources from different pages could share a cached entry
   // in such cases.
-  if (base::FeatureList::IsEnabled(features::kSplitCacheByTopFrameOrigin) &&
+  if (base::FeatureList::IsEnabled(
+          features::kSplitCacheByNetworkIsolationKey) &&
       request_->network_isolation_key.IsTransient()) {
     return true;
   }
@@ -2527,12 +2454,7 @@ int HttpCache::Transaction::BeginCacheRead() {
   if (method_ == "HEAD")
     FixHeadersForHead();
 
-  if (entry_->disk_entry->GetDataSize(kMetadataIndex) &&
-      !base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache)) {
-    TransitionToState(STATE_CACHE_READ_METADATA);
-  } else {
-    TransitionToState(STATE_FINISH_HEADERS);
-  }
+  TransitionToState(STATE_FINISH_HEADERS);
   return OK;
 }
 
@@ -2784,10 +2706,6 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
       validation_cause_ = VALIDATION_CAUSE_ZERO_FRESHNESS;
     } else {
       validation_cause_ = VALIDATION_CAUSE_STALE;
-      stale_entry_freshness_ = lifetimes.freshness;
-      stale_entry_age_ = response_.headers->GetCurrentAge(
-          response_.request_time, response_.response_time,
-          cache_->clock_->Now());
     }
   }
 
@@ -3105,12 +3023,7 @@ int HttpCache::Transaction::DoSetupEntryForRead() {
   if (method_ == "HEAD")
     FixHeadersForHead();
 
-  if (entry_->disk_entry->GetDataSize(kMetadataIndex) &&
-      !base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache)) {
-    TransitionToState(STATE_CACHE_READ_METADATA);
-  } else {
-    TransitionToState(STATE_FINISH_HEADERS);
-  }
+  TransitionToState(STATE_FINISH_HEADERS);
   return OK;
 }
 
@@ -3451,45 +3364,6 @@ void HttpCache::Transaction::RecordHistograms() {
       cache_entry_status_ == CacheEntryStatus::ENTRY_VALIDATED ||
       cache_entry_status_ == CacheEntryStatus::ENTRY_UPDATED;
 
-  bool stale_request =
-      validation_cause_ == VALIDATION_CAUSE_STALE &&
-      (validation_request ||
-       cache_entry_status_ == CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE);
-  int64_t freshness_periods_since_last_used = 0;
-
-  if (stale_request && !open_entry_last_used_.is_null()) {
-    // Note that we are not able to capture those transactions' histograms which
-    // when added to entry, the response was being written by another
-    // transaction because getting the last used timestamp might lead to a data
-    // race in that case. TODO(crbug.com/713354).
-
-    // For stale entries, record how many freshness periods have elapsed since
-    // the entry was last used.
-    DCHECK(!stale_entry_freshness_.is_zero());
-    base::TimeDelta time_since_use = base::Time::Now() - open_entry_last_used_;
-    freshness_periods_since_last_used =
-        (time_since_use * 1000) / stale_entry_freshness_;
-
-    if (validation_request) {
-      int64_t age_in_freshness_periods =
-          (stale_entry_age_ * 100) / stale_entry_freshness_;
-      if (cache_entry_status_ == CacheEntryStatus::ENTRY_VALIDATED) {
-        UMA_HISTOGRAM_COUNTS_1M("HttpCache.StaleEntry.Validated.Age",
-                                stale_entry_age_.InSeconds());
-        UMA_HISTOGRAM_COUNTS_1M(
-            "HttpCache.StaleEntry.Validated.AgeInFreshnessPeriods",
-            age_in_freshness_periods);
-
-      } else {
-        UMA_HISTOGRAM_COUNTS_1M("HttpCache.StaleEntry.Updated.Age",
-                                stale_entry_age_.InSeconds());
-        UMA_HISTOGRAM_COUNTS_1M(
-            "HttpCache.StaleEntry.Updated.AgeInFreshnessPeriods",
-            age_in_freshness_periods);
-      }
-    }
-  }
-
   std::string mime_type;
   HttpResponseHeaders* response_headers = GetResponseInfo()->headers.get();
   if (response_headers && response_headers->GetMimeType(&mime_type)) {
@@ -3529,6 +3403,10 @@ void HttpCache::Transaction::RecordHistograms() {
   }
 
   CACHE_STATUS_HISTOGRAMS("");
+  if (validation_request) {
+    UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause", validation_cause_,
+                              VALIDATION_CAUSE_MAX);
+  }
 
   if (cache_entry_status_ == CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE) {
     UMA_HISTOGRAM_ENUMERATION("HttpCache.CantConditionalizeCause",
@@ -3569,17 +3447,9 @@ void HttpCache::Transaction::RecordHistograms() {
 
   TimeDelta before_send_time = send_request_since_ - first_cache_access_since_;
   TimeDelta after_send_time = now - send_request_since_;
-  int64_t before_send_percent = (total_time.ToInternalValue() == 0)
-                                    ? 0
-                                    : before_send_time * 100 / total_time;
-  DCHECK_GE(before_send_percent, 0);
-  DCHECK_LE(before_send_percent, 100);
-  base::HistogramBase::Sample before_send_sample =
-      static_cast<base::HistogramBase::Sample>(before_send_percent);
 
   UMA_HISTOGRAM_TIMES("HttpCache.AccessToDone.SentRequest", total_time);
   UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend", before_send_time);
-  UMA_HISTOGRAM_PERCENTAGE("HttpCache.PercentBeforeSend", before_send_sample);
 
   // TODO(gavinp): Remove or minimize these histograms, particularly the ones
   // below this comment after we have received initial data.
@@ -3589,29 +3459,21 @@ void HttpCache::Transaction::RecordHistograms() {
                           before_send_time);
       UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.CantConditionalize",
                           after_send_time);
-      UMA_HISTOGRAM_PERCENTAGE("HttpCache.PercentBeforeSend.CantConditionalize",
-                               before_send_sample);
       break;
     }
     case CacheEntryStatus::ENTRY_NOT_IN_CACHE: {
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.NotCached", before_send_time);
       UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.NotCached", after_send_time);
-      UMA_HISTOGRAM_PERCENTAGE("HttpCache.PercentBeforeSend.NotCached",
-                               before_send_sample);
       break;
     }
     case CacheEntryStatus::ENTRY_VALIDATED: {
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.Validated", before_send_time);
       UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.Validated", after_send_time);
-      UMA_HISTOGRAM_PERCENTAGE("HttpCache.PercentBeforeSend.Validated",
-                               before_send_sample);
       break;
     }
     case CacheEntryStatus::ENTRY_UPDATED: {
       UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.Updated", after_send_time);
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.Updated", before_send_time);
-      UMA_HISTOGRAM_PERCENTAGE("HttpCache.PercentBeforeSend.Updated",
-                               before_send_sample);
       break;
     }
     default:

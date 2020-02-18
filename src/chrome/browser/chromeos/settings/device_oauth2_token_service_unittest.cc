@@ -15,7 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_delegate.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
@@ -33,7 +32,7 @@
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "google_apis/gaia/oauth2_token_service_test_util.h"
+#include "google_apis/gaia/oauth2_access_token_manager_test_util.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -42,22 +41,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
-
-namespace {
-
-class MockOAuth2TokenServiceObserver : public OAuth2TokenService::Observer {
- public:
-  MockOAuth2TokenServiceObserver();
-  ~MockOAuth2TokenServiceObserver() override;
-
-  MOCK_METHOD1(OnRefreshTokenAvailable, void(const std::string&));
-};
-
-MockOAuth2TokenServiceObserver::MockOAuth2TokenServiceObserver() {}
-
-MockOAuth2TokenServiceObserver::~MockOAuth2TokenServiceObserver() {}
-
-}  // namespace
 
 class DeviceOAuth2TokenServiceTest : public testing::Test {
  public:
@@ -89,9 +72,10 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
     content::RunAllTasksUntilIdle();
   }
 
-  std::unique_ptr<OAuth2TokenService::Request> StartTokenRequest() {
-    return oauth2_service_->StartRequest(oauth2_service_->GetRobotAccountId(),
-                                         std::set<std::string>(), &consumer_);
+  std::unique_ptr<OAuth2AccessTokenManager::Request> StartTokenRequest() {
+    return oauth2_service_->StartAccessTokenRequest(
+        oauth2_service_->GetRobotAccountId(), std::set<std::string>(),
+        &consumer_);
   }
 
   void SetUp() override {
@@ -120,12 +104,12 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   }
 
   void CreateService() {
-    auto delegate = std::make_unique<DeviceOAuth2TokenServiceDelegate>(
+    oauth2_service_.reset(new DeviceOAuth2TokenService(
         test_url_loader_factory_.GetSafeWeakWrapper(),
-        scoped_testing_local_state_.Get());
-    delegate->max_refresh_token_validation_retries_ = 0;
-    oauth2_service_.reset(new DeviceOAuth2TokenService(std::move(delegate)));
-    oauth2_service_->set_max_authorization_token_fetch_retries_for_testing(0);
+        scoped_testing_local_state_.Get()));
+    oauth2_service_->max_refresh_token_validation_retries_ = 0;
+    oauth2_service_->GetAccessTokenManager()
+        ->set_max_authorization_token_fetch_retries_for_testing(0);
   }
 
   // Utility method to set a value in Local State for the device refresh token
@@ -150,9 +134,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
     if (!RefreshTokenIsAvailable())
       return std::string();
 
-    return static_cast<DeviceOAuth2TokenServiceDelegate*>(
-               oauth2_service_->GetDelegate())
-        ->GetRefreshToken(oauth2_service_->GetRobotAccountId());
+    return oauth2_service_->GetRefreshToken();
   }
 
   // A utility method to return fake URL results, for testing the refresh token
@@ -201,7 +183,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   policy::DevicePolicyBuilder device_policy_;
   std::unique_ptr<DeviceOAuth2TokenService, TokenServiceDeleter>
       oauth2_service_;
-  TestingOAuth2TokenServiceConsumer consumer_;
+  TestingOAuth2AccessTokenManagerConsumer consumer_;
 };
 
 void DeviceOAuth2TokenServiceTest::ReturnOAuthUrlFetchResults(
@@ -252,6 +234,10 @@ void DeviceOAuth2TokenServiceTest::AssertConsumerTokensAndErrors(
 TEST_F(DeviceOAuth2TokenServiceTest, SaveEncryptedToken) {
   CreateService();
 
+  // The token service won't report there being a token if the robot account ID
+  // is not set, which would cause the expectation below to fail.
+  SetRobotAccountId("service_acct@g.com");
+
   oauth2_service_->SetAndSaveRefreshToken(
       "test-token", DeviceOAuth2TokenService::StatusCallback());
   EXPECT_EQ("test-token", GetRefreshToken());
@@ -282,7 +268,8 @@ TEST_F(DeviceOAuth2TokenServiceTest, SaveEncryptedTokenEarly) {
 
 TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Success) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetches();
   AssertConsumerTokensAndErrors(1, 0);
@@ -293,7 +280,8 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Success) {
 TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_SuccessAsyncLoad) {
   SetUpWithPendingSalt();
 
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
   PerformURLFetches();
   AssertConsumerTokensAndErrors(0, 0);
 
@@ -310,7 +298,8 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_SuccessAsyncLoad) {
 
 TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Cancel) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
   request.reset();
 
   PerformURLFetches();
@@ -325,7 +314,8 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_NoSalt) {
 
   EXPECT_FALSE(RefreshTokenIsAvailable());
 
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
   base::RunLoop().RunUntilIdle();
 
   AssertConsumerTokensAndErrors(0, 1);
@@ -334,7 +324,8 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_NoSalt) {
 TEST_F(DeviceOAuth2TokenServiceTest,
        RefreshTokenValidation_Failure_TokenInfoAccessTokenHttpError) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetchesWithResults(
       net::HTTP_UNAUTHORIZED, "",
@@ -347,7 +338,8 @@ TEST_F(DeviceOAuth2TokenServiceTest,
 TEST_F(DeviceOAuth2TokenServiceTest,
        RefreshTokenValidation_Failure_TokenInfoAccessTokenInvalidResponse) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetchesWithResults(
       net::HTTP_OK, "invalid response",
@@ -360,7 +352,8 @@ TEST_F(DeviceOAuth2TokenServiceTest,
 TEST_F(DeviceOAuth2TokenServiceTest,
        RefreshTokenValidation_Failure_TokenInfoApiCallHttpError) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetchesWithResults(
       net::HTTP_OK, GetValidTokenResponse("tokeninfo_access_token", 3600),
@@ -373,7 +366,8 @@ TEST_F(DeviceOAuth2TokenServiceTest,
 TEST_F(DeviceOAuth2TokenServiceTest,
        RefreshTokenValidation_Failure_TokenInfoApiCallInvalidResponse) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetchesWithResults(
       net::HTTP_OK, GetValidTokenResponse("tokeninfo_access_token", 3600),
@@ -386,7 +380,8 @@ TEST_F(DeviceOAuth2TokenServiceTest,
 TEST_F(DeviceOAuth2TokenServiceTest,
        RefreshTokenValidation_Failure_CloudPrintAccessTokenHttpError) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetchesWithResults(
       net::HTTP_OK, GetValidTokenResponse("tokeninfo_access_token", 3600),
@@ -399,7 +394,8 @@ TEST_F(DeviceOAuth2TokenServiceTest,
 TEST_F(DeviceOAuth2TokenServiceTest,
        RefreshTokenValidation_Failure_CloudPrintAccessTokenInvalidResponse) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetchesWithResults(
       net::HTTP_OK, GetValidTokenResponse("tokeninfo_access_token", 3600),
@@ -411,7 +407,8 @@ TEST_F(DeviceOAuth2TokenServiceTest,
 
 TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Failure_BadOwner) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   SetRobotAccountId("WRONG_service_acct@g.com");
 
@@ -425,7 +422,8 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Failure_BadOwner) {
 
 TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Retry) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetchesWithResults(
       net::HTTP_INTERNAL_SERVER_ERROR, "",
@@ -443,22 +441,28 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Retry) {
 TEST_F(DeviceOAuth2TokenServiceTest, DoNotAnnounceTokenWithoutAccountID) {
   CreateService();
 
-  testing::StrictMock<MockOAuth2TokenServiceObserver> observer;
-  oauth2_service_->AddObserver(&observer);
+  auto callback_without_id = base::BindRepeating(
+      [](const CoreAccountId& account_id) { EXPECT_TRUE(false); });
+  oauth2_service_->SetRefreshTokenAvailableCallback(
+      std::move(callback_without_id));
 
   // Make a token available during enrollment. Verify that the token is not
   // announced yet.
   oauth2_service_->SetAndSaveRefreshToken(
       "test-token", DeviceOAuth2TokenService::StatusCallback());
-  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  base::RunLoop run_loop;
+  auto callback_with_id =
+      base::BindRepeating([](base::RunLoop* loop,
+                             const CoreAccountId& account_id) { loop->Quit(); },
+                          &run_loop);
+  oauth2_service_->SetRefreshTokenAvailableCallback(
+      std::move(callback_with_id));
 
   // Also make the robot account ID available. Verify that the token is
   // announced now.
-  EXPECT_CALL(observer, OnRefreshTokenAvailable("robot@example.com"));
   SetRobotAccountId("robot@example.com");
-  testing::Mock::VerifyAndClearExpectations(&observer);
-
-  oauth2_service_->RemoveObserver(&observer);
+  run_loop.Run();
 }
 
 }  // namespace chromeos

@@ -113,6 +113,7 @@
 <translation id="2500374554657206846">Options d'enregistrement des mots de passe</translation>
 <translation id="2523363575747517183">Ce site Web a tenté à plusieurs reprises d'ouvrir une autre application.</translation>
 <translation id="2529021024822217800">Tout ouvrir</translation>
+<translation id="2562041823070056534">Envoi à <ph name="DEVICE_NAME" />…</translation>
 <translation id="2570206273416014374">Envoie des cookies et des recherches effectuées à partir de la barre d'adresse et du champ de recherche à votre moteur de recherche par défaut.</translation>
 <translation id="2572712655377361602">Les règles relatives aux appareils ont bloqué l'accès à vos photos.</translation>
 <translation id="2578571896248130439">Envoyer la page Web</translation>
@@ -150,6 +151,7 @@
 <translation id="2933759065870693102">Lampe torche</translation>
 <translation id="2958718410589002129">Mots de passe</translation>
 <translation id="2969979262385602596">Échec de la connexion. Veuillez réessayer plus tard.</translation>
+<translation id="298306318844797842">Ajouter un mode de paiement</translation>
 <translation id="2989805286512600854">Ouvrir dans un nouvel onglet</translation>
 <translation id="3037605927509011580">Aïe aïe aïe</translation>
 <translation id="3112556859945124369">Marquer…</translation>
@@ -313,6 +315,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="5556459405103347317">Actualiser</translation>
 <translation id="5614553682702429503">Enregistrer le mot de passe ?</translation>
 <translation id="5626245204502895507">Impossible de télécharger le fichier pour le moment.</translation>
+<translation id="5631164295104953411">Ajouter un mode de paiement</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
@@ -464,6 +467,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7772032839648071052">Confirmer la phrase secrète</translation>
 <translation id="7781829728241885113">Hier</translation>
 <translation id="778855399387580014">Lancer une recherche dans un nouvel onglet Chrome.</translation>
+<translation id="7791543448312431591">Ajouter</translation>
 <translation id="780301667611848630">Non merci</translation>
 <translation id="7840771868269352570">Les éléments sélectionnés seront supprimés.</translation>
 <translation id="7856733331829174190">Téléchargement impossible</translation>
@@ -477,6 +481,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="7971521879845308059">Bloquer les pop-ups</translation>
 <translation id="7982789257301363584">Réseau</translation>
+<translation id="8007420562015504427">Recherche en mode Navigation privée</translation>
 <translation id="8019783059653722575">Cela vous permet d'enregistrer et d'importer des photos.</translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>
 <translation id="8023878949384262191">Développe la section.</translation>
@@ -491,6 +496,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8225985093977202398">Img/fich. en cache</translation>
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8281781826761538115">Par défaut : <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8319076807703933069">Nouvelle recherche</translation>
 <translation id="8328777765163860529">Tout fermer</translation>
 <translation id="8381750437846184350">Contrôlez la façon dont Google utilise votre historique de navigation pour personnaliser la recherche, les annonces et d'autres services Google.</translation>
 <translation id="8407669440184693619">Aucun mot de passe trouvé pour ce site</translation>
@@ -507,7 +513,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8532105204136943229">Année d'expiration</translation>
 <translation id="8534481786647257214">Post Google+ publié.</translation>
 <translation id="8548878600947630424">Rechercher sur la page…</translation>
-<translation id="8583866649835978847">Envoyez l'onglet <ph name="TITLE" /> sur un de vos appareils.</translation>
 <translation id="8605219856220328675">Fermer l'onglet</translation>
 <translation id="8620640915598389714">Modifier</translation>
 <translation id="8636825310635137004">Activez la synchronisation pour accéder à vos onglets sur vos autres appareils.</translation>
@@ -530,7 +535,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8976382372951310360">Aide</translation>
 <translation id="8981454092730389528">Commandes Google relatives à l'activité</translation>
 <translation id="8985320356172329008">Connecté à Google en tant que</translation>
-<translation id="9016406938567631235">Envoi…</translation>
 <translation id="902659348151742535">Google peut utiliser votre historique de navigation pour personnaliser la recherche, les annonces et d'autres services Google.</translation>
 <translation id="9034759925968272072">Vous ne serez pas déconnecté de votre compte Google. Celui-ci conserve peut-être d'autres formes d'historique de navigation sur la page <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Bande passante</translation>

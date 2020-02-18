@@ -21,8 +21,8 @@
 #include "components/reading_list/core/reading_list_model_observer.h"
 #include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
-#include "ios/web/public/web_task_traits.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
 
@@ -38,6 +38,7 @@ enum ShareExtensionItemReceived {
   CANCELLED_ENTRY,
   READINGLIST_ENTRY,
   BOOKMARK_ENTRY,
+  OPEN_IN_CHROME_ENTRY,
   SHARE_EXTENSION_ITEM_RECEIVED_COUNT
 };
 
@@ -194,7 +195,18 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 }
 
 - (BOOL)receivedData:(NSData*)data withCompletion:(ProceduralBlock)completion {
-  id entryID = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+  NSError* error = nil;
+  NSKeyedUnarchiver* unarchiver =
+      [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:&error];
+  if (!unarchiver || error) {
+    DLOG(WARNING) << "Error creating share extension item unarchiver: "
+                  << base::SysNSStringToUTF8([error description]);
+    return NO;
+  }
+
+  unarchiver.requiresSecureCoding = NO;
+
+  id entryID = [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
   NSDictionary* entry = base::mac::ObjCCast<NSDictionary>(entryID);
   if (!entry) {
     if (completion) {
@@ -267,6 +279,12 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
         LogHistogramReceivedItem(BOOKMARK_ENTRY);
         _bookmarkModel->AddURL(_bookmarkModel->mobile_node(), 0,
                                base::UTF8ToUTF16(entryTitle), entryURL);
+        break;
+      }
+      case app_group::OPEN_IN_CHROME_ITEM: {
+        LogHistogramReceivedItem(OPEN_IN_CHROME_ENTRY);
+        // Open URL command is sent directly by the extension. No processing is
+        // needed here.
         break;
       }
     }

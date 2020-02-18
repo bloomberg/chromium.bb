@@ -75,7 +75,7 @@ def RecordSubmissionMetrics(action_history, submitted_change_strategies):
       bot_type=constants.CQ)
   exonerations = action_history.GetExonerations()
 
-  for change, strategy in submitted_change_strategies.iteritems():
+  for change, strategy in submitted_change_strategies.items():
     strategy = strategy or ''
     handling_time = clactions.GetCLHandlingTime(change, action_history)
     wall_clock_time = clactions.GetCLWallClockTime(change, action_history)

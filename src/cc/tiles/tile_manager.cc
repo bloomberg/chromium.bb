@@ -402,9 +402,7 @@ TileManager::TileManager(
                               base::Unretained(this))),
       has_scheduled_tile_tasks_(false),
       prepare_tiles_count_(0u),
-      next_tile_id_(0u),
-      task_set_finished_weak_ptr_factory_(this),
-      ready_to_draw_callback_weak_ptr_factory_(this) {}
+      next_tile_id_(0u) {}
 
 TileManager::~TileManager() {
   FinishTasksAndCleanUp();
@@ -549,8 +547,6 @@ bool TileManager::PrepareTiles(
 
   // Schedule tile tasks.
   ScheduleTasks(std::move(prioritized_work));
-
-  image_controller_.paint_worklet_image_cache()->NotifyDidPrepareTiles();
 
   TRACE_EVENT_INSTANT1("cc", "DidPrepareTiles", TRACE_EVENT_SCOPE_THREAD,
                        "state", BasicStateAsValue());
@@ -779,8 +775,12 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
     // If we couldn't fit the tile into our current memory limit, then we're
     // done.
     if (!memory_usage_is_within_limit) {
-      if (tile_is_needed_now)
+      if (tile_is_needed_now) {
+        LOG(ERROR) << "WARNING: tile memory limits exceeded, some content may "
+                      "not draw";
+
         had_enough_memory_to_schedule_tiles_needed_now = false;
+      }
       all_tiles_that_need_to_be_rasterized_are_scheduled_ = false;
       break;
     }
@@ -1190,10 +1190,8 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       prepare_tiles_count_, prioritized_tile.priority().priority_bin,
       ImageDecodeCache::TaskType::kInRaster);
   bool has_at_raster_images = false;
-  image_controller_.ConvertDataImagesToTasks(
-      &sync_decoded_images, &decode_tasks, &has_at_raster_images, tracing_info);
-  image_controller_.ConvertPaintWorkletImagesToTask(&sync_decoded_images,
-                                                    &decode_tasks);
+  image_controller_.ConvertImagesToTasks(&sync_decoded_images, &decode_tasks,
+                                         &has_at_raster_images, tracing_info);
   // Notify |decoded_image_tracker_| after |image_controller_| to ensure we've
   // taken new refs on the images before releasing the predecode API refs.
   decoded_image_tracker_.OnImagesUsedInDraw(sync_decoded_images);
@@ -1246,8 +1244,13 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
 
   PlaybackImageProvider image_provider(image_controller_.cache(),
                                        raster_color_space, std::move(settings));
+  // We make a deliberate copy of the PaintWorklet map here, as the
+  // PictureLayerImpl's map could be mutated or destroyed whilst raster from an
+  // earlier snapshot is still ongoing on the raster worker threads.
+  PaintWorkletRecordMap paint_worklet_records =
+      prioritized_tile.GetPaintWorkletRecords();
   PaintWorkletImageProvider paint_worklet_image_provider(
-      image_controller_.paint_worklet_image_cache());
+      std::move(paint_worklet_records));
   DispatchingImageProvider dispatching_image_provider(
       std::move(image_provider), std::move(paint_worklet_image_provider));
 
@@ -1709,11 +1712,6 @@ TileManager::ActivationStateAsValue() {
   auto state = std::make_unique<base::trace_event::TracedValue>();
   ActivationStateAsValueInto(state.get());
   return std::move(state);
-}
-
-void TileManager::SetPaintWorkletLayerPainter(
-    std::unique_ptr<PaintWorkletLayerPainter> painter) {
-  image_controller_.SetPaintWorkletLayerPainter(std::move(painter));
 }
 
 void TileManager::ActivationStateAsValueInto(

@@ -38,8 +38,8 @@ test("device_unittests") {
     "bluetooth/bluetooth_remote_gatt_service_unittest.cc",
     "bluetooth/bluetooth_service_record_win_unittest.cc",
     "bluetooth/bluetooth_task_manager_win_unittest.cc",
-    "bluetooth/bluetooth_uuid_unittest.cc",
     "bluetooth/device_unittest.cc",
+    "bluetooth/public/cpp/bluetooth_uuid_unittest.cc",
     "bluetooth/string_util_icu_unittest.cc",
     "bluetooth/test/bluetooth_gatt_server_test.cc",
     "bluetooth/test/bluetooth_gatt_server_test.h",
@@ -104,6 +104,7 @@ test("device_unittests") {
     "fido/u2f_sign_operation_unittest.cc",
     "fido/win/type_conversions_unittest.cc",
     "gamepad/abstract_haptic_gamepad_unittest.cc",
+    "gamepad/gamepad_blocklist_unittest.cc",
     "gamepad/gamepad_id_list_unittest.cc",
     "gamepad/gamepad_provider_unittest.cc",
     "gamepad/gamepad_service_unittest.cc",
@@ -322,7 +323,6 @@ test("device_unittests") {
       "vr/util/fps_meter_unittest.cc",
       "vr/util/sliding_average_unittest.cc",
       "vr/vr_device_base_unittest.cc",
-      "vr/vr_display_impl_unittest.cc",
     ]
 
     if (is_android) {
@@ -361,7 +361,6 @@ if (is_android) {
 
   generate_jni("bluetooth_test_jni_headers") {
     sources = bluetooth_java_sources_needing_jni
-    jni_package = "bluetooth"
   }
 
   android_library("bluetooth_test_java") {

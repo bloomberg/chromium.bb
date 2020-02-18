@@ -1,17 +1,31 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
 #!C:\strawberry\perl\bin\perl.exe 
-#line 15
+#line 29
 
 use strict;
 use Module::Build 0.25;
@@ -175,13 +189,13 @@ Koenig (C<CPAN::Config>), Jon Swartz (C<HTML::Mason::Config>), Andy
 Wardley (C<Template::Config>), and Larry Wall (perl's own Config.pm)
 have developed independently.
 
-The configuration system emplyed here was developed in the context of
+The configuration system employed here was developed in the context of
 C<Module::Build>.  Under this system, configuration information for a
 module C<Foo>, for example, is stored in a module called
 C<Foo::ConfigData>) (I would have called it C<Foo::Config>, but that
 was taken by all those other systems mentioned in the previous
 paragraph...).  These C<...::ConfigData> modules contain the
-configuration data, as well as publically accessible methods for
+configuration data, as well as publicly accessible methods for
 querying and setting (yes, actually re-writing) the configuration
 data.  The C<config_data> script (whose docs you are currently
 reading) is merely a front-end for those methods.  If you wish, you

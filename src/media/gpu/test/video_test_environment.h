@@ -42,6 +42,9 @@ class VideoTestEnvironment : public ::testing::Environment {
   base::FilePath::StringType GetTestName() const;
 
  private:
+  // Whether the test environment has been initialized.
+  bool initialized_ = false;
+
   // An exit manager is required to run callbacks on shutdown.
   base::AtExitManager at_exit_manager;
 

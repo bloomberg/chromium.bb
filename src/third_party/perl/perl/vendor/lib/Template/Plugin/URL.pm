@@ -76,6 +76,7 @@ sub args {
 sub escape {
     my $toencode = shift;
     return undef unless defined($toencode);
+    utf8::encode($toencode);
     $toencode=~s/([^a-zA-Z0-9_.-])/uc sprintf("%%%02x",ord($1))/eg;
     return $toencode;
 }

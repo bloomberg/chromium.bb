@@ -18,8 +18,8 @@ limitation, you may add your own input handler to open, read and close
 particular types of locations or URI classes. Using this input callback
 handlers, you can handle your own custom URI schemes for example.
 
-The input callbacks are used whenever LibXML has to get something other than
-externally parsed entities from somewhere. They are implemented using a
+The input callbacks are used whenever XML::LibXML has to get something other
+than externally parsed entities from somewhere. They are implemented using a
 callback stack on the Perl layer in analogy to libxml2's native callback stack.
 
 The XML::LibXML::InputCallback class transparently registers the input
@@ -73,7 +73,7 @@ read callback, the I<<<<<< close >>>>>> callback will be called to close the str
 Callback groups are implemented as a stack (Array), each entry holds a
 reference to an array of the callbacks. For the libxml2 library, the
 XML::LibXML::InputCallback callback implementation appears as one single
-callback group. The Perl implementation however allows to manage different
+callback group. The Perl implementation however allows one to manage different
 callback stacks on a per libxml2-parser basis.
 
 
@@ -273,14 +273,14 @@ MyScheme::Handler object that responds to methods similar to an IO::Handle.
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -291,3 +291,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

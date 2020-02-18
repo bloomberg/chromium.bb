@@ -26,7 +26,7 @@
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
-#include "services/network/resource_scheduler.h"
+#include "services/network/resource_scheduler/resource_scheduler.h"
 
 namespace content {
 namespace {
@@ -117,8 +117,8 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                       base::SequencedTaskRunnerHandle::Get()),
       url_loader_client_(std::move(url_loader_client)),
-      report_transfer_size_async_timer_(std::make_unique<base::OneShotTimer>()),
-      weak_factory_(this) {
+      report_transfer_size_async_timer_(
+          std::make_unique<base::OneShotTimer>()) {
   DCHECK(IsResourceTypeFrame(resource_type) ||
          resource_type == ResourceType::kServiceWorker ||
          !(url_loader_options_ &

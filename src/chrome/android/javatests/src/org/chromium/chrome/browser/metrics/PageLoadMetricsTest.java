@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -126,6 +127,7 @@ public class PageLoadMetricsTest {
 
     @Test
     @SmallTest
+    @FlakyTest(message = "crbug.com/983804")
     public void testPageLoadMetricEmitted() throws InterruptedException {
         Assert.assertFalse("Tab shouldn't be loading anything before we add observer",
                 mActivityTestRule.getActivity().getActivityTab().isLoading());
@@ -142,6 +144,7 @@ public class PageLoadMetricsTest {
 
     @Test
     @SmallTest
+    @FlakyTest(message = "crbug.com/986025")
     public void testPageLoadMetricNavigationIdSetCorrectly() throws InterruptedException {
         PageLoadMetricsTestObserver metricsObserver = new PageLoadMetricsTestObserver();
         TestThreadUtils.runOnUiThreadBlockingNoException(

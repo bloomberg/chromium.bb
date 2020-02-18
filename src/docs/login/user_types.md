@@ -18,8 +18,8 @@ Regular users that were registered using their GAIA account.
 
 Users that logged in using
 *   a child account - an account designated for children under the age of 13.
-*   a Geller account - an account with parental supervision designated for
-    children between ages 13 and 18.
+*   a Geller account - an account with parental supervision that has no age
+    restrictions.
 
 In order to add a child user to the device, the user has to go through an
 adapted GAIA flow, which also requires their parent to authenticate.
@@ -38,13 +38,13 @@ During child login, user session start will be delayed up to 10 seconds until
 the user's policies have been refreshed (using the user's OAuth token). This
 might cause issues for tests that include child user login, as it may add
 unnecessary time to the test runtime. To avoid this, tests should:
-*   Set up `LocalTestServerMixin` to serve a policy for the test user.
+*   Set up `LocalPolicyTestServerMixin` to serve a policy for the test user.
     *   This should be done even if a cached policy is set up using
         `UserPolicyMixin`.
     *   Note that `UserPolicyMixin` propagates policy changes to
         `LocalPolicyTestServerMixin` optionally provided in its constructor.
     *   For testing adding child users, directly setting up
-        `LocalPolicyTestsServer`, to avoid setting user's cached policy before
+        `LocalPolicyTestServer`, to avoid setting user's cached policy before
         they ever logged in, might be more appropriate.
 *   Set up `FakeGaiaMixin` to serve the child user's auth tokens.
     *   This should be done even if the test does not use fake gaia for login,

@@ -163,6 +163,8 @@ int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_TIME_REMAINING_DISPLAY_HELP;
     case WebLocalizedString::kAXMediaOverflowButtonHelp:
       return IDS_AX_MEDIA_OVERFLOW_BUTTON_HELP;
+    case WebLocalizedString::kAXMediaTouchLessPlayPauseAction:
+      return IDS_AX_MEDIA_TOUCHLESS_PLAY_PAUSE_ACTION;
     case WebLocalizedString::kAXMediaTouchLessSeekAction:
       return IDS_AX_MEDIA_TOUCHLESS_SEEK_ACTION;
     case WebLocalizedString::kAXMediaTouchLessVolumeAction:
@@ -446,6 +448,10 @@ const DataResource kDataResources[] = {
     {"win.css", IDR_UASTYLE_THEME_WIN_CSS, ui::SCALE_FACTOR_NONE, true},
     {"win_quirks.css", IDR_UASTYLE_THEME_WIN_QUIRKS_CSS, ui::SCALE_FACTOR_NONE,
      true},
+    {"controls_refresh.css", IDR_UASTYLE_THEME_CONTROLS_REFRESH_CSS,
+     ui::SCALE_FACTOR_NONE, true},
+    {"forced_colors.css", IDR_UASTYLE_THEME_FORCED_COLORS_CSS,
+     ui::SCALE_FACTOR_NONE, true},
     {"svg.css", IDR_UASTYLE_SVG_CSS, ui::SCALE_FACTOR_NONE, true},
     {"mathml.css", IDR_UASTYLE_MATHML_CSS, ui::SCALE_FACTOR_NONE, true},
     {"fullscreen.css", IDR_UASTYLE_FULLSCREEN_CSS, ui::SCALE_FACTOR_NONE, true},
@@ -489,10 +495,14 @@ const DataResource kDataResources[] = {
      true},
     {"suggestionPicker.css", IDR_SUGGESTION_PICKER_CSS, ui::SCALE_FACTOR_NONE,
      true},
+    {"color_picker_common.js", IDR_COLOR_PICKER_COMMON_JS,
+     ui::SCALE_FACTOR_NONE, true},
     {"colorSuggestionPicker.js", IDR_COLOR_SUGGESTION_PICKER_JS,
      ui::SCALE_FACTOR_NONE, true},
     {"colorSuggestionPicker.css", IDR_COLOR_SUGGESTION_PICKER_CSS,
      ui::SCALE_FACTOR_NONE, true},
+    {"color_picker.js", IDR_COLOR_PICKER_JS, ui::SCALE_FACTOR_NONE, true},
+    {"color_picker.css", IDR_COLOR_PICKER_CSS, ui::SCALE_FACTOR_NONE, true},
 #endif
     {"input_alert.svg", IDR_VALIDATION_BUBBLE_ICON, ui::SCALE_FACTOR_NONE,
      true},
@@ -654,38 +664,6 @@ WebThemeEngine* BlinkPlatformImpl::ThemeEngine() {
 
 bool BlinkPlatformImpl::IsURLSupportedForAppCache(const blink::WebURL& url) {
   return IsSchemeSupportedForAppCache(url);
-}
-
-base::File BlinkPlatformImpl::DatabaseOpenFile(
-    const blink::WebString& vfs_file_name,
-    int desired_flags) {
-  return base::File();
-}
-
-int BlinkPlatformImpl::DatabaseDeleteFile(const blink::WebString& vfs_file_name,
-                                          bool sync_dir) {
-  return -1;
-}
-
-int32_t BlinkPlatformImpl::DatabaseGetFileAttributes(
-    const blink::WebString& vfs_file_name) {
-  return 0;
-}
-
-int64_t BlinkPlatformImpl::DatabaseGetFileSize(
-    const blink::WebString& vfs_file_name) {
-  return 0;
-}
-
-int64_t BlinkPlatformImpl::DatabaseGetSpaceAvailableForOrigin(
-    const blink::WebSecurityOrigin& origin) {
-  return 0;
-}
-
-bool BlinkPlatformImpl::DatabaseSetFileSize(
-    const blink::WebString& vfs_file_name,
-    int64_t size) {
-  return false;
 }
 
 size_t BlinkPlatformImpl::MaxDecodedImageBytes() {

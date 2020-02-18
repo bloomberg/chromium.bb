@@ -12,7 +12,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/common/google_util.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
@@ -83,8 +83,7 @@ PromoService::PromoService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     GoogleURLTracker* google_url_tracker)
     : url_loader_factory_(url_loader_factory),
-      google_url_tracker_(google_url_tracker),
-      weak_ptr_factory_(this) {}
+      google_url_tracker_(google_url_tracker) {}
 
 PromoService::~PromoService() = default;
 
@@ -131,6 +130,8 @@ void PromoService::Refresh() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GetApiUrl();
   resource_request->allow_credentials = false;
+  resource_request->request_initiator =
+      url::Origin::Create(GURL(chrome::kChromeUINewTabURL));
 
   simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                     traffic_annotation);
@@ -159,8 +160,7 @@ void PromoService::OnLoadDone(std::unique_ptr<std::string> response_body) {
   }
 
   data_decoder::SafeJsonParser::Parse(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      response,
+      content::GetSystemConnector(), response,
       base::BindOnce(&PromoService::OnJsonParsed,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&PromoService::OnJsonParseFailed,

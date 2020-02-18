@@ -65,6 +65,7 @@
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/types/scroll_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/native_widget_types.h"
@@ -101,9 +102,6 @@ class Range;
 
 namespace ui {
 struct DidOverscrollParams;
-namespace input_types {
-enum class ScrollGranularity;
-}
 }
 
 namespace content {
@@ -331,8 +329,7 @@ class CONTENT_EXPORT RenderWidget
 
   // LayerTreeViewDelegate
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override;
-  void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
-                                         bool has_scrolled_by_touch) override;
+  void RecordManipulationTypeCounts(cc::ManipulationInfo info) override;
   void SendOverscrollEventFromImplSide(
       const gfx::Vector2dF& overscroll_delta,
       cc::ElementId scroll_latched_element_id) override;
@@ -386,6 +383,7 @@ class CONTENT_EXPORT RenderWidget
   void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
   void ScheduleAnimation() override;
   void SetShowFPSCounter(bool show) override;
+  void SetShowLayoutShiftRegions(bool) override;
   void SetShowPaintRects(bool) override;
   void SetShowDebugBorders(bool) override;
   void SetShowScrollBottleneckRects(bool) override;
@@ -420,8 +418,9 @@ class CONTENT_EXPORT RenderWidget
   void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;
   void ShowVirtualKeyboardOnElementFocus() override;
   void ConvertViewportToWindow(blink::WebRect* rect) override;
+  void ConvertViewportToWindow(blink::WebFloatRect* rect) override;
   void ConvertWindowToViewport(blink::WebFloatRect* rect) override;
-  bool RequestPointerLock() override;
+  bool RequestPointerLock(blink::WebLocalFrame* requester_frame) override;
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
   void StartDragging(network::mojom::ReferrerPolicy policy,
@@ -431,8 +430,9 @@ class CONTENT_EXPORT RenderWidget
                      const gfx::Point& image_offset) override;
   void SetTouchAction(cc::TouchAction touch_action) override;
   void RequestUnbufferedInputEvents() override;
-  void HasPointerRawUpdateEventHandlers(bool has_handlers) override;
-  void HasTouchEventHandlers(bool has_handlers) override;
+  void SetHasPointerRawUpdateEventHandlers(bool has_handlers) override;
+  void SetHasTouchEventHandlers(bool has_handlers) override;
+  void SetHaveScrollEventHandlers(bool have_handlers) override;
   void SetNeedsLowLatencyInput(bool) override;
   void SetNeedsUnbufferedInputForDebugger(bool) override;
   void AnimateDoubleTapZoomInMainFrame(const blink::WebPoint& point,
@@ -456,9 +456,29 @@ class CONTENT_EXPORT RenderWidget
                                bool use_anchor,
                                float new_page_scale,
                                double duration_sec) override;
+  void ForceRecalculateRasterScales() override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
   void NotifySwapTime(ReportTimeCallback callback) override;
+  void SetEventListenerProperties(
+      cc::EventListenerClass event_class,
+      cc::EventListenerProperties properties) override;
+  cc::EventListenerProperties EventListenerProperties(
+      cc::EventListenerClass event_class) const override;
+  std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate()
+      override;
+  void StartDeferringCommits(base::TimeDelta timeout) override;
+  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
+
+  // Registers a SwapPromise to report presentation time and possibly swap time.
+  // If |swap_time_callback| is not a null callback, it would be called once
+  // swap happens. |presentation_time_callback| will be called some time after
+  // pixels are presented on screen. Swap time is needed only in tests and
+  // production code uses |NotifySwapTime()| above which calls this one passing
+  // a null callback as |swap_time_callback|.
+  void NotifySwapAndPresentationTime(
+      ReportTimeCallback swap_time_callback,
+      ReportTimeCallback presentation_time_callback);
 
   // Override point to obtain that the current input method state and caret
   // position.
@@ -553,7 +573,6 @@ class CONTENT_EXPORT RenderWidget
   // Helper to convert |point| using ConvertWindowToViewport().
   gfx::PointF ConvertWindowPointToViewport(const gfx::PointF& point);
   gfx::Point ConvertWindowPointToViewport(const gfx::Point& point);
-  uint32_t GetContentSourceId();
   void DidNavigate();
 
   bool auto_resize_mode() const { return auto_resize_mode_; }
@@ -583,8 +602,9 @@ class CONTENT_EXPORT RenderWidget
                                          gfx::PointF* local_point);
 
   // Widget mojom overrides.
-  void SetupWidgetInputHandler(mojom::WidgetInputHandlerRequest request,
-                               mojom::WidgetInputHandlerHostPtr host) override;
+  void SetupWidgetInputHandler(
+      mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
+      mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) override;
 
   scoped_refptr<MainThreadEventQueue> GetInputEventQueue();
 
@@ -1145,19 +1165,6 @@ class CONTENT_EXPORT RenderWidget
   float page_scale_factor_from_mainframe_ = 1.f;
   bool is_pinch_gesture_active_from_mainframe_ = false;
 
-  // This is initialized to zero and is incremented on each non-same-page
-  // navigation commit by RenderFrameImpl. At that time it is sent to the
-  // compositor so that it can tag compositor frames, and RenderFrameImpl is
-  // responsible for sending it to the browser process to be used to match
-  // each compositor frame to the most recent page navigation before it was
-  // generated.
-  // This only applies to main frames, and is not touched for subframe
-  // RenderWidgets, where there is no concern around displaying unloaded
-  // content.
-  // TODO(kenrb, fsamuel): This should be removed when SurfaceIDs can be used
-  // to replace it. See https://crbug.com/695579.
-  uint32_t current_content_source_id_;
-
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
 
   mojo::Binding<mojom::Widget> widget_binding_;
@@ -1169,6 +1176,11 @@ class CONTENT_EXPORT RenderWidget
   base::Optional<bool> has_touch_handlers_;
 
   uint32_t last_capture_sequence_number_ = 0u;
+
+  // State that is saved in OnUpdateRenderThrottlingStatus() before being
+  // propagated to the frame widget.
+  bool is_throttled_ = false;
+  bool subtree_throttled_ = false;
 
   // Used to generate a callback for the reply when making the warmup frame
   // sink, and to cancel that callback if the warmup is aborted.

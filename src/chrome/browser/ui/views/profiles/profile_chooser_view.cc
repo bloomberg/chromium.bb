@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -43,12 +45,12 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/vector_icons/vector_icons.h"
 #include "net/base/url_util.h"
-#include "services/identity/public/cpp/accounts_mutator.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -84,14 +86,24 @@ BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
 
 void NavigateToGoogleAccountPage(Profile* profile, const std::string& email) {
   // Create a URL so that the account chooser is shown if the account with
-  // |email| is not signed into the web.
+  // |email| is not signed into the web. Include a UTM parameter to signal the
+  // source of the navigation.
+  GURL google_account = net::AppendQueryParameter(
+      GURL(chrome::kGoogleAccountURL), "utm_source", "chrome-profile-chooser");
+
   GURL url(chrome::kGoogleAccountChooserURL);
   url = net::AppendQueryParameter(url, "Email", email);
-  url = net::AppendQueryParameter(url, "continue", chrome::kGoogleAccountURL);
+  url = net::AppendQueryParameter(url, "continue", google_account.spec());
 
   NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
+}
+
+bool AreSigninCookiesClearedOnExit(Profile* profile) {
+  SigninClient* client =
+      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile);
+  return client->AreSigninCookiesDeletedOnExit();
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -158,6 +170,7 @@ void ProfileChooserView::Reset() {
   addresses_button_ = nullptr;
   signout_button_ = nullptr;
   manage_google_account_button_ = nullptr;
+  cookies_cleared_on_exit_label_ = nullptr;
 }
 
 void ProfileChooserView::Init() {
@@ -170,7 +183,7 @@ void ProfileChooserView::Init() {
   avatar_menu_->RebuildMenu();
 
   Profile* profile = browser()->profile();
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
 
   if (identity_manager)
@@ -254,7 +267,7 @@ void ProfileChooserView::OnWidgetClosing(views::Widget* /*widget*/) {
   // Unsubscribe from everything early so that the updates do not reach the
   // bubble and change its state.
   avatar_menu_.reset();
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(browser()->profile());
   if (identity_manager)
     identity_manager->RemoveObserver(this);
@@ -331,7 +344,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
                 IdentityManagerFactory::GetForProfile(browser()->profile())
                     ->GetPrimaryAccountMutator()) {
           account_mutator->ClearPrimaryAccount(
-              identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+              signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
               signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
               signin_metrics::SignoutDelete::IGNORE_METRIC);
           ShowViewOrOpenTab(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
@@ -393,6 +406,17 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
       NOTREACHED();
     }
   }
+}
+
+void ProfileChooserView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                const gfx::Range& range,
+                                                int event_flags) {
+  DCHECK_EQ(cookies_cleared_on_exit_label_, label);
+  chrome::ShowSettingsSubPage(browser(), chrome::kContentSettingsSubPage +
+                                             std::string("/") +
+                                             chrome::kCookieSettingsSubPage);
+  base::RecordAction(
+      base::UserMetricsAction("ProfileChooser_CookieSettingsClicked"));
 }
 
 void ProfileChooserView::AddProfileChooserView(AvatarMenu* avatar_menu) {
@@ -491,6 +515,12 @@ void ProfileChooserView::AddDiceSyncErrorView(
 
   AddMenuGroup();
 
+  if (show_sync_paused_ui &&
+      base::FeatureList::IsEnabled(
+          features::kShowSyncPausedReasonCookiesClearedOnExit) &&
+      AreSigninCookiesClearedOnExit(browser()->profile())) {
+    AddSyncPausedReasonCookiesClearedOnExit();
+  }
   // Add profile card.
   auto current_profile_photo = std::make_unique<BadgedProfilePhoto>(
       show_sync_paused_ui
@@ -520,6 +550,38 @@ void ProfileChooserView::AddDiceSyncErrorView(
     base::RecordAction(
         base::UserMetricsAction("ProfileChooser_SignInAgainDisplayed"));
   }
+}
+
+void ProfileChooserView::AddSyncPausedReasonCookiesClearedOnExit() {
+  size_t offset = 0;
+  std::unique_ptr<views::StyledLabel> sync_paused_reason =
+      std::make_unique<views::StyledLabel>(base::string16(), this);
+
+  base::string16 link_text = l10n_util::GetStringUTF16(
+      IDS_SYNC_PAUSED_REASON_CLEAR_COOKIES_ON_EXIT_LINK_TEXT);
+
+  base::string16 message = l10n_util::GetStringFUTF16(
+      IDS_SYNC_PAUSED_REASON_CLEAR_COOKIES_ON_EXIT, link_text, &offset);
+
+  sync_paused_reason->SetText(message);
+  // Mark the link text as link.
+  sync_paused_reason->AddStyleRange(
+      gfx::Range(offset, offset + link_text.length()),
+      views::StyledLabel::RangeStyleInfo::CreateForLink());
+
+  // Mark the rest of the text as secondary text.
+  views::StyledLabel::RangeStyleInfo message_style;
+  message_style.text_style = STYLE_SECONDARY;
+  gfx::Range before_link_range(0, offset);
+  if (!before_link_range.is_empty())
+    sync_paused_reason->AddStyleRange(before_link_range, message_style);
+
+  gfx::Range after_link_range(offset + link_text.length(), message.length());
+  if (!after_link_range.is_empty())
+    sync_paused_reason->AddStyleRange(after_link_range, message_style);
+
+  cookies_cleared_on_exit_label_ = sync_paused_reason.get();
+  AddViewItem(std::move(sync_paused_reason));
 }
 
 void ProfileChooserView::AddCurrentProfileView(
@@ -719,7 +781,7 @@ void ProfileChooserView::AddOptionsView(bool display_lock,
   base::string16 text = l10n_util::GetStringUTF16(
       is_guest ? IDS_PROFILES_EXIT_GUEST : IDS_PROFILES_MANAGE_USERS_BUTTON);
   const gfx::VectorIcon& settings_icon =
-      is_guest ? kCloseAllIcon : kSettingsIcon;
+      is_guest ? kCloseAllIcon : vector_icons::kSettingsIcon;
   users_button_ = CreateAndAddButton(CreateVectorIcon(settings_icon), text);
 
   if (display_lock) {

@@ -100,7 +100,7 @@ void PaintedScrollbarLayerImpl::AppendQuads(
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   PopulateScaledSharedQuadState(shared_quad_state, internal_contents_scale_,
-                                internal_contents_scale_, contents_opaque());
+                                contents_opaque());
 
   AppendDebugBorderQuad(render_pass, gfx::Rect(internal_content_bounds_),
                         shared_quad_state, append_quads_data);
@@ -129,7 +129,7 @@ void PaintedScrollbarLayerImpl::AppendQuads(
                  thumb_resource_id, premultipled_alpha, uv_top_left,
                  uv_bottom_right, SK_ColorTRANSPARENT, opacity, flipped,
                  nearest_neighbor, /*secure_output_only=*/false,
-                 ui::ProtectedVideoType::kClear);
+                 gfx::ProtectedVideoType::kClear);
     ValidateQuadResources(quad);
   }
 
@@ -149,7 +149,7 @@ void PaintedScrollbarLayerImpl::AppendQuads(
                  track_resource_id, premultipled_alpha, uv_top_left,
                  uv_bottom_right, SK_ColorTRANSPARENT, opacity, flipped,
                  nearest_neighbor, /*secure_output_only=*/false,
-                 ui::ProtectedVideoType::kClear);
+                 gfx::ProtectedVideoType::kClear);
     ValidateQuadResources(quad);
   }
 }

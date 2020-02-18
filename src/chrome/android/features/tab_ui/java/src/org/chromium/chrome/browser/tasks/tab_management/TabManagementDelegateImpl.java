@@ -17,6 +17,13 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tasks.TasksSurface;
+import org.chromium.chrome.browser.tasks.TasksSurfaceCoordinator;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.features.start_surface.StartSurface;
+import org.chromium.chrome.features.start_surface.StartSurfaceCoordinator;
+import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 
 /**
  * Impl class that will resolve components for tab management.
@@ -24,28 +31,52 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 @UsedByReflection("TabManagementModule")
 public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
-    public Layout createGTSLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, GridTabSwitcher gridTabSwitcher) {
-        return new GridTabSwitcherLayout(context, updateHost, renderHost, gridTabSwitcher);
+    public TasksSurface createTasksSurface(ChromeActivity activity) {
+        return new TasksSurfaceCoordinator(activity);
     }
 
     @Override
-    public GridTabSwitcher createGridTabSwitcher(ChromeActivity activity) {
+    public TabSwitcher createGridTabSwitcher(ChromeActivity activity, ViewGroup containerView) {
         if (UmaSessionStats.isMetricsServiceAvailable()) {
             UmaSessionStats.registerSyntheticFieldTrial(
                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + SYNTHETIC_TRIAL_POSTFIX,
                     "Downloaded_Enabled");
         }
-        return new GridTabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
-                activity.getToolbarManager(), activity.getTabModelSelector(),
-                activity.getTabContentManager(), activity.getCompositorViewHolder(),
-                activity.getFullscreenManager(), activity,
-                activity.getMenuOrKeyboardActionController(), activity::onBackPressed);
+        return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
+                activity.getTabModelSelector(), activity.getTabContentManager(),
+                activity.getCompositorViewHolder(), activity.getFullscreenManager(), activity,
+                activity.getMenuOrKeyboardActionController(), activity, containerView,
+                TabListCoordinator.TabListMode.GRID);
+    }
+
+    @Override
+    public TabSwitcher createCarouselTabSwitcher(ChromeActivity activity, ViewGroup containerView) {
+        return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
+                activity.getTabModelSelector(), activity.getTabContentManager(),
+                activity.getCompositorViewHolder(), activity.getFullscreenManager(), activity,
+                activity.getMenuOrKeyboardActionController(), activity, containerView,
+                TabListCoordinator.TabListMode.CAROUSEL);
     }
 
     @Override
     public TabGroupUi createTabGroupUi(
             ViewGroup parentView, ThemeColorProvider themeColorProvider) {
         return new TabGroupUiCoordinator(parentView, themeColorProvider);
+    }
+
+    @Override
+    public Layout createStartSurfaceLayout(Context context, LayoutUpdateHost updateHost,
+            LayoutRenderHost renderHost, StartSurface startSurface) {
+        return new StartSurfaceLayout(context, updateHost, renderHost, startSurface);
+    }
+
+    @Override
+    public StartSurface createStartSurface(ChromeActivity activity) {
+        return new StartSurfaceCoordinator(activity);
+    }
+
+    @Override
+    public TabGroupModelFilter createTabGroupModelFilter(TabModel tabModel) {
+        return new TabGroupModelFilter(tabModel);
     }
 }

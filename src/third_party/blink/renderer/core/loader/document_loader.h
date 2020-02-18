@@ -34,7 +34,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
@@ -42,12 +42,13 @@
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
+#include "third_party/blink/public/web/web_origin_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
 #include "third_party/blink/renderer/core/frame/dactyloscoper.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/use_counter_helper.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/loader/previews_resource_loading_hints.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -121,10 +123,6 @@ class CORE_EXPORT DocumentLoader
 
   uint64_t MainResourceIdentifier() const;
 
-  void ReplaceDocumentWhileExecutingJavaScriptURL(const KURL&,
-                                                  Document* owner_document,
-                                                  const String& source);
-
   const AtomicString& MimeType() const;
 
   const KURL& OriginalUrl() const;
@@ -150,6 +148,7 @@ class CORE_EXPORT DocumentLoader
   const Referrer& GetReferrer() const;
   const KURL& UnreachableURL() const;
   EncodedFormData* HttpBody() const;
+  const base::UnguessableToken& AppcacheHostId() const;
 
   void DidChangePerformanceTiming();
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag);
@@ -188,6 +187,9 @@ class CORE_EXPORT DocumentLoader
 
   void StartLoading();
   void StopLoading();
+
+  // Starts loading the response.
+  void StartLoadingResponse();
 
   // Called when the browser process has asked this renderer process to commit a
   // same document navigation in that frame. Returns false if the navigation
@@ -262,13 +264,6 @@ class CORE_EXPORT DocumentLoader
   void BlockParser();
   void ResumeParser();
 
-  // Returns the currently stored content security policy, if this is called
-  // after the document has been installed it will return nullptr as the
-  // CSP belongs to the document at that point.
-  const ContentSecurityPolicy* GetContentSecurityPolicy() const {
-    return content_security_policy_.Get();
-  }
-
   bool IsListingFtpDirectory() const { return listing_ftp_directory_; }
 
   UseCounterHelper& GetUseCounterHelper() { return use_counter_; }
@@ -284,10 +279,26 @@ class CORE_EXPORT DocumentLoader
 
   // The caller owns the |clock| which must outlive the DocumentLoader.
   void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
+  void SetApplicationCacheHostForTesting(ApplicationCacheHost* host) {
+    application_cache_host_ = host;
+  }
+
+  void SetLoadingJavaScriptUrl() { loading_url_as_javascript_ = true; }
+
+  WebURLRequest::PreviewsState previews_state() const {
+    return previews_state_;
+  }
+
+  bool HadTransientActivation() const { return had_transient_activation_; }
+
+  bool IsBrowserInitiated() const { return is_browser_initiated_; }
+
+  // TODO(dcheng, japhet): Some day, Document::Url() will always match
+  // DocumentLoader::Url(), and one of them will be removed. Today is not that
+  // day though.
+  void UpdateUrlForDocumentOpen(const KURL& url) { url_ = url; }
 
  protected:
-  bool had_transient_activation() const { return had_transient_activation_; }
-
   Vector<KURL> redirect_chain_;
 
   // Archive used to load document and/or subresources. If one of the ancestor
@@ -299,26 +310,25 @@ class CORE_EXPORT DocumentLoader
       mojom::MHTMLLoadResult::kSuccess;
 
  private:
-  // installNewDocument() does the work of creating a Document and
+  // InstallNewDocument() does the work of creating a Document and
   // DocumentParser, as well as creating a new LocalDOMWindow if needed. It also
   // initalizes a bunch of state on the Document (e.g., the state based on
   // response headers).
-  enum class InstallNewDocumentReason { kNavigation, kJavascriptURL };
   void InstallNewDocument(
       const KURL&,
       const scoped_refptr<const SecurityOrigin> initiator_origin,
       Document* owner_document,
       const AtomicString& mime_type,
       const AtomicString& encoding,
-      InstallNewDocumentReason,
       ParserSynchronizationPolicy,
       const KURL& overriding_url);
   void DidInstallNewDocument(Document*);
   void WillCommitNavigation();
   void DidCommitNavigation(GlobalObjectReusePolicy);
 
-  void CommitNavigation(const AtomicString& mime_type,
-                        const KURL& overriding_url = KURL());
+  void PrepareForNavigationCommit();
+  void FinishNavigationCommit(const AtomicString& mime_type,
+                              const KURL& overriding_url = KURL());
 
   void CommitSameDocumentNavigationInternal(
       const KURL&,
@@ -336,10 +346,11 @@ class CORE_EXPORT DocumentLoader
 
   void CommitData(const char* bytes, size_t length);
 
-  ContentSecurityPolicy* CreateCSP(const ResourceResponse&,
-                                   const String& origin_policy_string);
+  ContentSecurityPolicy* CreateCSP(
+      const ResourceResponse&,
+      const base::Optional<WebOriginPolicy>& origin_policy);
   void StartLoadingInternal();
-  void FinishedLoading(TimeTicks finish_time);
+  void FinishedLoading(base::TimeTicks finish_time);
   void CancelLoadAfterCSPDenied(const ResourceResponse&);
 
   enum class HistoryNavigationType {
@@ -351,11 +362,12 @@ class CORE_EXPORT DocumentLoader
                                     WebFrameLoadType,
                                     HistoryNavigationType);
 
+  void FinalizeMHTMLArchiveLoad();
   void HandleRedirect(const KURL& current_request_url);
   void HandleResponse();
   void HandleData(const char* data, size_t length);
 
-  void LoadEmpty();
+  void InitializeEmptyResponse();
 
   bool ShouldReportTimingInfoToParent();
 
@@ -369,7 +381,7 @@ class CORE_EXPORT DocumentLoader
   // WebNavigationBodyLoader::Client
   void BodyCodeCacheReceived(base::span<const uint8_t>) override;
   void BodyDataReceived(base::span<const char> data) override;
-  void BodyLoadingFinished(TimeTicks completion_time,
+  void BodyLoadingFinished(base::TimeTicks completion_time,
                            int64_t total_encoded_data_length,
                            int64_t total_encoded_body_length,
                            int64_t total_decoded_body_length,
@@ -399,11 +411,12 @@ class CORE_EXPORT DocumentLoader
   scoped_refptr<EncodedFormData> http_body_;
   AtomicString http_content_type_;
   WebURLRequest::PreviewsState previews_state_;
-  String origin_policy_;
+  base::Optional<WebOriginPolicy> origin_policy_;
   scoped_refptr<const SecurityOrigin> requestor_origin_;
   KURL unreachable_url_;
   int error_code_;
   std::unique_ptr<WebNavigationBodyLoader> body_loader_;
+  base::UnguessableToken appcache_host_id_;
 
   // Params are saved in constructor and are cleared after StartLoading().
   // TODO(dgozman): remove once StartLoading is merged with constructor.
@@ -441,7 +454,7 @@ class CORE_EXPORT DocumentLoader
 
   DocumentLoadTiming document_load_timing_;
 
-  TimeTicks time_of_last_data_received_;
+  base::TimeTicks time_of_last_data_received_;
 
   Member<ApplicationCacheHost> application_cache_host_;
 
@@ -474,6 +487,9 @@ class CORE_EXPORT DocumentLoader
   // Whether this load request had a user activation when created.
   bool had_transient_activation_ = false;
 
+  // Whether this load request was initiated by the browser.
+  bool is_browser_initiated_ = false;
+
   // See WebNavigationParams for definition.
   bool was_discarded_ = false;
 
@@ -481,6 +497,7 @@ class CORE_EXPORT DocumentLoader
   bool loading_mhtml_archive_ = false;
   bool loading_srcdoc_ = false;
   bool loading_url_as_empty_document_ = false;
+  bool loading_url_as_javascript_ = false;
   uint64_t main_resource_identifier_ = 0;
   scoped_refptr<ResourceTimingInfo> navigation_timing_info_;
   bool report_timing_info_to_parent_ = false;

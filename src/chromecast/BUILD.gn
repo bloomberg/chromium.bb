@@ -98,7 +98,7 @@ cast_test_group("cast_tests") {
     tests += [ "//chromecast/media/cma/backend:cast_audio_backend_unittests" ]
   }
 
-  if (is_android && is_cast_using_cma_backend) {
+  if (is_android) {
     tests += [ "//chromecast/media/cma/backend/android:cast_android_cma_backend_unittests" ]
   }
 
@@ -471,7 +471,7 @@ if (is_fuchsia) {
   fuchsia_package("cast_shell_pkg") {
     binary = ":cast_shell"
     package_name_override = "cast_shell"
-    sandbox_policy = "//chromecast/cast_shell_sandbox_policy"
+    manifest = "//chromecast/cast_shell.cmx"
 
     if (chromecast_branding != "public") {
       deps = [
@@ -594,12 +594,10 @@ buildflag_header("chromecast_buildflags") {
     "IS_ANDROID_THINGS_NON_PUBLIC=$is_android_things_non_public",
     "IS_CAST_AUDIO_ONLY=$is_cast_audio_only",
     "IS_CAST_DESKTOP_BUILD=$is_cast_desktop_build",
-    "IS_CAST_USING_CMA_BACKEND=$is_cast_using_cma_backend",
     "IS_SINGLE_VOLUME=$is_single_volume",
     "SUPPORTS_MULTIZONE=$supports_multizone",
     "USE_ANDROID_USER_AGENT=$use_android_user_agent",
     "USE_CHROMECAST_CDMS=$use_chromecast_cdms",
-    "USE_ANDROID_THINGS_N=$build_for_android_things_n",
   ]
 }
 
@@ -648,6 +646,8 @@ if (is_android) {
     android_manifest_dep = "//chromecast/browser/android:cast_shell_manifest"
 
     shared_libraries = [ "//chromecast/android:libcast_shell_android" ]
+
+    locale_config_java_packages = [ "org.chromium.chromecast.shell" ]
 
     deps = [
       ":cast_shell_apk_assets",

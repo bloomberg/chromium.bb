@@ -1,9 +1,13 @@
-# tags: [ d3d11 no-angle vulkan opengl ]
-# tags: [ win win7 highsierra mac linux sierra android mojave ]
+# tags: [ android chromeos highsierra linux mac mojave sierra win win7 ]
+# tags: [ d3d11 no-angle vulkan opengl opengles ]
 # tags: [ passthrough no-passthrough ]
-# tags: [ intel amd-0x699f nvidia-0x1cb3 amd-0x6613 amd
-#         qualcomm nvidia-0xfe9 nvidia nvidia-0xf02 intel-0xa2e ]
+# tags: [ intel intel-0xa2e
+#         amd amd-0x6613 amd-0x699f
+#         nvidia nvidia-0xf02 nvidia-0xfe9 nvidia-0x1cb3
+#         qualcomm qualcomm-adreno-(tm)-540 ]
 # tags: [ debug ]
+# tags: [ intel_lt_25.20.100.6444 intel_lt_25.20.100.6577 mesa_lt_17.1.6 mesa_lt_17.3.9 mesa_lt_19.1.2 ]
+# results: [ Failure RetryOnFailure Skip ]
 
 
 # ===================================
@@ -45,16 +49,16 @@ crbug.com/945970 [ android ] WebglExtension_EXT_float_blend [ Skip ]
 # Conformance expectations
 # ========================
 
+crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
+# TODO(kbr): restore suppression for Android / Qualcomm below after this is fixed.
+crbug.com/949249 conformance2/extensions/ovr_multiview2.html [ Failure ]
+
+# Marking a test as failing on all platforms.
+crbug.com/985032 conformance2/glsl3/sampler-array-indexing.html [ Failure ]
+
 # Failing new test
 crbug.com/874620 [ linux nvidia ] conformance2/glsl3/const-struct-from-array-as-function-parameter.html [ Failure ]
 crbug.com/874620 [ opengl win nvidia ] conformance2/glsl3/const-struct-from-array-as-function-parameter.html [ Failure ]
-
-# Unsuppress after both
-# https://chromium-review.googlesource.com/1558678 and
-# https://github.com/KhronosGroup/WebGL/pull/2878 land and are rolled
-# in.
-# TODO(kbr): this is actually crbug.com/angleproject/3285 .
-crbug.com/angleproject/3285 conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
 
 # Too slow (take about one hour to run)
 crbug.com/619403 deqp/functional/gles3/builtinprecision/* [ Skip ]
@@ -76,11 +80,75 @@ crbug.com/772651 [ nvidia ] conformance/glsl/bugs/vector-scalar-arithmetic-insid
 crbug.com/735483 conformance/rendering/texture-switch-performance.html [ Skip ]
 crbug.com/735483 conformance2/rendering/texture-switch-performance.html [ Skip ]
 
+# This test is unfortunately flaky for unknown reasons.
+# TODO(crbug.com/979444): once this is passing on the passthrough
+# command decoder on Android, simplify this expectation to just not
+# declare any OS.
+crbug.com/979444 [ chromeos ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ linux ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ mac ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ win ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ android no-angle ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+
 # Nvidia bugs fixed in latest driver
 # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
 crbug.com/798117 [ vulkan win nvidia ] conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html [ Failure ]
 crbug.com/798117 [ linux nvidia ] conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html [ Failure ]
 crbug.com/792210 [ nvidia ] conformance/glsl/bugs/in-parameter-passed-as-inout-argument-and-global.html [ Failure ]
+
+
+####################
+# Win failures     #
+####################
+
+# Intel flaky issues
+crbug.com/945942 [ win passthrough intel ] conformance/uniforms/no-over-optimization-on-uniform-array-00.html [ RetryOnFailure ]
+crbug.com/620379 [ d3d11 win intel ] deqp/functional/gles3/lifetime.html [ RetryOnFailure ]
+crbug.com/614418 [ d3d11 win intel ] deqp/functional/gles3/textureformat/unsized_3d.html [ RetryOnFailure ]
+crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-bounds-index-buffers-after-copying.html [ RetryOnFailure ]
+
+# It's unfortunate that these suppressions need to be so broad, but it
+# looks like the D3D11 device can be lost spontaneously on this
+# configuration while running basically any test.
+crbug.com/628395 [ d3d11 win intel ] conformance/* [ RetryOnFailure ]
+crbug.com/628395 [ d3d11 win intel ] conformance2/* [ RetryOnFailure ]
+crbug.com/628395 [ d3d11 win intel ] deqp/* [ RetryOnFailure ]
+
+# Intel failed issues
+crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_* [ Failure ]
+crbug.com/795030 [ opengl win passthrough intel ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]
+crbug.com/angleproject/2994 [ opengl win passthrough intel ] conformance2/textures/misc/copy-texture-image-same-texture.html [ Failure ]
+
+# Intel driver issues
+crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
+crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing.html [ Failure ]
+
+# Passthrough command decoder / Windows / OpenGL / Intel
+# This case causes no-over-optimization-on-uniform-array fail.
+crbug.com/884210 [ opengl win passthrough intel ] conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html [ Skip ]
+
+crbug.com/602688 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] conformance/glsl/constructors/glsl-construct-mat2.html [ Failure ]
+crbug.com/602688 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] conformance2/textures/misc/texture-npot.html [ Failure ]
+crbug.com/854100 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] conformance/glsl/variables/gl-pointcoord.html [ Failure ]
+crbug.com/957631 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] conformance2/rendering/element-index-uint.html [ Failure ]
+crbug.com/angleproject/2880 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] deqp/functional/gles3/shaderbuiltinvar.html [ Failure ]
+
+# This is an OpenGL driver bug on Intel platform and it is fixed in
+# Intel Driver 25.20.100.6444.
+# Case no-over-optimization-on-uniform-array-08 always fail if run
+# case gl-min-uniforms first.
+# Temporarily skip these two cases now.
+crbug.com/953243 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/limits/gl-min-uniforms.html [ Skip ]
+crbug.com/953243 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-08.html [ Skip ]
+
+# This is an OpenGL driver bug on Intel platform and it is fixed in
+# Intel Driver 25.20.100.6444.
+# Case no-over-optimization-on-uniform-array-09 always fail if run
+# case biuDepthRange_001_to_002 first.
+# Temporarily skip these two cases now because this issue blocks
+# WEBGL_video_texture implementation.
+crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
+crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
 
 # Windows only.
 crbug.com/736926 [ win ] conformance2/textures/svg_image/tex-2d-rgb565-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]
@@ -89,13 +157,14 @@ crbug.com/angleproject/3033 [ win no-passthrough ] conformance2/textures/misc/ge
 crbug.com/angleproject/1465 [ win ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
 crbug.com/951628 [ win no-passthrough ] conformance/rendering/blending.html [ Failure ]
 
+# Win / D3D11 backend
+crbug.com/angleproject/3388 [ win d3d11 ] conformance2/uniforms/large-uniform-buffers.html [ Failure ]
+
 # Win / NVidia
 crbug.com/631317 [ d3d11 win nvidia ] deqp/functional/gles3/fbomultisample* [ RetryOnFailure ]
 crbug.com/679639 [ d3d11 win nvidia ] conformance2/rendering/draw-with-integer-texture-base-level.html [ Failure ]
 crbug.com/735464 [ d3d11 win nvidia ] deqp/functional/gles3/textureshadow/* [ RetryOnFailure ]
 crbug.com/907544 [ vulkan win passthrough nvidia ] conformance/uniforms/uniform-default-values.html [ RetryOnFailure ]
-crbug.com/945877 [ win passthrough ] conformance/attribs/gl-disabled-vertex-attrib.html [ Failure ]
-crbug.com/945877 [ linux passthrough ] conformance/attribs/gl-disabled-vertex-attrib.html [ Failure ]
 
 # Win / NVIDIA Quadro P400 / D3D11 flaky failures
 crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/data/gles3/shaders/functions.html [ Failure ]
@@ -110,6 +179,7 @@ crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeed
 crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/random_separate_triangles.html [ Failure ]
 crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/interpolation_flat.html [ Failure ]
 crbug.com/966143 [ d3d11 win7 nvidia-0x1cb3 ] conformance/attribs/gl-vertex-attrib-unconsumed-out-of-bounds.html [ RetryOnFailure ]
+crbug.com/966143 [ d3d11 win7 nvidia-0x1cb3 ] conformance/attribs/gl-vertex-attrib-zero-issues.html [ RetryOnFailure ]
 crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance/extensions/oes-texture-half-float-with-video.html [ RetryOnFailure ]
 crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
 crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
@@ -122,11 +192,9 @@ crbug.com/963205 [ win nvidia opengl passthrough ] conformance/extensions/webgl-
 crbug.com/963205 [ win nvidia opengl passthrough ] conformance/extensions/webgl-compressed-texture-s3tc-srgb.html [ RetryOnFailure ]
 crbug.com/715001 [ opengl win nvidia                    ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
 crbug.com/703779 [ opengl win nvidia                    ] conformance/textures/misc/texture-size.html [ Failure ]
-crbug.com/830046 [ opengl win passthrough nvidia        ] conformance2/rendering/blitframebuffer-size-overflow.html [ Skip ]
 crbug.com/781668 [ opengl win nvidia-0x1cb3             ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb565-rgb-unsigned_byte.html [ Failure ]
 crbug.com/921055 [ opengl win passthrough nvidia-0x1cb3 ] conformance2/textures/image_bitmap_from_image_data/tex-2d-rgb9_e5-rgb-float.html [ RetryOnFailure ]
 crbug.com/905003 [ opengl win passthrough nvidia        ] conformance2/textures/misc/integer-cubemap-specification-order-bug.html [ Failure ]
-crbug.com/832238 [ opengl win no-passthrough nvidia     ] conformance2/transform_feedback/switching-objects.html [ RetryOnFailure ]
 crbug.com/887578 [ opengl win passthrough nvidia        ] deqp/data/gles3/shaders/conversions.html [ RetryOnFailure ]
 crbug.com/965648 [ opengl win passthrough nvidia-0x1cb3 ] deqp/functional/gles3/shaderstruct.html [ RetryOnFailure ]
 crbug.com/822733 [ opengl win nvidia-0x1cb3             ] deqp/functional/gles3/transformfeedback/* [ RetryOnFailure ]
@@ -186,102 +254,27 @@ crbug.com/687374 [ win amd-0x6613 ] deqp/functional/gles3/multisample.html [ Ret
 # Failing on AMD RX 550
 crbug.com/angleproject/3354 [ win amd-0x699f ] deqp/functional/gles3/fborender/shared_colorbuffer_02.html [ Skip ]
 
-# Win / Intel
-crbug.com/782317 [ d3d11 win intel ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
-crbug.com/945942 [ win passthrough intel ] conformance/uniforms/no-over-optimization-on-uniform-array-00.html [ RetryOnFailure ]
-crbug.com/620379 [ d3d11 win intel ] deqp/functional/gles3/lifetime.html [ RetryOnFailure ]
-crbug.com/614418 [ d3d11 win intel ] deqp/functional/gles3/textureformat/unsized_3d.html [ RetryOnFailure ]
-
-# This is an OpenGL driver bug on Intel platform and it is fixed in
-# Intel Driver 25.20.100.6444.
-# Case no-over-optimization-on-uniform-array-08 always fail if run
-# case gl-min-uniforms first.
-# Temporarily skip these two cases now.
-crbug.com/953243 [ opengl win passthrough intel ] conformance/limits/gl-min-uniforms.html [ Skip ]
-crbug.com/953243 [ opengl win passthrough intel ] conformance/uniforms/no-over-optimization-on-uniform-array-08.html [ Skip ]
-
-# This is an OpenGL driver bug on Intel platform and it is fixed in
-# Intel Driver 25.20.100.6444.
-# Case no-over-optimization-on-uniform-array-09 always fail if run
-# case biuDepthRange_001_to_002 first.
-# Temporarily skip these two cases now because this issue blocks
-# WEBGL_video_texture implementation.
-crbug.com/907195 [ opengl win passthrough intel ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
-crbug.com/907195 [ opengl win passthrough intel ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
-
-# It's unfortunate that these suppressions need to be so broad, but it
-# looks like the D3D11 device can be lost spontaneously on this
-# configuration while running basically any test.
-crbug.com/628395 [ d3d11 win intel ] conformance/* [ RetryOnFailure ]
-crbug.com/628395 [ d3d11 win intel ] conformance2/* [ RetryOnFailure ]
-crbug.com/628395 [ d3d11 win intel ] deqp/* [ RetryOnFailure ]
-
 # Passthrough command decoder
 crbug.com/844349 [ passthrough ] conformance/misc/webgl-specific-stencil-settings.html [ Failure ]
 crbug.com/951628 [ passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failure ]
 
-# Passthrough command decoder / OpenGL
-crbug.com/602688 [ opengl passthrough ] conformance2/misc/uninitialized-test-2.html [ Failure ]
-crbug.com/602688 [ opengl passthrough ] conformance2/rendering/draw-buffers-dirty-state-bug.html [ Failure ]
-crbug.com/602688 [ opengl passthrough ] conformance2/state/gl-get-calls.html [ Failure ]
-crbug.com/602688 [ opengl passthrough ] deqp/functional/gles3/integerstatequery.html [ Failure ]
-crbug.com/602688 [ opengl passthrough ] conformance/textures/canvas/tex-2d-alpha-alpha-unsigned_byte.html [ Failure ]
-crbug.com/602688 [ opengl passthrough ] conformance/textures/canvas/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
-crbug.com/795030 [ opengl passthrough ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]
-crbug.com/794341 [ opengl passthrough ] deqp/functional/gles3/shaderpackingfunction.html [ Failure ]
-crbug.com/814905 [ opengl passthrough ] conformance2/rendering/attrib-type-match.html [ Failure ]
-crbug.com/angleproject/2994 [ opengl passthrough ] conformance2/textures/misc/copy-texture-image-same-texture.html [ Failure ]
-
 # Passthrough command decoder / OpenGL / Windows
 crbug.com/835364 [ opengl win passthrough ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 crbug.com/835364 [ opengl win passthrough ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ RetryOnFailure ]
-
-# Passthrough command decoder / OpenGL / Intel
-crbug.com/602688 [ opengl passthrough intel ] conformance2/textures/video/tex-2d-rgb32f-rgb-float.html [ Failure ]
-crbug.com/602688 [ win opengl passthrough intel ] conformance2/textures/video/tex-2d-rgb8ui-rgb_integer-unsigned_byte.html [ Failure ]
-crbug.com/602688 [ linux opengl passthrough intel ] conformance2/textures/video/tex-2d-rgb8ui-rgb_integer-unsigned_byte.html [ Failure ]
-crbug.com/602688 [ opengl passthrough intel ] conformance/misc/uninitialized-test.html [ Failure ]
-crbug.com/602688 [ opengl passthrough intel ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
-crbug.com/602688 [ opengl passthrough intel ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
-crbug.com/602688 [ opengl passthrough intel ] conformance/textures/misc/texture-attachment-formats.html [ Failure ]
-crbug.com/602688 [ opengl passthrough intel ] conformance/renderbuffers/framebuffer-state-restoration.html [ Failure ]
-
-# Passthrough command decoder / Windows / OpenGL / Intel
-# This case causes no-over-optimization-on-uniform-array fail.
-crbug.com/884210 [ opengl win passthrough intel ] conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html [ Skip ]
-crbug.com/854100 [ opengl win passthrough intel ] conformance/glsl/variables/gl-pointcoord.html [ Failure ]
-crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-bounds-index-buffers-after-copying.html [ RetryOnFailure ]
-crbug.com/602688 [ opengl win passthrough intel ] conformance/glsl/constructors/glsl-construct-mat2.html [ Failure ]
-crbug.com/602688 [ opengl win passthrough intel ] conformance2/textures/misc/texture-npot.html [ Failure ]
-crbug.com/602688 [ opengl win passthrough intel ] conformance2/textures/misc/npot-video-sizing.html [ Failure ]
-crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
-crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing.html [ Failure ]
-crbug.com/angleproject/2880 [ opengl win passthrough intel ] deqp/functional/gles3/shaderbuiltinvar.html [ Failure ]
-crbug.com/957631 [ opengl win passthrough intel ] conformance2/rendering/element-index-uint.html [ Failure ]
-crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_* [ RetryOnFailure ]
+crbug.com/angleproject/3742 [ opengl win passthrough ] conformance2/rendering/clearbuffer-sub-source.html [ Failure ]
 
 # Passthrough command decoder / Linux / OpenGL / NVIDIA
-crbug.com/773861 [ opengl linux passthrough nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
-crbug.com/773861 [ opengl linux passthrough nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
-crbug.com/766918 [ opengl linux passthrough nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
-crbug.com/766918 [ opengl linux passthrough nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
 crbug.com/766918 [ opengl linux passthrough nvidia ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-crbug.com/793055 [ opengl linux passthrough nvidia ] deqp/functional/gles3/shaderoperator/common_functions_* [ Failure ]
-crbug.com/927407 [ opengl linux passthrough nvidia ] conformance/extensions/webgl-compressed-texture-s3tc.html [ RetryOnFailure ]
 
-# Passthrough command decoder / Linux / OpenGL / Intel
-crbug.com/angleproject/2761 [ opengl linux passthrough intel ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
-crbug.com/950787 [ opengl linux passthrough intel ] conformance/extensions/webgl-compressed-texture-s3tc.html [ RetryOnFailure ]
+
+####################
+# Mac failures     #
+####################
 
 # Regressions in 10.12.4.
 crbug.com/705865 [ sierra intel ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
 crbug.com/705865 [ sierra intel ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
-crbug.com/870856 [ sierra amd ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
-
-# Flaky on 10.13 as well.
-crbug.com/870856 [ sierra amd ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
-crbug.com/870856 [ highsierra amd ] conformance2/textures/misc/tex-mipmap-levels.html [ RetryOnFailure ]
 
 # Regressions in 10.13
 crbug.com/774826 [ highsierra intel-0xa2e ] deqp/functional/gles3/fbocolorbuffer/tex2d_00.html [ Failure ]
@@ -314,6 +307,7 @@ crbug.com/811614 [ amd mac ] deqp/functional/gles3/negativeshaderapi.html [ Fail
 crbug.com/811614 [ intel mac ] deqp/functional/gles3/negativeshaderapi.html [ Failure ]
 
 # Mac Retina NVIDIA
+crbug.com/981101 [ mac nvidia-0xfe9 ] deqp/functional/gles3/multisample.html [ Failure ]
 crbug.com/728271 [ mac nvidia-0xfe9 ] deqp/functional/gles3/shaderindexing/mat_01.html [ Failure ]
 crbug.com/728271 [ mac nvidia-0xfe9 ] deqp/functional/gles3/shaderindexing/tmp.html [ Failure ]
 crbug.com/641209 [ mac nvidia-0xfe9 ] deqp/functional/gles3/fbomultisample* [ Failure ]
@@ -324,6 +318,7 @@ crbug.com/923080 [ mac nvidia-0xfe9 ] conformance/ogles/GL/exp2/exp2_001_to_008.
 crbug.com/483282 [ mac nvidia-0xfe9 ] conformance/programs/gl-bind-attrib-location-long-names-test.html [ Failure ]
 crbug.com/483282 [ mac nvidia-0xfe9 ] conformance/programs/gl-bind-attrib-location-test.html [ Failure ]
 crbug.com/483282 [ mac nvidia-0xfe9 ] conformance2/glsl3/loops-with-side-effects.html [ Failure ]
+crbug.com/981122 [ mac nvidia-0xfe9 ] conformance2/rendering/framebuffer-completeness-draw-framebuffer.html [ RetryOnFailure ]
 crbug.com/483282 [ no-angle mac nvidia-0xfe9 ] conformance2/textures/misc/tex-input-validation.html [ Failure ]
 crbug.com/682834 [ mac nvidia-0xfe9 ] conformance2/textures/image_bitmap_from_video/tex-2d-rgba16f-rgba-half_float.html [ RetryOnFailure ]
 crbug.com/922517 [ mac nvidia-0xfe9 ] conformance2/textures/canvas/tex-3d-rg16f-rg-float.html [ RetryOnFailure ]
@@ -378,6 +373,9 @@ crbug.com/483282 [ mac nvidia-0xfe9 ] deqp/functional/gles3/draw/draw_range_elem
 crbug.com/483282 [ mac nvidia-0xfe9 ] deqp/functional/gles3/fboinvalidate/format_02.html [ Failure ]
 crbug.com/483282 [ mac nvidia-0xfe9 ] deqp/functional/gles3/negativeshaderapi.html [ Failure ]
 crbug.com/483282 [ mac nvidia-0xfe9 ] deqp/functional/gles3/vertexarrays/multiple_attributes.output.html [ RetryOnFailure ]
+crbug.com/984588 [ mac nvidia-0xfe9 ] deqp/functional/gles3/framebufferblit/conversion_06.html [ Failure ]
+crbug.com/984588 [ mac nvidia-0xfe9 ] deqp/functional/gles3/framebufferblit/conversion_21.html [ Failure ]
+crbug.com/984588 [ mac nvidia-0xfe9 ] deqp/functional/gles3/framebufferblit/conversion_26.html [ Failure ]
 crbug.com/654187 [ mac nvidia-0xfe9 ] deqp/functional/gles3/framebufferblit/conversion_28.html [ Failure ]
 crbug.com/654187 [ mac nvidia-0xfe9 ] deqp/functional/gles3/framebufferblit/conversion_30.html [ Failure ]
 crbug.com/654187 [ mac nvidia-0xfe9 ] deqp/functional/gles3/framebufferblit/conversion_31.html [ Failure ]
@@ -406,11 +404,13 @@ crbug.com/907599 [ mac nvidia debug ] conformance/textures/video/tex-2d-rgb-rgb-
 # self.Fail('conformance2/rendering/texture-switch-performance.html',
 #     ['mac', 'amd'], bug=735483)
 
-# The following two failures are a regression in the Mac AMD
-# OpenGL driver on 10.13.6 specifically. Unfortunately when the
-# tests fail, they fail three times in a row, so we must mark them
-# failing rather than flaky.
-crbug.com/870856 [ highsierra amd ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
+# The following two failures appeared to be a regression in the Mac AMD OpenGL
+# driver on 10.13.6 specifically, and are still flaky. Unfortunately when the
+# tests fail, they fail three times in a row, so we must mark them failing
+# rather than flaky.
+crbug.com/870856 [ mac amd ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
+crbug.com/870856 [ mac amd ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
+
 crbug.com/483282 [ sierra amd ] deqp/functional/gles3/transformfeedback/array_interleaved_lines.html [ Failure ]
 crbug.com/483282 [ sierra amd ] deqp/functional/gles3/transformfeedback/array_interleaved_points.html [ Failure ]
 crbug.com/483282 [ sierra amd ] deqp/functional/gles3/transformfeedback/array_interleaved_triangles.html [ Failure ]
@@ -520,6 +520,22 @@ crbug.com/658930 [ mac intel ] conformance2/textures/misc/integer-cubemap-textur
 crbug.com/731877 [ mac intel-0xa2e ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
 crbug.com/782317 [ mac intel ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
 
+
+####################
+# Linux failures   #
+####################
+
+# Intel failed issues
+crbug.com/950552 [ linux intel ] conformance2/textures/misc/tex-3d-size-limit.html [ Failure ]
+crbug.com/905011 [ linux intel opengl passthrough ] conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html [ Failure ]
+
+# Intel driver issues
+crbug.com/680675 [ linux intel mesa_lt_17.1.6 ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
+crbug.com/905011 [ linux intel no-angle mesa_lt_17.3.9 ] conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html [ Failure ]
+crbug.com/666384 [ linux intel no-angle mesa_lt_17.3.9 ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
+crbug.com/666384 [ linux intel no-angle mesa_lt_17.3.9 ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
+crbug.com/950552 [ linux intel mesa_lt_19.1.2 ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
+
 # Linux only.
 crbug.com/627525 [ linux ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/627525 [ linux ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
@@ -541,10 +557,6 @@ crbug.com/905003 [ linux nvidia ] conformance2/textures/misc/integer-cubemap-spe
 crbug.com/680278 [ opengl linux nvidia ] conformance2/rendering/framebuffer-texture-level1.html [ Failure ]
 crbug.com/680282 [ linux nvidia-0xf02 ] conformance2/textures/image/tex-3d-rg8ui-rg_integer-unsigned_byte.html [ Failure ]
 crbug.com/694354 [ linux no-passthrough nvidia ] conformance2/textures/image_bitmap_from_image_data/tex-2d-srgb8-rgb-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/832238 [ linux no-passthrough nvidia ] conformance2/transform_feedback/switching-objects.html [ RetryOnFailure ]
-
-# Linux NVIDIA Quadro P400
-crbug.com/830046 [ linux passthrough nvidia-0x1cb3 ] conformance2/rendering/blitframebuffer-size-overflow.html [ Skip ]
 
 # Observed flaky on Swarmed bots. Some of these were directly
 # observed, some not. We can't afford any flakes on the tryservers
@@ -581,23 +593,11 @@ crbug.com/703779 [ opengl linux nvidia-0x1cb3 ] conformance/extensions/webgl-com
 crbug.com/703779 [ opengl linux nvidia-0x1cb3 ] conformance/textures/misc/texture-size-limit.html [ Failure ]
 crbug.com/703779 [ opengl linux nvidia-0x1cb3 ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 
-# Linux Intel
-crbug.com/950552 [ linux intel ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
-
-# Already fixed with Mesa 17.2.3
-crbug.com/905011 [ linux intel ] conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html [ Failure ]
-crbug.com/666384 [ linux intel ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
-crbug.com/666384 [ linux intel ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
-
-# Already fixed with Mesa 17.1.6
-crbug.com/680675 [ linux intel ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
-
 # Linux AMD only.
 # It looks like AMD shader compiler rejects many valid ES3 semantics.
 crbug.com/844311 [ linux amd ] conformance/glsl/misc/fragcolor-fragdata-invariant.html [ Failure ]
 crbug.com/766776 [ linux amd ] conformance2/attribs/gl-vertex-attrib-normalized-int.html [ Failure ]
-# TODO(kbr): re-add after global suppression is removed.
-# crbug.com/483282 [ linux amd ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
+crbug.com/981070 [ linux amd ] conformance2/glsl3/matrix-row-major.html [ Failure ]
 crbug.com/709351 [ linux amd ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
 crbug.com/617290 [ linux amd ] deqp/functional/gles3/multisample.html [ Failure ]
 crbug.com/483282 [ linux amd ] deqp/data/gles3/shaders/conversions.html [ Failure ]
@@ -734,7 +734,6 @@ crbug.com/809237 [ linux amd-0x6613 ] conformance2/uniforms/incompatible-texture
 
 # Basic failures that need to be investigated on multiple devices
 crbug.com/709351 [ android ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
-crbug.com/947236 [ android ] conformance2/uniforms/incompatible-texture-type-for-sampler.html [ Failure ]
 
 # Video tests are flaky. Sometimes the video is black.
 crbug.com/948894 [ android ] conformance/textures/video/* [ RetryOnFailure ]
@@ -750,16 +749,17 @@ crbug.com/951628 [ android no-passthrough ] conformance/rendering/blending.html 
 
 # Qualcomm (Pixel 2) failures
 crbug.com/906737 [ android qualcomm ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
-crbug.com/906739 [ android qualcomm ] conformance2/extensions/ovr_multiview2.html [ Failure ]
+# TODO(kbr): uncomment after http://crbug.com/949249 fixed
+# crbug.com/906739 [ android qualcomm ] conformance2/extensions/ovr_multiview2.html [ Failure ]
 crbug.com/906742 [ android qualcomm ] conformance2/glsl3/compare-structs-containing-arrays.html [ Failure ]
 crbug.com/906735 [ android qualcomm ] conformance2/textures/video/tex-2d-rgba8ui-rgba_integer-unsigned_byte.html [ Failure ]
+crbug.com/981216 [ android qualcomm-adreno-(tm)-540 ] deqp/functional/gles3/fbocolorbuffer/tex2d_01.html [ RetryOnFailure ]
+crbug.com/949321 [ android qualcomm ] deqp/functional/gles3/framebufferblit/default_framebuffer_02.html [ RetryOnFailure ]
 
 # This test is failing on Android Pixel 2 and 3 (Qualcomm)
 # Seems to be an OpenGL ES bug.
 crbug.com/945903 [ android qualcomm ] conformance2/rendering/vertex-id.html [ Failure ]
-crbug.com/906745 [ android qualcomm ] deqp/functional/gles3/shaderderivate_dfdy.html [ Failure ]
-crbug.com/695742 [ android qualcomm ] deqp/functional/gles3/multisample.html [ RetryOnFailure ]
-crbug.com/832238 [ android qualcomm ] conformance2/transform_feedback/switching-objects.html [ RetryOnFailure ]
+crbug.com/695742 [ android qualcomm no-angle ] deqp/functional/gles3/multisample.html [ RetryOnFailure ]
 
 # This test is flaky but can fail three times in a row so it must be
 # marked as Fail instead of Flaky.
@@ -769,6 +769,23 @@ crbug.com/946177 [ android qualcomm ] deqp/functional/gles3/shaderbuiltinvar.htm
 crbug.com/906752 [ android nvidia ] conformance2/glsl3/array-complex-indexing.html [ Failure ]
 crbug.com/874620 [ android nvidia ] conformance2/glsl3/const-struct-from-array-as-function-parameter.html [ Failure ]
 crbug.com/905006 [ android nvidia ] conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html [ Failure ]
+
+# Android ANGLE GLES
+# TODO(crbug.com/979444): once this is passing on the passthrough
+# command decoder, simplify the RetryOnFailure expectation at the top
+# of this file to just not declare any OS.
+crbug.com/979444 [ android opengles ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
+crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+
+crbug.com/angleproject/3684 [ android opengles ] conformance2/renderbuffers/multisample-with-full-sample-counts.html [ Failure ]
+crbug.com/983142 [ android opengles ] conformance2/textures/misc/tex-storage-compressed-formats.html [ Failure ]
+crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-rgb16f-rgb-half_float.html [ Failure ]
+crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-rgb9_e5-rgb-half_float.html [ Failure ]
+crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-srgb8-rgb-unsigned_byte.html [ Failure ]
+crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-srgb8_alpha8-rgba-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/3685 [ android opengles ] conformance2/transform_feedback/simultaneous_binding.html [ Failure ]
+crbug.com/angleproject/3686 [ android opengles ] deqp/functional/gles3/multisample.html [ Failure ]
 
 # Conflicting expectations to test that the
 # "Expectations have no collisions" unittest works.

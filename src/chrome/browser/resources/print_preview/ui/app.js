@@ -209,7 +209,7 @@ Polymer({
         this.state === print_preview.State.READY &&
         this.openDialogs_.length === 0) {
       const activeElementTag = e.path[0].tagName;
-      if (['PAPER-BUTTON', 'BUTTON', 'SELECT', 'A', 'CR-CHECKBOX'].includes(
+      if (['CR-BUTTON', 'BUTTON', 'SELECT', 'A', 'CR-CHECKBOX'].includes(
               activeElementTag)) {
         return;
       }
@@ -262,7 +262,8 @@ Polymer({
       // sidebar, so that cloud printers can be selected automatically.
       if (settings.cloudPrintURL) {
         this.initializeCloudPrint_(
-            settings.cloudPrintURL, settings.isInAppKioskMode);
+            settings.cloudPrintURL, settings.isInAppKioskMode,
+            settings.uiLocale);
       }
       this.$.documentInfo.init(
           settings.previewModifiable, settings.documentTitle,
@@ -294,12 +295,13 @@ Polymer({
    * Called when Google Cloud Print integration is enabled.
    * @param {string} cloudPrintUrl The URL to use for cloud print servers.
    * @param {boolean} appKioskMode Whether the browser is in app kiosk mode.
+   * @param {string} uiLocale The UI locale.
    * @private
    */
-  initializeCloudPrint_: function(cloudPrintUrl, appKioskMode) {
+  initializeCloudPrint_: function(cloudPrintUrl, appKioskMode, uiLocale) {
     assert(!this.cloudPrintInterface_);
     this.cloudPrintInterface_ = cloudprint.getCloudPrintInterface(
-        cloudPrintUrl, assert(this.nativeLayer_), appKioskMode);
+        cloudPrintUrl, assert(this.nativeLayer_), appKioskMode, uiLocale);
     this.tracker_.add(
         assert(this.cloudPrintInterface_).getEventTarget(),
         cloudprint.CloudPrintInterfaceEventType.SUBMIT_DONE,
@@ -556,21 +558,26 @@ Polymer({
     }
 
     if (copies > 0 && this.getSetting('copies').available) {
-      this.setSetting('copies', copies);
+      this.setSetting('copies', copies, true);
     }
 
-    if (duplex !== print_preview.DuplexMode.UNKNOWN_DUPLEX_MODE &&
-        this.getSetting('duplex').available) {
+    if (duplex === print_preview.DuplexMode.UNKNOWN_DUPLEX_MODE) {
+      return;
+    }
+
+    if (this.getSetting('duplex').available) {
       this.setSetting(
           'duplex',
           duplex === print_preview.DuplexMode.LONG_EDGE ||
-              duplex === print_preview.DuplexMode.SHORT_EDGE);
+              duplex === print_preview.DuplexMode.SHORT_EDGE,
+          true);
     }
-    if (duplex !== print_preview.DuplexMode.UNKNOWN_DUPLEX_MODE &&
-        duplex !== print_preview.DuplexMode.SIMPLEX &&
+
+    if (duplex !== print_preview.DuplexMode.SIMPLEX &&
         this.getSetting('duplexShortEdge').available) {
       this.setSetting(
-          'duplexShortEdge', duplex === print_preview.DuplexMode.SHORT_EDGE);
+          'duplexShortEdge', duplex === print_preview.DuplexMode.SHORT_EDGE,
+          true);
     }
   },
 

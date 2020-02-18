@@ -23,11 +23,11 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
-#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_client.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 // Enables usage of Gaia Auth Multilogin endpoint for identity consistency.
 extern const base::Feature kUseMultiloginEndpoint;
@@ -42,7 +42,7 @@ class SigninClient;
 
 class AccountReconcilor : public KeyedService,
                           public content_settings::Observer,
-                          public identity::IdentityManager::Observer {
+                          public signin::IdentityManager::Observer {
  public:
   // When an instance of this class exists, the account reconcilor is suspended.
   // It will automatically restart when all instances of Lock have been
@@ -94,7 +94,7 @@ class AccountReconcilor : public KeyedService,
   };
 
   AccountReconcilor(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       SigninClient* client,
       std::unique_ptr<signin::AccountReconcilorDelegate> delegate);
   ~AccountReconcilor() override;
@@ -146,6 +146,8 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            ProfileAlreadyConnected);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestTable, TableRowTest);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestTable,
+                           InconsistencyReasonLogging);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestDiceMultilogin, TableRowTest);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestMirrorMultilogin, TableRowTest);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestMiceMultilogin, TableRowTest);
@@ -254,7 +256,7 @@ class AccountReconcilor : public KeyedService,
 
   // All actions with side effects, only doing meaningful work if account
   // consistency is enabled. Virtual so that they can be overridden in tests.
-  virtual void PerformMergeAction(const std::string& account_id);
+  virtual void PerformMergeAction(const CoreAccountId& account_id);
   virtual void PerformLogoutAllAccountsAction();
   virtual void PerformSetCookiesAction(
       const signin::MultiloginParameters& parameters);
@@ -262,18 +264,18 @@ class AccountReconcilor : public KeyedService,
   // Used during periodic reconciliation.
   void StartReconcile();
   // |gaia_accounts| are the accounts in the Gaia cookie.
-  void FinishReconcile(const std::string& primary_account,
-                       const std::vector<std::string>& chrome_accounts,
+  void FinishReconcile(const CoreAccountId& primary_account,
+                       const std::vector<CoreAccountId>& chrome_accounts,
                        std::vector<gaia::ListedAccount>&& gaia_accounts);
   void AbortReconcile();
   void CalculateIfReconcileIsDone();
   void ScheduleStartReconcileIfChromeAccountsChanged();
 
   // Returns the list of valid accounts from the TokenService.
-  std::vector<std::string> LoadValidAccountsFromTokenService() const;
+  std::vector<CoreAccountId> LoadValidAccountsFromTokenService() const;
 
   // Note internally that this |account_id| is added to the cookie jar.
-  bool MarkAccountAsAddedToCookie(const std::string& account_id);
+  bool MarkAccountAsAddedToCookie(const CoreAccountId& account_id);
 
   // The reconcilor only starts when the token service is ready.
   bool IsIdentityManagerReady();
@@ -284,24 +286,23 @@ class AccountReconcilor : public KeyedService,
                                ContentSettingsType content_type,
                                const std::string& resource_identifier) override;
 
-
-  // Overridden from identity::IdentityManager::Observer.
+  // Overridden from signin::IdentityManager::Observer.
   void OnEndBatchOfRefreshTokenStateChanges() override;
   void OnRefreshTokensLoaded() override;
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info,
       const GoogleServiceAuthError& error) override;
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
   void OnAccountsCookieDeletedByUserAction() override;
 
   void FinishReconcileWithMultiloginEndpoint(
-      const std::string& primary_account,
-      const std::vector<std::string>& chrome_accounts,
+      const CoreAccountId& primary_account,
+      const std::vector<CoreAccountId>& chrome_accounts,
       std::vector<gaia::ListedAccount>&& gaia_accounts);
 
-  void OnAddAccountToCookieCompleted(const std::string& account_id,
+  void OnAddAccountToCookieCompleted(const CoreAccountId& account_id,
                                      const GoogleServiceAuthError& error);
   void OnSetAccountsInCookieCompleted(signin::SetAccountsInCookieResult result);
 
@@ -330,7 +331,7 @@ class AccountReconcilor : public KeyedService,
   std::unique_ptr<signin::AccountReconcilorDelegate> delegate_;
 
   // The IdentityManager associated with this reconcilor.
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   // The SigninClient associated with this reconcilor.
   SigninClient* client_;
@@ -361,8 +362,8 @@ class AccountReconcilor : public KeyedService,
   bool reconcile_is_noop_;
 
   // Used during reconcile action.
-  std::vector<std::string> add_to_cookie_;  // Progress of AddAccount calls.
-  bool set_accounts_in_progress_;           // Progress of SetAccounts calls.
+  std::vector<CoreAccountId> add_to_cookie_;  // Progress of AddAccount calls.
+  bool set_accounts_in_progress_;             // Progress of SetAccounts calls.
   bool chrome_accounts_changed_;
 
   // Used for the Lock.
@@ -398,7 +399,7 @@ class AccountReconcilor : public KeyedService,
   std::unique_ptr<signin::ConsistencyCookieManagerBase>
       consistency_cookie_manager_;
 
-  base::WeakPtrFactory<AccountReconcilor> weak_factory_;
+  base::WeakPtrFactory<AccountReconcilor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilor);
 };

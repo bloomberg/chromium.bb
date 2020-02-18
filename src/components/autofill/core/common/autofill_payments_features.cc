@@ -42,13 +42,19 @@ const base::Feature kAutofillCreditCardAblationExperiment{
 const base::Feature kAutofillCreditCardAuthentication{
     "AutofillCreditCardAuthentication", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, if credit card upload succeeded, the avatar icon will show a
+// highlight otherwise, the credit card icon image will be updated and if user
+// clicks on the icon, a save card failure bubble will pop up.
+const base::Feature kAutofillCreditCardUploadFeedback{
+    "AutofillCreditCardUploadFeedback", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillDoNotMigrateUnsupportedLocalCards{
     "AutofillDoNotMigrateUnsupportedLocalCards",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillDoNotUploadSaveUnsupportedCards{
     "AutofillDoNotUploadSaveUnsupportedCards",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the credit card downstream keyboard accessory shows
 // the Google Pay logo animation on iOS.
@@ -69,13 +75,13 @@ const base::Feature kAutofillEnableToolbarStatusChip{
 
 // When enabled, autofill can import credit cards from dynamic change form.
 const base::Feature kAutofillImportDynamicForms{
-    "AutofillImportDynamicForms", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillImportDynamicForms", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, a credit card form that is hidden after receiving input can
 // import the card.
 const base::Feature kAutofillImportNonFocusableCreditCardForms{
     "AutofillImportNonFocusableCreditCardForms",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether offering to migrate cards will consider data from the
 // Autofill strike database (new version).
@@ -93,11 +99,12 @@ const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess{
 const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
     "AutofillNoLocalSaveOnUploadSuccess", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, local and upload credit card save dialogs will be updated to
-// new M72 guidelines, including a [No thanks] cancel button and an extended
-// title string.
-const base::Feature kAutofillSaveCardImprovedUserConsent{
-    "AutofillSaveCardImprovedUserConsent", base::FEATURE_DISABLED_BY_DEFAULT};
+// When enabled, local and upload credit card save dialogs will add a
+// [No thanks] cancel button option. This is intended to bring the
+// AutofillSaveCardImprovedUserConsent functionality to Chrome OS, Android, and
+// iOS without bringing the extended title string change with it.
+const base::Feature kAutofillSaveCardShowNoThanks{
+    "AutofillSaveCardShowNoThanks", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls what title and bubble label for the credit card upload bubble are
 // shown to users.
@@ -109,13 +116,6 @@ const base::Feature kAutofillSaveCreditCardUsesImprovedMessaging{
 // Google Payments RPCs or not.
 const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs{
     "AutofillSendExperimentIdsInPaymentsRPCs",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-// If enabled, only countries of recently-used addresses are sent in the
-// GetUploadDetails call to Payments. If disabled, whole recently-used addresses
-// are sent.
-const base::Feature kAutofillSendOnlyCountryInGetUploadDetails{
-    "AutofillSendOnlyCountryInGetUploadDetails",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls offering credit card upload to Google Payments. Cannot ever be
@@ -131,10 +131,19 @@ const base::Feature kAutofillUpstream{"AutofillUpstream",
 const base::Feature kAutofillUpstreamAllowAllEmailDomains{
     "AutofillUpstreamAllowAllEmailDomains", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// For testing purposes; not to be launched.  When enabled, Chrome Upstream
+// always requests that the user enters/confirms cardholder name in the
+// offer-to-save dialog, regardless of if it was present or if the user is a
+// Google Payments customer.  Note that this will override the detected
+// cardholder name, if one was found.
 const base::Feature kAutofillUpstreamAlwaysRequestCardholderName{
     "AutofillUpstreamAlwaysRequestCardholderName",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// For experimental purposes; not to be made available in chrome://flags. When
+// enabled and Chrome Upstream requests the cardholder name in the offer-to-save
+// dialog, the field will be blank instead of being prefilled with the name from
+// the user's Google Account.
 const base::Feature kAutofillUpstreamBlankCardholderNameField{
     "AutofillUpstreamBlankCardholderNameField",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -147,6 +156,9 @@ const base::Feature kAutofillUpstreamDisallowElo{
 const base::Feature kAutofillUpstreamDisallowJcb{
     "AutofillUpstreamDisallowJcb", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, Chrome Upstream can request the user to enter/confirm cardholder
+// name in the offer-to-save bubble if it was not detected or was conflicting
+// during the checkout flow and the user is NOT a Google Payments customer.
 const base::Feature kAutofillUpstreamEditableCardholderName{
   "AutofillUpstreamEditableCardholderName",
 #if defined(OS_ANDROID)
@@ -160,23 +172,14 @@ const base::Feature kAutofillUpstreamEditableExpirationDate{
     "AutofillUpstreamEditableExpirationDate",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether the PaymentsCustomerData is used to make requests to
-// Google Payments.
-const base::Feature kAutofillUsePaymentsCustomerData{
-    "AutofillUsePaymentsCustomerData", base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled() {
-  return base::FeatureList::IsEnabled(
-      features::kAutofillUpstreamAlwaysRequestCardholderName);
-}
-
-bool IsAutofillUpstreamBlankCardholderNameFieldExperimentEnabled() {
-  return base::FeatureList::IsEnabled(
-      features::kAutofillUpstreamBlankCardholderNameField);
-}
-
-bool IsAutofillUpstreamEditableCardholderNameExperimentEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillUpstreamEditableCardholderName);
+bool ShouldShowImprovedUserConsentForCreditCardSave() {
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  // The new user consent UI is fully launched on MacOS, Windows and Linux.
+  return true;
+#endif
+  // Chrome OS does not have the new UI.
+  return false;
 }
 
 }  // namespace features

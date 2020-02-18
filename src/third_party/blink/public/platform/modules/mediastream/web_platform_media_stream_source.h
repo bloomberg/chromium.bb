@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
@@ -32,15 +33,15 @@ class BLINK_PLATFORM_EXPORT WebPlatformMediaStreamSource {
 
   using ConstraintsCallback =
       base::Callback<void(WebPlatformMediaStreamSource* source,
-                          MediaStreamRequestResult result,
+                          mojom::MediaStreamRequestResult result,
                           const WebString& result_name)>;
   using ConstraintsRepeatingCallback =
       base::RepeatingCallback<void(WebPlatformMediaStreamSource* source,
-                                   MediaStreamRequestResult result,
+                                   mojom::MediaStreamRequestResult result,
                                    const WebString& result_name)>;
   using ConstraintsOnceCallback =
       base::OnceCallback<void(WebPlatformMediaStreamSource* source,
-                              MediaStreamRequestResult result,
+                              mojom::MediaStreamRequestResult result,
                               const WebString& result_name)>;
 
   // Source constraints key for

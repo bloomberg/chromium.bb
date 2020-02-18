@@ -100,12 +100,12 @@ class SwapChainPresenter {
   // |protected_video_type|. Returns true on success.
   bool ReallocateSwapChain(const gfx::Size& swap_chain_size,
                            bool use_yuv_swap_chain,
-                           ui::ProtectedVideoType protected_video_type,
+                           gfx::ProtectedVideoType protected_video_type,
                            bool z_order);
 
   // Returns true if YUV swap chain should be preferred over BGRA swap chain.
   // This changes over time based on stats recorded in |presentation_history|.
-  bool ShouldUseYUVSwapChain(ui::ProtectedVideoType protected_video_type);
+  bool ShouldUseYUVSwapChain(gfx::ProtectedVideoType protected_video_type);
 
   // Perform a blit using video processor from given input texture to swap chain
   // backbuffer. |input_texture| is the input texture (array), and |input_level|
@@ -159,7 +159,8 @@ class SwapChainPresenter {
 
   // Whether the current swap chain is presenting protected video, software
   // or hardware protection.
-  ui::ProtectedVideoType protected_video_type_ = ui::ProtectedVideoType::kClear;
+  gfx::ProtectedVideoType protected_video_type_ =
+      gfx::ProtectedVideoType::kClear;
 
   // Presentation history to track if swap chain was composited or used hardware
   // overlays.

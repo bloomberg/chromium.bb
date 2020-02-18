@@ -191,7 +191,7 @@ void NonBlockingTypeCommitContribution::PopulateCommitProto(
   commit_proto->set_version(commit_entity.base_version);
   commit_proto->set_deleted(entity_data.is_deleted());
   commit_proto->set_folder(entity_data.is_folder);
-  commit_proto->set_name(entity_data.non_unique_name);
+  commit_proto->set_name(entity_data.name);
 
   if (!entity_data.is_deleted()) {
     // Handle bookmarks separately.

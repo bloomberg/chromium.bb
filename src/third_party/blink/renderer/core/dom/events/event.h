@@ -111,20 +111,20 @@ class CORE_EXPORT Event : public ScriptWrappable {
         Bubbles,
         Cancelable,
         ComposedMode,
-        TimeTicks platform_time_stamp);
+        base::TimeTicks platform_time_stamp);
   Event(const AtomicString& type,
         Bubbles,
         Cancelable,
-        TimeTicks platform_time_stamp);
+        base::TimeTicks platform_time_stamp);
   Event(const AtomicString& type,
         Bubbles,
         Cancelable,
         ComposedMode = ComposedMode::kScoped);
   Event(const AtomicString& type,
         const EventInit*,
-        TimeTicks platform_time_stamp);
+        base::TimeTicks platform_time_stamp);
   Event(const AtomicString& type, const EventInit* init)
-      : Event(type, init, CurrentTimeTicks()) {}
+      : Event(type, init, base::TimeTicks::Now()) {}
   ~Event() override;
 
   void initEvent(const AtomicString& type, bool bubbles, bool cancelable);
@@ -185,7 +185,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
   // using the platform timestamp (see |platform_time_stamp_|).
   // For more info see http://crbug.com/160524
   double timeStamp(ScriptState*) const;
-  TimeTicks PlatformTimeStamp() const { return platform_time_stamp_; }
+  base::TimeTicks PlatformTimeStamp() const { return platform_time_stamp_; }
 
   void stopPropagation() { propagation_stopped_ = true; }
   void SetStopPropagation(bool stop_propagation) {
@@ -279,10 +279,6 @@ class CORE_EXPORT Event : public ScriptWrappable {
 
   void SetHandlingPassive(PassiveMode);
 
-  bool PreventDefaultCalledDuringPassive() const {
-    return prevent_default_called_during_passive_;
-  }
-
   bool PreventDefaultCalledOnUncancelableEvent() const {
     return prevent_default_called_on_uncancelable_event_;
   }
@@ -332,9 +328,6 @@ class CORE_EXPORT Event : public ScriptWrappable {
   unsigned was_initialized_ : 1;
   unsigned is_trusted_ : 1;
 
-  // Whether preventDefault was called when |handling_passive_| is
-  // true. This field is reset on each call to SetHandlingPassive.
-  unsigned prevent_default_called_during_passive_ : 1;
   // Whether preventDefault was called on uncancelable event.
   unsigned prevent_default_called_on_uncancelable_event_ : 1;
 
@@ -356,7 +349,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
   // The monotonic platform time in seconds, for input events it is the
   // event timestamp provided by the host OS and reported in the original
   // WebInputEvent instance.
-  TimeTicks platform_time_stamp_;
+  base::TimeTicks platform_time_stamp_;
 };
 
 #define DEFINE_EVENT_TYPE_CASTS(typeName)                          \

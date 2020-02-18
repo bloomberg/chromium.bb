@@ -27,7 +27,6 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/version_info/version_info.h"
-#include "components/webdata_services/web_data_service_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -78,7 +77,7 @@ class MockAutofillClient : public TestAutofillClient {
 class MockSuggestionsHandler
     : public AutocompleteHistoryManager::SuggestionsHandler {
  public:
-  MockSuggestionsHandler() : weak_ptr_factory_(this) {}
+  MockSuggestionsHandler() {}
 
   MOCK_METHOD3(OnSuggestionsReturned,
                void(int query_id,
@@ -90,7 +89,7 @@ class MockSuggestionsHandler
   }
 
  private:
-  base::WeakPtrFactory<MockSuggestionsHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<MockSuggestionsHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockSuggestionsHandler);
 };
@@ -256,6 +255,42 @@ TEST_F(AutocompleteHistoryManagerTest, AutocompleteFeatureOff) {
   EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_)).Times(0);
   autocomplete_manager_->OnWillSubmitForm(form,
                                           /*is_autocomplete_enabled=*/false);
+}
+
+// Verify that we don't save invalid values in Autocomplete.
+TEST_F(AutocompleteHistoryManagerTest, InvalidValues) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.url = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  // Search field.
+  FormFieldData search_field;
+
+  // Empty value.
+  search_field.label = ASCIIToUTF16("Search");
+  search_field.name = ASCIIToUTF16("search");
+  search_field.value = ASCIIToUTF16("");
+  search_field.form_control_type = "search";
+  form.fields.push_back(search_field);
+
+  // Single whitespace.
+  search_field.label = ASCIIToUTF16("Search2");
+  search_field.name = ASCIIToUTF16("other search");
+  search_field.value = ASCIIToUTF16(" ");
+  search_field.form_control_type = "search";
+  form.fields.push_back(search_field);
+
+  // Multiple whitespaces.
+  search_field.label = ASCIIToUTF16("Search3");
+  search_field.name = ASCIIToUTF16("other search");
+  search_field.value = ASCIIToUTF16("      ");
+  search_field.form_control_type = "search";
+  form.fields.push_back(search_field);
+
+  EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_)).Times(0);
+  autocomplete_manager_->OnWillSubmitForm(form,
+                                          /*is_autocomplete_enabled=*/true);
 }
 
 // Tests that text entered into fields specifying autocomplete="off" is not sent

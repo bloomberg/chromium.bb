@@ -26,7 +26,7 @@ void OfflinePageBookmarkObserver::BookmarkModelChanged() {}
 void OfflinePageBookmarkObserver::BookmarkNodeRemoved(
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* parent,
-    int old_index,
+    size_t old_index,
     const bookmarks::BookmarkNode* node,
     const std::set<GURL>& removed_urls) {
   if (!offline_page_model_) {

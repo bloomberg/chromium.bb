@@ -5,8 +5,9 @@
 #include "cc/test/fake_compositor_frame_reporting_controller.h"
 
 namespace cc {
-FakeCompositorFrameReportingController::FakeCompositorFrameReportingController()
-    : CompositorFrameReportingController() {}
+FakeCompositorFrameReportingController::FakeCompositorFrameReportingController(
+    bool is_single_threaded)
+    : CompositorFrameReportingController(is_single_threaded) {}
 
 void FakeCompositorFrameReportingController::WillBeginMainFrame() {
   if (!reporters_[PipelineStage::kBeginImplFrame])
@@ -43,4 +44,15 @@ void FakeCompositorFrameReportingController::DidActivate() {
     WillActivate();
   CompositorFrameReportingController::DidActivate();
 }
+
+void FakeCompositorFrameReportingController::DidSubmitCompositorFrame(
+    uint32_t frame_token) {
+  CompositorFrameReportingController::DidSubmitCompositorFrame(frame_token);
+  CompositorFrameReportingController::DidPresentCompositorFrame(
+      frame_token, base::TimeTicks::Now());
+}
+
+void FakeCompositorFrameReportingController::DidPresentCompositorFrame(
+    uint32_t frame_token,
+    base::TimeTicks presentation_time) {}
 }  // namespace cc

@@ -35,6 +35,8 @@
 #include <set>
 
 #include "base/single_thread_task_runner.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
@@ -80,6 +82,7 @@ class WebViewImpl;
 enum class WebFrameLoadType;
 struct WebContentSecurityPolicyViolation;
 struct WebPrintParams;
+class WindowAgentFactory;
 
 template <typename T>
 class WebVector;
@@ -233,7 +236,7 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void DispatchMessageEventWithOriginCheck(
       const WebSecurityOrigin& intended_target_origin,
-      const WebDOMEvent&,
+      const WebDOMMessageEvent&,
       bool has_user_gesture) override;
 
   WebRect GetSelectionBoundsRectForTesting() const override;
@@ -265,7 +268,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool IsLoading() const override;
   bool IsNavigationScheduledWithin(double interval) const override;
   void NotifyUserActivation() override;
-  void BlinkFeatureUsageReport(const std::set<int>& features) override;
+  void BlinkFeatureUsageReport(
+      const std::set<blink::mojom::WebFeature>& features) override;
+  void BlinkFeatureUsageReport(blink::mojom::WebFeature feature) override;
   void MixedContentFound(const WebURL& main_resource_url,
                          const WebURL& mixed_content_url,
                          mojom::RequestContextType,
@@ -299,7 +304,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                             WebString& clip_html,
                             WebRect& clip_rect) override;
   void AdvanceFocusInForm(WebFocusType) override;
-  bool CanFocusedFieldBeAutofilled() const override;
+  bool TryToShowTouchToFillForFocusedElement() override;
   void PerformMediaPlayerAction(const WebPoint&,
                                 const WebMediaPlayerAction&) override;
   void OnPortalActivated(const base::UnguessableToken& portal_token,
@@ -342,7 +347,14 @@ class CORE_EXPORT WebLocalFrameImpl final
   void WasHidden() override;
   void WasShown() override;
 
-  void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
+  void InitializeCoreFrame(
+      Page&,
+      FrameOwner*,
+      const AtomicString& name,
+      WindowAgentFactory*,
+      WebSandboxFlags sandbox_flags = WebSandboxFlags::kNone,
+      const FeaturePolicy::FeatureState& opener_feature_state =
+          FeaturePolicy::FeatureState());
   LocalFrame* GetFrame() const { return frame_.Get(); }
 
   void WillBeDetached();
@@ -372,8 +384,8 @@ class CORE_EXPORT WebLocalFrameImpl final
                                HTMLFrameOwnerElement*);
   std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
-      mojom::blink::PortalAssociatedRequest,
-      mojom::blink::PortalClientAssociatedPtrInfo);
+      mojo::PendingAssociatedReceiver<mojom::blink::Portal>,
+      mojo::PendingAssociatedRemote<mojom::blink::PortalClient>);
   RemoteFrame* AdoptPortal(HTMLPortalElement*);
 
   void DidChangeContentsSize(const IntSize&);

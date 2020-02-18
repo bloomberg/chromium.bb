@@ -7,8 +7,6 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_targeter.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -21,6 +19,11 @@
 
 #if defined(OS_WIN)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 #endif
 
 namespace message_center {
@@ -102,7 +105,7 @@ void MessagePopupView::AutoCollapse() {
 
 void MessagePopupView::Show() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.keep_on_top = true;
+  params.z_order = ui::ZOrderLevel::kFloatingWindow;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Make the widget explicitly activatable as TYPE_POPUP is not activatable by
   // default but we need focus for the inline reply textarea.

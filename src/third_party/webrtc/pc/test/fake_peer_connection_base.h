@@ -144,6 +144,8 @@ class FakePeerConnectionBase : public PeerConnectionInternal {
     return nullptr;
   }
 
+  void RestartIce() override {}
+
   void CreateOffer(CreateSessionDescriptionObserver* observer,
                    const RTCOfferAnswerOptions& options) override {}
 
@@ -186,10 +188,6 @@ class FakePeerConnectionBase : public PeerConnectionInternal {
     return RTCError(RTCErrorType::UNSUPPORTED_OPERATION, "Not implemented");
   }
 
-  void SetBitrateAllocationStrategy(
-      std::unique_ptr<rtc::BitrateAllocationStrategy>
-          bitrate_allocation_strategy) override {}
-
   void SetAudioPlayout(bool playout) override {}
 
   void SetAudioRecording(bool recording) override {}
@@ -207,11 +205,6 @@ class FakePeerConnectionBase : public PeerConnectionInternal {
 
   IceGatheringState ice_gathering_state() override {
     return IceGatheringState::kIceGatheringNew;
-  }
-
-  bool StartRtcEventLog(rtc::PlatformFile file,
-                        int64_t max_size_bytes) override {
-    return false;
   }
 
   bool StartRtcEventLog(std::unique_ptr<RtcEventLogOutput> output,

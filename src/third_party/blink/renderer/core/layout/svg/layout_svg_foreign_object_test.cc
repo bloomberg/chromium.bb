@@ -64,7 +64,7 @@ TEST_F(LayoutSVGForeignObjectTest, DivInForeignObject) {
   EXPECT_EQ(svg, HitTest(450, 350));
 
   // Rect based hit testing
-  auto results = RectBasedHitTest(LayoutRect(0, 0, 300, 300));
+  auto results = RectBasedHitTest(PhysicalRect(0, 0, 300, 300));
   int count = 0;
   EXPECT_EQ(3u, results.size());
   for (auto result : results) {
@@ -138,7 +138,7 @@ TEST_F(LayoutSVGForeignObjectTest, IframeInForeignObject) {
   EXPECT_EQ(svg, HitTest(450, 400));
 
   // Rect based hit testing
-  auto results = RectBasedHitTest(LayoutRect(0, 0, 300, 300));
+  auto results = RectBasedHitTest(PhysicalRect(0, 0, 300, 300));
   int count = 0;
   EXPECT_EQ(7u, results.size());
   for (auto result : results) {
@@ -194,7 +194,7 @@ TEST_F(LayoutSVGForeignObjectTest, HitTestZoomedForeignObject) {
   EXPECT_EQ(div, HitTest(290, 290));
 
   // Rect based hit testing
-  auto results = RectBasedHitTest(LayoutRect(0, 0, 300, 300));
+  auto results = RectBasedHitTest(PhysicalRect(0, 0, 300, 300));
   int count = 0;
   EXPECT_EQ(3u, results.size());
   for (auto result : results) {
@@ -298,11 +298,11 @@ TEST_F(LayoutSVGForeignObjectTest,
   EXPECT_EQ(foreignObject, GetDocument().ElementFromPoint(205, 255));
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestLocation location((LayoutPoint(206, 206)));
+  HitTestLocation location((PhysicalOffset(206, 206)));
   HitTestResult result(request, location);
   GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(target, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(206, 206), result.PointInInnerNodeFrame());
+  EXPECT_EQ(PhysicalOffset(206, 206), result.PointInInnerNodeFrame());
 }
 
 TEST_F(LayoutSVGForeignObjectTest,
@@ -332,11 +332,11 @@ TEST_F(LayoutSVGForeignObjectTest,
   EXPECT_EQ(foreign_object, GetDocument().ElementFromPoint(235, 255));
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestLocation location((LayoutPoint(236, 206)));
+  HitTestLocation location((PhysicalOffset(236, 206)));
   HitTestResult result(request, location);
   GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(target, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(236, 206), result.PointInInnerNodeFrame());
+  EXPECT_EQ(PhysicalOffset(236, 206), result.PointInInnerNodeFrame());
 }
 
 TEST_F(LayoutSVGForeignObjectTest, HitTestUnderScrollingAncestor) {
@@ -362,11 +362,11 @@ TEST_F(LayoutSVGForeignObjectTest, HitTestUnderScrollingAncestor) {
   EXPECT_EQ(target, GetDocument().ElementFromPoint(450, 450));
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestLocation location((LayoutPoint(450, 450)));
+  HitTestLocation location((PhysicalOffset(450, 450)));
   HitTestResult result(request, location);
   GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(target, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(450, 450), result.PointInInnerNodeFrame());
+  EXPECT_EQ(PhysicalOffset(450, 450), result.PointInInnerNodeFrame());
 
   scroller.setScrollTop(3000);
 
@@ -374,7 +374,7 @@ TEST_F(LayoutSVGForeignObjectTest, HitTestUnderScrollingAncestor) {
 
   GetDocument().GetLayoutView()->HitTest(location, result);
   EXPECT_EQ(target, result.InnerNode());
-  EXPECT_EQ(LayoutPoint(450, 450), result.PointInInnerNodeFrame());
+  EXPECT_EQ(PhysicalOffset(450, 450), result.PointInInnerNodeFrame());
 }
 
 }  // namespace blink

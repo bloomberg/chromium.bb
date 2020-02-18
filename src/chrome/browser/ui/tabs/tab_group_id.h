@@ -11,6 +11,10 @@ class TabGroupId {
  public:
   static TabGroupId GenerateNew();
 
+  // This should only called with |token| returned from a previous |token()|
+  // call on a valid TabGroupId.
+  static TabGroupId FromRawToken(base::Token token);
+
   TabGroupId(const TabGroupId& other);
 
   TabGroupId& operator=(const TabGroupId& other);

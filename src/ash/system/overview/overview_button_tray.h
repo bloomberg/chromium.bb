@@ -6,10 +6,10 @@
 #define ASH_SYSTEM_OVERVIEW_OVERVIEW_BUTTON_TRAY_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/wm/overview/overview_observer.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "ui/events/event_constants.h"
 
@@ -48,8 +48,6 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   // Sets the ink drop ripple to ACTIVATED immediately with no animations.
   void SnapRippleToActivated();
 
-  void UpdateIconVisibility();
-
   // views::Button:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
@@ -76,6 +74,10 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
 
  private:
   friend class OverviewButtonTrayTest;
+
+  // Sets the icon to visible if tablet mode is enabled and
+  // OverviewController::CanSelect.
+  void UpdateIconVisibility();
 
   // Weak pointer, will be parented by TrayContainer for its lifetime.
   views::ImageView* icon_;

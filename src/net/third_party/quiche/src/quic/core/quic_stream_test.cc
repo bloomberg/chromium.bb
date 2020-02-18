@@ -49,8 +49,8 @@ class TestStream : public QuicStream {
   TestStream(QuicStreamId id, QuicSession* session, StreamType type)
       : QuicStream(id, session, /*is_static=*/false, type) {}
 
-  TestStream(PendingStream pending, StreamType type, bool is_static)
-      : QuicStream(std::move(pending), type, is_static) {}
+  TestStream(PendingStream* pending, StreamType type, bool is_static)
+      : QuicStream(pending, type, is_static) {}
 
   void OnDataAvailable() override {}
 
@@ -121,11 +121,6 @@ class QuicStreamTestBase : public QuicTestWithParam<ParsedQuicVersion> {
     return QuicConsumedData(1, false);
   }
 
-  bool ClearControlFrame(const QuicFrame& frame) {
-    DeleteFrame(&const_cast<QuicFrame&>(frame));
-    return true;
-  }
-
   bool ClearResetStreamFrame(const QuicFrame& frame) {
     EXPECT_EQ(RST_STREAM_FRAME, frame.type);
     DeleteFrame(&const_cast<QuicFrame&>(frame));
@@ -175,11 +170,11 @@ TEST_P(QuicStreamTest, PendingStreamStaticness) {
   Initialize();
 
   PendingStream pending(kTestStreamId + 2, session_.get());
-  TestStream stream(std::move(pending), StreamType::BIDIRECTIONAL, false);
+  TestStream stream(&pending, StreamType::BIDIRECTIONAL, false);
   EXPECT_FALSE(stream.is_static());
 
   PendingStream pending2(kTestStreamId + 3, session_.get());
-  TestStream stream2(std::move(pending2), StreamType::BIDIRECTIONAL, true);
+  TestStream stream2(&pending2, StreamType::BIDIRECTIONAL, true);
   EXPECT_TRUE(stream2.is_static());
 }
 
@@ -240,7 +235,7 @@ TEST_P(QuicStreamTest, FromPendingStream) {
   QuicStreamFrame frame2(kTestStreamId + 2, true, 3, QuicStringPiece("."));
   pending.OnStreamFrame(frame2);
 
-  TestStream stream(std::move(pending), StreamType::READ_UNIDIRECTIONAL, false);
+  TestStream stream(&pending, StreamType::READ_UNIDIRECTIONAL, false);
   EXPECT_EQ(3, stream.num_frames_received());
   EXPECT_EQ(3u, stream.stream_bytes_read());
   EXPECT_EQ(1, stream.num_duplicate_frames_received());
@@ -259,8 +254,8 @@ TEST_P(QuicStreamTest, FromPendingStreamThenData) {
   QuicStreamFrame frame(kTestStreamId + 2, false, 2, QuicStringPiece("."));
   pending.OnStreamFrame(frame);
 
-  auto stream = new TestStream(std::move(pending),
-                               StreamType::READ_UNIDIRECTIONAL, false);
+  auto stream =
+      new TestStream(&pending, StreamType::READ_UNIDIRECTIONAL, false);
   session_->ActivateStream(QuicWrapUnique(stream));
 
   QuicStreamFrame frame2(kTestStreamId + 2, true, 3, QuicStringPiece("."));
@@ -314,6 +309,9 @@ TEST_P(QuicStreamTest, BlockIfOnlySomeDataConsumed) {
                                             NO_FIN);
       }));
   stream_->WriteOrBufferData(QuicStringPiece(kData1, 2), false, nullptr);
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   ASSERT_EQ(1u, write_blocked_list_->NumBlockedStreams());
   EXPECT_EQ(1u, stream_->BufferedDataBytes());
 }
@@ -331,6 +329,9 @@ TEST_P(QuicStreamTest, BlockIfFinNotConsumedWithData) {
                                             NO_FIN);
       }));
   stream_->WriteOrBufferData(QuicStringPiece(kData1, 2), true, nullptr);
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   ASSERT_EQ(1u, write_blocked_list_->NumBlockedStreams());
 }
 
@@ -376,6 +377,10 @@ TEST_P(QuicStreamTest, WriteOrBufferData) {
                                             kDataLen - 1, 0u, NO_FIN);
       }));
   stream_->WriteOrBufferData(kData1, false, nullptr);
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
+
   EXPECT_EQ(1u, stream_->BufferedDataBytes());
   EXPECT_TRUE(HasWriteBlockedStreams());
 
@@ -390,6 +395,9 @@ TEST_P(QuicStreamTest, WriteOrBufferData) {
                                             kDataLen - 1, kDataLen - 1, NO_FIN);
       }));
   stream_->OnCanWrite();
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
 
   // And finally the end of the bytes_consumed.
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
@@ -398,6 +406,9 @@ TEST_P(QuicStreamTest, WriteOrBufferData) {
                                             2 * kDataLen - 2, NO_FIN);
       }));
   stream_->OnCanWrite();
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
 }
 
 TEST_P(QuicStreamTest, WriteOrBufferDataReachStreamLimit) {
@@ -408,6 +419,9 @@ TEST_P(QuicStreamTest, WriteOrBufferDataReachStreamLimit) {
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Invoke(&(MockQuicSession::ConsumeData)));
   stream_->WriteOrBufferData(data, false, nullptr);
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   EXPECT_CALL(*connection_, CloseConnection(QUIC_STREAM_LENGTH_OVERFLOW, _, _));
   EXPECT_QUIC_BUG(stream_->WriteOrBufferData("a", false, nullptr),
                   "Write too many data via stream");
@@ -442,12 +456,18 @@ TEST_P(QuicStreamTest, RstAlwaysSentIfNoFinSent) {
                                             NO_FIN);
       }));
   stream_->WriteOrBufferData(QuicStringPiece(kData1, 1), false, nullptr);
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   EXPECT_FALSE(fin_sent());
   EXPECT_FALSE(rst_sent());
 
   // Now close the stream, and expect that we send a RST.
   EXPECT_CALL(*session_, SendRstStream(_, _, _));
   stream_->OnClose();
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
   EXPECT_FALSE(fin_sent());
   EXPECT_TRUE(rst_sent());
 }
@@ -585,7 +605,7 @@ TEST_P(QuicStreamTest, StopReadingSendsFlowControl) {
       .Times(0);
   EXPECT_CALL(*connection_, SendControlFrame(_))
       .Times(AtLeast(1))
-      .WillRepeatedly(Invoke(this, &QuicStreamTest::ClearControlFrame));
+      .WillRepeatedly(Invoke(&ClearControlFrame));
 
   std::string data(1000, 'x');
   for (QuicStreamOffset offset = 0;
@@ -719,6 +739,11 @@ TEST_P(QuicStreamTest, StreamTooLong) {
 }
 
 TEST_P(QuicParameterizedStreamTest, SetDrainingIncomingOutgoing) {
+  if (GetParam().handshake_protocol == PROTOCOL_TLS1_3) {
+    // TODO(nharper, b/112643533): Figure out why this test fails when TLS is
+    // enabled and fix it.
+    return;
+  }
   // Don't have incoming data consumed.
   Initialize();
 
@@ -748,6 +773,11 @@ TEST_P(QuicParameterizedStreamTest, SetDrainingIncomingOutgoing) {
 }
 
 TEST_P(QuicParameterizedStreamTest, SetDrainingOutgoingIncoming) {
+  if (GetParam().handshake_protocol == PROTOCOL_TLS1_3) {
+    // TODO(nharper, b/112643533): Figure out why this test fails when TLS is
+    // enabled and fix it.
+    return;
+  }
   // Don't have incoming data consumed.
   Initialize();
 
@@ -808,9 +838,15 @@ TEST_P(QuicStreamTest, StreamWaitsForAcks) {
   // Stream is not waiting for acks initially.
   EXPECT_FALSE(stream_->IsWaitingForAcks());
   EXPECT_EQ(0u, QuicStreamPeer::SendBuffer(stream_).size());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
 
   // Send kData1.
   stream_->WriteOrBufferData(kData1, false, nullptr);
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(1u, QuicStreamPeer::SendBuffer(stream_).size());
   EXPECT_TRUE(stream_->IsWaitingForAcks());
   QuicByteCount newly_acked_length = 0;
@@ -819,11 +855,17 @@ TEST_P(QuicStreamTest, StreamWaitsForAcks) {
   EXPECT_EQ(9u, newly_acked_length);
   // Stream is not waiting for acks as all sent data is acked.
   EXPECT_FALSE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(0u, QuicStreamPeer::SendBuffer(stream_).size());
 
   // Send kData2.
   stream_->WriteOrBufferData(kData2, false, nullptr);
   EXPECT_TRUE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(1u, QuicStreamPeer::SendBuffer(stream_).size());
   // Send FIN.
   stream_->WriteOrBufferData("", true, nullptr);
@@ -839,6 +881,9 @@ TEST_P(QuicStreamTest, StreamWaitsForAcks) {
   EXPECT_EQ(9u, newly_acked_length);
   // Stream is waiting for acks as FIN is not acked.
   EXPECT_TRUE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(0u, QuicStreamPeer::SendBuffer(stream_).size());
 
   // FIN is acked.
@@ -846,6 +891,9 @@ TEST_P(QuicStreamTest, StreamWaitsForAcks) {
                                           &newly_acked_length));
   EXPECT_EQ(0u, newly_acked_length);
   EXPECT_FALSE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(0u, QuicStreamPeer::SendBuffer(stream_).size());
 }
 
@@ -860,26 +908,43 @@ TEST_P(QuicStreamTest, StreamDataGetAckedOutOfOrder) {
   stream_->WriteOrBufferData("", true, nullptr);
   EXPECT_EQ(3u, QuicStreamPeer::SendBuffer(stream_).size());
   EXPECT_TRUE(stream_->IsWaitingForAcks());
-
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   QuicByteCount newly_acked_length = 0;
   EXPECT_TRUE(stream_->OnStreamFrameAcked(9, 9, false, QuicTime::Delta::Zero(),
                                           &newly_acked_length));
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(9u, newly_acked_length);
   EXPECT_EQ(3u, QuicStreamPeer::SendBuffer(stream_).size());
   EXPECT_TRUE(stream_->OnStreamFrameAcked(18, 9, false, QuicTime::Delta::Zero(),
                                           &newly_acked_length));
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(9u, newly_acked_length);
   EXPECT_EQ(3u, QuicStreamPeer::SendBuffer(stream_).size());
   EXPECT_TRUE(stream_->OnStreamFrameAcked(0, 9, false, QuicTime::Delta::Zero(),
                                           &newly_acked_length));
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(9u, newly_acked_length);
   EXPECT_EQ(0u, QuicStreamPeer::SendBuffer(stream_).size());
   // FIN is not acked yet.
   EXPECT_TRUE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   EXPECT_TRUE(stream_->OnStreamFrameAcked(27, 0, true, QuicTime::Delta::Zero(),
                                           &newly_acked_length));
   EXPECT_EQ(0u, newly_acked_length);
   EXPECT_FALSE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
 }
 
 TEST_P(QuicStreamTest, CancelStream) {
@@ -887,22 +952,43 @@ TEST_P(QuicStreamTest, CancelStream) {
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
   EXPECT_FALSE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(0u, QuicStreamPeer::SendBuffer(stream_).size());
 
   stream_->WriteOrBufferData(kData1, false, nullptr);
   EXPECT_TRUE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(1u, QuicStreamPeer::SendBuffer(stream_).size());
   // Cancel stream.
   stream_->Reset(QUIC_STREAM_NO_ERROR);
   // stream still waits for acks as the error code is QUIC_STREAM_NO_ERROR, and
   // data is going to be retransmitted.
   EXPECT_TRUE(stream_->IsWaitingForAcks());
-  EXPECT_CALL(*session_,
-              SendRstStream(stream_->id(), QUIC_STREAM_CANCELLED, 9));
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
+  EXPECT_CALL(*connection_,
+              OnStreamReset(stream_->id(), QUIC_STREAM_CANCELLED));
+  EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
+  EXPECT_CALL(*session_, SendRstStream(stream_->id(), QUIC_STREAM_CANCELLED, 9))
+      .WillOnce(InvokeWithoutArgs([this]() {
+        return QuicSessionPeer::SendRstStreamInner(
+            session_.get(), stream_->id(), QUIC_STREAM_CANCELLED,
+            stream_->stream_bytes_written(),
+            /*close_write_side_only=*/false);
+      }));
+
   stream_->Reset(QUIC_STREAM_CANCELLED);
   EXPECT_EQ(1u, QuicStreamPeer::SendBuffer(stream_).size());
   // Stream stops waiting for acks as data is not going to be retransmitted.
   EXPECT_FALSE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
 }
 
 TEST_P(QuicStreamTest, RstFrameReceivedStreamNotFinishSending) {
@@ -910,10 +996,16 @@ TEST_P(QuicStreamTest, RstFrameReceivedStreamNotFinishSending) {
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
   EXPECT_FALSE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(0u, QuicStreamPeer::SendBuffer(stream_).size());
 
   stream_->WriteOrBufferData(kData1, false, nullptr);
   EXPECT_TRUE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(1u, QuicStreamPeer::SendBuffer(stream_).size());
 
   // RST_STREAM received.
@@ -926,6 +1018,9 @@ TEST_P(QuicStreamTest, RstFrameReceivedStreamNotFinishSending) {
   // Stream stops waiting for acks as it does not finish sending and rst is
   // sent.
   EXPECT_FALSE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
 }
 
 TEST_P(QuicStreamTest, RstFrameReceivedStreamFinishSending) {
@@ -933,10 +1028,16 @@ TEST_P(QuicStreamTest, RstFrameReceivedStreamFinishSending) {
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
   EXPECT_FALSE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(0u, QuicStreamPeer::SendBuffer(stream_).size());
 
   stream_->WriteOrBufferData(kData1, true, nullptr);
   EXPECT_TRUE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
 
   // RST_STREAM received.
   EXPECT_CALL(*session_, SendRstStream(_, _, _)).Times(0);
@@ -945,6 +1046,9 @@ TEST_P(QuicStreamTest, RstFrameReceivedStreamFinishSending) {
   stream_->OnStreamReset(rst_frame);
   // Stream still waits for acks as it finishes sending and has unacked data.
   EXPECT_TRUE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(1u, QuicStreamPeer::SendBuffer(stream_).size());
 }
 
@@ -953,11 +1057,16 @@ TEST_P(QuicStreamTest, ConnectionClosed) {
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
   EXPECT_FALSE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
   EXPECT_EQ(0u, QuicStreamPeer::SendBuffer(stream_).size());
 
   stream_->WriteOrBufferData(kData1, false, nullptr);
   EXPECT_TRUE(stream_->IsWaitingForAcks());
-
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
   EXPECT_CALL(*session_,
               SendRstStream(stream_->id(), QUIC_RST_ACKNOWLEDGEMENT, 9));
   stream_->OnConnectionClosed(QUIC_INTERNAL_ERROR,
@@ -965,6 +1074,9 @@ TEST_P(QuicStreamTest, ConnectionClosed) {
   EXPECT_EQ(1u, QuicStreamPeer::SendBuffer(stream_).size());
   // Stream stops waiting for acks as connection is going to close.
   EXPECT_FALSE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
 }
 
 TEST_P(QuicStreamTest, CanWriteNewDataAfterData) {
@@ -993,6 +1105,8 @@ TEST_P(QuicStreamTest, WriteBufferedData) {
   stream_->WriteOrBufferData(data, false, nullptr);
   stream_->WriteOrBufferData(data, false, nullptr);
   stream_->WriteOrBufferData(data, false, nullptr);
+  EXPECT_TRUE(stream_->IsWaitingForAcks());
+
   // Verify all data is saved.
   EXPECT_EQ(3 * data.length() - 100, stream_->BufferedDataBytes());
 
@@ -1205,12 +1319,20 @@ TEST_P(QuicStreamTest, StreamDataGetAckedMultipleTimes) {
   Initialize();
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
+  EXPECT_FALSE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
+
   // Send [0, 27) and fin.
   stream_->WriteOrBufferData(kData1, false, nullptr);
   stream_->WriteOrBufferData(kData1, false, nullptr);
   stream_->WriteOrBufferData(kData1, true, nullptr);
   EXPECT_EQ(3u, QuicStreamPeer::SendBuffer(stream_).size());
   EXPECT_TRUE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
 
   // Ack [0, 9), [5, 22) and [18, 26)
   // Verify [0, 9) 9 bytes are acked.
@@ -1230,6 +1352,9 @@ TEST_P(QuicStreamTest, StreamDataGetAckedMultipleTimes) {
   EXPECT_EQ(4u, newly_acked_length);
   EXPECT_EQ(1u, QuicStreamPeer::SendBuffer(stream_).size());
   EXPECT_TRUE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
 
   // Ack [0, 27). Verify [26, 27) 1 byte is acked.
   EXPECT_TRUE(stream_->OnStreamFrameAcked(26, 1, false, QuicTime::Delta::Zero(),
@@ -1237,6 +1362,9 @@ TEST_P(QuicStreamTest, StreamDataGetAckedMultipleTimes) {
   EXPECT_EQ(1u, newly_acked_length);
   EXPECT_EQ(0u, QuicStreamPeer::SendBuffer(stream_).size());
   EXPECT_TRUE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_TRUE(session_->HasUnackedStreamData());
+  }
 
   // Ack Fin.
   EXPECT_TRUE(stream_->OnStreamFrameAcked(27, 0, true, QuicTime::Delta::Zero(),
@@ -1244,6 +1372,9 @@ TEST_P(QuicStreamTest, StreamDataGetAckedMultipleTimes) {
   EXPECT_EQ(0u, newly_acked_length);
   EXPECT_EQ(0u, QuicStreamPeer::SendBuffer(stream_).size());
   EXPECT_FALSE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
 
   // Ack [10, 27) and fin. No new data is acked.
   EXPECT_FALSE(stream_->OnStreamFrameAcked(
@@ -1251,6 +1382,9 @@ TEST_P(QuicStreamTest, StreamDataGetAckedMultipleTimes) {
   EXPECT_EQ(0u, newly_acked_length);
   EXPECT_EQ(0u, QuicStreamPeer::SendBuffer(stream_).size());
   EXPECT_FALSE(stream_->IsWaitingForAcks());
+  if (GetQuicReloadableFlag(quic_ignore_tlpr_if_no_pending_stream_data)) {
+    EXPECT_FALSE(session_->HasUnackedStreamData());
+  }
 }
 
 TEST_P(QuicStreamTest, OnStreamFrameLost) {
@@ -1354,7 +1488,7 @@ TEST_P(QuicStreamTest, MarkConnectionLevelWriteBlockedOnWindowUpdateFrame) {
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
   EXPECT_CALL(*connection_, SendControlFrame(_))
-      .WillOnce(Invoke(this, &QuicStreamTest::ClearControlFrame));
+      .WillOnce(Invoke(&ClearControlFrame));
   std::string data(1024, '.');
   stream_->WriteOrBufferData(data, false, nullptr);
   EXPECT_FALSE(HasWriteBlockedStreams());
@@ -1380,7 +1514,7 @@ TEST_P(QuicStreamTest,
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
   EXPECT_CALL(*connection_, SendControlFrame(_))
-      .WillOnce(Invoke(this, &QuicStreamTest::ClearControlFrame));
+      .WillOnce(Invoke(&ClearControlFrame));
   stream_->WriteOrBufferData(data, false, nullptr);
   EXPECT_FALSE(HasWriteBlockedStreams());
 
@@ -1482,7 +1616,7 @@ TEST_P(QuicParameterizedStreamTest, CheckStopSending) {
   EXPECT_FALSE(stream_->write_side_closed());
   EXPECT_FALSE(QuicStreamPeer::read_side_closed(stream_));
   // Expect to actually see a stop sending if and only if we are in version 99.
-  if (connection_->transport_version() == QUIC_VERSION_99) {
+  if (VersionHasIetfQuicFrames(connection_->transport_version())) {
     EXPECT_CALL(*session_, SendStopSending(kStopSendingCode, stream_->id()))
         .Times(1);
   } else {
@@ -1506,7 +1640,7 @@ TEST_P(QuicStreamTest, OnStreamResetReadOrReadWrite) {
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream_->id(),
                                QUIC_STREAM_CANCELLED, 1234);
   stream_->OnStreamReset(rst_frame);
-  if (connection_->transport_version() == QUIC_VERSION_99) {
+  if (VersionHasIetfQuicFrames(connection_->transport_version())) {
     // Version 99/IETF QUIC should close just the read side.
     EXPECT_TRUE(QuicStreamPeer::read_side_closed(stream_));
     EXPECT_FALSE(stream_->write_side_closed());
@@ -1521,7 +1655,7 @@ TEST_P(QuicStreamTest, OnStreamResetReadOrReadWrite) {
 // If not V99, the test is a noop (no STOP_SENDING in Google QUIC).
 TEST_P(QuicStreamTest, OnStopSendingReadOrReadWrite) {
   Initialize();
-  if (connection_->transport_version() != QUIC_VERSION_99) {
+  if (!VersionHasIetfQuicFrames(connection_->transport_version())) {
     return;
   }
 
@@ -1539,7 +1673,7 @@ TEST_P(QuicStreamTest, OnStopSendingReadOrReadWrite) {
 // SendOnlyRstStream must only send a RESET_STREAM (no bundled STOP_SENDING).
 TEST_P(QuicStreamTest, SendOnlyRstStream) {
   Initialize();
-  if (connection_->transport_version() != QUIC_VERSION_99) {
+  if (!VersionHasIetfQuicFrames(connection_->transport_version())) {
     return;
   }
 
@@ -1557,6 +1691,23 @@ TEST_P(QuicStreamTest, SendOnlyRstStream) {
   // ResetStreamOnly should just close the write side.
   EXPECT_FALSE(QuicStreamPeer::read_side_closed(stream_));
   EXPECT_TRUE(stream_->write_side_closed());
+}
+
+TEST_P(QuicStreamTest, WindowUpdateForReadOnlyStream) {
+  SetQuicReloadableFlag(quic_no_window_update_on_read_only_stream, true);
+  Initialize();
+
+  QuicStreamId stream_id = QuicUtils::GetFirstUnidirectionalStreamId(
+      connection_->transport_version(), Perspective::IS_CLIENT);
+  TestStream stream(stream_id, session_.get(), READ_UNIDIRECTIONAL);
+  QuicWindowUpdateFrame window_update_frame(kInvalidControlFrameId, stream_id,
+                                            0);
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(
+          QUIC_WINDOW_UPDATE_RECEIVED_ON_READ_UNIDIRECTIONAL_STREAM,
+          "WindowUpdateFrame received on READ_UNIDIRECTIONAL stream.", _));
+  stream.OnWindowUpdateFrame(window_update_frame);
 }
 
 }  // namespace

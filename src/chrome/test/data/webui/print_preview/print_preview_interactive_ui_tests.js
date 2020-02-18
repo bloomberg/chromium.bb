@@ -45,7 +45,8 @@ const PrintPreviewInteractiveUITest = class extends PolymerInteractiveUITest {
   }
 };
 
-PrintPreviewPrintHeaderInteractiveTest =
+// eslint-disable-next-line no-var
+var PrintPreviewPrintHeaderInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
@@ -72,7 +73,8 @@ TEST_F(
           print_header_interactive_test.TestNames.FocusPrintOnReady);
     });
 
-PrintPreviewButtonStripInteractiveTest =
+// eslint-disable-next-line no-var
+var PrintPreviewButtonStripInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
@@ -106,19 +108,20 @@ TEST_F(
           button_strip_interactive_test.TestNames.FocusPrintOnReady);
     });
 
-PrintPreviewDestinationDialogInteractiveTest =
+// eslint-disable-next-line no-var
+var PrintPreviewDestinationDialogInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/destination_dialog.html';
+    return 'chrome://print/ui/destination_settings.html';
   }
 
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
       '//chrome/test/data/webui/settings/test_util.js',
-      '//ui/webui/resources/js/web_ui_listener_behavior.js',
       '../test_browser_proxy.js',
+      'cloud_print_interface_stub.js',
       'native_layer_stub.js',
       'print_preview_test_utils.js',
       'destination_dialog_interactive_test.js',
@@ -138,6 +141,14 @@ TEST_F(
           destination_dialog_interactive_test.TestNames.FocusSearchBox);
     });
 
+
+TEST_F(
+    'PrintPreviewDestinationDialogInteractiveTest', 'FocusSearchBoxOnSignIn',
+    function() {
+      this.runMochaTest(
+          destination_dialog_interactive_test.TestNames.FocusSearchBoxOnSignIn);
+    });
+
 TEST_F(
     'PrintPreviewDestinationDialogInteractiveTest', 'EscapeSearchBox',
     function() {
@@ -145,7 +156,9 @@ TEST_F(
           destination_dialog_interactive_test.TestNames.EscapeSearchBox);
     });
 
-PrintPreviewPagesSettingsTest = class extends PrintPreviewInteractiveUITest {
+// eslint-disable-next-line no-var
+var PrintPreviewPagesSettingsTest =
+    class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/pages_settings.html';
@@ -183,7 +196,8 @@ TEST_F(
           pages_settings_test.TestNames.EnterOnInputTriggersPrint);
     });
 
-PrintPreviewNumberSettingsSectionInteractiveTest =
+// eslint-disable-next-line no-var
+var PrintPreviewNumberSettingsSectionInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
@@ -212,7 +226,8 @@ TEST_F(
                             .BlurResetsEmptyInput);
     });
 
-PrintPreviewScalingSettingsInteractiveTest =
+// eslint-disable-next-line no-var
+var PrintPreviewScalingSettingsInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {

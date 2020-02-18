@@ -18,6 +18,7 @@
 #include "content/browser/isolation_context.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/browser/webui/url_data_manager_backend.h"
 #include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host_factory.h"
@@ -30,6 +31,17 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace content {
+
+namespace {
+
+// Returns true if CreateForURL() and related functions should be allowed to
+// return a default SiteInstance.
+bool ShouldAllowDefaultSiteInstance() {
+  return base::FeatureList::IsEnabled(
+      features::kProcessSharingWithDefaultSiteInstances);
+}
+
+}  // namespace
 
 int32_t SiteInstanceImpl::next_site_instance_id_ = 1;
 
@@ -90,8 +102,7 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForURL(
   // This will create a new SiteInstance and BrowsingInstance.
   scoped_refptr<BrowsingInstance> instance(
       new BrowsingInstance(browser_context));
-  return instance->GetSiteInstanceForURL(url,
-                                         /* allow_default_instance */ false);
+  return instance->GetSiteInstanceForURL(url, ShouldAllowDefaultSiteInstance());
 }
 
 // static
@@ -184,8 +195,12 @@ RenderProcessHost* SiteInstanceImpl::GetDefaultProcessIfUsable() {
   return browsing_instance_->default_process();
 }
 
-bool SiteInstanceImpl::IsDefaultSiteInstance() {
+bool SiteInstanceImpl::IsDefaultSiteInstance() const {
   return browsing_instance_->IsDefaultSiteInstance(this);
+}
+
+bool SiteInstanceImpl::IsSiteInDefaultSiteInstance(const GURL& site_url) const {
+  return browsing_instance_->IsSiteInDefaultSiteInstance(site_url);
 }
 
 void SiteInstanceImpl::MaybeSetBrowsingInstanceDefaultProcess() {
@@ -330,6 +345,17 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
   }
 }
 
+void SiteInstanceImpl::ConvertToDefaultOrSetSite(const GURL& url) {
+  DCHECK(!has_site_);
+
+  if (ShouldAllowDefaultSiteInstance() &&
+      browsing_instance_->TrySettingDefaultSiteInstance(this, url)) {
+    return;
+  }
+
+  SetSite(url);
+}
+
 const GURL& SiteInstanceImpl::GetSiteURL() {
   return site_;
 }
@@ -384,6 +410,20 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
   // GetRelatedSiteInstance(url).
   browsing_instance_->GetSiteAndLockForURL(
       url, /* allow_default_instance */ true, &site_url, &origin_lock);
+
+  // If this is a default SiteInstance and the BrowsingInstance gives us a
+  // non-default site URL even when we explicitly allow the default SiteInstance
+  // to be considered, then |url| does not belong in the same process as this
+  // SiteInstance. This can happen when the
+  // kProcessSharingWithDefaultSiteInstances feature is not enabled and the
+  // site URL is explicitly set on a SiteInstance for a URL that would normally
+  // be directed to the default SiteInstance (e.g. a site not requiring a
+  // dedicated process). This situation typically happens when the top-level
+  // frame is a site that should be in the default SiteInstance and the
+  // SiteInstance associated with that frame is initially a SiteInstance with
+  // no site URL set.
+  if (IsDefaultSiteInstance() && site_url != GetSiteURL())
+    return true;
 
   // Note that HasProcess() may return true if process_ is null, in
   // process-per-site cases where there's an existing process available.
@@ -480,6 +520,11 @@ bool SiteInstance::ShouldAssignSiteForURL(const GURL& url) {
 
 bool SiteInstanceImpl::IsSameSiteWithURL(const GURL& url) {
   if (IsDefaultSiteInstance()) {
+    // about:blank URLs should always be considered same site just like they are
+    // in IsSameWebSite().
+    if (url.IsAboutBlank())
+      return true;
+
     // Consider |url| the same site if it could be handled by the
     // default SiteInstance and we don't already have a SiteInstance for
     // this URL.
@@ -591,6 +636,14 @@ bool SiteInstanceImpl::IsSameWebSite(const IsolationContext& isolation_context,
   }
 
   return true;
+}
+
+bool SiteInstanceImpl::DoesSiteForURLMatch(const GURL& url) {
+  // Note: The |allow_default_site_url| value used here MUST match the value
+  // used in CreateForURL().
+  return site_ == GetSiteForURLInternal(GetIsolationContext(), url,
+                                        true /* should_use_effective_urls */,
+                                        ShouldAllowDefaultSiteInstance());
 }
 
 // static
@@ -746,13 +799,49 @@ GURL SiteInstanceImpl::GetSiteForURLInternal(
   }
 
   if (allow_default_site_url &&
-      !base::FeatureList::IsEnabled(
-          features::kProcessSharingWithStrictSiteInstances) &&
-      SiteInstanceImpl::ShouldAssignSiteForURL(url) &&
-      !DoesSiteURLRequireDedicatedProcess(isolation_context, site_url)) {
+      CanBePlacedInDefaultSiteInstance(isolation_context, url, site_url)) {
     return GetDefaultSiteURL();
   }
   return site_url;
+}
+
+// static
+bool SiteInstanceImpl::CanBePlacedInDefaultSiteInstance(
+    const IsolationContext& isolation_context,
+    const GURL& url,
+    const GURL& site_url) {
+  // Exclude "chrome-guest:" URLs from the default SiteInstance to ensure that
+  // guest specific process selection, process swapping, and storage partition
+  // behavior is preserved.
+  if (url.SchemeIs(kGuestScheme))
+    return false;
+
+  // Exclude "file://" URLs from the default SiteInstance to prevent the
+  // default SiteInstance process from accumulating file access grants that
+  // could be exploited by other non-isolated sites.
+  if (url.SchemeIs(url::kFileScheme))
+    return false;
+
+  // Don't use the default SiteInstance when
+  // kProcessSharingWithStrictSiteInstances is enabled because we want each
+  // site to have its own SiteInstance object and logic elsewhere ensures
+  // that those SiteInstances share a process.
+  if (base::FeatureList::IsEnabled(
+          features::kProcessSharingWithStrictSiteInstances)) {
+    return false;
+  }
+
+  // Don't use the default SiteInstance when SiteInstance doesn't assign a
+  // site URL for |url|, since in that case the SiteInstance should remain
+  // unused, and a subsequent navigation should always be able to reuse it,
+  // whether or not it's to a site requiring a dedicated process or to a site
+  // that will use the default SiteInstance.
+  if (!ShouldAssignSiteForURL(url))
+    return false;
+
+  // Allow the default SiteInstance to be used for sites that don't need to be
+  // isolated in their own process.
+  return !DoesSiteURLRequireDedicatedProcess(isolation_context, site_url);
 }
 
 // static
@@ -814,10 +903,11 @@ bool SiteInstanceImpl::DoesSiteURLRequireDedicatedProcess(
   if (site_url.SchemeIs(kChromeErrorScheme))
     return true;
 
-  // Isolate kChromeUIScheme pages from one another and from other kinds of
-  // schemes.
-  if (site_url.SchemeIs(content::kChromeUIScheme))
-    return true;
+  // Isolate WebUI pages from one another and from other kinds of schemes.
+  for (const auto& webui_scheme : URLDataManagerBackend::GetWebUISchemes()) {
+    if (site_url.SchemeIs(webui_scheme))
+      return true;
+  }
 
   // Let the content embedder enable site isolation for specific URLs. Use the
   // canonical site url for this check, so that schemes with nested origins
@@ -975,7 +1065,10 @@ void SiteInstance::StartIsolatingSite(BrowserContext* context,
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   url::Origin site_origin(url::Origin::Create(site));
-  policy->AddIsolatedOrigins({site_origin}, context);
+  policy->AddIsolatedOrigins(
+      {site_origin},
+      ChildProcessSecurityPolicy::IsolatedOriginSource::USER_TRIGGERED,
+      context);
 
   // This function currently assumes the new isolated site should persist
   // across restarts, so ask the embedder to save it, excluding off-the-record

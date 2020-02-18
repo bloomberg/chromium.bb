@@ -172,11 +172,8 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
                                       "Execution context is detached.");
     return;
   }
-  DCHECK(stream_->getTracks().size());
-  recorder_handler_ = Platform::Current()->CreateMediaRecorderHandler(
+  recorder_handler_ = MediaRecorderHandler::Create(
       context->GetTaskRunner(TaskType::kInternalMediaRealTime));
-  DCHECK(recorder_handler_);
-
   if (!recorder_handler_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
@@ -219,25 +216,43 @@ void MediaRecorder::start(ExceptionState& exception_state) {
 }
 
 void MediaRecorder::start(int time_slice, ExceptionState& exception_state) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "Execution context is detached.");
+    return;
+  }
   if (state_ != State::kInactive) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "The MediaRecorder's state is '" + StateToString(state_) + "'.");
     return;
   }
+
+  if (stream_->getTracks().size() == 0) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
+                                      "The MediaRecorder cannot start because"
+                                      "there are no audio or video tracks "
+                                      "available.");
+    return;
+  }
+
   state_ = State::kRecording;
 
   if (!recorder_handler_->Start(time_slice)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
-                                      "The MediaRecorder failed to start "
-                                      "because there are no audio or video "
-                                      "tracks available.");
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kUnknownError,
+        "There was an error starting the MediaRecorder.");
     return;
   }
   ScheduleDispatchEvent(Event::Create(event_type_names::kStart));
 }
 
 void MediaRecorder::stop(ExceptionState& exception_state) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "Execution context is detached.");
+    return;
+  }
   if (state_ == State::kInactive) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -249,6 +264,11 @@ void MediaRecorder::stop(ExceptionState& exception_state) {
 }
 
 void MediaRecorder::pause(ExceptionState& exception_state) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "Execution context is detached.");
+    return;
+  }
   if (state_ == State::kInactive) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -266,6 +286,11 @@ void MediaRecorder::pause(ExceptionState& exception_state) {
 }
 
 void MediaRecorder::resume(ExceptionState& exception_state) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "Execution context is detached.");
+    return;
+  }
   if (state_ == State::kInactive) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -282,6 +307,11 @@ void MediaRecorder::resume(ExceptionState& exception_state) {
 }
 
 void MediaRecorder::requestData(ExceptionState& exception_state) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "Execution context is detached.");
+    return;
+  }
   if (state_ == State::kInactive) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -289,14 +319,13 @@ void MediaRecorder::requestData(ExceptionState& exception_state) {
     return;
   }
   WriteData(nullptr /* data */, 0 /* length */, true /* lastInSlice */,
-            WTF::CurrentTimeMS());
+            base::Time::Now().ToDoubleT() * 1000.0);
 }
 
 bool MediaRecorder::isTypeSupported(ExecutionContext* context,
                                     const String& type) {
-  std::unique_ptr<WebMediaRecorderHandler> handler =
-      Platform::Current()->CreateMediaRecorderHandler(
-          context->GetTaskRunner(TaskType::kInternalMediaRealTime));
+  MediaRecorderHandler* handler = MediaRecorderHandler::Create(
+      context->GetTaskRunner(TaskType::kInternalMediaRealTime));
   if (!handler)
     return false;
 
@@ -322,9 +351,13 @@ void MediaRecorder::ContextDestroyed(ExecutionContext*) {
   if (stopped_)
     return;
 
+  WriteData(nullptr /* data */, 0 /* length */, true /* lastInSlice */,
+            base::Time::Now().ToDoubleT() * 1000.0);
+
   stopped_ = true;
   stream_.Clear();
-  recorder_handler_.reset();
+  recorder_handler_->Stop();
+  recorder_handler_ = nullptr;
 }
 
 void MediaRecorder::WriteData(const char* data,
@@ -353,7 +386,7 @@ void MediaRecorder::WriteData(const char* data,
                   timecode);
 }
 
-void MediaRecorder::OnError(const WebString& message) {
+void MediaRecorder::OnError(const String& message) {
   DLOG(ERROR) << message.Ascii();
   StopRecording();
   ScheduleDispatchEvent(Event::Create(event_type_names::kError));
@@ -371,7 +404,7 @@ void MediaRecorder::StopRecording() {
   recorder_handler_->Stop();
 
   WriteData(nullptr /* data */, 0 /* length */, true /* lastInSlice */,
-            WTF::CurrentTimeMS());
+            base::Time::Now().ToDoubleT() * 1000.0);
   ScheduleDispatchEvent(Event::Create(event_type_names::kStop));
 }
 
@@ -400,6 +433,7 @@ void MediaRecorder::DispatchScheduledEvent() {
 
 void MediaRecorder::Trace(blink::Visitor* visitor) {
   visitor->Trace(stream_);
+  visitor->Trace(recorder_handler_);
   visitor->Trace(scheduled_events_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

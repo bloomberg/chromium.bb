@@ -4,26 +4,28 @@
 */
 'use strict';
 
+import './cp-flex.js';
 import './chart-legend.js';
-import './cp-input.js';
-import './cp-loading.js';
+import './cp-icon.js';
 import './expand-button.js';
-import ChartBase from './chart-base.js';
-import ChartCompound from './chart-compound.js';
-import ChartTimeseries from './chart-timeseries.js';
-import MenuInput from './menu-input.js';
-import OptionGroup from './option-group.js';
-import SparklineCompound from './sparkline-compound.js';
-import TimeseriesDescriptor from './timeseries-descriptor.js';
-import sha from './sha.js';
+import '@chopsui/chops-input';
+import '@chopsui/chops-loading';
 import {CHAIN, UPDATE} from './simple-redux.js';
-import {ElementBase, STORE} from './element-base.js';
+import {ChartBase} from './chart-base.js';
+import {ChartCompound} from './chart-compound.js';
+import {ChartTimeseries} from './chart-timeseries.js';
+import {ElementBase, STORE, maybeScheduleAutoReload} from './element-base.js';
 import {MODE} from './layout-timeseries.js';
-import {get} from '@polymer/polymer/lib/utils/path.js';
-import {html} from '@polymer/polymer/polymer-element.js';
+import {MenuInput} from './menu-input.js';
+import {OptionGroup} from './option-group.js';
+import {SparklineCompound} from './sparkline-compound.js';
+import {TimeseriesDescriptor} from './timeseries-descriptor.js';
+import {get} from 'dot-prop-immutable';
+import {html, css} from 'lit-element';
+import {sha} from './sha.js';
 import {simpleGUID} from './utils.js';
 
-export default class ChartSection extends ElementBase {
+export class ChartSection extends ElementBase {
   static get is() { return 'chart-section'; }
 
   static get properties() {
@@ -98,151 +100,130 @@ export default class ChartSection extends ElementBase {
     };
   }
 
-  static get template() {
+  static get styles() {
+    return css`
+      #controls {
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      #controls-inner {
+        flex-grow: 1;
+      }
+
+      #spacer {
+        flex-grow: 1;
+      }
+
+      #toggle_chart_only,
+      #copy,
+      #close {
+        align-self: flex-start;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      chart-legend {
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      #legend-container {
+        justify-content: center;
+        max-height: 311px;
+      }
+    `;
+  }
+
+  render() {
+    const isLoading = (
+      this.isLoading ||
+      (this.minimapLayout && this.minimapLayout.isLoading) ||
+      (this.chartLayout && this.chartLayout.isLoading));
+    const hideLegend = (
+      !this.isExpanded || !this.legend || (this.legend.length === 0));
+
     return html`
-      <style>
-        #controls {
-          align-items: center;
-          display: flex;
-          margin-bottom: 8px;
-        }
-
-        #controls_inner {
-          display: flex;
-          flex-direction: column;
-        }
-
-        #parameters {
-          display: flex;
-        }
-
-        #spacer {
-          flex-grow: 1;
-        }
-
-        #toggle_chart_only,
-        #copy,
-        #close {
-          align-self: flex-start;
-          cursor: pointer;
-          flex-shrink: 0;
-          height: var(--icon-size, 1em);
-          width: var(--icon-size, 1em);
-        }
-
-        #chart_container {
-          display: flex;
-        }
-
-        chart-legend {
-          overflow-y: auto;
-          overflow-x: hidden;
-        }
-
-        #legend_container {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          max-height: 311px;
-        }
-      </style>
-
-      <div id="controls">
-        <div id="controls_inner">
-          <iron-collapse id="parameters"
-                        opened="[[isExpanded]]">
+      <cp-flex id="controls">
+        <cp-flex column id="controls-inner">
+          <cp-flex id="parameters" ?hidden="${!this.isExpanded}">
             <timeseries-descriptor
                 id="descriptor"
-                state-path="[[statePath]].descriptor"
-                on-matrix-change="onMatrixChange_">
+                .statePath="${this.statePath}.descriptor"
+                @matrix-change="${this.onMatrixChange_}">
             </timeseries-descriptor>
 
             <menu-input
                 id="statistic"
-                state-path="[[statePath]].statistic"
-                on-option-select="onStatisticSelect_">
+                .statePath="${this.statePath}.statistic"
+                @option-select="${this.onStatisticSelect_}">
             </menu-input>
-          </iron-collapse>
+          </cp-flex>
 
-          <iron-collapse opened="[[!isExpanded]]">
-            <cp-input
+          <div ?hidden="${this.isExpanded}">
+            <chops-input
                 id="title"
-                value="[[title_]]"
+                value="${this.title_}"
                 label="Title"
-                on-keyup="onTitleKeyup_">
-            </cp-input>
-          </iron-collapse>
-        </div>
+                @keyup="${this.onTitleKeyup_}">
+            </chops-input>
+          </div>
+        </cp-flex>
 
         <span id="spacer">&nbsp;</span>
 
         <expand-button
             id="toggle_chart_only"
-            state-path="[[statePath]]">
+            .statePath="${this.statePath}">
         </expand-button>
 
-        <iron-icon
+        <cp-icon
             id="copy"
-            icon="cp:copy"
+            icon="copy"
             title="Clone"
-            on-click="onCopy_">
-        </iron-icon>
+            @click="${this.onCopy_}">
+        </cp-icon>
 
-        <iron-icon
+        <cp-icon
             id="close"
-            icon="cp:close"
+            icon="close"
             title="Close"
-            on-click="onClose_">
-        </iron-icon>
-      </div>
+            @click="${this.onClose_}">
+        </cp-icon>
+      </cp-flex>
 
-      <cp-loading loading$="[[isLoading_(
-          isLoading, minimapLayout, chartLayout)]]">
-      </cp-loading>
+      <chops-loading ?loading="${isLoading}"></chops-loading>
 
-      <div id="chart_container">
+      <cp-flex id="chart-container">
         <chart-compound
-            state-path="[[statePath]]"
-            linked-state-path="[[linkedStatePath]]"
-            on-line-count-change="onLineCountChange_">
+            .statePath="${this.statePath}"
+            .linkedStatePath="${this.linkedStatePath}"
+            @line-count-change="${this.onLineCountChange_}">
           Select at least one Test suite and Measurement above.
         </chart-compound>
 
-        <iron-collapse
-            id="legend_container"
-            horizontal
-            opened="[[isLegendOpen_(isExpanded, legend)]]"
-            on-click="onLegendClick_">
+        <cp-flex column
+            id="legend-container"
+            ?hidden="${hideLegend}"
+            @click="${this.onLegendClick_}">
           <chart-legend
-              items="[[legend]]"
-              on-leaf-mouseover="onLegendMouseOver_"
-              on-leaf-mouseout="onLegendMouseOut_"
-              on-leaf-click="onLegendLeafClick_">
+              .items="${this.legend}"
+              @leaf-mouseover="${this.onLegendMouseOver_}"
+              @leaf-mouseout="${this.onLegendMouseOut_}"
+              @leaf-click="${this.onLegendLeafClick_}">
           </chart-legend>
-        </iron-collapse>
-      </div>
+        </cp-flex>
+      </cp-flex>
 
-      <iron-collapse opened="[[isExpanded]]">
-        <sparkline-compound state-path="[[statePath]]">
+      <div ?hidden="${!this.isExpanded}">
+        <sparkline-compound .statePath="${this.statePath}">
         </sparkline-compound>
-      </iron-collapse>
+      </div>
     `;
   }
 
-  ready() {
-    super.ready();
+  firstUpdated() {
     this.scrollIntoView(true);
-  }
-
-  isLoading_(isLoading, minimapLayout, chartLayout) {
-    if (isLoading) return true;
-    if (minimapLayout && minimapLayout.isLoading) return true;
-    if (chartLayout && chartLayout.isLoading) return true;
-    return false;
-  }
-
-  isLegendOpen_(isExpanded, legend) {
-    return isExpanded && !this.isEmpty_(legend);
   }
 
   async onMatrixChange_(event) {
@@ -303,11 +284,11 @@ export default class ChartSection extends ElementBase {
     STORE.dispatch(CHAIN(
         {
           type: ChartTimeseries.reducers.mouseYTicks.name,
-          statePath: statePath + '.chartLayout',
+          statePath: this.statePath + '.chartLayout',
         },
         {
           type: ChartBase.reducers.boldLine.name,
-          statePath: statePath + '.chartLayout',
+          statePath: this.statePath + '.chartLayout',
         },
     ));
   }
@@ -354,7 +335,17 @@ export default class ChartSection extends ElementBase {
     }
   }
 
+  static maybeAutoReload(statePath) {
+    const state = get(STORE.getState(), statePath);
+    if (!state || state.maxRevision) return;
+    ChartSection.maybeLoadTimeseries(statePath);
+  }
+
   static async loadTimeseries(statePath) {
+    maybeScheduleAutoReload(statePath,
+        state => !state.maxRevision,
+        () => ChartSection.maybeAutoReload(statePath));
+
     STORE.dispatch(CHAIN(
         {type: ChartSection.reducers.loadTimeseries.name, statePath},
         {
@@ -494,6 +485,7 @@ ChartSection.newStateOptionsFromQueryParams = routeParams => {
     fixedXAxis: !routeParams.has('natural'),
     zeroYAxis: routeParams.has('zeroY'),
     selectedLineDescriptorHash: routeParams.get('select'),
+    isShowingOptions: routeParams.has('opts'),
   };
 };
 
@@ -613,6 +605,7 @@ ChartSection.getSessionState = state => {
     mode: state.mode,
     selectedRelatedTabName: state.selectedRelatedTabName,
     selectedLineDescriptorHash: state.selectedLineDescriptorHash,
+    isShowingOptions: state.isShowingOptions,
   };
 };
 
@@ -691,6 +684,9 @@ ChartSection.getRouteParams = state => {
       state.chartLayout.brushRevisions &&
       state.chartLayout.brushRevisions.length) {
     routeParams.set('brush', state.chartLayout.brushRevisions.join('-'));
+  }
+  if (state.isShowingOptions) {
+    routeParams.set('opts', '');
   }
   return routeParams;
 };

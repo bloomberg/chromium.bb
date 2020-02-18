@@ -8,8 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "test/gmock.h"
-#include "test/gtest.h"
+#include "video/rtp_video_stream_receiver.h"
 
 #include "absl/memory/memory.h"
 #include "api/video/video_codec_type.h"
@@ -32,10 +31,12 @@
 #include "system_wrappers/include/clock.h"
 #include "system_wrappers/include/field_trial.h"
 #include "test/field_trial.h"
-#include "video/rtp_video_stream_receiver.h"
+#include "test/gmock.h"
+#include "test/gtest.h"
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::SizeIs;
 using ::testing::Values;
 
 namespace webrtc {
@@ -56,6 +57,9 @@ class MockTransport : public Transport {
 class MockNackSender : public NackSender {
  public:
   MOCK_METHOD1(SendNack, void(const std::vector<uint16_t>& sequence_numbers));
+  MOCK_METHOD2(SendNack,
+               void(const std::vector<uint16_t>& sequence_numbers,
+                    bool buffering_allowed));
 };
 
 class MockKeyFrameRequestSender : public KeyFrameRequestSender {
@@ -556,6 +560,32 @@ TEST_F(RtpVideoStreamReceiverTest, RequestKeyframeIfFirstFrameIsDelta) {
       data.data(), data.size(), rtp_header, video_header, absl::nullopt, false);
 }
 
+TEST_F(RtpVideoStreamReceiverTest, RequestKeyframeWhenPacketBufferGetsFull) {
+  constexpr int kPacketBufferMaxSize = 2048;
+
+  RTPHeader rtp_header;
+  RTPVideoHeader video_header;
+  const std::vector<uint8_t> data({1, 2, 3, 4});
+  video_header.is_first_packet_in_frame = true;
+  // Incomplete frames so that the packet buffer is filling up.
+  video_header.is_last_packet_in_frame = false;
+  video_header.codec = kVideoCodecGeneric;
+  video_header.frame_type = VideoFrameType::kVideoFrameDelta;
+  uint16_t start_sequence_number = 1234;
+  rtp_header.sequenceNumber = start_sequence_number;
+  while (rtp_header.sequenceNumber - start_sequence_number <
+         kPacketBufferMaxSize) {
+    rtp_video_stream_receiver_->OnReceivedPayloadData(data.data(), data.size(),
+                                                      rtp_header, video_header,
+                                                      absl::nullopt, false);
+    rtp_header.sequenceNumber += 2;
+  }
+
+  EXPECT_CALL(mock_key_frame_request_sender_, RequestKeyFrame());
+  rtp_video_stream_receiver_->OnReceivedPayloadData(
+      data.data(), data.size(), rtp_header, video_header, absl::nullopt, false);
+}
+
 TEST_F(RtpVideoStreamReceiverTest, SecondarySinksGetRtpNotifications) {
   rtp_video_stream_receiver_->StartReceive();
 
@@ -718,6 +748,7 @@ TEST_P(RtpVideoStreamReceiverGenericDescriptorTest,
         EXPECT_EQ(frame->references[0], frame->id.picture_id - 90);
         EXPECT_EQ(frame->references[1], frame->id.picture_id - 80);
         EXPECT_EQ(frame->id.spatial_layer, kSpatialIndex);
+        EXPECT_THAT(frame->PacketInfos(), SizeIs(1));
       }));
 
   rtp_video_stream_receiver_->OnRtpPacket(rtp_packet);
@@ -782,6 +813,7 @@ TEST_P(RtpVideoStreamReceiverGenericDescriptorTest,
         EXPECT_EQ(frame->id.spatial_layer, kSpatialIndex);
         EXPECT_EQ(frame->EncodedImage()._encodedWidth, 480u);
         EXPECT_EQ(frame->EncodedImage()._encodedHeight, 360u);
+        EXPECT_THAT(frame->PacketInfos(), SizeIs(2));
       }));
 
   rtp_video_stream_receiver_->OnRtpPacket(second_packet);

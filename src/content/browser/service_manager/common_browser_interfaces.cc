@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/viz/host/gpu_client.h"
-#include "content/browser/browser_main_loop.h"
 #include "content/browser/gpu/browser_gpu_client_delegate.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -27,7 +26,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/ws/public/mojom/gpu.mojom.h"
+#include "services/viz/public/interfaces/gpu.mojom.h"
 
 #if defined(OS_WIN)
 #include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
@@ -54,19 +53,16 @@ class ConnectionFilterImpl : public ConnectionFilter {
         base::BindRepeating(&SandboxSupportMacImpl::BindRequest,
                             base::Owned(new SandboxSupportMacImpl)));
 #endif
-    // For mus, the mojom::discardable_memory::DiscardableSharedMemoryManager
-    // is exposed from ui::Service. So we don't need bind the interface here.
-    auto* browser_main_loop = BrowserMainLoop::GetInstance();
-    if (browser_main_loop) {
-      auto* manager = browser_main_loop->discardable_shared_memory_manager();
-      if (manager) {
-        registry_.AddInterface(base::BindRepeating(
-            &discardable_memory::DiscardableSharedMemoryManager::Bind,
-            base::Unretained(manager)));
-      }
-    }
     registry_.AddInterface(base::BindRepeating(
         &ConnectionFilterImpl::BindGpuRequest, base::Unretained(this)));
+
+    auto* discardable_shared_memory_manager =
+        discardable_memory::DiscardableSharedMemoryManager::Get();
+    if (discardable_shared_memory_manager) {
+      registry_.AddInterface(base::BindRepeating(
+          &discardable_memory::DiscardableSharedMemoryManager::Bind,
+          base::Unretained(discardable_shared_memory_manager)));
+    }
   }
 
   ~ConnectionFilterImpl() override { DCHECK_CURRENTLY_ON(BrowserThread::IO); }
@@ -82,16 +78,16 @@ class ConnectionFilterImpl : public ConnectionFilter {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle* interface_pipe,
                        service_manager::Connector* connector) override {
-    // Ignore ws::mojom::Gpu interface request from Renderer process.
+    // Ignore viz::mojom::Gpu interface request from Renderer process.
     // The request will be handled in RenderProcessHostImpl.
     if (source_info.identity.name() == mojom::kRendererServiceName &&
-        interface_name == ws::mojom::Gpu::Name_)
+        interface_name == viz::mojom::Gpu::Name_)
       return;
 
     registry_.TryBindInterface(interface_name, interface_pipe, source_info);
   }
 
-  void BindGpuRequest(ws::mojom::GpuRequest request,
+  void BindGpuRequest(viz::mojom::GpuRequest request,
                       const service_manager::BindSourceInfo& source_info) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

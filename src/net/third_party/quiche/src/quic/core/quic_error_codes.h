@@ -216,8 +216,8 @@ enum QuicErrorCode {
   QUIC_CRYPTO_INTERNAL_ERROR = 38,
   // A crypto handshake message specified an unsupported version.
   QUIC_CRYPTO_VERSION_NOT_SUPPORTED = 39,
-  // A crypto handshake message resulted in a stateless reject.
-  QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT = 72,
+  // (Deprecated) A crypto handshake message resulted in a stateless reject.
+  // QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT = 72,
   // There was no intersection between the crypto primitives supported by the
   // peer and ourselves.
   QUIC_CRYPTO_NO_SUPPORT = 40,
@@ -331,8 +331,11 @@ enum QuicErrorCode {
   // not available in a received CONNECTION_CLOSE frame.
   QUIC_IETF_GQUIC_ERROR_MISSING = 122,
 
+  // Received WindowUpdate on a READ_UNIDIRECTIONAL stream.
+  QUIC_WINDOW_UPDATE_RECEIVED_ON_READ_UNIDIRECTIONAL_STREAM = 123,
+
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 123,
+  QUIC_LAST_ERROR = 124,
 };
 // QuicErrorCodes is encoded as a single octet on-the-wire.
 static_assert(static_cast<int>(QUIC_LAST_ERROR) <=
@@ -352,7 +355,7 @@ QUIC_EXPORT_PRIVATE inline std::string HistogramEnumString(
 }
 
 QUIC_EXPORT_PRIVATE inline std::string HistogramEnumDescription(
-    QuicErrorCode dummy) {
+    QuicErrorCode /*dummy*/) {
   return "cause";
 }
 

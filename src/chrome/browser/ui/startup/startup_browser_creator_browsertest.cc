@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -129,11 +130,6 @@ bool IsWindows10OrNewer() {
 void DisableWelcomePages(const std::vector<Profile*>& profiles) {
   for (Profile* profile : profiles)
     profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
-
-#if defined(OS_WIN)
-  g_browser_process->local_state()->SetBoolean(prefs::kHasSeenWin10PromoPage,
-                                               true);
-#endif
 }
 
 Browser* OpenNewBrowser(Profile* profile) {
@@ -145,10 +141,8 @@ Browser* OpenNewBrowser(Profile* profile) {
 }
 
 Browser* CloseBrowserAndOpenNew(Browser* browser, Profile* profile) {
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser));
   browser->window()->Close();
-  observer.Wait();
+  ui_test_utils::WaitForBrowserToClose(browser);
   return OpenNewBrowser(profile);
 }
 
@@ -1031,36 +1025,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile2));
 }
 
-class SupervisedUserBrowserCreatorTest : public InProcessBrowserTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kSupervisedUserId,
-                                    supervised_users::kChildAccountSUID);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(SupervisedUserBrowserCreatorTest,
-                       StartupSupervisedUserProfile) {
-  StartupBrowserCreator browser_creator;
-
-  // Do a simple non-process-startup browser launch.
-  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
-  StartupBrowserCreatorImpl launch(base::FilePath(), dummy, &browser_creator,
-                                   chrome::startup::IS_FIRST_RUN);
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
-  ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
-
-  // This should have created a new browser window.
-  Browser* new_browser = FindOneOtherBrowser(browser());
-  ASSERT_TRUE(new_browser);
-
-  TabStripModel* tab_strip = new_browser->tab_strip_model();
-
-  EXPECT_EQ(1, tab_strip->count());
-}
-
 #endif  // !defined(OS_CHROMEOS)
 
 // These tests are not applicable to Chrome OS as neither master_preferences nor
@@ -1068,12 +1032,23 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBrowserCreatorTest,
 #if !defined(OS_CHROMEOS)
 
 class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
+ public:
+  StartupBrowserCreatorFirstRunTest() {
+    scoped_feature_list_.InitWithFeatures({nux::kNuxOnboardingForceEnabled},
+                                          {});
+  }
+
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpInProcessBrowserTestFixture() override;
 
   policy::MockConfigurationPolicyProvider provider_;
   policy::PolicyMap policy_map_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreatorFirstRunTest);
 };
 
 void StartupBrowserCreatorFirstRunTest::SetUpCommandLine(
@@ -1244,29 +1219,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
   }
   Profile* profile1_ptr = profile1.get();
   ASSERT_TRUE(profile1_ptr);
-  profile_manager->RegisterTestingProfile(profile1.release(), true, false);
+  profile_manager->RegisterTestingProfile(std::move(profile1), true, false);
 
   Browser* browser = OpenNewBrowser(profile1_ptr);
   ASSERT_TRUE(browser);
 
   TabStripModel* tab_strip = browser->tab_strip_model();
-
-  // Windows 10 has its own Welcome page; the standard Welcome page does not
-  // appear until second run.  However, if NuxOnboarding is enabled, the
-  // standard welcome URL should still be used.
-  bool is_navi_enabled = false;
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  is_navi_enabled = nux::IsNuxOnboardingEnabled(profile1_ptr);
-#endif
-  if (IsWindows10OrNewer() && !is_navi_enabled) {
-    ASSERT_EQ(1, tab_strip->count());
-    EXPECT_EQ(chrome::kChromeUIWelcomeWin10URL,
-              tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
-
-    browser = CloseBrowserAndOpenNew(browser, profile1_ptr);
-    ASSERT_TRUE(browser);
-    tab_strip = browser->tab_strip_model();
-  }
 
   // Ensure that the standard Welcome page appears on second run on Win 10, and
   // on first run on all other platforms.
@@ -1318,7 +1276,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   }
   Profile* profile1_ptr = profile1.get();
   ASSERT_TRUE(profile1_ptr);
-  profile_manager->RegisterTestingProfile(profile1.release(), true, false);
+  profile_manager->RegisterTestingProfile(std::move(profile1), true, false);
 
   Browser* browser = OpenNewBrowser(profile1_ptr);
   ASSERT_TRUE(browser);
@@ -1378,9 +1336,8 @@ class StartupBrowserCreatorWelcomeBackTest : public InProcessBrowserTest {
     ASSERT_EQ(0U, BrowserList::GetInstance()->size());
   }
 
-  void StartBrowser(StartupBrowserCreator::WelcomeBackPage welcome_back_page,
-                    PolicyVariant variant) {
-    browser_creator_.set_welcome_back_page(welcome_back_page);
+  void StartBrowser(PolicyVariant variant) {
+    browser_creator_.set_welcome_back_page(true);
 
     if (variant) {
       policy::PolicyMap values;
@@ -1417,37 +1374,9 @@ class StartupBrowserCreatorWelcomeBackTest : public InProcessBrowserTest {
   policy::MockConfigurationPolicyProvider provider_;
 };
 
-#if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
-                       WelcomeBackWin10NoPolicy) {
-  ASSERT_NO_FATAL_FAILURE(StartBrowser(
-      StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10, PolicyVariant()));
-  ExpectUrlInBrowserAtPosition(
-      StartupTabProviderImpl::GetWin10WelcomePageUrl(false), 0);
-}
-
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
-                       WelcomeBackWin10MandatoryPolicy) {
-  ASSERT_NO_FATAL_FAILURE(
-      StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10,
-                   PolicyVariant(policy::POLICY_LEVEL_MANDATORY)));
-  ExpectUrlInBrowserAtPosition(GURL("http://managed.site.com/"), 0);
-}
-
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
-                       WelcomeBackWin10RecommendedPolicy) {
-  ASSERT_NO_FATAL_FAILURE(
-      StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10,
-                   PolicyVariant(policy::POLICY_LEVEL_RECOMMENDED)));
-  ExpectUrlInBrowserAtPosition(GURL("http://managed.site.com/"), 0);
-}
-#endif  // defined(OS_WIN)
-
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
                        WelcomeBackStandardNoPolicy) {
-  ASSERT_NO_FATAL_FAILURE(
-      StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard,
-                   PolicyVariant()));
+  ASSERT_NO_FATAL_FAILURE(StartBrowser(PolicyVariant()));
   ExpectUrlInBrowserAtPosition(StartupTabProviderImpl::GetWelcomePageUrl(false),
                                0);
 }
@@ -1455,16 +1384,14 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
                        WelcomeBackStandardMandatoryPolicy) {
   ASSERT_NO_FATAL_FAILURE(
-      StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard,
-                   PolicyVariant(policy::POLICY_LEVEL_MANDATORY)));
+      StartBrowser(PolicyVariant(policy::POLICY_LEVEL_MANDATORY)));
   ExpectUrlInBrowserAtPosition(GURL("http://managed.site.com/"), 0);
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
                        WelcomeBackStandardRecommendedPolicy) {
   ASSERT_NO_FATAL_FAILURE(
-      StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard,
-                   PolicyVariant(policy::POLICY_LEVEL_RECOMMENDED)));
+      StartBrowser(PolicyVariant(policy::POLICY_LEVEL_RECOMMENDED)));
   ExpectUrlInBrowserAtPosition(GURL("http://managed.site.com/"), 0);
 }
 

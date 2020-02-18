@@ -167,6 +167,13 @@ bool IsHeadingOrTableHeader(const ax::mojom::Role role) {
   }
 }
 
+bool IsIgnored(const AXNodeData& data) {
+  if (data.HasState(ax::mojom::State::kIgnored) ||
+      data.role == ax::mojom::Role::kIgnored)
+    return true;
+  return false;
+}
+
 bool IsImage(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kCanvas:
@@ -328,6 +335,7 @@ bool IsSetLike(const ax::mojom::Role role) {
     case ax::mojom::Role::kRadioGroup:
     case ax::mojom::Role::kTabList:
     case ax::mojom::Role::kTree:
+    case ax::mojom::Role::kPopUpButton:
       return true;
     default:
       return false;

@@ -324,7 +324,8 @@ class CreditsUpdater(object):
         open_output.writelines(open_license_md.readlines())
 
       # Next write verbatim headers from the generated credits map.
-      for filename, file_license in self.generated_credits.iteritems():
+      for filename, file_license in sorted(self.generated_credits.iteritems(),
+                                           key=lambda x: x[0]):
         open_output.writelines(LICENSE_SEPARATOR)
         open_output.writelines('%s\n\n%s' % (filename, file_license))
 

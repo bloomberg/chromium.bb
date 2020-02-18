@@ -18,14 +18,12 @@
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -98,8 +96,9 @@ id<GREYMatcher> LongPressTipBubble() {
 // Opens the TabGrid and then opens a new tab.
 void OpenTabGridAndOpenTab() {
   id<GREYMatcher> openTabSwitcherMatcher =
-      IsIPadIdiom() ? chrome_test_util::TabletTabSwitcherOpenButton()
-                    : chrome_test_util::ShowTabsButton();
+      [ChromeEarlGrey isIPadIdiom]
+          ? chrome_test_util::TabletTabSwitcherOpenButton()
+          : chrome_test_util::ShowTabsButton();
   [[EarlGrey selectElementWithMatcher:openTabSwitcherMatcher]
       performAction:grey_tap()];
 
@@ -110,8 +109,9 @@ void OpenTabGridAndOpenTab() {
 // Opens and closes the tab switcher.
 void OpenAndCloseTabSwitcher() {
   id<GREYMatcher> openTabSwitcherMatcher =
-      IsIPadIdiom() ? chrome_test_util::TabletTabSwitcherOpenButton()
-                    : chrome_test_util::ShowTabsButton();
+      [ChromeEarlGrey isIPadIdiom]
+          ? chrome_test_util::TabletTabSwitcherOpenButton()
+          : chrome_test_util::ShowTabsButton();
   [[EarlGrey selectElementWithMatcher:openTabSwitcherMatcher]
       performAction:grey_tap()];
 
@@ -420,8 +420,7 @@ std::unique_ptr<net::test_server::HttpResponse> LoadFrenchPage(
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start");
 
   // Load a URL with french text so that language detection is performed.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL(kFrenchPageURLPath)]);
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kFrenchPageURLPath)];
 
   base::test::ScopedFeatureList scoped_feature_list;
   EnableBadgedTranslateManualTrigger(scoped_feature_list);
@@ -449,7 +448,8 @@ std::unique_ptr<net::test_server::HttpResponse> LoadFrenchPage(
 }
 
 // Verifies that the New Tab Tip appears when all conditions are met.
-- (void)testNewTabTipPromoShouldShow {
+// Flaky. See crbug.com/974152
+- (void)DISABLED_testNewTabTipPromoShouldShow {
   base::test::ScopedFeatureList scoped_feature_list;
 
   EnableNewTabTipTriggering(scoped_feature_list);
@@ -466,7 +466,7 @@ std::unique_ptr<net::test_server::HttpResponse> LoadFrenchPage(
 
   // Navigate to a page other than the NTP to allow for the New Tab Tip to
   // appear.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("chrome://version")]);
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
 
   // Open and close the tab switcher to trigger the New Tab tip.
   OpenAndCloseTabSwitcher();

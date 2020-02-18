@@ -21,17 +21,19 @@
 
 #include "dawn_native/dawn_platform.h"
 
+#include <memory>
+
 namespace dawn_native {
 
     MaybeError ValidateBufferDescriptor(DeviceBase* device, const BufferDescriptor* descriptor);
 
     static constexpr dawn::BufferUsageBit kReadOnlyBufferUsages =
-        dawn::BufferUsageBit::MapRead | dawn::BufferUsageBit::TransferSrc |
+        dawn::BufferUsageBit::MapRead | dawn::BufferUsageBit::CopySrc |
         dawn::BufferUsageBit::Index | dawn::BufferUsageBit::Vertex | dawn::BufferUsageBit::Uniform;
 
-    static constexpr dawn::BufferUsageBit kWritableBufferUsages =
-        dawn::BufferUsageBit::MapWrite | dawn::BufferUsageBit::TransferDst |
-        dawn::BufferUsageBit::Storage;
+    static constexpr dawn::BufferUsageBit kWritableBufferUsages = dawn::BufferUsageBit::MapWrite |
+                                                                  dawn::BufferUsageBit::CopyDst |
+                                                                  dawn::BufferUsageBit::Storage;
 
     class BufferBase : public ObjectBase {
         enum class BufferState {
@@ -49,7 +51,7 @@ namespace dawn_native {
                                            uint64_t size,
                                            uint8_t** mappedPointer);
 
-        uint32_t GetSize() const;
+        uint64_t GetSize() const;
         dawn::BufferUsageBit GetUsage() const;
 
         MaybeError MapAtCreation(uint8_t** mappedPointer);
@@ -57,9 +59,9 @@ namespace dawn_native {
         MaybeError ValidateCanUseInSubmitNow() const;
 
         // Dawn API
-        void SetSubData(uint32_t start, uint32_t count, const uint8_t* data);
-        void MapReadAsync(DawnBufferMapReadCallback callback, DawnCallbackUserdata userdata);
-        void MapWriteAsync(DawnBufferMapWriteCallback callback, DawnCallbackUserdata userdata);
+        void SetSubData(uint32_t start, uint32_t count, const void* data);
+        void MapReadAsync(DawnBufferMapReadCallback callback, void* userdata);
+        void MapWriteAsync(DawnBufferMapWriteCallback callback, void* userdata);
         void Unmap();
         void Destroy();
 
@@ -79,11 +81,14 @@ namespace dawn_native {
 
       private:
         virtual MaybeError MapAtCreationImpl(uint8_t** mappedPointer) = 0;
-        virtual MaybeError SetSubDataImpl(uint32_t start, uint32_t count, const uint8_t* data);
-        virtual void MapReadAsyncImpl(uint32_t serial) = 0;
-        virtual void MapWriteAsyncImpl(uint32_t serial) = 0;
+        virtual MaybeError SetSubDataImpl(uint32_t start, uint32_t count, const void* data);
+        virtual MaybeError MapReadAsyncImpl(uint32_t serial) = 0;
+        virtual MaybeError MapWriteAsyncImpl(uint32_t serial) = 0;
         virtual void UnmapImpl() = 0;
         virtual void DestroyImpl() = 0;
+
+        virtual bool IsMapWritable() const = 0;
+        MaybeError CopyFromStagingBuffer();
 
         MaybeError ValidateSetSubData(uint32_t start, uint32_t count) const;
         MaybeError ValidateMap(dawn::BufferUsageBit requiredUsage) const;
@@ -95,8 +100,10 @@ namespace dawn_native {
 
         DawnBufferMapReadCallback mMapReadCallback = nullptr;
         DawnBufferMapWriteCallback mMapWriteCallback = nullptr;
-        DawnCallbackUserdata mMapUserdata = 0;
+        void* mMapUserdata = 0;
         uint32_t mMapSerial = 0;
+
+        std::unique_ptr<StagingBufferBase> mStagingBuffer;
 
         BufferState mState;
     };

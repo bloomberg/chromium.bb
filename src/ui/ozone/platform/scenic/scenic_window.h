@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/events/fuchsia/input_event_dispatcher.h"
 #include "ui/events/fuchsia/input_event_dispatcher_delegate.h"
@@ -19,7 +20,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/ozone_export.h"
 #include "ui/platform_window/platform_window.h"
 
 namespace ui {
@@ -27,8 +27,9 @@ namespace ui {
 class ScenicWindowManager;
 class PlatformWindowDelegate;
 
-class OZONE_EXPORT ScenicWindow : public PlatformWindow,
-                                  public InputEventDispatcherDelegate {
+class COMPONENT_EXPORT(OZONE) ScenicWindow
+    : public PlatformWindow,
+      public InputEventDispatcherDelegate {
  public:
   // Both |window_manager| and |delegate| must outlive the ScenicWindow.
   // |view_token| is passed to Scenic to attach the view to the view tree.
@@ -39,7 +40,7 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
 
   scenic::Session* scenic_session() { return &scenic_session_; }
 
-  void ExportRenderingEntity(fuchsia::ui::gfx::ExportToken export_token);
+  void AttachSurface(fuchsia::ui::gfx::ExportToken surface_export_token);
 
   // PlatformWindow implementation.
   gfx::Rect GetBounds() override;
@@ -57,10 +58,11 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
   void Minimize() override;
   void Restore() override;
   PlatformWindowState GetPlatformWindowState() const override;
+  void Activate() override;
+  void Deactivate() override;
   void SetCursor(PlatformCursor cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
-  PlatformImeController* GetPlatformImeController() override;
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
   gfx::Rect GetRestoredBoundsInPixels() const override;
 
@@ -96,9 +98,6 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
 
   // Entity node for the |view_|.
   scenic::EntityNode node_;
-
-  // Node in |scenic_session_| for receiving input that hits within our View.
-  scenic::ShapeNode input_node_;
 
   // Node in |scenic_session_| for rendering (hit testing disabled).
   scenic::EntityNode render_node_;

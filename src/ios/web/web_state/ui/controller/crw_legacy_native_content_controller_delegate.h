@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_WEB_STATE_UI_CONTROLLER_CRW_LEGACY_NATIVE_CONTENT_CONTROLLER_DELEGATE_H_
 #define IOS_WEB_WEB_STATE_UI_CONTROLLER_CRW_LEGACY_NATIVE_CONTENT_CONTROLLER_DELEGATE_H_
 
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #include "ui/base/page_transition_types.h"
 
 namespace web {
@@ -20,10 +20,6 @@ class GURL;
 
 // Whether the web usage is enabled.
 - (BOOL)legacyNativeContentControllerWebUsageEnabled:
-    (CRWLegacyNativeContentController*)contentController;
-
-// Whether the delegate is being destroyed.
-- (BOOL)legacyNativeContentControllerIsBeingDestroyed:
     (CRWLegacyNativeContentController*)contentController;
 
 // Asks the delegate to remove the web view.

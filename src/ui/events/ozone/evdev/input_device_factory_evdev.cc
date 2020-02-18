@@ -295,6 +295,14 @@ void InputDeviceFactoryEvdev::GetTouchEventLog(
 #endif
 }
 
+void InputDeviceFactoryEvdev::GetGesturePropertiesService(
+    ozone::mojom::GesturePropertiesServiceRequest request) {
+#if defined(USE_EVDEV_GESTURES)
+  gesture_properties_service_ = std::make_unique<GesturePropertiesService>(
+      gesture_property_provider_.get(), std::move(request));
+#endif
+}
+
 base::WeakPtr<InputDeviceFactoryEvdev> InputDeviceFactoryEvdev::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }

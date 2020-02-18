@@ -23,6 +23,10 @@
 #include "ui/events/ozone/evdev/input_device_settings_evdev.h"
 #include "ui/ozone/public/input_controller.h"
 
+#if defined(USE_EVDEV_GESTURES)
+#include "ui/events/ozone/chromeos/gesture_properties_service.h"
+#endif
+
 namespace ui {
 
 class CursorDelegateEvdev;
@@ -61,6 +65,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   void GetTouchDeviceStatus(InputController::GetTouchDeviceStatusReply reply);
   void GetTouchEventLog(const base::FilePath& out_dir,
                         InputController::GetTouchEventLogReply reply);
+
+  void GetGesturePropertiesService(
+      ozone::mojom::GesturePropertiesServiceRequest request);
 
   base::WeakPtr<InputDeviceFactoryEvdev> GetWeakPtr();
 
@@ -106,6 +113,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 #if defined(USE_EVDEV_GESTURES)
   // Gesture library property provider (used by touchpads/mice).
   std::unique_ptr<GesturePropertyProvider> gesture_property_provider_;
+  std::unique_ptr<GesturePropertiesService> gesture_properties_service_;
 #endif
 
   // Dispatcher for events.

@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+#include <numeric>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/test_data_util.h"
 #include "media/gpu/test/video_player/frame_renderer_dummy.h"
@@ -25,8 +28,9 @@ namespace {
 // making changes here.
 constexpr const char* usage_msg =
     "usage: video_decode_accelerator_perf_tests\n"
-    "           [-v=<level>] [--vmodule=<config>] [--use_vd] [--gtest_help]\n"
-    "           [--help] [<video path>] [<video metadata path>]\n";
+    "           [-v=<level>] [--vmodule=<config>] [--output_folder]\n"
+    "           [--use_vd] [--gtest_help] [--help]\n"
+    "           [<video path>] [<video metadata path>]\n";
 
 // Video decoder perf tests help message.
 constexpr const char* help_msg =
@@ -40,6 +44,9 @@ constexpr const char* help_msg =
     "   -v                  enable verbose mode, e.g. -v=2.\n"
     "  --vmodule            enable verbose mode for the specified module,\n"
     "                       e.g. --vmodule=*media/gpu*=2.\n"
+    "  --output_folder      overwrite the output folder used to store\n"
+    "                       performance metrics, if not specified results\n"
+    "                       will be stored in the current working directory.\n"
     "  --use_vd             use the new VD-based video decoders, instead of\n"
     "                       the default VDA-based video decoders.\n"
     "  --gtest_help         display the gtest help and exit.\n"
@@ -51,7 +58,25 @@ media::test::VideoPlayerTestEnvironment* g_env;
 constexpr const base::FilePath::CharType* kDefaultOutputFolder =
     FILE_PATH_LITERAL("perf_metrics");
 
-// TODO(dstaessens@) Expand with more meaningful metrics.
+// Struct storing various time-related statistics.
+struct PerformanceTimeStats {
+  PerformanceTimeStats() {}
+  explicit PerformanceTimeStats(const std::vector<double>& times);
+  double avg_ms_ = 0.0;
+  double percentile_25_ms_ = 0.0;
+  double percentile_50_ms_ = 0.0;
+  double percentile_75_ms_ = 0.0;
+};
+
+PerformanceTimeStats::PerformanceTimeStats(const std::vector<double>& times) {
+  avg_ms_ = std::accumulate(times.begin(), times.end(), 0.0) / times.size();
+  std::vector<double> sorted_times = times;
+  std::sort(sorted_times.begin(), sorted_times.end());
+  percentile_25_ms_ = sorted_times[sorted_times.size() / 4];
+  percentile_50_ms_ = sorted_times[sorted_times.size() / 2];
+  percentile_75_ms_ = sorted_times[(sorted_times.size() * 3) / 4];
+}
+
 struct PerformanceMetrics {
   // Total measurement duration.
   base::TimeDelta total_duration_;
@@ -62,10 +87,12 @@ struct PerformanceMetrics {
   // The number of frames dropped because of the decoder running behind, only
   // relevant for capped performance tests.
   size_t frames_dropped_ = 0;
-  // The average time between subsequent frame deliveries.
-  double avg_frame_delivery_time_ms_ = 0.0;
-  // The median time between decode start and frame delivery.
-  double median_frame_decode_time_ms_ = 0.0;
+  // The rate at which frames are dropped: dropped frames / non-dropped frames.
+  double dropped_frame_rate_ = 0;
+  // Statistics about the time between subsequent frame deliveries.
+  PerformanceTimeStats delivery_time_stats_;
+  // Statistics about the time between decode start and frame deliveries.
+  PerformanceTimeStats decode_time_stats_;
 };
 
 // The performance evaluator can be plugged into the video player to collect
@@ -138,67 +165,124 @@ void PerformanceEvaluator::StopMeasuring() {
                                      perf_metrics_.total_duration_.InSecondsF();
   perf_metrics_.frames_dropped_ = frame_renderer_->FramesDropped();
 
-  perf_metrics_.avg_frame_delivery_time_ms_ =
-      perf_metrics_.total_duration_.InMillisecondsF() /
-      perf_metrics_.frames_decoded_;
+  // Calculate the frame drop rate.
+  // TODO(dstaessens@) Find a better metric for dropped frames.
+  size_t frames_rendered =
+      perf_metrics_.frames_decoded_ - perf_metrics_.frames_dropped_;
+  perf_metrics_.dropped_frame_rate_ =
+      perf_metrics_.frames_dropped_ / std::max<size_t>(frames_rendered, 1ul);
 
-  std::sort(frame_decode_times_.begin(), frame_decode_times_.end());
-  size_t median_index = frame_decode_times_.size() / 2;
-  perf_metrics_.median_frame_decode_time_ms_ =
-      (frame_decode_times_.size() % 2 != 0)
-          ? frame_decode_times_[median_index]
-          : (frame_decode_times_[median_index - 1] +
-             frame_decode_times_[median_index]) /
-                2.0;
+  // Calculate delivery and decode time metrics.
+  perf_metrics_.delivery_time_stats_ =
+      PerformanceTimeStats(frame_delivery_times_);
+  perf_metrics_.decode_time_stats_ = PerformanceTimeStats(frame_decode_times_);
 
-  VLOG(0) << "Frames decoded: " << perf_metrics_.frames_decoded_;
-  VLOG(0) << "Total duration: "
-          << perf_metrics_.total_duration_.InMillisecondsF() << "ms";
-  VLOG(0) << "FPS:            " << perf_metrics_.frames_per_second_;
-  VLOG(0) << "Frames Dropped: " << perf_metrics_.frames_dropped_;
-  VLOG(0) << "Avg. frame delivery time:   "
-          << perf_metrics_.avg_frame_delivery_time_ms_ << "ms";
-  VLOG(0) << "Median frame decode time:   "
-          << perf_metrics_.median_frame_decode_time_ms_ << "ms";
+  std::cout << "Frames decoded:     " << perf_metrics_.frames_decoded_
+            << std::endl;
+  std::cout << "Total duration:     "
+            << perf_metrics_.total_duration_.InMillisecondsF() << "ms"
+            << std::endl;
+  std::cout << "FPS:                " << perf_metrics_.frames_per_second_
+            << std::endl;
+  std::cout << "Frames Dropped:     " << perf_metrics_.frames_dropped_
+            << std::endl;
+  std::cout << "Dropped frame rate: " << perf_metrics_.dropped_frame_rate_
+            << std::endl;
+  std::cout << "Frame delivery time - average:       "
+            << perf_metrics_.delivery_time_stats_.avg_ms_ << "ms" << std::endl;
+  std::cout << "Frame delivery time - percentile 25: "
+            << perf_metrics_.delivery_time_stats_.percentile_25_ms_ << "ms"
+            << std::endl;
+  std::cout << "Frame delivery time - percentile 50: "
+            << perf_metrics_.delivery_time_stats_.percentile_50_ms_ << "ms"
+            << std::endl;
+  std::cout << "Frame delivery time - percentile 75: "
+            << perf_metrics_.delivery_time_stats_.percentile_75_ms_ << "ms"
+            << std::endl;
+  std::cout << "Frame decode time - average:       "
+            << perf_metrics_.decode_time_stats_.avg_ms_ << "ms" << std::endl;
+  std::cout << "Frame decode time - percentile 25: "
+            << perf_metrics_.decode_time_stats_.percentile_25_ms_ << "ms"
+            << std::endl;
+  std::cout << "Frame decode time - percentile 50: "
+            << perf_metrics_.decode_time_stats_.percentile_50_ms_ << "ms"
+            << std::endl;
+  std::cout << "Frame decode time - percentile 75: "
+            << perf_metrics_.decode_time_stats_.percentile_75_ms_ << "ms"
+            << std::endl;
 }
 
 void PerformanceEvaluator::WriteMetricsToFile() const {
-  std::string str = base::StringPrintf(
-      "Frames decoded: %zu\nTotal duration: %fms\nFPS: %f\n"
-      "Frames dropped: %zu\nAvg. frame delivery time: %fms\n"
-      "Median frame decode time: %fms\n",
-      perf_metrics_.frames_decoded_,
-      perf_metrics_.total_duration_.InMillisecondsF(),
-      perf_metrics_.frames_per_second_, perf_metrics_.frames_dropped_,
-      perf_metrics_.avg_frame_delivery_time_ms_,
-      perf_metrics_.median_frame_decode_time_ms_);
-
-  // Write performance metrics to file.
-  base::FilePath output_folder_path = base::FilePath(kDefaultOutputFolder);
+  base::FilePath output_folder_path = base::FilePath(g_env->OutputFolder());
   if (!DirectoryExists(output_folder_path))
     base::CreateDirectory(output_folder_path);
-  base::FilePath output_file_path =
-      output_folder_path.Append(base::FilePath(g_env->GetTestName())
-                                    .AddExtension(FILE_PATH_LITERAL(".txt")));
-  base::File output_file(
-      base::FilePath(output_file_path),
-      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  output_file.WriteAtCurrentPos(str.data(), str.length());
-  VLOG(0) << "Wrote performance metrics to: " << output_file_path;
+  output_folder_path = base::MakeAbsoluteFilePath(output_folder_path);
 
-  // Write frame decode times to file.
-  base::FilePath decode_times_file_path =
-      output_file_path.InsertBeforeExtension(FILE_PATH_LITERAL(".frame_times"));
-  base::File decode_times_output_file(
-      base::FilePath(decode_times_file_path),
-      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  for (double frame_decoded_time : frame_delivery_times_) {
-    std::string decode_time_str =
-        base::StringPrintf("%f\n", frame_decoded_time);
-    decode_times_output_file.WriteAtCurrentPos(decode_time_str.data(),
-                                               decode_time_str.length());
+  // Write performance metrics to json.
+  base::Value metrics(base::Value::Type::DICTIONARY);
+  metrics.SetKey(
+      "FramesDecoded",
+      base::Value(base::checked_cast<int>(perf_metrics_.frames_decoded_)));
+  metrics.SetKey("TotalDurationMs",
+                 base::Value(perf_metrics_.total_duration_.InMillisecondsF()));
+  metrics.SetKey("FPS", base::Value(perf_metrics_.frames_per_second_));
+  metrics.SetKey(
+      "FramesDropped",
+      base::Value(base::checked_cast<int>(perf_metrics_.frames_dropped_)));
+  metrics.SetKey("DroppedFrameRate",
+                 base::Value(perf_metrics_.dropped_frame_rate_));
+  metrics.SetKey("FrameDeliveryTimeAverage",
+                 base::Value(perf_metrics_.delivery_time_stats_.avg_ms_));
+  metrics.SetKey(
+      "FrameDeliveryTimePercentile25",
+      base::Value(perf_metrics_.delivery_time_stats_.percentile_25_ms_));
+  metrics.SetKey(
+      "FrameDeliveryTimePercentile50",
+      base::Value(perf_metrics_.delivery_time_stats_.percentile_50_ms_));
+  metrics.SetKey(
+      "FrameDeliveryTimePercentile75",
+      base::Value(perf_metrics_.delivery_time_stats_.percentile_75_ms_));
+  metrics.SetKey("FrameDecodeTimeAverage",
+                 base::Value(perf_metrics_.decode_time_stats_.avg_ms_));
+  metrics.SetKey(
+      "FrameDecodeTimePercentile25",
+      base::Value(perf_metrics_.decode_time_stats_.percentile_25_ms_));
+  metrics.SetKey(
+      "FrameDecodeTimePercentile50",
+      base::Value(perf_metrics_.decode_time_stats_.percentile_50_ms_));
+  metrics.SetKey(
+      "FrameDecodeTimePercentile75",
+      base::Value(perf_metrics_.decode_time_stats_.percentile_75_ms_));
+
+  // Write frame delivery times to json.
+  base::Value delivery_times(base::Value::Type::LIST);
+  for (double frame_delivery_time : frame_delivery_times_) {
+    delivery_times.GetList().emplace_back(frame_delivery_time);
   }
-  VLOG(0) << "Wrote frame decode times to: " << decode_times_file_path;
+  metrics.SetKey("FrameDeliveryTimes", std::move(delivery_times));
+
+  // Write frame decodes times to json.
+  base::Value decode_times(base::Value::Type::LIST);
+  for (double frame_decode_time : frame_decode_times_) {
+    decode_times.GetList().emplace_back(frame_decode_time);
+  }
+  metrics.SetKey("FrameDecodeTimes", std::move(decode_times));
+
+  // Write json to file.
+  std::string metrics_str;
+  ASSERT_TRUE(base::JSONWriter::WriteWithOptions(
+      metrics, base::JSONWriter::OPTIONS_PRETTY_PRINT, &metrics_str));
+
+  base::FilePath metrics_file_path =
+      output_folder_path.Append(base::FilePath(g_env->GetTestName())
+                                    .AddExtension(FILE_PATH_LITERAL(".json")));
+  base::File metrics_output_file(
+      base::FilePath(metrics_file_path),
+      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  int bytes_written = metrics_output_file.WriteAtCurrentPos(
+      metrics_str.data(), metrics_str.length());
+  ASSERT_EQ(bytes_written, static_cast<int>(metrics_str.length()));
+  VLOG(0) << "Wrote performance metrics to: " << metrics_file_path;
 }
 
 // Video decode test class. Performs setup and teardown for each single test.
@@ -232,6 +316,10 @@ class VideoDecoderTest : public ::testing::Test {
     // Use the new VD-based video decoders if requested.
     VideoDecoderClientConfig config;
     config.use_vd = g_env->UseVD();
+
+    // Force allocate mode if import mode is not supported.
+    if (!g_env->ImportSupported())
+      config.allocation_mode = AllocationMode::kAllocate;
 
     return VideoPlayer::Create(video, std::move(frame_renderer),
                                std::move(frame_processors), config);
@@ -300,6 +388,7 @@ int main(int argc, char** argv) {
       (args.size() >= 2) ? base::FilePath(args[1]) : base::FilePath();
 
   // Parse command line arguments.
+  base::FilePath::StringType output_folder = media::test::kDefaultOutputFolder;
   bool use_vd = false;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
@@ -309,7 +398,9 @@ int main(int argc, char** argv) {
       continue;
     }
 
-    if (it->first == "use_vd") {
+    if (it->first == "output_folder") {
+      output_folder = it->second;
+    } else if (it->first == "use_vd") {
       use_vd = true;
     } else {
       std::cout << "unknown option: --" << it->first << "\n"
@@ -323,7 +414,8 @@ int main(int argc, char** argv) {
   // Set up our test environment.
   media::test::VideoPlayerTestEnvironment* test_environment =
       media::test::VideoPlayerTestEnvironment::Create(
-          video_path, video_metadata_path, false, false, use_vd);
+          video_path, video_metadata_path, false, false,
+          base::FilePath(output_folder), use_vd);
   if (!test_environment)
     return EXIT_FAILURE;
 

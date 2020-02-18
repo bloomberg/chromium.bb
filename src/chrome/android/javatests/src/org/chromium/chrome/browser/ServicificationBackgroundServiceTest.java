@@ -81,16 +81,15 @@ public final class ServicificationBackgroundServiceTest {
             return;
         }
 
-        try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
             try {
                 mMappedSpareFile = new RandomAccessFile(mSpareFile, "rw");
 
                 MappedByteBuffer mappedByteBuffer = mMappedSpareFile.getChannel().map(
                         FileChannel.MapMode.READ_WRITE, 0, ALLOC_SIZE);
-                mappedByteBuffer.load();
-                Assert.assertTrue(mappedByteBuffer.isLoaded());
 
                 mappedByteBuffer.put(0, (byte) 0);
+                mappedByteBuffer.force();
                 Assert.assertTrue(Byte.compare(mappedByteBuffer.get(0), (byte) 0) == 0);
             } catch (Exception e) {
                 Log.d(TAG, "Fail to create memory-mapped file: %s", SPARE_FILE_NAME);
@@ -101,7 +100,7 @@ public final class ServicificationBackgroundServiceTest {
     private void closeBrowserMetricsSpareFile() {
         if (mMappedSpareFile == null) return;
 
-        try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
             try {
                 mMappedSpareFile.close();
             } catch (IOException e) {
@@ -120,10 +119,8 @@ public final class ServicificationBackgroundServiceTest {
     @Test
     @LargeTest
     @Feature({"ServicificationStartup"})
-    @CommandLineFlags.Add({"enable-features=NetworkService,AllowStartingServiceManagerOnly,"
-            + "WriteBasicSystemProfileToPersistentHistogramsFile"})
-    public void
-    testHistogramsPersistedWithServiceManagerOnlyStart() {
+    @CommandLineFlags.Add("force-fieldtrials=*Foo/Bar")
+    public void testHistogramsPersistedWithServiceManagerOnlyStart() {
         createBrowserMetricsSpareFile();
         Assert.assertTrue(mSpareFile.exists());
 
@@ -137,7 +134,7 @@ public final class ServicificationBackgroundServiceTest {
     @Test
     @MediumTest
     @Feature({"ServicificationStartup"})
-    @CommandLineFlags.Add({"enable-features=NetworkService,AllowStartingServiceManagerOnly"})
+    @CommandLineFlags.Add({"enable-features=NetworkService"})
     public void testFullBrowserStartsAfterServiceManager() {
         startServiceAndWaitForNative(mServicificationBackgroundService);
         ServicificationBackgroundService.assertOnlyServiceManagerStarted();

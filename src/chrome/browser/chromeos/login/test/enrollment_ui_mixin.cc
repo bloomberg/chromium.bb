@@ -40,27 +40,23 @@ const char kLocation[] = "location";
 
 namespace {
 
-const char* const kAllSteps[] = {ui::kEnrollmentStepSignin,
-                                 ui::kEnrollmentStepWorking,
-                                 ui::kEnrollmentStepLicenses,
-                                 ui::kEnrollmentStepDeviceAttributes,
-                                 ui::kEnrollmentStepSuccess,
-                                 ui::kEnrollmentStepADJoin,
-                                 ui::kEnrollmentStepError,
-                                 ui::kEnrollmentStepADJoinError,
-                                 ui::kEnrollmentStepDeviceAttributesError};
+const char kEnrollmentUI[] = "enterprise-enrollment";
 
-std::string StepVisibleExpression(const std::string& step) {
-  return "document.getElementsByClassName('oauth-enroll-state-" + step +
-         "').length > 0";
+const char* const kAllSteps[] = {
+    ui::kEnrollmentStepSignin,   ui::kEnrollmentStepWorking,
+    ui::kEnrollmentStepLicenses, ui::kEnrollmentStepDeviceAttributes,
+    ui::kEnrollmentStepSuccess,  ui::kEnrollmentStepADJoin,
+    ui::kEnrollmentStepError};
+
+std::string StepElementID(const std::string& step) {
+  return "step-" + step;
 }
 
-const std::initializer_list<base::StringPiece> kEnrollmentErrorRetryButtonPath =
-    {"oauth-enroll-error-card", "submitButton"};
+const std::initializer_list<base::StringPiece> kEnrollmentErrorButtonPath = {
+    kEnrollmentUI, "oauth-enroll-error-card", "submitButton"};
 
-const std::initializer_list<base::StringPiece>
-    kEnrollmentDeviceAttributesErrorButtonPath = {
-        "oauth-enroll-attribute-prompt-error-card", "submitButton"};
+const std::initializer_list<base::StringPiece> kEnrollmentSuccessButtonPath = {
+    kEnrollmentUI, "success-done-button"};
 
 }  // namespace
 
@@ -71,56 +67,67 @@ EnrollmentUIMixin::~EnrollmentUIMixin() = default;
 
 // Waits until specific enrollment step is displayed.
 void EnrollmentUIMixin::WaitForStep(const std::string& step) {
-  OobeJS().CreateWaiter(StepVisibleExpression(step))->Wait();
+  OobeJS()
+      .CreateVisibilityWaiter(true, {kEnrollmentUI, StepElementID(step)})
+      ->Wait();
   for (const char* other : kAllSteps) {
-    if (other != step) {
-      ASSERT_FALSE(IsStepDisplayed(other));
-    }
+    if (other != step)
+      OobeJS().ExpectHiddenPath({kEnrollmentUI, StepElementID(other)});
   }
 }
+
 // Returns true if there are any DOM elements with the given class.
-bool EnrollmentUIMixin::IsStepDisplayed(const std::string& step) {
-  return OobeJS().GetBool(StepVisibleExpression(step));
+void EnrollmentUIMixin::ExpectStepVisibility(bool visibility,
+                                             const std::string& step) {
+  if (visibility) {
+    OobeJS().ExpectVisiblePath({kEnrollmentUI, StepElementID(step)});
+  } else {
+    OobeJS().ExpectHiddenPath({kEnrollmentUI, StepElementID(step)});
+  }
 }
 
 void EnrollmentUIMixin::SelectEnrollmentLicense(
     const std::string& license_type) {
-  OobeJS().SelectRadioPath(
-      {"oauth-enroll-license-ui", "license-option-" + license_type});
+  OobeJS().SelectRadioPath({kEnrollmentUI, "oauth-enroll-license-ui",
+                            "license-option-" + license_type});
 }
 
 void EnrollmentUIMixin::UseSelectedLicense() {
-  OobeJS().TapOnPath({"oauth-enroll-license-ui", "next"});
+  OobeJS().TapOnPath({kEnrollmentUI, "oauth-enroll-license-ui", "next"});
 }
 
 void EnrollmentUIMixin::ExpectErrorMessage(int error_message_id,
                                            bool can_retry) {
   const std::string element_path =
-      GetOobeElementPath({"oauth-enroll-error-card"});
+      GetOobeElementPath({kEnrollmentUI, "oauth-enroll-error-card"});
   const std::string message = OobeJS().GetString(element_path + ".textContent");
   ASSERT_TRUE(std::string::npos !=
               message.find(l10n_util::GetStringUTF8(error_message_id)));
   if (can_retry) {
-    OobeJS().ExpectVisiblePath(kEnrollmentErrorRetryButtonPath);
+    OobeJS().ExpectVisiblePath(kEnrollmentErrorButtonPath);
   } else {
-    OobeJS().ExpectHiddenPath(kEnrollmentErrorRetryButtonPath);
+    OobeJS().ExpectHiddenPath(kEnrollmentErrorButtonPath);
   }
 }
 
 void EnrollmentUIMixin::RetryAfterError() {
-  OobeJS().TapOnPath(kEnrollmentErrorRetryButtonPath);
+  OobeJS().ClickOnPath(kEnrollmentErrorButtonPath);
   WaitForStep(ui::kEnrollmentStepSignin);
 }
 
 void EnrollmentUIMixin::LeaveDeviceAttributeErrorScreen() {
-  OobeJS().TapOnPath(kEnrollmentDeviceAttributesErrorButtonPath);
+  OobeJS().ClickOnPath(kEnrollmentErrorButtonPath);
+}
+
+void EnrollmentUIMixin::LeaveSuccessScreen() {
+  OobeJS().ClickOnPath(kEnrollmentSuccessButtonPath);
 }
 
 void EnrollmentUIMixin::SubmitDeviceAttributes(const std::string& asset_id,
                                                const std::string& location) {
-  OobeJS().TypeIntoPath(asset_id, {"oauth-enroll-asset-id"});
-  OobeJS().TypeIntoPath(location, {"oauth-enroll-location"});
-  OobeJS().TapOn("enroll-attributes-submit-button");
+  OobeJS().TypeIntoPath(asset_id, {kEnrollmentUI, "oauth-enroll-asset-id"});
+  OobeJS().TypeIntoPath(location, {kEnrollmentUI, "oauth-enroll-location"});
+  OobeJS().TapOnPath({kEnrollmentUI, "attributes-submit"});
 }
 
 void EnrollmentUIMixin::SetExitHandler() {

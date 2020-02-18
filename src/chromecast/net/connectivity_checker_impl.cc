@@ -47,6 +47,10 @@ const unsigned int kRequestTimeoutInSeconds = 3;
 const char kDefaultConnectivityCheckUrl[] =
     "https://connectivitycheck.gstatic.com/generate_204";
 
+// Http url for connectivity checking.
+const char kHttpConnectivityCheckUrl[] =
+    "http://connectivitycheck.gstatic.com/generate_204";
+
 // Delay notification of network change events to smooth out rapid flipping.
 // Histogram "Cast.Network.Down.Duration.In.Seconds" shows 40% of network
 // downtime is less than 3 seconds.
@@ -119,6 +123,17 @@ void ConnectivityCheckerImpl::SetConnected(bool connected) {
     base::AutoLock auto_lock(connected_lock_);
     connected_ = connected;
   }
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  base::CommandLine::StringType check_url_str =
+      command_line->GetSwitchValueNative(switches::kConnectivityCheckUrl);
+  if (check_url_str.empty())
+  {
+    connectivity_check_url_.reset(new GURL(
+      connected ? kHttpConnectivityCheckUrl : kDefaultConnectivityCheckUrl));
+    LOG(INFO) << "Change check url=" << *connectivity_check_url_;
+  }
+
   Notify(connected);
   LOG(INFO) << "Global connection is: " << (connected ? "Up" : "Down");
 }
@@ -144,7 +159,8 @@ void ConnectivityCheckerImpl::CheckInternal() {
 
   DVLOG(1) << "Connectivity check: url=" << *connectivity_check_url_;
   url_request_ = url_request_context_->CreateRequest(
-      *connectivity_check_url_, net::MAXIMUM_PRIORITY, this);
+      *connectivity_check_url_, net::MAXIMUM_PRIORITY, this,
+      MISSING_TRAFFIC_ANNOTATION);
   url_request_->set_method("HEAD");
   url_request_->Start();
 
@@ -209,7 +225,7 @@ void ConnectivityCheckerImpl::OnResponseStarted(net::URLRequest* request,
     timeout_.Cancel();
     return;
   }
-  DVLOG(1) << "Connectivity check failed: " << http_response_code;
+  LOG(ERROR) << "Connectivity check failed: " << http_response_code;
   OnUrlRequestError(ErrorType::BAD_HTTP_STATUS);
   timeout_.Cancel();
 }

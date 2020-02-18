@@ -32,8 +32,7 @@ AXImageAnnotator::AXImageAnnotator(
     image_annotation::mojom::AnnotatorPtr annotator_ptr)
     : render_accessibility_(render_accessibility),
       preferred_language_(preferred_language),
-      annotator_ptr_(std::move(annotator_ptr)),
-      weak_factory_(this) {
+      annotator_ptr_(std::move(annotator_ptr)) {
   DCHECK(render_accessibility_);
 }
 
@@ -70,12 +69,12 @@ bool AXImageAnnotator::HasAnnotationInCache(blink::WebAXObject& image) const {
 
 bool AXImageAnnotator::HasImageInCache(const blink::WebAXObject& image) const {
   DCHECK(!image.IsDetached());
-  return base::ContainsKey(image_annotations_, image.AxID());
+  return base::Contains(image_annotations_, image.AxID());
 }
 
 void AXImageAnnotator::OnImageAdded(blink::WebAXObject& image) {
   DCHECK(!image.IsDetached());
-  DCHECK(!base::ContainsKey(image_annotations_, image.AxID()));
+  DCHECK(!base::Contains(image_annotations_, image.AxID()));
   const std::string image_id = GenerateImageSourceId(image);
   if (image_id.empty())
     return;
@@ -93,7 +92,7 @@ void AXImageAnnotator::OnImageAdded(blink::WebAXObject& image) {
 
 void AXImageAnnotator::OnImageUpdated(blink::WebAXObject& image) {
   DCHECK(!image.IsDetached());
-  DCHECK(base::ContainsKey(image_annotations_, image.AxID()));
+  DCHECK(base::Contains(image_annotations_, image.AxID()));
   const std::string image_id = GenerateImageSourceId(image);
   if (image_id.empty())
     return;
@@ -178,7 +177,7 @@ void AXImageAnnotator::MarkDirty(const blink::WebAXObject& image) const {
   blink::WebAXObject parent = image.ParentObject();
   for (int ancestor_count = 0; !parent.IsDetached() && ancestor_count < 2;
        parent = parent.ParentObject()) {
-    if (!parent.AccessibilityIsIgnored()) {
+    if (parent.AccessibilityIsIncludedInTree()) {
       ++ancestor_count;
       if (parent.Role() == ax::mojom::Role::kLink ||
           parent.Role() == ax::mojom::Role::kRootWebArea) {
@@ -242,7 +241,7 @@ SkBitmap AXImageAnnotator::GetImageData(const blink::WebAXObject& image) {
 void AXImageAnnotator::OnImageAnnotated(
     const blink::WebAXObject& image,
     image_annotation::mojom::AnnotateImageResultPtr result) {
-  if (!base::ContainsKey(image_annotations_, image.AxID()))
+  if (!base::Contains(image_annotations_, image.AxID()))
     return;
 
   if (image.IsDetached()) {

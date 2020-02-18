@@ -7,14 +7,13 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/variations/variations_params_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/cert/cert_verifier.h"
 #include "net/ssl/ssl_config.h"
@@ -85,7 +84,7 @@ class SSLConfigServiceManagerPrefTest : public testing::Test,
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   TestingPrefServiceSimple local_state_;
 

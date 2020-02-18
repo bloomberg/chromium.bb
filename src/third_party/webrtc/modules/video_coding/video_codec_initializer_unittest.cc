@@ -12,10 +12,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 
 #include "absl/types/optional.h"
 #include "api/scoped_refptr.h"
+#include "api/test/mock_fec_controller_override.h"
 #include "api/video/builtin_video_bitrate_allocator_factory.h"
 #include "api/video/video_bitrate_allocation.h"
 #include "api/video/video_bitrate_allocator.h"
@@ -26,6 +28,7 @@
 #include "modules/video_coding/codecs/vp9/include/vp9_globals.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/ref_counted_object.h"
+#include "test/gmock.h"
 #include "test/gtest.h"
 
 namespace webrtc {
@@ -98,7 +101,10 @@ class VideoCodecInitializerTest : public ::testing::Test {
     // Make sure temporal layers instances have been created.
     if (codec_out_.codecType == VideoCodecType::kVideoCodecVP8) {
       Vp8TemporalLayersFactory factory;
-      frame_buffer_controller_ = factory.Create(codec_out_);
+      const VideoEncoder::Settings settings(VideoEncoder::Capabilities(false),
+                                            1, 1000);
+      frame_buffer_controller_ =
+          factory.Create(codec_out_, settings, &fec_controller_override_);
     }
     return true;
   }
@@ -127,6 +133,8 @@ class VideoCodecInitializerTest : public ::testing::Test {
     stream.active = true;
     return stream;
   }
+
+  MockFecControllerOverride fec_controller_override_;
 
   // Input settings.
   VideoEncoderConfig config_;

@@ -14,8 +14,9 @@
 #include "chromeos/services/device_sync/proto/cryptauth_enrollment.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_proto_to_query_parameters_util.h"
 #include "chromeos/services/device_sync/switches.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
@@ -107,7 +108,7 @@ GURL CreateV2DeviceSyncRequestUrl(const std::string& request_path) {
 
 CryptAuthClientImpl::CryptAuthClientImpl(
     std::unique_ptr<CryptAuthApiCallFlow> api_call_flow,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const cryptauth::DeviceClassifier& device_classifier)
     : api_call_flow_(std::move(api_call_flow)),
@@ -393,9 +394,9 @@ void CryptAuthClientImpl::SyncMetadata(
           "cryptauth_v2_devicesync_sync_metadata", "oauth2_api_call_flow",
           R"(
       semantics {
-        sender: "CryptAuth V2 Device Manager"
+        sender: "CryptAuth Device Syncer"
         description:
-          "Sends device metadata to CryptAuth and recieves metadata data for "
+          "Sends device metadata to CryptAuth and receives metadata data for "
           "the user's other devices."
         trigger:
           "CryptAuth will potentially instruct the client to invoke "
@@ -435,7 +436,7 @@ void CryptAuthClientImpl::ShareGroupPrivateKey(
           "oauth2_api_call_flow",
           R"(
       semantics {
-        sender: "CryptAuth V2 Device Manager"
+        sender: "CryptAuth Device Syncer"
         description:
           "The device shares the group private key by encrypting it with the "
           "public key of the user's other devices."
@@ -504,8 +505,6 @@ void CryptAuthClientImpl::BatchNotifyGroupDevices(
       callback, error_callback, partial_traffic_annotation);
 }
 
-// TODO(https://crbug.com/953087): Populate the "sender" and "trigger" fields
-// when method is used in codebase.
 void CryptAuthClientImpl::BatchGetFeatureStatuses(
     const cryptauthv2::BatchGetFeatureStatusesRequest& request,
     const BatchGetFeatureStatusesCallback& callback,
@@ -516,12 +515,13 @@ void CryptAuthClientImpl::BatchGetFeatureStatuses(
           "oauth2_api_call_flow",
           R"(
       semantics {
-        sender: "TBD"
+        sender: "CryptAuth Device Syncer"
         description:
           "The client queries CryptAuth for the state of features on the "
           "user's devices, for example, whether or not Magic Tether is enabled "
           "on any of the user's phones."
-        trigger: "TBD"
+        trigger:
+          "Called after SyncMetadata as part of the v2 DeviceSync flow."
         data: "The user device IDs and feature types to query."
         destination: GOOGLE_OWNED_SERVICE
       }
@@ -606,17 +606,17 @@ void CryptAuthClientImpl::MakeApiCall(
   request_url_ = request_url;
   error_callback_ = error_callback;
 
-  OAuth2TokenService::ScopeSet scopes;
+  OAuth2AccessTokenManager::ScopeSet scopes;
   scopes.insert(kCryptAuthOAuth2Scope);
 
-  access_token_fetcher_ = std::make_unique<
-      identity::PrimaryAccountAccessTokenFetcher>(
-      "cryptauth_client", identity_manager_, scopes,
-      base::BindOnce(&CryptAuthClientImpl::OnAccessTokenFetched<ResponseProto>,
-                     weak_ptr_factory_.GetWeakPtr(), request_type,
-                     serialized_request, request_as_query_parameters,
-                     response_callback),
-      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+  access_token_fetcher_ =
+      std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
+          "cryptauth_client", identity_manager_, scopes,
+          base::BindOnce(
+              &CryptAuthClientImpl::OnAccessTokenFetched<ResponseProto>,
+              weak_ptr_factory_.GetWeakPtr(), request_type, serialized_request,
+              request_as_query_parameters, response_callback),
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 template <class ResponseProto>
@@ -627,7 +627,7 @@ void CryptAuthClientImpl::OnAccessTokenFetched(
         request_as_query_parameters,
     const base::Callback<void(const ResponseProto&)>& response_callback,
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   access_token_fetcher_.reset();
 
   if (error.state() != GoogleServiceAuthError::NONE) {
@@ -687,7 +687,7 @@ RequestProto CryptAuthClientImpl::RequestWithDeviceClassifierSet(
 
 // CryptAuthClientFactoryImpl
 CryptAuthClientFactoryImpl::CryptAuthClientFactoryImpl(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const cryptauth::DeviceClassifier& device_classifier)
     : identity_manager_(identity_manager),

@@ -21,10 +21,10 @@
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -555,7 +555,7 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
   InitLogging(logging::LoggingSettings());
-  base::MessageLoop message_loop;
+  base::SingleThreadTaskExecutor main_task_executor;
 
   scoped_refptr<media::cast::CastEnvironment> cast_environment(
       new media::cast::StandaloneCastEnvironment);

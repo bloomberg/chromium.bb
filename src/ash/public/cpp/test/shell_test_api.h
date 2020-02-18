@@ -21,6 +21,7 @@ enum class AppListViewState;
 class DragDropController;
 class MessageCenterController;
 class NativeCursorManagerAsh;
+class PaginationModel;
 class PowerPrefs;
 class ScreenPositionController;
 class Shell;
@@ -38,6 +39,11 @@ class ASH_EXPORT ShellTestApi {
   ShellTestApi();
   ~ShellTestApi();
 
+  // TabletModeController usually takes a screenshot before animating from
+  // clamshell to tablet mode for performance reasons. This is an async
+  // operation that we want to disable for most tests.
+  static void SetTabletControllerUseScreenshotForTest(bool use_screenshot);
+
   MessageCenterController* message_center_controller();
   SystemGestureEventFilter* system_gesture_event_filter();
   WorkspaceController* workspace_controller();
@@ -50,8 +56,6 @@ class ASH_EXPORT ShellTestApi {
   // Chrome starting.
   void ResetPowerButtonControllerForTest();
 
-  void ResetTabletModeController();
-
   // Simulates a modal dialog being open.
   void SimulateModalWindowOpenForTest(bool modal_window_open);
 
@@ -59,8 +63,12 @@ class ASH_EXPORT ShellTestApi {
   // password dialog).
   bool IsSystemModalWindowOpen();
 
-  // Enables or disables the tablet mode window manager.
-  void EnableTabletModeWindowManager(bool enable);
+  // Enables or disables the tablet mode. TabletMode switch can be
+  // asynchronous, and this will wait until the transition is complete
+  // by default. Set |wait_for_completion| to false if you do not want
+  // to wait.
+  void SetTabletModeEnabledForTest(bool enable,
+                                   bool wait_for_completion = true);
 
   // Enables the keyboard and associates it with the primary root window
   // controller. In tablet mode, enables the virtual keyboard.
@@ -69,9 +77,6 @@ class ASH_EXPORT ShellTestApi {
   // Fullscreens the active window, as if the user had pressed the hardware
   // fullscreen button.
   void ToggleFullscreen();
-
-  // Enters or exits overview mode.
-  void ToggleOverviewMode();
 
   // Returns true if it is in overview selecting mode.
   bool IsOverviewSelecting();
@@ -95,6 +100,10 @@ class ASH_EXPORT ShellTestApi {
   // Runs the callback when the launcher state becomes |state| after
   // state transition animation.
   void WaitForLauncherAnimationState(AppListViewState state);
+
+  // Returns the pagination model of the currently visible app-list view.
+  // It returns nullptr when app-list is not shown.
+  PaginationModel* GetAppListPaginationModel();
 
   // Returns the list of windows used in overview item. Returns empty
   // if not in the overview mode.

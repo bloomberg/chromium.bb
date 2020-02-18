@@ -8,18 +8,17 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/bindings/modules/v8/string_or_array_buffer_or_ndef_message.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_message_callback.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_constants.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
 class NFCPushOptions;
-using NDEFMessageSource = StringOrArrayBufferOrNDEFMessage;
-class NFCWatchOptions;
+class NFCReaderOptions;
 class ScriptPromiseResolver;
 
 class NFC final : public ScriptWrappable,
@@ -49,8 +48,10 @@ class NFC final : public ScriptWrappable,
   // Cancels ongoing push operation.
   ScriptPromise cancelPush(ScriptState*, const String&);
 
-  // Starts watching for NFC messages that match NFCWatchOptions criteria.
-  ScriptPromise watch(ScriptState*, V8MessageCallback*, const NFCWatchOptions*);
+  // Starts watching for NFC messages that match NFCReaderOptions criteria.
+  ScriptPromise watch(ScriptState*,
+                      V8MessageCallback*,
+                      const NFCReaderOptions*);
 
   // Cancels watch operation with id.
   ScriptPromise cancelWatch(ScriptState*, int32_t id);
@@ -76,13 +77,14 @@ class NFC final : public ScriptWrappable,
   void OnRequestCompleted(ScriptPromiseResolver*,
                           device::mojom::blink::NFCErrorPtr);
   void OnConnectionError();
-  void OnWatchRegistered(V8PersistentCallbackFunction<V8MessageCallback>*,
+  void OnWatchRegistered(V8MessageCallback*,
                          ScriptPromiseResolver*,
                          uint32_t id,
                          device::mojom::blink::NFCErrorPtr);
 
   // device::mojom::blink::NFCClient implementation.
-  void OnWatch(const Vector<uint32_t>& ids,
+  void OnWatch(const Vector<uint32_t>&,
+               const String&,
                device::mojom::blink::NDEFMessagePtr) override;
 
  private:

@@ -44,7 +44,7 @@ void WebRtcAudioSink::SetAudioProcessor(
 }
 
 void WebRtcAudioSink::SetLevel(
-    scoped_refptr<MediaStreamAudioLevelCalculator::Level> level) {
+    scoped_refptr<blink::MediaStreamAudioLevelCalculator::Level> level) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(level.get());
   adapter_->set_level(std::move(level));
@@ -152,7 +152,7 @@ void WebRtcAudioSink::Adapter::AddSink(webrtc::AudioTrackSinkInterface* sink) {
          signaling_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(sink);
   base::AutoLock auto_lock(lock_);
-  DCHECK(!base::ContainsValue(sinks_, sink));
+  DCHECK(!base::Contains(sinks_, sink));
   sinks_.push_back(sink);
 }
 

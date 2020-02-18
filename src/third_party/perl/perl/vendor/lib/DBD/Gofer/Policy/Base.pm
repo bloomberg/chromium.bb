@@ -1,6 +1,6 @@
 package DBD::Gofer::Policy::Base;
 
-#   $Id: Base.pm 10087 2007-10-16 12:42:37Z timbo $
+#   $Id: Base.pm 10087 2007-10-16 12:42:37Z Tim $
 #
 #   Copyright (c) 2007, Tim Bunce, Ireland
 #
@@ -11,7 +11,7 @@ use strict;
 use warnings;
 use Carp;
 
-our $VERSION = sprintf("0.%06d", q$Revision: 10087 $ =~ /(\d+)/o);
+our $VERSION = "0.010088";
 our $AUTOLOAD;
 
 my %policy_defaults = (
@@ -50,7 +50,7 @@ __PACKAGE__->create_policy_subs(\%policy_defaults);
 sub create_policy_subs {
     my ($class, $policy_defaults) = @_;
 
-    while ( my ($policy_name, $policy_default) = each %$policy_defaults) { 
+    while ( my ($policy_name, $policy_default) = each %$policy_defaults) {
         my $policy_attr_name = "go_$policy_name";
         my $sub = sub {
             # $policy->foo($attr, ...)
@@ -106,12 +106,12 @@ The Base policy is not used directly. You should use a policy class derived from
 =head1 POLICY CLASSES
 
 Three policy classes are supplied with DBD::Gofer:
-    
+
 L<DBD::Gofer::Policy::pedantic> is most 'transparent' but slowest because it
 makes more  round-trips to the Gofer server.
 
 L<DBD::Gofer::Policy::classic> is a reasonable compromise - it's the default policy.
-    
+
 L<DBD::Gofer::Policy::rush> is fastest, but may require code changes in your applications.
 
 Generally the default C<classic> policy is fine. When first testing an existing

@@ -16,6 +16,8 @@
 
 #include "common/Math.h"
 
+#include <cmath>
+
 // Tests for ScanForward
 TEST(Math, ScanForward) {
     // Test extrema
@@ -31,15 +33,18 @@ TEST(Math, ScanForward) {
 // Tests for Log2
 TEST(Math, Log2) {
     // Test extrema
-    ASSERT_EQ(Log2(1), 0u);
-    ASSERT_EQ(Log2(0xFFFFFFFF), 31u);
+    ASSERT_EQ(Log2(1u), 0u);
+    ASSERT_EQ(Log2(0xFFFFFFFFu), 31u);
+    ASSERT_EQ(Log2(static_cast<uint64_t>(0xFFFFFFFFFFFFFFFF)), 63u);
 
     // Test boundary between two logs
-    ASSERT_EQ(Log2(0x80000000), 31u);
-    ASSERT_EQ(Log2(0x7FFFFFFF), 30u);
+    ASSERT_EQ(Log2(0x80000000u), 31u);
+    ASSERT_EQ(Log2(0x7FFFFFFFu), 30u);
+    ASSERT_EQ(Log2(static_cast<uint64_t>(0x8000000000000000)), 63u);
+    ASSERT_EQ(Log2(static_cast<uint64_t>(0x7FFFFFFFFFFFFFFF)), 62u);
 
-    ASSERT_EQ(Log2(16), 4u);
-    ASSERT_EQ(Log2(15), 3u);
+    ASSERT_EQ(Log2(16u), 4u);
+    ASSERT_EQ(Log2(15u), 3u);
 }
 
 // Tests for IsPowerOfTwo
@@ -50,6 +55,19 @@ TEST(Math, IsPowerOfTwo) {
 
     ASSERT_TRUE(IsPowerOfTwo(0x8000000));
     ASSERT_FALSE(IsPowerOfTwo(0x8000400));
+}
+
+// Tests for NextPowerOfTwo
+TEST(Math, NextPowerOfTwo) {
+    // Test extrema
+    ASSERT_EQ(NextPowerOfTwo(0), 1ull);
+    ASSERT_EQ(NextPowerOfTwo(0x7FFFFFFFFFFFFFFF), 0x8000000000000000);
+
+    // Test boundary between powers-of-two.
+    ASSERT_EQ(NextPowerOfTwo(31), 32ull);
+    ASSERT_EQ(NextPowerOfTwo(33), 64ull);
+
+    ASSERT_EQ(NextPowerOfTwo(32), 32ull);
 }
 
 // Tests for AlignPtr
@@ -132,4 +150,44 @@ TEST(Math, IsAligned) {
     for (uint32_t i = 1; i < 64; ++i) {
         ASSERT_FALSE(IsAligned(64 + i, 64));
     }
+}
+
+// Tests for float32 to float16 conversion
+TEST(Math, Float32ToFloat16) {
+    ASSERT_EQ(Float32ToFloat16(0.0f), 0x0000);
+    ASSERT_EQ(Float32ToFloat16(-0.0f), 0x8000);
+
+    ASSERT_EQ(Float32ToFloat16(INFINITY), 0x7C00);
+    ASSERT_EQ(Float32ToFloat16(-INFINITY), 0xFC00);
+
+    // Check that NaN is converted to a value in one of the float16 NaN ranges
+    uint16_t nan16 = Float32ToFloat16(NAN);
+    ASSERT_TRUE(nan16 > 0xFC00 || (nan16 < 0x8000 && nan16 > 0x7C00));
+
+    ASSERT_EQ(Float32ToFloat16(1.0f), 0x3C00);
+}
+
+// Tests for IsFloat16NaN
+TEST(Math, IsFloat16NaN) {
+    ASSERT_FALSE(IsFloat16NaN(0u));
+    ASSERT_FALSE(IsFloat16NaN(0u));
+    ASSERT_FALSE(IsFloat16NaN(Float32ToFloat16(1.0f)));
+    ASSERT_FALSE(IsFloat16NaN(Float32ToFloat16(INFINITY)));
+    ASSERT_FALSE(IsFloat16NaN(Float32ToFloat16(-INFINITY)));
+
+    ASSERT_TRUE(IsFloat16NaN(Float32ToFloat16(INFINITY) + 1));
+    ASSERT_TRUE(IsFloat16NaN(Float32ToFloat16(-INFINITY) + 1));
+    ASSERT_TRUE(IsFloat16NaN(0x7FFF));
+    ASSERT_TRUE(IsFloat16NaN(0xFFFF));
+}
+
+// Tests for SRGBToLinear
+TEST(Math, SRGBToLinear) {
+    ASSERT_EQ(SRGBToLinear(0.0f), 0.0f);
+    ASSERT_EQ(SRGBToLinear(1.0f), 1.0f);
+
+    ASSERT_EQ(SRGBToLinear(-1.0f), 0.0f);
+    ASSERT_EQ(SRGBToLinear(2.0f), 1.0f);
+
+    ASSERT_FLOAT_EQ(SRGBToLinear(0.5f), 0.21404114f);
 }

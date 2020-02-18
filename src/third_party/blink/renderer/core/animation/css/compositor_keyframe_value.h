@@ -21,17 +21,17 @@ class CORE_EXPORT CompositorKeyframeValue
     return GetType() == Type::kFilterOperations;
   }
   bool IsTransform() const { return GetType() == Type::kTransform; }
+  bool IsColor() const { return GetType() == Type::kColor; }
 
   virtual void Trace(Visitor*) {}
 
- protected:
   enum class Type {
     kDouble,
     kFilterOperations,
     kTransform,
+    kColor,
   };
 
- private:
   virtual Type GetType() const = 0;
 };
 

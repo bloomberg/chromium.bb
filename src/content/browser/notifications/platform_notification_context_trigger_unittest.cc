@@ -53,17 +53,14 @@ class PlatformNotificationContextTriggerTest : public ::testing::Test {
  public:
   PlatformNotificationContextTriggerTest()
       : thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::MainThreadType::UI,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
         notification_browser_client_(&browser_context_),
         success_(false) {
     SetBrowserClientForTesting(&notification_browser_client_);
   }
 
   void SetUp() override {
-    // Advance time a little bit so TimeTicks::Now().is_null() becomes false.
-    thread_bundle_.FastForwardBy(base::TimeDelta::FromMilliseconds(1));
     scoped_feature_list_.InitAndEnableFeature(features::kNotificationTriggers);
     platform_notification_context_ =
         base::MakeRefCounted<PlatformNotificationContextImpl>(
@@ -119,7 +116,7 @@ class PlatformNotificationContextTriggerTest : public ::testing::Test {
         ->GetDisplayedNotifications(base::BindLambdaForTesting(
             [&](std::set<std::string> notification_ids, bool supports_sync) {
               displayed_notification_ids = std::move(notification_ids);
-              run_loop.QuitClosure().Run();
+              run_loop.Quit();
             }));
     run_loop.Run();
     return displayed_notification_ids;

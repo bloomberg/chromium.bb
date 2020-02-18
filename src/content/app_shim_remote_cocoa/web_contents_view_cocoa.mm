@@ -15,7 +15,9 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
 
-using content::mojom::DraggingInfo;
+using remote_cocoa::mojom::DraggingInfo;
+using remote_cocoa::mojom::SelectionDirection;
+using remote_cocoa::mojom::Visibility;
 using content::DropData;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -92,10 +94,10 @@ using content::DropData;
 }
 
 - (void)mouseEvent:(NSEvent*)theEvent {
-  if (!client_)
+  if (!host_)
     return;
-  client_->OnMouseEvent([theEvent type] == NSMouseMoved,
-                        [theEvent type] == NSMouseExited);
+  host_->OnMouseEvent([theEvent type] == NSMouseMoved,
+                      [theEvent type] == NSMouseExited);
 }
 
 - (void)setMouseDownCanMoveWindow:(BOOL)canMove {
@@ -104,9 +106,9 @@ using content::DropData;
 
 - (BOOL)mouseDownCanMoveWindow {
   // This is needed to prevent mouseDowns from moving the window
-  // around.  The default implementation returns YES only for opaque
-  // views.  WebContentsViewCocoa does not draw itself in any way, but
-  // its subviews do paint their entire frames.  Returning NO here
+  // around. The default implementation returns YES only for opaque
+  // views. WebContentsViewCocoa does not draw itself in any way, but
+  // its subviews do paint their entire frames. Returning NO here
   // saves us the effort of overriding this method in every possible
   // subview.
   return mouseDownCanMoveWindow_;
@@ -120,10 +122,10 @@ using content::DropData;
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
                        offset:(NSPoint)offset {
-  if (!client_)
+  if (!host_)
     return;
   dragSource_.reset([[WebDragSource alloc]
-         initWithClient:client_
+           initWithHost:host_
                    view:self
                dropData:&dropData
                   image:image
@@ -174,45 +176,45 @@ using content::DropData;
 // NSDraggingDestination methods
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
-  if (!client_)
+  if (!host_)
     return NSDragOperationNone;
 
   // Fill out a DropData from pasteboard.
   DropData dropData;
   content::PopulateDropDataFromPasteboard(&dropData,
                                           [sender draggingPasteboard]);
-  client_->SetDropData(dropData);
+  host_->SetDropData(dropData);
 
   auto draggingInfo = DraggingInfo::New();
   [self populateDraggingInfo:draggingInfo.get() fromNSDraggingInfo:sender];
   uint32_t result = 0;
-  client_->DraggingEntered(std::move(draggingInfo), &result);
+  host_->DraggingEntered(std::move(draggingInfo), &result);
   return result;
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
-  if (!client_)
+  if (!host_)
     return;
-  client_->DraggingExited();
+  host_->DraggingExited();
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
-  if (!client_)
+  if (!host_)
     return NSDragOperationNone;
   auto draggingInfo = DraggingInfo::New();
   [self populateDraggingInfo:draggingInfo.get() fromNSDraggingInfo:sender];
   uint32_t result = 0;
-  client_->DraggingUpdated(std::move(draggingInfo), &result);
+  host_->DraggingUpdated(std::move(draggingInfo), &result);
   return result;
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
-  if (!client_)
+  if (!host_)
     return NO;
   auto draggingInfo = DraggingInfo::New();
   [self populateDraggingInfo:draggingInfo.get() fromNSDraggingInfo:sender];
   bool result = false;
-  client_->PerformDragOperation(std::move(draggingInfo), &result);
+  host_->PerformDragOperation(std::move(draggingInfo), &result);
   return result;
 }
 
@@ -220,14 +222,14 @@ using content::DropData;
   viewsHostableView_ = nullptr;
 }
 
-- (void)setClient:(content::mojom::WebContentsNSViewClient*)client {
-  if (!client)
-    [dragSource_ clearClientAndWebContentsView];
-  client_ = client;
+- (void)setHost:(remote_cocoa::mojom::WebContentsNSViewHost*)host {
+  if (!host)
+    [dragSource_ clearHostAndWebContentsView];
+  host_ = host;
 }
 
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification {
-  if (!client_)
+  if (!host_)
     return;
 
   NSView* view = [notification object];
@@ -238,34 +240,34 @@ using content::DropData;
       static_cast<NSSelectionDirection>([[[notification userInfo]
           objectForKey:kSelectionDirection] unsignedIntegerValue]);
 
-  content::mojom::SelectionDirection direction;
+  SelectionDirection direction;
   switch (ns_direction) {
     case NSDirectSelection:
-      direction = content::mojom::SelectionDirection::kDirect;
+      direction = SelectionDirection::kDirect;
       break;
     case NSSelectingNext:
-      direction = content::mojom::SelectionDirection::kForward;
+      direction = SelectionDirection::kForward;
       break;
     case NSSelectingPrevious:
-      direction = content::mojom::SelectionDirection::kReverse;
+      direction = SelectionDirection::kReverse;
       break;
     default:
       return;
   }
-  client_->OnBecameFirstResponder(direction);
+  host_->OnBecameFirstResponder(direction);
 }
 
 - (void)updateWebContentsVisibility {
-  if (!client_)
+  if (!host_)
     return;
-  content::mojom::Visibility visibility = content::mojom::Visibility::kVisible;
+  Visibility visibility = Visibility::kVisible;
   if ([self isHiddenOrHasHiddenAncestor] || ![self window])
-    visibility = content::mojom::Visibility::kHidden;
+    visibility = Visibility::kHidden;
   else if ([[self window] occlusionState] & NSWindowOcclusionStateVisible)
-    visibility = content::mojom::Visibility::kVisible;
+    visibility = Visibility::kVisible;
   else
-    visibility = content::mojom::Visibility::kOccluded;
-  client_->OnWindowVisibilityChanged(visibility);
+    visibility = Visibility::kOccluded;
+  host_->OnWindowVisibilityChanged(visibility);
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {

@@ -9,9 +9,7 @@
 
 namespace net {
 
-base::Value NetLogCookieMonsterConstructorCallback(
-    bool persistent_store,
-    NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogCookieMonsterConstructorParams(bool persistent_store) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetBoolKey("persistent_store", persistent_store);
   return dict;
@@ -20,7 +18,7 @@ base::Value NetLogCookieMonsterConstructorCallback(
 base::Value NetLogCookieMonsterCookieAdded(const CanonicalCookie* cookie,
                                            bool sync_requested,
                                            NetLogCaptureMode capture_mode) {
-  if (!capture_mode.include_cookies_and_credentials())
+  if (!NetLogCaptureIncludesSensitive(capture_mode))
     return base::Value();
 
   base::Value dict(base::Value::Type::DICTIONARY);
@@ -41,7 +39,7 @@ base::Value NetLogCookieMonsterCookieDeleted(const CanonicalCookie* cookie,
                                              CookieChangeCause cause,
                                              bool sync_requested,
                                              NetLogCaptureMode capture_mode) {
-  if (!capture_mode.include_cookies_and_credentials())
+  if (!NetLogCaptureIncludesSensitive(capture_mode))
     return base::Value();
 
   base::Value dict(base::Value::Type::DICTIONARY);
@@ -59,7 +57,7 @@ base::Value NetLogCookieMonsterCookieRejectedSecure(
     const CanonicalCookie* old_cookie,
     const CanonicalCookie* new_cookie,
     NetLogCaptureMode capture_mode) {
-  if (!capture_mode.include_cookies_and_credentials())
+  if (!NetLogCaptureIncludesSensitive(capture_mode))
     return base::Value();
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("name", old_cookie->Name());
@@ -75,7 +73,7 @@ base::Value NetLogCookieMonsterCookieRejectedHttponly(
     const CanonicalCookie* old_cookie,
     const CanonicalCookie* new_cookie,
     NetLogCaptureMode capture_mode) {
-  if (!capture_mode.include_cookies_and_credentials())
+  if (!NetLogCaptureIncludesSensitive(capture_mode))
     return base::Value();
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("name", old_cookie->Name());
@@ -91,7 +89,7 @@ base::Value NetLogCookieMonsterCookiePreservedSkippedSecure(
     const CanonicalCookie* preserved,
     const CanonicalCookie* new_cookie,
     NetLogCaptureMode capture_mode) {
-  if (!capture_mode.include_cookies_and_credentials())
+  if (!NetLogCaptureIncludesSensitive(capture_mode))
     return base::Value();
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("name", preserved->Name());

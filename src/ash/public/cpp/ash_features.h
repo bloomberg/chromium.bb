@@ -37,6 +37,12 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenInlineReply;
 ASH_PUBLIC_EXPORT extern const base::Feature
     kLockScreenHideSensitiveNotificationsSupport;
 
+// Enables user preference to control media keys on the lock screen.
+ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenMediaKeys;
+
+// Enables lock screen media controls UI.
+ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenMediaControls;
+
 // Enables hiding of ARC media notifications. If this is enabled, all ARC
 // notifications that are of the media type will not be shown. This
 // is because they will be replaced by native media session notifications.
@@ -47,6 +53,13 @@ ASH_PUBLIC_EXPORT extern const base::Feature kHideArcMediaNotifications;
 // a notification that shows the currently playing media with controls.
 // TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
 ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionNotification;
+
+// Enables multi-display support for overview and split view.
+// TODO(crbug.com/952461): Remove this when the feature is fully launched.
+ASH_PUBLIC_EXPORT extern const base::Feature kMultiDisplayOverviewAndSplitView;
+
+// Enables the redesigned managed device info UI in the system tray.
+ASH_PUBLIC_EXPORT extern const base::Feature kManagedDeviceUIRedesign;
 
 // Enables the Night Light feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kNightLight;
@@ -85,13 +98,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 // Enables the Supervised User Deprecation notices.
 ASH_PUBLIC_EXPORT extern const base::Feature kSupervisedUserDeprecationNotice;
 
-// Uses fragment shader for all the rounded corners instead of mask layer. This
-// improves memory performance by avoiding render surfaces where ever possible.
-ASH_PUBLIC_EXPORT extern const base::Feature kUseShaderRoundedCorner;
-
-// Enables the notification stacking bar redesigned UI.
-ASH_PUBLIC_EXPORT extern const base::Feature kNotificationStackingBarRedesign;
-
 // Enables pagination for feature pod buttons in the system tray
 ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayFeaturePodsPagination;
 
@@ -106,6 +112,8 @@ ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
+
+ASH_PUBLIC_EXPORT bool IsManagedDeviceUIRedesignEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenInlineReplyEnabled();
 
@@ -126,10 +134,6 @@ ASH_PUBLIC_EXPORT bool IsViewsLoginEnabled();
 ASH_PUBLIC_EXPORT bool IsVirtualDesksEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
-
-ASH_PUBLIC_EXPORT bool ShouldUseShaderRoundedCorner();
-
-ASH_PUBLIC_EXPORT bool IsNotificationStackingBarRedesignEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSystemTrayFeaturePodsPaginationEnabled();
 

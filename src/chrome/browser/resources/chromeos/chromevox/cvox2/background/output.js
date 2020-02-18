@@ -513,7 +513,8 @@ Output.RULES = {
     paragraph: {speak: `$nameOrDescendants`},
     popUpButton: {
       speak: `$if($value, $value, $descendants) $name $role @aria_has_popup
-          $state $restriction $description`
+          $if($expanded, @@list_with_items($setSize)) $state $restriction
+          $description`
     },
     radioButton: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))
@@ -1240,14 +1241,40 @@ Output.prototype = {
           if (node.activeDescendantFor && node.activeDescendantFor.length > 0)
             options.annotation.push(new Output.SelectionSpan(0, 0));
 
-          this.append_(buff, node.name || '', options);
-          ruleStr.writeTokenWithValue(token, node.name);
           // Language Switching. Only execute if feature is enabled.
           if (localStorage['languageSwitching'] === 'true') {
-            speechProps = new Output.SpeechProperties();
-            speechProps['lang'] =
-                LanguageSwitching.updateCurrentLanguageForNode(node);
+            /**
+             * Passed as a callback to assignLanguagesForStringAttribute.
+             * Appends outputString to the output buffer in newLanguage.
+             * @param {!Array<Spannable>} buff
+             * @param {{isUnique: (boolean|undefined),
+             *      annotation: !Array<*>}} opt_options
+             * @param {string} newLanguage
+             * @param {string} outputString
+             */
+            var appendStringWithLanguage = function(
+                                               buff, options, newLanguage,
+                                               outputString) {
+              var speechProps = new Output.SpeechProperties();
+              // Set output language.
+              speechProps['lang'] = newLanguage;
+              // Append outputString to buff.
+              this.append_(buff, outputString, options);
+              // Attach associated SpeechProperties if the buffer is non-empty.
+              if (buff.length > 0)
+                buff[buff.length - 1].setSpan(speechProps, 0, 0);
+            }.bind(this, buff, options);
+            // Cut up node name into multiple spans with different languages.
+            LanguageSwitching.assignLanguagesForStringAttribute(
+                node, 'name', appendStringWithLanguage);
+          } else {
+            // Append entire node name.
+            // TODO(akihiroota): Follow-up with dtseng about why we append empty
+            // string.
+            this.append_(buff, node.name || '', options);
           }
+          ruleStr.writeTokenWithValue(token, node.name);
+
         } else if (token == 'description') {
           if (node.name == node.description)
             return;

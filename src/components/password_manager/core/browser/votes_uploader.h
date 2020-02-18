@@ -70,9 +70,9 @@ class VotesUploader {
       const autofill::PasswordForm& pending_credentials,
       const autofill::PasswordForm& form_to_upload);
 
-  // Searches for |username| in |other_possible_usernames| of |best_matches|
+  // Searches for |username| in |all_possible_usernames| of |best_matches|
   // and |not_best_matches|. If the username value is found in
-  // |other_possible_usernames| and the password value of the match is equal to
+  // |all_possible_usernames| and the password value of the match is equal to
   // |password|, the match is saved to |username_correction_vote_| and the
   // method returns true.
   bool FindCorrectedUsernameElement(
@@ -86,6 +86,17 @@ class VotesUploader {
   // to |form_structure|. Declared as public for testing.
   void GeneratePasswordAttributesVote(const base::string16& password_value,
                                       autofill::FormStructure* form_structure);
+
+  // Stores the |unique_renderer_id| and |values| of the fields in
+  // |observed_form| to |initial_field_values_|.
+  void StoreInitialFieldValues(const autofill::FormData& observed_form);
+
+  // Sets the low-entropy hash value of the values stored in |initial_values_|
+  // for the detected |username| field to the corresponding field in
+  // |form_structure|.
+  void SetInitialHashValueOfUsernameField(
+      uint32_t username_element_renderer_id,
+      autofill::FormStructure* form_structure);
 
   bool get_generation_popup_was_shown() const {
     return generation_popup_was_shown_;
@@ -152,7 +163,7 @@ class VotesUploader {
           best_matches,
       autofill::FormStructure* form_to_upload);
 
-  // Searches for |username| in |other_possible_usernames| of |match|. If the
+  // Searches for |username| in |all_possible_usernames| of |match|. If the
   // username value is found, the match is saved to |username_correction_vote_|
   // and the function returns true.
   bool FindUsernameInOtherPossibleUsernames(const autofill::PasswordForm& match,
@@ -175,7 +186,7 @@ class VotesUploader {
   bool has_username_edited_vote_ = false;
 
   // If the user typed username that doesn't match any saved credentials, but
-  // matches an entry from |other_possible_usernames| of a saved credential,
+  // matches an entry from |all_possible_usernames| of a saved credential,
   // |username_correction_vote_| stores the credential with matched username.
   // The matched credential is copied to |username_correction_vote_|, but
   // |username_correction_vote_.username_element| is set to the name of the
@@ -197,6 +208,10 @@ class VotesUploader {
 
   // Whether this form has a generated password changed by user.
   bool generated_password_changed_ = false;
+
+  // Maps an |unique_renderer_id| to the initial value of the fields of an
+  // observed form.
+  std::map<uint32_t, base::string16> initial_values_;
 };
 
 }  // namespace password_manager

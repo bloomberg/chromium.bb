@@ -10,6 +10,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/chromeos/apps/apk_web_app_service.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
@@ -41,6 +42,7 @@
 #include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_bridge.h"
 #include "chrome/browser/chromeos/arc/tts/arc_tts_service.h"
+#include "chrome/browser/chromeos/arc/usb/arc_usb_host_bridge_delegate.h"
 #include "chrome/browser/chromeos/arc/user_session/arc_user_session_service.h"
 #include "chrome/browser/chromeos/arc/video/gpu_arc_video_service_host.h"
 #include "chrome/browser/chromeos/arc/wallpaper/arc_wallpaper_service.h"
@@ -51,6 +53,7 @@
 #include "components/arc/app_permissions/arc_app_permissions_bridge.h"
 #include "components/arc/appfuse/arc_appfuse_bridge.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/audio/arc_audio_bridge.h"
 #include "components/arc/camera/arc_camera_bridge.h"
 #include "components/arc/clipboard/arc_clipboard_bridge.h"
@@ -58,6 +61,7 @@
 #include "components/arc/disk_quota/arc_disk_quota_bridge.h"
 #include "components/arc/ime/arc_ime_service.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/keymaster/arc_keymaster_bridge.h"
 #include "components/arc/lock_screen/arc_lock_screen_bridge.h"
 #include "components/arc/media_session/arc_media_session_bridge.h"
 #include "components/arc/metrics/arc_metrics_service.h"
@@ -75,11 +79,15 @@
 #include "components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 #include "components/arc/wake_lock/arc_wake_lock_bridge.h"
 #include "components/prefs/pref_member.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace arc {
 namespace {
+
+// The file that specifies if the environment is ARCVM or ARC. It contains 1 in
+// ARCVM and 0 in ARC.
+constexpr base::FilePath::CharType kIsArcVm[] = "/run/chrome/is_arcvm";
 
 // ChromeBrowserMainPartsChromeos owns.
 ArcServiceLauncher* g_arc_service_launcher = nullptr;
@@ -97,10 +105,17 @@ ArcServiceLauncher::ArcServiceLauncher()
   DCHECK(g_arc_service_launcher == nullptr);
   g_arc_service_launcher = this;
 
+  // Write kIsArcVm file to be 1 or 0.
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce([](const base::FilePath& filename, const char* data,
+                        int size) { base::WriteFile(filename, data, size); },
+                     base::FilePath(kIsArcVm),
+                     arc::IsArcVmEnabled() ? "1" : "0", 1));
+
   ash::mojom::CrosDisplayConfigControllerPtr cros_display_config;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &cros_display_config);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &cros_display_config);
   default_scale_factor_retriever_.Start(std::move(cros_display_config));
 }
 
@@ -151,7 +166,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   // Those services will be initialized lazily.
   // List in lexicographical order.
   ArcAccessibilityHelperBridge::GetForBrowserContext(profile);
-  ArcAppfuseBridge::GetForBrowserContext(profile);
   ArcAppPermissionsBridge::GetForBrowserContext(profile);
   ArcAudioBridge::GetForBrowserContext(profile);
   ArcAuthService::GetForBrowserContext(profile);
@@ -171,6 +185,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcImeService::GetForBrowserContext(profile);
   ArcInputMethodManagerService::GetForBrowserContext(profile);
   ArcIntentHelperBridge::GetForBrowserContext(profile);
+  ArcKeymasterBridge::GetForBrowserContext(profile);
   ArcKioskBridge::GetForBrowserContext(profile);
   ArcLockScreenBridge::GetForBrowserContext(profile);
   ArcMediaSessionBridge::GetForBrowserContext(profile);
@@ -179,7 +194,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcMidisBridge::GetForBrowserContext(profile);
   ArcNetHostImpl::GetForBrowserContext(profile)->SetPrefService(
       profile->GetPrefs());
-  ArcObbMounterBridge::GetForBrowserContext(profile);
   ArcOemCryptoBridge::GetForBrowserContext(profile);
   ArcPipBridge::GetForBrowserContext(profile);
   ArcPolicyBridge::GetForBrowserContext(profile);
@@ -196,7 +210,8 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcTracingBridge::GetForBrowserContext(profile);
   ArcAppPerformanceTracing::GetForBrowserContext(profile);
   ArcTtsService::GetForBrowserContext(profile);
-  ArcUsbHostBridge::GetForBrowserContext(profile);
+  ArcUsbHostBridge::GetForBrowserContext(profile)->SetDelegate(
+      std::make_unique<ArcUsbHostBridgeDelegate>());
   ArcUsbHostPermissionManager::GetForBrowserContext(profile);
   ArcUserSessionService::GetForBrowserContext(profile);
   ArcVolumeMounterBridge::GetForBrowserContext(profile);
@@ -207,6 +222,12 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
     apps::ArcAppsFactory::GetForProfile(profile);
   }
   chromeos::ApkWebAppService::Get(profile);
+
+  // ARC Container-only services.
+  if (!arc::IsArcVmEnabled()) {
+    ArcAppfuseBridge::GetForBrowserContext(profile);
+    ArcObbMounterBridge::GetForBrowserContext(profile);
+  }
 
   arc_session_manager_->Initialize();
   arc_play_store_enabled_preference_handler_ =

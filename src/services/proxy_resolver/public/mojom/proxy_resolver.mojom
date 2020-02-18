@@ -10,8 +10,6 @@ module proxy_resolver.mojom;
 import "services/network/public/mojom/ip_address.mojom";
 import "url/mojom/url.mojom";
 
-const string kProxyResolverServiceName = "proxy_resolver";
-
 // Mirror of net::ProxyResolveDnsOperation.
 enum HostResolveOperation {
   DNS_RESOLVE,
@@ -54,7 +52,8 @@ struct ProxyInfo {
 interface ProxyResolver {
   // Use a ProxyResolverRequestClient instead of returning a result so we can
   // cancel in-flight requests by destroying the client.
-  GetProxyForUrl(url.mojom.Url url, ProxyResolverRequestClient client);
+  GetProxyForUrl(url.mojom.Url url,
+                 pending_remote<ProxyResolverRequestClient> client);
 };
 
 interface ProxyResolverRequestClient {
@@ -65,7 +64,7 @@ interface ProxyResolverRequestClient {
 
   ResolveDns(string host,
              HostResolveOperation operation,
-             HostResolverRequestClient client);
+             pending_remote<HostResolverRequestClient> client);
 };
 
 // Creates a ProxyResolver that uses the provided PAC script. The ProxyResolver
@@ -75,8 +74,8 @@ interface ProxyResolverRequestClient {
 // creation of the ProxyResolverFactory.
 interface ProxyResolverFactory {
   CreateResolver(string pac_script,
-                 ProxyResolver& resolver,
-                 ProxyResolverFactoryRequestClient client);
+                 pending_receiver<ProxyResolver> receiver,
+                 pending_remote<ProxyResolverFactoryRequestClient> client);
 };
 
 interface ProxyResolverFactoryRequestClient {
@@ -87,5 +86,5 @@ interface ProxyResolverFactoryRequestClient {
 
   ResolveDns(string host,
              HostResolveOperation operation,
-             HostResolverRequestClient client);
+             pending_remote<HostResolverRequestClient> client);
 };

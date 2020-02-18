@@ -14,12 +14,9 @@ namespace features {
 COMPONENT_EXPORT(BLINK_FEATURES)
 extern const base::Feature kResamplingScrollEvents;
 
-// This flag is used to set field parameters to choose predictor we use when
-// resampling is disabled. It's used for gatherig accuracy metrics on finch
-// without enabling resampling. It does not have any effect when the resampling
-// flag is enabled.
+// Enables filtering of predicted scroll events on compositor thread.
 COMPONENT_EXPORT(BLINK_FEATURES)
-extern const base::Feature kScrollPredictorTypeChoice;
+extern const base::Feature kFilteringScrollPrediction;
 
 // This feature allows native ET_MOUSE_EXIT events to be passed
 // through to blink as mouse leave events. Traditionally these events were
@@ -30,15 +27,9 @@ extern const base::Feature kSendMouseLeaveEvents;
 
 // When enabled, this feature prevents Blink from changing the hover state and
 // dispatching mouse enter/exit events for elements under the mouse after the
-// layout under the mouse cursor is changed.
+// layout under the mouse cursor is changed or the page is scrolled.
 COMPONENT_EXPORT(BLINK_FEATURES)
-extern const base::Feature kUpdateHoverFromLayoutChangeAtBeginFrame;
-
-// When enabled, this feature prevents Blink from changing the hover state and
-// dispatching mouse enter/exit events for elements under the mouse as the page
-// is scrolled.
-COMPONENT_EXPORT(BLINK_FEATURES)
-extern const base::Feature kUpdateHoverFromScrollAtBeginFrame;
+extern const base::Feature kUpdateHoverAtBeginFrame;
 
 // Enables handling touch events in compositor using impl side touch action
 // knowledge.

@@ -492,7 +492,7 @@ class GitBisector(common.OptionsChecker):
     self.bisect_log.sort(key=lambda x: x.timestamp)
     logging.notice(
         'Bisect log (sort by time):\n' +
-        '\n'.join(map(self.CommitInfoToStr, self.bisect_log)))
+        '\n'.join(self.CommitInfoToStr(x) for x in self.bisect_log))
 
     if culprit_commit:
       logging.notice('\n'.join(['Culprit commit:'] + culprit_commit))

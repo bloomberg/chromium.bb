@@ -50,7 +50,8 @@ bool HeapprofdConfig::operator==(const HeapprofdConfig& other) const {
          (block_client_ == other.block_client_) &&
          (no_startup_ == other.no_startup_) &&
          (no_running_ == other.no_running_) &&
-         (idle_allocations_ == other.idle_allocations_);
+         (idle_allocations_ == other.idle_allocations_) &&
+         (dump_at_max_ == other.dump_at_max_);
 }
 #pragma GCC diagnostic pop
 
@@ -98,7 +99,7 @@ void HeapprofdConfig::FromProto(
         static_cast<decltype(skip_symbol_prefix_)::value_type>(field);
   }
 
-  continuous_dump_config_.FromProto(proto.continuous_dump_config());
+  continuous_dump_config_->FromProto(proto.continuous_dump_config());
 
   static_assert(sizeof(shmem_size_bytes_) == sizeof(proto.shmem_size_bytes()),
                 "size mismatch");
@@ -121,6 +122,10 @@ void HeapprofdConfig::FromProto(
                 "size mismatch");
   idle_allocations_ =
       static_cast<decltype(idle_allocations_)>(proto.idle_allocations());
+
+  static_assert(sizeof(dump_at_max_) == sizeof(proto.dump_at_max()),
+                "size mismatch");
+  dump_at_max_ = static_cast<decltype(dump_at_max_)>(proto.dump_at_max());
   unknown_fields_ = proto.unknown_fields();
 }
 
@@ -156,7 +161,7 @@ void HeapprofdConfig::ToProto(perfetto::protos::HeapprofdConfig* proto) const {
                   "size mismatch");
   }
 
-  continuous_dump_config_.ToProto(proto->mutable_continuous_dump_config());
+  continuous_dump_config_->ToProto(proto->mutable_continuous_dump_config());
 
   static_assert(sizeof(shmem_size_bytes_) == sizeof(proto->shmem_size_bytes()),
                 "size mismatch");
@@ -182,6 +187,11 @@ void HeapprofdConfig::ToProto(perfetto::protos::HeapprofdConfig* proto) const {
                 "size mismatch");
   proto->set_idle_allocations(
       static_cast<decltype(proto->idle_allocations())>(idle_allocations_));
+
+  static_assert(sizeof(dump_at_max_) == sizeof(proto->dump_at_max()),
+                "size mismatch");
+  proto->set_dump_at_max(
+      static_cast<decltype(proto->dump_at_max())>(dump_at_max_));
   *(proto->mutable_unknown_fields()) = unknown_fields_;
 }
 

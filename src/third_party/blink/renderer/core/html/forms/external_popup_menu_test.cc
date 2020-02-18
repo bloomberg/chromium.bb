@@ -182,7 +182,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndex) {
       static_cast<ExternalPopupMenu*>(select->Popup());
   client->DidAcceptIndex(2);
   EXPECT_FALSE(select->PopupIsVisible());
-  ASSERT_STREQ("2", menu_list->GetText().Utf8().data());
+  ASSERT_EQ("2", menu_list->GetText().Utf8());
   EXPECT_EQ(2, select->selectedIndex());
 }
 

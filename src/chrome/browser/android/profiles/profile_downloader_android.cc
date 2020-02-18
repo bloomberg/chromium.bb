@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/macros.h"
+#include "chrome/android/chrome_jni_headers/ProfileDownloader_jni.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -16,9 +17,9 @@
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "jni/ProfileDownloader_jni.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image_skia.h"
@@ -62,8 +63,14 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
     return desired_image_side_pixels_;
   }
 
-  Profile* GetBrowserProfile() override {
-    return profile_;
+  signin::IdentityManager* GetIdentityManager() override {
+    return IdentityManagerFactory::GetForProfile(profile_);
+  }
+
+  network::mojom::URLLoaderFactory* GetURLLoaderFactory() override {
+    return content::BrowserContext::GetDefaultStoragePartition(profile_)
+        ->GetURLLoaderFactoryForBrowserProcess()
+        .get();
   }
 
   std::string GetCachedPictureURL() const override {

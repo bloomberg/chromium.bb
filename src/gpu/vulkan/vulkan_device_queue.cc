@@ -25,9 +25,9 @@ VulkanDeviceQueue::~VulkanDeviceQueue() {
 
 bool VulkanDeviceQueue::Initialize(
     uint32_t options,
+    uint32_t max_api_version,
     const std::vector<const char*>& required_extensions,
-    const GetPresentationSupportCallback& get_presentation_support,
-    bool use_swiftshader) {
+    const GetPresentationSupportCallback& get_presentation_support) {
   DCHECK_EQ(static_cast<VkPhysicalDevice>(VK_NULL_HANDLE), vk_physical_device_);
   DCHECK_EQ(static_cast<VkDevice>(VK_NULL_HANDLE), owned_vk_device_);
   DCHECK_EQ(static_cast<VkDevice>(VK_NULL_HANDLE), vk_device_);
@@ -134,29 +134,63 @@ bool VulkanDeviceQueue::Initialize(
                             std::begin(required_extensions),
                             std::end(required_extensions));
 
+#if defined(OS_ANDROID)
+  if (!vkGetPhysicalDeviceFeatures2) {
+    DLOG(ERROR) << "Vulkan 1.1 or VK_KHR_get_physical_device_properties2 "
+                   "extension is required.";
+    return false;
+  }
+
+  // Query if VkPhysicalDeviceSamplerYcbcrConversionFeatures is supported by
+  // the implementation. This extension must be supported for android.
+  sampler_ycbcr_conversion_features_.sType =
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES;
+  sampler_ycbcr_conversion_features_.pNext = nullptr;
+
+  // Add VkPhysicalDeviceSamplerYcbcrConversionFeatures struct to pNext chain
+  // of VkPhysicalDeviceFeatures2.
+  enabled_device_features_2_.pNext = &sampler_ycbcr_conversion_features_;
+  vkGetPhysicalDeviceFeatures2(vk_physical_device_,
+                               &enabled_device_features_2_);
+  if (!sampler_ycbcr_conversion_features_.samplerYcbcrConversion) {
+    LOG(ERROR) << "samplerYcbcrConversion is not supported";
+    return false;
+  }
+
+  // Disable all physical device features by default.
+  memset(&enabled_device_features_2_.features, 0,
+         sizeof(enabled_device_features_2_.features));
+#endif
+
   VkDeviceCreateInfo device_create_info = {};
   device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+  device_create_info.pNext = enabled_device_features_2_.pNext;
   device_create_info.queueCreateInfoCount = 1;
   device_create_info.pQueueCreateInfos = &queue_create_info;
   device_create_info.enabledLayerCount = enabled_layer_names.size();
   device_create_info.ppEnabledLayerNames = enabled_layer_names.data();
   device_create_info.enabledExtensionCount = enabled_extensions.size();
   device_create_info.ppEnabledExtensionNames = enabled_extensions.data();
+  device_create_info.pEnabledFeatures = &enabled_device_features_2_.features;
 
   result = vkCreateDevice(vk_physical_device_, &device_create_info, nullptr,
                           &owned_vk_device_);
   if (VK_SUCCESS != result)
     return false;
-  vk_device_ = owned_vk_device_;
 
   enabled_extensions_ = gfx::ExtensionSet(std::begin(enabled_extensions),
                                           std::end(enabled_extensions));
 
-  gpu::GetVulkanFunctionPointers()->BindDeviceFunctionPointers(vk_device_,
-                                                               use_swiftshader);
+  uint32_t device_api_version =
+      std::min(max_api_version, vk_physical_device_properties_.apiVersion);
+  if (!gpu::GetVulkanFunctionPointers()->BindDeviceFunctionPointers(
+          owned_vk_device_, device_api_version, enabled_extensions_)) {
+    vkDestroyDevice(owned_vk_device_, nullptr);
+    owned_vk_device_ = VK_NULL_HANDLE;
+    return false;
+  }
 
-  if (gfx::HasExtension(enabled_extensions_, VK_KHR_SWAPCHAIN_EXTENSION_NAME))
-    gpu::GetVulkanFunctionPointers()->BindSwapchainFunctionPointers(vk_device_);
+  vk_device_ = owned_vk_device_;
 
   vkGetDeviceQueue(vk_device_, queue_index, 0, &vk_queue_);
 
@@ -165,7 +199,7 @@ bool VulkanDeviceQueue::Initialize(
   return true;
 }
 
-bool VulkanDeviceQueue::InitializeForWevbView(
+bool VulkanDeviceQueue::InitializeForWebView(
     VkPhysicalDevice vk_physical_device,
     VkDevice vk_device,
     VkQueue vk_queue,
@@ -187,8 +221,10 @@ bool VulkanDeviceQueue::InitializeForWevbView(
 }
 
 void VulkanDeviceQueue::Destroy() {
-  cleanup_helper_->Destroy();
-  cleanup_helper_.reset();
+  if (cleanup_helper_) {
+    cleanup_helper_->Destroy();
+    cleanup_helper_.reset();
+  }
 
   if (VK_NULL_HANDLE != owned_vk_device_) {
     vkDestroyDevice(owned_vk_device_, nullptr);

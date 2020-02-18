@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunActivity.FirstRunActivityObs
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.preferences.Preferences;
-import org.chromium.chrome.browser.signin.AccountManagementFragment;
+import org.chromium.chrome.browser.preferences.sync.AccountManagementFragment;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
@@ -161,9 +161,9 @@ public class FirstRunTest {
 
         // Close the settings fragment.
         AccountManagementFragment fragment =
-                (AccountManagementFragment) prefActivity.getFragmentForTest();
+                (AccountManagementFragment) prefActivity.getMainFragmentCompat();
         Assert.assertNotNull(fragment);
-        prefActivity.getFragmentManager().beginTransaction().remove(fragment).commit();
+        prefActivity.getSupportFragmentManager().beginTransaction().remove(fragment).commit();
 
         // Sync should immediately become active.
         Assert.assertTrue(SyncTestUtil.isSyncActive());

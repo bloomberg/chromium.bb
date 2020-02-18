@@ -8,13 +8,16 @@
 #include "include/core/SkSurface.h"
 #include "include/core/SkTime.h"
 
+#include "tools/ModifierKey.h"
 #include "tools/sk_app/Application.h"
 #include "tools/sk_app/Window.h"
 
 #include "experimental/editor/editor.h"
 
 #include <memory>
+#include <fstream>
 
+#ifdef SK_EDITOR_DEBUG_OUT
 static const char* key_name(sk_app::Window::Key k) {
     switch (k) {
         #define M(X) case sk_app::Window::Key::k ## X: return #X
@@ -28,15 +31,15 @@ static const char* key_name(sk_app::Window::Key k) {
     }
 }
 
-static SkString modifiers_desc(uint32_t m) {
+static SkString modifiers_desc(ModifierKey m) {
     SkString s;
-    #define M(X) if (m & sk_app::Window::k ## X ##_ModifierKey) { s.append(" {" #X "}"); }
+    #define M(X) if (m & ModifierKey::k ## X ##) { s.append(" {" #X "}"); }
     M(Shift) M(Control) M(Option) M(Command) M(FirstPress)
     #undef M
     return s;
 }
 
-static void debug_on_char(SkUnichar c, uint32_t modifiers) {
+static void debug_on_char(SkUnichar c, ModifierKey modifiers) {
     SkString m = modifiers_desc(modifiers);
     if ((unsigned)c < 0x100) {
         SkDebugf("char: %c (0x%02X)%s\n", (char)(c & 0xFF), (unsigned)c, m.c_str());
@@ -45,9 +48,10 @@ static void debug_on_char(SkUnichar c, uint32_t modifiers) {
     }
 }
 
-static void debug_on_key(sk_app::Window::Key key, sk_app::Window::InputState, uint32_t modifiers) {
-    SkDebugf("key: %s%s\n", key_name(key), modifiers_desc(modifiers).c_str());
+static void debug_on_key(sk_app::Window::Key key, InputState, ModifierKey modi) {
+    SkDebugf("key: %s%s\n", key_name(key), modifiers_desc(modi).c_str());
 }
+#endif  // SK_EDITOR_DEBUG_OUT
 
 static editor::Editor::Movement convert(sk_app::Window::Key key) {
     switch (key) {
@@ -70,7 +74,9 @@ struct Timer {
 };
 
 struct EditorLayer : public sk_app::Window::Layer {
+    SkString fPath;
     sk_app::Window* fParent = nullptr;
+    editor::StringSlice fClipboard;
     editor::Editor fEditor;
     editor::Editor::TextPosition fTextPos{0, 0};
     editor::Editor::TextPosition fMarkPos;
@@ -80,17 +86,19 @@ struct EditorLayer : public sk_app::Window::Layer {
     bool fShiftDown = false;
 
     EditorLayer() {
-        fEditor.setFont(SkFont(nullptr, 24));
+        fEditor.setFont(SkFont(SkTypeface::MakeFromName("monospace", SkFontStyle()), 18));
     }
 
     void loadFile(const char* path) {
         if (sk_sp<SkData> data = SkData::MakeFromFileName(path)) {
+            fPath = path;
             fEditor.setText((const char*)data->data(), data->size());
+        } else {
+            fPath  = "output.txt";
         }
     }
 
     void onPaint(SkSurface* surface) override {
-        Timer timer("painting");
         SkCanvas* canvas = surface->getCanvas();
         SkAutoCanvasRestore acr(canvas, true);
         canvas->clipRect({0, 0, (float)fWidth, (float)fHeight});
@@ -102,6 +110,15 @@ struct EditorLayer : public sk_app::Window::Layer {
             options.fSelectionBegin = fMarkPos;
             options.fSelectionEnd = fTextPos;
         }
+        {
+            #ifdef SK_EDITOR_DEBUG_OUT
+            Timer timer("shaping");
+            #endif  // SK_EDITOR_DEBUG_OUT
+            fEditor.paint(nullptr, options);
+        }
+        #ifdef SK_EDITOR_DEBUG_OUT
+        Timer timer("painting");
+        #endif  // SK_EDITOR_DEBUG_OUT
         fEditor.paint(canvas, options);
     }
 
@@ -130,16 +147,18 @@ struct EditorLayer : public sk_app::Window::Layer {
 
     void inval() { if (fParent) { fParent->inval(); } }
 
-    bool onMouseWheel(float delta, uint32_t modifiers) override {
+    bool onMouseWheel(float delta, ModifierKey modifiers) override {
         this->scroll(-(int)(delta * fEditor.font().getSpacing()));
         return true;
     }
 
-    bool onMouse(int x, int y, sk_app::Window::InputState state, uint32_t modifiers) override {
-        if (sk_app::Window::kDown_InputState == state) {
+    bool onMouse(int x, int y, InputState state, ModifierKey modifiers) override {
+        if (InputState::kDown == state) {
             y += fPos;
             editor::Editor::TextPosition pos = fEditor.getPosition(SkIPoint{x, y});
+            #ifdef SK_EDITOR_DEBUG_OUT
             SkDebugf("select:  line:%d column:%d \n", pos.fParagraphIndex, pos.fTextByteIndex);
+            #endif  // SK_EDITOR_DEBUG_OUT
             if (pos != editor::Editor::TextPosition()) {
                 fTextPos = pos;
                 this->inval();
@@ -148,18 +167,59 @@ struct EditorLayer : public sk_app::Window::Layer {
         return true;
     }
 
-    bool onChar(SkUnichar c, uint32_t modifiers) override {
-        if (0 == (modifiers & (sk_app::Window::kControl_ModifierKey |
-                               sk_app::Window::kOption_ModifierKey |
-                               sk_app::Window::kCommand_ModifierKey))) {
-            if ((unsigned) c < 0x7F && (unsigned)c >= 0x20) {
+    bool onChar(SkUnichar c, ModifierKey modifiers) override {
+        if (!ModifierKeyIsSet(modifiers & (ModifierKey::kControl |
+                                           ModifierKey::kOption  |
+                                           ModifierKey::kCommand))) {
+            if (((unsigned)c < 0x7F && (unsigned)c >= 0x20) || c == '\n') {
                 char ch = (char)c;
                 fEditor.insert(fTextPos, &ch, 1);
+                #ifdef SK_EDITOR_DEBUG_OUT
                 SkDebugf("insert: %X'%c'\n", (unsigned)c, ch);
+                #endif  // SK_EDITOR_DEBUG_OUT
                 return this->moveCursor(editor::Editor::Movement::kRight);
             }
         }
+        if (modifiers == ModifierKey::kControl) {
+            switch (c) {
+                case 'p':
+                    for (const editor::StringSlice& str : fEditor.text()) {
+                        SkDebugf(">>  '%.*s'\n", str.size(), str.begin());
+                    }
+                    return true;
+                case 's':
+                    {
+                        std::ofstream out(fPath.c_str());
+                        for (const editor::StringSlice& str : fEditor.text()) {
+                            out.write(str.begin(), str.size());
+                            out.write("\n", 1);
+                        }
+                    }
+                    return true;
+                case 'c':
+                    if (fMarkPos != editor::Editor::TextPosition()) {
+                        fClipboard = fEditor.copy(fMarkPos, fTextPos);
+                        return true;
+                    }
+                case 'x':
+                    if (fMarkPos != editor::Editor::TextPosition()) {
+                        fClipboard = fEditor.copy(fMarkPos, fTextPos);
+                        fTextPos = fEditor.remove(fMarkPos, fTextPos);
+                        this->inval();
+                        return true;
+                    }
+                case 'v':
+                    if (fClipboard.size()) {
+                        fEditor.insert(fTextPos, fClipboard.begin(), fClipboard.size());
+                        this->inval();
+                        return true;
+                    }
+            }
+
+        }
+        #ifdef SK_EDITOR_DEBUG_OUT
         debug_on_char(c, modifiers);
+        #endif  // SK_EDITOR_DEBUG_OUT
         return false;
     }
     bool moveCursor(editor::Editor::Movement m, bool shift = false) {
@@ -172,9 +232,9 @@ struct EditorLayer : public sk_app::Window::Layer {
         return true;
     }
     bool onKey(sk_app::Window::Key key,
-               sk_app::Window::InputState state,
-               uint32_t modifiers) override {
-        if (state == sk_app::Window::kDown_InputState) {
+               InputState state,
+               ModifierKey modifiers) override {
+        if (state == InputState::kDown) {
             switch (key) {
                 case sk_app::Window::Key::kPageDown:
                     return this->scroll(fHeight * 4 / 5);
@@ -187,7 +247,7 @@ struct EditorLayer : public sk_app::Window::Layer {
                 case sk_app::Window::Key::kHome:
                 case sk_app::Window::Key::kEnd:
                     return this->moveCursor(convert(key),
-                                            modifiers & sk_app::Window::kShift_ModifierKey);
+                                            (int)(modifiers & ModifierKey::kShift));
                 case sk_app::Window::Key::kDelete:
                     if (fMarkPos != editor::Editor::TextPosition()) {
                         fTextPos = fEditor.remove(fMarkPos, fTextPos);
@@ -210,10 +270,14 @@ struct EditorLayer : public sk_app::Window::Layer {
                     }
                     this->inval();
                     return true;
+                case sk_app::Window::Key::kOK:
+                    return this->onChar('\n', modifiers);
                 default:
                     break;
             }
+            #ifdef SK_EDITOR_DEBUG_OUT
             debug_on_key(key, state, modifiers);
+            #endif  // SK_EDITOR_DEBUG_OUT
         }
         return true;
     }
@@ -232,9 +296,12 @@ struct EditorApplication : public sk_app::Application {
         fLayer.inval();
         fLayer.loadFile(path);
         fWindow->pushLayer(&fLayer);
+        fWindow->setTitle(SkStringPrintf("Editor: \"%s\"", fLayer.fPath.c_str()).c_str());
         fWindow->show();
         fLayer.onResize(fWindow->width(), fWindow->height());
+        #ifdef SK_EDITOR_DEBUG_OUT
         Timer timer("shaping");
+        #endif  // SK_EDITOR_DEBUG_OUT
         fLayer.fEditor.paint(nullptr, editor::Editor::PaintOpts());
     }
     ~EditorApplication() override { fWindow->detach(); }

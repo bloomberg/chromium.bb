@@ -25,6 +25,7 @@
 #include "components/viz/service/display/bsp_tree.h"
 #include "components/viz/service/display/bsp_walk_action.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -108,15 +109,17 @@ DirectRenderer::DirectRenderer(const RendererSettings* settings,
                                DisplayResourceProvider* resource_provider)
     : settings_(settings),
       output_surface_(output_surface),
-      resource_provider_(resource_provider),
-      overlay_processor_(std::make_unique<OverlayProcessor>(
-          output_surface->context_provider())) {}
+      resource_provider_(resource_provider) {}
 
 DirectRenderer::~DirectRenderer() = default;
 
 void DirectRenderer::Initialize() {
-  overlay_processor_->SetOverlayCandidateValidator(
-      output_surface_->TakeOverlayCandidateValidator());
+  // Create overlay validator based on the platform and set it on the newly
+  // created processor. This would initialize the strategies on the validator as
+  // well.
+  gpu::SurfaceHandle surface_handle = output_surface_->GetSurfaceHandle();
+  overlay_processor_ = OverlayProcessor::CreateOverlayProcessor(
+      output_surface_->context_provider(), surface_handle, *settings_);
 
   auto* context_provider = output_surface_->context_provider();
 
@@ -284,7 +287,8 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 
 void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
                                float device_scale_factor,
-                               const gfx::Size& device_viewport_size) {
+                               const gfx::Size& device_viewport_size,
+                               float sdr_white_level) {
   DCHECK(visible_);
   TRACE_EVENT0("viz,benchmark", "DirectRenderer::DrawFrame");
   UMA_HISTOGRAM_COUNTS_1M(
@@ -319,6 +323,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       overlay_processor_->GetAndResetOverlayDamage());
   current_frame()->root_damage_rect.Intersect(gfx::Rect(device_viewport_size));
   current_frame()->device_viewport_size = device_viewport_size;
+  current_frame()->sdr_white_level = sdr_white_level;
 
   // Only reshape when we know we are going to draw. Otherwise, the reshape
   // can leave the window at the wrong size if we never draw and the proper
@@ -364,6 +369,10 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   overlay_processor_->SetDisplayTransformHint(
       output_surface_->GetDisplayTransform());
 
+  // Only used for pre-OOP-D code path.
+  // TODO(weiliangc): Remove once reflector code is removed.
+  overlay_processor_->SetSoftwareMirrorMode(
+      output_surface_->IsSoftwareMirrorMode());
   // Create the overlay candidate for the output surface, and mark it as
   // always handled.
   if (output_surface_->IsDisplayedAsOverlayPlane()) {
@@ -390,13 +399,6 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       &current_frame()->root_damage_rect,
       &current_frame()->root_content_bounds);
 
-  // Draw all non-root render passes except for the root render pass.
-  for (const auto& pass : *render_passes_in_draw_order) {
-    if (pass.get() == root_render_pass)
-      break;
-    DrawRenderPassAndExecuteCopyRequests(pass.get());
-  }
-
   bool was_using_dc_layers = using_dc_layers_;
   if (!current_frame()->dc_layer_overlay_list.empty()) {
     DCHECK(supports_dc_layers_);
@@ -406,6 +408,17 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
              kNumberOfFramesBeforeDisablingDCLayers) {
     using_dc_layers_ = false;
   }
+
+  if (supports_dc_layers_ && (was_using_dc_layers != using_dc_layers_))
+    SetEnableDCLayers(using_dc_layers_);
+
+  // Draw all non-root render passes except for the root render pass.
+  for (const auto& pass : *render_passes_in_draw_order) {
+    if (pass.get() == root_render_pass)
+      break;
+    DrawRenderPassAndExecuteCopyRequests(pass.get());
+  }
+
   if (supports_dc_layers_ &&
       (did_reshape || (was_using_dc_layers != using_dc_layers_))) {
     // The entire surface has to be redrawn if it was reshaped or if switching
@@ -749,9 +762,6 @@ void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   current_frame()->current_render_pass = render_pass;
   if (render_pass == current_frame()->root_render_pass) {
     BindFramebufferToOutputSurface();
-
-    if (supports_dc_layers_)
-      SetEnableDCLayers(using_dc_layers_);
     output_surface_->SetDrawRectangle(current_frame()->root_damage_rect);
     InitializeViewport(current_frame(), render_pass->output_rect,
                        gfx::Rect(current_frame()->device_viewport_size),

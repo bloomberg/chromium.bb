@@ -33,7 +33,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -77,7 +77,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   int RepetitionCount() const;
   bool FrameHasAlphaAtIndex(size_t index) const;
   bool FrameIsReceivedAtIndex(size_t index) const;
-  TimeDelta FrameDurationAtIndex(size_t index) const;
+  base::TimeDelta FrameDurationAtIndex(size_t index) const;
   ImageOrientation OrientationAtIndex(size_t index) const;
   bool HotSpot(IntPoint&) const;
 

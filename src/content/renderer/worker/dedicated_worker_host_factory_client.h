@@ -15,6 +15,7 @@
 
 namespace blink {
 class WebDedicatedWorker;
+class WebWorkerFetchContext;
 }  // namespace blink
 
 namespace content {
@@ -41,9 +42,17 @@ class DedicatedWorkerHostFactoryClient final
   // Implements blink::WebDedicatedWorkerHostFactoryClient.
   void CreateWorkerHostDeprecated(
       const blink::WebSecurityOrigin& script_origin) override;
-  void CreateWorkerHost(const blink::WebURL& script_url,
-                        const blink::WebSecurityOrigin& script_origin,
-                        mojo::ScopedMessagePipeHandle blob_url_token) override;
+  void CreateWorkerHost(
+      const blink::WebURL& script_url,
+      const blink::WebSecurityOrigin& script_origin,
+      network::mojom::CredentialsMode credentials_mode,
+      const blink::WebSecurityOrigin& fetch_client_security_origin,
+      network::mojom::ReferrerPolicy fetch_client_referrer_policy,
+      const blink::WebURL& fetch_client_outgoing_referrer,
+      mojo::ScopedMessagePipeHandle blob_url_token) override;
+  scoped_refptr<blink::WebWorkerFetchContext> CloneWorkerFetchContext(
+      blink::WebWorkerFetchContext* web_worker_fetch_context,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
   scoped_refptr<WebWorkerFetchContextImpl> CreateWorkerFetchContext(
       blink::mojom::RendererPreferences renderer_preference,
@@ -54,7 +63,7 @@ class DedicatedWorkerHostFactoryClient final
   void OnWorkerHostCreated(
       service_manager::mojom::InterfaceProviderPtr interface_provider) override;
   void OnScriptLoadStarted(
-      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr
           service_worker_provider_info,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>

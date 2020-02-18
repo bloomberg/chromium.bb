@@ -12,17 +12,17 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <va/va.h>
 
 #include <set>
 #include <string>
 #include <vector>
 
-#include <va/va.h>
-
 #include "base/files/file.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "media/gpu/media_gpu_export.h"
@@ -36,12 +36,16 @@
 #endif  // USE_X11
 
 namespace gfx {
+enum class BufferFormat;
 class NativePixmap;
+class NativePixmapDmaBuf;
 }
 
 namespace media {
+constexpr unsigned int kInvalidVaRtFormat = 0u;
 
 class ScopedVAImage;
+class ScopedVASurface;
 class VideoFrame;
 
 // This class handles VA-API calls and ensures proper locking of VA-API calls
@@ -96,27 +100,30 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Return the supported video decode profiles.
   static VideoDecodeAccelerator::SupportedProfiles GetSupportedDecodeProfiles();
 
-  // Return true when JPEG decode is supported.
-  static bool IsJpegDecodeSupported();
+  // Return true when decoding using |va_profile| is supported.
+  static bool IsDecodeSupported(VAProfile va_profile);
 
-  // Returns the supported internal formats for JPEG decoding. If JPEG decoding
-  // is not supported, returns InternalFormats{}.
-  static InternalFormats GetJpegDecodeSupportedInternalFormats();
+  // Returns the supported internal formats for decoding using |va_profile|. If
+  // decoding is not supported for that profile, returns InternalFormats{}.
+  static InternalFormats GetDecodeSupportedInternalFormats(
+      VAProfile va_profile);
 
-  // Returns true if |rt_format| is supported for JPEG decoding. If it's not or
-  // JPEG decoding is not supported, returns false.
-  static bool IsJpegDecodingSupportedForInternalFormat(unsigned int rt_format);
+  // Returns true if |rt_format| is supported for decoding using |va_profile|.
+  // Returns false if |rt_format| or |va_profile| is not supported for decoding.
+  static bool IsDecodingSupportedForInternalFormat(VAProfile va_profile,
+                                                   unsigned int rt_format);
 
-  // Gets the minimum surface size allowed for JPEG decoding. Returns true if
-  // the size can be obtained, false otherwise. If a dimension is not reported
-  // by the driver, the dimension is returned as 0.
-  static bool GetJpegDecodeMinResolution(gfx::Size* min_size);
+  // Gets the minimum surface size allowed for decoding using |va_profile|.
+  // Returns true if the size can be obtained, false otherwise. The minimum
+  // dimension (width or height) returned is 1. Particularly, if a dimension is
+  // not reported by the driver, the dimension is returned as 1.
+  static bool GetDecodeMinResolution(VAProfile va_profile, gfx::Size* min_size);
 
-  // Gets the maximum surface size allowed for JPEG decoding. Returns true if
-  // the size can be obtained, false otherwise. Because of the initialization in
-  // VASupportedProfiles::FillProfileInfo_Locked(), the size is guaranteed to
-  // not be empty (as long as this method returns true).
-  static bool GetJpegDecodeMaxResolution(gfx::Size* max_size);
+  // Gets the maximum surface size allowed for decoding using |va_profile|.
+  // Returns true if the size can be obtained, false otherwise. Because of the
+  // initialization in VASupportedProfiles::FillProfileInfo_Locked(), the size
+  // is guaranteed to not be empty (as long as this method returns true).
+  static bool GetDecodeMaxResolution(VAProfile va_profile, gfx::Size* max_size);
 
   // Obtains a suitable FOURCC that can be used in vaCreateImage() +
   // vaGetImage(). |rt_format| corresponds to the JPEG's subsampling format.
@@ -142,32 +149,64 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
   static uint32_t BufferFormatToVARTFormat(gfx::BufferFormat fmt);
 
-  // Creates |num_surfaces| backing surfaces in driver for VASurfaces of
-  // |va_format|, each of size |size| and initializes |va_context_id_| with
-  // |format| and |size|. Returns true when successful, with the created IDs in
-  // |va_surfaces| to be managed and later wrapped in VASurfaces. The client
-  // must DestroyContextAndSurfaces() each time before calling this method again
-  // to free the allocated surfaces first, but is not required to do so at
-  // destruction time, as this will be done automatically from the destructor.
+  // Creates |num_surfaces| VASurfaceIDs of |va_format| and |size| and, if
+  // successful, creates a |va_context_id_| of the same size. Returns true if
+  // successful, with the created IDs in |va_surfaces|. The client is
+  // responsible for destroying |va_surfaces| via DestroyContextAndSurfaces() to
+  // free the allocated surfaces.
   virtual bool CreateContextAndSurfaces(unsigned int va_format,
                                         const gfx::Size& size,
                                         size_t num_surfaces,
                                         std::vector<VASurfaceID>* va_surfaces);
-  // Creates a VA Context associated with |format| and |size|, and sets
-  // |va_context_id_|. The |va_context_id_| will be destroyed by
-  // DestroyContextAndSurfaces().
-  virtual bool CreateContext(unsigned int va_format, const gfx::Size& size);
 
-  // Frees all memory allocated in CreateContextAndSurfaces() and destroys
-  // |va_context_id_|.
-  virtual void DestroyContextAndSurfaces();
+  // Creates a single VASurfaceID of |va_format| and |size| and, if successful,
+  // creates a |va_context_id_| of the same size. Returns a ScopedVASurface
+  // containing the created VASurfaceID, the |va_format|, and |size|, or nullptr
+  // if creation failed.
+  std::unique_ptr<ScopedVASurface> CreateContextAndScopedVASurface(
+      unsigned int va_format,
+      const gfx::Size& size);
 
-  // Create a VASurface for |pixmap|. The ownership of the surface is
-  // transferred to the caller. It differs from surfaces created using
-  // CreateContextAndSurfaces(), where VaapiWrapper is the owner of the
-  // surfaces.
+  // Releases the |va_surfaces| and destroys |va_context_id_|.
+  virtual void DestroyContextAndSurfaces(std::vector<VASurfaceID> va_surfaces);
+
+  // Creates a VA Context of |size| and sets |va_context_id_|. The client is
+  // responsible for releasing it via DestroyContext() or
+  // DestroyContextAndSurfaces(), or it will be released on dtor.
+  virtual bool CreateContext(const gfx::Size& size);
+
+  // Destroys the context identified by |va_context_id_|.
+  void DestroyContext();
+
+  // Tries to allocate a VA surface of size |size| and |va_rt_format|.
+  // Returns a self-cleaning ScopedVASurface or nullptr if creation failed.
+  std::unique_ptr<ScopedVASurface> CreateScopedVASurface(
+      unsigned int va_rt_format,
+      const gfx::Size& size);
+
+  // Creates a self-releasing VASurface from |pixmap|. The ownership of the
+  // surface is transferred to the caller.
   scoped_refptr<VASurface> CreateVASurfaceForPixmap(
       const scoped_refptr<gfx::NativePixmap>& pixmap);
+
+  // Syncs and exports the VA surface identified by |va_surface_id| as a
+  // gfx::NativePixmapDmaBuf. Currently, the only VAAPI surface pixel formats
+  // supported are VA_FOURCC_IMC3 and VA_FOURCC_NV12.
+  //
+  // Notes:
+  //
+  // - For VA_FOURCC_IMC3, the format of the returned NativePixmapDmaBuf is
+  //   gfx::BufferFormat::YVU_420 because we don't have a YUV_420 format. The
+  //   planes are flipped accordingly, i.e.,
+  //   gfx::NativePixmapDmaBuf::GetDmaBufOffset(1) refers to the V plane.
+  //   TODO(andrescj): revisit once crrev.com/c/1573718 lands.
+  //
+  // - For VA_FOURCC_NV12, the format of the returned NativePixmapDmaBuf is
+  //   gfx::BufferFormat::YUV_420_BIPLANAR.
+  //
+  // Returns nullptr on failure.
+  scoped_refptr<gfx::NativePixmapDmaBuf> ExportVASurfaceAsNativePixmapDmaBuf(
+      VASurfaceID va_surface_id);
 
   // Submit parameters or slice data of |va_buffer_type|, copying them from
   // |buffer| of size |size|, into HW codec. The data in |buffer| is no
@@ -268,8 +307,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Initialize static data before sandbox is enabled.
   static void PreSandboxInitialization();
 
-  // Get the created surfaces format.
-  unsigned int va_surface_format() const { return va_surface_format_; }
+  // vaDestroySurfaces() a vector or a single VASurfaceID.
+  void DestroySurfaces(std::vector<VASurfaceID> va_surfaces);
+  void DestroySurface(VASurfaceID va_surface_id);
 
  protected:
   VaapiWrapper();
@@ -286,8 +326,12 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   void Deinitialize();
   bool VaInitialize(const base::Closure& report_error_to_uma_cb);
 
-  // Destroys a |va_surface_id|.
-  void DestroySurface(VASurfaceID va_surface_id);
+  // Tries to allocate |num_surfaces| VASurfaceIDs of |size| and |va_format|.
+  // Fills |va_surfaces| and returns true if successful, or returns false.
+  bool CreateSurfaces(unsigned int va_format,
+                      const gfx::Size& size,
+                      size_t num_surfaces,
+                      std::vector<VASurfaceID>* va_surfaces);
 
   // Execute pending job in hardware and destroy pending buffers. Return false
   // if vaapi driver refuses to accept parameter or slice buffers submitted
@@ -304,18 +348,12 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // the lifetime of VaapiWrapper.
   base::Lock* va_lock_;
 
-  // Allocated ids for VASurfaces.
-  std::vector<VASurfaceID> va_surface_ids_;
-
-  // VA format of surfaces with va_surface_ids_.
-  unsigned int va_surface_format_;
-
   // VA handles.
   // All valid after successful Initialize() and until Deinitialize().
   VADisplay va_display_ GUARDED_BY(va_lock_);
   VAConfigID va_config_id_;
   // Created in CreateContext() or CreateContextAndSurfaces() and valid until
-  // DestroyContextAndSurfaces().
+  // DestroyContext() or DestroyContextAndSurfaces().
   VAContextID va_context_id_;
 
   // Data queued up for HW codec, to be committed on next execution.

@@ -9,7 +9,6 @@
 #include "include/gpu/GrContextOptions.h"
 #include "tools/flags/CommonFlags.h"
 
-
 DEFINE_int(gpuThreads,
              2,
              "Create this many extra threads to assist with GPU work, "
@@ -32,7 +31,6 @@ static DEFINE_bool(disableDriverCorrectnessWorkarounds, false,
 
 static DEFINE_bool(reduceOpListSplitting, false, "Improve opList sorting");
 static DEFINE_bool(dontReduceOpListSplitting, false, "Allow more opList splitting");
-
 
 static GpuPathRenderers get_named_pathrenderers_flags(const char* name) {
     if (!strcmp(name, "none")) {

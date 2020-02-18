@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 
 #import "base/mac/foundation_util.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -27,8 +29,6 @@
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#import "services/identity/public/objc/identity_manager_observer_bridge.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -113,7 +113,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   NSMutableDictionary<NSString*, CollectionViewItem*>* mutableIdentityMap =
       [[NSMutableDictionary alloc] init];
 
-  identity::IdentityManager* identityManager =
+  signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(_browserState);
   for (const auto& account : identityManager->GetAccountsWithRefreshTokens()) {
     ChromeIdentity* identity = ios::GetChromeBrowserProvider()
@@ -180,7 +180,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 @interface SignedInAccountsViewController () <
     IdentityManagerObserverBridgeDelegate> {
   ios::ChromeBrowserState* _browserState;  // Weak.
-  std::unique_ptr<identity::IdentityManagerObserverBridge>
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserver;
   MDCDialogTransitionController* _transitionController;
 
@@ -201,10 +201,14 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   if (!browserState || browserState->IsOffTheRecord()) {
     return NO;
   }
-  AuthenticationService* authService =
-      AuthenticationServiceFactory::GetForBrowserState(browserState);
-  return !gSignedInAccountsViewControllerIsShown &&
-         authService->IsAuthenticated() && authService->HaveAccountsChanged();
+  // Temporary fix for regression for http://crbug.com/1006744: Disable showing
+  // the signed-in account modal dialog.
+  //
+  // AuthenticationService* authService =
+  //    AuthenticationServiceFactory::GetForBrowserState(browserState);
+  // return !gSignedInAccountsViewControllerIsShown &&
+  //       authService->IsAuthenticated() && authService->HaveAccountsChanged();
+  return NO;
 }
 
 #pragma mark Initialization
@@ -217,7 +221,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
     _browserState = browserState;
     _dispatcher = dispatcher;
     _identityManagerObserver =
-        std::make_unique<identity::IdentityManagerObserverBridge>(
+        std::make_unique<signin::IdentityManagerObserverBridge>(
             IdentityManagerFactory::GetForBrowserState(_browserState), self);
     _transitionController = [[MDCDialogTransitionController alloc] init];
     self.modalPresentationStyle = UIModalPresentationCustom;
@@ -246,7 +250,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   CGFloat width = std::min(
       kDialogMaxWidth, self.presentingViewController.view.bounds.size.width -
                            2 * kMDCMinHorizontalPadding);
-  identity::IdentityManager* identityManager =
+  signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(_browserState);
   int shownAccounts =
       std::min(kMaxShownAccounts,
@@ -389,7 +393,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 #pragma mark IdentityManagerObserverBridgeDelegate
 
 - (void)onEndBatchOfRefreshTokenStateChanges {
-  identity::IdentityManager* identityManager =
+  signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(_browserState);
   if (identityManager->GetAccountsWithRefreshTokens().empty()) {
     [self dismissWithCompletion:nil];

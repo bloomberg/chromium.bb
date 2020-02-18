@@ -105,8 +105,6 @@ LLVM_TEST_DISABLE_WARNINGS_FLAGS = [
     "-Wno-unused-template",
     "-Wno-used-but-marked-unused",
     "-Wno-zero-as-null-pointer-constant",
-    # For a libc++ bug fixed in r357267
-    "-Wno-gnu-include-next",
     # gtest depends on this GNU extension being offered.
     "-Wno-gnu-zero-variadic-macro-arguments",
 ]
@@ -198,5 +196,19 @@ COPT_VARS = {
     "ABSL_MSVC_LINKOPTS": [
         # Object file doesn't export any previously undefined symbols
         "-ignore:4221",
+    ],
+    # "HWAES" is an abbreviation for "hardware AES" (AES - Advanced Encryption
+    # Standard). These flags are used for detecting whether or not the target
+    # architecture has hardware support for AES instructions which can be used
+    # to improve performance of some random bit generators.
+    "ABSL_RANDOM_HWAES_ARM64_FLAGS": ["-march=armv8-a+crypto"],
+    "ABSL_RANDOM_HWAES_ARM32_FLAGS": ["-mfpu=neon"],
+    "ABSL_RANDOM_HWAES_X64_FLAGS": [
+        "-maes",
+        "-msse4.1",
+    ],
+    "ABSL_RANDOM_HWAES_MSVC_X64_FLAGS": [
+        "/O2",  # Maximize speed
+        "/Ob2",  # Aggressive inlining
     ],
 }

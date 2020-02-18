@@ -45,8 +45,8 @@ views::ScrollView* CreateCredentialsView(
     views::ButtonListener* button_listener,
     network::mojom::URLLoaderFactory* loader_factory) {
   auto list_view = std::make_unique<views::View>();
-  list_view->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  list_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   int item_height = 0;
   for (const auto& form : forms) {
     std::pair<base::string16, base::string16> titles =
@@ -145,10 +145,10 @@ base::string16 AccountChooserDialogView::GetDialogButtonLabel(
   return l10n_util::GetStringUTF16(message_id);
 }
 
-views::View* AccountChooserDialogView::CreateFootnoteView() {
+std::unique_ptr<views::View> AccountChooserDialogView::CreateFootnoteView() {
   if (!controller_->ShouldShowFooter())
     return nullptr;
-  views::Label* label = new views::Label(
+  auto label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),
       ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY);
   label->SetMultiLine(true);

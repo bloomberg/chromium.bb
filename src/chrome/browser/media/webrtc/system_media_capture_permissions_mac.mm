@@ -21,7 +21,10 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
@@ -29,10 +32,16 @@
 #include "chrome/browser/media/webrtc/media_authorization_wrapper_mac.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "media/base/media_switches.h"
 
 namespace system_media_permissions {
 
 namespace {
+
+bool UsingFakeMediaDevices() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseFakeDeviceForMediaStream);
+}
 
 // Pointer to OS call wrapper that tests can set.
 MediaAuthorizationWrapper* g_media_authorization_wrapper_for_tests = nullptr;
@@ -109,6 +118,9 @@ NSInteger MediaAuthorizationStatus(NSString* media_type) {
 }
 
 SystemPermission CheckSystemMediaCapturePermission(NSString* media_type) {
+  if (UsingFakeMediaDevices())
+    return SystemPermission::kAllowed;
+
   if (@available(macOS 10.14, *)) {
     NSInteger auth_status = MediaAuthorizationStatus(media_type);
     switch (auth_status) {
@@ -135,6 +147,11 @@ SystemPermission CheckSystemMediaCapturePermission(NSString* media_type) {
 void RequestSystemMediaCapturePermission(NSString* media_type,
                                          base::RepeatingClosure callback,
                                          const base::TaskTraits& traits) {
+  if (UsingFakeMediaDevices()) {
+    base::PostTaskWithTraits(FROM_HERE, traits, std::move(callback));
+    return;
+  }
+
   if (@available(macOS 10.14, *)) {
     GetMediaAuthorizationWrapper().RequestAccessForMediaType(
         media_type, std::move(callback), traits);
@@ -147,6 +164,27 @@ void RequestSystemMediaCapturePermission(NSString* media_type,
   }
 }
 
+// Heuristic to check screen capture permission on macOS 10.15.
+// See https://crbug.com/993692#c3.
+bool IsScreenCaptureAllowed() {
+  if (@available(macOS 10.15, *)) {
+    base::ScopedCFTypeRef<CFArrayRef> window_list(CGWindowListCopyWindowInfo(
+        kCGWindowListOptionOnScreenOnly, kCGNullWindowID));
+    NSUInteger num_windows = CFArrayGetCount(window_list);
+    NSUInteger num_windows_with_name = 0;
+    for (NSDictionary* dict in base::mac::CFToNSCast(window_list.get())) {
+      if ([dict objectForKey:base::mac::CFToNSCast(kCGWindowName)]) {
+        num_windows_with_name++;
+      } else {
+        // No kCGWindowName detected implies no permission.
+        break;
+      }
+    }
+    return num_windows == num_windows_with_name;
+  }
+  return true;
+}
+
 }  // namespace
 
 SystemPermission CheckSystemAudioCapturePermission() {
@@ -155,6 +193,11 @@ SystemPermission CheckSystemAudioCapturePermission() {
 
 SystemPermission CheckSystemVideoCapturePermission() {
   return CheckSystemMediaCapturePermission(AVMediaTypeVideo);
+}
+
+SystemPermission CheckSystemScreenCapturePermission() {
+  return IsScreenCaptureAllowed() ? SystemPermission::kAllowed
+                                  : SystemPermission::kDenied;
 }
 
 void RequestSystemAudioCapturePermisson(base::OnceClosure callback,

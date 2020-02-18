@@ -214,7 +214,7 @@ class StageFailureMessageTests(cros_test_lib.TestCase):
         'VMTest [amd64-generic] (attempt 1)': 'VMTest'
     }
 
-    for k, v in prefix_name_map.iteritems():
+    for k, v in prefix_name_map.items():
       failure_message = FailureMessageHelper.GetStageFailureMessage(
           stage_name=k)
       self.assertEqual(failure_message.stage_prefix_name, v)

@@ -20,6 +20,7 @@
 constexpr uint32_t kRTSize = 400;
 constexpr uint32_t kBufferElementsCount = kMinDynamicBufferOffsetAlignment / sizeof(uint32_t) + 2;
 constexpr uint32_t kBufferSize = kBufferElementsCount * sizeof(uint32_t);
+constexpr uint32_t kBindingSize = 8;
 
 class DynamicBufferOffsetTests : public DawnTest {
   protected:
@@ -39,20 +40,20 @@ class DynamicBufferOffsetTests : public DawnTest {
         dawn::BufferDescriptor storageBufferDescriptor;
         storageBufferDescriptor.size = kBufferSize;
         storageBufferDescriptor.usage = dawn::BufferUsageBit::Storage |
-                                        dawn::BufferUsageBit::TransferDst |
-                                        dawn::BufferUsageBit::TransferSrc;
+                                        dawn::BufferUsageBit::CopyDst |
+                                        dawn::BufferUsageBit::CopySrc;
 
         mStorageBuffer = device.CreateBuffer(&storageBufferDescriptor);
 
         mBindGroupLayout = utils::MakeBindGroupLayout(
             device, {{0, dawn::ShaderStageBit::Compute | dawn::ShaderStageBit::Fragment,
-                      dawn::BindingType::DynamicUniformBuffer},
+                      dawn::BindingType::UniformBuffer, true},
                      {1, dawn::ShaderStageBit::Compute | dawn::ShaderStageBit::Fragment,
-                      dawn::BindingType::DynamicStorageBuffer}});
+                      dawn::BindingType::StorageBuffer, true}});
 
         mBindGroup = utils::MakeBindGroup(
             device, mBindGroupLayout,
-            {{0, mUniformBuffer, 0, kBufferSize}, {1, mStorageBuffer, 0, kBufferSize}});
+            {{0, mUniformBuffer, 0, kBindingSize}, {1, mStorageBuffer, 0, kBindingSize}});
     }
     // Create objects to use as resources inside test bind groups.
 
@@ -64,7 +65,7 @@ class DynamicBufferOffsetTests : public DawnTest {
 
     dawn::RenderPipeline CreateRenderPipeline() {
         dawn::ShaderModule vsModule =
-            utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
+            utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
                 #version 450
                 void main() {
                     const vec2 pos[3] = vec2[3](vec2(-1.0f, 0.0f), vec2(-1.0f, -1.0f), vec2(0.0f, -1.0f));
@@ -72,7 +73,7 @@ class DynamicBufferOffsetTests : public DawnTest {
                 })");
 
         dawn::ShaderModule fsModule =
-            utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
                 #version 450
                 layout(std140, set = 0, binding = 0) uniform uBuffer {
                      uvec2 value;
@@ -89,7 +90,7 @@ class DynamicBufferOffsetTests : public DawnTest {
         utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
         pipelineDescriptor.cVertexStage.module = vsModule;
         pipelineDescriptor.cFragmentStage.module = fsModule;
-        pipelineDescriptor.cColorStates[0]->format = dawn::TextureFormat::R8G8B8A8Unorm;
+        pipelineDescriptor.cColorStates[0]->format = dawn::TextureFormat::RGBA8Unorm;
         dawn::PipelineLayout pipelineLayout =
             utils::MakeBasicPipelineLayout(device, &mBindGroupLayout);
         pipelineDescriptor.layout = pipelineLayout;
@@ -99,7 +100,7 @@ class DynamicBufferOffsetTests : public DawnTest {
 
     dawn::ComputePipeline CreateComputePipeline() {
         dawn::ShaderModule csModule =
-            utils::CreateShaderModule(device, dawn::ShaderStage::Compute, R"(
+            utils::CreateShaderModule(device, utils::ShaderStage::Compute, R"(
                 #version 450
                 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
                 layout(std140, set = 0, binding = 0) uniform UniformBuffer {

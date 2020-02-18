@@ -24,11 +24,18 @@ base::string16 FidoDevice::GetDisplayName() const {
 }
 
 bool FidoDevice::IsInPairingMode() const {
+  NOTREACHED();
   return false;
 }
 
 bool FidoDevice::IsPaired() const {
+  NOTREACHED();
   return false;
+}
+
+bool FidoDevice::RequiresBlePairingPin() const {
+  NOTREACHED();
+  return true;
 }
 
 void FidoDevice::DiscoverSupportedProtocolAndDeviceInfo(
@@ -59,8 +66,8 @@ void FidoDevice::OnDeviceInfoReceived(
   state_ = FidoDevice::State::kReady;
   base::Optional<AuthenticatorGetInfoResponse> get_info_response =
       response ? ReadCTAPGetInfoResponse(*response) : base::nullopt;
-  if (!get_info_response || !base::ContainsKey(get_info_response->versions,
-                                               ProtocolVersion::kCtap2)) {
+  if (!get_info_response ||
+      !base::Contains(get_info_response->versions, ProtocolVersion::kCtap2)) {
     supported_protocol_ = ProtocolVersion::kU2f;
     FIDO_LOG(DEBUG) << "The device only supports the U2F protocol.";
   } else {

@@ -77,11 +77,6 @@ class TestQuicSession : public MockQuicSession {
 
   const QuicFrame& save_frame() { return save_frame_; }
 
-  bool ClearControlFrame(const QuicFrame& frame) {
-    DeleteFrame(&const_cast<QuicFrame&>(frame));
-    return true;
-  }
-
   TestQuicStream* CreateOutgoingBidirectionalStream() {
     if (!CanOpenNextOutgoingBidirectionalStream()) {
       return nullptr;
@@ -161,7 +156,7 @@ class QuicStreamIdManagerTestBase : public QuicTestWithParam<bool> {
     // needs to do the stream count where #1 is 0/1/2/3, and not
     // take into account that stream 0 is special.
     QuicStreamId id =
-        ((stream_count - 1) * QuicUtils::StreamIdDelta(QUIC_VERSION_99));
+        ((stream_count - 1) * QuicUtils::StreamIdDelta(transport_version()));
     if (IsUnidi()) {
       id |= 0x2;
     }
@@ -640,7 +635,8 @@ TEST_P(QuicStreamIdManagerTestClient, TestStaticStreamAdjustment) {
 
   // First test will register the first dynamic stream id as being for a static
   // stream.
-  stream_id_manager_->RegisterStaticStream(first_dynamic);
+  stream_id_manager_->RegisterStaticStream(first_dynamic,
+                                           /*stream_already_counted = */ false);
   // Should go up by 1 stream/stream id.
   EXPECT_EQ(actual_max + 1u, stream_id_manager_->incoming_actual_max_streams());
 }

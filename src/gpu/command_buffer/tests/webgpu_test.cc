@@ -39,8 +39,8 @@ bool WebGPUTest::WebGPUSharedImageSupported() const {
 void WebGPUTest::SetUp() {
   gpu::GpuPreferences gpu_preferences;
   gpu_preferences.enable_webgpu = true;
-  gpu_service_holder_ = std::make_unique<viz::TestGpuServiceHolder>(
-      gpu_preferences, false /* use_swiftshader_for_vulkan */);
+  gpu_service_holder_ =
+      std::make_unique<viz::TestGpuServiceHolder>(gpu_preferences);
 }
 
 void WebGPUTest::TearDown() {

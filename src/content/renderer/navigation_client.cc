@@ -16,16 +16,18 @@ NavigationClient::NavigationClient(RenderFrameImpl* render_frame)
 NavigationClient::~NavigationClient() {}
 
 void NavigationClient::CommitNavigation(
-    const network::ResourceResponseHead& head,
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params,
+    const network::ResourceResponseHead& response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
     base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
     CommitNavigationCallback callback) {
   // TODO(ahemery): The reset should be done when the navigation did commit
@@ -34,7 +36,7 @@ void NavigationClient::CommitNavigation(
   // unexpectedly abort the ongoing navigation. Remove when the races are fixed.
   ResetDisconnectionHandler();
   render_frame_->CommitPerNavigationMojoInterfaceNavigation(
-      head, common_params, commit_params,
+      common_params, commit_params, response_head, std::move(response_body),
       std::move(url_loader_client_endpoints), std::move(subresource_loaders),
       std::move(subresource_overrides),
       std::move(controller_service_worker_info), std::move(provider_info),

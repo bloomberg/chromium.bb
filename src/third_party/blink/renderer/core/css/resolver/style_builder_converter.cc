@@ -41,6 +41,9 @@
 #include "third_party/blink/renderer/core/css/css_font_variation_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_path_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_quad_value.h"
@@ -53,11 +56,11 @@
 #include "third_party/blink/renderer/core/css/resolver/transform_builder.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -299,10 +302,11 @@ static float ComputeFontSize(const CSSToLengthConversionData& conversion_data,
                              const FontDescription::Size& parent_size) {
   if (primitive_value.IsLength())
     return primitive_value.ComputeLength<float>(conversion_data);
-  if (primitive_value.IsCalculatedPercentageWithLength())
-    return primitive_value.CssCalcValue()
-        ->ToCalcValue(conversion_data)
+  if (primitive_value.IsCalculatedPercentageWithLength()) {
+    return To<CSSMathFunctionValue>(primitive_value)
+        .ToCalcValue(conversion_data)
         ->Evaluate(parent_size.value);
+  }
 
   NOTREACHED();
   return 0;
@@ -1007,6 +1011,28 @@ UnzoomedLength StyleBuilderConverter::ConvertUnzoomedLength(
       state.UnzoomedLengthConversionData()));
 }
 
+float StyleBuilderConverter::ConvertZoom(const StyleResolverState& state,
+                                         const CSSValue& value) {
+  SECURITY_DCHECK(value.IsPrimitiveValue() || value.IsIdentifierValue());
+
+  if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    if (identifier_value->GetValueID() == CSSValueID::kNormal)
+      return ComputedStyleInitialValues::InitialZoom();
+  } else if (const auto* primitive_value =
+                 DynamicTo<CSSPrimitiveValue>(value)) {
+    if (primitive_value->IsPercentage()) {
+      float percent = primitive_value->GetFloatValue();
+      return percent ? (percent / 100.0f) : 1.0f;
+    } else if (primitive_value->IsNumber()) {
+      float number = primitive_value->GetFloatValue();
+      return number ? number : 1.0f;
+    }
+  }
+
+  NOTREACHED();
+  return 1.0f;
+}
+
 Length StyleBuilderConverter::ConvertLengthOrAuto(
     const StyleResolverState& state,
     const CSSValue& value) {
@@ -1056,9 +1082,10 @@ TabSize StyleBuilderConverter::ConvertLengthOrTabSpaces(
     const CSSValue& value) {
   const auto& primitive_value = To<CSSPrimitiveValue>(value);
   if (primitive_value.IsNumber())
-    return TabSize(primitive_value.GetIntValue());
+    return TabSize(primitive_value.GetFloatValue(), TabSizeValueType::kSpace);
   return TabSize(
-      primitive_value.ComputeLength<float>(state.CssToLengthConversionData()));
+      primitive_value.ComputeLength<float>(state.CssToLengthConversionData()),
+      TabSizeValueType::kLength);
 }
 
 static CSSToLengthConversionData LineHeightToLengthConversionData(
@@ -1087,8 +1114,8 @@ Length StyleBuilderConverter::ConvertLineHeight(StyleResolverState& state,
     }
     if (primitive_value->IsCalculated()) {
       Length zoomed_length =
-          Length(primitive_value->CssCalcValue()->ToCalcValue(
-              LineHeightToLengthConversionData(state)));
+          Length(To<CSSMathFunctionValue>(primitive_value)
+                     ->ToCalcValue(LineHeightToLengthConversionData(state)));
       return Length::Fixed(ValueForLength(
           zoomed_length, LayoutUnit(state.Style()->ComputedFontSize())));
     }
@@ -1206,8 +1233,8 @@ Length StyleBuilderConverter::ConvertQuirkyLength(StyleResolverState& state,
                                                   const CSSValue& value) {
   Length length = ConvertLengthOrAuto(state, value);
   // This is only for margins which use __qem
-  auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
-  length.SetQuirk(primitive_value && primitive_value->IsQuirkyEms());
+  auto* numeric_literal = DynamicTo<CSSNumericLiteralValue>(value);
+  length.SetQuirk(numeric_literal && numeric_literal->IsQuirkyEms());
   return length;
 }
 
@@ -1442,8 +1469,8 @@ float StyleBuilderConverter::ConvertTextStrokeWidth(StyleResolverState& state,
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && IsValidCSSValueID(identifier_value->GetValueID())) {
     float multiplier = ConvertLineWidth<float>(state, value);
-    return CSSPrimitiveValue::Create(multiplier / 48,
-                                     CSSPrimitiveValue::UnitType::kEms)
+    return CSSNumericLiteralValue::Create(multiplier / 48,
+                                          CSSPrimitiveValue::UnitType::kEms)
         ->ComputeLength<float>(state.CssToLengthConversionData());
   }
   return To<CSSPrimitiveValue>(value).ComputeLength<float>(
@@ -1703,7 +1730,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
       // Instead of the actual zoom, use 1 to avoid potential rounding errors
       Length length = primitive_value->ConvertToLength(
           css_to_length_conversion_data.CopyWithAdjustedZoom(1));
-      return *CSSPrimitiveValue::Create(length, 1);
+      return *CSSPrimitiveValue::CreateFromLength(length, 1);
     }
 
     // If we encounter a calculated number that was not resolved during
@@ -1711,26 +1738,31 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     // an integer. Such calc()-for-integers must be rounded at computed value
     // time.
     // https://drafts.csswg.org/css-values-4/#calc-type-checking
-    if (primitive_value->IsCalculated() &&
-        (primitive_value->TypeWithCalcResolved() ==
-         CSSPrimitiveValue::UnitType::kNumber)) {
-      double double_value = primitive_value->CssCalcValue()->DoubleValue();
-      auto unit_type = CSSPrimitiveValue::UnitType::kInteger;
-      return *CSSPrimitiveValue::Create(std::round(double_value), unit_type);
+    if (primitive_value->IsCalculated()) {
+      const CSSMathFunctionValue& math_value =
+          To<CSSMathFunctionValue>(*primitive_value);
+      if (math_value.IsNumber()) {
+        double double_value = math_value.GetDoubleValue();
+        auto unit_type = CSSPrimitiveValue::UnitType::kInteger;
+        return *CSSNumericLiteralValue::Create(std::round(double_value),
+                                               unit_type);
+      }
     }
 
     if (primitive_value->IsAngle()) {
-      return *CSSPrimitiveValue::Create(primitive_value->ComputeDegrees(),
-                                        CSSPrimitiveValue::UnitType::kDegrees);
+      return *CSSNumericLiteralValue::Create(
+          primitive_value->ComputeDegrees(),
+          CSSPrimitiveValue::UnitType::kDegrees);
     }
 
     if (primitive_value->IsTime()) {
-      return *CSSPrimitiveValue::Create(primitive_value->ComputeSeconds(),
-                                        CSSPrimitiveValue::UnitType::kSeconds);
+      return *CSSNumericLiteralValue::Create(
+          primitive_value->ComputeSeconds(),
+          CSSPrimitiveValue::UnitType::kSeconds);
     }
 
     if (primitive_value->IsResolution()) {
-      return *CSSPrimitiveValue::Create(
+      return *CSSNumericLiteralValue::Create(
           primitive_value->ComputeDotsPerPixel(),
           CSSPrimitiveValue::UnitType::kDotsPerPixel);
     }

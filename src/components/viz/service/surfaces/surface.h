@@ -76,6 +76,20 @@ class SurfaceManager;
 // the event of missing dependencies at display time.
 class VIZ_SERVICE_EXPORT Surface final {
  public:
+  class PresentationHelper {
+   public:
+    PresentationHelper(base::WeakPtr<Surface> surface, uint32_t frame_token);
+    ~PresentationHelper();
+
+    void DidPresent(const gfx::PresentationFeedback& feedback);
+
+   private:
+    base::WeakPtr<Surface> surface_;
+    const uint32_t frame_token_;
+
+    DISALLOW_COPY_AND_ASSIGN(PresentationHelper);
+  };
+
   using PresentedCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   enum QueueFrameResult { REJECTED, ACCEPTED_ACTIVE, ACCEPTED_PENDING };
@@ -83,8 +97,7 @@ class VIZ_SERVICE_EXPORT Surface final {
   Surface(const SurfaceInfo& surface_info,
           SurfaceManager* surface_manager,
           SurfaceAllocationGroup* allocation_group,
-          base::WeakPtr<SurfaceClient> surface_client,
-          bool block_activation_on_parent);
+          base::WeakPtr<SurfaceClient> surface_client);
   ~Surface();
 
   void SetDependencyDeadline(
@@ -118,10 +131,6 @@ class VIZ_SERVICE_EXPORT Surface final {
   // don't matter anyway.
   bool needs_sync_tokens() const {
     return surface_client_ ? surface_client_->NeedsSyncTokens() : false;
-  }
-
-  bool block_activation_on_parent() const {
-    return block_activation_on_parent_;
   }
 
   // Returns false if |frame| is invalid.
@@ -173,7 +182,10 @@ class VIZ_SERVICE_EXPORT Surface final {
   void TakeActiveLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
   void TakeActiveAndPendingLatencyInfo(
       std::vector<ui::LatencyInfo>* latency_info);
-  bool TakePresentedCallback(PresentedCallback* callback);
+  // Callers of this function must call |DidPresent| on the returned
+  // PresentationHelper, at the appropriate point in the future.
+  std::unique_ptr<Surface::PresentationHelper>
+  TakePresentationHelperForPresentNotification();
   void DidPresentSurface(uint32_t presentation_token,
                          const gfx::PresentationFeedback& feedback);
   void SendAckToClient();
@@ -200,10 +212,6 @@ class VIZ_SERVICE_EXPORT Surface final {
     return HasActiveFrame() && !active_frame_data_->frame_acked;
   }
 
-  // Returns true if at any point, another Surface's CompositorFrame has
-  // depended on this Surface.
-  bool HasDependentFrame() const { return seen_first_surface_dependency_; }
-
   bool seen_first_surface_embedding() const {
     return seen_first_surface_embedding_;
   }
@@ -216,9 +224,6 @@ class VIZ_SERVICE_EXPORT Surface final {
   // Called when |surface_id| is activated for the first time and its part of a
   // referenced SurfaceRange.
   void OnChildActivatedForActiveFrame(const SurfaceId& surface_id);
-
-  // Called when this surface is embedded by another Surface's CompositorFrame.
-  void OnSurfaceDependencyAdded();
 
   // Called when the embedder of this surface has been activated and therefore
   // this surface should activate too by deadline inheritance.
@@ -243,6 +248,8 @@ class VIZ_SERVICE_EXPORT Surface final {
 
   void ActivateIfDeadlinePassed();
 
+  base::WeakPtr<Surface> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
+
  private:
   struct FrameData {
     FrameData(CompositorFrame&& frame, uint64_t frame_index);
@@ -255,10 +262,10 @@ class VIZ_SERVICE_EXPORT Surface final {
     // Whether the frame has been displayed or not.
     bool frame_drawn = false;
     bool frame_acked = false;
-    // Whether there is a presentation feedback callback bound to this frame.
+    // Whether there is a pending presentation callback (via DidPresentSurface).
     // This typically happens when a frame is swapped - the Display will ask
     // for a callback that will supply presentation feedback to the client.
-    bool is_presented_callback_bound = false;
+    bool will_be_notified_of_presentation = false;
   };
 
   // Updates surface references of the surface using the referenced
@@ -312,13 +319,6 @@ class VIZ_SERVICE_EXPORT Surface final {
   base::Optional<FrameData> active_frame_data_;
   bool seen_first_frame_activation_ = false;
   bool seen_first_surface_embedding_ = false;
-  // Indicates whether another surface adds this surface as a dependency. When
-  // set to true, this surface will be unthrottled and the surface that is
-  // created after it will also not be throttled.
-  bool seen_first_surface_dependency_ = false;
-  // When false, this surface will not be subject to child throttling even if
-  // it's not embedded yet.
-  bool block_activation_on_parent_ = false;
 
   // A set of all valid SurfaceIds contained |last_surface_id_for_range_| to
   // avoid recompution.
@@ -349,7 +349,7 @@ class VIZ_SERVICE_EXPORT Surface final {
 
   SurfaceAllocationGroup* const allocation_group_;
 
-  base::WeakPtrFactory<Surface> weak_factory_;
+  base::WeakPtrFactory<Surface> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

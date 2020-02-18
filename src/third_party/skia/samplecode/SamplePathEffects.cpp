@@ -17,7 +17,7 @@
 #include "include/utils/SkRandom.h"
 #include "samplecode/Sample.h"
 #include "src/utils/SkUTF.h"
-#include "tools/timer/AnimTimer.h"
+#include "tools/timer/TimeUtils.h"
 
 #define CORNER_RADIUS   12
 
@@ -108,13 +108,7 @@ protected:
         this->setBGColor(0xFFDDDDDD);
     }
 
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "PathEffects");
-            return true;
-        }
-        return this->INHERITED::onQuery(evt);
-    }
+    SkString name() override { return SkString("PathEffects"); }
 
     void onDrawContent(SkCanvas* canvas) override {
         SkPaint paint;
@@ -138,8 +132,8 @@ protected:
         canvas->drawPath(fPath, paint);
     }
 
-    bool onAnimate(const AnimTimer& timer) override {
-        fPhase = timer.scaled(40);
+    bool onAnimate(double nanos) override {
+        fPhase = TimeUtils::Scaled(1e-9 * nanos, 40);
         return true;
     }
 

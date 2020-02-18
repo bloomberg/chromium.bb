@@ -21,7 +21,7 @@ namespace {
 void MergeRemovedHeaders(std::vector<std::string>* removed_headers_A,
                          const std::vector<std::string>& removed_headers_B) {
   for (auto& header : removed_headers_B) {
-    if (!base::ContainsValue(*removed_headers_A, header))
+    if (!base::Contains(*removed_headers_A, header))
       removed_headers_A->emplace_back(std::move(header));
   }
 }
@@ -303,8 +303,7 @@ ThrottlingURLLoader::ThrottlingURLLoader(
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : forwarding_client_(client),
       client_binding_(this),
-      traffic_annotation_(traffic_annotation),
-      weak_factory_(this) {
+      traffic_annotation_(traffic_annotation) {
   throttles_.reserve(throttles.size());
   for (auto& throttle : throttles)
     throttles_.emplace_back(this, std::move(throttle));
@@ -394,9 +393,27 @@ void ThrottlingURLLoader::StartNow() {
     network::ResourceResponseHead response_head;
     std::string header_string = base::StringPrintf(
         "HTTP/1.1 %i Internal Redirect\n"
-        "Location: %s\n",
+        "Location: %s",
         net::HTTP_TEMPORARY_REDIRECT,
         throttle_will_start_redirect_url_.spec().c_str());
+
+    // This is only needed when CORS is running in the renderer.
+    if (!network::features::ShouldEnableOutOfBlinkCors()) {
+      std::string http_origin;
+      if (start_info_->url_request.headers.GetHeader("Origin", &http_origin)) {
+        // If this redirect is used in a cross-origin request, add CORS headers
+        // to make sure that the redirect gets through. Note that the
+        // destination URL is still subject to the usual CORS policy, i.e. the
+        // resource will only be available to web pages if the server serves the
+        // response with the required CORS response headers.
+        header_string += base::StringPrintf(
+            "\n"
+            "Access-Control-Allow-Origin: %s\n"
+            "Access-Control-Allow-Credentials: true",
+            http_origin.c_str());
+      }
+    }
+
     response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(header_string));
     response_head.encoded_data_length = header_string.size();

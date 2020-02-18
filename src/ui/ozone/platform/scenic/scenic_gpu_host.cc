@@ -55,30 +55,31 @@ mojom::ScenicGpuHostPtr ScenicGpuHost::CreateHostProcessSelfBinding() {
   return gpu_host;
 }
 
-void ScenicGpuHost::ExportParent(int32_t surface_handle,
-                                 mojo::ScopedHandle export_token_mojo) {
+void ScenicGpuHost::AttachSurfaceToWindow(
+    int32_t window_id,
+    mojo::ScopedHandle export_token_mojo) {
   DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
-  ScenicWindow* scenic_window =
-      scenic_window_manager_->GetWindow(surface_handle);
+  ScenicWindow* scenic_window = scenic_window_manager_->GetWindow(window_id);
   if (!scenic_window)
     return;
   fuchsia::ui::gfx::ExportToken export_token;
   export_token.value = zx::eventpair(
       mojo::UnwrapPlatformHandle(std::move(export_token_mojo)).TakeHandle());
-  scenic_window->ExportRenderingEntity(std::move(export_token));
+  scenic_window->AttachSurface(std::move(export_token));
 }
 
 void ScenicGpuHost::OnGpuProcessLaunched(
     int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
     scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-    const base::RepeatingCallback<void(IPC::Message*)>& send_callback) {
+    base::RepeatingCallback<void(IPC::Message*)> send_callback) {
   NOTREACHED();
 }
 
 void ScenicGpuHost::OnChannelDestroyed(int host_id) {}
 
 void ScenicGpuHost::OnGpuServiceLaunched(
+    int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     GpuHostBindInterfaceCallback binder,

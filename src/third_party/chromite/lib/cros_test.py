@@ -9,11 +9,9 @@ from __future__ import print_function
 
 import datetime
 import os
-import re
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import chrome_util
-from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import device
@@ -59,7 +57,6 @@ class CrOSTest(object):
     self.as_chronos = opts.as_chronos
     self.args = opts.args[1:] if opts.args else None
 
-    self.output = opts.output
     self.results_src = opts.results_src
     self.results_dest_dir = opts.results_dest_dir
 
@@ -70,6 +67,7 @@ class CrOSTest(object):
     else:
       self.chrome_test_target = None
       self.chrome_test_deploy_target_dir = None
+    self.staging_dir = None
 
     self._device = device.Device.Create(opts)
 
@@ -175,22 +173,19 @@ class CrOSTest(object):
       copy_paths: A list of chrome_utils.Path of files to be copied.
     """
     with osutils.TempDir(set_global=True) as tempdir:
-      staging_dir = tempdir
+      self.staging_dir = tempdir
       strip_bin = None
       chrome_util.StageChromeFromBuildDir(
-          staging_dir, host_src_dir, strip_bin, copy_paths=copy_paths)
+          self.staging_dir, host_src_dir, strip_bin, copy_paths=copy_paths)
 
       if self._device.remote.HasRsync():
-        self._device.remote.CopyToDevice('%s/' % os.path.abspath(staging_dir),
-                                         remote_target_dir,
-                                         mode='rsync', inplace=True,
-                                         compress=True,
-                                         debug_level=logging.INFO)
+        self._device.remote.CopyToDevice(
+            '%s/' % os.path.abspath(self.staging_dir), remote_target_dir,
+            mode='rsync', inplace=True, compress=True, debug_level=logging.INFO)
       else:
-        self._device.remote.CopyToDevice('%s/' % os.path.abspath(staging_dir),
-                                         remote_target_dir,
-                                         mode='scp',
-                                         debug_level=logging.INFO)
+        self._device.remote.CopyToDevice(
+            '%s/' % os.path.abspath(self.staging_dir), remote_target_dir,
+            mode='scp', debug_level=logging.INFO)
 
   def _RunCatapultTests(self):
     """Run catapult tests matching a pattern using run_tests.
@@ -269,6 +264,9 @@ class CrOSTest(object):
       remote_data_dir = os.path.join(
           tast_cache_dir, 'tast-remote-tests-cros', 'usr', 'share', 'tast',
           'data')
+      private_key = (self._device.private_key or
+                     self._device.remote.GetAgent().private_key)
+      assert private_key, 'ssh private key not found.'
       cmd += [
           '-remoterunner=%s' % remote_runner_path,
           '-remotebundledir=%s' % remote_bundle_dir,
@@ -276,9 +274,8 @@ class CrOSTest(object):
           # The dev server has trouble downloading assets from Google Storage
           # from outside the chroot.
           '-ephemeraldevserver=false',
+          '-keyfile', private_key,
       ]
-      if self._device.private_key:
-        cmd += ['-keyfile', self._device.private_key]
     if self.test_timeout > 0:
       cmd += ['-timeout=%d' % self.test_timeout]
     if self._device.is_vm:
@@ -322,30 +319,12 @@ class CrOSTest(object):
       result = self._device.RemoteCommand(
           ['/usr/local/autotest/bin/vm_sanity.py'], stream_output=True)
 
-    self._OutputResults(result)
     self._FetchResults()
-    return result.returncode
 
-  def _OutputResults(self, result):
-    """Log the output from RunTests.
-
-    Args:
-      result: cros_build_lib.CommandResult object.
-    """
     name = self.args[0] if self.args else 'Test process'
     logging.info('%s exited with status code %d.', name, result.returncode)
-    if not self.output:
-      return
 
-    # Skip SSH warning.
-    suppress_list = [
-        r'Warning: Permanently added .* to the list of known hosts']
-    with open(self.output, 'w') as f:
-      lines = result.output.splitlines(True) if result.output else []
-      for line in lines:
-        for suppress in suppress_list:
-          if not re.search(suppress, line):
-            f.write(line)
+    return result.returncode
 
   def _FetchResults(self):
     """Fetch results files/directories."""
@@ -385,7 +364,8 @@ class CrOSTest(object):
           if has_exe:
             break
       copy_paths.append(chrome_util.Path(f, exe=is_exe or has_exe))
-    self._DeployCopyPaths(os.getcwd(), DEST_BASE, copy_paths)
+    if copy_paths:
+      self._DeployCopyPaths(os.getcwd(), DEST_BASE, copy_paths)
 
     # Make cwd an absolute path (if it isn't one) rooted in DEST_BASE.
     cwd = self.cwd
@@ -406,6 +386,7 @@ class CrOSTest(object):
     if cwd:
       # Run the remote command with cwd.
       cmd = '"cd %s && %s"' % (cwd, ' '.join(self.args))
+      # Pass shell=True because of && in the cmd.
       result = self._device.RemoteCommand(cmd, stream_output=True, shell=True,
                                           remote_user=user)
     else:
@@ -450,10 +431,7 @@ def ParseCommandLine(argv):
     List of parsed options for CrOSTest.
   """
 
-  vm_parser = vm.VM.GetParser()
-  parser = commandline.ArgumentParser(description=__doc__,
-                                      parents=[vm_parser],
-                                      add_help=False, logging=False)
+  parser = vm.VM.GetParser()
   parser.add_argument('--start-vm', action='store_true', default=False,
                       help='Start a new VM before running tests.')
   parser.add_argument('--catapult-tests', nargs='+',
@@ -468,7 +446,6 @@ def ParseCommandLine(argv):
                       'remote command should be the test binary name, such as '
                       'interactive_ui_tests. It is used for building and '
                       'collecting runtime deps files.')
-  parser.add_argument('--output', type='path', help='Save output to file.')
   parser.add_argument('--guest', action='store_true', default=False,
                       help='Run tests in incognito mode.')
   parser.add_argument('--build-dir', type='path',
@@ -514,12 +491,6 @@ def ParseCommandLine(argv):
                       help='Timeout for running all tests (for --tast).')
 
   opts = parser.parse_args(argv)
-
-  # Remove the logging handling after https://crbug.com/955575
-  log_level = parser.default_log_level
-  if hasattr(opts, 'log_level'):
-    log_level = opts.log_level
-  logging.getLogger().setLevel(getattr(logging, log_level.upper()))
 
   if opts.chrome_test:
     if not opts.args:

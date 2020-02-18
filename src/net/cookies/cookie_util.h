@@ -37,6 +37,8 @@ NET_EXPORT std::string GetEffectiveDomain(const std::string& scheme,
 // On success returns true, and sets cookie_domain to either a
 //   -host cookie domain (ex: "google.com")
 //   -domain cookie domain (ex: ".google.com")
+// On success, DomainIsHostOnly(url.host()) is DCHECKed. The URL's host must not
+// begin with a '.' character.
 NET_EXPORT bool GetCookieDomainWithString(const GURL& url,
                                           const std::string& domain_string,
                                           std::string* result);
@@ -134,6 +136,13 @@ ComputeSameSiteContextForResponse(const GURL& url,
 NET_EXPORT CookieOptions::SameSiteCookieContext
 ComputeSameSiteContextForScriptSet(const GURL& url,
                                    const GURL& site_for_cookies);
+
+// Determines which of the cookies for |url| can be accessed when fetching a
+// subresources. This is either CROSS_SITE or SAME_SITE_STRICT,
+// since the initiator for a subresource is the frame loading it.
+NET_EXPORT CookieOptions::SameSiteCookieContext
+ComputeSameSiteContextForSubresource(const GURL& url,
+                                     const GURL& site_for_cookies);
 
 // Checks whether a cookie would be excluded due to SameSite restrictions,
 // assuming SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure

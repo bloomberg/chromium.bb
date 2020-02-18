@@ -6,6 +6,7 @@
 
 #include "device/vr/test/test_hook.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_location.h"
+#include "ui/gfx/transform_util.h"
 
 namespace device {
 
@@ -25,6 +26,7 @@ class MockWMRInputLocation : public WMRInputLocation {
 
  private:
   ControllerFrameData data_;
+  gfx::DecomposedTransform decomposed_device_to_origin_;
 };
 
 }  // namespace device

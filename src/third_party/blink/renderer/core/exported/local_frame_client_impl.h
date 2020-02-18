@@ -150,8 +150,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) override;
   void DidObserveNewFeatureUsage(mojom::WebFeature) override;
   void DidObserveNewCssPropertyUsage(int, bool) override;
-  void DidObserveLayoutJank(double jank_fraction,
-                            bool after_input_or_scroll) override;
+  void DidObserveLayoutShift(double score, bool after_input_or_scroll) override;
   void DidObserveLazyLoadBehavior(
       WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) override;
   bool ShouldTrackUseCounter(const KURL&) override;
@@ -182,8 +181,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
                           HTMLFrameOwnerElement*) override;
   std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
-      mojom::blink::PortalAssociatedRequest,
-      mojom::blink::PortalClientAssociatedPtrInfo) override;
+      mojo::PendingAssociatedReceiver<mojom::blink::Portal>,
+      mojo::PendingAssociatedRemote<mojom::blink::PortalClient>) override;
   RemoteFrame* AdoptPortal(HTMLPortalElement*) override;
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
                                        const KURL&,
@@ -203,11 +202,10 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   bool AllowContentInitiatedDataUrlNavigations(const KURL&) override;
 
-  WebCookieJar* CookieJar() const override;
   void FrameFocused() const override;
   void DidChangeName(const String&) override;
   void DidEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) override;
-  void DidEnforceInsecureNavigationsSet(const std::vector<unsigned>&) override;
+  void DidEnforceInsecureNavigationsSet(const WebVector<unsigned>&) override;
   void DidChangeFramePolicy(Frame* child_frame, const FramePolicy&) override;
   void DidSetFramePolicyHeaders(
       WebSandboxFlags,
@@ -224,10 +222,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   std::unique_ptr<WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
   WebContentSettingsClient* GetContentSettingsClient() override;
-
-  std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
-      DocumentLoader*,
-      WebApplicationCacheHostClient*) override;
 
   void DispatchDidChangeManifest() override;
 
@@ -282,7 +276,9 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void AnnotatedRegionsChanged() override;
 
-  void DidBlockFramebust(const KURL&) override;
+  void DidBlockNavigation(const KURL& blocked_url,
+                          const KURL& initiator_url,
+                          blink::NavigationBlockedReason reason) override;
 
   base::UnguessableToken GetDevToolsFrameToken() const override;
 
@@ -305,6 +301,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void FrameRectsChanged(const IntRect&) override;
 
+  void LifecycleStateChanged(mojom::FrameLifecycleState state) override;
+
   bool IsPluginHandledExternally(HTMLPlugInElement&,
                                  const KURL&,
                                  const String&) override;
@@ -323,6 +321,10 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   bool UsePrintingLayout() const override;
 
   void TransferUserActivationFrom(LocalFrame* source_frame) override;
+
+  void UpdateSubresourceFactory(
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) override;
+  WebLocalFrameClient::AppCacheType GetAppCacheType() override;
 
  private:
   struct DocumentInterfaceBrokerForwarderTraits {

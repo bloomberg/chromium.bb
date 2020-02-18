@@ -61,7 +61,7 @@ public:
                 args.fUniformHandler->getUniformCStr(profileSizeVar),
                 args.fUniformHandler->getUniformCStr(profileSizeVar),
                 args.fUniformHandler->getUniformCStr(profileSizeVar),
-                fragBuilder->getProgramBuilder()->samplerVariable(args.fTexSamplers[0]).c_str());
+                fragBuilder->getProgramBuilder()->samplerVariable(args.fTexSamplers[0]));
         fragBuilder->codeAppendf(
                 "%s.w;\n    half vcoord = half((abs(translatedPos.y - 0.5 * height) - 0.5 * wh.y) "
                 "/ float(%s));\n    half vlookup = texture(%s, float2(float(vcoord), 0.5)).%s.w;\n "
@@ -72,7 +72,7 @@ public:
                 "smallDims - half2(center, center);\n    half ",
                 fragBuilder->getProgramBuilder()->samplerSwizzle(args.fTexSamplers[0]).c_str(),
                 args.fUniformHandler->getUniformCStr(profileSizeVar),
-                fragBuilder->getProgramBuilder()->samplerVariable(args.fTexSamplers[0]).c_str(),
+                fragBuilder->getProgramBuilder()->samplerVariable(args.fTexSamplers[0]),
                 fragBuilder->getProgramBuilder()->samplerSwizzle(args.fTexSamplers[0]).c_str(),
                 args.fOutputColor, args.fInputColor, args.fUniformHandler->getUniformCStr(rectVar),
                 args.fUniformHandler->getUniformCStr(rectVar),
@@ -89,10 +89,10 @@ public:
                 "texture(%s, float2(float(vcoord), 0.5)).%s.w;\n    %s = (%s * hlookup) * "
                 "vlookup;\n}\n",
                 args.fUniformHandler->getUniformCStr(profileSizeVar),
-                fragBuilder->getProgramBuilder()->samplerVariable(args.fTexSamplers[0]).c_str(),
+                fragBuilder->getProgramBuilder()->samplerVariable(args.fTexSamplers[0]),
                 fragBuilder->getProgramBuilder()->samplerSwizzle(args.fTexSamplers[0]).c_str(),
                 args.fUniformHandler->getUniformCStr(profileSizeVar),
-                fragBuilder->getProgramBuilder()->samplerVariable(args.fTexSamplers[0]).c_str(),
+                fragBuilder->getProgramBuilder()->samplerVariable(args.fTexSamplers[0]),
                 fragBuilder->getProgramBuilder()->samplerSwizzle(args.fTexSamplers[0]).c_str(),
                 args.fOutputColor, args.fInputColor);
     }
@@ -128,7 +128,14 @@ GrGLSLFragmentProcessor* GrRectBlurEffect::onCreateGLSLInstance() const {
     return new GrGLSLRectBlurEffect();
 }
 void GrRectBlurEffect::onGetGLSLProcessorKey(const GrShaderCaps& caps,
-                                             GrProcessorKeyBuilder* b) const {}
+                                             GrProcessorKeyBuilder* b) const {
+    bool highPrecision = ((((abs(rect.left()) > 16000.0 || abs(rect.top()) > 16000.0) ||
+                            abs(rect.right()) > 16000.0) ||
+                           abs(rect.bottom()) > 16000.0) ||
+                          abs(rect.right() - rect.left()) > 16000.0) ||
+                         abs(rect.bottom() - rect.top()) > 16000.0;
+    b->add32((int32_t)highPrecision);
+}
 bool GrRectBlurEffect::onIsEqual(const GrFragmentProcessor& other) const {
     const GrRectBlurEffect& that = other.cast<GrRectBlurEffect>();
     (void)that;

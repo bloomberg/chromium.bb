@@ -68,7 +68,7 @@ ReportResult CrashReportSender::SendCrashReport(
   }
 
   int http_response = 0;
-  bool result = HTTPUpload::SendRequest(
+  bool result = HTTPUpload::SendMultipartPostRequest(
     url, parameters, files, NULL, report_code,
     &http_response);
 

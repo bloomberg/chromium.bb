@@ -10,6 +10,8 @@ from __future__ import print_function
 import os
 
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
+
 from chromite.lib.paygen import utils
 
 
@@ -20,11 +22,16 @@ class TestUtils(cros_test_lib.TempDirTestCase):
     file_a = os.path.join(self.tempdir, 'a')
     file_b = os.path.join(self.tempdir, 'b')
 
-    with file(file_a, 'w+'):
-      pass
-
-    with file(file_b, 'w+'):
-      pass
+    osutils.Touch(file_a)
+    osutils.Touch(file_b)
 
     self.assertEqual(sorted(utils.ListdirFullpath(self.tempdir)),
                      [file_a, file_b])
+
+  def testReadLsbRelease(self):
+    """Tests that we correctly read the lsb release file."""
+    path = os.path.join(self.tempdir, 'etc', 'lsb-release')
+    osutils.WriteFile(path, 'key=value\nfoo=bar\n', makedirs=True)
+
+    self.assertEqual(utils.ReadLsbRelease(self.tempdir),
+                     {'key': 'value', 'foo': 'bar'})

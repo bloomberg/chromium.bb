@@ -6,36 +6,26 @@
 
 #include <memory>
 
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "osp/impl/presentation/testing/mock_connection_delegate.h"
 #include "osp/impl/quic/quic_client.h"
 #include "osp/impl/quic/quic_server.h"
 #include "osp/impl/quic/testing/fake_quic_connection_factory.h"
 #include "osp/impl/quic/testing/quic_test_support.h"
-#include "osp/impl/testing/fake_clock.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/protocol_connection_server.h"
 #include "osp/public/testing/message_demuxer_test_support.h"
-#include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "platform/test/fake_clock.h"
 
 namespace openscreen {
 namespace presentation {
+
 namespace {
 
 using ::testing::_;
 using ::testing::Invoke;
-
-class MockConnectionDelegate final : public Connection::Delegate {
- public:
-  ~MockConnectionDelegate() override = default;
-
-  MOCK_METHOD0(OnConnected, void());
-  MOCK_METHOD0(OnClosedByRemote, void());
-  MOCK_METHOD0(OnDiscarded, void());
-  MOCK_METHOD1(OnError, void(const absl::string_view message));
-  MOCK_METHOD0(OnTerminated, void());
-  MOCK_METHOD1(OnStringMessage, void(const absl::string_view message));
-  MOCK_METHOD1(OnBinaryMessage, void(const std::vector<uint8_t>& data));
-};
+using ::testing::NiceMock;
 
 class MockConnectRequest final
     : public ProtocolConnectionClient::ConnectionRequestCallback {
@@ -103,9 +93,9 @@ class PresentationReceiverTest : public ::testing::Test {
   }
 
   const std::string url1_{"https://www.example.com/receiver.html"};
-  FakeClock fake_clock_{
+  platform::FakeClock fake_clock_{
       platform::Clock::time_point(std::chrono::milliseconds(1298424))};
-  FakeQuicBridge quic_bridge_{FakeClock::now};
+  FakeQuicBridge quic_bridge_{platform::FakeClock::now};
   MockReceiverDelegate mock_receiver_delegate_;
 };
 
@@ -182,7 +172,7 @@ TEST_F(PresentationReceiverTest, StartPresentation) {
   EXPECT_EQ(presentation_id, info.id);
   EXPECT_EQ(url1_, info.url);
 
-  MockConnectionDelegate null_connection_delegate;
+  NiceMock<MockConnectionDelegate> null_connection_delegate;
   Connection connection(Connection::PresentationInfo{presentation_id, url1_},
                         &null_connection_delegate, Receiver::Get());
   Receiver::Get()->OnPresentationStarted(presentation_id, &connection,

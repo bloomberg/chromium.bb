@@ -4,6 +4,12 @@
 
 chrome_camera_app_dir = "$root_out_dir/resources/chromeos/camera"
 
+group("closure_compile") {
+  deps = [
+    "src/js:closure_compile",
+  ]
+}
+
 group("chrome_camera_app") {
   # According to crbug.com/855747, we should list all the files we want to copy
   # rather than list only the folders to avoid potential building issue and ease
@@ -17,6 +23,8 @@ group("chrome_camera_app") {
     ":chrome_camera_app_css",
     ":chrome_camera_app_images",
     ":chrome_camera_app_js",
+    ":chrome_camera_app_js_browser_proxy",
+    ":chrome_camera_app_js_device",
     ":chrome_camera_app_js_models",
     ":chrome_camera_app_js_mojo",
     ":chrome_camera_app_js_views",
@@ -55,6 +63,8 @@ copy("chrome_camera_app_images") {
     "src/images/browser_button_print.svg",
     "src/images/camera_app_icons_128.png",
     "src/images/camera_app_icons_48.png",
+    "src/images/camera_button_fps_30.svg",
+    "src/images/camera_button_fps_60.svg",
     "src/images/camera_button_grid_off.svg",
     "src/images/camera_button_grid_on.svg",
     "src/images/camera_button_mic_off.svg",
@@ -121,6 +131,28 @@ copy("chrome_camera_app_js") {
   ]
 }
 
+copy("chrome_camera_app_js_browser_proxy") {
+  sources = [
+    "src/js/browser_proxy/browser_proxy.js",
+  ]
+
+  outputs = [
+    "$chrome_camera_app_dir/js/browser_proxy/{{source_file_part}}",
+  ]
+}
+
+copy("chrome_camera_app_js_device") {
+  sources = [
+    "src/js/device/camera3_device_info.js",
+    "src/js/device/constraints_preferrer.js",
+    "src/js/device/device_info_updater.js",
+  ]
+
+  outputs = [
+    "$chrome_camera_app_dir/js/device/{{source_file_part}}",
+  ]
+}
+
 copy("chrome_camera_app_js_models") {
   sources = [
     "src/js/models/filenamer.js",
@@ -166,7 +198,6 @@ copy("chrome_camera_app_js_views_camera") {
     "src/js/views/camera/options.js",
     "src/js/views/camera/preview.js",
     "src/js/views/camera/recordtime.js",
-    "src/js/views/camera/resolution_preference.js",
     "src/js/views/camera/timertick.js",
   ]
 

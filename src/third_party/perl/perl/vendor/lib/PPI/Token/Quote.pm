@@ -18,7 +18,8 @@ The C<PPI::Token::Quote> class is never instantiated, and simply
 provides a common abstract base class for the four quote classes.
 In PPI, a "quote" is limited to only the quote-like things that
 themselves directly represent a string. (although this includes
-double quotes with interpolated elements inside them).
+double quotes with interpolated elements inside them, note that
+L<String::InterpolatedVariables> allows to extract them).
 
 The subclasses of C<PPI::Token::Quote> are:
 
@@ -48,11 +49,9 @@ honor of its own token class (L<PPI::Token::HereDoc>).
 use strict;
 use PPI::Token ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Token';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = "PPI::Token";
 
 
 
@@ -75,29 +74,6 @@ of the quotes.
   q{foo}
   qq <foo>
 
-=begin testing string 15
-
-# Prove what we say in the ->string docs
-my $Document = PPI::Document->new(\<<'END_PERL');
-  'foo'
-  "foo"
-  q{foo}
-  qq <foo>
-END_PERL
-isa_ok( $Document, 'PPI::Document' );
-
-my $quotes = $Document->find('Token::Quote');
-is( ref($quotes), 'ARRAY', 'Found quotes' );
-is( scalar(@$quotes), 4, 'Found 4 quotes' );
-foreach my $Quote ( @$quotes ) {
-	isa_ok( $Quote, 'PPI::Token::Quote');
-	can_ok( $Quote, 'string'           );
-	is( $Quote->string, 'foo', '->string returns "foo" for '
-		. $Quote->content );
-}
-
-=end testing
-
 =cut
 
 #sub string {
@@ -109,7 +85,7 @@ foreach my $Quote ( @$quotes ) {
 
 =head2 literal
 
-The C<literal> method is provided by ::Quote:Literal and
+The C<literal> method is provided by ::Quote::Literal and
 ::Quote::Single.  This returns the value of the string as Perl sees
 it: without the quote marks and with C<\\> and C<\'> resolved to C<\>
 and C<'>.

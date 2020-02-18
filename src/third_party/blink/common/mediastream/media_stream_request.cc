@@ -9,56 +9,57 @@
 
 namespace blink {
 
-bool IsAudioInputMediaType(MediaStreamType type) {
-  return (type == MEDIA_DEVICE_AUDIO_CAPTURE ||
-          type == MEDIA_GUM_TAB_AUDIO_CAPTURE ||
-          type == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE ||
-          type == MEDIA_DISPLAY_AUDIO_CAPTURE);
+bool IsAudioInputMediaType(mojom::MediaStreamType type) {
+  return (type == mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE ||
+          type == mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE ||
+          type == mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE ||
+          type == mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE);
 }
 
-bool IsVideoInputMediaType(MediaStreamType type) {
-  return (type == MEDIA_DEVICE_VIDEO_CAPTURE ||
-          type == MEDIA_GUM_TAB_VIDEO_CAPTURE ||
-          type == MEDIA_GUM_DESKTOP_VIDEO_CAPTURE ||
-          type == MEDIA_DISPLAY_VIDEO_CAPTURE);
+bool IsVideoInputMediaType(mojom::MediaStreamType type) {
+  return (type == mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE ||
+          type == mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE ||
+          type == mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
+          type == mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE);
 }
 
-bool IsScreenCaptureMediaType(MediaStreamType type) {
+bool IsScreenCaptureMediaType(mojom::MediaStreamType type) {
   return IsDesktopCaptureMediaType(type) || IsTabCaptureMediaType(type);
 }
 
-bool IsVideoScreenCaptureMediaType(MediaStreamType type) {
+bool IsVideoScreenCaptureMediaType(mojom::MediaStreamType type) {
   return IsVideoDesktopCaptureMediaType(type) ||
-         type == MEDIA_GUM_TAB_VIDEO_CAPTURE;
+         type == mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE;
 }
 
-bool IsDesktopCaptureMediaType(MediaStreamType type) {
-  return (type == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE ||
+bool IsDesktopCaptureMediaType(mojom::MediaStreamType type) {
+  return (type == mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE ||
           IsVideoDesktopCaptureMediaType(type));
 }
 
-bool IsVideoDesktopCaptureMediaType(MediaStreamType type) {
-  return (type == MEDIA_DISPLAY_VIDEO_CAPTURE ||
-          type == MEDIA_GUM_DESKTOP_VIDEO_CAPTURE);
+bool IsVideoDesktopCaptureMediaType(mojom::MediaStreamType type) {
+  return (type == mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE ||
+          type == mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE);
 }
 
-bool IsTabCaptureMediaType(MediaStreamType type) {
-  return (type == MEDIA_GUM_TAB_AUDIO_CAPTURE ||
-          type == MEDIA_GUM_TAB_VIDEO_CAPTURE);
+bool IsTabCaptureMediaType(mojom::MediaStreamType type) {
+  return (type == mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE ||
+          type == mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE);
 }
 
-bool IsDeviceMediaType(MediaStreamType type) {
-  return (type == MEDIA_DEVICE_AUDIO_CAPTURE ||
-          type == MEDIA_DEVICE_VIDEO_CAPTURE);
+bool IsDeviceMediaType(mojom::MediaStreamType type) {
+  return (type == mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE ||
+          type == mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE);
 }
 
 // static
 const int MediaStreamDevice::kNoId = -1;
 
 MediaStreamDevice::MediaStreamDevice()
-    : type(MEDIA_NO_SERVICE), video_facing(media::MEDIA_VIDEO_FACING_NONE) {}
+    : type(mojom::MediaStreamType::NO_SERVICE),
+      video_facing(media::MEDIA_VIDEO_FACING_NONE) {}
 
-MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
+MediaStreamDevice::MediaStreamDevice(mojom::MediaStreamType type,
                                      const std::string& id,
                                      const std::string& name)
     : type(type),
@@ -67,7 +68,7 @@ MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
       name(name) {}
 
 MediaStreamDevice::MediaStreamDevice(
-    MediaStreamType type,
+    mojom::MediaStreamType type,
     const std::string& id,
     const std::string& name,
     media::VideoFacingMode facing,
@@ -78,7 +79,7 @@ MediaStreamDevice::MediaStreamDevice(
       group_id(group_id),
       name(name) {}
 
-MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
+MediaStreamDevice::MediaStreamDevice(mojom::MediaStreamType type,
                                      const std::string& id,
                                      const std::string& name,
                                      int sample_rate,

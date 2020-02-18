@@ -39,6 +39,25 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "ui/events/event.h"
 
+// TODO(crbug.com/961064): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_LocalInputTest DISABLED_LocalInputTest
+#define MAYBE_ClampMouseEvents DISABLED_ClampMouseEvents
+#define MAYBE_DisableInputs DISABLED_DisableInputs
+#define MAYBE_MultiMonMouseMove_SameSize DISABLED_MultiMonMouseMove_SameSize
+#define MAYBE_RestoreEventState DISABLED_RestoreEventState
+#define MAYBE_MultiMonMouseMove DISABLED_MultiMonMouseMove
+#define MAYBE_DisconnectOnLocalInputTest DISABLED_DisconnectOnLocalInputTest
+#else
+#define MAYBE_LocalInputTest LocalInputTest
+#define MAYBE_ClampMouseEvents ClampMouseEvents
+#define MAYBE_DisableInputs DisableInputs
+#define MAYBE_MultiMonMouseMove_SameSize MultiMonMouseMove_SameSize
+#define MAYBE_RestoreEventState RestoreEventState
+#define MAYBE_MultiMonMouseMove MultiMonMouseMove
+#define MAYBE_DisconnectOnLocalInputTest DisconnectOnLocalInputTest
+#endif
+
 namespace remoting {
 
 using protocol::FakeSession;
@@ -413,7 +432,7 @@ void ClientSessionTest::MultiMon_SelectAllDisplays() {
   NotifyVideoSizeAll();
 }
 
-TEST_F(ClientSessionTest, MultiMonMouseMove) {
+TEST_F(ClientSessionTest, MAYBE_MultiMonMouseMove) {
   CreateClientSession();
   ConnectClientSession();
   SetupMultiDisplay();
@@ -470,7 +489,7 @@ TEST_F(ClientSessionTest, MultiMonMouseMove) {
                                    kDisplay2Height + kDisplay2YOffset - 1));
 }
 
-TEST_F(ClientSessionTest, MultiMonMouseMove_SameSize) {
+TEST_F(ClientSessionTest, MAYBE_MultiMonMouseMove_SameSize) {
   CreateClientSession();
   ConnectClientSession();
   SetupMultiDisplay_SameSize();
@@ -526,7 +545,7 @@ TEST_F(ClientSessionTest, MultiMonMouseMove_SameSize) {
                                    kDisplay1Height + kDisplay2YOffset - 1));
 }
 
-TEST_F(ClientSessionTest, DisableInputs) {
+TEST_F(ClientSessionTest, MAYBE_DisableInputs) {
   CreateClientSession();
   ConnectClientSession();
   SetupSingleDisplay();
@@ -582,7 +601,7 @@ TEST_F(ClientSessionTest, DisableInputs) {
               EqualsClipboardEvent(kMimeTypeTextUtf8, "c"));
 }
 
-TEST_F(ClientSessionTest, LocalInputTest) {
+TEST_F(ClientSessionTest, MAYBE_LocalInputTest) {
   CreateClientSession();
   ConnectClientSession();
   SetupSingleDisplay();
@@ -622,7 +641,7 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   // eventually (via dependency injection, not sleep!)
 }
 
-TEST_F(ClientSessionTest, DisconnectOnLocalInputTest) {
+TEST_F(ClientSessionTest, MAYBE_DisconnectOnLocalInputTest) {
   desktop_environment_options_.set_terminate_upon_input(true);
   CreateClientSession();
   ConnectClientSession();
@@ -633,7 +652,7 @@ TEST_F(ClientSessionTest, DisconnectOnLocalInputTest) {
   EXPECT_FALSE(connection_->is_connected());
 }
 
-TEST_F(ClientSessionTest, RestoreEventState) {
+TEST_F(ClientSessionTest, MAYBE_RestoreEventState) {
   CreateClientSession();
   ConnectClientSession();
   SetupSingleDisplay();
@@ -671,7 +690,7 @@ TEST_F(ClientSessionTest, RestoreEventState) {
   EXPECT_THAT(key_events[3], EqualsKeyEvent(2, false));
 }
 
-TEST_F(ClientSessionTest, ClampMouseEvents) {
+TEST_F(ClientSessionTest, MAYBE_ClampMouseEvents) {
   CreateClientSession();
   ConnectClientSession();
   SetupSingleDisplay();

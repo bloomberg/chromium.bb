@@ -41,7 +41,7 @@ in EMX docs).
 
 Contents (This may be a little bit obsolete)
  
- perlos2 - Perl under OS/2, DOS, Win0.3*, Win0.95 and WinNT. 
+ perlos2 - Perl under OS/2, DOS, Win0.3*, Win0.95 and WinNT.
 
       NAME
       SYNOPSIS
@@ -180,7 +180,7 @@ Since OS/2 port of perl uses a remarkable EMX environment, it can
 run (and build extensions, and - possibly - be built itself) under any
 environment which can run EMX. The current list is DOS,
 DOS-inside-OS/2, Win0.3*, Win0.95 and WinNT. Out of many perl flavors,
-only one works, see L<"perl_.exe">.
+only one works, see L</"F<perl_.exe>">.
 
 Note that not all features of Perl are available under these
 environments. This depends on the features the I<extender> - most
@@ -224,7 +224,7 @@ will work as well.)
 
 To run Perl on DPMI platforms one needs RSX runtime. This is
 needed under DOS-inside-OS/2, Win0.3*, Win0.95 and WinNT (see 
-L<"Other OSes">). RSX would not work with VCPI
+L</"Other OSes">). RSX would not work with VCPI
 only, as EMX would, it requires DMPI.
 
 Having RSX and the latest F<sh.exe> one gets a fully functional
@@ -261,7 +261,7 @@ To start external programs with complicated command lines (like with
 pipes in between, and/or quoting of arguments), Perl uses an external
 shell. With EMX port such shell should be named F<sh.exe>, and located
 either in the wired-in-during-compile locations (usually F<F:/bin>),
-or in configurable location (see L<"PERL_SH_DIR">).
+or in configurable location (see L</"C<PERL_SH_DIR>">).
 
 For best results use EMX pdksh. The standard binary (5.2.14 or later) runs
 under DOS (with L</RSX>) as well, see
@@ -328,9 +328,9 @@ are for. (Avoid exec() (see L<perlfunc/exec>) unless you know what you
 do).
 
 Note however that to use some of these operators you need to have a
-sh-syntax shell installed (see L<"Pdksh">, 
-L<"Frequently asked questions">), and perl should be able to find it
-(see L<"PERL_SH_DIR">).
+sh-syntax shell installed (see L</"Pdksh">, 
+L</"Frequently asked questions">), and perl should be able to find it
+(see L</"C<PERL_SH_DIR>">).
 
 The cases when the shell is used are:
 
@@ -404,11 +404,12 @@ there is an executable file F<blah.exe> I<anywhere> on C<PATH>.  In
 other words, C<PATH> is essentially searched twice: once by the OS for
 an executable, then by Perl for scripts.
 
-Note also that executable files on OS/2 can have an arbitrary extension, 
-but F<.exe> will be automatically appended if no dot is present in the name.  
-The workaround is as simple as that:  since F<blah.> and F<blah> denote the 
-same file (at list on FAT and HPFS file systems), to start an executable residing in file F<n:/bin/blah> (no 
-extension) give an argument C<n:/bin/blah.> (dot appended) to system().
+Note also that executable files on OS/2 can have an arbitrary extension, but
+F<.exe> will be automatically appended if no dot is present in the name.  The
+workaround is as simple as that:  since F<blah.> and F<blah> denote the same
+file (at list on FAT and HPFS file systems), to start an executable residing in
+file F<n:/bin/blah> (no extension) give an argument C<n:/bin/blah.> (dot
+appended) to system().
 
 Perl will start PM programs from VIO (=text-mode) Perl process in a
 separate PM session;
@@ -474,12 +475,12 @@ should be done "correctly".
 
 =head2 C<``> and pipe-C<open> do not work under DOS.
 
-This may a variant of just L<"I cannot run external programs">, or a
+This may a variant of just L</"I cannot run external programs">, or a
 deeper problem. Basically: you I<need> RSX (see L</Prerequisites>)
 for these commands to work, and you may need a port of F<sh.exe> which
 understands command arguments. One of such ports is listed in
 L</Prerequisites> under RSX. Do not forget to set variable
-C<L<"PERL_SH_DIR">> as well.
+L</"C<PERL_SH_DIR>"> as well.
 
 DPMI is required for RSX.
 
@@ -534,11 +535,11 @@ B<Things not taken care of by automatic binary installation:>
 =item C<PERL_BADLANG>
 
 may be needed if you change your codepage I<after> perl installation,
-and the new value is not supported by EMX. See L<"PERL_BADLANG">.
+and the new value is not supported by EMX. See L</"C<PERL_BADLANG>">.
 
 =item C<PERL_BADFREE>
 
-see L<"PERL_BADFREE">.
+see L</"C<PERL_BADFREE>">.
 
 =item F<Config.pm>
 
@@ -557,7 +558,7 @@ of this file.
 
 B<NOTE>. Because of a typo the binary installer of 5.00305
 would install a variable C<PERL_SHPATH> into F<Config.sys>. Please
-remove this variable and put C<L</PERL_SH_DIR>> instead.
+remove this variable and put L</C<PERL_SH_DIR>> instead.
 
 =head2 Manual binary installation
 
@@ -614,11 +615,11 @@ If this directory is exactly the same as the prefix which was compiled
 into F<perl.exe>, you do not need to change
 anything. However, for perl to find the library if you use a different
 path, you need to
-C<set PERLLIB_PREFIX> in F<Config.sys>, see L<"PERLLIB_PREFIX">.
+C<set PERLLIB_PREFIX> in F<Config.sys>, see L</"C<PERLLIB_PREFIX>">.
 
 =item Additional Perl modules
 
-  unzip perl_ste.zip -d f:/perllib/lib/site_perl/5.16.0/
+  unzip perl_ste.zip -d f:/perllib/lib/site_perl/5.30.0/
 
 Same remark as above applies.  Additionally, if this directory is not
 one of directories on @INC (and @INC is influenced by C<PERLLIB_PREFIX>), you
@@ -674,7 +675,7 @@ This is used by perl to run external commands which explicitly
 require shell, like the commands using I<redirection> and I<shell
 metacharacters>. It is also used instead of explicit F</bin/sh>.
 
-Set C<PERL_SH_DIR> (see L<"PERL_SH_DIR">) if you move F<sh.exe> from
+Set C<PERL_SH_DIR> (see L</"C<PERL_SH_DIR>">) if you move F<sh.exe> from
 the above location.
 
 B<Note.> It may be possible to use some other sh-compatible shell (untested).
@@ -694,8 +695,8 @@ currently start with C<f:/>).
 =head2 B<Warning>
 
 The automatic and manual perl installation leave precompiled paths
-inside perl executables. While these paths are overwriteable (see
-L<"PERLLIB_PREFIX">, L<"PERL_SH_DIR">), some people may prefer
+inside perl executables. While these paths are overwritable (see
+L</"C<PERLLIB_PREFIX>">, L</"C<PERL_SH_DIR>">), some people may prefer
 binary editing of paths inside the executables/DLLs.
 
 =head1 Accessing documentation
@@ -713,7 +714,7 @@ Most probably the most convenient form. Under OS/2 view it as
   view perl ExtUtils::MakeMaker
 
 (currently the last two may hit a wrong location, but this may improve
-soon). Under Win* see L<"SYNOPSIS">.
+soon). Under Win* see L</"SYNOPSIS">.
 
 If you want to build the docs yourself, and have I<OS/2 toolkit>, run
 
@@ -869,7 +870,7 @@ make sure that no copies or perl are currently running.  Later steps
 of the build may fail since an older version of F<perl.dll> loaded into
 memory may be found.  Running C<make test> becomes meaningless, since
 the test are checking a previous build of perl (this situation is detected
-and reported by F<lib/os2_base.t> test).  Do not forget to unset
+and reported by F<os2/os2_base.t> test).  Do not forget to unset
 C<PERL_EMXLOAD_SEC> in environment.
 
 Also make sure that you have F</tmp> directory on the current drive,
@@ -947,7 +948,7 @@ wrong you find there. I do not expect it is needed anywhere.
 
 C<prefix> means: where to install the resulting perl library. Giving
 correct prefix you may avoid the need to specify C<PERLLIB_PREFIX>,
-see L<"PERLLIB_PREFIX">.
+see L</"C<PERLLIB_PREFIX>">.
 
 I<Ignore the message about missing C<ln>, and about C<-c> option to
 tr>. The latter is most probably already fixed, if you see it and can trace
@@ -981,7 +982,7 @@ Some tests may generate extra messages similar to
 =item A lot of C<bad free>
 
 in database tests related to Berkeley DB. I<This should be fixed already.>
-If it persists, you may disable this warnings, see L<"PERL_BADFREE">.
+If it persists, you may disable this warnings, see L</"C<PERL_BADFREE>">.
 
 =item Process terminated by SIGTERM/SIGINT
 
@@ -1001,11 +1002,12 @@ To get finer test reports, call
 
 The report with F<io/pipe.t> failing may look like this:
 
-  Failed Test  Status Wstat Total Fail  Failed  List of failed
-  ------------------------------------------------------------
-  io/pipe.t                    12    1   8.33%  9
-  7 tests skipped, plus 56 subtests skipped.
-  Failed 1/195 test scripts, 99.49% okay. 1/6542 subtests failed, 99.98% okay.
+ Failed Test  Status Wstat Total Fail  Failed  List of failed
+ ------------------------------------------------------------
+ io/pipe.t                    12    1   8.33%  9
+ 7 tests skipped, plus 56 subtests skipped.
+ Failed 1/195 test scripts, 99.49% okay. 1/6542 subtests failed,
+    99.98% okay.
 
 The reasons for most important skipped tests are:
 
@@ -1015,12 +1017,12 @@ The reasons for most important skipped tests are:
 
 =over 4
 
-=item 18
+=item Z<>18
 
 Checks C<atime> and C<mtime> of C<stat()> - unfortunately, HPFS
 provides only 2sec time granularity (for compatibility with FAT?).
 
-=item 25
+=item Z<>25
 
 Checks C<truncate()> on a filehandle just opened for write - I do not
 know why this should or should not work.
@@ -1071,7 +1073,7 @@ making steps.)
 
 =head2 C<a.out>-style build
 
-Proceed as above, but make F<perl_.exe> (see L<"perl_.exe">) by
+Proceed as above, but make F<perl_.exe> (see L</"F<perl_.exe>">) by
 
   make perl_
 
@@ -1131,15 +1133,15 @@ to manually install C<Net::FTP>.
 
 Install the bundle C<Bundle::OS2_default>
 
-  perl5.8.2 -MCPAN -e "install Bundle::OS2_default" < nul |& tee 00cpan_i_1
+ perl5.8.2 -MCPAN -e "install Bundle::OS2_default" < nul |& tee 00cpan_i_1
 
 This may take a couple of hours on 1GHz processor (when run the first time).
 And this should not be necessarily a smooth procedure.  Some modules may not
 specify required dependencies, so one may need to repeat this procedure several
 times until the results stabilize.
 
-  perl5.8.2 -MCPAN -e "install Bundle::OS2_default" < nul |& tee 00cpan_i_2
-  perl5.8.2 -MCPAN -e "install Bundle::OS2_default" < nul |& tee 00cpan_i_3
+ perl5.8.2 -MCPAN -e "install Bundle::OS2_default" < nul |& tee 00cpan_i_2
+ perl5.8.2 -MCPAN -e "install Bundle::OS2_default" < nul |& tee 00cpan_i_3
 
 Even after they stabilize, some tests may fail.
 
@@ -1193,7 +1195,7 @@ via C<CPAN.pm> is going to be painfully slow, since it statically links
 a new executable per XS extension.
 
 Here is a possible workaround: create a toplevel F<Makefile.PL> in
-F<$CPANHOME/.cpan/build/> with contents being (compare with L<Making
+F<$CPANHOME/.cpan/build/> with contents being (compare with L</Making
 executables with a custom collection of statically loaded extensions>)
 
   use ExtUtils::MakeMaker;
@@ -1365,7 +1367,7 @@ to find Perl DLL relatively to the location of the EXE file; or one may want
 to ignore the environment when setting the Perl-library search patch, etc.
 
 If you fill comfortable with I<embedding> interface (see L<perlembed>), such
-things are easy to do repeating the steps outlined in L<Making
+things are easy to do repeating the steps outlined in L/<Making
 executables with a custom collection of statically loaded extensions>, and
 doing more comprehensive edits to main() of F<perlmain.c>.  The people with
 little desire to understand Perl can just rename main(), and do necessary
@@ -1409,113 +1411,139 @@ For best results compile the C file below with the same options as the Perl
 DLL.  However, a lot of functionality will work even if the executable is not
 an EMX applications, e.g., if compiled with
 
-  gcc -Wall -DDOSISH -DOS2=1 -O2 -s -Zomf -Zsys perl-starter.c -DPERL_DLL_BASENAME=\"perl312F\" -Zstack 8192 -Zlinker /PM:VIO
+  gcc -Wall -DDOSISH -DOS2=1 -O2 -s -Zomf -Zsys perl-starter.c \
+    -DPERL_DLL_BASENAME=\"perl312F\" -Zstack 8192 -Zlinker /PM:VIO
 
 Here is the sample C file:
 
-  #define INCL_DOS
-  #define INCL_NOPM
-  /* These are needed for compile if os2.h includes os2tk.h, not os2emx.h */
-  #define INCL_DOSPROCESS
-  #include <os2.h>
+ #define INCL_DOS
+ #define INCL_NOPM
+ /* These are needed for compile if os2.h includes os2tk.h, not
+  * os2emx.h */
+ #define INCL_DOSPROCESS
+ #include <os2.h>
 
-  #include "EXTERN.h"
-  #define PERL_IN_MINIPERLMAIN_C
-  #include "perl.h"
+ #include "EXTERN.h"
+ #define PERL_IN_MINIPERLMAIN_C
+ #include "perl.h"
 
-  static char *me;
-  HMODULE handle;
+ static char *me;
+ HMODULE handle;
 
-  static void
-  die_with(char *msg1, char *msg2, char *msg3, char *msg4)
-  {
-     ULONG c;
-     char *s = " error: ";
+ static void
+ die_with(char *msg1, char *msg2, char *msg3, char *msg4)
+ {
+    ULONG c;
+    char *s = " error: ";
 
-     DosWrite(2, me, strlen(me), &c);
-     DosWrite(2, s, strlen(s), &c);
-     DosWrite(2, msg1, strlen(msg1), &c);
-     DosWrite(2, msg2, strlen(msg2), &c);
-     DosWrite(2, msg3, strlen(msg3), &c);
-     DosWrite(2, msg4, strlen(msg4), &c);
-     DosWrite(2, "\r\n", 2, &c);
-     exit(255);
-  }
+    DosWrite(2, me, strlen(me), &c);
+    DosWrite(2, s, strlen(s), &c);
+    DosWrite(2, msg1, strlen(msg1), &c);
+    DosWrite(2, msg2, strlen(msg2), &c);
+    DosWrite(2, msg3, strlen(msg3), &c);
+    DosWrite(2, msg4, strlen(msg4), &c);
+    DosWrite(2, "\r\n", 2, &c);
+    exit(255);
+ }
 
-  typedef ULONG (*fill_extLibpath_t)(int type, char *pre, char *post, int replace, char *msg);
-  typedef int (*main_t)(int type, char *argv[], char *env[]);
-  typedef int (*handler_t)(void* data, int which);
+ typedef ULONG (*fill_extLibpath_t)(int type,
+                                    char *pre,
+                                    char *post,
+                                    int replace,
+                                    char *msg);
+ typedef int (*main_t)(int type, char *argv[], char *env[]);
+ typedef int (*handler_t)(void* data, int which);
 
-  #ifndef PERL_DLL_BASENAME
-  #  define PERL_DLL_BASENAME "perl"
-  #endif
+ #ifndef PERL_DLL_BASENAME
+ #  define PERL_DLL_BASENAME "perl"
+ #endif
 
-  static HMODULE
-  load_perl_dll(char *basename)
-  {
-      char buf[300], fail[260];
-      STRLEN l, dirl;
-      fill_extLibpath_t f;
-      ULONG rc_fullname;
-      HMODULE handle, handle1;
+ static HMODULE
+ load_perl_dll(char *basename)
+ {
+     char buf[300], fail[260];
+     STRLEN l, dirl;
+     fill_extLibpath_t f;
+     ULONG rc_fullname;
+     HMODULE handle, handle1;
 
-      if (_execname(buf, sizeof(buf) - 13) != 0)
-          die_with("Can't find full path: ", strerror(errno), "", "");
-      /* XXXX Fill 'me' with new value */
-      l = strlen(buf);
-      while (l && buf[l-1] != '/' && buf[l-1] != '\\')
-          l--;
-      dirl = l - 1;
-      strcpy(buf + l, basename);
-      l += strlen(basename);
-      strcpy(buf + l, ".dll");
-      if ( (rc_fullname = DosLoadModule(fail, sizeof fail, buf, &handle)) != 0
-           && DosLoadModule(fail, sizeof fail, basename, &handle) != 0 )
-          die_with("Can't load DLL ", buf, "", "");
-      if (rc_fullname)
-          return handle;		/* was loaded with short name; all is fine */
-      if (DosQueryProcAddr(handle, 0, "fill_extLibpath", (PFN*)&f))
-          die_with(buf, ": DLL exports no symbol ", "fill_extLibpath", "");
-      buf[dirl] = 0;
-      if (f(0 /*BEGINLIBPATH*/, buf /* prepend */, NULL /* append */,
-            0 /* keep old value */, me))
-          die_with(me, ": prepending BEGINLIBPATH", "", "");
-      if (DosLoadModule(fail, sizeof fail, basename, &handle1) != 0)
-          die_with(me, ": finding perl DLL again via BEGINLIBPATH", "", "");
-      buf[dirl] = '\\';     
-      if (handle1 != handle) {
-          if (DosQueryModuleName(handle1, sizeof(fail), fail))
-              strcpy(fail, "???");
-          die_with(buf, ":\n\tperl DLL via BEGINLIBPATH is different: \n\t",
-                   fail,
-                   "\n\tYou may need to manipulate global BEGINLIBPATH and LIBPATHSTRICT"
-                   "\n\tso that the other copy is loaded via BEGINLIBPATH.");
-      }
-      return handle;
-  }
+     if (_execname(buf, sizeof(buf) - 13) != 0)
+         die_with("Can't find full path: ", strerror(errno), "", "");
+     /* XXXX Fill 'me' with new value */
+     l = strlen(buf);
+     while (l && buf[l-1] != '/' && buf[l-1] != '\\')
+         l--;
+     dirl = l - 1;
+     strcpy(buf + l, basename);
+     l += strlen(basename);
+     strcpy(buf + l, ".dll");
+     if ( (rc_fullname = DosLoadModule(fail, sizeof fail, buf, &handle))
+                                                                    != 0
+          && DosLoadModule(fail, sizeof fail, basename, &handle) != 0 )
+         die_with("Can't load DLL ", buf, "", "");
+     if (rc_fullname)
+         return handle;    /* was loaded with short name; all is fine */
+     if (DosQueryProcAddr(handle, 0, "fill_extLibpath", (PFN*)&f))
+         die_with(buf,
+                  ": DLL exports no symbol ",
+                  "fill_extLibpath",
+                  "");
+     buf[dirl] = 0;
+     if (f(0 /*BEGINLIBPATH*/, buf /* prepend */, NULL /* append */,
+           0 /* keep old value */, me))
+         die_with(me, ": prepending BEGINLIBPATH", "", "");
+     if (DosLoadModule(fail, sizeof fail, basename, &handle1) != 0)
+         die_with(me,
+                  ": finding perl DLL again via BEGINLIBPATH",
+                  "",
+                  "");
+     buf[dirl] = '\\';
+     if (handle1 != handle) {
+         if (DosQueryModuleName(handle1, sizeof(fail), fail))
+             strcpy(fail, "???");
+         die_with(buf,
+                  ":\n\tperl DLL via BEGINLIBPATH is different: \n\t",
+                  fail,
+                  "\n\tYou may need to manipulate global BEGINLIBPATH"
+                     " and LIBPATHSTRICT"
+                     "\n\tso that the other copy is loaded via"
+                     BEGINLIBPATH.");
+     }
+     return handle;
+ }
 
-  int
-  main(int argc, char **argv, char **env)
-  {
-      main_t f;
-      handler_t h;
+ int
+ main(int argc, char **argv, char **env)
+ {
+     main_t f;
+     handler_t h;
 
-      me = argv[0];
-      /**/
-      handle = load_perl_dll(PERL_DLL_BASENAME);
+     me = argv[0];
+     /**/
+     handle = load_perl_dll(PERL_DLL_BASENAME);
 
-      if (DosQueryProcAddr(handle, 0, "Perl_OS2_handler_install", (PFN*)&h))
-          die_with(PERL_DLL_BASENAME, ": DLL exports no symbol ", "Perl_OS2_handler_install", "");
-      if ( !h((void *)"~installprefix", Perlos2_handler_perllib_from)
-           || !h((void *)"~dll", Perlos2_handler_perllib_to)
-           || !h((void *)"~dll/sh/ksh.exe", Perlos2_handler_perl_sh) )
-          die_with(PERL_DLL_BASENAME, ": Can't install @INC manglers", "", "");
-
-      if (DosQueryProcAddr(handle, 0, "dll_perlmain", (PFN*)&f))
-          die_with(PERL_DLL_BASENAME, ": DLL exports no symbol ", "dll_perlmain", "");
-      return f(argc, argv, env);
-  }
-
+     if (DosQueryProcAddr(handle,
+                          0,
+                          "Perl_OS2_handler_install",
+                          (PFN*)&h))
+         die_with(PERL_DLL_BASENAME,
+                  ": DLL exports no symbol ",
+                  "Perl_OS2_handler_install",
+                  "");
+     if ( !h((void *)"~installprefix", Perlos2_handler_perllib_from)
+          || !h((void *)"~dll", Perlos2_handler_perllib_to)
+          || !h((void *)"~dll/sh/ksh.exe", Perlos2_handler_perl_sh) )
+         die_with(PERL_DLL_BASENAME,
+                  ": Can't install @INC manglers",
+                  "",
+                  "");
+     if (DosQueryProcAddr(handle, 0, "dll_perlmain", (PFN*)&f))
+         die_with(PERL_DLL_BASENAME,
+                  ": DLL exports no symbol ",
+                  "dll_perlmain",
+                  "");
+     return f(argc, argv, env);
+ }
 
 =head1 Build FAQ
 
@@ -1591,7 +1619,7 @@ translated to
   system qw(C:/emx.add/bin/bash.exe -x -c C:/emx/bin/foo.cmd bar baz)
 
 One additional translation is performed: instead of F</bin/sh> Perl uses
-the hardwired-or-customized shell (see C<L<"PERL_SH_DIR">>).
+the hardwired-or-customized shell (see L</"C<PERL_SH_DIR>">).
 
 The above search for "interpreter" is recursive: if F<bash> executable is not
 found, but F<bash.btm> is found, Perl will investigate its first line etc.
@@ -1736,7 +1764,7 @@ Transforms the current application into a PM application and back.
 The argument true means that a real message loop is going to be served.
 OS2::MorphPM() returns the PM message queue handle as an integer.
 
-See L<"Centralized management of resources"> for additional details.
+See L</"Centralized management of resources"> for additional details.
 
 =item C<OS2::Serve_Messages(force)>
 
@@ -1773,7 +1801,7 @@ The variant of OS2::_control87() with default values good for
 handling exception mask: if no C<mask>, uses exception mask part of C<new>
 only.  If no C<new>, disables all the floating point exceptions.
 
-See L<"Misfeatures"> for details.
+See L</"Misfeatures"> for details.
 
 =item C<OS2::DLLname([how [, \&xsub]])>
 
@@ -1871,7 +1899,7 @@ Note that C<kill -9> does not work with the current version of EMX.
 
 =item *
 
-See L<"Text-mode filehandles">.
+See L</"Text-mode filehandles">.
 
 =item *
 
@@ -1930,7 +1958,7 @@ Perl modifies some standard C library calls in the following ways:
 
 =item C<popen>
 
-C<my_popen> uses F<sh.exe> if shell is required, cf. L<"PERL_SH_DIR">.
+C<my_popen> uses F<sh.exe> if shell is required, cf. L</"C<PERL_SH_DIR>">.
 
 =item C<tmpnam>
 
@@ -2122,12 +2150,12 @@ points available for such linking is provided (see C<entries_ordinals>
 - and also C<PMWIN_entries> - in F<os2ish.h>).  These ordinals can be
 accessed via the APIs:
 
-  CallORD(), DeclFuncByORD(), DeclVoidFuncByORD(),
-  DeclOSFuncByORD(), DeclWinFuncByORD(), AssignFuncPByORD(),
-  DeclWinFuncByORD_CACHE(), DeclWinFuncByORD_CACHE_survive(),
-  DeclWinFuncByORD_CACHE_resetError_survive(),
-  DeclWinFunc_CACHE(), DeclWinFunc_CACHE_resetError(),
-  DeclWinFunc_CACHE_survive(), DeclWinFunc_CACHE_resetError_survive()
+ CallORD(), DeclFuncByORD(), DeclVoidFuncByORD(),
+ DeclOSFuncByORD(), DeclWinFuncByORD(), AssignFuncPByORD(),
+ DeclWinFuncByORD_CACHE(), DeclWinFuncByORD_CACHE_survive(),
+ DeclWinFuncByORD_CACHE_resetError_survive(),
+ DeclWinFunc_CACHE(), DeclWinFunc_CACHE_resetError(),
+ DeclWinFunc_CACHE_survive(), DeclWinFunc_CACHE_resetError_survive()
 
 See the header files and the C code in the supplied OS/2-related
 modules for the details on usage of these functions.
@@ -2166,7 +2194,7 @@ application.
 I<This is the only executable with does not require OS/2.> The
 friends locked into C<M$> world would appreciate the fact that this
 executable runs under DOS, Win0.3*, Win0.95 and WinNT with an
-appropriate extender. See L<"Other OSes">.
+appropriate extender. See L</"Other OSes">.
 
 =head2 F<perl__.exe>
 
@@ -2565,7 +2593,8 @@ F<perl5shim.def-leader> with
 
 modifying the versions/names as needed.  Run
 
- perl -wnle "next if 0../EXPORTS/; print qq(  \"$1\") if /\"(\w+)\"/" perl5.def >lst
+ perl -wnle "next if 0../EXPORTS/; print qq(  \"$1\")
+                                          if /\"(\w+)\"/" perl5.def >lst
 
 in the Perl build directory (to make the DLL smaller replace perl5.def
 with the definition file for the older version of Perl if present).
@@ -2591,7 +2620,7 @@ with C<-Zmt -Zcrtdll>.
 Due to a popular demand the perl external program calling has been
 changed wrt Andreas Kaiser's port.  I<If> perl needs to call an
 external program I<via shell>, the F<f:/bin/sh.exe> will be called, or
-whatever is the override, see L<"PERL_SH_DIR">.
+whatever is the override, see L</"C<PERL_SH_DIR>">.
 
 Thus means that you need to get some copy of a F<sh.exe> as well (I
 use one from pdksh). The path F<F:/bin> above is set up automatically during
@@ -2714,7 +2743,7 @@ files - and maybe some other extensions at the time you read it.
 
 Note that OS2 perl defines 2 pseudo-extension functions
 OS2::Copy::copy and DynaLoader::mod2fname (many more now, see
-L<Prebuilt methods>).
+L</Prebuilt methods>).
 
 The -R switch of older perl is deprecated. If you need to call a REXX code
 which needs access to variables, include the call into a REXX compartment

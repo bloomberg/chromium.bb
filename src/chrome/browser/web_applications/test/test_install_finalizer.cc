@@ -12,8 +12,14 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/web_application_info.h"
+#include "components/crx_file/id_util.h"
 
 namespace web_app {
+
+// static
+AppId TestInstallFinalizer::GetAppIdForUrl(const GURL& url) {
+  return GenerateAppIdFromURL(url);
+}
 
 TestInstallFinalizer::TestInstallFinalizer() {}
 
@@ -23,7 +29,7 @@ void TestInstallFinalizer::FinalizeInstall(
     const WebApplicationInfo& web_app_info,
     const FinalizeOptions& options,
     InstallFinalizedCallback callback) {
-  AppId app_id = GenerateAppIdFromURL(web_app_info.app_url);
+  AppId app_id = GetAppIdForUrl(web_app_info.app_url);
   if (next_app_id_.has_value()) {
     app_id = next_app_id_.value();
     next_app_id_.reset();
@@ -46,7 +52,7 @@ void TestInstallFinalizer::FinalizeInstall(
 void TestInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
     UninstallExternalWebAppCallback callback) {
-  DCHECK(base::ContainsKey(next_uninstall_external_web_app_results_, app_url));
+  DCHECK(base::Contains(next_uninstall_external_web_app_results_, app_url));
   uninstall_external_web_app_urls_.push_back(app_url);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -102,7 +108,7 @@ void TestInstallFinalizer::RevealAppShim(const AppId& app_id) {
 bool TestInstallFinalizer::CanSkipAppUpdateForSync(
     const AppId& app_id,
     const WebApplicationInfo& web_app_info) const {
-  return false;
+  return next_can_skip_app_update_for_sync_;
 }
 
 void TestInstallFinalizer::SetNextFinalizeInstallResult(
@@ -115,8 +121,13 @@ void TestInstallFinalizer::SetNextFinalizeInstallResult(
 void TestInstallFinalizer::SetNextUninstallExternalWebAppResult(
     const GURL& app_url,
     bool uninstalled) {
-  DCHECK(!base::ContainsKey(next_uninstall_external_web_app_results_, app_url));
+  DCHECK(!base::Contains(next_uninstall_external_web_app_results_, app_url));
   next_uninstall_external_web_app_results_[app_url] = uninstalled;
+}
+
+void TestInstallFinalizer::SetNextCanSkipAppUpdateForSync(
+    bool can_skip_app_update_for_sync) {
+  next_can_skip_app_update_for_sync_ = can_skip_app_update_for_sync;
 }
 
 }  // namespace web_app

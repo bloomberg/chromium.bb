@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 
+from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import vm_test_stages
@@ -17,7 +18,6 @@ from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import osutils
 from chromite.lib import sysroot_lib
 from chromite.service import artifacts
 
@@ -71,35 +71,21 @@ def BundleTestUpdatePayloads(input_proto, output_proto):
 
   # Use the first available image to create the update payload.
   img_dir = _GetImageDir(build_root, target)
-  img_types = [
-      constants.IMAGE_TYPE_TEST, constants.IMAGE_TYPE_DEV,
-      constants.IMAGE_TYPE_BASE
-  ]
-  img_paths = []
-  for img_type in img_types:
-    img_path = os.path.join(img_dir, constants.IMAGE_TYPE_TO_NAME[img_type])
-    if os.path.exists(img_path):
-      img_paths.append(img_path)
+  img_types = [constants.IMAGE_TYPE_TEST, constants.IMAGE_TYPE_DEV,
+               constants.IMAGE_TYPE_BASE]
+  img_names = [constants.IMAGE_TYPE_TO_NAME[t] for t in img_types]
+  img_paths = [os.path.join(img_dir, x) for x in img_names]
+  valid_images = [x for x in img_paths if os.path.exists(x)]
 
-  if not img_paths:
+  if not valid_images:
     cros_build_lib.Die(
         'Expected to find an image of type among %r for target "%s" '
         'at path %s.', img_types, target, img_dir)
-  img = img_paths[0]
+  image = valid_images[0]
 
-  # Unfortunately, the relevant commands.py functions do not return
-  # a list of generated files. As a workaround, we have commands.py
-  # put the files in a separate temporary directory so we can catalog them,
-  # then move them to the output dir.
-  # TODO(crbug.com/954283): Replace with a chromite/service implementation.
-  with osutils.TempDir() as temp:
-    commands.GeneratePayloads(img, temp, full=True, stateful=True, delta=True)
-    commands.GenerateQuickProvisionPayloads(img, temp)
-    for path in osutils.DirectoryIterator(temp):
-      if os.path.isfile(path):
-        rel_path = os.path.relpath(path, temp)
-        output_proto.artifacts.add().path = os.path.join(output_dir, rel_path)
-    osutils.CopyDirContents(temp, output_dir, allow_nonempty=True)
+  payloads = artifacts.BundleTestUpdatePayloads(image, output_dir)
+  for payload in payloads:
+    output_proto.artifacts.add().path = payload
 
 
 def BundleAutotestFiles(input_proto, output_proto):
@@ -148,6 +134,7 @@ def BundleAutotestFiles(input_proto, output_proto):
     output_proto.artifacts.add().path = archive
 
 
+@validate.require('output_dir')
 def BundleTastFiles(input_proto, output_proto):
   """Tar the tast files for a build target.
 
@@ -158,12 +145,26 @@ def BundleTastFiles(input_proto, output_proto):
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
   build_root = constants.SOURCE_ROOT
-  cwd = os.path.join(build_root, 'chroot/build', target, 'build')
 
-  # Note that unlike the functions below, this returns the full path
-  # to the tarball.
-  # TODO(crbug.com/954294): Replace with a chromite/service implementation.
-  archive = commands.BuildTastBundleTarball(build_root, cwd, output_dir)
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  sysroot_path = input_proto.sysroot.path
+
+  # TODO(saklein) Cleanup legacy handling after it has been switched over.
+  if target:
+    # Legacy handling.
+    chroot.path = os.path.join(build_root, 'chroot')
+    sysroot_path = os.path.join('/build', target)
+
+  # New handling - chroot & sysroot based.
+  # TODO(saklein) Switch this to the require decorator when legacy is removed.
+  if not sysroot_path:
+    cros_build_lib.Die('sysroot.path is required.')
+
+  sysroot = sysroot_lib.Sysroot(sysroot_path)
+  if not sysroot.Exists(chroot):
+    cros_build_lib.Die('Sysroot must exist.')
+
+  archive = artifacts.BundleTastFiles(chroot, sysroot, output_dir)
 
   if archive is None:
     cros_build_lib.Die(
@@ -195,6 +196,31 @@ def BundlePinnedGuestImages(input_proto, output_proto):
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
+def FetchPinnedGuestImages(input_proto, output_proto):
+  """Get the pinned guest image information."""
+  sysroot_path = input_proto.sysroot.path
+  if not sysroot_path:
+    cros_build_lib.Die('sysroot.path is required.')
+
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  sysroot = sysroot_lib.Sysroot(sysroot_path)
+
+  if not chroot.exists():
+    cros_build_lib.Die('Chroot does not exist: %s', chroot.path)
+
+  if not sysroot.Exists(chroot=chroot):
+    cros_build_lib.Die('Sysroot does not exist: %s',
+                       chroot.full_path(sysroot.path))
+
+  pins = artifacts.FetchPinnedGuestImages(chroot, sysroot)
+
+  for pin in pins:
+    pinned_image = output_proto.pinned_images.add()
+    pinned_image.filename = pin.filename
+    pinned_image.uri = pin.uri
+
+
+@validate.require('output_dir', 'sysroot.path')
 def BundleFirmware(input_proto, output_proto):
   """Tar the firmware images for a build target.
 
@@ -202,16 +228,16 @@ def BundleFirmware(input_proto, output_proto):
     input_proto (BundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
   """
-  target = input_proto.build_target.name
   output_dir = input_proto.output_dir
-  build_root = constants.SOURCE_ROOT
-
-  # TODO(crbug.com/954300): Replace with a chromite/service implementation.
-  archive = commands.BuildFirmwareArchive(build_root, target, output_dir)
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  sysroot_path = input_proto.sysroot.path
+  sysroot = sysroot_lib.Sysroot(sysroot_path)
+  archive = artifacts.BuildFirmwareArchive(chroot, sysroot, output_dir)
 
   if archive is None:
     cros_build_lib.Die(
-        'Could not create firmware archive. No firmware found for %s.', target)
+        'Could not create firmware archive. No firmware found for %s.',
+        sysroot_path)
 
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
@@ -282,6 +308,8 @@ def BundleSimpleChromeArtifacts(input_proto, output_proto):
     output_proto.artifacts.add().path = file_name
 
 
+@validate.require('chroot.path', 'sysroot.path', 'test_results_dir',
+                  'output_dir')
 def BundleVmFiles(input_proto, output_proto):
   """Tar VM disk and memory files.
 
@@ -290,23 +318,45 @@ def BundleVmFiles(input_proto, output_proto):
     output_proto (BundleResponse): The output proto.
   """
   chroot = input_proto.chroot.path
-  sysroot = input_proto.sysroot.path
-  test_results_dir = input_proto.test_results_dir
+  sysroot = input_proto.sysroot.path.lstrip(os.sep)
+  test_results_dir = input_proto.test_results_dir.lstrip(os.sep)
   output_dir = input_proto.output_dir
 
-  if not chroot:
-    cros_build_lib.Die('chroot.path is required.')
-  if not sysroot:
-    cros_build_lib.Die('sysroot.path is required.')
-  if not test_results_dir:
-    cros_build_lib.Die('test_results_dir is required.')
-  if not output_dir:
-    cros_build_lib.Die('output_dir is required.')
-
   # TODO(crbug.com/954344): Replace with a chromite/service implementation.
-  sysroot = sysroot.lstrip(os.sep)
-  result_dir = test_results_dir.lstrip(os.sep)
-  image_dir = os.path.join(chroot, sysroot, result_dir)
+  image_dir = os.path.join(chroot, sysroot, test_results_dir)
   archives = vm_test_stages.ArchiveVMFilesFromImageDir(image_dir, output_dir)
   for archive in archives:
     output_proto.artifacts.add().path = archive
+
+def BundleOrderfileGenerationArtifacts(input_proto, output_proto):
+  """Create tarballs of all the artifacts of orderfile_generate builder.
+
+  Args:
+    input_proto (BundleRequest): The input proto.
+    output_proto (BundleResponse): The output proto.
+  """
+  # Required args.
+  build_target_name = input_proto.build_target.name
+  output_dir = input_proto.output_dir
+  chrome_version = input_proto.chrome_version
+
+  if not build_target_name:
+    cros_build_lib.Die('build_target.name is required.')
+  if not chrome_version:
+    cros_build_lib.Die('chrome_version is required.')
+  if not output_dir:
+    cros_build_lib.Die('output_dir is required.')
+  elif not os.path.isdir(output_dir):
+    cros_build_lib.Die('output_dir does not exist.')
+
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+
+  try:
+    results = artifacts.BundleOrderfileGenerationArtifacts(
+        chroot, input_proto.build_target, chrome_version, output_dir)
+  except artifacts.Error as e:
+    cros_build_lib.Die('Error %s raised in BundleSimpleChromeArtifacts: %s',
+                       type(e), e)
+
+  for file_name in results:
+    output_proto.artifacts.add().path = file_name

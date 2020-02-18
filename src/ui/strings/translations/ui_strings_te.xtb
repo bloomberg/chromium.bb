@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">వెతుకు</translation>
 <translation id="1398853756734560583">గరిష్ఠీకరించు</translation>
 <translation id="1409544243779336081">యాప్ సిఫార్సు</translation>
+<translation id="1498028757988366001">మీరు దీని కోసం గతంలో వెతికారు. మీ చరిత్ర నుండి "<ph name="QUERY" />"ను తొలగిస్తే, మీ ఖాతాతో సైన్ ఇన్ చేసి ఉన్న మీ పరికరాలు అన్నింటిలో అది శాశ్వతంగా తీసివేయబడుతుంది.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 నిమిషం మరియు }other{# నిమిషాలు మరియు }}</translation>
 <translation id="1643823602425662293">నోటిఫికేషన్</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -45,13 +46,16 @@
 <translation id="2289052229480071835">మీ స్క్రీన్‌పై ఉన్న స్పర్శ లక్ష్యాలను నొక్కండి.</translation>
 <translation id="2295140143284145483">సర్వే</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">మీ ఫోన్ నుండి ఈ నంబర్‌‌కు కాల్ చేయాలా?</translation>
 <translation id="24452542372838207">నోటిఫికేషన్‌ను విస్తరించు</translation>
 <translation id="2445449901874883781">ఎక్కువ సాంద్రతను ఉపయోగించు</translation>
+<translation id="2451871130406122810">పరికరానికి పంపబడింది</translation>
 <translation id="2482878487686419369">ప్రకటనలు</translation>
 <translation id="2497284189126895209">మొత్తం ఫైళ్లు</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">క్రమాంకనం పూర్తయింది</translation>
 <translation id="252373100621549798">తెలియని ప్రదర్శన</translation>
+<translation id="2545651323591713692">తాత్కాలికంగా ఆపివేయి</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 గంటలో}other{#గంటలలో}}</translation>
 <translation id="2583543531130364912">మీ టచ్‌స్క్రీన్‌ను క్రమాంకనం చేయండి</translation>
 <translation id="2666092431469916601">పైన</translation>
@@ -70,6 +74,7 @@
 <translation id="3183922693828471536">ఇక్కడికి స్క్రోల్ చేయండి</translation>
 <translation id="3234408098842461169">క్రింది బాణం</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 రోజు}other{# రోజులు}}</translation>
+<translation id="3295886253693811851">దీని నుండి కాల్ చేయండి</translation>
 <translation id="335581015389089642">ప్రసంగం</translation>
 <translation id="3443810440409579745">ట్యాబ్‌ను అందుకున్నారు.</translation>
 <translation id="3479552764303398839">ఇప్పుడు కాదు</translation>
@@ -95,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 నెల క్రితం}other{# నెలల క్రితం}}</translation>
 <translation id="4289300219472526559">మాట్లాడటాన్ని ప్రారంభించు</translation>
 <translation id="4316910396681052118">అన్ని అనువర్తనాలు</translation>
+<translation id="4467014365953759647">నంబర్‌ను పంపడం సాధ్యపడలేదు</translation>
 <translation id="4588090240171750605">కుడికి స్క్రోల్ చేయి</translation>
 <translation id="4690510401873698237">అర కింది భాగంలో ఉంది</translation>
 <translation id="4724120544754982507">నోటిఫికేషన్ కేంద్రం, <ph name="UNREAD_NOTIFICATION_COUNT" /> చదవని నోటిఫికేషన్‌లు</translation>
@@ -111,6 +117,7 @@
 <translation id="5266161281976477809">కంటెంట్‌ను విస్తరింపజేసే లేదా కుదించే త్రిభుజం</translation>
 <translation id="5278860589123563674">పంపడం విఫలమైంది</translation>
 <translation id="528468243742722775">ముగించు</translation>
+<translation id="5327567770033251652">సమకాలీకరణను ఆన్ చేయండి</translation>
 <translation id="5329858601952122676">&amp;తొలగించు</translation>
 <translation id="5395308026110844773"><ph name="IN_PLACE_APP" />పై భాగాన <ph name="DRAGGED_APP_NAME" /> ఉంది, ఫోల్డర్ సృష్టించడానికి రిలీజ్ చేయండి.</translation>
 <translation id="5463830097259460683">ఎమోజి &amp;&amp; చిహ్నాలు</translation>
@@ -150,12 +157,13 @@
 <translation id="6620110761915583480">ఫైల్‌ను సేవ్ చేయి</translation>
 <translation id="6699343763173986273">మీడియా తరువాత ట్రాక్</translation>
 <translation id="673773751041746814">తొలగింపు</translation>
+<translation id="6779314412797872738">దీని నుండి మీ ఫోన్‌కు Android నంబర్‌ను పంపడానికి, రెండు పరికరాలలోని సెట్టింగ్‌లలో "<ph name="TROUBLESHOOT_LINK" />".</translation>
 <translation id="6786750046913594791">ఫోల్డర్‌ను మూసివేయండి</translation>
 <translation id="6808150112686056157">మీడియా ఆపివేయి</translation>
 <translation id="6845383723252244143">ఫోల్డర్‌ను ఎంచుకో</translation>
 <translation id="6845533974506654842">నొక్కండి</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 గంట మిగిలి ఉంది}other{# గంటలు మిగిలి ఉన్నాయి}}</translation>
-<translation id="688711909580084195">శీర్షికలేని వెబ్‌పేజీ</translation>
+<translation id="688711909580084195">శీర్షిక లేని వెబ్‌పేజీ</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{1 సంవత్సరం మిగిలి ఉంది}other{# సంవత్సరాలు మిగిలి ఉన్నాయి}}</translation>
 <translation id="6945221475159498467">ఎంచుకోండి</translation>
@@ -168,7 +176,9 @@
 <translation id="7319740667687257810">లాంఛ‌ర్‌, పాక్షిక వీక్షణ</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 నిమి. క్రితం}other{# నిమి. క్రితం}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">మీ ఫోన్ కనెక్షన్‌ను సరిచూసుకుని, ఆపై మళ్లీ ప్రయత్నించండి</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 నిమిషం మిగిలి ఉంది}other{# నిమిషాలు మిగిలి ఉన్నాయి}}</translation>
+<translation id="7430878839542012341">మీ చరిత్ర నుండి ఈ శోధనను తొలగించాలా?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ఎమోజి</translation>
 <translation id="7658239707568436148">రద్దు చేయి</translation>
@@ -186,7 +196,6 @@
 <translation id="8144660977431427332">మీ శోధనలు Google అసిస్టెంట్ ఆధారితంగా ఉంటాయి. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, స్వయంపూర్తి</translation>
 <translation id="815598010540052116">కిందికి స్క్రోల్ చేయి</translation>
-<translation id="8170087467028567933">ఈ సూచనను తీసివేయడం వలన అది మీ అన్ని పరికరాలలోని మీ ఖాతా నుండి దానిని దాచి పెడుతుంది.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">పేజీ క్రిందికి</translation>
 <translation id="8245914219290430011">ట్యాబ్</translation>
@@ -197,7 +206,6 @@
 <translation id="838869780401515933">తనిఖీ చేయి</translation>
 <translation id="8393700583063109961">సందేశాన్ని పంపండి</translation>
 <translation id="8394908167088220973">మీడియా ప్లే/పాజ్</translation>
-<translation id="8420205633584771378">ఈ సూచనని తీసివేయలా?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1సం}other{#సం}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ఫైల్ (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">అర ఎల్లప్పుడూ చూపబడుతుంది</translation>

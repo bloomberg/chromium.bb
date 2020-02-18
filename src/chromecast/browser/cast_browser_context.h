@@ -16,15 +16,12 @@
 namespace chromecast {
 namespace shell {
 
-class URLRequestContextFactory;
-
 // Chromecast does not currently support multiple profiles.  So there is a
 // single BrowserContext for all chromecast renderers.
 // There is no support for PartitionStorage.
 class CastBrowserContext final : public content::BrowserContext {
  public:
-  explicit CastBrowserContext(
-      URLRequestContextFactory* url_request_context_factory);
+  CastBrowserContext();
   ~CastBrowserContext() override;
 
   // BrowserContext implementation:
@@ -32,8 +29,8 @@ class CastBrowserContext final : public content::BrowserContext {
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
 #endif  // !defined(OS_ANDROID)
-  base::FilePath GetPath() const override;
-  bool IsOffTheRecord() const override;
+  base::FilePath GetPath() override;
+  bool IsOffTheRecord() override;
   content::ResourceContext* GetResourceContext() override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;
@@ -51,25 +48,14 @@ class CastBrowserContext final : public content::BrowserContext {
   net::URLRequestContextGetter* CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) override;
-  net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
-      const base::FilePath& partition_path,
-      bool in_memory,
-      content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) override;
   net::URLRequestContextGetter* CreateMediaRequestContext() override;
-  net::URLRequestContextGetter* CreateMediaRequestContextForStoragePartition(
-      const base::FilePath& partition_path,
-      bool in_memory) override;
-
-  net::URLRequestContextGetter* GetSystemRequestContext();
 
   void SetCorsOriginAccessListForOrigin(
       const url::Origin& source_origin,
       std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
       std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
       base::OnceClosure closure) override;
-  const content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList()
-      const override;
+  content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList() override;
 
  private:
   class CastResourceContext;
@@ -78,7 +64,6 @@ class CastBrowserContext final : public content::BrowserContext {
   // allowed on the current thread.
   void InitWhileIOAllowed();
 
-  URLRequestContextFactory* const url_request_context_factory_;
   base::FilePath path_;
   std::unique_ptr<CastResourceContext> resource_context_;
   std::unique_ptr<content::PermissionControllerDelegate> permission_manager_;

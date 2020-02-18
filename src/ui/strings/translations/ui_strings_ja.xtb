@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">検索</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1409544243779336081">おすすめのアプリ</translation>
+<translation id="1498028757988366001">このキーワードは以前に検索したことがあります。「<ph name="QUERY" />」を履歴から削除すると、アカウントから完全に（つまりすべてのデバイスから）削除されます。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分 }other{# 分 }}</translation>
 <translation id="1643823602425662293">通知</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -45,13 +46,16 @@
 <translation id="2289052229480071835">画面に表示されるタップ ターゲットをタップします。</translation>
 <translation id="2295140143284145483">アンケート</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/秒</translation>
+<translation id="2388990488038464401">スマートフォンからこの番号に電話しますか？</translation>
 <translation id="24452542372838207">通知を展開</translation>
 <translation id="2445449901874883781">表示間隔を狭くする</translation>
+<translation id="2451871130406122810">デバイスに送信済み</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2497284189126895209">すべてのファイル</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">キャリブレーションが完了しました</translation>
 <translation id="252373100621549798">不明なディスプレイ</translation>
+<translation id="2545651323591713692">スヌーズ</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1時間}other{#時間}}</translation>
 <translation id="2583543531130364912">タッチスクリーンのキャリブレーション</translation>
 <translation id="2666092431469916601">一番上</translation>
@@ -70,6 +74,7 @@
 <translation id="3183922693828471536">ここまでスクロール</translation>
 <translation id="3234408098842461169">下矢印キー</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 日}other{# 日}}</translation>
+<translation id="3295886253693811851">次を使って電話</translation>
 <translation id="335581015389089642">スピーチ</translation>
 <translation id="3443810440409579745">タブが共有されました。</translation>
 <translation id="3479552764303398839">後で</translation>
@@ -95,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 か月前}other{# か月前}}</translation>
 <translation id="4289300219472526559">読み上げを開始</translation>
 <translation id="4316910396681052118">すべてのアプリ</translation>
+<translation id="4467014365953759647">番号を送信できません</translation>
 <translation id="4588090240171750605">右にスクロール</translation>
 <translation id="4690510401873698237">シェルフは一番下にあります</translation>
 <translation id="4724120544754982507">通知センター: <ph name="UNREAD_NOTIFICATION_COUNT" /> 件の未読通知</translation>
@@ -111,6 +117,7 @@
 <translation id="5266161281976477809">三角形の展開ボタン</translation>
 <translation id="5278860589123563674">送信できませんでした</translation>
 <translation id="528468243742722775">終了</translation>
+<translation id="5327567770033251652">同期を有効</translation>
 <translation id="5329858601952122676">削除(&amp;D)</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" />を<ph name="IN_PLACE_APP" />の上にドラッグしました。指を離すとフォルダが作成されます。</translation>
 <translation id="5463830097259460683">絵文字と記号</translation>
@@ -150,6 +157,7 @@
 <translation id="6620110761915583480">ファイルを保存</translation>
 <translation id="6699343763173986273">メディアの次のトラック</translation>
 <translation id="673773751041746814">削除</translation>
+<translation id="6779314412797872738">Android スマートフォンに番号を送信するには、設定で両方のデバイスの<ph name="TROUBLESHOOT_LINK" />にしてください。</translation>
 <translation id="6786750046913594791">フォルダを閉じる</translation>
 <translation id="6808150112686056157">メディアの停止</translation>
 <translation id="6845383723252244143">フォルダを選択</translation>
@@ -168,7 +176,9 @@
 <translation id="7319740667687257810">ランチャー、一部のみ表示</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 分前}other{# 分前}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">スマートフォンの接続を確認し、もう一度お試しください</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{残り 1 分}other{残り # 分}}</translation>
+<translation id="7430878839542012341">この検索キーワードを履歴から削除しますか？</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">絵文字</translation>
 <translation id="7658239707568436148">キャンセル</translation>
@@ -186,7 +196,6 @@
 <translation id="8144660977431427332">検索は Google アシスタントによって行われます。<ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />、オートコンプリート</translation>
 <translation id="815598010540052116">下にスクロール</translation>
-<translation id="8170087467028567933">この候補を削除すると、お使いのすべてのデバイスでアカウントに表示されなくなります。</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">次のページへ</translation>
 <translation id="8245914219290430011">タブ</translation>
@@ -197,7 +206,6 @@
 <translation id="838869780401515933">チェックを付ける</translation>
 <translation id="8393700583063109961">メッセージを送信</translation>
 <translation id="8394908167088220973">メディアの再生/一時停止</translation>
-<translation id="8420205633584771378">この候補を削除しますか？</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1年}other{#年}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ファイル (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">シェルフは常に表示されます</translation>

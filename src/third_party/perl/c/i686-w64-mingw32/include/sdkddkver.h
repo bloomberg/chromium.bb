@@ -3,7 +3,7 @@
  * from ReactOS PSDK/DDK, this file is in the public domain:
  *
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 
@@ -20,6 +20,10 @@
 #define _WIN32_WINNT_WS08		0x0600
 #define _WIN32_WINNT_LONGHORN		0x0600
 #define _WIN32_WINNT_WIN7		0x0601
+#define _WIN32_WINNT_WIN8		0x0602
+#define _WIN32_WINNT_WINBLUE            0x0603
+#define _WIN32_WINNT_WINTHRESHOLD       0x0A00
+#define _WIN32_WINNT_WIN10              0x0A00
 
 /* _WIN32_IE */
 #define _WIN32_IE_IE20			0x0200
@@ -35,6 +39,8 @@
 #define _WIN32_IE_IE60SP2		0x0603
 #define _WIN32_IE_IE70			0x0700
 #define _WIN32_IE_IE80			0x0800
+#define _WIN32_IE_IE90                  0x0900
+#define _WIN32_IE_IE100                 0x0a00
 
 /* Mappings Between IE Version  and Windows Version */
 #define _WIN32_IE_NT4			_WIN32_IE_IE20
@@ -60,19 +66,41 @@
 #define _WIN32_IE_WIN6			_WIN32_IE_IE70
 #define _WIN32_IE_LONGHORN		_WIN32_IE_IE70
 #define _WIN32_IE_WIN7			_WIN32_IE_IE80
+#define _WIN32_IE_WIN8                  _WIN32_IE_IE100
+#define _WIN32_IE_WINBLUE               _WIN32_IE_IE100
 
 /* NTDDI_VERSION */
+#ifndef NTDDI_WIN2K
 #define NTDDI_WIN2K			0x05000000
+#endif
+#ifndef NTDDI_WIN2KSP1
 #define NTDDI_WIN2KSP1			0x05000100
+#endif
+#ifndef NTDDI_WIN2KSP2
 #define NTDDI_WIN2KSP2			0x05000200
+#endif
+#ifndef NTDDI_WIN2KSP3
 #define NTDDI_WIN2KSP3			0x05000300
+#endif
+#ifndef NTDDI_WIN2KSP4
 #define NTDDI_WIN2KSP4			0x05000400
+#endif
 
+#ifndef NTDDI_WINXP
 #define NTDDI_WINXP			0x05010000
+#endif
+#ifndef NTDDI_WINXPSP1
 #define NTDDI_WINXPSP1			0x05010100
+#endif
+#ifndef NTDDI_WINXPSP2
 #define NTDDI_WINXPSP2			0x05010200
+#endif
+#ifndef NTDDI_WINXPSP3
 #define NTDDI_WINXPSP3			0x05010300
+#endif
+#ifndef NTDDI_WINXPSP4
 #define NTDDI_WINXPSP4			0x05010400
+#endif
 
 #define NTDDI_WS03			0x05020000
 #define NTDDI_WS03SP1			0x05020100
@@ -99,9 +127,18 @@
 #define NTDDI_WS08SP4			NTDDI_WIN6SP4
 
 #define NTDDI_WIN7			0x06010000
+#define NTDDI_WIN8                      0x06020000
+#define NTDDI_WINBLUE                   0x06030000
+#define NTDDI_WINTHRESHOLD              0x0A000000
+#define NTDDI_WIN10                     0x0A000000
+#define NTDDI_WIN10_TH2                 0x0A000001
+#define NTDDI_WIN10_RS1                 0x0A000002
+#define NTDDI_WIN10_RS2                 0x0A000003
+#define NTDDI_WIN10_RS3                 0x0A000004
+
 
 /* Version Fields in NTDDI_VERSION */
-#define OSVERSION_MASK			0xFFFF0000
+#define OSVERSION_MASK			0xFFFF0000U
 #define SPVERSION_MASK			0x0000FF00
 #define SUBVERSION_MASK			0x000000FF
 
@@ -147,9 +184,15 @@
 #elif (_WIN32_WINNT <= _WIN32_WINNT_WINXP)
 #define _WIN32_IE	_WIN32_IE_IE60
 #elif (_WIN32_WINNT <= _WIN32_WINNT_WS03)
-#define _WIN32_IE	0x0602
+#define _WIN32_IE	_WIN32_IE_WS03
+#elif (_WIN32_WINNT <= _WIN32_WINNT_VISTA)
+#define _WIN32_IE       _WIN32_IE_LONGHORN
+#elif (_WIN32_WINNT <= _WIN32_WINNT_WIN7)
+#define _WIN32_IE       _WIN32_IE_WIN7
+#elif (_WIN32_WINNT <= _WIN32_WINNT_WIN8)
+#define _WIN32_IE       _WIN32_IE_WIN8
 #else
-#define _WIN32_IE	0x0700
+#define _WIN32_IE       0x0a00
 #endif
 #else
 #define _WIN32_IE	0x0700

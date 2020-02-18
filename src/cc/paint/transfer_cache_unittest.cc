@@ -10,8 +10,8 @@
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/paint/raw_memory_transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_entry.h"
-#include "cc/test/test_in_process_context_provider.h"
 #include "components/viz/test/test_gpu_service_holder.h"
+#include "components/viz/test/test_in_process_context_provider.h"
 #include "gpu/command_buffer/client/client_transfer_cache.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -85,7 +85,7 @@ class TransferCacheTest : public testing::Test {
 
  private:
   viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
-  TestImageFactory image_factory_;
+  viz::TestImageFactory image_factory_;
   std::unique_ptr<gpu::RasterInProcessContext> context_;
   gl::DisableNullDrawGLBindings enable_pixel_output_;
   ClientRawMemoryTransferCacheEntry test_client_entry_;

@@ -20,7 +20,7 @@ WindowTracker::~WindowTracker() {
 }
 
 void WindowTracker::Add(Window* window) {
-  if (base::ContainsValue(windows_, window))
+  if (base::Contains(windows_, window))
     return;
 
   window->AddObserver(this);
@@ -49,7 +49,7 @@ Window* WindowTracker::Pop() {
 }
 
 bool WindowTracker::Contains(Window* window) const {
-  return base::ContainsValue(windows_, window);
+  return base::Contains(windows_, window);
 }
 
 void WindowTracker::OnWindowDestroying(Window* window) {

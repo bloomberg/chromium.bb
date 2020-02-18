@@ -25,7 +25,7 @@ namespace dawn_native {
 
     class CommandBufferBase : public ObjectBase {
       public:
-        CommandBufferBase(DeviceBase* device, CommandEncoderBase* encoder);
+        CommandBufferBase(CommandEncoderBase* encoder, const CommandBufferDescriptor* descriptor);
         static CommandBufferBase* MakeError(DeviceBase* device);
 
         const CommandBufferResourceUsage& GetResourceUsages() const;
@@ -35,6 +35,9 @@ namespace dawn_native {
 
         CommandBufferResourceUsage mResourceUsages;
     };
+    bool IsCompleteSubresourceCopiedTo(const TextureBase* texture,
+                                       const Extent3D copySize,
+                                       const uint32_t mipLevel);
 
 }  // namespace dawn_native
 

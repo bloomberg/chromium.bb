@@ -21,10 +21,6 @@ class StubPasswordManagerDriver : public PasswordManagerDriver {
   // PasswordManagerDriver:
   void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) override;
-  void AllowPasswordGenerationForForm(
-      const autofill::PasswordForm& form) override;
-  void FormsEligibleForGenerationFound(
-      const std::vector<autofill::PasswordFormGenerationData>& forms) override;
   void GeneratedPasswordAccepted(const base::string16& password) override;
   void FillSuggestion(const base::string16& username,
                       const base::string16& password) override;
@@ -38,7 +34,7 @@ class StubPasswordManagerDriver : public PasswordManagerDriver {
   PasswordAutofillManager* GetPasswordAutofillManager() override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
-  GURL GetLastCommittedURL() const override;
+  const GURL& GetLastCommittedURL() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubPasswordManagerDriver);

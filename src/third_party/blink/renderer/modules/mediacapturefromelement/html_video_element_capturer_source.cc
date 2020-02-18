@@ -17,9 +17,9 @@
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 namespace {
@@ -51,8 +51,7 @@ HtmlVideoElementCapturerSource::HtmlVideoElementCapturerSource(
       io_task_runner_(io_task_runner),
       task_runner_(task_runner),
       is_opaque_(player->IsOpaque()),
-      capture_frame_rate_(0.0),
-      weak_factory_(this) {
+      capture_frame_rate_(0.0) {
   DCHECK(web_media_player_);
 }
 
@@ -127,7 +126,6 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
   const blink::WebSize resolution = web_media_player_->NaturalSize();
 
   if (!canvas_ || is_opaque_ != web_media_player_->IsOpaque()) {
-    LOG(ERROR) << " Change in opacity !!!";
     is_opaque_ = web_media_player_->IsOpaque();
     if (!bitmap_.tryAllocPixels(SkImageInfo::MakeN32(
             resolution.width, resolution.height,
@@ -199,7 +197,7 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
     // and use CrossThreadBind
     PostCrossThreadTask(
         *io_task_runner_, FROM_HERE,
-        CrossThreadBind(new_frame_callback_, frame, current_time));
+        CrossThreadBindRepeating(new_frame_callback_, frame, current_time));
   }
 
   // Calculate the time in the future where the next frame should be created.

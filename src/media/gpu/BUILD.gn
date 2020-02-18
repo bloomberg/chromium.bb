@@ -81,8 +81,12 @@ component("gpu") {
   libs = []
   ldflags = []
 
-  if (is_linux) {
-    public_deps += [ "//media/gpu/linux" ]
+  if (use_v4l2_codec || use_vaapi) {
+    public_deps += [ "//media/gpu/linux:common" ]
+  }
+
+  if (is_chromeos) {
+    public_deps += [ "//media/gpu/chromeos" ]
   }
 
   if (is_mac) {
@@ -91,35 +95,30 @@ component("gpu") {
 
   if (is_android) {
     sources += [
-      "android/android_video_decode_accelerator.cc",
-      "android/android_video_decode_accelerator.h",
       "android/android_video_encode_accelerator.cc",
       "android/android_video_encode_accelerator.h",
       "android/android_video_surface_chooser.cc",
       "android/android_video_surface_chooser.h",
       "android/android_video_surface_chooser_impl.cc",
       "android/android_video_surface_chooser_impl.h",
-      "android/avda_codec_image.cc",
-      "android/avda_codec_image.h",
-      "android/avda_picture_buffer_manager.cc",
-      "android/avda_picture_buffer_manager.h",
-      "android/avda_shared_state.cc",
-      "android/avda_shared_state.h",
-      "android/avda_state_provider.h",
-      "android/avda_surface_bundle.cc",
-      "android/avda_surface_bundle.h",
       "android/codec_allocator.cc",
       "android/codec_allocator.h",
       "android/codec_image.cc",
       "android/codec_image.h",
       "android/codec_image_group.cc",
       "android/codec_image_group.h",
+      "android/codec_surface_bundle.cc",
+      "android/codec_surface_bundle.h",
       "android/codec_wrapper.cc",
       "android/codec_wrapper.h",
       "android/device_info.cc",
       "android/device_info.h",
+      "android/direct_shared_image_video_provider.cc",
+      "android/direct_shared_image_video_provider.h",
       "android/image_reader_gl_owner.cc",
       "android/image_reader_gl_owner.h",
+      "android/maybe_render_early_manager.cc",
+      "android/maybe_render_early_manager.h",
       "android/media_codec_video_decoder.cc",
       "android/media_codec_video_decoder.h",
       "android/promotion_hint_aggregator.h",
@@ -127,6 +126,8 @@ component("gpu") {
       "android/promotion_hint_aggregator_impl.h",
       "android/shared_image_video.cc",
       "android/shared_image_video.h",
+      "android/shared_image_video_provider.cc",
+      "android/shared_image_video_provider.h",
       "android/surface_chooser_helper.cc",
       "android/surface_chooser_helper.h",
       "android/surface_texture_gl_owner.cc",
@@ -150,13 +151,6 @@ component("gpu") {
     if (enable_vulkan) {
       deps += [ "//gpu/vulkan:vulkan" ]
     }
-
-    # TODO(crbug.com/789435): This is needed for AVDA to access the CDM
-    # directly.  Remove this dependency after VDAs are also running as part of
-    # the mojo media service. See http://crbug.com/522298
-    if (mojo_media_host == "gpu") {
-      deps += [ "//media/cdm:cdm_manager" ]
-    }
   }
 
   if (use_v4l2_codec) {
@@ -169,10 +163,15 @@ component("gpu") {
 
   if (is_win) {
     sources += [
+      "windows/d3d11_com_defs.h",
+      "windows/d3d11_copying_texture_wrapper.cc",
+      "windows/d3d11_copying_texture_wrapper.h",
       "windows/d3d11_h264_accelerator.cc",
       "windows/d3d11_h264_accelerator.h",
       "windows/d3d11_picture_buffer.cc",
       "windows/d3d11_picture_buffer.h",
+      "windows/d3d11_texture_selector.cc",
+      "windows/d3d11_texture_selector.h",
       "windows/d3d11_texture_wrapper.cc",
       "windows/d3d11_texture_wrapper.h",
       "windows/d3d11_video_context_wrapper.cc",
@@ -182,6 +181,8 @@ component("gpu") {
       "windows/d3d11_video_decoder_client.h",
       "windows/d3d11_video_decoder_impl.cc",
       "windows/d3d11_video_decoder_impl.h",
+      "windows/d3d11_video_processor_proxy.cc",
+      "windows/d3d11_video_processor_proxy.h",
       "windows/d3d11_vp9_accelerator.cc",
       "windows/d3d11_vp9_accelerator.h",
       "windows/d3d11_vp9_picture.cc",
@@ -193,6 +194,8 @@ component("gpu") {
       "windows/init_guid.cc",
       "windows/media_foundation_video_encode_accelerator_win.cc",
       "windows/media_foundation_video_encode_accelerator_win.h",
+      "windows/supported_profile_helpers.cc",
+      "windows/supported_profile_helpers.h",
     ]
     configs += [
       # TODO(https://crbug.com/167187): Fix size_t to int truncations.
@@ -243,6 +246,7 @@ source_set("common") {
     "codec_picture.h",
     "format_utils.cc",
     "format_utils.h",
+    "gpu_video_decode_accelerator_helpers.cc",
     "gpu_video_decode_accelerator_helpers.h",
     "gpu_video_encode_accelerator_helpers.cc",
     "gpu_video_encode_accelerator_helpers.h",
@@ -354,7 +358,7 @@ source_set("video_frame_mapper") {
   deps = []
 
   # generic_dmabuf_video_frame_mapper
-  if (is_linux) {
+  if (use_v4l2_codec || use_vaapi) {
     deps += [ "//media/gpu/linux:video_frame_mapper" ]
   }
 
@@ -455,7 +459,6 @@ source_set("android_video_decode_accelerator_unittests") {
   if (is_android) {
     testonly = true
     sources = [
-      "android/android_video_decode_accelerator_unittest.cc",
       "android/android_video_surface_chooser_impl_unittest.cc",
       "android/codec_allocator_unittest.cc",
       "android/codec_image_group_unittest.cc",
@@ -464,11 +467,14 @@ source_set("android_video_decode_accelerator_unittests") {
       "android/fake_codec_allocator.cc",
       "android/fake_codec_allocator.h",
       "android/image_reader_gl_owner_unittest.cc",
+      "android/maybe_render_early_manager_unittest.cc",
       "android/media_codec_video_decoder_unittest.cc",
       "android/mock_abstract_texture.cc",
       "android/mock_abstract_texture.h",
       "android/mock_android_video_surface_chooser.cc",
       "android/mock_android_video_surface_chooser.h",
+      "android/mock_codec_image.cc",
+      "android/mock_codec_image.h",
       "android/mock_device_info.cc",
       "android/mock_device_info.h",
       "android/mock_promotion_hint_aggregator.cc",
@@ -558,6 +564,9 @@ source_set("unit_tests") {
     "h264_decoder_unittest.cc",
   ]
 
+  if (use_v4l2_codec || use_vaapi) {
+    deps += [ "//media/gpu/linux:unit_tests" ]
+  }
   if (use_vaapi) {
     deps += [ "//media/gpu/vaapi:unit_test" ]
   }
@@ -570,8 +579,12 @@ source_set("unit_tests") {
   if (is_win && enable_library_cdms) {
     sources += [
       "windows/d3d11_cdm_proxy_unittest.cc",
+      "windows/d3d11_copying_texture_wrapper_unittest.cc",
       "windows/d3d11_decryptor_unittest.cc",
+      "windows/d3d11_texture_selector_unittest.cc",
       "windows/d3d11_video_decoder_unittest.cc",
+      "windows/d3d11_video_processor_proxy_unittest.cc",
+      "windows/supported_profile_helpers_unittest.cc",
     ]
     libs = [ "dxguid.lib" ]
   }

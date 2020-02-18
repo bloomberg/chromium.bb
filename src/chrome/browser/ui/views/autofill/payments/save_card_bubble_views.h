@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "components/autofill/core/browser/ui/payments/save_card_bubble_controller.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 
 namespace content {
 class WebContents;
@@ -41,7 +41,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
 
   // views::BubbleDialogDelegateView:
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  views::View* CreateFootnoteView() override;
+  std::unique_ptr<views::View> CreateFootnoteView() override;
   bool Accept() override;
   bool Cancel() override;
   bool Close() override;

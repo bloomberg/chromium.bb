@@ -1,20 +1,15 @@
 package Moose::Meta::TypeConstraint::Class;
-BEGIN {
-  $Moose::Meta::TypeConstraint::Class::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::TypeConstraint::Class::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 use metaclass;
 
 use B;
-use Scalar::Util 'blessed';
+use Scalar::Util ();
 use Moose::Util::TypeConstraints ();
 
-use base 'Moose::Meta::TypeConstraint';
+use parent 'Moose::Meta::TypeConstraint';
 
 __PACKAGE__->meta->add_attribute('class' => (
     reader => 'class',
@@ -137,9 +132,11 @@ sub get_message {
 
 # ABSTRACT: Class/TypeConstraint parallel hierarchy
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -147,7 +144,7 @@ Moose::Meta::TypeConstraint::Class - Class/TypeConstraint parallel hierarchy
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -160,9 +157,7 @@ L<Moose::Meta::TypeConstraint>.
 
 =head1 METHODS
 
-=over 4
-
-=item B<< Moose::Meta::TypeConstraint::Class->new(%options) >>
+=head2 Moose::Meta::TypeConstraint::Class->new(%options)
 
 This creates a new class type constraint based on the given
 C<%options>.
@@ -175,16 +170,16 @@ C<Object> type.
 The constructor also overrides the hand optimized type constraint with
 one it creates internally.
 
-=item B<< $constraint->class >>
+=head2 $constraint->class
 
 Returns the class name associated with the constraint.
 
-=item B<< $constraint->parents >>
+=head2 $constraint->parents
 
 Returns all the type's parent types, corresponding to its parent
 classes.
 
-=item B<< $constraint->is_subtype_of($type_name_or_object) >>
+=head2 $constraint->is_subtype_of($type_name_or_object)
 
 If the given type is also a class type, then this checks that the
 type's class is a subclass of the other type's class.
@@ -192,7 +187,7 @@ type's class is a subclass of the other type's class.
 Otherwise it falls back to the implementation in
 L<Moose::Meta::TypeConstraint>.
 
-=item B<< $constraint->create_child_type(%options) >>
+=head2 $constraint->create_child_type(%options)
 
 This returns a new L<Moose::Meta::TypeConstraint> object with the type
 as its parent.
@@ -200,31 +195,67 @@ as its parent.
 Note that it does I<not> return a
 C<Moose::Meta::TypeConstraint::Class> object!
 
-=item B<< $constraint->get_message($value) >>
+=head2 $constraint->get_message($value)
 
 This is the same as L<Moose::Meta::TypeConstraint/get_message> except
 that it explicitly says C<isa> was checked. This is to help users deal
 with accidentally autovivified type constraints.
 
-=back
-
 =head1 BUGS
 
 See L<Moose/BUGS> for details on reporting bugs.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

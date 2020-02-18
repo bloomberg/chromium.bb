@@ -492,7 +492,7 @@ bool ValidateES2CopyTexImageParameters(Context *context,
 
     const gl::Framebuffer *framebuffer = context->getState().getReadFramebuffer();
     GLenum colorbufferFormat =
-        framebuffer->getReadColorbuffer()->getFormat().info->sizedInternalFormat;
+        framebuffer->getReadColorAttachment()->getFormat().info->sizedInternalFormat;
     const auto &formatInfo = *textureFormat.info;
 
     // [OpenGL ES 2.0.24] table 3.9
@@ -1129,6 +1129,7 @@ bool IsValidImageLayout(ImageLayout layout)
 {
     switch (layout)
     {
+        case ImageLayout::Undefined:
         case ImageLayout::General:
         case ImageLayout::ColorAttachment:
         case ImageLayout::DepthStencilAttachment:
@@ -1144,8 +1145,6 @@ bool IsValidImageLayout(ImageLayout layout)
             return false;
     }
 }
-
-}  // anonymous namespace
 
 bool ValidateES2TexImageParameters(Context *context,
                                    TextureTarget target,
@@ -1168,6 +1167,30 @@ bool ValidateES2TexImageParameters(Context *context,
         context->validationError(GL_INVALID_ENUM, kInvalidTextureTarget);
         return false;
     }
+
+    return ValidateES2TexImageParametersBase(context, target, level, internalformat, isCompressed,
+                                             isSubImage, xoffset, yoffset, width, height, border,
+                                             format, type, imageSize, pixels);
+}
+
+}  // anonymous namespace
+
+bool ValidateES2TexImageParametersBase(Context *context,
+                                       TextureTarget target,
+                                       GLint level,
+                                       GLenum internalformat,
+                                       bool isCompressed,
+                                       bool isSubImage,
+                                       GLint xoffset,
+                                       GLint yoffset,
+                                       GLsizei width,
+                                       GLsizei height,
+                                       GLint border,
+                                       GLenum format,
+                                       GLenum type,
+                                       GLsizei imageSize,
+                                       const void *pixels)
+{
 
     TextureType texType = TextureTargetToType(target);
     if (!ValidImageSizeParameters(context, texType, level, width, height, 1, isSubImage))
@@ -1194,6 +1217,7 @@ bool ValidateES2TexImageParameters(Context *context,
     switch (texType)
     {
         case TextureType::_2D:
+        case TextureType::External:
             if (static_cast<GLuint>(width) > (caps.max2DTextureSize >> level) ||
                 static_cast<GLuint>(height) > (caps.max2DTextureSize >> level))
             {
@@ -1286,9 +1310,10 @@ bool ValidateES2TexImageParameters(Context *context,
                 return false;
             }
 
-            if (!ValidCompressedSubImageSize(context, actualInternalFormat, xoffset, yoffset, width,
-                                             height, texture->getWidth(target, level),
-                                             texture->getHeight(target, level)))
+            if (!ValidCompressedSubImageSize(context, actualInternalFormat, xoffset, yoffset, 0,
+                                             width, height, 1, texture->getWidth(target, level),
+                                             texture->getHeight(target, level),
+                                             texture->getDepth(target, level)))
             {
                 context->validationError(GL_INVALID_OPERATION, kInvalidCompressedImageSize);
                 return false;
@@ -1302,7 +1327,7 @@ bool ValidateES2TexImageParameters(Context *context,
         }
         else
         {
-            if (!ValidCompressedImageSize(context, actualInternalFormat, level, width, height))
+            if (!ValidCompressedImageSize(context, actualInternalFormat, level, width, height, 1))
             {
                 context->validationError(GL_INVALID_OPERATION, kInvalidCompressedImageSize);
                 return false;
@@ -2639,13 +2664,17 @@ bool ValidateBlitFramebufferANGLE(Context *context,
 
     if (mask & GL_COLOR_BUFFER_BIT)
     {
-        const FramebufferAttachment *readColorAttachment = readFramebuffer->getReadColorbuffer();
-        const FramebufferAttachment *drawColorAttachment = drawFramebuffer->getFirstColorbuffer();
+        const FramebufferAttachment *readColorAttachment =
+            readFramebuffer->getReadColorAttachment();
+        const FramebufferAttachment *drawColorAttachment =
+            drawFramebuffer->getFirstColorAttachment();
 
         if (readColorAttachment && drawColorAttachment)
         {
             if (!(readColorAttachment->type() == GL_TEXTURE &&
-                  readColorAttachment->getTextureImageIndex().getType() == TextureType::_2D) &&
+                  (readColorAttachment->getTextureImageIndex().getType() == TextureType::_2D ||
+                   readColorAttachment->getTextureImageIndex().getType() ==
+                       TextureType::Rectangle)) &&
                 readColorAttachment->type() != GL_RENDERBUFFER &&
                 readColorAttachment->type() != GL_FRAMEBUFFER_DEFAULT)
             {
@@ -2662,7 +2691,9 @@ bool ValidateBlitFramebufferANGLE(Context *context,
                 if (attachment)
                 {
                     if (!(attachment->type() == GL_TEXTURE &&
-                          attachment->getTextureImageIndex().getType() == TextureType::_2D) &&
+                          (attachment->getTextureImageIndex().getType() == TextureType::_2D ||
+                           attachment->getTextureImageIndex().getType() ==
+                               TextureType::Rectangle)) &&
                         attachment->type() != GL_RENDERBUFFER &&
                         attachment->type() != GL_FRAMEBUFFER_DEFAULT)
                     {
@@ -2894,6 +2925,23 @@ bool ValidateTexSubImage2DRobustANGLE(Context *context,
                                            pixels);
 }
 
+bool ValidateTexSubImage3DOES(Context *context,
+                              TextureTarget target,
+                              GLint level,
+                              GLint xoffset,
+                              GLint yoffset,
+                              GLint zoffset,
+                              GLsizei width,
+                              GLsizei height,
+                              GLsizei depth,
+                              GLenum format,
+                              GLenum type,
+                              const void *pixels)
+{
+    return ValidateTexSubImage3D(context, target, level, xoffset, yoffset, zoffset, width, height,
+                                 depth, format, type, pixels);
+}
+
 bool ValidateCompressedTexImage2D(Context *context,
                                   TextureTarget target,
                                   GLint level,
@@ -2967,6 +3015,21 @@ bool ValidateCompressedTexImage2DRobustANGLE(Context *context,
                                         border, imageSize, data);
 }
 
+bool ValidateCompressedTexImage3DOES(Context *context,
+                                     TextureTarget target,
+                                     GLint level,
+                                     GLenum internalformat,
+                                     GLsizei width,
+                                     GLsizei height,
+                                     GLsizei depth,
+                                     GLint border,
+                                     GLsizei imageSize,
+                                     const void *data)
+{
+    return ValidateCompressedTexImage3D(context, target, level, internalformat, width, height,
+                                        depth, border, imageSize, data);
+}
+
 bool ValidateCompressedTexSubImage2DRobustANGLE(Context *context,
                                                 TextureTarget target,
                                                 GLint level,
@@ -3033,6 +3096,23 @@ bool ValidateCompressedTexSubImage2D(Context *context,
     }
 
     return true;
+}
+
+bool ValidateCompressedTexSubImage3DOES(Context *context,
+                                        TextureTarget target,
+                                        GLint level,
+                                        GLint xoffset,
+                                        GLint yoffset,
+                                        GLint zoffset,
+                                        GLsizei width,
+                                        GLsizei height,
+                                        GLsizei depth,
+                                        GLenum format,
+                                        GLsizei imageSize,
+                                        const void *data)
+{
+    return ValidateCompressedTexSubImage3D(context, target, level, xoffset, yoffset, zoffset, width,
+                                           height, depth, format, imageSize, data);
 }
 
 bool ValidateGetBufferPointervOES(Context *context,
@@ -3429,9 +3509,9 @@ bool ValidateMapBufferBase(Context *context, BufferBinding target)
     ASSERT(buffer != nullptr);
 
     // Check if this buffer is currently being used as a transform feedback output buffer
-    TransformFeedback *transformFeedback = context->getState().getCurrentTransformFeedback();
-    if (transformFeedback != nullptr && transformFeedback->isActive())
+    if (context->getState().isTransformFeedbackActive())
     {
+        TransformFeedback *transformFeedback = context->getState().getCurrentTransformFeedback();
         for (size_t i = 0; i < transformFeedback->getIndexedBufferCount(); i++)
         {
             const auto &transformFeedbackBuffer = transformFeedback->getIndexedBuffer(i);
@@ -3896,6 +3976,7 @@ bool ValidateStencilFillPathCHROMIUM(Context *context, GLuint path, GLenum fillM
 
     switch (fillMode)
     {
+        case GL_INVERT:
         case GL_COUNT_UP_CHROMIUM:
         case GL_COUNT_DOWN_CHROMIUM:
             break;
@@ -4066,6 +4147,7 @@ bool ValidateStencilFillPathInstancedCHROMIUM(Context *context,
 
     switch (fillMode)
     {
+        case GL_INVERT:
         case GL_COUNT_UP_CHROMIUM:
         case GL_COUNT_DOWN_CHROMIUM:
             break;
@@ -4128,6 +4210,7 @@ bool ValidateStencilThenCoverFillPathInstancedCHROMIUM(Context *context,
 
     switch (fillMode)
     {
+        case GL_INVERT:
         case GL_COUNT_UP_CHROMIUM:
         case GL_COUNT_DOWN_CHROMIUM:
             break;
@@ -6122,6 +6205,21 @@ bool ValidateCopyTexSubImage2D(Context *context,
                                                yoffset, 0, x, y, width, height, 0);
 }
 
+bool ValidateCopyTexSubImage3DOES(Context *context,
+                                  TextureTarget target,
+                                  GLint level,
+                                  GLint xoffset,
+                                  GLint yoffset,
+                                  GLint zoffset,
+                                  GLint x,
+                                  GLint y,
+                                  GLsizei width,
+                                  GLsizei height)
+{
+    return ValidateCopyTexSubImage3D(context, target, level, xoffset, yoffset, zoffset, x, y, width,
+                                     height);
+}
+
 bool ValidateDeleteBuffers(Context *context, GLint n, const GLuint *)
 {
     return ValidateGenOrDelete(context, n);
@@ -6307,6 +6405,18 @@ bool ValidateFramebufferTexture2D(Context *context,
     }
 
     return true;
+}
+
+bool ValidateFramebufferTexture3DOES(Context *context,
+                                     GLenum target,
+                                     GLenum attachment,
+                                     TextureTarget textargetPacked,
+                                     GLuint texture,
+                                     GLint level,
+                                     GLint zoffset)
+{
+    UNIMPLEMENTED();
+    return false;
 }
 
 bool ValidateGenBuffers(Context *context, GLint n, GLuint *)
@@ -6898,7 +7008,7 @@ bool ValidateVertexAttribDivisorEXT(Context *context, GLuint index, GLuint divis
 }
 
 bool ValidateTexImage3DOES(Context *context,
-                           GLenum target,
+                           TextureTarget target,
                            GLint level,
                            GLenum internalformat,
                            GLsizei width,
@@ -6909,8 +7019,8 @@ bool ValidateTexImage3DOES(Context *context,
                            GLenum type,
                            const void *pixels)
 {
-    UNIMPLEMENTED();  // FIXME
-    return false;
+    return ValidateTexImage3D(context, target, level, internalformat, width, height, depth, border,
+                              format, type, pixels);
 }
 
 bool ValidatePopGroupMarkerEXT(Context *context)
@@ -7014,7 +7124,7 @@ bool ValidateMultiDrawElementsANGLE(Context *context,
     return true;
 }
 
-bool ValidateProvokingVertexANGLE(Context *context, ProvokingVertex modePacked)
+bool ValidateProvokingVertexANGLE(Context *context, ProvokingVertexConvention modePacked)
 {
     if (!context->getExtensions().provokingVertex)
     {
@@ -7024,8 +7134,8 @@ bool ValidateProvokingVertexANGLE(Context *context, ProvokingVertex modePacked)
 
     switch (modePacked)
     {
-        case ProvokingVertex::FirstVertexConvention:
-        case ProvokingVertex::LastVertexConvention:
+        case ProvokingVertexConvention::FirstVertexConvention:
+        case ProvokingVertexConvention::LastVertexConvention:
             break;
         default:
             context->validationError(GL_INVALID_ENUM, kInvalidProvokingVertex);

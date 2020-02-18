@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill_assistant.payment;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
@@ -27,19 +28,33 @@ public class AssistantPaymentRequestPaymentMethodSection
         extends AssistantPaymentRequestSection<AutofillPaymentInstrument> {
     private CardEditor mEditor;
     private boolean mIgnorePaymentMethodsChangeNotifications;
+    private boolean mRequiresBillingPostalCode;
+    private String mBillingPostalCodeMissingText;
 
     AssistantPaymentRequestPaymentMethodSection(Context context, ViewGroup parent) {
         super(context, parent, R.layout.autofill_assistant_payment_method_summary,
                 R.layout.autofill_assistant_payment_method_full,
                 context.getResources().getDimensionPixelSize(
                         R.dimen.autofill_assistant_payment_request_payment_method_title_padding),
-                context.getString(org.chromium.chrome.R.string.payments_method_of_payment_label),
-                context.getString(org.chromium.chrome.R.string.payments_add_card),
-                context.getString(org.chromium.chrome.R.string.payments_add_card));
+                context.getString(R.string.payments_method_of_payment_label),
+                context.getString(R.string.payments_add_card),
+                context.getString(R.string.payments_add_card));
     }
 
     public void setEditor(CardEditor editor) {
         mEditor = editor;
+        if (mEditor == null) {
+            return;
+        }
+
+        PersonalDataManager personalDataManager = PersonalDataManager.getInstance();
+        for (AutofillPaymentInstrument method : getItems()) {
+            String guid = method.getCard().getBillingAddressId();
+            PersonalDataManager.AutofillProfile profile = personalDataManager.getProfile(guid);
+            if (profile != null) {
+                addAutocompleteInformationToEditor(profile);
+            }
+        }
     }
 
     @Override
@@ -71,9 +86,15 @@ public class AssistantPaymentRequestPaymentMethodSection
         if (method == null) {
             return;
         }
+
         ImageView cardIssuerImageView = summaryView.findViewById(R.id.credit_card_issuer_icon);
-        cardIssuerImageView.setImageDrawable(summaryView.getContext().getResources().getDrawable(
-                method.getCard().getIssuerIconDrawableId()));
+        try {
+            cardIssuerImageView.setImageDrawable(
+                    summaryView.getContext().getResources().getDrawable(
+                            method.getCard().getIssuerIconDrawableId()));
+        } catch (Resources.NotFoundException e) {
+            cardIssuerImageView.setImageDrawable(null);
+        }
 
         /**
          * By default, the obfuscated number contains the issuer (e.g., 'Visa'). This is needlessly
@@ -94,13 +115,14 @@ public class AssistantPaymentRequestPaymentMethodSection
         hideIfEmpty(cardExpirationView);
 
         TextView methodIncompleteView = summaryView.findViewById(R.id.incomplete_error);
-        methodIncompleteView.setVisibility(method.isComplete() ? View.GONE : View.VISIBLE);
+        setIncompleteErrorMessage(methodIncompleteView, method);
+        hideIfEmpty(methodIncompleteView);
     }
 
     void onProfilesChanged(List<PersonalDataManager.AutofillProfile> profiles) {
+        // TODO(crbug.com/806868): replace suggested billing addresses (remove if necessary).
         for (PersonalDataManager.AutofillProfile profile : profiles) {
-            // TODO(crbug.com/806868): replace suggested billing addresses (remove if necessary).
-            mEditor.updateBillingAddressIfComplete(new AutofillAddress(mContext, profile));
+            addAutocompleteInformationToEditor(profile);
         }
     }
 
@@ -124,5 +146,59 @@ public class AssistantPaymentRequestPaymentMethodSection
 
         // Replace current set of items, keep selection if possible.
         setItems(paymentMethods, selectedMethodIndex);
+    }
+
+    void setRequiresBillingPostalCode(boolean requiresBillingPostalCode) {
+        mRequiresBillingPostalCode = requiresBillingPostalCode;
+    }
+
+    void setBillingPostalCodeMissingText(String text) {
+        mBillingPostalCodeMissingText = text;
+    }
+
+    private void addAutocompleteInformationToEditor(PersonalDataManager.AutofillProfile profile) {
+        // The check for non-null label is necessary to prevent crash in editor when opening.
+        if (mEditor == null || profile.getLabel() == null) {
+            return;
+        }
+        mEditor.updateBillingAddressIfComplete(new AutofillAddress(mContext, profile));
+    }
+
+    private boolean hasAllRequiredFields(AutofillPaymentInstrument method) {
+        if (!method.isComplete()) {
+            return false;
+        }
+
+        if (!mRequiresBillingPostalCode) {
+            return true;
+        }
+
+        // TODO: Inject the PersonalDataManager instance.
+        PersonalDataManager personalDataManager = PersonalDataManager.getInstance();
+        String billingAddressId = method.getCard().getBillingAddressId();
+        PersonalDataManager.AutofillProfile profile =
+                personalDataManager.getProfile(billingAddressId);
+        if (profile == null || TextUtils.isEmpty(profile.getPostalCode())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void setIncompleteErrorMessage(
+            TextView methodIncompleteView, AutofillPaymentInstrument method) {
+        if (hasAllRequiredFields(method)) {
+            methodIncompleteView.setText("");
+            return;
+        }
+
+        // we have to show an error message either because the payment method is incomplete (missing
+        // information), or because a postcode is required and the billing address does not have
+        // one.
+        if (method.isComplete()) {
+            methodIncompleteView.setText(mBillingPostalCodeMissingText);
+        } else {
+            methodIncompleteView.setText(R.string.autofill_assistant_payment_information_missing);
+        }
     }
 }

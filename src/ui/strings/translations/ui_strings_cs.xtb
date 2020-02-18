@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="1398853756734560583">Maximalizovat</translation>
 <translation id="1409544243779336081">Doporučení aplikace</translation>
+<translation id="1498028757988366001">Toto jste v minulosti vyhledávali. Když dotaz „<ph name="QUERY" />“ vymažete z historie, bude trvale odstraněn z vašeho účtu na všech zařízeních.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta a  }few{# minuty a  }many{# minuty a  }other{# minut a  }}</translation>
 <translation id="1643823602425662293">Oznámení</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -45,13 +46,16 @@
 <translation id="2289052229480071835">Klepněte na cíle klepnutí na obrazovce.</translation>
 <translation id="2295140143284145483">Průzkum</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">Zavolat toto číslo z vašeho telefonu?</translation>
 <translation id="24452542372838207">Rozbalit oznámení</translation>
 <translation id="2445449901874883781">Použít vysokou hustotu</translation>
+<translation id="2451871130406122810">Odesláno do zařízení</translation>
 <translation id="2482878487686419369">Oznámení</translation>
 <translation id="2497284189126895209">Všechny soubory</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Kalibrace je dokončena</translation>
 <translation id="252373100621549798">Neznámý displej</translation>
+<translation id="2545651323591713692">Odložit</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{za 1 h}few{za # h}many{za # h}other{za # h}}</translation>
 <translation id="2583543531130364912">Zkalibrujte dotykovou obrazovku</translation>
 <translation id="2666092431469916601">Nahoru</translation>
@@ -70,6 +74,7 @@
 <translation id="3183922693828471536">Posunout sem</translation>
 <translation id="3234408098842461169">Klávesa šipka dolů</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 den}few{# dny}many{# dne}other{# dnů}}</translation>
+<translation id="3295886253693811851">Zavolat pomocí služby</translation>
 <translation id="335581015389089642">Řeč</translation>
 <translation id="3443810440409579745">Byla přijata karta.</translation>
 <translation id="3479552764303398839">Teď ne</translation>
@@ -95,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{před 1 měsícem}few{před # měsíci}many{před # měsíce}other{před # měsíci}}</translation>
 <translation id="4289300219472526559">Začít mluvit</translation>
 <translation id="4316910396681052118">VŠECHNY APLIKACE</translation>
+<translation id="4467014365953759647">Číslo nelze odeslat</translation>
 <translation id="4588090240171750605">Posuv doprava</translation>
 <translation id="4690510401873698237">Polička dole</translation>
 <translation id="4724120544754982507">Centrum oznámení – nepřečtená oznámení: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -111,6 +117,7 @@
 <translation id="5266161281976477809">Tlačítko k zobrazení skrytého obsahu</translation>
 <translation id="5278860589123563674">Odeslání se nezdařilo</translation>
 <translation id="528468243742722775">Konec</translation>
+<translation id="5327567770033251652">zapněte synchronizaci</translation>
 <translation id="5329858601952122676">&amp;Smazat</translation>
 <translation id="5395308026110844773">Aplikace <ph name="DRAGGED_APP_NAME" /> je nad aplikací <ph name="IN_PLACE_APP" />. Uvolněním vytvoříte složku.</translation>
 <translation id="5463830097259460683">Emodži a symboly</translation>
@@ -150,6 +157,7 @@
 <translation id="6620110761915583480">Uložit soubor</translation>
 <translation id="6699343763173986273">Média – další skladba</translation>
 <translation id="673773751041746814">Smazání</translation>
+<translation id="6779314412797872738">Chcete-li si odsud poslat číslo na telefon Android, v nastavení obou zařízení <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="6786750046913594791">Zavřít složku</translation>
 <translation id="6808150112686056157">Média – zastavit</translation>
 <translation id="6845383723252244143">Vybrat složku</translation>
@@ -168,7 +176,9 @@
 <translation id="7319740667687257810">Spouštěč, částečné zobrazení</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Před 1 min}few{Před # min}many{Před # min}other{Před # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Zkontrolujte připojení telefonu a zkuste to znovu</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Zbývá 1 minuta}few{Zbývají # minuty}many{Zbývá # minuty}other{Zbývá # minut}}</translation>
+<translation id="7430878839542012341">Vymazat toto vyhledávání z historie?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emodži</translation>
 <translation id="7658239707568436148">Zrušit</translation>
@@ -186,7 +196,6 @@
 <translation id="8144660977431427332">Pro vaše vyhledávání se používá technologie Asistenta Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatické doplnění</translation>
 <translation id="815598010540052116">Posuv dolů</translation>
-<translation id="8170087467028567933">Pokud tento návrh odstraníte, bude ve vašem účtu skryt na všech vašich zařízeních.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Klávesa PageDown</translation>
 <translation id="8245914219290430011">Tab</translation>
@@ -197,7 +206,6 @@
 <translation id="838869780401515933">zaškrtnout</translation>
 <translation id="8393700583063109961">Odeslat zprávu</translation>
 <translation id="8394908167088220973">Média – přehrát/pozastavit</translation>
-<translation id="8420205633584771378">Odstranit tento návrh?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 r}few{# r}many{# r}other{# r}}</translation>
 <translation id="8602707065186045623">Soubor <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Polička se vždy zobrazuje</translation>

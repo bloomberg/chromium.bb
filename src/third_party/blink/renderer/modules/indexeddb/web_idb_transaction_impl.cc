@@ -54,7 +54,7 @@ void WebIDBTransactionImpl::Put(int64_t object_store_id,
   size_t index_keys_size = 0;
   for (const auto& index_key : index_keys) {
     index_keys_size++;  // Account for index_key.first (int64_t).
-    for (const auto& key : index_key.second) {
+    for (const auto& key : index_key.keys) {
       index_keys_size += key->SizeEstimate();
     }
   }

@@ -18,10 +18,11 @@ class ToolbarController {
    * @param {!FileSelectionHandler} selectionHandler
    * @param {!DirectoryModel} directoryModel
    * @param {!VolumeManager} volumeManager
+   * @param {!A11yAnnounce} a11y
    */
   constructor(
       toolbar, navigationList, listContainer, locationLine, selectionHandler,
-      directoryModel, volumeManager) {
+      directoryModel, volumeManager, a11y) {
     /**
      * @private {!HTMLElement}
      * @const
@@ -56,6 +57,13 @@ class ToolbarController {
     this.deleteButton_ = queryRequiredElement('#delete-button', this.toolbar_);
 
     /**
+     * @private {!HTMLElement}
+     * @const
+     */
+    this.readOnlyIndicator_ =
+        queryRequiredElement('#read-only-indicator', this.toolbar_);
+
+    /**
      * @private {!cr.ui.Command}
      * @const
      */
@@ -69,6 +77,15 @@ class ToolbarController {
      */
     this.refreshCommand_ = assertInstanceof(
         queryRequiredElement('#refresh', assert(this.toolbar_.ownerDocument)),
+        cr.ui.Command);
+
+    /**
+     * @private {!cr.ui.Command}
+     * @const
+     */
+    this.newFolderCommand_ = assertInstanceof(
+        queryRequiredElement(
+            '#new-folder', assert(this.toolbar_.ownerDocument)),
         cr.ui.Command);
 
     /**
@@ -107,6 +124,12 @@ class ToolbarController {
      */
     this.volumeManager_ = volumeManager;
 
+    /**
+     * @private {!A11yAnnounce}
+     * @const
+     */
+    this.a11y_ = a11y;
+
     this.selectionHandler_.addEventListener(
         FileSelectionHandler.EventType.CHANGE,
         this.onSelectionChanged_.bind(this));
@@ -136,15 +159,24 @@ class ToolbarController {
   }
 
   /**
-   * Updates buttons that act on current directory.
+   * Updates toolbar's UI elements which are related to current directory.
    * @private
    */
   updateCurrentDirectoryButtons_() {
+    this.updateRefreshCommand_();
+
+    this.newFolderCommand_.canExecuteChange(this.listContainer_.currentList);
+
+    const currentDirectory = this.directoryModel_.getCurrentDirEntry();
+    const locationInfo = currentDirectory &&
+        this.volumeManager_.getLocationInfo(currentDirectory);
+    this.readOnlyIndicator_.hidden = !(locationInfo && locationInfo.isReadOnly);
+  }
+
+  /** @private */
+  updateRefreshCommand_() {
     const volumeInfo = this.directoryModel_.getCurrentVolumeInfo();
-    this.refreshCommand_.disabled = !!volumeInfo && volumeInfo.watchable;
-    this.refreshCommand_.setHidden(
-        volumeInfo && volumeInfo.watchable ||
-        this.directoryModel_.getFileListSelection().getCheckSelectMode());
+    this.refreshCommand_.canExecuteChange(this.listContainer_.currentList);
   }
 
   /**
@@ -153,6 +185,7 @@ class ToolbarController {
    */
   onSelectionChanged_() {
     const selection = this.selectionHandler_.selection;
+    this.updateRefreshCommand_();
 
     // Update the label "x files selected." on the header.
     let text;
@@ -209,6 +242,7 @@ class ToolbarController {
    */
   onCancelSelectionButtonClicked_() {
     this.directoryModel_.selectEntries([]);
+    this.a11y_.speakA11yMessage(str('SELECTION_CANCELLATION'));
   }
 
   /**

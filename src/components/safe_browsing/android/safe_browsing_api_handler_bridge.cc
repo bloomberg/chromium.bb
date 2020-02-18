@@ -16,12 +16,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
+#include "components/safe_browsing/android/jni_headers/SafeBrowsingApiBridge_jni.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_util.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "jni/SafeBrowsingApiBridge_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -123,7 +123,7 @@ void OnUrlCheckDoneOnIOThread(jlong callback_id,
            << " status: " << result_status << " metadata: [" << metadata << "]";
 
   PendingCallbacksMap* pending_callbacks = GetPendingCallbacksMapOnIOThread();
-  bool found = base::ContainsKey(*pending_callbacks, callback_id);
+  bool found = base::Contains(*pending_callbacks, callback_id);
   DCHECK(found) << "Not found in pending_callbacks: " << callback_id;
   if (!found)
     return;

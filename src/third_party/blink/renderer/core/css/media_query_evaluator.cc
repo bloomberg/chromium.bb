@@ -29,6 +29,7 @@
 
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 
+#include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
@@ -47,11 +48,11 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -845,6 +846,24 @@ static bool PrefersColorSchemeMediaFeatureEval(
           value.id == CSSValueID::kDark) ||
          (preferred_scheme == PreferredColorScheme::kLight &&
           value.id == CSSValueID::kLight);
+}
+
+static bool ForcedColorsMediaFeatureEval(const MediaQueryExpValue& value,
+                                         MediaFeaturePrefix,
+                                         const MediaValues& media_values) {
+  ForcedColors forced_colors = media_values.GetForcedColors();
+
+  if (!value.IsValid())
+    return forced_colors != ForcedColors::kNone;
+
+  if (!value.is_id)
+    return false;
+
+  // Check the forced colors against value.id.
+  return (forced_colors == ForcedColors::kNone &&
+          value.id == CSSValueID::kNone) ||
+         (forced_colors != ForcedColors::kNone &&
+          value.id == CSSValueID::kActive);
 }
 
 void MediaQueryEvaluator::Init() {

@@ -9,6 +9,7 @@
 # that might not be possible.
 
 import fnmatch
+import itertools
 import re
 
 from collections import OrderedDict
@@ -17,17 +18,23 @@ from collections import defaultdict
 from typ.json_results import ResultType
 
 _EXPECTATION_MAP = {
-    'Crash': ResultType.Crash,
-    'Failure': ResultType.Failure,
-    'Pass': ResultType.Pass,
-    'Timeout': ResultType.Timeout,
-    'Skip': ResultType.Skip
+    'crash': ResultType.Crash,
+    'failure': ResultType.Failure,
+    'pass': ResultType.Pass,
+    'timeout': ResultType.Timeout,
+    'skip': ResultType.Skip
 }
+
 
 def _group_to_string(group):
     msg = ', '.join(group)
     k = msg.rfind(', ')
     return msg[:k] + ' and ' + msg[k+2:] if k != -1 else msg
+
+
+def _default_tags_conflict(t1, t2):
+    return t1 != t2
+
 
 class ParseError(Exception):
 
@@ -104,7 +111,8 @@ class TaggedTestListParser(object):
       crbug.com/123 [ Win ] benchmark/story [ Skip ]
       ...
     """
-
+    CONFLICTS_ALLOWED = '# conflicts_allowed: '
+    RESULT_TOKEN = '# results: ['
     TAG_TOKEN = '# tags: ['
     # The bug field (optional), including optional subproject.
     _MATCH_STRING = r'^(?:(crbug.com/(?:[^/]*/)?\d+) )?'
@@ -116,7 +124,9 @@ class TaggedTestListParser(object):
 
     def __init__(self, raw_data):
         self.tag_sets = []
+        self.conflicts_allowed = False
         self.expectations = []
+        self._allowed_results = set()
         self._tag_to_tag_set = {}
         self._parse_raw_expectation_data(raw_data)
 
@@ -128,7 +138,12 @@ class TaggedTestListParser(object):
         first_tag_line = None
         while lineno <= num_lines:
             line = lines[lineno - 1].strip()
-            if line.startswith(self.TAG_TOKEN):
+            if (line.startswith(self.TAG_TOKEN) or
+                line.startswith(self.RESULT_TOKEN)):
+                if line.startswith(self.TAG_TOKEN):
+                    token = self.TAG_TOKEN
+                else:
+                    token = self.RESULT_TOKEN
                 # Handle tags.
                 if self.expectations:
                     raise ParseError(lineno,
@@ -138,7 +153,7 @@ class TaggedTestListParser(object):
                 right_bracket = line.find(']')
                 if right_bracket == -1:
                     # multi-line tag set
-                    tag_set = set(line[len(self.TAG_TOKEN):].split())
+                    tag_set = set(line[len(token):].split())
                     lineno += 1
                     while lineno <= num_lines and right_bracket == -1:
                         line = lines[lineno - 1].strip()
@@ -164,12 +179,24 @@ class TaggedTestListParser(object):
                             'Nothing is allowed after a closing tag '
                             'bracket')
                     tag_set = set(
-                        line[len(self.TAG_TOKEN):right_bracket].split())
-                tag_sets_intersection.update(
-                    (t for t in tag_set if t.lower() in self._tag_to_tag_set))
-                self.tag_sets.append(tag_set)
-                self._tag_to_tag_set.update(
-                    {tg.lower(): id(tag_set) for tg in tag_set})
+                        line[len(token):right_bracket].split())
+                if token == self.TAG_TOKEN:
+                    tag_sets_intersection.update(
+                        (t for t in tag_set if t.lower() in self._tag_to_tag_set))
+                    self.tag_sets.append(tag_set)
+                    self._tag_to_tag_set.update(
+                        {tg.lower(): id(tag_set) for tg in tag_set})
+                else:
+                    self._allowed_results.update({t.lower() for t in tag_set})
+            elif line.startswith(self.CONFLICTS_ALLOWED):
+                bool_value = line[len(self.CONFLICTS_ALLOWED):].lower()
+                if bool_value not in ('true', 'false'):
+                    raise ParseError(
+                        lineno,
+                        ("Unrecognized value '%s' given for conflicts_allowed "
+                         "descriptor" %
+                         bool_value))
+                self.conflicts_allowed = bool_value == 'true'
             elif line.startswith('#') or not line:
                 # Ignore, it is just a comment or empty.
                 lineno += 1
@@ -223,12 +250,15 @@ class TaggedTestListParser(object):
         results = []
         retry_on_failure = False
         for r in raw_results.split():
+            r = r.lower()
+            if r not in self._allowed_results:
+                raise ParseError(lineno, 'Unknown result type "%s"' % r)
             try:
                 # The test expectations may contain expected results and
                 # the RetryOnFailure tag
                 if r in  _EXPECTATION_MAP:
                     results.append(_EXPECTATION_MAP[r])
-                elif r == 'RetryOnFailure':
+                elif r == 'retryonfailure':
                     retry_on_failure = True
                 else:
                     raise KeyError
@@ -244,9 +274,8 @@ class TaggedTestListParser(object):
 
 class TestExpectations(object):
 
-    def __init__(self, tags):
-        self.tags = [tag.lower() for tag in tags]
-
+    def __init__(self, tags=None):
+        self.set_tags(tags or [])
         # Expectations may either refer to individual tests, or globs of
         # tests. Each test (or glob) may have multiple sets of tags and
         # expected results, so we store these in dicts ordered by the string
@@ -255,12 +284,24 @@ class TestExpectations(object):
         self.individual_exps = {}
         self.glob_exps = OrderedDict()
 
-    def parse_tagged_list(self, raw_data):
+    def set_tags(self, tags):
+        self.tags = [tag.lower() for tag in tags]
+
+    def parse_tagged_list(self, raw_data, file_name='',
+                          tags_conflict=_default_tags_conflict):
+        # TODO(rmhasan): If we decide to support multiple test expectations in
+        # one TestExpectations instance, then we should make the file_name field
+        # mandatory.
+        assert not self.individual_exps and not self.glob_exps, (
+            'Currently there is no support for multiple test expectations'
+            ' files in a TestExpectations instance')
+        self.file_name = file_name
         try:
             parser = TaggedTestListParser(raw_data)
         except ParseError as e:
             return 1, e.message
-
+        self.tag_sets = parser.tag_sets
+        self._tags_conflict = tags_conflict
         # TODO(crbug.com/83560) - Add support for multiple policies
         # for supporting multiple matching lines, e.g., allow/union,
         # reject, etc. Right now, you effectively just get a union.
@@ -278,7 +319,10 @@ class TestExpectations(object):
         for exp in glob_exps:
             self.glob_exps.setdefault(exp.test, []).append(exp)
 
-        return 0, None
+        errors = ''
+        if not parser.conflicts_allowed:
+            errors = self.check_test_expectations_patterns_for_conflicts()
+        return 0, errors
 
     def expectations_for(self, test):
         # Returns a tuple of (expectations, should_retry_on_failure)
@@ -300,14 +344,17 @@ class TestExpectations(object):
         #
         # The longest matching test string (name or glob) has priority.
         results = set()
+        reasons = set()
         should_retry_on_failure = False
         # First, check for an exact match on the test name.
         for exp in self.individual_exps.get(test, []):
             if exp.tags.issubset(self.tags):
                 results.update(exp.results)
                 should_retry_on_failure |= exp.should_retry_on_failure
+                if exp.reason:
+                    reasons.update([exp.reason])
         if results or should_retry_on_failure:
-            return (results or {ResultType.Pass}), should_retry_on_failure
+            return (results or {ResultType.Pass}), should_retry_on_failure, reasons
 
         # If we didn't find an exact match, check for matching globs. Match by
         # the most specific (i.e., longest) glob first. Because self.globs is
@@ -318,12 +365,89 @@ class TestExpectations(object):
                     if exp.tags.issubset(self.tags):
                         results.update(exp.results)
                         should_retry_on_failure |= exp.should_retry_on_failure
+                        if exp.reason:
+                            reasons.update([exp.reason])
                 # if *any* of the exps matched, results will be non-empty,
                 # and we're done. If not, keep looking through ever-shorter
                 # globs.
                 if results or should_retry_on_failure:
                     return ((results or {ResultType.Pass}),
-                            should_retry_on_failure)
+                            should_retry_on_failure, reasons)
 
         # Nothing matched, so by default, the test is expected to pass.
-        return {ResultType.Pass}, False
+        return {ResultType.Pass}, False, set()
+
+    def tag_sets_conflict(self, s1, s2):
+        # Tag sets s1 and s2 have no conflict when there exists a tag in s1
+        # and tag in s2 that are from the same tag declaration set and do not
+        # conflict with each other.
+        for tag_set in self.tag_sets:
+            for t1, t2 in itertools.product(s1, s2):
+                if (t1 in tag_set and t2 in tag_set and
+                    self._tags_conflict(t1, t2)):
+                    return False
+        return True
+
+    def check_test_expectations_patterns_for_conflicts(self):
+        # This function makes sure that any test expectations that have the same
+        # pattern do not conflict with each other. Test expectations conflict
+        # if their tag sets do not have conflicting tags. Tags conflict when
+        # they belong to the same tag declaration set. For example an
+        # expectations file may have a tag declaration set for operating systems
+        # which might look like [ win linux]. A test expectation that has the
+        # linux tag will not conflict with an expectation that has the win tag.
+        error_msg = ''
+        for pattern, exps in self.individual_exps.items():
+            conflicts_exist = False
+            for e1, e2 in itertools.combinations(exps, 2):
+                if self.tag_sets_conflict(e1.tags, e2.tags):
+                    if not conflicts_exist:
+                        error_msg += (
+                            '\nFound conflicts for test %s%s:\n' %
+                            (pattern,
+                             (' in %s' %
+                              self.file_name if self.file_name else '')))
+                    conflicts_exist = True
+                    error_msg += ('  line %d conflicts with line %d\n' %
+                                  (e1.lineno, e2.lineno))
+        return error_msg
+
+    def check_for_broken_expectations(self, test_names):
+        # It returns a list expectations that do not apply to any test names in
+        # the test_names list.
+        #
+        # args:
+        # test_names: list of test names that are used to find test expectations
+        # that do not apply to any of test names in the list.
+        trie = {}
+        for test in test_names:
+            _trie = trie.setdefault(test[0], {})
+            for l in test[1:]:
+                _trie = _trie.setdefault(l, {})
+            _trie.setdefault('$', {})
+
+        broken_expectations = []
+
+        def _get_broken_expectations(patterns_to_exps):
+            exps_dont_apply = []
+            for pattern, exps in patterns_to_exps.items():
+                _trie = trie
+                is_glob = False
+                broken_exp = False
+                for l in pattern:
+                    if l == '*':
+                        is_glob = True
+                        break
+                    if l not in _trie:
+                        exps_dont_apply.extend(exps)
+                        broken_exp = True
+                        break
+                    _trie = _trie[l]
+                if not broken_exp and not is_glob and '$' not in _trie:
+                    exps_dont_apply.extend(exps)
+            return exps_dont_apply
+
+        broken_expectations.extend(_get_broken_expectations(self.glob_exps))
+        broken_expectations.extend(
+            _get_broken_expectations(self.individual_exps))
+        return broken_expectations

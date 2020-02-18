@@ -15,9 +15,9 @@
 #include "components/offline_items_collection/core/android/offline_item_bridge.h"
 #include "components/offline_items_collection/core/android/offline_item_share_info_bridge.h"
 #include "components/offline_items_collection/core/android/offline_item_visuals_bridge.h"
+#include "components/offline_items_collection/core/jni_headers/OfflineContentAggregatorBridge_jni.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "components/offline_items_collection/core/throttled_offline_content_provider.h"
-#include "jni/OfflineContentAggregatorBridge_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -265,13 +265,16 @@ void OfflineContentAggregatorBridge::OnItemRemoved(const ContentId& id) {
       ConvertUTF8ToJavaString(env, id.id));
 }
 
-void OfflineContentAggregatorBridge::OnItemUpdated(const OfflineItem& item) {
+void OfflineContentAggregatorBridge::OnItemUpdated(
+    const OfflineItem& item,
+    const base::Optional<UpdateDelta>& update_delta) {
   if (java_ref_.is_null())
     return;
 
   JNIEnv* env = AttachCurrentThread();
   Java_OfflineContentAggregatorBridge_onItemUpdated(
-      env, java_ref_, OfflineItemBridge::CreateOfflineItem(env, item));
+      env, java_ref_, OfflineItemBridge::CreateOfflineItem(env, item),
+      OfflineItemBridge::CreateUpdateDelta(env, update_delta));
 }
 
 }  // namespace android

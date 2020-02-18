@@ -45,8 +45,8 @@ using namespace html_names;
 static Node* EnclosingBlockToSplitTreeTo(Node* start_node);
 static bool IsElementForFormatBlock(const QualifiedName& tag_name);
 static inline bool IsElementForFormatBlock(Node* node) {
-  return node->IsElementNode() &&
-         IsElementForFormatBlock(ToElement(node)->TagQName());
+  auto* element = DynamicTo<Element>(node);
+  return element && IsElementForFormatBlock(element->TagQName());
 }
 
 static Element* EnclosingBlockFlowElement(
@@ -170,8 +170,7 @@ Element* FormatBlockCommand::ElementForFormatBlockCommand(
   if (!element || common_ancestor->contains(element))
     return nullptr;
 
-  return common_ancestor->IsElementNode() ? ToElement(common_ancestor)
-                                          : nullptr;
+  return DynamicTo<Element>(common_ancestor);
 }
 
 bool IsElementForFormatBlock(const QualifiedName& tag_name) {

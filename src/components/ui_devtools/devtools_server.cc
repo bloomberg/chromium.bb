@@ -75,7 +75,7 @@ const net::NetworkTrafficAnnotationTag UiDevToolsServer::kVizDevtoolsServerTag =
 
 UiDevToolsServer::UiDevToolsServer(int port,
                                    net::NetworkTrafficAnnotationTag tag)
-    : port_(port), tag_(tag), weak_ptr_factory_(this) {
+    : port_(port), tag_(tag) {
   DCHECK(!devtools_server_);
   devtools_server_ = this;
 }
@@ -168,7 +168,7 @@ void UiDevToolsServer::AttachClient(std::unique_ptr<UiDevToolsClient> client) {
 }
 
 void UiDevToolsServer::SendOverWebSocket(int connection_id,
-                                         const protocol::String& message) {
+                                         base::StringPiece message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(devtools_server_sequence_);
   server_->SendOverWebSocket(connection_id, message, tag_);
 }

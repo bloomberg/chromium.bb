@@ -10,6 +10,7 @@
 
 #include <bitset>
 #include <memory>
+#include <queue>
 
 #include <linux/input.h>
 // See if we compile against new enough headers and add missing definition
@@ -88,12 +89,16 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
                         base::TimeTicks timestamp);
   void ReportEvents(base::TimeTicks timestamp);
 
+  void ProcessTouchEvent(InProgressTouchEvdev* event,
+                         base::TimeTicks timestamp);
+
   void UpdateTrackingId(int slot, int tracking_id);
   void ReleaseTouches();
-  void CancelAllTouches();
+  // Returns true if all touches were marked cancelled. Otherwise false.
+  bool MaybeCancelAllTouches();
   bool IsPalm(const InProgressTouchEvdev& touch);
   // Normalize pressure value to [0, 1].
-  float ScalePressure(int32_t value);
+  float ScalePressure(int32_t value) const;
 
   int NextTrackingId();
 
@@ -157,6 +162,11 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   // In-progress touch points.
   std::vector<InProgressTouchEvdev> events_;
 
+  // In progress touch points, from being held, along with the timestamp they
+  // were held at.
+  std::vector<std::queue<std::pair<InProgressTouchEvdev, base::TimeTicks>>>
+      held_events_;
+
   // Finds touches that need to be filtered.
   std::unique_ptr<FalseTouchFinder> false_touch_finder_;
 
@@ -165,7 +175,6 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   // Callback to enable/disable palm suppression.
   base::RepeatingCallback<void(bool)> enable_palm_suppression_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdev);
 };
 

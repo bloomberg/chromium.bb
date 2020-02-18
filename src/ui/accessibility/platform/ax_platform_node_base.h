@@ -78,6 +78,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Helpers.
   AXPlatformNodeBase* GetPreviousSibling();
   AXPlatformNodeBase* GetNextSibling();
+  AXPlatformNodeBase* GetFirstChild();
+  AXPlatformNodeBase* GetLastChild();
   bool IsDescendant(AXPlatformNodeBase* descendant);
 
   bool HasBoolAttribute(ax::mojom::BoolAttribute attr) const;
@@ -125,58 +127,66 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   AXPlatformNodeBase* GetTable() const;
 
   // If inside an HTML or ARIA table, returns the object containing the caption.
+  // Returns nullptr if not inside a table, or if there is no
+  // caption.
   AXPlatformNodeBase* GetTableCaption() const;
 
   // If inside a table or ARIA grid, returns the cell found at the given index.
   // Indices are in row major order and each cell is counted once regardless of
-  // its span.
+  // its span. Returns nullptr if the cell is not found or if not inside a
+  // table.
   AXPlatformNodeBase* GetTableCell(int index) const;
 
   // If inside a table or ARIA grid, returns the cell at the given row and
   // column (0-based). Works correctly with cells that span multiple rows or
-  // columns.
+  // columns. Returns nullptr if the cell is not found or if not inside a
+  // table.
   AXPlatformNodeBase* GetTableCell(int row, int column) const;
 
   // If inside a table or ARIA grid, returns the zero-based index of the cell.
   // Indices are in row major order and each cell is counted once regardless of
-  // its span. Returns -1 if the cell is not found or if not inside a table.
-  int GetTableCellIndex() const;
+  // its span. Returns base::nullopt if not a cell or if not inside a table.
+  base::Optional<int> GetTableCellIndex() const;
 
   // If inside a table or ARIA grid, returns the physical column number for the
   // current cell. In contrast to logical columns, physical columns always start
   // from 0 and have no gaps in their numbering. Logical columns can be set
-  // using aria-colindex.
-  int GetTableColumn() const;
+  // using aria-colindex. Returns base::nullopt if not a cell or if not inside a
+  // table.
+  base::Optional<int> GetTableColumn() const;
 
-  // If inside a table or ARIA grid, returns the number of physical columns,
-  // otherwise returns 0.
-  int GetTableColumnCount() const;
+  // If inside a table or ARIA grid, returns the number of physical columns.
+  // Returns base::nullopt if not inside a table.
+  base::Optional<int> GetTableColumnCount() const;
 
-  // If inside a table or ARIA grid, returns the number of ARIA columns,
-  // otherwise returns nullopt.
-  base::Optional<int32_t> GetTableAriaColumnCount() const;
+  // If inside a table or ARIA grid, returns the number of ARIA columns.
+  // Returns base::nullopt if not inside a table.
+  base::Optional<int> GetTableAriaColumnCount() const;
 
   // If inside a table or ARIA grid, returns the number of physical columns that
-  // this cell spans. If not a cell, returns 0.
-  int GetTableColumnSpan() const;
+  // this cell spans. Returns base::nullopt if not a cell or if not inside a
+  // table.
+  base::Optional<int> GetTableColumnSpan() const;
 
   // If inside a table or ARIA grid, returns the physical row number for the
   // current cell. In contrast to logical rows, physical rows always start from
   // 0 and have no gaps in their numbering. Logical rows can be set using
-  // aria-rowindex.
-  int GetTableRow() const;
+  // aria-rowindex. Returns base::nullopt if not a cell or if not inside a
+  // table.
+  base::Optional<int> GetTableRow() const;
 
-  // If inside a table or ARIA grid, returns the number of physical rows,
-  // otherwise returns 0.
-  int GetTableRowCount() const;
+  // If inside a table or ARIA grid, returns the number of physical rows.
+  // Returns base::nullopt if not inside a table.
+  base::Optional<int> GetTableRowCount() const;
 
-  // If inside a table or ARIA grid, returns the number of ARIA rows,
-  // otherwise returns nullopt.
-  base::Optional<int32_t> GetTableAriaRowCount() const;
+  // If inside a table or ARIA grid, returns the number of ARIA rows.
+  // Returns base::nullopt if not inside a table.
+  base::Optional<int> GetTableAriaRowCount() const;
 
   // If inside a table or ARIA grid, returns the number of physical rows that
-  // this cell spans. If not a cell, returns 0.
-  int GetTableRowSpan() const;
+  // this cell spans. Returns base::nullopt if not a cell or if not inside a
+  // table.
+  base::Optional<int> GetTableRowSpan() const;
 
   // Returns true if either a descendant has selection (sel_focus_object_id) or
   // if this node is a simple text element and has text selection attributes.
@@ -354,8 +364,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // First they check for a local selection found on the current control, e.g.
   // when querying the selection on a textarea.
   // If not found they retrieve the global selection found on the current frame.
-  int GetSelectionAnchor();
-  int GetSelectionFocus();
+  int GetUnignoredSelectionAnchor();
+  int GetUnignoredSelectionFocus();
 
   // Retrieves the selection offsets in the way required by the IA2 APIs.
   // selection_start and selection_end are -1 when there is no selection active
@@ -392,8 +402,11 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
                                           size_t* start,
                                           size_t* old_len,
                                           size_t* new_len);
-  int32_t GetPosInSet() const;
-  int32_t GetSetSize() const;
+
+  base::Optional<int> GetPosInSet() const;
+  base::Optional<int> GetSetSize() const;
+
+  std::string GetInvalidValue() const;
 
   AXHypertext hypertext_;
 

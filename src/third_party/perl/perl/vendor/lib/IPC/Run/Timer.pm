@@ -60,7 +60,7 @@ You do need to check timers:
 
 Timers and timeouts that are reset get started by start() and
 pump().  Timers change state only in pump().  Since run() and
-finish() both call pump(), they act like pump() with repect to
+finish() both call pump(), they act like pump() with respect to
 timers.
 
 Timers and timeouts have three states: reset, running, and expired.
@@ -71,9 +71,9 @@ it's in.
 
 =head2 Time values
 
-All time values are in seconds.  Times may be specified as integer or
-floating point seconds, optionally preceded by puncuation-separated
-days, hours, and minutes.\
+All time values are in seconds.  Times may be any kind of perl number,
+e.g. as integer or floating point seconds, optionally preceded by
+punctuation-separated days, hours, and minutes.
 
 Examples:
 
@@ -84,6 +84,7 @@ Examples:
    1:1         1 minute, 1 second
    1:90        2 minutes, 30 seconds
    1:2:3:4.5   1 day, 2 hours, 3 minutes, 4.5 seconds
+   'inf'       the infinity perl special number (the timer never finishes)
 
 Absolute date/time strings are *not* accepted: year, month and
 day-of-month parsing is not available (patches welcome :-).
@@ -161,27 +162,29 @@ use Carp;
 use Fcntl;
 use Symbol;
 use Exporter;
+use Scalar::Util ();
 use vars qw( $VERSION @ISA @EXPORT_OK %EXPORT_TAGS );
-BEGIN {
-	$VERSION   = '0.90';
-	@ISA       = qw( Exporter );
-	@EXPORT_OK = qw(
-		check
-		end_time
-		exception
-		expire
-		interval
-		is_expired
-		is_reset
-		is_running
-		name
-		reset
-		start
-		timeout
-		timer
-	);
 
-	%EXPORT_TAGS = ( 'all' => \@EXPORT_OK );
+BEGIN {
+    $VERSION   = '20180523.0';
+    @ISA       = qw( Exporter );
+    @EXPORT_OK = qw(
+      check
+      end_time
+      exception
+      expire
+      interval
+      is_expired
+      is_reset
+      is_running
+      name
+      reset
+      start
+      timeout
+      timer
+    );
+
+    %EXPORT_TAGS = ( 'all' => \@EXPORT_OK );
 }
 
 require IPC::Run;
@@ -193,29 +196,34 @@ use IPC::Run::Debug;
 my $resolution = 1;
 
 sub _parse_time {
-   for ( $_[0] ) {
-      return $_ unless defined $_;
-      return $_ if /^\d*(?:\.\d*)?$/;
-
-      my @f = reverse split( /[^\d\.]+/i );
-      croak "IPC::Run: invalid time string '$_'" unless @f <= 4;
-      my ( $s, $m, $h, $d ) = @f;
-      return
-      ( (
-	         ( $d || 0 )   * 24
-	       + ( $h || 0 ) ) * 60
-	       + ( $m || 0 ) ) * 60
-               + ( $s || 0 );
-   }
+    for ( $_[0] ) {
+        my $val;
+        if ( not defined $_ ) {
+            $val = $_;
+        }
+        else {
+            my @f = split( /:/, $_, -1 );
+            if ( scalar @f > 4 ) {
+                croak "IPC::Run: expected <= 4 elements in time string '$_'";
+            }
+            for (@f) {
+                if ( not Scalar::Util::looks_like_number($_) ) {
+                    croak "IPC::Run: non-numeric element '$_' in time string '$_'";
+                }
+            }
+            my ( $s, $m, $h, $d ) = reverse @f;
+            $val = ( ( ( $d || 0 ) * 24 + ( $h || 0 ) ) * 60 + ( $m || 0 ) ) * 60 + ( $s || 0 );
+        }
+        return $val;
+    }
 }
 
 sub _calc_end_time {
-   my IPC::Run::Timer $self = shift;
-   my $interval = $self->interval;
-   $interval += $resolution if $interval;
-   $self->end_time( $self->start_time + $interval );
+    my IPC::Run::Timer $self = shift;
+    my $interval = $self->interval;
+    $interval += $resolution if $interval;
+    $self->end_time( $self->start_time + $interval );
 }
-
 
 =item timer
 
@@ -244,9 +252,8 @@ will be provided.
 =cut
 
 sub timer {
-   return IPC::Run::Timer->new( @_ );
+    return IPC::Run::Timer->new(@_);
 }
-
 
 =item timeout
 
@@ -275,12 +282,11 @@ the default exception.
 =cut
 
 sub timeout {
-   my $t = IPC::Run::Timer->new( @_ );
-   $t->exception( "IPC::Run: timeout on " . $t->name )
+    my $t = IPC::Run::Timer->new(@_);
+    $t->exception( "IPC::Run: timeout on " . $t->name )
       unless defined $t->exception;
-   return $t;
+    return $t;
 }
-
 
 =item new
 
@@ -294,40 +300,36 @@ Constructor.  See L</timer> for details.
 
 my $timer_counter;
 
-
 sub new {
-   my $class = shift;
-   $class = ref $class || $class;
+    my $class = shift;
+    $class = ref $class || $class;
 
-   my IPC::Run::Timer $self = bless {}, $class;
+    my IPC::Run::Timer $self = bless {}, $class;
 
-   $self->{STATE} = 0;
-   $self->{DEBUG} = 0;
-   $self->{NAME}  = "timer #" . ++$timer_counter;
+    $self->{STATE} = 0;
+    $self->{DEBUG} = 0;
+    $self->{NAME}  = "timer #" . ++$timer_counter;
 
-   while ( @_ ) {
-      my $arg = shift;
-      if ( $arg =~ /^(?:\d+[^\a\d]){0,3}\d*(?:\.\d*)?$/ ) {
-         $self->interval( $arg );
-      }
-      elsif ( $arg eq 'exception' ) {
-         $self->exception( shift );
-      }
-      elsif ( $arg eq 'name' ) {
-         $self->name( shift );
-      }
-      elsif ( $arg eq 'debug' ) {
-         $self->debug( shift );
-      }
-      else {
-         croak "IPC::Run: unexpected parameter '$arg'";
-      }
-   }
+    while (@_) {
+        my $arg = shift;
+        if ( $arg eq 'exception' ) {
+            $self->exception(shift);
+        }
+        elsif ( $arg eq 'name' ) {
+            $self->name(shift);
+        }
+        elsif ( $arg eq 'debug' ) {
+            $self->debug(shift);
+        }
+        else {
+            $self->interval($arg);
+        }
+    }
 
-   _debug $self->name . ' constructed'
+    _debug $self->name . ' constructed'
       if $self->{DEBUG} || _debugging_details;
 
-   return $self;
+    return $self;
 }
 
 =item check
@@ -356,25 +358,22 @@ and the time left if it's left running.
 =cut
 
 sub check {
-   my IPC::Run::Timer $self = shift;
-   return undef if ! $self->is_running;
-   return 0     if  $self->is_expired;
+    my IPC::Run::Timer $self = shift;
+    return undef if !$self->is_running;
+    return 0     if $self->is_expired;
 
-   my ( $now ) = @_;
-   $now = _parse_time( $now );
-   $now = time unless defined $now;
+    my ($now) = @_;
+    $now = _parse_time($now);
+    $now = time unless defined $now;
 
-   _debug(
-      "checking ", $self->name, " (end time ", $self->end_time, ") at ", $now 
-   ) if $self->{DEBUG} || _debugging_details;
+    _debug( "checking ", $self->name, " (end time ", $self->end_time, ") at ", $now ) if $self->{DEBUG} || _debugging_details;
 
-   my $left = $self->end_time - $now;
-   return $left if $left > 0;
+    my $left = $self->end_time - $now;
+    return $left if $left > 0;
 
-   $self->expire;
-   return 0;
+    $self->expire;
+    return 0;
 }
-
 
 =item debug
 
@@ -383,13 +382,11 @@ has no effect if debugging is not enabled for the current harness.
 
 =cut
 
-
 sub debug {
-   my IPC::Run::Timer $self = shift;
-   $self->{DEBUG} = shift if @_;
-   return $self->{DEBUG};
+    my IPC::Run::Timer $self = shift;
+    $self->{DEBUG} = shift if @_;
+    return $self->{DEBUG};
 }
-
 
 =item end_time
 
@@ -412,17 +409,15 @@ clears the end_time().
 
 =cut
 
-
 sub end_time {
-   my IPC::Run::Timer $self = shift;
-   if ( @_ ) {
-      $self->{END_TIME} = shift;
-      _debug $self->name, ' end_time set to ', $self->{END_TIME}
-	 if $self->{DEBUG} > 2 || _debugging_details;
-   }
-   return $self->{END_TIME};
+    my IPC::Run::Timer $self = shift;
+    if (@_) {
+        $self->{END_TIME} = shift;
+        _debug $self->name, ' end_time set to ', $self->{END_TIME}
+          if $self->{DEBUG} > 2 || _debugging_details;
+    }
+    return $self->{END_TIME};
 }
-
 
 =item exception
 
@@ -436,17 +431,15 @@ may ask that references be thrown.
 
 =cut
 
-
 sub exception {
-   my IPC::Run::Timer $self = shift;
-   if ( @_ ) {
-      $self->{EXCEPTION} = shift;
-      _debug $self->name, ' exception set to ', $self->{EXCEPTION}
-	 if $self->{DEBUG} || _debugging_details;
-   }
-   return $self->{EXCEPTION};
+    my IPC::Run::Timer $self = shift;
+    if (@_) {
+        $self->{EXCEPTION} = shift;
+        _debug $self->name, ' exception set to ', $self->{EXCEPTION}
+          if $self->{DEBUG} || _debugging_details;
+    }
+    return $self->{EXCEPTION};
 }
-
 
 =item interval
 
@@ -460,17 +453,16 @@ interval (and a little fudge) if the timer is running.
 =cut
 
 sub interval {
-   my IPC::Run::Timer $self = shift;
-   if ( @_ ) {
-      $self->{INTERVAL} = _parse_time( shift );
-      _debug $self->name, ' interval set to ', $self->{INTERVAL}
-	 if $self->{DEBUG} > 2 || _debugging_details;
+    my IPC::Run::Timer $self = shift;
+    if (@_) {
+        $self->{INTERVAL} = _parse_time(shift);
+        _debug $self->name, ' interval set to ', $self->{INTERVAL}
+          if $self->{DEBUG} > 2 || _debugging_details;
 
-      $self->_calc_end_time if $self->state;
-   }
-   return $self->{INTERVAL};
+        $self->_calc_end_time if $self->state;
+    }
+    return $self->{INTERVAL};
 }
-
 
 =item expire
 
@@ -484,48 +476,43 @@ reset timer without starting it.
 
 =cut
 
-
 sub expire {
-   my IPC::Run::Timer $self = shift;
-   if ( defined $self->state ) {
-      _debug $self->name . ' expired'
-	 if $self->{DEBUG} || _debugging;
+    my IPC::Run::Timer $self = shift;
+    if ( defined $self->state ) {
+        _debug $self->name . ' expired'
+          if $self->{DEBUG} || _debugging;
 
-      $self->state( undef );
-      croak $self->exception if $self->exception;
-   }
-   return undef;
+        $self->state(undef);
+        croak $self->exception if $self->exception;
+    }
+    return undef;
 }
-
 
 =item is_running
 
 =cut
 
-
 sub is_running {
-   my IPC::Run::Timer $self = shift;
-   return $self->state ? 1 : 0;
+    my IPC::Run::Timer $self = shift;
+    return $self->state ? 1 : 0;
 }
-
 
 =item is_reset
 
 =cut
-   
-sub is_reset {
-   my IPC::Run::Timer $self = shift;
-   return defined $self->state && $self->state == 0;
-}
 
+sub is_reset {
+    my IPC::Run::Timer $self = shift;
+    return defined $self->state && $self->state == 0;
+}
 
 =item is_expired
 
 =cut
 
 sub is_expired {
-   my IPC::Run::Timer $self = shift;
-   return ! defined $self->state;
+    my IPC::Run::Timer $self = shift;
+    return !defined $self->state;
 }
 
 =item name
@@ -536,16 +523,14 @@ purposes so you can tell which freakin' timer is doing what.
 =cut
 
 sub name {
-   my IPC::Run::Timer $self = shift;
- 
-   $self->{NAME} = shift if @_;
-   return defined $self->{NAME}
-      ? $self->{NAME}
-      : defined $self->{EXCEPTION}
-         ? 'timeout'
-	 : 'timer';
-}
+    my IPC::Run::Timer $self = shift;
 
+    $self->{NAME} = shift if @_;
+    return
+        defined $self->{NAME}      ? $self->{NAME}
+      : defined $self->{EXCEPTION} ? 'timeout'
+      :                              'timer';
+}
 
 =item reset
 
@@ -558,15 +543,14 @@ the end_time().
 =cut
 
 sub reset {
-   my IPC::Run::Timer $self = shift;
-   $self->state( 0 );
-   $self->end_time( undef );
-   _debug $self->name . ' reset'
+    my IPC::Run::Timer $self = shift;
+    $self->state(0);
+    $self->end_time(undef);
+    _debug $self->name . ' reset'
       if $self->{DEBUG} || _debugging;
 
-   return undef;
+    return undef;
 }
-
 
 =item start
 
@@ -595,35 +579,34 @@ IPC::Run::Timer, occasionally.
 =cut
 
 sub start {
-   my IPC::Run::Timer $self = shift;
+    my IPC::Run::Timer $self = shift;
 
-   my ( $interval, $now ) = map { _parse_time( $_ ) } @_;
-   $now = _parse_time( $now );
-   $now = time unless defined $now;
+    my ( $interval, $now ) = map { _parse_time($_) } @_;
+    $now = _parse_time($now);
+    $now = time unless defined $now;
 
-   $self->interval( $interval ) if defined $interval;
+    $self->interval($interval) if defined $interval;
 
-   ## start()ing a running or expired timer clears the end_time, so that the
-   ## interval is used.  So does specifying an interval.
-   $self->end_time( undef ) if ! $self->is_reset || $interval;
+    ## start()ing a running or expired timer clears the end_time, so that the
+    ## interval is used.  So does specifying an interval.
+    $self->end_time(undef) if !$self->is_reset || $interval;
 
-   croak "IPC::Run: no timer interval or end_time defined for " . $self->name
+    croak "IPC::Run: no timer interval or end_time defined for " . $self->name
       unless defined $self->interval || defined $self->end_time;
 
-   $self->state( 1 );
-   $self->start_time( $now );
-   ## The "+ 1" is in case the START_TIME was sampled at the end of a
-   ## tick (which are one second long in this module).
-   $self->_calc_end_time
+    $self->state(1);
+    $self->start_time($now);
+    ## The "+ 1" is in case the START_TIME was sampled at the end of a
+    ## tick (which are one second long in this module).
+    $self->_calc_end_time
       unless defined $self->end_time;
 
-   _debug(
-      $self->name, " started at ", $self->start_time,
-      ", with interval ", $self->interval, ", end_time ", $self->end_time
-   ) if $self->{DEBUG} || _debugging;
-   return undef;
+    _debug(
+        $self->name, " started at ", $self->start_time,
+        ", with interval ", $self->interval, ", end_time ", $self->end_time
+    ) if $self->{DEBUG} || _debugging;
+    return undef;
 }
-
 
 =item start_time
 
@@ -632,18 +615,16 @@ is a bad idea, it's better to call L</start>() at the correct time.
 
 =cut
 
-
 sub start_time {
-   my IPC::Run::Timer $self = shift;
-   if ( @_ ) {
-      $self->{START_TIME} = _parse_time( shift );
-      _debug $self->name, ' start_time set to ', $self->{START_TIME}
-	 if $self->{DEBUG} > 2 || _debugging;
-   }
+    my IPC::Run::Timer $self = shift;
+    if (@_) {
+        $self->{START_TIME} = _parse_time(shift);
+        _debug $self->name, ' start_time set to ', $self->{START_TIME}
+          if $self->{DEBUG} > 2 || _debugging;
+    }
 
-   return $self->{START_TIME};
+    return $self->{START_TIME};
 }
-
 
 =item state
 
@@ -663,15 +644,14 @@ exception.
 =cut
 
 sub state {
-   my IPC::Run::Timer $self = shift;
-   if ( @_ ) {
-      $self->{STATE} = shift;
-      _debug $self->name, ' state set to ', $self->{STATE}
-	 if $self->{DEBUG} > 2 || _debugging;
-   }
-   return $self->{STATE};
+    my IPC::Run::Timer $self = shift;
+    if (@_) {
+        $self->{STATE} = shift;
+        _debug $self->name, ' state set to ', $self->{STATE}
+          if $self->{DEBUG} > 2 || _debugging;
+    }
+    return $self->{STATE};
 }
-
 
 1;
 

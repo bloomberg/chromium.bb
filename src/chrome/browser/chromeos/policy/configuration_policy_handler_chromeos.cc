@@ -340,7 +340,7 @@ void PinnedLauncherAppsPolicyHandler::ApplyList(
 ScreenMagnifierPolicyHandler::ScreenMagnifierPolicyHandler()
     : IntRangePolicyHandlerBase(key::kScreenMagnifierType,
                                 chromeos::MAGNIFIER_DISABLED,
-                                chromeos::MAGNIFIER_FULL,
+                                chromeos::MAGNIFIER_DOCKED,
                                 false) {}
 
 ScreenMagnifierPolicyHandler::~ScreenMagnifierPolicyHandler() {
@@ -352,10 +352,10 @@ void ScreenMagnifierPolicyHandler::ApplyPolicySettings(
   const base::Value* value = policies.GetValue(policy_name());
   int value_in_range;
   if (value && EnsureInRange(value, &value_in_range, nullptr)) {
-    // The "type" is only used to enable or disable the feature as a whole.
-    // http://crbug.com/170850
     prefs->SetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled,
-                      value_in_range != chromeos::MAGNIFIER_DISABLED);
+                      value_in_range == chromeos::MAGNIFIER_FULL);
+    prefs->SetBoolean(ash::prefs::kDockedMagnifierEnabled,
+                      value_in_range == chromeos::MAGNIFIER_DOCKED);
   }
 }
 

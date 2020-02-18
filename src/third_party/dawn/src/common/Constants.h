@@ -17,7 +17,6 @@
 
 #include <cstdint>
 
-static constexpr uint32_t kMaxPushConstants = 32u;
 static constexpr uint32_t kMaxBindGroups = 4u;
 // TODO(cwallez@chromium.org): investigate bindgroup limits
 static constexpr uint32_t kMaxBindingsPerGroup = 16u;
@@ -36,6 +35,10 @@ static constexpr uint32_t kMaxColorAttachments = 4u;
 static constexpr uint32_t kTextureRowPitchAlignment = 256u;
 // Dynamic buffer offsets require offset to be divisible by 256
 static constexpr uint64_t kMinDynamicBufferOffsetAlignment = 256u;
+// Indirect command sizes
+static constexpr uint64_t kDispatchIndirectSize = 3 * sizeof(uint32_t);
+static constexpr uint64_t kDrawIndirectSize = 4 * sizeof(uint32_t);
+static constexpr uint64_t kDrawIndexedIndirectSize = 5 * sizeof(uint32_t);
 
 // Non spec defined constants.
 static constexpr float kLodMin = 0.0;
@@ -47,5 +50,12 @@ static constexpr uint32_t kVendorID_ImgTec = 0x1010;
 static constexpr uint32_t kVendorID_Intel = 0x8086;
 static constexpr uint32_t kVendorID_Nvidia = 0x10DE;
 static constexpr uint32_t kVendorID_Qualcomm = 0x5143;
+
+// Max texture size constants
+static constexpr uint32_t kMaxTextureSize = 8192u;
+static constexpr uint32_t kMaxTexture2DArrayLayers = 256u;
+static constexpr uint32_t kMaxTexture2DMipLevels = 14u;
+static_assert(1 << (kMaxTexture2DMipLevels - 1) == kMaxTextureSize,
+              "kMaxTexture2DMipLevels and kMaxTextureSize size mismatch");
 
 #endif  // COMMON_CONSTANTS_H_

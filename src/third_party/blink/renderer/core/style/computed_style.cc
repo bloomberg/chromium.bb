@@ -72,6 +72,7 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/case_map.h"
 
 namespace blink {
 
@@ -152,8 +153,6 @@ scoped_refptr<ComputedStyle>
 ComputedStyle::CreateInheritedDisplayContentsStyleIfNeeded(
     const ComputedStyle& parent_style,
     const ComputedStyle& layout_parent_style) {
-  if (&parent_style == &layout_parent_style)
-    return nullptr;
   if (parent_style.InheritedEqual(layout_parent_style))
     return nullptr;
   return ComputedStyle::CreateAnonymousStyleWithDisplay(parent_style,
@@ -237,32 +236,54 @@ ComputedStyle::Difference ComputedStyle::ComputeDifference(
     return Difference::kEqual;
   if (!old_style || !new_style)
     return Difference::kInherited;
-  if (old_style->Display() != new_style->Display() &&
-      (old_style->IsDisplayFlexibleOrGridBox() ||
-       old_style->IsDisplayLayoutCustomBox() ||
-       new_style->IsDisplayFlexibleOrGridBox() ||
-       old_style->IsDisplayLayoutCustomBox())) {
+
+  // For inline elements, the new computed first line style will be |new_style|
+  // inheriting from the parent's first line style. If |new_style| is different
+  // from |old_style|'s cached inherited first line style, the new computed
+  // first line style may be different from the old even if |new_style| and
+  // |old_style| equal. Especially if the difference is on inherited properties,
+  // we need to propagate the difference to descendants.
+  // See external/wpt/css/css-pseudo/first-line-change-inline-color*.html.
+  auto inherited_first_line_style_diff = Difference::kEqual;
+  if (const ComputedStyle* cached_inherited_first_line_style =
+          old_style->GetCachedPseudoStyle(kPseudoIdFirstLineInherited)) {
+    DCHECK(!new_style->GetCachedPseudoStyle(kPseudoIdFirstLineInherited));
+    inherited_first_line_style_diff =
+        ComputeDifferenceIgnoringInheritedFirstLineStyle(
+            *cached_inherited_first_line_style, *new_style);
+  }
+  return std::max(
+      inherited_first_line_style_diff,
+      ComputeDifferenceIgnoringInheritedFirstLineStyle(*old_style, *new_style));
+}
+
+ComputedStyle::Difference
+ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
+    const ComputedStyle& old_style,
+    const ComputedStyle& new_style) {
+  DCHECK_NE(&old_style, &new_style);
+  if (old_style.Display() != new_style.Display() &&
+      old_style.BlockifiesChildren() != new_style.BlockifiesChildren())
     return Difference::kDisplayAffectingDescendantStyles;
+  if (!old_style.NonIndependentInheritedEqual(new_style))
+    return Difference::kInherited;
+  if (!old_style.LoadingCustomFontsEqual(new_style) ||
+      old_style.JustifyItems() != new_style.JustifyItems())
+    return Difference::kInherited;
+  bool non_inherited_equal = old_style.NonInheritedEqual(new_style);
+  if (!non_inherited_equal && old_style.HasExplicitlyInheritedProperties()) {
+    return Difference::kInherited;
   }
-  if (!old_style->NonIndependentInheritedEqual(*new_style))
-    return Difference::kInherited;
-  if (!old_style->LoadingCustomFontsEqual(*new_style) ||
-      old_style->JustifyItems() != new_style->JustifyItems())
-    return Difference::kInherited;
-  bool non_inherited_equal = old_style->NonInheritedEqual(*new_style);
-  if (!non_inherited_equal && old_style->HasExplicitlyInheritedProperties()) {
-    return Difference::kInherited;
-  }
-  if (!old_style->IndependentInheritedEqual(*new_style))
+  if (!old_style.IndependentInheritedEqual(new_style))
     return Difference::kIndependentInherited;
   if (non_inherited_equal) {
-    DCHECK(*old_style == *new_style);
-    if (PseudoStylesEqual(*old_style, *new_style))
+    DCHECK(old_style == new_style);
+    if (PseudoStylesEqual(old_style, new_style))
       return Difference::kEqual;
     return Difference::kPseudoStyle;
   }
-  if (new_style->HasAnyPublicPseudoStyles() ||
-      old_style->HasAnyPublicPseudoStyles())
+  if (new_style.HasAnyPublicPseudoStyles() ||
+      old_style.HasAnyPublicPseudoStyles())
     return Difference::kPseudoStyle;
   return Difference::kNonInherited;
 }
@@ -459,7 +480,7 @@ const ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
 }
 
 const ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
-    scoped_refptr<ComputedStyle> pseudo) {
+    scoped_refptr<const ComputedStyle> pseudo) const {
   DCHECK(pseudo);
   DCHECK_GT(pseudo->StyleType(), kPseudoIdNone);
 
@@ -1510,12 +1531,18 @@ void ComputedStyle::ApplyTextTransform(String* text,
     case ETextTransform::kCapitalize:
       *text = Capitalize(*text, previous_character);
       return;
-    case ETextTransform::kUppercase:
-      *text = DisableNewGeorgianCapitalLetters(text->UpperUnicode(Locale()));
+    case ETextTransform::kUppercase: {
+      const LayoutLocale* locale = GetFontDescription().Locale();
+      CaseMap case_map(locale ? locale->CaseMapLocale() : CaseMap::Locale());
+      *text = DisableNewGeorgianCapitalLetters(case_map.ToUpper(*text));
       return;
-    case ETextTransform::kLowercase:
-      *text = text->LowerUnicode(Locale());
+    }
+    case ETextTransform::kLowercase: {
+      const LayoutLocale* locale = GetFontDescription().Locale();
+      CaseMap case_map(locale ? locale->CaseMapLocale() : CaseMap::Locale());
+      *text = case_map.ToLower(*text);
       return;
+    }
   }
   NOTREACHED();
 }
@@ -2015,8 +2042,8 @@ void ComputedStyle::ClearMultiCol() {
       ComputedStyleInitialValues::InitialColumnRuleColor());
   SetColumnRuleColorIsCurrentColor(
       ComputedStyleInitialValues::InitialColumnRuleColorIsCurrentColor());
-  SetVisitedLinkColumnRuleColorInternal(
-      ComputedStyleInitialValues::InitialVisitedLinkColumnRuleColor());
+  SetInternalVisitedColumnRuleColorInternal(
+      ComputedStyleInitialValues::InitialInternalVisitedColumnRuleColor());
   SetColumnCountInternal(ComputedStyleInitialValues::InitialColumnCount());
   SetHasAutoColumnCountInternal(
       ComputedStyleInitialValues::InitialHasAutoColumnCount());
@@ -2028,8 +2055,8 @@ void ComputedStyle::ClearMultiCol() {
 
 StyleColor ComputedStyle::DecorationColorIncludingFallback(
     bool visited_link) const {
-  StyleColor style_color =
-      visited_link ? VisitedLinkTextDecorationColor() : TextDecorationColor();
+  StyleColor style_color = visited_link ? InternalVisitedTextDecorationColor()
+                                        : TextDecorationColor();
 
   if (!style_color.IsCurrentColor())
     return style_color;
@@ -2037,24 +2064,35 @@ StyleColor ComputedStyle::DecorationColorIncludingFallback(
   if (TextStrokeWidth()) {
     // Prefer stroke color if possible, but not if it's fully transparent.
     StyleColor text_stroke_style_color =
-        visited_link ? VisitedLinkTextStrokeColor() : TextStrokeColor();
+        visited_link ? InternalVisitedTextStrokeColor() : TextStrokeColor();
     if (!text_stroke_style_color.IsCurrentColor() &&
         text_stroke_style_color.GetColor().Alpha())
       return text_stroke_style_color;
   }
 
-  return visited_link ? VisitedLinkTextFillColor() : TextFillColor();
+  return visited_link ? InternalVisitedTextFillColor() : TextFillColor();
 }
 
 Color ComputedStyle::VisitedDependentColor(
     const CSSProperty& color_property) const {
+  DCHECK(!color_property.IsVisited());
+
   Color unvisited_color =
       To<Longhand>(color_property).ColorIncludingFallback(false, *this);
   if (InsideLink() != EInsideLink::kInsideVisitedLink)
     return unvisited_color;
 
+  // Properties that provide a GetVisitedProperty() must use the
+  // ColorIncludingFallback function on that property.
+  //
+  // TODO(andruud): Simplify this when all properties support
+  // GetVisitedProperty.
+  const CSSProperty* visited_property = &color_property;
+  if (const CSSProperty* visited = color_property.GetVisitedProperty())
+    visited_property = visited;
+
   Color visited_color =
-      To<Longhand>(color_property).ColorIncludingFallback(true, *this);
+      To<Longhand>(*visited_property).ColorIncludingFallback(true, *this);
 
   // Take the alpha from the unvisited color, but get the RGB values from the
   // visited color.

@@ -20,8 +20,7 @@ SimpleDownloadManagerCoordinator::SimpleDownloadManagerCoordinator(
       current_manager_has_all_history_downloads_(false),
       initialized_(false),
       download_when_full_manager_starts_cb_(
-          download_when_full_manager_starts_cb),
-      weak_factory_(this) {}
+          download_when_full_manager_starts_cb) {}
 
 SimpleDownloadManagerCoordinator::~SimpleDownloadManagerCoordinator() {
   if (simple_download_manager_)
@@ -73,8 +72,10 @@ void SimpleDownloadManagerCoordinator::DownloadUrl(
 
 void SimpleDownloadManagerCoordinator::GetAllDownloads(
     std::vector<DownloadItem*>* downloads) {
-  if (simple_download_manager_)
+  if (simple_download_manager_) {
     simple_download_manager_->GetAllDownloads(downloads);
+    simple_download_manager_->GetUninitializedActiveDownloadsIfAny(downloads);
+  }
 }
 
 DownloadItem* SimpleDownloadManagerCoordinator::GetDownloadByGuid(
@@ -104,6 +105,10 @@ AllDownloadEventNotifier* SimpleDownloadManagerCoordinator::GetNotifier() {
   if (!notifier_)
     notifier_ = std::make_unique<AllDownloadEventNotifier>(this);
   return notifier_.get();
+}
+
+void SimpleDownloadManagerCoordinator::CheckForExternallyRemovedDownloads() {
+  simple_download_manager_->CheckForHistoryFilesRemoval();
 }
 
 }  // namespace download

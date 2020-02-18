@@ -22,8 +22,8 @@
 #include <thread>
 #include <unordered_map>
 
-#include "gtest/gtest.h"
-#include "perfetto/base/optional.h"
+#include <gtest/gtest.h>
+#include "perfetto/ext/base/optional.h"
 
 namespace perfetto {
 namespace profiling {

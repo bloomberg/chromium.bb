@@ -12,6 +12,7 @@
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
 namespace system_media_controls {
@@ -47,6 +48,8 @@ class CONTENT_EXPORT SystemMediaControlsNotifier
       override {}
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override {}
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override {}
 
   // media_session::mojom::MediaControllerImageObserver implementation.
   void MediaControllerImageChanged(
@@ -91,10 +94,10 @@ class CONTENT_EXPORT SystemMediaControlsNotifier
   media_session::mojom::MediaSessionInfoPtr session_info_ptr_;
 
   // Used to receive updates to the active media controller.
-  mojo::Binding<media_session::mojom::MediaControllerObserver>
-      media_controller_observer_binding_{this};
-  mojo::Binding<media_session::mojom::MediaControllerImageObserver>
-      media_controller_image_observer_binding_{this};
+  mojo::Receiver<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_receiver_{this};
+  mojo::Receiver<media_session::mojom::MediaControllerImageObserver>
+      media_controller_image_observer_receiver_{this};
 
   SEQUENCE_CHECKER(sequence_checker_);
 

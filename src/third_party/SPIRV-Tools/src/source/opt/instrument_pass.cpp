@@ -264,6 +264,28 @@ void InstrumentPass::GenStageStreamWriteCode(uint32_t stage_idx,
         GenFragCoordEltDebugOutputCode(
             base_offset_id, uint_frag_coord_inst->result_id(), u, builder);
     } break;
+    case SpvExecutionModelRayGenerationNV:
+    case SpvExecutionModelIntersectionNV:
+    case SpvExecutionModelAnyHitNV:
+    case SpvExecutionModelClosestHitNV:
+    case SpvExecutionModelMissNV:
+    case SpvExecutionModelCallableNV: {
+      // Load and store LaunchIdNV.
+      uint32_t launch_id = GenVarLoad(
+          context()->GetBuiltinInputVarId(SpvBuiltInLaunchIdNV), builder);
+      Instruction* x_launch_inst = builder->AddIdLiteralOp(
+          GetUintId(), SpvOpCompositeExtract, launch_id, 0);
+      Instruction* y_launch_inst = builder->AddIdLiteralOp(
+          GetUintId(), SpvOpCompositeExtract, launch_id, 1);
+      Instruction* z_launch_inst = builder->AddIdLiteralOp(
+          GetUintId(), SpvOpCompositeExtract, launch_id, 2);
+      GenDebugOutputFieldCode(base_offset_id, kInstRayTracingOutLaunchIdX,
+                              x_launch_inst->result_id(), builder);
+      GenDebugOutputFieldCode(base_offset_id, kInstRayTracingOutLaunchIdY,
+                              y_launch_inst->result_id(), builder);
+      GenDebugOutputFieldCode(base_offset_id, kInstRayTracingOutLaunchIdZ,
+                              z_launch_inst->result_id(), builder);
+    } break;
     default: { assert(false && "unsupported stage"); } break;
   }
 }
@@ -605,7 +627,9 @@ uint32_t InstrumentPass::GetStreamWriteFunctionId(uint32_t stage_idx,
         context(), &*new_blk_ptr,
         IRContext::kAnalysisDefUse | IRContext::kAnalysisInstrToBlockMapping);
     // Gen test if debug output buffer size will not be exceeded.
-    uint32_t obuf_record_sz = kInstStageOutCnt + val_spec_param_cnt;
+    uint32_t val_spec_offset =
+        (version_ == 1) ? kInstStageOutCnt : kInst2StageOutCnt;
+    uint32_t obuf_record_sz = val_spec_offset + val_spec_param_cnt;
     uint32_t buf_id = GetOutputBufferId();
     uint32_t buf_uint_ptr_id = GetBufferUintPtrId();
     Instruction* obuf_curr_sz_ac_inst =
@@ -649,8 +673,6 @@ uint32_t InstrumentPass::GetStreamWriteFunctionId(uint32_t stage_idx,
     GenCommonStreamWriteCode(obuf_record_sz, param_vec[kInstCommonParamInstIdx],
                              stage_idx, obuf_curr_sz_id, &builder);
     GenStageStreamWriteCode(stage_idx, obuf_curr_sz_id, &builder);
-    uint32_t val_spec_offset =
-        (version_ == 1) ? kInstStageOutCnt : kInst2StageOutCnt;
     // Gen writes of validation specific data
     for (uint32_t i = 0; i < val_spec_param_cnt; ++i) {
       GenDebugOutputFieldCode(obuf_curr_sz_id, val_spec_offset + i,
@@ -843,7 +865,12 @@ bool InstrumentPass::InstProcessEntryPointCallTree(InstProcessFunction& pfn) {
       stage != SpvExecutionModelGeometry &&
       stage != SpvExecutionModelGLCompute &&
       stage != SpvExecutionModelTessellationControl &&
-      stage != SpvExecutionModelTessellationEvaluation)
+      stage != SpvExecutionModelTessellationEvaluation &&
+      stage != SpvExecutionModelRayGenerationNV &&
+      stage != SpvExecutionModelIntersectionNV &&
+      stage != SpvExecutionModelAnyHitNV &&
+      stage != SpvExecutionModelClosestHitNV &&
+      stage != SpvExecutionModelMissNV && stage != SpvExecutionModelCallableNV)
     return false;
   // Add together the roots of all entry points
   std::queue<uint32_t> roots;

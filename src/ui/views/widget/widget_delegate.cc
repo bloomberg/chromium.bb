@@ -23,16 +23,7 @@ WidgetDelegate::~WidgetDelegate() {
 }
 
 void WidgetDelegate::SetCanActivate(bool can_activate) {
-  if (can_activate == can_activate_)
-    return;
-
-  const bool previous_value = CanActivate();
   can_activate_ = can_activate;
-  if (previous_value != CanActivate()) {
-    Widget* widget = GetWidget();
-    if (widget)
-      widget->OnCanActivateChanged();
-  }
 }
 
 void WidgetDelegate::OnWidgetMove() {
@@ -190,8 +181,6 @@ bool WidgetDelegate::ShouldDescendIntoChildForEventHandling(
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetDelegateView:
 
-// static
-const char WidgetDelegateView::kViewClassName[] = "WidgetDelegateView";
 
 WidgetDelegateView::WidgetDelegateView() {
   // A WidgetDelegate should be deleted on DeleteDelegate.
@@ -216,8 +205,8 @@ views::View* WidgetDelegateView::GetContentsView() {
   return this;
 }
 
-const char* WidgetDelegateView::GetClassName() const {
-  return kViewClassName;
-}
+BEGIN_METADATA(WidgetDelegateView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

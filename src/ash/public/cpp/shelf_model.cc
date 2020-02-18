@@ -18,11 +18,6 @@ static ShelfModel* g_shelf_model = nullptr;
 
 int ShelfItemTypeToWeight(ShelfItemType type) {
   switch (type) {
-    case TYPE_APP_LIST:
-    case TYPE_BACK_BUTTON:
-      // TODO(skuhne): If the app list and back button items become movable,
-      // this needs to be a fallthrough.
-      return 0;
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_PINNED_APP:
       return 1;
@@ -45,10 +40,6 @@ bool CompareByWeight(const ShelfItem& a, const ShelfItem& b) {
 
 }  // namespace
 
-// TODO(michaelpg): Rename App List item to Home Button.
-const char kAppListId[] = "jlfapfmkapbjlfbpjedlinehodkccjee";
-const char kBackButtonId[] = "icmmkgojeloilfifneofeejijgdhjknf";
-
 ShelfModel* ShelfModel::Get() {
   DCHECK(g_shelf_model);
   return g_shelf_model;
@@ -58,22 +49,7 @@ void ShelfModel::SetInstance(ShelfModel* shelf_model) {
   g_shelf_model = shelf_model;
 }
 
-ShelfModel::ShelfModel() {
-  // Add the back button and app list item; its title and delegate are set in
-  // ShelfController. This avoids an ash/public dep on ash/strings, and a
-  // Chrome-side delegate.
-  ShelfItem back_button_item;
-  back_button_item.type = TYPE_BACK_BUTTON;
-  back_button_item.id = ShelfID(kBackButtonId);
-  const int back_button_index = Add(back_button_item);
-  DCHECK_EQ(0, back_button_index);
-
-  ShelfItem app_list_item;
-  app_list_item.type = TYPE_APP_LIST;
-  app_list_item.id = ShelfID(kAppListId);
-  const int app_list_index = Add(app_list_item);
-  DCHECK_EQ(1, app_list_index);
-}
+ShelfModel::ShelfModel() = default;
 
 ShelfModel::~ShelfModel() = default;
 

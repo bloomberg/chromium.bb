@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -23,6 +24,13 @@
 #include "net/base/escape.h"
 #include "url/gurl.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#endif
+
 namespace {
 
 // Whether we accept requests for launching external protocols. This is set to
@@ -34,16 +42,28 @@ ExternalProtocolHandler::Delegate* g_external_protocol_handler_delegate =
     nullptr;
 
 constexpr const char* kDeniedSchemes[] = {
-    "afp", "data", "disk", "disks",
+    "afp",
+    "data",
+    "disk",
+    "disks",
     // ShellExecuting file:///C:/WINDOWS/system32/notepad.exe will simply
     // execute the file specified!  Hopefully we won't see any "file" schemes
     // because we think of file:// URLs as handled URLs, but better to be safe
     // than to let an attacker format the user's hard drive.
-    "file", "hcp", "javascript", "ms-help", "nntp", "res", "shell", "vbscript",
+    "file",
+    "hcp",
+    "ie.http",
+    "javascript",
+    "ms-help",
+    "nntp",
+    "res",
+    "shell",
+    "vbscript",
     // view-source is a special case in chrome. When it comes through an
     // iframe or a redirect, it looks like an external protocol, but we don't
     // want to shellexecute it.
-    "view-source", "vnd.ms.radio",
+    "view-source",
+    "vnd.ms.radio",
 };
 
 constexpr const char* kAllowedSchemes[] = {
@@ -103,6 +123,20 @@ void LaunchUrlWithoutSecurityCheckWithDelegate(
 
   platform_util::OpenExternal(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()), url);
+
+#if !defined(OS_ANDROID)
+  // If the protocol navigation occurs in a new tab, close it.
+  // Avoid calling CloseContents if the tab is not in this browser's tab strip
+  // model; this can happen if the protocol was initiated by something
+  // internal to Chrome.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (browser && web_contents->GetController().IsInitialNavigation() &&
+      browser->tab_strip_model()->count() > 1 &&
+      browser->tab_strip_model()->GetIndexOfWebContents(web_contents) !=
+          TabStripModel::kNoTab) {
+    web_contents->Close();
+  }
+#endif
 }
 
 // When we are about to launch a URL with the default OS level application, we
@@ -122,14 +156,30 @@ void OnDefaultProtocolClientWorkerFinished(
   if (delegate)
     delegate->FinishedProcessingCheck();
 
-  if (state == shell_integration::IS_DEFAULT) {
+  content::WebContents* web_contents = tab_util::GetWebContentsByID(
+      render_process_host_id, render_view_routing_id);
+
+  // The default handler is hidden if it is Chrome itself, as nothing will
+  // happen if it is selected (since this is invoked by the external protocol
+  // handling flow).
+  bool chrome_is_default_handler = state == shell_integration::IS_DEFAULT;
+
+#if !defined(OS_ANDROID)
+  if (web_contents &&
+      ShouldOfferClickToCall(web_contents->GetBrowserContext(), escaped_url)) {
+    // Handle tel links by opening the Click to Call dialog. This will call back
+    // into LaunchUrlWithoutSecurityCheck if the user selects a system handler.
+    ClickToCallSharingDialogController::ShowDialog(web_contents, escaped_url,
+                                                   chrome_is_default_handler);
+    return;
+  }
+#endif
+
+  if (chrome_is_default_handler) {
     if (delegate)
       delegate->BlockRequest();
     return;
   }
-
-  content::WebContents* web_contents = tab_util::GetWebContentsByID(
-      render_process_host_id, render_view_routing_id);
 
   // If we get here, either we are not the default or we cannot work out
   // what the default is, so we proceed.
@@ -166,7 +216,7 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
     Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // If we are being carpet bombed, block the request.
+  // If we are being flooded with requests, block the request.
   if (!g_accept_requests)
     return BLOCK;
 

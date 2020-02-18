@@ -29,7 +29,9 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/chromeos/camera/camera_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -66,13 +68,6 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
             InternalAppName::kKeyboardShortcutViewer,
             IDS_LAUNCHER_SEARCHABLE_KEYBOARD_SHORTCUT_VIEWER},
 
-           {kInternalAppIdSettings, IDS_INTERNAL_APP_SETTINGS,
-            IDR_SETTINGS_LOGO_192,
-            /*recommendable=*/true,
-            /*searchable=*/true,
-            /*show_in_launcher=*/true, InternalAppName::kSettings,
-            /*searchable_string_resource_id=*/0},
-
            {kInternalAppIdContinueReading, IDS_INTERNAL_APP_CONTINUOUS_READING,
             IDR_PRODUCT_LOGO_256,
             /*recommendable=*/true,
@@ -87,7 +82,7 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
                             internal_app_list_static->end());
 
   const bool add_camera_app = get_all || !profile->IsGuestSession();
-  if (add_camera_app) {
+  if (add_camera_app && !chromeos::CameraUI::IsEnabled()) {
     internal_app_list->push_back(
         {kInternalAppIdCamera, IDS_INTERNAL_APP_CAMERA, IDR_CAMERA_LOGO_192,
          /*recommendable=*/true,
@@ -107,6 +102,19 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
          /*searchable=*/true,
          /*show_in_launcher=*/true, InternalAppName::kDiscover,
          /*searchable_string_resource_id=*/IDS_INTERNAL_APP_DISCOVER});
+  }
+
+  // TODO(calamity/nigeltao): when removing the
+  // web_app::SystemWebAppManager::IsEnabled condition, we can probably also
+  // remove the apps::BuiltInChromeOsApps::SetHideSettingsAppForTesting hack.
+  if (!web_app::SystemWebAppManager::IsEnabled()) {
+    internal_app_list->push_back(
+        {kInternalAppIdSettings, IDS_INTERNAL_APP_SETTINGS,
+         IDR_SETTINGS_LOGO_192,
+         /*recommendable=*/true,
+         /*searchable=*/true,
+         /*show_in_launcher=*/true, InternalAppName::kSettings,
+         /*searchable_string_resource_id=*/0});
   }
 
   if (get_all || plugin_vm::IsPluginVmAllowedForProfile(profile)) {
@@ -158,7 +166,8 @@ void OpenChromeCameraApp(Profile* profile, int event_flags) {
   if (extension) {
     AppListClientImpl* controller = AppListClientImpl::GetInstance();
     AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
-        profile, extension, event_flags, extensions::SOURCE_APP_LAUNCHER,
+        profile, extension, event_flags,
+        extensions::AppLaunchSource::kSourceAppLauncher,
         controller->GetAppListDisplayId());
     params.launch_id = ash::ShelfID(extension->id()).launch_id;
     OpenApplication(params);

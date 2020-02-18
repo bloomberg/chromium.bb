@@ -4,6 +4,7 @@
 
 #include "components/sync_bookmarks/bookmark_model_type_processor.h"
 
+#include <map>
 #include <utility>
 
 #include "base/bind.h"
@@ -31,6 +32,7 @@
 #include "components/sync_bookmarks/bookmark_remote_updates_handler.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
 #include "components/undo/bookmark_undo_utils.h"
+#include "ui/base/models/tree_node_iterator.h"
 
 namespace sync_bookmarks {
 
@@ -141,13 +143,29 @@ std::string ComputeServerDefinedUniqueTagForDebugging(
   return "";
 }
 
+// Returns a map from id to node for all nodes in |model|.
+std::map<int64_t, const bookmarks::BookmarkNode*> BuildIdToBookmarkNodeMap(
+    const bookmarks::BookmarkModel* model) {
+  std::map<int64_t, const bookmarks::BookmarkNode*> id_to_bookmark_node_map;
+
+  // The TreeNodeIterator used below doesn't include the node itself, and hence
+  // add the root node separately.
+  id_to_bookmark_node_map[model->root_node()->id()] = model->root_node();
+
+  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
+      model->root_node());
+  while (iterator.has_next()) {
+    const bookmarks::BookmarkNode* node = iterator.Next();
+    id_to_bookmark_node_map[node->id()] = node;
+  }
+  return id_to_bookmark_node_map;
+}
+
 }  // namespace
 
 BookmarkModelTypeProcessor::BookmarkModelTypeProcessor(
     BookmarkUndoService* bookmark_undo_service)
-    : bookmark_undo_service_(bookmark_undo_service),
-      weak_ptr_factory_for_controller_(this),
-      weak_ptr_factory_for_worker_(this) {}
+    : bookmark_undo_service_(bookmark_undo_service) {}
 
 BookmarkModelTypeProcessor::~BookmarkModelTypeProcessor() {
   if (bookmark_model_ && bookmark_model_observer_) {
@@ -320,21 +338,21 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
   bookmark_model_ = model;
   schedule_save_closure_ = schedule_save_closure;
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
   sync_pb::BookmarkModelMetadata model_metadata;
   model_metadata.ParseFromString(metadata_str);
 
   if (model_metadata.model_type_state().initial_sync_done() &&
       SyncedBookmarkTracker::BookmarkModelMatchesMetadata(model,
                                                           model_metadata)) {
+    std::map<int64_t, const bookmarks::BookmarkNode*> id_to_bookmark_node_map =
+        BuildIdToBookmarkNodeMap(bookmark_model_);
     std::vector<NodeMetadataPair> nodes_metadata;
     for (sync_pb::BookmarkMetadata& bookmark_metadata :
          *model_metadata.mutable_bookmarks_metadata()) {
-      // TODO(crbug.com/516866): Replace with a more efficient way to retrieve
-      // all nodes and store in a map keyed by id instead of doing a lookup for
-      // every id.
       const bookmarks::BookmarkNode* node = nullptr;
       if (!bookmark_metadata.metadata().is_deleted()) {
-        node = GetBookmarkNodeByID(bookmark_model_, bookmark_metadata.id());
+        node = id_to_bookmark_node_map[bookmark_metadata.id()];
         DCHECK(node);
       }
       auto metadata = std::make_unique<sync_pb::EntityMetadata>();
@@ -346,6 +364,8 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
     StartTrackingMetadata(std::move(nodes_metadata),
                           std::move(model_type_state));
     bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
+    UMA_HISTOGRAM_TIMES("Sync.BookmarksModelReadyToSyncTime",
+                        base::TimeTicks::Now() - start_time);
   } else if (!model_metadata.model_type_state().initial_sync_done() &&
              !model_metadata.bookmarks_metadata().empty()) {
     DLOG(ERROR)
@@ -535,11 +555,9 @@ void BookmarkModelTypeProcessor::GetAllNodesForDebugging(
   all_nodes->Append(std::move(root_node));
 
   const bookmarks::BookmarkNode* model_root_node = bookmark_model_->root_node();
-  for (int i = 0; i < model_root_node->child_count(); ++i) {
-    const bookmarks::BookmarkNode* model_permanent_node =
-        model_root_node->GetChild(i);
-    AppendNodeAndChildrenForDebugging(model_permanent_node, i, all_nodes.get());
-  }
+  int i = 0;
+  for (const auto& child : model_root_node->children())
+    AppendNodeAndChildrenForDebugging(child.get(), i++, all_nodes.get());
 
   std::move(callback).Run(syncer::BOOKMARKS, std::move(all_nodes));
 }
@@ -564,7 +582,7 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
   data.creation_time = node->date_added();
   data.modification_time =
       syncer::ProtoTimeToTime(metadata->modification_time());
-  data.non_unique_name = base::UTF16ToUTF8(node->GetTitle());
+  data.name = base::UTF16ToUTF8(node->GetTitle());
   data.is_folder = node->is_folder();
   data.unique_position = metadata->unique_position();
   data.specifics = CreateSpecificsFromBookmarkNode(
@@ -605,9 +623,9 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
   data_dictionary->SetString("modelType", "Bookmarks");
   all_nodes->Append(std::move(data_dictionary));
 
-  for (int i = 0; i < node->child_count(); ++i) {
-    AppendNodeAndChildrenForDebugging(node->GetChild(i), i, all_nodes);
-  }
+  int i = 0;
+  for (const auto& child : node->children())
+    AppendNodeAndChildrenForDebugging(child.get(), i++, all_nodes);
 }
 
 void BookmarkModelTypeProcessor::GetStatusCountersForDebugging(

@@ -6,17 +6,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace keyboard {
-namespace {
 
-class NotificationManagerTest : public testing::Test {
- public:
-  NotificationManagerTest() {}
-  ~NotificationManagerTest() override {}
-};
-
-}  // namespace
-
-TEST_F(NotificationManagerTest, DoesItConsolidate) {
+TEST(NotificationManagerTest, DoesItConsolidate) {
   NotificationManager manager;
 
   ASSERT_TRUE(manager.ShouldSendVisibilityNotification(false));

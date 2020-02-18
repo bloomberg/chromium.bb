@@ -120,6 +120,8 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     PaymentRequestImpl mPaymentRequest;
     PaymentRequestUI mUI;
 
+    private final boolean mDelayStartActivity;
+
     private final AtomicReference<WebContents> mWebContentsRef;
 
     private final String mTestFilePath;
@@ -129,6 +131,11 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     private final MainActivityStartCallback mCallback;
 
     public PaymentRequestTestRule(String testFileName, MainActivityStartCallback callback) {
+        this(testFileName, callback, false);
+    }
+
+    public PaymentRequestTestRule(
+            String testFileName, MainActivityStartCallback callback, boolean delayStartActivity) {
         super();
         mReadyForInput = new PaymentsCallbackHelper<>();
         mReadyToPay = new PaymentsCallbackHelper<>();
@@ -155,6 +162,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                 : UrlUtils.getIsolatedTestFilePath(
                         String.format("components/test/data/payments/%s", testFileName));
         mCallback = callback;
+        mDelayStartActivity = delayStartActivity;
     }
 
     public PaymentRequestTestRule(String testFileName) {
@@ -483,6 +491,21 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                 ()
                         -> ((OptionSection) mUI.getPaymentMethodSectionForTest())
                                    .getNumberOfOptionLabelsForTest());
+    }
+
+    /**
+     * Returns the label corresponding to the payment method suggestion at the specified
+     * |suggestionIndex|.
+     */
+    protected String getPaymentMethodSuggestionLabel(final int suggestionIndex) {
+        Assert.assertTrue(suggestionIndex < getNumberOfPaymentInstruments());
+
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                ()
+                        -> ((OptionSection) mUI.getPaymentMethodSectionForTest())
+                                   .getOptionLabelsForTest(suggestionIndex)
+                                   .getText()
+                                   .toString());
     }
 
     /** Returns the number of contact detail suggestions. */
@@ -1154,8 +1177,8 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         }
 
         @Override
-        public void getInstruments(Map<String, PaymentMethodData> methodData, String origin,
-                String iframeOrigin, byte[][] certificateChain,
+        public void getInstruments(String id, Map<String, PaymentMethodData> methodData,
+                String origin, String iframeOrigin, byte[][] certificateChain,
                 Map<String, PaymentDetailsModifier> modifiers,
                 InstrumentsCallback instrumentsCallback) {
             mCallback = instrumentsCallback;
@@ -1241,7 +1264,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         return super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                startMainActivity();
+                if (!mDelayStartActivity) startMainActivity();
                 base.evaluate();
             }
         }, description);

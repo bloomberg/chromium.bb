@@ -1,12 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_CTYPE
 #define _INC_CTYPE
 
-#include <_mingw.h>
+#include <crtdefs.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,7 +25,11 @@ extern "C" {
 #ifdef _MSVCRT_
 #define __pctype_func()	(_pctype)
 #else
+#if __MSVCRT_VERSION__ >= 0x1400
+  _CRTIMP unsigned short* __pctype_func(void);
+#else
 #define __pctype_func()	(* __MINGW_IMP_SYMBOL(_pctype))
+#endif
 #endif
 #endif
 
@@ -33,8 +37,12 @@ extern "C" {
 #ifdef _MSVCRT_
   extern unsigned short *_pctype;
 #else
+#if __MSVCRT_VERSION__ >= 0x1400
+#define _pctype (__pctype_func())
+#else
   extern unsigned short ** __MINGW_IMP_SYMBOL(_pctype);
 #define _pctype (* __MINGW_IMP_SYMBOL(_pctype))
+#endif
 #endif
 #endif
 
@@ -191,15 +199,17 @@ int __cdecl iswblank(wint_t _C);
   extern int __mb_cur_max;
 #define __mb_cur_max	__mb_cur_max
 #else
+#if __MSVCRT_VERSION__ < 0x1400
   extern int * __MINGW_IMP_SYMBOL(__mb_cur_max);
-#define __mb_cur_max	(* __MINGW_IMP_SYMBOL(__mb_cur_max))
+#endif
+#define __mb_cur_max	(___mb_cur_max_func())
 #endif
 #endif
-#define ___mb_cur_max_func() (__mb_cur_max)
+_CRTIMP int __cdecl ___mb_cur_max_func(void);
 #endif
 
-#define __chvalidchk(a,b) (__PCTYPE_FUNC[(a)] & (b))
-#define _chvalidchk_l(_Char,_Flag,_Locale) (!_Locale ? __chvalidchk(_Char,_Flag) : ((_locale_t)_Locale)->locinfo->pctype[_Char] & (_Flag))
+#define __chvalidchk(a,b) (__PCTYPE_FUNC[(unsigned char)(a)] & (b))
+#define _chvalidchk_l(_Char,_Flag,_Locale) (!_Locale ? __chvalidchk(_Char,_Flag) : ((_locale_t)_Locale)->locinfo->pctype[(unsigned char)(_Char)] & (_Flag))
 #define _ischartype_l(_Char,_Flag,_Locale) (((_Locale)!=NULL && (((_locale_t)(_Locale))->locinfo->mb_cur_max) > 1) ? _isctype_l(_Char,(_Flag),_Locale) : _chvalidchk_l(_Char,_Flag,_Locale))
 #define _isalpha_l(_Char,_Locale) _ischartype_l(_Char,_ALPHA,_Locale)
 #define _isupper_l(_Char,_Locale) _ischartype_l(_Char,_UPPER,_Locale)

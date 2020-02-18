@@ -24,6 +24,7 @@ java_cpp_enum("autofill_assistant_enums_java") {
     "metrics.h",
     "overlay_state.h",
     "payment_request.h",
+    "viewport_mode.h",
   ]
 }
 
@@ -49,6 +50,8 @@ jumbo_static_library("browser") {
     "actions/highlight_element_action.h",
     "actions/navigate_action.cc",
     "actions/navigate_action.h",
+    "actions/popup_message_action.cc",
+    "actions/popup_message_action.h",
     "actions/prompt_action.cc",
     "actions/prompt_action.h",
     "actions/reset_action.cc",
@@ -75,6 +78,8 @@ jumbo_static_library("browser") {
     "actions/unsupported_action.h",
     "actions/upload_dom_action.cc",
     "actions/upload_dom_action.h",
+    "actions/wait_for_document_action.cc",
+    "actions/wait_for_document_action.h",
     "actions/wait_for_dom_action.cc",
     "actions/wait_for_dom_action.h",
     "actions/wait_for_navigation_action.cc",
@@ -92,8 +97,12 @@ jumbo_static_library("browser") {
     "client_status.h",
     "controller.cc",
     "controller.h",
+    "controller_observer.cc",
+    "controller_observer.h",
     "details.cc",
     "details.h",
+    "direct_action.cc",
+    "direct_action.h",
     "element_area.cc",
     "element_area.h",
     "element_precondition.cc",
@@ -126,8 +135,9 @@ jumbo_static_library("browser") {
     "selector.h",
     "self_delete_full_card_requester.cc",
     "self_delete_full_card_requester.h",
-    "service.cc",
     "service.h",
+    "service_impl.cc",
+    "service_impl.h",
     "state.h",
     "string_conversions_util.cc",
     "string_conversions_util.h",
@@ -135,9 +145,10 @@ jumbo_static_library("browser") {
     "top_padding.h",
     "trigger_context.cc",
     "trigger_context.h",
-    "ui_controller.cc",
-    "ui_controller.h",
     "ui_delegate.h",
+    "user_action.cc",
+    "user_action.h",
+    "viewport_mode.h",
     "web_controller.cc",
     "web_controller.h",
   ]
@@ -149,12 +160,12 @@ jumbo_static_library("browser") {
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/autofill_assistant/browser/devtools",
+    "//components/signin/public/identity_manager",
     "//components/strings:components_strings_grit",
     "//components/version_info",
     "//content/public/browser",
     "//google_apis",
     "//net",
-    "//services/identity/public/cpp:cpp",
     "//third_party/re2",
   ]
 }
@@ -166,7 +177,9 @@ source_set("unit_tests") {
     "actions/configure_bottom_sheet_action_unittest.cc",
     "actions/mock_action_delegate.cc",
     "actions/mock_action_delegate.h",
+    "actions/popup_message_action_unittest.cc",
     "actions/prompt_action_unittest.cc",
+    "actions/wait_for_document_action_unittest.cc",
     "actions/wait_for_dom_action_unittest.cc",
     "batch_element_checker_unittest.cc",
     "controller_unittest.cc",
@@ -174,11 +187,10 @@ source_set("unit_tests") {
     "element_precondition_unittest.cc",
     "fake_script_executor_delegate.cc",
     "fake_script_executor_delegate.h",
-    "mock_run_once_callback.h",
+    "mock_controller_observer.cc",
+    "mock_controller_observer.h",
     "mock_service.cc",
     "mock_service.h",
-    "mock_ui_controller.cc",
-    "mock_ui_controller.h",
     "mock_web_controller.cc",
     "mock_web_controller.h",
     "protocol_utils_unittest.cc",
@@ -188,6 +200,7 @@ source_set("unit_tests") {
     "script_tracker_unittest.cc",
     "selector_unittest.cc",
     "string_conversions_util_unittest.cc",
+    "trigger_context_unittest.cc",
   ]
 
   deps = [
@@ -200,5 +213,21 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/re2",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "java_service.cc",
+    "java_service.h",
+  ]
+
+  deps = [
+    ":browser",
+    ":proto",
+    "//base",
+    "//chrome/android/features/autofill_assistant:test_support_jni_headers",
+    "//url:url",
   ]
 }

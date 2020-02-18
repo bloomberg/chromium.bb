@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -39,10 +39,13 @@ class CSSDirectionAwareResolver {
   static PhysicalGroup<4> MarginGroup();
   static PhysicalGroup<2> MaxSizeGroup();
   static PhysicalGroup<2> MinSizeGroup();
+  static PhysicalGroup<2> OverflowGroup();
+  static PhysicalGroup<2> OverscrollBehaviorGroup();
   static PhysicalGroup<4> PaddingGroup();
   static PhysicalGroup<4> ScrollMarginGroup();
   static PhysicalGroup<4> ScrollPaddingGroup();
   static PhysicalGroup<2> SizeGroup();
+  static PhysicalGroup<4> VisitedBorderColorGroup();
 
   // These resolvers expect a PhysicalGroup with box sides, in the following
   // order: top, right, bottom, left.

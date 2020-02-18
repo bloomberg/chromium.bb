@@ -92,7 +92,8 @@ class MediaRouteController
   // The second item is a bound MediaStatusObserverPtr whose binding is owned
   // by |this|.
   using InitMojoResult =
-      std::pair<mojom::MediaControllerRequest, mojom::MediaStatusObserverPtr>;
+      std::pair<mojo::PendingReceiver<mojom::MediaController>,
+                mojom::MediaStatusObserverPtr>;
 
   // Constructs a MediaRouteController that forwards media commands to
   // |mojo_media_controller_|. |media_router_| will be notified when the
@@ -196,35 +197,6 @@ class MediaRouteController
   base::Optional<MediaStatus> current_media_status_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouteController);
-};
-
-class HangoutsMediaRouteController : public MediaRouteController {
- public:
-  // Casts |controller| to a HangoutsMediaRouteController if its
-  // RouteControllerType is HANGOUTS. Returns nullptr otherwise.
-  static HangoutsMediaRouteController* From(MediaRouteController* controller);
-
-  HangoutsMediaRouteController(const MediaRoute::Id& route_id,
-                               content::BrowserContext* context,
-                               MediaRouter* router);
-
-  // MediaRouteController
-  RouteControllerType GetType() const override;
-
-  void SetLocalPresent(bool local_present);
-
- protected:
-  ~HangoutsMediaRouteController() override;
-
- private:
-  // MediaRouteController
-  void InitAdditionalMojoConnections() override;
-  void OnMojoConnectionError() override;
-  void InvalidateInternal() override;
-
-  mojom::HangoutsMediaRouteControllerPtr mojo_hangouts_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(HangoutsMediaRouteController);
 };
 
 // Controller subclass for Cast streaming mirroring routes. Responsible for:

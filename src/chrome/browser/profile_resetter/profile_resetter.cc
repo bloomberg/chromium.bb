@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "base/synchronization/cancellation_flag.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -84,8 +84,7 @@ ProfileResetter::ProfileResetter(Profile* profile)
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
       pending_reset_flags_(0),
       cookies_remover_(nullptr),
-      ntp_service_(InstantServiceFactory::GetForProfile(profile)),
-      weak_ptr_factory_(this) {
+      ntp_service_(InstantServiceFactory::GetForProfile(profile)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(profile_);
 }

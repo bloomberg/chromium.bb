@@ -14,9 +14,8 @@ import re
 import shutil
 import sys
 
-import generate_v14_compatible_resources
-
 from util import build_utils
+from util import manifest_utils
 from util import resource_utils
 
 _AAPT_IGNORE_PATTERN = ':'.join([
@@ -61,20 +60,13 @@ def _ParseArgs(args):
   output_opts.add_argument(
       '--resource-zip-out',
       help='Path to a zip archive containing all resources from '
-           '--resource-dirs, merged into a single directory tree. This will '
-           'also include auto-generated v14-compatible resources unless '
-           '--v14-skip is used.')
+      '--resource-dirs, merged into a single directory tree.')
 
   output_opts.add_argument('--srcjar-out',
                     help='Path to .srcjar to contain the generated R.java.')
 
   output_opts.add_argument('--r-text-out',
                     help='Path to store the generated R.txt file.')
-
-  input_opts.add_argument(
-      '--v14-skip',
-      action="store_true",
-      help='Do not generate nor verify v14 resources.')
 
   input_opts.add_argument(
       '--strip-drawables',
@@ -140,14 +132,16 @@ def _GenerateRTxt(options, dep_subdirs, gen_dir):
   """
   # NOTE: This uses aapt rather than aapt2 because 'aapt2 compile' does not
   # support the --output-text-symbols option yet (https://crbug.com/820460).
-  package_command = [options.aapt_path,
-                     'package',
-                     '-m',
-                     '-M', resource_utils.EMPTY_ANDROID_MANIFEST_PATH,
-                     '--no-crunch',
-                     '--auto-add-overlay',
-                     '--no-version-vectors',
-                    ]
+  package_command = [
+      options.aapt_path,
+      'package',
+      '-m',
+      '-M',
+      manifest_utils.EMPTY_ANDROID_MANIFEST_PATH,
+      '--no-crunch',
+      '--auto-add-overlay',
+      '--no-version-vectors',
+  ]
   for j in options.include_resources:
     package_command += ['-I', j]
 
@@ -180,28 +174,14 @@ def _GenerateRTxt(options, dep_subdirs, gen_dir):
       package_command, print_stdout=False, print_stderr=False)
 
 
-def _GenerateResourcesZip(output_resource_zip, input_resource_dirs, v14_skip,
-                          strip_drawables, temp_dir):
+def _GenerateResourcesZip(output_resource_zip, input_resource_dirs,
+                          strip_drawables):
   """Generate a .resources.zip file fron a list of input resource dirs.
 
   Args:
     output_resource_zip: Path to the output .resources.zip file.
     input_resource_dirs: A list of input resource directories.
-    v14_skip: If False, then v14-compatible resource will also be
-      generated in |{temp_dir}/v14| and added to the final zip.
-    temp_dir: Path to temporary directory.
   """
-  if not v14_skip:
-    # Generate v14-compatible resources in temp_dir.
-    v14_dir = os.path.join(temp_dir, 'v14')
-    build_utils.MakeDirectory(v14_dir)
-
-    for resource_dir in input_resource_dirs:
-      generate_v14_compatible_resources.GenerateV14Resources(
-          resource_dir,
-          v14_dir)
-
-    input_resource_dirs.append(v14_dir)
 
   ignore_pattern = _AAPT_IGNORE_PATTERN
   if strip_drawables:
@@ -232,8 +212,9 @@ def _OnStaleMd5(options):
     if options.srcjar_out:
       package = options.custom_package
       if not package and options.android_manifest:
-        package = resource_utils.ExtractPackageFromManifest(
+        _, manifest_node, _ = manifest_utils.ParseManifest(
             options.android_manifest)
+        package = manifest_utils.GetPackage(manifest_node)
 
       # Don't create a .java file for the current resource target when no
       # package name was provided (either by manifest or build rules).
@@ -247,6 +228,8 @@ def _OnStaleMd5(options):
         if options.shared_resources:
           rjava_build_options.GenerateOnResourcesLoaded()
 
+        # Not passing in custom_root_package_name or parent to keep
+        # file names unique.
         resource_utils.CreateRJavaFiles(
             build.srcjar_dir, package, r_txt_path, options.extra_res_packages,
             options.extra_r_text_files, rjava_build_options, options.srcjar_out)
@@ -255,8 +238,7 @@ def _OnStaleMd5(options):
 
     if options.resource_zip_out:
       _GenerateResourcesZip(options.resource_zip_out, options.resource_dirs,
-                            options.v14_skip, options.strip_drawables,
-                            build.temp_dir)
+                            options.strip_drawables)
 
 
 def main(args):
@@ -277,7 +259,6 @@ def main(args):
   input_strings = options.extra_res_packages + [
       options.custom_package,
       options.shared_resources,
-      options.v14_skip,
       options.strip_drawables,
   ]
 

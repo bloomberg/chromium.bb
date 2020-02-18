@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -90,6 +91,16 @@ void BrowserList::AddBrowser(Browser* browser) {
 
   if (browser->window()->IsActive())
     SetLastActive(browser);
+
+  if (browser->profile()->IsGuestSession()) {
+    base::UmaHistogramCounts100(
+        "Browser.WindowCount.Guest",
+        GetIncognitoSessionsActiveForProfile(browser->profile()));
+  } else if (browser->profile()->IsIncognitoProfile()) {
+    base::UmaHistogramCounts100(
+        "Browser.WindowCount.Incognito",
+        GetIncognitoSessionsActiveForProfile(browser->profile()));
+  }
 }
 
 // static
@@ -98,10 +109,6 @@ void BrowserList::RemoveBrowser(Browser* browser) {
   BrowserList* browser_list = GetInstance();
   RemoveBrowserFrom(browser, &browser_list->last_active_browsers_);
   browser_list->currently_closing_browsers_.erase(browser);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser),
-      content::NotificationService::NoDetails());
 
   RemoveBrowserFrom(browser, &browser_list->browsers_);
 

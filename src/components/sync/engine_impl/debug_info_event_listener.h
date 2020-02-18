@@ -46,8 +46,7 @@ class DebugInfoEventListener : public SyncManager::Observer,
   void OnInitializationComplete(
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_listener,
-      bool success,
-      ModelTypeSet restored_types) override;
+      bool success) override;
   void OnConnectionStatusChange(ConnectionStatus connection_status) override;
   void OnActionableError(const SyncProtocolError& sync_error) override;
   void OnMigrationRequested(ModelTypeSet types) override;
@@ -109,7 +108,7 @@ class DebugInfoEventListener : public SyncManager::Observer,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<DebugInfoEventListener> weak_ptr_factory_;
+  base::WeakPtrFactory<DebugInfoEventListener> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DebugInfoEventListener);
 };

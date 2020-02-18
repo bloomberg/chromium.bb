@@ -39,13 +39,12 @@
 #include "chrome/common/url_constants.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/escape.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
@@ -369,7 +368,7 @@ bool IsLockAvailable(Profile* profile) {
   // TODO(mlerman): After one release remove any hosted_domain reference to the
   // pref, since all users will have this in the AccountTrackerService.
   if (hosted_domain.empty()) {
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
 
     base::Optional<AccountInfo> primary_account_info =
@@ -434,9 +433,6 @@ void BubbleViewModeFromAvatarBubbleMode(BrowserWindow::AvatarBubbleMode mode,
       *bubble_view_mode = BUBBLE_VIEW_MODE_GAIA_REAUTH;
       return;
     case BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN:
-      *bubble_view_mode = BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
-      return;
-    case BrowserWindow::AVATAR_BUBBLE_MODE_SHOW_ERROR:
       *bubble_view_mode = BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
       return;
     case BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT:

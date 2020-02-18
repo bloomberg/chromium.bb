@@ -10,6 +10,12 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
+declare_args() {
+  # Enables Vulkan in WebEngine (has effect only for context instances that have
+  # Vulkan loader service in the service directory).
+  web_engine_enable_vulkan = false
+}
+
 config("web_engine_implementation") {
   defines = [ "WEB_ENGINE_IMPLEMENTATION" ]
 }
@@ -105,6 +111,8 @@ component("web_engine_core") {
     "browser/discarding_event_filter.h",
     "browser/frame_impl.cc",
     "browser/frame_impl.h",
+    "browser/navigation_controller_impl.cc",
+    "browser/navigation_controller_impl.h",
     "browser/web_engine_browser_context.cc",
     "browser/web_engine_browser_context.h",
     "browser/web_engine_browser_main.cc",
@@ -117,6 +125,10 @@ component("web_engine_core") {
     "browser/web_engine_devtools_manager_delegate.h",
     "browser/web_engine_net_log.cc",
     "browser/web_engine_net_log.h",
+    "browser/web_engine_permission_manager.cc",
+    "browser/web_engine_permission_manager.h",
+    "browser/web_engine_remote_debugging.cc",
+    "browser/web_engine_remote_debugging.h",
     "browser/web_engine_screen.cc",
     "browser/web_engine_screen.h",
     "browser/web_engine_url_request_context_getter.cc",
@@ -141,6 +153,9 @@ component("web_engine_core") {
     ":*",
     "//fuchsia/runners:cast_runner_browsertests__exec",
   ]
+  if (web_engine_enable_vulkan) {
+    defines = [ "WEB_ENGINE_ENABLE_VULKAN" ]
+  }
 }
 
 executable("web_engine_exe") {
@@ -159,10 +174,13 @@ executable("web_engine_exe") {
 fuchsia_package("web_engine") {
   binary = ":web_engine_exe"
   package_name_override = "chromium"
-  sandbox_policy = "sandbox_policy"
+  manifest = "web_engine.cmx"
   excluded_files = [
     "lib/libswiftshader_libEGL.so",
     "lib/libswiftshader_libGLESv2.so",
+    "lib/libEGL.so",
+    "lib/libGLESv2.so",
+    "lib/libfuchsia_egl.so",
   ]
 }
 
@@ -229,6 +247,34 @@ test("web_engine_unittests") {
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk:web",
   ]
+}
+
+test("web_engine_integration_tests") {
+  manifest = "web_engine_integration_tests.cmx"
+  sources = [
+    "test_debug_listener.cc",
+    "test_debug_listener.h",
+    "test_devtools_list_fetcher.cc",
+    "test_devtools_list_fetcher.h",
+    "web_engine_debug_integration_test.cc",
+    "web_engine_integration_test.cc",
+  ]
+  data = [
+    "test/data",
+  ]
+  deps = [
+    "//base",
+    "//base/test:run_all_unittests",
+    "//fuchsia/base",
+    "//fuchsia/base:test_support",
+    "//net",
+    "//net:test_support",
+    "//third_party/fuchsia-sdk/sdk:web",
+  ]
+  package_deps = [ [
+        ":web_engine",
+        "chromium",
+      ] ]
 }
 
 if (is_official_build) {

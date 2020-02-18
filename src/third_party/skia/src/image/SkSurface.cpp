@@ -204,6 +204,15 @@ void SkSurface_Base::onAsyncRescaleAndReadPixels(const SkImageInfo& info, const 
     }
 }
 
+void SkSurface_Base::onAsyncRescaleAndReadPixelsYUV420(
+        SkYUVColorSpace yuvColorSpace, sk_sp<SkColorSpace> dstColorSpace, const SkIRect& srcRect,
+        int dstW, int dstH, RescaleGamma rescaleGamma, SkFilterQuality rescaleQuality,
+        ReadPixelsCallbackYUV420 callback, ReadPixelsContext context) {
+    // TODO: Call non-YUV asyncRescaleAndReadPixels and then make our callback convert to YUV and
+    // call client's callback.
+    callback(context, nullptr, nullptr);
+}
+
 bool SkSurface_Base::outstandingImageSnapshot() const {
     return fCachedImage && !fCachedImage->unique();
 }
@@ -247,6 +256,10 @@ static SkSurface_Base* asSB(SkSurface* surface) {
     return static_cast<SkSurface_Base*>(surface);
 }
 
+static const SkSurface_Base* asConstSB(const SkSurface* surface) {
+    return static_cast<const SkSurface_Base*>(surface);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 SkSurface::SkSurface(int width, int height, const SkSurfaceProps* props)
@@ -263,6 +276,11 @@ SkSurface::SkSurface(const SkImageInfo& info, const SkSurfaceProps* props)
     SkASSERT(fWidth > 0);
     SkASSERT(fHeight > 0);
     fGenerationID = 0;
+}
+
+SkImageInfo SkSurface::imageInfo() {
+    // TODO: do we need to go through canvas for this?
+    return this->getCanvas()->imageInfo();
 }
 
 uint32_t SkSurface::generationID() {
@@ -302,6 +320,10 @@ sk_sp<SkSurface> SkSurface::makeSurface(const SkImageInfo& info) {
     return asSB(this)->onNewSurface(info);
 }
 
+sk_sp<SkSurface> SkSurface::makeSurface(int width, int height) {
+    return this->makeSurface(this->imageInfo().makeWH(width, height));
+}
+
 void SkSurface::draw(SkCanvas* canvas, SkScalar x, SkScalar y,
                      const SkPaint* paint) {
     return asSB(this)->onDraw(canvas, x, y, paint);
@@ -335,6 +357,20 @@ void SkSurface::asyncRescaleAndReadPixels(const SkImageInfo& info, const SkIRect
     }
     asSB(this)->onAsyncRescaleAndReadPixels(info, srcRect, rescaleGamma, rescaleQuality, callback,
                                             context);
+}
+
+void SkSurface::asyncRescaleAndReadPixelsYUV420(
+        SkYUVColorSpace yuvColorSpace, sk_sp<SkColorSpace> dstColorSpace, const SkIRect& srcRect,
+        int dstW, int dstH, RescaleGamma rescaleGamma, SkFilterQuality rescaleQuality,
+        ReadPixelsCallbackYUV420 callback, ReadPixelsContext context) {
+    if (!SkIRect::MakeWH(this->width(), this->height()).contains(srcRect) || (dstW & 0b1) ||
+        (dstH & 0b1)) {
+        callback(context, nullptr, nullptr);
+        return;
+    }
+    asSB(this)->onAsyncRescaleAndReadPixelsYUV420(yuvColorSpace, std::move(dstColorSpace), srcRect,
+                                                  dstW, dstH, rescaleGamma, rescaleQuality,
+                                                  callback, context);
 }
 
 void SkSurface::writePixels(const SkPixmap& pmap, int x, int y) {
@@ -421,7 +457,11 @@ bool SkSurface::wait(int numSemaphores, const GrBackendSemaphore* waitSemaphores
 }
 
 bool SkSurface::characterize(SkSurfaceCharacterization* characterization) const {
-    return asSB(const_cast<SkSurface*>(this))->onCharacterize(characterization);
+    return asConstSB(this)->onCharacterize(characterization);
+}
+
+bool SkSurface::isCompatible(const SkSurfaceCharacterization& characterization) const {
+    return asConstSB(this)->onIsCompatible(characterization);
 }
 
 bool SkSurface::draw(SkDeferredDisplayList* ddl) {

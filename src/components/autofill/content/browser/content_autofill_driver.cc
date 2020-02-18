@@ -7,12 +7,14 @@
 #include <utility>
 #include <vector>
 
+#include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_handler_proxy.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
@@ -24,8 +26,10 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "url/origin.h"
 
 namespace autofill {
 
@@ -37,8 +41,7 @@ ContentAutofillDriver::ContentAutofillDriver(
     AutofillProvider* provider)
     : render_frame_host_(render_frame_host),
       autofill_manager_(nullptr),
-      key_press_handler_manager_(this),
-      binding_(this) {
+      key_press_handler_manager_(this) {
   // AutofillManager isn't used if provider is valid, Autofill provider is
   // currently used by Android WebView only.
   if (provider) {
@@ -64,9 +67,9 @@ ContentAutofillDriver* ContentAutofillDriver::GetForRenderFrameHost(
   return factory ? factory->DriverForFrame(render_frame_host) : nullptr;
 }
 
-void ContentAutofillDriver::BindRequest(
-    mojom::AutofillDriverAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+void ContentAutofillDriver::BindPendingReceiver(
+    mojo::PendingAssociatedReceiver<mojom::AutofillDriver> pending_receiver) {
+  receiver_.Bind(std::move(pending_receiver));
 }
 
 bool ContentAutofillDriver::IsIncognito() const {
@@ -77,6 +80,10 @@ bool ContentAutofillDriver::IsIncognito() const {
 
 bool ContentAutofillDriver::IsInMainFrame() const {
   return render_frame_host_->GetParent() == nullptr;
+}
+
+ui::AXTreeID ContentAutofillDriver::GetAxTreeId() const {
+  return render_frame_host_->GetAXTreeID();
 }
 
 net::URLRequestContextGetter* ContentAutofillDriver::GetURLRequestContext() {
@@ -94,6 +101,17 @@ ContentAutofillDriver::GetURLLoaderFactory() {
 
 bool ContentAutofillDriver::RendererIsAvailable() {
   return render_frame_host_->GetRenderViewHost() != nullptr;
+}
+
+void ContentAutofillDriver::ConnectToAuthenticator(
+    blink::mojom::InternalAuthenticatorRequest request) {
+#if defined(OS_ANDROID)
+  render_frame_host_->GetJavaInterfaces()->GetInterface(std::move(request));
+#else
+  authenticator_impl_ = std::make_unique<content::InternalAuthenticatorImpl>(
+      render_frame_host_, url::Origin::Create(payments::GetBaseSecureUrl()));
+  authenticator_impl_->Bind(std::move(request));
+#endif
 }
 
 void ContentAutofillDriver::SendFormDataToRenderer(
@@ -162,6 +180,13 @@ void ContentAutofillDriver::RendererShouldPreviewFieldWithValue(
   GetAutofillAgent()->PreviewFieldWithValue(value);
 }
 
+void ContentAutofillDriver::RendererShouldSetSuggestionAvailability(
+    bool available) {
+  if (!RendererIsAvailable())
+    return;
+  GetAutofillAgent()->SetSuggestionAvailability(available);
+}
+
 void ContentAutofillDriver::PopupHidden() {
   // If the unmask prompt is showing, keep showing the preview. The preview
   // will be cleared when the prompt closes.
@@ -189,7 +214,7 @@ void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms,
 
 void ContentAutofillDriver::FormSubmitted(const FormData& form,
                                           bool known_success,
-                                          SubmissionSource source) {
+                                          mojom::SubmissionSource source) {
   autofill_handler_->OnFormSubmitted(form, known_success, source);
 }
 
@@ -276,12 +301,12 @@ void ContentAutofillDriver::SetAutofillManager(
   autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
 }
 
-const mojom::AutofillAgentAssociatedPtr&
+const mojo::AssociatedRemote<mojom::AutofillAgent>&
 ContentAutofillDriver::GetAutofillAgent() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!autofill_agent_) {
     render_frame_host_->GetRemoteAssociatedInterfaces()->GetInterface(
-        mojo::MakeRequest(&autofill_agent_));
+        &autofill_agent_);
   }
 
   return autofill_agent_;

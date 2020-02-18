@@ -66,11 +66,11 @@ std::unique_ptr<syncer::EntityData> MoveToEntityData(
     const std::string& client_name,
     SessionSpecifics* specifics) {
   auto entity_data = std::make_unique<syncer::EntityData>();
-  entity_data->non_unique_name = client_name;
+  entity_data->name = client_name;
   if (specifics->has_header()) {
-    entity_data->non_unique_name += " (header)";
+    entity_data->name += " (header)";
   } else if (specifics->has_tab()) {
-    entity_data->non_unique_name +=
+    entity_data->name +=
         base::StringPrintf(" (tab node %d)", specifics->tab_node_id());
   }
   entity_data->specifics.mutable_session()->Swap(specifics);
@@ -412,8 +412,7 @@ SessionStore::SessionStore(
     : local_session_info_(local_session_info),
       restored_foreign_tab_callback_(restored_foreign_tab_callback),
       store_(std::move(underlying_store)),
-      session_tracker_(sessions_client),
-      weak_ptr_factory_(this) {
+      session_tracker_(sessions_client) {
   session_tracker_.InitLocalSession(local_session_info_.session_tag,
                                     local_session_info_.client_name,
                                     local_session_info_.device_type);

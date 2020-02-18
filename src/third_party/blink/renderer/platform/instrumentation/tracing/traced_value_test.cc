@@ -14,8 +14,7 @@ namespace blink {
 std::unique_ptr<base::Value> ParseTracedValue(
     std::unique_ptr<TracedValue> value) {
   base::JSONReader reader;
-  CString utf8 = value->ToString().Utf8();
-  return reader.ReadDeprecated(utf8.data());
+  return reader.ReadDeprecated(value->ToString().Utf8());
 }
 
 TEST(TracedValueTest, FlatDictionary) {

@@ -19,7 +19,6 @@
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
@@ -33,6 +32,8 @@
 #include "headless/lib/headless_macros.h"
 #include "net/base/url_util.h"
 #include "net/ssl/client_cert_identity.h"
+#include "printing/buildflags/buildflags.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
@@ -118,9 +119,9 @@ HeadlessContentBrowserClient::~HeadlessContentBrowserClient() = default;
 
 std::unique_ptr<content::BrowserMainParts>
 HeadlessContentBrowserClient::CreateBrowserMainParts(
-    const content::MainFunctionParams&) {
+    const content::MainFunctionParams& parameters) {
   auto browser_main_parts =
-      std::make_unique<HeadlessBrowserMainParts>(browser_);
+      std::make_unique<HeadlessBrowserMainParts>(parameters, browser_);
 
   browser_->set_browser_main_parts(browser_main_parts.get());
 
@@ -248,6 +249,14 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
                                             headless_browser_context_impl,
                                             process_type, child_process_id);
   }
+
+#if defined(OS_LINUX)
+  // Processes may only query perf_event_open with the BPF sandbox disabled.
+  if (old_command_line.HasSwitch(::switches::kEnableThreadInstructionCount) &&
+      old_command_line.HasSwitch(service_manager::switches::kNoSandbox)) {
+    command_line->AppendSwitch(::switches::kEnableThreadInstructionCount);
+  }
+#endif
 }
 
 std::string HeadlessContentBrowserClient::GetAcceptLangs(
@@ -279,19 +288,13 @@ void HeadlessContentBrowserClient::AllowCertificateError(
   }
 }
 
-void HeadlessContentBrowserClient::SelectClientCertificate(
+base::OnceClosure HeadlessContentBrowserClient::SelectClientCertificate(
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   delegate->ContinueWithCertificate(nullptr, nullptr);
-}
-
-void HeadlessContentBrowserClient::ResourceDispatcherHostCreated() {
-  resource_dispatcher_host_delegate_.reset(
-      new HeadlessResourceDispatcherHostDelegate);
-  content::ResourceDispatcherHost::Get()->SetDelegate(
-      resource_dispatcher_host_delegate_.get());
+  return base::OnceClosure();
 }
 
 bool HeadlessContentBrowserClient::ShouldEnableStrictSiteIsolation() {
@@ -312,11 +315,11 @@ HeadlessContentBrowserClient::CreateNetworkContext(
       in_memory, relative_partition_path);
 }
 
-std::string HeadlessContentBrowserClient::GetProduct() const {
+std::string HeadlessContentBrowserClient::GetProduct() {
   return browser_->options()->product_name_and_version;
 }
 
-std::string HeadlessContentBrowserClient::GetUserAgent() const {
+std::string HeadlessContentBrowserClient::GetUserAgent() {
   return browser_->options()->user_agent;
 }
 

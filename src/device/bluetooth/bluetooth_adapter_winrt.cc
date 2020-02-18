@@ -1298,7 +1298,7 @@ void BluetoothAdapterWinrt::OnAdvertisementReceived(
 void BluetoothAdapterWinrt::OnRegisterAdvertisement(
     BluetoothAdvertisement* advertisement,
     const CreateAdvertisementCallback& callback) {
-  DCHECK(base::ContainsValue(pending_advertisements_, advertisement));
+  DCHECK(base::Contains(pending_advertisements_, advertisement));
   auto wrapped_advertisement = base::WrapRefCounted(advertisement);
   base::Erase(pending_advertisements_, advertisement);
   callback.Run(std::move(wrapped_advertisement));

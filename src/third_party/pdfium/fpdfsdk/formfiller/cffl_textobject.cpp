@@ -16,7 +16,7 @@ CPWL_Wnd* CFFL_TextObject::ResetPDFWindow(CPDFSDK_PageView* pPageView,
   if (bRestoreValue)
     RestoreState(pPageView);
 
-  CPWL_Wnd::ObservedPtr pRet(GetPDFWindow(pPageView, !bRestoreValue));
+  ObservedPtr<CPWL_Wnd> pRet(GetPDFWindow(pPageView, !bRestoreValue));
   m_pWidget->UpdateField();  // May invoke JS, invalidating |pRet|.
   return pRet.Get();
 }
@@ -33,8 +33,9 @@ CFFL_TextObject::~CFFL_TextObject() {
 
 CBA_FontMap* CFFL_TextObject::MaybeCreateFontMap() {
   if (!m_pFontMap) {
-    m_pFontMap =
-        pdfium::MakeUnique<CBA_FontMap>(m_pWidget.Get(), GetSystemHandler());
+    m_pFontMap = pdfium::MakeUnique<CBA_FontMap>(
+        m_pWidget->GetPDFPage()->GetDocument(),
+        m_pWidget->GetPDFAnnot()->GetAnnotDict());
   }
   return m_pFontMap.get();
 }

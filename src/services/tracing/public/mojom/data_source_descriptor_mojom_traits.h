@@ -28,6 +28,10 @@ class StructTraits<tracing::mojom::DataSourceRegistrationDataView,
   static bool will_notify_on_stop(const perfetto::DataSourceDescriptor& src) {
     return src.will_notify_on_stop();
   }
+  static bool handles_incremental_state_clear(
+      const perfetto::DataSourceDescriptor& src) {
+    return src.handles_incremental_state_clear();
+  }
 
   static bool Read(tracing::mojom::DataSourceRegistrationDataView data,
                    perfetto::DataSourceDescriptor* out);

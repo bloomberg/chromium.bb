@@ -7,11 +7,14 @@
 #include "base/stl_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
+#include "chrome/browser/performance_manager/public/graph/page_node.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -38,10 +41,13 @@ class PageNodeImplTest : public GraphTestHarness {
 
 }  // namespace
 
-TEST_F(PageNodeImplTest, GetIndexingKey) {
+TEST_F(PageNodeImplTest, SafeDowncast) {
   auto page = CreateNode<PageNodeImpl>();
-  EXPECT_EQ(page->GetIndexingKey(),
-            static_cast<const void*>(static_cast<const NodeBase*>(page.get())));
+  PageNode* node = page.get();
+  EXPECT_EQ(page.get(), PageNodeImpl::FromNode(node));
+  NodeBase* base = page.get();
+  EXPECT_EQ(base, NodeBase::FromNode(node));
+  EXPECT_EQ(static_cast<Node*>(node), base->ToNode());
 }
 
 TEST_F(PageNodeImplTest, AddFrameBasic) {
@@ -55,7 +61,7 @@ TEST_F(PageNodeImplTest, AddFrameBasic) {
       process_node.get(), page_node.get(), parent_frame.get(), 2);
 
   // Validate that all frames are tallied to the page.
-  EXPECT_EQ(3u, page_node->GetFrameNodes().size());
+  EXPECT_EQ(3u, GraphImplOperations::GetFrameNodes(page_node.get()).size());
 }
 
 TEST_F(PageNodeImplTest, RemoveFrame) {
@@ -65,15 +71,15 @@ TEST_F(PageNodeImplTest, RemoveFrame) {
                                               page_node.get(), nullptr, 0);
 
   // Ensure correct page-frame relationship has been established.
-  EXPECT_EQ(1u, page_node->GetFrameNodes().size());
-  EXPECT_TRUE(
-      base::ContainsValue(page_node->GetFrameNodes(), frame_node.get()));
+  auto frame_nodes = GraphImplOperations::GetFrameNodes(page_node.get());
+  EXPECT_EQ(1u, frame_nodes.size());
+  EXPECT_TRUE(base::Contains(frame_nodes, frame_node.get()));
   EXPECT_EQ(page_node.get(), frame_node->page_node());
 
   frame_node.reset();
 
   // Parent-child relationships should no longer exist.
-  EXPECT_EQ(0u, page_node->GetFrameNodes().size());
+  EXPECT_EQ(0u, GraphImplOperations::GetFrameNodes(page_node.get()).size());
 }
 
 TEST_F(PageNodeImplTest, CalculatePageCPUUsageForSinglePageInSingleProcess) {
@@ -389,6 +395,133 @@ TEST_F(PageNodeImplTest, IncrementalInterventionPolicy) {
       resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
   ExpectInterventionPolicy(
       resource_coordinator::mojom::InterventionPolicy::kOptIn, page.get());
+}
+
+namespace {
+
+class LenientMockObserver : public PageNodeImpl::Observer {
+ public:
+  LenientMockObserver() {}
+  ~LenientMockObserver() override {}
+
+  MOCK_METHOD1(OnPageNodeAdded, void(const PageNode*));
+  MOCK_METHOD1(OnBeforePageNodeRemoved, void(const PageNode*));
+  MOCK_METHOD1(OnIsVisibleChanged, void(const PageNode*));
+  MOCK_METHOD1(OnIsAudibleChanged, void(const PageNode*));
+  MOCK_METHOD1(OnIsLoadingChanged, void(const PageNode*));
+  MOCK_METHOD1(OnUkmSourceIdChanged, void(const PageNode*));
+  MOCK_METHOD1(OnPageLifecycleStateChanged, void(const PageNode*));
+  MOCK_METHOD1(OnPageAlmostIdleChanged, void(const PageNode*));
+  MOCK_METHOD1(OnMainFrameNavigationCommitted, void(const PageNode*));
+  MOCK_METHOD1(OnTitleUpdated, void(const PageNode*));
+  MOCK_METHOD1(OnFaviconUpdated, void(const PageNode*));
+
+  void SetNotifiedPageNode(const PageNode* page_node) {
+    notified_page_node_ = page_node;
+  }
+
+  const PageNode* TakeNotifiedPageNode() {
+    const PageNode* node = notified_page_node_;
+    notified_page_node_ = nullptr;
+    return node;
+  }
+
+ private:
+  const PageNode* notified_page_node_ = nullptr;
+};
+
+using MockObserver = ::testing::StrictMock<LenientMockObserver>;
+
+using testing::_;
+using testing::Invoke;
+
+}  // namespace
+
+TEST_F(PageNodeImplTest, ObserverWorks) {
+  auto process = CreateNode<ProcessNodeImpl>();
+
+  MockObserver obs;
+  graph()->AddPageNodeObserver(&obs);
+
+  // Create a page node and expect a matching call to "OnPageNodeAdded".
+  EXPECT_CALL(obs, OnPageNodeAdded(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  auto page_node = CreateNode<PageNodeImpl>();
+  const PageNode* raw_page_node = page_node.get();
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnIsVisibleChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->SetIsVisible(true);
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnIsAudibleChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->SetIsAudible(true);
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnIsLoadingChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->SetIsLoading(true);
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnUkmSourceIdChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->SetUkmSourceId(static_cast<ukm::SourceId>(0x1234));
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnPageLifecycleStateChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->SetLifecycleStateForTesting(PageNodeImpl::LifecycleState::kFrozen);
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnPageAlmostIdleChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->SetPageAlmostIdleForTesting(true);
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnMainFrameNavigationCommitted(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), 0x1234ull,
+                                            GURL("https://foo.com/"));
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnTitleUpdated(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->OnTitleUpdated();
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnFaviconUpdated(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->OnFaviconUpdated();
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  // Release the page node and expect a call to "OnBeforePageNodeRemoved".
+  EXPECT_CALL(obs, OnBeforePageNodeRemoved(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node.reset();
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  graph()->RemovePageNodeObserver(&obs);
+}
+
+TEST_F(PageNodeImplTest, PublicInterface) {
+  auto page_node = CreateNode<PageNodeImpl>();
+  const PageNode* public_page_node = page_node.get();
+
+  // Simply test that the public interface impls yield the same result as their
+  // private counterpart.
+
+  EXPECT_EQ(page_node->page_almost_idle(),
+            public_page_node->IsPageAlmostIdle());
+  EXPECT_EQ(page_node->is_visible(), public_page_node->IsVisible());
+  EXPECT_EQ(page_node->is_audible(), public_page_node->IsAudible());
+  EXPECT_EQ(page_node->is_loading(), public_page_node->IsLoading());
+  EXPECT_EQ(page_node->ukm_source_id(), public_page_node->GetUkmSourceID());
+  EXPECT_EQ(page_node->lifecycle_state(),
+            public_page_node->GetLifecycleState());
+  EXPECT_EQ(page_node->navigation_id(), public_page_node->GetNavigationID());
+  EXPECT_EQ(page_node->main_frame_url(), public_page_node->GetMainFrameUrl());
 }
 
 }  // namespace performance_manager

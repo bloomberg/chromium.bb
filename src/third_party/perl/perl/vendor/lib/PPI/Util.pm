@@ -7,18 +7,13 @@ use Exporter     ();
 use Digest::MD5  ();
 use Params::Util qw{_INSTANCE _SCALAR0 _ARRAY0};
 
-use vars qw{$VERSION @ISA @EXPORT_OK};
-BEGIN {
-	$VERSION   = '1.215';
-	@ISA       = 'Exporter';
-	@EXPORT_OK = qw{_Document _slurp};
-}
+our $VERSION = '1.269'; # VERSION
 
-# Alarms are used to catch unexpectedly slow and complex documents
-use constant HAVE_ALARM   => !  ( $^O eq 'MSWin32' or $^O eq 'cygwin' );
+our @ISA       = 'Exporter';
+our @EXPORT_OK = qw{ _Document _slurp };
 
 # 5.8.7 was the first version to resolve the notorious
-# "unicode length caching" bug. See RT #FIXME
+# "unicode length caching" bug.
 use constant HAVE_UNICODE => !! ( $] >= 5.008007 );
 
 # Common reusable true and false functions

@@ -39,7 +39,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kOffMainThreadDedicatedWorkerScriptFetch;
 BLINK_COMMON_EXPORT extern const base::Feature
     kOffMainThreadServiceWorkerScriptFetch;
-BLINK_COMMON_EXPORT extern const base::Feature kOnionSoupDOMStorage;
 BLINK_COMMON_EXPORT extern const base::Feature kPlzDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature kPortals;
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -54,8 +53,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kServiceWorkerIsolateInForeground;
 BLINK_COMMON_EXPORT extern const base::Feature
     kServiceWorkerImportedScriptUpdateCheck;
-BLINK_COMMON_EXPORT extern const base::Feature
-    kServiceWorkerParallelSideDataReading;
 BLINK_COMMON_EXPORT extern const base::Feature
     kServiceWorkerAggressiveCodeCache;
 BLINK_COMMON_EXPORT extern const base::Feature kServiceWorkerUpdateDelay;
@@ -78,6 +75,9 @@ BLINK_COMMON_EXPORT extern const base::Feature kDecodeLossyWebPImagesToYUV;
 BLINK_COMMON_EXPORT extern const base::Feature kAlwaysAccelerateCanvas;
 
 BLINK_COMMON_EXPORT extern const base::Feature
+    kSendPreviewsLoadingHintsBeforeCommit;
+
+BLINK_COMMON_EXPORT extern const base::Feature
     kWebFontsCacheAwareTimeoutAdaption;
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingFocusWithoutUserActivation;
@@ -85,15 +85,32 @@ BLINK_COMMON_EXPORT extern const base::Feature kScrollbarInjectScrollGestures;
 
 BLINK_COMMON_EXPORT extern const base::Feature kAudioWorkletRealtimeThread;
 
+BLINK_COMMON_EXPORT extern const base::Feature kLightweightNoStatePrefetch;
+
 // Returns true when off-the-main-thread shared worker script fetch is enabled.
 BLINK_COMMON_EXPORT bool IsOffMainThreadSharedWorkerScriptFetchEnabled();
 
 // Returns true when PlzDedicatedWorker is enabled.
 BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();
 
+BLINK_COMMON_EXPORT extern const base::Feature kCanvasAlwaysDeferral;
+
+BLINK_COMMON_EXPORT extern const base::Feature kStreamsNative;
+
+// Blink garbage collection.
+BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapCompaction;
+BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapConcurrentMarking;
+BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapConcurrentSweeping;
+BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapIncrementalMarking;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kBlinkHeapIncrementalMarkingStress;
+BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapUnifiedGCScheduling;
+
 BLINK_COMMON_EXPORT extern const base::Feature kBufferingBytesConsumerDelay;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBufferingBytesConsumerDelayMilliseconds;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kVerifyHTMLFetchedFromAppCacheBeforeDelay;
 
 }  // namespace features
 }  // namespace blink

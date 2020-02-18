@@ -21,8 +21,8 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "services/ws/public/cpp/gpu/command_buffer_metrics.h"
-#include "services/ws/public/cpp/gpu/shared_worker_context_provider_factory.h"
+#include "services/viz/public/cpp/gpu/command_buffer_metrics.h"
+#include "services/viz/public/cpp/gpu/shared_worker_context_provider_factory.h"
 #include "ui/compositor/compositor.h"
 
 namespace base {
@@ -45,7 +45,7 @@ class ServerSharedBitmapManager;
 class SoftwareOutputDevice;
 }
 
-namespace ws {
+namespace viz {
 class ContextProviderCommandBuffer;
 }
 
@@ -92,8 +92,8 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   void SetDisplayColorMatrix(ui::Compositor* compositor,
                              const SkMatrix44& matrix) override;
   void SetDisplayColorSpace(ui::Compositor* compositor,
-                            const gfx::ColorSpace& blending_color_space,
-                            const gfx::ColorSpace& output_color_space) override;
+                            const gfx::ColorSpace& output_color_space,
+                            float sdr_white_level) override;
   void SetDisplayVSyncParameters(ui::Compositor* compositor,
                                  base::TimeTicks timebase,
                                  base::TimeDelta interval) override;
@@ -109,7 +109,6 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   bool IsGpuCompositingDisabled() override;
   ui::ContextFactory* GetContextFactory() override;
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
-  viz::FrameSinkManagerImpl* GetFrameSinkManager() override;
 
  private:
   struct PerCompositorData;
@@ -132,7 +131,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   // viz::ContextLostObserver implementation.
   void OnContextLost() override;
 
-  scoped_refptr<ws::ContextProviderCommandBuffer> CreateContextCommon(
+  scoped_refptr<viz::ContextProviderCommandBuffer> CreateContextCommon(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
       gpu::SurfaceHandle surface_handle,
       bool need_alpha_channel,
@@ -141,7 +140,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
       bool support_gles2_interface,
       bool support_raster_interface,
       bool support_grcontext,
-      ws::command_buffer_metrics::ContextType type);
+      viz::command_buffer_metrics::ContextType type);
 
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
 
@@ -150,11 +149,11 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
       PerCompositorDataMap;
   PerCompositorDataMap per_compositor_data_;
 
-  scoped_refptr<ws::ContextProviderCommandBuffer> shared_main_thread_contexts_;
+  scoped_refptr<viz::ContextProviderCommandBuffer> shared_main_thread_contexts_;
   base::ObserverList<ui::ContextFactoryObserver>::Unchecked observer_list_;
   scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
-  ws::SharedWorkerContextProviderFactory
+  viz::SharedWorkerContextProviderFactory
       shared_worker_context_provider_factory_;
 
   bool is_gpu_compositing_disabled_ = false;
@@ -168,7 +167,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   // Manages a mapping of SharedBitmapId to shared memory objects.
   viz::ServerSharedBitmapManager* const server_shared_bitmap_manager_;
 
-  base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
+  base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessTransportFactory);
 };

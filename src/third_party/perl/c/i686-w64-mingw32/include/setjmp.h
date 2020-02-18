@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_SETJMP
@@ -141,6 +141,58 @@ extern "C" {
     SETJMP_FLOAT128 Xmm15;
   } _JUMP_BUFFER;
 
+#elif defined(_ARM_)
+
+#define _JBLEN 28
+#define _JBTYPE int
+
+  typedef struct __JUMP_BUFFER {
+    unsigned long Frame;
+    unsigned long R4;
+    unsigned long R5;
+    unsigned long R6;
+    unsigned long R7;
+    unsigned long R8;
+    unsigned long R9;
+    unsigned long R10;
+    unsigned long R11;
+    unsigned long Sp;
+    unsigned long Pc;
+    unsigned long Fpscr;
+    unsigned long long D[8];
+  } _JUMP_BUFFER;
+
+#elif defined(_ARM64_)
+
+#define _JBLEN 24
+#define _JBTYPE unsigned __int64
+
+  typedef struct __JUMP_BUFFER {
+    unsigned __int64 Frame;
+    unsigned __int64 Reserved;
+    unsigned __int64 X19;
+    unsigned __int64 X20;
+    unsigned __int64 X21;
+    unsigned __int64 X22;
+    unsigned __int64 X23;
+    unsigned __int64 X24;
+    unsigned __int64 X25;
+    unsigned __int64 X26;
+    unsigned __int64 X27;
+    unsigned __int64 X28;
+    unsigned __int64 Fp;
+    unsigned __int64 Lr;
+    unsigned __int64 Sp;
+    unsigned long Fpcr;
+    unsigned long Fpsr;
+    double D[8];
+  } _JUMP_BUFFER;
+
+#else
+
+#define _JBLEN 1
+#define _JBTYPE int
+
 #endif
 
 #ifndef _JMP_BUF_DEFINED
@@ -148,40 +200,60 @@ extern "C" {
 #define _JMP_BUF_DEFINED
 #endif
 
-  void * __cdecl __attribute__ ((__nothrow__)) mingw_getsp(void);
+void * __cdecl __attribute__ ((__nothrow__)) mingw_getsp (void);
 
-#ifndef USE_NO_MINGW_SETJMP_TWO_ARGS
-#ifndef _INC_SETJMPEX
-#ifdef _WIN64
-#define setjmp(BUF) _setjmp((BUF), mingw_getsp())
-#else
-#define setjmp(BUF) _setjmp3((BUF), NULL)
-#endif
+#if !defined(USE_NO_MINGW_SETJMP_TWO_ARGS)
+#  if __MSVCRT_VERSION__ >= 0x1400
+#    ifdef _WIN64
+#      define _setjmp __intrinsic_setjmpex
+#    else
+#      define _setjmp __intrinsic_setjmp
+#    endif
+#  endif
+#  ifndef _INC_SETJMPEX
+#    if defined(_X86_) || defined(__i386__)
+#      define setjmp(BUF) _setjmp3((BUF), NULL)
+#    elif defined(_ARM_) || defined(__arm__) || defined(_ARM64_) || defined(__aarch64__)
+#      define setjmp(BUF) __mingw_setjmp((BUF))
+#      define longjmp __mingw_longjmp
+  int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) __mingw_setjmp(jmp_buf _Buf);
+#    else
+#     if (__MINGW_GCC_VERSION < 40702)
+#      define setjmp(BUF) _setjmp((BUF), mingw_getsp())
+#     else
+#      define setjmp(BUF) _setjmp((BUF), __builtin_frame_address (0))
+#     endif
+#    endif
   int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) _setjmp(jmp_buf _Buf, void *_Ctx);
   int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) _setjmp3(jmp_buf _Buf, void *_Ctx);
-#else
-#undef setjmp
-#ifdef _WIN64
-#define setjmp(BUF) _setjmpex((BUF), mingw_getsp())
-#define setjmpex(BUF) _setjmpex((BUF), mingw_getsp())
-#else
-#define setjmp(BUF) _setjmpex((BUF), NULL)
-#define setjmpex(BUF) _setjmpex((BUF), NULL)
-#endif
+#  else
+#    undef setjmp
+#    ifdef _WIN64
+#     if (__MINGW_GCC_VERSION < 40702)
+#      define setjmp(BUF) _setjmpex((BUF), mingw_getsp())
+#      define setjmpex(BUF) _setjmpex((BUF), mingw_getsp())
+#     else
+#      define setjmp(BUF) _setjmpex((BUF), __builtin_frame_address (0))
+#      define setjmpex(BUF) _setjmpex((BUF), __builtin_frame_address (0))
+#     endif
+#    else
+#      define setjmp(BUF) _setjmpex((BUF), NULL)
+#      define setjmpex(BUF) _setjmpex((BUF), NULL)
+#    endif
   int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) _setjmpex(jmp_buf _Buf,void *_Ctx);
-#endif
+#  endif
 
 #else
 
-#ifndef _INC_SETJMPEX
-#define setjmp _setjmp
-#endif
+#  if !defined(_INC_SETJMPEX)
+#    define setjmp _setjmp
+#  endif
 
   int __cdecl __attribute__ ((__nothrow__,__returns_twice__)) setjmp(jmp_buf _Buf);
 #endif
 
-  __declspec(noreturn) __attribute__ ((__nothrow__)) void __cdecl ms_longjmp(jmp_buf _Buf,int _Value)/* throw(...)*/;
-  __declspec(noreturn) __attribute__ ((__nothrow__)) void __cdecl longjmp(jmp_buf _Buf,int _Value);
+  __MINGW_ATTRIB_NORETURN __attribute__ ((__nothrow__)) void __cdecl ms_longjmp(jmp_buf _Buf,int _Value)/* throw(...)*/;
+  __MINGW_ATTRIB_NORETURN __attribute__ ((__nothrow__)) void __cdecl longjmp(jmp_buf _Buf,int _Value);
 
 #ifdef __cplusplus
 }

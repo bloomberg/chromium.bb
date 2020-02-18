@@ -8,7 +8,10 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "call/rtp_payload_params.h"
+
 #include <string.h>
+
 #include <map>
 #include <set>
 
@@ -17,14 +20,17 @@
 #include "absl/types/variant.h"
 #include "api/video/video_content_type.h"
 #include "api/video/video_rotation.h"
-#include "call/rtp_payload_params.h"
 #include "modules/video_coding/codecs/h264/include/h264_globals.h"
 #include "modules/video_coding/codecs/interface/common_constants.h"
 #include "modules/video_coding/codecs/vp8/include/vp8_globals.h"
 #include "modules/video_coding/codecs/vp9/include/vp9_globals.h"
 #include "modules/video_coding/include/video_codec_interface.h"
 #include "test/field_trial.h"
+#include "test/gmock.h"
 #include "test/gtest.h"
+
+using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 
 namespace webrtc {
 namespace {
@@ -148,7 +154,7 @@ TEST(RtpPayloadParamsTest, InfoMappedToRtpVideoHeader_H264) {
 
   EncodedImage encoded_image;
   CodecSpecificInfo codec_info;
-  CodecSpecificInfoH264 *h264info = &codec_info.codecSpecific.H264;
+  CodecSpecificInfoH264* h264info = &codec_info.codecSpecific.H264;
   codec_info.codecType = kVideoCodecH264;
   h264info->packetization_mode = H264PacketizationMode::SingleNalUnit;
   h264info->temporal_idx = kNoTemporalIdx;
@@ -335,6 +341,32 @@ TEST(RtpPayloadParamsTest, PictureIdForOldGenericFormat) {
   EXPECT_EQ(1, header.generic->frame_id);
 }
 
+TEST(RtpPayloadParamsTest, GenericDescriptorForGenericCodec) {
+  test::ScopedFieldTrials generic_picture_id(
+      "WebRTC-GenericDescriptor/Enabled/");
+  RtpPayloadState state{};
+
+  EncodedImage encoded_image;
+  encoded_image._frameType = VideoFrameType::kVideoFrameKey;
+  CodecSpecificInfo codec_info;
+  codec_info.codecType = kVideoCodecGeneric;
+
+  RtpPayloadParams params(kSsrc1, &state);
+  RTPVideoHeader header =
+      params.GetRtpVideoHeader(encoded_image, &codec_info, 0);
+
+  EXPECT_EQ(kVideoCodecGeneric, header.codec);
+  ASSERT_TRUE(header.generic);
+  EXPECT_EQ(0, header.generic->frame_id);
+  EXPECT_THAT(header.generic->dependencies, IsEmpty());
+
+  encoded_image._frameType = VideoFrameType::kVideoFrameDelta;
+  header = params.GetRtpVideoHeader(encoded_image, &codec_info, 1);
+  ASSERT_TRUE(header.generic);
+  EXPECT_EQ(1, header.generic->frame_id);
+  EXPECT_THAT(header.generic->dependencies, ElementsAre(0));
+}
+
 class RtpPayloadParamsVp8ToGenericTest : public ::testing::Test {
  public:
   enum LayerSync { kNoSync, kSync };
@@ -421,6 +453,103 @@ TEST_F(RtpPayloadParamsVp8ToGenericTest, LayerSync) {
 }
 
 TEST_F(RtpPayloadParamsVp8ToGenericTest, FrameIdGaps) {
+  // 0101 pattern
+  ConvertAndCheck(0, 0, VideoFrameType::kVideoFrameKey, kNoSync, {}, 480, 360);
+  ConvertAndCheck(1, 1, VideoFrameType::kVideoFrameDelta, kNoSync, {0});
+
+  ConvertAndCheck(0, 5, VideoFrameType::kVideoFrameDelta, kNoSync, {0});
+  ConvertAndCheck(1, 10, VideoFrameType::kVideoFrameDelta, kNoSync, {1, 5});
+
+  ConvertAndCheck(0, 15, VideoFrameType::kVideoFrameDelta, kNoSync, {5});
+  ConvertAndCheck(1, 20, VideoFrameType::kVideoFrameDelta, kNoSync, {10, 15});
+}
+
+class RtpPayloadParamsH264ToGenericTest : public ::testing::Test {
+ public:
+  enum LayerSync { kNoSync, kSync };
+
+  RtpPayloadParamsH264ToGenericTest()
+      : generic_descriptor_field_trial_("WebRTC-GenericDescriptor/Enabled/"),
+        state_(),
+        params_(123, &state_) {}
+
+  void ConvertAndCheck(int temporal_index,
+                       int64_t shared_frame_id,
+                       VideoFrameType frame_type,
+                       LayerSync layer_sync,
+                       const std::set<int64_t>& expected_deps,
+                       uint16_t width = 0,
+                       uint16_t height = 0) {
+    EncodedImage encoded_image;
+    encoded_image._frameType = frame_type;
+    encoded_image._encodedWidth = width;
+    encoded_image._encodedHeight = height;
+
+    CodecSpecificInfo codec_info;
+    codec_info.codecType = kVideoCodecH264;
+    codec_info.codecSpecific.H264.temporal_idx = temporal_index;
+    codec_info.codecSpecific.H264.base_layer_sync = layer_sync == kSync;
+
+    RTPVideoHeader header =
+        params_.GetRtpVideoHeader(encoded_image, &codec_info, shared_frame_id);
+
+    ASSERT_TRUE(header.generic);
+    EXPECT_TRUE(header.generic->higher_spatial_layers.empty());
+    EXPECT_EQ(header.generic->spatial_index, 0);
+
+    EXPECT_EQ(header.generic->frame_id, shared_frame_id);
+    EXPECT_EQ(header.generic->temporal_index, temporal_index);
+    std::set<int64_t> actual_deps(header.generic->dependencies.begin(),
+                                  header.generic->dependencies.end());
+    EXPECT_EQ(expected_deps, actual_deps);
+
+    EXPECT_EQ(header.width, width);
+    EXPECT_EQ(header.height, height);
+  }
+
+ protected:
+  test::ScopedFieldTrials generic_descriptor_field_trial_;
+  RtpPayloadState state_;
+  RtpPayloadParams params_;
+};
+
+TEST_F(RtpPayloadParamsH264ToGenericTest, Keyframe) {
+  ConvertAndCheck(0, 0, VideoFrameType::kVideoFrameKey, kNoSync, {}, 480, 360);
+  ConvertAndCheck(0, 1, VideoFrameType::kVideoFrameDelta, kNoSync, {0});
+  ConvertAndCheck(0, 2, VideoFrameType::kVideoFrameKey, kNoSync, {}, 480, 360);
+}
+
+TEST_F(RtpPayloadParamsH264ToGenericTest, TooHighTemporalIndex) {
+  ConvertAndCheck(0, 0, VideoFrameType::kVideoFrameKey, kNoSync, {}, 480, 360);
+
+  EncodedImage encoded_image;
+  encoded_image._frameType = VideoFrameType::kVideoFrameDelta;
+  CodecSpecificInfo codec_info;
+  codec_info.codecType = kVideoCodecH264;
+  codec_info.codecSpecific.H264.temporal_idx =
+      RtpGenericFrameDescriptor::kMaxTemporalLayers;
+  codec_info.codecSpecific.H264.base_layer_sync = false;
+
+  RTPVideoHeader header =
+      params_.GetRtpVideoHeader(encoded_image, &codec_info, 1);
+  EXPECT_FALSE(header.generic);
+}
+
+TEST_F(RtpPayloadParamsH264ToGenericTest, LayerSync) {
+  // 02120212 pattern
+  ConvertAndCheck(0, 0, VideoFrameType::kVideoFrameKey, kNoSync, {}, 480, 360);
+  ConvertAndCheck(2, 1, VideoFrameType::kVideoFrameDelta, kNoSync, {0});
+  ConvertAndCheck(1, 2, VideoFrameType::kVideoFrameDelta, kNoSync, {0});
+  ConvertAndCheck(2, 3, VideoFrameType::kVideoFrameDelta, kNoSync, {0, 1, 2});
+
+  ConvertAndCheck(0, 4, VideoFrameType::kVideoFrameDelta, kNoSync, {0});
+  ConvertAndCheck(2, 5, VideoFrameType::kVideoFrameDelta, kNoSync, {2, 3, 4});
+  ConvertAndCheck(1, 6, VideoFrameType::kVideoFrameDelta, kSync,
+                  {4});  // layer sync
+  ConvertAndCheck(2, 7, VideoFrameType::kVideoFrameDelta, kNoSync, {4, 5, 6});
+}
+
+TEST_F(RtpPayloadParamsH264ToGenericTest, FrameIdGaps) {
   // 0101 pattern
   ConvertAndCheck(0, 0, VideoFrameType::kVideoFrameKey, kNoSync, {}, 480, 360);
   ConvertAndCheck(1, 1, VideoFrameType::kVideoFrameDelta, kNoSync, {0});

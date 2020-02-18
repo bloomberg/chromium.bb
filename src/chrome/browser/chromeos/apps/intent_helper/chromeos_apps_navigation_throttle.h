@@ -61,6 +61,7 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
   static void RecordUma(const std::string& selected_app_package,
                         apps::mojom::AppType app_type,
                         apps::IntentPickerCloseReason close_reason,
+                        apps::Source source,
                         bool should_persist);
 
   ChromeOsAppsNavigationThrottle(content::NavigationHandle* navigation_handle,
@@ -111,8 +112,6 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
       content::WebContents* web_contents,
       IntentPickerAutoDisplayService* ui_auto_display_service,
       const GURL& url) override;
-
-  bool ShouldShowRememberSelection() override;
 
   void CloseTab();
 

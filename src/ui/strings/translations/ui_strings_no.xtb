@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1398853756734560583">Maksimer</translation>
 <translation id="1409544243779336081">Appanbefaling</translation>
+<translation id="1498028757988366001">Du har søkt etter dette før. Hvis du sletter «<ph name="QUERY" />» fra loggen, blir det fjernet permanent fra kontoen din på alle enhetene dine.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutt og }other{# minutter og }}</translation>
 <translation id="1643823602425662293">Varsel</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -45,13 +46,16 @@
 <translation id="2289052229480071835">Trykk på berøringsmålene på skjermen.</translation>
 <translation id="2295140143284145483">Undersøkelse</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB per sek</translation>
+<translation id="2388990488038464401">Vil du ringe dette nummeret fra telefonen?</translation>
 <translation id="24452542372838207">Vis varselet</translation>
 <translation id="2445449901874883781">Bruk høy tetthet</translation>
+<translation id="2451871130406122810">Sendt til enheten</translation>
 <translation id="2482878487686419369">Varsler</translation>
 <translation id="2497284189126895209">Alle filer</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Kalibreringen er ferdig</translation>
 <translation id="252373100621549798">Ukjent skjerm</translation>
+<translation id="2545651323591713692">Utsett</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{om 1 t}other{om # t}}</translation>
 <translation id="2583543531130364912">Kalibrer berøringsskjermen din</translation>
 <translation id="2666092431469916601">Topp</translation>
@@ -70,6 +74,7 @@
 <translation id="3183922693828471536">Rull hit</translation>
 <translation id="3234408098842461169">Pil ned</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dag}other{# dager}}</translation>
+<translation id="3295886253693811851">Ring fra</translation>
 <translation id="335581015389089642">Tale</translation>
 <translation id="3443810440409579745">Fane er mottatt.</translation>
 <translation id="3479552764303398839">Ikke nå</translation>
@@ -95,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{for 1 måned siden}other{for # måneder siden}}</translation>
 <translation id="4289300219472526559">Begynn å snakke</translation>
 <translation id="4316910396681052118">ALLE APPER</translation>
+<translation id="4467014365953759647">Kan ikke sende nummeret</translation>
 <translation id="4588090240171750605">Rull mot høyre</translation>
 <translation id="4690510401873698237">Hyllen er nederst</translation>
 <translation id="4724120544754982507">Varselsenter, <ph name="UNREAD_NOTIFICATION_COUNT" /> uleste varsler</translation>
@@ -111,6 +117,7 @@
 <translation id="5266161281976477809">Trekant for mer innhold</translation>
 <translation id="5278860589123563674">Kunne ikke sende</translation>
 <translation id="528468243742722775">Avslutt</translation>
+<translation id="5327567770033251652">slå på synkronisering</translation>
 <translation id="5329858601952122676">&amp;Slett</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> oppå <ph name="IN_PLACE_APP" /> – slipp for å opprette en mappe.</translation>
 <translation id="5463830097259460683">Emoji og symboler</translation>
@@ -150,6 +157,7 @@
 <translation id="6620110761915583480">Lagre fil</translation>
 <translation id="6699343763173986273">Media – neste spor</translation>
 <translation id="673773751041746814">Sletting</translation>
+<translation id="6779314412797872738">For å sende numre herfra til Android-telefonen din, <ph name="TROUBLESHOOT_LINK" /> for begge enhetene i innstillingene.</translation>
 <translation id="6786750046913594791">Lukk mappen</translation>
 <translation id="6808150112686056157">Media – stopp</translation>
 <translation id="6845383723252244143">Velg mappe</translation>
@@ -168,7 +176,9 @@
 <translation id="7319740667687257810">Appoversikt, delvis visning</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{For 1 min siden}other{For # min siden}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Kontrollér telefonens tilkobling og prøv på nytt</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minutt igjen}other{# minutter igjen}}</translation>
+<translation id="7430878839542012341">Vil du slette dette søket fra loggen?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7658239707568436148">Avbryt</translation>
@@ -186,7 +196,6 @@
 <translation id="8144660977431427332">Søkene er drevet av Google-assistenten. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autofullføring</translation>
 <translation id="815598010540052116">Rull ned</translation>
-<translation id="8170087467028567933">Hvis du fjerner dette forslaget, skjules det for kontoen din på alle enhetene dine.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Ned 1 s.</translation>
 <translation id="8245914219290430011">Fane</translation>
@@ -197,7 +206,6 @@
 <translation id="838869780401515933">merk av</translation>
 <translation id="8393700583063109961">Send melding</translation>
 <translation id="8394908167088220973">Media – spill av / pause</translation>
-<translation id="8420205633584771378">Vil du fjerne dette forslaget?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 år}other{# år}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> Fil (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Hyllen vises alltid</translation>

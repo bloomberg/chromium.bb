@@ -120,7 +120,7 @@ class NET_EXPORT HostResolver {
     static const size_t kDefaultParallelism = 0;
 
     // Set |max_system_retry_attempts| to this to select a default retry value.
-    static const size_t kDefaultRetryAttempts = static_cast<size_t>(-1);
+    static const size_t kDefaultRetryAttempts;
 
     // How many resolve requests will be allowed to run in parallel.
     // |kDefaultParallelism| for the resolver to choose a default value.
@@ -192,7 +192,9 @@ class NET_EXPORT HostResolver {
       ALLOWED,
 
       // Results may come from the host cache even if stale (by expiration or
-      // network changes).
+      // network changes). In secure dns AUTOMATIC mode, the cache is checked
+      // for both secure and insecure results prior to any secure DNS lookups to
+      // minimize response time.
       STALE_ALLOWED,
 
       // Results will not come from the host cache.

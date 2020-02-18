@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Drsnik za iskanje</translation>
 <translation id="1399648040768741453">Tipkovnica za teluščino (fonetična)</translation>
 <translation id="1430915738399379752">Natisni</translation>
+<translation id="1439494416798956626">Premaknjeno v mapo <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Tipkovnica za vietnamščino (Telex)</translation>
 <translation id="1455548678241328678">Norveška tipkovnica</translation>
 <translation id="1464724975715666883">1 napaka.</translation>
@@ -90,9 +91,9 @@
 <translation id="197560921582345123">Urejanje dovoljeno</translation>
 <translation id="1984603991036629094">Ameriška fonetična tipkovnica</translation>
 <translation id="2001796770603320721">Upravljanje v Googlu Drive</translation>
+<translation id="2009067268969781306">Če formatirate pogon, se izbrišejo vsi podatki, shranjeni na njem. Tega dejanja ni mogoče razveljaviti.</translation>
 <translation id="2028997212275086731">Arhiv RAR</translation>
 <translation id="2046702855113914483">Ramen</translation>
-<translation id="204914487372604757">Ustvari bližnjico</translation>
 <translation id="2070909990982335904">Imena, ki se začnejo s piko, so rezervirana za sistem. Izberite drugo ime.</translation>
 <translation id="2079545284768500474">Razveljavi</translation>
 <translation id="2080010875307505892">Srbska tipkovnica</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Pregledovanje predstavnostne naprave ...</translation>
 <translation id="3468522857997926824">V <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> je varnostno kopiranih toliko fotografij: <ph name="FILE_COUNT" /></translation>
 <translation id="3470502288861289375">Kopiranje ...</translation>
+<translation id="3473378059788601120">Kopirano v mapo <ph name="FOLDER_NAME" /></translation>
 <translation id="3475447146579922140">Googlova preglednica</translation>
 <translation id="3495304270784461826">Št. napak: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Prečrkovanje (shalom ← שלום)</translation>
@@ -220,6 +222,7 @@
 <translation id="3620292326130836921">Vse je varnostno kopirano!</translation>
 <translation id="3626281679859535460">Svetlost</translation>
 <translation id="3644896802912593514">Širina</translation>
+<translation id="3645531960514756307">Odpni mapo</translation>
 <translation id="3678559383040232393">Malteška tipkovnica</translation>
 <translation id="3685122418104378273">Sinhronizacija z Googlom Drive je ob uporabi prenosa podatkov v mobilnih omrežjih privzeto onemogočena.</translation>
 <translation id="3726463242007121105">Naprave ni mogoče odpreti, ker njen datotečni sistem ni podprt.</translation>
@@ -240,6 +243,7 @@
 <translation id="383652340667548381">srbščina</translation>
 <translation id="385051799172605136">Nazaj</translation>
 <translation id="3855472144336161447">nemščina (Neo 2)</translation>
+<translation id="3856075812838139784">Samo za branje</translation>
 <translation id="3858678421048828670">Italijanska tipkovnica</translation>
 <translation id="386548886866354912">Stiskanje z: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Opis</translation>
@@ -266,6 +270,7 @@
 <translation id="426015154560005552">Tipkovnica za arabščino</translation>
 <translation id="4261901459838235729">Googlova predstavitev</translation>
 <translation id="4290535918735525311">1 mapa v skupni rabi z Linuxom</translation>
+<translation id="42981349822642051">Razširi</translation>
 <translation id="4298972503445160211">Danska tipkovnica</translation>
 <translation id="4299729908419173967">portugalščina (Brazilija)</translation>
 <translation id="4309915981827077375">Splošni podatki</translation>
@@ -285,7 +290,9 @@
 <translation id="4568854179928172494">Ura spremembe</translation>
 <translation id="4572815280350369984">Datoteka <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Več ...</translation>
+<translation id="4579744207439506346">Vnos <ph name="ENTRY_NAME" /> je bil dodan v izbor.</translation>
 <translation id="4582497162516204941">Namestitev v Linuxu (beta)</translation>
+<translation id="4594543368593301662">Prikaz rezultatov za »<ph name="SEARCH_TERM" />«.</translation>
 <translation id="4631887759990505102">Izvajalec</translation>
 <translation id="4656293982926141856">V tem računalniku</translation>
 <translation id="4669606053856530811">Člani skupine »<ph name="SOURCE_NAME" />« bodo izgubili dostop, razen če te elemente delite z njimi.</translation>
@@ -338,6 +345,7 @@
 <translation id="5038625366300922036">Več ...</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pica</translation>
+<translation id="5081517858322016911">Izbrisanih bo za <ph name="TOTAL_FILE_SIZE" /> datotek</translation>
 <translation id="509429900233858213">Napaka.</translation>
 <translation id="5098629044894065541">hebrejščina</translation>
 <translation id="5123433949759960244">Košarkarska žoga</translation>
@@ -383,12 +391,14 @@
 <translation id="5412637665001827670">Bolgarska tipkovnica</translation>
 <translation id="5418923334382419584">Tipkovnica za mjanmarščino</translation>
 <translation id="5428105026674456456">španščina</translation>
+<translation id="5438282218546237410">Ni rezultatov za »<ph name="SEARCH_TERM" />«.</translation>
 <translation id="5464696796438641524">Poljska tipkovnica</translation>
 <translation id="5465122519792752163">Tipkovnica za nepalščino (InScript)</translation>
 <translation id="5469868506864199649">italijanščina</translation>
 <translation id="5494920125229734069">Izberi vse</translation>
 <translation id="5500122897333236901">islandščina</translation>
 <translation id="5508696409934741614">Pike</translation>
+<translation id="5522908512596376669">Seznam datotek je spremenjen na prikaz seznama.</translation>
 <translation id="5524517123096967210">Datoteke ni bilo mogoče prebrati.</translation>
 <translation id="5533102081734025921">Slika <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">Prečrkovanje (namaste → नमस्ते)</translation>
@@ -407,6 +417,7 @@
 <translation id="5752453871435543420">Varnostna kopija sistema Chrome OS v oblaku</translation>
 <translation id="5756666464756035725">madžarščina – QWERTY</translation>
 <translation id="5771585441665576801">Prečrkovanje (geia → γεια)</translation>
+<translation id="5776325638577448643">Izbriši in formatiraj</translation>
 <translation id="57838592816432529">Izklopi zvok</translation>
 <translation id="5788127256798019331">Datoteke iz Googla Play</translation>
 <translation id="5790193330357274855">kazaščina</translation>
@@ -415,6 +426,7 @@
 <translation id="5819442873484330149">Trodelni hangulski način (dokončni)</translation>
 <translation id="5833610766403489739">Ta datoteka se je nekje izgubila. Preverite nastavitev mesta za prenos in poskusite znova.</translation>
 <translation id="5838051104334203064">Aplikacije iz Trgovine Play ne morejo dostopati do te naprave</translation>
+<translation id="5838451609423551646">Vsi vnosi so bili odstranjeni iz izbora.</translation>
 <translation id="5838825566232597749">Združene države – mednarodna (Workman)</translation>
 <translation id="5850516540536751549">Ta vrsta datoteke ni podprta. V <ph name="BEGIN_LINK" />Spletni trgovini Chrome<ph name="END_LINK" /> poiščite aplikacijo, s katero lahko odprete to vrsto datoteke.
         <ph name="BEGIN_LINK_HELP" />Več o tem<ph name="END_LINK_HELP" /></translation>
@@ -422,10 +434,12 @@
 <translation id="5857774240076772505">Aplikacijam za Linux dovolite spreminjanje datotek v mapi <ph name="FOLDER_NAME" /></translation>
 <translation id="5892290200158927959">Francoska tipkovnica – BÉPO</translation>
 <translation id="5911887972742538906">Med nameščanjem aplikacije za Linux je prišlo do napake.</translation>
+<translation id="5912396950572065471">Oblika</translation>
 <translation id="5913638992615760742">Operacija kopiranja ni uspela, nepričakovana napaka: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5923484009666796948">Vnos besedila za japonščino (za japonsko tipkovnico)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Aplikacijam za Linux dovolite spreminjanje datotek v Googlu Drive. Spremembe bodo sinhronizirane z drugimi napravami.</translation>
+<translation id="5955954492236143329">Št. datotek: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5982621672636444458">Možnosti razvrščanja</translation>
 <translation id="6005282720244019462">Latinskoameriška tipkovnica</translation>
 <translation id="6007237601604674381">Premikanje ni uspelo. <ph name="ERROR_MESSAGE" /></translation>
@@ -436,6 +450,7 @@
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="6054173164583630569">Francoska tipkovnica</translation>
 <translation id="6074825444536523002">Googlov obrazec</translation>
+<translation id="6096979789310008754">Besedilo iskanja je izbrisano, prikaz vseh datotek in map.</translation>
 <translation id="6111770213269631447">Prečrkovanje (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Presledek</translation>
 <translation id="6133173853026656527">Premikanje datoteke <ph name="FILE_NAME" /> ...</translation>
@@ -446,6 +461,7 @@
 <translation id="6189412234224385711">Odpiranje z: <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Čakanje na podatke o prostoru ...</translation>
 <translation id="6205710420833115353">Nekateri postopki trajajo dlje, kot je pričakovano. Ali jih želite opustiti?</translation>
+<translation id="6224253798271602650">Formatiraj <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Te datoteke ni bilo mogoče predvajati.</translation>
 <translation id="6248400709929739064">Omogoči podnapise</translation>
 <translation id="6264347891387618177">Prečrkovanje (selam → ሰላም)</translation>
@@ -488,6 +504,7 @@
 <translation id="6820687829547641339">Stisnjen arhiv tar Gzip</translation>
 <translation id="6825883775269213504">ruščina</translation>
 <translation id="6827236167376090743">Ta videoposnetek se bo neprekinjeno stalno predvajal.</translation>
+<translation id="6847101934483209767">Vnos <ph name="ENTRY_NAME" /> je bil odstranjen iz izbora.</translation>
 <translation id="6862635236584086457">Datoteke, shranjene v teh mapi, se samodejno varnostno kopirajo v splet</translation>
 <translation id="6870130893560916279">Ukrajinska tipkovnica</translation>
 <translation id="6876155724392614295">Kolo</translation>
@@ -524,6 +541,7 @@
 <translation id="719009910964971313">ameriška tpkovnica Dvorak za programerje</translation>
 <translation id="7191454237977785534">Shrani datoteko kot</translation>
 <translation id="7222624196722476520">Fonetična tipkovnica za bolgarščino</translation>
+<translation id="7238097264433196391">Ime pogona</translation>
 <translation id="7248671827512403053">Aplikacija</translation>
 <translation id="7268659760406822741">Razpoložljive storitve</translation>
 <translation id="7283041136720745563">Vaša kvota za Google Drive ni dovolj velika.</translation>
@@ -594,7 +612,6 @@
 <translation id="7969525169268594403">slovenščina</translation>
 <translation id="7982283708762922719">Višina</translation>
 <translation id="7987485481246785146">Tipkovnica za soransko kurdščino na arabski osnovi</translation>
-<translation id="799547531016638432">Odstrani bližnjico</translation>
 <translation id="799923393800005025">Ogled dovoljen</translation>
 <translation id="8008366997883261463">Pes</translation>
 <translation id="8028993641010258682">Velikost</translation>
@@ -614,11 +631,13 @@
 <translation id="8148264977957212129">Način vnosa pinjin</translation>
 <translation id="8151638057146502721">Konfiguriraj</translation>
 <translation id="8153607920959057464">Te datoteke ni bilo mogoče prikazati.</translation>
+<translation id="8154842056504218462">Izbrani so vsi vnosi.</translation>
 <translation id="8157684860301034423">Prenos podatkov aplikacije ni uspel.</translation>
 <translation id="8157939133946352716">7 x 5</translation>
 <translation id="8160015581537295331">Španska tipkovnica</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Model naprave</translation>
+<translation id="8208580316430297579">Slikovni material</translation>
 <translation id="8223479393428528563">Če želite te datoteke shraniti za uporabo brez povezave, vzpostavite povezavo, z desnim gumbom miške kliknite datoteke in izberite možnost <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Prekini</translation>
 <translation id="8261506727792406068">Izbriši</translation>
@@ -632,6 +651,7 @@
 <translation id="8336153091935557858">Včeraj <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Islandska tipkovnica</translation>
 <translation id="8342318071240498787">Datoteka ali imenik s tem imenom že obstaja.</translation>
+<translation id="8382450452152102026">V <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Prečrkovanje (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Mere</translation>
 <translation id="8412586565681117057">Hitri način vnosa</translation>
@@ -650,11 +670,13 @@
 <translation id="8561206103590473338">Slon</translation>
 <translation id="8569764466147087991">Izberite datoteko, ki jo želite odpreti</translation>
 <translation id="8579285237314169903">Sinhroniziranje datotek (<ph name="NUMBER_OF_FILES" />) ...</translation>
+<translation id="8600173386174225982">Seznam datotek je spremenjen na pogled sličic.</translation>
 <translation id="8669949407341943408">Premikanje ...</translation>
 <translation id="8671210955687109937">Komentiranje dovoljeno</translation>
 <translation id="8686213429977032554">Ta datoteka v storitvi Google Drive še ni v skupni rabi</translation>
 <translation id="8698464937041809063">Googlova risba</translation>
 <translation id="8714406895390098252">Kolo</translation>
+<translation id="8719721339511222681">Izbran je vnos <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">Mednarodna tipkovnica za angleščino (Združene države)</translation>
 <translation id="872537912056138402">hrvaščina</translation>
 <translation id="874420130893181774">Način vnosa tradicionalni pinjin</translation>
@@ -679,6 +701,7 @@
 <translation id="9099674669267916096">Število strani</translation>
 <translation id="9110990317705400362">Stalno si prizadevamo zagotoviti, da bi bilo brskanje varnejše. Prej vas je lahko vsako spletno mesto pozvalo, da dodate razširitev v brskalnik. V zadnjih različicah Google Chroma pa morate Chromu izrecno povedati, da želite te razširitve namestiti, tako da jih dodate na strani »Razširitve«. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Kodek</translation>
+<translation id="9129931661813833980">Pripni mapo</translation>
 <translation id="9130775360844693113">Člani skupine »<ph name="DESTINATION_NAME" />« bodo imeli dostop do teh elementov.</translation>
 <translation id="9131598836763251128">Izberite eno ali več datotek</translation>
 <translation id="9133055936679483811">Ustvarjanje datoteke zip ni uspelo. <ph name="ERROR_MESSAGE" /></translation>
@@ -695,6 +718,7 @@
 <translation id="942954117721265519">V tem imeniku ni slik.</translation>
 <translation id="943972244133411984">Spremenil(-a):</translation>
 <translation id="945522503751344254">Pošlji povratne informacije</translation>
+<translation id="947144732524271678">Izbran je nabor vnosov (<ph name="ENTRY_COUNT" />) od <ph name="FROM_ENTRY_NAME" /> do <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Brez povezave</translation>
 <translation id="988685240266037636">Datoteka z imenom »<ph name="FILE_NAME" />« že obstaja. Ali jo želite zamenjati?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

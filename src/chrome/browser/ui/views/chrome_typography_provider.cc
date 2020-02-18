@@ -107,26 +107,6 @@ SkColor GetHarmonyTextColorForNonStandardNativeTheme(
 
 }  // namespace
 
-#if defined(OS_WIN)
-// static
-int ChromeTypographyProvider::GetPlatformFontHeight(int font_context) {
-  switch (font_context) {
-    case CONTEXT_HEADLINE:
-      return 27;
-    case views::style::CONTEXT_DIALOG_TITLE:
-      return 20;
-    case CONTEXT_BODY_TEXT_LARGE:
-    case CONTEXT_TAB_HOVER_CARD_TITLE:
-    case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
-      return 18;
-    case CONTEXT_BODY_TEXT_SMALL:
-      return 16;
-  }
-  NOTREACHED();
-  return 0;
-}
-#endif
-
 const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
                                                        int style) const {
   // "Target" font size constants.
@@ -284,14 +264,10 @@ int ChromeTypographyProvider::GetLineHeight(int context, int style) const {
   constexpr int kBodyTextLargePlatformHeight = 16;
   constexpr int kBodyTextSmallPlatformHeight = 15;
 #elif defined(OS_WIN)
-  static const int kHeadlinePlatformHeight =
-      GetPlatformFontHeight(CONTEXT_HEADLINE);
-  static const int kTitlePlatformHeight =
-      GetPlatformFontHeight(views::style::CONTEXT_DIALOG_TITLE);
-  static const int kBodyTextLargePlatformHeight =
-      GetPlatformFontHeight(CONTEXT_BODY_TEXT_LARGE);
-  static const int kBodyTextSmallPlatformHeight =
-      GetPlatformFontHeight(CONTEXT_BODY_TEXT_SMALL);
+  constexpr int kHeadlinePlatformHeight = 27;
+  constexpr int kTitlePlatformHeight = 20;
+  constexpr int kBodyTextLargePlatformHeight = 18;
+  constexpr int kBodyTextSmallPlatformHeight = 16;
 #else
   constexpr int kHeadlinePlatformHeight = 24;
   constexpr int kTitlePlatformHeight = 18;

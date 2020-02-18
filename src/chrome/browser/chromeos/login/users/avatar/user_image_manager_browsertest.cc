@@ -60,7 +60,8 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
@@ -72,7 +73,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_request_status.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
@@ -210,7 +210,7 @@ class UserImageManagerTest : public LoginManagerTest,
     fake_gaia_.fake_gaia()->IssueOAuthToken(kRandomTokenStrForTesting,
                                             token_info);
     fake_gaia_.fake_gaia()->MapEmailToGaiaId(
-        kTestUserEmail1, identity::GetTestGaiaIdForEmail(kTestUserEmail1));
+        kTestUserEmail1, signin::GetTestGaiaIdForEmail(kTestUserEmail1));
   }
 
   void TearDownOnMainThread() override {
@@ -273,8 +273,8 @@ class UserImageManagerTest : public LoginManagerTest,
 
   void UpdatePrimaryAccountInfo(Profile* profile) {
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-    identity::SetRefreshTokenForPrimaryAccount(identity_manager,
-                                               kRandomTokenStrForTesting);
+    signin::SetRefreshTokenForPrimaryAccount(identity_manager,
+                                             kRandomTokenStrForTesting);
     CoreAccountInfo core_info = identity_manager->GetPrimaryAccountInfo();
     AccountInfo account_info;
     account_info.email = core_info.email;
@@ -289,7 +289,7 @@ class UserImageManagerTest : public LoginManagerTest,
     account_info.picture_url =
         embedded_test_server()->GetURL("/avatar.jpg").spec();
     account_info.is_child_account = false;
-    identity::UpdateAccountInfoForAccount(identity_manager, account_info);
+    signin::UpdateAccountInfoForAccount(identity_manager, account_info);
   }
 
   // Completes the download of the currently logged-in user's profile image.
@@ -333,13 +333,13 @@ class UserImageManagerTest : public LoginManagerTest,
 
   const AccountId test_account_id1_ = AccountId::FromUserEmailGaiaId(
       kTestUserEmail1,
-      identity::GetTestGaiaIdForEmail(kTestUserEmail1));
+      signin::GetTestGaiaIdForEmail(kTestUserEmail1));
   const AccountId test_account_id2_ = AccountId::FromUserEmailGaiaId(
       kTestUserEmail2,
-      identity::GetTestGaiaIdForEmail(kTestUserEmail2));
+      signin::GetTestGaiaIdForEmail(kTestUserEmail2));
   const AccountId enterprise_account_id_ = AccountId::FromUserEmailGaiaId(
       FakeGaiaMixin::kEnterpriseUser1,
-      identity::GetTestGaiaIdForEmail(FakeGaiaMixin::kEnterpriseUser1));
+      signin::GetTestGaiaIdForEmail(FakeGaiaMixin::kEnterpriseUser1));
   const cryptohome::AccountIdentifier cryptohome_id_ =
       cryptohome::CreateAccountIdentifierFromAccountId(enterprise_account_id_);
 

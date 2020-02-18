@@ -46,17 +46,19 @@ void Anonymize(feedback::AnonymizerTool* anonymizer,
 
 }  // namespace
 
-SystemLogsFetcher::SystemLogsFetcher(bool scrub_data)
+SystemLogsFetcher::SystemLogsFetcher(
+    bool scrub_data,
+    const char* const first_party_extension_ids[])
     : response_(std::make_unique<SystemLogsResponse>()),
       num_pending_requests_(0),
       task_runner_for_anonymizer_(base::CreateSequencedTaskRunnerWithTraits(
           {// User visible because this is called when the user is looking at
            // the send feedback dialog, watching a spinner.
            base::TaskPriority::USER_VISIBLE,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      weak_ptr_factory_(this) {
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {
   if (scrub_data)
-    anonymizer_ = std::make_unique<feedback::AnonymizerTool>();
+    anonymizer_ =
+        std::make_unique<feedback::AnonymizerTool>(first_party_extension_ids);
 }
 
 SystemLogsFetcher::~SystemLogsFetcher() {

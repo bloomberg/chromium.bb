@@ -18,7 +18,6 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
 import android.provider.Browser;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -363,13 +362,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         mUnselectAllOnDismiss = true;
 
         if (hasSelection()) {
-            // Device is not provisioned, don't trigger SelectionClient logic at all.
-            boolean blockSelectionClient = !isDeviceProvisioned();
-
-            // Disable SelectionClient logic if it's incognito.
-            blockSelectionClient |= isIncognito();
-
-            if (!blockSelectionClient && mSelectionMetricsLogger != null) {
+            if (mSelectionMetricsLogger != null) {
                 switch (sourceType) {
                     case MenuSourceType.MENU_SOURCE_ADJUST_SELECTION:
                         mSelectionMetricsLogger.logSelectionModified(
@@ -389,15 +382,14 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             }
 
             // From selection adjustment, show menu directly.
-            if (!blockSelectionClient
-                    && sourceType == MenuSourceType.MENU_SOURCE_ADJUST_SELECTION) {
+            // Note that this won't happen if it is incognito mode or device is not provisioned.
+            if (sourceType == MenuSourceType.MENU_SOURCE_ADJUST_SELECTION) {
                 showActionModeOrClearOnFailure();
                 return;
             }
 
-            // Show menu if we need to block SelectionClient or there is no updates from
-            // SelectionClient.
-            if (blockSelectionClient || mSelectionClient == null
+            // Show menu there is no updates from SelectionClient.
+            if (mSelectionClient == null
                     || !mSelectionClient.requestSelectionPopupUpdates(shouldSuggest)) {
                 showActionModeOrClearOnFailure();
             }
@@ -450,6 +442,18 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         return actionMode;
     }
 
+    private void dismissTextHandles() {
+        if (mWebContents.getRenderWidgetHostView() != null) {
+            mWebContents.getRenderWidgetHostView().dismissTextHandles();
+        }
+    }
+
+    private void showContextMenuAtTouchHandle(int left, int bottom) {
+        if (mWebContents.getRenderWidgetHostView() != null) {
+            mWebContents.getRenderWidgetHostView().showContextMenuAtTouchHandle(left, bottom);
+        }
+    }
+
     private void createAndShowPastePopup() {
         if (mView.getParent() == null || mView.getVisibility() != View.VISIBLE) {
             return;
@@ -462,13 +466,13 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                     @Override
                     public void paste() {
                         SelectionPopupControllerImpl.this.paste();
-                        mWebContents.dismissTextHandles();
+                        dismissTextHandles();
                     }
 
                     @Override
                     public void pasteAsPlainText() {
                         SelectionPopupControllerImpl.this.pasteAsPlainText();
-                        mWebContents.dismissTextHandles();
+                        dismissTextHandles();
                     }
 
                     @Override
@@ -614,7 +618,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             } else {
                 // Hide popups and clear selection.
                 destroyActionModeAndUnselect();
-                mWebContents.dismissTextHandles();
+                dismissTextHandles();
                 PopupController.hideAll(mWebContents);
                 // Clear the selection. The selection is cleared on destroying IME
                 // and also here since we may receive destroy first, for example
@@ -1264,7 +1268,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                 break;
 
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
-                mWebContents.showContextMenuAtTouchHandle(left, bottom);
+                showContextMenuAtTouchHandle(left, bottom);
                 if (mHandleObserver != null) {
                     mHandleObserver.handleDragStopped();
                 }
@@ -1292,8 +1296,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                 if (mWasPastePopupShowingOnInsertionDragStart) {
                     destroyPastePopup();
                 } else {
-                    mWebContents.showContextMenuAtTouchHandle(
-                            mSelectionRect.left, mSelectionRect.bottom);
+                    showContextMenuAtTouchHandle(mSelectionRect.left, mSelectionRect.bottom);
                 }
                 mWasPastePopupShowingOnInsertionDragStart = false;
                 break;
@@ -1312,8 +1315,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
             case SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED:
                 if (mWasPastePopupShowingOnInsertionDragStart) {
-                    mWebContents.showContextMenuAtTouchHandle(
-                            mSelectionRect.left, mSelectionRect.bottom);
+                    showContextMenuAtTouchHandle(mSelectionRect.left, mSelectionRect.bottom);
                 }
                 mWasPastePopupShowingOnInsertionDragStart = false;
                 if (mHandleObserver != null) {
@@ -1565,14 +1567,6 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
         SelectionClient client = getSelectionClient();
         return client == null ? null : client.getCustomTextClassifier();
-    }
-
-    @VisibleForTesting
-    public boolean isDeviceProvisioned() {
-        if (mContext == null || mContext.getContentResolver() == null) return true;
-        return Settings.Global.getInt(
-                       mContext.getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 0)
-                != 0;
     }
 
     @CalledByNative

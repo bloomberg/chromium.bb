@@ -21,16 +21,17 @@ class DisplaySettingsHandler;
 
 class AccessibilityControllerClient;
 class AppListClientImpl;
+class ArcChromeActionsClient;
 class AshShellInit;
 class CastConfigControllerMediaRouter;
 class ChromeNewWindowClient;
 class ImeControllerClient;
-class KioskNextShellClient;
 class LoginScreenClient;
-class MediaClient;
+class MediaClientImpl;
 class MobileDataNotifications;
 class NetworkConnectDelegateChromeOS;
 class NightLightClient;
+class PhotoControllerImpl;
 class ScreenOrientationDelegateChromeos;
 class SessionControllerClientImpl;
 class SystemTrayClient;
@@ -76,6 +77,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<AccessibilityControllerClient>
       accessibility_controller_client_;
   std::unique_ptr<AppListClientImpl> app_list_client_;
+  std::unique_ptr<ArcChromeActionsClient> arc_chrome_actions_client_;
   std::unique_ptr<ChromeNewWindowClient> chrome_new_window_client_;
   std::unique_ptr<ImeControllerClient> ime_controller_client_;
   std::unique_ptr<ScreenOrientationDelegateChromeos>
@@ -98,14 +100,14 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
 #endif
 
   // Initialized in PostProfileInit in all configs:
-  std::unique_ptr<KioskNextShellClient> kiosk_next_shell_client_;
   std::unique_ptr<LoginScreenClient> login_screen_client_;
-  std::unique_ptr<MediaClient> media_client_;
+  std::unique_ptr<MediaClientImpl> media_client_;
   std::unique_ptr<policy::DisplaySettingsHandler> display_settings_handler_;
 
   // Initialized in PostBrowserStart in all configs:
   std::unique_ptr<MobileDataNotifications> mobile_data_notifications_;
   std::unique_ptr<NightLightClient> night_light_client_;
+  std::unique_ptr<PhotoControllerImpl> photo_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);
 };

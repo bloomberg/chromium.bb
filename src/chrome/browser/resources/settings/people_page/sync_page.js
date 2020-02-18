@@ -444,7 +444,7 @@ Polymer({
     assert(this.creatingNewPassphrase_);
 
     // Ignore events on irrelevant elements or with irrelevant keys.
-    if (e.target.tagName != 'PAPER-BUTTON' && e.target.tagName != 'CR-INPUT') {
+    if (e.target.tagName != 'CR-BUTTON' && e.target.tagName != 'CR-INPUT') {
       return;
     }
     if (e.type == 'keypress' && e.key != 'Enter') {

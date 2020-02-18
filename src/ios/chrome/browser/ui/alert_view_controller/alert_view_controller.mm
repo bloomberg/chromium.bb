@@ -9,6 +9,8 @@
 #import "ios/chrome/browser/ui/elements/gray_highlight_button.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -16,9 +18,6 @@
 #endif
 
 namespace {
-
-// The alpha of the black chrome behind the alert view.
-constexpr CGFloat kBackgroundAlpha = 0.4;
 
 // Properties of the alert shadow.
 constexpr CGFloat kShadowOffsetX = 0;
@@ -59,10 +58,9 @@ constexpr CGFloat kTextfieldStackInsetTrailing = 12;
 
 constexpr CGFloat kTextfieldInset = 8;
 
-// Colors for the action buttons.
-constexpr int kButtonTextDefaultColor = 0x0579ff;
-constexpr int kButtonTextDestructiveColor = 0xdf322f;
-constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
+// This is how many bits UIViewAnimationCurve needs to be shifted to be in
+// UIViewAnimationOptions format. Must match the one in UIView.h.
+constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
 
 }  // namespace
 
@@ -102,16 +100,37 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 // will end up calling |resignFirstResponder| on this.
 @property(nonatomic, weak) UITextField* lastFocusedTextField;
 
+// This holds the text field stack view. A reference is needed because its
+// layer.borderColor is manually set. As that is a CGColor, it must be updated
+// when the trait collection changes from light to dark mode.
+@property(nonatomic, weak) UIView* textFieldStackHolder;
+
 @end
 
 @implementation AlertViewController
 
 #pragma mark - Public
 
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    if ([self.traitCollection
+            hasDifferentColorAppearanceComparedToTraitCollection:
+                previousTraitCollection]) {
+      [self.traitCollection performAsCurrentTraitCollection:^{
+        self.textFieldStackHolder.layer.borderColor =
+            UIColor.cr_separatorColor.CGColor;
+      }];
+    }
+  }
+#endif
+}
+
 - (void)loadView {
   [super loadView];
-  self.view.backgroundColor =
-      [[UIColor blackColor] colorWithAlphaComponent:kBackgroundAlpha];
+  self.view.backgroundColor = [UIColor colorNamed:kScrimBackgroundColor];
   self.view.accessibilityViewIsModal = YES;
 
   self.tapRecognizer = [[UITapGestureRecognizer alloc]
@@ -123,7 +142,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 
   self.contentView = [[UIView alloc] init];
   self.contentView.clipsToBounds = YES;
-  self.contentView.backgroundColor = [UIColor whiteColor];
+  self.contentView.backgroundColor = UIColor.cr_systemBackgroundColor;
   self.contentView.layer.cornerRadius = kCornerRadius;
   self.contentView.layer.shadowOffset =
       CGSizeMake(kShadowOffsetX, kShadowOffsetY);
@@ -221,6 +240,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 
   if (self.title.length) {
     UILabel* titleLabel = [[UILabel alloc] init];
+    titleLabel.numberOfLines = 0;
     titleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
     titleLabel.adjustsFontForContentSizeCategory = YES;
@@ -261,11 +281,21 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
     // fields.
     UIView* stackHolder = [[UIView alloc] init];
     stackHolder.layer.cornerRadius = kTextFieldCornerRadius;
-    stackHolder.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    stackHolder.layer.borderColor = UIColor.cr_separatorColor.CGColor;
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+    if (@available(iOS 13, *)) {
+      // Use performAsCurrentTraitCollection to get the correct CGColor for the
+      // given dynamic color and current userInterfaceStyle.
+      [self.traitCollection performAsCurrentTraitCollection:^{
+        stackHolder.layer.borderColor = UIColor.cr_separatorColor.CGColor;
+      }];
+    }
+#endif
     stackHolder.layer.borderWidth = 1.0 / [UIScreen mainScreen].scale;
     stackHolder.clipsToBounds = YES;
-    stackHolder.backgroundColor = UIColorFromRGB(kTextfieldBackgroundColor);
+    stackHolder.backgroundColor = UIColor.cr_secondarySystemBackgroundColor;
     stackHolder.translatesAutoresizingMaskIntoConstraints = NO;
+    self.textFieldStackHolder = stackHolder;
 
     // Updates the custom space before the text fields to account for their
     // inset.
@@ -307,7 +337,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
       if (textFieldConfiguration !=
           [self.textFieldConfigurations firstObject]) {
         UIView* hairline = [[UIView alloc] init];
-        hairline.backgroundColor = [UIColor lightGrayColor];
+        hairline.backgroundColor = UIColor.cr_separatorColor;
         hairline.translatesAutoresizingMaskIntoConstraints = NO;
         [fieldStack addArrangedSubview:hairline];
         CGFloat pixelHeight = 1.0 / [UIScreen mainScreen].scale;
@@ -348,7 +378,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
   self.buttonAlertActionsDictionary = [[NSMutableDictionary alloc] init];
   for (AlertAction* action in self.actions) {
     UIView* hairline = [[UIView alloc] init];
-    hairline.backgroundColor = [UIColor lightGrayColor];
+    hairline.backgroundColor = UIColor.cr_separatorColor;
     hairline.translatesAutoresizingMaskIntoConstraints = NO;
     [stackView addArrangedSubview:hairline];
 
@@ -357,13 +387,13 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
     UIColor* textColor = nil;
     if (action.style == UIAlertActionStyleDefault) {
       font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-      textColor = UIColorFromRGB(kButtonTextDefaultColor);
+      textColor = [UIColor colorNamed:kTintColor];
     } else if (action.style == UIAlertActionStyleCancel) {
       font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-      textColor = UIColorFromRGB(kButtonTextDefaultColor);
+      textColor = [UIColor colorNamed:kTintColor];
     } else {  // Style is UIAlertActionStyleDestructive
       font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-      textColor = UIColorFromRGB(kButtonTextDestructiveColor);
+      textColor = [UIColor colorNamed:kDestructiveTintColor];
     }
     button.titleLabel.font = font;
     button.titleLabel.adjustsFontForContentSizeCategory = YES;
@@ -464,6 +494,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
   if (additionalBottomInset > 0) {
     self.additionalSafeAreaInsets =
         UIEdgeInsetsMake(0, 0, additionalBottomInset, 0);
+    [self animateLayoutFromKeyboardNotification:notification];
   }
 
   self.tapRecognizer.enabled = YES;
@@ -472,9 +503,29 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 
 - (void)handleKeyboardWillHide:(NSNotification*)notification {
   self.additionalSafeAreaInsets = UIEdgeInsetsZero;
+  [self animateLayoutFromKeyboardNotification:notification];
 
   self.tapRecognizer.enabled = NO;
   self.swipeRecognizer.enabled = NO;
+}
+
+- (void)animateLayoutFromKeyboardNotification:(NSNotification*)notification {
+  double duration =
+      [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey]
+          doubleValue];
+  UIViewAnimationCurve animationCurve = static_cast<UIViewAnimationCurve>(
+      [notification.userInfo[UIKeyboardAnimationCurveUserInfoKey]
+          integerValue]);
+  UIViewAnimationOptions options = animationCurve
+                                   << kUIViewAnimationCurveToOptionsShift;
+
+  [UIView animateWithDuration:duration
+                        delay:0
+                      options:options
+                   animations:^{
+                     [self.view layoutIfNeeded];
+                   }
+                   completion:nil];
 }
 
 - (void)didSelectActionForButton:(UIButton*)button {

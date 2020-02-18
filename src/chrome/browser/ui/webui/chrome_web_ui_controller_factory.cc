@@ -26,7 +26,8 @@
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/account_manager_welcome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/account_migration_welcome_ui.h"
-#include "chrome/browser/ui/webui/chromeos/insession_password_change_ui.h"
+#include "chrome/browser/ui/webui/chromeos/camera/camera_ui.h"
+#include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_ui.h"
 #include "chrome/browser/ui/webui/components_ui.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
@@ -36,7 +37,6 @@
 #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/gcm_internals_ui.h"
-#include "chrome/browser/ui/webui/hats/hats_ui.h"
 #include "chrome/browser/ui/webui/identity_internals_ui.h"
 #include "chrome/browser/ui/webui/interstitials/interstitial_ui.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals_ui.h"
@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/webui/memory_internals_ui.h"
 #include "chrome/browser/ui/webui/net_export_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
+#include "chrome/browser/ui/webui/notifications_internals/notifications_internals_ui.h"
 #include "chrome/browser/ui/webui/ntp_tiles_internals_ui.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/password_manager_internals/password_manager_internals_ui.h"
@@ -57,7 +58,6 @@
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chrome/browser/ui/webui/settings_utils.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
-#include "chrome/browser/ui/webui/supervised_user_internals_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_ui.h"
 #include "chrome/browser/ui/webui/ukm/ukm_internals_ui.h"
@@ -85,8 +85,6 @@
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "components/security_interstitials/content/connection_help_ui.h"
 #include "components/security_interstitials/content/urls.h"
-#include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/signin_buildflags.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
@@ -113,7 +111,6 @@
 #include "chrome/browser/ui/webui/app_management/app_management_ui.h"
 #include "chrome/browser/ui/webui/management_ui.h"
 #include "chrome/browser/ui/webui/media_router/media_router_internals_ui.h"
-#include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #endif
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/cast/cast_ui.h"
@@ -171,6 +168,7 @@
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_credentials_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_share_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/sys_internals/sys_internals_ui.h"
+#include "chrome/browser/ui/webui/chromeos/terminal/terminal_ui.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chromeos/components/multidevice/debug_webui/proximity_auth_ui.h"
@@ -196,13 +194,13 @@
 #include "chrome/browser/ui/webui/signin/signin_error_ui.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin/user_manager_ui.h"
+#include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "chrome/browser/ui/webui/welcome/welcome_ui.h"
 #endif
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/webui/conflicts/conflicts_ui.h"
 #include "chrome/browser/ui/webui/set_as_default_browser_ui_win.h"
-#include "chrome/browser/ui/webui/welcome/welcome_win10_ui.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
@@ -235,6 +233,10 @@
 
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/ui/webui/reset_password/reset_password_ui.h"
+#endif
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/ui/webui/supervised_user_internals_ui.h"
 #endif
 
 using content::WebUI;
@@ -312,13 +314,6 @@ WebUIController* NewWebUI<WelcomeUI>(WebUI* web_ui, const GURL& url) {
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
-#if defined(OS_WIN)
-template <>
-WebUIController* NewWebUI<WelcomeWin10UI>(WebUI* web_ui, const GURL& url) {
-  return new WelcomeWin10UI(web_ui, url);
-}
-#endif  // defined(OS_WIN)
-
 bool IsAboutUI(const GURL& url) {
   return (url.host_piece() == chrome::kChromeUIChromeURLsHost ||
           url.host_piece() == chrome::kChromeUICreditsHost
@@ -393,6 +388,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<NetExportUI>;
   if (url.host_piece() == chrome::kChromeUINetInternalsHost)
     return &NewWebUI<NetInternalsUI>;
+  if (url.host_piece() == chrome::kChromeUINotificationsInternalsHost)
+    return &NewWebUI<NotificationsInternalsUI>;
   if (url.host_piece() == chrome::kChromeUINTPTilesInternalsHost)
     return &NewWebUI<NTPTilesInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIOmniboxHost)
@@ -409,14 +406,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SignInInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISuggestionsHost)
     return &NewWebUI<suggestions::SuggestionsUI>;
-  if (url.host_piece() == chrome::kChromeUISupervisedUserInternalsHost)
-    return &NewWebUI<SupervisedUserInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISupervisedUserPassphrasePageHost)
     return &NewWebUI<ConstrainedWebDialogUI>;
   if (url.host_piece() == chrome::kChromeUISyncInternalsHost)
     return &NewWebUI<SyncInternalsUI>;
-  if (url.host_piece() == chrome::kChromeUISyncResourcesHost)
-    return &NewWebUI<WebDialogUI>;
   if (url.host_piece() == chrome::kChromeUITranslateInternalsHost)
     return &NewWebUI<TranslateInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIUkmHost)
@@ -446,12 +439,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<AppLauncherPageUI>;
   }
 #endif  // !defined(OS_CHROMEOS)
-  // HaTS for Desktop is distinct from the Android implementation of HaTS
-  if (url.host_piece() == chrome::kChromeUIHatsHost &&
-      base::FeatureList::IsEnabled(
-          features::kHappinessTrackingSurveysForDesktop)) {
-    return &NewWebUI<HatsUI>;
-  }
   if (profile->IsGuestSession() &&
       (url.host_piece() == chrome::kChromeUIAppLauncherPageHost ||
        url.host_piece() == chrome::kChromeUIAppManagementHost ||
@@ -498,13 +485,28 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
             prefs::kSamlInSessionPasswordChangeEnabled)) {
       return nullptr;
     }
-    return &NewWebUI<chromeos::InSessionPasswordChangeUI>;
+    return &NewWebUI<chromeos::PasswordChangeUI>;
+  }
+  if (url.host_piece() == chrome::kChromeUIConfirmPasswordChangeHost) {
+    if (!profile->GetPrefs()->GetBoolean(
+            prefs::kSamlInSessionPasswordChangeEnabled)) {
+      return nullptr;
+    }
+    return &NewWebUI<chromeos::ConfirmPasswordChangeUI>;
+  }
+  if (url.host_piece() ==
+      chrome::kChromeUIUrgentPasswordExpiryNotificationHost) {
+    if (!profile->GetPrefs()->GetBoolean(
+            prefs::kSamlInSessionPasswordChangeEnabled)) {
+      return nullptr;
+    }
+    return &NewWebUI<chromeos::UrgentPasswordExpiryNotificationUI>;
   }
   if (url.host_piece() == chrome::kChromeUIAccountManagerWelcomeHost)
     return &NewWebUI<chromeos::AccountManagerWelcomeUI>;
   if (url.host_piece() == chrome::kChromeUIAccountMigrationWelcomeHost)
     return &NewWebUI<chromeos::AccountMigrationWelcomeUI>;
-  if (chromeos::switches::IsAddSupervisionEnabled()) {
+  if (chromeos::switches::IsParentalControlsSettingsEnabled()) {
     if (url.host_piece() == chrome::kChromeUIAddSupervisionHost)
       return &NewWebUI<chromeos::AddSupervisionUI>;
   }
@@ -552,8 +554,17 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::smb_dialog::SmbShareDialogUI>;
   if (url.host_piece() == chrome::kChromeUISysInternalsHost)
     return &NewWebUI<SysInternalsUI>;
+  if (url.host_piece() == chrome::kChromeUITerminalHost) {
+    if (!base::FeatureList::IsEnabled(features::kTerminalSystemApp))
+      return nullptr;
+    return &NewWebUI<TerminalUI>;
+  }
   if (url.host_piece() == chrome::kChromeUIAssistantOptInHost)
     return &NewWebUI<chromeos::AssistantOptInUI>;
+  if (url.host_piece() == chrome::kChromeUICameraHost &&
+      chromeos::CameraUI::IsEnabled()) {
+    return &NewWebUI<chromeos::CameraUI>;
+  }
 
   if (url.host_piece() == chrome::kChromeUIArcGraphicsTracingHost) {
     if (!base::FeatureList::IsEnabled(arc::kGraphicBuffersVisualizationTool))
@@ -612,13 +623,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUISigninEmailConfirmationHost &&
       !profile->IsOffTheRecord())
     return &NewWebUI<SigninEmailConfirmationUI>;
-  if (url.host_piece() == chrome::kChromeUIWelcomeHost)
+  if (url.host_piece() == chrome::kChromeUIWelcomeHost &&
+      nux::IsNuxOnboardingEnabled(profile))
     return &NewWebUI<WelcomeUI>;
 #endif
-#if defined(OS_WIN)
-  if (url.host_piece() == chrome::kChromeUIWelcomeWin10Host)
-    return &NewWebUI<WelcomeWin10UI>;
-#endif  // defined(OS_WIN)
 
   /****************************************************************************
    * Other #defines and special logics.
@@ -657,10 +665,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIWebRtcLogsHost)
     return &NewWebUI<WebRtcLogsUI>;
 #if !defined(OS_ANDROID)
-  if (url.host_piece() == chrome::kChromeUIMediaRouterHost &&
-      media_router::MediaRouterEnabled(profile)) {
-    return &NewWebUI<media_router::MediaRouterUI>;
-  }
   if (url.host_piece() == chrome::kChromeUIMediaRouterInternalsHost &&
       media_router::MediaRouterEnabled(profile)) {
     return &NewWebUI<media_router::MediaRouterInternalsUI>;
@@ -715,32 +719,39 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 #endif
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  if (url.host_piece() == chrome::kChromeUISupervisedUserInternalsHost)
+    return &NewWebUI<SupervisedUserInternalsUI>;
+#endif
+
   return NULL;
 }
 
 }  // namespace
 
 WebUI::TypeID ChromeWebUIControllerFactory::GetWebUIType(
-      content::BrowserContext* browser_context, const GURL& url) const {
+    content::BrowserContext* browser_context,
+    const GURL& url) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   WebUIFactoryFunction function = GetWebUIFactoryFunction(NULL, profile, url);
   return function ? reinterpret_cast<WebUI::TypeID>(function) : WebUI::kNoWebUI;
 }
 
 bool ChromeWebUIControllerFactory::UseWebUIForURL(
-    content::BrowserContext* browser_context, const GURL& url) const {
+    content::BrowserContext* browser_context,
+    const GURL& url) {
   return GetWebUIType(browser_context, url) != WebUI::kNoWebUI;
 }
 
 bool ChromeWebUIControllerFactory::UseWebUIBindingsForURL(
-    content::BrowserContext* browser_context, const GURL& url) const {
+    content::BrowserContext* browser_context,
+    const GURL& url) {
   return UseWebUIForURL(browser_context, url);
 }
 
 std::unique_ptr<WebUIController>
-ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
-    WebUI* web_ui,
-    const GURL& url) const {
+ChromeWebUIControllerFactory::CreateWebUIControllerForURL(WebUI* web_ui,
+                                                          const GURL& url) {
   Profile* profile = Profile::FromWebUI(web_ui);
   WebUIFactoryFunction function = GetWebUIFactoryFunction(web_ui, profile, url);
   if (!function)

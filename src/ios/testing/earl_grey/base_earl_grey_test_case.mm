@@ -7,12 +7,29 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
+#include "base/logging.h"
+#include "base/strings/sys_string_conversions.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
+#import "ios/testing/earl_grey/base_earl_grey_test_case_app_interface.h"
 #import "ios/testing/earl_grey/coverage_utils.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+#if defined(CHROME_EARL_GREY_2)
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(BaseEarlGreyTestCaseAppInterface)
+#endif  // defined(CHROME_EARL_GREY_2)
+
+namespace {
+
+// If true, +setUpForTestCase will be called from -setUp.  This flag is used to
+// ensure that +setUpForTestCase is called exactly once per unique XCTestCase
+// and is reset in +tearDown.
+bool g_needs_set_up_for_test_case = true;
+
+}  // namespace
 
 @implementation BaseEarlGreyTestCase
 
@@ -25,6 +42,11 @@
 
 #if defined(CHROME_EARL_GREY_2)
   [self launchAppForTestMethod];
+  [self handleSystemAlertIfVisible];
+
+  NSString* logFormat = @"*********************************\nStarting test: %@";
+  [BaseEarlGreyTestCaseAppInterface
+      logMessage:[NSString stringWithFormat:logFormat, self.name]];
 
   // Calling XCTFail before the application is launched does not assert
   // properly, so failing upon detection of overriding +setUp is delayed until
@@ -33,19 +55,60 @@
   [self failIfSetUpIsOverridden];
 #endif
 
-  static dispatch_once_t setupToken;
-  dispatch_once(&setupToken, ^{
+  if (g_needs_set_up_for_test_case) {
+    g_needs_set_up_for_test_case = false;
     [CoverageUtils configureCoverageReportPath];
     [[self class] setUpForTestCase];
-  });
+  }
+}
+
++ (void)tearDown {
+  g_needs_set_up_for_test_case = true;
+  [super tearDown];
+}
+
+// Handles system alerts if any are present, closing them to unblock the UI.
+- (void)handleSystemAlertIfVisible {
+#if defined(CHROME_EARL_GREY_2)
+  NSError* systemAlertFoundError = nil;
+  [[EarlGrey selectElementWithMatcher:grey_systemAlertViewShown()]
+      assertWithMatcher:grey_nil()
+                  error:&systemAlertFoundError];
+
+  if (systemAlertFoundError) {
+    NSError* alertGetTextError = nil;
+    NSString* alertText =
+        [self grey_systemAlertTextWithError:&alertGetTextError];
+    GREYAssertNil(alertGetTextError, @"Error getting alert text.\n%@",
+                  alertGetTextError);
+
+    // If the system alert is of a known type, accept it.
+    // Otherwise, reject it, as unknown types include alerts which are not
+    // desirable to accept, including OS upgrades.
+    if ([self grey_systemAlertType] != GREYSystemAlertTypeUnknown) {
+      DLOG(WARNING) << "Accepting iOS system alert: "
+                    << base::SysNSStringToUTF8(alertText);
+
+      NSError* acceptAlertError = nil;
+      [self grey_acceptSystemDialogWithError:&acceptAlertError];
+      GREYAssertNil(acceptAlertError, @"Error accepting system alert.\n%@",
+                    acceptAlertError);
+    } else {
+      DLOG(WARNING) << "Denying iOS system alert of unknown type: "
+                    << base::SysNSStringToUTF8(alertText);
+
+      NSError* denyAlertError = nil;
+      [self grey_denySystemDialogWithError:&denyAlertError];
+      GREYAssertNil(denyAlertError, @"Error denying system alert.\n%@",
+                    denyAlertError);
+    }
+  }
+#endif  // CHROME_EARL_GREY_2
 }
 
 - (void)launchAppForTestMethod {
-  static dispatch_once_t launchAppToken;
-  dispatch_once(&launchAppToken, ^{
-    XCUIApplication* application = [[XCUIApplication alloc] init];
-    [application launch];
-  });
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithArgs:nil
+                                                 forceRestart:false];
 }
 
 // Prevents tests inheriting from this class from putting logic in +setUp.

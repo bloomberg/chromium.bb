@@ -91,7 +91,7 @@ void RecordJobResult(JobResultForHistogram result) {
 }
 
 // Returns the equivalient CupsPrintJob#State from a CupsJob#JobState.
-chromeos::CupsPrintJob::State ConvertState(printing::CupsJob::JobState state) {
+State ConvertState(printing::CupsJob::JobState state) {
   switch (state) {
     case printing::CupsJob::PENDING:
       return State::STATE_WAITING;
@@ -106,7 +106,7 @@ chromeos::CupsPrintJob::State ConvertState(printing::CupsJob::JobState state) {
     case printing::CupsJob::STOPPED:
       return State::STATE_SUSPENDED;
     case printing::CupsJob::ABORTED:
-      return State::STATE_ERROR;
+      return State::STATE_FAILED;
     case printing::CupsJob::UNKNOWN:
       break;
   }
@@ -119,30 +119,33 @@ chromeos::CupsPrintJob::State ConvertState(printing::CupsJob::JobState state) {
 // Returns true if |job|.state_reasons contains |reason|
 bool JobContainsReason(const ::printing::CupsJob& job,
                        base::StringPiece reason) {
-  return base::ContainsValue(job.state_reasons, reason);
+  return base::Contains(job.state_reasons, reason);
 }
 
 // Extracts an ErrorCode from PrinterStatus#reasons.  Returns NO_ERROR if there
 // are no reasons which indicate an error.
-chromeos::CupsPrintJob::ErrorCode ErrorCodeFromReasons(
-    const printing::PrinterStatus& printer_status) {
+ErrorCode ErrorCodeFromReasons(const printing::PrinterStatus& printer_status) {
   for (const auto& reason : printer_status.reasons) {
     switch (reason.reason) {
-      case PrinterReason::MEDIA_JAM:
       case PrinterReason::MEDIA_EMPTY:
       case PrinterReason::MEDIA_NEEDED:
       case PrinterReason::MEDIA_LOW:
-        return chromeos::CupsPrintJob::ErrorCode::PAPER_JAM;
+        return ErrorCode::OUT_OF_PAPER;
+      case PrinterReason::MEDIA_JAM:
+        return ErrorCode::PAPER_JAM;
       case PrinterReason::TONER_EMPTY:
       case PrinterReason::TONER_LOW:
-        return chromeos::CupsPrintJob::ErrorCode::OUT_OF_INK;
+        return ErrorCode::OUT_OF_INK;
       case PrinterReason::TIMED_OUT:
-        return chromeos::CupsPrintJob::ErrorCode::PRINTER_UNREACHABLE;
+        return ErrorCode::PRINTER_UNREACHABLE;
+      case PrinterReason::DOOR_OPEN:
+      case PrinterReason::COVER_OPEN:
+        return ErrorCode::DOOR_OPEN;
       default:
         break;
     }
   }
-  return chromeos::CupsPrintJob::ErrorCode::NO_ERROR;
+  return ErrorCode::NO_ERROR;
 }
 
 // Update the current printed page.  Returns true of the page has been updated.
@@ -182,9 +185,8 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
     case ::printing::CupsJob::STOPPED:
       // If cups job STOPPED but with filter failure, treat as ERROR
       if (JobContainsReason(job, kJobCompletedWithErrors)) {
-        print_job->set_error_code(
-            chromeos::CupsPrintJob::ErrorCode::FILTER_FAILED);
-        print_job->set_state(chromeos::CupsPrintJob::State::STATE_ERROR);
+        print_job->set_error_code(ErrorCode::FILTER_FAILED);
+        print_job->set_state(State::STATE_FAILED);
       } else {
         print_job->set_state(ConvertState(job.state));
       }
@@ -377,8 +379,8 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   // Schedule a query of CUPS for print job status with a delay of |delay|.
   void ScheduleQuery(int attempt_count = 1) {
     timer_.Start(FROM_HERE, kPollRate * attempt_count,
-                 base::Bind(&CupsPrintJobManagerImpl::PostQuery,
-                            weak_ptr_factory_.GetWeakPtr()));
+                 base::BindRepeating(&CupsPrintJobManagerImpl::PostQuery,
+                                     weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Schedule the CUPS query off the UI thread. Posts results back to UI thread
@@ -399,10 +401,10 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     // completion.
     query_runner_->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&CupsWrapper::QueryCups,
-                   base::Unretained(cups_wrapper_.get()), ids, result_ptr),
-        base::Bind(&CupsPrintJobManagerImpl::UpdateJobs,
-                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&result)));
+        base::BindOnce(&CupsWrapper::QueryCups,
+                       base::Unretained(cups_wrapper_.get()), ids, result_ptr),
+        base::BindOnce(&CupsPrintJobManagerImpl::UpdateJobs,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(result)));
   }
 
   // Process jobs from CUPS and perform notifications.
@@ -487,7 +489,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
       // Declare all lost jobs errors.
       RecordJobResult(LOST);
       CupsPrintJob* job = entry.second.get();
-      job->set_state(CupsPrintJob::State::STATE_ERROR);
+      job->set_state(CupsPrintJob::State::STATE_FAILED);
       NotifyJobStateUpdate(job->GetWeakPtr());
     }
 
@@ -523,8 +525,8 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
       case State::STATE_CANCELLED:
         NotifyJobCanceled(job);
         break;
-      case State::STATE_ERROR:
-        NotifyJobError(job);
+      case State::STATE_FAILED:
+        NotifyJobFailed(job);
         break;
       case State::STATE_DOCUMENT_DONE:
         NotifyJobDone(job);

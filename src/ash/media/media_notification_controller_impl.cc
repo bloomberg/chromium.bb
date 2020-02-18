@@ -6,7 +6,6 @@
 
 #include "ash/media/media_notification_constants.h"
 #include "ash/media/media_notification_container_impl.h"
-#include "ash/media/media_notification_item.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/session_observer.h"
@@ -14,6 +13,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "components/media_message_center/media_notification_item.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/message_center/message_center.h"
@@ -127,9 +127,8 @@ MediaNotificationControllerImpl::MediaNotificationControllerImpl(
   connector->BindInterface(media_session::mojom::kServiceName,
                            mojo::MakeRequest(&controller_manager_ptr_));
 
-  media_session::mojom::AudioFocusObserverPtr audio_focus_observer;
-  audio_focus_observer_binding_.Bind(mojo::MakeRequest(&audio_focus_observer));
-  audio_focus_ptr->AddObserver(std::move(audio_focus_observer));
+  audio_focus_ptr->AddObserver(
+      audio_focus_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
 MediaNotificationControllerImpl::~MediaNotificationControllerImpl() = default;
@@ -138,7 +137,7 @@ void MediaNotificationControllerImpl::OnFocusGained(
     media_session::mojom::AudioFocusRequestStatePtr session) {
   const std::string id = session->request_id->ToString();
 
-  if (base::ContainsKey(notifications_, id))
+  if (base::Contains(notifications_, id))
     return;
 
   media_session::mojom::MediaControllerPtr controller;
@@ -196,7 +195,7 @@ void MediaNotificationControllerImpl::HideNotification(const std::string& id) {
 std::unique_ptr<MediaNotificationContainerImpl>
 MediaNotificationControllerImpl::CreateMediaNotification(
     const message_center::Notification& notification) {
-  base::WeakPtr<MediaNotificationItem> item;
+  base::WeakPtr<media_message_center::MediaNotificationItem> item;
 
   auto it = notifications_.find(notification.id());
   if (it != notifications_.end())

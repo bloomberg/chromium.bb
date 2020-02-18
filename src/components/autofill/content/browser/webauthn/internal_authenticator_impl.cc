@@ -33,9 +33,7 @@ InternalAuthenticatorImpl::InternalAuthenticatorImpl(
     : WebContentsObserver(WebContents::FromRenderFrameHost(render_frame_host)),
       render_frame_host_(render_frame_host),
       effective_origin_(std::move(effective_origin)),
-      authenticator_common_(std::move(authenticator_common)),
-      binding_(this),
-      weak_factory_(this) {
+      authenticator_common_(std::move(authenticator_common)) {
   DCHECK(render_frame_host_);
   DCHECK(authenticator_common_);
   DCHECK(!effective_origin.opaque());
@@ -48,15 +46,15 @@ InternalAuthenticatorImpl::~InternalAuthenticatorImpl() {
 }
 
 void InternalAuthenticatorImpl::Bind(
-    blink::mojom::InternalAuthenticatorRequest request) {
-  // If |render_frame_host_| is being unloaded then binding requests are
+    mojo::PendingReceiver<blink::mojom::InternalAuthenticator> receiver) {
+  // If |render_frame_host_| is being unloaded then binding receivers are
   // rejected.
   if (!render_frame_host_->IsCurrent()) {
     return;
   }
 
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request));
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(receiver));
 }
 
 // mojom::InternalAuthenticator
@@ -95,7 +93,7 @@ void InternalAuthenticatorImpl::DidFinishNavigation(
     return;
   }
 
-  binding_.Close();
+  receiver_.reset();
   authenticator_common_->Cleanup();
 }
 

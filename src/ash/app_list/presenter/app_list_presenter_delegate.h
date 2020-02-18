@@ -13,14 +13,6 @@ namespace aura {
 class Window;
 }  // namespace aura
 
-namespace base {
-class TimeDelta;
-}  // namespace base
-
-namespace gfx {
-class Vector2d;
-}  // namespace gfx
-
 namespace app_list {
 
 class AppListPresenterImpl;
@@ -38,29 +30,14 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegate {
   virtual void SetPresenter(AppListPresenterImpl* presenter) = 0;
 
   // Called to initialize the layout of the app list.
-  virtual void Init(AppListView* view,
-                    int64_t display_id,
-                    int current_apps_page) = 0;
-
-  // Called when app list is shown.
-  virtual void OnShown(int64_t display_id) = 0;
+  virtual void Init(AppListView* view, int64_t display_id) = 0;
+  virtual void ShowForDisplay(int64_t display_id) = 0;
 
   // Called when app list is closing.
   virtual void OnClosing() = 0;
 
   // Called when app list is closed.
   virtual void OnClosed() = 0;
-
-  // Returns the offset vector by which the app list window should animate
-  // when it gets shown or hidden.
-  virtual gfx::Vector2d GetVisibilityAnimationOffset(
-      aura::Window* root_window) = 0;
-
-  // Returns the animation duration in ms the app list window should animate
-  // when shown or hidden.
-  virtual base::TimeDelta GetVisibilityAnimationDuration(
-      aura::Window* root_window,
-      bool is_visible) = 0;
 
   // Returns true if tablet mode is enabled.
   virtual bool IsTabletMode() const = 0;
@@ -81,18 +58,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegate {
 
   // Called when the app list target visibility changes.
   virtual void OnTargetVisibilityChanged(bool visible) = 0;
-
- protected:
-  // Gets the duration for the hide animation for the fullscreen version of
-  // the app list in Ms.
-  static base::TimeDelta GetAnimationDurationFullscreen(bool is_side_shelf,
-                                                        bool is_fullscreen);
-
-  // Offset in pixels to animation away/towards the shelf.
-  static const int kAnimationOffset = 8;
-
-  // Offset for the hide animation for the fullscreen app list in DIPs.
-  static const int kAnimationOffsetFullscreen = 400;
 };
 
 }  // namespace app_list

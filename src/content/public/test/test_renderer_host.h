@@ -34,12 +34,7 @@ namespace display {
 class Screen;
 }
 
-namespace net {
-class NetworkChangeNotifier;
-}
-
 namespace ui {
-class InputDeviceManager;
 class ScopedOleInitializer;
 }
 
@@ -158,9 +153,6 @@ class RenderViewHostTestEnabler {
 #if defined(OS_ANDROID)
   std::unique_ptr<display::Screen> screen_;
 #endif
-#if defined(USE_AURA)
-  std::unique_ptr<ui::InputDeviceManager> input_device_client_;
-#endif
   std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
   std::unique_ptr<MockRenderProcessHostFactory> rph_factory_;
   std::unique_ptr<TestRenderViewHostFactory> rvh_factory_;
@@ -265,8 +257,6 @@ class RenderViewHostTestHarness : public testing::Test {
       std::unique_ptr<TestBrowserThreadBundle> thread_bundle);
 
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
-
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   std::unique_ptr<ContentBrowserSanityChecker> sanity_checker_;
 

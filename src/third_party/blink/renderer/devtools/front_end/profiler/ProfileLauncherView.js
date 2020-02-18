@@ -47,6 +47,7 @@ Profiler.ProfileLauncherView = class extends UI.VBox {
     this._selectedProfileTypeSetting = Common.settings.createSetting('selectedProfileType', 'CPU');
     this._profileTypeHeaderElement = profileTypeSelectorElement.createChild('h1');
     this._profileTypeSelectorForm = profileTypeSelectorElement.createChild('form');
+    UI.ARIAUtils.markAsRadioGroup(this._profileTypeSelectorForm);
 
     const isolateSelectorElement = this._contentElement.createChild('div', 'vbox profile-isolate-selector-block');
     isolateSelectorElement.createChild('h1').textContent = ls`Select JavaScript VM instance`;
@@ -126,21 +127,29 @@ Profiler.ProfileLauncherView = class extends UI.VBox {
     optionElement.addEventListener('change', this._profileTypeChanged.bind(this, profileType), false);
     const descriptionElement = this._profileTypeSelectorForm.createChild('p');
     descriptionElement.textContent = profileType.description;
+    UI.ARIAUtils.setDescription(optionElement, profileType.description);
     const customContent = profileType.customContent();
-    if (customContent)
+    if (customContent) {
       this._profileTypeSelectorForm.createChild('p').appendChild(customContent);
-    if (this._typeIdToOptionElement.size > 1)
-      this._profileTypeHeaderElement.textContent = ls`Select profiling type`;
-    else
-      this._profileTypeHeaderElement.textContent = profileType.name;
+      profileType.setCustomContentEnabled(false);
+    }
+    const headerText = this._typeIdToOptionElement.size > 1 ? ls`Select profiling type` : profileType.name;
+    this._profileTypeHeaderElement.textContent = headerText;
+    UI.ARIAUtils.setAccessibleName(this._profileTypeSelectorForm, headerText);
   }
 
   restoreSelectedProfileType() {
     let typeId = this._selectedProfileTypeSetting.get();
-    if (!this._typeIdToOptionElement.has(typeId))
+    if (!this._typeIdToOptionElement.has(typeId)) {
       typeId = this._typeIdToOptionElement.keys().next().value;
+      this._selectedProfileTypeSetting.set(typeId);
+    }
     this._typeIdToOptionElement.get(typeId).checked = true;
     const type = this._typeIdToOptionElement.get(typeId)._profileType;
+    for (const [id, element] of this._typeIdToOptionElement) {
+      const enabled = (id === typeId);
+      element._profileType.setCustomContentEnabled(enabled);
+    }
     this.dispatchEventToListeners(Profiler.ProfileLauncherView.Events.ProfileTypeSelected, type);
   }
 
@@ -152,6 +161,10 @@ Profiler.ProfileLauncherView = class extends UI.VBox {
    * @param {!Profiler.ProfileType} profileType
    */
   _profileTypeChanged(profileType) {
+    const typeId = this._selectedProfileTypeSetting.get();
+    const type = this._typeIdToOptionElement.get(typeId)._profileType;
+    type.setCustomContentEnabled(false);
+    profileType.setCustomContentEnabled(true);
     this.dispatchEventToListeners(Profiler.ProfileLauncherView.Events.ProfileTypeSelected, profileType);
     this._isInstantProfile = profileType.isInstantProfile();
     this._isEnabled = profileType.isEnabled();

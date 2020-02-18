@@ -5,9 +5,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
+#include "base/synchronization/lock.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -22,6 +24,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
@@ -289,15 +292,18 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
 
   // Called by |embedded_test_server()|.
   void MonitorRequest(const net::test_server::HttpRequest& request) {
+    base::AutoLock lock(last_request_lock_);
     last_request_relative_url_ = request.relative_url;
   }
 
   std::string last_request_relative_url() const {
+    base::AutoLock lock(last_request_lock_);
     return last_request_relative_url_;
   }
 
  private:
-  std::string last_request_relative_url_;
+  mutable base::Lock last_request_lock_;
+  std::string last_request_relative_url_ GUARDED_BY(last_request_lock_);
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceRestartBrowserTest);
@@ -476,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
     return;
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::unique_ptr<ShellBrowserContext> browser_context =
-      std::make_unique<ShellBrowserContext>(true, nullptr);
+      std::make_unique<ShellBrowserContext>(true);
   auto* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context.get()));
   auto factory_owner = IOThreadSharedURLLoaderFactoryOwner::Create(
@@ -566,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
     return;
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::unique_ptr<ShellBrowserContext> browser_context =
-      std::make_unique<ShellBrowserContext>(true, nullptr);
+      std::make_unique<ShellBrowserContext>(true);
   auto* partition =
       BrowserContext::GetDefaultStoragePartition(browser_context.get());
   scoped_refptr<network::SharedURLLoaderFactory> factory(
@@ -1029,19 +1035,6 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, Cookies) {
 
   SimulateNetworkServiceCrash();
 
-  auto* process = web_contents->GetMainFrame()->GetProcess();
-  scoped_refptr<RenderFrameMessageFilter> filter(
-      static_cast<RenderProcessHostImpl*>(process)
-          ->render_frame_message_filter_for_testing());
-  // Need to use FlushAsyncForTesting instead of FlushForTesting because the IO
-  // thread doesn't support nested message loops.
-  base::RunLoop run_loop;
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindLambdaForTesting([&]() {
-                             filter->GetCookieManager()->FlushAsyncForTesting(
-                                 run_loop.QuitClosure());
-                           }));
-
   // content_shell uses in-memory cookie database, so the value saved earlier
   // won't persist across crashes. What matters is that new access works.
   EXPECT_TRUE(ExecuteScript(web_contents, "document.cookie = 'foo=bar';"));
@@ -1131,16 +1124,16 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
     return;
   network::mojom::NetworkServiceTestPtr network_service_test;
   base::RunLoop run_loop;
-  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-      mojom::kNetworkServiceName, &network_service_test);
+  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                      &network_service_test);
 
   // Crash the network service, but do not wait for full startup.
   network_service_test.set_connection_error_handler(run_loop.QuitClosure());
   network_service_test->SimulateCrash();
   run_loop.Run();
 
-  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-      mojom::kNetworkServiceName, &network_service_test);
+  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                      &network_service_test);
 
   // Sync call should be fine, even though network process is still starting up.
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;

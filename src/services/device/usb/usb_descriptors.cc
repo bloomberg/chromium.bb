@@ -15,9 +15,23 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
+#include "services/device/public/cpp/usb/usb_utils.h"
 #include "services/device/usb/usb_device_handle.h"
 
 namespace device {
+
+using mojom::UsbAlternateInterfaceInfoPtr;
+using mojom::UsbConfigurationInfoPtr;
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbDeviceInfoPtr;
+using mojom::UsbEndpointInfoPtr;
+using mojom::UsbInterfaceInfoPtr;
+using mojom::UsbSynchronizationType;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+using mojom::UsbTransferType;
+using mojom::UsbUsageType;
 
 namespace {
 
@@ -80,12 +94,12 @@ void OnDoneReadingConfigDescriptors(
     scoped_refptr<UsbDeviceHandle> device_handle,
     std::unique_ptr<UsbDeviceDescriptor> desc,
     base::OnceCallback<void(std::unique_ptr<UsbDeviceDescriptor>)> callback) {
-  if (desc->num_configurations == desc->configurations.size()) {
+  if (desc->num_configurations == desc->device_info->configurations.size()) {
     std::move(callback).Run(std::move(desc));
   } else {
     LOG(ERROR) << "Failed to read all configuration descriptors. Expected "
                << static_cast<int>(desc->num_configurations) << ", got "
-               << desc->configurations.size() << ".";
+               << desc->device_info->configurations.size() << ".";
     std::move(callback).Run(nullptr);
   }
 }
@@ -234,194 +248,24 @@ void OnReadLanguageIds(scoped_refptr<UsbDeviceHandle> device_handle,
 
 }  // namespace
 
-UsbEndpointDescriptor::UsbEndpointDescriptor(const uint8_t* data)
-    : UsbEndpointDescriptor(data[2] /* bEndpointAddress */,
-                            data[3] /* bmAttributes */,
-                            data[4] + (data[5] << 8) /* wMaxPacketSize */,
-                            data[6] /* bInterval */) {
-  DCHECK_GE(data[0], kEndpointDescriptorLength);
-  DCHECK_EQ(data[1], kEndpointDescriptorType);
+CombinedInterfaceInfo::CombinedInterfaceInfo(
+    const mojom::UsbInterfaceInfo* interface,
+    const mojom::UsbAlternateInterfaceInfo* alternate)
+    : interface(interface), alternate(alternate) {}
+
+bool CombinedInterfaceInfo::IsValid() const {
+  return interface && alternate;
 }
 
-UsbEndpointDescriptor::UsbEndpointDescriptor(uint8_t address,
-                                             uint8_t attributes,
-                                             uint16_t maximum_packet_size,
-                                             uint8_t polling_interval)
-    : address(address),
-      maximum_packet_size(maximum_packet_size),
-      polling_interval(polling_interval) {
-  // These fields are defined in Table 9-24 of the USB 3.1 Specification.
-  switch (address & 0x80) {
-    case 0x00:
-      direction = UsbTransferDirection::OUTBOUND;
-      break;
-    case 0x80:
-      direction = UsbTransferDirection::INBOUND;
-      break;
-  }
-  switch (attributes & 0x03) {
-    case 0x00:
-      transfer_type = UsbTransferType::CONTROL;
-      break;
-    case 0x01:
-      transfer_type = UsbTransferType::ISOCHRONOUS;
-      break;
-    case 0x02:
-      transfer_type = UsbTransferType::BULK;
-      break;
-    case 0x03:
-      transfer_type = UsbTransferType::INTERRUPT;
-      break;
-  }
-  switch (attributes & 0x0F) {
-    // Isochronous endpoints only.
-    case 0x05:
-      synchronization_type = UsbSynchronizationType::ASYNCHRONOUS;
-      break;
-    case 0x09:
-      synchronization_type = UsbSynchronizationType::ADAPTIVE;
-      break;
-    case 0x0D:
-      synchronization_type = UsbSynchronizationType::SYNCHRONOUS;
-      break;
-    default:
-      synchronization_type = UsbSynchronizationType::NONE;
-  }
-  switch (attributes & 0x33) {
-    // Isochronous endpoint usages.
-    case 0x01:
-      usage_type = UsbUsageType::DATA;
-      break;
-    case 0x11:
-      usage_type = UsbUsageType::FEEDBACK;
-      break;
-    case 0x21:
-      usage_type = UsbUsageType::EXPLICIT_FEEDBACK;
-      break;
-    // Interrupt endpoint usages.
-    case 0x03:
-      usage_type = UsbUsageType::PERIODIC;
-      break;
-    case 0x13:
-      usage_type = UsbUsageType::NOTIFICATION;
-      break;
-    default:
-      usage_type = UsbUsageType::RESERVED;
-  }
-}
-
-UsbEndpointDescriptor::UsbEndpointDescriptor(
-    const UsbEndpointDescriptor& other) = default;
-
-UsbEndpointDescriptor::~UsbEndpointDescriptor() = default;
-
-UsbInterfaceDescriptor::UsbInterfaceDescriptor(const uint8_t* data)
-    : UsbInterfaceDescriptor(data[2] /* bInterfaceNumber */,
-                             data[3] /* bAlternateSetting */,
-                             data[5] /* bInterfaceClass */,
-                             data[6] /* bInterfaceSubClass */,
-                             data[7] /* bInterfaceProtocol */) {
-  DCHECK_GE(data[0], kInterfaceDescriptorLength);
-  DCHECK_EQ(data[1], kInterfaceDescriptorType);
-}
-
-UsbInterfaceDescriptor::UsbInterfaceDescriptor(uint8_t interface_number,
-                                               uint8_t alternate_setting,
-                                               uint8_t interface_class,
-                                               uint8_t interface_subclass,
-                                               uint8_t interface_protocol)
-    : interface_number(interface_number),
-      alternate_setting(alternate_setting),
-      interface_class(interface_class),
-      interface_subclass(interface_subclass),
-      interface_protocol(interface_protocol),
-      first_interface(interface_number) {}
-
-UsbInterfaceDescriptor::UsbInterfaceDescriptor(
-    const UsbInterfaceDescriptor& other) = default;
-
-UsbInterfaceDescriptor::~UsbInterfaceDescriptor() = default;
-
-UsbConfigDescriptor::UsbConfigDescriptor(const uint8_t* data)
-    : UsbConfigDescriptor(data[5] /* bConfigurationValue */,
-                          (data[7] & 0x02) != 0 /* bmAttributes */,
-                          (data[7] & 0x04) != 0 /* bmAttributes */,
-                          data[8] /* bMaxPower */) {
-  DCHECK_GE(data[0], kConfigurationDescriptorLength);
-  DCHECK_EQ(data[1], kConfigurationDescriptorType);
-}
-
-UsbConfigDescriptor::UsbConfigDescriptor(uint8_t configuration_value,
-                                         bool self_powered,
-                                         bool remote_wakeup,
-                                         uint8_t maximum_power)
-    : configuration_value(configuration_value),
-      self_powered(self_powered),
-      remote_wakeup(remote_wakeup),
-      maximum_power(maximum_power) {}
-
-UsbConfigDescriptor::UsbConfigDescriptor(const UsbConfigDescriptor& other) =
-    default;
-
-UsbConfigDescriptor::~UsbConfigDescriptor() = default;
-
-void UsbConfigDescriptor::AssignFirstInterfaceNumbers() {
-  std::vector<UsbInterfaceAssociationDescriptor> functions;
-  ParseInterfaceAssociationDescriptors(extra_data, &functions);
-  for (const auto& interface : interfaces) {
-    ParseInterfaceAssociationDescriptors(interface.extra_data, &functions);
-    for (const auto& endpoint : interface.endpoints)
-      ParseInterfaceAssociationDescriptors(endpoint.extra_data, &functions);
-  }
-
-  // libusb has collected interface association descriptors in the |extra_data|
-  // fields of other descriptor types. This may have disturbed their order
-  // but sorting by the bFirstInterface should fix it.
-  std::sort(functions.begin(), functions.end());
-
-  uint8_t remaining_interfaces = 0;
-  auto function_it = functions.cbegin();
-  auto interface_it = interfaces.begin();
-  while (interface_it != interfaces.end()) {
-    if (remaining_interfaces > 0) {
-      // Continuation of a previous function. Tag all alternate interfaces
-      // (which are guaranteed to be contiguous).
-      for (uint8_t interface_number = interface_it->interface_number;
-           interface_it != interfaces.end() &&
-           interface_it->interface_number == interface_number;
-           ++interface_it) {
-        interface_it->first_interface = function_it->first_interface;
-      }
-      if (--remaining_interfaces == 0)
-        ++function_it;
-    } else if (function_it != functions.end() &&
-               interface_it->interface_number == function_it->first_interface) {
-      // Start of a new function.
-      interface_it->first_interface = function_it->first_interface;
-      if (function_it->interface_count > 1)
-        remaining_interfaces = function_it->interface_count - 1;
-      else
-        ++function_it;
-      ++interface_it;
-    } else {
-      // Unassociated interfaces already have |first_interface| set to
-      // |interface_number|.
-      ++interface_it;
-    }
-  }
-}
-
-UsbDeviceDescriptor::UsbDeviceDescriptor() = default;
-
-UsbDeviceDescriptor::UsbDeviceDescriptor(const UsbDeviceDescriptor& other) =
-    default;
+UsbDeviceDescriptor::UsbDeviceDescriptor()
+    : device_info(mojom::UsbDeviceInfo::New()) {}
 
 UsbDeviceDescriptor::~UsbDeviceDescriptor() = default;
 
 bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
-  UsbConfigDescriptor* last_config = nullptr;
-  UsbInterfaceDescriptor* last_interface = nullptr;
-  UsbEndpointDescriptor* last_endpoint = nullptr;
+  mojom::UsbConfigurationInfo* last_config = nullptr;
+  mojom::UsbInterfaceInfo* last_interface = nullptr;
+  mojom::UsbEndpointInfo* last_endpoint = nullptr;
 
   for (auto it = buffer.begin(); it != buffer.end();
        /* incremented internally */) {
@@ -433,15 +277,21 @@ bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
 
     switch (data[1] /* bDescriptorType */) {
       case kDeviceDescriptorType:
-        if (configurations.size() > 0 || length < kDeviceDescriptorLength)
+        if (device_info->configurations.size() > 0 ||
+            length < kDeviceDescriptorLength) {
           return false;
-        usb_version = data[2] | data[3] << 8;
-        device_class = data[4];
-        device_subclass = data[5];
-        device_protocol = data[6];
-        vendor_id = data[8] | data[9] << 8;
-        product_id = data[10] | data[11] << 8;
-        device_version = data[12] | data[13] << 8;
+        }
+        device_info->usb_version_minor = data[2] >> 4 & 0xf;
+        device_info->usb_version_subminor = data[2] & 0xf;
+        device_info->usb_version_major = data[3];
+        device_info->class_code = data[4];
+        device_info->subclass_code = data[5];
+        device_info->protocol_code = data[6];
+        device_info->vendor_id = data[8] | data[9] << 8;
+        device_info->product_id = data[10] | data[11] << 8;
+        device_info->device_version_minor = data[12] >> 4 & 0xf;
+        device_info->device_version_subminor = data[12] & 0xf;
+        device_info->device_version_major = data[13];
         i_manufacturer = data[14];
         i_product = data[15];
         i_serial_number = data[16];
@@ -450,25 +300,29 @@ bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
       case kConfigurationDescriptorType:
         if (length < kConfigurationDescriptorLength)
           return false;
-        if (last_config)
-          last_config->AssignFirstInterfaceNumbers();
-        configurations.emplace_back(data);
-        last_config = &configurations.back();
+        if (last_config) {
+          AssignFirstInterfaceNumbers(last_config);
+          AggregateInterfacesForConfig(last_config);
+        }
+        device_info->configurations.push_back(
+            BuildUsbConfigurationInfoPtr(data));
+        last_config = device_info->configurations.back().get();
         last_interface = nullptr;
         last_endpoint = nullptr;
         break;
       case kInterfaceDescriptorType:
         if (!last_config || length < kInterfaceDescriptorLength)
           return false;
-        last_config->interfaces.emplace_back(data);
-        last_interface = &last_config->interfaces.back();
+        last_config->interfaces.push_back(BuildUsbInterfaceInfoPtr(data));
+        last_interface = last_config->interfaces.back().get();
         last_endpoint = nullptr;
         break;
       case kEndpointDescriptorType:
         if (!last_interface || length < kEndpointDescriptorLength)
           return false;
-        last_interface->endpoints.emplace_back(data);
-        last_endpoint = &last_interface->endpoints.back();
+        last_interface->alternates[0]->endpoints.push_back(
+            BuildUsbEndpointInfoPtr(data));
+        last_endpoint = last_interface->alternates[0]->endpoints.back().get();
         break;
       default:
         // Append unknown descriptor types to the |extra_data| field of the last
@@ -477,8 +331,10 @@ bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
           last_endpoint->extra_data.insert(last_endpoint->extra_data.end(),
                                            data, data + length);
         } else if (last_interface) {
-          last_interface->extra_data.insert(last_interface->extra_data.end(),
-                                            data, data + length);
+          DCHECK_EQ(1u, last_interface->alternates.size());
+          last_interface->alternates[0]->extra_data.insert(
+              last_interface->alternates[0]->extra_data.end(), data,
+              data + length);
         } else if (last_config) {
           last_config->extra_data.insert(last_config->extra_data.end(), data,
                                          data + length);
@@ -486,8 +342,10 @@ bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
     }
   }
 
-  if (last_config)
-    last_config->AssignFirstInterfaceNumbers();
+  if (last_config) {
+    AssignFirstInterfaceNumbers(last_config);
+    AggregateInterfacesForConfig(last_config);
+  }
 
   return true;
 }
@@ -538,6 +396,242 @@ void ReadUsbStringDescriptors(scoped_refptr<UsbDeviceHandle> device_handle,
       device_handle, 0, 0,
       base::BindOnce(&OnReadLanguageIds, device_handle, std::move(index_map),
                      std::move(callback)));
+}
+
+UsbEndpointInfoPtr BuildUsbEndpointInfoPtr(const uint8_t* data) {
+  DCHECK_GE(data[0], kEndpointDescriptorLength);
+  DCHECK_EQ(data[1], kEndpointDescriptorType);
+
+  return BuildUsbEndpointInfoPtr(
+      data[2] /* bEndpointAddress */, data[3] /* bmAttributes */,
+      data[4] + (data[5] << 8) /* wMaxPacketSize */, data[6] /* bInterval */);
+}
+
+UsbEndpointInfoPtr BuildUsbEndpointInfoPtr(uint8_t address,
+                                           uint8_t attributes,
+                                           uint16_t maximum_packet_size,
+                                           uint8_t polling_interval) {
+  UsbEndpointInfoPtr endpoint = mojom::UsbEndpointInfo::New();
+  endpoint->endpoint_number = ConvertEndpointAddressToNumber(address);
+
+  // These fields are defined in Table 9-24 of the USB 3.1 Specification.
+  switch (address & 0x80) {
+    case 0x00:
+      endpoint->direction = UsbTransferDirection::OUTBOUND;
+      break;
+    case 0x80:
+      endpoint->direction = UsbTransferDirection::INBOUND;
+      break;
+  }
+
+  switch (attributes & 0x03) {
+    case 0x00:
+      endpoint->type = UsbTransferType::CONTROL;
+      break;
+    case 0x01:
+      endpoint->type = UsbTransferType::ISOCHRONOUS;
+      break;
+    case 0x02:
+      endpoint->type = UsbTransferType::BULK;
+      break;
+    case 0x03:
+      endpoint->type = UsbTransferType::INTERRUPT;
+      break;
+  }
+
+  switch (attributes & 0x0F) {
+    // Isochronous endpoints only.
+    case 0x05:
+      endpoint->synchronization_type = UsbSynchronizationType::ASYNCHRONOUS;
+      break;
+    case 0x09:
+      endpoint->synchronization_type = UsbSynchronizationType::ADAPTIVE;
+      break;
+    case 0x0D:
+      endpoint->synchronization_type = UsbSynchronizationType::SYNCHRONOUS;
+      break;
+    default:
+      endpoint->synchronization_type = UsbSynchronizationType::NONE;
+  }
+
+  switch (attributes & 0x33) {
+    // Isochronous endpoint usages.
+    case 0x01:
+      endpoint->usage_type = UsbUsageType::DATA;
+      break;
+    case 0x11:
+      endpoint->usage_type = UsbUsageType::FEEDBACK;
+      break;
+    case 0x21:
+      endpoint->usage_type = UsbUsageType::EXPLICIT_FEEDBACK;
+      break;
+    // Interrupt endpoint usages.
+    case 0x03:
+      endpoint->usage_type = UsbUsageType::PERIODIC;
+      break;
+    case 0x13:
+      endpoint->usage_type = UsbUsageType::NOTIFICATION;
+      break;
+    default:
+      endpoint->usage_type = UsbUsageType::RESERVED;
+  }
+
+  endpoint->packet_size = static_cast<uint32_t>(maximum_packet_size);
+  endpoint->polling_interval = polling_interval;
+
+  return endpoint;
+}
+
+UsbInterfaceInfoPtr BuildUsbInterfaceInfoPtr(const uint8_t* data) {
+  DCHECK_GE(data[0], kInterfaceDescriptorLength);
+  DCHECK_EQ(data[1], kInterfaceDescriptorType);
+  return BuildUsbInterfaceInfoPtr(
+      data[2] /* bInterfaceNumber */, data[3] /* bAlternateSetting */,
+      data[5] /* bInterfaceClass */, data[6] /* bInterfaceSubClass */,
+      data[7] /* bInterfaceProtocol */);
+}
+
+UsbInterfaceInfoPtr BuildUsbInterfaceInfoPtr(uint8_t interface_number,
+                                             uint8_t alternate_setting,
+                                             uint8_t interface_class,
+                                             uint8_t interface_subclass,
+                                             uint8_t interface_protocol) {
+  UsbInterfaceInfoPtr interface_info = mojom::UsbInterfaceInfo::New();
+  interface_info->interface_number = interface_number;
+  interface_info->first_interface = interface_number;
+
+  UsbAlternateInterfaceInfoPtr alternate =
+      mojom::UsbAlternateInterfaceInfo::New();
+  alternate->alternate_setting = alternate_setting;
+  alternate->class_code = interface_class;
+  alternate->subclass_code = interface_subclass;
+  alternate->protocol_code = interface_protocol;
+
+  interface_info->alternates.push_back(std::move(alternate));
+
+  return interface_info;
+}
+
+// Aggregate each alternate setting into an InterfaceInfo corresponding to its
+// interface number.
+void AggregateInterfacesForConfig(mojom::UsbConfigurationInfo* config) {
+  std::map<uint8_t, device::mojom::UsbInterfaceInfo*> interface_map;
+  std::vector<device::mojom::UsbInterfaceInfoPtr> interfaces =
+      std::move(config->interfaces);
+  config->interfaces.clear();
+
+  for (size_t i = 0; i < interfaces.size(); ++i) {
+    // As interfaces should appear in order, this map could be unnecessary,
+    // but this errs on the side of caution.
+    auto iter = interface_map.find(interfaces[i]->interface_number);
+    if (iter == interface_map.end()) {
+      // This is the first time we're seeing an alternate with this interface
+      // number, so add a new InterfaceInfo to the array and map the number.
+      config->interfaces.push_back(std::move(interfaces[i]));
+      interface_map.insert(
+          std::make_pair(config->interfaces.back()->interface_number,
+                         config->interfaces.back().get()));
+    } else {
+      DCHECK_EQ(1u, interfaces[i]->alternates.size());
+      iter->second->alternates.push_back(
+          std::move(interfaces[i]->alternates[0]));
+    }
+  }
+}
+
+CombinedInterfaceInfo FindInterfaceInfoFromConfig(
+    const mojom::UsbConfigurationInfo* config,
+    uint8_t interface_number,
+    uint8_t alternate_setting) {
+  CombinedInterfaceInfo interface_info;
+  if (!config) {
+    return interface_info;
+  }
+
+  for (const auto& iface : config->interfaces) {
+    if (iface->interface_number == interface_number) {
+      interface_info.interface = iface.get();
+
+      for (const auto& alternate : iface->alternates) {
+        if (alternate->alternate_setting == alternate_setting) {
+          interface_info.alternate = alternate.get();
+          break;
+        }
+      }
+    }
+  }
+  return interface_info;
+}
+
+UsbConfigurationInfoPtr BuildUsbConfigurationInfoPtr(const uint8_t* data) {
+  DCHECK_GE(data[0], kConfigurationDescriptorLength);
+  DCHECK_EQ(data[1], kConfigurationDescriptorType);
+  return BuildUsbConfigurationInfoPtr(data[5] /* bConfigurationValue */,
+                                      (data[7] & 0x02) != 0 /* bmAttributes */,
+                                      (data[7] & 0x04) != 0 /* bmAttributes */,
+                                      data[8] /* bMaxPower */);
+}
+
+UsbConfigurationInfoPtr BuildUsbConfigurationInfoPtr(
+    uint8_t configuration_value,
+    bool self_powered,
+    bool remote_wakeup,
+    uint8_t maximum_power) {
+  UsbConfigurationInfoPtr config = mojom::UsbConfigurationInfo::New();
+  config->configuration_value = configuration_value;
+  config->self_powered = self_powered;
+  config->remote_wakeup = remote_wakeup;
+  config->maximum_power = maximum_power;
+  return config;
+}
+
+void AssignFirstInterfaceNumbers(mojom::UsbConfigurationInfo* config) {
+  std::vector<UsbInterfaceAssociationDescriptor> functions;
+  ParseInterfaceAssociationDescriptors(config->extra_data, &functions);
+  for (const auto& interface : config->interfaces) {
+    DCHECK_EQ(1u, interface->alternates.size());
+    ParseInterfaceAssociationDescriptors(interface->alternates[0]->extra_data,
+                                         &functions);
+    for (auto& endpoint : interface->alternates[0]->endpoints)
+      ParseInterfaceAssociationDescriptors(endpoint->extra_data, &functions);
+  }
+
+  // libusb has collected interface association descriptors in the |extra_data|
+  // fields of other descriptor types. This may have disturbed their order
+  // but sorting by the bFirstInterface should fix it.
+  std::sort(functions.begin(), functions.end());
+
+  uint8_t remaining_interfaces = 0;
+  auto function_it = functions.cbegin();
+  auto interface_it = config->interfaces.begin();
+  while (interface_it != config->interfaces.end()) {
+    if (remaining_interfaces > 0) {
+      // Continuation of a previous function. Tag all alternate interfaces
+      // (which are guaranteed to be contiguous).
+      for (uint8_t interface_number = (*interface_it)->interface_number;
+           interface_it != config->interfaces.end() &&
+           (*interface_it)->interface_number == interface_number;
+           ++interface_it) {
+        (*interface_it)->first_interface = function_it->first_interface;
+      }
+      if (--remaining_interfaces == 0)
+        ++function_it;
+    } else if (function_it != functions.end() &&
+               (*interface_it)->interface_number ==
+                   function_it->first_interface) {
+      // Start of a new function.
+      (*interface_it)->first_interface = function_it->first_interface;
+      if (function_it->interface_count > 1)
+        remaining_interfaces = function_it->interface_count - 1;
+      else
+        ++function_it;
+      ++interface_it;
+    } else {
+      // Unassociated interfaces already have |first_interface| set to
+      // |interface_number|.
+      ++interface_it;
+    }
+  }
 }
 
 }  // namespace device

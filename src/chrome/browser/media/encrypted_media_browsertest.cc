@@ -359,6 +359,30 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase,
   }
 };
 
+class ECKIncognitoEncryptedMediaTest : public EncryptedMediaTestBase {
+ public:
+  // We use special |key_system| names to do non-playback related tests,
+  // e.g. kExternalClearKeyFileIOTestKeySystem is used to test file IO.
+  void TestNonPlaybackCases(const std::string& key_system,
+                            const std::string& expected_title) {
+    // Make sure the Clear Key CDM is properly registered in CdmRegistry.
+    EXPECT_TRUE(IsLibraryCdmRegistered(media::kClearKeyCdmGuid));
+
+    // Since we do not test playback, arbitrarily choose a test file and source
+    // type.
+    RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm", key_system,
+                          SrcType::SRC, kNoSessionToLoad, false,
+                          PlayCount::ONCE, expected_title);
+  }
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    EncryptedMediaTestBase::SetUpCommandLine(command_line);
+    SetUpCommandLineForKeySystem(kExternalClearKeyKeySystem, command_line);
+    command_line->AppendSwitch(switches::kIncognito);
+  }
+};
+
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 // Tests encrypted media playback with a combination of parameters:
@@ -786,10 +810,9 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-// Test CDM_9 through CDM_11.
-static_assert(media::CheckSupportedCdmInterfaceVersions(9, 11),
+// Test CDM_10 through CDM_11.
+static_assert(media::CheckSupportedCdmInterfaceVersions(10, 11),
               "Mismatch between implementation and test coverage");
-INSTANTIATE_TEST_SUITE_P(CDM_9, ECKEncryptedMediaTest, Values(9));
 INSTANTIATE_TEST_SUITE_P(CDM_10, ECKEncryptedMediaTest, Values(10));
 INSTANTIATE_TEST_SUITE_P(CDM_11, ECKEncryptedMediaTest, Values(11));
 
@@ -839,9 +862,9 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_MessageTypeTest) {
       "document.querySelector('video').receivedMessageTypes.size);",
       &num_received_message_types));
 
-  // CDM_9: expects 2 message types 'license-request' and 'license-renewal'.
-  // CDM_10 and above: one more message type 'individualization-request'.
-  EXPECT_EQ(GetCdmInterfaceVersion() == 9 ? 2 : 3, num_received_message_types);
+  // Expects 3 message types: 'license-request', 'license-renewal' and
+  // 'individualization-request'.
+  EXPECT_EQ(3, num_received_message_types);
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadLoadableSession) {
@@ -960,6 +983,25 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CdmProxy) {
   // ClearKeyCdmProxy only supports decrypt-only.
   RunSimpleEncryptedMediaTest("bear-a_enc-a.webm",
                               kExternalClearKeyCdmProxyKeySystem, SrcType::MSE);
+}
+
+// Incognito tests. Ideally we would run all above tests in incognito mode to
+// ensure that everything works. However, that would add a lot of extra tests
+// that aren't really testing anything different, as normal playback does not
+// save anything to disk. Instead we are only running the tests that actually
+// have the CDM do file access.
+
+IN_PROC_BROWSER_TEST_F(ECKIncognitoEncryptedMediaTest, FileIO) {
+  // Try the FileIO test using the default CDM API while running in incognito.
+  TestNonPlaybackCases(kExternalClearKeyFileIOTestKeySystem, kUnitTestSuccess);
+}
+
+IN_PROC_BROWSER_TEST_F(ECKIncognitoEncryptedMediaTest, LoadSessionAfterClose) {
+  // Loading a session should work in incognito mode.
+  base::StringPairs query_params{{"keySystem", kExternalClearKeyKeySystem}};
+  RunEncryptedMediaTestPage("eme_load_session_after_close_test.html",
+                            kExternalClearKeyKeySystem, query_params,
+                            media::kEnded);
 }
 
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

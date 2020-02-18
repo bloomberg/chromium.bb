@@ -17,7 +17,7 @@ John F. Fay
 Norman Vine
 Daniel Wagner
 Sven Panne <sven.panne@aedion.de>
-    contributing the project, using the product, and generally keeping it going
+    contributing to the project, using the product, and generally keeping it going
 
 Brian Paul
 Eric Sandall
@@ -27,7 +27,10 @@ James 'J.C.' Jones
     designing the new website
 
 John Tsiombikas <nuclear@member.fsf.org>
-	Linux spaceball support, XR&R gamemode, misc linux fixes and breakages
+    Linux spaceball support, XR&R gamemode, misc linux fixes and breakages
+
+Sylvain Beucler
+    support for Android, X11/EGL, OpenGL(ES) 2.x, misc fixes
 
 Diederick C. Niehorster
 Chris Marshall
@@ -35,5 +38,8 @@ Clive McCarthy
 Eero Pajarre
 Florian Echtler
 Matti Lehtonen
+
+Vincent Simonetti
+    support for BlackBerry
 
 ...and all the opengl-gamedev-l people that made Pawel start this project :)

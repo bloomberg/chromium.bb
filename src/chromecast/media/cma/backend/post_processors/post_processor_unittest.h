@@ -38,6 +38,8 @@ namespace post_processor_test {
 const int kBufSizeFrames = 256;
 const int kNumChannels = 2;
 
+AudioPostProcessor2::Config MakeProcessorConfig(int sample_rate_hz);
+
 void TestDelay(AudioPostProcessor2* pp,
                int sample_rate,
                int num_input_channels = 2);

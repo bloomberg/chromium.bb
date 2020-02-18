@@ -69,6 +69,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="1383876407941801731">Meklēt</translation>
 <translation id="1385214448885562192">Nospiediet ievadīšanas taustiņu, lai piekristu; atsoļa taustiņu — lai atceltu; lejupvērsto bulttaustiņu — lai pārietu uz nākamo rezultātu; augšupvērsto bulttaustiņu — lai pārietu uz iepriekšējo rezultātu.</translation>
 <translation id="1396114365388024581">ciļņu saraksts</translation>
+<translation id="139902759009894363">Ziņot par bagātinātā teksta atribūtiem</translation>
 <translation id="1405567553485452995">Gaiši zaļa</translation>
 <translation id="1417889266572670458">Tumšzila</translation>
 <translation id="1431911867058218151">Plūmju</translation>
@@ -319,11 +320,11 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="3232388865800379423">Uznirstoša poga</translation>
 <translation id="3241052487511142956">Iepriekšējā apmeklētā saite</translation>
 <translation id="3241638166094654466">Šūnas katrā rindā:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">portrets</translation>
 <translation id="3286390186030710347">Slīdnis</translation>
 <translation id="3299925995433437805">Tālāk nav nevienas apmeklētās saites.</translation>
 <translation id="3300348286427369683">Bagātināta teksta atbalsts. Tagad ChromeVox tiek atbalstīti bagātināta teksta lauki, tostarp pārejas komandas, Braila raksta kursora maršrutēšana, atlasīšana un citas darbības.</translation>
-<translation id="3304756947457041303">Pielāgot bagātinātā teksta norādīšanu</translation>
 <translation id="3307886118343381874">Pāriet uz tabulas beigām</translation>
 <translation id="3311969765485641742">Lai skatītu brīdinājumus, nospiediet taustiņu kombināciju Alt+Shift+A.</translation>
 <translation id="3312997241656799641">Nākamā apmeklētā saite</translation>
@@ -444,7 +445,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="4161104397932142764">{COUNT,plural, =1{sekunde}zero{sekundes}one{sekunde}other{sekundes}}</translation>
 <translation id="4161663686871496107">ChromeVox izrunas funkcija ir gatava</translation>
 <translation id="4173994908659439270">Tālāk nav neviena rediģējama teksta lauka.</translation>
-<translation id="4176463684765177261">Atspējots</translation>
+<translation id="4176463684765177261">Atspējota</translation>
 <translation id="4187322598335821254">Velciet augšup vai lejup, lai pārvietotos pa rindiņām</translation>
 <translation id="4188530942454211480">Iepriekšējais teikums</translation>
 <translation id="4191918948604314587">Poga</translation>

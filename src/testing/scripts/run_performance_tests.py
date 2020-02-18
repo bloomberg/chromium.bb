@@ -244,10 +244,10 @@ class _TelemetryFilterArgument(object):
 
 class TelemetryCommandGenerator(object):
   def __init__(self, benchmark, options,
-               stories=None, is_reference=False):
+               story_selection_config=None, is_reference=False):
     self.benchmark = benchmark
     self._options = options
-    self._stories = stories
+    self._story_selection_config = story_selection_config
     self._is_reference = is_reference
 
   def generate(self, output_dir):
@@ -265,7 +265,7 @@ class TelemetryCommandGenerator(object):
             self._generate_filter_args() +
             self._generate_also_run_disabled_tests_args() +
             self._generate_output_args(output_dir) +
-            self._generate_story_range_args() +
+            self._generate_story_selection_args() +
             # passthrough args must be before reference args and repeat args:
             # crbug.com/928928, crbug.com/894254#c78
             self._get_passthrough_args() +
@@ -304,18 +304,20 @@ class TelemetryCommandGenerator(object):
             '--output-format=histograms',
             '--output-dir=' + output_dir]
 
-  def _generate_story_range_args(self):
+  def _generate_story_selection_args(self):
     """Returns arguments that limit the stories to be run inside the benchmark.
     """
-    range_arguments = []
-    if self._stories:
-      if 'begin' in self._stories.keys():
-        range_arguments.append('--story-shard-begin-index=%d' % (
-            self._stories['begin']))
-      if 'end' in self._stories.keys():
-        range_arguments.append('--story-shard-end-index=%d' % (
-            self._stories['end']))
-    return range_arguments
+    selection_args = []
+    if self._story_selection_config:
+      if 'begin' in self._story_selection_config:
+        selection_args.append('--story-shard-begin-index=%d' % (
+            self._story_selection_config['begin']))
+      if 'end' in self._story_selection_config:
+        selection_args.append('--story-shard-end-index=%d' % (
+            self._story_selection_config['end']))
+      if not self._story_selection_config.get('abridged', True):
+        selection_args.append('--run-full-story-set')
+    return selection_args
 
   def _generate_reference_build_args(self):
     if self._is_reference:
@@ -479,19 +481,9 @@ def main(sys_args):
     elif options.test_shard_map_filename:
       # First determine what shard we are running on to know how to
       # index into the bot map to get list of telemetry benchmarks to run.
-      total_shards = None
       shard_index = None
       shard_map_path = os.path.join(SHARD_MAPS_DIRECTORY,
                                     options.test_shard_map_filename)
-      env = os.environ.copy()
-      if 'GTEST_TOTAL_SHARDS' in env:
-        total_shards = env['GTEST_TOTAL_SHARDS']
-      if 'GTEST_SHARD_INDEX' in env:
-        shard_index = env['GTEST_SHARD_INDEX']
-      if not total_shards or not shard_index:
-        raise Exception(
-            'Sharded Telemetry perf tests must either specify --benchmarks '
-            'list or have shard indicator environment variables present.')
       # Copy sharding map file to isolated_out_dir so that the merge script
       # can collect it later.
       # TODO(crouleau): Move this step over to merge script
@@ -501,13 +493,27 @@ def main(sys_args):
           os.path.join(isolated_out_dir, 'benchmarks_shard_map.json'))
       with open(shard_map_path) as f:
         shard_map = json.load(f)
-      benchmarks_and_stories = shard_map[shard_index]['benchmarks']
+      env = os.environ.copy()
+      if 'GTEST_SHARD_INDEX' in env:
+        shard_index = env['GTEST_SHARD_INDEX']
+      # TODO(crbug.com/972844): shard environment variables are not specified
+      # for single-shard shard runs.
+      if not shard_index:
+        shard_map_has_multiple_shards = bool(shard_map.get('1', False))
+        if not shard_map_has_multiple_shards:
+          shard_index = '0'
+      if not shard_index:
+        raise Exception(
+            'Sharded Telemetry perf tests must either specify --benchmarks '
+            'list or have GTEST_SHARD_INDEX environment variable present.')
+      benchmarks_and_configs = shard_map[shard_index]['benchmarks']
 
-      for benchmark, stories in benchmarks_and_stories.iteritems():
+      for (benchmark, story_selection_config
+           ) in benchmarks_and_configs.iteritems():
         # Need to run the benchmark on both latest browser and reference build.
         output_paths = OutputFilePaths(isolated_out_dir, benchmark).SetUp()
         command_generator = TelemetryCommandGenerator(
-            benchmark, options, stories=stories)
+            benchmark, options, story_selection_config=story_selection_config)
         print('\n### {folder} ###'.format(folder=benchmark))
         return_code = execute_telemetry_benchmark(
             command_generator, output_paths, options.xvfb)
@@ -519,7 +525,7 @@ def main(sys_args):
               isolated_out_dir, reference_benchmark_foldername).SetUp()
           reference_command_generator = TelemetryCommandGenerator(
               benchmark, options,
-              stories=stories, is_reference=True)
+              story_selection_config=story_selection_config, is_reference=True)
           print('\n### {folder} ###'.format(
               folder=reference_benchmark_foldername))
           # We intentionally ignore the return code and test results of the

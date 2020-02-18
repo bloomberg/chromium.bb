@@ -41,6 +41,12 @@ GetServerConnectionIdAsRecipient(const QuicPacketHeader& header,
 // Returns the destination connection ID of |header| when |perspective| is
 // client, and the source connection ID when |perspective| is server.
 QUIC_EXPORT_PRIVATE QuicConnectionId
+GetClientConnectionIdAsRecipient(const QuicPacketHeader& header,
+                                 Perspective perspective);
+
+// Returns the destination connection ID of |header| when |perspective| is
+// client, and the source connection ID when |perspective| is server.
+QUIC_EXPORT_PRIVATE QuicConnectionId
 GetServerConnectionIdAsSender(const QuicPacketHeader& header,
                               Perspective perspective);
 
@@ -50,6 +56,12 @@ GetServerConnectionIdAsSender(const QuicPacketHeader& header,
 QUIC_EXPORT_PRIVATE QuicConnectionIdIncluded
 GetServerConnectionIdIncludedAsSender(const QuicPacketHeader& header,
                                       Perspective perspective);
+
+// Returns the destination connection ID of |header| when |perspective| is
+// server, and the source connection ID when |perspective| is client.
+QUIC_EXPORT_PRIVATE QuicConnectionId
+GetClientConnectionIdAsSender(const QuicPacketHeader& header,
+                              Perspective perspective);
 
 // Returns the destination connection ID included of |header| when |perspective|
 // is server, and the source connection ID included when |perspective| is
@@ -388,6 +400,35 @@ typedef std::unique_ptr<SerializedPacket, SerializedPacketDeleter>
 // Context for an incoming packet.
 struct QUIC_EXPORT_PRIVATE QuicPerPacketContext {
   virtual ~QuicPerPacketContext() {}
+};
+
+// ReceivedPacketInfo comprises information obtained by parsing the unencrypted
+// bytes of a received packet.
+struct QUIC_EXPORT_PRIVATE ReceivedPacketInfo {
+  ReceivedPacketInfo(const QuicSocketAddress& self_address,
+                     const QuicSocketAddress& peer_address,
+                     const QuicReceivedPacket& packet);
+  ReceivedPacketInfo(const ReceivedPacketInfo& other) = default;
+
+  ~ReceivedPacketInfo();
+
+  std::string ToString() const;
+
+  QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(
+      std::ostream& os,
+      const ReceivedPacketInfo& packet_info);
+
+  const QuicSocketAddress& self_address;
+  const QuicSocketAddress& peer_address;
+  const QuicReceivedPacket& packet;
+
+  // Fields below are populated by QuicFramer::ProcessPacketDispatcher.
+  PacketHeaderFormat form;
+  bool version_flag;
+  QuicVersionLabel version_label;
+  ParsedQuicVersion version;
+  QuicConnectionId destination_connection_id;
+  QuicConnectionId source_connection_id;
 };
 
 }  // namespace quic

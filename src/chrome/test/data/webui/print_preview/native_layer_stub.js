@@ -28,6 +28,9 @@ cr.define('print_preview', function() {
        */
       this.initialSettings_ = null;
 
+      /** @private {?Array<string>} Accounts to be sent on signIn(). */
+      this.accounts_ = null;
+
       /**
        * @private {!Array<!print_preview.LocalDestinationInfo>} Local
        *     destination list to be used for the response to |getPrinters|.
@@ -67,6 +70,9 @@ cr.define('print_preview', function() {
 
       /** @private {number} The number of total pages in the document. */
       this.pageCount_ = 1;
+
+      /** @private {?print_preview.PageLayoutInfo} Page layout information */
+      this.pageLayoutInfo_ = null;
     }
 
     /** @param {number} pageCount The number of pages in the document. */
@@ -110,6 +116,10 @@ cr.define('print_preview', function() {
       }
       const pageRanges = printTicketParsed.pageRange;
       const requestId = printTicketParsed.requestID;
+      if (this.pageLayoutInfo_) {
+        cr.webUIListenerCallback(
+            'page-layout-ready', this.pageLayoutInfo_, false);
+      }
       if (pageRanges.length == 0) {  // assume full length document, 1 page.
         cr.webUIListenerCallback(
             'page-count-ready', this.pageCount_, requestId, 100);
@@ -198,11 +208,21 @@ cr.define('print_preview', function() {
     /** @override */
     signIn(addAccount) {
       this.methodCalled('signIn', addAccount);
-      const accounts = ['foo@chromium.org'];
-      if (addAccount) {
+      const accounts = this.accounts_ || ['foo@chromium.org'];
+      if (!this.accounts_ && addAccount) {
         accounts.push('bar@chromium.org');
       }
-      cr.webUIListenerCallback('user-accounts-updated', accounts);
+      if (accounts.length > 0) {
+        cr.webUIListenerCallback('user-accounts-updated', accounts);
+      }
+    }
+
+    /**
+     * @param {!Array<string>} accounts The accounts to send when signIn is
+     * called.
+     */
+    setSignIn(accounts) {
+      this.accounts_ = accounts;
     }
 
     /**
@@ -261,6 +281,11 @@ cr.define('print_preview', function() {
      */
     setInvalidPrinterId(id) {
       this.badPrinterId_ = id;
+    }
+
+    /** @param {!print_preview.PageLayoutInfo} pageLayoutInfo */
+    setPageLayoutInfo(pageLayoutInfo) {
+      this.pageLayoutInfo_ = pageLayoutInfo;
     }
   }
 

@@ -55,9 +55,6 @@ struct Manifest {
   bool has_background_color;
   uint32 background_color;
 
-  // A URL of the HTML splash screen.
-  url.mojom.Url splash_screen_url;
-
   mojo_base.mojom.String16? gcm_sender_id;
 
   url.mojom.Url scope;
@@ -139,8 +136,8 @@ struct ManifestShareTarget {
   // to application/x-www-url-encoded and kMultipart corresponds to
   // multipart/form-data.
   enum Enctype {
-    kApplication,
-    kMultipart,
+    kFormUrlEncoded,
+    kMultipartFormData,
   };
 
   // The URL that will be opened when the share target is invoked.

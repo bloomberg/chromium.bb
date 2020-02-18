@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "cc/trees/element_id.h"
+#include "cc/paint/element_id.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/common/input/input_event_ack.h"
@@ -126,12 +126,6 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
       UMA_HISTOGRAM_CUSTOM_COUNTS("Event.PassiveListeners.Latency",
                                   GetEventLatencyMicros(event_timestamp, now),
                                   1, 10000000, 100);
-    } else if (enum_value ==
-               PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING) {
-      base::TimeTicks now = base::TimeTicks::Now();
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.PassiveListeners.ForcedNonBlockingLatencyDueToFling",
-          GetEventLatencyMicros(event_timestamp, now), 1, 10000000, 100);
     }
   }
 }
@@ -159,9 +153,9 @@ void LogAllPassiveEventListenersUma(const WebInputEvent& input_event,
 
 blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
     const WebPointerEvent& pointer_event,
-    std::vector<const WebInputEvent*> coalesced_events,
-    std::vector<const WebInputEvent*> predicted_events) {
-  std::vector<WebPointerEvent> related_pointer_events;
+    blink::WebVector<const WebInputEvent*> coalesced_events,
+    blink::WebVector<const WebInputEvent*> predicted_events) {
+  blink::WebVector<WebPointerEvent> related_pointer_events;
   for (const WebInputEvent* event : coalesced_events) {
     DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
     const WebTouchEvent& touch_event =
@@ -169,12 +163,12 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
     for (unsigned i = 0; i < touch_event.touches_length; ++i) {
       if (touch_event.touches[i].id == pointer_event.id &&
           touch_event.touches[i].state != WebTouchPoint::kStateStationary) {
-        related_pointer_events.push_back(
+        related_pointer_events.emplace_back(
             WebPointerEvent(touch_event, touch_event.touches[i]));
       }
     }
   }
-  std::vector<WebPointerEvent> predicted_pointer_events;
+  blink::WebVector<WebPointerEvent> predicted_pointer_events;
   for (const WebInputEvent* event : predicted_events) {
     DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
     const WebTouchEvent& touch_event =
@@ -182,7 +176,7 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
     for (unsigned i = 0; i < touch_event.touches_length; ++i) {
       if (touch_event.touches[i].id == pointer_event.id &&
           touch_event.touches[i].state != WebTouchPoint::kStateStationary) {
-        predicted_pointer_events.push_back(
+        predicted_pointer_events.emplace_back(
             WebPointerEvent(touch_event, touch_event.touches[i]));
       }
     }
@@ -192,11 +186,16 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
                                        predicted_pointer_events);
 }
 
-viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebNode& node) {
+viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebHitTestResult& result) {
+  const blink::WebNode& node = result.GetNode();
+  DCHECK(!node.IsNull());
   blink::WebFrame* result_frame = blink::WebFrame::FromFrameOwnerElement(node);
   if (result_frame && result_frame->IsWebRemoteFrame()) {
     blink::WebRemoteFrame* remote_frame = result_frame->ToWebRemoteFrame();
     if (remote_frame->IsIgnoredForHitTest())
+      return viz::FrameSinkId();
+
+    if (!result.ContentBoxContainsPoint())
       return viz::FrameSinkId();
 
     return RenderFrameProxy::FromWebFrame(remote_frame)->frame_sink_id();
@@ -248,7 +247,7 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
                             widget_->routing_id());
   }
 
-  viz::FrameSinkId frame_sink_id = GetRemoteFrameSinkId(result_node);
+  viz::FrameSinkId frame_sink_id = GetRemoteFrameSinkId(result);
   if (frame_sink_id.is_valid()) {
     *local_point = gfx::PointF(result.LocalPointWithoutContentBoxOffset());
     if (widget_->compositor_deps()->IsUseZoomForDSFEnabled()) {
@@ -259,8 +258,8 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
   }
 
   // Return the FrameSinkId for the current widget if the point did not hit
-  // test to a remote frame, or the remote frame doesn't have a valid
-  // FrameSinkId yet.
+  // test to a remote frame, or the point is outside of the remote frame's
+  // content box, or the remote frame doesn't have a valid FrameSinkId yet.
   return viz::FrameSinkId(RenderThread::Get()->GetClientId(),
                           widget_->routing_id());
 }
@@ -443,8 +442,8 @@ void RenderWidgetInputHandler::HandleInputEvent(
   // do this here so that we can attribute lateny information from the mouse as
   // a scroll interaction, instead of just classifying as mouse input.
   if (injected_scroll_params && injected_scroll_params->size()) {
-    HandleInjectedScrollGestures(*injected_scroll_params, input_event,
-                                 latency_info);
+    HandleInjectedScrollGestures(std::move(*injected_scroll_params),
+                                 input_event, latency_info);
   }
 
   // Send gesture scroll events and their dispositions to the compositor thread,
@@ -497,6 +496,12 @@ void RenderWidgetInputHandler::HandleInputEvent(
     delegate_->FocusChangeComplete();
   }
 #endif
+
+  // Ensure all injected scrolls were handled or queue up - any remaining
+  // injected scrolls at this point would not be processed.
+  DCHECK(!handling_injected_scroll_params_ ||
+         !*handling_injected_scroll_params_ ||
+         (*handling_injected_scroll_params_)->empty());
 }
 
 void RenderWidgetInputHandler::DidOverscrollFromBlink(
@@ -569,24 +574,10 @@ void RenderWidgetInputHandler::InjectGestureScrollEvent(
     ui::LatencyInfo latency_info;
     ui::WebScopedInputEvent web_scoped_gesture_event(gesture_event.release());
 
-    // We have an empty callback since sending gestures through the
-    // system can generate overscroll params - if the user holds down the
-    // mouse on one of the arrows the autoscroll timer continues to fire to
-    // support infinite scrollers.
-    // For scrollbar, we ignore overscroll params, as scrollbar doesn't
-    // participate in overscroll.
-    // TODO(dlibby): Change blink to not propagate overscroll for scrollbar
-    // gestures and remove this callback. Currently non-blocking events are
-    // set up such that the callback is not propagated into the event queue,
-    // and we DCHECK when overscroll data is passed to the event handler.
-    HandledEventCallback handled_event = base::BindOnce(
-        [](InputEventAckState, const ui::LatencyInfo& latency_info,
-           std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
-           base::Optional<cc::TouchAction> touch_action) {});
     widget_->GetInputEventQueue()->HandleEvent(
         std::move(web_scoped_gesture_event), latency_info,
-        DISPATCH_TYPE_BLOCKING, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-        std::move(handled_event));
+        DISPATCH_TYPE_NON_BLOCKING, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+        HandledEventCallback());
   }
 }
 
@@ -627,7 +618,7 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
             last_injected_gesture_was_begin_
                 ? ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT
                 : ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-            original_timestamp, 1);
+            original_timestamp);
       } else {
         // If we're injecting a GSU in response to a GSU (touch drags of the
         // scrollbar thumb in Blink handles GSUs, and reverses them with

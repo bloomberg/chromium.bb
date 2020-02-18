@@ -22,10 +22,10 @@
 #include "libANGLE/renderer/gl/RenderbufferGL.h"
 #include "libANGLE/renderer/gl/StateManagerGL.h"
 #include "libANGLE/renderer/gl/TextureGL.h"
-#include "libANGLE/renderer/gl/WorkaroundsGL.h"
 #include "libANGLE/renderer/gl/formatutilsgl.h"
 #include "libANGLE/renderer/gl/renderergl_utils.h"
 #include "libANGLE/renderer/renderer_utils.h"
+#include "platform/FeaturesGL.h"
 
 using angle::Vector2;
 
@@ -212,10 +212,10 @@ void UnbindAttachments(const FunctionsGL *functions,
 }  // anonymous namespace
 
 BlitGL::BlitGL(const FunctionsGL *functions,
-               const WorkaroundsGL &workarounds,
+               const angle::FeaturesGL &features,
                StateManagerGL *stateManager)
     : mFunctions(functions),
-      mWorkarounds(workarounds),
+      mFeatures(features),
       mStateManager(stateManager),
       mScratchFBO(0),
       mVAO(0),
@@ -315,7 +315,7 @@ angle::Result BlitGL::copySubImageToLUMAWorkaroundTexture(const gl::Context *con
     ANGLE_TRY(source->getImplementationColorReadType(context, &readType));
 
     nativegl::CopyTexImageImageFormat copyTexImageFormat =
-        nativegl::GetCopyTexImageImageFormat(mFunctions, mWorkarounds, readFormat, readType);
+        nativegl::GetCopyTexImageImageFormat(mFunctions, mFeatures, readFormat, readType);
 
     mStateManager->bindTexture(gl::TextureType::_2D, mScratchTextures[0]);
     mFunctions->copyTexImage2D(GL_TEXTURE_2D, 0, copyTexImageFormat.internalFormat, sourceArea.x,
@@ -406,7 +406,7 @@ angle::Result BlitGL::blitColorBufferWithShader(const gl::Context *context,
     gl::Rectangle sourceArea = sourceAreaIn.removeReversal();
     gl::Rectangle destArea   = destAreaIn.removeReversal();
 
-    const gl::FramebufferAttachment *readAttachment = source->getReadColorbuffer();
+    const gl::FramebufferAttachment *readAttachment = source->getReadColorAttachment();
     ASSERT(readAttachment->getSamples() <= 1);
 
     // Compute the part of the source that will be sampled.
@@ -502,7 +502,7 @@ angle::Result BlitGL::copySubTexture(const gl::Context *context,
                                      TextureGL *source,
                                      size_t sourceLevel,
                                      GLenum sourceComponentType,
-                                     TextureGL *dest,
+                                     GLuint destID,
                                      gl::TextureTarget destTarget,
                                      size_t destLevel,
                                      GLenum destComponentType,
@@ -524,7 +524,7 @@ angle::Result BlitGL::copySubTexture(const gl::Context *context,
     // cube maps may not be renderable until all faces have been filled.
     mStateManager->bindFramebuffer(GL_FRAMEBUFFER, mScratchFBO);
     mFunctions->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, ToGLenum(destTarget),
-                                     dest->getTextureID(), static_cast<GLint>(destLevel));
+                                     destID, static_cast<GLint>(destLevel));
     GLenum status = mFunctions->checkFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE)
     {
@@ -608,14 +608,17 @@ angle::Result BlitGL::copySubTexture(const gl::Context *context,
 angle::Result BlitGL::copySubTextureCPUReadback(const gl::Context *context,
                                                 TextureGL *source,
                                                 size_t sourceLevel,
-                                                GLenum sourceComponentType,
+                                                GLenum sourceSizedInternalFormat,
                                                 TextureGL *dest,
                                                 gl::TextureTarget destTarget,
                                                 size_t destLevel,
                                                 GLenum destFormat,
                                                 GLenum destType,
+                                                const gl::Extents &sourceSize,
                                                 const gl::Rectangle &sourceArea,
                                                 const gl::Offset &destOffset,
+                                                bool needsLumaWorkaround,
+                                                GLenum lumaFormat,
                                                 bool unpackFlipY,
                                                 bool unpackPremultiplyAlpha,
                                                 bool unpackUnmultiplyAlpha)
@@ -624,20 +627,65 @@ angle::Result BlitGL::copySubTextureCPUReadback(const gl::Context *context,
 
     ContextGL *contextGL = GetImplAs<ContextGL>(context);
 
-    ASSERT(source->getType() == gl::TextureType::_2D);
+    ASSERT(source->getType() == gl::TextureType::_2D ||
+           source->getType() == gl::TextureType::External);
     const auto &destInternalFormatInfo = gl::GetInternalFormatInfo(destFormat, destType);
+    const gl::InternalFormat &sourceInternalFormatInfo =
+        gl::GetSizedInternalFormatInfo(sourceSizedInternalFormat);
+
+    gl::Rectangle readPixelsArea = sourceArea;
 
     mStateManager->bindFramebuffer(GL_FRAMEBUFFER, mScratchFBO);
-    mFunctions->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                                     source->getTextureID(), static_cast<GLint>(sourceLevel));
+    mFunctions->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                     ToGLenum(source->getType()), source->getTextureID(),
+                                     static_cast<GLint>(sourceLevel));
     GLenum status = mFunctions->checkFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        // The source texture cannot be read with glReadPixels. Copy it into another RGBA texture
+        // and read that back instead.
+        nativegl::TexImageFormat texImageFormat = nativegl::GetTexImageFormat(
+            mFunctions, mFeatures, sourceInternalFormatInfo.internalFormat,
+            sourceInternalFormatInfo.format, sourceInternalFormatInfo.type);
+
+        gl::TextureType scratchTextureType = gl::TextureType::_2D;
+        mStateManager->bindTexture(scratchTextureType, mScratchTextures[0]);
+        mFunctions->texImage2D(ToGLenum(scratchTextureType), 0, texImageFormat.internalFormat,
+                               sourceArea.width, sourceArea.height, 0, texImageFormat.format,
+                               texImageFormat.type, nullptr);
+
+        bool copySucceeded = false;
+        ANGLE_TRY(copySubTexture(
+            context, source, sourceLevel, sourceInternalFormatInfo.componentType,
+            mScratchTextures[0], NonCubeTextureTypeToTarget(scratchTextureType), 0,
+            sourceInternalFormatInfo.componentType, sourceSize, sourceArea, gl::Offset(0, 0, 0),
+            needsLumaWorkaround, lumaFormat, false, false, false, &copySucceeded));
+        if (!copySucceeded)
+        {
+            // No fallback options if we can't render to the scratch texture.
+            return angle::Result::Stop;
+        }
+
+        // Bind the scratch texture as the readback texture
+        mStateManager->bindFramebuffer(GL_FRAMEBUFFER, mScratchFBO);
+        mFunctions->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                         ToGLenum(scratchTextureType), mScratchTextures[0], 0);
+
+        // The scratch texture sized to sourceArea so adjust the readpixels area
+        readPixelsArea.x = 0;
+        readPixelsArea.y = 0;
+
+        // Recheck the status
+        status = mFunctions->checkFramebufferStatus(GL_FRAMEBUFFER);
+    }
+
     ASSERT(status == GL_FRAMEBUFFER_COMPLETE);
 
     // Create a buffer for holding the source and destination memory
     const size_t sourcePixelSize = 4;
-    size_t sourceBufferSize      = sourceArea.width * sourceArea.height * sourcePixelSize;
+    size_t sourceBufferSize      = readPixelsArea.width * readPixelsArea.height * sourcePixelSize;
     size_t destBufferSize =
-        sourceArea.width * sourceArea.height * destInternalFormatInfo.pixelBytes;
+        readPixelsArea.width * readPixelsArea.height * destInternalFormatInfo.pixelBytes;
     angle::MemoryBuffer *buffer = nullptr;
     ANGLE_CHECK_GL_ALLOC(contextGL,
                          context->getScratchBuffer(sourceBufferSize + destBufferSize, &buffer));
@@ -647,14 +695,14 @@ angle::Result BlitGL::copySubTextureCPUReadback(const gl::Context *context,
 
     GLenum readPixelsFormat        = GL_NONE;
     PixelReadFunction readFunction = nullptr;
-    if (sourceComponentType == GL_UNSIGNED_INT)
+    if (sourceInternalFormatInfo.componentType == GL_UNSIGNED_INT)
     {
         readPixelsFormat = GL_RGBA_INTEGER;
         readFunction     = angle::ReadColor<angle::R8G8B8A8, GLuint>;
     }
     else
     {
-        ASSERT(sourceComponentType != GL_INT);
+        ASSERT(sourceInternalFormatInfo.componentType != GL_INT);
         readPixelsFormat = GL_RGBA;
         readFunction     = angle::ReadColor<angle::R8G8B8A8, GLfloat>;
     }
@@ -663,18 +711,18 @@ angle::Result BlitGL::copySubTextureCPUReadback(const gl::Context *context,
     unpack.alignment = 1;
     mStateManager->setPixelUnpackState(unpack);
     mStateManager->setPixelUnpackBuffer(nullptr);
-    mFunctions->readPixels(sourceArea.x, sourceArea.y, sourceArea.width, sourceArea.height,
-                           readPixelsFormat, GL_UNSIGNED_BYTE, sourceMemory);
+    mFunctions->readPixels(readPixelsArea.x, readPixelsArea.y, readPixelsArea.width,
+                           readPixelsArea.height, readPixelsFormat, GL_UNSIGNED_BYTE, sourceMemory);
 
     angle::FormatID destFormatID =
         angle::Format::InternalFormatToID(destInternalFormatInfo.sizedInternalFormat);
     const auto &destFormatInfo = angle::Format::Get(destFormatID);
     CopyImageCHROMIUM(
-        sourceMemory, sourceArea.width * sourcePixelSize, sourcePixelSize, 0, readFunction,
-        destMemory, sourceArea.width * destInternalFormatInfo.pixelBytes,
+        sourceMemory, readPixelsArea.width * sourcePixelSize, sourcePixelSize, 0, readFunction,
+        destMemory, readPixelsArea.width * destInternalFormatInfo.pixelBytes,
         destInternalFormatInfo.pixelBytes, 0, destFormatInfo.pixelWriteFunction,
-        destInternalFormatInfo.format, destInternalFormatInfo.componentType, sourceArea.width,
-        sourceArea.height, 1, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
+        destInternalFormatInfo.format, destInternalFormatInfo.componentType, readPixelsArea.width,
+        readPixelsArea.height, 1, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
 
     gl::PixelPackState pack;
     pack.alignment = 1;
@@ -682,11 +730,11 @@ angle::Result BlitGL::copySubTextureCPUReadback(const gl::Context *context,
     mStateManager->setPixelPackBuffer(nullptr);
 
     nativegl::TexSubImageFormat texSubImageFormat =
-        nativegl::GetTexSubImageFormat(mFunctions, mWorkarounds, destFormat, destType);
+        nativegl::GetTexSubImageFormat(mFunctions, mFeatures, destFormat, destType);
 
     mStateManager->bindTexture(dest->getType(), dest->getTextureID());
     mFunctions->texSubImage2D(ToGLenum(destTarget), static_cast<GLint>(destLevel), destOffset.x,
-                              destOffset.y, sourceArea.width, sourceArea.height,
+                              destOffset.y, readPixelsArea.width, readPixelsArea.height,
                               texSubImageFormat.format, texSubImageFormat.type, destMemory);
 
     return angle::Result::Continue;

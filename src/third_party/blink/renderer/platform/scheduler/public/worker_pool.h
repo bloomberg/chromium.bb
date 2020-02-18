@@ -16,7 +16,7 @@ namespace blink {
 namespace worker_pool {
 
 // These are a thin wrapper around base::ThreadPoolInstance to ensure that all
-// callers use WTF::CrossThreadBindOnce instead of base::Bind to ensure that
+// callers use CrossThreadBindOnce instead of base::Bind to ensure that
 // all non-thread-safe objects are copied properly.
 //
 // All tasks that do not care about which thread they are running on

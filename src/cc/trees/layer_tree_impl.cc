@@ -89,7 +89,6 @@ LayerTreeImpl::LayerTreeImpl(
       external_page_scale_factor_(1.f),
       device_scale_factor_(1.f),
       painted_device_scale_factor_(1.f),
-      content_source_id_(0),
       elastic_overscroll_(elastic_overscroll),
       layers_(new OwnedLayerImplList),
       needs_update_draw_properties_(true),
@@ -483,8 +482,6 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   target_tree->SetRasterColorSpace(raster_color_space_id_, raster_color_space_);
   target_tree->elastic_overscroll()->PushPendingToActive();
-
-  target_tree->set_content_source_id(content_source_id());
 
   target_tree->set_painted_device_scale_factor(painted_device_scale_factor());
   target_tree->SetDeviceScaleFactor(device_scale_factor());
@@ -1290,7 +1287,6 @@ bool LayerTreeImpl::UpdateDrawProperties(
         InnerViewportScrollLayer(), OuterViewportScrollLayer(),
         elastic_overscroll()->Current(IsActiveTree()),
         OverscrollElasticityElementId(), max_texture_size(),
-        settings().layer_transforms_should_scale_layer_contents,
         &render_surface_list_, &property_trees_, PageScaleTransformNode());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     if (const char* client_name = GetClientNameForMetrics()) {
@@ -1456,6 +1452,18 @@ LayerImpl* LayerTreeImpl::LayerById(int id) const {
   return iter != layer_id_map_.end() ? iter->second : nullptr;
 }
 
+// TODO(masonfreed): If this shows up on profiles, this could use
+// a layer_element_map_ approach similar to LayerById().
+LayerImpl* LayerTreeImpl::LayerByElementId(ElementId element_id) const {
+  auto it = std::find_if(layer_list_.rbegin(), layer_list_.rend(),
+                         [&element_id](LayerImpl* layer_impl) {
+                           return layer_impl->element_id() == element_id;
+                         });
+  if (it == layer_list_.rend())
+    return nullptr;
+  return *it;
+}
+
 LayerImpl* LayerTreeImpl::ScrollableLayerByElementId(
     ElementId element_id) const {
   auto iter = element_id_to_scrollable_layer_.find(element_id);
@@ -1482,7 +1490,7 @@ void LayerTreeImpl::AddLayerShouldPushProperties(LayerImpl* layer) {
   DCHECK(!IsActiveTree()) << "The active tree does not push layer properties";
   // TODO(crbug.com/303943): PictureLayerImpls always push properties so should
   // not go into this set or we'd push them twice.
-  DCHECK(!base::ContainsValue(picture_layers_, layer));
+  DCHECK(!base::Contains(picture_layers_, layer));
   layers_that_should_push_properties_.insert(layer);
 }
 
@@ -1503,7 +1511,7 @@ void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
 
 // These manage ownership of the LayerImpl.
 void LayerTreeImpl::AddLayer(std::unique_ptr<LayerImpl> layer) {
-  DCHECK(!base::ContainsValue(*layers_, layer));
+  DCHECK(!base::Contains(*layers_, layer));
   DCHECK(layer);
   layers_->push_back(std::move(layer));
   set_needs_update_draw_properties();
@@ -1862,7 +1870,7 @@ void LayerTreeImpl::ProcessUIResourceRequestQueue() {
 }
 
 void LayerTreeImpl::RegisterPictureLayerImpl(PictureLayerImpl* layer) {
-  DCHECK(!base::ContainsValue(picture_layers_, layer));
+  DCHECK(!base::Contains(picture_layers_, layer));
   picture_layers_.push_back(layer);
 }
 
@@ -1870,6 +1878,23 @@ void LayerTreeImpl::UnregisterPictureLayerImpl(PictureLayerImpl* layer) {
   auto it = std::find(picture_layers_.begin(), picture_layers_.end(), layer);
   DCHECK(it != picture_layers_.end());
   picture_layers_.erase(it);
+
+  // Make sure that |picture_layers_with_paint_worklets_| doesn't get left with
+  // dead layers. They should already have been removed (via calling
+  // NotifyLayerHasPaintWorkletsChanged) before the layer was unregistered.
+  DCHECK(!picture_layers_with_paint_worklets_.contains(layer));
+}
+
+void LayerTreeImpl::NotifyLayerHasPaintWorkletsChanged(PictureLayerImpl* layer,
+                                                       bool has_worklets) {
+  if (has_worklets) {
+    auto insert_pair = picture_layers_with_paint_worklets_.insert(layer);
+    DCHECK(insert_pair.second);
+  } else {
+    auto it = picture_layers_with_paint_worklets_.find(layer);
+    DCHECK(it != picture_layers_with_paint_worklets_.end());
+    picture_layers_with_paint_worklets_.erase(it);
+  }
 }
 
 void LayerTreeImpl::RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer) {
@@ -2179,8 +2204,10 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPoint(
 
 struct FindTouchEventLayerFunctor {
   bool operator()(LayerImpl* layer) const {
+    if (!layer->has_touch_action_regions())
+      return false;
     return PointHitsRegion(screen_space_point, layer->ScreenSpaceTransform(),
-                           layer->touch_action_region().region(), layer);
+                           layer->GetAllTouchActionRegions(), layer);
   }
   const gfx::PointF screen_space_point;
 };
@@ -2218,6 +2245,28 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInWheelEventHandlerRegion(
   FindWheelEventHandlerLayerFunctor func = {screen_space_point};
   return FindLayerThatIsHitByPointInEventHandlerRegion(screen_space_point,
                                                        func);
+}
+
+std::vector<const LayerImpl*>
+LayerTreeImpl::FindLayersHitByPointInNonFastScrollableRegion(
+    const gfx::PointF& screen_space_point) {
+  std::vector<const LayerImpl*> layers;
+  if (layer_list_.empty())
+    return layers;
+  if (!UpdateDrawProperties())
+    return layers;
+  for (const auto* layer : *this) {
+    if (layer->non_fast_scrollable_region().IsEmpty())
+      continue;
+    if (!PointHitsLayer(layer, screen_space_point, nullptr))
+      continue;
+    if (PointHitsRegion(screen_space_point, layer->ScreenSpaceTransform(),
+                        layer->non_fast_scrollable_region(), layer)) {
+      layers.push_back(layer);
+    }
+  }
+
+  return layers;
 }
 
 void LayerTreeImpl::RegisterSelection(const LayerSelection& selection) {

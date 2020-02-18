@@ -70,8 +70,6 @@ class FakeOutputSurface : public OutputSurface {
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override {}
-  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
-      override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
@@ -128,7 +126,7 @@ class FakeOutputSurface : public OutputSurface {
  private:
   void SwapBuffersAck();
 
-  base::WeakPtrFactory<FakeOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeOutputSurface> weak_ptr_factory_{this};
 };
 
 }  // namespace viz

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -33,7 +34,9 @@ class PaymentInstrument {
         const std::string& method_name,
         const std::string& stringified_details) = 0;
 
-    virtual void OnInstrumentDetailsError() = 0;
+    // Should be called with a developer-facing error message to be used when
+    // rejecting PaymentRequest.show().
+    virtual void OnInstrumentDetailsError(const std::string& error_message) = 0;
   };
 
   virtual ~PaymentInstrument();
@@ -45,6 +48,13 @@ class PaymentInstrument {
   // Returns whether the instrument is complete to be used as a payment method
   // without further editing.
   virtual bool IsCompleteForPayment() const = 0;
+  // Returns the calculated completeness score. Used to sort the list of
+  // available instruments.
+  virtual uint32_t GetCompletenessScore() const = 0;
+  // Returns whether the instrument can be preselected in the payment sheet or
+  // not. If none of the instruments can be preselected, the user must
+  // explicitly select an instrument from a list.
+  virtual bool CanPreselect() const = 0;
   // Returns whether the instrument is exactly matching all filters provided by
   // the merchant. For example, this can return "false" for unknown card types,
   // if the merchant requested only debit cards.
@@ -77,18 +87,30 @@ class PaymentInstrument {
       const std::set<autofill::CreditCard::CardType>& supported_types)
       const = 0;
 
-  // Returns true if this payment instrument can handle payments for the given
-  // |payment_method_identifier|.
-  virtual bool IsValidForPaymentMethodIdentifier(
-      const std::string& payment_method_identifier) const = 0;
+  // Sets |is_valid| to true if this payment instrument can handle payments for
+  // the given |payment_method_identifier|. The |is_valid| is an an out-param
+  // instead of the return value to enable binding this method with a
+  // base::WeakPtr, which prohibits non-void methods.
+  virtual void IsValidForPaymentMethodIdentifier(
+      const std::string& payment_method_identifier,
+      bool* is_valid) const = 0;
+
+  // Returns a WeakPtr to this payment instrument.
+  virtual base::WeakPtr<PaymentInstrument> AsWeakPtr() = 0;
+
+  // Sorts the instruments using the overloaded < operator.
+  static void SortInstruments(
+      std::vector<std::unique_ptr<PaymentInstrument>>* instruments);
+  static void SortInstruments(std::vector<PaymentInstrument*>* instruments);
 
   int icon_resource_id() const { return icon_resource_id_; }
-  Type type() { return type_; }
+  Type type() const { return type_; }
 
  protected:
   PaymentInstrument(int icon_resource_id, Type type);
 
  private:
+  bool operator<(const PaymentInstrument& other) const;
   int icon_resource_id_;
   Type type_;
 

@@ -34,9 +34,9 @@
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/html/parser/xss_auditor.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -101,8 +101,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(
       loading_task_runner_(std::move(loading_task_runner)),
       pending_csp_meta_token_index_(
           HTMLDocumentParser::TokenizedChunk::kNoPendingToken),
-      starting_script_(false),
-      weak_factory_(this) {}
+      starting_script_(false) {}
 
 BackgroundHTMLParser::~BackgroundHTMLParser() = default;
 

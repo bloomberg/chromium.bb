@@ -139,3 +139,17 @@ AppManagementArcPermissionViewTest.prototype = {
 TEST_F('AppManagementArcPermissionViewTest', 'All', function() {
   mocha.run();
 });
+
+function AppManagementManagedAppsTest() {}
+
+AppManagementManagedAppsTest.prototype = {
+  __proto__: AppManagementBrowserTest.prototype,
+
+  extraLibraries: AppManagementBrowserTest.prototype.extraLibraries.concat([
+    'managed_apps_test.js',
+  ]),
+};
+
+TEST_F('AppManagementManagedAppsTest', 'All', function() {
+  mocha.run();
+});

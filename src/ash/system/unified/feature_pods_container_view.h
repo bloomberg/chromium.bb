@@ -37,16 +37,15 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
   // horizontally placed.
   void SetExpandedAmount(double expanded_amount);
 
+  // Set the number of rows of feature pods based on the max height the
+  // container can have.
+  void SetMaxHeight(int max_height);
+
   // Get height of the view when |expanded_amount| is set to 1.0.
   int GetExpandedHeight() const;
 
   // Get the height of the view when |expanded_amount| is set to 0.0.
   int GetCollapsedHeight() const;
-
-  // Save and restore keyboard focus of a child feature pod button. If no button
-  // has focus or no focus is saved, these methods are no-op.
-  void SaveFocus();
-  void RestoreFocus();
 
   // Returns the number of children that prefer to be visible.
   int GetVisibleCount() const;
@@ -57,6 +56,9 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
   void Layout() override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
+  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   const char* GetClassName() const override;
 
  private:
@@ -90,13 +92,17 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
   // PaginationModelObserver:
   void TransitionChanged() override;
 
-  UnifiedSystemTrayController* controller_;
+  UnifiedSystemTrayController* const controller_;
 
   // Owned by UnifiedSystemTrayModel.
-  PaginationModel* pagination_model_;
+  PaginationModel* const pagination_model_;
 
   // The last |expanded_amount| passed to SetExpandedAmount().
   double expanded_amount_;
+
+  // Number of rows of feature pods to display. Updated based on the available
+  // max height for FeaturePodsContainer.
+  int feature_pod_rows_ = 0;
 
   // Horizontal side padding in dip for collapsed state.
   int collapsed_side_padding_ = 0;
@@ -104,9 +110,6 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
   // Used for preventing reentrancy issue in ChildVisibilityChanged. Should be
   // always false if FeaturePodsContainerView is not in the call stack.
   bool changing_visibility_ = false;
-
-  // A button that had focus at the point SaveButtonFocus is called.
-  views::View* focused_button_ = nullptr;
 
   // A view model that contains all visible feature pod buttons.
   // Used to calculate required number of pages.

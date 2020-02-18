@@ -98,14 +98,6 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
   // isInherit => (state.parentNode() && state.parentStyle())
   DCHECK(!is_inherit || (state.ParentNode() && state.ParentStyle()));
 
-  if (!state.ApplyPropertyToRegularStyle() &&
-      (!state.ApplyPropertyToVisitedLinkStyle() ||
-       !property.IsValidForVisitedLink())) {
-    // Limit the properties that can be applied to only the ones honored by
-    // :visited.
-    return;
-  }
-
   if (is_inherit && !state.ParentStyle()->HasExplicitlyInheritedProperties() &&
       !is_inherited) {
     state.ParentStyle()->SetHasExplicitlyInheritedProperties();
@@ -116,11 +108,6 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
     else
       is_initial = true;
   }
-
-  // CSSPropertyID::kVariable currently handles initial/inherit inside
-  // ApplyValue.
-  DCHECK(id != CSSPropertyID::kVariable || !is_initial);
-  DCHECK(id != CSSPropertyID::kVariable || !is_inherit);
 
   if (is_initial)
     To<Longhand>(property).ApplyInitial(state);

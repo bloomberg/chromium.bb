@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "components/sync/base/fake_encryptor.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/nigori/cryptographer.h"
 #include "components/sync/nigori/keystore_keys_handler.h"
@@ -35,7 +34,7 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   // SyncEncryptionHandler implementation.
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  void Init() override;
+  bool Init() override;
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void EnableEncryptEverything() override;
@@ -43,9 +42,12 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   PassphraseType GetPassphraseType(
       syncable::BaseTransaction* const trans) const override;
   base::Time GetKeystoreMigrationTime() const override;
+  Cryptographer* GetCryptographerUnsafe() override;
+  KeystoreKeysHandler* GetKeystoreKeysHandler() override;
+  syncable::NigoriHandler* GetNigoriHandler() override;
 
   // NigoriHandler implemenation.
-  void ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
+  bool ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
                          syncable::BaseTransaction* const trans) override;
   void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
@@ -57,15 +59,12 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   bool NeedKeystoreKey() const override;
   bool SetKeystoreKeys(const std::vector<std::string>& keys) override;
 
-  Cryptographer* cryptographer() { return &cryptographer_; }
-
  private:
   base::ObserverList<SyncEncryptionHandler::Observer>::Unchecked observers_;
   ModelTypeSet encrypted_types_;
   bool encrypt_everything_;
   PassphraseType passphrase_type_;
 
-  FakeEncryptor encryptor_;
   Cryptographer cryptographer_;
   std::string keystore_key_;
 };

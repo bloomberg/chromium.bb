@@ -101,6 +101,9 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsInlineBox() const {
     return IsBox() && BoxType() == NGBoxType::kInlineBox;
   }
+  bool IsColumnBox() const {
+    return IsBox() && BoxType() == NGBoxType::kColumnBox;
+  }
   // An atomic inline is represented as a kFragmentBox, such as inline block and
   // replaced elements.
   bool IsAtomicInline() const {
@@ -188,6 +191,10 @@ class CORE_EXPORT NGPhysicalFragment
   bool HasOverflowClip() const;
   bool ShouldClipOverflow() const;
 
+  // This fragment is hidden for paint purpose, but exists for querying layout
+  // information. Used for `text-overflow: ellipsis`.
+  bool IsHiddenForPaint() const { return is_hidden_for_paint_; }
+
   // GetLayoutObject should only be used when necessary for compatibility
   // with LegacyLayout.
   //
@@ -239,6 +246,7 @@ class CORE_EXPORT NGPhysicalFragment
 
   String ToString() const;
 
+  void CheckType() const;
   void CheckCanUpdateInkOverflow() const;
 
   enum DumpFlag {
@@ -284,6 +292,7 @@ class CORE_EXPORT NGPhysicalFragment
   const unsigned type_ : 2;      // NGFragmentType
   const unsigned sub_type_ : 3;  // NGBoxType, NGTextType, or NGLineBoxType
   const unsigned style_variant_ : 2;  // NGStyleVariant
+  const unsigned is_hidden_for_paint_ : 1;
 
   // The following bitfields are only to be used by NGPhysicalContainerFragment
   // (it's defined here to save memory, since that class has no bitfields).
@@ -331,7 +340,11 @@ struct CORE_EXPORT NGPhysicalFragmentWithOffset {
   PhysicalRect RectInContainerBox() const;
 };
 
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGPhysicalFragment*);
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGPhysicalFragment&);
+
 #if !DCHECK_IS_ON()
+inline void NGPhysicalFragment::CheckType() const {}
 inline void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {}
 #endif
 

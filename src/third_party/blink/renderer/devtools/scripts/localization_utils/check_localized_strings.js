@@ -8,15 +8,11 @@
  * files and report error if present.
  */
 
-const fs = require('fs');
 const path = require('path');
-const {promisify} = require('util');
-const writeFileAsync = promisify(fs.writeFile);
 const localizationUtils = require('./localization_utils');
 const escodegen = localizationUtils.escodegen;
 const esprimaTypes = localizationUtils.esprimaTypes;
 const esprima = localizationUtils.esprima;
-const DEVTOOLS_FRONTEND_PATH = path.resolve(__dirname, '..', '..', 'front_end');
 const extensionStringKeys = ['category', 'destination', 'title', 'title-mac'];
 
 // Format of frontendStrings
@@ -24,6 +20,7 @@ const extensionStringKeys = ['category', 'destination', 'title', 'title-mac'];
 //     string: string,
 //     code: string,
 //     filepath: string,
+//     grdpPath: string,
 //     location: {
 //       start: {
 //         line: number, (1-based)
@@ -41,8 +38,10 @@ const frontendStrings = new Map();
 
 // Format
 // {
-//   IDS_KEY => {
-//     filepath: string,
+//   IDS_KEY => a list of {
+//     actualIDSKey: string,  // the IDS key in the message tag
+//     description: string,
+//     grdpPath: string,
 //     location: {
 //       start: {
 //         line: number
@@ -54,28 +53,39 @@ const frontendStrings = new Map();
 //   }
 // }
 const IDSkeys = new Map();
+const fileToGRDPMap = new Map();
 
 const devtoolsFrontendPath = path.resolve(__dirname, '..', '..', 'front_end');
 
-async function parseLocalizableResourceMaps(isDebug) {
-  const devtoolsFiles = [];
-  await localizationUtils.getFilesFromDirectory(devtoolsFrontendPath, devtoolsFiles, ['.js', 'module.json']);
+async function parseLocalizableResourceMaps() {
+  const grdpToFiles = new Map();
+  const dirs = await localizationUtils.getChildDirectoriesFromDirectory(devtoolsFrontendPath);
+  const grdpToFilesPromises = dirs.map(dir => {
+    const files = [];
+    grdpToFiles.set(path.resolve(dir, `${path.basename(dir)}_strings.grdp`), files);
+    return localizationUtils.getFilesFromDirectory(dir, files, ['.js', 'module.json']);
+  });
+  await Promise.all(grdpToFilesPromises);
 
-  const promises = [parseLocalizableStrings(devtoolsFiles, isDebug), parseIDSKeys(localizationUtils.GRD_PATH, isDebug)];
-  return Promise.all(promises);
+  const promises = [];
+  for (const [grdpPath, files] of grdpToFiles) {
+    files.forEach(file => fileToGRDPMap.set(file, grdpPath));
+    promises.push(parseLocalizableStrings(files));
+  }
+  await Promise.all(promises);
+  // Parse grd(p) files after frontend strings are processed so we know
+  // what to add or remove based on frontend strings
+  await parseIDSKeys(localizationUtils.GRD_PATH);
 }
 
 /**
- * The following functions parse localizable strings (wrapped in
- * Common.UIString, UI.formatLocalized or ls``) from devtools frontend files.
+ * The following functions parse localizable strings (wrapped in Common.UIString,
+ * Common.UIStringFormat, UI.formatLocalized or ls``) from devtools frontend files.
  */
 
-async function parseLocalizableStrings(devtoolsFiles, isDebug) {
+async function parseLocalizableStrings(devtoolsFiles) {
   const promises = devtoolsFiles.map(filePath => parseLocalizableStringsFromFile(filePath));
   await Promise.all(promises);
-  if (isDebug)
-    await writeFileAsync(path.resolve(__dirname, 'localizable_strings.json'), JSON.stringify(frontendStrings));
-  return frontendStrings;
 }
 
 async function parseLocalizableStringsFromFile(filePath) {
@@ -131,6 +141,7 @@ function parseLocalizableStringFromNode(node, filePath) {
   const locCase = localizationUtils.getLocalizationCase(node);
   switch (locCase) {
     case 'Common.UIString':
+    case 'Common.UIStringFormat':
       handleCommonUIString(node, filePath);
       break;
     case 'UI.formatLocalized':
@@ -192,11 +203,7 @@ function handleTemplateLiteral(node, code, filePath, argumentNodes) {
 }
 
 function addString(str, code, filePath, location, argumentNodes) {
-  const currentString = {
-    string: str,
-    code: code,
-    filepath: filePath,
-  };
+  const currentString = {string: str, code: code, filepath: filePath, grdpPath: fileToGRDPMap.get(filePath)};
   if (location)
     currentString.location = location;
   if (argumentNodes && argumentNodes.length > 0)
@@ -216,13 +223,10 @@ function addString(str, code, filePath, location, argumentNodes) {
  * devtools frontend grdp files.
  */
 
-async function parseIDSKeys(grdFilePath, isDebug) {
+async function parseIDSKeys(grdFilePath) {
   // NOTE: this function assumes that no <message> tags are present in the parent
   const grdpFilePaths = await parseGRDFile(grdFilePath);
   await parseGRDPFiles(grdpFilePaths);
-  if (isDebug)
-    await writeFileAsync(path.resolve(__dirname, 'IDS_Keys.json'), JSON.stringify(IDSkeys));
-  return IDSkeys;
 }
 
 async function parseGRDFile(grdFilePath) {
@@ -271,13 +275,6 @@ function convertToFrontendPlaceholders(message) {
   return message;
 }
 
-function trimGrdpMessage(message) {
-  // '    Message text \n  ' trims to ' Message text '.
-  const fixedLeadingWhitespace = 4;  // GRDP encoding uses 4 leading spaces.
-  const trimmedMessage = message.substring(4);
-  return trimmedMessage.substring(0, trimmedMessage.lastIndexOf('\n'));
-}
-
 async function parseGRDPFile(filePath) {
   const fileContent = await localizationUtils.parseFileContent(filePath);
 
@@ -286,42 +283,59 @@ async function parseGRDPFile(filePath) {
     return stringToIndex.split('\n').length;
   }
 
+  function stripWhitespacePadding(message) {
+    let match = message.match(/^'''/);
+    if (match)
+      message = message.substring(3);
+    match = message.match(/(.*?)'''$/);
+    if (match)
+      message = match[1];
+    return message;
+  }
+
   // Example:
-  //  <message name="IDS_*" desc="*">
+  //  <message name="IDS_DEVTOOLS_md5_hash" desc="Description of this message">
   //      Message text here with optional placeholders <ph name="phname">$1s</ph>
   //  </message>
   // match[0]: the entire '<message>...</message>' block.
-  // match[1]: '     Message text here with optional placeholders <ph name="phname">$1s</ph>\n  '
-  const messageRegex = new RegExp('<message[^>]*>\s*\n(.*?)<\/message>', 'gms');
+  // match[1]: 'IDS_DEVTOOLS_md5_hash'
+  // match[2]: 'Description of this message'
+  // match[3]: '     Message text here with optional placeholders <ph name="phname">$1s</ph>\n  '
+  const messageRegex = new RegExp('<message[^>]*name="([^"]*)"[^>]*desc="([^"]*)"[^>]*>\s*\n(.*?)<\/message>', 'gms');
   let match;
   while ((match = messageRegex.exec(fileContent)) !== null) {
     const line = lineNumberOfIndex(fileContent, match.index);
-
-    let message = match[1];
-    message = trimGrdpMessage(message);
-    message = convertToFrontendPlaceholders(message);
+    const actualIDSKey = match[1];
+    const description = match[2];
+    let message = match[3];
+    message = convertToFrontendPlaceholders(message.trim());
+    message = stripWhitespacePadding(message);
     message = localizationUtils.sanitizeStringIntoFrontendFormat(message);
 
     const ids = localizationUtils.getIDSKey(message);
-    IDSkeys.set(ids, {filepath: filePath, location: {start: {line}, end: {line}}});
+    addMessage(ids, actualIDSKey, filePath, line, description);
   }
+}
+
+function addMessage(expectedIDSKey, actualIDSKey, grdpPath, line, description) {
+  if (!IDSkeys.has(expectedIDSKey))
+    IDSkeys.set(expectedIDSKey, []);
+
+  IDSkeys.get(expectedIDSKey).push({actualIDSKey, grdpPath, location: {start: {line}, end: {line}}, description});
 }
 
 /**
  * The following functions compare frontend localizable strings
- * with grdp <message>s and report error of resources to add or
- * remove.
+ * with grdp <message>s and report error of resources to add,
+ * remove or modify.
  */
-async function getAndReportResourcesToAdd(frontendStrings, IDSkeys) {
-  const keysToAddToGRD = getDifference(IDSkeys, frontendStrings);
+async function getAndReportResourcesToAdd() {
+  const keysToAddToGRD = getMessagesToAdd();
   if (keysToAddToGRD.size === 0)
     return;
 
   let errorStr = 'The following frontend string(s) need to be added to GRD/GRDP file(s).\n';
   errorStr += 'Please refer to auto-generated message(s) below and modify as needed.\n\n';
-
-  const frontendDirs = await localizationUtils.getChildDirectoriesFromDirectory(DEVTOOLS_FRONTEND_PATH);
-  const fileToGRDPMap = new Map();
 
   // Example error message:
   // third_party/blink/renderer/devtools/front_end/network/NetworkDataGridNode.js Line 973: ls`(disk cache)`
@@ -330,55 +344,139 @@ async function getAndReportResourcesToAdd(frontendStrings, IDSkeys) {
   //   (disk cache)
   // </message>
   for (const [key, stringObj] of keysToAddToGRD) {
-    let relativeGRDPFilePath = '';
-    if (fileToGRDPMap.has(stringObj.filepath)) {
-      relativeGRDPFilePath = fileToGRDPMap.get(stringObj.filepath);
-    } else {
-      relativeGRDPFilePath = localizationUtils.getRelativeFilePathFromSrc(
-          localizationUtils.getGRDPFilePath(stringObj.filepath, frontendDirs));
-      fileToGRDPMap.set(stringObj.filepath, relativeGRDPFilePath);
-    }
     errorStr += `${localizationUtils.getRelativeFilePathFromSrc(stringObj.filepath)}${
         localizationUtils.getLocationMessage(stringObj.location)}: ${stringObj.code}\n`;
     errorStr += `Add a new message tag for this string to ${
-        localizationUtils.getRelativeFilePathFromSrc(
-            localizationUtils.getGRDPFilePath(stringObj.filepath, frontendDirs))}\n\n`;
+        localizationUtils.getRelativeFilePathFromSrc(fileToGRDPMap.get(stringObj.filepath))}\n\n`;
     errorStr += localizationUtils.createGrdpMessage(key, stringObj);
   }
   return errorStr;
 }
 
-function getAndReportResourcesToRemove(frontendStrings, IDSkeys) {
-  const keysToRemoveFromGRD = getDifference(frontendStrings, IDSkeys);
+function getAndReportResourcesToRemove() {
+  const keysToRemoveFromGRD = getMessagesToRemove();
   if (keysToRemoveFromGRD.size === 0)
     return;
 
   let errorStr =
       '\nThe message(s) associated with the following IDS key(s) should be removed from its GRD/GRDP file(s):\n';
   // Example error message:
-  // third_party/blink/renderer/devtools/front_end/help/help_strings.grdp Line 18: IDS_DEVTOOLS_7d0ee6fed10d3d4e5c9ee496729ab519
-  for (const [key, keyObj] of keysToRemoveFromGRD) {
-    errorStr += `${localizationUtils.getRelativeFilePathFromSrc(keyObj.filepath)}${
-        localizationUtils.getLocationMessage(keyObj.location)}: ${key}\n\n`;
+  // third_party/blink/renderer/devtools/front_end/accessibility/accessibility_strings.grdp Line 300: IDS_DEVTOOLS_c9bbad3047af039c14d0e7ec957bb867
+  for (const [ids, messages] of keysToRemoveFromGRD) {
+    messages.forEach(
+        message => errorStr += `${localizationUtils.getRelativeFilePathFromSrc(message.grdpPath)}${
+            localizationUtils.getLocationMessage(message.location)}: ${ids}\n\n`);
   }
   return errorStr;
 }
 
-/**
- * Output a Map containing entries that are in @comparison but not @reference in sorted order.
- */
-function getDifference(reference, comparison) {
+function getAndReportIDSKeysToModify() {
+  const messagesToModify = getIDSKeysToModify();
+  if (messagesToModify.size === 0)
+    return;
+
+  let errorStr = '\nThe following GRD/GRDP message(s) do not have the correct IDS key.\n';
+  errorStr += 'Please update the key(s) by changing the "name" value.\n\n';
+
+  for (const [expectedIDSKey, messages] of messagesToModify) {
+    messages.forEach(
+        message => errorStr += `${localizationUtils.getRelativeFilePathFromSrc(message.grdpPath)}${
+            localizationUtils.getLocationMessage(
+                message.location)}:\n${message.actualIDSKey} --> ${expectedIDSKey}\n\n`);
+  }
+  return errorStr;
+}
+
+function getMessagesToAdd() {
+  // If a message with ids key exists in grdpPath
+  function messageExists(ids, grdpPath) {
+    const messages = IDSkeys.get(ids);
+    return messages.some(message => message.grdpPath === grdpPath);
+  }
+
   const difference = [];
-  for (const [key, value] of comparison) {
-    if (!reference.has(key))
-      difference.push([key, value]);
+  for (const [ids, frontendString] of frontendStrings) {
+    if (!IDSkeys.has(ids) || !messageExists(ids, frontendString.grdpPath))
+      difference.push([ids, frontendString]);
   }
   return new Map(difference.sort());
 }
 
+// Return a map from the expected IDS key to a list of messages
+// whose actual IDS keys need to be modified.
+function getIDSKeysToModify() {
+  const messagesToModify = new Map();
+  for (const [expectedIDSKey, messages] of IDSkeys) {
+    for (const message of messages) {
+      if (expectedIDSKey !== message.actualIDSKey) {
+        if (messagesToModify.has(expectedIDSKey))
+          messagesToModify.get(expectedIDSKey).push(message);
+        else
+          messagesToModify.set(expectedIDSKey, [message]);
+      }
+    }
+  }
+  return messagesToModify;
+}
+
+function getMessagesToRemove() {
+  const difference = new Map();
+  for (const [ids, messages] of IDSkeys) {
+    if (!frontendStrings.has(ids)) {
+      difference.set(ids, messages);
+      continue;
+    }
+
+    const expectedGrdpPath = frontendStrings.get(ids).grdpPath;
+    const messagesInGrdp = [];
+    const messagesToRemove = [];
+    messages.forEach(message => {
+      if (message.grdpPath !== expectedGrdpPath)
+        messagesToRemove.push(message);
+      else
+        messagesInGrdp.push(message);
+    });
+
+    if (messagesToRemove.length === 0 && messagesInGrdp.length === 1)
+      continue;
+
+    if (messagesInGrdp.length > 1) {
+      // If there are more than one messages with ids in the
+      // expected grdp file, keep one with the longest
+      // description and delete all the other messages
+      const longestDescription = getLongestDescription(messagesInGrdp);
+      let foundMessageToKeep = false;
+      for (const message of messagesInGrdp) {
+        if (message.description === longestDescription && !foundMessageToKeep) {
+          foundMessageToKeep = true;
+          continue;
+        }
+        messagesToRemove.push(message);
+      }
+    }
+    difference.set(ids, messagesToRemove);
+  }
+  return difference;
+}
+
+function getLongestDescription(messages) {
+  let longestDescription = '';
+  messages.forEach(message => {
+    if (message.description.length > longestDescription.length)
+      longestDescription = message.description;
+  });
+  return longestDescription;
+}
+
 module.exports = {
+  frontendStrings,
+  IDSkeys,
   parseLocalizableResourceMaps,
+  getAndReportIDSKeysToModify,
   getAndReportResourcesToAdd,
   getAndReportResourcesToRemove,
-  getDifference
+  getIDSKeysToModify,
+  getLongestDescription,
+  getMessagesToAdd,
+  getMessagesToRemove,
 };

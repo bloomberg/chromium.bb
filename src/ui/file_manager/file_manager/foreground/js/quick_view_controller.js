@@ -20,11 +20,12 @@ class QuickViewController {
    * @param {!MetadataBoxController} metadataBoxController
    * @param {DialogType} dialogType
    * @param {!VolumeManager} volumeManager
+   * @param {!HTMLElement} dialogDom
    */
   constructor(
       metadataModel, selectionHandler, listContainer, selectionMenuButton,
       quickViewModel, taskController, fileListSelectionModel, quickViewUma,
-      metadataBoxController, dialogType, volumeManager) {
+      metadataBoxController, dialogType, volumeManager, dialogDom) {
     /** @private {?FilesQuickView} */
     this.quickView_ = null;
 
@@ -69,6 +70,13 @@ class QuickViewController {
         this.onFileSelectionChanged_.bind(this));
     this.listContainer_.element.addEventListener(
         'keydown', this.onKeyDownToOpen_.bind(this));
+    dialogDom.addEventListener('command', event => {
+      // Selection menu command can be triggered with focus outside of file list
+      // or button e.g.: from the directory tree.
+      if (event.command.id === 'get-info') {
+        this.display_(QuickViewUma.WayToOpen.SELECTION_MENU);
+      }
+    });
     this.listContainer_.element.addEventListener('command', event => {
       if (event.command.id === 'get-info') {
         this.display_(QuickViewUma.WayToOpen.CONTEXT_MENU);
@@ -184,15 +192,14 @@ class QuickViewController {
   /**
    * Display quick view.
    *
-   * @param {QuickViewUma.WayToOpen=} opt_wayToOpen in which way opening of
-   *     quick view was triggered. Can be omitted if quick view is already open.
+   * @param {QuickViewUma.WayToOpen} wayToOpen The open quick view trigger.
    * @private
    */
-  display_(opt_wayToOpen) {
+  display_(wayToOpen) {
     this.updateQuickView_().then(() => {
       if (!this.quickView_.isOpened()) {
         this.quickView_.open();
-        this.quickViewUma_.onOpened(this.entries_[0], assert(opt_wayToOpen));
+        this.quickViewUma_.onOpened(this.entries_[0], wayToOpen);
       }
     });
   }
@@ -208,11 +215,9 @@ class QuickViewController {
     if (this.quickView_ && this.quickView_.isOpened()) {
       assert(this.entries_.length > 0);
       const entry = this.entries_[0];
-      if (util.isSameEntry(entry, this.quickViewModel_.getSelectedEntry())) {
-        return;
+      if (!util.isSameEntry(entry, this.quickViewModel_.getSelectedEntry())) {
+        this.updateQuickView_();
       }
-      this.quickViewModel_.setSelectedEntry(entry);
-      this.display_();
     }
   }
 
@@ -240,14 +245,16 @@ class QuickViewController {
           .then(this.updateQuickView_.bind(this))
           .catch(console.error);
     }
-    assert(this.entries_.length > 0);
-    // TODO(oka): Support multi-selection.
-    this.quickViewModel_.setSelectedEntry(this.entries_[0]);
 
-    const entry =
-        (/** @type {!FileEntry} */ (this.quickViewModel_.getSelectedEntry()));
-    assert(entry);
-    this.quickViewUma_.onEntryChanged(entry);
+    // TODO(oka): Support multi-selection.
+    assert(this.entries_.length > 0);
+    const entry = this.entries_[0];
+    this.quickViewModel_.setSelectedEntry(entry);
+
+    requestIdleCallback(() => {
+      this.quickViewUma_.onEntryChanged(entry);
+    });
+
     return Promise
         .all([
           this.metadataModel_.get([entry], ['thumbnailUrl']),
@@ -264,7 +271,10 @@ class QuickViewController {
   }
 
   /**
-   * Update quick view using file entry and loaded metadata and tasks.
+   * Update quick view for |entry| from its loaded metadata and tasks.
+   *
+   * Note: fast-typing users can change the active selection while the |entry|
+   * metadata and tasks were being async fetched. Bail out in that case.
    *
    * @param {!FileEntry} entry
    * @param {Array<MetadataItem>} items
@@ -273,6 +283,10 @@ class QuickViewController {
    */
   onMetadataLoaded_(entry, items, tasks) {
     return this.getQuickViewParameters_(entry, items, tasks).then(params => {
+      if (this.quickViewModel_.getSelectedEntry() != entry) {
+        return;  // Bail: there's no point drawing a stale selection.
+      }
+
       this.quickView_.type = params.type || '';
       this.quickView_.subtype = params.subtype || '';
       this.quickView_.filePath = params.filePath || '';
@@ -297,12 +311,14 @@ class QuickViewController {
     const item = items[0];
     const typeInfo = FileType.getType(entry);
     const type = typeInfo.type;
+    const locationInfo = this.volumeManager_.getLocationInfo(entry);
+    const label = util.getEntryLabel(locationInfo, entry);
 
     /** @type {!QuickViewParams} */
     const params = {
       type: type,
       subtype: typeInfo.subtype,
-      filePath: entry.name,
+      filePath: label,
       hasTask: tasks.length > 0,
     };
 
@@ -312,10 +328,10 @@ class QuickViewController {
             volumeInfo.volumeType) >= 0;
 
     if (!localFile) {
-      // For Drive files, display a thumbnail if there is one.
+      // Drive files: fetch their thumbnail if there is one.
       if (item.thumbnailUrl) {
         return this.loadThumbnailFromDrive_(item.thumbnailUrl).then(result => {
-          if (result.status === 'success') {
+          if (result.status === LoadImageResponseStatus.SUCCESS) {
             if (params.type == 'video') {
               params.videoPoster = result.data;
             } else if (params.type == 'image') {
@@ -335,9 +351,26 @@ class QuickViewController {
       return Promise.resolve(params);
     }
 
+    if (type === 'raw') {
+      // RAW files: fetch their ImageLoader thumbnail.
+      return this.loadRawFileThumbnailFromImageLoader_(entry)
+          .then(result => {
+            if (result.status === LoadImageResponseStatus.SUCCESS) {
+              params.contentUrl = result.data;
+              params.type = 'image';
+            }
+            return params;
+          })
+          .catch(e => {
+            console.error(e);
+            return params;
+          });
+    }
+
     if (type === '.folder') {
       return Promise.resolve(params);
     }
+
     return new Promise((resolve, reject) => {
              entry.file(resolve, reject);
            })
@@ -398,14 +431,37 @@ class QuickViewController {
    * Loads a thumbnail from Drive.
    *
    * @param {string} url Thumbnail url
-   * @return Promise<{{status: string, data:string, width:number,
-   *     height:number}}>
+   * @return Promise<!LoadImageResponse>
    * @private
    */
   loadThumbnailFromDrive_(url) {
     return new Promise(resolve => {
       ImageLoaderClient.getInstance().load(
           LoadImageRequest.createForUrl(url), resolve);
+    });
+  }
+
+  /**
+   * Loads a RAW image thumbnail from ImageLoader. Resolve the file entry first
+   * to get its |lastModified| time. ImageLoaderClient uses that to work out if
+   * its cached data for |entry| is up-to-date or otherwise call ImageLoader to
+   * refresh the cached |entry| data with the most recent data.
+   *
+   * @param {!Entry} entry The RAW file entry.
+   * @return Promise<!LoadImageResponse>
+   * @private
+   */
+  loadRawFileThumbnailFromImageLoader_(entry) {
+    return new Promise((resolve, reject) => {
+      entry.file(function requestFileThumbnail(file) {
+        const request = LoadImageRequest.createForUrl(entry.toURL());
+        request.maxWidth = ThumbnailLoader.THUMBNAIL_MAX_WIDTH;
+        request.maxHeight = ThumbnailLoader.THUMBNAIL_MAX_HEIGHT;
+        request.timestamp = file.lastModified;
+        request.cache = true;
+        request.priority = 0;
+        ImageLoaderClient.getInstance().load(request, resolve);
+      }, reject);
     });
   }
 }

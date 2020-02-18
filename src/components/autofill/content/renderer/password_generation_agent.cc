@@ -50,41 +50,6 @@ namespace {
 using autofill::form_util::GetTextDirectionForElement;
 using Logger = autofill::SavePasswordProgressLogger;
 
-// Returns pairs of |PasswordForm| and corresponding |WebFormElement| for all
-// <form>s in the frame and for unowned <input>s. The method doesn't filter out
-// invalid |PasswordForm|s.
-std::vector<std::pair<std::unique_ptr<PasswordForm>, WebFormElement>>
-GetAllPasswordFormsInFrame(PasswordAutofillAgent* password_agent,
-                           WebLocalFrame* web_frame) {
-  blink::WebVector<WebFormElement> web_forms;
-  web_frame->GetDocument().Forms(web_forms);
-  std::vector<std::pair<std::unique_ptr<PasswordForm>, WebFormElement>>
-      all_forms;
-  for (const WebFormElement& web_form : web_forms) {
-    all_forms.emplace_back(std::make_pair(
-        password_agent->GetPasswordFormFromWebForm(web_form), web_form));
-  }
-  all_forms.emplace_back(
-      std::make_pair(password_agent->GetPasswordFormFromUnownedInputElements(),
-                     WebFormElement()));
-  return all_forms;
-}
-
-// Returns true if we think that this form is for account creation. Password
-// field(s) of the form are pushed back to |passwords|.
-bool GetAccountCreationPasswordFields(
-    const std::vector<WebFormControlElement>& control_elements,
-    std::vector<WebInputElement>* passwords) {
-  for (const auto& control_element : control_elements) {
-    const WebInputElement* input_element = ToWebInputElement(&control_element);
-    if (input_element && input_element->IsTextField() &&
-        input_element->IsPasswordFieldForAutofill()) {
-      passwords->push_back(*input_element);
-    }
-  }
-  return !passwords->empty();
-}
-
 // Returns the renderer id of the next password field in |control_elements|
 // after |new_password|. This field is likely to be the confirmation field.
 // Returns FormFieldData::kNotSetFormControlRendererId if there is no such
@@ -107,81 +72,6 @@ uint32_t FindConfirmationPasswordFieldId(
   return FormFieldData::kNotSetFormControlRendererId;
 }
 
-bool ContainsURL(const std::vector<GURL>& urls, const GURL& url) {
-  return base::ContainsValue(urls, url);
-}
-
-// Calculates the signature of |form| and searches it in |forms|.
-const PasswordFormGenerationData* FindFormGenerationData(
-    const std::vector<PasswordFormGenerationData>& forms,
-    const PasswordForm& form) {
-  FormSignature form_signature = CalculateFormSignature(form.form_data);
-  for (const auto& form_it : forms) {
-    if (form_it.form_signature == form_signature)
-      return &form_it;
-  }
-  return nullptr;
-}
-
-// Returns a vector of up to 2 password fields with autocomplete attribute set
-// to "new-password". These will be filled with the generated password.
-std::vector<WebInputElement> FindNewPasswordElementsMarkedBySite(
-    const std::vector<WebInputElement>& all_password_elements) {
-  std::vector<WebInputElement> passwords;
-
-  auto is_new_password_field = [](const WebInputElement& element) {
-    return AutocompleteFlagForElement(element) ==
-           AutocompleteFlag::NEW_PASSWORD;
-  };
-
-  auto field_iter =
-      std::find_if(all_password_elements.begin(), all_password_elements.end(),
-                   is_new_password_field);
-  if (field_iter != all_password_elements.end()) {
-    passwords.push_back(*field_iter++);
-    field_iter = std::find_if(field_iter, all_password_elements.end(),
-                              is_new_password_field);
-    if (field_iter != all_password_elements.end())
-      passwords.push_back(*field_iter);
-  }
-
-  return passwords;
-}
-
-// Returns a vector of up to 2 password fields into which Chrome should fill the
-// generated password. It assumes that |field_signature| describes the field
-// where Chrome shows the password generation prompt.
-std::vector<WebInputElement> FindPasswordElementsForGeneration(
-    const std::vector<WebInputElement>& all_password_elements,
-    const PasswordFormGenerationData& generation_data) {
-  auto generation_field_iter = all_password_elements.end();
-  auto confirmation_field_iter = all_password_elements.end();
-  for (auto iter = all_password_elements.begin();
-       iter != all_password_elements.end(); ++iter) {
-    const WebInputElement& input = *iter;
-    FieldSignature signature = CalculateFieldSignatureByNameAndType(
-        input.NameForAutofill().Utf16(),
-        input.FormControlTypeForAutofill().Utf8());
-    if (signature == generation_data.field_signature) {
-      generation_field_iter = iter;
-    } else if (generation_data.confirmation_field_signature &&
-               signature == *generation_data.confirmation_field_signature) {
-      confirmation_field_iter = iter;
-    }
-  }
-
-  std::vector<WebInputElement> passwords;
-  if (generation_field_iter != all_password_elements.end()) {
-    passwords.push_back(*generation_field_iter);
-
-    if (confirmation_field_iter == all_password_elements.end())
-      confirmation_field_iter = generation_field_iter + 1;
-    if (confirmation_field_iter != all_password_elements.end())
-      passwords.push_back(*confirmation_field_iter);
-  }
-  return passwords;
-}
-
 void CopyElementValueToOtherInputElements(
     const WebInputElement* element,
     std::vector<WebInputElement>* elements) {
@@ -195,32 +85,10 @@ void CopyElementValueToOtherInputElements(
 
 }  // namespace
 
-// Contains information about a form for which generation is possible.
-struct PasswordGenerationAgent::AccountCreationFormData {
-  PasswordForm form;
-  std::vector<blink::WebInputElement> password_elements;
-
-  AccountCreationFormData(PasswordForm password_form,
-                          std::vector<blink::WebInputElement> passwords)
-      : form(std::move(password_form)),
-        password_elements(std::move(passwords)) {}
-  AccountCreationFormData(AccountCreationFormData&& rhs) = default;
-
-  ~AccountCreationFormData() = default;
-
-  DISALLOW_COPY_AND_ASSIGN(AccountCreationFormData);
-};
-
 // Contains information about generation status for an element for the
 // lifetime of the possible interaction.
 struct PasswordGenerationAgent::GenerationItemInfo {
-  GenerationItemInfo(const AccountCreationFormData& creation_form_data,
-                     const blink::WebInputElement& generation_element)
-      : generation_element_(generation_element) {
-    form_ = creation_form_data.form;
-    password_elements_ = creation_form_data.password_elements;
-  }
-  GenerationItemInfo(blink::WebInputElement generation_element,
+  GenerationItemInfo(WebInputElement generation_element,
                      PasswordForm form,
                      std::vector<blink::WebInputElement> password_elements)
       : generation_element_(std::move(generation_element)),
@@ -279,19 +147,19 @@ PasswordGenerationAgent::PasswordGenerationAgent(
       mark_generation_element_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kShowAutofillSignatures)),
-      password_agent_(password_agent),
-      binding_(this) {
+      password_agent_(password_agent) {
   LogBoolean(Logger::STRING_GENERATION_RENDERER_ENABLED, enabled_);
   registry->AddInterface(base::BindRepeating(
-      &PasswordGenerationAgent::BindRequest, base::Unretained(this)));
+      &PasswordGenerationAgent::BindPendingReceiver, base::Unretained(this)));
   password_agent_->SetPasswordGenerationAgent(this);
 }
 
 PasswordGenerationAgent::~PasswordGenerationAgent() = default;
 
-void PasswordGenerationAgent::BindRequest(
-    mojom::PasswordGenerationAgentAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+void PasswordGenerationAgent::BindPendingReceiver(
+    mojo::PendingAssociatedReceiver<mojom::PasswordGenerationAgent>
+        pending_receiver) {
+  receiver_.Bind(std::move(pending_receiver));
 }
 
 void PasswordGenerationAgent::DidCommitProvisionalLoad(
@@ -301,15 +169,6 @@ void PasswordGenerationAgent::DidCommitProvisionalLoad(
     return;
   // Update stats for main frame navigation.
   if (!render_frame()->GetWebFrame()->Parent()) {
-    // Log statistics after navigation so that we only log once per page.
-    if (automatic_generation_form_data_ &&
-        !automatic_generation_form_data_->password_elements.empty()) {
-      password_generation::LogPasswordGenerationEvent(
-          password_generation::SIGN_UP_DETECTED);
-    } else {
-      password_generation::LogPasswordGenerationEvent(
-          password_generation::NO_SIGN_UP_DETECTED);
-    }
     if (current_generation_item_) {
       if (current_generation_item_->password_edited_) {
         password_generation::LogPasswordGenerationEvent(
@@ -325,11 +184,6 @@ void PasswordGenerationAgent::DidCommitProvisionalLoad(
       }
     }
   }
-  possible_account_creation_forms_.clear();
-  not_blacklisted_password_form_origins_.clear();
-  generation_enabled_forms_.clear();
-  automatic_generation_form_data_.reset();
-  automatic_generation_element_.Reset();
   current_generation_item_.reset();
   last_focused_password_element_.Reset();
   generation_enabled_fields_.clear();
@@ -341,24 +195,9 @@ void PasswordGenerationAgent::DidChangeScrollOffset() {
   GetPasswordGenerationDriver()->FrameWasScrolled();
 }
 
-void PasswordGenerationAgent::DidFinishDocumentLoad() {
-  FindPossibleGenerationForm();
-}
-
-void PasswordGenerationAgent::DidFinishLoad() {
-  // Since forms on some sites are available only at this event (but not at
-  // DidFinishDocumentLoad), again call FindPossibleGenerationForm to detect
-  // these forms (crbug.com/617893).
-  FindPossibleGenerationForm();
-}
-
 void PasswordGenerationAgent::OnDestruct() {
-  binding_.Close();
+  receiver_.reset();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
-}
-
-void PasswordGenerationAgent::OnDynamicFormsSeen() {
-  FindPossibleGenerationForm();
 }
 
 void PasswordGenerationAgent::OnFieldAutofilled(
@@ -377,75 +216,6 @@ void PasswordGenerationAgent::OnFieldAutofilled(
 bool PasswordGenerationAgent::ShouldIgnoreBlur() const {
   return current_generation_item_ &&
          current_generation_item_->updating_other_password_fileds_;
-}
-
-void PasswordGenerationAgent::FindPossibleGenerationForm() {
-  if (!enabled_ || !render_frame())
-    return;
-
-  // We don't want to generate passwords if the browser won't store or sync
-  // them.
-  if (!ShouldAnalyzeDocument())
-    return;
-
-  // If we have already found a signup form for this page, no need to continue.
-  if (automatic_generation_form_data_)
-    return;
-
-  WebLocalFrame* web_frame = render_frame()->GetWebFrame();
-  std::vector<std::pair<std::unique_ptr<PasswordForm>, WebFormElement>>
-      all_password_forms =
-          GetAllPasswordFormsInFrame(password_agent_, web_frame);
-  for (auto& form : all_password_forms) {
-    PasswordForm* password_form = form.first.get();
-    // If we can't get a valid PasswordForm, we skip this form because the
-    // the password won't get saved even if we generate it.
-    if (!password_form) {
-      LogMessage(Logger::STRING_GENERATION_RENDERER_INVALID_PASSWORD_FORM);
-      continue;
-    }
-
-    // Do not generate password for GAIA since it is used to retrieve the
-    // generated paswords.
-    GURL realm(password_form->signon_realm);
-    if (realm == GaiaUrls::GetInstance()->gaia_login_form_realm())
-      continue;
-
-    std::vector<WebInputElement> passwords;
-    const WebFormElement& web_form = form.second;
-    if (GetAccountCreationPasswordFields(
-            web_form.IsNull()
-                ? form_util::GetUnownedFormFieldElements(
-                      web_frame->GetDocument().All(), nullptr)
-                : form_util::ExtractAutofillableElementsInForm(web_form),
-            &passwords)) {
-      possible_account_creation_forms_.emplace_back(std::move(*form.first),
-                                                    std::move(passwords));
-    }
-  }
-
-  if (!possible_account_creation_forms_.empty()) {
-    LogNumber(
-        Logger::STRING_GENERATION_RENDERER_POSSIBLE_ACCOUNT_CREATION_FORMS,
-        possible_account_creation_forms_.size());
-    DetermineGenerationElement();
-  }
-}
-
-bool PasswordGenerationAgent::ShouldAnalyzeDocument() {
-  // Make sure that this frame is allowed to use password manager. Generating a
-  // password that can't be saved is a bad idea.
-  if (!render_frame() || !password_agent_->FrameCanAccessPasswordManager()) {
-    LogMessage(Logger::STRING_GENERATION_RENDERER_NO_PASSWORD_MANAGER_ACCESS);
-    return false;
-  }
-
-  return true;
-}
-
-void PasswordGenerationAgent::FormNotBlacklisted(const PasswordForm& form) {
-  not_blacklisted_password_form_origins_.push_back(form.origin);
-  DetermineGenerationElement();
 }
 
 void PasswordGenerationAgent::GeneratedPasswordAccepted(
@@ -512,15 +282,8 @@ PasswordGenerationAgent::CreatePasswordFormToPresave() {
   return password_form;
 }
 
-void PasswordGenerationAgent::FoundFormsEligibleForGeneration(
-    const std::vector<PasswordFormGenerationData>& forms) {
-  generation_enabled_forms_.insert(generation_enabled_forms_.end(),
-                                   forms.begin(), forms.end());
-  DetermineGenerationElement();
-}
-
 void PasswordGenerationAgent::FoundFormEligibleForGeneration(
-    const NewPasswordFormGenerationData& form) {
+    const PasswordFormGenerationData& form) {
   generation_enabled_fields_[form.new_password_renderer_id] = form;
 
   if (mark_generation_element_) {
@@ -549,6 +312,8 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword(
             current_generation_item_->generation_element_.MaxLength(),
             current_generation_item_->generation_element_.NameForAutofill()
                 .Utf16(),
+            current_generation_item_->generation_element_
+                .UniqueRendererFormControlId(),
             GetTextDirectionForElement(
                 current_generation_item_->generation_element_),
             current_generation_item_->form_);
@@ -559,80 +324,6 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword(
   }
 }
 
-void PasswordGenerationAgent::DetermineGenerationElement() {
-  if (automatic_generation_form_data_) {
-    LogMessage(Logger::STRING_GENERATION_RENDERER_FORM_ALREADY_FOUND);
-    return;
-  }
-
-  // Make sure local heuristics have identified a possible account creation
-  // form.
-  if (possible_account_creation_forms_.empty()) {
-    LogMessage(Logger::STRING_GENERATION_RENDERER_NO_POSSIBLE_CREATION_FORMS);
-    return;
-  }
-
-  // Note that no messages will be sent if this feature is disabled
-  // (e.g. password saving is disabled).
-  for (auto& possible_form_data : possible_account_creation_forms_) {
-    PasswordForm* possible_password_form = &possible_form_data.form;
-    std::vector<WebInputElement> password_elements;
-    if (!ContainsURL(not_blacklisted_password_form_origins_,
-                     possible_password_form->origin)) {
-      LogMessage(Logger::STRING_GENERATION_RENDERER_NOT_BLACKLISTED);
-      continue;
-    } else {
-      const PasswordFormGenerationData* generation_data =
-          FindFormGenerationData(generation_enabled_forms_,
-                                 *possible_password_form);
-      if (generation_data) {
-        password_elements = FindPasswordElementsForGeneration(
-            possible_form_data.password_elements, *generation_data);
-      } else {
-        if (!possible_password_form->new_password_marked_by_site) {
-          LogMessage(Logger::STRING_GENERATION_RENDERER_NO_SERVER_SIGNAL);
-          continue;
-        }
-
-        LogMessage(Logger::STRING_GENERATION_RENDERER_AUTOCOMPLETE_ATTRIBUTE);
-        password_generation::LogPasswordGenerationEvent(
-            password_generation::AUTOCOMPLETE_ATTRIBUTES_ENABLED_GENERATION);
-
-        password_elements = FindNewPasswordElementsMarkedBySite(
-            possible_form_data.password_elements);
-      }
-    }
-
-    LogMessage(Logger::STRING_GENERATION_RENDERER_ELIGIBLE_FORM_FOUND);
-    if (password_elements.empty()) {
-      // It might be if JavaScript changes field names.
-      LogMessage(Logger::STRING_GENERATION_RENDERER_NO_FIELD_FOUND);
-      return;
-    }
-
-    automatic_generation_form_data_.reset(new AccountCreationFormData(
-        possible_form_data.form, std::move(password_elements)));
-    automatic_generation_element_ =
-        automatic_generation_form_data_->password_elements[0];
-    if (mark_generation_element_)
-      automatic_generation_element_.SetAttribute("password_creation_field",
-                                                 "1");
-    automatic_generation_element_.SetAttribute("aria-autocomplete", "list");
-    password_generation::LogPasswordGenerationEvent(
-        password_generation::GENERATION_AVAILABLE);
-    possible_account_creation_forms_.clear();
-    if (!current_generation_item_) {
-      // If the manual generation hasn't started, set
-      // |automatic_generation_element_| as the current generation field.
-      current_generation_item_.reset(new GenerationItemInfo(
-          *automatic_generation_form_data_, automatic_generation_element_));
-    }
-    GetPasswordGenerationDriver()->GenerationAvailableForForm(
-        automatic_generation_form_data_->form);
-    return;
-  }
-}
-
 bool PasswordGenerationAgent::SetUpUserTriggeredGeneration() {
   if (last_focused_password_element_.IsNull() || !render_frame())
     return false;
@@ -640,7 +331,7 @@ bool PasswordGenerationAgent::SetUpUserTriggeredGeneration() {
   uint32_t last_focused_password_element_id =
       last_focused_password_element_.UniqueRendererFormControlId();
 
-  bool is_automatic_generation_available = base::ContainsKey(
+  bool is_automatic_generation_available = base::Contains(
       generation_enabled_fields_, last_focused_password_element_id);
 
   if (!is_automatic_generation_available) {
@@ -676,19 +367,8 @@ bool PasswordGenerationAgent::SetUpUserTriggeredGeneration() {
     return false;
   }
 
-  // Automatic generation depends on whether the new parser is on because the
-  // new parser sends now information to the renderer about fields for
-  // generation. In case when the new old parser is used the old path for
-  // automatic generation is used. So detecting which automatic generation
-  // depends on which parser is used.
-  // TODO(https://crbug.com/831123): Remove this variable when the old parser is
-  // gone.
-  bool automatic_generation_available_with_the_old_parser =
-      last_focused_password_element_ == automatic_generation_element_;
-
   current_generation_item_->is_manually_triggered_ =
-      !is_automatic_generation_available &&
-      !automatic_generation_available_with_the_old_parser;
+      !is_automatic_generation_available;
   return true;
 }
 
@@ -837,6 +517,8 @@ void PasswordGenerationAgent::AutomaticGenerationAvailable() {
           current_generation_item_->generation_element_.MaxLength(),
           current_generation_item_->generation_element_.NameForAutofill()
               .Utf16(),
+          current_generation_item_->generation_element_
+              .UniqueRendererFormControlId(),
           GetTextDirectionForElement(
               current_generation_item_->generation_element_),
           current_generation_item_->form_);
@@ -851,7 +533,9 @@ void PasswordGenerationAgent::ShowEditingPopup() {
   GetPasswordGenerationDriver()->ShowPasswordEditingPopup(
       render_frame()->GetRenderView()->ElementBoundsInWindow(
           current_generation_item_->generation_element_),
-      *CreatePasswordFormToPresave());
+      *CreatePasswordFormToPresave(),
+      current_generation_item_->generation_element_
+          .UniqueRendererFormControlId());
   current_generation_item_->editing_popup_shown_ = true;
 }
 
@@ -919,13 +603,13 @@ void PasswordGenerationAgent::MaybeCreateCurrentGenerationItem(
   element.SetAttribute("aria-autocomplete", "list");
 }
 
-const mojom::PasswordManagerDriverAssociatedPtr&
+const mojo::AssociatedRemote<mojom::PasswordManagerDriver>&
 PasswordGenerationAgent::GetPasswordManagerDriver() {
   DCHECK(password_agent_);
   return password_agent_->GetPasswordManagerDriver();
 }
 
-const mojom::PasswordGenerationDriverAssociatedPtr&
+const mojo::AssociatedRemote<mojom::PasswordGenerationDriver>&
 PasswordGenerationAgent::GetPasswordGenerationDriver() {
   if (!password_generation_client_) {
     render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
@@ -948,14 +632,6 @@ void PasswordGenerationAgent::LogBoolean(Logger::StringID message_id,
     return;
   RendererSavePasswordProgressLogger logger(GetPasswordManagerDriver().get());
   logger.LogBoolean(message_id, truth_value);
-}
-
-void PasswordGenerationAgent::LogNumber(Logger::StringID message_id,
-                                        int number) {
-  if (!password_agent_->logging_state_active())
-    return;
-  RendererSavePasswordProgressLogger logger(GetPasswordManagerDriver().get());
-  logger.LogNumber(message_id, number);
 }
 
 }  // namespace autofill

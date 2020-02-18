@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.browserservices;
 
 import android.net.Uri;
 
-import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.util.UrlConstants;
 
 /**
  * A class to canonically represent a web origin in Java. In comparison to

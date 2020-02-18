@@ -11,8 +11,10 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "base/token.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/sessions_export.h"
@@ -64,6 +66,9 @@ struct SESSIONS_EXPORT SessionTab {
   // only valid url's being stored (ie chrome://newtab is not stored). Bounds
   // checking must be performed before indexing into |navigations|.
   int current_navigation_index;
+
+  // The tab's group ID, if any.
+  base::Optional<base::Token> group;
 
   // True if the tab is pinned.
   bool pinned;

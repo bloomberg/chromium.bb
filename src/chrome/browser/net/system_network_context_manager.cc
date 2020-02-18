@@ -22,7 +22,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
@@ -57,10 +56,10 @@
 #include "net/third_party/uri_template/uri_template.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -74,7 +73,6 @@
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/common/chrome_paths_internal.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -83,17 +81,6 @@ namespace {
 
 // The global instance of the SystemNetworkContextmanager.
 SystemNetworkContextManager* g_system_network_context_manager = nullptr;
-
-// Called on IOThread to disable QUIC for HttpNetworkSessions not using the
-// network service. Note that re-enabling QUIC dynamically is not supported for
-// simpliciy and requires a browser restart.
-void DisableQuicOnIOThread(IOThread* io_thread) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    content::GetNetworkServiceImpl()->DisableQuic();
-  io_thread->DisableQuic();
-}
 
 void GetStubResolverConfig(
     PrefService* local_state,
@@ -293,12 +280,6 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
 };
 
 network::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // SetUp should already have been called.
-    DCHECK(io_thread_network_context_);
-    return io_thread_network_context_.get();
-  }
-
   if (!network_service_network_context_ ||
       network_service_network_context_.encountered_error()) {
     // This should call into OnNetworkServiceCreated(), which will re-create
@@ -334,26 +315,6 @@ SystemNetworkContextManager::GetSharedURLLoaderFactory() {
   return shared_url_loader_factory_;
 }
 
-void SystemNetworkContextManager::SetUp(
-    network::mojom::NetworkContextRequest* network_context_request,
-    network::mojom::NetworkContextParamsPtr* network_context_params,
-    bool* stub_resolver_enabled,
-    base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
-        dns_over_https_servers,
-    network::mojom::HttpAuthStaticParamsPtr* http_auth_static_params,
-    network::mojom::HttpAuthDynamicParamsPtr* http_auth_dynamic_params,
-    bool* is_quic_allowed) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    *network_context_request = mojo::MakeRequest(&io_thread_network_context_);
-    *network_context_params = CreateNetworkContextParams();
-  }
-  *is_quic_allowed = is_quic_allowed_;
-  *http_auth_static_params = CreateHttpAuthStaticParams(local_state_);
-  *http_auth_dynamic_params = CreateHttpAuthDynamicParams(local_state_);
-  GetStubResolverConfig(local_state_, stub_resolver_enabled,
-                        dns_over_https_servers);
-}
-
 // static
 SystemNetworkContextManager* SystemNetworkContextManager::CreateInstance(
     PrefService* pref_service) {
@@ -364,7 +325,23 @@ SystemNetworkContextManager* SystemNetworkContextManager::CreateInstance(
 }
 
 // static
+bool SystemNetworkContextManager::HasInstance() {
+  return !!g_system_network_context_manager;
+}
+
+// static
 SystemNetworkContextManager* SystemNetworkContextManager::GetInstance() {
+  if (!g_system_network_context_manager) {
+    // Initialize the network service, which will trigger
+    // ChromeContentBrowserClient::OnNetworkServiceCreated(), which calls
+    // CreateInstance() to initialize |g_system_network_context_manager|.
+    content::GetNetworkService();
+
+    // TODO(crbug.com/981057): There should be a DCHECK() here to make sure
+    // |g_system_network_context_manager| has been created, but that is not
+    // true in many unit tests.
+  }
+
   return g_system_network_context_manager;
 }
 
@@ -372,6 +349,7 @@ SystemNetworkContextManager* SystemNetworkContextManager::GetInstance() {
 void SystemNetworkContextManager::DeleteInstance() {
   DCHECK(g_system_network_context_manager);
   delete g_system_network_context_manager;
+  g_system_network_context_manager = nullptr;
 }
 
 SystemNetworkContextManager::SystemNetworkContextManager(
@@ -513,8 +491,6 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
 
 void SystemNetworkContextManager::OnNetworkServiceCreated(
     network::mojom::NetworkService* network_service) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
   // Disable QUIC globally, if needed.
   if (!is_quic_allowed_)
     network_service->DisableQuic();
@@ -613,18 +589,9 @@ void SystemNetworkContextManager::DisableQuic() {
   is_quic_allowed_ = false;
 
   // Disabling QUIC for a profile disables QUIC globally. As a side effect, new
-  // Profiles will also have QUIC disabled (because both IOThread's
-  // NetworkService and the network service, if enabled will disable QUIC).
-
+  // Profiles will also have QUIC disabled because the network service will
+  // disable QUIC.
   content::GetNetworkService()->DisableQuic();
-
-  IOThread* io_thread = g_browser_process->io_thread();
-  // Nothing more to do if IOThread has already been shut down.
-  if (!io_thread)
-    return;
-
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce(&DisableQuicOnIOThread, io_thread));
 }
 
 void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(
@@ -648,18 +615,24 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
   // respect prefs::kEnableReferrers from the appropriate pref store.
   network_context_params->enable_referrers = false;
 
-  std::string quic_user_agent_id = chrome::GetChannelName();
-  if (!quic_user_agent_id.empty())
-    quic_user_agent_id.push_back(' ');
-  quic_user_agent_id.append(
-      version_info::GetProductNameAndVersionForUserAgent());
-  quic_user_agent_id.push_back(' ');
-  quic_user_agent_id.append(
-      content::BuildOSCpuInfo(false /* include_android_build_number */));
-  network_context_params->quic_user_agent_id = quic_user_agent_id;
-
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+
+  std::string quic_user_agent_id;
+
+  if (base::FeatureList::IsEnabled(blink::features::kFreezeUserAgent)) {
+    quic_user_agent_id = "";
+  } else {
+    quic_user_agent_id = chrome::GetChannelName();
+    if (!quic_user_agent_id.empty())
+      quic_user_agent_id.push_back(' ');
+    quic_user_agent_id.append(
+        version_info::GetProductNameAndVersionForUserAgent());
+    quic_user_agent_id.push_back(' ');
+    quic_user_agent_id.append(
+        content::BuildOSCpuInfo(false /* include_android_build_number */));
+  }
+  network_context_params->quic_user_agent_id = quic_user_agent_id;
 
   // TODO(eroman): Figure out why this doesn't work in single-process mode,
   // or if it does work, now.
@@ -670,8 +643,7 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
       LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
     } else {
       network_context_params->proxy_resolver_factory =
-          ChromeMojoProxyResolverFactory::CreateWithStrongBinding()
-              .PassInterface();
+          ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver();
     }
   }
 
@@ -727,13 +699,8 @@ void SystemNetworkContextManager::FlushProxyConfigMonitorForTesting() {
 }
 
 void SystemNetworkContextManager::FlushNetworkInterfaceForTesting() {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    DCHECK(io_thread_network_context_);
-    io_thread_network_context_.FlushForTesting();
-  } else {
-    DCHECK(network_service_network_context_);
-    network_service_network_context_.FlushForTesting();
-  }
+  DCHECK(network_service_network_context_);
+  network_service_network_context_.FlushForTesting();
   if (url_loader_factory_)
     url_loader_factory_.FlushForTesting();
 }

@@ -139,6 +139,7 @@ void XRCompositorCommon::CleanUp() {
   frame_data_binding_.Close();
   gamepad_provider_.Close();
   overlay_binding_.Close();
+  input_event_listener_ = nullptr;
   StopRuntime();
 }
 
@@ -156,6 +157,12 @@ void XRCompositorCommon::RequestOverlay(
   // WebXR is visible and overlay hidden by default until the overlay overrides
   // this.
   SetOverlayAndWebXRVisibility(false, true);
+}
+
+bool XRCompositorCommon::UsesInputEventing() {
+  // By default we don't use input eventing.  Any subclass that does will need
+  // to override this.
+  return false;
 }
 
 void XRCompositorCommon::UpdateLayerBounds(int16_t frame_id,
@@ -226,6 +233,7 @@ void XRCompositorCommon::RequestSession(
   auto session = device::mojom::XRSession::New();
   session->data_provider = frame_data_provider.PassInterface();
   session->submit_frame_sink = std::move(submit_frame_sink);
+  session->uses_input_eventing = UsesInputEventing();
 
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true, std::move(session)));
@@ -297,6 +305,8 @@ void XRCompositorCommon::StartPendingFrame() {
     pending_frame_->waiting_for_webxr_ = webxr_visible_;
     pending_frame_->waiting_for_overlay_ = overlay_visible_;
     pending_frame_->frame_data_ = GetNextFrameData();
+    // pending_frame_->frame_data_ should never be null
+    DCHECK(pending_frame_->frame_data_);
   }
 }
 
@@ -345,6 +355,12 @@ void XRCompositorCommon::GetFrameData(
   }
 }
 
+void XRCompositorCommon::SetInputSourceButtonListener(
+    mojom::XRInputSourceButtonListenerAssociatedPtrInfo input_listener_info) {
+  DCHECK(UsesInputEventing());
+  input_event_listener_.Bind(std::move(input_listener_info));
+}
+
 void XRCompositorCommon::GetControllerDataAndSendFrameData(
     XRFrameDataProvider::GetFrameDataCallback callback,
     mojom::XRFrameDataPtr frame_data) {
@@ -358,6 +374,14 @@ void XRCompositorCommon::GetControllerDataAndSendFrameData(
                                   (webxr_visible_ || on_webxr_submitted_)
                               ? std::move(frame_data)
                               : mojom::XRFrameData::New());
+}
+
+void XRCompositorCommon::GetEnvironmentIntegrationProvider(
+    device::mojom::XREnvironmentIntegrationProviderAssociatedRequest
+        environment_provider) {
+  // Environment integration is not supported. This call should not
+  // be made on this device.
+  mojo::ReportBadMessage("Environment integration is not supported.");
 }
 
 void XRCompositorCommon::SubmitOverlayTexture(
@@ -477,6 +501,9 @@ void XRCompositorCommon::MaybeCompositeAndSubmit() {
       pending_frame_->frame_ready_time_ = base::TimeTicks::Now();
       if (!SubmitCompositedFrame()) {
         ExitPresent();
+        // ExitPresent() clears pending_frame_, so return here to avoid
+        // accessing it below.
+        return;
       }
     }
   }

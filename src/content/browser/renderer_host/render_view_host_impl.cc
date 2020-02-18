@@ -219,7 +219,6 @@ RenderViewHostImpl::RenderViewHostImpl(
     bool swapped_out,
     bool has_initialized_audio_host)
     : render_widget_host_(std::move(widget)),
-      frames_ref_count_(0),
       delegate_(delegate),
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       is_swapped_out_(swapped_out),
@@ -228,8 +227,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       is_waiting_for_close_ack_(false),
       sudden_termination_allowed_(false),
       updating_web_preferences_(false),
-      has_notified_about_creation_(false),
-      weak_factory_(this) {
+      has_notified_about_creation_(false) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
   DCHECK_NE(GetRoutingID(), render_widget_host_->GetRoutingID());
@@ -297,6 +295,11 @@ RenderViewHostImpl::~RenderViewHostImpl() {
 
   delegate_->RenderViewDeleted(this);
   GetProcess()->RemoveObserver(this);
+
+  // This can be called inside the FrameTree destructor. When the delegate is
+  // the InterstialPageImpl, the |frame_tree| is set to null before deleting it.
+  if (FrameTree* frame_tree = GetDelegate()->GetFrameTree())
+    frame_tree->RenderViewHostDeleted(this);
 }
 
 RenderViewHostDelegate* RenderViewHostImpl::GetDelegate() {
@@ -325,18 +328,12 @@ bool RenderViewHostImpl::CreateRenderView(
     return false;
   DCHECK(GetProcess()->IsInitializedAndNotDead());
   DCHECK(GetProcess()->GetBrowserContext());
-  CHECK(main_frame_routing_id_ != MSG_ROUTING_NONE ||
-        proxy_route_id != MSG_ROUTING_NONE);
 
-  // We should not set both main_frame_routing_id_ and proxy_route_id.  Log
-  // cases that this happens (without crashing) to track down
-  // https://crbug.com/575245.
-  // TODO(creis): Remove this once we've found the cause.
-  if (main_frame_routing_id_ != MSG_ROUTING_NONE &&
-      proxy_route_id != MSG_ROUTING_NONE) {
-    NOTREACHED() << "Don't set both main_frame_routing_id_ and proxy_route_id";
-    base::debug::DumpWithoutCrashing();
-  }
+  // Exactly one of main_frame_routing_id_ or proxy_route_id should be set.
+  CHECK((main_frame_routing_id_ != MSG_ROUTING_NONE &&
+         proxy_route_id == MSG_ROUTING_NONE) ||
+        (main_frame_routing_id_ == MSG_ROUTING_NONE &&
+         proxy_route_id != MSG_ROUTING_NONE));
 
   RenderFrameHostImpl* main_rfh = nullptr;
   if (main_frame_routing_id_ != MSG_ROUTING_NONE) {
@@ -564,6 +561,9 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
 
   if (delegate_ && delegate_->IsSpatialNavigationDisabled())
     prefs.spatial_navigation_enabled = false;
+
+  prefs.caret_browsing_enabled =
+      command_line.HasSwitch(switches::kEnableCaretBrowsing);
 
   prefs.disable_reading_from_canvas = command_line.HasSwitch(
       switches::kDisableReadingFromCanvas);

@@ -35,8 +35,7 @@ DecryptingDemuxerStream::DecryptingDemuxerStream(
       waiting_cb_(waiting_cb),
       demuxer_stream_(NULL),
       decryptor_(NULL),
-      key_added_while_decrypt_pending_(false),
-      weak_factory_(this) {}
+      key_added_while_decrypt_pending_(false) {}
 
 std::string DecryptingDemuxerStream::GetDisplayName() const {
   return "DecryptingDemuxerStream";
@@ -87,6 +86,10 @@ void DecryptingDemuxerStream::Read(const ReadCB& read_cb) {
   state_ = kPendingDemuxerRead;
   demuxer_stream_->Read(
       base::Bind(&DecryptingDemuxerStream::DecryptBuffer, weak_this_));
+}
+
+bool DecryptingDemuxerStream::IsReadPending() const {
+  return !read_cb_.is_null();
 }
 
 void DecryptingDemuxerStream::Reset(const base::Closure& closure) {
@@ -258,7 +261,6 @@ void DecryptingDemuxerStream::DeliverBuffer(
   DVLOG(3) << __func__ << " - status: " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPendingDecrypt) << state_;
-  DCHECK_NE(status, Decryptor::kNeedMoreData);
   DCHECK(read_cb_);
   DCHECK(pending_buffer_to_decrypt_);
   CompletePendingDecrypt(status);
@@ -275,9 +277,10 @@ void DecryptingDemuxerStream::DeliverBuffer(
 
   DCHECK_EQ(status == Decryptor::kSuccess, decrypted_buffer.get() != NULL);
 
-  if (status == Decryptor::kError) {
-    DVLOG(2) << "DoDeliverBuffer() - kError";
-    MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": decrypt error";
+  if (status == Decryptor::kError || status == Decryptor::kNeedMoreData) {
+    DVLOG(2) << __func__ << ": Error with status " << status;
+    MEDIA_LOG(ERROR, media_log_)
+        << GetDisplayName() << ": decrypt error " << status;
     pending_buffer_to_decrypt_ = NULL;
     state_ = kIdle;
     std::move(read_cb_).Run(kError, nullptr);

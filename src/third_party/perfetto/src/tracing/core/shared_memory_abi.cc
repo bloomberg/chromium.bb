@@ -13,17 +13,17 @@
  * express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-#include "perfetto/tracing/core/shared_memory_abi.h"
+#include "perfetto/ext/tracing/core/shared_memory_abi.h"
 
 #include "perfetto/base/build_config.h"
-#include "perfetto/base/time.h"
+#include "perfetto/ext/base/time.h"
 
 #if !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
 #include <sys/mman.h>
 #endif
 
-#include "perfetto/base/utils.h"
-#include "perfetto/tracing/core/basic_types.h"
+#include "perfetto/ext/base/utils.h"
+#include "perfetto/ext/tracing/core/basic_types.h"
 
 namespace perfetto {
 
@@ -74,6 +74,7 @@ constexpr uint32_t SharedMemoryABI::kNumChunksForLayout[];
 constexpr const char* SharedMemoryABI::kChunkStateStr[];
 constexpr const size_t SharedMemoryABI::kInvalidPageIdx;
 constexpr const size_t SharedMemoryABI::kMaxPageSize;
+constexpr const size_t SharedMemoryABI::kPacketSizeDropPacket;
 
 SharedMemoryABI::SharedMemoryABI() = default;
 

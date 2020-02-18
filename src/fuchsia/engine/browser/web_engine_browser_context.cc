@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "fuchsia/engine/browser/web_engine_net_log.h"
+#include "fuchsia/engine/browser/web_engine_permission_manager.h"
 #include "fuchsia/engine/browser/web_engine_url_request_context_getter.h"
 #include "fuchsia/engine/common.h"
 #include "net/url_request/url_request_context.h"
@@ -80,11 +81,11 @@ WebEngineBrowserContext::CreateZoomLevelDelegate(
   return nullptr;
 }
 
-base::FilePath WebEngineBrowserContext::GetPath() const {
+base::FilePath WebEngineBrowserContext::GetPath() {
   return data_dir_path_;
 }
 
-bool WebEngineBrowserContext::IsOffTheRecord() const {
+bool WebEngineBrowserContext::IsOffTheRecord() {
   return data_dir_path_.empty();
 }
 
@@ -119,7 +120,9 @@ WebEngineBrowserContext::GetSSLHostStateDelegate() {
 
 content::PermissionControllerDelegate*
 WebEngineBrowserContext::GetPermissionControllerDelegate() {
-  return nullptr;
+  if (!permission_manager_)
+    permission_manager_ = std::make_unique<WebEnginePermissionManager>();
+  return permission_manager_.get();
 }
 
 content::ClientHintsControllerDelegate*
@@ -155,23 +158,7 @@ net::URLRequestContextGetter* WebEngineBrowserContext::CreateRequestContext(
 }
 
 net::URLRequestContextGetter*
-WebEngineBrowserContext::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return nullptr;
-}
-
-net::URLRequestContextGetter*
 WebEngineBrowserContext::CreateMediaRequestContext() {
   DCHECK(url_request_getter_.get());
   return url_request_getter_.get();
-}
-
-net::URLRequestContextGetter*
-WebEngineBrowserContext::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
-  return nullptr;
 }

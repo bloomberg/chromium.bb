@@ -145,7 +145,7 @@ WebFrameWidget* WebFrameWidget::CreateForChildLocalRoot(
 
 WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient& client)
     : WebFrameWidgetBase(client),
-      self_keep_alive_(this) {}
+      self_keep_alive_(PERSISTENT_FROM_HERE, this) {}
 
 WebFrameWidgetImpl::~WebFrameWidgetImpl() = default;
 
@@ -235,23 +235,6 @@ void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
   }
 }
 
-void WebFrameWidgetImpl::ResizeVisualViewport(const WebSize& new_size) {
-  if (!LocalRootImpl()) {
-    // We should figure out why we get here when there is no local root
-    // (https://crbug.com/792345).
-    return;
-  }
-
-  // TODO(alexmos, kenrb): resizing behavior such as this should be changed
-  // to use Page messages.  This uses the visual viewport size to set size on
-  // both the WebViewImpl size and the Page's VisualViewport. If there are
-  // multiple OOPIFs on a page, this will currently be set redundantly by
-  // each of them. See https://crbug.com/599688.
-  View()->MainFrameWidget()->Resize(new_size);
-
-  View()->DidUpdateFullscreenSize();
-}
-
 void WebFrameWidgetImpl::UpdateMainFrameLayoutSize() {
   if (!LocalRootImpl())
     return;
@@ -309,7 +292,7 @@ void WebFrameWidgetImpl::DidBeginFrame() {
 
 void WebFrameWidgetImpl::BeginRafAlignedInput() {
   if (LocalRootImpl()) {
-    raf_aligned_input_start_time_.emplace(CurrentTimeTicks());
+    raf_aligned_input_start_time_.emplace(base::TimeTicks::Now());
   }
 }
 
@@ -318,14 +301,14 @@ void WebFrameWidgetImpl::EndRafAlignedInput() {
     DCHECK(raf_aligned_input_start_time_);
     LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kHandleInputEvents,
-        raf_aligned_input_start_time_.value(), CurrentTimeTicks());
+        raf_aligned_input_start_time_.value(), base::TimeTicks::Now());
   }
   raf_aligned_input_start_time_.reset();
 }
 
 void WebFrameWidgetImpl::BeginUpdateLayers() {
   if (LocalRootImpl())
-    update_layers_start_time_.emplace(CurrentTimeTicks());
+    update_layers_start_time_.emplace(base::TimeTicks::Now());
 }
 
 void WebFrameWidgetImpl::EndUpdateLayers() {
@@ -333,14 +316,14 @@ void WebFrameWidgetImpl::EndUpdateLayers() {
     DCHECK(update_layers_start_time_);
     LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kUpdateLayers,
-        update_layers_start_time_.value(), CurrentTimeTicks());
+        update_layers_start_time_.value(), base::TimeTicks::Now());
   }
   update_layers_start_time_.reset();
 }
 
 void WebFrameWidgetImpl::BeginCommitCompositorFrame() {
   if (LocalRootImpl()) {
-    commit_compositor_frame_start_time_.emplace(CurrentTimeTicks());
+    commit_compositor_frame_start_time_.emplace(base::TimeTicks::Now());
   }
 }
 
@@ -350,7 +333,7 @@ void WebFrameWidgetImpl::EndCommitCompositorFrame() {
     // timing data.
     LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kProxyCommit,
-        commit_compositor_frame_start_time_.value(), CurrentTimeTicks());
+        commit_compositor_frame_start_time_.value(), base::TimeTicks::Now());
   }
   commit_compositor_frame_start_time_.reset();
 }
@@ -371,7 +354,7 @@ void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
       ->GetFrame()
       ->View()
       ->EnsureUkmAggregator()
-      .RecordEndOfFrameMetrics(frame_begin_time, CurrentTimeTicks());
+      .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now());
 }
 
 void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update,
@@ -525,6 +508,8 @@ void WebFrameWidgetImpl::OnFallbackCursorModeToggled(bool is_on) {
   NOTREACHED();
 }
 
+void WebFrameWidgetImpl::DidDetachLocalFrameTree() {}
+
 WebInputMethodController*
 WebFrameWidgetImpl::GetActiveWebInputMethodController() const {
   WebLocalFrameImpl* local_frame =
@@ -540,7 +525,7 @@ bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
   if (!element->GetLayoutObject())
     return false;
 
-  LayoutRect rect_to_scroll;
+  PhysicalRect rect_to_scroll;
   WebScrollIntoViewParams params;
   GetScrollParamsForFocusedEditableElement(*element, rect_to_scroll, params);
   element->GetLayoutObject()->ScrollRectToVisible(rect_to_scroll, params);
@@ -696,7 +681,8 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
   // Take capture on a mouse down on a plugin so we can send it mouse events.
   // If the hit node is a plugin but a scrollbar is over it don't start mouse
   // capture because it will interfere with the scrollbar receiving events.
-  LayoutPoint point(event.PositionInWidget().x, event.PositionInWidget().y);
+  PhysicalOffset point(LayoutUnit(event.PositionInWidget().x),
+                       LayoutUnit(event.PositionInWidget().y));
   if (event.button == WebMouseEvent::Button::kLeft) {
     HitTestLocation location(
         LocalRootImpl()->GetFrameView()->ConvertFromRootFrame(point));
@@ -752,7 +738,8 @@ void WebFrameWidgetImpl::MouseContextMenu(const WebMouseEvent& event) {
       FlooredIntPoint(transformed_event.PositionInRootFrame());
 
   // Find the right target frame. See issue 1186900.
-  HitTestResult result = HitTestResultForRootFramePos(position_in_root_frame);
+  HitTestResult result =
+      HitTestResultForRootFramePos(PhysicalOffset(position_in_root_frame));
   Frame* target_frame;
   if (result.InnerNodeOrImageMapImage())
     target_frame = result.InnerNodeOrImageMapImage()->GetDocument().GetFrame();
@@ -997,19 +984,6 @@ void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
                                       LocalRootImpl()->GetFrame()->View());
 }
 
-void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
-  if (!active)
-    return;
-  if (is_accelerated_compositing_active_)
-    return;
-  DCHECK(layer_tree_view_);
-
-  TRACE_EVENT0("blink",
-               "WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(true)");
-  Client()->SetRootLayer(root_layer_);
-  is_accelerated_compositing_active_ = true;
-}
-
 PaintLayerCompositor* WebFrameWidgetImpl::Compositor() const {
   LocalFrame* frame = LocalRootImpl()->GetFrame();
   if (!frame || !frame->GetDocument() || !frame->GetDocument()->GetLayoutView())
@@ -1024,13 +998,13 @@ void WebFrameWidgetImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
 }
 
 void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  root_layer_ = layer;
+  root_layer_ = std::move(layer);
 
-  SetIsAcceleratedCompositingActive(!!layer);
-
-  // TODO(danakj): Is this called after Close?? (With a null layer?)
-  if (!layer_tree_view_)
+  if (!root_layer_) {
+    // This notifies the WebFrameWidgetImpl that its LocalFrame tree is being
+    // detached.
     return;
+  }
 
   // WebFrameWidgetImpl is used for child frames, which always have a
   // transparent background color.
@@ -1067,8 +1041,8 @@ HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
   LocalFrameView* view = LocalRootImpl()->GetFrameView();
-  IntPoint point_in_root_frame =
-      view->ViewportToFrame(IntPoint(point_in_viewport));
+  PhysicalOffset point_in_root_frame(
+      view->ViewportToFrame(IntPoint(point_in_viewport)));
   return HitTestResultForRootFramePos(point_in_root_frame);
 }
 
@@ -1078,10 +1052,10 @@ void WebFrameWidgetImpl::ZoomToFindInPageRect(
 }
 
 HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
-    const LayoutPoint& pos_in_root_frame) {
-  LayoutPoint doc_point(
+    const PhysicalOffset& pos_in_root_frame) {
+  PhysicalOffset doc_point =
       LocalRootImpl()->GetFrame()->View()->ConvertFromRootFrame(
-          pos_in_root_frame));
+          pos_in_root_frame);
   HitTestLocation location(doc_point);
   HitTestResult result =
       LocalRootImpl()->GetFrame()->GetEventHandler().HitTestResultAtLocation(
@@ -1108,7 +1082,7 @@ void WebFrameWidgetImpl::DidCreateLocalRootView() {
 
 void WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
     const Element& element,
-    LayoutRect& rect_to_scroll,
+    PhysicalRect& rect_to_scroll,
     WebScrollIntoViewParams& params) {
   LocalFrameView& frame_view = *element.GetDocument().View();
   IntRect absolute_element_bounds =
@@ -1151,7 +1125,7 @@ void WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
   params.relative_caret_bounds = NormalizeRect(
       Intersection(absolute_caret_bounds, maximal_rect), maximal_rect);
   params.behavior = WebScrollIntoViewParams::kInstant;
-  rect_to_scroll = LayoutRect(maximal_rect);
+  rect_to_scroll = PhysicalRect(maximal_rect);
 }
 
 }  // namespace blink

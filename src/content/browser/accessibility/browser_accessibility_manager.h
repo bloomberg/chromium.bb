@@ -19,6 +19,7 @@
 #include "content/browser/accessibility/browser_accessibility_position.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/ax_event_notification_details.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_event_generator.h"
@@ -88,6 +89,7 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() = 0;
   virtual gfx::NativeViewAccessible
   AccessibilityGetNativeViewAccessibleForWindow() = 0;
+  virtual WebContents* AccessibilityWebContents() = 0;
 
   // Returns true if this delegate represents the main (topmost) frame in a
   // tree of frames.
@@ -125,7 +127,8 @@ struct BrowserAccessibilityFindInPageInfo {
 
 // Manages a tree of BrowserAccessibility objects.
 class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
-                                                   public ui::AXTreeManager {
+                                                   public ui::AXTreeManager,
+                                                   public WebContentsObserver {
  protected:
   using BrowserAccessibilityPositionInstance =
       BrowserAccessibilityPosition::AXPositionInstance;
@@ -160,9 +163,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // the frame tree has focus. If focus has changed, calls FireFocusEvent.
   void FireFocusEventsIfNeeded();
 
-  // Send the events triggered when a node lose focus.
-  virtual void OnFocusLost(BrowserAccessibility* node) {}
-
   // Return whether or not we are currently able to fire events.
   virtual bool CanFireEvents() const;
 
@@ -191,11 +191,14 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   virtual void OnWindowBlurred();
 
   // Notify the accessibility manager about page navigation.
+  // TODO(domfarolino, dmazzoni): Implement WebContentsObserver methods that
+  // correspond to the ones we provide today, so we can stop being manually
+  // notified of navigation events when they happen.
   void UserIsNavigatingAway();
   virtual void UserIsReloading();
   void NavigationSucceeded();
   void NavigationFailed();
-  void DidStopLoading();
+  void DidStopLoading() override;
 
   // Keep track of if this page is hidden by an interstitial, in which case
   // we need to suppress all events.
@@ -239,8 +242,13 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void HitTest(const gfx::Point& point);
   void Increment(const BrowserAccessibility& node);
   void LoadInlineTextBoxes(const BrowserAccessibility& node);
-  void ScrollToMakeVisible(const BrowserAccessibility& node,
-                           gfx::Rect subfocus);
+  void ScrollToMakeVisible(
+      const BrowserAccessibility& node,
+      gfx::Rect subfocus,
+      ax::mojom::ScrollAlignment horizontal_scroll_alignment =
+          ax::mojom::ScrollAlignment::kScrollAlignmentCenter,
+      ax::mojom::ScrollAlignment vertical_scroll_alignment =
+          ax::mojom::ScrollAlignment::kScrollAlignmentCenter);
   void ScrollToPoint(const BrowserAccessibility& node, gfx::Point point);
   void SetAccessibilityFocus(const BrowserAccessibility& node);
   void SetFocus(const BrowserAccessibility& node);
@@ -265,6 +273,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // the manager.
   virtual bool OnAccessibilityEvents(const AXEventNotificationDetails& details)
       WARN_UNUSED_RESULT;
+
+  // Allows derived classes to do event pre-processing
+  virtual void BeforeAccessibilityEvents();
 
   // Allows derived classes to do event post-processing.
   virtual void FinalizeAccessibilityEvents();
@@ -388,7 +399,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeReparented(ui::AXTree* tree, ui::AXNode* node) override;
-  void OnNodeChanged(ui::AXTree* tree, ui::AXNode* node) override;
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
       bool root_changed,

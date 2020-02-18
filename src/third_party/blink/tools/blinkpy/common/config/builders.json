@@ -64,9 +64,16 @@
         "port_name": "win-win10",
         "specifiers": ["Win10", "Debug"]
     },
+    "fuchsia_x64": {
+        "port_name": "fuchsia",
+        "specifiers": ["Fuchsia", "Release"],
+        "is_try_builder": true
+    },
     "linux-blink-rel": {
         "port_name": "linux-trusty",
         "specifiers": ["Trusty", "Release"],
+        "master": "tryserver.blink",
+        "has_webdriver_tests": true,
         "is_try_builder": true
     },
     "mac10.10-blink-rel": {
@@ -103,12 +110,5 @@
         "port_name": "win-win10",
         "specifiers": ["Win10", "Release"],
         "is_try_builder": true
-    },
-    "linux-rel": {
-        "bucket": "luci.chromium.try",
-        "port_name": "linux-trusty",
-        "specifiers": ["Trusty", "Release"],
-        "master": "tryserver.chromium.linux",
-        "is_try_builder": false
     }
 }

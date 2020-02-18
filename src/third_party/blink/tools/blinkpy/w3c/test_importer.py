@@ -393,19 +393,11 @@ class TestImporter(object):
         first ensures if upstream deletes some files, we also delete them.
         """
         _log.info('Cleaning out tests from %s.', self.dest_path)
-
-        # TODO(crbug.com/927187): Temporarily prevent the external/wpt/webdriver folder from deletion.
-        # Will delete once starting the two-way sync phase on webdriver/tests.
-        webdriver_dir_path = self.fs.join(self.dest_path, 'webdriver')
-
         should_remove = lambda fs, dirname, basename: (
             is_file_exportable(fs.relpath(fs.join(dirname, basename), self.finder.chromium_base())))
         files_to_delete = self.fs.files_under(self.dest_path, file_filter=should_remove)
         for subpath in files_to_delete:
-            remove_path = self.finder.path_from_web_tests('external', subpath)
-            if remove_path.startswith(webdriver_dir_path):
-                continue
-            self.remove(remove_path)
+            self.remove(self.finder.path_from_web_tests('external', subpath))
 
     def _commit_changes(self, commit_message):
         _log.info('Committing changes.')
@@ -556,6 +548,9 @@ class TestImporter(object):
             username = self._fetch_ecosystem_infra_sheriff_username()
         except (IOError, KeyError, ValueError) as error:
             _log.error('Exception while fetching current sheriff: %s', error)
+        if username in ['kyleju']:
+            _log.warning('Cannot TBR by %s: not a committer', username)
+            username = ''
         return username or TBR_FALLBACK
 
     def _fetch_ecosystem_infra_sheriff_username(self):

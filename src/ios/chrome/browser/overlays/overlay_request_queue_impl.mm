@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
-#import "ios/web/public/web_state/navigation_context.h"
+#import "ios/web/public/navigation/navigation_context.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -61,25 +61,18 @@ base::WeakPtr<OverlayRequestQueueImpl> OverlayRequestQueueImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void OverlayRequestQueueImpl::PopFrontRequest() {
+std::unique_ptr<OverlayRequest> OverlayRequestQueueImpl::PopFrontRequest() {
   DCHECK(!requests_.empty());
+  std::unique_ptr<OverlayRequest> request = std::move(requests_.front());
   requests_.pop_front();
+  return request;
 }
 
-void OverlayRequestQueueImpl::PopBackRequest() {
+std::unique_ptr<OverlayRequest> OverlayRequestQueueImpl::PopBackRequest() {
   DCHECK(!requests_.empty());
+  std::unique_ptr<OverlayRequest> request = std::move(requests_.back());
   requests_.pop_back();
-}
-
-void OverlayRequestQueueImpl::CancelAllRequests() {
-  while (!empty()) {
-    // Requests are cancelled in reverse order to prevent attempting to present
-    // subsequent requests after the dismissal of the front request's UI.
-    for (auto& observer : observers_) {
-      observer.QueuedRequestCancelled(this, requests_.back().get());
-    }
-    PopBackRequest();
-  }
+  return request;
 }
 
 #pragma mark OverlayRequestQueue
@@ -94,6 +87,17 @@ void OverlayRequestQueueImpl::AddRequest(
 
 OverlayRequest* OverlayRequestQueueImpl::front_request() const {
   return requests_.empty() ? nullptr : requests_.front().get();
+}
+
+void OverlayRequestQueueImpl::CancelAllRequests() {
+  while (!empty()) {
+    // Requests are cancelled in reverse order to prevent attempting to present
+    // subsequent requests after the dismissal of the front request's UI.
+    for (auto& observer : observers_) {
+      observer.QueuedRequestCancelled(this, requests_.back().get());
+    }
+    PopBackRequest();
+  }
 }
 
 #pragma mark RequestCancellationHelper
@@ -121,5 +125,6 @@ void OverlayRequestQueueImpl::RequestCancellationHelper::RenderProcessGone(
 
 void OverlayRequestQueueImpl::RequestCancellationHelper::WebStateDestroyed(
     web::WebState* web_state) {
+  queue_->CancelAllRequests();
   web_state->RemoveObserver(this);
 }

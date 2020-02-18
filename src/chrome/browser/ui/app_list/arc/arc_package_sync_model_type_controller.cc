@@ -12,15 +12,14 @@
 
 ArcPackageSyncModelTypeController::ArcPackageSyncModelTypeController(
     syncer::OnceModelTypeStoreFactory store_factory,
-    SyncableServiceProvider syncable_service_provider,
+    base::WeakPtr<syncer::SyncableService> syncable_service,
     const base::RepeatingClosure& dump_stack,
     syncer::SyncService* sync_service,
     Profile* profile)
-    : syncer::SyncableServiceBasedModelTypeController(
-          syncer::ARC_PACKAGE,
-          std::move(store_factory),
-          std::move(syncable_service_provider),
-          dump_stack),
+    : syncer::SyncableServiceBasedModelTypeController(syncer::ARC_PACKAGE,
+                                                      std::move(store_factory),
+                                                      syncable_service,
+                                                      dump_stack),
       sync_service_(sync_service),
       profile_(profile) {
   arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();

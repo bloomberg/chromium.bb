@@ -820,7 +820,7 @@ def reflected_name(constant_name):
     return 'k' + ''.join(part.title() for part in constant_name.split('_'))
 
 
-# [DeprecateAs], [OriginTrialEnabled], [Reflect], [RuntimeEnabled]
+# [DeprecateAs], [Reflect], [RuntimeEnabled]
 def constant_context(constant, interface, component_info):
     extended_attributes = constant.extended_attributes
     runtime_features = component_info['runtime_enabled_features']
@@ -834,11 +834,13 @@ def constant_context(constant, interface, component_info):
         'measure_as': v8_utilities.measure_as(constant, interface),  # [MeasureAs]
         'high_entropy': v8_utilities.high_entropy(constant),  # [HighEntropy]
         'name': constant.name,
-        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(constant, runtime_features),  # [OriginTrialEnabled]
+        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(constant,
+                                                                            runtime_features),  # [RuntimeEnabled] for origin trial
         # FIXME: use 'reflected_name' as correct 'name'
         'rcs_counter': 'Blink_' + v8_utilities.cpp_name(interface) + '_' + constant.name + '_ConstantGetter',
         'reflected_name': extended_attributes.get('Reflect', reflected_name(constant.name)),
-        'runtime_enabled_feature_name': runtime_enabled_feature_name(constant, runtime_features),  # [RuntimeEnabled]
+        'runtime_enabled_feature_name': runtime_enabled_feature_name(constant,
+                                                                     runtime_features),  # [RuntimeEnabled] if not in origin trial
         'value': constant.value,
     }
 
@@ -885,11 +887,11 @@ def overloads_context(interface, overloads):
     for index, method in enumerate(overloads, 1):
         method['overload_index'] = index
 
-    # [OriginTrialEnabled]
+    # [RuntimeEnabled]
     # TODO(iclelland): Allow origin trials on method overloads
     # (crbug.com/621641)
     if any(method.get('origin_trial_feature_name') for method in overloads):
-        raise Exception('[OriginTrialEnabled] cannot be specified on '
+        raise Exception('[RuntimeEnabled] for origin trial cannot be specified on '
                         'overloaded methods: %s.%s' % (interface.name, overloads[0]['name']))
 
     effective_overloads_by_length = effective_overload_set_by_length(overloads)

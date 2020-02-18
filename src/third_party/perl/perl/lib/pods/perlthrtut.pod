@@ -7,7 +7,7 @@ perlthrtut - Tutorial on threads in Perl
 =head1 DESCRIPTION
 
 This tutorial describes the use of Perl interpreter threads (sometimes
-referred to as I<ithreads>) that was first introduced in Perl 5.6.0.  In this
+referred to as I<ithreads>).  In this
 model, each thread runs in its own Perl interpreter, and any data sharing
 between threads must be explicit.  The user-level interface for I<ithreads>
 uses the L<threads> class.
@@ -173,7 +173,8 @@ enabled. If your program can't run without them, you can say something
 like:
 
     use Config;
-    $Config{useithreads} or die('Recompile Perl with threads to run this program.');
+    $Config{useithreads} or
+        die('Recompile Perl with threads to run this program.');
 
 A possibly-threaded program using a possibly-threaded module might
 have code like this:
@@ -241,7 +242,7 @@ part of the C<threads-E<gt>create()> call, like this:
     sub sub1 {
         my @InboundParameters = @_;
         print("In the thread\n");
-        print('Got parameters >', join('<>', @InboundParameters), "<\n");
+        print('Got parameters >', join('<>',@InboundParameters), "<\n");
     }
 
 The last example illustrates another feature of threads.  You can spawn
@@ -301,10 +302,10 @@ automatically.
     sleep(15);        # Let thread run for awhile
 
     sub sub1 {
-        $a = 0;
+        my $count = 0;
         while (1) {
-            $a++;
-            print("\$a is $a\n");
+            $count++;
+            print("\$count is $count\n");
             sleep(1);
         }
     }
@@ -402,7 +403,8 @@ assignment will cause the thread to die. For example:
 
     ... create some threads ...
 
-    $hash{a} = 1;       # All threads see exists($hash{a}) and $hash{a} == 1
+    $hash{a} = 1;       # All threads see exists($hash{a})
+                        # and $hash{a} == 1
     $hash{a} = $var;    # okay - copy-by-value: same effect as previous
     $hash{a} = $svar;   # okay - copy-by-value: same effect as previous
     $hash{a} = \$svar;  # okay - a reference to a shared variable
@@ -422,22 +424,22 @@ number of pitfalls.  One pitfall is the race condition:
     use threads;
     use threads::shared;
 
-    my $a :shared = 1;
+    my $x :shared = 1;
     my $thr1 = threads->create(\&sub1);
     my $thr2 = threads->create(\&sub2);
 
     $thr1->join();
     $thr2->join();
-    print("$a\n");
+    print("$x\n");
 
-    sub sub1 { my $foo = $a; $a = $foo + 1; }
-    sub sub2 { my $bar = $a; $a = $bar + 1; }
+    sub sub1 { my $foo = $x; $x = $foo + 1; }
+    sub sub2 { my $bar = $x; $x = $bar + 1; }
 
-What do you think C<$a> will be? The answer, unfortunately, is I<it
-depends>. Both C<sub1()> and C<sub2()> access the global variable C<$a>, once
+What do you think C<$x> will be? The answer, unfortunately, is I<it
+depends>. Both C<sub1()> and C<sub2()> access the global variable C<$x>, once
 to read and once to write.  Depending on factors ranging from your
 thread implementation's scheduling algorithm to the phase of the moon,
-C<$a> can be 2 or 3.
+C<$x> can be 2 or 3.
 
 Race conditions are caused by unsynchronized access to shared
 data.  Without explicit synchronization, there's no way to be sure that
@@ -446,19 +448,19 @@ and the time you update it.  Even this simple code fragment has the
 possibility of error:
 
     use threads;
-    my $a :shared = 2;
-    my $b :shared;
-    my $c :shared;
-    my $thr1 = threads->create(sub { $b = $a; $a = $b + 1; });
-    my $thr2 = threads->create(sub { $c = $a; $a = $c + 1; });
+    my $x :shared = 2;
+    my $y :shared;
+    my $z :shared;
+    my $thr1 = threads->create(sub { $y = $x; $x = $y + 1; });
+    my $thr2 = threads->create(sub { $z = $x; $x = $z + 1; });
     $thr1->join();
     $thr2->join();
 
-Two threads both access C<$a>.  Each thread can potentially be interrupted
-at any point, or be executed in any order.  At the end, C<$a> could be 3
-or 4, and both C<$b> and C<$c> could be 2 or 3.
+Two threads both access C<$x>.  Each thread can potentially be interrupted
+at any point, or be executed in any order.  At the end, C<$x> could be 3
+or 4, and both C<$y> and C<$z> could be 2 or 3.
 
-Even C<$a += 5> or C<$a++> are not guaranteed to be atomic.
+Even C<$x += 5> or C<$x++> are not guaranteed to be atomic.
 
 Whenever your program accesses data or resources that can be accessed
 by other threads, you must take steps to coordinate access or risk
@@ -570,17 +572,17 @@ Consider the following code:
 
     use threads;
 
-    my $a :shared = 4;
-    my $b :shared = 'foo';
+    my $x :shared = 4;
+    my $y :shared = 'foo';
     my $thr1 = threads->create(sub {
-        lock($a);
+        lock($x);
         sleep(20);
-        lock($b);
+        lock($y);
     });
     my $thr2 = threads->create(sub {
-        lock($b);
+        lock($y);
         sleep(20);
-        lock($a);
+        lock($x);
     });
 
 This program will probably hang until you kill it.  The only way it
@@ -588,10 +590,10 @@ won't hang is if one of the two threads acquires both locks
 first.  A guaranteed-to-hang version is more complicated, but the
 principle is the same.
 
-The first thread will grab a lock on C<$a>, then, after a pause during which
+The first thread will grab a lock on C<$x>, then, after a pause during which
 the second thread has probably had time to do some work, try to grab a
-lock on C<$b>.  Meanwhile, the second thread grabs a lock on C<$b>, then later
-tries to grab a lock on C<$a>.  The second lock attempt for both threads will
+lock on C<$y>.  Meanwhile, the second thread grabs a lock on C<$y>, then later
+tries to grab a lock on C<$x>.  The second lock attempt for both threads will
 block, each waiting for the other to release its lock.
 
 This condition is called a deadlock, and it occurs whenever two or
@@ -602,8 +604,8 @@ resource is itself waiting for a lock to be released.
 
 There are a number of ways to handle this sort of problem.  The best
 way is to always have all threads acquire locks in the exact same
-order.  If, for example, you lock variables C<$a>, C<$b>, and C<$c>, always lock
-C<$a> before C<$b>, and C<$b> before C<$c>.  It's also best to hold on to locks for
+order.  If, for example, you lock variables C<$x>, C<$y>, and C<$z>, always lock
+C<$x> before C<$y>, and C<$y> before C<$z>.  It's also best to hold on to locks for
 as short a period of time to minimize the risks of deadlock.
 
 The other synchronization primitives described below can suffer from
@@ -674,7 +676,8 @@ gives a quick demonstration:
         while ($TryCount--) {
             $semaphore->down();
             $LocalCopy = $GlobalVariable;
-            print("$TryCount tries left for sub $SubNumber (\$GlobalVariable is $GlobalVariable)\n");
+            print("$TryCount tries left for sub $SubNumber "
+                 ."(\$GlobalVariable is $GlobalVariable)\n");
             sleep(2);
             $LocalCopy++;
             $GlobalVariable = $LocalCopy;
@@ -846,40 +849,40 @@ does not appear in the list returned by C<threads-E<gt>list()>.
 Confused yet? It's time for an example program to show some of the
 things we've covered.  This program finds prime numbers using threads.
 
-     1 #!/usr/bin/perl
-     2 # prime-pthread, courtesy of Tom Christiansen
-     3
-     4 use strict;
-     5 use warnings;
-     6
-     7 use threads;
-     8 use Thread::Queue;
-     9
-    10 sub check_num {
-    11     my ($upstream, $cur_prime) = @_;
-    12     my $kid;
-    13     my $downstream = Thread::Queue->new();
-    14     while (my $num = $upstream->dequeue()) {
-    15         next unless ($num % $cur_prime);
-    16         if ($kid) {
-    17             $downstream->enqueue($num);
-    18         } else {
-    19             print("Found prime: $num\n");
-    20             $kid = threads->create(\&check_num, $downstream, $num);
-    21             if (! $kid) {
-    22                 warn("Sorry.  Ran out of threads.\n");
-    23                 last;
-    24             }
-    25         }
-    26     }
-    27     if ($kid) {
-    28         $downstream->enqueue(undef);
-    29         $kid->join();
-    30     }
-    31 }
-    32
-    33 my $stream = Thread::Queue->new(3..1000, undef);
-    34 check_num($stream, 2);
+   1 #!/usr/bin/perl
+   2 # prime-pthread, courtesy of Tom Christiansen
+   3
+   4 use strict;
+   5 use warnings;
+   6
+   7 use threads;
+   8 use Thread::Queue;
+   9
+  10 sub check_num {
+  11     my ($upstream, $cur_prime) = @_;
+  12     my $kid;
+  13     my $downstream = Thread::Queue->new();
+  14     while (my $num = $upstream->dequeue()) {
+  15         next unless ($num % $cur_prime);
+  16         if ($kid) {
+  17             $downstream->enqueue($num);
+  18         } else {
+  19             print("Found prime: $num\n");
+  20             $kid = threads->create(\&check_num, $downstream, $num);
+  21             if (! $kid) {
+  22                 warn("Sorry.  Ran out of threads.\n");
+  23                 last;
+  24             }
+  25         }
+  26     }
+  27     if ($kid) {
+  28         $downstream->enqueue(undef);
+  29         $kid->join();
+  30     }
+  31 }
+  32
+  33 my $stream = Thread::Queue->new(3..1000, undef);
+  34 check_num($stream, 2);
 
 This program uses the pipeline model to generate prime numbers.  Each
 thread in the pipeline has an input queue that feeds numbers to be
@@ -958,9 +961,9 @@ though, regardless of how many CPUs a system might have.
 
 Since kernel threading can interrupt a thread at any time, they will
 uncover some of the implicit locking assumptions you may make in your
-program.  For example, something as simple as C<$a = $a + 2> can behave
-unpredictably with kernel threads if C<$a> is visible to other
-threads, as another thread may have changed C<$a> between the time it
+program.  For example, something as simple as C<$x = $x + 2> can behave
+unpredictably with kernel threads if C<$x> is visible to other
+threads, as another thread may have changed C<$x> between the time it
 was fetched on the right hand side and the time the new value is
 stored.
 
@@ -1101,7 +1104,7 @@ Here's a short bibliography courtesy of Jürgen Christoffel:
 Birrell, Andrew D. An Introduction to Programming with
 Threads. Digital Equipment Corporation, 1989, DEC-SRC Research Report
 #35 online as
-ftp://ftp.dec.com/pub/DEC/SRC/research-reports/SRC-035.pdf
+L<ftp://ftp.dec.com/pub/DEC/SRC/research-reports/SRC-035.pdf>
 (highly recommended)
 
 Robbins, Kay. A., and Steven Robbins. Practical Unix Programming: A
@@ -1158,14 +1161,14 @@ of the prime number generator.
 
 =head1 AUTHOR
 
-Dan Sugalski E<lt>dan@sidhe.org<gt>
+Dan Sugalski E<lt>dan@sidhe.orgE<gt>
 
 Slightly modified by Arthur Bergman to fit the new thread model/module.
 
-Reworked slightly by Jörg Walter E<lt>jwalt@cpan.org<gt> to be more concise
+Reworked slightly by Jörg Walter E<lt>jwalt@cpan.orgE<gt> to be more concise
 about thread-safety of Perl code.
 
-Rearranged slightly by Elizabeth Mattijsen E<lt>liz@dijkmat.nl<gt> to put
+Rearranged slightly by Elizabeth Mattijsen E<lt>liz@dijkmat.nlE<gt> to put
 less emphasis on yield().
 
 =head1 Copyrights

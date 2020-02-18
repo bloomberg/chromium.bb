@@ -45,7 +45,7 @@ https://testbed.example.com/job/1
 
 <b>Subject.</b> by author@chromium.org
 https://example.com/repository/+/git_hash
-0 \u2192 1.235 (+1.235)
+0 \u2192 1.235 (+1.235) (+\u221e%)
 
 Understanding performance regressions:
   http://g.co/ChromePerformanceRegressions""")
@@ -56,7 +56,7 @@ https://testbed.example.com/job/1
 
 <b>Subject.</b> by author@chromium.org
 https://example.com/repository/+/git_hash
-0 \u2192 1.235 (+1.235)
+1.235 \u2192 0 (-1.235) (-100%)
 
 Understanding performance regressions:
   http://g.co/ChromePerformanceRegressions
@@ -70,7 +70,7 @@ https://testbed.example.com/job/1
 
 <b>Subject.</b> by chromium-autoroll@skia-public.iam.gserviceaccount.com
 https://example.com/repository/+/git_hash
-0 \u2192 1.235 (+1.235)
+20 \u2192 30 (+10) (+50%)
 
 Assigning to sheriff sheriff@bar.com because "Subject." is a roll.
 
@@ -84,23 +84,27 @@ https://testbed.example.com/job/1
 
 <b>Subject.</b> by author@chromium.org
 https://codereview.com/c/672011/2f0d5c7
-0 \u2192 1.235 (+1.235)
+40 \u2192 20 (-20) (-50%)
 
 Understanding performance regressions:
   http://g.co/ChromePerformanceRegressions""")
 
 
-_COMMENT_COMPLETED_TWO_DIFFERENCES = (
-    u"""<b>\U0001f4cd Found significant differences after each of 2 commits.</b>
+_COMMENT_COMPLETED_THREE_DIFFERENCES = (
+    u"""<b>\U0001f4cd Found significant differences after each of 3 commits.</b>
 https://testbed.example.com/job/1
 
 <b>Subject.</b> by author1@chromium.org
 https://example.com/repository/+/git_hash_1
-0 \u2192 No values
+50 \u2192 0 (-50) (-100%)
 
 <b>Subject.</b> by author2@chromium.org
 https://example.com/repository/+/git_hash_2
-No values \u2192 2
+0 \u2192 40 (+40) (+\u221e%)
+
+<b>Subject.</b> by author3@chromium.org
+https://example.com/repository/+/git_hash_3
+0 \u2192 No values
 
 Understanding performance regressions:
   http://g.co/ChromePerformanceRegressions""")
@@ -142,8 +146,7 @@ class RetryTest(test.TestCase):
                      mock.call(countdown=job._TASK_INTERVAL * 8))
     self.assertFalse(j.Fail.called)
 
-    with self.assertRaises(errors.RecoverableError):
-      j.Run()
+    j.Run()
     self.assertTrue(j.Fail.called)
 
   def testStarted_RecoverableError_Resets(self):
@@ -202,6 +205,7 @@ class BugCommentTest(test.TestCase):
 
     self.ExecuteDeferredTasks('default')
 
+    self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_STARTED, send_email=False)
 
@@ -211,6 +215,7 @@ class BugCommentTest(test.TestCase):
 
     self.ExecuteDeferredTasks('default')
 
+    self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_COMPLETED_NO_COMPARISON)
 
@@ -220,6 +225,7 @@ class BugCommentTest(test.TestCase):
 
     self.ExecuteDeferredTasks('default')
 
+    self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_COMPLETED_NO_DIFFERENCES)
 
@@ -246,6 +252,7 @@ class BugCommentTest(test.TestCase):
 
     self.ExecuteDeferredTasks('default')
 
+    self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_COMPLETED_WITH_COMMIT,
         status='Assigned', owner='author@chromium.org',
@@ -276,6 +283,7 @@ class BugCommentTest(test.TestCase):
 
     self.ExecuteDeferredTasks('default')
 
+    self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_COMPLETED_WITH_COMMIT,
         status='Assigned', owner='author@chromium.org',
@@ -313,6 +321,7 @@ class BugCommentTest(test.TestCase):
 
     self.ExecuteDeferredTasks('default')
 
+    self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_COMPLETED_WITH_COMMIT,
         status='Assigned', owner='author@chromium.org',
@@ -342,6 +351,7 @@ class BugCommentTest(test.TestCase):
 
     self.ExecuteDeferredTasks('default')
 
+    self.assertFalse(j.failed)
     self.assertFalse(self.add_bug_comment.called)
 
   @mock.patch('dashboard.pinpoint.models.change.commit.Commit.AsDict')
@@ -351,7 +361,7 @@ class BugCommentTest(test.TestCase):
       self, differences, result_values, commit_as_dict):
     c = change.Change((change.Commit('chromium', 'git_hash'),))
     differences.return_value = [(None, c)]
-    result_values.side_effect = [0], [1.23456]
+    result_values.side_effect = [1.23456], [0]
     commit_as_dict.return_value = {
         'repository': 'chromium',
         'git_hash': 'git_hash',
@@ -378,6 +388,7 @@ class BugCommentTest(test.TestCase):
 
     self.ExecuteDeferredTasks('default')
 
+    self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_COMPLETED_WITH_COMMIT_AND_DOCS,
         status='Assigned', owner='author@chromium.org',
@@ -391,7 +402,7 @@ class BugCommentTest(test.TestCase):
     patch = change.GerritPatch('https://codereview.com', 672011, '2f0d5c7')
     c = change.Change(commits, patch)
     differences.return_value = [(None, c)]
-    result_values.side_effect = [0], [1.23456]
+    result_values.side_effect = [40], [20]
     patch_as_dict.return_value = {
         'url': 'https://codereview.com/c/672011/2f0d5c7',
         'author': 'author@chromium.org',
@@ -407,6 +418,7 @@ class BugCommentTest(test.TestCase):
 
     self.ExecuteDeferredTasks('default')
 
+    self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_COMPLETED_WITH_PATCH,
         status='Assigned', owner='author@chromium.org',
@@ -422,7 +434,7 @@ class BugCommentTest(test.TestCase):
     c = change.Change(commits, patch)
     c = change.Change(commits, patch)
     differences.return_value = [(None, c)]
-    result_values.side_effect = [0], [1.23456]
+    result_values.side_effect = [40], [20]
     patch_as_dict.return_value = {
         'url': 'https://codereview.com/c/672011/2f0d5c7',
         'author': 'author@chromium.org',
@@ -438,6 +450,7 @@ class BugCommentTest(test.TestCase):
 
     self.ExecuteDeferredTasks('default')
 
+    self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_COMPLETED_WITH_PATCH, owner=None, status=None,
         cc_list=['author@chromium.org'], merge_issue=None)
@@ -451,7 +464,7 @@ class BugCommentTest(test.TestCase):
     patch = change.GerritPatch('https://codereview.com', 672011, '2f0d5c7')
     c = change.Change(commits, patch)
     differences.return_value = [(None, c)]
-    result_values.side_effect = [0], [1.23456]
+    result_values.side_effect = [40], [20]
     patch_as_dict.return_value = {
         'url': 'https://codereview.com/c/672011/2f0d5c7',
         'author': 'author@chromium.org',
@@ -467,6 +480,7 @@ class BugCommentTest(test.TestCase):
 
     self.ExecuteDeferredTasks('default')
 
+    self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_COMPLETED_WITH_PATCH, owner=None, status=None,
         cc_list=['author@chromium.org'], merge_issue=None)
@@ -478,8 +492,9 @@ class BugCommentTest(test.TestCase):
       self, differences, result_values, commit_as_dict):
     c1 = change.Change((change.Commit('chromium', 'git_hash_1'),))
     c2 = change.Change((change.Commit('chromium', 'git_hash_2'),))
-    differences.return_value = [(None, c1), (None, c2)]
-    result_values.side_effect = [0], [], [], [2]
+    c3 = change.Change((change.Commit('chromium', 'git_hash_3'),))
+    differences.return_value = [(None, c1), (None, c2), (None, c3)]
+    result_values.side_effect = [50], [0], [0], [40], [0], []
     commit_as_dict.side_effect = (
         {
             'repository': 'chromium',
@@ -497,6 +512,14 @@ class BugCommentTest(test.TestCase):
             'subject': 'Subject.',
             'message': 'Subject.\n\nCommit message.',
         },
+        {
+            'repository': 'chromium',
+            'git_hash': 'git_hash_3',
+            'url': 'https://example.com/repository/+/git_hash_3',
+            'author': 'author3@chromium.org',
+            'subject': 'Subject.',
+            'message': 'Subject.\n\nCommit message.',
+        },
     )
 
     self.get_issue.return_value = {'status': 'Untriaged'}
@@ -506,10 +529,12 @@ class BugCommentTest(test.TestCase):
 
     self.ExecuteDeferredTasks('default')
 
+    self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
-        123456, _COMMENT_COMPLETED_TWO_DIFFERENCES,
-        status='Assigned', owner='author2@chromium.org',
-        cc_list=['author1@chromium.org', 'author2@chromium.org'],
+        123456, _COMMENT_COMPLETED_THREE_DIFFERENCES,
+        status='Assigned', owner='author1@chromium.org',
+        cc_list=['author1@chromium.org', 'author2@chromium.org',
+                 'author3@chromium.org'],
         merge_issue=None)
 
   @mock.patch('dashboard.pinpoint.models.change.commit.Commit.AsDict')
@@ -519,7 +544,7 @@ class BugCommentTest(test.TestCase):
       self, differences, result_values, commit_as_dict):
     c = change.Change((change.Commit('chromium', 'git_hash'),))
     differences.return_value = [(None, c)]
-    result_values.side_effect = [0], [1.23456]
+    result_values.side_effect = [20], [30]
     commit_as_dict.return_value = {
         'repository': 'chromium',
         'git_hash': 'git_hash',
@@ -537,6 +562,7 @@ class BugCommentTest(test.TestCase):
 
     self.ExecuteDeferredTasks('default')
 
+    self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_COMPLETED_WITH_AUTOROLL_COMMIT,
         status='Assigned', owner='sheriff@bar.com',
@@ -552,7 +578,35 @@ class BugCommentTest(test.TestCase):
 
     self.ExecuteDeferredTasks('default')
 
+    self.assertTrue(j.failed)
     self.add_bug_comment.assert_called_once_with(123456, _COMMENT_FAILED)
+
+  @mock.patch.object(job.job_state.JobState, 'ScheduleWork',
+                     mock.MagicMock(side_effect=AssertionError('Error string')))
+  def testFailed_ExceptionDetailsFieldAdded(self):
+    j = job.Job.New((), (), bug_id=123456)
+    with self.assertRaises(AssertionError):
+      j.Run()
+
+    j.exception = j.exception_details['traceback']
+
+    exception_details = job.Job.exception_details
+    delattr(job.Job, 'exception_details')
+
+    j.put()
+
+    self.assertTrue(j.failed)
+    self.assertFalse(hasattr(j, 'exception_details'))
+
+    job.Job.exception_details = exception_details
+
+    j = j.key.get(use_cache=False)
+
+    self.assertTrue(j.failed)
+    self.assertTrue(hasattr(j, 'exception_details'))
+    self.assertEqual(j.exception, j.exception_details['traceback'])
+    self.assertTrue(
+        j.exception_details['message'] in j.exception.splitlines()[-1])
 
   @mock.patch('dashboard.services.gerrit_service.PostChangeComment')
   def testCompletedUpdatesGerrit(self, post_change_comment):

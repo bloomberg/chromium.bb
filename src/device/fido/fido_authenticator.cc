@@ -78,16 +78,44 @@ void FidoAuthenticator::EnumerateCredentials(
 
 void FidoAuthenticator::DeleteCredential(
     base::span<const uint8_t> pin_token,
-    base::span<const uint8_t> credential_id,
+    const PublicKeyCredentialDescriptor& credential_id,
     DeleteCredentialCallback callback) {
   NOTREACHED();
 }
 
-void FidoAuthenticator::GetModality(GetBioEnrollmentInfoCallback) {
+void FidoAuthenticator::GetModality(BioEnrollmentCallback) {
   NOTREACHED();
 }
 
-void FidoAuthenticator::GetSensorInfo(GetBioEnrollmentInfoCallback) {
+void FidoAuthenticator::GetSensorInfo(BioEnrollmentCallback) {
+  NOTREACHED();
+}
+
+void FidoAuthenticator::BioEnrollFingerprint(const pin::TokenResponse&,
+                                             BioEnrollmentSampleCallback,
+                                             BioEnrollmentCallback) {
+  NOTREACHED();
+}
+
+void FidoAuthenticator::BioEnrollCancel(BioEnrollmentCallback) {
+  NOTREACHED();
+}
+
+void FidoAuthenticator::BioEnrollEnumerate(const pin::TokenResponse&,
+                                           BioEnrollmentCallback) {
+  NOTREACHED();
+}
+
+void FidoAuthenticator::BioEnrollRename(const pin::TokenResponse&,
+                                        std::vector<uint8_t>,
+                                        std::string,
+                                        BioEnrollmentCallback) {
+  NOTREACHED();
+}
+
+void FidoAuthenticator::BioEnrollDelete(const pin::TokenResponse&,
+                                        std::vector<uint8_t>,
+                                        BioEnrollmentCallback) {
   NOTREACHED();
 }
 

@@ -76,15 +76,16 @@ class CORE_EXPORT InspectorApplicationCacheAgent final
   void InnerEnable();
 
   std::unique_ptr<protocol::ApplicationCache::ApplicationCache>
-  BuildObjectForApplicationCache(const ApplicationCacheHost::ResourceInfoList&,
-                                 const ApplicationCacheHost::CacheInfo&);
+  BuildObjectForApplicationCache(
+      const Vector<mojom::blink::AppCacheResourceInfo>&,
+      const ApplicationCacheHost::CacheInfo&);
   std::unique_ptr<
       protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>>
   BuildArrayForApplicationCacheResources(
-      const ApplicationCacheHost::ResourceInfoList&);
+      const Vector<mojom::blink::AppCacheResourceInfo>&);
   std::unique_ptr<protocol::ApplicationCache::ApplicationCacheResource>
   BuildObjectForApplicationCacheResource(
-      const ApplicationCacheHost::ResourceInfo&);
+      const mojom::blink::AppCacheResourceInfo&);
 
   protocol::Response AssertFrameWithDocumentLoader(String frame_id,
                                                    DocumentLoader*&);

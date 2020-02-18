@@ -49,17 +49,17 @@ class MockGbmBuffer final : public ui::GbmBuffer {
     NOTREACHED();
     return -1;
   }
-  int GetPlaneStride(size_t plane) const override {
+  uint32_t GetPlaneStride(size_t plane) const override {
     DCHECK_LT(plane, planes_.size());
     return planes_[plane].stride;
   }
-  int GetPlaneOffset(size_t plane) const override {
+  size_t GetPlaneOffset(size_t plane) const override {
     DCHECK_LT(plane, planes_.size());
     return planes_[plane].offset;
   }
   size_t GetPlaneSize(size_t plane) const override {
     DCHECK_LT(plane, planes_.size());
-    return planes_[plane].size;
+    return static_cast<size_t>(planes_[plane].size);
   }
   uint32_t GetPlaneHandle(size_t plane) const override {
     DCHECK_LT(plane, planes_.size());

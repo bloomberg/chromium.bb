@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/http/http_response_info.h"
@@ -215,7 +216,8 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetSecurityStyle(WebSecurityStyle);
 
   BLINK_PLATFORM_EXPORT void SetSecurityDetails(const WebSecurityDetails&);
-  BLINK_PLATFORM_EXPORT WebSecurityDetails SecurityDetailsForTesting();
+  BLINK_PLATFORM_EXPORT base::Optional<WebSecurityDetails>
+  SecurityDetailsForTesting();
 
   BLINK_PLATFORM_EXPORT void SetAsyncRevalidationRequested(bool);
   BLINK_PLATFORM_EXPORT void SetNetworkAccessed(bool);
@@ -286,8 +288,15 @@ class WebURLResponse {
   // Original size of the response before decompression.
   BLINK_PLATFORM_EXPORT void SetEncodedDataLength(int64_t);
 
+  // Original size of the response body before decompression.
+  BLINK_PLATFORM_EXPORT int64_t EncodedBodyLength() const;
+  BLINK_PLATFORM_EXPORT void SetEncodedBodyLength(int64_t);
+
   BLINK_PLATFORM_EXPORT void SetIsSignedExchangeInnerResponse(bool);
   BLINK_PLATFORM_EXPORT void SetWasInPrefetchCache(bool);
+
+  // Whether this resource is from a MHTML archive.
+  BLINK_PLATFORM_EXPORT bool FromArchive() const;
 
 #if INSIDE_BLINK
  protected:

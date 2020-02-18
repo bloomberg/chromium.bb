@@ -89,13 +89,13 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
                  double m22,
                  double dx,
                  double dy);
-  void setTransform(double m11,
-                    double m12,
-                    double m21,
-                    double m22,
-                    double dx,
-                    double dy);
-  void setTransform(DOMMatrix2DInit*, ExceptionState&);
+  virtual void setTransform(double m11,
+                            double m12,
+                            double m21,
+                            double m22,
+                            double dx,
+                            double dy);
+  virtual void setTransform(DOMMatrix2DInit*, ExceptionState&);
   DOMMatrix* getTransform();
   void resetTransform();
 
@@ -227,7 +227,6 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   virtual cc::PaintCanvas* DrawingCanvas() const = 0;
   virtual cc::PaintCanvas* ExistingDrawingCanvas() const = 0;
-  virtual void DisableDeferral(DisableDeferralReason) = 0;
 
   virtual void DidDraw(const SkIRect& dirty_rect) = 0;
 

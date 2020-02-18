@@ -29,12 +29,12 @@ element:
 @demo demo/index.html
 */
 
-import '../../polymer/polymer-legacy.js';
+import '../../polymer/polymer_bundled.min.js';
 import '../color.js';
 import '../default-theme.js';
 import '../typography.js';
 
-import {html} from '../../polymer/lib/utils/html-tag.js';
+import {html} from '../../polymer/polymer_bundled.min.js';
 const template = html`
 <dom-module id="paper-item-styles">
   <template>

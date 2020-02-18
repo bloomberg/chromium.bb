@@ -32,19 +32,17 @@
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-namespace network {
-namespace mojom {
-class URLRequestBodyDataView;
-}  // namespace mojom
-}  // namespace network
-
 namespace blink {
+
+namespace mojom {
+class FetchAPIRequestBodyDataView;
+}  // namespace mojom
 
 class BlobDataHandle;
 class WrappedDataPipeGetter;
@@ -103,7 +101,7 @@ class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
 
   static scoped_refptr<EncodedFormData> Create();
   static scoped_refptr<EncodedFormData> Create(const void*, wtf_size_t);
-  static scoped_refptr<EncodedFormData> Create(const CString&);
+  static scoped_refptr<EncodedFormData> Create(base::span<const char>);
   static scoped_refptr<EncodedFormData> Create(const Vector<char>&);
   scoped_refptr<EncodedFormData> Copy() const;
   scoped_refptr<EncodedFormData> DeepCopy() const;
@@ -153,7 +151,7 @@ class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
   bool IsSafeToSendToAnotherThread() const;
 
  private:
-  friend struct mojo::StructTraits<network::mojom::URLRequestBodyDataView,
+  friend struct mojo::StructTraits<blink::mojom::FetchAPIRequestBodyDataView,
                                    scoped_refptr<blink::EncodedFormData>>;
   EncodedFormData();
   EncodedFormData(const EncodedFormData&);

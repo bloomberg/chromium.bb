@@ -7,9 +7,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_items.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
@@ -36,7 +37,7 @@ class NGInlineNodeForTest : public NGInlineNode {
  public:
   using NGInlineNode::NGInlineNode;
 
-  std::string Text() const { return Data().text_content.Utf8().data(); }
+  std::string Text() const { return Data().text_content.Utf8(); }
   Vector<NGInlineItem>& Items() { return MutableData()->items; }
   static Vector<NGInlineItem>& Items(NGInlineNodeData& data) {
     return data.items;
@@ -521,6 +522,25 @@ TEST_F(NGInlineNodeTest, MinMaxSizeFloatsClearance) {
   EXPECT_EQ(160, sizes.max_size);
 }
 
+TEST_F(NGInlineNodeTest, MinMaxSizeTabulationWithBreakWord) {
+  LoadAhem();
+  SetupHtml("t", R"HTML(
+    <style>
+    #t {
+      font: 10px Ahem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    </style>
+    <div id=t>&#9;&#9;<span>X</span></div>
+  )HTML");
+
+  NGInlineNodeForTest node = CreateInlineNode();
+  MinMaxSize sizes = ComputeMinMaxSize(node);
+  EXPECT_EQ(160, sizes.min_size);
+  EXPECT_EQ(170, sizes.max_size);
+}
+
 TEST_F(NGInlineNodeTest, AssociatedItemsWithControlItem) {
   SetBodyInnerHTML(
       "<pre id=t style='-webkit-rtl-ordering:visual'>ab\nde</pre>");
@@ -732,6 +752,25 @@ TEST_P(NodeInsertTest, NeedsCollectInlinesOnInsert) {
   EXPECT_FALSE(next->GetLayoutObject()->NeedsCollectInlines());
 }
 
+TEST_F(NGInlineNodeTest, NeedsCollectInlinesOnInsertToOutOfFlowButton) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #xflex { display: flex; }
+    </style>
+    <div id="container">
+      <button id="flex" style="position: absolute"></button>
+    </div>
+  )HTML");
+
+  Element* container = GetElementById("container");
+  Element* parent = ElementTraversal::FirstChild(*container);
+  Element* child = GetDocument().CreateRawElement(html_names::kDivTag);
+  parent->appendChild(child);
+  GetDocument().UpdateStyleAndLayoutTree();
+
+  EXPECT_FALSE(container->GetLayoutObject()->NeedsCollectInlines());
+}
+
 class NodeRemoveTest : public NGInlineNodeTest,
                        public testing::WithParamInterface<const char*> {};
 
@@ -804,12 +843,36 @@ TEST_F(NGInlineNodeTest, NeedsCollectInlinesOnForceLayout) {
   EXPECT_FALSE(target->NeedsCollectInlines());
 }
 
+TEST_F(NGInlineNodeTest, CollectInlinesShouldNotClearFirstInlineFragment) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="container">
+      text
+    </div>
+  )HTML");
+
+  // Appending a child should set |NeedsCollectInlines|.
+  Element* container = GetElementById("container");
+  container->appendChild(GetDocument().createTextNode("add"));
+  auto* block_flow = To<LayoutBlockFlow>(container->GetLayoutObject());
+  GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_TRUE(block_flow->NeedsCollectInlines());
+
+  // |IsEmptyInline| should run |CollectInlines|.
+  NGInlineNode node(block_flow);
+  node.IsEmptyInline();
+  EXPECT_FALSE(block_flow->NeedsCollectInlines());
+
+  // Running |CollectInlines| should not clear |FirstInlineFragment|.
+  LayoutObject* first_child = container->firstChild()->GetLayoutObject();
+  EXPECT_NE(first_child->FirstInlineFragment(), nullptr);
+}
+
 TEST_F(NGInlineNodeTest, InvalidateAddSpan) {
   SetupHtml("t", "<div id=t>before</div>");
   EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());
   unsigned item_count_before = Items().size();
 
-  Element* parent = ToElement(layout_block_flow_->GetNode());
+  auto* parent = To<Element>(layout_block_flow_->GetNode());
   Element* span = GetDocument().CreateRawElement(html_names::kSpanTag);
   parent->appendChild(span);
 
@@ -880,7 +943,7 @@ TEST_F(NGInlineNodeTest, InvalidateAddAbsolute) {
   EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());
   unsigned item_count_before = Items().size();
 
-  Element* parent = ToElement(layout_block_flow_->GetNode());
+  auto* parent = To<Element>(layout_block_flow_->GetNode());
   Element* span = GetDocument().CreateRawElement(html_names::kSpanTag);
   parent->appendChild(span);
 
@@ -945,7 +1008,7 @@ TEST_F(NGInlineNodeTest, InvalidateAddFloat) {
   EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());
   unsigned item_count_before = Items().size();
 
-  Element* parent = ToElement(layout_block_flow_->GetNode());
+  auto* parent = To<Element>(layout_block_flow_->GetNode());
   Element* span = GetDocument().CreateRawElement(html_names::kSpanTag);
   parent->appendChild(span);
 
@@ -1456,6 +1519,24 @@ TEST_F(NGInlineNodeTest, InsertedWBRWithLineBreakInRelayout) {
 
   // The '\n' should be collapsed by the inserted <wbr>
   EXPECT_EQ(String(u"foo\u200Bbar"), GetText());
+}
+
+TEST_F(NGInlineNodeTest, CollapsibleSpaceFollowingBRWithNoWrapStyle) {
+  SetupHtml("t", "<div id=t><span style=white-space:pre><br></span> </div>");
+  EXPECT_EQ("\n", GetText());
+
+  GetDocument().QuerySelector("span")->removeAttribute(html_names::kStyleAttr);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ("\n", GetText());
+}
+
+TEST_F(NGInlineNodeTest, CollapsibleSpaceFollowingNewlineWithPreStyle) {
+  SetupHtml("t", "<div id=t><span style=white-space:pre>\n</span> </div>");
+  EXPECT_EQ("\n", GetText());
+
+  GetDocument().QuerySelector("span")->removeAttribute(html_names::kStyleAttr);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ("", GetText());
 }
 
 #if SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH

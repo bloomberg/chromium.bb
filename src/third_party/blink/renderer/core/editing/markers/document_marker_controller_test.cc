@@ -81,7 +81,7 @@ void DocumentMarkerControllerTest::MarkNodeContentsTextMatch(Node* node) {
 
 TEST_F(DocumentMarkerControllerTest, DidMoveToNewDocument) {
   SetBodyContent("<b><i>foo</i></b>");
-  Element* parent = ToElement(GetDocument().body()->firstChild()->firstChild());
+  auto* parent = To<Element>(GetDocument().body()->firstChild()->firstChild());
   MarkNodeContents(parent);
   EXPECT_EQ(1u, MarkerController().Markers().size());
   Persistent<Document> another_document = MakeGarbageCollected<Document>();
@@ -96,8 +96,8 @@ TEST_F(DocumentMarkerControllerTest, DidMoveToNewDocument) {
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByNormalize) {
   SetBodyContent("<b><i>foo</i></b>");
   {
-    Element* parent =
-        ToElement(GetDocument().body()->firstChild()->firstChild());
+    auto* parent =
+        To<Element>(GetDocument().body()->firstChild()->firstChild());
     parent->AppendChild(CreateTextNode("bar"));
     MarkNodeContents(parent);
     EXPECT_EQ(2u, MarkerController().Markers().size());
@@ -111,7 +111,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByNormalize) {
 
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveChildren) {
   SetBodyContent("<b><i>foo</i></b>");
-  Element* parent = ToElement(GetDocument().body()->firstChild()->firstChild());
+  auto* parent = To<Element>(GetDocument().body()->firstChild()->firstChild());
   MarkNodeContents(parent);
   EXPECT_EQ(1u, MarkerController().Markers().size());
   parent->RemoveChildren();
@@ -124,8 +124,8 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveChildren) {
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedByRemoveMarked) {
   SetBodyContent("<b><i>foo</i></b>");
   {
-    Element* parent =
-        ToElement(GetDocument().body()->firstChild()->firstChild());
+    auto* parent =
+        To<Element>(GetDocument().body()->firstChild()->firstChild());
     MarkNodeContents(parent);
     EXPECT_EQ(1u, MarkerController().Markers().size());
     parent->RemoveChild(parent->firstChild());
@@ -139,8 +139,8 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedByRemoveMarked) {
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveAncestor) {
   SetBodyContent("<b><i>foo</i></b>");
   {
-    Element* parent =
-        ToElement(GetDocument().body()->firstChild()->firstChild());
+    auto* parent =
+        To<Element>(GetDocument().body()->firstChild()->firstChild());
     MarkNodeContents(parent);
     EXPECT_EQ(1u, MarkerController().Markers().size());
     parent->parentNode()->parentNode()->RemoveChild(parent->parentNode());
@@ -154,8 +154,8 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveAncestor) {
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveParent) {
   SetBodyContent("<b><i>foo</i></b>");
   {
-    Element* parent =
-        ToElement(GetDocument().body()->firstChild()->firstChild());
+    auto* parent =
+        To<Element>(GetDocument().body()->firstChild()->firstChild());
     MarkNodeContents(parent);
     EXPECT_EQ(1u, MarkerController().Markers().size());
     parent->parentNode()->RemoveChild(parent);
@@ -169,8 +169,8 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveParent) {
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByReplaceChild) {
   SetBodyContent("<b><i>foo</i></b>");
   {
-    Element* parent =
-        ToElement(GetDocument().body()->firstChild()->firstChild());
+    auto* parent =
+        To<Element>(GetDocument().body()->firstChild()->firstChild());
     MarkNodeContents(parent);
     EXPECT_EQ(1u, MarkerController().Markers().size());
     parent->ReplaceChild(CreateTextNode("bar"), parent->firstChild());
@@ -184,8 +184,8 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByReplaceChild) {
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML) {
   SetBodyContent("<b><i>foo</i></b>");
   {
-    Element* parent =
-        ToElement(GetDocument().body()->firstChild()->firstChild());
+    auto* parent =
+        To<Element>(GetDocument().body()->firstChild()->firstChild());
     MarkNodeContents(parent);
     EXPECT_EQ(1u, MarkerController().Markers().size());
     SetBodyContent("");
@@ -201,8 +201,8 @@ TEST_F(DocumentMarkerControllerTest, SynchronousMutationNotificationAfterGC) {
   SetBodyContent("<b><i>foo</i></b>");
   Persistent<Text> sibling_text = CreateTextNode("bar");
   {
-    Element* parent =
-        ToElement(GetDocument().body()->firstChild()->firstChild());
+    auto* parent =
+        To<Element>(GetDocument().body()->firstChild()->firstChild());
     parent->parentNode()->AppendChild(sibling_text);
     MarkNodeContents(parent);
     EXPECT_EQ(1u, MarkerController().Markers().size());
@@ -221,7 +221,7 @@ TEST_F(DocumentMarkerControllerTest, SynchronousMutationNotificationAfterGC) {
 
 TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects) {
   SetBodyContent("<div style='margin: 100px'>foo</div>");
-  Element* div = ToElement(GetDocument().body()->firstChild());
+  auto* div = To<Element>(GetDocument().body()->firstChild());
   MarkNodeContentsTextMatch(div);
   Vector<IntRect> rendered_rects =
       MarkerController().LayoutRectsForTextMatchMarkers();
@@ -250,7 +250,7 @@ TEST_F(DocumentMarkerControllerTest, CompositionMarkersNotMerged) {
 
 TEST_F(DocumentMarkerControllerTest, SetMarkerActiveTest) {
   SetBodyContent("<b>foo</b>");
-  Element* b_element = ToElement(GetDocument().body()->firstChild());
+  auto* b_element = To<Element>(GetDocument().body()->firstChild());
   EphemeralRange ephemeral_range = EphemeralRange::RangeOfContents(*b_element);
   Position start_b_element =
       ToPositionInDOMTree(ephemeral_range.StartPosition());

@@ -343,9 +343,6 @@ class CC_EXPORT LayerTreeImpl {
     return painted_device_scale_factor_;
   }
 
-  void set_content_source_id(uint32_t id) { content_source_id_ = id; }
-  uint32_t content_source_id() { return content_source_id_; }
-
   void SetLocalSurfaceIdAllocationFromParent(
       const viz::LocalSurfaceIdAllocation&
           local_surface_id_allocation_from_parent);
@@ -460,6 +457,7 @@ class CC_EXPORT LayerTreeImpl {
   gfx::Rect RootScrollLayerDeviceViewportBounds() const;
 
   LayerImpl* LayerById(int id) const;
+  LayerImpl* LayerByElementId(ElementId element_id) const;
   LayerImpl* ScrollableLayerByElementId(ElementId element_id) const;
 
   bool IsElementInPropertyTree(ElementId element_id) const;
@@ -545,6 +543,13 @@ class CC_EXPORT LayerTreeImpl {
     return picture_layers_;
   }
 
+  void NotifyLayerHasPaintWorkletsChanged(PictureLayerImpl* layer,
+                                          bool has_worklets);
+  const base::flat_set<PictureLayerImpl*>& picture_layers_with_paint_worklets()
+      const {
+    return picture_layers_with_paint_worklets_;
+  }
+
   void RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer);
   void UnregisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer);
   ScrollbarSet ScrollbarsFor(ElementId scroll_element_id) const;
@@ -558,6 +563,10 @@ class CC_EXPORT LayerTreeImpl {
       const gfx::PointF& screen_space_point);
 
   LayerImpl* FindLayerThatIsHitByPointInWheelEventHandlerRegion(
+      const gfx::PointF& screen_space_point);
+
+  // Return all layers with a hit non-fast scrollable region.
+  std::vector<const LayerImpl*> FindLayersHitByPointInNonFastScrollableRegion(
       const gfx::PointF& screen_space_point);
 
   void RegisterSelection(const LayerSelection& selection);
@@ -704,7 +713,6 @@ class CC_EXPORT LayerTreeImpl {
   int raster_color_space_id_ = -1;
   gfx::ColorSpace raster_color_space_;
 
-  uint32_t content_source_id_;
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
   bool new_local_surface_id_request_ = false;
   gfx::Size device_viewport_size_;
@@ -744,6 +752,11 @@ class CC_EXPORT LayerTreeImpl {
       element_id_to_scrollbar_layer_ids_;
 
   std::vector<PictureLayerImpl*> picture_layers_;
+
+  // After commit (or impl-side invalidation), the LayerTreeHostImpl must walk
+  // all PictureLayerImpls that have PaintWorklets to ensure they are painted.
+  // To avoid unnecessary walking, we track that set here.
+  base::flat_set<PictureLayerImpl*> picture_layers_with_paint_worklets_;
 
   base::flat_set<viz::SurfaceRange> surface_layer_ranges_;
 

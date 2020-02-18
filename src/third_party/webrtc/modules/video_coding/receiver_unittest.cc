@@ -7,7 +7,10 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "modules/video_coding/receiver.h"
+
 #include <string.h>
+
 #include <cstdint>
 #include <memory>
 #include <queue>
@@ -16,7 +19,6 @@
 #include "modules/video_coding/encoded_frame.h"
 #include "modules/video_coding/jitter_buffer_common.h"
 #include "modules/video_coding/packet.h"
-#include "modules/video_coding/receiver.h"
 #include "modules/video_coding/test/stream_generator.h"
 #include "modules/video_coding/timing.h"
 #include "rtc_base/checks.h"
@@ -454,7 +456,7 @@ TEST_F(VCMReceiverTimingTest, FrameForDecodingPreferLateDecoding) {
   int render_delay_ms;
   int max_decode_ms;
   int dummy;
-  timing_.GetTimings(&dummy, &max_decode_ms, &dummy, &dummy, &dummy, &dummy,
+  timing_.GetTimings(&max_decode_ms, &dummy, &dummy, &dummy, &dummy,
                      &render_delay_ms);
 
   // Construct test samples.

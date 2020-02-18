@@ -29,7 +29,7 @@
 
 #include <memory>
 #include "base/optional.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
@@ -58,7 +58,7 @@
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
@@ -299,54 +299,53 @@ class TokenPreloadScanner::StartTagScanner {
         document_parameters.lazyload_policy_enforced) {
       effective_loading_attr_value = LoadingAttrValue::kAuto;
     }
-    bool is_lazy_load_image_enabled = false;
-    switch (effective_loading_attr_value) {
-      case LoadingAttrValue::kEager:
-        is_lazy_load_image_enabled = false;
-        break;
-      case LoadingAttrValue::kLazy:
-        is_lazy_load_image_enabled =
-            document_parameters.lazy_load_image_enabled_state !=
-            LocalFrame::LazyLoadImageEnabledState::kDisabled;
-        break;
-      case LoadingAttrValue::kAuto:
-        if ((width_attr_dimension_type_ ==
-                 HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall &&
-             height_attr_dimension_type_ ==
-                 HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) ||
-            inline_style_dimensions_type_ ==
-                HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) {
+    if (type == ResourceType::kImage) {
+      bool is_lazy_load_image_enabled = false;
+      switch (effective_loading_attr_value) {
+        case LoadingAttrValue::kEager:
           is_lazy_load_image_enabled = false;
-        } else {
+          break;
+        case LoadingAttrValue::kLazy:
           is_lazy_load_image_enabled =
-              document_parameters.lazy_load_image_enabled_state ==
-              LocalFrame::LazyLoadImageEnabledState::kEnabledAutomatic;
-        }
-        break;
+              document_parameters.lazy_load_image_setting !=
+              LocalFrame::LazyLoadImageSetting::kDisabled;
+          break;
+        case LoadingAttrValue::kAuto:
+          if ((width_attr_dimension_type_ ==
+                   HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall &&
+               height_attr_dimension_type_ ==
+                   HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) ||
+              inline_style_dimensions_type_ ==
+                  HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) {
+            is_lazy_load_image_enabled = false;
+          } else {
+            is_lazy_load_image_enabled =
+                document_parameters.lazy_load_image_setting ==
+                LocalFrame::LazyLoadImageSetting::kEnabledAutomatic;
+          }
+          break;
+      }
+      // Do not preload if lazyload is possible but metadata fetch is disabled.
+      if (is_lazy_load_image_enabled &&
+          !RuntimeEnabledFeatures::LazyImageLoadingMetadataFetchEnabled()) {
+        return nullptr;
+      }
+      // LazyLoad: Do not preload if absolute dimensions are mentioned in width
+      // and height attributes or in the inline style, and the dimensions are
+      // not small enough.
+      if (is_lazy_load_image_enabled &&
+          ((width_attr_dimension_type_ ==
+                HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall &&
+            height_attr_dimension_type_ ==
+                HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall) ||
+           inline_style_dimensions_type_ ==
+               HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall)) {
+        return nullptr;
+      }
+      request->SetIsLazyLoadImageEnabled(is_lazy_load_image_enabled);
     }
-    // Do not preload if lazyload is possible but metadata fetch is disabled.
-    if (is_lazy_load_image_enabled &&
-        !RuntimeEnabledFeatures::LazyImageLoadingMetadataFetchEnabled()) {
-      return nullptr;
-    }
-    // LazyLoad: Do not preload if absolute dimensions are mentioned in width
-    // and height attributes or in the inline style, and the dimensions are not
-    // small enough.
-    if (is_lazy_load_image_enabled &&
-        ((width_attr_dimension_type_ ==
-              HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall &&
-          height_attr_dimension_type_ ==
-              HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall) ||
-         inline_style_dimensions_type_ ==
-             HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall)) {
-      return nullptr;
-    }
-    request->SetIsLazyLoadImageEnabled(is_lazy_load_image_enabled);
 
-    // The only link tags that should keep the integrity metadata are
-    // stylesheets until crbug.com/677022 is resolved.
-    if (link_is_style_sheet_ || !Match(tag_impl_, kLinkTag))
-      request->SetIntegrityMetadata(integrity_metadata_);
+    request->SetIntegrityMetadata(integrity_metadata_);
 
     if (scanner_type_ == ScannerType::kInsertion)
       request->SetFromInsertionScanner(true);
@@ -1092,11 +1091,10 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   integrity_features = SubresourceIntegrityHelper::GetFeatures(document);
   lazyload_policy_enforced = document->IsLazyLoadPolicyEnforced();
   if (document->Loader() && document->Loader()->GetFrame()) {
-    lazy_load_image_enabled_state =
-        document->Loader()->GetFrame()->GetLazyLoadImageEnabledState();
+    lazy_load_image_setting =
+        document->Loader()->GetFrame()->GetLazyLoadImageSetting();
   } else {
-    lazy_load_image_enabled_state =
-        LocalFrame::LazyLoadImageEnabledState::kDisabled;
+    lazy_load_image_setting = LocalFrame::LazyLoadImageSetting::kDisabled;
   }
 }
 

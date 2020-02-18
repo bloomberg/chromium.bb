@@ -45,6 +45,7 @@
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -82,7 +83,6 @@ class TestResourceDispatcher : public ResourceDispatcher {
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       bool is_sync,
-      bool pass_response_pipe_to_peer,
       std::unique_ptr<RequestPeer> peer,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
@@ -236,7 +236,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       int64_t totalEncodedBodyLength,
       int64_t totalDecodedBodyLength,
       bool should_report_corb_blocking,
-      const std::vector<network::cors::PreflightTimingInfo>&) override {
+      const blink::WebVector<network::cors::PreflightTimingInfo>&) override {
     EXPECT_TRUE(loader_);
     EXPECT_TRUE(did_receive_response_);
     EXPECT_FALSE(did_finish_);
@@ -305,10 +305,7 @@ class WebURLLoaderImplTest : public testing::Test {
   ~WebURLLoaderImplTest() override {}
 
   void DoStartAsyncRequest() {
-    blink::WebURLRequest request{GURL(kTestURL)};
-    request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
-    client()->loader()->LoadAsynchronously(request, client());
-    ASSERT_TRUE(peer());
+    DoStartAsyncRequestWithPriority(blink::WebURLRequest::Priority::kVeryLow);
   }
 
   void DoStartAsyncRequestWithPriority(
@@ -468,9 +465,10 @@ TEST_F(WebURLLoaderImplTest, ResponseOverride) {
   const std::string kMimeType = "application/javascript";
   blink::WebURLRequest request(kRequestURL);
   request.SetRequestContext(blink::mojom::RequestContextType::SCRIPT);
+  request.SetPriority(blink::WebURLRequest::Priority::kVeryLow);
   std::unique_ptr<NavigationResponseOverrideParameters> response_override(
       new NavigationResponseOverrideParameters());
-  response_override->response.mime_type = kMimeType;
+  response_override->response_head.mime_type = kMimeType;
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_navigation_response_override(std::move(response_override));
   request.SetExtraData(std::move(extra_data));
@@ -483,7 +481,7 @@ TEST_F(WebURLLoaderImplTest, ResponseOverride) {
 
   response_override = dispatcher()->TakeNavigationResponseOverrideParams();
   ASSERT_TRUE(response_override);
-  peer()->OnReceivedResponse(response_override->response);
+  peer()->OnReceivedResponse(response_override->response_head);
 
   EXPECT_TRUE(client()->did_receive_response());
 
@@ -549,22 +547,23 @@ TEST_F(WebURLLoaderImplTest, ResponseCert) {
   blink::WebURLResponse web_url_response;
   WebURLLoaderImpl::PopulateURLResponse(url, info, &web_url_response, true, -1);
 
-  blink::WebURLResponse::WebSecurityDetails security_details =
+  base::Optional<blink::WebURLResponse::WebSecurityDetails> security_details =
       web_url_response.SecurityDetailsForTesting();
-  EXPECT_EQ("TLS 1.2", security_details.protocol);
-  EXPECT_EQ("127.0.0.1", security_details.subject_name);
-  EXPECT_EQ("127.0.0.1", security_details.issuer);
-  ASSERT_EQ(3U, security_details.san_list.size());
-  EXPECT_EQ("test.example", security_details.san_list[0]);
-  EXPECT_EQ("127.0.0.2", security_details.san_list[1]);
-  EXPECT_EQ("fe80::1", security_details.san_list[2]);
-  EXPECT_EQ(certs[0]->valid_start().ToTimeT(), security_details.valid_from);
-  EXPECT_EQ(certs[0]->valid_expiry().ToTimeT(), security_details.valid_to);
-  ASSERT_EQ(2U, security_details.certificate.size());
+  ASSERT_TRUE(security_details.has_value());
+  EXPECT_EQ("TLS 1.2", security_details->protocol);
+  EXPECT_EQ("127.0.0.1", security_details->subject_name);
+  EXPECT_EQ("127.0.0.1", security_details->issuer);
+  ASSERT_EQ(3U, security_details->san_list.size());
+  EXPECT_EQ("test.example", security_details->san_list[0]);
+  EXPECT_EQ("127.0.0.2", security_details->san_list[1]);
+  EXPECT_EQ("fe80::1", security_details->san_list[2]);
+  EXPECT_EQ(certs[0]->valid_start().ToTimeT(), security_details->valid_from);
+  EXPECT_EQ(certs[0]->valid_expiry().ToTimeT(), security_details->valid_to);
+  ASSERT_EQ(2U, security_details->certificate.size());
   EXPECT_EQ(blink::WebString::FromLatin1(std::string(cert0_der)),
-            security_details.certificate[0]);
+            security_details->certificate[0]);
   EXPECT_EQ(blink::WebString::FromLatin1(std::string(cert1_der)),
-            security_details.certificate[1]);
+            security_details->certificate[1]);
 }
 
 TEST_F(WebURLLoaderImplTest, ResponseCertWithNoSANs) {
@@ -586,17 +585,18 @@ TEST_F(WebURLLoaderImplTest, ResponseCertWithNoSANs) {
   blink::WebURLResponse web_url_response;
   WebURLLoaderImpl::PopulateURLResponse(url, info, &web_url_response, true, -1);
 
-  blink::WebURLResponse::WebSecurityDetails security_details =
+  base::Optional<blink::WebURLResponse::WebSecurityDetails> security_details =
       web_url_response.SecurityDetailsForTesting();
-  EXPECT_EQ("TLS 1.2", security_details.protocol);
-  EXPECT_EQ("B CA - Multi-root", security_details.subject_name);
-  EXPECT_EQ("C CA - Multi-root", security_details.issuer);
-  EXPECT_EQ(0U, security_details.san_list.size());
-  EXPECT_EQ(certs[0]->valid_start().ToTimeT(), security_details.valid_from);
-  EXPECT_EQ(certs[0]->valid_expiry().ToTimeT(), security_details.valid_to);
-  ASSERT_EQ(1U, security_details.certificate.size());
+  ASSERT_TRUE(security_details.has_value());
+  EXPECT_EQ("TLS 1.2", security_details->protocol);
+  EXPECT_EQ("B CA - Multi-root", security_details->subject_name);
+  EXPECT_EQ("C CA - Multi-root", security_details->issuer);
+  EXPECT_EQ(0U, security_details->san_list.size());
+  EXPECT_EQ(certs[0]->valid_start().ToTimeT(), security_details->valid_from);
+  EXPECT_EQ(certs[0]->valid_expiry().ToTimeT(), security_details->valid_to);
+  ASSERT_EQ(1U, security_details->certificate.size());
   EXPECT_EQ(blink::WebString::FromLatin1(std::string(cert0_der)),
-            security_details.certificate[0]);
+            security_details->certificate[0]);
 }
 
 // Verifies that the lengths used by the PerformanceResourceTiming API are
@@ -608,6 +608,7 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   const GURL url(kTestURL);
   blink::WebURLRequest request(url);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
+  request.SetPriority(blink::WebURLRequest::Priority::kHighest);
 
   // Prepare a mock response
   SyncLoadResponse sync_load_response;

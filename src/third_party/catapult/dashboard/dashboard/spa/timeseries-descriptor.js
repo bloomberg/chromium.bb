@@ -4,24 +4,24 @@
 */
 'use strict';
 
-import './cp-checkbox.js';
-import './cp-loading.js';
+import './cp-flex.js';
 import './error-set.js';
 import './recommended-options.js';
-import '@polymer/polymer/lib/elements/dom-if.js';
-import DescribeRequest from './describe-request.js';
-import MemoryComponents from './memory-components.js';
-import MenuInput from './menu-input.js';
-import OptionGroup from './option-group.js';
-import TagFilter from './tag-filter.js';
-import TestSuitesRequest from './test-suites-request.js';
-import {BatchIterator} from './utils.js';
+import '@chopsui/chops-checkbox';
+import '@chopsui/chops-loading';
+import {BatchIterator} from '@chopsui/batch-iterator';
+import {DescribeRequest} from './describe-request.js';
 import {ElementBase, STORE} from './element-base.js';
+import {MemoryComponents} from './memory-components.js';
+import {MenuInput} from './menu-input.js';
+import {OptionGroup} from './option-group.js';
 import {TOGGLE, UPDATE} from './simple-redux.js';
-import {get} from '@polymer/polymer/lib/utils/path.js';
-import {html} from '@polymer/polymer/polymer-element.js';
+import {TagFilter} from './tag-filter.js';
+import {TestSuitesRequest} from './test-suites-request.js';
+import {get} from 'dot-prop-immutable';
+import {html, css} from 'lit-element';
 
-export default class TimeseriesDescriptor extends ElementBase {
+export class TimeseriesDescriptor extends ElementBase {
   static get is() { return 'timeseries-descriptor'; }
 
   static get properties() {
@@ -85,131 +85,136 @@ export default class TimeseriesDescriptor extends ElementBase {
     };
   }
 
-  static get template() {
-    return html`
-      <style>
-        #row {
-          display: flex;
-        }
-        menu-input {
-          margin-right: 8px;
-        }
-        .error {
-          color: var(--error-color, red);
-          position: absolute;
-          visibility: hidden;
-        }
-        .error[visible] {
-          visibility: visible;
-        }
-        cp-checkbox[hidden] {
-          visibility: hidden;
-        }
-      </style>
+  static get styles() {
+    return css`
+      menu-input {
+        margin-right: 8px;
+      }
+      .error {
+        color: var(--error-color, red);
+        position: absolute;
+        visibility: hidden;
+      }
+      .error[visible] {
+        visibility: visible;
+      }
+      chops-checkbox[hidden] {
+        visibility: hidden;
+      }
+    `;
+  }
 
-      <div id="row">
+  render() {
+    return html`
+      <cp-flex>
         <div>
           <menu-input
-              state-path="[[statePath]].suite"
-              on-option-select="onSuiteSelect_">
-            <recommended-options slot="top" state-path="[[statePath]].suite">
+              .statePath="${this.statePath}.suite"
+              @keydown="${this.onSuiteKeyDown_}"
+              @option-select="${this.onSuiteSelect_}">
+            <recommended-options
+                slot="top"
+                .statePath="${this.statePath}.suite">
             </recommended-options>
           </menu-input>
 
-          <div class="error" visible$="[[isEmpty_(suite.selectedOptions)]]">
+          <div class="error"
+              ?visible="${this.suite.selectedOptions.length === 0}">
             At least one required
           </div>
 
-          <template is="dom-if" if="[[suite.canAggregate]]">
-            <cp-checkbox
-                hidden$="[[isEmpty_(suite.selectedOptions)]]"
-                disabled$="[[!isMultiple_(suite.selectedOptions)]]"
-                checked="[[suite.isAggregated]]"
-                on-change="onSuiteAggregateChange_">
+          ${!this.suite.canAggregate ? '' : html`
+            <chops-checkbox
+                ?hidden="${this.suite.selectedOptions.length === 0}"
+                ?disabled="${this.suite.selectedOptions.length === 1}"
+                ?checked="${this.suite.isAggregated}"
+                @change="${this.onSuiteAggregateChange_}">
               Aggregate
-            </cp-checkbox>
-          </template>
+            </chops-checkbox>
+          `}
         </div>
 
         <div>
           <menu-input
-              state-path="[[statePath]].measurement"
-              on-option-select="onMeasurementSelect_">
+              .statePath="${this.statePath}.measurement"
+              @keydown="${this.onMeasurementKeyDown_}"
+              @option-select="${this.onMeasurementSelect_}">
             <div slot="top">
-              <recommended-options state-path="[[statePath]].measurement">
+              <recommended-options .statePath="${this.statePath}.measurement">
               </recommended-options>
-              <memory-components state-path="[[statePath]].measurement">
+              <memory-components .statePath="${this.statePath}.measurement">
               </memory-components>
             </div>
           </menu-input>
 
-          <template is="dom-if" if="[[!measurement.requireSingle]]">
+          ${this.measurement.requireSingle ? html`
             <div class="error"
-                visible$="[[isEmpty_(measurement.selectedOptions)]]">
-              At least one required
-            </div>
-          </template>
-
-          <template is="dom-if" if="[[measurement.requireSingle]]">
-            <div class="error"
-                visible$="[[showExactlyOneRequiredMeasurement_(measurement)]]">
+                ?visible="${this.measurement.selectedOptions.length !== 1}">
               Exactly one required
             </div>
-          </template>
+          ` : html`
+            <div class="error"
+                ?visible="${this.measurement.selectedOptions.length === 0}">
+              At least one required
+            </div>
+          `}
         </div>
 
         <div>
           <menu-input
-              state-path="[[statePath]].bot"
-              on-option-select="onBotSelect_">
-            <recommended-options slot="top" state-path="[[statePath]].bot">
+              .statePath="${this.statePath}.bot"
+              @keydown="${this.onBotKeyDown_}"
+              @option-select="${this.onBotSelect_}">
+            <recommended-options slot="top" .statePath="${this.statePath}.bot">
             </recommended-options>
           </menu-input>
 
-          <div class="error" visible$="[[isEmpty_(bot.selectedOptions)]]">
+          <div class="error"
+              ?visible="${this.bot.selectedOptions.length === 0}">
             At least one required
           </div>
 
-          <template is="dom-if" if="[[bot.canAggregate]]">
-            <cp-checkbox
-                hidden$="[[isEmpty_(bot.selectedOptions)]]"
-                disabled$="[[!isMultiple_(bot.selectedOptions)]]"
-                checked="[[bot.isAggregated]]"
-                on-change="onBotAggregateChange_">
+          ${!this.bot.canAggregate ? '' : html`
+            <chops-checkbox
+                ?hidden="${this.bot.selectedOptions.length === 0}"
+                ?disabled="${this.bot.selectedOptions.length === 1}"
+                ?checked="${this.bot.isAggregated}"
+                @change="${this.onBotAggregateChange_}">
               Aggregate
-            </cp-checkbox>
-          </template>
+            </chops-checkbox>
+          `}
         </div>
 
         <div>
           <menu-input
-              state-path="[[statePath]].case"
-              on-option-select="onCaseSelect_">
-            <recommended-options slot="top" state-path="[[statePath]].case">
+              .statePath="${this.statePath}.case"
+              @keydown="${this.onCaseKeyDown_}"
+              @option-select="${this.onCaseSelect_}">
+            <recommended-options slot="top" .statePath="${this.statePath}.case">
             </recommended-options>
 
-            <tag-filter slot="left" state-path="[[statePath]].case">
+            <tag-filter slot="left" .statePath="${this.statePath}.case">
             </tag-filter>
           </menu-input>
 
-          <template is="dom-if" if="[[case.canAggregate]]">
-            <cp-checkbox
-                disabled$="[[!isMultiple_(case.selectedOptions)]]"
-                checked="[[case.isAggregated]]"
-                on-change="onCaseAggregateChange_">
+          ${!this.case.canAggregate ? '' : html`
+            <chops-checkbox
+                ?hidden="${this.case.selectedOptions.length === 0}"
+                ?disabled="${this.case.selectedOptions.length === 1}"
+                ?checked="${this.case.isAggregated}"
+                @change="${this.onCaseAggregateChange_}">
               Aggregate
-            </cp-checkbox>
-          </template>
+            </chops-checkbox>
+          `}
         </div>
-      </div>
+      </cp-flex>
 
-      <cp-loading loading$="[[isLoading]]"></cp-loading>
-      <error-set errors="[[errors]]"></error-set>
+      <chops-loading ?loading="${this.isLoading}"></chops-loading>
+      <error-set .errors="${this.errors}"></error-set>
     `;
   }
 
-  async ready() {
-    super.ready();
+  async firstUpdated() {
     await TimeseriesDescriptor.ready(this.statePath);
     this.dispatchMatrixChange_();
   }
@@ -277,7 +282,6 @@ export default class TimeseriesDescriptor extends ElementBase {
         // handled by a new dispatch of this action creator.
         return;
       }
-      // TODO display errors
       for (const descriptor of results) {
         if (!descriptor) continue;
         DescribeRequest.mergeDescriptor(mergedDescriptor, descriptor);
@@ -286,6 +290,7 @@ export default class TimeseriesDescriptor extends ElementBase {
         type: TimeseriesDescriptor.reducers.receiveDescriptor.name,
         statePath,
         descriptor: mergedDescriptor,
+        errors,
       });
     }
     STORE.dispatch({
@@ -300,10 +305,6 @@ export default class TimeseriesDescriptor extends ElementBase {
     }
   }
 
-  showExactlyOneRequiredMeasurement_(measurement) {
-    return measurement && (1 !== measurement.selectedOptions.length);
-  }
-
   dispatchMatrixChange_() {
     this.dispatchEvent(new CustomEvent('matrix-change', {
       bubbles: true,
@@ -311,6 +312,30 @@ export default class TimeseriesDescriptor extends ElementBase {
       detail: TimeseriesDescriptor.getParameterMatrix(
           this.suite, this.measurement, this.bot, this.case),
     }));
+  }
+
+  async onSuiteKeyDown_(event) {
+    if (event.key === 'Tab') {
+      MenuInput.focus(`${this.statePath}.measurement`);
+    }
+  }
+
+  async onMeasurementKeyDown_(event) {
+    if (event.key === 'Tab') {
+      MenuInput.focus(`${this.statePath}.bot`);
+    }
+  }
+
+  async onBotKeyDown_(event) {
+    if (event.key === 'Tab') {
+      MenuInput.focus(`${this.statePath}.case`);
+    }
+  }
+
+  async onCaseKeyDown_(event) {
+    if (event.key === 'Tab') {
+      MenuInput.focus(`${this.statePath}.statistic`);
+    }
   }
 
   async onSuiteSelect_(event) {
@@ -361,6 +386,77 @@ export default class TimeseriesDescriptor extends ElementBase {
     STORE.dispatch(TOGGLE(`${this.statePath}.case.isAggregated`));
     this.dispatchMatrixChange_();
   }
+
+  static getParameterMatrix(suite, measurement, bot, cas) {
+    // Organizes selected options from redux state into an object like
+    // {suites, measurements, bots, cases}.
+    // suites is an array of arrays of test suite names.
+    // measurements is an array of measurement names.
+    // bots is an array of arrays of bot names.
+    // cases is an array of arrays of test case names.
+    // suites, bots, and cases can be aggregated or unaggregated.
+    // Aggregated parameters contain a single array that can contain multiple
+    // names like [[a, b, c]].
+    // Unaggregated parameters contain multiple arrays that contain a single
+    // name like [[a], [b], [c]].
+
+    if (!suite || !measurement || !bot || !cas) {
+      return {suites: [], measurements: [], bots: [], cases: []};
+    }
+
+    let suites = suite.selectedOptions;
+    if (suite.isAggregated) {
+      suites = [suites];
+    } else {
+      suites = suites.map(suite => [suite]);
+    }
+
+    let bots = bot.selectedOptions;
+    if (bot.isAggregated) {
+      bots = [bots];
+    } else {
+      bots = bots.map(bot => [bot]);
+    }
+
+    let cases = cas.selectedOptions.filter(x => x);
+    if (cas.isAggregated) {
+      cases = [cases];
+    } else {
+      cases = cases.map(c => [c]);
+    }
+    if (cases.length === 0) cases.push([]);
+
+    const measurements = measurement.selectedOptions;
+    return {suites, measurements, bots, cases};
+  }
+
+  static createLineDescriptors({
+    suiteses, measurements, botses, caseses, statistics,
+    buildTypes,
+  }) {
+    const lineDescriptors = [];
+    for (const suites of suiteses) {
+      for (const measurement of measurements) {
+        for (const bots of botses) {
+          for (const cases of caseses) {
+            for (const statistic of statistics) {
+              for (const buildType of buildTypes) {
+                lineDescriptors.push({
+                  suites,
+                  measurement,
+                  bots,
+                  cases,
+                  statistic,
+                  buildType,
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+    return lineDescriptors;
+  }
 }
 
 TimeseriesDescriptor.reducers = {
@@ -368,13 +464,22 @@ TimeseriesDescriptor.reducers = {
     if (!state) return state;
     const suite = {
       ...state.suite,
-      ...MenuInput.buildState({...state.suite, options: suites}),
+      ...MenuInput.buildState({
+        ...state.suite,
+        options: suites,
+        label: `Suites (${suites.length})`,
+      }),
     };
     return {...state, suite};
   },
 
-  receiveDescriptor: (state, {descriptor}, rootState) => {
+  receiveDescriptor: (state, {descriptor, errors}, rootState) => {
     state = {...state};
+
+    if (errors) {
+      errors = errors.map(e => e.message);
+      state.errors = [...new Set([...state.errors, ...errors])];
+    }
 
     state.measurement = {
       ...state.measurement,
@@ -451,77 +556,6 @@ TimeseriesDescriptor.reducers = {
 
     return state;
   },
-};
-
-TimeseriesDescriptor.getParameterMatrix = (suite, measurement, bot, cas) => {
-  // Organizes selected options from redux state into an object like
-  // {suites, measurements, bots, cases}.
-  // suites is an array of arrays of test suite names.
-  // measurements is an array of measurement names.
-  // bots is an array of arrays of bot names.
-  // cases is an array of arrays of test case names.
-  // suites, bots, and cases can be aggregated or unaggregated.
-  // Aggregated parameters contain a single array that can contain multiple
-  // names like [[a, b, c]].
-  // Unaggregated parameters contain multiple arrays that contain a single
-  // name like [[a], [b], [c]].
-
-  if (!suite || !measurement || !bot || !cas) {
-    return {suites: [], measurements: [], bots: [], cases: []};
-  }
-
-  let suites = suite.selectedOptions;
-  if (suite.isAggregated) {
-    suites = [suites];
-  } else {
-    suites = suites.map(suite => [suite]);
-  }
-
-  let bots = bot.selectedOptions;
-  if (bot.isAggregated) {
-    bots = [bots];
-  } else {
-    bots = bots.map(bot => [bot]);
-  }
-
-  let cases = cas.selectedOptions.filter(x => x);
-  if (cas.isAggregated) {
-    cases = [cases];
-  } else {
-    cases = cases.map(c => [c]);
-  }
-  if (cases.length === 0) cases.push([]);
-
-  const measurements = measurement.selectedOptions;
-  return {suites, measurements, bots, cases};
-};
-
-TimeseriesDescriptor.createLineDescriptors = ({
-  suiteses, measurements, botses, caseses, statistics,
-  buildTypes,
-}) => {
-  const lineDescriptors = [];
-  for (const suites of suiteses) {
-    for (const measurement of measurements) {
-      for (const bots of botses) {
-        for (const cases of caseses) {
-          for (const statistic of statistics) {
-            for (const buildType of buildTypes) {
-              lineDescriptors.push({
-                suites,
-                measurement,
-                bots,
-                cases,
-                statistic,
-                buildType,
-              });
-            }
-          }
-        }
-      }
-    }
-  }
-  return lineDescriptors;
 };
 
 ElementBase.register(TimeseriesDescriptor);

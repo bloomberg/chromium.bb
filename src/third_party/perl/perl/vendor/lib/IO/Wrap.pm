@@ -13,7 +13,7 @@ use FileHandle;
 use Carp;
 
 # The package version, both in 1.23 style *and* usable by MakeMaker:
-$VERSION = "2.110";
+$VERSION = "2.111";
 
 
 #------------------------------
@@ -49,6 +49,12 @@ sub close {
     my $self = shift;
     return close($$self);
 }
+sub fileno {
+    my $self = shift;
+    my $fh = $$self;
+    return fileno($fh);
+}
+
 sub getline {
     my $self = shift;
     my $fh = $$self;
@@ -211,7 +217,7 @@ $Id: Wrap.pm,v 1.2 2005/02/10 21:21:53 dfs Exp $
 
 =item Primary Maintainer
 
-David F. Skoll (F<dfs@roaringpenguin.com>).
+Dianne Skoll (F<dfs@roaringpenguin.com>).
 
 =item Original Author
 

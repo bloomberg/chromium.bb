@@ -18,14 +18,17 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
+#include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -182,18 +185,19 @@ class FakeControllerServiceWorker
   ~FakeControllerServiceWorker() override = default;
 
   // blink::mojom::ControllerServiceWorker:
-  void DispatchFetchEvent(
+  void DispatchFetchEventForSubresource(
       blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      DispatchFetchEventCallback callback) override {
+      DispatchFetchEventForSubresourceCallback callback) override {
     fetch_event_count_++;
     fetch_event_request_ = std::move(params->request);
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
     if (fetch_event_callback_)
       std::move(fetch_event_callback_).Run();
   }
-  void Clone(blink::mojom::ControllerServiceWorkerRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
+  void Clone(mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
+                 receiver) override {
+    receivers_.Add(this, std::move(receiver));
   }
 
   void set_fetch_callback(base::OnceClosure closure) {
@@ -204,13 +208,13 @@ class FakeControllerServiceWorker
     return *fetch_event_request_;
   }
 
-  void Disconnect() { bindings_.CloseAllBindings(); }
+  void Disconnect() { receivers_.Clear(); }
 
  private:
   int fetch_event_count_ = 0;
   blink::mojom::FetchAPIRequestPtr fetch_event_request_;
   base::OnceClosure fetch_event_callback_;
-  mojo::BindingSet<blink::mojom::ControllerServiceWorker> bindings_;
+  mojo::ReceiverSet<blink::mojom::ControllerServiceWorker> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeControllerServiceWorker);
 };
@@ -241,7 +245,7 @@ class FakeServiceWorkerContainerHost
     NOTIMPLEMENTED();
   }
   void EnsureControllerServiceWorker(
-      blink::mojom::ControllerServiceWorkerRequest request,
+      mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
       blink::mojom::ControllerServiceWorkerPurpose purpose) override {
     NOTIMPLEMENTED();
   }
@@ -289,7 +293,7 @@ class ServiceWorkerProviderContextTest : public testing::Test {
 
   void FlushControllerConnector(
       ServiceWorkerProviderContext* provider_context) {
-    provider_context->state_for_client_->controller_connector.FlushForTesting();
+    provider_context->controller_connector_.FlushForTesting();
   }
 
  protected:
@@ -435,12 +439,12 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // Make the ControllerServiceWorkerInfo.
   FakeControllerServiceWorker fake_controller1;
   auto controller_info1 = blink::mojom::ControllerServiceWorkerInfo::New();
-  blink::mojom::ControllerServiceWorkerPtr controller_ptr1;
-  fake_controller1.Clone(mojo::MakeRequest(&controller_ptr1));
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller1;
+  fake_controller1.Clone(remote_controller1.BindNewPipeAndPassReceiver());
   controller_info1->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info1->object_info = std::move(object_info1);
-  controller_info1->endpoint = controller_ptr1.PassInterface();
+  controller_info1->remote_controller = remote_controller1.Unbind();
 
   // Make the ServiceWorkerProviderContext, pasing it the controller, container,
   // and container host.
@@ -450,8 +454,11 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
       std::move(controller_info1), loader_factory_);
 
   // The subresource loader factory must be available.
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      wrapped_loader_factory1 = provider_context->GetSubresourceLoaderFactory();
+  ASSERT_NE(nullptr, wrapped_loader_factory1);
   network::mojom::URLLoaderFactory* subresource_loader_factory1 =
-      provider_context->GetSubresourceLoaderFactory();
+      provider_context->GetSubresourceLoaderFactoryInternal();
   ASSERT_NE(nullptr, subresource_loader_factory1);
 
   // Performing a request should reach the controller.
@@ -475,12 +482,12 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   EXPECT_EQ(1, object_host2->GetBindingCount());
   FakeControllerServiceWorker fake_controller2;
   auto controller_info2 = blink::mojom::ControllerServiceWorkerInfo::New();
-  blink::mojom::ControllerServiceWorkerPtr controller_ptr2;
-  fake_controller2.Clone(mojo::MakeRequest(&controller_ptr2));
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller2;
+  fake_controller2.Clone(remote_controller2.BindNewPipeAndPassReceiver());
   controller_info2->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info2->object_info = std::move(object_info2);
-  controller_info2->endpoint = controller_ptr2.PassInterface();
+  controller_info2->remote_controller = remote_controller2.Unbind();
 
   // Resetting the controller will trigger many things happening, including the
   // object binding being broken.
@@ -493,8 +500,12 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
   // Subresource loader factory must be available, and should be the same
   // one as we got before.
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      wrapped_loader_factory2 = provider_context->GetSubresourceLoaderFactory();
+  ASSERT_NE(nullptr, wrapped_loader_factory2);
+  EXPECT_EQ(wrapped_loader_factory1, wrapped_loader_factory2);
   network::mojom::URLLoaderFactory* subresource_loader_factory2 =
-      provider_context->GetSubresourceLoaderFactory();
+      provider_context->GetSubresourceLoaderFactoryInternal();
   ASSERT_NE(nullptr, subresource_loader_factory2);
   EXPECT_EQ(subresource_loader_factory1, subresource_loader_factory2);
 
@@ -528,6 +539,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
   // Subresource loader factory must not be available.
   EXPECT_EQ(nullptr, provider_context->GetSubresourceLoaderFactory());
+  EXPECT_EQ(nullptr, provider_context->GetSubresourceLoaderFactoryInternal());
 
   // The SetController() call results in another Mojo call to
   // ControllerServiceWorkerConnector.UpdateController(). Flush that interface
@@ -559,18 +571,21 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   EXPECT_EQ(1, object_host4->GetBindingCount());
   FakeControllerServiceWorker fake_controller4;
   auto controller_info4 = blink::mojom::ControllerServiceWorkerInfo::New();
-  blink::mojom::ControllerServiceWorkerPtr controller_ptr4;
-  fake_controller4.Clone(mojo::MakeRequest(&controller_ptr4));
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller4;
+  fake_controller4.Clone(remote_controller4.BindNewPipeAndPassReceiver());
   controller_info4->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info4->object_info = std::move(object_info4);
-  controller_info4->endpoint = controller_ptr4.PassInterface();
+  controller_info4->remote_controller = remote_controller4.Unbind();
   container_ptr->SetController(std::move(controller_info4), true);
   container_ptr.FlushForTesting();
 
   // Subresource loader factory must be available.
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      wrapped_loader_factory4 = provider_context->GetSubresourceLoaderFactory();
+  ASSERT_NE(nullptr, wrapped_loader_factory4);
   auto* subresource_loader_factory4 =
-      provider_context->GetSubresourceLoaderFactory();
+      provider_context->GetSubresourceLoaderFactoryInternal();
   ASSERT_NE(nullptr, subresource_loader_factory4);
 
   // The SetController() call results in another Mojo call to
@@ -625,6 +640,7 @@ TEST_F(ServiceWorkerProviderContextTest, ControllerWithoutFetchHandler) {
 
   // Subresource loader factory must not be available.
   EXPECT_EQ(nullptr, provider_context->GetSubresourceLoaderFactory());
+  EXPECT_EQ(nullptr, provider_context->GetSubresourceLoaderFactoryInternal());
 }
 
 TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
@@ -705,12 +721,12 @@ TEST_F(ServiceWorkerProviderContextTest, OnNetworkProviderDestroyed) {
   // Make the ControllerServiceWorkerInfo.
   FakeControllerServiceWorker fake_controller;
   auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
-  blink::mojom::ControllerServiceWorkerPtr controller_ptr;
-  fake_controller.Clone(mojo::MakeRequest(&controller_ptr));
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller;
+  fake_controller.Clone(remote_controller.BindNewPipeAndPassReceiver());
   controller_info->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info->object_info = std::move(object_info);
-  controller_info->endpoint = controller_ptr.PassInterface();
+  controller_info->remote_controller = remote_controller.Unbind();
 
   // Make the container host and container pointers.
   blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
@@ -735,6 +751,62 @@ TEST_F(ServiceWorkerProviderContextTest, OnNetworkProviderDestroyed) {
   provider_context->PingContainerHost(base::DoNothing());
   provider_context->DispatchNetworkQuiet();
   provider_context->NotifyExecutionReady();
+}
+
+TEST_F(ServiceWorkerProviderContextTest,
+       SubresourceLoaderFactoryUseableAfterContextDestructs) {
+  EnableNetworkService();
+
+  // Make the object host for .controller.
+  auto mock_service_worker_object_host =
+      std::make_unique<MockServiceWorkerObjectHost>(201 /* version_id */);
+  ASSERT_EQ(0, mock_service_worker_object_host->GetBindingCount());
+  blink::mojom::ServiceWorkerObjectInfoPtr object_info =
+      mock_service_worker_object_host->CreateObjectInfo();
+  EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
+
+  // Make the ControllerServiceWorkerInfo.
+  FakeControllerServiceWorker fake_controller;
+  auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller;
+  fake_controller.Clone(remote_controller.BindNewPipeAndPassReceiver());
+  controller_info->mode =
+      blink::mojom::ControllerServiceWorkerMode::kControlled;
+  controller_info->object_info = std::move(object_info);
+  controller_info->remote_controller = remote_controller.Unbind();
+
+  // Make the container host and container pointers.
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
+  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&host_ptr);
+  blink::mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
+  blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
+
+  // Make the ServiceWorkerProviderContext, pasing it the controller, container,
+  // and container host.
+  auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
+      blink::mojom::ServiceWorkerProviderType::kForWindow,
+      std::move(container_request), host_ptr.PassInterface(),
+      std::move(controller_info), loader_factory_);
+
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      wrapped_loader_factory = provider_context->GetSubresourceLoaderFactory();
+  ASSERT_NE(nullptr, wrapped_loader_factory);
+
+  // Clear our context and ensure that we don't crash when later trying to use
+  // the factory.
+  provider_context.reset();
+
+  network::ResourceRequest request;
+  request.url = GURL("https://www.example.com/random.js");
+  request.resource_type = static_cast<int>(ResourceType::kSubResource);
+  network::mojom::URLLoaderPtr loader;
+  network::TestURLLoaderClient loader_client;
+  wrapped_loader_factory->CreateLoaderAndStart(
+      mojo::MakeRequest(&loader), 0, 0, network::mojom::kURLLoadOptionNone,
+      request, loader_client.CreateInterfacePtr(),
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 }
 
 }  // namespace service_worker_provider_context_unittest

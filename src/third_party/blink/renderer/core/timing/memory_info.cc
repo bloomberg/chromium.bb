@@ -43,8 +43,10 @@
 
 namespace blink {
 
-static constexpr TimeDelta kTwentyMinutes = TimeDelta::FromMinutes(20);
-static constexpr TimeDelta kFiftyMs = TimeDelta::FromMilliseconds(50);
+static constexpr base::TimeDelta kTwentyMinutes =
+    base::TimeDelta::FromMinutes(20);
+static constexpr base::TimeDelta kFiftyMs =
+    base::TimeDelta::FromMilliseconds(50);
 
 static void GetHeapSize(HeapInfo& info) {
   v8::HeapStatistics heap_statistics;
@@ -54,10 +56,6 @@ static void GetHeapSize(HeapInfo& info) {
   info.total_js_heap_size =
       heap_statistics.total_physical_size() + heap_statistics.external_memory();
   info.js_heap_size_limit = heap_statistics.heap_size_limit();
-  info.used_js_heap_size_without_external_memory =
-      heap_statistics.used_heap_size();
-  info.total_js_heap_size_without_external_memory =
-      heap_statistics.total_physical_size();
 }
 
 class HeapSizeCache {
@@ -86,10 +84,10 @@ class HeapSizeCache {
     // to make it more difficult for attackers to compare memory usage before
     // and after some event. We limit to once every 50 ms in the Precise case to
     // avoid exposing precise GC timings.
-    TimeTicks now = clock_->NowTicks();
-    TimeDelta delta_allowed = precision == MemoryInfo::Precision::Bucketized
-                                  ? kTwentyMinutes
-                                  : kFiftyMs;
+    base::TimeTicks now = clock_->NowTicks();
+    base::TimeDelta delta_allowed =
+        precision == MemoryInfo::Precision::Bucketized ? kTwentyMinutes
+                                                       : kFiftyMs;
     if (!last_update_time_.has_value() ||
         now - last_update_time_.value() >= delta_allowed) {
       Update(precision);
@@ -105,13 +103,9 @@ class HeapSizeCache {
     info_.used_js_heap_size = QuantizeMemorySize(info_.used_js_heap_size);
     info_.total_js_heap_size = QuantizeMemorySize(info_.total_js_heap_size);
     info_.js_heap_size_limit = QuantizeMemorySize(info_.js_heap_size_limit);
-    info_.used_js_heap_size_without_external_memory =
-        QuantizeMemorySize(info_.used_js_heap_size_without_external_memory);
-    info_.total_js_heap_size_without_external_memory =
-        QuantizeMemorySize(info_.total_js_heap_size_without_external_memory);
   }
 
-  base::Optional<TimeTicks> last_update_time_;
+  base::Optional<base::TimeTicks> last_update_time_;
   const base::TickClock* clock_;
 
   HeapInfo info_;

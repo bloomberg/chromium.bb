@@ -6,6 +6,7 @@
 */
 
 #include "src/core/SkUtils.h"
+#include "tools/ModifierKey.h"
 #include "tools/sk_app/ios/WindowContextFactory_ios.h"
 #include "tools/sk_app/ios/Window_ios.h"
 #include "tools/timer/Timer.h"
@@ -135,17 +136,17 @@ static Window::Key get_key(const SDL_Keysym& keysym) {
     return Window::Key::kNONE;
 }
 
-static uint32_t get_modifiers(const SDL_Event& event) {
+static ModifierKey get_modifiers(const SDL_Event& event) {
     static const struct {
         unsigned    fSDLMask;
-        unsigned    fSkMask;
+        ModifierKey fSkMask;
     } gModifiers[] = {
-        { KMOD_SHIFT, Window::kShift_ModifierKey },
-        { KMOD_CTRL,  Window::kControl_ModifierKey },
-        { KMOD_ALT,   Window::kOption_ModifierKey },
+        { KMOD_SHIFT, ModifierKey::kShift },
+        { KMOD_CTRL,  ModifierKey::kControl },
+        { KMOD_ALT,   ModifierKey::kOption },
     };
 
-    auto modifiers = 0;
+    ModifierKey modifiers = ModifierKey::kNone;
 
     switch (event.type) {
         case SDL_KEYDOWN:
@@ -157,7 +158,7 @@ static uint32_t get_modifiers(const SDL_Event& event) {
                 }
             }
             if (0 == event.key.repeat) {
-                modifiers |= Window::kFirstPress_ModifierKey;
+                modifiers |= ModifierKey::kFirstPress;
             }
             break;
         }
@@ -195,19 +196,19 @@ bool Window_ios::handleEvent(const SDL_Event& event) {
             break;
 
         case SDL_FINGERDOWN:
-            this->onTouch(event.tfinger.fingerId, Window::kDown_InputState,
+            this->onTouch(event.tfinger.fingerId, InputState::kDown,
                           (int)(this->width()*event.tfinger.x),
                           (int)(this->height()*event.tfinger.y));
             break;
 
         case SDL_FINGERUP:
-            this->onTouch(event.tfinger.fingerId, Window::kUp_InputState,
+            this->onTouch(event.tfinger.fingerId, InputState::kUp,
                           (int)(this->width()*event.tfinger.x),
                           (int)(this->height()*event.tfinger.y));
             break;
 
         case SDL_FINGERMOTION:
-            this->onTouch(event.tfinger.fingerId, Window::kMove_InputState,
+            this->onTouch(event.tfinger.fingerId, InputState::kMove,
                           (int)(this->width()*event.tfinger.x),
                           (int)(this->height()*event.tfinger.y));
             break;
@@ -215,7 +216,7 @@ bool Window_ios::handleEvent(const SDL_Event& event) {
         case SDL_KEYDOWN: {
             Window::Key key = get_key(event.key.keysym);
             if (key != Window::Key::kNONE) {
-                if (!this->onKey(key, Window::kDown_InputState, get_modifiers(event))) {
+                if (!this->onKey(key, InputState::kDown, get_modifiers(event))) {
                     if (event.key.keysym.sym == SDLK_ESCAPE) {
                         return true;
                     }
@@ -226,7 +227,7 @@ bool Window_ios::handleEvent(const SDL_Event& event) {
         case SDL_KEYUP: {
             Window::Key key = get_key(event.key.keysym);
             if (key != Window::Key::kNONE) {
-                (void) this->onKey(key, Window::kUp_InputState,
+                (void) this->onKey(key, InputState::kUp,
                                    get_modifiers(event));
             }
         } break;

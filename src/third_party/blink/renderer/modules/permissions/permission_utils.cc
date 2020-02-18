@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -26,6 +27,19 @@ void ConnectToPermissionService(
     mojom::blink::PermissionServiceRequest request) {
   if (auto* interface_provider = execution_context->GetInterfaceProvider())
     interface_provider->GetInterface(std::move(request));
+}
+
+String PermissionStatusToString(mojom::blink::PermissionStatus status) {
+  switch (status) {
+    case mojom::blink::PermissionStatus::GRANTED:
+      return "granted";
+    case mojom::blink::PermissionStatus::DENIED:
+      return "denied";
+    case mojom::blink::PermissionStatus::ASK:
+      return "prompt";
+  }
+  NOTREACHED();
+  return "denied";
 }
 
 PermissionDescriptorPtr CreatePermissionDescriptor(PermissionName name) {
@@ -52,6 +66,17 @@ PermissionDescriptorPtr CreateClipboardPermissionDescriptor(
       mojom::blink::ClipboardPermissionDescriptor::New(allow_without_gesture);
   descriptor->extension = mojom::blink::PermissionDescriptorExtension::New();
   descriptor->extension->set_clipboard(std::move(clipboard_extension));
+  return descriptor;
+}
+
+PermissionDescriptorPtr CreateWakeLockPermissionDescriptor(
+    mojom::blink::WakeLockType type) {
+  auto descriptor =
+      CreatePermissionDescriptor(mojom::blink::PermissionName::WAKE_LOCK);
+  auto wake_lock_extension =
+      mojom::blink::WakeLockPermissionDescriptor::New(type);
+  descriptor->extension = mojom::blink::PermissionDescriptorExtension::New();
+  descriptor->extension->set_wake_lock(std::move(wake_lock_extension));
   return descriptor;
 }
 

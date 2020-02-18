@@ -147,7 +147,7 @@ class SignerPayloadsClientGoogleStorage(object):
       hash_count: How many hash names are needed?
     """
     result = []
-    for i in xrange(1, hash_count + 1):
+    for i in range(1, hash_count + 1):
       result.append('%d.payload.hash' % i)
     return result
 

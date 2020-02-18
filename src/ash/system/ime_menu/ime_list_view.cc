@@ -6,7 +6,7 @@
 
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
@@ -102,7 +102,7 @@ class ImeListItemView : public ActionableView {
           gfx::CreateVectorIcon(kCheckCircleIcon, kMenuIconSize, button_color));
       tri_view->AddView(TriView::Container::END, checked_image);
     }
-    SetAccessibleName(label_view->text());
+    SetAccessibleName(label_view->GetText());
   }
 
   ~ImeListItemView() override = default;
@@ -332,7 +332,7 @@ void ImeListView::HandleButtonPressed(views::Button* sender,
   DCHECK_EQ(sender, keyboard_status_row_->toggle());
 
   Shell::Get()
-      ->ash_keyboard_controller()
+      ->keyboard_controller()
       ->virtual_keyboard_controller()
       ->ToggleIgnoreExternalKeyboard();
   last_selected_item_id_.clear();

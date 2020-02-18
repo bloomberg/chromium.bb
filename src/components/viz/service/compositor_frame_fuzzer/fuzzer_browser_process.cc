@@ -58,10 +58,8 @@ void FuzzerBrowserProcess::EmbedFuzzedCompositorFrame(
                                                 sink_client.BindInterfacePtr());
 
   for (auto& fuzzed_bitmap : allocated_bitmaps) {
-    sink_ptr->DidAllocateSharedBitmap(
-        bitmap_allocation::ToMojoHandle(
-            fuzzed_bitmap.shared_region.Duplicate()),
-        fuzzed_bitmap.id);
+    sink_ptr->DidAllocateSharedBitmap(fuzzed_bitmap.shared_region.Duplicate(),
+                                      fuzzed_bitmap.id);
   }
 
   lsi_allocator_.GenerateId();

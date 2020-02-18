@@ -42,7 +42,7 @@
 #include "third_party/blink/renderer/modules/encryptedmedia/media_keys_policy.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
@@ -306,7 +306,7 @@ ScriptPromise MediaKeys::setServerCertificate(
   pending_actions_.push_back(PendingAction::CreatePendingSetServerCertificate(
       result, server_certificate_buffer));
   if (!timer_.IsActive())
-    timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   // 6. Return promise.
   return promise;
@@ -348,7 +348,7 @@ ScriptPromise MediaKeys::getStatusForPolicy(
   pending_actions_.push_back(
       PendingAction::CreatePendingGetStatusForPolicy(result, min_hdcp_version));
   if (!timer_.IsActive())
-    timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   // Return promise.
   return promise;

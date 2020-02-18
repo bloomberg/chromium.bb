@@ -97,6 +97,7 @@ component("fido") {
     "fido_task.h",
     "fido_transport_protocol.cc",
     "fido_transport_protocol.h",
+    "fido_types.h",
     "get_assertion_request_handler.cc",
     "get_assertion_request_handler.h",
     "get_assertion_task.cc",
@@ -165,6 +166,7 @@ component("fido") {
   public_deps = [
     "//base",
     "//device/bluetooth",
+    "//device/bluetooth/public/cpp",
     "//services/device/public/mojom",
   ]
 
@@ -194,6 +196,8 @@ component("fido") {
       "mac/credential_metadata.h",
       "mac/credential_store.h",
       "mac/credential_store.mm",
+      "mac/discovery.cc",
+      "mac/discovery.h",
       "mac/get_assertion_operation.h",
       "mac/get_assertion_operation.mm",
       "mac/keychain.h",

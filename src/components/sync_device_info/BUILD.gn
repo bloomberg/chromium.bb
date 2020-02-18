@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 
@@ -12,6 +11,8 @@ jumbo_static_library("sync_device_info") {
     "device_count_metrics_provider.h",
     "device_info.cc",
     "device_info.h",
+    "device_info_prefs.cc",
+    "device_info_prefs.h",
     "device_info_sync_bridge.cc",
     "device_info_sync_bridge.h",
     "device_info_sync_service.cc",
@@ -43,6 +44,7 @@ jumbo_static_library("sync_device_info") {
   deps = [
     "//components/keyed_service/core",
     "//components/metrics",
+    "//components/prefs",
     "//components/version_info",
     "//ui/base",
   ]
@@ -62,6 +64,18 @@ jumbo_static_library("sync_device_info") {
   }
 }
 
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "fake_device_info_tracker.cc",
+    "fake_device_info_tracker.h",
+  ]
+
+  public_deps = [
+    ":sync_device_info",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -76,8 +90,10 @@ source_set("unit_tests") {
 
   deps = [
     ":sync_device_info",
+    ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//components/sync:test_support",
     "//components/version_info:version_string",
     "//testing/gmock",

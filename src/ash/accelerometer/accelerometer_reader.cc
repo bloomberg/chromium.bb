@@ -10,9 +10,9 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -724,35 +724,24 @@ void AccelerometerReader::Initialize(
 }
 
 void AccelerometerReader::AddObserver(Observer* observer) {
-  if (accelerometer_file_reader_)
-    accelerometer_file_reader_->AddObserver(observer);
+  accelerometer_file_reader_->AddObserver(observer);
 }
 
 void AccelerometerReader::RemoveObserver(Observer* observer) {
-  if (accelerometer_file_reader_)
-    accelerometer_file_reader_->RemoveObserver(observer);
+  accelerometer_file_reader_->RemoveObserver(observer);
 }
 
 void AccelerometerReader::StartListenToTabletModeController() {
-  if (accelerometer_file_reader_)
-    accelerometer_file_reader_->StartListenToTabletModeController();
+  accelerometer_file_reader_->StartListenToTabletModeController();
 }
 
 void AccelerometerReader::StopListenToTabletModeController() {
-  if (accelerometer_file_reader_)
-    accelerometer_file_reader_->StopListenToTabletModeController();
+  accelerometer_file_reader_->StopListenToTabletModeController();
 }
 
 AccelerometerReader::AccelerometerReader()
     : accelerometer_file_reader_(new AccelerometerFileReader()) {}
 
 AccelerometerReader::~AccelerometerReader() = default;
-
-void AccelerometerReader::DisableForTest() {
-  if (accelerometer_file_reader_) {
-    accelerometer_file_reader_->StopListenToTabletModeController();
-    accelerometer_file_reader_.reset();
-  }
-}
 
 }  // namespace ash

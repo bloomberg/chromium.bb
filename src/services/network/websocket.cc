@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -27,6 +28,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
+#include "net/websockets/websocket_basic_stream.h"
 #include "net/websockets/websocket_channel.h"
 #include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_frame.h"  // for WebSocketFrameHeader::OpCode
@@ -88,7 +90,7 @@ class WebSocket::WebSocketEventHandler final
                    scoped_refptr<net::IOBuffer> buffer,
                    size_t buffer_size) override;
   void OnClosingHandshake() override;
-  void OnFlowControl(int64_t quota) override;
+  void OnSendFlowControlQuotaAdded(int64_t quota) override;
   void OnDropChannel(bool was_clean,
                      uint16_t code,
                      const std::string& reason) override;
@@ -144,10 +146,32 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
            << selected_protocol << "\""
            << " extensions=\"" << extensions << "\"";
 
+  mojom::WebSocketPtr websocket_to_pass;
+  impl_->binding_.Bind(mojo::MakeRequest(&websocket_to_pass));
+  impl_->binding_.set_connection_error_handler(
+      base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(impl_)));
+
   impl_->handshake_succeeded_ = true;
   impl_->pending_connection_tracker_.OnCompleteHandshake();
 
-  impl_->client_->OnAddChannelResponse(selected_protocol, extensions);
+  base::CommandLine* const command_line =
+      base::CommandLine::ForCurrentProcess();
+  DCHECK(command_line);
+  uint64_t receive_quota_threshold =
+      net::WebSocketChannel::kReceiveQuotaThreshold;
+  if (command_line->HasSwitch(net::kWebSocketReceiveQuotaThreshold)) {
+    std::string flag_string =
+        command_line->GetSwitchValueASCII(net::kWebSocketReceiveQuotaThreshold);
+    if (!base::StringToUint64(flag_string, &receive_quota_threshold))
+      receive_quota_threshold = net::WebSocketChannel::kReceiveQuotaThreshold;
+  }
+  DVLOG(3) << "receive_quota_threshold is " << receive_quota_threshold;
+  impl_->handshake_client_->OnConnectionEstablished(
+      std::move(websocket_to_pass), selected_protocol, extensions,
+      receive_quota_threshold);
+  impl_->handshake_client_ = nullptr;
+  impl_->auth_handler_ = nullptr;
+  impl_->header_client_ = nullptr;
 }
 
 void WebSocket::WebSocketEventHandler::OnDataFrame(
@@ -159,14 +183,11 @@ void WebSocket::WebSocketEventHandler::OnDataFrame(
            << reinterpret_cast<void*>(this) << " fin=" << fin
            << " type=" << type << " data is " << buffer_size << " bytes";
 
-  // TODO(darin): Avoid this copy.
-  std::vector<uint8_t> data_to_pass(buffer_size);
-  if (buffer_size > 0) {
-    std::copy(buffer->data(), buffer->data() + buffer_size,
-              data_to_pass.begin());
-  }
-
-  impl_->client_->OnDataFrame(fin, OpCodeToMessageType(type), data_to_pass);
+  base::span<char> char_span =
+      buffer_size ? base::make_span(buffer->data(), buffer_size)
+                  : base::span<char>();
+  impl_->client_->OnDataFrame(fin, OpCodeToMessageType(type),
+                              base::as_bytes(char_span));
 }
 
 void WebSocket::WebSocketEventHandler::OnClosingHandshake() {
@@ -176,11 +197,12 @@ void WebSocket::WebSocketEventHandler::OnClosingHandshake() {
   impl_->client_->OnClosingHandshake();
 }
 
-void WebSocket::WebSocketEventHandler::OnFlowControl(int64_t quota) {
-  DVLOG(3) << "WebSocketEventHandler::OnFlowControl @"
+void WebSocket::WebSocketEventHandler::OnSendFlowControlQuotaAdded(
+    int64_t quota) {
+  DVLOG(3) << "WebSocketEventHandler::OnSendFlowControlQuotaAdded @"
            << reinterpret_cast<void*>(this) << " quota=" << quota;
 
-  impl_->client_->OnFlowControl(quota);
+  impl_->client_->AddSendFlowControlQuota(quota);
 }
 
 void WebSocket::WebSocketEventHandler::OnDropChannel(
@@ -192,6 +214,10 @@ void WebSocket::WebSocketEventHandler::OnDropChannel(
            << " code=" << code << " reason=\"" << reason << "\"";
 
   impl_->client_->OnDropChannel(was_clean, code, reason);
+  impl_->handshake_client_ = nullptr;
+  impl_->client_ = nullptr;
+  impl_->auth_handler_ = nullptr;
+  impl_->header_client_ = nullptr;
 
   // net::WebSocketChannel requires that we delete it at this point.
   impl_->channel_.reset();
@@ -202,7 +228,13 @@ void WebSocket::WebSocketEventHandler::OnFailChannel(
   DVLOG(3) << "WebSocketEventHandler::OnFailChannel @"
            << reinterpret_cast<void*>(this) << " message=\"" << message << "\"";
 
-  impl_->client_->OnFailChannel(message);
+  impl_->handshake_client_.ResetWithReason(mojom::WebSocket::kInternalFailure,
+                                           message);
+  impl_->client_.ResetWithReason(mojom::WebSocket::kInternalFailure, message);
+  impl_->handshake_client_ = nullptr;
+  impl_->client_ = nullptr;
+  impl_->auth_handler_ = nullptr;
+  impl_->header_client_ = nullptr;
 
   // net::WebSocketChannel requires that we delete it at this point.
   impl_->channel_.reset();
@@ -238,7 +270,8 @@ void WebSocket::WebSocketEventHandler::OnStartOpeningHandshake(
   headers_text.append("\r\n");
   request_to_pass->headers_text = std::move(headers_text);
 
-  impl_->client_->OnStartOpeningHandshake(std::move(request_to_pass));
+  impl_->handshake_client_->OnOpeningHandshakeStarted(
+      std::move(request_to_pass));
 }
 
 void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
@@ -272,7 +305,7 @@ void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
   headers_text.append("\r\n");
   response_to_pass->headers_text = headers_text;
 
-  impl_->client_->OnFinishOpeningHandshake(std::move(response_to_pass));
+  impl_->handshake_client_->OnResponseReceived(std::move(response_to_pass));
 }
 
 void WebSocket::WebSocketEventHandler::OnSSLCertificateError(
@@ -312,17 +345,24 @@ int WebSocket::WebSocketEventHandler::OnAuthRequired(
 
 WebSocket::WebSocket(
     std::unique_ptr<Delegate> delegate,
-    mojom::WebSocketRequest request,
+    const GURL& url,
+    const std::vector<std::string>& requested_protocols,
+    const GURL& site_for_cookies,
+    std::vector<mojom::HttpHeaderPtr> additional_headers,
+    int32_t child_id,
+    int32_t frame_id,
+    const url::Origin& origin,
+    uint32_t options,
+    mojom::WebSocketHandshakeClientPtr handshake_client,
+    mojom::WebSocketClientPtr client,
     mojom::AuthenticationHandlerPtr auth_handler,
     mojom::TrustedHeaderClientPtr header_client,
     WebSocketThrottler::PendingConnection pending_connection_tracker,
-    int child_id,
-    int frame_id,
-    url::Origin origin,
-    uint32_t options,
     base::TimeDelta delay)
     : delegate_(std::move(delegate)),
-      binding_(this, std::move(request)),
+      binding_(this),
+      handshake_client_(std::move(handshake_client)),
+      client_(std::move(client)),
       auth_handler_(std::move(auth_handler)),
       header_client_(std::move(header_client)),
       pending_connection_tracker_(std::move(pending_connection_tracker)),
@@ -332,17 +372,36 @@ WebSocket::WebSocket(
       child_id_(child_id),
       frame_id_(frame_id),
       origin_(std::move(origin)),
-      handshake_succeeded_(false),
-      weak_ptr_factory_(this) {
-  binding_.set_connection_error_handler(
-      base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
-
+      handshake_succeeded_(false) {
+  DCHECK(handshake_client_);
+  DCHECK(client_);
+  if (auth_handler_) {
+    // Make sure the request dies if |auth_handler_| has an error, otherwise
+    // requests can hang.
+    auth_handler_.set_connection_error_handler(
+        base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
+  }
   if (header_client_) {
     // Make sure the request dies if |header_client_| has an error, otherwise
     // requests can hang.
     header_client_.set_connection_error_handler(
         base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
   }
+  handshake_client_.set_connection_error_handler(
+      base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
+  client_.set_connection_error_handler(
+      base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
+  if (delay_ > base::TimeDelta()) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&WebSocket::AddChannel, weak_ptr_factory_.GetWeakPtr(),
+                       url, requested_protocols, site_for_cookies,
+                       std::move(additional_headers)),
+        delay_);
+    return;
+  }
+  AddChannel(url, requested_protocols, site_for_cookies,
+             std::move(additional_headers));
 }
 
 WebSocket::~WebSocket() {}
@@ -355,54 +414,13 @@ void WebSocket::GoAway() {
                         "");
 }
 
-void WebSocket::AddChannelRequest(
-    const GURL& socket_url,
-    const std::vector<std::string>& requested_protocols,
-    const GURL& site_for_cookies,
-    std::vector<mojom::HttpHeaderPtr> additional_headers,
-    mojom::WebSocketClientPtr client) {
-  DVLOG(3) << "WebSocket::AddChannelRequest @" << reinterpret_cast<void*>(this)
-           << " socket_url=\"" << socket_url << "\" requested_protocols=\""
-           << base::JoinString(requested_protocols, ", ") << "\" origin=\""
-           << origin_ << "\" site_for_cookies=\"" << site_for_cookies << "\"";
-
-  if (client_ || !client) {
-    delegate_->ReportBadMessage(
-        Delegate::BadMessageReason::kUnexpectedAddChannelRequest, this);
-    return;
-  }
-
-  client_ = std::move(client);
-
-  DCHECK(!channel_);
-  if (delay_ > base::TimeDelta()) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&WebSocket::AddChannel, weak_ptr_factory_.GetWeakPtr(),
-                       socket_url, requested_protocols, site_for_cookies,
-                       std::move(additional_headers)),
-        delay_);
-  } else {
-    AddChannel(socket_url, requested_protocols, site_for_cookies,
-               std::move(additional_headers));
-  }
-}
-
 void WebSocket::SendFrame(bool fin,
                           mojom::WebSocketMessageType type,
                           const std::vector<uint8_t>& data) {
+  DCHECK(handshake_succeeded_);
   DVLOG(3) << "WebSocket::SendFrame @" << reinterpret_cast<void*>(this)
            << " fin=" << fin << " type=" << type << " data is " << data.size()
            << " bytes";
-
-  if (!handshake_succeeded_) {
-    // The client should not be sending us frames until after we've informed
-    // it that the channel has been opened (OnAddChannelResponse).
-    delegate_->ReportBadMessage(
-        Delegate::BadMessageReason::kUnexpectedSendFrame, this);
-    return;
-  }
-
   if (!channel_) {
     DVLOG(1) << "Dropping frame sent to closed websocket";
     return;
@@ -446,8 +464,9 @@ void WebSocket::StartClosingHandshake(uint16_t code,
   if (!channel_) {
     // WebSocketChannel is not yet created due to the delay introduced by
     // per-renderer WebSocket throttling.
-    if (client_)
+    if (client_) {
       client_->OnDropChannel(false, net::kWebSocketErrorAbnormalClosure, "");
+    }
     return;
   }
 

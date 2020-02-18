@@ -5,6 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_DISPLAY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_DISPLAY_H_
 
+#include <memory>
+#include <utility>
+
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -148,7 +151,7 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   void FocusChanged();
 
-  void OnNonImmersiveVSync(TimeTicks timestamp);
+  void OnNonImmersiveVSync(base::TimeTicks timestamp);
   int PendingNonImmersiveVSyncId() { return pending_non_immersive_vsync_id_; }
 
   void Trace(blink::Visitor*) override;
@@ -169,9 +172,9 @@ class VRDisplay final : public EventTargetWithInlineData,
 
  private:
   void OnRequestImmersiveSessionReturned(
-      device::mojom::blink::XRSessionPtr session);
+      device::mojom::blink::RequestSessionResultPtr result);
   void OnNonImmersiveSessionRequestReturned(
-      device::mojom::blink::XRSessionPtr session);
+      device::mojom::blink::RequestSessionResultPtr result);
 
   void OnConnected();
   void OnDisconnected();
@@ -193,8 +196,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool FocusedOrPresenting();
 
   ScriptedAnimationController& EnsureScriptedAnimationController(Document*);
-  void ProcessScheduledAnimations(TimeTicks timestamp);
-  void ProcessScheduledWindowAnimations(TimeTicks timestamp);
+  void ProcessScheduledAnimations(base::TimeTicks timestamp);
+  void ProcessScheduledWindowAnimations(base::TimeTicks timestamp);
 
   // Request delivery of a VSync event for either magic window mode or
   // presenting mode as applicable. May be called more than once per frame, it
@@ -230,7 +233,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   double depth_far_ = 10000.0;
 
   // Current dimensions of the WebVR source canvas. May be different from
-  // the recommended renderWidth/Height if the client overrides dimensions.
+  // the recommended render width/height if the client overrides dimensions.
   int source_width_ = 0;
   int source_height_ = 0;
 
@@ -246,8 +249,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool pending_non_immersive_vsync_ = false;
   int pending_non_immersive_vsync_id_ = -1;
   base::OnceClosure non_immersive_vsync_waiting_for_pose_;
-  WTF::TimeTicks non_immersive_pose_request_time_;
-  WTF::TimeTicks non_immersive_pose_received_time_;
+  base::TimeTicks non_immersive_pose_request_time_;
+  base::TimeTicks non_immersive_pose_received_time_;
   bool in_animation_frame_ = false;
   bool did_submit_this_frame_ = false;
   bool display_blurred_ = false;

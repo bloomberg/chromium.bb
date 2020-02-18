@@ -87,34 +87,34 @@ class QuicEndpoint : public Endpoint,
   bool HasPendingHandshake() const override;
   bool ShouldKeepConnectionAlive() const override;
 
-  void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override {}
-  void OnBlockedFrame(const QuicBlockedFrame& frame) override {}
-  void OnRstStream(const QuicRstStreamFrame& frame) override {}
-  void OnGoAway(const QuicGoAwayFrame& frame) override {}
-  void OnMessageReceived(QuicStringPiece message) override {}
-  void OnConnectionClosed(QuicErrorCode error,
-                          const std::string& error_details,
-                          ConnectionCloseSource source) override {}
+  void OnWindowUpdateFrame(const QuicWindowUpdateFrame& /*frame*/) override {}
+  void OnBlockedFrame(const QuicBlockedFrame& /*frame*/) override {}
+  void OnRstStream(const QuicRstStreamFrame& /*frame*/) override {}
+  void OnGoAway(const QuicGoAwayFrame& /*frame*/) override {}
+  void OnMessageReceived(QuicStringPiece /*message*/) override {}
+  void OnConnectionClosed(const QuicConnectionCloseFrame& /*frame*/,
+                          ConnectionCloseSource /*source*/) override {}
   void OnWriteBlocked() override {}
   void OnSuccessfulVersionNegotiation(
-      const ParsedQuicVersion& version) override {}
+      const ParsedQuicVersion& /*version*/) override {}
   void OnConnectivityProbeReceived(
-      const QuicSocketAddress& self_address,
-      const QuicSocketAddress& peer_address) override {}
-  void OnCongestionWindowChange(QuicTime now) override {}
-  void OnConnectionMigration(AddressChangeType type) override {}
+      const QuicSocketAddress& /*self_address*/,
+      const QuicSocketAddress& /*peer_address*/) override {}
+  void OnCongestionWindowChange(QuicTime /*now*/) override {}
+  void OnConnectionMigration(AddressChangeType /*type*/) override {}
   void OnPathDegrading() override {}
   void OnAckNeedsRetransmittableFrame() override {}
   void SendPing() override {}
   bool AllowSelfAddressChange() const override;
   void OnForwardProgressConfirmed() override {}
-  bool OnMaxStreamsFrame(const QuicMaxStreamsFrame& frame) override {
+  bool OnMaxStreamsFrame(const QuicMaxStreamsFrame& /*frame*/) override {
     return true;
   }
-  bool OnStreamsBlockedFrame(const QuicStreamsBlockedFrame& frame) override {
+  bool OnStreamsBlockedFrame(
+      const QuicStreamsBlockedFrame& /*frame*/) override {
     return true;
   }
-  bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override {
+  bool OnStopSendingFrame(const QuicStopSendingFrame& /*frame*/) override {
     return true;
   }
 
@@ -122,13 +122,15 @@ class QuicEndpoint : public Endpoint,
 
   // Begin SessionNotifierInterface methods:
   bool OnFrameAcked(const QuicFrame& frame,
-                    QuicTime::Delta ack_delay_time) override;
-  void OnStreamFrameRetransmitted(const QuicStreamFrame& frame) override {}
+                    QuicTime::Delta ack_delay_time,
+                    QuicTime receive_timestamp) override;
+  void OnStreamFrameRetransmitted(const QuicStreamFrame& /*frame*/) override {}
   void OnFrameLost(const QuicFrame& frame) override;
   void RetransmitFrames(const QuicFrames& frames,
                         TransmissionType type) override;
   bool IsFrameOutstanding(const QuicFrame& frame) const override;
   bool HasUnackedCryptoData() const override;
+  bool HasUnackedStreamData() const override;
   // End SessionNotifierInterface implementation.
 
  private:
@@ -212,7 +214,7 @@ class QuicEndpointMultiplexer : public Endpoint,
                                 public UnconstrainedPortInterface {
  public:
   QuicEndpointMultiplexer(std::string name,
-                          std::initializer_list<QuicEndpoint*> endpoints);
+                          const std::vector<QuicEndpoint*>& endpoints);
   ~QuicEndpointMultiplexer() override;
 
   // Receives a packet and passes it to the specified endpoint if that endpoint

@@ -48,6 +48,18 @@ find components-chromium/polymer/ -mindepth 3 -maxdepth 3 -name '*.js' \
 # Apply additional chrome specific patches.
 patch -p1 --forward -r - < chromium.patch
 
+echo 'Minifying Polymer 3, since it comes non-minified from NPM.'
+python minify_polymer.py
+
+echo 'Updating paper/iron elements to point to the minified file.'
+# Replace all paths that point to within polymer/ to point to the bundle.
+find components-chromium/ -name '*.js' -exec sed -i \
+  's/\/polymer\/[a-zA-Z\/\.-]\+/\/polymer\/polymer_bundled.min.js/' {} +
+
+# Undo any changes in paper-ripple, since Chromium's implementation is a fork of
+# the original paper-ripple.
+git checkout -- components-chromium/paper-ripple/*
+
 new=$(git status --porcelain components-chromium | grep '^??' | \
       cut -d' ' -f2 | egrep '\.(js|css)$' || true)
 
@@ -70,8 +82,13 @@ if [[ ! -z "${new}${deleted}" ]]; then
   echo
 fi
 
-# TODO css_strip_prefixes.py
-# TODO rgbify_hex_vars.py
+echo 'Stripping unnecessary prefixed CSS rules...'
+python ../v1_0/css_strip_prefixes.py --file_extension=js
+
+echo 'Generating -rgb versions of --google-* vars in paper-style/colors.js...'
+python ../v1_0/rgbify_hex_vars.py --filter-prefix=google --replace \
+    components-chromium/paper-styles/color.js
+
 # TODO create components summary
 # TODO generate gn
 # TODO find unused elements?

@@ -136,6 +136,8 @@ extern const char kFakeDriveFsLauncherChrootPath[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kFakeDriveFsLauncherSocketPath[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kForceCertVerifierBuiltin[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kForceDevToolsAvailable[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kForceFirstRunUI[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -155,6 +157,7 @@ extern const char kHideAndroidFilesInFilesApp[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kHomedir[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kIgnoreUserProfileMappingForTests[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kKernelnextRestrictVMs[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kLoginManager[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kLoginProfile[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kLoginUser[];
@@ -175,11 +178,12 @@ extern const char kRedirectLibassistantLogging[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kRegulatoryLabelDir[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kRlzPingDelay[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kSamlPasswordChangeUrl[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfDenseClamshell[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfHoverPreviews[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfHotseat[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfScrollable[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kShowAndroidFilesInFilesApp[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kSupervisionOnboardingUrlPrefix[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShowLoginDevOverlay[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kTestEncryptionMigrationUI[];
@@ -194,40 +198,27 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kWakeOnWifiPacket[];
 // Controls whether to enable Chrome OS Account Manager.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kAccountManager;
 
-// Controls whether to enable Chrome OS Add Child Account Supervision flow.
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kAddSupervision;
-
 // Controls whether to enable Google Assistant feature.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAssistantFeature;
 
-// Controls whether to show the system tray language toggle in Demo Mode.
+// Controls whether to enable Ambient mode feature.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kShowLanguageToggleInDemoMode;
+extern const base::Feature kAmbientModeFeature;
+
+// Controls whether to enable Parental Controls options in settings.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kParentalControlsSettings;
 
 // Controls whether to show the Play Store icon in Demo Mode.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kShowPlayInDemoMode;
-
-// Controls whether to show a static splash screen instead of the user pods
-// before demo sessions log in.
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kShowSplashScreenInDemoMode;
-
-// Controls whether to support country-level customization in Demo Mode.
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kSupportCountryCustomizationInDemoMode;
 
 // Returns true if the system should wake in response to wifi traffic.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool WakeOnWifiEnabled();
 
 // Returns true if memory pressure handling is enabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool MemoryPressureHandlingEnabled();
-
-// Returns thresholds for determining if the system is under memory pressure.
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-base::chromeos::MemoryPressureMonitor::MemoryPressureThresholds
-GetMemoryPressureThresholds();
 
 // Returns true if flags are set indicating that stored user keys are being
 // converted to GAIA IDs.
@@ -239,14 +230,17 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsCellularFirstDevice();
 // Returns true if Chrome OS Account Manager is enabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAccountManagerEnabled();
 
-// Returns true if Chrome OS Add Child Supervision flow is enabled.
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAddSupervisionEnabled();
+// Returns true if Parental Controls Settings are enabled.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsParentalControlsSettingsEnabled();
 
 // Returns true if Google Assistant flags are enabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAssistantFlagsEnabled();
 
 // Returns true if Google Assistant is enabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAssistantEnabled();
+
+// Returns true if Ambient mode is enabled.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAmbientModeEnabled();
 
 // Returns true if client certificate authentication for the sign-in frame on
 // the Chrome OS sign-in screen is enabled.
@@ -257,9 +251,18 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSigninFrameClientCertsEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsSigninFrameClientCertUserSelectionEnabled();
 
+// Returns true if we should show a smaller, denser shelf in clamshell mode.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowShelfDenseClamshell();
+
+// Returns true if we should show the modular shelf with the hotseat UI.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowShelfHotseat();
+
 // Returns true if we should show window previews when hovering over an app
 // on the shelf.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowShelfHoverPreviews();
+
+// Returns true if we should show a scrollable list of apps in the main shelf.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowScrollableShelf();
 
 // Returns true if Instant Tethering should support hosts which use the
 // background advertisement model.

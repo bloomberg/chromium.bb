@@ -144,7 +144,7 @@ TEST_F(UssMigratorTest, Migrate) {
   EXPECT_EQ(1, update->response_version);
   EXPECT_EQ(ctime, entity.creation_time);
   EXPECT_EQ(ctime, entity.modification_time);
-  EXPECT_EQ(kTag1, entity.non_unique_name);
+  EXPECT_EQ(kTag1, entity.name);
   EXPECT_FALSE(entity.is_deleted());
   EXPECT_EQ(kTag1, entity.specifics.preference().name());
   EXPECT_EQ(kValue1, entity.specifics.preference().value());

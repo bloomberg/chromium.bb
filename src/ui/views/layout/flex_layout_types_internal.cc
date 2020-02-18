@@ -27,114 +27,6 @@ std::string OptionalToString(const base::Optional<int>& opt) {
 
 }  // namespace
 
-// Span ------------------------------------------------------------------------
-
-void Span::SetSpan(int start, int length) {
-  start_ = start;
-  length_ = std::max(0, length);
-}
-
-void Span::Expand(int leading, int trailing) {
-  const int end = this->end();
-  set_start(start_ - leading);
-  set_end(end + trailing);
-}
-
-void Span::Inset(int leading, int trailing) {
-  Expand(-leading, -trailing);
-}
-
-void Span::Inset(const Inset1D& insets) {
-  Inset(insets.leading(), insets.trailing());
-}
-
-void Span::Center(const Span& container, const Inset1D& margins) {
-  int remaining = container.length() - length();
-
-  // Case 1: no room for any margins. Just center the span in the container,
-  // with equal overflow on each side.
-  if (remaining <= 0) {
-    set_start(std::ceil(remaining * 0.5f));
-    return;
-  }
-
-  // Case 2: room for only part of the margins.
-  if (margins.size() > remaining) {
-    float scale = float{remaining} / float{margins.size()};
-    set_start(std::roundf(scale * margins.leading()));
-    return;
-  }
-
-  // Case 3: room for both span and margins. Center the whole unit.
-  remaining -= margins.size();
-  set_start(remaining / 2 + margins.leading());
-}
-
-void Span::Align(const Span& container,
-                 LayoutAlignment alignment,
-                 const Inset1D& margins) {
-  switch (alignment) {
-    case LayoutAlignment::kStart:
-      set_start(container.start() + margins.leading());
-      break;
-    case LayoutAlignment::kEnd:
-      set_start(container.end() - (margins.trailing() + length()));
-      break;
-    case LayoutAlignment::kCenter:
-      Center(container, margins);
-      break;
-    case LayoutAlignment::kStretch:
-      SetSpan(container.start() + margins.leading(),
-              std::max(0, container.length() - margins.size()));
-      break;
-  }
-}
-
-bool Span::operator==(const Span& other) const {
-  return start_ == other.start_ && length_ == other.length_;
-}
-
-bool Span::operator!=(const Span& other) const {
-  return !(*this == other);
-}
-
-bool Span::operator<(const Span& other) const {
-  return std::tie(start_, length_) < std::tie(other.start_, other.length_);
-}
-
-std::string Span::ToString() const {
-  return base::StringPrintf("%d [%d]", start(), length());
-}
-
-// Inset1D ---------------------------------------------------------------------
-
-void Inset1D::SetInsets(int leading, int trailing) {
-  leading_ = leading;
-  trailing_ = trailing;
-}
-
-void Inset1D::Expand(int delta_leading, int delta_trailing) {
-  leading_ += delta_leading;
-  trailing_ += delta_trailing;
-}
-
-bool Inset1D::operator==(const Inset1D& other) const {
-  return leading_ == other.leading_ && trailing_ == other.trailing_;
-}
-
-bool Inset1D::operator!=(const Inset1D& other) const {
-  return !(*this == other);
-}
-
-bool Inset1D::operator<(const Inset1D& other) const {
-  return std::tie(leading_, trailing_) <
-         std::tie(other.leading_, other.trailing_);
-}
-
-std::string Inset1D::ToString() const {
-  return base::StringPrintf("%d, %d", leading(), trailing());
-}
-
 // NormalizedPoint -------------------------------------------------------------
 
 void NormalizedPoint::SetPoint(int main, int cross) {
@@ -250,6 +142,10 @@ void NormalizedSizeBounds::Expand(int main, int cross) {
     cross_ = std::max(0, *cross_ + cross);
 }
 
+void NormalizedSizeBounds::Inset(const NormalizedInsets& insets) {
+  Expand(-insets.main_size(), -insets.cross_size());
+}
+
 bool NormalizedSizeBounds::operator==(const NormalizedSizeBounds& other) const {
   return main_ == other.main_ && cross_ == other.cross_;
 }
@@ -310,6 +206,7 @@ void NormalizedRect::SetRect(int origin_main,
   origin_.SetPoint(origin_main, origin_cross);
   size_.SetSize(size_main, size_cross);
 }
+
 void NormalizedRect::SetByBounds(int origin_main,
                                  int origin_cross,
                                  int max_main,
@@ -318,17 +215,25 @@ void NormalizedRect::SetByBounds(int origin_main,
   size_.SetSize(std::max(0, max_main - origin_main),
                 std::max(0, max_cross - origin_cross));
 }
+
 void NormalizedRect::Inset(const NormalizedInsets& insets) {
   Inset(insets.main_leading(), insets.cross_leading(), insets.main_trailing(),
         insets.cross_trailing());
 }
+
 void NormalizedRect::Inset(int main, int cross) {
   Inset(main, cross, main, cross);
 }
+
 void NormalizedRect::Inset(int main_leading,
                            int cross_leading,
                            int main_trailing,
-                           int cross_trailing) {}
+                           int cross_trailing) {
+  origin_.Offset(main_leading, cross_leading);
+  size_.Enlarge(-(main_leading + main_trailing),
+                -(cross_leading + cross_trailing));
+}
+
 void NormalizedRect::Offset(int main, int cross) {
   origin_.Offset(main, cross);
 }

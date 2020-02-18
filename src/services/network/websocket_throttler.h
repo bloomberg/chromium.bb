@@ -47,9 +47,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocketPerProcessThrottler final {
   ~WebSocketPerProcessThrottler();
 
   // Returns if there are too many pending connections.
-  bool HasTooManyPendingConnections() const {
-    return num_pending_connections_ >= kMaxPendingWebSocketConnections;
-  }
+  bool HasTooManyPendingConnections() const { return false; }
 
   // Returns the delay which should be used to throttle opening websocket
   // connections.
@@ -96,7 +94,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocketPerProcessThrottler final {
 
   static constexpr int kMaxPendingWebSocketConnections = 255;
 
-  base::WeakPtrFactory<WebSocketPerProcessThrottler> weak_factory_;
+  base::WeakPtrFactory<WebSocketPerProcessThrottler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketPerProcessThrottler);
 };

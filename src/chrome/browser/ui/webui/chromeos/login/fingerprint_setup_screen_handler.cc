@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,7 +15,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -54,9 +55,8 @@ FingerprintSetupScreenHandler::FingerprintSetupScreenHandler(
     : BaseScreenHandler(kScreenId, js_calls_container) {
   set_user_acted_method_path("login.FingerprintSetupScreen.userActed");
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName, &fp_service_);
+  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
+                                               &fp_service_);
   device::mojom::FingerprintObserverPtr observer;
   binding_.Bind(mojo::MakeRequest(&observer));
   fp_service_->AddFingerprintObserver(std::move(observer));
@@ -68,8 +68,6 @@ void FingerprintSetupScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("setupFingerprintScreenTitle",
                IDS_OOBE_FINGERPINT_SETUP_SCREEN_TITLE);
-  builder->Add("setupFingerprintScreenDescription",
-               IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_DESCRIPTION);
   builder->Add("skipFingerprintSetup",
                IDS_OOBE_FINGERPINT_SETUP_SCREEN_BUTTON_SKIP);
   builder->Add("fingerprintSetupLater",
@@ -92,6 +90,19 @@ void FingerprintSetupScreenHandler::DeclareLocalizedValues(
                IDS_OOBE_FINGERPINT_SETUP_SCREEN_INSTRUCTION_MOVE_FINGER);
   builder->Add("setupFingerprintScanTryAgain",
                IDS_OOBE_FINGERPINT_SETUP_SCREEN_INSTRUCTION_TRY_AGAIN);
+  int description_id;
+  switch (quick_unlock::GetFingerprintLocation()) {
+    case quick_unlock::FingerprintLocation::TABLET_POWER_BUTTON:
+      description_id =
+          IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_POWER_BUTTON_DESCRIPTION;
+      break;
+    case quick_unlock::FingerprintLocation::KEYBOARD_BOTTOM_RIGHT:
+    case quick_unlock::FingerprintLocation::KEYBOARD_TOP_RIGHT:
+      description_id =
+          IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_GENERAL_DESCRIPTION;
+      break;
+  }
+  builder->Add("setupFingerprintScreenDescription", description_id);
 }
 
 void FingerprintSetupScreenHandler::RegisterMessages() {

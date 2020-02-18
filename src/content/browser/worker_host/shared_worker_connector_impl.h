@@ -15,22 +15,24 @@ namespace content {
 class CONTENT_EXPORT SharedWorkerConnectorImpl
     : public blink::mojom::SharedWorkerConnector {
  public:
-  static void Create(int process_id,
+  static void Create(int client_process_id,
                      int frame_id,
                      blink::mojom::SharedWorkerConnectorRequest request);
 
  private:
-  SharedWorkerConnectorImpl(int process_id, int frame_id);
+  SharedWorkerConnectorImpl(int client_process_id, int frame_id);
 
   // blink::mojom::SharedWorkerConnector methods:
   void Connect(
       blink::mojom::SharedWorkerInfoPtr info,
+      blink::mojom::FetchClientSettingsObjectPtr
+          outside_fetch_client_settings_object,
       blink::mojom::SharedWorkerClientPtr client,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
       mojo::ScopedMessagePipeHandle message_port,
       blink::mojom::BlobURLTokenPtr blob_url_token) override;
 
-  const int process_id_;
+  const int client_process_id_;
   const int frame_id_;
 };
 

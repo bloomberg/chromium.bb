@@ -56,7 +56,7 @@ class CORE_EXPORT V0InsertionPoint : public HTMLElement {
   virtual bool CanAffectSelector() const { return false; }
 
   void AttachLayoutTree(AttachContext&) override;
-  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
+  void DetachLayoutTree(bool performing_reattach) override;
   void RebuildDistributedChildrenLayoutTrees(WhitespaceAttacher&);
 
   size_t DistributedNodesSize() const { return distributed_nodes_.size(); }
@@ -112,8 +112,8 @@ inline ShadowRoot* ShadowRootWhereNodeCanBeDistributedForV0(const Node& node) {
     return nullptr;
   if (IsActiveV0InsertionPoint(*parent))
     return node.ContainingShadowRoot();
-  if (parent->IsElementNode())
-    return ToElement(parent)->GetShadowRoot();
+  if (auto* parent_element = DynamicTo<Element>(parent))
+    return parent_element->GetShadowRoot();
   return nullptr;
 }
 

@@ -38,7 +38,8 @@ void EnableStartupTracingIfNeeded() {
   if (startup_config->IsEnabled()) {
     if (TracingUsesPerfettoBackend()) {
       TraceEventDataSource::GetInstance()->SetupStartupTracing(
-          startup_config->GetBackgroundStartupTracingEnabled());
+          startup_config->GetSessionOwner() ==
+          TraceStartupConfig::SessionOwner::kBackgroundTracing);
     }
 
     const TraceConfig& trace_config = startup_config->GetTraceConfig();
@@ -57,6 +58,15 @@ void EnableStartupTracingIfNeeded() {
       TraceEventDataSource::GetInstance()->SetupStartupTracing(
           /*privacy_filtering_enabled=*/false);
     trace_log->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
+  }
+}
+
+void InitTracingPostThreadPoolStart() {
+  TraceEventDataSource::GetInstance()->OnTaskSchedulerAvailable();
+  if (base::FeatureList::IsEnabled(features::kEnablePerfettoSystemTracing)) {
+    // To ensure System tracing connects we have to initialize the process wide
+    // state. This Get() call ensures that the constructor has run.
+    PerfettoTracedProcess::Get();
   }
 }
 

@@ -20,7 +20,7 @@
 #include "Vulkan/VkFormat.h"
 
 #include <mutex>
-#include <string.h>
+#include <cstring>
 
 namespace vk
 {
@@ -59,15 +59,16 @@ namespace sw
 			bool clampToEdge : 1;
 		};
 
-		struct State : Options
+		struct State : Memset<State>, Options
 		{
-			State() = default;
-			State(const Options &options) : Options(options) {}
+			State() : Memset(this, 0) {}
+			State(const Options &options) : Memset(this, 0), Options(options) {}
 			State(vk::Format sourceFormat, vk::Format destFormat, int srcSamples, int destSamples, const Options &options) :
-				Options(options), sourceFormat(sourceFormat), destFormat(destFormat), srcSamples(srcSamples), destSamples(destSamples) {}
+				Memset(this, 0), Options(options), sourceFormat(sourceFormat), destFormat(destFormat), srcSamples(srcSamples), destSamples(destSamples) {}
 
 			bool operator==(const State &state) const
 			{
+				static_assert(is_memcmparable<State>::value, "Cannot memcmp State");
 				return memcmp(this, &state, sizeof(State)) == 0;
 			}
 
@@ -133,8 +134,9 @@ namespace sw
 		static Int ComputeOffset(Int &x, Int &y, Int &pitchB, int bytes, bool quadLayout);
 		static Float4 LinearToSRGB(Float4 &color);
 		static Float4 sRGBtoLinear(Float4 &color);
-		Routine *getRoutine(const State &state);
+		Routine *getBlitRoutine(const State &state);
 		Routine *generate(const State &state);
+		Routine *getCornerUpdateRoutine(const State &state);
 		Routine *generateCornerUpdate(const State& state);
 		void computeCubeCorner(Pointer<Byte>& layer, Int& x0, Int& x1, Int& y0, Int& y1, Int& pitchB, const State& state);
 
@@ -142,9 +144,10 @@ namespace sw
 	                      const VkImageSubresourceLayers& dstSubresourceLayers, Edge dstEdge,
 	                      const VkImageSubresourceLayers& srcSubresourceLayers, Edge srcEdge);
 
-		RoutineCache<State> *blitCache;
-		RoutineCache<State> *cornerUpdateCache;
-		std::mutex criticalSection;
+		std::mutex blitMutex;
+		RoutineCache<State> blitCache; // guarded by blitMutex
+		std::mutex cornerUpdateMutex;
+		RoutineCache<State> cornerUpdateCache; // guarded by cornerUpdateMutex
 	};
 }
 

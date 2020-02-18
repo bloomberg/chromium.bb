@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "perfetto/ipc/deferred.h"
+#include "perfetto/ext/ipc/deferred.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "perfetto/base/logging.h"
 
 #include "src/ipc/test/deferred_unittest_messages.pb.h"
@@ -26,7 +26,7 @@ namespace ipc {
 namespace {
 
 #if PERFETTO_DCHECK_IS_ON()
-#define EXPECT_DCHECK(x) EXPECT_DEATH_IF_SUPPORTED((x), ".*");
+#define EXPECT_DCHECK(x) EXPECT_DEATH_IF_SUPPORTED((x), ".*")
 #else
 #define EXPECT_DCHECK(x) x
 #endif

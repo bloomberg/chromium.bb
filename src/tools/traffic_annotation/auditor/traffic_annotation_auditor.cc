@@ -36,7 +36,6 @@ uint32_t recursive_hash(const char* str, int N) {
 std::map<int, std::string> kReservedAnnotations = {
     {TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code, "test"},
     {PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code, "test_partial"},
-    {NO_TRAFFIC_ANNOTATION_YET.unique_id_hash_code, "undefined"},
     {MISSING_TRAFFIC_ANNOTATION.unique_id_hash_code, "missing"}};
 
 struct AnnotationID {
@@ -83,13 +82,19 @@ const base::FilePath kRunToolScript =
         .Append(FILE_PATH_LITERAL("scripts"))
         .Append(FILE_PATH_LITERAL("run_tool.py"));
 
+const base::FilePath kExtractorScript =
+    base::FilePath(FILE_PATH_LITERAL("tools"))
+        .Append(FILE_PATH_LITERAL("traffic_annotation"))
+        .Append(FILE_PATH_LITERAL("scripts"))
+        .Append(FILE_PATH_LITERAL("extractor.py"));
+
 // Checks if the list of |path_filters| include the given |file_path|, or there
 // are path filters which are a folder (don't have a '.' in their name), and
 // match the file name.
 // TODO(https://crbug.com/690323): Update to a more general policy.
 bool PathFiltersMatch(const std::vector<std::string>& path_filters,
                       const std::string file_path) {
-  if (base::ContainsValue(path_filters, file_path))
+  if (base::Contains(path_filters, file_path))
     return true;
   for (const std::string& path_filter : path_filters) {
     if (path_filter.find(".") == std::string::npos &&
@@ -112,6 +117,7 @@ std::string MakeRelativePath(const base::FilePath& base_directory,
 #else
   base::FilePath converted_file_path(file_path);
 #endif
+  converted_file_path = base::MakeAbsoluteFilePath(converted_file_path);
   base::FilePath normalized_path;
   if (base::NormalizeFilePath(converted_file_path, &normalized_path) &&
       normalized_path.IsAbsolute()) {
@@ -123,7 +129,7 @@ std::string MakeRelativePath(const base::FilePath& base_directory,
                              file_str.length() - base_str.length() - 1);
     }
   }
-  return file_path;
+  return converted_file_path.MaybeAsASCII();
 }
 
 }  // namespace
@@ -176,12 +182,16 @@ base::FilePath TrafficAnnotationAuditor::GetClangLibraryPath() {
       .Next();
 }
 
-bool TrafficAnnotationAuditor::RunClangTool(
+bool TrafficAnnotationAuditor::RunExtractor(
+    ExtractorBackend backend,
     const std::vector<std::string>& path_filters,
     bool filter_files_based_on_heuristics,
     bool use_compile_commands,
     bool rerun_on_errors,
     const base::FilePath& errors_file) {
+  DCHECK(backend == ExtractorBackend::CLANG_TOOL ||
+         backend == ExtractorBackend::PYTHON_SCRIPT);
+
   if (!safe_list_loaded_ && !LoadSafeList())
     return false;
 
@@ -204,51 +214,41 @@ bool TrafficAnnotationAuditor::RunClangTool(
     return false;
   }
 
-  // As the checked out clang tool may be in a directory different from the
-  // default one (third_party/llvm-buid/Release+Asserts/bin), its path and
-  // clang's library folder should be passed to the run_tool.py script.
-  fprintf(
-      options_file,
-      "--generate-compdb --tool=traffic_annotation_extractor -p=%s "
-      "--tool-path=%s "
-      "--tool-arg=--extra-arg=-resource-dir=%s ",
-      build_path_.MaybeAsASCII().c_str(),
-      base::MakeAbsoluteFilePath(clang_tool_path_).MaybeAsASCII().c_str(),
-      base::MakeAbsoluteFilePath(GetClangLibraryPath()).MaybeAsASCII().c_str());
+  // Write some options to the file, which depends on the backend used.
+  if (backend == ExtractorBackend::CLANG_TOOL)
+    WriteClangToolOptions(options_file, use_compile_commands);
+  else if (backend == ExtractorBackend::PYTHON_SCRIPT)
+    WritePythonScriptOptions(options_file);
 
-  for (const std::string& item : clang_tool_switches_)
-    fprintf(options_file, "--tool-arg=--extra-arg=%s ", item.c_str());
-
-  if (use_compile_commands)
-    fprintf(options_file, "--all ");
-
+  // Write the file paths regardless of backend.
   for (const std::string& file_path : file_paths)
     fprintf(options_file, "%s ", file_path.c_str());
 
   base::CloseFile(options_file);
 
+  const base::FilePath& script_path =
+      (backend == ExtractorBackend::CLANG_TOOL ? kRunToolScript
+                                               : kExtractorScript);
   base::CommandLine cmdline(
-      base::MakeAbsoluteFilePath(source_path_.Append(kRunToolScript)));
-
+      base::MakeAbsoluteFilePath(source_path_.Append(script_path)));
 #if defined(OS_WIN)
   cmdline.PrependWrapper(L"python");
 #endif
-
   cmdline.AppendArg(base::StringPrintf(
       "--options-file=%s", options_filepath.MaybeAsASCII().c_str()));
 
-  // Change current folder to source before running run_tool.py as it expects to
+  // Change current folder to source before running the command as it expects to
   // be run from there.
   base::FilePath original_path;
   base::GetCurrentDirectory(&original_path);
   base::SetCurrentDirectory(source_path_);
-  bool result = base::GetAppOutput(cmdline, &clang_tool_raw_output_);
+  bool result = base::GetAppOutput(cmdline, &extractor_raw_output_);
 
-  // If running clang tool had no output, it means that the script running it
-  // could not perform the task.
-  if (clang_tool_raw_output_.empty()) {
+  // If the extractor had no output, it means that the script running it could
+  // not perform the task.
+  if (extractor_raw_output_.empty()) {
     result = false;
-  } else if (!result) {
+  } else if (backend == ExtractorBackend::CLANG_TOOL && !result) {
     // If clang tool had errors but also returned results, the errors can be
     // ignored as we do not separate platform specific files here and processing
     // them fails. This is a post-build test and if there exists any actual
@@ -258,7 +258,8 @@ bool TrafficAnnotationAuditor::RunClangTool(
   }
 
   if (!result) {
-    if (use_compile_commands && !clang_tool_raw_output_.empty()) {
+    if (backend == ExtractorBackend::CLANG_TOOL && use_compile_commands &&
+        !extractor_raw_output_.empty()) {
       printf(
           "\nWARNING: Ignoring clang tool error as it is called using "
           "compile_commands.json which will result in processing some "
@@ -303,6 +304,33 @@ bool TrafficAnnotationAuditor::RunClangTool(
   base::DeleteFile(options_filepath, false);
 
   return result;
+}
+
+void TrafficAnnotationAuditor::WriteClangToolOptions(
+    FILE* options_file,
+    bool use_compile_commands) {
+  // As the checked out clang tool may be in a directory different from the
+  // default one (third_party/llvm-buid/Release+Asserts/bin), its path and
+  // clang's library folder should be passed to the run_tool.py script.
+  fprintf(
+      options_file,
+      "--generate-compdb --tool=traffic_annotation_extractor -p=%s "
+      "--tool-path=%s "
+      "--tool-arg=--extra-arg=-resource-dir=%s ",
+      build_path_.MaybeAsASCII().c_str(),
+      base::MakeAbsoluteFilePath(clang_tool_path_).MaybeAsASCII().c_str(),
+      base::MakeAbsoluteFilePath(GetClangLibraryPath()).MaybeAsASCII().c_str());
+
+  for (const std::string& item : clang_tool_switches_)
+    fprintf(options_file, "--tool-arg=--extra-arg=%s ", item.c_str());
+
+  if (use_compile_commands)
+    fprintf(options_file, "--all ");
+}
+
+void TrafficAnnotationAuditor::WritePythonScriptOptions(FILE* options_file) {
+  fprintf(options_file, "--generate-compdb --build-path=%s ",
+          build_path_.MaybeAsASCII().c_str());
 }
 
 void TrafficAnnotationAuditor::GenerateFilesListForClangTool(
@@ -400,7 +428,7 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
     return false;
   // Remove possible carriage return characters before splitting lines.
   std::string temp_string;
-  base::RemoveChars(clang_tool_raw_output_, "\r", &temp_string);
+  base::RemoveChars(extractor_raw_output_, "\r", &temp_string);
   std::vector<std::string> lines = base::SplitString(
       temp_string, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   for (unsigned int current = 0; current < lines.size(); current++) {
@@ -462,6 +490,12 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
             result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
           }
           break;
+        case AuditorResult::Type::ERROR_MUTABLE_TAG:
+          if (IsSafeListed(file_path,
+                           AuditorException::ExceptionType::MUTABLE_TAG)) {
+            result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
+          }
+          break;
         default:
           break;
       }
@@ -482,14 +516,9 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
       new_assignment.file_path =
           MakeRelativePath(absolute_source_path_, new_assignment.file_path);
       if (IsSafeListed(new_assignment.file_path,
-                       AuditorException::ExceptionType::ALL)) {
+                       AuditorException::ExceptionType::DIRECT_ASSIGNMENT)) {
         result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
-      }
-      if (result.IsOK() &&
-          !IsSafeListed(base::StringPrintf(
-                            "%s@%s", new_assignment.function_context.c_str(),
-                            new_assignment.file_path.c_str()),
-                        AuditorException::ExceptionType::DIRECT_ASSIGNMENT)) {
+      } else if (result.IsOK()) {
         result = AuditorResult(AuditorResult::Type::ERROR_DIRECT_ASSIGNMENT,
                                std::string(), new_assignment.file_path,
                                new_assignment.line_number);
@@ -612,7 +641,7 @@ bool TrafficAnnotationAuditor::CheckIfCallCanBeUnannotated(
     return false;
 
   // Already checked?
-  if (base::ContainsKey(checked_dependencies_, call.file_path))
+  if (base::Contains(checked_dependencies_, call.file_path))
     return checked_dependencies_[call.file_path];
 
   std::string gn_output;
@@ -732,7 +761,7 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
   }
 
   for (AnnotationInstance* instance : completing_annotations) {
-    if (!base::ContainsKey(used_completing_annotations, instance)) {
+    if (!base::Contains(used_completing_annotations, instance)) {
       errors_.push_back(
           AuditorResult(AuditorResult::Type::ERROR_INCOMPLETED_ANNOTATION,
                         instance->proto.unique_id()));

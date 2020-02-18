@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -19,17 +18,14 @@
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/common/swap_buffers_flags.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "ui/gl/color_space_utils.h"
 
 namespace content {
 
 GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
-    scoped_refptr<ws::ContextProviderCommandBuffer> context,
-    std::unique_ptr<viz::OverlayCandidateValidator> overlay_candidate_validator)
-    : BrowserCompositorOutputSurface(std::move(context),
-                                     std::move(overlay_candidate_validator)),
-      weak_ptr_factory_(this) {
+    scoped_refptr<viz::ContextProviderCommandBuffer> context)
+    : BrowserCompositorOutputSurface(std::move(context)) {
   if (capabilities_.uses_default_gl_framebuffer) {
     capabilities_.flipped_output_surface =
         context_provider()->ContextCapabilities().flips_vertically;
@@ -53,7 +49,7 @@ void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     client_->DidReceiveCALayerParams(params.ca_layer_params);
   if (!params.texture_in_use_responses.empty())
     client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
-  client_->DidReceiveSwapBuffersAck();
+  client_->DidReceiveSwapBuffersAck(params.swap_response.timings);
   UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
 }
@@ -142,7 +138,8 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
 }
 
 uint32_t GpuBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
-  auto* gl = static_cast<ws::ContextProviderCommandBuffer*>(context_provider());
+  auto* gl =
+      static_cast<viz::ContextProviderCommandBuffer*>(context_provider());
   return gl->GetCopyTextureInternalFormat();
 }
 
@@ -190,8 +187,8 @@ void GpuBrowserCompositorOutputSurface::OnUpdateVSyncParameters(
 
 gpu::CommandBufferProxyImpl*
 GpuBrowserCompositorOutputSurface::GetCommandBufferProxy() {
-  ws::ContextProviderCommandBuffer* provider_command_buffer =
-      static_cast<ws::ContextProviderCommandBuffer*>(context_provider_.get());
+  viz::ContextProviderCommandBuffer* provider_command_buffer =
+      static_cast<viz::ContextProviderCommandBuffer*>(context_provider_.get());
   gpu::CommandBufferProxyImpl* command_buffer_proxy =
       provider_command_buffer->GetCommandBufferProxy();
   DCHECK(command_buffer_proxy);

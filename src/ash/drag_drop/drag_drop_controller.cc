@@ -127,8 +127,7 @@ class DragDropTrackerDelegate : public aura::WindowDelegate {
 // DragDropController, public:
 
 DragDropController::DragDropController()
-    : drag_data_(NULL),
-      drag_operation_(0),
+    : drag_operation_(0),
       drag_window_(NULL),
       drag_source_window_(NULL),
       should_block_during_drag_drop_(true),
@@ -150,7 +149,7 @@ DragDropController::~DragDropController() {
 }
 
 int DragDropController::StartDragAndDrop(
-    const ui::OSExchangeData& data,
+    std::unique_ptr<ui::OSExchangeData> data,
     aura::Window* root_window,
     aura::Window* source_window,
     const gfx::Point& screen_location,
@@ -159,7 +158,7 @@ int DragDropController::StartDragAndDrop(
   if (!enabled_ || IsDragDropInProgress())
     return 0;
 
-  const ui::OSExchangeData::Provider* provider = &data.provider();
+  const ui::OSExchangeData::Provider* provider = &data->provider();
   // We do not support touch drag/drop without a drag image.
   if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH &&
       provider->GetDragImage().size().IsEmpty())
@@ -190,7 +189,7 @@ int DragDropController::StartDragAndDrop(
     drag_source_window_->AddObserver(this);
   pending_long_tap_.reset();
 
-  drag_data_ = &data;
+  drag_data_ = std::move(data);
   drag_operation_ = operation;
 
   float drag_image_scale = 1;
@@ -376,20 +375,12 @@ void DragDropController::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_SCROLL_FLING_START:
       Drop(translated_target, *translated_event.get());
       break;
-    case ui::ET_GESTURE_END:
-      // This case occurs when IsUsingWindowService() is true and the user
-      // presses, pauses, and releases a touch without any movement between.
-      // That gesture should be interpreted as a long tap and show a menu, etc.
-      // Classic Ash handles this scenario below via ET_GESTURE_LONG_TAP, while
-      // Mash handles it in DragDropControllerMus::OnPerformDragDropCompleted.
-      DoDragCancel(kTouchCancelAnimationDuration);
-      break;
     case ui::ET_GESTURE_LONG_TAP:
       // Ideally we would want to just forward this long tap event to the
       // |drag_source_window_|. However, webkit does not accept events while a
       // drag drop is still in progress. The drag drop ends only when the nested
       // message loop ends. Due to this stupidity, we have to defer forwarding
-      // the long tap. This only occurs when IsUsingWindowService() is false.
+      // the long tap.
       pending_long_tap_.reset(new ui::GestureEvent(
           *event,
           static_cast<aura::Window*>(drag_drop_tracker_->capture_window()),
@@ -438,7 +429,7 @@ void DragDropController::DragUpdate(aura::Window* target,
     aura::client::DragDropDelegate* delegate =
         aura::client::GetDragDropDelegate(drag_window_);
     if (delegate) {
-      ui::DropTargetEvent e(*drag_data_, event.location_f(),
+      ui::DropTargetEvent e(*drag_data_.get(), event.location_f(),
                             event.root_location_f(), drag_operation_);
       e.set_flags(event.flags());
       ui::Event::DispatcherApi(&e).set_target(target);
@@ -448,7 +439,7 @@ void DragDropController::DragUpdate(aura::Window* target,
     aura::client::DragDropDelegate* delegate =
         aura::client::GetDragDropDelegate(drag_window_);
     if (delegate) {
-      ui::DropTargetEvent e(*drag_data_, event.location_f(),
+      ui::DropTargetEvent e(*drag_data_.get(), event.location_f(),
                             event.root_location_f(), drag_operation_);
       e.set_flags(event.flags());
       ui::Event::DispatcherApi(&e).set_target(target);
@@ -489,11 +480,11 @@ void DragDropController::Drop(aura::Window* target,
   aura::client::DragDropDelegate* delegate =
       aura::client::GetDragDropDelegate(target);
   if (delegate) {
-    ui::DropTargetEvent e(*drag_data_, event.location_f(),
+    ui::DropTargetEvent e(*drag_data_.get(), event.location_f(),
                           event.root_location_f(), drag_operation_);
     e.set_flags(event.flags());
     ui::Event::DispatcherApi(&e).set_target(target);
-    drag_operation_ = delegate->OnPerformDrop(e);
+    drag_operation_ = delegate->OnPerformDrop(e, std::move(drag_data_));
     if (drag_operation_ == 0)
       StartCanceledAnimation(kCancelAnimationDuration);
     else
@@ -595,7 +586,7 @@ void DragDropController::Cleanup() {
   if (drag_window_)
     drag_window_->RemoveObserver(this);
   drag_window_ = NULL;
-  drag_data_ = NULL;
+  drag_data_.reset();
   // Cleanup can be called again while deleting DragDropTracker, so delete
   // the pointer with a local variable to avoid double free.
   std::unique_ptr<ash::DragDropTracker> holder = std::move(drag_drop_tracker_);

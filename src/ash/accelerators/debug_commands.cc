@@ -4,12 +4,16 @@
 
 #include "ash/accelerators/debug_commands.h"
 
+#include <string>
+#include <utility>
+
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/toast_data.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/system/toast/toast_data.h"
-#include "ash/system/toast/toast_manager.h"
+#include "ash/system/toast/toast_manager_impl.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -23,6 +27,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/debug_utils.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/manager/display_manager.h"
@@ -48,7 +53,7 @@ void HandlePrintLayerHierarchy() {
 }
 
 void HandlePrintViewHierarchy() {
-  aura::Window* active_window = wm::GetActiveWindow();
+  aura::Window* active_window = window_util::GetActiveWindow();
   if (!active_window)
     return;
   views::Widget* widget = views::Widget::GetWidgetForNativeView(active_window);
@@ -67,12 +72,12 @@ void PrintWindowHierarchy(const aura::Window* active_window,
   if (name.empty())
     name = "\"\"";
   const gfx::Vector2dF& subpixel_position_offset =
-      window->layer()->subpixel_position_offset();
+      window->layer()->GetSubpixelOffset();
   *out << indent_str;
   *out << name << " (" << window << ")"
        << " type=" << window->type();
   if (window->GetProperty(kWindowStateKey))
-    *out << " " << wm::GetWindowState(window)->GetStateType();
+    *out << " " << WindowState::Get(window)->GetStateType();
   *out << ((window == active_window) ? " [active]" : "")
        << ((window == focused_window) ? " [focused]" : "")
        << (window->IsVisible() ? " visible" : "") << " "
@@ -80,13 +85,19 @@ void PrintWindowHierarchy(const aura::Window* active_window,
                ? aura::Window::OcclusionStateToString(window->occlusion_state())
                : "")
        << " " << window->bounds().ToString();
-  if (window->GetProperty(::wm::kSnapChildrenToPixelBoundary))
-    *out << " [snapped]";
   if (!subpixel_position_offset.IsZero())
     *out << " subpixel offset=" + subpixel_position_offset.ToString();
   std::string* tree_id = window->GetProperty(ui::kChildAXTreeID);
   if (tree_id)
     *out << " ax_tree_id=" << *tree_id;
+  base::string16 title(window->GetTitle());
+  if (!title.empty())
+    *out << " title=" << title;
+  int app_type = window->GetProperty(aura::client::kAppType);
+  *out << " app_type=" << app_type;
+  std::string* pkg_name = window->GetProperty(ash::kArcPackageNameKey);
+  if (pkg_name)
+    *out << " pkg_name=" << *pkg_name;
   *out << '\n';
 
   for (aura::Window* child : window->children())
@@ -94,8 +105,8 @@ void PrintWindowHierarchy(const aura::Window* active_window,
 }
 
 void HandlePrintWindowHierarchy() {
-  aura::Window* active_window = wm::GetActiveWindow();
-  aura::Window* focused_window = wm::GetFocusedWindow();
+  aura::Window* active_window = window_util::GetActiveWindow();
+  aura::Window* focused_window = window_util::GetFocusedWindow();
   aura::Window::Windows roots = Shell::Get()->GetAllRootWindows();
   for (size_t i = 0; i < roots.size(); ++i) {
     std::ostringstream out;
@@ -168,8 +179,7 @@ void HandleToggleTouchscreen() {
 
 void HandleToggleTabletMode() {
   TabletModeController* controller = Shell::Get()->tablet_mode_controller();
-  controller->EnableTabletModeWindowManager(
-      !controller->IsTabletModeWindowManagerEnabled());
+  controller->SetEnabledForDev(!controller->InTabletMode());
 }
 
 void HandleTriggerCrash() {

@@ -1634,7 +1634,7 @@ class Upgrader(object):
         pkg_commit_line = '%s %s to ' % (UPGRADED, pkg)
         pkg_commit_line += ' AND '.join(
             'version %s on %s' % (upgraded_ver, ', '.join(sorted(archlist)))
-            for upgraded_ver, archlist in upgraded_versarch.iteritems())
+            for upgraded_ver, archlist in upgraded_versarch.items())
         commit_lines.append(pkg_commit_line)
 
     if commit_lines:

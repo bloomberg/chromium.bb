@@ -39,8 +39,9 @@ class BackgroundTaskSchedulerUma {
     static final int BACKGROUND_TASK_ONE_SHOT_SYNC_WAKE_UP = 19;
     static final int BACKGROUND_TASK_NOTIFICATION_SCHEDULER = 20;
     static final int BACKGROUND_TASK_NOTIFICATION_TRIGGER = 21;
+    static final int BACKGROUND_TASK_PERIODIC_SYNC_WAKE_UP = 22;
     // Keep this one at the end and increment appropriately when adding new tasks.
-    static final int BACKGROUND_TASK_COUNT = 22;
+    static final int BACKGROUND_TASK_COUNT = 23;
 
     static final String KEY_CACHED_UMA = "bts_cached_uma";
 
@@ -207,6 +208,20 @@ class BackgroundTaskSchedulerUma {
         }
     }
 
+    /**
+     * Reports metrics of how Chrome is launched, either in ServiceManager only mode or as full
+     * browser, as well as either cold start or warm start.
+     * See {@link org.chromium.content.browser.ServicificationStartupUma} for more details.
+     * @param startupMode Chrome's startup mode.
+     */
+    public void reportStartupMode(int startupMode) {
+        // We don't record full browser's warm startup since most of the full browser warm startup
+        // don't even reach here.
+        if (startupMode < 0) return;
+
+        cacheEvent("Servicification.Startup3", startupMode);
+    }
+
     /** Method that actually invokes histogram recording. Extracted for testing. */
     @VisibleForTesting
     void recordEnumeratedHistogram(String histogram, int value, int maxCount) {
@@ -318,6 +333,8 @@ class BackgroundTaskSchedulerUma {
                 return BACKGROUND_TASK_NOTIFICATION_SCHEDULER;
             case TaskIds.NOTIFICATION_TRIGGER_JOB_ID:
                 return BACKGROUND_TASK_NOTIFICATION_TRIGGER;
+            case TaskIds.PERIODIC_BACKGROUND_SYNC_CHROME_WAKEUP_TASK_JOB_ID:
+                return BACKGROUND_TASK_PERIODIC_SYNC_WAKE_UP;
             default:
                 assert false;
         }

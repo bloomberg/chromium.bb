@@ -191,10 +191,10 @@ TEST_F(LinkSelectionTest, HandCursorDuringLinkDrag) {
       ->LocalFrameRoot()
       .GetEventHandler()
       .ScheduleCursorUpdate();
-  test::RunDelayedTasks(TimeDelta::FromMilliseconds(50));
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(50));
   const auto& cursor =
       main_frame_->GetFrame()->GetChromeClient().LastSetCursorForTesting();
-  EXPECT_EQ(Cursor::kHand, cursor.GetType());
+  EXPECT_EQ(ui::CursorType::kHand, cursor.GetType());
 }
 
 TEST_F(LinkSelectionTest, DragOnNothingShowsPointer) {
@@ -203,10 +203,10 @@ TEST_F(LinkSelectionTest, DragOnNothingShowsPointer) {
       ->LocalFrameRoot()
       .GetEventHandler()
       .ScheduleCursorUpdate();
-  test::RunDelayedTasks(TimeDelta::FromMilliseconds(50));
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(50));
   const auto& cursor =
       main_frame_->GetFrame()->GetChromeClient().LastSetCursorForTesting();
-  EXPECT_EQ(Cursor::kPointer, cursor.GetType());
+  EXPECT_EQ(ui::CursorType::kPointer, cursor.GetType());
 }
 
 TEST_F(LinkSelectionTest, CaretCursorOverLinkDuringSelection) {
@@ -216,10 +216,10 @@ TEST_F(LinkSelectionTest, CaretCursorOverLinkDuringSelection) {
       ->LocalFrameRoot()
       .GetEventHandler()
       .ScheduleCursorUpdate();
-  test::RunDelayedTasks(TimeDelta::FromMilliseconds(50));
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(50));
   const auto& cursor =
       main_frame_->GetFrame()->GetChromeClient().LastSetCursorForTesting();
-  EXPECT_EQ(Cursor::kIBeam, cursor.GetType());
+  EXPECT_EQ(ui::CursorType::kIBeam, cursor.GetType());
 }
 
 TEST_F(LinkSelectionTest, HandCursorOverLinkAfterContextMenu) {
@@ -235,10 +235,10 @@ TEST_F(LinkSelectionTest, HandCursorOverLinkAfterContextMenu) {
   frame->GetPage()->GetContextMenuController().ClearContextMenu();
 
   frame->LocalFrameRoot().GetEventHandler().ScheduleCursorUpdate();
-  test::RunDelayedTasks(TimeDelta::FromMilliseconds(50));
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(50));
   const auto& cursor =
       main_frame_->GetFrame()->GetChromeClient().LastSetCursorForTesting();
-  EXPECT_EQ(Cursor::kHand, cursor.GetType());
+  EXPECT_EQ(ui::CursorType::kHand, cursor.GetType());
 }
 
 TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownload) {

@@ -19,7 +19,7 @@
 
 namespace web_app {
 
-using InstallSource = InstallSource;
+using ExternalInstallSource = ExternalInstallSource;
 
 class ExternallyInstalledWebAppPrefsTest
     : public ChromeRenderViewHostTestHarness {
@@ -42,7 +42,8 @@ class ExternallyInstalledWebAppPrefsTest
     return crx_file::id_util::GenerateId("fake_app_id_for:" + url.spec());
   }
 
-  void SimulatePreviouslyInstalledApp(GURL url, InstallSource install_source) {
+  void SimulatePreviouslyInstalledApp(GURL url,
+                                      ExternalInstallSource install_source) {
     std::string id = GenerateFakeExtensionId(url);
     extensions::ExtensionRegistry::Get(profile())->AddEnabled(
         extensions::ExtensionBuilder("Dummy Name").SetID(id).Build());
@@ -56,11 +57,15 @@ class ExternallyInstalledWebAppPrefsTest
     extensions::ExtensionRegistry::Get(profile())->RemoveEnabled(id);
   }
 
-  std::vector<GURL> GetInstalledAppUrls(InstallSource install_source) {
-    std::vector<GURL> vec = ExternallyInstalledWebAppPrefs::GetInstalledAppUrls(
-        profile(), install_source);
-    std::sort(vec.begin(), vec.end());
-    return vec;
+  std::vector<GURL> GetAppUrls(ExternalInstallSource install_source) {
+    std::vector<GURL> urls;
+    for (const auto& id_and_url :
+         ExternallyInstalledWebAppPrefs::BuildAppIdsMap(profile()->GetPrefs(),
+                                                        install_source)) {
+      urls.push_back(id_and_url.second);
+    }
+    std::sort(urls.begin(), urls.end());
+    return urls;
   }
 
  private:
@@ -94,17 +99,20 @@ TEST_F(ExternallyInstalledWebAppPrefsTest, BasicOps) {
   EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_d));
 
   EXPECT_EQ(std::vector<GURL>({}),
-            GetInstalledAppUrls(InstallSource::kInternal));
+            GetAppUrls(ExternalInstallSource::kInternalDefault));
   EXPECT_EQ(std::vector<GURL>({}),
-            GetInstalledAppUrls(InstallSource::kExternalDefault));
+            GetAppUrls(ExternalInstallSource::kExternalDefault));
   EXPECT_EQ(std::vector<GURL>({}),
-            GetInstalledAppUrls(InstallSource::kExternalPolicy));
+            GetAppUrls(ExternalInstallSource::kExternalPolicy));
 
   // Add some entries.
 
-  SimulatePreviouslyInstalledApp(url_a, InstallSource::kExternalDefault);
-  SimulatePreviouslyInstalledApp(url_b, InstallSource::kInternal);
-  SimulatePreviouslyInstalledApp(url_c, InstallSource::kExternalDefault);
+  SimulatePreviouslyInstalledApp(url_a,
+                                 ExternalInstallSource::kExternalDefault);
+  SimulatePreviouslyInstalledApp(url_b,
+                                 ExternalInstallSource::kInternalDefault);
+  SimulatePreviouslyInstalledApp(url_c,
+                                 ExternalInstallSource::kExternalDefault);
 
   EXPECT_EQ(id_a, map.LookupAppId(url_a).value_or("missing"));
   EXPECT_EQ(id_b, map.LookupAppId(url_b).value_or("missing"));
@@ -117,15 +125,16 @@ TEST_F(ExternallyInstalledWebAppPrefsTest, BasicOps) {
   EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_d));
 
   EXPECT_EQ(std::vector<GURL>({url_b}),
-            GetInstalledAppUrls(InstallSource::kInternal));
+            GetAppUrls(ExternalInstallSource::kInternalDefault));
   EXPECT_EQ(std::vector<GURL>({url_a, url_c}),
-            GetInstalledAppUrls(InstallSource::kExternalDefault));
+            GetAppUrls(ExternalInstallSource::kExternalDefault));
   EXPECT_EQ(std::vector<GURL>({}),
-            GetInstalledAppUrls(InstallSource::kExternalPolicy));
+            GetAppUrls(ExternalInstallSource::kExternalPolicy));
 
   // Overwrite an entry.
 
-  SimulatePreviouslyInstalledApp(url_c, InstallSource::kInternal);
+  SimulatePreviouslyInstalledApp(url_c,
+                                 ExternalInstallSource::kInternalDefault);
 
   EXPECT_EQ(id_a, map.LookupAppId(url_a).value_or("missing"));
   EXPECT_EQ(id_b, map.LookupAppId(url_b).value_or("missing"));
@@ -138,15 +147,14 @@ TEST_F(ExternallyInstalledWebAppPrefsTest, BasicOps) {
   EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_d));
 
   EXPECT_EQ(std::vector<GURL>({url_b, url_c}),
-            GetInstalledAppUrls(InstallSource::kInternal));
+            GetAppUrls(ExternalInstallSource::kInternalDefault));
   EXPECT_EQ(std::vector<GURL>({url_a}),
-            GetInstalledAppUrls(InstallSource::kExternalDefault));
+            GetAppUrls(ExternalInstallSource::kExternalDefault));
   EXPECT_EQ(std::vector<GURL>({}),
-            GetInstalledAppUrls(InstallSource::kExternalPolicy));
+            GetAppUrls(ExternalInstallSource::kExternalPolicy));
 
   // Uninstall an underlying extension. The ExternallyInstalledWebAppPrefs will
-  // still return positive for LookupAppId and HasAppId (as they ignore
-  // installed-ness), but GetInstalledAppUrls will skip over it.
+  // still return positive.
 
   SimulateUninstallApp(url_b);
 
@@ -160,12 +168,12 @@ TEST_F(ExternallyInstalledWebAppPrefsTest, BasicOps) {
   EXPECT_TRUE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_c));
   EXPECT_FALSE(ExternallyInstalledWebAppPrefs::HasAppId(prefs, id_d));
 
-  EXPECT_EQ(std::vector<GURL>({url_c}),
-            GetInstalledAppUrls(InstallSource::kInternal));
+  EXPECT_EQ(std::vector<GURL>({url_b, url_c}),
+            GetAppUrls(ExternalInstallSource::kInternalDefault));
   EXPECT_EQ(std::vector<GURL>({url_a}),
-            GetInstalledAppUrls(InstallSource::kExternalDefault));
+            GetAppUrls(ExternalInstallSource::kExternalDefault));
   EXPECT_EQ(std::vector<GURL>({}),
-            GetInstalledAppUrls(InstallSource::kExternalPolicy));
+            GetAppUrls(ExternalInstallSource::kExternalPolicy));
 }
 
 }  // namespace web_app

@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
@@ -76,12 +75,12 @@
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/text/bidi_resolver.h"
 #include "third_party/blink/renderer/platform/text/bidi_text_run.h"
 #include "third_party/blink/renderer/platform/text/text_run_iterator.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 namespace blink {
 
@@ -127,10 +126,10 @@ bool IsEditable(const Node& node) {
     return true;
   if (IsSVGSVGElement(node))
     return true;
-  if (node.IsElementNode() &&
-      ToElement(node).HasTagName(mathml_names::kMathTag))
+  auto* element = DynamicTo<Element>(node);
+  if (element && element->HasTagName(mathml_names::kMathTag))
     return true;
-  return !node.IsElementNode() && node.parentNode()->IsHTMLElement();
+  return !element && node.parentNode()->IsHTMLElement();
 }
 
 const WebFeature kNoWebFeature = static_cast<WebFeature>(0);
@@ -1044,19 +1043,19 @@ TextDirection HTMLElement::Directionality() const {
   Node* node = FlatTreeTraversal::FirstChild(*this);
   while (node) {
     // Skip bdi, script, style and text form controls.
+    auto* element = DynamicTo<Element>(node);
     if (DeprecatedEqualIgnoringCase(node->nodeName(), "bdi") ||
         IsHTMLScriptElement(*node) || IsHTMLStyleElement(*node) ||
-        (node->IsElementNode() && ToElement(node)->IsTextControl()) ||
-        (node->IsElementNode() &&
-         ToElement(node)->ShadowPseudoId() == "-webkit-input-placeholder")) {
+        (element && element->IsTextControl()) ||
+        (element && element->ShadowPseudoId() == "-webkit-input-placeholder")) {
       node = FlatTreeTraversal::NextSkippingChildren(*node, this);
       continue;
     }
 
     // Skip elements with valid dir attribute
-    if (node->IsElementNode()) {
+    if (auto* element_node = DynamicTo<Element>(node)) {
       AtomicString dir_attribute_value =
-          ToElement(node)->FastGetAttribute(kDirAttr);
+          element_node->FastGetAttribute(kDirAttr);
       if (IsValidDirAttribute(dir_attribute_value)) {
         node = FlatTreeTraversal::NextSkippingChildren(*node, this);
         continue;
@@ -1545,6 +1544,6 @@ void HTMLElement::FinishParsingChildren() {
 void dumpInnerHTML(blink::HTMLElement*);
 
 void dumpInnerHTML(blink::HTMLElement* element) {
-  printf("%s\n", element->InnerHTMLAsString().Ascii().data());
+  printf("%s\n", element->InnerHTMLAsString().Ascii().c_str());
 }
 #endif

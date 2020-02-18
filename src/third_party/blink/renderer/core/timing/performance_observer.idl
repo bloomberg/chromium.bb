@@ -15,5 +15,5 @@ callback PerformanceObserverCallback = void (PerformanceObserverEntryList entrie
     [RaisesException] void observe(optional PerformanceObserverInit options);
     void disconnect();
     PerformanceEntryList takeRecords();
-    [CallWith=ScriptState] static readonly attribute FrozenArray<DOMString> supportedEntryTypes;
+    [SameObject, SaveSameObject, CallWith=ScriptState] static readonly attribute FrozenArray<DOMString> supportedEntryTypes;
 };

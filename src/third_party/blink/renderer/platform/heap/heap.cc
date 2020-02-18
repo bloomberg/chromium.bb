@@ -45,7 +45,7 @@
 #include "third_party/blink/renderer/platform/heap/page_memory.h"
 #include "third_party/blink/renderer/platform/heap/page_pool.h"
 #include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
@@ -59,15 +59,47 @@ namespace blink {
 HeapAllocHooks::AllocationHook* HeapAllocHooks::allocation_hook_ = nullptr;
 HeapAllocHooks::FreeHook* HeapAllocHooks::free_hook_ = nullptr;
 
+class ProcessHeapReporter final : public ThreadHeapStatsObserver {
+ public:
+  void IncreaseAllocatedSpace(size_t bytes) final {
+    ProcessHeap::IncreaseTotalAllocatedSpace(bytes);
+  }
+
+  void DecreaseAllocatedSpace(size_t bytes) final {
+    ProcessHeap::DecreaseTotalAllocatedSpace(bytes);
+  }
+
+  void ResetAllocatedObjectSize(size_t bytes) final {
+    ProcessHeap::DecreaseTotalAllocatedObjectSize(prev_incremented_);
+    ProcessHeap::IncreaseTotalAllocatedObjectSize(bytes);
+    prev_incremented_ = bytes;
+  }
+
+  void IncreaseAllocatedObjectSize(size_t bytes) final {
+    ProcessHeap::IncreaseTotalAllocatedObjectSize(bytes);
+    prev_incremented_ += bytes;
+  }
+
+  void DecreaseAllocatedObjectSize(size_t bytes) final {
+    ProcessHeap::DecreaseTotalAllocatedObjectSize(bytes);
+    prev_incremented_ -= bytes;
+  }
+
+ private:
+  size_t prev_incremented_ = 0;
+};
+
 ThreadHeap::ThreadHeap(ThreadState* thread_state)
     : thread_state_(thread_state),
       heap_stats_collector_(std::make_unique<ThreadHeapStatsCollector>()),
       region_tree_(std::make_unique<RegionTree>()),
       address_cache_(std::make_unique<AddressCache>()),
       free_page_pool_(std::make_unique<PagePool>()),
+      process_heap_reporter_(std::make_unique<ProcessHeapReporter>()),
       marking_worklist_(nullptr),
       not_fully_constructed_worklist_(nullptr),
       weak_callback_worklist_(nullptr),
+      movable_reference_worklist_(nullptr),
       vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
       current_arena_ages_(0) {
   if (ThreadState::Current()->IsMainThread())
@@ -82,31 +114,13 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
   likely_to_be_promptly_freed_ =
       std::make_unique<int[]>(kLikelyToBePromptlyFreedArraySize);
   ClearArenaAges();
+
+  stats_collector()->RegisterObserver(process_heap_reporter_.get());
 }
 
 ThreadHeap::~ThreadHeap() {
   for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
     delete arenas_[i];
-}
-
-void ThreadHeap::IncreaseAllocatedObjectSize(size_t bytes) {
-  stats_collector()->IncreaseAllocatedObjectSize(bytes);
-  ProcessHeap::IncreaseTotalAllocatedObjectSize(bytes);
-}
-
-void ThreadHeap::DecreaseAllocatedObjectSize(size_t bytes) {
-  stats_collector()->DecreaseAllocatedObjectSize(bytes);
-  ProcessHeap::DecreaseTotalAllocatedObjectSize(bytes);
-}
-
-void ThreadHeap::IncreaseAllocatedSpace(size_t bytes) {
-  stats_collector()->IncreaseAllocatedSpace(bytes);
-  ProcessHeap::IncreaseTotalAllocatedSpace(bytes);
-}
-
-void ThreadHeap::DecreaseAllocatedSpace(size_t bytes) {
-  stats_collector()->DecreaseAllocatedSpace(bytes);
-  ProcessHeap::DecreaseTotalAllocatedSpace(bytes);
 }
 
 Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
@@ -149,16 +163,17 @@ void ThreadHeap::RegisterWeakTable(void* table,
 #endif  // DCHECK_IS_ON()
 }
 
-void ThreadHeap::CommitCallbackStacks() {
+void ThreadHeap::SetupWorklists() {
   marking_worklist_.reset(new MarkingWorklist());
   not_fully_constructed_worklist_.reset(new NotFullyConstructedWorklist());
   previously_not_fully_constructed_worklist_.reset(
       new NotFullyConstructedWorklist());
   weak_callback_worklist_.reset(new WeakCallbackWorklist());
+  movable_reference_worklist_.reset(new MovableReferenceWorklist());
   DCHECK(ephemeron_callbacks_.IsEmpty());
 }
 
-void ThreadHeap::DecommitCallbackStacks() {
+void ThreadHeap::DestroyMarkingWorklists(BlinkGC::StackState stack_state) {
   marking_worklist_.reset(nullptr);
   previously_not_fully_constructed_worklist_.reset(nullptr);
   weak_callback_worklist_.reset(nullptr);
@@ -167,14 +182,24 @@ void ThreadHeap::DecommitCallbackStacks() {
   // The fixed point iteration may have found not-fully-constructed objects.
   // Such objects should have already been found through the stack scan though
   // and should thus already be marked.
+  //
+  // Possible reasons for encountering unmarked objects here:
+  // - Object is not allocated through MakeGarbageCollected.
+  // - Type is missing a USING_GARBAGE_COLLECTED_MIXIN annotation which means
+  //   that the GC will always find pointers as in construction.
+  // - Broken stack (roots) scanning.
   if (!not_fully_constructed_worklist_->IsGlobalEmpty()) {
 #if DCHECK_IS_ON()
+    const bool conservative_gc =
+        BlinkGC::StackState::kHeapPointersOnStack == stack_state;
     NotFullyConstructedItem item;
     while (not_fully_constructed_worklist_->Pop(WorklistTaskId::MainThread,
                                                 &item)) {
       HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(
           reinterpret_cast<Address>(const_cast<void*>(item)));
-      DCHECK(header->IsMarked());
+      DCHECK(conservative_gc && header->IsMarked())
+          << " conservative: " << (conservative_gc ? "yes" : "no")
+          << " type: " << header->Name();
     }
 #else
     not_fully_constructed_worklist_->Clear();
@@ -183,14 +208,18 @@ void ThreadHeap::DecommitCallbackStacks() {
   not_fully_constructed_worklist_.reset(nullptr);
 }
 
+void ThreadHeap::DestroyCompactionWorklists() {
+  movable_reference_worklist_.reset();
+}
+
 HeapCompact* ThreadHeap::Compaction() {
   if (!compaction_)
     compaction_ = std::make_unique<HeapCompact>(this);
   return compaction_.get();
 }
 
-void ThreadHeap::RegisterMovingObjectReference(MovableReference* slot) {
-  Compaction()->RegisterMovingObjectReference(slot);
+bool ThreadHeap::ShouldRegisterMovingObjectReference(MovableReference* slot) {
+  return Compaction()->ShouldRegisterMovingObjectReference(slot);
 }
 
 void ThreadHeap::RegisterMovingObjectCallback(MovableReference* slot,
@@ -249,7 +278,7 @@ void ThreadHeap::InvokeEphemeronCallbacks(Visitor* visitor) {
 namespace {
 
 template <typename Worklist, typename Callback>
-bool DrainWorklistWithDeadline(TimeTicks deadline,
+bool DrainWorklistWithDeadline(base::TimeTicks deadline,
                                Worklist* worklist,
                                Callback callback) {
   const size_t kDeadlineCheckInterval = 2500;
@@ -260,7 +289,7 @@ bool DrainWorklistWithDeadline(TimeTicks deadline,
     callback(item);
     processed_callback_count++;
     if (++processed_callback_count == kDeadlineCheckInterval) {
-      if (deadline <= CurrentTimeTicks()) {
+      if (deadline <= base::TimeTicks::Now()) {
         return false;
       }
       processed_callback_count = 0;
@@ -271,7 +300,8 @@ bool DrainWorklistWithDeadline(TimeTicks deadline,
 
 }  // namespace
 
-bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor, TimeTicks deadline) {
+bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
+                                base::TimeTicks deadline) {
   bool finished;
   // Ephemeron fixed point loop.
   do {
@@ -350,7 +380,7 @@ size_t ThreadHeap::ObjectPayloadSizeForTesting() {
 
 void ThreadHeap::ResetAllocationPointForTesting() {
   for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
-    arenas_[i]->ResetAllocationPointForTesting();
+    arenas_[i]->ResetAllocationPoint();
 }
 
 BasePage* ThreadHeap::LookupPageForAddress(Address address) {
@@ -377,7 +407,7 @@ void ThreadHeap::Compact() {
     return;
 
   ThreadHeapStatsCollector::Scope stats_scope(
-      stats_collector(), ThreadHeapStatsCollector::kAtomicPhaseCompaction);
+      stats_collector(), ThreadHeapStatsCollector::kAtomicPauseCompaction);
   // Compaction is done eagerly and before the mutator threads get
   // to run again. Doing it lazily is problematic, as the mutator's
   // references to live objects could suddenly be invalidated by
@@ -408,10 +438,14 @@ void ThreadHeap::RemoveAllPages() {
 }
 
 void ThreadHeap::CompleteSweep() {
-  static_assert(BlinkGC::kEagerSweepArenaIndex == 0,
-                "Eagerly swept arenas must be processed first.");
   for (int i = 0; i < BlinkGC::kNumberOfArenas; i++)
     arenas_[i]->CompleteSweep();
+}
+
+void ThreadHeap::InvokeFinalizersOnSweptPages() {
+  for (size_t i = BlinkGC::kNormalPage1ArenaIndex;
+       i < BlinkGC::kNumberOfArenas; i++)
+    arenas_[i]->InvokeFinalizersOnSweptPages();
 }
 
 void ThreadHeap::ClearArenaAges() {
@@ -477,19 +511,6 @@ void ThreadHeap::PoisonAllHeaps() {
   ProcessHeap::GetCrossThreadPersistentRegion()
       .UnpoisonCrossThreadPersistents();
 }
-
-void ThreadHeap::PoisonEagerArena() {
-  // This lock must be held because other threads may access cross-thread
-  // persistents and should not observe them in a poisoned state.
-  MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
-
-  arenas_[BlinkGC::kEagerSweepArenaIndex]->PoisonArena();
-  // CrossThreadPersistents in unmarked objects may be accessed from other
-  // threads (e.g. in CrossThreadPersistentRegion::shouldTracePersistent) and
-  // that would be fine.
-  ProcessHeap::GetCrossThreadPersistentRegion()
-      .UnpoisonCrossThreadPersistents();
-}
 #endif
 
 #if DCHECK_IS_ON()
@@ -535,7 +556,6 @@ void ThreadHeap::TakeSnapshot(SnapshotType type) {
   SNAPSHOT_HEAP(NormalPage2);
   SNAPSHOT_HEAP(NormalPage3);
   SNAPSHOT_HEAP(NormalPage4);
-  SNAPSHOT_HEAP(EagerSweep);
   SNAPSHOT_HEAP(Vector1);
   SNAPSHOT_HEAP(Vector2);
   SNAPSHOT_HEAP(Vector3);
@@ -583,18 +603,27 @@ void ThreadHeap::TakeSnapshot(SnapshotType type) {
       ->AddOwnershipEdge(classes_dump->guid(), heaps_dump->guid());
 }
 
-bool ThreadHeap::AdvanceLazySweep(TimeTicks deadline) {
+bool ThreadHeap::AdvanceLazySweep(base::TimeTicks deadline) {
+  static const base::TimeDelta slack = base::TimeDelta::FromSecondsD(0.001);
   for (int i = 0; i < BlinkGC::kNumberOfArenas; i++) {
     // lazySweepWithDeadline() won't check the deadline until it sweeps
     // 10 pages. So we give a small slack for safety.
-    TimeDelta slack = TimeDelta::FromSecondsD(0.001);
-    TimeDelta remaining_budget = deadline - slack - CurrentTimeTicks();
-    if (remaining_budget <= TimeDelta() ||
+    const base::TimeDelta remaining_budget =
+        deadline - slack - base::TimeTicks::Now();
+    if (remaining_budget <= base::TimeDelta() ||
         !arenas_[i]->LazySweepWithDeadline(deadline)) {
       return false;
     }
   }
   return true;
+}
+
+void ThreadHeap::ConcurrentSweep() {
+  // Concurrent sweep simply sweeps pages not calling finalizers.
+  for (size_t i = BlinkGC::kNormalPage1ArenaIndex;
+       i < BlinkGC::kNumberOfArenas; i++) {
+    arenas_[i]->SweepOnConcurrentThread();
+  }
 }
 
 ThreadHeap* ThreadHeap::main_thread_heap_ = nullptr;

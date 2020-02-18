@@ -18,9 +18,8 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_fetcher_service.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/ios/browser/active_state_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_impl.h"
@@ -33,7 +32,6 @@
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace {
 
@@ -221,7 +219,7 @@ void ChromeBrowserStateManagerImpl::AddBrowserStateToCache(
   if (browser_state->GetStatePath().DirName() != cache->GetUserDataDir())
     return;
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
   CoreAccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
   base::string16 username = base::UTF8ToUTF16(account_info.email);
@@ -229,7 +227,7 @@ void ChromeBrowserStateManagerImpl::AddBrowserStateToCache(
   size_t browser_state_index =
       cache->GetIndexOfBrowserStateWithPath(browser_state->GetStatePath());
   if (browser_state_index != std::string::npos) {
-    // The BrowserStateInfoCache's info must match the Signin Manager.
+    // The BrowserStateInfoCache's info must match the IdentityManager.
     cache->SetAuthInfoOfBrowserStateAtIndex(browser_state_index,
                                             account_info.gaia, username);
     return;

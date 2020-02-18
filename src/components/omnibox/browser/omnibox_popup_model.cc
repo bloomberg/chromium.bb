@@ -37,8 +37,7 @@ OmniboxPopupModel::OmniboxPopupModel(OmniboxPopupView* popup_view,
       edit_model_(edit_model),
       selected_line_(kNoMatch),
       selected_line_state_(NORMAL),
-      has_selected_match_(false),
-      weak_factory_(this) {
+      has_selected_match_(false) {
   edit_model->set_popup_model(this);
 }
 
@@ -169,15 +168,11 @@ void OmniboxPopupModel::ResetToDefaultMatch() {
   view_->OnDragCanceled();
 }
 
-void OmniboxPopupModel::Move(int count) {
-  const AutocompleteResult& result = this->result();
-  if (result.empty())
+void OmniboxPopupModel::MoveTo(size_t new_line) {
+  if (result().empty())
     return;
 
-  // Clamp the new line to [0, result_.count() - 1].
-  const size_t new_line = selected_line_ + count;
-  SetSelectedLine(((count < 0) && (new_line >= selected_line_)) ? 0 : new_line,
-                  false, false);
+  SetSelectedLine(new_line, false, false);
 }
 
 void OmniboxPopupModel::SetSelectedLineState(LineState state) {
@@ -309,7 +304,8 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
   // Get the favicon for navigational suggestions.
   if (base::FeatureList::IsEnabled(
           omnibox::kUIExperimentShowSuggestionFavicons) &&
-      !AutocompleteMatch::IsSearchType(match.type)) {
+      !AutocompleteMatch::IsSearchType(match.type) &&
+      match.type != AutocompleteMatchType::DOCUMENT_SUGGESTION) {
     // Because the Views UI code calls GetMatchIcon in both the layout and
     // painting code, we may generate multiple OnFaviconFetched callbacks,
     // all run one after another. This seems to be harmless as the callback

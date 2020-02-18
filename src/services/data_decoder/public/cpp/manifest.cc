@@ -5,16 +5,21 @@
 #include "services/data_decoder/public/cpp/manifest.h"
 
 #include "base/no_destructor.h"
+#include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
+#ifdef OS_CHROMEOS
+#include "services/data_decoder/public/mojom/ble_scan_parser.mojom.h"
+#endif  // OS_CHROMEOS
+
 namespace data_decoder {
 
 const service_manager::Manifest& GetManifest() {
-  static base::NoDestructor<service_manager::Manifest> manifest{
+  auto manifest_builder =
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kServiceName)
           .WithDisplayName("Data Decoder Service")
@@ -35,7 +40,18 @@ const service_manager::Manifest& GetManifest() {
           .ExposeCapability(
               "xml_parser",
               service_manager::Manifest::InterfaceList<mojom::XmlParser>())
-          .Build()};
+          .ExposeCapability("bundled_exchanges_parser_factory",
+                            service_manager::Manifest::InterfaceList<
+                                mojom::BundledExchangesParserFactory>());
+
+#ifdef OS_CHROMEOS
+  manifest_builder.ExposeCapability(
+      "ble_scan_parser",
+      service_manager::Manifest::InterfaceList<mojom::BleScanParser>());
+#endif  // OS_CHROMEOS
+
+  static base::NoDestructor<service_manager::Manifest> manifest{
+      manifest_builder.Build()};
   return *manifest;
 }
 

@@ -5,17 +5,14 @@
 #ifndef CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_UTILS_H_
 #define CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_UTILS_H_
 
-#include "base/files/file_path.h"
+#include <string>
 
-namespace content {
-class BrowserContext;
-}
+#include "base/files/file_path.h"
 
 namespace download {
 class DownloadItem;
 }
 
-class DownloadOfflineContentProvider;
 class GURL;
 
 // Native side of DownloadUtils.java.
@@ -27,8 +24,8 @@ class DownloadUtils {
   static std::string RemapGenericMimeType(const std::string& mime_type,
                                           const GURL& url,
                                           const std::string& file_name);
-  static DownloadOfflineContentProvider* GetDownloadOfflineContentProvider(
-      content::BrowserContext* browser_context);
+  static bool ShouldAutoOpenDownload(download::DownloadItem* item);
+  static bool IsOmaDownloadDescription(const std::string& mime_type);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_UTILS_H_

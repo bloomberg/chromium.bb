@@ -26,6 +26,12 @@ proto_library("realtimeapi_proto") {
   ]
 }
 
+proto_library("webprotect_proto") {
+  sources = [
+    "proto/webprotect.proto",
+  ]
+}
+
 source_set("safe_browsing") {
   sources = [
     "base_blocking_page.cc",
@@ -39,10 +45,7 @@ source_set("safe_browsing") {
   deps = [
     ":features",
     ":ping_manager",
-
-    # TODO(vakh): This is here temporarily until we start actually using the
-    # proto. If it isn't a DEP, it isn't built.
-    ":realtimeapi_proto",
+    ":verdict_cache_manager",
     "//base:base",
     "//base:i18n",
     "//components/safe_browsing/common:common",
@@ -111,5 +114,40 @@ source_set("public") {
   deps = [
     "//base:base",
     "//content/public/browser",
+  ]
+}
+
+source_set("verdict_cache_manager") {
+  sources = [
+    "verdict_cache_manager.cc",
+    "verdict_cache_manager.h",
+  ]
+
+  deps = [
+    ":csd_proto",
+    "//base",
+    "//components/content_settings/core/browser",
+    "//components/history/core/browser",
+    "//components/password_manager/core/browser:browser",
+    "//components/safe_browsing/db:v4_protocol_manager_util",
+    "//content/public/browser",
+    "//url",
+  ]
+}
+
+source_set("verdict_cache_manager_unittest") {
+  testonly = true
+  sources = [
+    "verdict_cache_manager_unittest.cc",
+  ]
+
+  deps = [
+    ":csd_proto",
+    ":verdict_cache_manager",
+    "//base",
+    "//components/content_settings/core/browser",
+    "//components/sync_preferences:test_support",
+    "//content/test:test_support",
+    "//testing/gtest",
   ]
 }

@@ -6,8 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_WRITER_H_
 
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_file_writer.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 
 namespace blink {
 
@@ -24,7 +26,8 @@ class NativeFileSystemWriter final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit NativeFileSystemWriter(NativeFileSystemFileHandle*);
+  explicit NativeFileSystemWriter(
+      RevocableInterfacePtr<mojom::blink::NativeFileSystemFileWriter>);
 
   ScriptPromise write(ScriptState*,
                       uint64_t position,
@@ -47,7 +50,9 @@ class NativeFileSystemWriter final : public ScriptWrappable {
   void WriteComplete(mojom::blink::NativeFileSystemErrorPtr result,
                      uint64_t bytes_written);
   void TruncateComplete(mojom::blink::NativeFileSystemErrorPtr result);
+  void CloseComplete(mojom::blink::NativeFileSystemErrorPtr result);
 
+  RevocableInterfacePtr<mojom::blink::NativeFileSystemFileWriter> mojo_ptr_;
   Member<NativeFileSystemFileHandle> file_;
 
   Member<ScriptPromiseResolver> pending_operation_;

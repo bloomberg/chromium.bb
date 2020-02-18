@@ -23,6 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/browser_context.h"
@@ -69,8 +70,7 @@ ChildAccountService::ChildAccountService(Profile* profile)
     : profile_(profile),
       active_(false),
       family_fetch_backoff_(&kFamilyFetchBackoffPolicy),
-      identity_manager_(IdentityManagerFactory::GetForProfile(profile)),
-      weak_ptr_factory_(this) {}
+      identity_manager_(IdentityManagerFactory::GetForProfile(profile)) {}
 
 ChildAccountService::~ChildAccountService() {}
 
@@ -126,7 +126,7 @@ void ChildAccountService::AddChildStatusReceivedCallback(
 }
 
 ChildAccountService::AuthState ChildAccountService::GetGoogleAuthState() {
-  identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+  signin::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
       identity_manager_->GetAccountsInCookieJar();
   if (!accounts_in_cookie_jar_info.accounts_are_fresh)
     return AuthState::PENDING;
@@ -305,7 +305,7 @@ void ChildAccountService::OnFailure(FamilyInfoFetcher::ErrorCode error) {
 }
 
 void ChildAccountService::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   google_auth_state_observers_.Notify();
 }

@@ -8,9 +8,10 @@ cr.define('app_management', function() {
    */
   class FakePageHandler {
     /**
+     * @param {Object=} options
      * @return {!Object<number, Permission>}
      */
-    static createWebPermissions() {
+    static createWebPermissions(options) {
       const permissionIds = [
         PwaPermissionType.CONTENT_SETTINGS_TYPE_GEOLOCATION,
         PwaPermissionType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
@@ -21,8 +22,17 @@ cr.define('app_management', function() {
       const permissions = {};
 
       for (const permissionId of permissionIds) {
+        let permissionValue = TriState.kAllow;
+        let isManaged = false;
+
+        if (options && options[permissionId]) {
+          const opts = options[permissionId];
+          permissionValue = opts.permissionValue || permissionValue;
+          isManaged = opts.isManaged || isManaged;
+        }
         permissions[permissionId] = app_management.util.createPermission(
-            permissionId, PermissionValueType.kTriState, TriState.kAllow);
+            permissionId, PermissionValueType.kTriState, permissionValue,
+            isManaged);
       }
 
       return permissions;
@@ -38,13 +48,16 @@ cr.define('app_management', function() {
         ArcPermissionType.LOCATION,
         ArcPermissionType.MICROPHONE,
         ArcPermissionType.NOTIFICATIONS,
+        ArcPermissionType.CONTACTS,
+        ArcPermissionType.STORAGE,
       ];
 
       const permissions = {};
 
       for (const permissionId of permissionIds) {
         permissions[permissionId] = app_management.util.createPermission(
-            permissionId, PermissionValueType.kBool, Bool.kTrue);
+            permissionId, PermissionValueType.kBool, Bool.kTrue,
+            false /*is_managed*/);
       }
 
       return permissions;
@@ -79,8 +92,11 @@ cr.define('app_management', function() {
         version: '5.1',
         size: '9.0MB',
         isPinned: apps.mojom.OptionalBool.kFalse,
+        isPolicyPinned: apps.mojom.OptionalBool.kFalse,
         installSource: apps.mojom.InstallSource.kUser,
         permissions: {},
+        hideMoreSettings: false,
+        hidePinToShelf: false,
       };
 
       if (optConfig) {
@@ -96,23 +112,29 @@ cr.define('app_management', function() {
     }
 
     /**
-     * @param {appManagement.mojom.PageProxy} page
+     * @param {appManagement.mojom.PageRemote} page
      */
     constructor(page) {
-      /** @type {appManagement.mojom.PageProxy} */
+      this.receiver_ = new appManagement.mojom.PageHandlerReceiver(this);
+      /** @type {appManagement.mojom.PageRemote} */
       this.page = page;
 
       /** @type {!Array<App>} */
       this.apps_ = [];
 
-      this.$ = {
-        flushForTesting: async () => {
-          await this.page.$.flushForTesting();
-        }
-      };
-
       /** @type {number} */
       this.guid = 0;
+    }
+
+    /**
+     * @returns {!appManagement.mojom.PageHandlerRemote}
+     */
+    getRemote() {
+      return this.receiver_.$.bindNewPipeAndPassRemote();
+    }
+
+    async flushPipesForTesting() {
+      await this.page.$.flushForTesting();
     }
 
     async getApps() {
@@ -184,7 +206,7 @@ cr.define('app_management', function() {
       optId = optId || String(this.guid++);
       const app = FakePageHandler.createApp(optId, optConfig);
       this.page.onAppAdded(app);
-      await this.$.flushForTesting();
+      await this.flushPipesForTesting();
       return app;
     }
 
@@ -197,7 +219,7 @@ cr.define('app_management', function() {
      */
     async changeApp(id, changes) {
       this.page.onAppChanged(FakePageHandler.createApp(id, changes));
-      await this.$.flushForTesting();
+      await this.flushPipesForTesting();
     }
   }
 

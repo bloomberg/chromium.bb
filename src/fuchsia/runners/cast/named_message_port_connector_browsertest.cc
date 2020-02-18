@@ -198,3 +198,48 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest, MultiplePorts) {
   connector_->Unregister("port1");
   connector_->Unregister("port2");
 }
+
+// Verifies that 'port1' and 'port2' are delivered via the DefaultHandler
+// callback.
+IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
+                       MultiplePortsViaDefaultHandler) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url(
+      embedded_test_server()->GetURL("/connector_multiple_ports.html"));
+
+  fuchsia::web::NavigationControllerPtr controller;
+  frame_->GetNavigationController(controller.NewRequest());
+
+  std::set<std::string> received_ports;
+  base::RunLoop receive_ports_run_loop;
+
+  // Register port1 to ensure that registered and "default handled" ports can
+  // coexist happily.
+  connector_->Register(
+      "port1", base::BindRepeating(
+                   [](fidl::InterfaceHandle<fuchsia::web::MessagePort>) {}));
+
+  // Resume test execution once two ports are received. Since ports are
+  // received in order, if those two ports are "port2" and "port3", then that
+  // means "port1" was handled separately and correctly.
+  connector_->RegisterDefaultHandler(base::BindRepeating(
+      [](std::set<std::string>* received_ports,
+         base::RunLoop* receive_ports_run_loop, base::StringPiece name,
+         fidl::InterfaceHandle<fuchsia::web::MessagePort>) {
+        received_ports->insert(name.as_string());
+
+        if (received_ports->size() == 2)
+          receive_ports_run_loop->Quit();
+      },
+      base::Unretained(&received_ports),
+      base::Unretained(&receive_ports_run_loop)));
+
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      controller.get(), fuchsia::web::LoadUrlParams(), test_url.spec()));
+  receive_ports_run_loop.Run();
+
+  EXPECT_TRUE(received_ports.find("port2") != received_ports.end());
+  EXPECT_TRUE(received_ports.find("port3") != received_ports.end());
+
+  connector_->Unregister("port1");
+}

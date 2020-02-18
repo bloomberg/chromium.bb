@@ -630,6 +630,7 @@ class FileTransferController {
                 this.pendingTaskIds.push(taskId);
                 const item = new ProgressCenterItem();
                 item.id = taskId;
+                item.itemCount = entries.length;
                 if (toMove) {
                   item.type = ProgressItemType.MOVE;
                   if (entries.length === 1) {
@@ -645,6 +646,20 @@ class FileTransferController {
                     item.message = strf('COPY_ITEMS_REMAINING', entries.length);
                   }
                 }
+                // Store the source name or count for display in messages.
+                if (entries.length === 1) {
+                  item.sourceMessage = entries[0].name;
+                } else {
+                  item.sourceMessage = entries.length.toString();
+                }
+                // Store the destination name for display in messages.
+                const destinationLocationInfo =
+                    this.volumeManager_.getLocationInfo(destinationEntry);
+                const destinationName = util.getEntryLabel(
+                    destinationLocationInfo, destinationEntry);
+                item.destinationMessage = destinationName;
+                item.subMessage =
+                    strf('TO_FOLDER_NAME', item.destinationMessage);
                 this.progressCenter_.updateItem(item);
                 // Check if cross share is needed or not.
                 return this.getMultiProfileShareEntries_(entries);
@@ -1348,6 +1363,13 @@ class FileTransferController {
       return false;
     }
 
+    const sourceUrls = (clipboardData.getData('fs/sources') || '').split('\n');
+    // If the destination is sub-tree of any of the sources paste isn't allowed.
+    const destinationUrl = destinationEntry.toURL();
+    if (sourceUrls.some(source => destinationUrl.startsWith(source))) {
+      return false;
+    }
+
     // Destination entry needs the 'canAddChildren' permission.
     const metadata =
         this.metadataModel_.getCache([destinationEntry], ['canAddChildren']);
@@ -1455,10 +1477,6 @@ class FileTransferController {
     this.metadataModel_
         .get(entries, ['alternateUrl', 'externalFileUrl', 'hosted'])
         .then(metadataList => {
-          // |Copy| is the only menu item affected by allDriveFilesAvailable_.
-          // It could be open right now, update its UI.
-          this.copyCommand_.disabled =
-              !this.canCutOrCopy_(false /* not move operation */);
           for (let i = 0; i < entries.length; i++) {
             if (entries[i].isFile) {
               if (metadataList[i].hosted) {

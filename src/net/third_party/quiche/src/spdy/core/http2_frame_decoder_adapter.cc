@@ -6,8 +6,8 @@
 
 // Logging policy: If an error in the input is detected, SPDY_VLOG(n) is used so
 // that the option exists to debug the situation. Otherwise, this code mostly
-// uses DVLOG so that the logging does not slow down production code when things
-// are working OK.
+// uses SPDY_DVLOG so that the logging does not slow down production code when
+// things are working OK.
 
 #include <stddef.h>
 
@@ -76,8 +76,9 @@ uint64_t ToSpdyPingId(const Http2PingFields& ping) {
 // Overwrites the fields of the header with invalid values, for the purpose
 // of identifying reading of unset fields. Only takes effect for debug builds.
 // In Address Sanatizer builds, it also marks the fields as un-readable.
-void CorruptFrameHeader(Http2FrameHeader* header) {
+void CorruptFrameHeader(Http2FrameHeader*
 #ifndef NDEBUG
+                            header) {
   // Beyond a valid payload length, which is 2^24 - 1.
   header->payload_length = 0x1010dead;
   // An unsupported frame type.
@@ -88,6 +89,8 @@ void CorruptFrameHeader(Http2FrameHeader* header) {
   // A stream id with the reserved high-bit (R in the RFC) set.
   // 2129510127 when the high-bit is cleared.
   header->stream_id = 0xfeedbeef;
+#else
+                        /*header*/) {
 #endif
 }
 
@@ -395,6 +398,11 @@ void Http2DecoderAdapter::OnHeadersPriority(
   DCHECK(!on_headers_called_);
   on_headers_called_ = true;
   ReportReceiveCompressedFrame(frame_header_);
+  if (!visitor()) {
+    SPDY_BUG << "Visitor is nullptr, handling priority in headers failed."
+             << " priority:" << priority << " frame_header:" << frame_header_;
+    return;
+  }
   visitor()->OnHeaders(frame_header_.stream_id, kHasPriorityFields,
                        priority.weight, priority.stream_dependency,
                        priority.is_exclusive, frame_header_.IsEndStream(),
@@ -455,7 +463,7 @@ void Http2DecoderAdapter::OnPadLength(size_t trailing_length) {
   }
 }
 
-void Http2DecoderAdapter::OnPadding(const char* padding,
+void Http2DecoderAdapter::OnPadding(const char* /*padding*/,
                                     size_t skipped_length) {
   SPDY_DVLOG(1) << "OnPadding: " << skipped_length;
   if (frame_header_.type == Http2FrameType::DATA) {
@@ -614,7 +622,7 @@ void Http2DecoderAdapter::OnAltSvcEnd() {
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
   if (!SpdyAltSvcWireFormat::ParseHeaderFieldValue(alt_svc_value_,
                                                    &altsvc_vector)) {
-    DLOG(ERROR) << "SpdyAltSvcWireFormat::ParseHeaderFieldValue failed.";
+    SPDY_DLOG(ERROR) << "SpdyAltSvcWireFormat::ParseHeaderFieldValue failed.";
     SetSpdyErrorAndNotify(SpdyFramerError::SPDY_INVALID_CONTROL_FRAME);
     return;
   }
@@ -1015,8 +1023,8 @@ void Http2DecoderAdapter::CommonHpackFragmentEnd() {
 
 namespace spdy {
 
-bool SpdyFramerVisitorInterface::OnGoAwayFrameData(const char* goaway_data,
-                                                   size_t len) {
+bool SpdyFramerVisitorInterface::OnGoAwayFrameData(const char* /*goaway_data*/,
+                                                   size_t /*len*/) {
   return true;
 }
 

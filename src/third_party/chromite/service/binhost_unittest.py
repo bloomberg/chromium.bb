@@ -10,12 +10,57 @@ from __future__ import print_function
 import os
 
 from chromite.lib import binpkg
+from chromite.lib import build_target_util
+from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
+from chromite.lib import sysroot_lib
 from chromite.service import binhost
+
+
+class GetPrebuiltAclArgsTest(cros_test_lib.MockTempDirTestCase):
+  """GetPrebuiltAclArgs tests."""
+
+  _ACL_FILE = """
+# Comment
+-g group1:READ
+
+# Another Comment
+-u user:FULL_CONTROL # EOL Comment
+
+
+
+# Comment # Comment
+-g group2:READ
+"""
+
+  def setUp(self):
+    self.build_target = build_target_util.BuildTarget('board')
+    self.acl_file = os.path.join(self.tempdir, 'googlestorage_acl.txt')
+    osutils.WriteFile(self.acl_file, self._ACL_FILE)
+
+  def testParse(self):
+    """Test parsing a valid file."""
+    self.PatchObject(portage_util, 'FindOverlayFile',
+                     return_value=self.acl_file)
+
+    expected_acls = [['-g', 'group1:READ'], ['-u', 'user:FULL_CONTROL'],
+                     ['-g', 'group2:READ']]
+
+    acls = binhost.GetPrebuiltAclArgs(self.build_target)
+
+    self.assertItemsEqual(expected_acls, acls)
+
+  def testNoFile(self):
+    """Test no file handling."""
+    self.PatchObject(portage_util, 'FindOverlayFile', return_value=None)
+
+    with self.assertRaises(binhost.NoAclFileFound):
+      binhost.GetPrebuiltAclArgs(self.build_target)
+
 
 class SetBinhostTest(cros_test_lib.MockTempDirTestCase):
   """Unittests for SetBinhost."""
@@ -83,18 +128,28 @@ class GetPrebuiltsRootTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     self.PatchObject(constants, 'SOURCE_ROOT', new=self.tempdir)
-    self.root = os.path.join(self.tempdir, 'chroot/build/foo/packages')
+    self.chroot_path = os.path.join(self.tempdir, 'chroot')
+    self.sysroot_path = '/build/foo'
+    self.root = os.path.join(self.chroot_path, self.sysroot_path.lstrip('/'),
+                             'packages')
+
+    self.chroot = chroot_lib.Chroot(self.chroot_path)
+    self.sysroot = sysroot_lib.Sysroot(self.sysroot_path)
+    self.build_target = build_target_util.BuildTarget('foo')
+
     osutils.SafeMakedirs(self.root)
 
   def testGetPrebuiltsRoot(self):
     """GetPrebuiltsRoot returns correct root for given build target."""
-    actual = binhost.GetPrebuiltsRoot('foo')
+    actual = binhost.GetPrebuiltsRoot(self.chroot, self.sysroot,
+                                      self.build_target)
     self.assertEqual(actual, self.root)
 
   def testGetPrebuiltsBadTarget(self):
     """GetPrebuiltsRoot dies on missing root (target probably not built.)"""
-    with self.assertRaises(LookupError):
-      binhost.GetPrebuiltsRoot('bar')
+    with self.assertRaises(binhost.EmptyPrebuiltsRoot):
+      binhost.GetPrebuiltsRoot(self.chroot, sysroot_lib.Sysroot('/build/bar'),
+                               build_target_util.BuildTarget('bar'))
 
 
 class GetPrebuiltsFilesTest(cros_test_lib.MockTempDirTestCase):
@@ -109,6 +164,7 @@ class GetPrebuiltsFilesTest(cros_test_lib.MockTempDirTestCase):
     """GetPrebuiltsFiles returns all archives for all packages."""
     packages_content = """\
 ARCH: amd64
+URI: gs://foo_prebuilts
 
 CPV: package/prebuilt_a
 
@@ -127,6 +183,7 @@ CPV: package/prebuilt_b
     """GetPrebuiltsFiles returns debug symbols archive if specified in index."""
     packages_content = """\
 ARCH: amd64
+URI: gs://foo_prebuilts
 
 CPV: package/prebuilt
 DEBUG_SYMBOLS: yes
@@ -145,6 +202,7 @@ DEBUG_SYMBOLS: yes
     """GetPrebuiltsFiles dies if archive file does not exist."""
     packages_content = """\
 ARCH: amd64
+URI: gs://foo_prebuilts
 
 CPV: package/prebuilt
     """
@@ -198,6 +256,6 @@ class RegenBuildCacheTest(cros_test_lib.MockTempDirTestCase):
         portage_util, 'FindOverlays', return_value=overlays_found)
     run_tasks = self.PatchObject(parallel, 'RunTasksInProcessPool')
 
-    binhost.RegenBuildCache(None, self.tempdir)
-    find_overlays.assert_called_once_with(None, buildroot=self.tempdir)
+    binhost.RegenBuildCache(None)
+    find_overlays.assert_called_once_with(None)
     run_tasks.assert_called_once_with(portage_util.RegenCache, [overlays_found])

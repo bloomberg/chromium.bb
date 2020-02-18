@@ -16,7 +16,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#elif (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_FUCHSIA)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <sys/utsname.h>
 #endif
 
@@ -30,17 +30,16 @@ const base::Feature kAndroidUserAgentStringContainsBuildId{
 #endif  // defined(OS_ANDROID)
 
 std::string GetUserAgentPlatform() {
-  return
-#if defined(OS_WIN)
-      "";
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
+  return "";
 #elif defined(OS_MACOSX)
-      "Macintosh; ";
+  return "Macintosh; ";
 #elif defined(USE_X11) || defined(USE_OZONE)
-      "X11; ";  // strange, but that's what Firefox uses
+  return "X11; ";  // strange, but that's what Firefox uses
 #elif defined(OS_ANDROID)
-      "Linux; ";
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-      "Unknown; ";
+  return "Linux; ";
+#elif defined(OS_POSIX)
+  return "Unknown; ";
 #endif
 }
 
@@ -86,7 +85,7 @@ std::string BuildOSCpuInfo(bool include_android_build_number) {
 #elif defined(OS_ANDROID)
   std::string android_version_str = base::SysInfo::OperatingSystemVersion();
   std::string android_info_str = GetAndroidOSInfo(include_android_build_number);
-#elif (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_FUCHSIA)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
   // Should work on any Posix system.
   struct utsname unixinfo;
   uname(&unixinfo);
@@ -94,42 +93,36 @@ std::string BuildOSCpuInfo(bool include_android_build_number) {
   std::string cputype;
   // special case for biarch systems
   if (strcmp(unixinfo.machine, "x86_64") == 0 &&
-      sizeof(void*) == sizeof(int32_t)) {  // NOLINT
+      sizeof(void*) == sizeof(int32_t)) {
     cputype.assign("i686 (x86_64)");
   } else {
     cputype.assign(unixinfo.machine);
   }
 #endif
 
-  base::StringAppendF(
-      &os_cpu,
+  base::StringAppendF(&os_cpu,
 #if defined(OS_WIN)
-      "Windows NT %d.%d%s",
-      os_major_version,
-      os_minor_version,
-      architecture_token.c_str()
+                      "Windows NT %d.%d%s", os_major_version, os_minor_version,
+                      architecture_token.c_str()
 #elif defined(OS_MACOSX)
-      "Intel Mac OS X %d_%d_%d",
-      os_major_version,
-      os_minor_version,
-      os_bugfix_version
+                      "Intel Mac OS X %d_%d_%d", os_major_version,
+                      os_minor_version, os_bugfix_version
 #elif defined(OS_CHROMEOS)
-      "CrOS "
-      "%s %d.%d.%d",
-      cputype.c_str(),   // e.g. i686
-      os_major_version,
-      os_minor_version,
-      os_bugfix_version
+                      "CrOS "
+                      "%s %d.%d.%d",
+                      cputype.c_str(),  // e.g. i686
+                      os_major_version, os_minor_version, os_bugfix_version
 #elif defined(OS_ANDROID)
-      "Android %s%s",
-      android_version_str.c_str(),
-      android_info_str.c_str()
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+                      "Android %s%s", android_version_str.c_str(),
+                      android_info_str.c_str()
+#elif defined(OS_FUCHSIA)
+                      "Fuchsia"
+#elif defined(OS_POSIX)
                       "%s %s",
                       unixinfo.sysname,  // e.g. Linux
                       cputype.c_str()    // e.g. i686
 #endif
-  );  // NOLINT
+  );
 
   return os_cpu;
 }

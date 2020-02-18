@@ -456,7 +456,8 @@ static void test_write_pixels_non_texture(skiatest::Reporter* reporter,
 
     for (auto& origin : { kTopLeft_GrSurfaceOrigin, kBottomLeft_GrSurfaceOrigin }) {
         GrBackendTexture backendTex = context->createBackendTexture(
-                DEV_W, DEV_H, kRGBA_8888_SkColorType, GrMipMapped::kNo, GrRenderable::kYes);
+                DEV_W, DEV_H, kRGBA_8888_SkColorType,
+                SkColors::kTransparent, GrMipMapped::kNo, GrRenderable::kYes, GrProtected::kNo);
         if (!backendTex.isValid()) {
             continue;
         }
@@ -520,19 +521,18 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(WritePixelsPendingIO, reporter, ctxInfo) {
     sk_sp<SkSurface> dest = SkSurface::MakeRenderTarget(context, SkBudgeted::kYes, fullII);
 
     {
-        // Seed the resource cached with a scratch texture that will be
-        // reused by writeSurfacePixels
+        // Seed the resource cached with a scratch texture that will be reused by writePixels
         GrSurfaceDesc desc;
-        desc.fFlags = kNone_GrSurfaceFlags;
         desc.fWidth = 32;
         desc.fHeight = 64;
         desc.fConfig = kRGBA_8888_GrPixelConfig;
 
         const GrBackendFormat format =
-            context->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
+            context->priv().caps()->getBackendFormatFromColorType(GrColorType::kRGBA_8888);
 
         sk_sp<GrTextureProxy> temp = proxyProvider->createProxy(
-                format, desc, kTopLeft_GrSurfaceOrigin, SkBackingFit::kApprox, SkBudgeted::kYes);
+                format, desc, GrRenderable::kNo, 1, kTopLeft_GrSurfaceOrigin, SkBackingFit::kApprox,
+                SkBudgeted::kYes, GrProtected::kNo);
         temp->instantiate(context->priv().resourceProvider());
     }
 

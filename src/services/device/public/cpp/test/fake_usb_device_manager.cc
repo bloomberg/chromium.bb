@@ -18,7 +18,7 @@
 
 namespace device {
 
-FakeUsbDeviceManager::FakeUsbDeviceManager() : weak_factory_(this) {}
+FakeUsbDeviceManager::FakeUsbDeviceManager() {}
 
 FakeUsbDeviceManager::~FakeUsbDeviceManager() {}
 
@@ -102,7 +102,7 @@ void FakeUsbDeviceManager::AddBinding(mojom::UsbDeviceManagerRequest request) {
 mojom::UsbDeviceInfoPtr FakeUsbDeviceManager::AddDevice(
     scoped_refptr<FakeUsbDeviceInfo> device) {
   DCHECK(device);
-  DCHECK(!base::ContainsKey(devices_, device->guid()));
+  DCHECK(!base::Contains(devices_, device->guid()));
   devices_[device->guid()] = device;
   auto device_info = device->GetDeviceInfo().Clone();
 
@@ -117,7 +117,7 @@ mojom::UsbDeviceInfoPtr FakeUsbDeviceManager::AddDevice(
 void FakeUsbDeviceManager::RemoveDevice(
     scoped_refptr<FakeUsbDeviceInfo> device) {
   DCHECK(device);
-  DCHECK(base::ContainsKey(devices_, device->guid()));
+  DCHECK(base::Contains(devices_, device->guid()));
 
   auto device_info = device->GetDeviceInfo().Clone();
   devices_.erase(device->guid());
@@ -132,7 +132,7 @@ void FakeUsbDeviceManager::RemoveDevice(
 }
 
 void FakeUsbDeviceManager::RemoveDevice(const std::string& guid) {
-  DCHECK(ContainsKey(devices_, guid));
+  DCHECK(base::Contains(devices_, guid));
 
   RemoveDevice(devices_[guid]);
 }
@@ -149,7 +149,7 @@ void FakeUsbDeviceManager::RemoveAllDevices() {
 
 bool FakeUsbDeviceManager::SetMockForDevice(const std::string& guid,
                                             MockUsbMojoDevice* mock_device) {
-  if (!base::ContainsKey(devices_, guid))
+  if (!base::Contains(devices_, guid))
     return false;
 
   devices_[guid]->SetMockDevice(mock_device);

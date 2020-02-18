@@ -14,6 +14,7 @@
 #include "chrome/browser/android/download/download_controller_base.h"
 #include "chrome/browser/android/download/download_utils.h"
 #include "chrome/browser/offline_pages/offline_page_mhtml_archiver.h"
+#include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/page_criteria.h"
@@ -66,9 +67,8 @@ void OfflinePageShareHelper::OnPageGetForShare(
     return;
   }
   const OfflinePageItem& page = pages[0];
-  bool is_suggested =
-      model_->GetPolicyController()->IsSuggested(page.client_id.name_space);
-  bool in_private_dir = model_->IsArchiveInInternalDir(page.file_path);
+  const bool is_suggested = GetPolicy(page.client_id.name_space).is_suggested;
+  const bool in_private_dir = model_->IsArchiveInInternalDir(page.file_path);
 
   // Need to publish internal page to public directory to share the file with
   // content URI instead of the web page URL.
@@ -109,9 +109,8 @@ void OfflinePageShareHelper::OnPageGetForPublish(
     return;
   // Publish the page.
   model_->PublishInternalArchive(
-      pages[0], std::make_unique<OfflinePageMHTMLArchiver>(),
-      base::BindOnce(&OfflinePageShareHelper::OnPagePublished,
-                     weak_ptr_factory_.GetWeakPtr()));
+      pages[0], base::BindOnce(&OfflinePageShareHelper::OnPagePublished,
+                               weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OfflinePageShareHelper::OnPagePublished(const base::FilePath& file_path,

@@ -6,20 +6,20 @@
 
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
-#include "media/gpu/android/avda_surface_bundle.h"
+#include "media/gpu/android/codec_surface_bundle.h"
 
 namespace media {
 
 CodecImageGroup::CodecImageGroup(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_refptr<AVDASurfaceBundle> surface_bundle)
+    scoped_refptr<CodecSurfaceBundle> surface_bundle)
     : surface_bundle_(std::move(surface_bundle)), weak_this_factory_(this) {
   // If the surface bundle has an overlay, then register for destruction
   // callbacks.  We thread-hop to the right thread, which means that we might
   // find out about destruction asynchronously.  Remember that the wp will be
   // cleared on |task_runner|.
-  if (surface_bundle_->overlay) {
-    surface_bundle_->overlay->AddSurfaceDestroyedCallback(base::BindOnce(
+  if (surface_bundle_->overlay()) {
+    surface_bundle_->overlay()->AddSurfaceDestroyedCallback(base::BindOnce(
         [](scoped_refptr<base::SequencedTaskRunner> task_runner,
            base::OnceCallback<void(AndroidOverlay*)> cb,
            AndroidOverlay* overlay) -> void {
@@ -38,11 +38,6 @@ CodecImageGroup::CodecImageGroup(
 
 CodecImageGroup::~CodecImageGroup() {}
 
-void CodecImageGroup::SetDestructionCb(
-    CodecImage::DestructionCb destruction_cb) {
-  destruction_cb_ = std::move(destruction_cb);
-}
-
 void CodecImageGroup::AddCodecImage(CodecImage* image) {
   // If somebody adds an image after the surface has been destroyed, fail the
   // image immediately.  This can happen due to thread hopping.
@@ -55,15 +50,19 @@ void CodecImageGroup::AddCodecImage(CodecImage* image) {
 
   // Bind a strong ref to |this| so that the callback will prevent us from being
   // destroyed until the CodecImage is destroyed.
-  image->SetDestructionCb(
+  image->SetDestructionCB(
       base::BindRepeating(&CodecImageGroup::OnCodecImageDestroyed,
                           scoped_refptr<CodecImageGroup>(this)));
 }
 
+void CodecImageGroup::RemoveCodecImage(CodecImage* image) {
+  images_.erase(image);
+  // Clear the destruction CB, since it has a strong ref to us.
+  image->SetDestructionCB(CodecImage::DestructionCB());
+}
+
 void CodecImageGroup::OnCodecImageDestroyed(CodecImage* image) {
   images_.erase(image);
-  if (destruction_cb_)
-    destruction_cb_.Run(image);
 }
 
 void CodecImageGroup::OnSurfaceDestroyed(AndroidOverlay* overlay) {

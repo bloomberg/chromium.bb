@@ -21,8 +21,8 @@
 #include "components/offline_pages/core/background/offliner_client.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/save_page_request.h"
-#include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_clock.h"
+#include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -279,15 +279,13 @@ RequestCoordinator::RequestCoordinator(
       policy_(std::move(policy)),
       queue_(std::move(queue)),
       scheduler_(std::move(scheduler)),
-      policy_controller_(new ClientPolicyController()),
       network_quality_tracker_(network_quality_tracker),
       network_quality_at_request_start_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
       scheduler_callback_(base::DoNothing()),
       internal_start_processing_callback_(base::DoNothing()),
       pending_state_updater_(this),
-      active_tab_info_(std::move(active_tab_info)),
-      weak_ptr_factory_(this) {
+      active_tab_info_(std::move(active_tab_info)) {
   DCHECK(policy_ != nullptr);
   DCHECK(network_quality_tracker_);
   offliner_client_ = std::make_unique<OfflinerClient>(
@@ -802,7 +800,7 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
   // Ask request queue to make a new PickRequestTask object, then put it on
   // the task queue.
   queue_->PickNextRequest(
-      policy_.get(), policy_controller_.get(),
+      policy_.get(),
       base::BindOnce(&RequestCoordinator::RequestPicked,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&RequestCoordinator::RequestNotPicked,
@@ -922,7 +920,7 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
     RecordStartTimeUMA(request);
   }
   const OfflinePageClientPolicy& policy =
-      policy_controller_->GetPolicy(request.client_id().name_space);
+      GetPolicy(request.client_id().name_space);
   if (policy.defer_background_fetch_while_page_is_active &&
       active_tab_info_->DoesActiveTabMatch(request.url())) {
     queue_->MarkAttemptDeferred(
@@ -1180,10 +1178,6 @@ void RequestCoordinator::NotifyNetworkProgress(const SavePageRequest& request,
                                                int64_t received_bytes) {
   for (Observer& observer : observers_)
     observer.OnNetworkProgress(request, received_bytes);
-}
-
-ClientPolicyController* RequestCoordinator::GetPolicyController() {
-  return policy_controller_.get();
 }
 
 void RequestCoordinator::RecordOfflinerResult(const SavePageRequest& request,

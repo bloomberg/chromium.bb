@@ -63,8 +63,7 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
           BrowserContext::GetServiceInstanceGroupFor(browser_context),
           base::Token::CreateRandom(),
           base::Token::CreateRandom()),
-      url_loader_factory_(nullptr),
-      weak_ptr_factory_(this) {
+      url_loader_factory_(nullptr) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID(), browser_context);
@@ -353,13 +352,11 @@ size_t MockRenderProcessHost::GetKeepAliveRefCount() const {
   return keep_alive_ref_count_;
 }
 
-void MockRenderProcessHost::IncrementKeepAliveRefCount(
-    KeepAliveClientType client) {
+void MockRenderProcessHost::IncrementKeepAliveRefCount() {
   ++keep_alive_ref_count_;
 }
 
-void MockRenderProcessHost::DecrementKeepAliveRefCount(
-    KeepAliveClientType client) {
+void MockRenderProcessHost::DecrementKeepAliveRefCount() {
   --keep_alive_ref_count_;
 }
 
@@ -393,6 +390,8 @@ mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
 
 void MockRenderProcessHost::CreateURLLoaderFactory(
     const base::Optional<url::Origin>& origin,
+    const WebPreferences* preferences,
+    const net::NetworkIsolationKey& network_isolation_key,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
     network::mojom::URLLoaderFactoryRequest request) {
   url_loader_factory_->Clone(std::move(request));
@@ -502,7 +501,7 @@ MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
 
 RenderProcessHost* MockRenderProcessHostFactory::CreateRenderProcessHost(
     BrowserContext* browser_context,
-    SiteInstance* site_instance) const {
+    SiteInstance* site_instance) {
   std::unique_ptr<MockRenderProcessHost> host =
       std::make_unique<MockRenderProcessHost>(browser_context);
   host->OverrideURLLoaderFactory(default_mock_url_loader_factory_.get());

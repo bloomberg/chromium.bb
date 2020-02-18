@@ -21,8 +21,8 @@
 #include "net/third_party/quiche/src/quic/core/crypto/proof_source.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_compressed_certs_cache.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_proof.h"
-#include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters.pb.h"
-#include "net/third_party/quiche/src/quic/core/proto/source_address_token.pb.h"
+#include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters_proto.h"
+#include "net/third_party/quiche/src/quic/core/proto/source_address_token_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mutex.h"
@@ -212,12 +212,11 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   //     server. Not owned.
   // |proof_source|: provides certificate chains and signatures.
   // |key_exchange_source|: provides key-exchange functionality.
-  // |ssl_ctx|: The SSL_CTX used for doing TLS handshakes.
-  QuicCryptoServerConfig(QuicStringPiece source_address_token_secret,
-                         QuicRandom* server_nonce_entropy,
-                         std::unique_ptr<ProofSource> proof_source,
-                         std::unique_ptr<KeyExchangeSource> key_exchange_source,
-                         bssl::UniquePtr<SSL_CTX> ssl_ctx);
+  QuicCryptoServerConfig(
+      QuicStringPiece source_address_token_secret,
+      QuicRandom* server_nonce_entropy,
+      std::unique_ptr<ProofSource> proof_source,
+      std::unique_ptr<KeyExchangeSource> key_exchange_source);
   QuicCryptoServerConfig(const QuicCryptoServerConfig&) = delete;
   QuicCryptoServerConfig& operator=(const QuicCryptoServerConfig&) = delete;
   ~QuicCryptoServerConfig();
@@ -338,10 +337,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
       const QuicSocketAddress& client_address,
       ParsedQuicVersion version,
       const ParsedQuicVersionVector& supported_versions,
-      // TODO(wub): Deprecate use_stateless_rejects and
-      // server_designated_connection_id.
-      bool use_stateless_rejects,
-      QuicConnectionId server_designated_connection_id,
       const QuicClock* clock,
       QuicRandom* rand,
       QuicCompressedCertsCache* compressed_certs_cache,
@@ -568,8 +563,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
         const QuicSocketAddress& client_address,
         ParsedQuicVersion version,
         const ParsedQuicVersionVector& supported_versions,
-        bool use_stateless_rejects,
-        QuicConnectionId server_designated_connection_id,
         const QuicClock* clock,
         QuicRandom* rand,
         QuicCompressedCertsCache* compressed_certs_cache,
@@ -585,8 +578,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
           client_address_(client_address),
           version_(version),
           supported_versions_(supported_versions),
-          use_stateless_rejects_(use_stateless_rejects),
-          server_designated_connection_id_(server_designated_connection_id),
           clock_(clock),
           rand_(rand),
           compressed_certs_cache_(compressed_certs_cache),
@@ -618,10 +609,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
     ParsedQuicVersion version() const { return version_; }
     ParsedQuicVersionVector supported_versions() const {
       return supported_versions_;
-    }
-    bool use_stateless_rejects() const { return use_stateless_rejects_; }
-    QuicConnectionId server_designated_connection_id() const {
-      return server_designated_connection_id_;
     }
     const QuicClock* clock() const { return clock_; }
     QuicRandom* rand() const { return rand_; }  // NOLINT
@@ -657,8 +644,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
     const QuicSocketAddress client_address_;
     const ParsedQuicVersion version_;
     const ParsedQuicVersionVector supported_versions_;
-    const bool use_stateless_rejects_;
-    const QuicConnectionId server_designated_connection_id_;
     const QuicClock* const clock_;
     QuicRandom* const rand_;
     QuicCompressedCertsCache* const compressed_certs_cache_;

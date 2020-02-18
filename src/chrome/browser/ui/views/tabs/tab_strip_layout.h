@@ -41,9 +41,7 @@ struct TabSizeInfo {
 std::vector<gfx::Rect> CalculateTabBounds(
     const TabSizeInfo& tab_size_info,
     const std::vector<TabAnimationState>& tabs,
-    int width,
-    int* active_width,
-    int* inactive_width);
+    int width);
 
 std::vector<gfx::Rect> CalculatePinnedTabBounds(
     const TabSizeInfo& tab_size_info,

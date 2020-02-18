@@ -7,12 +7,15 @@
 #include <limits.h>
 
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "public/cpp/fpdf_scopers.h"
 #include "public/fpdf_annot.h"
 #include "public/fpdf_attachment.h"
 #include "public/fpdf_edit.h"
+#include "public/fpdf_thumbnail.h"
 #include "testing/fx_string_testhelpers.h"
 #include "testing/image_diff/image_diff_png.h"
 #include "third_party/base/logging.h"
@@ -128,6 +131,35 @@ const char* PageObjectTypeToCString(int type) {
     return "Form";
   NOTREACHED();
   return "";
+}
+
+std::vector<unsigned char> EncodePng(const unsigned char* buffer,
+                                     int width,
+                                     int height,
+                                     int stride,
+                                     int format) {
+  std::vector<unsigned char> png;
+  switch (format) {
+    case FPDFBitmap_Unknown:
+      break;
+    case FPDFBitmap_Gray:
+      png = image_diff_png::EncodeGrayPNG(buffer, width, height, stride);
+      break;
+    case FPDFBitmap_BGR:
+      png = image_diff_png::EncodeBGRPNG(buffer, width, height, stride);
+      break;
+    case FPDFBitmap_BGRx:
+      png = image_diff_png::EncodeBGRAPNG(buffer, width, height, stride,
+                                          /*discard_transparency=*/true);
+      break;
+    case FPDFBitmap_BGRA:
+      png = image_diff_png::EncodeBGRAPNG(buffer, width, height, stride,
+                                          /*discard_transparency=*/false);
+      break;
+    default:
+      NOTREACHED();
+  }
+  return png;
 }
 
 #ifdef _WIN32
@@ -352,10 +384,11 @@ std::string WritePng(const char* pdf_name,
   if (!CheckDimensions(stride, width, height))
     return "";
 
-  std::vector<unsigned char> png_encoding;
   const auto* buffer = static_cast<const unsigned char*>(buffer_void);
-  if (!image_diff_png::EncodeBGRAPNG(buffer, width, height, stride, false,
-                                     &png_encoding)) {
+
+  std::vector<unsigned char> png_encoding =
+      EncodePng(buffer, width, height, stride, FPDFBitmap_BGRA);
+  if (png_encoding.empty()) {
     fprintf(stderr, "Failed to convert bitmap to PNG\n");
     return "";
   }
@@ -505,6 +538,72 @@ std::string WriteSkp(const char* pdf_name,
 }
 #endif
 
+enum class ThumbnailDecodeType { kBitmap, kRawStream, kDecodedStream };
+
+bool GetThumbnailFilename(char* name_buf,
+                          size_t name_buf_size,
+                          const char* pdf_name,
+                          int page_num,
+                          ThumbnailDecodeType decode_type) {
+  const char* format;
+  switch (decode_type) {
+    case ThumbnailDecodeType::kBitmap:
+      format = "%s.thumbnail.%d.png";
+      break;
+    case ThumbnailDecodeType::kDecodedStream:
+      format = "%s.thumbnail.decoded.%d.bin";
+      break;
+    case ThumbnailDecodeType::kRawStream:
+      format = "%s.thumbnail.raw.%d.bin";
+      break;
+  }
+
+  int chars_formatted =
+      snprintf(name_buf, name_buf_size, format, pdf_name, page_num);
+  if (chars_formatted < 0 ||
+      static_cast<size_t>(chars_formatted) >= name_buf_size) {
+    fprintf(stderr, "Filename %s for saving is too long.\n", name_buf);
+    return false;
+  }
+
+  return true;
+}
+
+void WriteBufferToFile(const void* buf,
+                       size_t buflen,
+                       const char* filename,
+                       const char* filetype) {
+  FILE* fp = fopen(filename, "wb");
+  if (!fp) {
+    fprintf(stderr, "Failed to open %s for saving %s.", filename, filetype);
+    return;
+  }
+
+  size_t bytes_written = fwrite(buf, 1, buflen, fp);
+  if (bytes_written == buflen)
+    fprintf(stderr, "Successfully wrote %s %s.\n", filetype, filename);
+  else
+    fprintf(stderr, "Failed to write to %s.\n", filename);
+  fclose(fp);
+}
+
+std::vector<unsigned char> EncodeBitmapToPng(ScopedFPDFBitmap bitmap) {
+  std::vector<unsigned char> png_encoding;
+  int format = FPDFBitmap_GetFormat(bitmap.get());
+  if (format == FPDFBitmap_Unknown)
+    return png_encoding;
+
+  const unsigned char* buffer =
+      static_cast<const unsigned char*>(FPDFBitmap_GetBuffer(bitmap.get()));
+
+  int width = FPDFBitmap_GetWidth(bitmap.get());
+  int height = FPDFBitmap_GetHeight(bitmap.get());
+  int stride = FPDFBitmap_GetStride(bitmap.get());
+
+  png_encoding = EncodePng(buffer, width, height, stride, format);
+  return png_encoding;
+}
+
 void WriteAttachments(FPDF_DOCUMENT doc, const std::string& name) {
   for (int i = 0; i < FPDFDoc_GetAttachmentCount(doc); ++i) {
     FPDF_ATTACHMENT attachment = FPDFDoc_GetAttachment(doc, i);
@@ -531,7 +630,7 @@ void WriteAttachments(FPDF_DOCUMENT doc, const std::string& name) {
                  attachment_name.c_str());
     if (chars_formatted < 0 ||
         static_cast<size_t>(chars_formatted) >= sizeof(save_name)) {
-      fprintf(stderr, "Filename %s is too long\n", save_name);
+      fprintf(stderr, "Filename %s is too long.\n", save_name);
       continue;
     }
 
@@ -550,20 +649,7 @@ void WriteAttachments(FPDF_DOCUMENT doc, const std::string& name) {
     }
 
     // Write the attachment file.
-    FILE* fp = fopen(save_name, "wb");
-    if (!fp) {
-      fprintf(stderr, "Failed to open %s for saving attachment.\n", save_name);
-      continue;
-    }
-
-    size_t written_len = fwrite(data_buf.data(), 1, length_bytes, fp);
-    if (written_len == length_bytes) {
-      fprintf(stderr, "Saved attachment \"%s\" as: %s.\n",
-              attachment_name.c_str(), save_name);
-    } else {
-      fprintf(stderr, "Failed to write to %s\n", save_name);
-    }
-    fclose(fp);
+    WriteBufferToFile(data_buf.data(), length_bytes, save_name, "attachment");
   }
 }
 
@@ -580,70 +666,109 @@ void WriteImages(FPDF_PAGE page, const char* pdf_name, int page_num) {
       continue;
     }
 
-    int format = FPDFBitmap_GetFormat(bitmap.get());
-    if (format == FPDFBitmap_Unknown) {
-      fprintf(stderr,
-              "Image object #%d on page #%d has a bitmap of unknown format.\n",
-              i + 1, page_num + 1);
-      continue;
-    }
-
-    std::vector<unsigned char> png_encoding;
-    const unsigned char* buffer =
-        static_cast<const unsigned char*>(FPDFBitmap_GetBuffer(bitmap.get()));
-    int width = FPDFBitmap_GetWidth(bitmap.get());
-    int height = FPDFBitmap_GetHeight(bitmap.get());
-    int stride = FPDFBitmap_GetStride(bitmap.get());
-    bool ret = false;
-    switch (format) {
-      case FPDFBitmap_Gray:
-        ret = image_diff_png::EncodeGrayPNG(buffer, width, height, stride,
-                                            &png_encoding);
-        break;
-      case FPDFBitmap_BGR:
-        ret = image_diff_png::EncodeBGRPNG(buffer, width, height, stride,
-                                           &png_encoding);
-        break;
-      case FPDFBitmap_BGRx:
-        ret = image_diff_png::EncodeBGRAPNG(buffer, width, height, stride, true,
-                                            &png_encoding);
-        break;
-      case FPDFBitmap_BGRA:
-        ret = image_diff_png::EncodeBGRAPNG(buffer, width, height, stride,
-                                            false, &png_encoding);
-        break;
-      default:
-        NOTREACHED();
-    }
-    if (!ret) {
-      fprintf(stderr,
-              "Failed to convert image object #%d on page #%d to png.\n", i + 1,
-              page_num + 1);
-      continue;
-    }
-
     char filename[256];
     int chars_formatted = snprintf(filename, sizeof(filename), "%s.%d.%d.png",
                                    pdf_name, page_num, i);
     if (chars_formatted < 0 ||
         static_cast<size_t>(chars_formatted) >= sizeof(filename)) {
-      fprintf(stderr, "Filename %s for saving image is too long\n", filename);
+      fprintf(stderr, "Filename %s for saving image is too long.\n", filename);
       continue;
     }
 
-    FILE* fp = fopen(filename, "wb");
-    if (!fp) {
-      fprintf(stderr, "Failed to open %s for saving image.\n", filename);
+    std::vector<unsigned char> png_encoding =
+        EncodeBitmapToPng(std::move(bitmap));
+    if (png_encoding.empty()) {
+      fprintf(stderr,
+              "Failed to convert image object #%d, on page #%d to png.\n",
+              i + 1, page_num + 1);
       continue;
     }
 
-    size_t bytes_written =
-        fwrite(&png_encoding.front(), 1, png_encoding.size(), fp);
-    if (bytes_written != png_encoding.size())
-      fprintf(stderr, "Failed to write to %s.\n", filename);
-    else
-      fprintf(stderr, "Successfully wrote embedded image %s.\n", filename);
-
-    (void)fclose(fp);
+    WriteBufferToFile(&png_encoding.front(), png_encoding.size(), filename,
+                      "image");
   }
+}
+
+void WriteDecodedThumbnailStream(FPDF_PAGE page,
+                                 const char* pdf_name,
+                                 int page_num) {
+  char filename[256];
+  if (!GetThumbnailFilename(filename, sizeof(filename), pdf_name, page_num,
+                            ThumbnailDecodeType::kDecodedStream)) {
+    return;
+  }
+
+  unsigned long decoded_data_size =
+      FPDFPage_GetDecodedThumbnailData(page, nullptr, 0u);
+
+  // Only continue if there actually is a thumbnail for this page
+  if (decoded_data_size == 0) {
+    fprintf(stderr, "Failed to get decoded thumbnail for page #%d.\n",
+            page_num + 1);
+    return;
+  }
+
+  std::vector<uint8_t> thumb_buf(decoded_data_size);
+  if (FPDFPage_GetDecodedThumbnailData(
+          page, thumb_buf.data(), decoded_data_size) != decoded_data_size) {
+    fprintf(stderr, "Failed to get decoded thumbnail data for %s.\n", filename);
+    return;
+  }
+
+  WriteBufferToFile(thumb_buf.data(), decoded_data_size, filename,
+                    "decoded thumbnail");
+}
+
+void WriteRawThumbnailStream(FPDF_PAGE page,
+                             const char* pdf_name,
+                             int page_num) {
+  char filename[256];
+  if (!GetThumbnailFilename(filename, sizeof(filename), pdf_name, page_num,
+                            ThumbnailDecodeType::kRawStream)) {
+    return;
+  }
+
+  unsigned long raw_data_size = FPDFPage_GetRawThumbnailData(page, nullptr, 0u);
+
+  // Only continue if there actually is a thumbnail for this page
+  if (raw_data_size == 0) {
+    fprintf(stderr, "Failed to get raw thumbnail data for page #%d.\n",
+            page_num + 1);
+    return;
+  }
+
+  std::vector<uint8_t> thumb_buf(raw_data_size);
+  if (FPDFPage_GetRawThumbnailData(page, thumb_buf.data(), raw_data_size) !=
+      raw_data_size) {
+    fprintf(stderr, "Failed to get raw thumbnail data for %s.\n", filename);
+    return;
+  }
+
+  WriteBufferToFile(thumb_buf.data(), raw_data_size, filename, "raw thumbnail");
+}
+
+void WriteThumbnail(FPDF_PAGE page, const char* pdf_name, int page_num) {
+  char filename[256];
+  if (!GetThumbnailFilename(filename, sizeof(filename), pdf_name, page_num,
+                            ThumbnailDecodeType::kBitmap)) {
+    return;
+  }
+
+  ScopedFPDFBitmap thumb_bitmap(FPDFPage_GetThumbnailAsBitmap(page));
+  if (!thumb_bitmap) {
+    fprintf(stderr, "Thumbnail of page #%d has an empty bitmap.\n",
+            page_num + 1);
+    return;
+  }
+
+  std::vector<unsigned char> png_encoding =
+      EncodeBitmapToPng(std::move(thumb_bitmap));
+  if (png_encoding.empty()) {
+    fprintf(stderr, "Failed to convert thumbnail of page #%d to png.\n",
+            page_num + 1);
+    return;
+  }
+
+  WriteBufferToFile(&png_encoding.front(), png_encoding.size(), filename,
+                    "thumbnail");
 }

@@ -44,6 +44,8 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
                    bool wait_for_all_surfaces_before_draw = false);
   ~DisplayScheduler() override;
 
+  int pending_swaps() const { return pending_swaps_; }
+
   void SetClient(DisplaySchedulerClient* client);
 
   void SetVisible(bool visible);
@@ -163,7 +165,7 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
 
   SurfaceId root_surface_id_;
 
-  base::WeakPtrFactory<DisplayScheduler> weak_ptr_factory_;
+  base::WeakPtrFactory<DisplayScheduler> weak_ptr_factory_{this};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayScheduler);

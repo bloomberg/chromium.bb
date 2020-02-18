@@ -83,8 +83,7 @@ ServiceWorkerRegistrationObjectHost::ServiceWorkerRegistrationObjectHost(
     scoped_refptr<ServiceWorkerRegistration> registration)
     : provider_host_(provider_host),
       context_(context),
-      registration_(registration),
-      weak_ptr_factory_(this) {
+      registration_(registration) {
   DCHECK(registration_.get());
   DCHECK(provider_host_);
   registration_->AddListener(this);
@@ -146,8 +145,8 @@ void ServiceWorkerRegistrationObjectHost::OnUpdateFound(
 }
 
 void ServiceWorkerRegistrationObjectHost::Update(UpdateCallback callback) {
-  if (!CanServeRegistrationObjectHostMethods(&callback,
-                                             kServiceWorkerUpdateErrorPrefix)) {
+  if (!CanServeRegistrationObjectHostMethods(
+          &callback, ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix)) {
     return;
   }
 
@@ -168,7 +167,7 @@ void ServiceWorkerRegistrationObjectHost::Update(UpdateCallback callback) {
     // This can happen if update() is called during initial script evaluation.
     std::move(callback).Run(
         blink::mojom::ServiceWorkerErrorType::kState,
-        std::string(kServiceWorkerUpdateErrorPrefix) +
+        std::string(ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix) +
             std::string(ServiceWorkerConsts::kInvalidStateErrorMessage));
     return;
   }
@@ -185,7 +184,7 @@ void ServiceWorkerRegistrationObjectHost::Update(UpdateCallback callback) {
       // install-event-handler.
       std::move(callback).Run(
           blink::mojom::ServiceWorkerErrorType::kState,
-          std::string(kServiceWorkerUpdateErrorPrefix) +
+          std::string(ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix) +
               std::string(ServiceWorkerConsts::kInvalidStateErrorMessage));
       return;
     }
@@ -246,7 +245,8 @@ void ServiceWorkerRegistrationObjectHost::DelayUpdate(
 void ServiceWorkerRegistrationObjectHost::Unregister(
     UnregisterCallback callback) {
   if (!CanServeRegistrationObjectHostMethods(
-          &callback, kServiceWorkerUnregisterErrorPrefix)) {
+          &callback,
+          ServiceWorkerConsts::kServiceWorkerUnregisterErrorPrefix)) {
     return;
   }
 
@@ -339,8 +339,9 @@ void ServiceWorkerRegistrationObjectHost::UpdateComplete(
     blink::mojom::ServiceWorkerErrorType error_type;
     GetServiceWorkerErrorTypeForRegistration(status, status_message,
                                              &error_type, &error_message);
-    std::move(callback).Run(error_type,
-                            kServiceWorkerUpdateErrorPrefix + error_message);
+    std::move(callback).Run(
+        error_type,
+        ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix + error_message);
     return;
   }
 
@@ -357,7 +358,8 @@ void ServiceWorkerRegistrationObjectHost::UnregistrationComplete(
     GetServiceWorkerErrorTypeForRegistration(status, std::string(), &error_type,
                                              &error_message);
     std::move(callback).Run(
-        error_type, kServiceWorkerUnregisterErrorPrefix + error_message);
+        error_type, ServiceWorkerConsts::kServiceWorkerUnregisterErrorPrefix +
+                        error_message);
     return;
   }
 
@@ -469,7 +471,7 @@ bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
     return false;
   }
 
-  if (!provider_host_->AllowServiceWorker(registration_->scope())) {
+  if (!provider_host_->AllowServiceWorker(registration_->scope(), GURL())) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kDisabled,
         std::string(error_prefix) +

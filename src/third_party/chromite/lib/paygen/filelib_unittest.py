@@ -23,11 +23,6 @@ class TestFileLib(cros_test_lib.TempDirTestCase):
   hashlib bug break both the code and the tests.
   """
 
-  def _MD5Sum(self, file_path):
-    """Use RunCommand to get the md5sum of a file."""
-    return cros_build_lib.RunCommand(
-        ['md5sum', file_path], redirect_stdout=True).output.split(' ')[0]
-
   def _SHA1Sum(self, file_path):
     """Use sha1sum utility to get SHA1 of a file."""
     # The sha1sum utility gives SHA1 in base 16 encoding.  We need base 64.
@@ -41,11 +36,6 @@ class TestFileLib(cros_test_lib.TempDirTestCase):
     hash16 = cros_build_lib.RunCommand(
         ['sha256sum', file_path], redirect_stdout=True).output.split(' ')[0]
     return hash16.decode('hex').encode('base64').rstrip()
-
-  def testMD5Sum(self):
-    """Test MD5Sum output with the /usr/bin/md5sum binary."""
-    file_path = os.path.abspath(__file__)
-    self.assertEqual(self._MD5Sum(file_path), filelib.MD5Sum(file_path))
 
   def testShaSums(self):
     file_path = os.path.abspath(__file__)

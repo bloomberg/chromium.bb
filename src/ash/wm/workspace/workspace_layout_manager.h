@@ -9,7 +9,7 @@
 #include <set>
 
 #include "ash/ash_export.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/window_state_observer.h"
@@ -24,32 +24,22 @@
 namespace ash {
 
 class RootWindowController;
-class BackdropDelegate;
 class BackdropController;
-
-namespace wm {
 class WMEvent;
-}
 
 // LayoutManager used on the window created for a workspace.
-class ASH_EXPORT WorkspaceLayoutManager
-    : public aura::LayoutManager,
-      public aura::WindowObserver,
-      public ::wm::ActivationChangeObserver,
-      public keyboard::KeyboardControllerObserver,
-      public display::DisplayObserver,
-      public ShellObserver,
-      public wm::WindowStateObserver,
-      public ShelfObserver {
+class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager,
+                                          public aura::WindowObserver,
+                                          public ::wm::ActivationChangeObserver,
+                                          public KeyboardControllerObserver,
+                                          public display::DisplayObserver,
+                                          public ShellObserver,
+                                          public WindowStateObserver,
+                                          public ShelfObserver {
  public:
   // |window| is the container for this layout manager.
   explicit WorkspaceLayoutManager(aura::Window* window);
   ~WorkspaceLayoutManager() override;
-
-  // A delegate which can be set to add a backdrop behind the top most visible
-  // window. With the call the ownership of the delegate will be transferred to
-  // the WorkspaceLayoutManager.
-  void SetBackdropDelegate(std::unique_ptr<BackdropDelegate> delegate);
 
   BackdropController* backdrop_controller() {
     return backdrop_controller_.get();
@@ -87,13 +77,12 @@ class ASH_EXPORT WorkspaceLayoutManager
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 
-  // keyboard::KeyboardControllerObserver:
+  // KeyboardControllerObserver:
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& new_bounds) override;
-  void OnKeyboardWorkspaceDisplacingBoundsChanged(
-      const gfx::Rect& new_bounds) override;
+  void OnKeyboardDisplacingBoundsChanged(const gfx::Rect& new_bounds) override;
 
   // WindowStateObserver:
-  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
+  void OnPostWindowStateTypeChange(WindowState* window_state,
                                    WindowStateType old_type) override;
 
   // display::DisplayObserver:
@@ -147,7 +136,7 @@ class ASH_EXPORT WorkspaceLayoutManager
   // windows are readjusted to make sure the window is completely within the
   // display region. Otherwise, it makes sure at least some parts of the window
   // is on display.
-  void AdjustAllWindowsBoundsForWorkAreaChange(const wm::WMEvent* event);
+  void AdjustAllWindowsBoundsForWorkAreaChange(const WMEvent* event);
 
   // Updates the visibility state of the shelf.
   void UpdateShelfVisibility();

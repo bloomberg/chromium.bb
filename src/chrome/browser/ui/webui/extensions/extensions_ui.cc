@@ -10,14 +10,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_extension_browser_constants.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
@@ -34,9 +31,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/common/extension_urls.h"
@@ -56,51 +50,6 @@ namespace {
 constexpr char kInDevModeKey[] = "inDevMode";
 constexpr char kShowActivityLogKey[] = "showActivityLog";
 constexpr char kLoadTimeClassesKey[] = "loadTimeClasses";
-
-class ExtensionWebUiTimer : public content::WebContentsObserver {
- public:
-  explicit ExtensionWebUiTimer(content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents) {}
-  ~ExtensionWebUiTimer() override {}
-
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    if (navigation_handle->IsInMainFrame() &&
-        !navigation_handle->IsSameDocument()) {
-      timer_.reset(new base::ElapsedTimer());
-    }
-  }
-
-  void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override {
-    if (render_frame_host != web_contents()->GetMainFrame() ||
-        !timer_) {  // See comment in DocumentOnLoadCompletedInMainFrame()
-      return;
-    }
-    UMA_HISTOGRAM_TIMES("Extensions.WebUi.DocumentLoadedInMainFrameTime.MD",
-                        timer_->Elapsed());
-  }
-
-  void DocumentOnLoadCompletedInMainFrame() override {
-    // TODO(devlin): The usefulness of these metrics remains to be seen.
-    if (!timer_) {
-      // This object could have been created for a child RenderFrameHost so it
-      // would never get a DidStartNavigation with the main frame. However it
-      // will receive this current callback.
-      return;
-    }
-    UMA_HISTOGRAM_TIMES("Extensions.WebUi.LoadCompletedInMainFrame.MD",
-                        timer_->Elapsed());
-    timer_.reset();
-  }
-
-  void WebContentsDestroyed() override { delete this; }
-
- private:
-  std::unique_ptr<base::ElapsedTimer> timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionWebUiTimer);
-};
 
 std::string GetLoadTimeClasses(bool in_dev_mode) {
   return in_dev_mode ? "in-dev-mode" : std::string();
@@ -362,7 +311,11 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
 
 }  // namespace
 
-ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+ExtensionsUI::ExtensionsUI(content::WebUI* web_ui)
+    : WebUIController(web_ui),
+      webui_load_timer_(web_ui->GetWebContents(),
+                        "Extensions.WebUi.DocumentLoadedInMainFrameTime.MD",
+                        "Extensions.WebUi.LoadCompletedInMainFrame.MD") {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* source = nullptr;
 
@@ -371,7 +324,6 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
       base::Bind(&ExtensionsUI::OnDevModeChanged, base::Unretained(this)));
 
   source = CreateMdExtensionsSource(profile, *in_dev_mode_);
-  DarkModeHandler::Initialize(web_ui, source);
   ManagedUIHandler::Initialize(web_ui, source);
 
 #if defined(OS_CHROMEOS)
@@ -386,9 +338,6 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
 
   content::WebUIDataSource::Add(profile, source);
-
-  // Handles its own lifetime.
-  new ExtensionWebUiTimer(web_ui->GetWebContents());
 }
 
 ExtensionsUI::~ExtensionsUI() {}

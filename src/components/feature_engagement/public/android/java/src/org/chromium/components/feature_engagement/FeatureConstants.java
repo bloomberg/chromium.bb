@@ -17,7 +17,6 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE, FeatureConstants.DOWNLOAD_HOME_FEATURE,
         FeatureConstants.CHROME_DUET_FEATURE, FeatureConstants.CHROME_HOME_EXPAND_FEATURE,
         FeatureConstants.CHROME_HOME_PULL_TO_REFRESH_FEATURE,
-        FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE,
         FeatureConstants.DATA_SAVER_PREVIEW_FEATURE, FeatureConstants.DATA_SAVER_DETAIL_FEATURE,
         FeatureConstants.NTP_BUTTON_FEATURE, FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE,
         FeatureConstants.HOMEPAGE_TILE_FEATURE, FeatureConstants.TRANSLATE_MENU_BUTTON_FEATURE,
@@ -34,7 +33,8 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.TAB_GROUPS_QUICKLY_COMPARE_PAGES_FEATURE,
         FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE,
         FeatureConstants.TAB_GROUPS_YOUR_TABS_ARE_TOGETHER_FEATURE,
-        FeatureConstants.IDENTITY_DISC_FEATURE})
+        FeatureConstants.FEED_CARD_MENU_FEATURE, FeatureConstants.IDENTITY_DISC_FEATURE,
+        FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String DOWNLOAD_PAGE_FEATURE = "IPH_DownloadPage";
@@ -43,7 +43,6 @@ public @interface FeatureConstants {
     String CHROME_DUET_FEATURE = "IPH_ChromeDuet";
     String CHROME_HOME_EXPAND_FEATURE = "IPH_ChromeHomeExpand";
     String CHROME_HOME_PULL_TO_REFRESH_FEATURE = "IPH_ChromeHomePullToRefresh";
-    String CONTEXTUAL_SUGGESTIONS_FEATURE = "IPH_ContextualSuggestions";
     String DATA_SAVER_PREVIEW_FEATURE = "IPH_DataSaverPreview";
     String DATA_SAVER_DETAIL_FEATURE = "IPH_DataSaverDetail";
     String DATA_SAVER_MILESTONE_PROMO_FEATURE = "IPH_DataSaverMilestonePromo";
@@ -109,6 +108,16 @@ public @interface FeatureConstants {
      * An IPH feature to show on tab switcher cards with multiple tab thumbnails.
      */
     String TAB_GROUPS_YOUR_TABS_ARE_TOGETHER_FEATURE = "IPH_TabGroupsYourTabsTogether";
+
+    /**
+     * An IPH feature to show a card item on grid tab switcher to educate drag-and-drop.
+     */
+    String TAB_GROUPS_DRAG_AND_DROP_FEATURE = "IPH_TabGroupsDragAndDrop";
+
+    /**
+     * An IPH feature to show on a card menu on the FeedNewTabPage.
+     */
+    String FEED_CARD_MENU_FEATURE = "IPH_FeedCardMenu";
 
     /**
      * An IPH feature prompting user to tap on identity disc to navigate to "Sync and Google

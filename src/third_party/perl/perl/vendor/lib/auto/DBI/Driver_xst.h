@@ -1,5 +1,5 @@
 /*
-#  $Id: Driver_xst.h 15124 2012-02-03 15:13:41Z timbo $
+#  $Id$
 #  Copyright (c) 2002  Tim Bunce  Ireland
 #
 #  You may distribute under the terms of either the GNU General Public
@@ -28,7 +28,7 @@ dbixst_bounce_method(char *methname, int params)
     if (debug >= 3) {
 	PerlIO_printf(DBIc_LOGPIO(imp_xxh),
 	    "    -> %s (trampoline call with %d (%ld) params)\n", methname, params, (long)items);
-	xxx = xxx; /* avoid unused var warning */
+	PERL_UNUSED_VAR(xxx);
     }
     EXTEND(SP, params);
     PUSHMARK(SP);

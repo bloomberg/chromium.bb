@@ -64,7 +64,9 @@ Polymer({
 
   /** @private */
   hideRipple_: function() {
-    this.getRipple().holdDown = false;
+    if (this.hasRipple()) {
+      this.getRipple().clear();
+    }
   },
 
   /** @private */
@@ -102,28 +104,23 @@ Polymer({
 
   /** @private */
   onIronIconChanged_: function() {
-    let ironIconElement = this.$$('iron-icon');
-    if (this.ironIcon) {
-      if (!ironIconElement) {
-        ironIconElement = document.createElement('iron-icon');
-        this.$.icon.appendChild(ironIconElement);
-      }
-      ironIconElement.icon = this.ironIcon;
+    this.shadowRoot.querySelectorAll('iron-icon').forEach(el => el.remove());
+    if (!this.ironIcon) {
       return;
     }
-
-    if (ironIconElement) {
-      ironIconElement.remove();
+    const icons = (this.ironIcon || '').split(',');
+    icons.forEach(icon => {
+      const element = document.createElement('iron-icon');
+      element.icon = icon;
+      this.$.icon.appendChild(element);
+    });
+    if (!this.hasRipple()) {
+      return;
     }
-  },
-
-  /**
-   * @param {!KeyboardEvent} e
-   * @private
-   */
-  onIconKeydown_: function(e) {
-    if (e.shiftKey && e.key === 'Tab') {
-      this.focus();
+    if (icons.length > 1) {
+      this.getRipple().classList.remove('circle');
+    } else {
+      this.getRipple().classList.add('circle');
     }
   },
 
@@ -168,7 +165,9 @@ Polymer({
     const ripple = Polymer.PaperRippleBehavior._createRipple();
     ripple.id = 'ink';
     ripple.setAttribute('recenters', '');
-    ripple.classList.add('circle');
+    if (!(this.ironIcon || '').includes(',')) {
+      ripple.classList.add('circle');
+    }
     return ripple;
   },
 });

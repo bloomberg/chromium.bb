@@ -14,7 +14,7 @@ fi
 
 # Execute whatever is printed by autoninja.py.
 # Also print it to reassure that the right settings are being used.
-command=$(python "$(dirname -- "$0")/autoninja.py" "$@")
+command=$(vpython "$(dirname -- "$0")/autoninja.py" "$@")
 if [ "$NINJA_SUMMARIZE_BUILD" == "1" ]; then
   echo "$command"
 fi

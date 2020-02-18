@@ -25,12 +25,18 @@ GPU_EXPORT extern const base::Feature kDefaultEnableGpuRasterization;
 
 GPU_EXPORT extern const base::Feature kDefaultEnableOopRasterization;
 
-GPU_EXPORT extern const base::Feature kDefaultPassthroughCommandDecoder;
-
 GPU_EXPORT extern const base::Feature kDirectCompositionUnderlays;
+
+#if defined(OS_WIN)
+GPU_EXPORT extern const base::Feature kGpuProcessHighPriorityWin;
+#endif
+
+GPU_EXPORT extern const base::Feature kGpuUseDisplayThreadPriority;
 
 GPU_EXPORT extern const base::Feature
     kGpuWatchdogNoTerminationAwaitingAcknowledge;
+
+GPU_EXPORT extern const base::Feature kGpuWatchdogV2;
 
 #if defined(OS_MACOSX)
 GPU_EXPORT extern const base::Feature kMetal;

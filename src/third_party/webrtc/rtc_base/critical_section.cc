@@ -19,13 +19,19 @@
 
 // TODO(tommi): Split this file up to per-platform implementation files.
 
+#if RTC_DCHECK_IS_ON
+#define RTC_CS_DEBUG_CODE(x) x
+#else  // !RTC_DCHECK_IS_ON
+#define RTC_CS_DEBUG_CODE(x)
+#endif  // !RTC_DCHECK_IS_ON
+
 namespace rtc {
 
 CriticalSection::CriticalSection() {
 #if defined(WEBRTC_WIN)
   InitializeCriticalSection(&crit_);
 #elif defined(WEBRTC_POSIX)
-#if defined(WEBRTC_MAC) && !USE_NATIVE_MUTEX_ON_MAC
+#if defined(WEBRTC_MAC) && !RTC_USE_NATIVE_MUTEX_ON_MAC
   lock_queue_ = 0;
   owning_thread_ = 0;
   recursion_ = 0;
@@ -41,8 +47,8 @@ CriticalSection::CriticalSection() {
   pthread_mutex_init(&mutex_, &mutex_attribute);
   pthread_mutexattr_destroy(&mutex_attribute);
 #endif
-  CS_DEBUG_CODE(thread_ = 0);
-  CS_DEBUG_CODE(recursion_count_ = 0);
+  RTC_CS_DEBUG_CODE(thread_ = 0);
+  RTC_CS_DEBUG_CODE(recursion_count_ = 0);
   RTC_UNUSED(thread_);
   RTC_UNUSED(recursion_count_);
 #else
@@ -54,7 +60,7 @@ CriticalSection::~CriticalSection() {
 #if defined(WEBRTC_WIN)
   DeleteCriticalSection(&crit_);
 #elif defined(WEBRTC_POSIX)
-#if defined(WEBRTC_MAC) && !USE_NATIVE_MUTEX_ON_MAC
+#if defined(WEBRTC_MAC) && !RTC_USE_NATIVE_MUTEX_ON_MAC
   dispatch_release(semaphore_);
 #else
   pthread_mutex_destroy(&mutex_);
@@ -68,7 +74,7 @@ void CriticalSection::Enter() const RTC_EXCLUSIVE_LOCK_FUNCTION() {
 #if defined(WEBRTC_WIN)
   EnterCriticalSection(&crit_);
 #elif defined(WEBRTC_POSIX)
-#if defined(WEBRTC_MAC) && !USE_NATIVE_MUTEX_ON_MAC
+#if defined(WEBRTC_MAC) && !RTC_USE_NATIVE_MUTEX_ON_MAC
   int spin = 3000;
   PlatformThreadRef self = CurrentThreadRef();
   bool have_lock = false;
@@ -109,7 +115,7 @@ void CriticalSection::Enter() const RTC_EXCLUSIVE_LOCK_FUNCTION() {
   pthread_mutex_lock(&mutex_);
 #endif
 
-#if CS_DEBUG_CHECKS
+#if RTC_DCHECK_IS_ON
   if (!recursion_count_) {
     RTC_DCHECK(!thread_);
     thread_ = CurrentThreadRef();
@@ -127,7 +133,7 @@ bool CriticalSection::TryEnter() const RTC_EXCLUSIVE_TRYLOCK_FUNCTION(true) {
 #if defined(WEBRTC_WIN)
   return TryEnterCriticalSection(&crit_) != FALSE;
 #elif defined(WEBRTC_POSIX)
-#if defined(WEBRTC_MAC) && !USE_NATIVE_MUTEX_ON_MAC
+#if defined(WEBRTC_MAC) && !RTC_USE_NATIVE_MUTEX_ON_MAC
   if (!IsThreadRefEqual(owning_thread_, CurrentThreadRef())) {
     if (AtomicOps::CompareAndSwap(&lock_queue_, 0, 1) != 0)
       return false;
@@ -141,7 +147,7 @@ bool CriticalSection::TryEnter() const RTC_EXCLUSIVE_TRYLOCK_FUNCTION(true) {
   if (pthread_mutex_trylock(&mutex_) != 0)
     return false;
 #endif
-#if CS_DEBUG_CHECKS
+#if RTC_DCHECK_IS_ON
   if (!recursion_count_) {
     RTC_DCHECK(!thread_);
     thread_ = CurrentThreadRef();
@@ -161,13 +167,13 @@ void CriticalSection::Leave() const RTC_UNLOCK_FUNCTION() {
 #if defined(WEBRTC_WIN)
   LeaveCriticalSection(&crit_);
 #elif defined(WEBRTC_POSIX)
-#if CS_DEBUG_CHECKS
+#if RTC_DCHECK_IS_ON
   --recursion_count_;
   RTC_DCHECK(recursion_count_ >= 0);
   if (!recursion_count_)
     thread_ = 0;
 #endif
-#if defined(WEBRTC_MAC) && !USE_NATIVE_MUTEX_ON_MAC
+#if defined(WEBRTC_MAC) && !RTC_USE_NATIVE_MUTEX_ON_MAC
   RTC_DCHECK(IsThreadRefEqual(owning_thread_, CurrentThreadRef()));
   RTC_DCHECK_GE(recursion_, 0);
   --recursion_;
@@ -193,11 +199,11 @@ bool CriticalSection::CurrentThreadIsOwner() const {
   return crit_.OwningThread ==
          reinterpret_cast<HANDLE>(static_cast<size_t>(GetCurrentThreadId()));
 #elif defined(WEBRTC_POSIX)
-#if CS_DEBUG_CHECKS
+#if RTC_DCHECK_IS_ON
   return IsThreadRefEqual(thread_, CurrentThreadRef());
 #else
   return true;
-#endif  // CS_DEBUG_CHECKS
+#endif  // RTC_DCHECK_IS_ON
 #else
 #error Unsupported platform.
 #endif
@@ -210,32 +216,16 @@ CritScope::~CritScope() {
   cs_->Leave();
 }
 
-TryCritScope::TryCritScope(const CriticalSection* cs)
-    : cs_(cs), locked_(cs->TryEnter()) {
-  CS_DEBUG_CODE(lock_was_called_ = false);
-  RTC_UNUSED(lock_was_called_);
-}
-
-TryCritScope::~TryCritScope() {
-  CS_DEBUG_CODE(RTC_DCHECK(lock_was_called_));
-  if (locked_)
-    cs_->Leave();
-}
-
-bool TryCritScope::locked() const {
-  CS_DEBUG_CODE(lock_was_called_ = true);
-  return locked_;
-}
-
 void GlobalLockPod::Lock() {
-#if !defined(WEBRTC_WIN) && (!defined(WEBRTC_MAC) || USE_NATIVE_MUTEX_ON_MAC)
+#if !defined(WEBRTC_WIN) && \
+    (!defined(WEBRTC_MAC) || RTC_USE_NATIVE_MUTEX_ON_MAC)
   const struct timespec ts_null = {0};
 #endif
 
   while (AtomicOps::CompareAndSwap(&lock_acquired, 0, 1)) {
 #if defined(WEBRTC_WIN)
     ::Sleep(0);
-#elif defined(WEBRTC_MAC) && !USE_NATIVE_MUTEX_ON_MAC
+#elif defined(WEBRTC_MAC) && !RTC_USE_NATIVE_MUTEX_ON_MAC
     sched_yield();
 #else
     nanosleep(&ts_null, nullptr);

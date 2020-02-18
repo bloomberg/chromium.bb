@@ -427,11 +427,12 @@ bool ExecuteFileTask(Profile* profile,
           extensions::GetLaunchContainer(
               extensions::ExtensionPrefs::Get(extension_task_profile),
               extension);
-      AppLaunchParams params(extension_task_profile, extension,
+      AppLaunchParams params(extension_task_profile, task.app_id,
                              launch_container,
                              WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                             extensions::AppLaunchSource::SOURCE_FILE_HANDLER);
+                             extensions::AppLaunchSource::kSourceFileHandler);
       params.override_url = GURL(task.action_id);
+      params.launch_files = std::move(paths);
       OpenApplication(params);
     }
     if (!done.is_null())
@@ -665,7 +666,7 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
     FullTaskDescriptor* task = &tasks->at(i);
     DCHECK(!task->is_default());
     const std::string task_id = TaskDescriptorToId(task->task_descriptor());
-    if (base::ContainsKey(default_task_ids, task_id)) {
+    if (base::Contains(default_task_ids, task_id)) {
       task->set_is_default(true);
       return;
     }

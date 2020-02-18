@@ -32,7 +32,7 @@ InspectorEmulationAgent::InspectorEmulationAgent(
     WebLocalFrameImpl* web_local_frame_impl)
     : web_local_frame_(web_local_frame_impl),
       default_background_color_override_rgba_(&agent_state_,
-                                              /*default_value=*/WTF::String()),
+                                              /*default_value=*/{}),
       script_execution_disabled_(&agent_state_, /*default_value=*/false),
       scrollbars_hidden_(&agent_state_, /*default_value=*/false),
       document_cookie_disabled_(&agent_state_, /*default_value=*/false),
@@ -60,6 +60,20 @@ WebViewImpl* InspectorEmulationAgent::GetWebViewImpl() {
   return web_local_frame_ ? web_local_frame_->ViewImpl() : nullptr;
 }
 
+namespace {
+std::unique_ptr<protocol::DOM::RGBA> ParseRGBA(
+    const std::vector<uint8_t>& cbor) {
+  auto parsed = protocol::Value::parseBinary(cbor.data(), cbor.size());
+  if (!parsed)
+    return nullptr;
+  blink::protocol::ErrorSupport errors;
+  auto rgba = protocol::DOM::RGBA::fromValue(parsed.get(), &errors);
+  if (errors.hasErrors())
+    return nullptr;
+  return rgba;
+}
+}  // namespace
+
 void InspectorEmulationAgent::Restore() {
   setUserAgentOverride(user_agent_override_.Get(),
                        accept_language_override_.Get(),
@@ -77,18 +91,9 @@ void InspectorEmulationAgent::Restore() {
   setTouchEmulationEnabled(touch_event_emulation_enabled_.Get(),
                            max_touch_points_.Get());
   setEmulatedMedia(emulated_media_.Get());
-  if (!default_background_color_override_rgba_.Get().IsNull()) {
-    std::unique_ptr<protocol::Value> parsed = protocol::StringUtil::parseJSON(
-        default_background_color_override_rgba_.Get());
-    if (parsed) {
-      blink::protocol::ErrorSupport errors;
-      auto rgba = protocol::DOM::RGBA::fromValue(parsed.get(), &errors);
-      if (!errors.hasErrors()) {
-        setDefaultBackgroundColorOverride(
-            Maybe<protocol::DOM::RGBA>(std::move(rgba)));
-      }
-    }
-  }
+  auto rgba = ParseRGBA(default_background_color_override_rgba_.Get());
+  if (rgba)
+    setDefaultBackgroundColorOverride(std::move(rgba));
   setFocusEmulationEnabled(emulate_focus_.Get());
 
   if (!timezone_id_override_.Get().IsNull())
@@ -317,7 +322,7 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
     *virtual_time_ticks_base_ms = 0;
   } else {
     *virtual_time_ticks_base_ms =
-        (virtual_time_base_ticks_ - WTF::TimeTicks()).InMillisecondsF();
+        (virtual_time_base_ticks_ - base::TimeTicks()).InMillisecondsF();
   }
 
   return response;
@@ -333,8 +338,8 @@ void InspectorEmulationAgent::ApplyVirtualTimePolicy(
   if (new_policy.virtual_time_budget_ms) {
     TRACE_EVENT_ASYNC_BEGIN1("renderer.scheduler", "VirtualTimeBudget", this,
                              "budget", *new_policy.virtual_time_budget_ms);
-    WTF::TimeDelta budget_amount =
-        WTF::TimeDelta::FromMillisecondsD(*new_policy.virtual_time_budget_ms);
+    base::TimeDelta budget_amount =
+        base::TimeDelta::FromMillisecondsD(*new_policy.virtual_time_budget_ms);
     web_local_frame_->View()->Scheduler()->GrantVirtualTimeBudget(
         budget_amount,
         WTF::Bind(&InspectorEmulationAgent::VirtualTimeBudgetExpired,
@@ -404,7 +409,7 @@ Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
   }
 
   blink::protocol::DOM::RGBA* rgba = color.fromJust();
-  default_background_color_override_rgba_.Set(rgba->toJSON());
+  default_background_color_override_rgba_.Set(rgba->serializeToBinary());
   // Clamping of values is done by Color() constructor.
   int alpha = static_cast<int>(lroundf(255.0f * rgba->getA(1.0f)));
   GetWebViewImpl()->SetBaseBackgroundColorOverride(

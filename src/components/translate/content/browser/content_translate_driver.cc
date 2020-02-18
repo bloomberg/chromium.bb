@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -17,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/google/core/common/google_util.h"
 #include "components/language/core/browser/url_language_histogram.h"
+#include "components/translate/content/browser/content_record_page_language.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_util.h"
@@ -29,8 +31,10 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/web_preferences.h"
 #include "net/http/http_status_code.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -44,14 +48,11 @@ namespace {
 // loading before giving up the translation
 const int kMaxTranslateLoadCheckAttempts = 20;
 
-// The key used to store page language in the NavigationEntry;
-const char kPageLanguageKey[] = "page_language";
-
-struct LanguageDectionData : public base::SupportsUserData::Data {
-  // The adopted language. An ISO 639 language code (two letters, except for
-  // Chinese where a localization is necessary).
-  std::string adopted_language;
-};
+// Overrides the hrefTranslate logic to auto-translate when the navigation is
+// from any origin rather than only Google origins. Used for manual testing
+// where the test page may reside on a test domain.
+const base::Feature kAutoHrefTranslateAllOrigins{
+    "AutoHrefTranslateAllOrigins", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace
 
@@ -63,8 +64,7 @@ ContentTranslateDriver::ContentTranslateDriver(
       translate_manager_(nullptr),
       max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
       next_page_seq_no_(0),
-      language_histogram_(url_language_histogram),
-      weak_pointer_factory_(this) {
+      language_histogram_(url_language_histogram) {
   DCHECK(navigation_controller_);
 }
 
@@ -137,8 +137,14 @@ ContentTranslateDriver::CreateURLLoaderFactory() {
   network::mojom::URLLoaderFactoryPtr factory;
   url::Origin origin = url::Origin::Create(GetTranslateSecurityOrigin());
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo null_header_client;
-  process->CreateURLLoaderFactory(origin, std::move(null_header_client),
-                                  mojo::MakeRequest(&factory));
+
+  // TODO(crbug.com/940068): Since this factory will be removed, sending an
+  // empty network isolation key for now.
+  content::WebPreferences preferences =
+      web_contents()->GetRenderViewHost()->GetWebkitPreferences();
+  process->CreateURLLoaderFactory(
+      origin, &preferences, net::NetworkIsolationKey(),
+      std::move(null_header_client), mojo::MakeRequest(&factory));
   return factory;
 }
 
@@ -270,9 +276,10 @@ void ContentTranslateDriver::DidFinishNavigation(
 
   bool navigation_from_google =
       initiator_origin.has_value() &&
-      google_util::IsGoogleDomainUrl(initiator_origin->GetURL(),
-                                     google_util::DISALLOW_SUBDOMAIN,
-                                     google_util::ALLOW_NON_STANDARD_PORTS);
+      (google_util::IsGoogleDomainUrl(initiator_origin->GetURL(),
+                                      google_util::DISALLOW_SUBDOMAIN,
+                                      google_util::ALLOW_NON_STANDARD_PORTS) ||
+       base::FeatureList::IsEnabled(kAutoHrefTranslateAllOrigins));
 
   translate_manager_->GetLanguageState().DidNavigate(
       navigation_handle->IsSameDocument(), navigation_handle->IsInMainFrame(),
@@ -311,11 +318,8 @@ void ContentTranslateDriver::RegisterPage(
 
     // Save the page language on the navigation entry so it can be synced.
     auto* const entry = web_contents()->GetController().GetLastCommittedEntry();
-    if (entry != nullptr) {
-      auto data = std::make_unique<LanguageDectionData>();
-      data->adopted_language = details.adopted_language;
-      entry->SetUserData(kPageLanguageKey, std::move(data));
-    }
+    if (entry != nullptr)
+      SetPageLanguageInNavigation(details.adopted_language, entry);
   }
 
   for (auto& observer : observer_list_)

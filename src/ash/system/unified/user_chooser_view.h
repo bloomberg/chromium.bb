@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_UNIFIED_USER_CHOOSER_VIEW_H_
 #define ASH_SYSTEM_UNIFIED_USER_CHOOSER_VIEW_H_
 
-#include "ash/media/media_controller.h"
+#include "ash/media/media_controller_impl.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -32,7 +32,7 @@ class UserItemButton : public views::Button, public views::ButtonListener {
                  bool has_close_button);
   ~UserItemButton() override = default;
 
-  void SetCaptureState(mojom::MediaCaptureState capture_states);
+  void SetCaptureState(MediaCaptureState capture_states);
 
   // views::Button:
   base::string16 GetTooltipText(const gfx::Point& p) const override;
@@ -57,9 +57,8 @@ class UserChooserView : public views::View, public MediaCaptureObserver {
   ~UserChooserView() override;
 
   // MediaCaptureObserver:
-  void OnMediaCaptureChanged(
-      const base::flat_map<AccountId, mojom::MediaCaptureState>& capture_states)
-      override;
+  void OnMediaCaptureChanged(const base::flat_map<AccountId, MediaCaptureState>&
+                                 capture_states) override;
 
   // views::View:
   const char* GetClassName() const override;

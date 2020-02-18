@@ -33,6 +33,7 @@
 #include <memory>
 #include <utility>
 #include "base/auto_reset.h"
+#include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -53,7 +54,7 @@
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -347,6 +348,7 @@ class CORE_EXPORT StyleEngine final
   PreferredColorScheme GetPreferredColorScheme() const {
     return preferred_color_scheme_;
   }
+  ForcedColors GetForcedColors() const { return forced_colors_; }
   void UpdateColorSchemeBackground();
 
   void Trace(blink::Visitor*) override;
@@ -436,10 +438,12 @@ class CORE_EXPORT StyleEngine final
 
   void ClearFontCacheAndAddUserFonts();
   void ClearKeyframeRules() { keyframes_rule_map_.clear(); }
+  void ClearPropertyRules();
 
   void AddUserFontFaceRules(const RuleSet&);
   void AddUserKeyframeRules(const RuleSet&);
   void AddUserKeyframeStyle(StyleRuleKeyframes*);
+  void AddPropertyRules(const RuleSet&);
 
   void UpdateColorScheme();
   bool SupportsDarkColorScheme();
@@ -447,13 +451,29 @@ class CORE_EXPORT StyleEngine final
   Member<Document> document_;
   bool is_master_;
 
-  // Track the number of currently loading top-level stylesheets needed for
-  // layout.  Sheets loaded using the @import directive are not included in this
-  // count.  We use this count of pending sheets to detect when we can begin
-  // attaching elements and when it is safe to execute scripts.
+  // Tracks the number of currently loading top-level stylesheets. Sheets loaded
+  // using the @import directive are not included in this count. We use this
+  // count of pending sheets to detect when it is safe to execute scripts
+  // (parser-inserted scripts may not run until all pending stylesheets have
+  // loaded). See:
+  // https://html.spec.whatwg.org/multipage/semantics.html#interactions-of-styling-and-scripting
+  // Once the BlockHTMLParserOnStyleSheets flag has shipped, this is the same
+  // as pending_parser_blocking_stylesheets_.
   int pending_script_blocking_stylesheets_ = 0;
+
+  // Tracks the number of currently loading top-level stylesheets which block
+  // rendering (the "Update the rendering" step of the event loop processing
+  // model) from starting. Sheets loaded using the @import directive are not
+  // included in this count. See:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#event-loop-processing-model
+  // Once all of these sheets have loaded, rendering begins.
   int pending_render_blocking_stylesheets_ = 0;
-  int pending_body_stylesheets_ = 0;
+
+  // Tracks the number of currently loading top-level stylesheets which block
+  // the HTML parser. Sheets loaded using the @import directive are not included
+  // in this count. Once all of these sheets have loaded, the parser may
+  // continue.
+  int pending_parser_blocking_stylesheets_ = 0;
 
   Member<CSSStyleSheet> inspector_style_sheet_;
 
@@ -533,10 +553,13 @@ class CORE_EXPORT StyleEngine final
   Member<const CSSValue> meta_color_scheme_;
 
   // The preferred color scheme is set in settings, but may be overridden by the
-  // ForceDarkMode setting where the preferred_color_scheme_ will be set no
+  // ForceDarkMode setting where the preferred_color_scheme_ will be set to
   // kNoPreference to avoid dark styling to be applied before auto darkening.
   PreferredColorScheme preferred_color_scheme_ =
       PreferredColorScheme::kNoPreference;
+
+  // Forced colors is set in settings.
+  ForcedColors forced_colors_ = ForcedColors::kNone;
 
   friend class NodeTest;
   friend class StyleEngineTest;

@@ -66,8 +66,8 @@ class LocalFrameViewTest : public RenderingTest {
   }
 
   void SetUp() override {
-    RenderingTest::SetUp();
     EnableCompositing();
+    RenderingTest::SetUp();
   }
 
   AnimationMockChromeClient& GetAnimationMockChromeClient() const {
@@ -174,6 +174,15 @@ TEST_F(LocalFrameViewTest, UpdateLifecyclePhasesForPrintingDetachedFrame) {
             ChildDocument().Lifecycle().GetState());
   auto* child_layout_view = ChildDocument().GetLayoutView();
   EXPECT_TRUE(child_layout_view->FirstFragment().PaintProperties());
+}
+
+TEST_F(LocalFrameViewTest, CanHaveScrollbarsIfScrollingAttrEqualsNoChanged) {
+  SetBodyInnerHTML("<iframe scrolling='no'></iframe>");
+  EXPECT_FALSE(ChildDocument().View()->CanHaveScrollbars());
+
+  ChildDocument().WillChangeFrameOwnerProperties(0, 0, kScrollbarAlwaysOn,
+                                                 false);
+  EXPECT_TRUE(ChildDocument().View()->CanHaveScrollbars());
 }
 
 // Ensure the fragment navigation "scroll into view and focus" behavior doesn't

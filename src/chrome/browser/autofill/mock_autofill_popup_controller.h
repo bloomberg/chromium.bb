@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
@@ -18,7 +19,9 @@
 
 namespace autofill {
 
-class MockAutofillPopupController : public AutofillPopupController {
+class MockAutofillPopupController
+    : public AutofillPopupController,
+      public base::SupportsWeakPtr<MockAutofillPopupController> {
  public:
   MockAutofillPopupController();
   ~MockAutofillPopupController();
@@ -67,8 +70,6 @@ class MockAutofillPopupController : public AutofillPopupController {
   MOCK_METHOD3(GetRemovalConfirmationText,
                bool(int index, base::string16* title, base::string16* body));
   MOCK_METHOD1(RemoveSuggestion, bool(int index));
-  MOCK_CONST_METHOD1(GetBackgroundColorIDForRow,
-                     ui::NativeTheme::ColorId(int index));
   MOCK_METHOD1(SetSelectedLine, void(base::Optional<int> selected_line));
   MOCK_CONST_METHOD0(selected_line, base::Optional<int>());
   const autofill::AutofillPopupLayoutModel& layout_model() const override {

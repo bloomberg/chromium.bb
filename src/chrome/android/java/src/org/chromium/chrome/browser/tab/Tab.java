@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.content.ContentUtils;
@@ -56,16 +55,16 @@ import org.chromium.chrome.browser.tab.TabState.WebContentsState;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.ResourceRequestBody;
@@ -79,8 +78,7 @@ import java.lang.annotation.RetentionPolicy;
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
  * This class is not intended to be extended.
  */
-public class Tab
-        implements ViewGroup.OnHierarchyChangeListener, View.OnSystemUiVisibilityChangeListener {
+public class Tab {
     public static final int INVALID_TAB_ID = -1;
 
     /** Return value from {@link #getBookmarkId()} if this tab is not bookmarked. */
@@ -299,12 +297,11 @@ public class Tab
         if (parent == null) {
             mParentId = INVALID_TAB_ID;
             mSourceTabId = INVALID_TAB_ID;
-            mRootId = mId;
         } else {
             mParentId = parent.getId();
             mSourceTabId = parent.isIncognito() == incognito ? mParentId : INVALID_TAB_ID;
-            mRootId = parent.getRootId();
         }
+        mRootId = mId;
 
         // Override the configuration for night mode to always stay in light mode until all UIs in
         // Tab are inflated from activity context instead of application context. This is to avoid
@@ -501,7 +498,12 @@ public class Tab
      * @return Whether or not the tab has something valid to render.
      */
     public boolean isReady() {
-        return mNativePage != null || (getWebContents() != null && getWebContents().isReady());
+        if (mNativePage != null) return true;
+        WebContents webContents = getWebContents();
+        if (webContents == null) return false;
+
+        RenderWidgetHostView rwhv = webContents.getRenderWidgetHostView();
+        return rwhv != null && rwhv.isReady();
     }
 
     /**
@@ -531,7 +533,7 @@ public class Tab
     /**
      * @return The application {@link Context} associated with this tab.
      */
-    protected Context getApplicationContext() {
+    public Context getApplicationContext() {
         return mThemedApplicationContext.getApplicationContext();
     }
 
@@ -867,12 +869,10 @@ public class Tab
 
             if (tabState != null) restoreFieldsFromState(tabState);
 
-            mDelegateFactory = delegateFactory;
             initializeNative();
 
+            mDelegateFactory = delegateFactory;
             RevenueStats.getInstance().tabCreated(this);
-
-            mDelegateFactory.createBrowserControlsState(this);
 
             // If there is a frozen WebContents state or a pending lazy load, don't create a new
             // WebContents.
@@ -1011,7 +1011,6 @@ public class Tab
         // Update the delegate factory, then recreate and propagate all delegates.
         mDelegateFactory = tabDelegateFactory;
         mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
-        mDelegateFactory.createBrowserControlsState(this);
 
         // Reload the NativePage (if any), since the old NativePage has a reference to the old
         // activity.
@@ -1176,8 +1175,6 @@ public class Tab
             mWebContents.setImportance(mImportance);
             ContentUtils.setUserAgentOverride(mWebContents);
 
-            mContentView.setOnHierarchyChangeListener(this);
-            mContentView.setOnSystemUiVisibilityChangeListener(this);
             mContentView.addOnAttachStateChangeListener(mAttachStateChangeListener);
             updateInteractableState();
 
@@ -1570,8 +1567,6 @@ public class Tab
     private final void destroyWebContents(boolean deleteNativeWebContents) {
         if (mWebContents == null) return;
 
-        mContentView.setOnHierarchyChangeListener(null);
-        mContentView.setOnSystemUiVisibilityChangeListener(null);
         mContentView.removeOnAttachStateChangeListener(mAttachStateChangeListener);
         mContentView = null;
         updateInteractableState();
@@ -1823,33 +1818,6 @@ public class Tab
         assert mNativeTabAndroid != 0 && getNativePage() != null;
         nativeSetActiveNavigationEntryTitleForUrl(mNativeTabAndroid, getNativePage().getUrl(),
                 getNativePage().getTitle());
-    }
-
-    @Override
-    public void onChildViewRemoved(View parent, View child) {
-        // TODO(jinsukkim): Consider updating |ContentView| to allow multiple
-        //         OnHierarchyChangeListener and OnSystemUiVisibilityChangeListener
-        //         to be added to not allow FullscreenManager to get the contentview
-        //         and add its own observers as needed.
-        updateContentViewChildrenState();
-    }
-
-    @Override
-    public void onChildViewAdded(View parent, View child) {
-        updateContentViewChildrenState();
-    }
-
-    private void updateContentViewChildrenState() {
-        RewindableIterator<TabObserver> observers = getTabObservers();
-        while (observers.hasNext()) observers.next().onContentViewChildrenStateUpdated(this);
-    }
-
-    @Override
-    public void onSystemUiVisibilityChange(int visibility) {
-        RewindableIterator<TabObserver> observers = getTabObservers();
-        while (observers.hasNext()) {
-            observers.next().onContentViewSystemUiVisibilityChanged(this, visibility);
-        }
     }
 
     /**

@@ -1,9 +1,7 @@
 package Test::YAML;
+our $VERSION = '1.07';
 
-use Test::Base 0.47 -Base;
-use lib 'lib';
-
-our $VERSION = '0.81';
+use Test::Base -Base;
 
 our $YAML    = 'YAML';
 our @EXPORT  = qw(
@@ -38,7 +36,7 @@ sub load_yaml_pm {
 sub run_yaml_tests() {
     run {
         my $block = shift;
-        &{_get_function($block)}($block) unless 
+        &{_get_function($block)}($block) unless
           _skip_tests_for_now($block) or
           _skip_yaml_tests($block);
     };
@@ -69,7 +67,7 @@ sub roundtrip_nyn() {
     else {
         pass $block->description . ' (n->y)';
     }
-        
+
     return if exists $block->{no_round_trip} or
         not exists $block->{yaml};
 
@@ -233,32 +231,3 @@ sub _perl_eval_result_error_warning {
 }
 
 1;
-
-=head1 NAME
-
-Test::YAML - Testing Module for YAML Implementations
-
-=head1 SYNOPSIS
-
-    use Test::YAML tests => 1;
-
-    pass;
-
-=head1 DESCRIPTION
-
-Test::YAML is a subclass of Test::Base with YAML specific support.
-
-=head1 AUTHOR
-
-Ingy döt Net <ingy@cpan.org>
-
-=head1 COPYRIGHT
-
-Copyright (c) 2006, 2011-2012. Ingy döt Net.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
-
-See L<http://www.perl.com/perl/misc/Artistic.html>
-
-=cut

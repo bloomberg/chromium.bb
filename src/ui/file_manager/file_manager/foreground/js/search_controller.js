@@ -12,9 +12,12 @@ class SearchController {
    * @param {!DirectoryModel} directoryModel Directory model.
    * @param {!TaskController} taskController Task controller to execute the
    *     selected item.
+   * @param {!FileManagerUI} a11y FileManagerUI to be able to announce a11y
+   *     messages.
    */
   constructor(
-      searchBox, locationLine, directoryModel, volumeManager, taskController) {
+      searchBox, locationLine, directoryModel, volumeManager, taskController,
+      a11y) {
     /** @const @private {!SearchBox} */
     this.searchBox_ = searchBox;
 
@@ -35,6 +38,9 @@ class SearchController {
 
     /** @private {boolean} */
     this.autocompleteSuggestionsBusy_ = false;
+
+    /** @const @private {!FileManagerUI} */
+    this.a11y_ = a11y;
 
     searchBox.addEventListener(
         SearchBox.EventType.TEXT_CHANGE, this.onTextChange_.bind(this));
@@ -122,6 +128,8 @@ class SearchController {
 
     // Clear search if the query empty.
     if (!searchString) {
+      const msg = str('SEARCH_A11Y_CLEAR_SEARCH');
+      this.a11y_.speakA11yMessage(msg);
       this.searchBox_.autocompleteList.suggestions = [];
       return;
     }
@@ -229,7 +237,18 @@ class SearchController {
    * @private
    */
   search_(searchString) {
+    if (!searchString) {
+      const msg = str('SEARCH_A11Y_CLEAR_SEARCH');
+      this.a11y_.speakA11yMessage(msg);
+    }
     const onSearchRescan = function() {
+      const fileList = this.directoryModel_.getFileList();
+      const count = fileList.getFileCount() + fileList.getFolderCount();
+      const msgId =
+          count === 0 ? 'SEARCH_A11Y_NO_RESULT' : 'SEARCH_A11Y_RESULT';
+      const msg = strf(msgId, searchString);
+      this.a11y_.speakA11yMessage(msg);
+
       // If the current location is somewhere in Drive, all files in Drive can
       // be listed as search results regardless of current location.
       // In this case, showing current location is confusing, so use the Drive

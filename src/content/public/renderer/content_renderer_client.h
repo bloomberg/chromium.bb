@@ -45,13 +45,13 @@ class WebFrame;
 class WebLocalFrame;
 class WebPlugin;
 class WebPrescientNetworking;
+class WebServiceWorkerContextProxy;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebMediaStreamRendererFactory;
 class WebThemeEngine;
 class WebURL;
 class WebURLRequest;
-class WebURLResponse;
 struct WebPluginParams;
 struct WebURLError;
 }  // namespace blink
@@ -313,13 +313,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // metric. See: https://www.chromium.org/developers/design-documents/rappor
   virtual void RecordRapporURL(const std::string& metric, const GURL& url) {}
 
-  // Gives the embedder a chance to add properties to the context menu.
-  // Currently only called when the context menu is for an image.
-  virtual void AddImageContextMenuProperties(
-      const blink::WebURLResponse& response,
-      bool is_image_in_context_a_placeholder_image,
-      std::map<std::string, std::string>* properties) {}
-
   // Notifies that a document element has been inserted in the frame's document.
   // This may be called multiple times for the same document. This method may
   // invalidate the frame.
@@ -344,8 +337,11 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Notifies that a service worker context has been created. This function
   // is called from the worker thread.
+  // |context_proxy| is valid until
+  // WillDestroyServiceWorkerContextOnWorkerThread() is called.
   virtual void DidInitializeServiceWorkerContextOnWorkerThread(
-      v8::Local<v8::Context> context,
+      blink::WebServiceWorkerContextProxy* context_proxy,
+      v8::Local<v8::Context> v8_context,
       int64_t service_worker_version_id,
       const GURL& service_worker_scope,
       const GURL& script_url) {}

@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -21,7 +22,6 @@
 #include "base/timer/hi_res_timer_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/tracing/common/tracing_sampler_profiler.h"
 #include "components/viz/service/main/viz_main_impl.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_switches_internal.h"
@@ -35,6 +35,7 @@
 #include "content/public/gpu/content_gpu_client.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_driver_bug_list.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
@@ -44,6 +45,7 @@
 #include "gpu/ipc/service/gpu_init.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "media/gpu/buildflags.h"
+#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "third_party/angle/src/gpu_info_util/SystemInfo.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/switches.h"
@@ -90,10 +92,6 @@
 #include "base/message_loop/message_pump_mac.h"
 #include "sandbox/mac/seatbelt.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
-#endif
-
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 #if BUILDFLAG(USE_VAAPI)
@@ -230,13 +228,16 @@ int GpuMain(const MainFunctionParams& parameters) {
   // COM callbacks.
   base::win::ScopedCOMInitializer com_initializer(
       base::win::ScopedCOMInitializer::kMTA);
+
+  if (base::FeatureList::IsEnabled(features::kGpuProcessHighPriorityWin))
+    ::SetPriorityClass(::GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 #endif
 
   logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
 
   // We are experiencing what appear to be memory-stomp issues in the GPU
-  // process. These issues seem to be impacting the message loop and listeners
-  // registered to it. Create the message loop on the heap to guard against
+  // process. These issues seem to be impacting the task executor and listeners
+  // registered to it. Create the task executor on the heap to guard against
   // this.
   // TODO(ericrk): Revisit this once we assess its impact on crbug.com/662802
   // and crbug.com/609252.
@@ -271,8 +272,9 @@ int GpuMain(const MainFunctionParams& parameters) {
 #elif defined(USE_OZONE)
     // The MessagePump type required depends on the Ozone platform selected at
     // runtime.
-    main_thread_task_executor.reset(new base::SingleThreadTaskExecutor(
-        ui::OzonePlatform::EnsureInstance()->GetMessageLoopTypeForGpu()));
+    main_thread_task_executor =
+        std::make_unique<base::SingleThreadTaskExecutor>(
+            gpu_preferences.message_loop_type);
 #elif defined(OS_LINUX)
 #error "Unsupported Linux platform."
 #elif defined(OS_MACOSX)
@@ -294,9 +296,12 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   base::PlatformThread::SetName("CrGpuMain");
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
-  // Set thread priority before sandbox initialization.
-  base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
+#if !defined(OS_MACOSX)
+  if (base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority)) {
+    // Set thread priority before sandbox initialization.
+    base::PlatformThread::SetCurrentThreadPriority(
+        base::ThreadPriority::DISPLAY);
+  }
 #endif
 
   auto gpu_init = std::make_unique<gpu::GpuInit>();
@@ -326,12 +331,20 @@ int GpuMain(const MainFunctionParams& parameters) {
   logging::SetLogMessageHandler(nullptr);
   GetContentClient()->SetGpuInfo(gpu_init->gpu_info());
 
-  base::ThreadPriority io_thread_priority = base::ThreadPriority::NORMAL;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
-  io_thread_priority = base::ThreadPriority::DISPLAY;
-#endif
-
+  const base::ThreadPriority io_thread_priority =
+      base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority)
+          ? base::ThreadPriority::DISPLAY
+          : base::ThreadPriority::NORMAL;
+#if defined(OS_MACOSX)
+  // Increase the thread priority to get more reliable values in performance
+  // test of mac_os.
+  GpuProcess gpu_process(
+      (command_line.HasSwitch(switches::kUseHighGPUThreadPriorityForPerfTests)
+           ? base::ThreadPriority::REALTIME_AUDIO
+           : io_thread_priority));
+#else
   GpuProcess gpu_process(io_thread_priority);
+#endif
 
   auto* client = GetContentClient()->gpu();
   if (client)
@@ -348,8 +361,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   gpu_process.set_main_thread(child_thread);
 
   // Setup tracing sampler profiler as early as possible.
-  std::unique_ptr<tracing::TracingSamplerProfiler> tracing_sampler_profiler =
-      tracing::TracingSamplerProfiler::CreateOnMainThread();
+  tracing::TracingSamplerProfiler::CreateForCurrentThread();
 
 #if defined(OS_ANDROID)
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

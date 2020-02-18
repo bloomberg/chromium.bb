@@ -14,9 +14,11 @@
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/public/cpp/login_types.h"
-#include "ash/shutdown_controller.h"
-#include "ash/system/locale/locale_update_controller.h"
+#include "ash/public/cpp/scoped_guest_button_blocker.h"
+#include "ash/shutdown_controller_impl.h"
+#include "ash/system/locale/locale_update_controller_impl.h"
 #include "ash/tray_action/tray_action_observer.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -43,7 +45,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
                                   public views::ButtonListener,
                                   public TrayActionObserver,
                                   public LockScreenActionBackgroundObserver,
-                                  public ShutdownController::Observer,
+                                  public ShutdownControllerImpl::Observer,
                                   public LoginDataDispatcher::Observer,
                                   public LocaleChangeObserver {
  public:
@@ -66,6 +68,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
     virtual void OnUiUpdate() = 0;
   };
 
+ public:
   explicit LoginShelfView(
       LockScreenActionBackgroundController* lock_screen_action_background);
   ~LoginShelfView() override;
@@ -126,6 +129,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
     return test_ui_update_delegate_.get();
   }
 
+  // Returns scoped object to temporarily block Browse as Guest login button.
+  std::unique_ptr<ScopedGuestButtonBlocker> GetScopedGuestButtonBlocker();
+
  protected:
   // TrayActionObserver:
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
@@ -134,7 +140,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   void OnLockScreenActionBackgroundStateChanged(
       LockScreenActionBackgroundState state) override;
 
-  // ShutdownController::Observer:
+  // ShutdownControllerImpl::Observer:
   void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;
 
   // LoginDataDispatcher::Observer:
@@ -145,6 +151,8 @@ class ASH_EXPORT LoginShelfView : public views::View,
   void OnLocaleChanged() override;
 
  private:
+  class ScopedGuestButtonBlockerImpl;
+
   bool LockScreenActionBackgroundAnimating() const;
 
   // Updates the visibility of buttons based on state changes, e.g. shutdown
@@ -157,6 +165,8 @@ class ASH_EXPORT LoginShelfView : public views::View,
 
   // Updates the total bounds of all buttons.
   void UpdateButtonUnionBounds();
+
+  bool ShouldShowGuestButton() const;
 
   OobeDialogState dialog_state_ = OobeDialogState::HIDDEN;
   bool allow_guest_ = true;
@@ -174,10 +184,10 @@ class ASH_EXPORT LoginShelfView : public views::View,
                  LockScreenActionBackgroundObserver>
       lock_screen_action_background_observer_{this};
 
-  ScopedObserver<ShutdownController, ShutdownController::Observer>
+  ScopedObserver<ShutdownControllerImpl, ShutdownControllerImpl::Observer>
       shutdown_controller_observer_{this};
 
-  ScopedObserver<LocaleUpdateController, LocaleChangeObserver>
+  ScopedObserver<LocaleUpdateControllerImpl, LocaleChangeObserver>
       locale_change_observer_{this};
 
   ScopedObserver<LoginDataDispatcher, LoginDataDispatcher::Observer>
@@ -194,6 +204,11 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // letting events that target the "empty space" pass through. These
   // coordinates are local to the view.
   gfx::Rect button_union_bounds_;
+
+  // Number of active scoped Guest button blockers.
+  int scoped_guest_button_blockers_ = 0;
+
+  base::WeakPtrFactory<LoginShelfView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginShelfView);
 };

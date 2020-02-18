@@ -1,5 +1,5 @@
 /*
- * exsltconfig.h: compile-time version informations for the EXSLT library
+ * exsltconfig.h: compile-time version information for the EXSLT library
  *
  * See Copyright for the status of this software.
  *
@@ -18,21 +18,21 @@ extern "C" {
  *
  * the version string like "1.2.3"
  */
-#define LIBEXSLT_DOTTED_VERSION "1.1.26"
+#define LIBEXSLT_DOTTED_VERSION "1.1.33"
 
 /**
  * LIBEXSLT_VERSION:
  *
  * the version number: 1.2.3 value is 10203
  */
-#define LIBEXSLT_VERSION 815
+#define LIBEXSLT_VERSION 820
 
 /**
  * LIBEXSLT_VERSION_STRING:
  *
  * the version number string, 1.2.3 value is "10203"
  */
-#define LIBEXSLT_VERSION_STRING "815"
+#define LIBEXSLT_VERSION_STRING "820"
 
 /**
  * LIBEXSLT_VERSION_EXTRA:
@@ -46,7 +46,7 @@ extern "C" {
  *
  * Whether crypto support is configured into exslt
  */
-#if 0
+#if 1
 #define EXSLT_CRYPTO_ENABLED
 #endif
 

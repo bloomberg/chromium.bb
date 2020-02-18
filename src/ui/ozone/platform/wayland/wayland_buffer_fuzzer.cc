@@ -13,9 +13,9 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/test/fuzzed_data_provider.h"
+#include "base/task/single_thread_task_executor.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
@@ -39,7 +39,7 @@ class MockPlatformWindowDelegate : public ui::PlatformWindowDelegate {
   MOCK_METHOD1(DispatchEvent, void(ui::Event* event));
   MOCK_METHOD0(OnCloseRequest, void());
   MOCK_METHOD0(OnClosed, void());
-  MOCK_METHOD1(OnWindowStateChanged, void(ui::PlatformWindowState new_state));
+  MOCK_METHOD1(OnWindowStateChanged, void(PlatformWindowState new_state));
   MOCK_METHOD0(OnLostCapture, void());
   MOCK_METHOD1(OnAcceleratedWidgetAvailable,
                void(gfx::AcceleratedWidget widget));
@@ -53,7 +53,7 @@ class MockPlatformWindowDelegate : public ui::PlatformWindowDelegate {
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  base::FuzzedDataProvider data_provider(data, size);
+  FuzzedDataProvider data_provider(data, size);
 
   std::vector<uint32_t> known_fourccs{
       DRM_FORMAT_R8,          DRM_FORMAT_GR88,        DRM_FORMAT_ABGR8888,
@@ -61,7 +61,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       DRM_FORMAT_XRGB2101010, DRM_FORMAT_XBGR2101010, DRM_FORMAT_RGB565,
       DRM_FORMAT_UYVY,        DRM_FORMAT_NV12,        DRM_FORMAT_YVU420};
 
-  base::MessageLoopForUI message_loop;
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
 
   MockPlatformWindowDelegate delegate;
   std::unique_ptr<ui::WaylandConnection> connection =

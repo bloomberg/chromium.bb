@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types_3d.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/offscreen_canvas_placeholder.h"
 #include "third_party/blink/renderer/platform/graphics/surface_layer_bridge.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -69,7 +70,6 @@ class CanvasRenderingContextFactory;
 class GraphicsContext;
 class HitTestCanvasResult;
 class HTMLCanvasElement;
-class Image;
 class ImageBitmapOptions;
 class IntSize;
 
@@ -159,16 +159,12 @@ class CORE_EXPORT HTMLCanvasElement final
              const PhysicalRect&,
              bool flatten_composited_layers);
 
-  void DisableDeferral(DisableDeferralReason);
-
   CanvasRenderingContext* RenderingContext() const override {
     return context_.Get();
   }
 
   bool OriginClean() const override;
   void SetOriginTainted() override { origin_clean_ = false; }
-
-  bool IsAnimated2d() const;
 
   Canvas2DLayerBridge* GetCanvas2DLayerBridge() {
     return canvas2d_bridge_.get();
@@ -227,6 +223,7 @@ class CORE_EXPORT HTMLCanvasElement final
   bool LowLatencyEnabled() const override { return !!frame_dispatcher_; }
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
       AccelerationHint hint) override;
+  bool IsPrinting() const override;
 
   void DisableAcceleration(std::unique_ptr<Canvas2DLayerBridge>
                                unaccelerated_bridge_used_for_testing = nullptr);
@@ -259,7 +256,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // For Canvas HitRegions
   bool IsSupportedInteractiveCanvasFallback(const Element&);
-  HitTestCanvasResult* GetControlAndIdIfHitRegionExists(const LayoutPoint&);
+  HitTestCanvasResult* GetControlAndIdIfHitRegionExists(const PhysicalOffset&);
   String GetIdFromControl(const Element*);
 
   // For OffscreenCanvas that controls this html canvas element
@@ -356,6 +353,9 @@ class CORE_EXPORT HTMLCanvasElement final
   // ImageBitmapRenderingContextBase.
   bool HasImageBitmapContext() const;
 
+  // Returns the transparent image resource for this canvas.
+  scoped_refptr<Image> GetTransparentImage();
+
   CanvasRenderingContext* GetCanvasRenderingContextInternal(
       const String&,
       const CanvasContextCreationAttributesCore&);
@@ -406,6 +406,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   mutable bool gpu_readback_invoked_in_current_frame_;
   int gpu_readback_successive_frames_;
+  scoped_refptr<Image> transparent_image_ = nullptr;
 };
 
 }  // namespace blink

@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "osp/public/service_info.h"
-#include "osp_base/macros.h"
-#include "osp_base/time.h"
+#include "osp/public/timestamp.h"
+#include "platform/base/macros.h"
 
 namespace openscreen {
 

@@ -6,7 +6,7 @@
 
 #include "base/no_destructor.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
-#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/gfx/font_list.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -21,7 +21,7 @@ const int kTooltipMaxWidthPixels = 250;
 namespace views {
 
 TooltipManagerMac::TooltipManagerMac(
-    remote_cocoa::mojom::BridgedNativeWidget* bridge)
+    remote_cocoa::mojom::NativeWidgetNSWindow* bridge)
     : bridge_(bridge) {}
 
 TooltipManagerMac::~TooltipManagerMac() {

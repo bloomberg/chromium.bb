@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_async_blob_creator.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_draw_listener.h"
@@ -85,6 +84,7 @@
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "v8/include/v8.h"
 
@@ -127,6 +127,8 @@ HTMLCanvasElement::HTMLCanvasElement(Document& document)
     : HTMLElement(kCanvasTag, document),
       ContextLifecycleObserver(&document),
       PageVisibilityObserver(document.GetPage()),
+      CanvasRenderingContextHost(
+          CanvasRenderingContextHost::HostType::kCanvasHost),
       size_(kDefaultCanvasWidth, kDefaultCanvasHeight),
       context_creation_was_blocked_(false),
       ignore_reset_(false),
@@ -137,7 +139,6 @@ HTMLCanvasElement::HTMLCanvasElement(Document& document)
       gpu_readback_invoked_in_current_frame_(false),
       gpu_readback_successive_frames_(0) {
   UseCounter::Count(document, WebFeature::kHTMLCanvasElement);
-
   GetDocument().IncrementNumberOfCanvases();
 }
 
@@ -320,6 +321,12 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
   if (!context_)
     return nullptr;
 
+  // Since the |context_| is created, free the transparent image,
+  // |transparent_image_| created for this canvas if it exists.
+  if (transparent_image_.get()) {
+    transparent_image_.reset();
+  }
+
   context_creation_was_blocked_ = false;
 
   probe::DidCreateCanvasContext(&GetDocument());
@@ -409,8 +416,7 @@ void HTMLCanvasElement::DidDraw() {
 
 void HTMLCanvasElement::FinalizeFrame() {
   TRACE_EVENT0("blink", "HTMLCanvasElement::FinalizeFrame");
-  RecordCanvasSizeToUMA(size_,
-                        CanvasRenderingContextHost::HostType::kCanvasHost);
+  RecordCanvasSizeToUMA(size_);
 
   // FinalizeFrame indicates the end of a script task that may have rendered
   // into the canvas, now is a good time to unlock cache entries.
@@ -443,10 +449,13 @@ void HTMLCanvasElement::FinalizeFrame() {
 
   if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
     if (GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
+      const bool webgl_overlay_enabled =
+          RuntimeEnabledFeatures::WebGLImageChromiumEnabled() ||
+          RuntimeEnabledFeatures::WebGLSwapChainEnabled();
       // TryEnableSingleBuffering() the first time we FinalizeFrame().
       if (!ResourceProvider()->IsSingleBuffered()) {
         ResourceProvider()->TryEnableSingleBuffering();
-        if (Is3d() && RuntimeEnabledFeatures::WebGLImageChromiumEnabled())
+        if (Is3d() && webgl_overlay_enabled)
           context_->ProvideBackBufferToResourceProvider();
       }
 
@@ -454,11 +463,11 @@ void HTMLCanvasElement::FinalizeFrame() {
         canvas2d_bridge_->FlushRecording();
       } else {
         DCHECK(Is3d());
-        if (!RuntimeEnabledFeatures::WebGLImageChromiumEnabled())
+        if (!webgl_overlay_enabled)
           context_->PaintRenderingResultsToCanvas(kBackBuffer);
       }
 
-      const base::TimeTicks start_time = WTF::CurrentTimeTicks();
+      const base::TimeTicks start_time = base::TimeTicks::Now();
       const scoped_refptr<CanvasResource> canvas_resource =
           ResourceProvider()->ProduceCanvasResource();
       const FloatRect src_rect(0, 0, Size().Width(), Size().Height());
@@ -766,6 +775,34 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
   context_->PaintRenderingResultsToCanvas(kFrontBuffer);
   if (HasResourceProvider()) {
     if (!context.ContextDisabled()) {
+      // For 2D Canvas, there are two ways of render Canvas for printing:
+      // display list or image snapshot. Display list allows better PDF printing
+      // and we prefer this method.
+      // Here are the requirements for display list to be used:
+      //    1. We must have had a full repaint of the Canvas after beginprint
+      //       event has been fired. Otherwise, we don't have a PaintRecord.
+      //    2. CSS property 'image-rendering' must not be 'pixelated'.
+
+      // display list rendering: we replay the last full PaintRecord, if Canvas
+      // has been redraw since beginprint happened.
+      if (IsPrinting() && !Is3d() && canvas2d_bridge_) {
+        canvas2d_bridge_->FlushRecording();
+        if (canvas2d_bridge_->getLastRecord()) {
+          const ComputedStyle* style = GetComputedStyle();
+          if (style && style->ImageRendering() != EImageRendering::kPixelated) {
+            context.Canvas()->save();
+            context.Canvas()->translate(r.X(), r.Y());
+            context.Canvas()->scale(r.Width() / Size().Width(),
+                                    r.Height() / Size().Height());
+            context.Canvas()->drawPicture(canvas2d_bridge_->getLastRecord());
+            context.Canvas()->restore();
+            UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.2DPrintingAsVector", true);
+            return;
+          }
+        }
+        UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.2DPrintingAsVector", false);
+      }
+      // or image snapshot rendering: grab a snapshot and raster it.
       SkBlendMode composite_operator =
           !context_ || context_->CreationAttributes().alpha
               ? SkBlendMode::kSrcOver
@@ -794,9 +831,8 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
     context_->MarkLayerComposited();
 }
 
-bool HTMLCanvasElement::IsAnimated2d() const {
-  return Is2d() && canvas2d_bridge_ &&
-         canvas2d_bridge_->WasDrawnToAfterSnapshot();
+bool HTMLCanvasElement::IsPrinting() const {
+  return GetDocument().BeforePrintingOrPrinting();
 }
 
 void HTMLCanvasElement::SetSurfaceSize(const IntSize& size) {
@@ -940,16 +976,13 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
     // If the canvas element's bitmap has no pixels
     GetDocument()
         .GetTaskRunner(TaskType::kCanvasBlobSerialization)
-        ->PostTask(
-            FROM_HERE,
-            WTF::Bind(&V8PersistentCallbackFunction<
-                          V8BlobCallback>::InvokeAndReportException,
-                      WrapPersistent(ToV8PersistentCallbackFunction(callback)),
-                      nullptr, nullptr));
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(&V8BlobCallback::InvokeAndReportException,
+                             WrapPersistent(callback), nullptr, nullptr));
     return;
   }
 
-  TimeTicks start_time = WTF::CurrentTimeTicks();
+  base::TimeTicks start_time = base::TimeTicks::Now();
   double quality = kUndefinedQualityValue;
   if (!quality_argument.IsEmpty()) {
     v8::Local<v8::Value> v8_value = quality_argument.V8Value();
@@ -978,12 +1011,9 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
   } else {
     GetDocument()
         .GetTaskRunner(TaskType::kCanvasBlobSerialization)
-        ->PostTask(
-            FROM_HERE,
-            WTF::Bind(&V8PersistentCallbackFunction<
-                          V8BlobCallback>::InvokeAndReportException,
-                      WrapPersistent(ToV8PersistentCallbackFunction(callback)),
-                      nullptr, nullptr));
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(&V8BlobCallback::InvokeAndReportException,
+                             WrapPersistent(callback), nullptr, nullptr));
   }
 }
 
@@ -1024,6 +1054,11 @@ void HTMLCanvasElement::PushFrame(scoped_refptr<CanvasResource> image,
 bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   if (context_ && !Is2d())
     return false;
+
+  // The command line flag --disable-accelerated-2d-canvas toggles this option
+  if (!RuntimeEnabledFeatures::Accelerated2dCanvasEnabled()) {
+    return false;
+  }
 
   // The following is necessary for handling the special case of canvases in
   // the dev tools overlay, which run in a process that supports accelerated
@@ -1088,9 +1123,6 @@ HTMLCanvasElement::CreateAccelerated2dBuffer() {
   if (!surface->IsValid())
     return nullptr;
 
-  if (MemoryPressureListenerRegistry::IsLowEndDevice())
-    surface->DisableDeferral(kDisableDeferralReasonLowEndDevice);
-
   return surface;
 }
 
@@ -1154,11 +1186,6 @@ void HTMLCanvasElement::Trace(Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
   HTMLElement::Trace(visitor);
-}
-
-void HTMLCanvasElement::DisableDeferral(DisableDeferralReason reason) {
-  if (canvas2d_bridge_)
-    canvas2d_bridge_->DisableDeferral(reason);
 }
 
 Canvas2DLayerBridge* HTMLCanvasElement::GetOrCreateCanvas2DLayerBridge() {
@@ -1251,7 +1278,7 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
   }
 
   if (!context_) {
-    scoped_refptr<Image> result = CreateTransparentImage(Size());
+    scoped_refptr<Image> result = GetTransparentImage();
     *status = result ? kNormalSourceImageStatus : kInvalidSourceImageStatus;
     return result;
   }
@@ -1260,7 +1287,7 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     *status = kNormalSourceImageStatus;
     scoped_refptr<Image> result = context_->GetImage(hint);
     if (!result)
-      result = CreateTransparentImage(Size());
+      result = GetTransparentImage();
     *status = result ? kNormalSourceImageStatus : kInvalidSourceImageStatus;
     return result;
   }
@@ -1276,7 +1303,7 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     if (ResourceProvider())
       image = ResourceProvider()->Snapshot();
     else
-      image = CreateTransparentImage(Size());
+      image = GetTransparentImage();
   } else {
     if (canvas_heuristic_parameters::kDisableAccelerationToAvoidReadbacks &&
         !RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled() &&
@@ -1287,7 +1314,7 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     }
     image = RenderingContext()->GetImage(hint);
     if (!image)
-      image = CreateTransparentImage(Size());
+      image = GetTransparentImage();
   }
 
   if (image)
@@ -1411,7 +1438,7 @@ bool HTMLCanvasElement::IsSupportedInteractiveCanvasFallback(
 }
 
 HitTestCanvasResult* HTMLCanvasElement::GetControlAndIdIfHitRegionExists(
-    const LayoutPoint& location) {
+    const PhysicalOffset& location) {
   if (Is2d())
     return context_->GetControlAndIdIfHitRegionExists(location);
   return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
@@ -1551,6 +1578,12 @@ bool HTMLCanvasElement::HasImageBitmapContext() const {
     return false;
   CanvasRenderingContext::ContextType type = context_->GetContextType();
   return (type == CanvasRenderingContext::kContextImageBitmap);
+}
+
+scoped_refptr<Image> HTMLCanvasElement::GetTransparentImage() {
+  if (!transparent_image_ || transparent_image_.get()->Size() != Size())
+    transparent_image_ = CreateTransparentImage(Size());
+  return transparent_image_;
 }
 
 cc::Layer* HTMLCanvasElement::ContentsCcLayer() const {

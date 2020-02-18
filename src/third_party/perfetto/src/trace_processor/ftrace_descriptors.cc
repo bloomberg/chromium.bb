@@ -8,7 +8,7 @@ namespace perfetto {
 namespace trace_processor {
 namespace {
 
-std::array<MessageDescriptor, 331> descriptors{{
+std::array<MessageDescriptor, 333> descriptors{{
     {nullptr, 0, {}},
     {nullptr, 0, {}},
     {nullptr, 0, {}},
@@ -3515,6 +3515,26 @@ std::array<MessageDescriptor, 331> descriptors{{
             {},
             {"id", ProtoSchemaType::kInt64},
             {"ret", ProtoSchemaType::kInt64},
+        },
+    },
+    {
+        "zero",
+        4,
+        {
+            {},
+            {"flag", ProtoSchemaType::kInt32},
+            {"name", ProtoSchemaType::kString},
+            {"pid", ProtoSchemaType::kInt32},
+            {"value", ProtoSchemaType::kInt64},
+        },
+    },
+    {
+        "gpu_frequency",
+        2,
+        {
+            {},
+            {"gpu_id", ProtoSchemaType::kUint32},
+            {"state", ProtoSchemaType::kUint32},
         },
     },
 }};

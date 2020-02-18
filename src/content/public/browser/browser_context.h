@@ -80,13 +80,14 @@ class BrowsingDataRemover;
 class BrowsingDataRemoverDelegate;
 class DownloadManager;
 class ClientHintsControllerDelegate;
+class ContentIndexProvider;
 class DownloadManagerDelegate;
+class NativeFileSystemPermissionContext;
 class PermissionController;
 class PermissionControllerDelegate;
 class PushMessagingService;
 class ResourceContext;
 class ServiceManagerConnection;
-class SmsService;
 class SharedCorsOriginAccessList;
 class SiteInstance;
 class StoragePartition;
@@ -247,12 +248,12 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 #endif
 
   // Returns the path of the directory where this context's data is stored.
-  virtual base::FilePath GetPath() const = 0;
+  virtual base::FilePath GetPath() = 0;
 
   // Return whether this context is off the record. Default is false.
   // Note that for Chrome this does not imply Incognito as Guest sessions are
   // also off the record.
-  virtual bool IsOffTheRecord() const = 0;
+  virtual bool IsOffTheRecord() = 0;
 
   // Returns the resource context.
   virtual ResourceContext* GetResourceContext() = 0;
@@ -308,24 +309,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors) = 0;
 
-  // Creates the net::URLRequestContextGetter for a StoragePartition. It's
-  // called only once per partition_path.
-  virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
-      const base::FilePath& partition_path,
-      bool in_memory,
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) = 0;
-
   // Creates the main net::URLRequestContextGetter for media resources. It's
   // called only once.
   virtual net::URLRequestContextGetter* CreateMediaRequestContext() = 0;
-
-  // Creates the media net::URLRequestContextGetter for a StoragePartition. It's
-  // called only once per partition_path.
-  virtual net::URLRequestContextGetter*
-      CreateMediaRequestContextForStoragePartition(
-          const base::FilePath& partition_path,
-          bool in_memory) = 0;
 
   // Sets CORS origin access lists.
   virtual void SetCorsOriginAccessListForOrigin(
@@ -335,8 +321,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       base::OnceClosure closure);
 
   // Returns a SharedCorsOriginAccessList instance.
-  virtual const SharedCorsOriginAccessList* GetSharedCorsOriginAccessList()
-      const;
+  virtual SharedCorsOriginAccessList* GetSharedCorsOriginAccessList();
 
   // Handles a service request for a service expected to run an instance per
   // BrowserContext.
@@ -345,7 +330,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       service_manager::mojom::ServiceRequest request);
 
   // Returns a unique string associated with this browser context.
-  virtual const std::string& UniqueId() const;
+  virtual const std::string& UniqueId();
 
   // Returns a random salt string that is used for creating media device IDs.
   // Returns a random string by default.
@@ -367,9 +352,14 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   virtual download::InProgressDownloadManager*
   RetriveInProgressDownloadManager();
 
-  // Returns the SmsService associated with this context if any,
+  // Returns the NativeFileSystemPermissionContext associated with this context
+  // if any, nullptr otherwise.
+  virtual NativeFileSystemPermissionContext*
+  GetNativeFileSystemPermissionContext();
+
+  // Returns the ContentIndexProvider associated with that context if any,
   // nullptr otherwise.
-  virtual SmsService* GetSmsService();
+  virtual ContentIndexProvider* GetContentIndexProvider();
 
  private:
   const std::string unique_id_;

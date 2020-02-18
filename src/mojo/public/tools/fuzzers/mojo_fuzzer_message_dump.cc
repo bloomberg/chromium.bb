@@ -258,7 +258,7 @@ int main(int argc, char** argv) {
   }
   std::string output_directory(argv[1]);
 
-  /* Dump the messages from a MessageLoop, and wait for it to finish. */
+  /* Dump the messages from a TaskExecutor, and wait for it to finish. */
   env->main_thread_task_executor.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&DumpMessages, output_directory));
   base::RunLoop().RunUntilIdle();

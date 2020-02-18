@@ -52,7 +52,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
     virtual ~DebugDelegate() {}
 
     // Called when a frame has been added to the current packet.
-    virtual void OnFrameAddedToPacket(const QuicFrame& frame) {}
+    virtual void OnFrameAddedToPacket(const QuicFrame& /*frame*/) {}
   };
 
   QuicPacketCreator(QuicConnectionId server_connection_id,
@@ -227,6 +227,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   // Update the server connection ID used in outgoing packets.
   void SetServerConnectionId(QuicConnectionId server_connection_id);
+
+  // Update the client connection ID used in outgoing packets.
+  void SetClientConnectionId(QuicConnectionId client_connection_id);
 
   // Sets the encryption level that will be applied to new packets.
   void set_encryption_level(EncryptionLevel level) {
@@ -407,6 +410,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // QuicEncryptedPacket has been flattened into SerializedPacket.
   size_t packet_size_;
   QuicConnectionId server_connection_id_;
+  QuicConnectionId client_connection_id_;
 
   // Packet used to invoke OnSerializedPacket.
   SerializedPacket packet_;
@@ -427,6 +431,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // If true, packet_'s transmission type is only set by
   // SetPacketTransmissionType and does not get cleared in ClearPacket.
   bool can_set_transmission_type_;
+
+  // Latched value of quic_fix_get_packet_header_size flag.
+  bool fix_get_packet_header_size_;
 };
 
 }  // namespace quic

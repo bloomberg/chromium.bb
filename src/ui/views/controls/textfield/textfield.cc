@@ -17,8 +17,6 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/default_style.h"
@@ -73,6 +71,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ui/aura/window.h"
 #include "ui/wm/core/ime_util_chromeos.h"
 #endif
 
@@ -250,9 +249,6 @@ bool IsControlKeyModifier(int flags) {
 }  // namespace
 
 // static
-const char Textfield::kViewClassName[] = "Textfield";
-
-// static
 base::TimeDelta Textfield::GetCaretBlinkInterval() {
 #if defined(OS_WIN)
   static const size_t system_value = ::GetCaretBlinkTime();
@@ -278,14 +274,14 @@ const gfx::FontList& Textfield::GetDefaultFontList() {
 Textfield::Textfield()
     : model_(new TextfieldModel(this)),
       placeholder_text_draw_flags_(gfx::Canvas::DefaultCanvasTextAlignment()),
-      selection_controller_(this),
-      weak_ptr_factory_(this) {
+      selection_controller_(this) {
   set_context_menu_controller(this);
   set_drag_controller(this);
   cursor_view_.SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   cursor_view_.layer()->SetColor(GetTextColor());
   // |cursor_view_| is owned by Textfield view.
   cursor_view_.set_owned_by_client();
+  cursor_view_.GetViewAccessibility().OverrideIsIgnored(true);
   AddChildView(&cursor_view_);
   GetRenderText()->SetFontList(GetDefaultFontList());
   UpdateBorder();
@@ -635,10 +631,6 @@ gfx::Size Textfield::GetMinimumSize() const {
         GetFontList().GetExpectedTextWidth(minimum_width_in_chars_) +
         GetInsets().width());
   return minimum_size;
-}
-
-const char* Textfield::GetClassName() const {
-  return kViewClassName;
 }
 
 void Textfield::SetBorder(std::unique_ptr<Border> b) {
@@ -1173,6 +1165,10 @@ void Textfield::OnThemeChanged() {
 void Textfield::OnCompositionTextConfirmedOrCleared() {
   if (!skip_input_method_cancel_composition_)
     GetInputMethod()->CancelComposition(this);
+}
+
+void Textfield::OnTextChanged() {
+  OnPropertyChanged(&model_ + kTextProperty, kPropertyEffectsPaint);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1712,7 +1708,7 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
       return readable && model_->HasSelection();
     case ui::TextEditCommand::PASTE:
       ui::Clipboard::GetForCurrentThread()->ReadText(
-          ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
+          ui::ClipboardType::kCopyPaste, &result);
       return editable && !result.empty();
     case ui::TextEditCommand::SELECT_ALL:
       return !text().empty() && GetSelectedRange().length() != text().length();
@@ -1810,7 +1806,7 @@ gfx::Point Textfield::GetLastClickRootLocation() const {
 
 base::string16 Textfield::GetSelectionClipboardText() const {
   base::string16 selection_clipboard_text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_SELECTION,
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kSelection,
                                                  &selection_clipboard_text);
   return selection_clipboard_text;
 }
@@ -2039,6 +2035,12 @@ bool Textfield::ShouldShowPlaceholderText() const {
   return text().empty() && !GetPlaceholderText().empty();
 }
 
+views::PropertyChangedSubscription Textfield::AddTextChangedCallback(
+    views::PropertyChangedCallback callback) {
+  return AddPropertyChangedCallback(&model_ + kTextProperty,
+                                    std::move(callback));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, private:
 
@@ -2111,10 +2113,10 @@ bool Textfield::PasteSelectionClipboard() {
 void Textfield::UpdateSelectionClipboard() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
-    ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_SELECTION)
+    ui::ScopedClipboardWriter(ui::ClipboardType::kSelection)
         .WriteText(GetSelectedText());
     if (controller_)
-      controller_->OnAfterCutOrCopy(ui::CLIPBOARD_TYPE_SELECTION);
+      controller_->OnAfterCutOrCopy(ui::ClipboardType::kSelection);
   }
 #endif
 }
@@ -2270,7 +2272,7 @@ bool Textfield::Cut() {
   if (!read_only() && text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD &&
       model_->Cut()) {
     if (controller_)
-      controller_->OnAfterCutOrCopy(ui::CLIPBOARD_TYPE_COPY_PASTE);
+      controller_->OnAfterCutOrCopy(ui::ClipboardType::kCopyPaste);
     return true;
   }
   return false;
@@ -2279,7 +2281,7 @@ bool Textfield::Cut() {
 bool Textfield::Copy() {
   if (text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD && model_->Copy()) {
     if (controller_)
-      controller_->OnAfterCutOrCopy(ui::CLIPBOARD_TYPE_COPY_PASTE);
+      controller_->OnAfterCutOrCopy(ui::ClipboardType::kCopyPaste);
     return true;
   }
   return false;
@@ -2389,5 +2391,9 @@ void Textfield::OnEnabledChanged() {
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
 }
+
+BEGIN_METADATA(Textfield)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

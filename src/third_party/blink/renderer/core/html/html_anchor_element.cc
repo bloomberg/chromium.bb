@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/anchor_element_metrics.h"
 #include "third_party/blink/renderer/core/html/anchor_element_metrics_sender.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -51,11 +50,53 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
+
+namespace {
+
+// Note: Here it covers download originated from clicking on <a download> link
+// that results in direct download. Features in this method can also be logged
+// from browser for download due to navigations to non-web-renderable content.
+bool ShouldInterveneDownloadByFramePolicy(LocalFrame* frame) {
+  bool should_intervene_download = false;
+  Document& document = *(frame->GetDocument());
+  UseCounter::Count(document, WebFeature::kDownloadPrePolicyCheck);
+  bool has_gesture = LocalFrame::HasTransientUserActivation(frame);
+  if (!has_gesture) {
+    UseCounter::Count(document, WebFeature::kDownloadWithoutUserGesture);
+  }
+  if (frame->IsAdSubframe()) {
+    UseCounter::Count(document, WebFeature::kDownloadInAdFrame);
+    if (!has_gesture) {
+      UseCounter::Count(document,
+                        WebFeature::kDownloadInAdFrameWithoutUserGesture);
+      if (base::FeatureList::IsEnabled(
+              blink::features::
+                  kBlockingDownloadsInAdFrameWithoutUserActivation))
+        should_intervene_download = true;
+    }
+  }
+  if (document.IsSandboxed(WebSandboxFlags::kDownloads)) {
+    UseCounter::Count(document, WebFeature::kDownloadInSandbox);
+    if (!has_gesture) {
+      UseCounter::Count(document,
+                        WebFeature::kDownloadInSandboxWithoutUserGesture);
+      if (RuntimeEnabledFeatures::
+              BlockingDownloadsInSandboxWithoutUserActivationEnabled())
+        should_intervene_download = true;
+    }
+  }
+  if (!should_intervene_download)
+    UseCounter::Count(document, WebFeature::kDownloadPostPolicyCheck);
+  return should_intervene_download;
+}
+
+}  // namespace
 
 using namespace html_names;
 
@@ -170,11 +211,11 @@ bool HTMLAnchorElement::HasActivationBehavior() const {
   return true;
 }
 
-void HTMLAnchorElement::SetActive(bool down) {
+void HTMLAnchorElement::SetActive(bool active) {
   if (HasEditableStyle(*this))
     return;
 
-  ContainerNode::SetActive(down);
+  HTMLElement::SetActive(active);
 }
 
 const AttrNameToTrustedType& HTMLAnchorElement::GetCheckedAttributeTypes()
@@ -381,7 +422,8 @@ void HTMLAnchorElement::HandleClick(Event& event) {
       !HasRel(kRelationNoReferrer)) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kHTMLAnchorElementReferrerPolicyAttribute);
-    request.SetReferrerPolicy(policy);
+    request.SetReferrerPolicy(
+        policy, ResourceRequest::SetReferrerPolicyLocation::kAnchorElement);
   }
 
   // Ignore the download attribute if we either can't read the content, or
@@ -389,33 +431,8 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   if (hasAttribute(kDownloadAttr) &&
       NavigationPolicyFromEvent(&event) != kNavigationPolicyDownload &&
       GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
-    UseCounter::Count(GetDocument(), WebFeature::kDownloadPrePolicyCheck);
-    bool has_gesture = LocalFrame::HasTransientUserActivation(frame);
-    if (frame->IsAdSubframe()) {
-      // Note: Here it covers download originated from clicking on <a download>
-      // link that results in direct download. These two features can also be
-      // logged from browser for download due to navigations to
-      // non-web-renderable content.
-      UseCounter::Count(GetDocument(),
-                        has_gesture
-                            ? WebFeature::kDownloadInAdFrameWithUserGesture
-                            : WebFeature::kDownloadInAdFrameWithoutUserGesture);
-      if (!has_gesture &&
-          base::FeatureList::IsEnabled(
-              blink::features::
-                  kBlockingDownloadsInAdFrameWithoutUserActivation))
-        return;
-    }
-    if (GetDocument().IsSandboxed(WebSandboxFlags::kDownloads)) {
-      if (!has_gesture) {
-        UseCounter::Count(GetDocument(),
-                          WebFeature::kDownloadInSandboxWithoutUserGesture);
-        if (RuntimeEnabledFeatures::
-                BlockingDownloadsInSandboxWithoutUserActivationEnabled())
-          return;
-      }
-    }
-    UseCounter::Count(GetDocument(), WebFeature::kDownloadPostPolicyCheck);
+    if (ShouldInterveneDownloadByFramePolicy(frame))
+      return;
     request.SetSuggestedFilename(
         static_cast<String>(FastGetAttribute(kDownloadAttr)));
     request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);

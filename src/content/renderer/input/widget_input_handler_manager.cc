@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/common/input_messages.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/ime_event_guard.h"
@@ -23,8 +24,8 @@
 
 #if defined(OS_ANDROID)
 #include "content/public/common/content_client.h"
-#include "content/renderer/android/synchronous_compositor_proxy.h"
-#include "content/renderer/android/synchronous_compositor_registry.h"
+#include "content/renderer/input/synchronous_compositor_proxy.h"
+#include "content/renderer/input/synchronous_compositor_registry.h"
 #endif
 
 namespace content {
@@ -170,41 +171,38 @@ void WidgetInputHandlerManager::InitInputHandler() {
 WidgetInputHandlerManager::~WidgetInputHandlerManager() = default;
 
 void WidgetInputHandlerManager::AddAssociatedInterface(
-    mojom::WidgetInputHandlerAssociatedRequest request,
-    mojom::WidgetInputHandlerHostPtr host) {
+    mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver,
+    mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) {
   if (compositor_task_runner_) {
-    associated_host_ =
-        mojo::ThreadSafeInterfacePtr<mojom::WidgetInputHandlerHost>::Create(
-            host.PassInterface(), compositor_task_runner_);
+    associated_host_ = mojo::SharedRemote<mojom::WidgetInputHandlerHost>(
+        std::move(host), compositor_task_runner_);
     // Mojo channel bound on compositor thread.
     compositor_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&WidgetInputHandlerManager::BindAssociatedChannel, this,
-                       std::move(request)));
+                       std::move(receiver)));
   } else {
     associated_host_ =
-        mojo::ThreadSafeInterfacePtr<mojom::WidgetInputHandlerHost>::Create(
-            std::move(host));
+        mojo::SharedRemote<mojom::WidgetInputHandlerHost>(std::move(host));
     // Mojo channel bound on main thread.
-    BindAssociatedChannel(std::move(request));
+    BindAssociatedChannel(std::move(receiver));
   }
 }
 
 void WidgetInputHandlerManager::AddInterface(
-    mojom::WidgetInputHandlerRequest request,
-    mojom::WidgetInputHandlerHostPtr host) {
+    mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
+    mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) {
   if (compositor_task_runner_) {
-    host_ = mojo::ThreadSafeInterfacePtr<mojom::WidgetInputHandlerHost>::Create(
-        host.PassInterface(), compositor_task_runner_);
+    host_ = mojo::SharedRemote<mojom::WidgetInputHandlerHost>(
+        std::move(host), compositor_task_runner_);
     // Mojo channel bound on compositor thread.
     compositor_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&WidgetInputHandlerManager::BindChannel, this,
-                                  std::move(request)));
+                                  std::move(receiver)));
   } else {
-    host_ = mojo::ThreadSafeInterfacePtr<mojom::WidgetInputHandlerHost>::Create(
-        std::move(host));
+    host_ = mojo::SharedRemote<mojom::WidgetInputHandlerHost>(std::move(host));
     // Mojo channel bound on main thread.
-    BindChannel(std::move(request));
+    BindChannel(std::move(receiver));
   }
 }
 
@@ -289,16 +287,17 @@ void WidgetInputHandlerManager::ProcessTouchAction(
 mojom::WidgetInputHandlerHost*
 WidgetInputHandlerManager::GetWidgetInputHandlerHost() {
   if (associated_host_)
-    return associated_host_.get()->get();
+    return associated_host_.get();
   if (host_)
-    return host_.get()->get();
+    return host_.get();
   return nullptr;
 }
 
 void WidgetInputHandlerManager::AttachSynchronousCompositor(
-    mojom::SynchronousCompositorControlHostPtr control_host,
-    mojom::SynchronousCompositorHostAssociatedPtrInfo host,
-    mojom::SynchronousCompositorAssociatedRequest compositor_request) {
+    mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
+    mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
+    mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+        compositor_request) {
 #if defined(OS_ANDROID)
   DCHECK(synchronous_compositor_registry_);
   synchronous_compositor_registry_->proxy()->BindChannel(
@@ -328,6 +327,14 @@ void WidgetInputHandlerManager::DispatchEvent(
           INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt, base::nullopt);
     }
     return;
+  }
+
+  if (!(have_emitted_uma_ ||
+        event->web_event->GetType() == WebInputEvent::Type::kMouseMove ||
+        event->web_event->GetType() == WebInputEvent::Type::kPointerMove)) {
+    UMA_HISTOGRAM_ENUMERATION("PaintHolding.InputTiming",
+                              current_lifecycle_state_);
+    have_emitted_uma_ = true;
   }
 
   // If TimeTicks is not consistent across processes we cannot use the event's
@@ -446,6 +453,16 @@ void WidgetInputHandlerManager::FallbackCursorModeSetCursorVisibility(
 #endif
 }
 
+void WidgetInputHandlerManager::MarkBeginMainFrame() {
+  if (current_lifecycle_state_ == InitialInputTiming::kBeforeLifecycle)
+    current_lifecycle_state_ = InitialInputTiming::kBeforeCommit;
+}
+
+void WidgetInputHandlerManager::MarkCompositorCommit() {
+  if (current_lifecycle_state_ == InitialInputTiming::kBeforeCommit)
+    current_lifecycle_state_ = InitialInputTiming::kAfterCommit;
+}
+
 void WidgetInputHandlerManager::InitOnInputHandlingThread(
     const base::WeakPtr<cc::InputHandler>& input_handler,
     bool smooth_scroll_enabled,
@@ -470,8 +487,8 @@ void WidgetInputHandlerManager::InitOnInputHandlingThread(
 }
 
 void WidgetInputHandlerManager::BindAssociatedChannel(
-    mojom::WidgetInputHandlerAssociatedRequest request) {
-  if (!request.is_pending())
+    mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> request) {
+  if (!request.is_valid())
     return;
   // Don't pass the |input_event_queue_| on if we don't have a
   // |compositor_task_runner_| as events might get out of order.
@@ -482,8 +499,8 @@ void WidgetInputHandlerManager::BindAssociatedChannel(
 }
 
 void WidgetInputHandlerManager::BindChannel(
-    mojom::WidgetInputHandlerRequest request) {
-  if (!request.is_pending())
+    mojo::PendingReceiver<mojom::WidgetInputHandler> request) {
+  if (!request.is_valid())
     return;
   // Don't pass the |input_event_queue_| on if we don't have a
   // |compositor_task_runner_| as events might get out of order.

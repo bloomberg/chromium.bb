@@ -26,7 +26,7 @@ class LinkListener;
 ////////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT Link : public Label {
  public:
-  static const char kViewClassName[];
+  METADATA_HEADER(Link);
 
   // The padding for the focus ring border when rendering a focused Link with
   // FocusStyle::RING.
@@ -56,7 +56,6 @@ class VIEWS_EXPORT Link : public Label {
   // Label:
   void PaintFocusRing(gfx::Canvas* canvas) const override;
   gfx::Insets GetInsets() const override;
-  const char* GetClassName() const override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   bool CanProcessEventsWithinSubtree() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;

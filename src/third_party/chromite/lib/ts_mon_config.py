@@ -54,7 +54,7 @@ def GetMetricFieldSpec(fields=None):
   """
   field_spec = []
   if fields:
-    for key, val in fields.iteritems():
+    for key, val in fields.items():
       if isinstance(val, bool):
         field_spec.append(BooleanField(key))
       elif isinstance(val, int):
@@ -388,7 +388,7 @@ def _MethodCallRepr(message):
   args = message.method_args,
   kwargs = message.method_kwargs
 
-  args_strings = (map(repr, args) +
+  args_strings = ([repr(x) for x in args] +
                   [(str(k) + '=' + repr(v))
-                   for k, v in kwargs.iteritems()])
+                   for k, v in kwargs.items()])
   return '%s.%s(%s)' % (repr(obj), method, ', '.join(args_strings))

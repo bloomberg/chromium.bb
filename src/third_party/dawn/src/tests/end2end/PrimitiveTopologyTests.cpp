@@ -150,15 +150,15 @@ class PrimitiveTopologyTest : public DawnTest {
 
             renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-            vsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
+            vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
                 #version 450
                 layout(location = 0) in vec4 pos;
                 void main() {
                     gl_Position = pos;
-                })"
-            );
+                    gl_PointSize = 1.0;
+                })");
 
-            fsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+            fsModule = utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) out vec4 fragColor;
                 void main() {
@@ -185,9 +185,9 @@ class PrimitiveTopologyTest : public DawnTest {
             descriptor.cVertexStage.module = vsModule;
             descriptor.cFragmentStage.module = fsModule;
             descriptor.primitiveTopology = primitiveTopology;
-            descriptor.cVertexInput.numBuffers = 1;
+            descriptor.cVertexInput.bufferCount = 1;
             descriptor.cVertexInput.cBuffers[0].stride = 4 * sizeof(float);
-            descriptor.cVertexInput.numAttributes = 1;
+            descriptor.cVertexInput.cBuffers[0].attributeCount = 1;
             descriptor.cVertexInput.cAttributes[0].format = dawn::VertexFormat::Float4;
             descriptor.cColorStates[0]->format = renderPass.colorFormat;
 

@@ -48,12 +48,14 @@ std::string GetMAForegroundColorAndOpacityAsCSSColor() {
   return color_utils::SkColorToRgbaString(rgba_color);
 }
 
-std::string GetMABackgroundColorAsCSSColor() {
+std::string GetMABackgroundColorAndOpacityAsCSSColor() {
   base::ScopedCFTypeRef<CGColorRef> cg_color(
       MACaptionAppearanceCopyBackgroundColor(kUserDomain, nullptr));
+  float opacity = MACaptionAppearanceGetBackgroundOpacity(kUserDomain, nullptr);
 
-  return color_utils::SkColorToRgbaString(
-      skia::CGColorRefToSkColor(cg_color.get()));
+  SkColor rgba_color =
+      SkColorSetA(skia::CGColorRefToSkColor(cg_color.get()), 0xff * opacity);
+  return color_utils::SkColorToRgbaString(rgba_color);
 }
 
 // The MA text scale is a float between 0.0 and 2.0; this function converts it
@@ -119,19 +121,49 @@ void GetMAFontAsCSSFontSpecifiers(std::string* font_family,
     *font_variant = base::SysCFStringRefToUTF8(ct_font_face_name);
 }
 
+std::string GetMAWindowColorAsCSSColor() {
+  base::ScopedCFTypeRef<CGColorRef> cg_color(
+      MACaptionAppearanceCopyWindowColor(kUserDomain, nullptr));
+  float opacity = MACaptionAppearanceGetWindowOpacity(kUserDomain, nullptr);
+
+  SkColor rgba_color =
+      SkColorSetA(skia::CGColorRefToSkColor(cg_color.get()), 0xff * opacity);
+  return color_utils::SkColorToRgbaString(rgba_color);
+}
+
+// If the window is visible (its opacity is greater than 0), give it padding so
+// it surrounds the text track cue. If it is not visible, its padding should be
+// 0. Webkit uses 0.4em padding so we match that here.
+std::string GetMAWindowPaddingAsCSSNumberInEm() {
+  float opacity = MACaptionAppearanceGetWindowOpacity(kUserDomain, nullptr);
+  if (opacity > 0)
+    return "0.4em";
+
+  return "";
+}
+
+std::string GetMAWindowRadiusAsCSSNumberInPixels() {
+  float radius =
+      MACaptionAppearanceGetWindowRoundedCornerRadius(kUserDomain, nullptr);
+  return base::StringPrintf("%fpx", radius);
+}
+
 }  // namespace
 
 // static
-CaptionStyle CaptionStyle::FromSystemSettings() {
+base::Optional<CaptionStyle> CaptionStyle::FromSystemSettings() {
+  if (!base::FeatureList::IsEnabled(features::kSystemCaptionStyle))
+    return base::nullopt;
+
   CaptionStyle style;
 
-  if (!base::FeatureList::IsEnabled(features::kSystemCaptionStyle))
-    return style;
-
   style.text_color = GetMAForegroundColorAndOpacityAsCSSColor();
-  style.background_color = GetMABackgroundColorAsCSSColor();
+  style.background_color = GetMABackgroundColorAndOpacityAsCSSColor();
   style.text_size = GetMATextScaleAsCSSPercent();
   style.text_shadow = GetMATextEdgeStyleAsCSSShadow();
+  style.window_color = GetMAWindowColorAsCSSColor();
+  style.window_padding = GetMAWindowPaddingAsCSSNumberInEm();
+  style.window_radius = GetMAWindowRadiusAsCSSNumberInPixels();
 
   GetMAFontAsCSSFontSpecifiers(&style.font_family, &style.font_variant);
 

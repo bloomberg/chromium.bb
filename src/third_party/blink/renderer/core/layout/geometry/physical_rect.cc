@@ -133,8 +133,8 @@ LayoutRect PhysicalRect::ToLayoutFlippedRect(
 }
 
 String PhysicalRect::ToString() const {
-  return String::Format("%s %s", offset.ToString().Ascii().data(),
-                        size.ToString().Ascii().data());
+  return String::Format("%s %s", offset.ToString().Ascii().c_str(),
+                        size.ToString().Ascii().c_str());
 }
 
 PhysicalRect UnionRect(const Vector<PhysicalRect>& rects) {

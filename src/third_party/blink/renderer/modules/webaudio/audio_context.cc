@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -31,10 +30,11 @@
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>
@@ -529,7 +529,7 @@ bool AudioContext::HasPendingActivity() const {
 }
 
 bool AudioContext::HandlePreRenderTasks(const AudioIOPosition* output_position,
-                                        const AudioIOCallbackMetric* metric) {
+                                        const AudioCallbackMetric* metric) {
   DCHECK(IsAudioThread());
 
   // At the beginning of every render quantum, try to update the internal
@@ -664,20 +664,24 @@ void AudioContext::EnsureAudioContextManagerService() {
   GetDocument()
       ->GetFrame()
       ->GetDocumentInterfaceBroker()
-      .GetAudioContextManager(mojo::MakeRequest(&audio_context_manager_));
-  audio_context_manager_.set_connection_error_handler(
+      .GetAudioContextManager(
+          audio_context_manager_.BindNewPipeAndPassReceiver());
+  audio_context_manager_.set_disconnect_handler(
       WTF::Bind(&AudioContext::OnAudioContextManagerServiceConnectionError,
                 WrapWeakPersistent(this)));
 }
 
 void AudioContext::OnAudioContextManagerServiceConnectionError() {
-  audio_context_manager_ = nullptr;
+  audio_context_manager_.reset();
 }
 
-double AudioContext::RenderCapacity() {
-  DCHECK(IsMainThread());
+AudioCallbackMetric AudioContext::GetCallbackMetric() const {
+  // Return a copy under the graph lock because returning a reference would
+  // allow seeing the audio thread changing the struct values. This method
+  // gets called once per second and the size of the struct is small, so
+  // creating a copy is acceptable here.
   GraphAutoLocker locker(this);
-  return callback_metric_.render_duration / callback_metric_.callback_interval;
+  return callback_metric_;
 }
 
 }  // namespace blink

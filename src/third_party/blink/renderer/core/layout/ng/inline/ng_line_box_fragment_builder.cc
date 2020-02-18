@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 
 namespace blink {
@@ -19,6 +20,7 @@ void NGLineBoxFragmentBuilder::Reset() {
   child_break_tokens_.Shrink(0);
   inline_break_tokens_.Shrink(0);
   oof_positioned_candidates_.Shrink(0);
+  unpositioned_list_marker_ = NGUnpositionedListMarker();
 
   size_.inline_size = LayoutUnit();
   metrics_ = NGLineHeightMetrics();
@@ -53,6 +55,10 @@ NGLineBoxFragmentBuilder::ChildList::LastInFlowChild() {
       return &child;
   }
   return nullptr;
+}
+
+void NGLineBoxFragmentBuilder::ChildList::InsertChild(unsigned index) {
+  children_.insert(index, Child());
 }
 
 void NGLineBoxFragmentBuilder::ChildList::MoveInInlineDirection(

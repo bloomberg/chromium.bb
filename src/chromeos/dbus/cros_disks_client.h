@@ -90,6 +90,8 @@ enum RenameError {
 };
 
 // Format error reported by cros-disks.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum FormatError {
   FORMAT_ERROR_NONE,
   FORMAT_ERROR_UNKNOWN,
@@ -100,6 +102,10 @@ enum FormatError {
   FORMAT_ERROR_FORMAT_PROGRAM_NOT_FOUND,
   FORMAT_ERROR_FORMAT_PROGRAM_FAILED,
   FORMAT_ERROR_DEVICE_NOT_ALLOWED,
+  FORMAT_ERROR_INVALID_OPTIONS,
+  FORMAT_ERROR_LONG_NAME,
+  FORMAT_ERROR_INVALID_CHARACTER,
+  FORMAT_ERROR_COUNT,
 };
 
 // Event type each corresponding to a signal sent from cros-disks.
@@ -358,6 +364,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CrosDisksClient : public DBusClient {
   // success, or with |false| otherwise.
   virtual void Format(const std::string& device_path,
                       const std::string& filesystem,
+                      const std::string& label,
                       VoidDBusMethodCallback callback) = 0;
 
   // Calls Rename method. On completion, |callback| is called, with |true| on

@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/merkle_integrity_source_stream.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_certificate_chain.h"
@@ -24,7 +25,6 @@
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/browser/web_package/signed_exchange_prologue.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
-#include "content/browser/web_package/signed_exchange_request_matcher.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -36,7 +36,6 @@
 #include "content/public/common/url_loader_throttle.h"
 #include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -51,6 +50,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
 
 namespace content {
 
@@ -96,8 +96,8 @@ void OnVerifyCertUI(VerifyCallback callback,
                     int32_t error_code,
                     const net::CertVerifyResult& cv_result,
                     const net::ct::CTVerifyResult& ct_result) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
+  NavigationURLLoaderImpl::RunOrPostTaskOnLoaderThread(
+      FROM_HERE,
       base::BindOnce(std::move(callback), error_code, cv_result, ct_result));
 }
 
@@ -188,7 +188,7 @@ SignedExchangeHandler::SignedExchangeHandler(
     ExchangeHeadersCallback headers_callback,
     std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory,
     int load_flags,
-    std::unique_ptr<SignedExchangeRequestMatcher> request_matcher,
+    std::unique_ptr<blink::SignedExchangeRequestMatcher> request_matcher,
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     SignedExchangeReporter* reporter,
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter)
@@ -201,8 +201,7 @@ SignedExchangeHandler::SignedExchangeHandler(
       request_matcher_(std::move(request_matcher)),
       devtools_proxy_(std::move(devtools_proxy)),
       reporter_(reporter),
-      frame_tree_node_id_getter_(frame_tree_node_id_getter),
-      weak_factory_(this) {
+      frame_tree_node_id_getter_(frame_tree_node_id_getter) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeHandler::SignedExchangeHandler");
 
@@ -253,8 +252,7 @@ SignedExchangeHandler::~SignedExchangeHandler() = default;
 SignedExchangeHandler::SignedExchangeHandler()
     : is_secure_transport_(true),
       has_nosniff_(true),
-      load_flags_(net::LOAD_NORMAL),
-      weak_factory_(this) {}
+      load_flags_(net::LOAD_NORMAL) {}
 
 const GURL& SignedExchangeHandler::GetFallbackUrl() const {
   return prologue_fallback_url_and_after_.fallback_url().url;
@@ -790,4 +788,10 @@ SignedExchangeHandler::ComputeHeaderIntegrity() const {
   return envelope_->ComputeHeaderIntegrity();
 }
 
+base::Time SignedExchangeHandler::GetSignatureExpireTime() const {
+  if (!envelope_)
+    return base::Time();
+  return base::Time::UnixEpoch() +
+         base::TimeDelta::FromSeconds(envelope_->signature().expires);
+}
 }  // namespace content

@@ -37,6 +37,11 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
                 AppListView* app_list_view = nullptr);
   ~SearchBoxView() override;
 
+  void Init(bool is_tablet_mode);
+
+  // Resets state of SearchBoxView so it can be reshown.
+  void ResetForShow();
+
   // Returns the total focus ring spacing for use in folders.
   static int GetFocusRingSpacing();
 
@@ -60,6 +65,7 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
+  bool CanProcessEventsWithinSubtree() const override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

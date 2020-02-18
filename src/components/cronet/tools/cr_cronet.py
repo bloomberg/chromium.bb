@@ -29,13 +29,18 @@ def run_shell(command, extra_options=''):
   return os.system(command)
 
 
-def gn(out_dir, gn_args, gn_extra=[]):
-  return run(['gn', 'gen', out_dir, "--args=%s" % gn_args] + gn_extra)
+def gn(out_dir, gn_args, gn_extra=None):
+  cmd = ['gn', 'gen', out_dir, "--args=%s" % gn_args]
+  if gn_extra:
+    cmd += gn_extra
+  return run(cmd)
 
 
-def build(out_dir, build_target, extra_options=[]):
-  return run(['ninja', '-C', out_dir, build_target] +
-             get_ninja_jobs_options() + extra_options)
+def build(out_dir, build_target, extra_options=None):
+  cmd = ['ninja', '-C', out_dir, build_target] + get_ninja_jobs_options()
+  if extra_options:
+    cmd += extra_options
+  return run(cmd)
 
 
 def install(out_dir):
@@ -114,7 +119,7 @@ def get_mobile_gn_args(target_os, is_release):
 def get_ios_gn_args(is_release, target_cpu):
   return get_mobile_gn_args('ios', is_release) + \
       'is_cronet_build=true  ' + \
-      'use_xcode_clang=true ' + \
+      'use_xcode_clang=false ' + \
       'ios_deployment_target="9.0" ' + \
       'enable_dsyms=true ' + \
       'target_cpu="%s" ' % target_cpu

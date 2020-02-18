@@ -9,12 +9,17 @@ config("base_config") {
     cflags_cc += [ "-Wno-format-truncation" ]
   }
   if (is_clang) {
-    cflags_cc += [
-      "-Wno-c++11-narrowing",
+    cflags_cc += [ "-Wno-c++11-narrowing" ]
+
+    cflags = [
+      "-Wno-c++98-compat-extra-semi",
+      "-Wno-extra-semi",
       "-Wno-deprecated-declarations",
     ]
+
     if (is_mac) {
-      cflags_objcc += [ "-Wno-deprecated-declarations" ]
+      # Necessary since trybots have an old version of clang.
+      cflags += [ "-Wno-unknown-warning-option" ]
     }
   }
   configs = [ "//third_party/chromium_quic:chromium_quic_config" ]

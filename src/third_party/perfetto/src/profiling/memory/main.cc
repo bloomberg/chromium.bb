@@ -23,15 +23,15 @@
 #include <getopt.h>
 #include <signal.h>
 
-#include "perfetto/base/event.h"
-#include "perfetto/base/scoped_file.h"
-#include "perfetto/base/unix_socket.h"
-#include "perfetto/base/watchdog.h"
+#include "perfetto/ext/base/event_fd.h"
+#include "perfetto/ext/base/scoped_file.h"
+#include "perfetto/ext/base/unix_socket.h"
+#include "perfetto/ext/base/watchdog.h"
+#include "perfetto/ext/tracing/ipc/default_socket.h"
 #include "src/profiling/memory/heapprofd_producer.h"
 #include "src/profiling/memory/wire_protocol.h"
-#include "src/tracing/ipc/default_socket.h"
 
-#include "perfetto/base/unix_task_runner.h"
+#include "perfetto/ext/base/unix_task_runner.h"
 
 // TODO(rsavitski): the task runner watchdog spawns a thread (normally for
 // tracking cpu/mem usage) that we don't strictly need.
@@ -45,7 +45,19 @@ int StartChildHeapprofd(pid_t target_pid,
                         base::ScopedFile inherited_sock_fd);
 int StartCentralHeapprofd();
 
-base::Event* g_dump_evt = nullptr;
+int GetListeningSocket() {
+  const char* sock_fd = getenv(kHeapprofdSocketEnvVar);
+  if (sock_fd == nullptr)
+    PERFETTO_FATAL("Did not inherit socket from init.");
+  char* end;
+  int raw_fd = static_cast<int>(strtol(sock_fd, &end, 10));
+  if (*end != '\0')
+    PERFETTO_FATAL("Invalid %s. Expected decimal integer.",
+                   kHeapprofdSocketEnvVar);
+  return raw_fd;
+}
+
+base::EventFd* g_dump_evt = nullptr;
 
 int HeapprofdMain(int argc, char** argv) {
   bool cleanup_crash = false;
@@ -139,11 +151,16 @@ int StartChildHeapprofd(pid_t target_pid,
 int StartCentralHeapprofd() {
   // We set this up before launching any threads, so we do not have to use a
   // std::atomic for g_dump_evt.
-  g_dump_evt = new base::Event();
+  g_dump_evt = new base::EventFd();
 
   base::UnixTaskRunner task_runner;
   base::Watchdog::GetInstance()->Start();  // crash on exceedingly long tasks
   HeapprofdProducer producer(HeapprofdMode::kCentral, &task_runner);
+
+  int listening_raw_socket = GetListeningSocket();
+  auto listening_socket =
+      base::UnixSocket::Listen(base::ScopedFile(listening_raw_socket),
+                               &producer.socket_delegate(), &task_runner);
 
   struct sigaction action = {};
   action.sa_handler = [](int) { g_dump_evt->Notify(); };

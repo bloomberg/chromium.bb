@@ -4,17 +4,17 @@ use strict;
 use warnings;
 use Carp qw(croak);
 
+our $VERSION = '2.29002';
+# ABSTRACT: Exceptions from autodying functions.
+
 our $DEBUG = 0;
 
 use overload
-    q{""} => "stringify"
+    q{""} => "stringify",
+    # Overload smart-match only if we're using 5.10 or up
+    ($] >= 5.010 ? ('~~'  => "matches") : ()),
+    fallback => 1
 ;
-
-# Overload smart-match only if we're using 5.10
-
-use if ($] >= 5.010), overload => '~~'  => "matches";
-
-our $VERSION = '2.11';
 
 my $PACKAGE = __PACKAGE__;  # Useful to have a scalar for hash keys.
 
@@ -131,11 +131,20 @@ sub line        { return $_[0]->{$PACKAGE}{line};  }
 
     my $context = $E->context;
 
-The context in which the subroutine was called.  This can be
-'list', 'scalar', or undefined (unknown).  It will never be 'void', as
-C<autodie> always captures the return value in one way or another.
+The context in which the subroutine was called by autodie; usually
+the same as the context in which you called the autodying subroutine.
+This can be 'list', 'scalar', or undefined (unknown).  It will never
+be 'void', as C<autodie> always captures the return value in one way
+or another.
+
+For some core functions that always return a scalar value regardless
+of their context (eg, C<chown>), this may be 'scalar', even if you
+used a list context.
 
 =cut
+
+# TODO: The comments above say this can be undefined. Is that actually
+# the case? (With 'system', perhaps?)
 
 sub context     { return $_[0]->{$PACKAGE}{context} }
 
@@ -186,12 +195,10 @@ sub eval_error { return $_[0]->{$PACKAGE}{eval_error}; }
 
     if ( $e->matches('open') ) { ... }
 
-    if ( $e ~~ 'open' ) { ... }
+    if ( 'open' ~~ $e ) { ... }
 
 C<matches> is used to determine whether a
-given exception matches a particular role.  On Perl 5.10,
-using smart-match (C<~~>) with an C<autodie::exception> object
-will use C<matches> underneath.
+given exception matches a particular role.
 
 An exception is considered to match a string if:
 
@@ -210,7 +217,19 @@ For a string that does start with a colon, if the subroutine
 throwing the exception I<does> that behaviour.  For example, the
 C<CORE::open> subroutine does C<:file>, C<:io> and C<:all>.
 
-See L<autodie/CATEGORIES> for futher information.
+See L<autodie/CATEGORIES> for further information.
+
+On Perl 5.10 and above, using smart-match (C<~~>) with an
+C<autodie::exception> object will use C<matches> underneath.  This module
+used to recommend using smart-match with the exception object on the left
+hand side, but in future Perls that is likely to stop working.
+The smart-match facility of this class should only be used with the
+exception object on the right hand side.  Having the exception object on
+the right is both future-proof and portable to older Perls, back to 5.10.
+Beware that this facility can only
+be relied upon when it is certain that the exception object actually is
+an C<autodie::exception> object; it is no more capable than an explicit
+call to the C<matches> method.
 
 =back
 
@@ -276,11 +295,56 @@ work closely with the C<autodie::exception> model.
 #        get used in most programs.
 
 my %formatter_of = (
-    'CORE::close'   => \&_format_close,
-    'CORE::open'    => \&_format_open,
-    'CORE::dbmopen' => \&_format_dbmopen,
-    'CORE::flock'   => \&_format_flock,
+    'CORE::close'    => \&_format_close,
+    'CORE::open'     => \&_format_open,
+    'CORE::dbmopen'  => \&_format_dbmopen,
+    'CORE::flock'    => \&_format_flock,
+    'CORE::read'     => \&_format_readwrite,
+    'CORE::sysread'  => \&_format_readwrite,
+    'CORE::syswrite' => \&_format_readwrite,
+    'CORE::chmod'    => \&_format_chmod,
+    'CORE::mkdir'    => \&_format_mkdir,
 );
+
+sub _beautify_arguments {
+    shift @_;
+
+    # Walk through all our arguments, and...
+    #
+    #   * Replace undef with the word 'undef'
+    #   * Replace globs with the string '$fh'
+    #   * Quote all other args.
+    foreach my $arg (@_) {
+       if    (not defined($arg))   { $arg = 'undef' }
+       elsif (ref($arg) eq "GLOB") { $arg = '$fh'   }
+       else                        { $arg = qq{'$arg'} }
+    }
+
+    return @_;
+}
+
+sub _trim_package_name {
+    # Info: The following is done since 05/2008 (which is before v1.10)
+
+    # TODO: This is probably a good idea for CORE, is it
+    # a good idea for other subs?
+
+    # Trim package name off dying sub for error messages
+    (my $name = $_[1]) =~ s/.*:://;
+    return $name;
+}
+
+# Returns the parameter formatted as octal number
+sub _octalize_number {
+    my $number = $_[1];
+
+    # Only reformat if it looks like a whole number
+    if ($number =~ /^\d+$/) {
+        $number = sprintf("%#04lo", $number);
+    }
+
+    return $number;
+}
 
 # TODO: Our tests only check LOCK_EX | LOCK_NB is properly
 # formatted.  Try other combinations and ensure they work
@@ -336,6 +400,40 @@ sub _format_flock {
 
 }
 
+# Default formatter for CORE::chmod
+sub _format_chmod {
+    my ($this) = @_;
+    my @args   = @{$this->args};
+
+    my $mode   = shift @args;
+    local $!   = $this->errno;
+
+    $mode = $this->_octalize_number($mode);
+
+    @args = $this->_beautify_arguments(@args);
+
+    return "Can't chmod($mode, ". join(q{, }, @args) ."): $!";
+}
+
+# Default formatter for CORE::mkdir
+sub _format_mkdir {
+    my ($this) = @_;
+    my @args   = @{$this->args};
+
+    # If no mask is specified use default formatter
+    if (@args < 2) {
+      return $this->format_default;
+    }
+
+    my $file = $args[0];
+    my $mask = $args[1];
+    local $! = $this->errno;
+
+    $mask = $this->_octalize_number($mask);
+
+    return "Can't mkdir('$file', $mask): '$!'";
+}
+
 # Default formatter for CORE::dbmopen
 sub _format_dbmopen {
     my ($this) = @_;
@@ -350,13 +448,7 @@ sub _format_dbmopen {
     my $mode = $args[-1];
     my $file = $args[-2];
 
-    # If we have a mask, then display it in octal, not decimal.
-    # We don't do this if it already looks octalish, or doesn't
-    # look like a number.
-
-    if ($mode =~ /^[^\D0]\d+$/) {
-        $mode = sprintf("0%lo", $mode);
-    };
+    $mode = $this->_octalize_number($mode);
 
     local $! = $this->errno;
 
@@ -381,6 +473,38 @@ sub _format_close {
 
 }
 
+# Default formatter for CORE::read, CORE::sysread and CORE::syswrite
+#
+# Similar to default formatter with the buffer filtered out as it
+# may contain binary data.
+sub _format_readwrite {
+    my ($this) = @_;
+    my $call = $this->_trim_package_name($this->function);
+    local $! = $this->errno;
+
+    # These subs receive the following arguments (in order):
+    #
+    # * FILEHANDLE
+    # * SCALAR (buffer, we do not want to write this)
+    # * LENGTH (optional for syswrite)
+    # * OFFSET (optional for all)
+    my (@args) = @{$this->args};
+    my $arg_name = $args[1];
+    if (defined($arg_name)) {
+        if (ref($arg_name)) {
+            my $name = blessed($arg_name) || ref($arg_name);
+            $arg_name = "<${name}>";
+        } else {
+            $arg_name = '<BUFFER>';
+        }
+    } else {
+        $arg_name = '<UNDEF>';
+    }
+    $args[1] = $arg_name;
+
+    return "Can't $call(" . join(q{, }, @args) . "): $!";
+}
+
 # Default formatter for CORE::open
 
 use constant _FORMAT_OPEN => "Can't open '%s' for %s: '%s'";
@@ -393,6 +517,8 @@ sub _format_open_with_mode {
     if    ($mode eq '<')  { $wordy_mode = 'reading';   }
     elsif ($mode eq '>')  { $wordy_mode = 'writing';   }
     elsif ($mode eq '>>') { $wordy_mode = 'appending'; }
+
+    $file = '<undef>' if not defined $file;
 
     return sprintf _FORMAT_OPEN, $file, $wordy_mode, $error if $wordy_mode;
 
@@ -444,7 +570,7 @@ sub _format_open {
             }
         }
 
-        # Localising $! means perl make make it a pretty error for us.
+        # Localising $! means perl makes it a pretty error for us.
         local $! = $this->errno;
 
         return $this->_format_open_with_mode($mode, $file, $!);
@@ -528,6 +654,7 @@ sub stringify {
     my ($this) = @_;
 
     my $call        =  $this->function;
+    my $msg;
 
     if ($DEBUG) {
         my $dying_pkg   = $this->package;
@@ -538,11 +665,14 @@ sub stringify {
 
     # TODO - This isn't using inheritance.  Should it?
     if ( my $sub = $formatter_of{$call} ) {
-        return $sub->($this) . $this->add_file_and_line;
+        $msg = $sub->($this) . $this->add_file_and_line;
+    } else {
+        $msg = $this->format_default . $this->add_file_and_line;
     }
+    $msg .=  $this->{$PACKAGE}{_stack_trace}
+        if $Carp::Verbose;
 
-    return $this->format_default . $this->add_file_and_line;
-
+    return $msg;
 }
 
 =head3 format_default
@@ -566,29 +696,12 @@ messages are formatted.
 sub format_default {
     my ($this) = @_;
 
-    my $call        =  $this->function;
+    my $call   =  $this->_trim_package_name($this->function);
 
     local $! = $this->errno;
 
-    # TODO: This is probably a good idea for CORE, is it
-    # a good idea for other subs?
-
-    # Trim package name off dying sub for error messages.
-    $call =~ s/.*:://;
-
-    # Walk through all our arguments, and...
-    #
-    #   * Replace undef with the word 'undef'
-    #   * Replace globs with the string '$fh'
-    #   * Quote all other args.
-
     my @args = @{ $this->args() };
-
-    foreach my $arg (@args) {
-       if    (not defined($arg))   { $arg = 'undef' }
-       elsif (ref($arg) eq "GLOB") { $arg = '$fh'   }
-       else                        { $arg = qq{'$arg'} }
-    }
+    @args = $this->_beautify_arguments(@args);
 
     # Format our beautiful error.
 
@@ -672,6 +785,12 @@ sub _init {
         next if $package->isa('Fatal');
         next if $package->isa($class);
         next if $package->isa(__PACKAGE__);
+
+        # Anything with the 'autodie::skip' role wants us to skip it.
+        # https://github.com/pjf/autodie/issues/15
+
+        next if ($package->can('DOES') and $package->DOES('autodie::skip'));
+
         next if $file =~ /^\(eval\s\d+\)$/;
 
         last;
@@ -704,7 +823,24 @@ sub _init {
     $this->{$PACKAGE}{file}    = $file;
     $this->{$PACKAGE}{line}    = $line;
     $this->{$PACKAGE}{caller}  = $sub;
-    $this->{$PACKAGE}{package} = $package;
+
+    # Tranks to %Carp::CarpInternal all Fatal, autodie and
+    # autodie::exception stack frames are filtered already, but our
+    # nameless wrapper is still present, so strip that.
+
+    my $trace = Carp::longmess();
+    $trace =~ s/^\s*at \(eval[^\n]+\n//;
+
+    # And if we see an __ANON__, then we'll replace that with the actual
+    # name of our autodying function.
+
+    my $short_func = $args{function};
+    $short_func =~ s/^CORE:://;
+    $trace =~ s/(\s*[\w:]+)__ANON__/$1$short_func/;
+
+    # And now we just fill in all our attributes.
+
+    $this->{$PACKAGE}{_stack_trace} = $trace;
 
     $this->{$PACKAGE}{errno}   = $args{errno} || 0;
 

@@ -9,8 +9,10 @@
 #include "ash/focus_cycler.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
+#include "ash/login/ui/parent_access_widget.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_screen_client.h"
+#include "ash/public/cpp/toast_data.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/login_shelf_view.h"
@@ -19,8 +21,7 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
-#include "ash/system/toast/toast_data.h"
-#include "ash/system/toast/toast_manager.h"
+#include "ash/system/toast/toast_manager_impl.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/debug/alias.h"
@@ -347,11 +348,28 @@ void LoginScreenController::ShowParentAccessButton(bool show) {
       ->ShowParentAccessButton(show);
 }
 
+void LoginScreenController::ShowParentAccessWidget(
+    const AccountId& child_account_id,
+    base::RepeatingCallback<void(bool success)> callback,
+    ParentAccessRequestReason reason,
+    bool extra_dimmer) {
+  parent_access_widget_ = std::make_unique<ash::ParentAccessWidget>(
+      child_account_id, callback, reason, extra_dimmer);
+}
+
 void LoginScreenController::SetAllowLoginAsGuest(bool allow_guest) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
       ->login_shelf_view()
       ->SetAllowLoginAsGuest(allow_guest);
+}
+
+std::unique_ptr<ScopedGuestButtonBlocker>
+LoginScreenController::GetScopedGuestButtonBlocker() {
+  return Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->login_shelf_view()
+      ->GetScopedGuestButtonBlocker();
 }
 
 void LoginScreenController::ShowLockScreen() {
@@ -387,6 +405,10 @@ void LoginScreenController::ShowResetScreen() {
 
 void LoginScreenController::ShowAccountAccessHelpApp() {
   client_->ShowAccountAccessHelpApp();
+}
+
+void LoginScreenController::ShowLockScreenNotificationSettings() {
+  client_->ShowLockScreenNotificationSettings();
 }
 
 void LoginScreenController::FocusOobeDialog() {

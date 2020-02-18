@@ -24,12 +24,12 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -43,7 +43,7 @@ HTMLMapElement::HTMLMapElement(Document& document)
 HTMLMapElement::~HTMLMapElement() = default;
 
 HTMLAreaElement* HTMLMapElement::AreaForPoint(
-    const LayoutPoint& location,
+    const PhysicalOffset& location,
     const LayoutObject* container_object) {
   HTMLAreaElement* default_area = nullptr;
   for (HTMLAreaElement& area :

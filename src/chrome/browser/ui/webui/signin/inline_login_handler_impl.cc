@@ -58,19 +58,18 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/about_signin_internals.h"
-#include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/browser/signin_investigator.h"
-#include "components/signin/core/browser/signin_metrics.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
+#include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
-#include "services/identity/public/cpp/accounts_mutator.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
@@ -250,7 +249,7 @@ void OnSyncSetupComplete(Profile* profile,
                          const std::string& username,
                          const std::string& password) {
   DCHECK(signin_util::IsForceSigninEnabled());
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   bool has_primary_account = identity_manager->HasPrimaryAccount();
   if (has_primary_account && !password.empty()) {
@@ -357,7 +356,7 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
       AboutSigninInternalsFactory::GetForProfile(profile_);
   about_signin_internals->OnRefreshTokenReceived("Successful");
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
 
   std::string primary_email = identity_manager->GetPrimaryAccountInfo().email;
@@ -399,7 +398,7 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     if (identity_manager->HasPrimaryAccount()) {
       identity_manager->GetAccountsCookieMutator()->AddAccountToCookie(
           identity_manager->GetPrimaryAccountId(),
-          gaia::GaiaSource::kSigninManager, {});
+          gaia::GaiaSource::kPrimaryAccountManager, {});
     }
 
     signin_metrics::LogSigninReason(
@@ -441,7 +440,7 @@ void InlineSigninHelper::UntrustedSigninConfirmed(
 
 void InlineSigninHelper::CreateSyncStarter(const std::string& refresh_token) {
   DCHECK(signin_util::IsForceSigninEnabled());
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   if (identity_manager->HasPrimaryAccount()) {
     // Already signed in, nothing to do.
@@ -484,7 +483,7 @@ void InlineSigninHelper::OnClientOAuthFailure(
 }
 
 InlineLoginHandlerImpl::InlineLoginHandlerImpl()
-    : confirm_untrusted_signin_(false), weak_factory_(this) {}
+    : confirm_untrusted_signin_(false) {}
 
 InlineLoginHandlerImpl::~InlineLoginHandlerImpl() {}
 

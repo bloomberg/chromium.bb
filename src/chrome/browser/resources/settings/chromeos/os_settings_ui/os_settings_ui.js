@@ -75,9 +75,6 @@ Polymer({
     showAndroidApps_: Boolean,
 
     /** @private */
-    showKioskNextShell_: Boolean,
-
-    /** @private */
     showCrostini_: Boolean,
 
     /** @private */
@@ -136,11 +133,14 @@ Polymer({
           loadTimeData.getString('controlledSettingNoOwner'),
       controlledSettingParent:
           loadTimeData.getString('controlledSettingParent'),
+      controlledSettingChildRestriction:
+          loadTimeData.getString('controlledSettingChildRestriction'),
     };
 
     CrOncStrings = {
       OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
       OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
+      OncTypeMobile: loadTimeData.getString('OncTypeMobile'),
       OncTypeTether: loadTimeData.getString('OncTypeTether'),
       OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
       OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
@@ -164,8 +164,7 @@ Polymer({
 
     this.showApps_ = loadTimeData.getBoolean('showApps');
     this.showAndroidApps_ = loadTimeData.getBoolean('androidAppsVisible');
-    this.showKioskNextShell_ = loadTimeData.valueExists('showKioskNextShell') &&
-        loadTimeData.getBoolean('showKioskNextShell');
+
     this.showCrostini_ = loadTimeData.getBoolean('showCrostini');
     this.showPluginVm_ = loadTimeData.getBoolean('showPluginVm');
     this.havePlayStoreApp_ = loadTimeData.getBoolean('havePlayStoreApp');
@@ -194,6 +193,11 @@ Polymer({
     settings.setGlobalScrollTarget(this.$.container);
 
     const scrollToTop = top => new Promise(resolve => {
+      if (this.$.container.scrollTop === top) {
+        resolve();
+        return;
+      }
+
       this.$.container.scrollTo({top: top, behavior: 'auto'});
       const onScroll = () => {
         this.debounce('scrollEnd', () => {

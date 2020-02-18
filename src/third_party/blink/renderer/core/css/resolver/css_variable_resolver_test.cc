@@ -6,6 +6,7 @@
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
@@ -108,7 +109,8 @@ class CSSVariableResolverTest : public PageTestBase {
   }
 
   const CSSValue* CreatePxValue(double px) {
-    return CSSPrimitiveValue::Create(px, CSSPrimitiveValue::UnitType::kPixels);
+    return CSSNumericLiteralValue::Create(px,
+                                          CSSPrimitiveValue::UnitType::kPixels);
   }
 
   size_t MaxSubstitutionTokens() const {
@@ -274,8 +276,13 @@ TEST_F(CSSVariableResolverTest, CopiedVariablesRetainNeedsResolution) {
 }
 
 TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
+  // This test is not relevant when CSSCascade is enabled, as we won't store
+  // unresolved CSSVariableData on the ComputedStyle in that case.
+  if (RuntimeEnabledFeatures::CSSCascadeEnabled())
+    return;
+
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
-  StyleResolverState state(GetDocument(), nullptr /* element */,
+  StyleResolverState state(GetDocument(), *GetDocument().documentElement(),
                            nullptr /* pseudo_element */, initial, initial);
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
@@ -463,7 +470,7 @@ TEST_F(CSSVariableResolverTest, CSSWideKeywords) {
   using CSSUnsetValue = cssvalue::CSSUnsetValue;
 
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
-  StyleResolverState state(GetDocument(), nullptr /* element */,
+  StyleResolverState state(GetDocument(), *GetDocument().documentElement(),
                            nullptr /* pseudo_element */, initial, initial);
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();

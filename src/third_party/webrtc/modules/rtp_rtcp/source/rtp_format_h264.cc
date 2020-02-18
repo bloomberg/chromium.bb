@@ -11,6 +11,7 @@
 #include "modules/rtp_rtcp/source/rtp_format_h264.h"
 
 #include <string.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
@@ -75,8 +76,7 @@ RtpPacketizerH264::RtpPacketizerH264(
     PayloadSizeLimits limits,
     H264PacketizationMode packetization_mode,
     const RTPFragmentationHeader& fragmentation)
-    : limits_(limits),
-      num_packets_left_(0) {
+    : limits_(limits), num_packets_left_(0) {
   // Guard against uninitialized memory in packetization_mode.
   RTC_CHECK(packetization_mode == H264PacketizationMode::NonInterleaved ||
             packetization_mode == H264PacketizationMode::SingleNalUnit);
@@ -458,7 +458,7 @@ bool RtpDepacketizerH264::ProcessStapAOrSingleNalu(
 
         SpsVuiRewriter::ParseResult result = SpsVuiRewriter::ParseAndRewriteSps(
             &payload_data[start_offset], end_offset - start_offset, &sps,
-            output_buffer.get(), SpsVuiRewriter::Direction::kIncoming);
+            nullptr, output_buffer.get(), SpsVuiRewriter::Direction::kIncoming);
 
         if (result == SpsVuiRewriter::ParseResult::kVuiRewritten) {
           if (modified_buffer_) {

@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
 
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder_stream_receiver.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder_stream_sender.h"
@@ -14,7 +15,6 @@
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_encoder.h"
 
 namespace spdy {
 
@@ -25,8 +25,6 @@ class SpdyHeaderBlock;
 namespace quic {
 
 // QPACK encoder class.  Exactly one instance should exist per QUIC connection.
-// This class vends a new QpackProgressiveEncoder instance for each new header
-// list to be encoded.
 class QUIC_EXPORT_PRIVATE QpackEncoder
     : public QpackDecoderStreamReceiver::Delegate {
  public:
@@ -40,17 +38,13 @@ class QUIC_EXPORT_PRIVATE QpackEncoder
     virtual void OnDecoderStreamError(QuicStringPiece error_message) = 0;
   };
 
-  QpackEncoder(
-      DecoderStreamErrorDelegate* decoder_stream_error_delegate,
-      QpackEncoderStreamSender::Delegate* encoder_stream_sender_delegate);
+  QpackEncoder(DecoderStreamErrorDelegate* decoder_stream_error_delegate,
+               QpackStreamSenderDelegate* encoder_stream_sender_delegate);
   ~QpackEncoder() override;
 
-  // This factory method is called to start encoding a header list.
-  // |*header_list| must remain valid and must not change
-  // during the lifetime of the returned ProgressiveEncoder instance.
-  std::unique_ptr<spdy::HpackEncoder::ProgressiveEncoder> EncodeHeaderList(
-      QuicStreamId stream_id,
-      const spdy::SpdyHeaderBlock* header_list);
+  // Encode a header list.
+  std::string EncodeHeaderList(QuicStreamId stream_id,
+                               const spdy::SpdyHeaderBlock* header_list);
 
   // Decode data received on the decoder stream.
   void DecodeDecoderStreamData(QuicStringPiece data);
@@ -62,6 +56,17 @@ class QUIC_EXPORT_PRIVATE QpackEncoder
   void OnErrorDetected(QuicStringPiece error_message) override;
 
  private:
+  // TODO(bnc): Consider moving this class to QpackInstructionEncoder or
+  // qpack_constants, adding factory methods, one for each instruction, and
+  // changing QpackInstructionEncoder::Encoder() to take an
+  // InstructionWithValues struct instead of separate |instruction| and |values|
+  // arguments.
+  struct InstructionWithValues {
+    // |instruction| is not owned.
+    const QpackInstruction* instruction;
+    QpackInstructionEncoder::Values values;
+  };
+
   DecoderStreamErrorDelegate* const decoder_stream_error_delegate_;
   QpackDecoderStreamReceiver decoder_stream_receiver_;
   QpackEncoderStreamSender encoder_stream_sender_;

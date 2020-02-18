@@ -43,7 +43,7 @@ void MockClipboardHost::ReadAvailableTypes(
   if (!image_.isNull())
     types.push_back(base::UTF8ToUTF16("image/png"));
   for (auto& it : custom_data_) {
-    CHECK(!base::ContainsValue(types, it.first));
+    CHECK(!base::Contains(types, it.first));
     types.push_back(it.first);
   }
   std::move(callback).Run(types, false);

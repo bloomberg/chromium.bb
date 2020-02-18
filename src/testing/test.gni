@@ -96,11 +96,13 @@ template("test") {
         "android_manifest",
         "android_manifest_dep",
         "enable_multidex",
+        "min_sdk_version",
         "proguard_configs",
         "proguard_enabled",
+        "target_sdk_version",
         "use_default_launcher",
-        "write_asset_list",
         "use_native_activity",
+        "write_asset_list",
       ]
 
       # Adds the unwind tables from unstripped binary as an asset file in the
@@ -274,16 +276,17 @@ template("test") {
       ]
     }
 
+    fuchsia_package(_pkg_target) {
+      testonly = true
+      forward_variables_from(invoker, [ "manifest" ])
+      binary = ":$_exec_target"
+      package_name_override = _output_name
+    }
+
     executable(_exec_target) {
       forward_variables_from(invoker, "*")
       testonly = true
       output_name = _exec_target
-    }
-
-    fuchsia_package(_pkg_target) {
-      testonly = true
-      binary = ":$_exec_target"
-      package_name_override = _output_name
     }
   } else if (is_ios) {
     import("//build/config/ios/ios_sdk.gni")

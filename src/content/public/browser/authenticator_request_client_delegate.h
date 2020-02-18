@@ -48,25 +48,33 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
     // kStorageFull indicates that a resident credential could not be created
     // because the authenticator has insufficient storage.
     kStorageFull,
+    kUserConsentDenied,
   };
 
   AuthenticatorRequestClientDelegate();
   ~AuthenticatorRequestClientDelegate() override;
 
-  // Called when the request fails for the given |reason|. Embedders may return
-  // true if they want AuthenticatorImpl to hold off from resolving the WebAuthn
-  // request with an error, e.g. because they want the user to dismiss an error
-  // dialog first. In this case, embedders *must* eventually invoke the
-  // FidoRequestHandlerBase::CancelCallback in order to resolve the request.
-  // Returning false causes AuthenticatorImpl to resolve the request with the
-  // error right away.
-  virtual bool DoesBlockRequestOnFailure(InterestingFailureReason reason);
+  // Called when the request fails for the given |reason|.  |authenticator|
+  // points to the FidoAuthenticator used in the request that resulted in the
+  // error. It may be nullptr if |reason| is kTimeout.
+  //
+  // Embedders may return true if they want AuthenticatorImpl to hold off from
+  // resolving the WebAuthn request with an error, e.g. because they want the
+  // user to dismiss an error dialog first. In this case, embedders *must*
+  // eventually invoke the FidoRequestHandlerBase::CancelCallback in order to
+  // resolve the request. Returning false causes AuthenticatorImpl to resolve
+  // the request with the error right away.
+  virtual bool DoesBlockRequestOnFailure(
+      const ::device::FidoAuthenticator* authenticator,
+      InterestingFailureReason reason);
 
   // Supplies callbacks that the embedder can invoke to initiate certain
-  // actions, namely: initiate BLE pairing process, cancel WebAuthN request, and
-  // dispatch request to connected authenticators.
+  // actions, namely: cancel the request, start the request over, initiate BLE
+  // pairing process, cancel WebAuthN request, and dispatch request to connected
+  // authenticators.
   virtual void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
+      base::Closure start_over_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
       base::RepeatingClosure bluetooth_adapter_power_on_callback,
       device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback);
@@ -80,14 +88,16 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
       const std::string& relying_party_id);
 
   // Invokes |callback| with |true| if the given relying party ID is permitted
-  // to receive attestation certificates from a device. Otherwise invokes
-  // |callback| with |false|.
+  // to receive attestation certificates from the provided FidoAuthenticator.
+  // Otherwise invokes |callback| with |false|.
   //
   // Since these certificates may uniquely identify the authenticator, the
   // embedder may choose to show a permissions prompt to the user, and only
   // invoke |callback| afterwards. This may hairpin |callback|.
-  virtual void ShouldReturnAttestation(const std::string& relying_party_id,
-                                       base::OnceCallback<void(bool)> callback);
+  virtual void ShouldReturnAttestation(
+      const std::string& relying_party_id,
+      const device::FidoAuthenticator* authenticator,
+      base::OnceCallback<void(bool)> callback);
 
   // SupportsResidentKeys returns true if this implementation of
   // |AuthenticatorRequestClientDelegate| supports resident keys. If false then
@@ -123,10 +133,6 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // that testing is possible.
   virtual bool IsFocused();
 
-  // Returns whether IsUVPAA() should always return false, regardless of
-  // hardware support or enrollment status.
-  virtual bool ShouldDisablePlatformAuthenticators();
-
 #if defined(OS_MACOSX)
   using TouchIdAuthenticatorConfig = device::fido::mac::AuthenticatorConfig;
 
@@ -134,8 +140,16 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // authenticator. May return nullopt if the authenticator is not used or not
   // available.
   virtual base::Optional<TouchIdAuthenticatorConfig>
-  GetTouchIdAuthenticatorConfig() const;
-#endif
+  GetTouchIdAuthenticatorConfig();
+#endif  // defined(OS_MACOSX)
+
+  // Returns true if a user verifying platform authenticator is available and
+  // configured.
+  virtual bool IsUserVerifyingPlatformAuthenticatorAvailable();
+
+  // Returns a FidoDiscoveryFactory that has been configured for the current
+  // environment.
+  virtual device::FidoDiscoveryFactory* GetDiscoveryFactory();
 
   // Saves transport type the user used during WebAuthN API so that the
   // WebAuthN UI will default to the same transport type during next API call.
@@ -167,8 +181,10 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
   void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
                                   std::string new_authenticator_id) override;
-  void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
-                                           bool is_in_pairing_mode) override;
+  void FidoAuthenticatorPairingModeChanged(
+      base::StringPiece authenticator_id,
+      bool is_in_pairing_mode,
+      base::string16 display_name) override;
   bool SupportsPIN() const override;
   void CollectPIN(
       base::Optional<int> attempts,
@@ -176,6 +192,10 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   void FinishCollectPIN() override;
 
  private:
+#if !defined(OS_ANDROID)
+  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
+#endif  // !defined(OS_ANDROID)
+
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestClientDelegate);
 };
 

@@ -91,9 +91,7 @@ LayoutInline::LayoutInline(Element* element)
 
 LayoutInline::~LayoutInline() {
 #if DCHECK_IS_ON()
-  if (IsInLayoutNGInlineFormattingContext())
-    DCHECK(!first_paint_fragment_);
-  else
+  if (!IsInLayoutNGInlineFormattingContext())
     line_boxes_.AssertIsEmpty();
 #endif
 }
@@ -132,8 +130,11 @@ void LayoutInline::WillBeDestroyed() {
         for (InlineFlowBox* box : *LineBoxes())
           box->Remove();
       }
-    } else if (Parent()) {
-      Parent()->DirtyLinesFromChangedChild(this);
+    } else {
+      if (NGPaintFragment* first_inline_fragment = FirstInlineFragment())
+        first_inline_fragment->LayoutObjectWillBeDestroyed();
+      if (Parent())
+        Parent()->DirtyLinesFromChangedChild(this);
     }
   }
 
@@ -143,9 +144,7 @@ void LayoutInline::WillBeDestroyed() {
 }
 
 void LayoutInline::DeleteLineBoxes() {
-  if (IsInLayoutNGInlineFormattingContext())
-    SetFirstInlineFragment(nullptr);
-  else
+  if (!IsInLayoutNGInlineFormattingContext())
     MutableLineBoxes()->DeleteLineBoxes();
 }
 
@@ -276,7 +275,7 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
 
       LayoutBoxModelObject* next_cont = curr_cont->Continuation();
       curr_cont->SetContinuation(nullptr);
-      curr_cont->SetStyle(MutableStyle());
+      curr_cont->SetStyle(Style());
       curr_cont->SetContinuation(next_cont);
       end_of_continuation = curr_cont;
     }
@@ -554,7 +553,7 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
 LayoutInline* LayoutInline::Clone() const {
   DCHECK(!IsAnonymous());
   LayoutInline* clone_inline = new LayoutInline(GetNode());
-  clone_inline->SetStyle(MutableStyle());
+  clone_inline->SetStyle(Style());
   clone_inline->SetIsInsideFlowThread(IsInsideFlowThread());
   return clone_inline;
 }
@@ -1019,8 +1018,8 @@ LayoutUnit LayoutInline::MarginBottom() const {
 }
 
 bool LayoutInline::NodeAtPoint(HitTestResult& result,
-                               const HitTestLocation& location_in_container,
-                               const LayoutPoint& accumulated_offset,
+                               const HitTestLocation& hit_test_location,
+                               const PhysicalOffset& accumulated_offset,
                                HitTestAction hit_test_action) {
   if (ContainingNGBlockFlow()) {
     // TODO(crbug.com/965976): We should fix the root cause of the missed
@@ -1035,38 +1034,35 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
          NGPaintFragment::InlineFragmentsFor(this)) {
       // NGBoxFragmentPainter::NodeAtPoint() takes an offset that is accumulated
       // up to the fragment itself. Compute this offset.
-      LayoutPoint adjusted_location =
-          accumulated_offset +
-          fragment->InlineOffsetToContainerBox().ToLayoutPoint();
+      PhysicalOffset adjusted_location =
+          accumulated_offset + fragment->InlineOffsetToContainerBox();
       if (NGBoxFragmentPainter(*fragment).NodeAtPoint(
-              result, location_in_container, adjusted_location,
-              hit_test_action))
+              result, hit_test_location, adjusted_location, hit_test_action))
         return true;
     }
     return false;
   }
 
   return LineBoxes()->HitTest(LineLayoutBoxModel(this), result,
-                              location_in_container, accumulated_offset,
+                              hit_test_location, accumulated_offset,
                               hit_test_action);
 }
 
 bool LayoutInline::HitTestCulledInline(
     HitTestResult& result,
-    const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset,
+    const HitTestLocation& hit_test_location,
+    const PhysicalOffset& accumulated_offset,
     const NGPaintFragment* container_fragment) {
   DCHECK(container_fragment || !AlwaysCreateLineBoxes());
   if (!VisibleToHitTestRequest(result.GetHitTestRequest()))
     return false;
 
-  HitTestLocation adjusted_location(location_in_container,
-                                    -ToLayoutSize(accumulated_offset));
+  HitTestLocation adjusted_location(hit_test_location, -accumulated_offset);
   Region region_result;
   bool intersected = false;
   auto yield = [&adjusted_location, &region_result,
                 &intersected](const PhysicalRect& rect) {
-    if (adjusted_location.Intersects(rect.ToLayoutRect())) {
+    if (adjusted_location.Intersects(rect)) {
       intersected = true;
       region_result.Unite(EnclosingIntRect(rect));
     }
@@ -1106,7 +1102,7 @@ bool LayoutInline::HitTestCulledInline(
 }
 
 PositionWithAffinity LayoutInline::PositionForPoint(
-    const LayoutPoint& point) const {
+    const PhysicalOffset& point) const {
   // FIXME: Does not deal with relative positioned inlines (should it?)
 
   // If there are continuations, test them first because our containing block
@@ -1292,14 +1288,11 @@ PhysicalRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   if (IsInLayoutNGInlineFormattingContext()) {
     PhysicalRect result;
     NGPaintFragment::InlineFragmentsIncludingCulledFor(
-        *this,
-        [](NGPaintFragment* fragment, void* context) {
-          PhysicalRect* result = static_cast<PhysicalRect*>(context);
+        *this, [&result](const NGPaintFragment* fragment) {
           PhysicalRect child_rect = fragment->InkOverflow();
           child_rect.offset += fragment->InlineOffsetToContainerBox();
-          result->Unite(child_rect);
-        },
-        &result);
+          result.Unite(child_rect);
+        });
     return result;
   }
 
@@ -1432,7 +1425,8 @@ bool LayoutInline::MapToVisualRectInAncestorSpaceInternal(
     // get the right dirty rect. Since this is called from LayoutObject::
     // setStyle, the relative position flag on the LayoutObject has been
     // cleared, so use the one on the style().
-    transform_state.Move(Layer()->OffsetForInFlowPosition(), accumulation);
+    transform_state.Move(Layer()->GetLayoutObject().OffsetForInFlowPosition(),
+                         accumulation);
   }
 
   LayoutBox* container_box =
@@ -1481,12 +1475,12 @@ void LayoutInline::ChildBecameNonInline(LayoutObject* child) {
 }
 
 void LayoutInline::UpdateHitTestResult(HitTestResult& result,
-                                       const LayoutPoint& point) const {
+                                       const PhysicalOffset& point) const {
   if (result.InnerNode())
     return;
 
   Node* n = GetNode();
-  LayoutPoint local_point(point);
+  PhysicalOffset local_point = point;
   if (n) {
     if (IsInlineElementContinuation()) {
       // We're in the continuation of a split inline. Adjust our local point to
@@ -1496,7 +1490,8 @@ void LayoutInline::UpdateHitTestResult(HitTestResult& result,
 
       // Get our containing block.
       LayoutBox* block = ContainingBlock();
-      local_point.MoveBy(block->Location() - first_block->LocationOffset());
+      local_point += block->PhysicalLocation();
+      local_point -= first_block->PhysicalLocation();
     }
 
     result.SetNodeAndPosition(n, local_point);
@@ -1647,6 +1642,8 @@ void LayoutInline::AddOutlineRects(
     Vector<PhysicalRect>& rects,
     const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
+  DCHECK_GE(GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kAfterPerformLayout);
   CollectLineBoxRects([&rects, &additional_offset](const PhysicalRect& r) {
     auto rect = r;
     rect.Move(additional_offset);

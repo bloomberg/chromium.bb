@@ -21,7 +21,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "content/browser/background_sync/background_sync.pb.h"
-#include "content/browser/background_sync/background_sync_registration.h"
+#include "content/browser/background_sync/background_sync_proxy.h"
 #include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
@@ -30,6 +30,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/background_sync_parameters.h"
+#include "content/public/browser/background_sync_registration.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
@@ -136,18 +137,51 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Called from DevTools to toggle service worker "offline" status
   void EmulateServiceWorkerOffline(int64_t service_worker_id, bool is_offline);
 
-  // Scans the list of available events and fires those that are
-  // ready to fire. For those that can't yet be fired, wakeup alarms are set.
-  // Once all of this is done, invokes |callback|.
+  // Scans the list of available events and fires those of type |sync_type| that
+  // are ready to fire. For those that can't yet be fired, wakeup alarms are
+  // set. Once all of this is done, invokes |callback|.
   void FireReadyEvents(
+      blink::mojom::BackgroundSyncType sync_type,
+      bool reschedule,
       base::OnceClosure callback,
       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive = nullptr);
 
   // Gets the soonest delta after which the browser should be woken up to send
   // a Background Sync event. If set to max, the browser won't be woken up.
   // Only registrations of type |sync_type| are considered.
+  // Browsers can have a hard limit on how often to wake themselves up to
+  // process Periodic Background Sync registrations. We apply this limit if
+  // |last_browser_wakeup_time| is not null.
+  // This limit is only applied when calculating the soonest wake up delta to
+  // wake up Chrome. It's not applied when calculating the time after which a
+  // delayed task should be run to process Background Sync registrations.
   virtual base::TimeDelta GetSoonestWakeupDelta(
-      blink::mojom::BackgroundSyncType sync_type);
+      blink::mojom::BackgroundSyncType sync_type,
+      base::Time last_browser_wakeup_time);
+
+  // Browsers can have a hard limit on how often to wake themselves up to
+  // process Periodic Background Sync registrations. If the browser can't be
+  // woken up after |wakeup_delta| to do so, returns an updated delta after
+  // which it's safe to wake the browser. This limit doesn't apply to retries.
+  base::TimeDelta MaybeApplyBrowserWakeupCountLimit(
+      base::TimeDelta wakeup_delta,
+      base::Time last_browser_wakeup_time);
+
+  // Each origin has a max_frequency decided by the browser. This picks the
+  // correct starting point to add to |delay| to so that the resulting
+  // |delay_until| for the |registration| ensures the minimum gap between
+  // periodicsync events fired for the origin.
+  // |delay| is only updated if |sync_type| is periodic.
+  base::Time GetDelayUntilAfterApplyingMinGapForOrigin(
+      blink::mojom::BackgroundSyncType sync_type,
+      const url::Origin& origin,
+      base::TimeDelta delay) const;
+
+  base::Time GetSoonestPeriodicSyncEventTimeForOrigin(
+      const url::Origin& origin) const;
+
+  // Revive any pending periodic Background Sync registrations for |origin|.
+  void RevivePeriodicSyncRegistrations(url::Origin origin);
 
  protected:
   BackgroundSyncManager(
@@ -176,7 +210,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       const std::string& tag,
       scoped_refptr<ServiceWorkerVersion> active_version,
       ServiceWorkerVersion::StatusCallback callback);
-  virtual void ScheduleDelayedTask(base::OnceClosure callback,
+  virtual void ScheduleDelayedTask(blink::mojom::BackgroundSyncType sync_type,
                                    base::TimeDelta delay);
   virtual void HasMainFrameProviderHost(const url::Origin& origin,
                                         BoolCallback callback);
@@ -226,7 +260,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   void RemoveActiveRegistration(
       const blink::mojom::BackgroundSyncRegistrationInfo& registration_info);
 
-  void AddActiveRegistration(
+  void AddOrUpdateActiveRegistration(
       int64_t sw_registration_id,
       const url::Origin& origin,
       const BackgroundSyncRegistration& sync_registration);
@@ -279,8 +313,10 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   // DidResolveRegistration callbacks
   void DidResolveRegistrationImpl(
-      blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info);
+      blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
+      CacheStorageSchedulerId id);
   void ResolveRegistrationDidCreateKeepAlive(
+      CacheStorageSchedulerId id,
       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive);
 
   // GetRegistrations callbacks
@@ -299,11 +335,22 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Assumes that all registrations in the pending state are not currently ready
   // to fire. Therefore this should not be called directly and should only be
   // called by FireReadyEvents.
-  void RunInBackgroundIfNecessary();
+  void ScheduleDelayedProcessingOfRegistrations(
+      blink::mojom::BackgroundSyncType sync_type);
+
+  base::CancelableOnceClosure& get_delayed_task(
+      blink::mojom::BackgroundSyncType sync_type);
+
+  void ResetAndScheduleDelayedSyncTask(
+      blink::mojom::BackgroundSyncType sync_type,
+      base::TimeDelta soonest_wakeup_delta);
 
   void FireReadyEventsImpl(
+      blink::mojom::BackgroundSyncType sync_type,
+      bool reschedule,
       base::OnceClosure callback,
       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive);
+
   void FireReadyEventsDidFindRegistration(
       blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive,
@@ -311,7 +358,10 @@ class CONTENT_EXPORT BackgroundSyncManager
       base::OnceClosure event_completed_callback,
       blink::ServiceWorkerStatusCode service_worker_status,
       scoped_refptr<ServiceWorkerRegistration> service_worker_registration);
-  void FireReadyEventsAllEventsFiring(base::OnceClosure callback);
+  void FireReadyEventsAllEventsFiring(
+      blink::mojom::BackgroundSyncType sync_type,
+      bool reschedule,
+      base::OnceClosure callback);
 
   // Called when a sync event has completed.
   void EventComplete(
@@ -332,13 +382,16 @@ class CONTENT_EXPORT BackgroundSyncManager
       const url::Origin& origin,
       base::OnceClosure callback,
       base::TimeDelta delay);
-  void EventCompleteDidStore(int64_t service_worker_id,
+  void EventCompleteDidStore(blink::mojom::BackgroundSyncType sync_type,
+                             int64_t service_worker_id,
                              base::OnceClosure callback,
                              blink::ServiceWorkerStatusCode status_code);
 
   // Called when all sync events have completed.
-  static void OnAllSyncEventsCompleted(const base::TimeTicks& start_time,
-                                       int number_of_batched_sync_events);
+  static void OnAllSyncEventsCompleted(
+      blink::mojom::BackgroundSyncType sync_type,
+      const base::TimeTicks& start_time,
+      int number_of_batched_sync_events);
 
   // OnRegistrationDeleted callbacks
   void OnRegistrationDeletedImpl(int64_t sw_registration_id,
@@ -353,13 +406,30 @@ class CONTENT_EXPORT BackgroundSyncManager
   void SetMaxSyncAttemptsImpl(int max_sync_attempts,
                               base::OnceClosure callback);
 
-  // Whether an event should be logged for debuggability.
+  // Whether an event should be logged for debuggability, for |sync_type|.
   bool ShouldLogToDevTools(blink::mojom::BackgroundSyncType sync_type);
 
-  base::OnceClosure MakeEmptyCompletion();
+  void ReviveOriginImpl(url::Origin origin, base::OnceClosure callback);
+  void ReviveDidGetNextEventDelay(int64_t service_worker_registration_id,
+                                  BackgroundSyncRegistration registration,
+                                  base::OnceClosure done_closure,
+                                  base::TimeDelta delay);
+  void ReviveDidStoreRegistration(int64_t service_worker_registration_id,
+                                  base::OnceClosure done_closure,
+                                  blink::ServiceWorkerStatusCode status);
+  void DidReceiveDelaysForSuspendedRegistrations(base::OnceClosure callback);
+
+  base::OnceClosure MakeEmptyCompletion(CacheStorageSchedulerId id);
 
   blink::ServiceWorkerStatusCode CanEmulateSyncEvent(
       scoped_refptr<ServiceWorkerVersion> active_version);
+
+  // Read or update |num_firing_registrations_one_shot_| or
+  // |num_firing_registrations_periodic_| based on |sync_type|.
+  int GetNumFiringRegistrations(blink::mojom::BackgroundSyncType sync_type);
+  void UpdateNumFiringRegistrationsBy(
+      blink::mojom::BackgroundSyncType sync_type,
+      int to_add);
 
   // Map from service worker registration id to its Background Sync
   // registrations.
@@ -367,17 +437,20 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   CacheStorageScheduler op_scheduler_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-  scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context_;
+  BackgroundSyncProxy proxy_;
 
+  scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context_;
   std::unique_ptr<BackgroundSyncParameters> parameters_;
 
   // True if the manager is disabled and registrations should fail.
   bool disabled_;
 
   // The number of registrations currently in the firing state.
-  int num_firing_registrations_;
+  int num_firing_registrations_one_shot_;
+  int num_firing_registrations_periodic_;
 
-  base::CancelableOnceClosure delayed_sync_task_;
+  base::CancelableOnceClosure delayed_one_shot_sync_task_;
+  base::CancelableOnceClosure delayed_periodic_sync_task_;
 
   std::unique_ptr<BackgroundSyncNetworkObserver> network_observer_;
 
@@ -385,7 +458,7 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   std::map<int64_t, int> emulated_offline_sw_;
 
-  base::WeakPtrFactory<BackgroundSyncManager> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundSyncManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncManager);
 };

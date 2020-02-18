@@ -240,7 +240,6 @@ class FastInkView::LayerTreeFrameSinkHolder
     if (root_window_)
       ScheduleDelete();
   }
-  void DidNotNeedBeginFrame() override {}
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
               bool resourceless_software_draw,
@@ -492,7 +491,7 @@ void FastInkView::SubmitCompositorFrame() {
       /*background_color=*/SK_ColorTRANSPARENT, vertex_opacity,
       /*y_flipped=*/false,
       /*nearest_neighbor=*/false,
-      /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
+      /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
   texture_quad->set_resource_size_in_pixels(transferable_resource.size);
   frame.resource_list.push_back(transferable_resource);
 

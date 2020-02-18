@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/thread_annotations.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -29,10 +30,10 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/cache_test_util.h"
@@ -55,6 +56,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
 
@@ -327,7 +329,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
                               0 /* process_id */, 0 /* render_frame_id */,
                               net::LOAD_ONLY_FROM_CACHE) == net::OK;
     } else {
-      return base::ContainsValue(cache_test_util_->GetEntryKeys(), url.spec());
+      return base::Contains(cache_test_util_->GetEntryKeys(), url.spec());
     }
   }
 
@@ -454,8 +456,8 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   void SetUpMockCertVerifier(int32_t default_result) {
     DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     network::mojom::NetworkServiceTestPtr network_service_test;
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        mojom::kNetworkServiceName, &network_service_test);
+    GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                        &network_service_test);
 
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     network_service_test->MockCertVerifierSetDefaultResult(
@@ -622,9 +624,22 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, InsecureNavigation) {
   delegate()->VerifyAndClearExpectations();
 }
 
+class ClearSiteDataHandlerBrowserTestWithAutoupgradesDisabled
+    : public ClearSiteDataHandlerBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ClearSiteDataHandlerBrowserTest::SetUpCommandLine(command_line);
+    feature_list.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
 // Tests that the Clear-Site-Data header is honored for secure resource loads
 // and ignored for insecure ones.
-IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTestWithAutoupgradesDisabled,
                        SecureAndInsecureResourceLoad) {
   GURL insecure_image =
       embedded_test_server()->GetURL("example.com", "/image.png");

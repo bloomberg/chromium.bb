@@ -29,7 +29,7 @@ namespace sw
 {
 	struct Mipmap
 	{
-		const void *buffer[6];
+		const void *buffer;
 
 		short4 uHalf;
 		short4 vHalf;
@@ -65,7 +65,7 @@ namespace sw
 		TEXTURE_2D,
 		TEXTURE_3D,
 		TEXTURE_CUBE,
-		TEXTURE_1D_ARRAY,   // Treated as 2D texture with second coordinate 0.
+		TEXTURE_1D_ARRAY,   // Treated as 2D texture with second coordinate 0. TODO(b/134669567)
 		TEXTURE_2D_ARRAY,
 		TEXTURE_CUBE_ARRAY,
 
@@ -102,7 +102,8 @@ namespace sw
 		ADDRESSING_MIRRORONCE,
 		ADDRESSING_BORDER,     // Single color
 		ADDRESSING_SEAMLESS,   // Border of pixels
-		ADDRESSING_LAYER,
+		ADDRESSING_CUBEFACE,   // Cube face layer
+		ADDRESSING_LAYER,      // Array layer
 		ADDRESSING_TEXELFETCH,
 
 		ADDRESSING_LAST = ADDRESSING_TEXELFETCH
@@ -156,10 +157,6 @@ namespace sw
 		VkSamplerYcbcrModelConversion ycbcrModel;
 		bool studioSwing;    // Narrow range
 		bool swappedChroma;  // Cb/Cr components in reverse order
-
-		#if PERF_PROFILE
-		bool compressedFormat;
-		#endif
 	};
 }
 

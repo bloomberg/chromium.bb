@@ -322,9 +322,7 @@ DisplayManager::BeginEndNotifier::~BeginEndNotifier() {
 }
 
 DisplayManager::DisplayManager(std::unique_ptr<Screen> screen)
-    : screen_(std::move(screen)),
-      layout_store_(new DisplayLayoutStore),
-      weak_ptr_factory_(this) {
+    : screen_(std::move(screen)), layout_store_(new DisplayLayoutStore) {
 #if defined(OS_CHROMEOS)
   configure_displays_ = chromeos::IsRunningAsSystemCompositor();
   change_display_upon_host_resize_ = !configure_displays_;
@@ -1047,7 +1045,7 @@ void DisplayManager::UpdateDisplaysWith(
   std::vector<size_t> updated_indices;
   UpdateNonPrimaryDisplayBoundsForLayout(&new_displays, &updated_indices);
   for (size_t updated_index : updated_indices) {
-    if (!base::ContainsValue(added_display_indices, updated_index)) {
+    if (!base::Contains(added_display_indices, updated_index)) {
       uint32_t metrics = DisplayObserver::DISPLAY_METRIC_BOUNDS |
                          DisplayObserver::DISPLAY_METRIC_WORK_AREA;
       if (display_changes.find(updated_index) != display_changes.end())
@@ -2098,6 +2096,7 @@ Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
   new_display.set_touch_support(display_info.touch_support());
   new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());
   new_display.SetColorSpaceAndDepth(display_info.color_space());
+  new_display.set_display_frequency(display_info.refresh_rate());
 
   if (internal_display_has_accelerometer_ && Display::IsInternalDisplayId(id)) {
     new_display.set_accelerometer_support(

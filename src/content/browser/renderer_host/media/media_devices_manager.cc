@@ -300,7 +300,7 @@ class MediaDevicesManager::AudioServiceDeviceListener
     : public audio::mojom::DeviceListener {
  public:
   explicit AudioServiceDeviceListener(service_manager::Connector* connector)
-      : binding_(this), weak_factory_(this) {
+      : binding_(this) {
     TryConnectToService(connector);
   }
   ~AudioServiceDeviceListener() override = default;
@@ -367,7 +367,7 @@ class MediaDevicesManager::AudioServiceDeviceListener
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<AudioServiceDeviceListener> weak_factory_;
+  base::WeakPtrFactory<AudioServiceDeviceListener> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AudioServiceDeviceListener);
 };
@@ -387,8 +387,7 @@ MediaDevicesManager::MediaDevicesManager(
       cache_infos_(blink::NUM_MEDIA_DEVICE_TYPES),
       monitoring_started_(false),
       salt_and_origin_callback_(
-          base::BindRepeating(&GetMediaDeviceSaltAndOrigin)),
-      weak_factory_(this) {
+          base::BindRepeating(&GetMediaDeviceSaltAndOrigin)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(audio_system_);
   DCHECK(video_capture_manager_.get());
@@ -591,7 +590,7 @@ media::VideoCaptureFormats MediaDevicesManager::GetVideoInputFormats(
   if (try_in_use_first) {
     base::Optional<media::VideoCaptureFormat> format =
         video_capture_manager_->GetDeviceFormatInUse(
-            blink::MEDIA_DEVICE_VIDEO_CAPTURE, device_id);
+            blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, device_id);
     if (format.has_value()) {
       formats.push_back(format.value());
       ReplaceInvalidFrameRatesWithFallback(&formats);
@@ -792,7 +791,7 @@ void MediaDevicesManager::GotAudioInputCapabilities(
     size_t capabilities_index,
     const base::Optional<media::AudioParameters>& parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(base::ContainsKey(enumeration_states_, state_id));
+  DCHECK(base::Contains(enumeration_states_, state_id));
 
   auto& enumeration_state = enumeration_states_[state_id];
   DCHECK_GT(enumeration_state.num_pending_audio_input_capabilities, 0);
@@ -1058,6 +1057,7 @@ void MediaDevicesManager::MaybeStopRemovedInputDevices(
   DCHECK(type == blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT ||
          type == blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT);
 
+  std::vector<blink::WebMediaDeviceInfo> removed_audio_devices;
   for (const auto& old_device_info : current_snapshot_[type]) {
     auto it =
         std::find_if(new_snapshot.begin(), new_snapshot.end(),
@@ -1067,8 +1067,31 @@ void MediaDevicesManager::MaybeStopRemovedInputDevices(
 
     // If a device was removed, notify the MediaStreamManager to stop all
     // streams using that device.
-    if (it == new_snapshot.end())
+    if (it == new_snapshot.end()) {
       stop_removed_input_device_cb_.Run(type, old_device_info);
+
+      if (type == blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT)
+        removed_audio_devices.push_back(old_device_info);
+    }
+  }
+
+  // "default" and "communications" audio devices that have been removed,
+  // require an extra notification. In fact, such audio devices have associated
+  // virtual audio devices in the snapshot with the special "default" or
+  // "communications" IDs. The code below implements an heuristic, such that to
+  // identify if an audio device was default, it checks whether the old
+  // snapshot contained an audio device with the same group ID and device ID
+  // matching either "default" or "communications".
+  for (const auto& removed_audio_device : removed_audio_devices) {
+    for (const auto& old_device_info : current_snapshot_[type]) {
+      if (removed_audio_device.group_id == old_device_info.group_id &&
+          (old_device_info.device_id ==
+               media::AudioDeviceDescription::kDefaultDeviceId ||
+           old_device_info.device_id ==
+               media::AudioDeviceDescription::kCommunicationsDeviceId)) {
+        stop_removed_input_device_cb_.Run(type, old_device_info);
+      }
+    }
   }
 }
 

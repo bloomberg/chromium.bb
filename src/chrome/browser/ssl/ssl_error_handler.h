@@ -226,8 +226,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   // Calculates a mask encoded using flags in SSLErrorUI::SSLErrorOptionsMask.
   static int CalculateOptionsMask(int cert_error,
                                   bool hard_override_disabled,
-                                  bool should_ssl_errors_be_fatal,
-                                  bool expired_previous_decision);
+                                  bool should_ssl_errors_be_fatal);
 
   std::unique_ptr<Delegate> delegate_;
   content::WebContents* const web_contents_;
@@ -243,7 +242,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
 
   std::unique_ptr<CommonNameMismatchHandler> common_name_mismatch_handler_;
 
-  base::WeakPtrFactory<SSLErrorHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<SSLErrorHandler> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

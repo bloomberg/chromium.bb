@@ -10,12 +10,14 @@
 #include <memory>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/sequence_manager/sequence_manager.h"
+#include "base/task/sequence_manager/task_queue.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace base {
 
-class MessageLoop;
+class MessagePumpForUI;
 
 namespace android {
 
@@ -37,13 +39,12 @@ class BASE_EXPORT JavaHandlerThread {
       const base::android::ScopedJavaLocalRef<jobject>& obj);
   virtual ~JavaHandlerThread();
 
-  // Called from any thread.
-  base::MessageLoop* message_loop() const { return message_loop_.get(); }
-
   // Gets the TaskRunner associated with the message loop.
   // Called from any thread.
   scoped_refptr<SingleThreadTaskRunner> task_runner() const {
-    return message_loop_ ? message_loop_->task_runner() : nullptr;
+    return task_environment_
+               ? task_environment_->default_task_queue->task_runner()
+               : nullptr;
   }
 
   // Called from the parent thread.
@@ -59,7 +60,7 @@ class BASE_EXPORT JavaHandlerThread {
   void OnLooperStopped(JNIEnv* env, const JavaParamRef<jobject>& obj);
 
   // Called from this thread.
-  void StopMessageLoopForTesting();
+  void StopSequenceManagerForTesting();
   // Called from this thread.
   void JoinForTesting();
 
@@ -70,6 +71,19 @@ class BASE_EXPORT JavaHandlerThread {
   ScopedJavaLocalRef<jthrowable> GetUncaughtExceptionIfAny();
 
  protected:
+  // Struct exists so JavaHandlerThread destructor can intentionally leak in an
+  // abort scenario.
+  struct TaskEnvironment {
+    TaskEnvironment();
+    ~TaskEnvironment();
+
+    std::unique_ptr<sequence_manager::SequenceManager> sequence_manager;
+    scoped_refptr<sequence_manager::TaskQueue> default_task_queue;
+    MessagePumpForUI* pump = nullptr;
+  };
+
+  TaskEnvironment* task_environment() const { return task_environment_.get(); }
+
   // Semantically the same as base::Thread#Init(), but unlike base::Thread the
   // Android Looper will already be running. This Init() call will still run
   // before other tasks are posted to the thread.
@@ -79,7 +93,7 @@ class BASE_EXPORT JavaHandlerThread {
   // loop ends. The Android Looper will also have been quit by this point.
   virtual void CleanUp() {}
 
-  std::unique_ptr<base::MessageLoopForUI> message_loop_;
+  std::unique_ptr<TaskEnvironment> task_environment_;
 
  private:
   void StartMessageLoop();

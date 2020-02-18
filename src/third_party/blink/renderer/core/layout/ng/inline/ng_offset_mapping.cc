@@ -107,7 +107,8 @@ void NGOffsetMappingUnit::AssertValid() const {
   SECURITY_DCHECK(dom_start_ <= dom_end_) << dom_start_ << " vs. " << dom_end_;
   SECURITY_DCHECK(text_content_start_ <= text_content_end_)
       << text_content_start_ << " vs. " << text_content_end_;
-  if (layout_object_->IsText()) {
+  if (layout_object_->IsText() &&
+      !ToLayoutText(*layout_object_).IsWordBreak()) {
     const LayoutText& layout_text = ToLayoutText(*layout_object_);
     const unsigned text_start =
         AssociatedNode() ? layout_text.TextStartOffset() : 0;
@@ -333,7 +334,7 @@ NGOffsetMapping::UnitVector NGOffsetMapping::GetMappingUnitsForDOMRange(
                        });
 
   UnitVector result;
-  for (const auto& unit : NGMappingUnitRange({result_begin, result_end})) {
+  for (const auto& unit : base::make_span(result_begin, result_end)) {
     // If the unit isn't fully within the range, create a new unit that's
     // within the range.
     const unsigned clamped_start = std::max(unit.DOMStart(), start_offset);
@@ -350,17 +351,19 @@ NGOffsetMapping::UnitVector NGOffsetMapping::GetMappingUnitsForDOMRange(
   return result;
 }
 
-NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForNode(
+base::span<const NGOffsetMappingUnit> NGOffsetMapping::GetMappingUnitsForNode(
     const Node& node) const {
   const auto it = ranges_.find(&node);
   if (it == ranges_.end()) {
     NOTREACHED() << node;
-    return NGMappingUnitRange();
+    return {};
   }
-  return {units_.begin() + it->value.first, units_.begin() + it->value.second};
+  return base::make_span(units_.begin() + it->value.first,
+                         units_.begin() + it->value.second);
 }
 
-NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForLayoutObject(
+base::span<const NGOffsetMappingUnit>
+NGOffsetMapping::GetMappingUnitsForLayoutObject(
     const LayoutObject& layout_object) const {
   const auto* begin =
       std::find_if(units_.begin(), units_.end(),
@@ -374,12 +377,12 @@ NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForLayoutObject(
                      return unit.GetLayoutObject() != layout_object;
                    });
   DCHECK_LT(begin, end);
-  return {begin, end};
+  return base::make_span(begin, end);
 }
 
-NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForTextContentOffsetRange(
-    unsigned start,
-    unsigned end) const {
+base::span<const NGOffsetMappingUnit>
+NGOffsetMapping::GetMappingUnitsForTextContentOffsetRange(unsigned start,
+                                                          unsigned end) const {
   DCHECK_LE(start, end);
   if (units_.front().TextContentStart() >= end ||
       units_.back().TextContentEnd() <= start)
@@ -400,7 +403,7 @@ NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForTextContentOffsetRange(
                        [](unsigned offset, const NGOffsetMappingUnit& unit) {
                          return offset <= unit.TextContentStart();
                        });
-  return {result_begin, result_end};
+  return base::make_span(result_begin, result_end);
 }
 
 base::Optional<unsigned> NGOffsetMapping::GetTextContentOffset(

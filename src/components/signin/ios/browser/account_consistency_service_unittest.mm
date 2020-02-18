@@ -11,18 +11,21 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/values.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
-#include "components/signin/core/browser/list_accounts_test_utils.h"
-#include "components/signin/core/browser/test_signin_client.h"
+#include "components/signin/public/base/list_accounts_test_utils.h"
+#include "components/signin/public/base/test_signin_client.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/signin/public/identity_manager/test_identity_manager_observer.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "ios/web/public/navigation/web_state_policy_decider.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#include "ios/web/public/web_state/web_state_policy_decider.h"
-#import "services/identity/public/cpp/identity_manager.h"
-#import "services/identity/public/cpp/identity_test_environment.h"
-#include "services/identity/public/cpp/test_identity_manager_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -57,7 +60,7 @@ class FakeAccountConsistencyService : public AccountConsistencyService {
       PrefService* prefs,
       AccountReconcilor* account_reconcilor,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
-      identity::IdentityManager* identity_manager)
+      signin::IdentityManager* identity_manager)
       : AccountConsistencyService(browser_state,
                                   prefs,
                                   account_reconcilor,
@@ -132,7 +135,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
     web_view_load_expection_count_ = 0;
     signin_client_.reset(
         new TestSigninClient(&prefs_, &test_url_loader_factory_));
-    identity_test_env_.reset(new identity::IdentityTestEnvironment(
+    identity_test_env_.reset(new signin::IdentityTestEnvironment(
         /*test_url_loader_factory=*/nullptr, &prefs_,
         signin::AccountConsistencyMethod::kDisabled, signin_client_.get()));
     settings_map_ = new HostContentSettingsMap(
@@ -184,14 +187,14 @@ class AccountConsistencyServiceTest : public PlatformTest {
   }
 
   void SignIn() {
-    identity::MakePrimaryAccountAvailable(
-        identity_test_env_->identity_manager(), "user@gmail.com");
+    signin::MakePrimaryAccountAvailable(identity_test_env_->identity_manager(),
+                                        "user@gmail.com");
     EXPECT_EQ(0, web_view_load_expection_count_);
   }
 
   void SignOutAndSimulateGaiaCookieManagerServiceLogout() {
-    identity::ClearPrimaryAccount(identity_test_env_->identity_manager(),
-                                  identity::ClearPrimaryAccountPolicy::DEFAULT);
+    signin::ClearPrimaryAccount(identity_test_env_->identity_manager(),
+                                signin::ClearPrimaryAccountPolicy::DEFAULT);
     SimulateGaiaCookieManagerServiceLogout(true);
   }
 
@@ -238,7 +241,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
   TestWebState web_state_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 
-  std::unique_ptr<identity::IdentityTestEnvironment> identity_test_env_;
+  std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env_;
   // AccountConsistencyService being tested. Actually a
   // FakeAccountConsistencyService to be able to use a mock web view.
   std::unique_ptr<AccountConsistencyService> account_consistency_service_;

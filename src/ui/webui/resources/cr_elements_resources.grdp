@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- Polymer 1.0 Elements -->
+  <structure name="IDR_CR_ELEMENTS_ACTION_LINK_CSS_HTML"
+             file="cr_elements/action_link_css.html"
+             type="chrome_html"
+             compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_CR_ACTION_MENU_HTML"
              file="cr_elements/cr_action_menu/cr_action_menu.html"
              type="chrome_html"
              compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_CR_ACTION_MENU_JS"
              file="cr_elements/cr_action_menu/cr_action_menu.js"
+             type="chrome_html"
+             compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_BUTTON_HTML"
+             file="cr_elements/cr_button/cr_button.html"
+             type="chrome_html"
+             compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_BUTTON_JS"
+             file="cr_elements/cr_button/cr_button.js"
              type="chrome_html"
              compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_CR_CHECKBOX_HTML"
@@ -367,13 +379,17 @@
              file="cr_elements/hidden_style_css.html"
              type="chrome_html"
              compress="gzip" />
-  <structure name="IDR_CR_ELEMENTS_CR_CR_ICONS_CSS_HTML"
+  <structure name="IDR_CR_ELEMENTS_CR_ICONS_CSS_HTML"
              file="cr_elements/cr_icons_css.html"
              flattenhtml="true"
              type="chrome_html"
              compress="gzip" />
-  <structure name="IDR_CR_ELEMENTS_PAPER_BUTTON_STYLE_CSS_HTML"
-             file="cr_elements/paper_button_style_css.html"
+  <structure name="IDR_CR_ELEMENTS_CR_PAGE_HOST_STYLE_CSS_HTML"
+             file="cr_elements/cr_page_host_style_css.html"
+             type="chrome_html"
+             compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_MD_SELECT_CSS_HTML"
+             file="cr_elements/md_select_css.html"
              type="chrome_html"
              compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_SEARCH_HIGHLIGHT_STYLE_CSS_HTML"

@@ -4,6 +4,9 @@
 
 /**
  * @fileoverview 'add-smb-share-dialog' is a component for adding an SMB Share.
+ *
+ * This component can only be used once to add an SMB share, and must be
+ * destroyed when finished, and re-created when shown again.
  */
 
 cr.define('smb_shares', function() {
@@ -80,6 +83,12 @@ Polymer({
     },
 
     /** @private */
+    discoveryActive_: {
+      type: Boolean,
+      value: true,
+    },
+
+    /** @private */
     isActiveDirectory_: {
       type: Boolean,
       value: function() {
@@ -143,7 +152,8 @@ Polymer({
         .smbMount(
             this.mountUrl_, this.mountName_.trim(), this.username_,
             this.password_, this.authenticationMethod_,
-            this.shouldOpenFileManagerAfterMount)
+            this.shouldOpenFileManagerAfterMount,
+            this.$.saveCredentialsCheckbox.checked)
         .then(result => {
           this.onAddShare_(result);
         });
@@ -169,11 +179,14 @@ Polymer({
   },
 
   /**
-   * @param {!Array<string>} shares
+   * @param {!Array<string>} newSharesDiscovered New shares that have been
+   * discovered since the last call.
+   * @param {boolean} done Whether share discovery has finished.
    * @private
    */
-  onSharesFound_: function(shares) {
-    this.discoveredShares_ = this.discoveredShares_.concat(shares);
+  onSharesFound_: function(newSharesDiscovered, done) {
+    this.discoveredShares_ = this.discoveredShares_.concat(newSharesDiscovered);
+    this.discoveryActive_ = !done;
   },
 
   /**
@@ -298,7 +311,7 @@ Polymer({
    * @private
    */
   isShareUrlValid_: function() {
-    if (!this.mountUrl_) {
+    if (!this.mountUrl_ || this.shouldShowPathError_()) {
       return false;
     }
     return smb_shares.SMB_SHARE_URL_REGEX.test(this.mountUrl_);

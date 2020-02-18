@@ -58,11 +58,13 @@ def _LoadGclientFile(path):
     solutions exists.
   """
   global_scope = {}
-  # Similar to depot_tools, we use execfile() to evaluate the gclient file,
+  # Similar to depot_tools, we use exec() to evaluate the gclient file,
   # which is essentially a Python script, and then extract the solutions
   # defined by the gclient file from the 'solutions' variable in the global
   # scope.
-  execfile(path, global_scope)
+  with open(path) as fp:
+    # pylint: disable=exec-used
+    exec(compile(fp.read(), path, 'exec'), global_scope)
   return global_scope.get('solutions', [])
 
 
@@ -105,7 +107,7 @@ def BuildspecUsesDepsGit(rev):
   threshold = _DEPS_GIT_TRANSITION_MAP.get(milestone)
   if threshold:
     return rev <= threshold
-  return all(milestone < k for k in _DEPS_GIT_TRANSITION_MAP.iterkeys())
+  return all(milestone < k for k in _DEPS_GIT_TRANSITION_MAP.keys())
 
 
 def _GetGclientURLs(internal, rev):

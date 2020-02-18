@@ -33,6 +33,7 @@ class AutofillPopupRowView : public views::View {
   void SetSelected(bool is_selected);
 
   // views::View:
+  void OnThemeChanged() override;
   // Drags and presses on any row should be a no-op; subclasses instead rely on
   // entry/release events. Returns true to indicate that those events have been
   // processed (i.e., intentionally ignored).
@@ -70,9 +71,13 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
     return rows_;
   }
 
+  // views::View:
+  void OnThemeChanged() override;
+
   // AutofillPopupView:
   void Show() override;
   void Hide() override;
+  base::Optional<int32_t> GetAxUniqueId() override;
 
   // AutofillPopupBaseView:
   // TODO(crbug.com/831603): Remove these overrides and the corresponding
@@ -97,10 +102,12 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   void DoUpdateBoundsAndRedrawPopup() override;
 
   // Controller for this view.
-  AutofillPopupController* controller_;
+  AutofillPopupController* controller_ = nullptr;
   std::vector<AutofillPopupRowView*> rows_;
-  views::BoxLayout* layout_;
-  views::ScrollView* scroll_view_;
+  views::BoxLayout* layout_ = nullptr;
+  views::ScrollView* scroll_view_ = nullptr;
+  views::View* body_container_ = nullptr;
+  views::View* footer_container_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupViewNativeViews);
 };

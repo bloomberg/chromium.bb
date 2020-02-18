@@ -27,6 +27,10 @@
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "url/origin.h"
 
+namespace net {
+class NetworkIsolationKey;
+}
+
 namespace network {
 
 // Noop implementation of mojom::NetworkContext.  Useful to override to create
@@ -43,7 +47,11 @@ class TestNetworkContext : public mojom::NetworkContext {
   void GetCookieManager(mojom::CookieManagerRequest cookie_manager) override {}
   void GetRestrictedCookieManager(
       mojom::RestrictedCookieManagerRequest restricted_cookie_manager,
-      const url::Origin& origin) override {}
+      mojom::RestrictedCookieManagerRole role,
+      const url::Origin& origin,
+      bool is_service_worker,
+      int32_t process_id,
+      int32_t routing_id) override {}
   void ClearNetworkingHistorySince(
       base::Time start_time,
       ClearNetworkingHistorySinceCallback callback) override {}
@@ -129,11 +137,16 @@ class TestNetworkContext : public mojom::NetworkContext {
       CreateTCPBoundSocketCallback callback) override {}
   void CreateProxyResolvingSocketFactory(
       mojom::ProxyResolvingSocketFactoryRequest request) override {}
-  void CreateWebSocket(mojom::WebSocketRequest request,
+  void CreateWebSocket(const GURL& url,
+                       const std::vector<std::string>& requested_protocols,
+                       const GURL& site_for_cookies,
+                       std::vector<mojom::HttpHeaderPtr> additional_headers,
                        int32_t process_id,
                        int32_t render_frame_id,
                        const url::Origin& origin,
                        uint32_t options,
+                       mojom::WebSocketHandshakeClientPtr handshake_client,
+                       mojom::WebSocketClientPtr client,
                        mojom::AuthenticationHandlerPtr auth_handler,
                        mojom::TrustedHeaderClientPtr header_client) override {}
   void LookUpProxyForURL(
@@ -149,11 +162,8 @@ class TestNetworkContext : public mojom::NetworkContext {
   void NotifyExternalCacheHit(
       const GURL& url,
       const std::string& http_method,
-      const base::Optional<url::Origin>& top_frame_origin) override {}
-  void WriteCacheMetadata(const GURL& url,
-                          net::RequestPriority priority,
-                          base::Time expected_response_time,
-                          mojo_base::BigBuffer data) override {}
+      const base::Optional<url::Origin>& top_frame_origin,
+      const url::Origin& frame_origin) override {}
   void VerifyCertForSignedExchange(
       const scoped_refptr<net::X509Certificate>& certificate,
       const GURL& url,
@@ -184,10 +194,12 @@ class TestNetworkContext : public mojom::NetworkContext {
       const std::string& ocsp_response,
       const std::string& sct_list,
       VerifyCertificateForTestingCallback callback) override {}
-  void PreconnectSockets(uint32_t num_streams,
-                         const GURL& url,
-                         int32_t load_flags,
-                         bool privacy_mode_enabled) override {}
+  void PreconnectSockets(
+      uint32_t num_streams,
+      const GURL& url,
+      int32_t load_flags,
+      bool privacy_mode_enabled,
+      const net::NetworkIsolationKey& network_isolation_key) override {}
   void CreateP2PSocketManager(
       mojom::P2PTrustedSocketManagerClientPtr client,
       mojom::P2PTrustedSocketManagerRequest trusted_socket_manager,
@@ -210,6 +222,9 @@ class TestNetworkContext : public mojom::NetworkContext {
   void SaveHttpAuthCache(SaveHttpAuthCacheCallback callback) override {}
   void LoadHttpAuthCache(const base::UnguessableToken& cache_key,
                          LoadHttpAuthCacheCallback callback) override {}
+  void AddAuthCacheEntry(const net::AuthChallengeInfo& challenge,
+                         const net::AuthCredentials& credentials,
+                         AddAuthCacheEntryCallback callback) override {}
   void LookupBasicAuthCredentials(
       const GURL& url,
       LookupBasicAuthCredentialsCallback callback) override {}

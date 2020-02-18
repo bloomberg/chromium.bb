@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,12 +17,7 @@ class QuicSpdySession;
 // The receive control stream is peer initiated and is read only.
 class QUIC_EXPORT_PRIVATE QuicReceiveControlStream : public QuicStream {
  public:
-  // |session| can't be nullptr, and the ownership is not passed. The stream can
-  // only be accessed through the session.
-  explicit QuicReceiveControlStream(QuicStreamId id, QuicSpdySession* session);
-  // Construct control stream from pending stream, the |pending| object will no
-  // longer exist after the construction.
-  explicit QuicReceiveControlStream(PendingStream pending);
+  explicit QuicReceiveControlStream(PendingStream* pending);
   QuicReceiveControlStream(const QuicReceiveControlStream&) = delete;
   QuicReceiveControlStream& operator=(const QuicReceiveControlStream&) = delete;
   ~QuicReceiveControlStream() override;
@@ -34,21 +29,24 @@ class QUIC_EXPORT_PRIVATE QuicReceiveControlStream : public QuicStream {
   // Implementation of QuicStream.
   void OnDataAvailable() override;
 
- protected:
-  // Called from HttpDecoderVisitor.
-  void OnSettingsFrameStart(Http3FrameLengths frame_lengths);
-  void OnSettingsFrame(const SettingsFrame& settings);
+  void SetUnblocked() { sequencer()->SetUnblocked(); }
 
  private:
   class HttpDecoderVisitor;
 
-  HttpDecoder decoder_;
+  // Called from HttpDecoderVisitor.
+  bool OnSettingsFrameStart(Http3FrameLengths frame_lengths);
+  bool OnSettingsFrame(const SettingsFrame& settings);
+  bool OnPriorityFrameStart(Http3FrameLengths frame_lengths);
+  // TODO(renjietang): Decode Priority in HTTP/3 style.
+  bool OnPriorityFrame(const PriorityFrame& priority);
 
-  // Track the number of settings bytes received.
-  size_t received_settings_length_;
+  // False until a SETTINGS frame is received.
+  bool settings_frame_received_;
 
-  // HttpDecoder's visitor.
+  // HttpDecoder and its visitor.
   std::unique_ptr<HttpDecoderVisitor> http_decoder_visitor_;
+  HttpDecoder decoder_;
 };
 
 }  // namespace quic

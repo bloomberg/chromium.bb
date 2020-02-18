@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -16,8 +17,9 @@ here:
   http://git.chromium.org/gitweb/?p=chromite.git;a=blob;f=bin/chromite
 
 Since this script is _copied_, it should remain small and not use internal libs.
-
 """
+
+from __future__ import print_function
 
 import errno
 import os
@@ -35,9 +37,9 @@ def _FindChromite(path):
   # Depending on the checkout type (whether repo chromeos or gclient chrome)
   # Chromite lives in a different location.
   roots = (
-    ('.repo', 'chromite/.git'),
-    ('.gclient', 'src/third_party/chromite/.git'),
-    ('src/.gitmodules', 'src/third_party/chromite/.git'),
+      ('.repo', 'chromite/.git'),
+      ('.gclient', 'src/third_party/chromite/.git'),
+      ('src/.gitmodules', 'src/third_party/chromite/.git'),
   )
 
   while path != '/':
@@ -50,8 +52,7 @@ def _FindChromite(path):
 
 
 def _MissingErrorOut(target):
-  sys.stderr.write(
-"""ERROR: Couldn't find the chromite tool %s.
+  sys.stderr.write("""ERROR: Couldn't find the chromite tool %s.
 
 Please change to a directory inside your Chromium OS source tree
 and retry.  If you need to setup a Chromium OS source tree, see

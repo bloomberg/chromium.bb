@@ -42,12 +42,13 @@
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/ping_manager.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
+#include "components/safe_browsing/verdict_cache_manager.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_request_info.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 
@@ -135,14 +136,9 @@ void SafeBrowsingService::Initialize() {
   bool result = base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   DCHECK(result);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    url_request_context_getter_ = new SafeBrowsingURLRequestContextGetter(
-        g_browser_process->system_request_context(), user_data_dir);
-  }
-
   network_context_ =
       std::make_unique<safe_browsing::SafeBrowsingNetworkContext>(
-          url_request_context_getter_, user_data_dir,
+          nullptr, user_data_dir,
           base::BindRepeating(&SafeBrowsingService::CreateNetworkContextParams,
                               base::Unretained(this)));
 
@@ -185,41 +181,8 @@ void SafeBrowsingService::ShutDown() {
 
   services_delegate_->ShutdownServices();
 
-  // Make sure to destruct SafeBrowsingNetworkContext first before
-  // |url_request_context_getter_|, as they both post tasks to the IO thread. We
-  // want the underlying NetworkContext C++ class to be torn down first so that
-  // it destroys any URLLoaders in flight.
   network_context_->ServiceShuttingDown();
   proxy_config_monitor_.reset();
-
-  if (!url_request_context_getter_)
-    return;
-
-  // Since URLRequestContextGetters are refcounted, can't count on clearing
-  // |url_request_context_getter_| to delete it, so need to shut it down first,
-  // which will cancel any requests that are currently using it, and prevent
-  // new requests from using it as well.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO, NonNestable()},
-      base::BindOnce(&SafeBrowsingURLRequestContextGetter::ServiceShuttingDown,
-                     url_request_context_getter_));
-
-  // Release the URLRequestContextGetter after passing it to the IOThread.  It
-  // has to be released now rather than in the destructor because it can only
-  // be deleted on the IOThread, and the SafeBrowsingService outlives the IO
-  // thread.
-  url_request_context_getter_ = nullptr;
-}
-
-scoped_refptr<net::URLRequestContextGetter>
-SafeBrowsingService::url_request_context() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CHECK(false);
-  // TODO(jam): remove this after
-  // chrome_browsing_data_remover_delegate_unittest.cc is converted to use the
-  // Network Service APIs instead of URLRequestContext directly.
-  // https://crbug.com/721398
-  return nullptr;
 }
 
 network::mojom::NetworkContext* SafeBrowsingService::GetNetworkContext() {
@@ -238,21 +201,6 @@ SafeBrowsingService::GetURLLoaderFactory() {
 void SafeBrowsingService::FlushNetworkInterfaceForTesting() {
   if (network_context_)
     network_context_->FlushForTesting();
-}
-
-scoped_refptr<network::SharedURLLoaderFactory>
-SafeBrowsingService::GetURLLoaderFactoryOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!shared_url_loader_factory_on_io_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&SafeBrowsingService::CreateURLLoaderFactoryForIO, this,
-                       MakeRequest(&url_loader_factory_on_io_)));
-    shared_url_loader_factory_on_io_ =
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            url_loader_factory_on_io_.get());
-  }
-  return shared_url_loader_factory_on_io_;
 }
 
 const scoped_refptr<SafeBrowsingUIManager>& SafeBrowsingService::ui_manager()
@@ -303,19 +251,6 @@ void SafeBrowsingService::AddDownloadManager(
   services_delegate_->AddDownloadManager(download_manager);
 }
 
-void SafeBrowsingService::OnResourceRequest(const net::URLRequest* request) {
-#if defined(FULL_SAFE_BROWSING)
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  TRACE_EVENT1("loading", "SafeBrowsingService::OnResourceRequest", "url",
-               request->url().spec());
-
-  ResourceRequestInfo info = ResourceRequestDetector::GetRequestInfo(request);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&SafeBrowsingService::ProcessResourceRequest, this, info));
-#endif
-}
-
 SafeBrowsingUIManager* SafeBrowsingService::CreateUIManager() {
   return new SafeBrowsingUIManager(this);
 }
@@ -331,6 +266,13 @@ V4ProtocolConfig SafeBrowsingService::GetV4ProtocolConfig() const {
   return ::safe_browsing::GetV4ProtocolConfig(
       GetProtocolConfigClientName(),
       cmdline->HasSwitch(::switches::kDisableBackgroundNetworking));
+}
+
+VerdictCacheManager* SafeBrowsingService::GetVerdictCacheManager(
+    Profile* profile) const {
+  if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
+    return services_delegate_->GetVerdictCacheManager(profile);
+  return nullptr;
 }
 
 std::string SafeBrowsingService::GetProtocolConfigClientName() const {
@@ -362,7 +304,8 @@ void SafeBrowsingService::SetDatabaseManagerForTest(
   services_delegate_->SetDatabaseManagerForTest(database_manager);
 }
 
-void SafeBrowsingService::StartOnIOThread() {
+void SafeBrowsingService::StartOnIOThread(
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (enabled_)
     return;
@@ -370,8 +313,9 @@ void SafeBrowsingService::StartOnIOThread() {
 
   V4ProtocolConfig v4_config = GetV4ProtocolConfig();
 
-  services_delegate_->StartOnIOThread(GetURLLoaderFactoryOnIOThread(),
-                                      v4_config);
+  services_delegate_->StartOnIOThread(
+      network::SharedURLLoaderFactory::Create(std::move(url_loader_factory)),
+      v4_config);
 }
 
 void SafeBrowsingService::StopOnIOThread(bool shutdown) {
@@ -382,10 +326,6 @@ void SafeBrowsingService::StopOnIOThread(bool shutdown) {
   if (enabled_) {
     enabled_ = false;
   }
-
-  if (shared_url_loader_factory_on_io_)
-    shared_url_loader_factory_on_io_->Detach();
-  url_loader_factory_on_io_.reset();
 }
 
 void SafeBrowsingService::Start() {
@@ -398,7 +338,10 @@ void SafeBrowsingService::Start() {
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&SafeBrowsingService::StartOnIOThread, this));
+      base::BindOnce(
+          &SafeBrowsingService::StartOnIOThread, this,
+          std::make_unique<network::CrossThreadSharedURLLoaderFactoryInfo>(
+              GetURLLoaderFactory())));
 }
 
 void SafeBrowsingService::Stop(bool shutdown) {
@@ -416,6 +359,7 @@ void SafeBrowsingService::Observe(int type,
     case chrome::NOTIFICATION_PROFILE_CREATED: {
       DCHECK_CURRENTLY_ON(BrowserThread::UI);
       Profile* profile = content::Source<Profile>(source).ptr();
+      services_delegate_->CreateVerdictCacheManager(profile);
       services_delegate_->CreatePasswordProtectionService(profile);
       services_delegate_->CreateTelemetryService(profile);
       if (!profile->IsOffTheRecord())
@@ -425,6 +369,7 @@ void SafeBrowsingService::Observe(int type,
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       DCHECK_CURRENTLY_ON(BrowserThread::UI);
       Profile* profile = content::Source<Profile>(source).ptr();
+      services_delegate_->RemoveVerdictCacheManager(profile);
       services_delegate_->RemovePasswordProtectionService(profile);
       services_delegate_->RemoveTelemetryService();
       if (!profile->IsOffTheRecord())
@@ -513,12 +458,6 @@ void SafeBrowsingService::SendSerializedDownloadReport(
     ping_manager()->ReportThreatDetails(report);
 }
 
-void SafeBrowsingService::ProcessResourceRequest(
-    const ResourceRequestInfo& request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  services_delegate_->ProcessResourceRequest(&request);
-}
-
 void SafeBrowsingService::CreateTriggerManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   trigger_manager_ = std::make_unique<TriggerManager>(
@@ -526,22 +465,9 @@ void SafeBrowsingService::CreateTriggerManager() {
       g_browser_process->local_state());
 }
 
-void SafeBrowsingService::CreateURLLoaderFactoryForIO(
-    network::mojom::URLLoaderFactoryRequest request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (shutdown_)
-    return;  // We've been shut down already.
-  network::mojom::URLLoaderFactoryParamsPtr params =
-      network::mojom::URLLoaderFactoryParams::New();
-  params->process_id = network::mojom::kBrowserProcessId;
-  params->is_corb_enabled = false;
-  GetNetworkContext()->CreateURLLoaderFactory(std::move(request),
-                                              std::move(params));
-}
-
 network::mojom::NetworkContextParamsPtr
 SafeBrowsingService::CreateNetworkContextParams() {
-  auto params = g_browser_process->system_network_context_manager()
+  auto params = SystemNetworkContextManager::GetInstance()
                     ->CreateDefaultNetworkContextParams();
   if (!proxy_config_monitor_) {
     proxy_config_monitor_ =

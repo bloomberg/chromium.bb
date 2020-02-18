@@ -99,6 +99,13 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   // intrinsic size in LayoutNG.
   virtual void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
 
+  // This callback is invoked whenever the intrinsic size changed.
+  //
+  // The intrinsic size can change due to the network (from the default
+  // intrinsic size [see above] to the actual intrinsic size) or to some
+  // CSS properties like 'zoom' or 'image-orientation'.
+  virtual void IntrinsicSizeChanged();
+
  protected:
   void WillBeDestroyed() override;
 
@@ -132,14 +139,7 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
     intrinsic_size_ = intrinsic_size;
   }
 
-  // This callback is invoked whenever the intrinsic size changed.
-  //
-  // The intrinsic size can change due to the network (from the default
-  // intrinsic size [see above] to the actual intrinsic size) or to some
-  // CSS properties like 'zoom' or 'image-orientation'.
-  virtual void IntrinsicSizeChanged();
-
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectLayoutReplaced || LayoutBox::IsOfType(type);

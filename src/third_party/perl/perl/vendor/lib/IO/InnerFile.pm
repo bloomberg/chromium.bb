@@ -30,7 +30,7 @@ can open an IO::InnerFile on a range of the underlying file.
 use Symbol;
 
 # The package version, both in 1.23 style *and* usable by MakeMaker:
-$VERSION = "2.110";
+$VERSION = "2.111";
 
 #------------------------------
 
@@ -146,10 +146,12 @@ sub write    { shift->WRITE(@_) }
 sub print    { shift->PRINT(@_) }
 sub printf   { shift->PRINTF(@_) }
 sub flush    { "0 but true"; }
+sub fileno   { }
 sub binmode  { 1; }
 sub getc     { return GETC(tied(${$_[0]}) ); }
 sub read     { return READ(     tied(${$_[0]}), @_[1,2,3] ); }
 sub readline { return READLINE( tied(${$_[0]}) ); }
+
 sub getline  { return READLINE( tied(${$_[0]}) ); }
 sub close    { return CLOSE(tied(${$_[0]}) ); }
 
@@ -226,9 +228,26 @@ sub READ   {
     return $lg;
 }
 
-sub READLINE { 
+sub READLINE {
+    my ($self) = @_;
+    return $self->_readline_helper() unless wantarray;
+    my @arr;
+    while(defined(my $line = $self->_readline_helper())) {
+	    push(@arr, $line);
+    }
+    return @arr;
+}
+
+sub _readline_helper { 
     my ($self) = @_;
     return undef if ($self->{CRPOS} >= $self->{LG});
+
+    # Handle slurp mode (CPAN ticket #72710)
+    if (! defined($/)) {
+	    my $text;
+	    $self->READ($text, $self->{LG} - $self->{CRPOS});
+	    return $text;
+    }
 
     ### Save and seek...
     my $old_pos = $self->{FH}->tell;
@@ -275,7 +294,7 @@ Original version by Doru Petrescu (pdoru@kappa.ro).
 
 Documentation and by Eryq (eryq@zeegee.com).
 
-Currently maintained by David F. Skoll (dfs@roaringpenguin.com).
+Currently maintained by Dianne Skoll (dfs@roaringpenguin.com).
 
 =cut
 

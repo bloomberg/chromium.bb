@@ -6,7 +6,7 @@
 <head>
   <link rel="stylesheet" href="chrome-search://local-ntp/animations.css"></link>
   <link rel="stylesheet" href="chrome-search://local-ntp/local-ntp-common.css"></link>
-  <link rel="stylesheet" href="chrome-search://local-ntp/custom-backgrounds.css"></link>
+  <link rel="stylesheet" href="chrome-search://local-ntp/customize.css"></link>
   <link rel="stylesheet" href="chrome-search://local-ntp/doodles.css"></link>
   <link rel="stylesheet" href="chrome-search://local-ntp/local-ntp.css"></link>
   <link rel="stylesheet" href="chrome-search://local-ntp/theme.css"></link>
@@ -18,8 +18,8 @@
       integrity="$i18n{animationsIntegrity}"></script>
   <script src="chrome-search://local-ntp/config.js"
       integrity="$i18n{configDataIntegrity}"></script>
-  <script src="chrome-search://local-ntp/custom-backgrounds.js"
-      integrity="$i18n{localNtpCustomBgIntegrity}"></script>
+  <script src="chrome-search://local-ntp/customize.js"
+      integrity="$i18n{localNtpCustomizeIntegrity}"></script>
   <script src="chrome-search://local-ntp/doodles.js"
       integrity="$i18n{doodlesIntegrity}"></script>
   <script src="chrome-search://local-ntp/local-ntp.js"
@@ -32,6 +32,7 @@
 </head>
 <body>
   <div id="custom-bg"></div>
+  <div id="custom-bg-preview"></div>
   <!-- Container for the OneGoogleBar HTML. -->
   <div id="one-google"></div>
 
@@ -44,9 +45,11 @@
       <!-- A doodle, if any: its link and image. -->
       <div id="logo-doodle">
         <div id="logo-doodle-container">
-          <button id="logo-doodle-button">
-            <img id="logo-doodle-image" tabindex="-1"></img>
-          </button>
+          <div id="logo-doodle-wrapper">
+            <button id="logo-doodle-button">
+              <img id="logo-doodle-image" tabindex="-1"></img>
+            </button>
+          </div>
         </div>
         <iframe id="logo-doodle-iframe" scrolling="no"></iframe>
         <!-- A spinner, prompting the doodle. Visible on NTPs with customized
@@ -71,14 +74,11 @@
       </div>
     </div>
 
-    <!-- TODO(crbug/944624): Remove wrapper after experiment is complete. -->
-    <div id="user-content-wrapper">
-      <div id="user-content">
-        <!-- Search suggestions will be inserted here. -->
-        <div id="most-visited">
-          <!-- The container for the tiles. The MV iframe goes in here. -->
-          <div id="mv-tiles"></div>
-        </div>
+    <div id="user-content">
+      <!-- Search suggestions will be inserted here. -->
+      <div id="most-visited">
+        <!-- The container for the tiles. The MV iframe goes in here. -->
+        <div id="mv-tiles"></div>
       </div>
     </div>
 
@@ -106,7 +106,7 @@
 
     <div id="edit-bg" tabindex="0" role="button" hidden>
       <div id="edit-bg-icon"></div>
-      <span id="edit-bg-text"></span>
+      <span id="edit-bg-text">$i18n{customizeButton}</span>
     </div>
 
     <a id="custom-bg-attr"></a>
@@ -170,70 +170,121 @@
   </dialog>
 
   <dialog id="customization-menu" class="customize-dialog">
-    <div id="menu-header">
-      <div id="menu-back-wrapper">
-        <div id="menu-back-circle" tabindex="0">
-          <div id="menu-back"></div>
-        </div>
-      </div>
-      <div id="menu-title-wrapper">
-        <div id="menu-title">$i18n{customizeMenuTitle}</div>
-      </div>
-    </div>
-    <div id="menu-nav-panel">
-      <div id="backgrounds-button" class="menu-option selected" tabindex="0">
+    <div id="menu-nav-panel" role="tablist" aria-label="$i18n{customizeMenu}">
+      <button id="backgrounds-button" class="menu-option" tabindex="0"
+          role="tab" aria-controls="backgrounds-menu backgrounds-image-menu"
+          aria-selected="true" aria-labelledby="backgrounds-menu-option"
+          title="$i18n{backgroundsOption}">
         <div class="menu-option-icon-wrapper">
           <div id="backgrounds-icon" class="menu-option-icon"></div>
         </div>
-        <div class="menu-option-label">$i18n{backgroundsOption}</div>
-      </div>
-      <div id="shortcuts-button" class="menu-option" tabindex="0">
+        <div id="backgrounds-menu-option" class="menu-option-label">
+          $i18n{backgroundsOption}
+        </div>
+      </button>
+      <button id="shortcuts-button" class="menu-option" tabindex="0" role="tab"
+          aria-controls="shortcuts-menu" aria-selected="false"
+          aria-labelledby="shortcuts-menu-option"
+          title="$i18n{shortcutsOption}">
         <div class="menu-option-icon-wrapper">
           <div id="shortcuts-icon" class="menu-option-icon"></div>
         </div>
-        <div class="menu-option-label">$i18n{shortcutsOption}</div>
-      </div>
-      <div id="colors-button" class="menu-option" tabindex="0">
+        <div id="shortcuts-menu-option" class="menu-option-label">
+          $i18n{shortcutsOption}
+        </div>
+      </button>
+      <button id="colors-button" class="menu-option" tabindex="0" role="tab"
+          aria-controls="colors-menu" aria-selected="false"
+          aria-labelledby="colors-menu-option" title="$i18n{colorsOption}">
         <div class="menu-option-icon-wrapper">
           <div id="colors-icon" class="menu-option-icon"></div>
         </div>
-        <div class="menu-option-label">$i18n{colorsOption}</div>
-      </div>
+        <div id="colors-menu-option" class="menu-option-label">
+          $i18n{colorsOption}
+        </div>
+      </button>
     </div>
     <div id="menu-contents">
-      <div id="backgrounds-menu" class="menu-panel">
+      <div id="menu-header">
+        <div id="menu-back-circle" tabindex="0" role="button"
+            aria-label="$i18n{backLabel}" title="$i18n{backLabel}">
+          <div id="menu-back"></div>
+        </div>
+        <div id="menu-title">$i18n{customizeMenu}</div>
+        <div id="refresh-daily-wrapper">
+          <div id="refresh-toggle-wrapper" title="$i18n{refreshDaily}">
+            <label class="switch">
+              <input id="refresh-daily-toggle" type="checkbox"
+                  aria-labelledby="refresh-text"></input>
+              <span class="toggle">
+                <div class="knob"></div>
+                <div class="highlight"></div>
+              </span>
+            </label>
+          </div>
+          <div id="refresh-text">$i18n{refreshDaily}</div>
+        </div>
+      </div>
+      <div id="backgrounds-menu" class="menu-panel" tabindex="0"
+          role="tabpanel" aria-label="$i18n{backgroundsOption}">
         <div id="backgrounds-upload" class="bg-sel-tile-bg">
-          <div id="backgrounds-upload-icon"></div>
-          <div id="backgrounds-upload-text">$i18n{uploadImage}</div>
+          <div id="backgrounds-upload-icon" class="bg-sel-tile" tabindex="-1"
+              role="button" aria-label="$i18n{uploadImage}"
+              title="$i18n{uploadImage}" aria-pressed="false">
+            <div id="backgrounds-upload-arrow"></div>
+            <div id="backgrounds-upload-text">$i18n{uploadImage}</div>
+          </div>
         </div>
         <div id="backgrounds-default" class="bg-sel-tile-bg">
-          <div id="backgrounds-default-icon" class="bg-sel-tile">
-            <div id="backgrounds-default-icon-header"></div>
-            <div id="backgrounds-default-icon-shortcuts"></div>
+          <div id="backgrounds-default-icon" class="bg-sel-tile" tabindex="-1"
+              role="button" aria-label="$i18n{noBackground}"
+              title="$i18n{noBackground}" aria-pressed="false">
+            <div class="mini-page">
+              <div class="mini-header-colorful"></div>
+              <div class="mini-shortcuts"></div>
+            </div>
           </div>
           <div class="bg-sel-tile-title">$i18n{noBackground}</div>
         </div>
       </div>
-      <div id="backgrounds-image-menu" class="menu-panel"></div>
-      <div id="shortcuts-menu" class="menu-panel">
+      <div id="backgrounds-image-menu" class="menu-panel" tabindex="0"
+          role="tabpanel" aria-label="$i18n{backgroundsOption}"></div>
+      <div id="shortcuts-menu" class="menu-panel" tabindex="0" role="tabpanel"
+          aria-label="$i18n{shortcutsOption}">
         <div id="sh-options">
-          <div id="sh-option-cl" class="sh-option">
-            <div class="sh-option-image">
+          <div class="sh-option">
+            <div id="sh-option-cl" class="sh-option-image" tabindex="-1"
+                role="button" aria-pressed="false"
+                aria-labelledby="sh-option-cl-title" title="$i18n{myShortcuts}">
               <div class="sh-option-icon"></div>
-              <div class="sh-option-mini"></div>
-              <div class="sh-option-select"></div>
+              <div class="sh-option-mini">
+                <div class="mini-page">
+                  <div class="mini-header"></div>
+                  <div class="mini-shortcuts"></div>
+                </div>
+              </div>
             </div>
-            <div class="sh-title">$i18n{myShortcuts}</div>
-              $i18n{shortcutsCurated}
+            <div id="sh-option-cl-title" class="sh-option-title">
+              $i18n{myShortcuts}
+            </div>
+            $i18n{shortcutsCurated}
           </div>
-          <div id="sh-option-mv" class="sh-option">
-            <div class="sh-option-image">
+          <div class="sh-option">
+            <div id="sh-option-mv" class="sh-option-image" tabindex="-1"
+                role="button" aria-pressed="false"
+                aria-labelledby="sh-option-mv-title" title="$i18n{mostVisited}">
               <div class="sh-option-icon"></div>
-              <div class="sh-option-mini"></div>
-              <div class="sh-option-select"></div>
+              <div class="sh-option-mini">
+                <div class="mini-page">
+                  <div class="mini-header"></div>
+                  <div class="mini-shortcuts"></div>
+                </div>
+              </div>
             </div>
-            <div class="sh-title">$i18n{mostVisited}</div>
-              $i18n{shortcutsSuggested}
+            <div id="sh-option-mv-title" class="sh-option-title">
+              $i18n{mostVisited}
+            </div>
+            $i18n{shortcutsSuggested}
           </div>
         </div>
         <div id="sh-hide">
@@ -242,18 +293,58 @@
             <div id="sh-hide-title">$i18n{hideShortcuts}</div>
             $i18n{hideShortcutsDesc}
           </div>
-          <div id="sh-hide-toggle">
-            <input type="checkbox"></input>
+          <div id="sh-hide-toggle-wrapper" title="$i18n{hideShortcuts}">
+            <label class="switch">
+              <input id="sh-hide-toggle" type="checkbox" tabindex="-1"
+                  aria-labelledby="sh-hide-title"></input>
+              <span class="toggle">
+                <div class="knob"></div>
+                <div class="highlight"></div>
+              </span>
+            </label>
           </div>
         </div>
       </div>
-      <div id="colors-menu" class="menu-panel"></div>
+      <div id="colors-menu" class="menu-panel" tabindex="0" role="tabpanel"
+          aria-label="$i18n{colorsOption}">
+        <div id="colors-theme" tabindex="0">
+            <div id="colors-theme-icon"></div>
+            <div>
+              <div id="colors-theme-name"></div>
+              $i18n{installedThemeDesc}
+            </div>
+            <a id="colors-theme-link" target="_blank">
+              <div id="colors-theme-link-icon" > </div>
+            </a>
+            <button id="colors-theme-uninstall" class="paper secondary">
+              $i18n{uninstallButton}
+            </button>
+        </div>
+        <div id="color-picker-container" class="bg-sel-tile-bg">
+          <div id="color-picker-tile" class="bg-sel-tile" tabindex="-1"
+            aria-label="$i18n{colorPickerLabel}"
+            title="$i18n{colorPickerLabel}"
+            role="button" aria-pressed="false">
+            <div id="left-semicircle"></div>
+            <div id="color-picker-icon"></div>
+            <input id="color-picker" type="color" style="display:none">
+            </input>
+          </div>
+        </div>
+        <div id="colors-default" class="bg-sel-tile-bg">
+          <div id="colors-default-icon" class="bg-sel-tile" tabindex="-1"
+            aria-label="$i18n{defaultThemeLabel}"
+            title="$i18n{defaultThemeLabel}"
+            role="button" aria-pressed="false"></div>
+        </div>
+      </div>
     </div>
     <div id="menu-footer">
-      <button id="menu-cancel" class="bg-sel-footer-button paper secondary
-                               ripple">$i18n{cancelButton}</button>
+      <button id="menu-cancel"
+          class="bg-sel-footer-button paper secondary ripple"
+          title="$i18n{cancelButton}">$i18n{cancelButton}</button>
       <button id="menu-done" class="bg-sel-footer-button paper primary ripple"
-                             disabled>$i18n{doneButton}</button>
+          title="$i18n{doneButton}">$i18n{doneButton}</button>
     </div>
   </dialog>
 

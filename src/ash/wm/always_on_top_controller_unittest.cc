@@ -4,9 +4,9 @@
 
 #include "ash/wm/always_on_top_controller.h"
 
-#include "ash/keyboard/ash_keyboard_controller.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -45,10 +45,9 @@ class TestLayoutManager : public WorkspaceLayoutManager {
 
   ~TestLayoutManager() override = default;
 
-  void OnKeyboardWorkspaceDisplacingBoundsChanged(
-      const gfx::Rect& bounds) override {
+  void OnKeyboardDisplacingBoundsChanged(const gfx::Rect& bounds) override {
     keyboard_bounds_changed_ = true;
-    WorkspaceLayoutManager::OnKeyboardWorkspaceDisplacingBoundsChanged(bounds);
+    WorkspaceLayoutManager::OnKeyboardDisplacingBoundsChanged(bounds);
   }
 
   bool keyboard_bounds_changed() const { return keyboard_bounds_changed_; }
@@ -72,7 +71,7 @@ TEST_F(AlwaysOnTopControllerTest, NotifyKeyboardBoundsChanging) {
   always_on_top_controller->SetLayoutManagerForTest(base::WrapUnique(manager));
 
   // Show the keyboard.
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(false /* locked */);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
@@ -81,7 +80,7 @@ TEST_F(AlwaysOnTopControllerTest, NotifyKeyboardBoundsChanging) {
 }
 
 TEST_F(AlwaysOnTopControllerTest,
-       AlwaysOnTopContainerReturnedForAlwaysOnTopWindow) {
+       AlwaysOnTopContainerReturnedForFloatingWindow) {
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   AlwaysOnTopController* always_on_top_controller =
       controller->always_on_top_controller();
@@ -89,7 +88,8 @@ TEST_F(AlwaysOnTopControllerTest,
   const gfx::Rect bounds(100, 100, 200, 200);
   std::unique_ptr<aura::Window> always_on_top_window(
       CreateTestWindowInShellWithBounds(bounds));
-  always_on_top_window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  always_on_top_window->SetProperty(aura::client::kZOrderingKey,
+                                    ui::ZOrderLevel::kFloatingWindow);
 
   aura::Window* container =
       always_on_top_controller->GetContainer(always_on_top_window.get());
@@ -97,7 +97,7 @@ TEST_F(AlwaysOnTopControllerTest,
   EXPECT_EQ(kShellWindowId_AlwaysOnTopContainer, container->id());
 }
 
-TEST_F(AlwaysOnTopControllerTest, PipContainerReturnedForAlwaysOnTopPipWindow) {
+TEST_F(AlwaysOnTopControllerTest, PipContainerReturnedForFloatingPipWindow) {
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   AlwaysOnTopController* always_on_top_controller =
       controller->always_on_top_controller();
@@ -106,10 +106,11 @@ TEST_F(AlwaysOnTopControllerTest, PipContainerReturnedForAlwaysOnTopPipWindow) {
   std::unique_ptr<aura::Window> pip_window(
       CreateTestWindowInShellWithBounds(bounds));
 
-  wm::WindowState* window_state = wm::GetWindowState(pip_window.get());
-  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  WindowState* window_state = WindowState::Get(pip_window.get());
+  const WMEvent enter_pip(WM_EVENT_PIP);
   window_state->OnWMEvent(&enter_pip);
-  pip_window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  pip_window->SetProperty(aura::client::kZOrderingKey,
+                          ui::ZOrderLevel::kFloatingWindow);
   EXPECT_TRUE(window_state->IsPip());
 
   aura::Window* container =
@@ -135,22 +136,23 @@ TEST_F(AlwaysOnTopControllerTest,
 }
 
 TEST_F(AlwaysOnTopControllerTest,
-       AlwaysOnTopWindowMovedBetweenContainersWhenPipStateChanges) {
+       FloatingWindowMovedBetweenContainersWhenPipStateChanges) {
   const gfx::Rect bounds(100, 100, 200, 200);
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(bounds));
-  window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  window->SetProperty(aura::client::kZOrderingKey,
+                      ui::ZOrderLevel::kFloatingWindow);
 
   EXPECT_EQ(kShellWindowId_AlwaysOnTopContainer, window->parent()->id());
 
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
-  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  WindowState* window_state = WindowState::Get(window.get());
+  const WMEvent enter_pip(WM_EVENT_PIP);
   window_state->OnWMEvent(&enter_pip);
   EXPECT_TRUE(window_state->IsPip());
 
   EXPECT_EQ(kShellWindowId_PipContainer, window->parent()->id());
 
-  const wm::WMEvent enter_normal(wm::WM_EVENT_NORMAL);
+  const WMEvent enter_normal(WM_EVENT_NORMAL);
   window_state->OnWMEvent(&enter_normal);
   EXPECT_FALSE(window_state->IsPip());
 

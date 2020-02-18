@@ -36,7 +36,8 @@ const CrExtensionsInteractiveUITest = class extends PolymerInteractiveUITest {
 
 
 /** Test fixture for Sync Page. */
-CrExtensionsOptionsPageTest = class extends CrExtensionsInteractiveUITest {
+// eslint-disable-next-line no-var
+var CrExtensionsOptionsPageTest = class extends CrExtensionsInteractiveUITest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/?id=ibbpngabdmdpednkhonkkobdeccpkiff';

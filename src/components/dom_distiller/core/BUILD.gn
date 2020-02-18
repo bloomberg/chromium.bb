@@ -45,8 +45,6 @@ static_library("core") {
     "page_features.h",
     "pref_names.cc",
     "pref_names.h",
-    "resource_utils.cc",
-    "resource_utils.h",
     "task_tracker.cc",
     "task_tracker.h",
     "url_constants.cc",
@@ -75,7 +73,6 @@ static_library("core") {
     "//services/network/public/cpp:cpp",
     "//skia",
     "//third_party/re2",
-    "//third_party/zlib/google:compression_utils",
     "//ui/base",
     "//url",
   ]
@@ -173,7 +170,6 @@ if (is_android) {
       "android/java/src/org/chromium/components/dom_distiller/core/DomDistillerService.java",
       "android/java/src/org/chromium/components/dom_distiller/core/DomDistillerUrlUtils.java",
     ]
-    jni_package = "dom_distiller_core"
   }
 
   java_cpp_enum("distiller_type_java") {

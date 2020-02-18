@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -75,8 +75,11 @@ void WhitespaceAttacher::DidVisitText(Text* text) {
   if (LayoutObject* text_layout_object = text->GetLayoutObject()) {
     ReattachWhitespaceSiblings(text_layout_object);
   } else {
-    if (last_text_node_->ContainsOnlyWhitespaceOrEmpty())
-      last_text_node_->ReattachLayoutTreeIfNeeded(Node::AttachContext());
+    if (last_text_node_->ContainsOnlyWhitespaceOrEmpty()) {
+      Node::AttachContext context;
+      context.parent = LayoutTreeBuilderTraversal::ParentLayoutObject(*text);
+      last_text_node_->ReattachLayoutTreeIfNeeded(context);
+    }
   }
   SetLastTextNode(text);
   if (reattach_all_whitespace_nodes_ && text->ContainsOnlyWhitespaceOrEmpty())
@@ -114,6 +117,8 @@ void WhitespaceAttacher::ReattachWhitespaceSiblings(
   Node::AttachContext context;
   context.previous_in_flow = previous_in_flow;
   context.use_previous_in_flow = true;
+  context.parent =
+      LayoutTreeBuilderTraversal::ParentLayoutObject(*last_text_node_);
 
   for (Node* sibling = last_text_node_; sibling;
        sibling = LayoutTreeBuilderTraversal::NextLayoutSibling(*sibling)) {
@@ -134,6 +139,8 @@ void WhitespaceAttacher::ReattachWhitespaceSiblings(
                !sibling_layout_object->IsFloatingOrOutOfFlowPositioned()) {
       break;
     }
+    context.next_sibling_valid = false;
+    context.next_sibling = nullptr;
   }
   SetLastTextNode(nullptr);
 }
@@ -165,8 +172,8 @@ void WhitespaceAttacher::UpdateLastTextNodeFromDisplayContents() {
     return;
   }
 
-  DCHECK(!sibling->IsElementNode() ||
-         !ToElement(sibling)->HasDisplayContentsStyle());
+  auto* sibling_element = DynamicTo<Element>(sibling);
+  DCHECK(!sibling_element || !sibling_element->HasDisplayContentsStyle());
 
   for (; sibling && sibling != last_text_node_;
        sibling = LayoutTreeBuilderTraversal::NextLayoutSibling(*sibling)) {

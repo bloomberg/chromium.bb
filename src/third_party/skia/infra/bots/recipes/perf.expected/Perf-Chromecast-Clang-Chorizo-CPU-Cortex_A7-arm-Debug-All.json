@@ -155,7 +155,11 @@
       "[START_DIR]/tmp/SKP_VERSION"
     ],
     "infra_step": true,
-    "name": "write SKP_VERSION"
+    "name": "write SKP_VERSION",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@SKP_VERSION@42@@@",
+      "@@@STEP_LOG_END@SKP_VERSION@@@"
+    ]
   },
   {
     "cmd": [
@@ -327,7 +331,9 @@
       "~desk_carsvg.skp",
       "~^path_text_clipped",
       "~shapes_rrect_inner_rrect_50_500x500",
-      "~compositing_images"
+      "~compositing_images",
+      "--loops",
+      "1"
     ],
     "env": {
       "CHROME_HEADLESS": "1",
@@ -438,7 +444,6 @@
     "name": "kill adb server"
   },
   {
-    "jsonResult": null,
     "name": "$result"
   }
 ]

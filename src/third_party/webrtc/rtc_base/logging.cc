@@ -30,6 +30,7 @@ static const int kMaxLogLineSize = 1024 - 60;
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+
 #include <algorithm>
 #include <cstdarg>
 #include <vector>
@@ -156,13 +157,6 @@ LogMessage::LogMessage(const char* file,
         break;
       }
 #endif  // WEBRTC_WIN
-#if defined(WEBRTC_MAC) && !defined(WEBRTC_IOS)
-      case ERRCTX_OSSTATUS: {
-        std::string desc(DescriptionFromOSStatus(err));
-        tmp << " " << (desc.empty() ? "Unknown error" : desc.c_str());
-        break;
-      }
-#endif  // WEBRTC_MAC && !defined(WEBRTC_IOS)
       default:
         break;
     }

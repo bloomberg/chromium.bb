@@ -25,6 +25,7 @@ public class ProgressBarMediator {
     private FutureTask mHideTask;
     private boolean mCanHideProgressBar;
     private boolean mWasDisplayedForMinimumDuration;
+    private boolean mSkipShowingOnNextActivityStart;
 
     private static final int MINIMUM_DISPLAY_DURATION_MS = 3 * 1000;
     private static final int MAXIMUM_PROGRESS = 100;
@@ -34,7 +35,16 @@ public class ProgressBarMediator {
         mModel = model;
     }
 
-    void onActivityResume() {
+    void skipShowingOnNextActivityStart() {
+        mSkipShowingOnNextActivityStart = true;
+    }
+
+    void onActivityStart() {
+        if (mSkipShowingOnNextActivityStart) {
+            mSkipShowingOnNextActivityStart = false;
+            return;
+        }
+
         if (mModel.get(ProgressBarProperties.IS_ENABLED)) show();
     }
 
@@ -152,6 +162,8 @@ public class ProgressBarMediator {
         }
 
         private void updateUrl(Tab tab) {
+            if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) return;
+
             mModel.set(ProgressBarProperties.URL,
                     TouchlessUrlUtilities.getUrlForDisplay(tab.getUrl()));
         }

@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/track/text_track.h"
 #include "third_party/blink/renderer/core/html/track/text_track_cue_list.h"
@@ -49,6 +48,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/bidi_resolver.h"
 #include "third_party/blink/renderer/platform/text/text_run_iterator.h"
@@ -258,8 +258,8 @@ VTTCue::~VTTCue() = default;
 #ifndef NDEBUG
 String VTTCue::ToString() const {
   return String::Format("%p id=%s interval=%f-->%f cue=%s)", this,
-                        id().Utf8().data(), startTime(), endTime(),
-                        text().Utf8().data());
+                        id().Utf8().c_str(), startTime(), endTime(),
+                        text().Utf8().c_str());
 }
 #endif
 
@@ -786,7 +786,7 @@ void VTTCue::UpdatePastAndFutureNodes(double movie_time) {
       child_vtt_element->SetIsPastNode(is_past_node);
       // Make an elemenet id match a cue id for style matching purposes.
       if (!id().IsEmpty())
-        ToElement(child).SetIdAttribute(id());
+        To<Element>(child).SetIdAttribute(id());
     }
   }
 }
@@ -1129,6 +1129,13 @@ void VTTCue::ApplyUserOverrideCSSProperties() {
   SetInlineStylePropertyIfNotEmpty(*cue_background_box_,
                                    CSSPropertyID::kFontSize,
                                    settings->GetTextTrackTextSize());
+  SetInlineStylePropertyIfNotEmpty(*display_tree_,
+                                   CSSPropertyID::kBackgroundColor,
+                                   settings->GetTextTrackWindowColor());
+  SetInlineStylePropertyIfNotEmpty(*display_tree_, CSSPropertyID::kPadding,
+                                   settings->GetTextTrackWindowPadding());
+  SetInlineStylePropertyIfNotEmpty(*display_tree_, CSSPropertyID::kBorderRadius,
+                                   settings->GetTextTrackWindowRadius());
 }
 
 ExecutionContext* VTTCue::GetExecutionContext() const {

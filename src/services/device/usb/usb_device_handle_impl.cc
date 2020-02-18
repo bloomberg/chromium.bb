@@ -22,6 +22,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
+#include "services/device/public/cpp/usb/usb_utils.h"
 #include "services/device/usb/usb_context.h"
 #include "services/device/usb/usb_descriptors.h"
 #include "services/device/usb/usb_device_impl.h"
@@ -30,6 +31,13 @@
 #include "third_party/libusb/src/libusb/libusb.h"
 
 namespace device {
+
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbIsochronousPacketPtr;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+using mojom::UsbTransferType;
 
 void HandleTransferCompletion(PlatformUsbTransferHandle transfer);
 
@@ -474,13 +482,16 @@ void UsbDeviceHandleImpl::Transfer::TransferComplete(UsbTransferStatus status,
   base::OnceClosure closure;
   if (transfer_type_ == UsbTransferType::ISOCHRONOUS) {
     DCHECK_NE(LIBUSB_TRANSFER_COMPLETED, platform_transfer_->status);
-    std::vector<IsochronousPacket> packets(platform_transfer_->num_iso_packets);
+    std::vector<UsbIsochronousPacketPtr> packets(
+        platform_transfer_->num_iso_packets);
     for (size_t i = 0; i < packets.size(); ++i) {
-      packets[i].length = platform_transfer_->iso_packet_desc[i].length;
-      packets[i].transferred_length = 0;
-      packets[i].status = status;
+      packets[i] = mojom::UsbIsochronousPacket::New();
+      packets[i]->length = platform_transfer_->iso_packet_desc[i].length;
+      packets[i]->transferred_length = 0;
+      packets[i]->status = status;
     }
-    closure = base::BindOnce(std::move(iso_callback_), buffer_, packets);
+    closure =
+        base::BindOnce(std::move(iso_callback_), buffer_, std::move(packets));
   } else {
     closure = base::BindOnce(std::move(callback_), status, buffer_,
                              bytes_transferred);
@@ -492,19 +503,21 @@ void UsbDeviceHandleImpl::Transfer::TransferComplete(UsbTransferStatus status,
 }
 
 void UsbDeviceHandleImpl::Transfer::IsochronousTransferComplete() {
-  std::vector<IsochronousPacket> packets(platform_transfer_->num_iso_packets);
+  std::vector<UsbIsochronousPacketPtr> packets(
+      platform_transfer_->num_iso_packets);
   for (size_t i = 0; i < packets.size(); ++i) {
-    packets[i].length = platform_transfer_->iso_packet_desc[i].length;
-    packets[i].transferred_length =
+    packets[i] = mojom::UsbIsochronousPacket::New();
+    packets[i]->length = platform_transfer_->iso_packet_desc[i].length;
+    packets[i]->transferred_length =
         platform_transfer_->iso_packet_desc[i].actual_length;
-    packets[i].status =
+    packets[i]->status =
         ConvertTransferStatus(platform_transfer_->iso_packet_desc[i].status);
   }
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(&UsbDeviceHandleImpl::TransferComplete,
-                                        device_handle_, base::Unretained(this),
-                                        base::BindOnce(std::move(iso_callback_),
-                                                       buffer_, packets)));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&UsbDeviceHandleImpl::TransferComplete,
+                                device_handle_, base::Unretained(this),
+                                base::BindOnce(std::move(iso_callback_),
+                                               buffer_, std::move(packets))));
 }
 
 scoped_refptr<UsbDevice> UsbDeviceHandleImpl::GetDevice() const {
@@ -564,7 +577,7 @@ void UsbDeviceHandleImpl::ClaimInterface(int interface_number,
     std::move(callback).Run(false);
     return;
   }
-  if (base::ContainsKey(claimed_interfaces_, interface_number)) {
+  if (base::Contains(claimed_interfaces_, interface_number)) {
     std::move(callback).Run(true);
     return;
   }
@@ -578,7 +591,7 @@ void UsbDeviceHandleImpl::ReleaseInterface(int interface_number,
                                            ResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!device_ || !base::ContainsKey(claimed_interfaces_, interface_number)) {
+  if (!device_ || !base::Contains(claimed_interfaces_, interface_number)) {
     task_runner_->PostTask(FROM_HERE,
                            base::BindOnce(std::move(callback), false));
     return;
@@ -606,7 +619,7 @@ void UsbDeviceHandleImpl::SetInterfaceAlternateSetting(
     ResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!device_ || !base::ContainsKey(claimed_interfaces_, interface_number)) {
+  if (!device_ || !base::Contains(claimed_interfaces_, interface_number)) {
     std::move(callback).Run(false);
     return;
   }
@@ -792,7 +805,7 @@ void UsbDeviceHandleImpl::GenericTransfer(
   }
 
   std::unique_ptr<Transfer> transfer;
-  UsbTransferType transfer_type = endpoint_it->second.endpoint->transfer_type;
+  UsbTransferType transfer_type = endpoint_it->second.endpoint->type;
   if (transfer_type == UsbTransferType::BULK) {
     transfer = Transfer::CreateBulkTransfer(this, endpoint_address, buffer,
                                             static_cast<int>(buffer->size()),
@@ -814,7 +827,7 @@ void UsbDeviceHandleImpl::GenericTransfer(
   SubmitTransfer(std::move(transfer));
 }
 
-const UsbInterfaceDescriptor* UsbDeviceHandleImpl::FindInterfaceByEndpoint(
+const mojom::UsbInterfaceInfo* UsbDeviceHandleImpl::FindInterfaceByEndpoint(
     uint8_t endpoint_address) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -987,21 +1000,20 @@ void UsbDeviceHandleImpl::RefreshEndpointMap() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(device_);
   endpoint_map_.clear();
-  const UsbConfigDescriptor* config = device_->active_configuration();
-  if (config) {
-    for (const auto& map_entry : claimed_interfaces_) {
-      int interface_number = map_entry.first;
-      const scoped_refptr<InterfaceClaimer>& claimed_iface = map_entry.second;
+  const mojom::UsbConfigurationInfo* config = device_->active_configuration();
+  if (!config)
+    return;
 
-      for (const UsbInterfaceDescriptor& iface : config->interfaces) {
-        if (iface.interface_number == interface_number &&
-            iface.alternate_setting == claimed_iface->alternate_setting()) {
-          for (const UsbEndpointDescriptor& endpoint : iface.endpoints) {
-            endpoint_map_[endpoint.address] = {&iface, &endpoint};
-          }
-          break;
-        }
-      }
+  for (const auto& map_entry : claimed_interfaces_) {
+    CombinedInterfaceInfo interface_info = FindInterfaceInfoFromConfig(
+        config, map_entry.first, map_entry.second->alternate_setting());
+
+    if (!interface_info.IsValid())
+      return;
+
+    for (const auto& endpoint : interface_info.alternate->endpoints) {
+      endpoint_map_[ConvertEndpointNumberToAddress(*endpoint)] = {
+          interface_info.interface, endpoint.get()};
     }
   }
 }
@@ -1020,15 +1032,15 @@ void UsbDeviceHandleImpl::ReportIsochronousTransferError(
     UsbTransferStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::vector<UsbDeviceHandle::IsochronousPacket> packets(
-      packet_lengths.size());
+  std::vector<UsbIsochronousPacketPtr> packets(packet_lengths.size());
   for (size_t i = 0; i < packet_lengths.size(); ++i) {
-    packets[i].length = packet_lengths[i];
-    packets[i].transferred_length = 0;
-    packets[i].status = status;
+    packets[i] = mojom::UsbIsochronousPacket::New();
+    packets[i]->length = packet_lengths[i];
+    packets[i]->transferred_length = 0;
+    packets[i]->status = status;
   }
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(std::move(callback), nullptr, packets));
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(callback), nullptr,
+                                                   std::move(packets)));
 }
 
 void UsbDeviceHandleImpl::SubmitTransfer(std::unique_ptr<Transfer> transfer) {
@@ -1046,8 +1058,7 @@ void UsbDeviceHandleImpl::SubmitTransfer(std::unique_ptr<Transfer> transfer) {
 void UsbDeviceHandleImpl::TransferComplete(Transfer* transfer,
                                            base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::ContainsKey(transfers_, transfer))
-      << "Missing transfer completed";
+  DCHECK(base::Contains(transfers_, transfer)) << "Missing transfer completed";
   transfers_.erase(transfer);
 
   std::move(callback).Run();

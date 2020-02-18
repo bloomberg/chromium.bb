@@ -7,6 +7,7 @@
 #include <drm_fourcc.h>
 #include <gbm.h>
 #include <xf86drmMode.h>
+
 #include <memory>
 
 #include "base/files/platform_file.h"
@@ -22,18 +23,14 @@
 #include "ui/ozone/common/linux/gbm_device.h"
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
-#include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 #include "ui/ozone/public/overlay_plane.h"
 #include "ui/ozone/public/ozone_platform.h"
 
 namespace ui {
 
-GbmPixmapWayland::GbmPixmapWayland(WaylandSurfaceFactory* surface_manager,
-                                   WaylandBufferManagerGpu* buffer_manager,
+GbmPixmapWayland::GbmPixmapWayland(WaylandBufferManagerGpu* buffer_manager,
                                    gfx::AcceleratedWidget widget)
-    : surface_manager_(surface_manager),
-      buffer_manager_(buffer_manager),
-      widget_(widget) {}
+    : buffer_manager_(buffer_manager), widget_(widget) {}
 
 GbmPixmapWayland::~GbmPixmapWayland() {
   if (gbm_bo_ && widget_ != gfx::kNullAcceleratedWidget)
@@ -98,12 +95,20 @@ int GbmPixmapWayland::GetDmaBufFd(size_t plane) const {
   return gbm_bo_->GetPlaneFd(plane);
 }
 
-int GbmPixmapWayland::GetDmaBufPitch(size_t plane) const {
+uint32_t GbmPixmapWayland::GetDmaBufPitch(size_t plane) const {
   return gbm_bo_->GetPlaneStride(plane);
 }
 
-int GbmPixmapWayland::GetDmaBufOffset(size_t plane) const {
+size_t GbmPixmapWayland::GetDmaBufOffset(size_t plane) const {
   return gbm_bo_->GetPlaneOffset(plane);
+}
+
+size_t GbmPixmapWayland::GetDmaBufPlaneSize(size_t plane) const {
+  return gbm_bo_->GetPlaneSize(plane);
+}
+
+size_t GbmPixmapWayland::GetNumberOfPlanes() const {
+  return gbm_bo_->GetNumPlanes();
 }
 
 uint64_t GbmPixmapWayland::GetBufferFormatModifier() const {
@@ -130,8 +135,12 @@ bool GbmPixmapWayland::ScheduleOverlayPlane(
     const gfx::RectF& crop_rect,
     bool enable_blend,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
-  GbmSurfacelessWayland* surfaceless = surface_manager_->GetSurface(widget);
+  auto* surface = buffer_manager_->GetSurface(widget);
+  DCHECK(surface);
+  GbmSurfacelessWayland* surfaceless =
+      static_cast<GbmSurfacelessWayland*>(surface);
   DCHECK(surfaceless);
+
   surfaceless->QueueOverlayPlane(
       OverlayPlane(this, std::move(gpu_fence), plane_z_order, plane_transform,
                    display_bounds, crop_rect, enable_blend));
@@ -144,7 +153,7 @@ gfx::NativePixmapHandle GbmPixmapWayland::ExportHandle() {
 
   // TODO(dcastagna): Use gbm_bo_get_plane_count once all the formats we use are
   // supported by gbm.
-  const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+  const size_t num_planes = gfx::NumberOfPlanesForLinearBufferFormat(format);
   std::vector<base::ScopedFD> scoped_fds(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
     scoped_fds[i] = base::ScopedFD(HANDLE_EINTR(dup(GetDmaBufFd(i))));

@@ -156,7 +156,8 @@ class NetworkHandler : public DevToolsDomainHandler,
       const base::UnguessableToken& frame_token,
       bool is_navigation,
       bool is_download,
-      network::mojom::URLLoaderFactoryRequest* target_factory_request);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+          target_factory_receiver);
 
   void ApplyOverrides(net::HttpRequestHeaders* headers,
                       bool* skip_service_worker,
@@ -186,6 +187,16 @@ class NetworkHandler : public DevToolsDomainHandler,
       const scoped_refptr<net::X509Certificate>& certificate,
       const base::Optional<net::SSLInfo>& ssl_info,
       const std::vector<SignedExchangeError>& errors);
+
+  void OnRequestWillBeSentExtraInfo(
+      const std::string& devtools_request_id,
+      const net::CookieStatusList& request_cookie_list,
+      const std::vector<network::mojom::HttpRawHeaderPairPtr>& request_headers);
+  void OnResponseReceivedExtraInfo(
+      const std::string& devtools_request_id,
+      const net::CookieAndLineStatusList& response_cookie_list,
+      const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
+      const base::Optional<std::string>& response_headers_text);
 
   bool enabled() const { return enabled_; }
 
@@ -234,7 +245,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   bool cache_disabled_;
   std::unique_ptr<BackgroundSyncRestorer> background_sync_restorer_;
   base::RepeatingClosure update_loader_factories_callback_;
-  base::WeakPtrFactory<NetworkHandler> weak_factory_;
+  base::WeakPtrFactory<NetworkHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
 };

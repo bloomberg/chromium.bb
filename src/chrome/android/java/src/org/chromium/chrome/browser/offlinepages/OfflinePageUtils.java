@@ -22,9 +22,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.FileProviderHelper;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -37,12 +35,12 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
@@ -317,38 +315,6 @@ public class OfflinePageUtils {
     }
 
     /**
-     * Records UMA data when the Offline Pages Background Load service awakens.
-     * @param context android context
-     */
-    public static void recordWakeupUMA(Context context, long taskScheduledTimeMillis) {
-        DeviceConditions deviceConditions = DeviceConditions.getCurrent(context);
-        if (deviceConditions == null) return;
-
-        // Report charging state.
-        RecordHistogram.recordBooleanHistogram(
-                "OfflinePages.Wakeup.ConnectedToPower", deviceConditions.isPowerConnected());
-
-        // Report battery percentage.
-        RecordHistogram.recordPercentageHistogram(
-                "OfflinePages.Wakeup.BatteryPercentage", deviceConditions.getBatteryPercentage());
-
-        // Report the default network found (or none, if we aren't connected).
-        int connectionType = deviceConditions.getNetConnectionType();
-        Log.d(TAG, "Found default network of type " + connectionType);
-        RecordHistogram.recordEnumeratedHistogram("OfflinePages.Wakeup.NetworkAvailable",
-                connectionType, ConnectionType.CONNECTION_LAST + 1);
-
-        // Collect UMA on the time since the request started.
-        long nowMillis = System.currentTimeMillis();
-        long delayInMilliseconds = nowMillis - taskScheduledTimeMillis;
-        if (delayInMilliseconds <= 0) {
-            return;
-        }
-        RecordHistogram.recordLongTimesHistogram(
-                "OfflinePages.Wakeup.DelayTime", delayInMilliseconds);
-    }
-
-    /**
      * Records UMA data for publishing internal page during sharing.
      * Most of the recording are in JNI layer, since it's a point that can be used by both ways of
      * sharing a page.
@@ -438,12 +404,12 @@ public class OfflinePageUtils {
 
         final String pageUrl = tab.getUrl();
         // We share temporary pages by content URI to prevent unanticipated side effects in the
-        // public directory. Temporary pages are ones not in a user requested download namespace.
+        // public directory.
         Uri uri;
-        boolean isPageUserRequested = offlinePageBridge.isUserRequestedDownloadNamespace(
-                offlinePage.getClientId().getNamespace());
+        boolean isPageTemporary =
+                offlinePageBridge.isTemporaryNamespace(offlinePage.getClientId().getNamespace());
         // Ensure that we have a file path that is longer than just "/".
-        if (!isPageUserRequested && offlinePath.length() > 1) {
+        if (isPageTemporary && offlinePath.length() > 1) {
             File file = new File(offlinePath);
             // We might get an exception if chrome does not have sharing roots configured.  If so,
             // just share by URL of the original page instead of sharing the offline page.
@@ -458,8 +424,8 @@ public class OfflinePageUtils {
 
         if (!isOfflinePageShareable(offlinePageBridge, offlinePage, uri)) return false;
 
-        if (!isPageUserRequested || !offlinePageBridge.isInPrivateDirectory(offlinePath)) {
-            // Share pages temporary pages and pages already in a public location.
+        if (isPageTemporary || !offlinePageBridge.isInPrivateDirectory(offlinePath)) {
+            // Share temporary pages and pages already in a public location.
             final String pageTitle = tab.getTitle();
             final File offlinePageFile = new File(offlinePath);
             sharePage(activity, uri.toString(), pageTitle, offlinePath, offlinePageFile,
@@ -475,8 +441,7 @@ public class OfflinePageUtils {
                 return;
             }
 
-            // If a user requested page is not in a public location, we must publish it before
-            // sharing it.
+            // If the page is not in a public location, we must publish it before sharing it.
             publishThenShareInternalPage(activity, offlinePageBridge, offlinePage, shareCallback);
         });
 
@@ -691,17 +656,23 @@ public class OfflinePageUtils {
      * @param tab The tab to be reloaded.
      */
     public static void reload(Tab tab) {
+        // Only the transition type with both RELOAD and FROM_ADDRESS_BAR set will force the
+        // navigation to be treated as reload (see ShouldTreatNavigationAsReload()). Without this,
+        // reloading an URL containing a hash will be treated as same document load and thus
+        // no loading is triggered.
+        int transitionTypeForReload = PageTransition.RELOAD | PageTransition.FROM_ADDRESS_BAR;
+
         OfflinePageItem offlinePage = getOfflinePage(tab);
         if (isShowingTrustedOfflinePage(tab) || offlinePage == null) {
             // If current page is an offline page, reload it with custom behavior defined in extra
             // header respected.
-            LoadUrlParams params = new LoadUrlParams(tab.getOriginalUrl(), PageTransition.RELOAD);
+            LoadUrlParams params = new LoadUrlParams(tab.getOriginalUrl(), transitionTypeForReload);
             params.setVerbatimHeaders(getOfflinePageHeaderForReload(tab));
             tab.loadUrl(params);
             return;
         }
 
-        LoadUrlParams params = new LoadUrlParams(offlinePage.getUrl(), PageTransition.RELOAD);
+        LoadUrlParams params = new LoadUrlParams(offlinePage.getUrl(), transitionTypeForReload);
         tab.loadUrl(params);
     }
 

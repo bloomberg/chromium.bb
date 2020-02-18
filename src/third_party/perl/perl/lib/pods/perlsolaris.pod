@@ -152,7 +152,7 @@ SUNWsprot, SUNWtoo
 for libraries & headers: SUNWhea, SUNWarc, SUNWlibm, SUNWlibms, SUNWdfbh,
 SUNWcg6h, SUNWxwinc
 
-Additionaly, on Solaris 8 and 9 you also need:
+Additionally, on Solaris 8 and 9 you also need:
 
 for 64 bit development: SUNWarcx, SUNWbtoox, SUNWdplx, SUNWscpux,
 SUNWsprox, SUNWtoox, SUNWlmsx, SUNWlmx, SUNWlibCx
@@ -484,20 +484,20 @@ malloc. [XXX further investigation is needed here.]
 
 If you have problems with dynamic loading using gcc on SunOS or
 Solaris, and you are using GNU as and GNU ld, see the section
-L<"GNU as and GNU ld"> above.
+L</"GNU as and GNU ld"> above.
 
 =item ld.so.1: ./perl: fatal: relocation error:
 
 If you get this message on SunOS or Solaris, and you're using gcc,
 it's probably the GNU as or GNU ld problem in the previous item
-L<"GNU as and GNU ld">.
+L</"GNU as and GNU ld">.
 
 =item dlopen: stub interception failed
 
 The primary cause of the 'dlopen: stub interception failed' message is
 that the LD_LIBRARY_PATH environment variable includes a directory
 which is a symlink to /usr/lib (such as /lib).  See
-L<"LD_LIBRARY_PATH"> above.
+L</"LD_LIBRARY_PATH"> above.
 
 =item #error "No DATAMODEL_NATIVE specified"
 
@@ -530,6 +530,20 @@ to catch all tmpfs situations.
 
 See L<perlhpux/"nss_delete core dump from op/pwent or op/grent">.
 
+=head1 CROSS-COMPILATION
+
+Nothing too unusual here.  You can easily do this if you have a 
+cross-compiler available;  A usual Configure invocation when targetting a
+Solaris x86 looks something like this:
+
+    sh ./Configure -des -Dusecrosscompile \
+        -Dcc=i386-pc-solaris2.11-gcc      \
+        -Dsysroot=$SYSROOT                \
+        -Alddlflags=" -Wl,-z,notext"      \
+        -Dtargethost=... # The usual cross-compilation options
+
+The lddlflags addition is the only abnormal bit.
+
 =head1 PREBUILT BINARIES OF PERL FOR SOLARIS.
 
 You can pick up prebuilt binaries for Solaris from
@@ -550,7 +564,7 @@ through 255 can be used in a stream.  Since perl calls open() and
 then fdopen(3C) with the resulting file descriptor, perl is limited
 to 255 simultaneous open files, even if sysopen() is used.  If this
 proves to be an insurmountable problem, you can compile perl as a
-LP64 application, see L<Building an LP64 perl> for details.  Note
+LP64 application, see L</Building an LP64 perl> for details.  Note
 also that the default resource limit for open file descriptors on
 Solaris is 255, so you will have to modify your ulimit or rctl
 (Solaris 9 onwards) appropriately.
@@ -623,7 +637,7 @@ also seems to have become broken in in SunOS 4.x.  Therefore the default
 is to build Perl statically.
 
 Running the test suite in SunOS 4.1 is a bit tricky since the
-F<lib/Tie/File/t/09_gen_rs> test hangs (subtest #51, FWIW) for some
+F<dist/Tie-File/t/09_gen_rs.t> test hangs (subtest #51, FWIW) for some
 unknown reason.  Just stop the test and kill that particular Perl
 process.
 
@@ -680,7 +694,8 @@ but if one patiently waits, one gets these results:
  uni/tr_eucjp.t                    29  7424     6   12 200.00%  1-6
  uni/tr_sjis.t                     29  7424     6   12 200.00%  1-6
  56 tests and 467 subtests skipped.
- Failed 27/811 test scripts, 96.67% okay. 1383/75399 subtests failed, 98.17% okay.
+ Failed 27/811 test scripts, 96.67% okay. 1383/75399 subtests failed,
+   98.17% okay.
 
 The alarm() test failure is caused by system() apparently blocking
 alarm().  That is probably a libc bug, and given that SunOS 4.x

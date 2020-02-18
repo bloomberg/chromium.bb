@@ -199,7 +199,8 @@ enum AppListPageSwitcherSource {
   kMousePadScroll = 5,
   kDragAppToBorder = 6,
   kMoveAppWithKeyboard = 7,
-  kMaxAppListPageSwitcherSource = 8,
+  kMouseDrag = 8,
+  kMaxAppListPageSwitcherSource = 9,
 };
 
 // The different ways to move an app in app list's apps grid. These values are
@@ -234,8 +235,8 @@ enum TabletModeAnimationTransition {
   // Release drag to hide the launcher (launcher animates the rest of the way).
   kDragReleaseHide,
 
-  // Click the AppList button in tablet mode.
-  kAppListButtonShow,
+  // Click the Home button in tablet mode.
+  kHomeButtonShow,
 
   // Activate a window from shelf to hide the launcher in tablet mode.
   kHideHomeLauncherForWindow,

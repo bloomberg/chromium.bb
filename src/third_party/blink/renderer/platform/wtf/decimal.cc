@@ -34,7 +34,7 @@
 #include <cfloat>
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -999,12 +999,11 @@ Decimal Decimal::Zero(Sign sign) {
 
 std::ostream& operator<<(std::ostream& ostream, const Decimal& decimal) {
   Decimal::EncodedData data = decimal.Value();
-  return ostream << "encode("
-                 << String::Number(data.Coefficient()).Ascii().data() << ", "
-                 << String::Number(data.Exponent()).Ascii().data() << ", "
+  return ostream << "encode(" << String::Number(data.Coefficient()).Ascii()
+                 << ", " << String::Number(data.Exponent()).Ascii() << ", "
                  << (data.GetSign() == Decimal::kNegative ? "Negative"
                                                           : "Positive")
-                 << ")=" << decimal.ToString().Ascii().data();
+                 << ")=" << decimal.ToString().Ascii();
 }
 
 }  // namespace blink

@@ -46,11 +46,10 @@
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
@@ -219,7 +218,7 @@ class PLATFORM_EXPORT FontCache {
 #if defined(OS_LINUX)
   struct PlatformFallbackFont {
     String name;
-    CString filename;
+    std::string filename;
     int fontconfig_interface_id;
     int ttc_index;
     bool is_bold;
@@ -257,8 +256,7 @@ class PLATFORM_EXPORT FontCache {
       const SimpleFontData* font_data_to_substitute,
       FontFallbackPriority = FontFallbackPriority::kText);
   sk_sp<SkTypeface> CreateTypefaceFromUniqueName(
-      const FontFaceCreationParams& creation_params,
-      CString& name);
+      const FontFaceCreationParams& creation_params);
 
   static Bcp47Vector GetBcp47LocaleForRequest(
       const FontDescription& font_description,
@@ -299,7 +297,7 @@ class PLATFORM_EXPORT FontCache {
 
   sk_sp<SkTypeface> CreateTypeface(const FontDescription&,
                                    const FontFaceCreationParams&,
-                                   CString& name);
+                                   std::string& name);
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)
   static AtomicString GetFamilyNameForCharacter(SkFontMgr*,
@@ -351,6 +349,15 @@ class PLATFORM_EXPORT FontCache {
 
   void PurgePlatformFontDataCache();
   void PurgeFallbackListShaperCache();
+
+  // A maximum float value to which we limit incoming font sizes. This is the
+  // smallest float so that multiplying it by
+  // FontCacheKey::PrecisionMultiplier() is still smaller than
+  // std::numeric_limits<unsigned>::max() - 1 in order to avoid hitting HashMap
+  // sentinel values (placed at std::numeric_limits<unsigned>::max() and
+  // std::numeric_limits<unsigned>::max() - 1) for SizedFontPlatformDataSet and
+  // FontPlatformDataCache.
+  const float font_size_limit_;
 
   friend class SimpleFontData;  // For fontDataFromFontPlatformData
   friend class FontFallbackList;

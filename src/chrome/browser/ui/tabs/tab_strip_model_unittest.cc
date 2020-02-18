@@ -6,12 +6,14 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -33,11 +35,6 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_CHROMEOS)
-#include "ui/aura/test/aura_test_utils.h"
-#include "ui/events/devices/input_device_manager.h"
-#endif
 
 using content::WebContents;
 
@@ -298,11 +295,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 
 class TabStripModelTest : public testing::Test {
  public:
-  TabStripModelTest() : profile_(new TestingProfile) {
-#if defined(OS_CHROMEOS)
-    input_device_manager_ = aura::test::CreateTestInputDeviceManager();
-#endif
-  }
+  TabStripModelTest() : profile_(new TestingProfile) {}
 
   TestingProfile* profile() { return profile_.get(); }
 
@@ -389,10 +382,6 @@ class TabStripModelTest : public testing::Test {
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   content::RenderViewHostTestEnabler rvh_test_enabler_;
   const std::unique_ptr<TestingProfile> profile_;
-
-#if defined(OS_CHROMEOS)
-  std::unique_ptr<ui::InputDeviceManager> input_device_manager_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(TabStripModelTest);
 };
@@ -1655,7 +1644,7 @@ TEST_F(TabStripModelTest, ReselectionConsidersChildrenTest) {
   strip.CloseAllTabs();
 }
 
-TEST_F(TabStripModelTest, AddWebContents_NewTabAtEndOfStripInheritsOpener) {
+TEST_F(TabStripModelTest, NewTabAtEndOfStripInheritsOpener) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
 
@@ -3241,6 +3230,29 @@ TEST_F(TabStripModelTest, CloseTabNotifiesObserversOfGroupChange) {
   EXPECT_EQ(num_group_changed_notifications, 1);
 }
 
+TEST_F(TabStripModelTest, InsertWebContentsAtWithGroupNotifiesObservers) {
+  TestTabStripModelDelegate delegate;
+  MockTabStripModelObserver observer;
+  TabStripModel strip(&delegate, profile());
+  strip.AddObserver(&observer);
+
+  strip.AppendWebContents(CreateWebContents(), true);
+  strip.AppendWebContents(CreateWebContents(), false);
+  auto group_id = strip.AddToNewGroup({0, 1});
+  observer.ClearStates();
+
+  strip.InsertWebContentsAt(1, CreateWebContents(), TabStripModel::ADD_NONE,
+                            group_id);
+
+  EXPECT_EQ(observer.GetStateCount(), 2);
+  EXPECT_EQ(MockTabStripModelObserver::GROUP_CHANGED,
+            observer.GetStateAt(1).action);
+  EXPECT_TRUE(observer.StateEquals(
+      1, ExpectedGroupChangeState(strip, 1, base::nullopt, group_id)));
+
+  strip.CloseAllTabs();
+}
+
 // When inserting a WebContents, if a group is not specified, the new tab
 // should be left ungrouped.
 TEST_F(TabStripModelTest, InsertWebContentsAtDoesNotGroupByDefault) {
@@ -3296,6 +3308,76 @@ TEST_F(TabStripModelTest, InsertWebContentsAtWithPinnedGroupPins) {
   strip.InsertWebContentsAt(1, CreateWebContentsWithID(2),
                             TabStripModel::ADD_NONE, group);
   EXPECT_EQ("0p 2p 1p", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, NewTabWithGroup) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  PrepareTabs(&strip, 3);
+  auto group = strip.AddToNewGroup({1});
+
+  strip.AddWebContents(CreateWebContentsWithID(3), 2, ui::PAGE_TRANSITION_TYPED,
+                       TabStripModel::ADD_NONE, group);
+  EXPECT_EQ("0 1 3 2", GetTabStripStateString(strip));
+  EXPECT_EQ(group, strip.GetTabGroupForTab(2));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, NewTabWithGroupDeletedCorrectly) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), true);
+  strip.AddToNewGroup({0});
+  strip.InsertWebContentsAt(1, CreateWebContents(), TabStripModel::ADD_NONE,
+                            strip.GetTabGroupForTab(0));
+
+  strip.RemoveFromGroup({1});
+  EXPECT_EQ(strip.ListTabGroups().size(), 1U);
+  strip.RemoveFromGroup({0});
+  EXPECT_EQ(strip.ListTabGroups().size(), 0U);
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, NewTabWithoutIndexInsertsAtEndOfGroup) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  PrepareTabs(&strip, 3);
+  auto group = strip.AddToNewGroup({0, 1});
+
+  strip.AddWebContents(CreateWebContentsWithID(3), -1,
+                       ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_NONE,
+                       group);
+  EXPECT_EQ("0 1 3 2", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, DiscontinuousNewTabIndexTooHigh) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  PrepareTabs(&strip, 3);
+  auto group = strip.AddToNewGroup({0, 1});
+
+  strip.AddWebContents(CreateWebContentsWithID(3), 3, ui::PAGE_TRANSITION_TYPED,
+                       TabStripModel::ADD_NONE, group);
+  EXPECT_EQ("0 1 3 2", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, DiscontinuousNewTabIndexTooLow) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  PrepareTabs(&strip, 3);
+  auto group = strip.AddToNewGroup({1, 2});
+
+  strip.AddWebContents(CreateWebContentsWithID(3), 0, ui::PAGE_TRANSITION_TYPED,
+                       TabStripModel::ADD_NONE, group);
+  EXPECT_EQ("0 3 1 2", GetTabStripStateString(strip));
 
   strip.CloseAllTabs();
 }

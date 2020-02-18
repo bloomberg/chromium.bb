@@ -79,7 +79,7 @@ enum LineDirectionMode { kHorizontalLine, kVerticalLine };
 //
 // In order to fully understand LayoutBoxModelObject and the inherited classes,
 // we need to introduce the concept of coordinate systems.
-// There is 3 main coordinate systems:
+// There are 4 coordinate systems:
 // - physical coordinates: it is the coordinate system used for painting and
 //   correspond to physical direction as seen on the physical display (screen,
 //   printed page). In CSS, 'top', 'right', 'bottom', 'left' are all in physical
@@ -118,6 +118,10 @@ enum LineDirectionMode { kHorizontalLine, kVerticalLine };
 //   "Logical" or "Physical" prefix in their names, or the name implies logical
 //   (e.g. InlineStart, BlockEnd) or physical (e.g. Top, Left), or the return
 //   type is PhysicalRect.
+//
+// - logical coordinates without flipping inline direction: those are "logical
+//   block coordinates", without considering text direction. Examples are
+//   "LogicalLeft" and "LogicalRight".
 //
 // For more, see Source/core/layout/README.md ### Coordinate Spaces.
 class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {

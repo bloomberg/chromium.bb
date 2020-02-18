@@ -6,7 +6,7 @@
 #define CONTENT_TEST_FAKE_LEVELDB_DATABASE_H_
 
 #include "base/memory/ref_counted.h"
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace content {
@@ -38,6 +38,8 @@ class FakeLevelDBDatabase : public leveldb::mojom::LevelDBDatabase {
   void Get(const std::vector<uint8_t>& key, GetCallback callback) override;
   void GetPrefixed(const std::vector<uint8_t>& key_prefix,
                    GetPrefixedCallback callback) override;
+  void GetMany(std::vector<leveldb::mojom::GetManyRequestPtr> keys_or_prefixes,
+               GetManyCallback callback) override;
   void CopyPrefixed(const std::vector<uint8_t>& source_key_prefix,
                     const std::vector<uint8_t>& destination_key_prefix,
                     CopyPrefixedCallback callback) override;

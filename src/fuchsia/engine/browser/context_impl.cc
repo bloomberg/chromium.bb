@@ -11,11 +11,26 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "content/public/browser/web_contents.h"
 #include "fuchsia/engine/browser/frame_impl.h"
+#include "fuchsia/engine/browser/web_engine_browser_context.h"
+#include "fuchsia/engine/common.h"
 
 ContextImpl::ContextImpl(content::BrowserContext* browser_context)
     : browser_context_(browser_context) {}
 
 ContextImpl::~ContextImpl() = default;
+
+void ContextImpl::DestroyFrame(FrameImpl* frame) {
+  DCHECK(frames_.find(frame) != frames_.end());
+  frames_.erase(frames_.find(frame));
+}
+
+bool ContextImpl::IsJavaScriptInjectionAllowed() {
+  return allow_javascript_injection_;
+}
+
+void ContextImpl::OnDebugDevToolsPortReady() {
+  web_engine_remote_debugging_.OnDebugDevToolsPortReady();
+}
 
 void ContextImpl::CreateFrame(
     fidl::InterfaceRequest<fuchsia::web::Frame> frame) {
@@ -27,13 +42,9 @@ void ContextImpl::CreateFrame(
                                              std::move(frame)));
 }
 
-void ContextImpl::DestroyFrame(FrameImpl* frame) {
-  DCHECK(frames_.find(frame) != frames_.end());
-  frames_.erase(frames_.find(frame));
-}
-
-bool ContextImpl::IsJavaScriptInjectionAllowed() {
-  return allow_javascript_injection_;
+void ContextImpl::GetRemoteDebuggingPort(
+    GetRemoteDebuggingPortCallback callback) {
+  web_engine_remote_debugging_.GetRemoteDebuggingPort(std::move(callback));
 }
 
 FrameImpl* ContextImpl::GetFrameImplForTest(fuchsia::web::FramePtr* frame_ptr) {

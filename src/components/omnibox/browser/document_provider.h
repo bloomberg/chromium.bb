@@ -88,6 +88,7 @@ class DocumentProvider : public AutocompleteProvider {
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            ParseDocumentSearchResultsWithIneligibleFlag);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, GenerateLastModifiedString);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, Scoring);
 
   DocumentProvider(AutocompleteProviderClient* client,
                    AutocompleteProviderListener* listener);
@@ -164,7 +165,7 @@ class DocumentProvider : public AutocompleteProvider {
   std::unique_ptr<network::SimpleURLLoader> loader_;
 
   // For callbacks that may be run after destruction. Must be declared last.
-  base::WeakPtrFactory<DocumentProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<DocumentProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DocumentProvider);
 };

@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">Vos appareils fonctionnent encore mieux ensemble</translation>
 <translation id="112308213915226829">Masquer automatiquement l'étagère</translation>
 <translation id="1153356358378277386">Appareils associés</translation>
+<translation id="1175572348579024023">Faire défiler</translation>
 <translation id="1178581264944972037">Suspendre</translation>
 <translation id="1195412055398077112">Surbalayage</translation>
 <translation id="119944043368869598">Tout effacer</translation>
-<translation id="123828989343052515">Nouveau bureau</translation>
 <translation id="1247372569136754018">Micro (interne)</translation>
 <translation id="1252999807265626933">Charge à partir de la source "<ph name="POWER_SOURCE" />"</translation>
 <translation id="1255033239764210633">Quel temps fait-il ?</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">Les modes de saisie sont configurés par votre administrateur.</translation>
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
 <translation id="1761222317188459878">Activer/Désactiver la connexion réseau. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Vers la droite</translation>
 <translation id="1812997170047690955">Éléments affichés à l'écran</translation>
+<translation id="1820355135508821526">La fonctionnalité <ph name="FEATURE_NAME" /> a été désactivée par une règle appliquée à cet appareil. Veuillez contacter votre administrateur pour effectuer des modifications.</translation>
 <translation id="1823873187264960516">Ethernet : <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (chargement…)</translation>
 <translation id="1850504506766569011">Le Wi-Fi est désactivé.</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Définir la langue</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">Saisie de texte</translation>
 <translation id="1993072747612765854">En savoir plus sur la dernière mise à jour <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Éteindre</translation>
 <translation id="2012624427112548395">Ctrl+Recherche+H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Luminosité du clavier</translation>
 <translation id="209965399369889474">Aucune connexion réseau</translation>
+<translation id="2126242104232412123">Nouveau bureau</translation>
 <translation id="2127372758936585790">Chargeur de faible puissance</translation>
 <translation id="2135456203358955318">Loupe ancrée</translation>
 <translation id="2144487987174258011">Redémarrez pour mettre Adobe Flash Player à jour</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">L'Assistant Google n'est pas disponible dans une session publique.</translation>
 <translation id="2575685495496069081">La connexion multicompte a été désactivée</translation>
 <translation id="2582112259361606227">Redémarrer pour mettre à jour</translation>
-<translation id="2597972630681408282">Éclairage nocturne : <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La carte SIM est verrouillée</translation>
+<translation id="2651765386227849097">L'Assistant Google est désactivé sur cet appareil.</translation>
 <translation id="2653659639078652383">Valider</translation>
 <translation id="2658778018866295321">Cliquer et faire glisser</translation>
 <translation id="2700493154570097719">Définir votre clavier</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connecté à un appareil}one{Connecté à # appareil}other{Connecté à # appareils}}</translation>
 <translation id="3226991577105957773">+ <ph name="COUNT" /> autres</translation>
 <translation id="3236488194889173876">Aucun réseau mobile disponible</translation>
+<translation id="3249513730522716925">La fenêtre <ph name="WINDOW_TITLE" /> a été déplacée du Bureau <ph name="ACTIVE_DESK" /> au Bureau <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Que sais-tu faire ?</translation>
 <translation id="3294437725009624529">Invité</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> pourra toujours se connecter plus tard.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">Revenir à "<ph name="FROM_LOCALE" />" (redémarrage requis)</translation>
 <translation id="3576141592585647168">Modifier le fuseau horaire</translation>
 <translation id="3595596368722241419">Batterie pleine</translation>
+<translation id="3604801046548457007">Bureau <ph name="DESK_TITILE" /> créé</translation>
 <translation id="3606978283550408104">La plage braille est connectée.</translation>
 <translation id="3621202678540785336">Entrée</translation>
 <translation id="3626281679859535460">Luminosité</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">La batterie est en charge, avec un niveau de <ph name="PERCENTAGE" /> % pour l'instant.</translation>
 <translation id="3995138139523574647">Appareil USB de type C (port situé sur la droite de l'appareil, à l'arrière)</translation>
 <translation id="4017989525502048489">Pointeur laser</translation>
+<translation id="4021716437419160885">Faire défiler vers le bas</translation>
 <translation id="4042660782729322247">Vous partagez votre écran</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Notifications désactivées pour une application}one{Notifications désactivées pour # application}other{Notifications désactivées pour # applications}}</translation>
 <translation id="4072264167173457037">Signal de moyenne intensité</translation>
@@ -220,8 +227,7 @@
 <translation id="4296136865091727875">Effacer les <ph name="COUNT" /> notifications</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Vous avez appuyé sur le raccourci clavier du contraste élevé. Voulez-vous l'activer ?</translation>
-<translation id="4331809312908958774">Chrome OS
-</translation>
+<translation id="4331809312908958774">Système d’exploitation Google Chrome</translation>
 <translation id="4338109981321384717">Loupe</translation>
 <translation id="4351433414020964307">Chargement de l'Assistant…</translation>
 <translation id="435527878592612277">Sélectionner votre photo</translation>
@@ -259,9 +265,11 @@
 <translation id="4895488851634969361">La batterie est pleine.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">Le raccourci permettant d'activer ou de désactiver le mode Contraste élevé a été modifié. Veuillez utiliser "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
+<translation id="490788395437447240">Niveau de la batterie : <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="4917385247580444890">Très bon</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4924411785043111640">Redémarrer et réinitialiser</translation>
+<translation id="495046168593986294">Faire défiler vers le haut</translation>
 <translation id="4961318399572185831">Diffuser l'écran</translation>
 <translation id="5030687792513154421">Temps écoulé</translation>
 <translation id="5035236842988137213">L'appareil <ph name="DEVICE_NAME" /> est associé à un nouveau téléphone</translation>
@@ -295,6 +303,7 @@
 <translation id="5648021990716966815">Connecteur micro</translation>
 <translation id="5669267381087807207">Activation</translation>
 <translation id="5673434351075758678">La langue utilisée est passée de "<ph name="FROM_LOCALE" />" à "<ph name="TO_LOCALE" />" après la synchronisation de vos paramètres.</translation>
+<translation id="5682642926269496722">L'Assistant Google n'est pas disponible pour le compte utilisateur actuel.</translation>
 <translation id="5691772641933328258">Empreinte digitale non reconnue</translation>
 <translation id="5710450975648804523">Mode "Ne pas déranger" activé</translation>
 <translation id="574392208103952083">Moyenne</translation>
@@ -319,6 +328,8 @@
 <translation id="598882571027504733">Pour télécharger la mise à jour, redémarrez votre Chromebook avec le clavier branché.</translation>
 <translation id="5992218262414051481">Le mode Contraste élevé est activé. Appuyez de nouveau sur Ctrl+Recherche+H pour le désactiver.</translation>
 <translation id="6018164090099858612">Sortie du mode Miroir…</translation>
+<translation id="602001110135236999">Vers la gauche</translation>
+<translation id="6040143037577758943">Fermer</translation>
 <translation id="6043212731627905357">Ce moniteur ne fonctionne pas avec votre <ph name="DEVICE_TYPE" /> (il n'est pas compatible).</translation>
 <translation id="6043994281159824495">Se déconnecter maintenant</translation>
 <translation id="6047696787498798094">Le partage d'écran s'arrête lorsque vous passez à un autre utilisateur. Voulez-vous continuer ?</translation>
@@ -326,6 +337,7 @@
 <translation id="6064337552080329342">Mot de passe incorrect. Veuillez réessayer.</translation>
 <translation id="607652042414456612">Votre ordinateur est visible par les appareils Bluetooth situés à proximité sous le nom "<ph name="NAME" />", associé à l'adresse <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> en charge</translation>
+<translation id="612734058257491180">L'Assistant Google n'est pas disponible dans une session Invité.</translation>
 <translation id="615957422585914272">Afficher le clavier à l'écran</translation>
 <translation id="6164005077879661055">Tous les fichiers et les données locales associés à l'utilisateur supervisé seront définitivement supprimés en même temps que cet utilisateur. Le gestionnaire peut toujours accéder aux sites Web consultés par l'utilisateur supervisé et aux paramètres de celui-ci à l'adresse <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
@@ -367,7 +379,9 @@
 <translation id="6713285437468012787">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" a été associé et tous les utilisateurs peuvent désormais y accéder. Vous pouvez supprimer cette association dans les paramètres.</translation>
 <translation id="6715542151869432661">Aucun appareil mobile détecté.</translation>
 <translation id="6723839937902243910">Alimentation</translation>
+<translation id="6727969043791803658">Connecté, batterie à <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">Le suivi des performances est activé</translation>
+<translation id="6752912906630585008">Bureau <ph name="REMOVED_DESK" /> supprimé et fusionné avec le Bureau <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Lire</translation>
 <translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>
 <translation id="6820676911989879663">Faites une pause !</translation>
@@ -425,6 +439,7 @@
 <translation id="7692480393933218409">Charge des appareils USB de type C connectés</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notification}one{# notification}other{# notifications}}</translation>
+<translation id="7749443890790263709">Vous avez atteint le nombre maximal de bureaux.</translation>
 <translation id="776344839111254542">Cliquer pour afficher les informations relatives à la mise à jour</translation>
 <translation id="7780159184141939021">Rotation d'écran</translation>
 <translation id="7796353162336583443">Appuyez sur le bouton du stylet situé sur l'étagère pour prendre des notes, effectuer des captures d'écran et utiliser l'Assistant Google, le pointeur laser ou la loupe.</translation>
@@ -468,6 +483,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Créer une note</translation>
 <translation id="8375916635258623388">L'appareil <ph name="DEVICE_NAME" /> et votre téléphone seront associés automatiquement</translation>
+<translation id="8388750414311082622">Impossible de supprimer le dernier bureau.</translation>
 <translation id="8392451568018454956">Menu "Options" de l'adresse e-mail <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Ton parent a verrouillé cet appareil</translation>
 <translation id="8406981827175133772">Loupe plein écran</translation>
@@ -476,6 +492,7 @@
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8433186206711564395">Paramètres réseau</translation>
 <translation id="8433977262951327081">Le raccourci pour afficher l'info-bulle du menu des options de saisie dans l'étagère a changé. Veuillez utiliser <ph name="NEW_SHORTCUT" /> au lieu de <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Bureau <ph name="DESK_TITILE" /> activé</translation>
 <translation id="8452135315243592079">Carte SIM manquante</translation>
 <translation id="8454013096329229812">Le Wi-Fi est activé.</translation>
 <translation id="847056008324733326">Paramètres de l'échelle d'affichage</translation>

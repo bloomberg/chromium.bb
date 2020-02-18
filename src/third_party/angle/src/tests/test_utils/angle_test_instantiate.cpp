@@ -33,7 +33,8 @@ bool IsANGLEConfigSupported(const PlatformParameters &param, OSWindow *osWindow)
     std::unique_ptr<angle::Library> eglLibrary;
 
 #if defined(ANGLE_USE_UTIL_LOADER)
-    eglLibrary.reset(angle::OpenSharedLibrary(ANGLE_EGL_LIBRARY_NAME));
+    eglLibrary.reset(
+        angle::OpenSharedLibrary(ANGLE_EGL_LIBRARY_NAME, angle::SearchType::ApplicationDir));
 #endif
 
     EGLWindow *eglWindow = EGLWindow::New(param.majorVersion, param.minorVersion);
@@ -48,7 +49,8 @@ bool IsANGLEConfigSupported(const PlatformParameters &param, OSWindow *osWindow)
 bool IsWGLConfigSupported(const PlatformParameters &param, OSWindow *osWindow)
 {
 #if defined(ANGLE_PLATFORM_WINDOWS) && defined(ANGLE_USE_UTIL_LOADER)
-    std::unique_ptr<angle::Library> openglLibrary(angle::OpenSharedLibrary("opengl32"));
+    std::unique_ptr<angle::Library> openglLibrary(
+        angle::OpenSharedLibrary("opengl32", angle::SearchType::SystemDir));
 
     WGLWindow *wglWindow = WGLWindow::New(param.majorVersion, param.minorVersion);
     ConfigParameters configParams;
@@ -69,6 +71,31 @@ bool IsNativeConfigSupported(const PlatformParameters &param, OSWindow *osWindow
 }
 
 std::map<PlatformParameters, bool> gParamAvailabilityCache;
+
+bool IsAndroidDevice(const std::string &deviceName)
+{
+    if (!IsAndroid())
+    {
+        return false;
+    }
+    SystemInfo *systemInfo = GetTestSystemInfo();
+    if (systemInfo->machineModelName == deviceName)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool HasSystemVendorID(VendorID vendorID)
+{
+    SystemInfo *systemInfo = GetTestSystemInfo();
+    // Unfortunately sometimes GPU info collection can fail.
+    if (systemInfo->activeGPUIndex < 0 || systemInfo->gpus.empty())
+    {
+        return false;
+    }
+    return systemInfo->gpus[systemInfo->activeGPUIndex].vendorId == vendorID;
+}
 }  // namespace
 
 std::string gSelectedConfig;
@@ -83,6 +110,15 @@ SystemInfo *GetTestSystemInfo()
         if (!GetSystemInfo(sSystemInfo))
         {
             std::cerr << "Warning: incomplete system info collection.\n";
+        }
+
+        // On dual-GPU Macs we want the active GPU to always appear to be the
+        // high-performance GPU for tests.
+        // We can call the generic GPU info collector which selects the
+        // non-Intel GPU as the active one on dual-GPU machines.
+        if (IsOSX())
+        {
+            GetDualGPUInfo(sSystemInfo);
         }
 
         // Print complete system info when available.
@@ -150,20 +186,6 @@ bool IsFuchsia()
 #endif
 }
 
-bool IsAndroidDevice(const std::string &deviceName)
-{
-    if (!IsAndroid())
-    {
-        return false;
-    }
-    SystemInfo *systemInfo = GetTestSystemInfo();
-    if (systemInfo->machineModelName == deviceName)
-    {
-        return true;
-    }
-    return false;
-}
-
 bool IsNexus5X()
 {
     return IsAndroidDevice("Nexus 5X");
@@ -172,6 +194,11 @@ bool IsNexus5X()
 bool IsNexus6P()
 {
     return IsAndroidDevice("Nexus 6P");
+}
+
+bool IsNexus9()
+{
+    return IsAndroidDevice("Nexus 9");
 }
 
 bool IsPixelXL()
@@ -189,6 +216,28 @@ bool IsNVIDIAShield()
     return IsAndroidDevice("SHIELD Android TV");
 }
 
+bool IsIntel()
+{
+    return HasSystemVendorID(kVendorID_Intel);
+}
+
+bool IsAMD()
+{
+    return HasSystemVendorID(kVendorID_AMD);
+}
+
+bool IsNVIDIA()
+{
+#if defined(ANGLE_PLATFORM_ANDROID)
+    // NVIDIA Shield cannot detect vendor ID (http://anglebug.com/3541)
+    if (IsNVIDIAShield())
+    {
+        return true;
+    }
+#endif
+    return HasSystemVendorID(kVendorID_NVIDIA);
+}
+
 bool IsConfigWhitelisted(const SystemInfo &systemInfo, const PlatformParameters &param)
 {
     VendorID vendorID = systemInfo.gpus[systemInfo.activeGPUIndex].vendorId;
@@ -201,14 +250,6 @@ bool IsConfigWhitelisted(const SystemInfo &systemInfo, const PlatformParameters 
         if (param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE)
             return true;
     }
-
-#if ANGLE_VULKAN_CONFORMANT_CONFIGS_ONLY
-    // Vulkan ES 3.0 is not yet supported.
-    if (param.majorVersion > 2 && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
-    {
-        return false;
-    }
-#endif
 
     if (IsWindows())
     {
@@ -237,7 +278,7 @@ bool IsConfigWhitelisted(const SystemInfo &systemInfo, const PlatformParameters 
                 }
             case GLESDriverType::SystemWGL:
                 // AMD does not support the ES compatibility extensions.
-                return IsAMD(vendorID);
+                return !IsAMD(vendorID);
             default:
                 return false;
         }

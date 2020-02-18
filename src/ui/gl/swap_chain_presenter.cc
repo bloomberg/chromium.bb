@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/color_space_win.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -25,8 +26,8 @@ namespace {
 const base::Feature kFallbackBT709VideoToBT601{
     "FallbackBT709VideoToBT601", base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsProtectedVideo(ui::ProtectedVideoType protected_video_type) {
-  return protected_video_type != ui::ProtectedVideoType::kClear;
+bool IsProtectedVideo(gfx::ProtectedVideoType protected_video_type) {
+  return protected_video_type != gfx::ProtectedVideoType::kClear;
 }
 
 class ScopedReleaseKeyedMutex {
@@ -61,8 +62,7 @@ enum class OverlayFullScreenTypes {
   kMaxValue = kNotAvailable,
 };
 
-void RecordOverlayFullScreenTypes(bool workaround_applied,
-                                  const gfx::Rect& overlay_onscreen_rect) {
+void RecordOverlayFullScreenTypes(const gfx::Rect& overlay_onscreen_rect) {
   OverlayFullScreenTypes full_screen_type;
   const gfx::Size& screen_size =
       DirectCompositionSurfaceWin::GetOverlayMonitorSize();
@@ -90,24 +90,18 @@ void RecordOverlayFullScreenTypes(bool workaround_applied,
 
   UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.OverlayFullScreenTypes",
                             full_screen_type);
-
-  // TODO(magchen): To be deleted once we know if this workaround is still
-  // needed
-  UMA_HISTOGRAM_BOOLEAN(
-      "GPU.DirectComposition.DisableLargerThanScreenOverlaysWorkaround",
-      workaround_applied);
 }
 
-const char* ProtectedVideoTypeToString(ui::ProtectedVideoType type) {
+const char* ProtectedVideoTypeToString(gfx::ProtectedVideoType type) {
   switch (type) {
-    case ui::ProtectedVideoType::kClear:
+    case gfx::ProtectedVideoType::kClear:
       return "Clear";
-    case ui::ProtectedVideoType::kSoftwareProtected:
+    case gfx::ProtectedVideoType::kSoftwareProtected:
       if (DirectCompositionSurfaceWin::AreOverlaysSupported())
         return "SoftwareProtected.HasOverlaySupport";
       else
         return "SoftwareProtected.NoOverlaySupport";
-    case ui::ProtectedVideoType::kHardwareProtected:
+    case gfx::ProtectedVideoType::kHardwareProtected:
       return "HardwareProtected";
   }
 }
@@ -203,19 +197,19 @@ SwapChainPresenter::SwapChainPresenter(
 SwapChainPresenter::~SwapChainPresenter() = default;
 
 bool SwapChainPresenter::ShouldUseYUVSwapChain(
-    ui::ProtectedVideoType protected_video_type) {
+    gfx::ProtectedVideoType protected_video_type) {
   // TODO(crbug.com/850799): Assess power/perf impact when protected video
   // swap chain is composited by DWM.
 
   // Always prefer YUV swap chain for hardware protected video for now.
-  if (protected_video_type == ui::ProtectedVideoType::kHardwareProtected)
+  if (protected_video_type == gfx::ProtectedVideoType::kHardwareProtected)
     return true;
 
   // For software protected video, BGRA swap chain is preferred if hardware
   // overlay is not supported for better power efficiency.
   // Currently, software protected video is the only case that overlay swap
   // chain is used when hardware overlay is not supported.
-  if (protected_video_type == ui::ProtectedVideoType::kSoftwareProtected &&
+  if (protected_video_type == gfx::ProtectedVideoType::kSoftwareProtected &&
       !DirectCompositionSurfaceWin::AreOverlaysSupported())
     return false;
 
@@ -372,7 +366,6 @@ gfx::Size SwapChainPresenter::CalculateSwapChainSize(
     swap_chain_size.SetToMin(params.content_rect.size());
   }
 
-  bool workaround_applied = false;
   gfx::Size overlay_monitor_size =
       DirectCompositionSurfaceWin::GetOverlayMonitorSize();
   if (layer_tree_->disable_larger_than_screen_overlays() &&
@@ -392,19 +385,15 @@ gfx::Size SwapChainPresenter::CalculateSwapChainSize(
         (swap_chain_size.width() <=
          overlay_monitor_size.width() + kOversizeMargin)) {
       swap_chain_size.set_width(overlay_monitor_size.width());
-      workaround_applied = true;
     }
 
     if ((swap_chain_size.height() > overlay_monitor_size.height()) &&
         (swap_chain_size.height() <=
          overlay_monitor_size.height() + kOversizeMargin)) {
       swap_chain_size.set_height(overlay_monitor_size.height());
-      workaround_applied = true;
     }
   }
-  RecordOverlayFullScreenTypes(
-      workaround_applied,
-      /*overlay_onscreen_rect*/ gfx::ToEnclosingRect(bounds));
+  RecordOverlayFullScreenTypes(gfx::ToEnclosingRect(bounds));
 
   // 4:2:2 subsampled formats like YUY2 must have an even width, and 4:2:0
   // subsampled formats like NV12 must have an even width and height.
@@ -425,7 +414,7 @@ void SwapChainPresenter::UpdateVisuals(const ui::DCRendererLayerParams& params,
     dcomp_device_->CreateVisual(&content_visual_);
     DCHECK(content_visual_);
     clip_visual_->AddVisual(content_visual_.Get(), FALSE, nullptr);
-    layer_tree_->SetNeedsCommit();
+    layer_tree_->SetNeedsRebuildVisualTree();
   }
 
   // Visual offset is applied before transform so it behaves similar to how the
@@ -447,7 +436,7 @@ void SwapChainPresenter::UpdateVisuals(const ui::DCRendererLayerParams& params,
   if (visual_info_.offset != offset || visual_info_.transform != transform) {
     visual_info_.offset = offset;
     visual_info_.transform = transform;
-    layer_tree_->SetNeedsCommit();
+    layer_tree_->SetNeedsRebuildVisualTree();
 
     content_visual_->SetOffsetX(offset.x());
     content_visual_->SetOffsetY(offset.y());
@@ -468,7 +457,7 @@ void SwapChainPresenter::UpdateVisuals(const ui::DCRendererLayerParams& params,
       visual_info_.clip_rect != params.clip_rect) {
     visual_info_.is_clipped = params.is_clipped;
     visual_info_.clip_rect = params.clip_rect;
-    layer_tree_->SetNeedsCommit();
+    layer_tree_->SetNeedsRebuildVisualTree();
     // DirectComposition clips happen in the pre-transform visual space, while
     // cc/ clips happen post-transform. So the clip needs to go on a separate
     // parent visual that's untransformed.
@@ -488,7 +477,7 @@ void SwapChainPresenter::UpdateVisuals(const ui::DCRendererLayerParams& params,
 
   if (visual_info_.z_order != params.z_order) {
     visual_info_.z_order = params.z_order;
-    layer_tree_->SetNeedsCommit();
+    layer_tree_->SetNeedsRebuildVisualTree();
   }
 }
 
@@ -639,7 +628,7 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
     DCHECK(decode_surface_);
 
     content_visual_->SetContent(decode_surface_.Get());
-    layer_tree_->SetNeedsCommit();
+    layer_tree_->SetNeedsRebuildVisualTree();
   } else if (last_y_image_ == image_dxgi && last_uv_image_ == image_dxgi &&
              swap_chain_size_ == swap_chain_size) {
     // Early out if we're presenting the same image again.
@@ -726,7 +715,7 @@ bool SwapChainPresenter::PresentToSwapChain(
     if (swap_chain_) {
       ReleaseSwapChainResources();
       content_visual_->SetContent(nullptr);
-      layer_tree_->SetNeedsCommit();
+      layer_tree_->SetNeedsRebuildVisualTree();
     }
     return true;
   }
@@ -757,7 +746,7 @@ bool SwapChainPresenter::PresentToSwapChain(
       return false;
     }
     content_visual_->SetContent(swap_chain_.Get());
-    layer_tree_->SetNeedsCommit();
+    layer_tree_->SetNeedsRebuildVisualTree();
   } else if (last_y_image_ == params.y_image &&
              last_uv_image_ == params.uv_image) {
     // The swap chain is presenting the same images as last swap, which means
@@ -1062,7 +1051,7 @@ void SwapChainPresenter::ReleaseSwapChainResources() {
 bool SwapChainPresenter::ReallocateSwapChain(
     const gfx::Size& swap_chain_size,
     bool use_yuv_swap_chain,
-    ui::ProtectedVideoType protected_video_type,
+    gfx::ProtectedVideoType protected_video_type,
     bool z_order) {
   TRACE_EVENT2("gpu", "SwapChainPresenter::ReallocateSwapChain", "size",
                swap_chain_size.ToString(), "yuv", use_yuv_swap_chain);
@@ -1129,7 +1118,7 @@ bool SwapChainPresenter::ReallocateSwapChain(
       DXGI_SWAP_CHAIN_FLAG_YUV_VIDEO | DXGI_SWAP_CHAIN_FLAG_FULLSCREEN_VIDEO;
   if (IsProtectedVideo(protected_video_type))
     desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
-  if (protected_video_type == ui::ProtectedVideoType::kHardwareProtected)
+  if (protected_video_type == gfx::ProtectedVideoType::kHardwareProtected)
     desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
   desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 
@@ -1171,7 +1160,7 @@ bool SwapChainPresenter::ReallocateSwapChain(
     desc.Flags = 0;
     if (IsProtectedVideo(protected_video_type))
       desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
-    if (protected_video_type == ui::ProtectedVideoType::kHardwareProtected)
+    if (protected_video_type == gfx::ProtectedVideoType::kHardwareProtected)
       desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
 
     HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(

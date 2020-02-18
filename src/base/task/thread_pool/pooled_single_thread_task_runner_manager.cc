@@ -110,20 +110,23 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
     PlatformThread::SetName(thread_name_);
   }
 
-  RegisteredTaskSource GetWork(WorkerThread* worker) override {
+  RunIntentWithRegisteredTaskSource GetWork(WorkerThread* worker) override {
     CheckedAutoLock auto_lock(lock_);
     DCHECK(worker_awake_);
     auto task_source = GetWorkLockRequired(worker);
     if (!task_source) {
       // The worker will sleep after this returns nullptr.
       worker_awake_ = false;
+      return nullptr;
     }
-    return task_source;
+    auto run_intent = task_source->WillRunTask();
+    DCHECK(run_intent);
+    return {std::move(task_source), std::move(run_intent)};
   }
 
-  void DidRunTask(RegisteredTaskSource task_source) override {
+  void DidProcessTask(RegisteredTaskSource task_source) override {
     if (task_source) {
-      EnqueueTaskSource(RegisteredTaskSourceAndTransaction::FromTaskSource(
+      EnqueueTaskSource(TransactionWithRegisteredTaskSource::FromTaskSource(
           std::move(task_source)));
     }
   }
@@ -143,6 +146,7 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
     auto registered_task_source = task_tracker_->WillQueueTaskSource(sequence);
     if (!registered_task_source)
       return false;
+    task_tracker_->WillPostTaskNow(task, transaction.traits().priority());
     transaction.PushTask(std::move(task));
     bool should_wakeup = EnqueueTaskSource(
         {std::move(registered_task_source), std::move(transaction)});
@@ -198,9 +202,9 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
   // Returns true iff the worker must wakeup, i.e. task source is allowed to run
   // and the worker was not awake.
   bool EnqueueTaskSource(
-      RegisteredTaskSourceAndTransaction task_source_and_transaction) {
+      TransactionWithRegisteredTaskSource transaction_with_task_source) {
     CheckedAutoLock auto_lock(lock_);
-    priority_queue_.Push(std::move(task_source_and_transaction));
+    priority_queue_.Push(std::move(transaction_with_task_source));
     if (!worker_awake_ && CanRunNextTaskSource()) {
       worker_awake_ = true;
       return true;
@@ -249,7 +253,7 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
     scoped_com_initializer_ = std::make_unique<win::ScopedCOMInitializer>();
   }
 
-  RegisteredTaskSource GetWork(WorkerThread* worker) override {
+  RunIntentWithRegisteredTaskSource GetWork(WorkerThread* worker) override {
     // This scheme below allows us to cover the following scenarios:
     // * Only WorkerThreadDelegate::GetWork() has work:
     //   Always return the task source from GetWork().
@@ -304,8 +308,11 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
     if (!task_source) {
       // The worker will sleep after this returns nullptr.
       worker_awake_ = false;
+      return nullptr;
     }
-    return task_source;
+    auto run_intent = task_source->WillRunTask();
+    DCHECK(run_intent);
+    return {std::move(task_source), std::move(run_intent)};
   }
 
   void OnMainExit(WorkerThread* /* worker */) override {
@@ -534,20 +541,18 @@ void PooledSingleThreadTaskRunnerManager::DidUpdateCanRunPolicy() {
 }
 
 scoped_refptr<SingleThreadTaskRunner>
-PooledSingleThreadTaskRunnerManager::CreateSingleThreadTaskRunnerWithTraits(
+PooledSingleThreadTaskRunnerManager::CreateSingleThreadTaskRunner(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
-  return CreateTaskRunnerWithTraitsImpl<WorkerThreadDelegate>(traits,
-                                                              thread_mode);
+  return CreateTaskRunnerImpl<WorkerThreadDelegate>(traits, thread_mode);
 }
 
 #if defined(OS_WIN)
 scoped_refptr<SingleThreadTaskRunner>
-PooledSingleThreadTaskRunnerManager::CreateCOMSTATaskRunnerWithTraits(
+PooledSingleThreadTaskRunnerManager::CreateCOMSTATaskRunner(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
-  return CreateTaskRunnerWithTraitsImpl<WorkerThreadCOMDelegate>(traits,
-                                                                 thread_mode);
+  return CreateTaskRunnerImpl<WorkerThreadCOMDelegate>(traits, thread_mode);
 }
 #endif  // defined(OS_WIN)
 
@@ -562,7 +567,7 @@ PooledSingleThreadTaskRunnerManager::TraitsToContinueOnShutdown(
 
 template <typename DelegateType>
 scoped_refptr<PooledSingleThreadTaskRunnerManager::PooledSingleThreadTaskRunner>
-PooledSingleThreadTaskRunnerManager::CreateTaskRunnerWithTraitsImpl(
+PooledSingleThreadTaskRunnerManager::CreateTaskRunnerImpl(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
   DCHECK(thread_mode != SingleThreadTaskRunnerThreadMode::SHARED ||

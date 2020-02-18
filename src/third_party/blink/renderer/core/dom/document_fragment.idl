@@ -21,7 +21,8 @@
 
 [
     Constructor,
-    ConstructorCallWith=Document
+    ConstructorCallWith=Document,
+    Exposed=Window
 ] interface DocumentFragment : Node {
 };
 

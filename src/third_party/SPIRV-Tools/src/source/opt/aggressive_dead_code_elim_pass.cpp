@@ -570,12 +570,27 @@ void AggressiveDCEPass::InitializeModuleScopeLiveInstructions() {
       AddToWorklist(&entry);
     }
   }
-  // Keep workgroup size.
   for (auto& anno : get_module()->annotations()) {
     if (anno.opcode() == SpvOpDecorate) {
+      // Keep workgroup size.
       if (anno.GetSingleWordInOperand(1u) == SpvDecorationBuiltIn &&
           anno.GetSingleWordInOperand(2u) == SpvBuiltInWorkgroupSize) {
         AddToWorklist(&anno);
+      }
+
+      if (context()->preserve_bindings()) {
+        // Keep all bindings.
+        if ((anno.GetSingleWordInOperand(1u) == SpvDecorationDescriptorSet) ||
+            (anno.GetSingleWordInOperand(1u) == SpvDecorationBinding)) {
+          AddToWorklist(&anno);
+        }
+      }
+
+      if (context()->preserve_spec_constants()) {
+        // Keep all specialization constant instructions
+        if (anno.GetSingleWordInOperand(1u) == SpvDecorationSpecId) {
+          AddToWorklist(&anno);
+        }
       }
     }
   }
@@ -868,6 +883,7 @@ void AggressiveDCEPass::InitExtensions() {
       "SPV_AMD_gpu_shader_half_float_fetch",
       "SPV_GOOGLE_decorate_string",
       "SPV_GOOGLE_hlsl_functionality1",
+      "SPV_GOOGLE_user_type",
       "SPV_NV_shader_subgroup_partitioned",
       "SPV_EXT_descriptor_indexing",
       "SPV_NV_fragment_shader_barycentric",

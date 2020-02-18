@@ -36,6 +36,7 @@
 #include "components/undo/bookmark_undo_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_function_dispatcher.h"
@@ -110,9 +111,8 @@ CreateNodeDataElementFromBookmarkNode(const BookmarkNode& node) {
     element.url.reset(new std::string(node.url().spec()));
 
   element.title = base::UTF16ToUTF8(node.GetTitle());
-  for (int i = 0; i < node.child_count(); ++i) {
-    element.children.push_back(
-        CreateNodeDataElementFromBookmarkNode(*node.GetChild(i)));
+  for (const auto& child : node.children()) {
+    element.children.push_back(CreateNodeDataElementFromBookmarkNode(*child));
   }
 
   return element;
@@ -354,15 +354,18 @@ bool BookmarkManagerPrivatePasteFunction::RunOnReady() {
   // No need to test return value, if we got an empty list, we insert at end.
   if (params->selected_id_list)
     GetNodesFromVector(model, *params->selected_id_list, &nodes);
-  int highest_index = -1;  // -1 means insert at end of list.
+  int highest_index = -1;
   for (size_t i = 0; i < nodes.size(); ++i) {
     // + 1 so that we insert after the selection.
     int index = parent_node->GetIndexOf(nodes[i]) + 1;
     if (index > highest_index)
       highest_index = index;
   }
+  size_t insertion_index = (highest_index == -1)
+                               ? parent_node->children().size()
+                               : size_t{highest_index};
 
-  bookmarks::PasteFromClipboard(model, parent_node, highest_index);
+  bookmarks::PasteFromClipboard(model, parent_node, insertion_index);
   return true;
 }
 
@@ -408,12 +411,9 @@ bool BookmarkManagerPrivateStartDragFunction::RunOnReady() {
     source = ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
 
   chrome::DragBookmarks(GetProfile(),
-                        {
-                            std::move(nodes), params->drag_node_index,
-                            platform_util::GetViewForWindow(
-                                web_contents->GetTopLevelNativeWindow()),
-                            source,
-                        });
+                        {std::move(nodes), params->drag_node_index,
+                         web_contents->GetContentNativeView(), source,
+                         gfx::Point(params->x, params->y)});
 
   return true;
 }
@@ -433,26 +433,20 @@ bool BookmarkManagerPrivateDropFunction::RunOnReady() {
     return false;
 
   content::WebContents* web_contents = GetSenderWebContents();
-  if (GetViewType(web_contents) != VIEW_TYPE_TAB_CONTENTS) {
-    NOTREACHED();
-    return false;
-  }
+  DCHECK_EQ(VIEW_TYPE_TAB_CONTENTS, GetViewType(web_contents));
 
-  int drop_index;
+  size_t drop_index;
   if (params->index)
-    drop_index = *params->index;
+    drop_index = size_t{*params->index};
   else
-    drop_index = drop_parent->child_count();
+    drop_index = drop_parent->children().size();
 
   BookmarkManagerPrivateDragEventRouter* router =
       BookmarkManagerPrivateDragEventRouter::FromWebContents(web_contents);
 
   DCHECK(router);
   const BookmarkNodeData* drag_data = router->GetBookmarkNodeData();
-  if (drag_data == NULL) {
-    NOTREACHED() <<"Somehow we're dropping null bookmark data";
-    return false;
-  }
+  DCHECK_NE(nullptr, drag_data) << "Somehow we're dropping null bookmark data";
   const bool copy = false;
   chrome::DropBookmarks(
       GetProfile(), *drag_data, drop_parent, drop_index, copy);

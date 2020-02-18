@@ -28,6 +28,7 @@
 #define HB_SET_HH
 
 #include "hb.hh"
+#include "hb-machinery.hh"
 
 
 /*
@@ -308,7 +309,7 @@ struct hb_set_t
       {
 	page->add (g);
 
-	array = (const T *) ((const char *) array + stride);
+	array = &StructAtOffsetUnaligned<T> (array, stride);
 	count--;
       }
       while (count && (g = *array, start <= g && g < end));
@@ -440,8 +441,8 @@ struct hb_set_t
     return true;
   }
 
-  template <class Op>
-  void process (const hb_set_t *other)
+  template <typename Op>
+  void process (const Op& op, const hb_set_t *other)
   {
     if (unlikely (!successful)) return;
 
@@ -495,7 +496,7 @@ struct hb_set_t
 	b--;
 	count--;
 	page_map[count] = page_map[a];
-	Op::process (page_at (count).v, page_at (a).v, other->page_at (b).v);
+	page_at (count).v = op (page_at (a).v, other->page_at (b).v);
       }
       else if (page_map[a - 1].major > other->page_map[b - 1].major)
       {
@@ -541,19 +542,19 @@ struct hb_set_t
 
   void union_ (const hb_set_t *other)
   {
-    process<HbOpOr> (other);
+    process (hb_bitwise_or, other);
   }
   void intersect (const hb_set_t *other)
   {
-    process<HbOpAnd> (other);
+    process (hb_bitwise_and, other);
   }
   void subtract (const hb_set_t *other)
   {
-    process<HbOpMinus> (other);
+    process (hb_bitwise_sub, other);
   }
   void symmetric_difference (const hb_set_t *other)
   {
-    process<HbOpXor> (other);
+    process (hb_bitwise_xor, other);
   }
   bool next (hb_codepoint_t *codepoint) const
   {
@@ -691,7 +692,7 @@ struct hb_set_t
    */
   struct iter_t : hb_iter_with_fallback_t<iter_t, hb_codepoint_t>
   {
-    static constexpr hb_sortedness_t is_sorted_iterator = hb_sortedness_t::STRICTLY_SORTED;
+    static constexpr bool is_sorted_iterator = true;
     iter_t (const hb_set_t &s_ = Null(hb_set_t)) :
       s (&s_), v (INVALID), l (s->get_population () + 1) { __next__ (); }
 

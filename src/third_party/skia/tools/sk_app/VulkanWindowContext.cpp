@@ -252,7 +252,6 @@ bool VulkanWindowContext::createSwapchain(int width, int height,
             colorType = kRGBA_8888_SkColorType;
             break;
         case VK_FORMAT_B8G8R8A8_UNORM: // fall through
-        case VK_FORMAT_B8G8R8A8_SRGB:
             colorType = kBGRA_8888_SkColorType;
             break;
         default:
@@ -344,14 +343,20 @@ void VulkanWindowContext::createBuffers(VkFormat format, SkColorType colorType) 
         info.fLevelCount = 1;
         info.fCurrentQueueFamily = fPresentQueueIndex;
 
-        GrBackendRenderTarget backendRT(fWidth, fHeight, fSampleCount, info);
+        if (fSampleCount == 1) {
+            GrBackendRenderTarget backendRT(fWidth, fHeight, fSampleCount, info);
 
-        fSurfaces[i] = SkSurface::MakeFromBackendRenderTarget(fContext.get(),
-                                                              backendRT,
-                                                              kTopLeft_GrSurfaceOrigin,
-                                                              colorType,
-                                                              fDisplayParams.fColorSpace,
-                                                              &fDisplayParams.fSurfaceProps);
+            fSurfaces[i] = SkSurface::MakeFromBackendRenderTarget(
+                    fContext.get(), backendRT, kTopLeft_GrSurfaceOrigin, colorType,
+                    fDisplayParams.fColorSpace, &fDisplayParams.fSurfaceProps);
+        } else {
+            GrBackendTexture backendTexture(fWidth, fHeight, info);
+
+            fSurfaces[i] = SkSurface::MakeFromBackendTexture(
+                    fContext.get(), backendTexture, kTopLeft_GrSurfaceOrigin, fSampleCount,
+                    colorType, fDisplayParams.fColorSpace, &fDisplayParams.fSurfaceProps);
+
+        }
     }
 
     // set up the backbuffers

@@ -13,6 +13,7 @@
 #include "content/browser/tracing/background_tracing_config_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/background_tracing_manager.h"
+#include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 
 namespace base {
@@ -30,7 +31,6 @@ class BackgroundTracingActiveScenario {
 
   BackgroundTracingActiveScenario(
       std::unique_ptr<BackgroundTracingConfigImpl> config,
-      bool requires_anonymized_data,
       BackgroundTracingManager::ReceiveCallback receive_callback,
       base::OnceClosure on_aborted_callback);
   virtual ~BackgroundTracingActiveScenario();
@@ -38,10 +38,11 @@ class BackgroundTracingActiveScenario {
   void StartTracingIfConfigNeedsIt();
   void AbortScenario();
 
-  const BackgroundTracingConfigImpl* GetConfig() const;
+  CONTENT_EXPORT const BackgroundTracingConfigImpl* GetConfig() const;
   void GenerateMetadataDict(base::DictionaryValue* metadata_dict);
+  void GenerateMetadataProto(
+      perfetto::protos::pbzero::ChromeMetadataPacket* metadata);
   State state() const { return scenario_state_; }
-  bool requires_anonymized_data() const { return requires_anonymized_data_; }
   base::WeakPtr<BackgroundTracingActiveScenario> GetWeakPtr();
 
   void TriggerNamedEvent(
@@ -67,9 +68,10 @@ class BackgroundTracingActiveScenario {
   CONTENT_EXPORT void SetRuleTriggeredCallbackForTesting(
       const base::RepeatingClosure& callback);
 
+  size_t GetTraceUploadLimitKb() const;
+
  private:
-  bool StartTracing(BackgroundTracingConfigImpl::CategoryPreset,
-                    base::trace_event::TraceRecordMode);
+  bool StartTracing();
   void BeginFinalizing(
       BackgroundTracingManager::StartedFinalizingCallback callback);
 
@@ -80,12 +82,12 @@ class BackgroundTracingActiveScenario {
 
   std::unique_ptr<TracingSession> tracing_session_;
   std::unique_ptr<BackgroundTracingConfigImpl> config_;
-  bool requires_anonymized_data_;
-  State scenario_state_;
-  std::unique_ptr<base::DictionaryValue> last_triggered_rule_;
+  // Owned by |config_|.
+  const BackgroundTracingRule* last_triggered_rule_ = nullptr;
+  State scenario_state_ = State::kIdle;
   base::RepeatingClosure rule_triggered_callback_for_testing_;
   BackgroundTracingManager::ReceiveCallback receive_callback_;
-  BackgroundTracingManager::TriggerHandle triggered_named_event_handle_;
+  BackgroundTracingManager::TriggerHandle triggered_named_event_handle_ = -1;
   base::OnceClosure on_aborted_callback_;
   base::OnceClosure started_finalizing_closure_;
 
@@ -93,7 +95,7 @@ class BackgroundTracingActiveScenario {
   std::unique_ptr<TracingTimer> tracing_timer_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<BackgroundTracingActiveScenario> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundTracingActiveScenario> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(BackgroundTracingActiveScenario);
 };
 

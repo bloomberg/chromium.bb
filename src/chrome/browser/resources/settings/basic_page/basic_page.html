@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
@@ -22,7 +23,6 @@
 <link rel="import" href="../bluetooth_page/bluetooth_page.html">
 <link rel="import" href="../crostini_page/crostini_page.html">
 <link rel="import" href="../plugin_vm_page/plugin_vm_page.html">
-<link rel="import" href="../kiosk_next_shell_page/kiosk_next_shell_page.html">
 <link rel="import" href="../device_page/device_page.html">
 <link rel="import" href="../internet_page/internet_page.html">
 <link rel="import" href="../multidevice_page/multidevice_page.html">
@@ -44,14 +44,22 @@
       }
 
       #advancedToggle {
-        @apply --cr-actionable;
+        --ink-color: currentColor;
         align-items: center;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        color: currentColor;
         display: flex;
+        font-weight: 400;
         margin-bottom: 3px;
         margin-top: 12px;  /* Part of a 48px spacer (33px + 12px + 3px). */
         min-height: 32px;
         padding: 0 12px;
-        text-transform: none;
+      }
+
+      :host-context(.focus-outline-visible) #advancedToggle:focus {
+        font-weight: 600;
       }
 
       #secondaryUserBanner {
@@ -196,14 +204,6 @@
             </settings-android-apps-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[showKioskNextShell]]" restamp>
-          <settings-section
-              page-title="$i18n{kioskNextShellPageTitle}"
-              section="kiosk-next-shell">
-            <settings-kiosk-next-shell-page prefs="{{prefs}}">
-            </settings-kiosk-next-shell-page>
-          </settings-section>
-        </template>
         <template is="dom-if" if="[[showCrostini]]" restamp>
           <settings-section page-title="$i18n{crostiniPageTitle}"
               section="crostini">
@@ -244,12 +244,12 @@
           inSearchMode, hasExpandedSection_)]]">
         <div id="toggleSpacer"></div>
         <h2 id="toggleContainer">
-          <paper-button id="advancedToggle" on-click="advancedToggleClicked_"
+          <cr-button id="advancedToggle" on-click="advancedToggleClicked_"
               aria-expanded$="[[boolToString_(advancedToggleExpanded)]]">
             <span>$i18n{advancedPageTitle}</span>
             <iron-icon icon="[[getArrowIcon_(advancedToggleExpanded)]]">
             </iron-icon>
-          </paper-button>
+          </cr-button>
         </h2>
       </template>
 
@@ -282,7 +282,8 @@
                 restamp>
               <settings-section page-title="$i18n{languagesPageTitle}"
                   section="languages">
-                <settings-languages-page prefs="{{prefs}}">
+                <settings-languages-page prefs="{{prefs}}"
+                    page-visibility="[[pageVisibility.languages]]">
                 </settings-languages-page>
               </settings-section>
             </template>

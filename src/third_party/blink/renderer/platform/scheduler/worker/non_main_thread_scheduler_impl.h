@@ -66,12 +66,16 @@ class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
                     Thread::IdleTask task) override;
   void PostNonNestableIdleTask(const base::Location& location,
                                Thread::IdleTask task) override;
+  void PostDelayedIdleTask(const base::Location& location,
+                           base::TimeDelta delay,
+                           Thread::IdleTask task) override;
+
   std::unique_ptr<PageScheduler> CreatePageScheduler(
       PageScheduler::Delegate*) override;
   std::unique_ptr<RendererPauseHandle> PauseScheduler() override
       WARN_UNUSED_RESULT;
 
-  // Returns TimeTicks::Now() by default.
+  // Returns base::TimeTicks::Now() by default.
   base::TimeTicks MonotonicallyIncreasingVirtualTime() override;
 
   NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {

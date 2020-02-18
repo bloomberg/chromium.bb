@@ -24,6 +24,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "media/media_buildflags.h"
+#include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-forward.h"
@@ -57,7 +58,7 @@ class IsolationContext;
 class RenderProcessHostObserver;
 class RendererAudioOutputStreamFactoryContext;
 class StoragePartition;
-
+struct WebPreferences;
 #if defined(OS_ANDROID)
 enum class ChildProcessImportance;
 #endif
@@ -345,12 +346,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns true if this process currently has backgrounded priority.
   virtual bool IsProcessBackgrounded() = 0;
 
-  enum class KeepAliveClientType {
-    kServiceWorker = 0,
-    kSharedWorker = 1,
-    kFetch = 2,
-    kUnload = 3,
-  };
   // "Keep alive ref count" represents the number of the customers of this
   // render process who wish the renderer process to be alive. While the ref
   // count is positive, |this| object will keep the renderer process alive,
@@ -376,8 +371,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //    Keeps the process alive briefly to give subframe unload handlers a
   //    chance to execute after their parent frame navigates or is detached.
   //    See https://crbug.com/852204.
-  virtual void IncrementKeepAliveRefCount(KeepAliveClientType) = 0;
-  virtual void DecrementKeepAliveRefCount(KeepAliveClientType) = 0;
+  virtual void IncrementKeepAliveRefCount() = 0;
+  virtual void DecrementKeepAliveRefCount() = 0;
 
   // Sets keep alive ref counts to zero. Called when the browser context will be
   // destroyed so this RenderProcessHost can immediately die.
@@ -407,12 +402,23 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // When NetworkService is not enabled, |request| will be bound with a
   // URLLoaderFactory which routes requests to ResourceDispatcherHost.
   //
+  // |preferences| is an optional argument that might be used to control some
+  // aspects of the URLLoaderFactory (e.g. via
+  // allow_universal_access_from_file_urls).
+  //
   // |header_client| will be used in URLLoaderFactoryParams when creating the
   // factory.
+  //
+  // |network_isolation_key| will be used in URLLoaderFactoryParams when
+  // creating the factory. All resource requests through this factory will
+  // propagate the key to the network stack so that resources with different
+  // keys do not share network resources like the http cache.
   //
   // TODO(lukasza, nasko): https://crbug.com/888079: Make |origin| mandatory.
   virtual void CreateURLLoaderFactory(
       const base::Optional<url::Origin>& origin,
+      const WebPreferences* preferences,
+      const net::NetworkIsolationKey& network_isolation_key,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
       network::mojom::URLLoaderFactoryRequest request) = 0;
 

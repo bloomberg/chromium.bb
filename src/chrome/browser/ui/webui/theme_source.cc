@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resources_util.h"
 #include "chrome/browser/search/instant_io_context.h"
@@ -73,7 +74,7 @@ ThemeSource::ThemeSource(Profile* profile) : profile_(profile) {}
 
 ThemeSource::~ThemeSource() = default;
 
-std::string ThemeSource::GetSource() const {
+std::string ThemeSource::GetSource() {
   return chrome::kChromeUIThemeHost;
 }
 
@@ -100,7 +101,7 @@ void ThemeSource::StartDataRequest(
   int resource_id = -1;
   if (parsed_path == "current-channel-logo") {
     switch (chrome::GetChannel()) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       case version_info::Channel::CANARY:
         resource_id = IDR_PRODUCT_LOGO_32_CANARY;
         break;
@@ -157,14 +158,14 @@ void ThemeSource::StartDataRequest(
   }
 }
 
-std::string ThemeSource::GetMimeType(const std::string& path) const {
+std::string ThemeSource::GetMimeType(const std::string& path) {
   std::string parsed_path;
   webui::ParsePathAndScale(GetThemeUrl(path), &parsed_path, nullptr);
   return IsNewTabCssPath(parsed_path) ? "text/css" : "image/png";
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-ThemeSource::TaskRunnerForRequestPath(const std::string& path) const {
+ThemeSource::TaskRunnerForRequestPath(const std::string& path) {
   std::string parsed_path;
   webui::ParsePathAndScale(GetThemeUrl(path), &parsed_path, nullptr);
 
@@ -181,14 +182,14 @@ ThemeSource::TaskRunnerForRequestPath(const std::string& path) const {
              : nullptr;
 }
 
-bool ThemeSource::AllowCaching() const {
+bool ThemeSource::AllowCaching() {
   return false;
 }
 
 bool ThemeSource::ShouldServiceRequest(
     const GURL& url,
     content::ResourceContext* resource_context,
-    int render_process_id) const {
+    int render_process_id) {
   return url.SchemeIs(chrome::kChromeSearchScheme)
              ? InstantIOContext::ShouldServiceRequest(url, resource_context,
                                                       render_process_id)

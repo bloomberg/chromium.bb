@@ -21,6 +21,11 @@
 #include <set>
 #include <vector>
 
+namespace angle
+{
+struct FrontendFeatures;
+}  // namespace angle
+
 namespace egl
 {
 class AttributeMap;
@@ -36,7 +41,7 @@ class Thread;
 namespace gl
 {
 class Context;
-}
+}  // namespace gl
 
 namespace rx
 {
@@ -81,6 +86,7 @@ class DisplayImpl : public EGLImplFactory
     virtual egl::Error waitClient(const gl::Context *context)                = 0;
     virtual egl::Error waitNative(const gl::Context *context, EGLint engine) = 0;
     virtual gl::Version getMaxSupportedESVersion() const                     = 0;
+    virtual gl::Version getMaxConformantESVersion() const                    = 0;
     const egl::Caps &getCaps() const;
 
     virtual void setBlobCacheFuncs(EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get) {}
@@ -90,7 +96,11 @@ class DisplayImpl : public EGLImplFactory
     void setBlobCache(egl::BlobCache *blobCache) { mBlobCache = blobCache; }
     egl::BlobCache *getBlobCache() const { return mBlobCache; }
 
+    virtual void initializeFrontendFeatures(angle::FrontendFeatures *features) const {}
+
     virtual void populateFeatureList(angle::FeatureList *features) = 0;
+
+    const egl::DisplayState &getState() const { return mState; }
 
   protected:
     const egl::DisplayState &mState;

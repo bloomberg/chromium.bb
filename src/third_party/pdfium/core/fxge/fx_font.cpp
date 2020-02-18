@@ -13,14 +13,14 @@
 
 namespace {
 
-ByteString GetStringFromTable(const uint8_t* string_ptr,
-                              uint32_t string_ptr_length,
+ByteString GetStringFromTable(pdfium::span<const uint8_t> string_span,
                               uint16_t offset,
                               uint16_t length) {
-  if (string_ptr_length < static_cast<uint32_t>(offset + length)) {
+  if (string_span.size() < static_cast<uint32_t>(offset + length))
     return ByteString();
-  }
-  return ByteString(string_ptr + offset, length);
+
+  string_span = string_span.subspan(offset, length);
+  return ByteString(string_span.data(), string_span.size());
 }
 
 }  // namespace
@@ -37,7 +37,7 @@ FX_RECT GetGlyphsBBox(const std::vector<TextGlyphPos>& glyphs, int anti_alias) {
       continue;
 
     int char_width = glyph.m_pGlyph->GetBitmap()->GetWidth();
-    if (anti_alias == FXFT_RENDER_MODE_LCD)
+    if (anti_alias == FT_RENDER_MODE_LCD)
       char_width /= 3;
 
     FX_SAFE_INT32 char_right = point.value().x;
@@ -69,35 +69,53 @@ FX_RECT GetGlyphsBBox(const std::vector<TextGlyphPos>& glyphs, int anti_alias) {
   return rect;
 }
 
-ByteString GetNameFromTT(const uint8_t* name_table,
-                         uint32_t name_table_size,
+ByteString GetNameFromTT(pdfium::span<const uint8_t> name_table,
                          uint32_t name_id) {
-  if (!name_table || name_table_size < 6) {
+  if (name_table.size() < 6)
     return ByteString();
-  }
-  uint32_t name_count = GET_TT_SHORT(name_table + 2);
-  uint32_t string_offset = GET_TT_SHORT(name_table + 4);
+
+  uint32_t name_count = GET_TT_SHORT(&name_table[2]);
+  uint32_t string_offset = GET_TT_SHORT(&name_table[4]);
   // We will ignore the possibility of overlap of structures and
   // string table as if it's all corrupt there's not a lot we can do.
-  if (name_table_size < string_offset) {
+  if (name_table.size() < string_offset)
     return ByteString();
-  }
 
-  const uint8_t* string_ptr = name_table + string_offset;
-  uint32_t string_ptr_size = name_table_size - string_offset;
-  name_table += 6;
-  name_table_size -= 6;
-  if (name_table_size < name_count * 12) {
+  pdfium::span<const uint8_t> string_span = name_table.subspan(string_offset);
+  name_table = name_table.subspan(6);
+  if (name_table.size() < name_count * 12)
     return ByteString();
-  }
 
-  for (uint32_t i = 0; i < name_count; i++, name_table += 12) {
-    if (GET_TT_SHORT(name_table + 6) == name_id &&
-        GET_TT_SHORT(name_table) == 1 && GET_TT_SHORT(name_table + 2) == 0) {
-      return GetStringFromTable(string_ptr, string_ptr_size,
-                                GET_TT_SHORT(name_table + 10),
-                                GET_TT_SHORT(name_table + 8));
+  for (uint32_t i = 0; i < name_count;
+       i++, name_table = name_table.subspan(12)) {
+    if (GET_TT_SHORT(&name_table[6]) == name_id &&
+        GET_TT_SHORT(&name_table[0]) == 1 &&
+        GET_TT_SHORT(&name_table[2]) == 0) {
+      return GetStringFromTable(string_span, GET_TT_SHORT(&name_table[10]),
+                                GET_TT_SHORT(&name_table[8]));
     }
   }
   return ByteString();
+}
+
+int GetTTCIndex(pdfium::span<const uint8_t> pFontData, uint32_t font_offset) {
+  const uint8_t* p = pFontData.data() + 8;
+  uint32_t nfont = GET_TT_LONG(p);
+  uint32_t index;
+  for (index = 0; index < nfont; index++) {
+    p = pFontData.data() + 12 + index * 4;
+    if (GET_TT_LONG(p) == font_offset)
+      return index;
+  }
+  return 0;
+}
+
+wchar_t PDF_UnicodeFromAdobeName(const char* name) {
+  return (wchar_t)(FXFT_unicode_from_adobe_name(name) & 0x7FFFFFFF);
+}
+
+ByteString PDF_AdobeNameFromUnicode(wchar_t unicode) {
+  char glyph_name[64];
+  FXFT_adobe_name_from_unicode(glyph_name, unicode);
+  return ByteString(glyph_name);
 }

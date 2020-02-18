@@ -43,7 +43,7 @@
 #include "third_party/blink/public/platform/web_url_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -244,8 +244,7 @@ void WebURLResponse::SetIsLegacyTLSVersion(bool value) {
 }
 
 void WebURLResponse::SetSecurityStyle(WebSecurityStyle security_style) {
-  resource_response_->SetSecurityStyle(
-      static_cast<ResourceResponse::SecurityStyle>(security_style));
+  resource_response_->SetSecurityStyle(security_style);
 }
 
 void WebURLResponse::SetSecurityDetails(
@@ -273,12 +272,15 @@ void WebURLResponse::SetSecurityDetails(
       sct_list);
 }
 
-WebURLResponse::WebSecurityDetails WebURLResponse::SecurityDetailsForTesting() {
-  const blink::ResourceResponse::SecurityDetails* security_details =
+base::Optional<WebURLResponse::WebSecurityDetails>
+WebURLResponse::SecurityDetailsForTesting() {
+  const base::Optional<ResourceResponse::SecurityDetails>& security_details =
       resource_response_->GetSecurityDetails();
-  std::vector<SignedCertificateTimestamp> sct_list;
+  if (!security_details.has_value())
+    return base::nullopt;
+  SignedCertificateTimestampList sct_list;
   for (const auto& iter : security_details->sct_list) {
-    sct_list.push_back(SignedCertificateTimestamp(
+    sct_list.emplace_back(SignedCertificateTimestamp(
         iter.status_, iter.origin_, iter.log_description_, iter.log_id_,
         iter.timestamp_, iter.hash_algorithm_, iter.signature_algorithm_,
         iter.signature_data_));
@@ -289,7 +291,7 @@ WebURLResponse::WebSecurityDetails WebURLResponse::SecurityDetailsForTesting() {
       security_details->mac, security_details->subject_name,
       security_details->san_list, security_details->issuer,
       security_details->valid_from, security_details->valid_to,
-      security_details->certificate, SignedCertificateTimestampList(sct_list));
+      security_details->certificate, sct_list);
 }
 
 const ResourceResponse& WebURLResponse::ToResourceResponse() const {
@@ -379,6 +381,14 @@ void WebURLResponse::SetEncodedDataLength(int64_t length) {
   resource_response_->SetEncodedDataLength(length);
 }
 
+int64_t WebURLResponse::EncodedBodyLength() const {
+  return resource_response_->EncodedBodyLength();
+}
+
+void WebURLResponse::SetEncodedBodyLength(int64_t length) {
+  resource_response_->SetEncodedBodyLength(length);
+}
+
 void WebURLResponse::SetIsSignedExchangeInnerResponse(
     bool is_signed_exchange_inner_response) {
   resource_response_->SetIsSignedExchangeInnerResponse(
@@ -413,6 +423,10 @@ void WebURLResponse::SetAsyncRevalidationRequested(bool requested) {
 
 void WebURLResponse::SetNetworkAccessed(bool network_accessed) {
   resource_response_->SetNetworkAccessed(network_accessed);
+}
+
+bool WebURLResponse::FromArchive() const {
+  return resource_response_->FromArchive();
 }
 
 WebURLResponse::WebURLResponse(ResourceResponse& r) : resource_response_(&r) {}

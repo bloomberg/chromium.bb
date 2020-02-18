@@ -23,8 +23,8 @@
 #import "ios/chrome/browser/webui/show_mail_composer_context.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state/web_state.h"
-#include "ios/web/public/web_thread.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #include "ios/web/public/webui/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
@@ -137,7 +137,7 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
   const base::Value::ListStorage& params = list->GetList();
 
   // Determine the capture mode.
-  net::NetLogCaptureMode capture_mode = net::NetLogCaptureMode::Default();
+  net::NetLogCaptureMode capture_mode = net::NetLogCaptureMode::kDefault;
   if (params.size() > 0 && params[0].is_string()) {
     capture_mode = net_log::NetExportFileWriter::CaptureModeFromString(
         params[0].GetString());

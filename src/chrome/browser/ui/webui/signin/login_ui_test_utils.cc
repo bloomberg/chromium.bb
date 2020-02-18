@@ -21,12 +21,12 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 using content::MessageLoopRunner;
 
@@ -42,9 +42,9 @@ const char kGetPasswordFieldFromDiceSigninPage[] =
     "  return e.querySelector('input[type=password]');"
     "})()";
 
-// The SignInObserver observes the signin manager and blocks until a signin
+// The SignInObserver observes the identity manager and blocks until a signin
 // success or failure notification is fired.
-class SignInObserver : public identity::IdentityManager::Observer {
+class SignInObserver : public signin::IdentityManager::Observer {
  public:
   SignInObserver() : seen_(false), running_(false), signed_in_(false) {}
 
@@ -298,7 +298,7 @@ bool SignInWithUI(Browser* browser,
   return false;
 #else
   SignInObserver signin_observer;
-  ScopedObserver<identity::IdentityManager, SignInObserver>
+  ScopedObserver<signin::IdentityManager, SignInObserver>
       scoped_signin_observer(&signin_observer);
   scoped_signin_observer.Add(
       IdentityManagerFactory::GetForProfile(browser->profile()));

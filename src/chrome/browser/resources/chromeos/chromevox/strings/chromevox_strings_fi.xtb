@@ -69,6 +69,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="1383876407941801731">Haku</translation>
 <translation id="1385214448885562192">Hyväksy painamalla enter-painiketta tai peruuta esc-painikkeella, siirry seuraavaan alanuolella ja edelliseen ylänuolella.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Ilmoita rich text ‑määritteistä</translation>
 <translation id="1405567553485452995">Vaaleanvihreä</translation>
 <translation id="1417889266572670458">Laivastonsininen</translation>
 <translation id="1431911867058218151">Luumunpunainen</translation>
@@ -319,11 +320,11 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="3232388865800379423">Ponnahduspainike</translation>
 <translation id="3241052487511142956">Edellinen käyty linkki</translation>
 <translation id="3241638166094654466">Kunkin rivin solut:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">pystysuunta</translation>
 <translation id="3286390186030710347">Liukusäädin</translation>
 <translation id="3299925995433437805">Ei seuraavia käytyjä linkkejä.</translation>
 <translation id="3300348286427369683">Rich Text ‑tuki. ChromeVox tukee nyt Rich Text ‑kenttiä ja niiden ominaisuuksia, kuten siirtymiskomentoja, pistekirjoitusosoittimen ohjausta ja valintaa.</translation>
-<translation id="3304756947457041303">Personoi rich text ‑merkkejä</translation>
 <translation id="3307886118343381874">Siirry taulukon loppuun</translation>
 <translation id="3311969765485641742">Tarkista ilmoitukset painamalla Alt+Shift+A</translation>
 <translation id="3312997241656799641">Seuraava käyty linkki</translation>

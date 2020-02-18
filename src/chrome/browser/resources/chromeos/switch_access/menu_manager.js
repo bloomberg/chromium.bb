@@ -103,6 +103,44 @@ class MenuManager {
   }
 
   /**
+   * Reload the menu.
+   * @param {!chrome.automation.AutomationNode} navNode the node for which the
+   * menu is to be displayed.
+   * @private
+   */
+  reloadMenu_(navNode) {
+    const actionNode = this.node_;
+
+    if (!this.menuPanel_) {
+      console.log('Error: Menu panel has not loaded.');
+      return;
+    }
+
+    const actions = this.getActionsForNode_(navNode);
+    if (actions === null) {
+      return;
+    }
+
+    this.inMenu_ = true;
+    if (actions !== this.actions_) {
+      this.actions_ = actions;
+      this.menuPanel_.setActions(this.actions_);
+    }
+
+    if (navNode.location) {
+      chrome.accessibilityPrivate.setSwitchAccessMenuState(
+          true /* show menu */, navNode.location, actions.length);
+    } else {
+      console.log('Unable to show Switch Access menu.');
+    }
+
+    if (actionNode) {
+      this.node_ = actionNode;
+      this.updateFocusRing_();
+    }
+  }
+
+  /**
    * Exits the menu.
    */
   exit() {
@@ -184,9 +222,19 @@ class MenuManager {
     if (!this.inMenu_ || !this.node_)
       return false;
 
-    this.clearFocusRing_();
-    this.node_.doDefault();
-    this.exit();
+
+    if (window.switchAccess.textEditingEnabled()) {
+      if (this.node_.role == RoleType.BUTTON) {
+        this.node_.doDefault();
+      } else {
+        this.exit();
+      }
+    } else {
+      this.clearFocusRing_();
+      this.node_.doDefault();
+      this.exit();
+    }
+
     return true;
   }
 
@@ -263,6 +311,22 @@ class MenuManager {
     if (SwitchAccessPredicate.isTextInput(node)) {
       actions.push(SAConstants.MenuAction.KEYBOARD);
       actions.push(SAConstants.MenuAction.DICTATION);
+
+      if (window.switchAccess.textEditingEnabled() &&
+          node.state[StateType.FOCUSED]) {
+        actions.push(SAConstants.MenuAction.JUMP_TO_BEGINNING_OF_TEXT);
+        actions.push(SAConstants.MenuAction.JUMP_TO_END_OF_TEXT);
+        actions.push(SAConstants.MenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT);
+        actions.push(SAConstants.MenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT);
+        actions.push(SAConstants.MenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT);
+        actions.push(SAConstants.MenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT);
+        actions.push(SAConstants.MenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT);
+        actions.push(SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT);
+        actions.push(SAConstants.MenuAction.SELECT_START);
+        if (this.navigationManager_.selectionStarted()) {
+          actions.push(SAConstants.MenuAction.SELECT_END);
+        }
+      }
     } else if (actions.length > 0) {
       actions.push(SAConstants.MenuAction.SELECT);
     }
@@ -291,7 +355,13 @@ class MenuManager {
    * @param {!SAConstants.MenuAction} action
    */
   performAction(action) {
-    this.exit();
+    if (!window.switchAccess.textEditingEnabled()) {
+      this.exit();
+    }
+
+    // Whether or not the menu should exit after performing
+    // the action.
+    let exitAfterAction = true;
 
     switch (action) {
       case SAConstants.MenuAction.SELECT:
@@ -312,8 +382,53 @@ class MenuManager {
       case SAConstants.MenuAction.SCROLL_RIGHT:
         this.navigationManager_.scroll(action);
         break;
+      case SAConstants.MenuAction.JUMP_TO_BEGINNING_OF_TEXT:
+        this.navigationManager_.jumpToBeginningOfText();
+        exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.JUMP_TO_END_OF_TEXT:
+        this.navigationManager_.jumpToEndOfText();
+        exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT:
+        this.navigationManager_.moveBackwardOneCharOfText();
+        exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT:
+        this.navigationManager_.moveBackwardOneWordOfText();
+        exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT:
+        this.navigationManager_.moveDownOneLineOfText();
+        exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT:
+        this.navigationManager_.moveForwardOneCharOfText();
+        exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT:
+        this.navigationManager_.moveForwardOneWordOfText();
+        exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT:
+        this.navigationManager_.moveUpOneLineOfText();
+        exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.SELECT_START:
+        this.navigationManager_.setSelectStart();
+        this.reloadMenu_(this.navigationManager_.currentNode());
+        exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.SELECT_END:
+        this.navigationManager_.setSelectEnd();
+        exitAfterAction = false;
+        break;
       default:
         this.navigationManager_.performActionOnCurrentNode(action);
+    }
+
+    if (window.switchAccess.textEditingEnabled() && exitAfterAction) {
+      this.exit();
     }
   }
 

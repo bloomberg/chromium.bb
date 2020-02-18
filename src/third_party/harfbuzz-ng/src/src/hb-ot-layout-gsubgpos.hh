@@ -483,7 +483,13 @@ struct hb_ot_apply_context_t :
 			iter_input (), iter_context (),
 			font (font_), face (font->face), buffer (buffer_),
 			recurse_func (nullptr),
-			gdef (*face->table.GDEF->table),
+			gdef (
+#ifndef HB_NO_OT_LAYOUT
+			      *face->table.GDEF->table
+#else
+			      Null(GDEF)
+#endif
+			     ),
 			var_store (gdef.get_var_store ()),
 			direction (buffer_->props.direction),
 			lookup_mask (1),
@@ -708,7 +714,7 @@ static inline bool intersects_array (const hb_set_t *glyphs,
 {
   return
   + hb_iter (values, count)
-  | hb_map ([&] (const HBUINT16 &_) -> bool { return intersects_func (glyphs, _, intersects_data); })
+  | hb_map ([&] (const HBUINT16 &_) { return intersects_func (glyphs, _, intersects_data); })
   | hb_any
   ;
 }
@@ -1371,7 +1377,8 @@ struct RuleSet
   {
     return
     + hb_iter (rule)
-    | hb_map ([&] (const OffsetTo<Rule> &_) -> bool { return (this+_).intersects (glyphs, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_map ([&] (const Rule &_) { return _.intersects (glyphs, lookup_context); })
     | hb_any
     ;
   }
@@ -1381,7 +1388,8 @@ struct RuleSet
   {
     return
     + hb_iter (rule)
-    | hb_apply ([&] (const OffsetTo<Rule> &_) { (this+_).closure (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_apply ([&] (const Rule &_) { _.closure (c, lookup_context); })
     ;
   }
 
@@ -1390,7 +1398,8 @@ struct RuleSet
   {
     return
     + hb_iter (rule)
-    | hb_apply ([&] (const OffsetTo<Rule> &_) { (this+_).collect_glyphs (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_apply ([&] (const Rule &_) { _.collect_glyphs (c, lookup_context); })
     ;
   }
 
@@ -1399,7 +1408,8 @@ struct RuleSet
   {
     return
     + hb_iter (rule)
-    | hb_map ([&] (const OffsetTo<Rule> &_) -> bool { return (this+_).would_apply (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_map ([&] (const Rule &_) { return _.would_apply (c, lookup_context); })
     | hb_any
     ;
   }
@@ -1410,7 +1420,8 @@ struct RuleSet
     TRACE_APPLY (this);
     return_trace (
     + hb_iter (rule)
-    | hb_map ([&] (const OffsetTo<Rule> &_) -> bool { return (this+_).apply (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_map ([&] (const Rule &_) { return _.apply (c, lookup_context); })
     | hb_any
     )
     ;
@@ -1444,7 +1455,8 @@ struct ContextFormat1
     + hb_zip (this+coverage, ruleSet)
     | hb_filter (*glyphs, hb_first)
     | hb_map (hb_second)
-    | hb_map ([&] (const OffsetTo<RuleSet> &_) -> bool { return (this+_).intersects (glyphs, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_map ([&] (const RuleSet &_) { return _.intersects (glyphs, lookup_context); })
     | hb_any
     ;
   }
@@ -1459,7 +1471,8 @@ struct ContextFormat1
     + hb_zip (this+coverage, ruleSet)
     | hb_filter (*c->glyphs, hb_first)
     | hb_map (hb_second)
-    | hb_apply ([&] (const OffsetTo<RuleSet> &_) { (this+_).closure (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_apply ([&] (const RuleSet &_) { _.closure (c, lookup_context); })
     ;
   }
 
@@ -1473,7 +1486,8 @@ struct ContextFormat1
     };
 
     + hb_iter (ruleSet)
-    | hb_apply ([&] (const OffsetTo<RuleSet> &_) { (this+_).collect_glyphs (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_apply ([&] (const RuleSet &_) { _.collect_glyphs (c, lookup_context); })
     ;
   }
 
@@ -1546,7 +1560,7 @@ struct ContextFormat2
 
     return
     + hb_enumerate (ruleSet)
-    | hb_map ([&] (const hb_pair_t<unsigned, const OffsetTo<RuleSet> &> p) -> bool
+    | hb_map ([&] (const hb_pair_t<unsigned, const OffsetTo<RuleSet> &> p)
 	      { return class_def.intersects_class (glyphs, p.first) &&
 		       (this+p.second).intersects (glyphs, lookup_context); })
     | hb_any
@@ -1567,11 +1581,12 @@ struct ContextFormat2
 
     return
     + hb_enumerate (ruleSet)
-    | hb_filter ([&] (unsigned _) -> bool
+    | hb_filter ([&] (unsigned _)
 		 { return class_def.intersects_class (c->glyphs, _); },
 		 hb_first)
     | hb_map (hb_second)
-    | hb_apply ([&] (const OffsetTo<RuleSet> &_) { (this+_).closure (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_apply ([&] (const RuleSet &_) { _.closure (c, lookup_context); })
     ;
   }
 
@@ -1586,7 +1601,8 @@ struct ContextFormat2
     };
 
     + hb_iter (ruleSet)
-    | hb_apply ([&] (const OffsetTo<RuleSet> &_) { (this+_).collect_glyphs (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_apply ([&] (const RuleSet &_) { _.collect_glyphs (c, lookup_context); })
     ;
   }
 
@@ -2022,7 +2038,8 @@ struct ChainRuleSet
   {
     return
     + hb_iter (rule)
-    | hb_map ([&] (const OffsetTo<ChainRule> &_) -> bool { return (this+_).intersects (glyphs, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_map ([&] (const ChainRule &_) { return _.intersects (glyphs, lookup_context); })
     | hb_any
     ;
   }
@@ -2030,7 +2047,8 @@ struct ChainRuleSet
   {
     return
     + hb_iter (rule)
-    | hb_apply ([&] (const OffsetTo<ChainRule> &_) { (this+_).closure (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_apply ([&] (const ChainRule &_) { _.closure (c, lookup_context); })
     ;
   }
 
@@ -2038,7 +2056,8 @@ struct ChainRuleSet
   {
     return
     + hb_iter (rule)
-    | hb_apply ([&] (const OffsetTo<ChainRule> &_) { (this+_).collect_glyphs (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_apply ([&] (const ChainRule &_) { _.collect_glyphs (c, lookup_context); })
     ;
   }
 
@@ -2046,7 +2065,8 @@ struct ChainRuleSet
   {
     return
     + hb_iter (rule)
-    | hb_map ([&] (const OffsetTo<ChainRule> &_) -> bool { return (this+_).would_apply (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_map ([&] (const ChainRule &_) { return _.would_apply (c, lookup_context); })
     | hb_any
     ;
   }
@@ -2056,7 +2076,8 @@ struct ChainRuleSet
     TRACE_APPLY (this);
     return_trace (
     + hb_iter (rule)
-    | hb_map ([&] (const OffsetTo<ChainRule> &_) -> bool { return (this+_).apply (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_map ([&] (const ChainRule &_) { return _.apply (c, lookup_context); })
     | hb_any
     )
     ;
@@ -2089,7 +2110,8 @@ struct ChainContextFormat1
     + hb_zip (this+coverage, ruleSet)
     | hb_filter (*glyphs, hb_first)
     | hb_map (hb_second)
-    | hb_map ([&] (const OffsetTo<ChainRuleSet> &_) -> bool { return (this+_).intersects (glyphs, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_map ([&] (const ChainRuleSet &_) { return _.intersects (glyphs, lookup_context); })
     | hb_any
     ;
   }
@@ -2104,7 +2126,8 @@ struct ChainContextFormat1
     + hb_zip (this+coverage, ruleSet)
     | hb_filter (*c->glyphs, hb_first)
     | hb_map (hb_second)
-    | hb_apply ([&] (const OffsetTo<ChainRuleSet> &_) { (this+_).closure (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_apply ([&] (const ChainRuleSet &_) { _.closure (c, lookup_context); })
     ;
   }
 
@@ -2118,7 +2141,8 @@ struct ChainContextFormat1
     };
 
     + hb_iter (ruleSet)
-    | hb_apply ([&] (const OffsetTo<ChainRuleSet> &_) { (this+_).collect_glyphs (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_apply ([&] (const ChainRuleSet &_) { _.collect_glyphs (c, lookup_context); })
     ;
   }
 
@@ -2193,9 +2217,9 @@ struct ChainContextFormat2
 
     return
     + hb_enumerate (ruleSet)
-    | hb_map ([&] (const hb_pair_t<unsigned, const OffsetTo<ChainRuleSet> &> p) -> bool
-		   { return input_class_def.intersects_class (glyphs, p.first) &&
-			    (this+p.second).intersects (glyphs, lookup_context); })
+    | hb_map ([&] (const hb_pair_t<unsigned, const OffsetTo<ChainRuleSet> &> p)
+	      { return input_class_def.intersects_class (glyphs, p.first) &&
+		       (this+p.second).intersects (glyphs, lookup_context); })
     | hb_any
     ;
   }
@@ -2217,11 +2241,12 @@ struct ChainContextFormat2
 
     return
     + hb_enumerate (ruleSet)
-    | hb_filter ([&] (unsigned _) -> bool
+    | hb_filter ([&] (unsigned _)
 		 { return input_class_def.intersects_class (c->glyphs, _); },
 		 hb_first)
     | hb_map (hb_second)
-    | hb_apply ([&] (const OffsetTo<ChainRuleSet> &_) { (this+_).closure (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_apply ([&] (const ChainRuleSet &_) { _.closure (c, lookup_context); })
     ;
   }
 
@@ -2241,7 +2266,8 @@ struct ChainContextFormat2
     };
 
     + hb_iter (ruleSet)
-    | hb_apply ([&] (const OffsetTo<ChainRuleSet> &_) { (this+_).collect_glyphs (c, lookup_context); })
+    | hb_map (hb_add (this))
+    | hb_apply ([&] (const ChainRuleSet &_) { _.collect_glyphs (c, lookup_context); })
     ;
   }
 
@@ -2641,11 +2667,17 @@ struct GSUBGPOS
 
   bool find_variations_index (const int *coords, unsigned int num_coords,
 			      unsigned int *index) const
-  { return (version.to_int () >= 0x00010001u ? this+featureVars : Null(FeatureVariations))
-	   .find_index (coords, num_coords, index); }
+  {
+#ifdef HB_NOVAR
+    return false;
+#endif
+    return (version.to_int () >= 0x00010001u ? this+featureVars : Null(FeatureVariations))
+	    .find_index (coords, num_coords, index);
+  }
   const Feature& get_feature_variation (unsigned int feature_index,
 					unsigned int variations_index) const
   {
+#ifndef HB_NO_VAR
     if (FeatureVariations::NOT_FOUND_INDEX != variations_index &&
 	version.to_int () >= 0x00010001u)
     {
@@ -2654,6 +2686,7 @@ struct GSUBGPOS
       if (feature)
 	return *feature;
     }
+#endif
     return get_feature (feature_index);
   }
 
@@ -2664,18 +2697,21 @@ struct GSUBGPOS
     auto *out = c->serializer->embed (*this);
     if (unlikely (!out)) return_trace (false);
 
-    out->scriptList.serialize_subset (c, this+scriptList, out);
-    out->featureList.serialize_subset (c, this+featureList, out);
+    out->scriptList.serialize_subset (c, scriptList, this, out);
+    out->featureList.serialize_subset (c, featureList, this, out);
 
     typedef OffsetListOf<TLookup> TLookupList;
     /* TODO Use intersects() to count how many subtables survive? */
     CastR<OffsetTo<TLookupList>> (out->lookupList)
       .serialize_subset (c,
-			 this+CastR<OffsetTo<TLookupList>> (lookupList),
+			 CastR<OffsetTo<TLookupList>> (lookupList),
+			 this,
 			 out);
 
+#ifndef HB_NO_VAR
     if (version.to_int () >= 0x00010001u)
-     out->featureVars.serialize_copy (c->serializer, this+featureVars, out);
+     out->featureVars.serialize_copy (c->serializer, featureVars, this, out);
+#endif
 
     return_trace (true);
   }
@@ -2691,12 +2727,19 @@ struct GSUBGPOS
   {
     TRACE_SANITIZE (this);
     typedef OffsetListOf<TLookup> TLookupList;
-    return_trace (version.sanitize (c) &&
-		  likely (version.major == 1) &&
-		  scriptList.sanitize (c, this) &&
-		  featureList.sanitize (c, this) &&
-		  CastR<OffsetTo<TLookupList>> (lookupList).sanitize (c, this) &&
-		  (version.to_int () < 0x00010001u || featureVars.sanitize (c, this)));
+    if (unlikely (!(version.sanitize (c) &&
+		    likely (version.major == 1) &&
+		    scriptList.sanitize (c, this) &&
+		    featureList.sanitize (c, this) &&
+		    CastR<OffsetTo<TLookupList>> (lookupList).sanitize (c, this))))
+      return_trace (false);
+
+#ifndef HB_NO_VAR
+    if (unlikely (!(version.to_int () < 0x00010001u || featureVars.sanitize (c, this))))
+      return_trace (false);
+#endif
+
+    return_trace (true);
   }
 
   template <typename T>

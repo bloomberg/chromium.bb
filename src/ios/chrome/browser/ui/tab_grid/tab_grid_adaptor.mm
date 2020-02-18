@@ -9,7 +9,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -42,7 +42,7 @@
   return self.tabGridViewController;
 }
 
-- (Tab*)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
+- (void)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
                         withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
                                   atIndex:(NSUInteger)position {
   NSUInteger tabIndex = position;
@@ -50,19 +50,17 @@
     tabIndex = targetModel.count;
 
   // Create the new tab.
-  Tab* tab = [targetModel insertTabWithLoadParams:urlLoadParams.web_params
-                                           opener:nil
-                                      openedByDOM:NO
-                                          atIndex:tabIndex
-                                     inBackground:NO];
+  [targetModel insertWebStateWithLoadParams:urlLoadParams.web_params
+                                     opener:nil
+                                openedByDOM:NO
+                                    atIndex:tabIndex
+                               inBackground:NO];
 
   // Tell the delegate to display the tab.
   DCHECK(self.delegate);
   [self.delegate tabSwitcher:self
       shouldFinishWithActiveModel:targetModel
                      focusOmnibox:NO];
-
-  return tab;
 }
 
 - (void)setOtrTabModel:(TabModel*)otrModel {

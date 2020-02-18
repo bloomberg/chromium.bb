@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _WINPERF_
@@ -182,7 +182,7 @@ typedef DWORD (WINAPI PM_COLLECT_PROC)(LPWSTR,LPVOID *,LPDWORD,LPDWORD);
 typedef DWORD (WINAPI PM_CLOSE_PROC)(void);
 typedef DWORD (WINAPI PM_QUERY_PROC)(LPDWORD,LPVOID *,LPDWORD,LPDWORD);
 
-#define MAX_PERF_OBJECTS_IN_QUERY_FUNCTION (64L)
+#define MAX_PERF_OBJECTS_IN_QUERY_FUNCTION (__MSABI_LONG(64))
 
 #define WINPERF_LOG_NONE 0
 #define WINPERF_LOG_USER 1

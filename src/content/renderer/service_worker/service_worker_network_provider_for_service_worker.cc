@@ -77,7 +77,7 @@ ServiceWorkerNetworkProviderForServiceWorker::CreateURLLoader(
 }
 
 blink::mojom::ControllerServiceWorkerMode
-ServiceWorkerNetworkProviderForServiceWorker::IsControlledByServiceWorker() {
+ServiceWorkerNetworkProviderForServiceWorker::GetControllerServiceWorkerMode() {
   return blink::mojom::ControllerServiceWorkerMode::kNoController;
 }
 

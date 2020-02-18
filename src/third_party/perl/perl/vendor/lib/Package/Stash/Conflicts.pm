@@ -4,6 +4,8 @@ package # hide from PAUSE
 use strict;
 use warnings;
 
+# this module was generated with Dist::Zilla::Plugin::Conflicts 0.19
+
 use Dist::CheckConflicts
     -dist      => 'Package::Stash',
     -conflicts => {
@@ -13,11 +15,21 @@ use Dist::CheckConflicts
         'namespace::clean' => '0.18',
     },
     -also => [ qw(
+        B
+        Carp
         Dist::CheckConflicts
-        Package::DeprecationManager
+        Getopt::Long
+        Module::Implementation
         Scalar::Util
+        Symbol
+        constant
+        strict
+        warnings
     ) ],
 
 ;
 
 1;
+
+# ABSTRACT: Provide information on conflicts for Package::Stash
+# Dist::Zilla: -PodWeaver

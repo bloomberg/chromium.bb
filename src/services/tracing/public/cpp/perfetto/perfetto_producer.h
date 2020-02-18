@@ -9,7 +9,7 @@
 
 #include "base/component_export.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/tracing_service.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/tracing_service.h"
 
 namespace perfetto {
 class SharedMemoryArbiter;
@@ -55,6 +55,9 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoProducer
   // PerfettoProducer to perform initialization on new data sources.
   virtual void NewDataSourceAdded(
       const PerfettoTracedProcess::DataSourceBase* const data_source) = 0;
+
+  // Returns true if this PerfettoProducer is currently tracing.
+  virtual bool IsTracingActive() = 0;
 
   static void DeleteSoonForTesting(
       std::unique_ptr<PerfettoProducer> perfetto_producer);

@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/android/jni_string.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AssistantPaymentRequestNativeDelegate_jni.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "jni/AssistantPaymentRequestDelegate_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
@@ -23,12 +23,12 @@ AssistantPaymentRequestDelegate::AssistantPaymentRequestDelegate(
     UiControllerAndroid* ui_controller)
     : ui_controller_(ui_controller) {
   java_assistant_payment_request_delegate_ =
-      Java_AssistantPaymentRequestDelegate_create(
+      Java_AssistantPaymentRequestNativeDelegate_create(
           AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
 }
 
 AssistantPaymentRequestDelegate::~AssistantPaymentRequestDelegate() {
-  Java_AssistantPaymentRequestDelegate_clearNativePtr(
+  Java_AssistantPaymentRequestNativeDelegate_clearNativePtr(
       AttachCurrentThread(), java_assistant_payment_request_delegate_);
 }
 
@@ -107,6 +107,13 @@ void AssistantPaymentRequestDelegate::OnTermsAndConditionsChanged(
     jint state) {
   ui_controller_->OnTermsAndConditionsChanged(
       static_cast<TermsAndConditionsState>(state));
+}
+
+void AssistantPaymentRequestDelegate::OnTermsAndConditionsLinkClicked(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint link) {
+  ui_controller_->OnTermsAndConditionsLinkClicked(link);
 }
 
 base::android::ScopedJavaGlobalRef<jobject>

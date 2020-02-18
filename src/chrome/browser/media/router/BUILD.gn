@@ -68,6 +68,9 @@ static_library("router") {
   if (enable_extensions) {
     deps += [
       "discovery",
+      "//components/mirroring/mojom:host",
+      "//components/mirroring/mojom:service",
+      "//components/translate/content/common",
       "//mojo/public/cpp/bindings",
       "//ui/base:buildflags",
     ]
@@ -142,17 +145,27 @@ static_library("router") {
 
     if (enable_openscreen) {
       sources += [
+        "providers/openscreen/discovery/open_screen_listener.cc",
+        "providers/openscreen/discovery/open_screen_listener.h",
         "providers/openscreen/network_service_async_packet_sender.cc",
         "providers/openscreen/network_service_async_packet_sender.h",
         "providers/openscreen/network_service_quic_packet_writer.cc",
         "providers/openscreen/network_service_quic_packet_writer.h",
         "providers/openscreen/platform/logging.cc",
+        "providers/openscreen/platform/task_runner.cc",
+        "providers/openscreen/platform/task_runner.h",
+        "providers/openscreen/platform/time.cc",
+        "providers/openscreen/platform/trace_logging_platform.cc",
       ]
 
       configs +=
           [ "//third_party/openscreen/src/build:allow_build_from_embedder" ]
 
-      deps += [ "//third_party/openscreen/src/platform" ]
+      deps += [
+        "//third_party/openscreen/src/osp/public",
+        "//third_party/openscreen/src/platform",
+        "//third_party/openscreen/src/util",
+      ]
     }
   }
 }

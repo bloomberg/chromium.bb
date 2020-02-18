@@ -31,11 +31,14 @@
 
 namespace dawn_native { namespace opengl {
 
-    Device::Device(AdapterBase* adapter, const DeviceDescriptor* descriptor)
-        : DeviceBase(adapter, descriptor) {
+    Device::Device(AdapterBase* adapter,
+                   const DeviceDescriptor* descriptor,
+                   const OpenGLFunctions& functions)
+        : DeviceBase(adapter, descriptor), gl(functions) {
         if (descriptor != nullptr) {
             ApplyToggleOverrides(descriptor);
         }
+        mFormatTable = BuildGLFormatTable();
     }
 
     Device::~Device() {
@@ -52,6 +55,15 @@ namespace dawn_native { namespace opengl {
         Tick();
     }
 
+    const GLFormat& Device::GetGLFormat(const Format& format) {
+        ASSERT(format.isSupported);
+        ASSERT(format.GetIndex() < mFormatTable.size());
+
+        const GLFormat& result = mFormatTable[format.GetIndex()];
+        ASSERT(result.isSupportedOnBackend);
+        return result;
+    }
+
     ResultOrError<BindGroupBase*> Device::CreateBindGroupImpl(
         const BindGroupDescriptor* descriptor) {
         return new BindGroup(this, descriptor);
@@ -63,8 +75,9 @@ namespace dawn_native { namespace opengl {
     ResultOrError<BufferBase*> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
         return new Buffer(this, descriptor);
     }
-    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoderBase* encoder) {
-        return new CommandBuffer(this, encoder);
+    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoderBase* encoder,
+                                                   const CommandBufferDescriptor* descriptor) {
+        return new CommandBuffer(encoder, descriptor);
     }
     ResultOrError<ComputePipelineBase*> Device::CreateComputePipelineImpl(
         const ComputePipelineDescriptor* descriptor) {
@@ -102,7 +115,7 @@ namespace dawn_native { namespace opengl {
     }
 
     void Device::SubmitFenceSync() {
-        GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+        GLsync sync = gl.FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
         mLastSubmittedSerial++;
         mFencesInFlight.emplace(sync, mLastSubmittedSerial);
     }
@@ -130,12 +143,12 @@ namespace dawn_native { namespace opengl {
 
             // Fence are added in order, so we can stop searching as soon
             // as we see one that's not ready.
-            GLenum result = glClientWaitSync(sync, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+            GLenum result = gl.ClientWaitSync(sync, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
             if (result == GL_TIMEOUT_EXPIRED) {
                 continue;
             }
 
-            glDeleteSync(sync);
+            gl.DeleteSync(sync);
 
             mFencesInFlight.pop();
 

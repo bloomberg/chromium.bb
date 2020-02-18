@@ -265,8 +265,10 @@ class Writer(object):
     def cleanup_files(self, output_dir):
         for file_name in self._cleanup:
             path = os.path.join(output_dir, file_name)
-            if os.path.exists(path):
+            try:
                 os.remove(path)
+            except OSError:
+                pass
 
     def set_gperf_path(self, gperf_path):
         self.gperf_path = gperf_path
@@ -288,12 +290,8 @@ class Maker(object):
         parser.add_argument("files", nargs="+")
 
         parser.add_argument("--gperf", default="gperf")
-        parser.add_argument("--developer_dir", help="Path to Xcode.")
         parser.add_argument("--output_dir", default=os.getcwd())
         args = parser.parse_args()
-
-        if args.developer_dir:
-            os.environ["DEVELOPER_DIR"] = args.developer_dir
 
         writer = self._writer_class(args.files, args.output_dir)
         writer.set_gperf_path(args.gperf)

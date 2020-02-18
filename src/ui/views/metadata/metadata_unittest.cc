@@ -109,7 +109,6 @@ TEST_F(MetadataTest, TestFloatMetadataPropertyAccess) {
       GetMemberMetaData(&test_obj, "FloatProperty");
 
   ASSERT_TRUE(member_data);
-
   base::string16 member_value = member_data->GetValueAsString(&test_obj);
   CHECK_EQ(member_value, base::NumberToString16(start_value));
 }

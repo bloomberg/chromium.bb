@@ -91,6 +91,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static bool IsCreateContextClientArraysSupported();
   static bool IsAndroidNativeFenceSyncSupported();
   static bool IsPixelFormatFloatSupported();
+  static bool IsANGLEFeatureControlSupported();
 
  protected:
   ~GLSurfaceEGL() override;

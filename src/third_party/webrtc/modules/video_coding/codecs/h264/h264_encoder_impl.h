@@ -25,10 +25,10 @@
 #include <vector>
 
 #include "api/video/i420_buffer.h"
+#include "api/video_codecs/video_encoder.h"
 #include "common_video/h264/h264_bitstream_parser.h"
 #include "modules/video_coding/codecs/h264/include/h264.h"
 #include "modules/video_coding/utility/quality_scaler.h"
-
 #include "third_party/openh264/src/codec/api/svc/codec_app_def.h"
 
 class ISVCEncoder;
@@ -48,6 +48,7 @@ class H264EncoderImpl : public H264Encoder {
     uint32_t max_bps = 0;
     bool frame_dropping_on = false;
     int key_frame_interval = 0;
+    int num_temporal_layers = 1;
 
     void SetStreamState(bool send_stream);
   };
@@ -56,7 +57,7 @@ class H264EncoderImpl : public H264Encoder {
   explicit H264EncoderImpl(const cricket::VideoCodec& codec);
   ~H264EncoderImpl() override;
 
-  // |max_payload_size| is ignored.
+  // |settings.max_payload_size| is ignored.
   // The following members of |codec_settings| are used. The rest are ignored.
   // - codecType (must be kVideoCodecH264)
   // - targetBitrate
@@ -64,8 +65,7 @@ class H264EncoderImpl : public H264Encoder {
   // - width
   // - height
   int32_t InitEncode(const VideoCodec* codec_settings,
-                     int32_t number_of_cores,
-                     size_t max_payload_size) override;
+                     const VideoEncoder::Settings& settings) override;
   int32_t Release() override;
 
   int32_t RegisterEncodeCompleteCallback(
@@ -107,8 +107,7 @@ class H264EncoderImpl : public H264Encoder {
   bool has_reported_init_;
   bool has_reported_error_;
 
-  int num_temporal_layers_;
-  uint8_t tl0sync_limit_;
+  std::vector<uint8_t> tl0sync_limit_;
 };
 
 }  // namespace webrtc

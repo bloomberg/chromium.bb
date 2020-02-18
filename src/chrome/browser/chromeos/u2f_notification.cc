@@ -63,9 +63,9 @@ void U2FNotification::CheckStatus(base::Optional<std::set<std::string>> flags) {
   // The legacy implementation is only enabled if either the U2F or G2F flags
   // are present and the user_keys flag is off (the latter enables the improved
   // implementation).
-  if (!(base::ContainsKey(*flags, debugd::u2f_flags::kU2f) ||
-        base::ContainsKey(*flags, debugd::u2f_flags::kG2f)) ||
-      base::ContainsKey(*flags, debugd::u2f_flags::kUserKeys)) {
+  if (!(base::Contains(*flags, debugd::u2f_flags::kU2f) ||
+        base::Contains(*flags, debugd::u2f_flags::kG2f)) ||
+      base::Contains(*flags, debugd::u2f_flags::kUserKeys)) {
     return;
   }
 

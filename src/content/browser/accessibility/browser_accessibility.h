@@ -5,15 +5,17 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_H_
 
-#include <cstdint>
+#include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -89,8 +91,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // its data changes.
   virtual void OnDataChanged() {}
 
-  virtual void OnSubtreeWillBeDeleted() {}
-
   // Called when the location changed.
   virtual void OnLocationChanged() {}
 
@@ -113,11 +113,18 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // Returns true if this is a leaf node on this platform, meaning any
   // children should not be exposed to this platform's native accessibility
-  // layer. Each platform subclass should implement this itself.
+  // layer.
   // The definition of a leaf may vary depending on the platform,
   // but a leaf node should never have children that are focusable or
   // that might send notifications.
-  virtual bool PlatformIsLeaf() const;
+  bool PlatformIsLeaf() const;
+
+  // Returns true if this is a leaf node on this platform, including
+  // ignored nodes, meaning any children should not be exposed to this
+  // platform's native accessibility layer, but a node shouldn't be
+  // considered a leaf node solely because it has only ignored children.
+  // Each platform subclass should implement this itself.
+  virtual bool PlatformIsLeafIncludingIgnored() const;
 
   // Returns true if this object can fire events.
   virtual bool CanFireEvents() const;
@@ -131,7 +138,42 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   virtual BrowserAccessibility* PlatformGetChild(uint32_t child_index) const;
 
   BrowserAccessibility* PlatformGetParent() const;
+  virtual BrowserAccessibility* PlatformGetFirstChild() const;
+  virtual BrowserAccessibility* PlatformGetLastChild() const;
+  virtual BrowserAccessibility* PlatformGetNextSibling() const;
+  virtual BrowserAccessibility* PlatformGetPreviousSibling() const;
 
+  class CONTENT_EXPORT PlatformChildIterator : public ChildIterator {
+   public:
+    PlatformChildIterator(const BrowserAccessibility* parent,
+                          BrowserAccessibility* child);
+    PlatformChildIterator(const PlatformChildIterator& it);
+    ~PlatformChildIterator() override;
+    bool operator==(const ChildIterator& rhs) const override;
+    bool operator!=(const ChildIterator& rhs) const override;
+    void operator++() override;
+    void operator++(int) override;
+    void operator--() override;
+    void operator--(int) override;
+    gfx::NativeViewAccessible GetNativeViewAccessible() const override;
+    BrowserAccessibility* get() const;
+    int GetIndexInParent() const override;
+
+    BrowserAccessibility& operator*() const;
+    BrowserAccessibility* operator->() const;
+
+   private:
+    const BrowserAccessibility* parent_;
+    ui::AXNode::ChildIteratorBase<
+        BrowserAccessibility,
+        &BrowserAccessibility::PlatformGetNextSibling,
+        &BrowserAccessibility::PlatformGetPreviousSibling,
+        &BrowserAccessibility::PlatformGetLastChild>
+        platform_iterator;
+  };
+
+  PlatformChildIterator PlatformChildrenBegin() const;
+  PlatformChildIterator PlatformChildrenEnd() const;
   // Return a pointer to the first ancestor that is a selection container
   BrowserAccessibility* PlatformGetSelectionContainer() const;
 
@@ -140,12 +182,15 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // platform.
   bool PlatformIsChildOfLeaf() const;
 
+  // Returns true if an ancestor of this node (not including itself) is a
+  // leaf node, including ignored nodes, meaning that this node is not
+  // actually exposed to the platform, but a node shouldn't be
+  // considered a leaf node solely because it has only ignored children.
+  bool PlatformIsChildOfLeafIncludingIgnored() const;
+
   // If this object is exposed to the platform, returns this object. Otherwise,
   // returns the platform leaf under which this object is found.
   BrowserAccessibility* GetClosestPlatformObject() const;
-
-  BrowserAccessibility* GetPreviousSibling() const;
-  BrowserAccessibility* GetNextSibling() const;
 
   bool IsPreviousSiblingOnSameLine() const;
   bool IsNextSiblingOnSameLine() const;
@@ -244,13 +289,24 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool instance_active() const { return node_ && manager_; }
   ui::AXNode* node() const { return node_; }
 
-  // These access the internal accessibility tree, which doesn't necessarily
-  // reflect the accessibility tree that should be exposed on each platform.
-  // Use PlatformChildCount and PlatformGetChild to implement platform
+  // These access the internal unignored accessibility tree, which doesn't
+  // necessarily reflect the accessibility tree that should be exposed on each
+  // platform. Use PlatformChildCount and PlatformGetChild to implement platform
   // accessibility APIs.
   uint32_t InternalChildCount() const;
   BrowserAccessibility* InternalGetChild(uint32_t child_index) const;
   BrowserAccessibility* InternalGetParent() const;
+  BrowserAccessibility* InternalGetFirstChild() const;
+  BrowserAccessibility* InternalGetLastChild() const;
+  BrowserAccessibility* InternalGetNextSibling() const;
+  BrowserAccessibility* InternalGetPreviousSibling() const;
+  using InternalChildIterator = ui::AXNode::ChildIteratorBase<
+      BrowserAccessibility,
+      &BrowserAccessibility::InternalGetNextSibling,
+      &BrowserAccessibility::InternalGetPreviousSibling,
+      &BrowserAccessibility::InternalGetLastChild>;
+  InternalChildIterator InternalChildrenBegin() const;
+  InternalChildIterator InternalChildrenEnd() const;
 
   int32_t GetId() const;
   gfx::RectF GetLocation() const;
@@ -375,6 +431,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   base::string16 GetAuthorUniqueId() const override;
   const ui::AXNodeData& GetData() const override;
   const ui::AXTreeData& GetTreeData() const override;
+  const ui::AXTree::Selection GetUnignoredSelection() const override;
   ui::AXNodePosition::AXPositionInstance CreateTextPositionAt(
       int offset,
       ax::mojom::TextAffinity affinity =
@@ -383,6 +440,14 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
+  gfx::NativeViewAccessible GetFirstChild() override;
+  gfx::NativeViewAccessible GetLastChild() override;
+  gfx::NativeViewAccessible GetNextSibling() override;
+  gfx::NativeViewAccessible GetPreviousSibling() override;
+
+  std::unique_ptr<ChildIterator> ChildrenBegin() override;
+  std::unique_ptr<ChildIterator> ChildrenEnd() override;
+
   base::string16 GetHypertext() const override;
   bool SetHypertextSelection(int start_offset, int end_offset) override;
   base::string16 GetInnerText() const override;
@@ -405,7 +470,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
-  int GetIndexInParent() const override;
+  int GetIndexInParent() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
 
   base::Optional<int> FindTextBoundary(
@@ -416,33 +481,34 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;
 
+  std::string GetLanguage() const override;
+
   bool IsTable() const override;
-  int32_t GetTableColCount() const override;
-  int32_t GetTableRowCount() const override;
-  base::Optional<int32_t> GetTableAriaColCount() const override;
-  base::Optional<int32_t> GetTableAriaRowCount() const override;
-  int32_t GetTableCellCount() const override;
-  const std::vector<int32_t> GetColHeaderNodeIds() const override;
-  const std::vector<int32_t> GetColHeaderNodeIds(
-      int32_t col_index) const override;
-  const std::vector<int32_t> GetRowHeaderNodeIds() const override;
-  const std::vector<int32_t> GetRowHeaderNodeIds(
-      int32_t row_index) const override;
-  ui::AXPlatformNode* GetTableCaption() override;
+  base::Optional<int> GetTableColCount() const override;
+  base::Optional<int> GetTableRowCount() const override;
+  base::Optional<int> GetTableAriaColCount() const override;
+  base::Optional<int> GetTableAriaRowCount() const override;
+  base::Optional<int> GetTableCellCount() const override;
+  std::vector<int32_t> GetColHeaderNodeIds() const override;
+  std::vector<int32_t> GetColHeaderNodeIds(int col_index) const override;
+  std::vector<int32_t> GetRowHeaderNodeIds() const override;
+  std::vector<int32_t> GetRowHeaderNodeIds(int row_index) const override;
+  ui::AXPlatformNode* GetTableCaption() const override;
 
   bool IsTableRow() const override;
-  int32_t GetTableRowRowIndex() const override;
+  base::Optional<int> GetTableRowRowIndex() const override;
 
   bool IsTableCellOrHeader() const override;
-  int32_t GetTableCellIndex() const override;
-  int32_t GetTableCellColIndex() const override;
-  int32_t GetTableCellRowIndex() const override;
-  int32_t GetTableCellColSpan() const override;
-  int32_t GetTableCellRowSpan() const override;
-  int32_t GetTableCellAriaColIndex() const override;
-  int32_t GetTableCellAriaRowIndex() const override;
-  int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
-  int32_t CellIndexToId(int32_t cell_index) const override;
+  base::Optional<int> GetTableCellIndex() const override;
+  base::Optional<int> GetTableCellColIndex() const override;
+  base::Optional<int> GetTableCellRowIndex() const override;
+  base::Optional<int> GetTableCellColSpan() const override;
+  base::Optional<int> GetTableCellRowSpan() const override;
+  base::Optional<int> GetTableCellAriaColIndex() const override;
+  base::Optional<int> GetTableCellAriaRowIndex() const override;
+  base::Optional<int32_t> GetCellId(int row_index,
+                                    int col_index) const override;
+  base::Optional<int32_t> CellIndexToId(int cell_index) const override;
 
   bool IsCellOrHeaderOfARIATable() const override;
   bool IsCellOrHeaderOfARIAGrid() const override;
@@ -455,6 +521,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   base::string16 GetStyleNameAttributeAsLocalizedString() const override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
+  bool IsMinimized() const override;
   bool IsWebContent() const override;
   ui::AXPlatformNode* GetTargetNodeForRelation(
       ax::mojom::IntAttribute attr) override;
@@ -466,10 +533,14 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       ax::mojom::IntListAttribute attr) override;
   bool IsOrderedSetItem() const override;
   bool IsOrderedSet() const override;
-  int32_t GetPosInSet() const override;
-  int32_t GetSetSize() const override;
+  base::Optional<int> GetPosInSet() const override;
+  base::Optional<int> GetSetSize() const override;
 
  protected:
+  // The UIA tree formatter needs access to GetUniqueId() to identify the
+  // starting point for tree dumps.
+  friend class AccessibilityTreeFormatterUia;
+
   using BrowserAccessibilityPositionInstance =
       BrowserAccessibilityPosition::AXPositionInstance;
   using AXPlatformRange =
@@ -530,6 +601,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // which they correspond.
   std::set<ui::AXPlatformNode*> GetNodesForNodeIdSet(
       const std::set<int32_t>& ids);
+
+  // If the node has a child tree, get the root node.
+  BrowserAccessibility* PlatformGetRootOfChildTree() const;
 
   // A unique ID, since node IDs are frame-local.
   ui::AXUniqueId unique_id_;

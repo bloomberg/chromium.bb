@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/client_settings.h"
@@ -24,6 +25,7 @@
 #include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
+#include "components/autofill_assistant/browser/user_action.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -49,29 +51,47 @@ class Controller : public ScriptExecutorDelegate,
                    private content::WebContentsObserver {
  public:
   // |web_contents|, |client| and |tick_clock| must remain valid for the
-  // lifetime of the instance.
+  // lifetime of the instance. Controller will take ownership of |service| if
+  // specified, otherwise will create and own the default service.
   Controller(content::WebContents* web_contents,
              Client* client,
-             const base::TickClock* tick_clock);
+             const base::TickClock* tick_clock,
+             std::unique_ptr<Service> service);
   ~Controller() override;
 
-  // Returns true if the controller is in a state where UI is necessary.
-  bool NeedsUI() const;
+  // Let the controller know it should keep tracking script availability for the
+  // current domain, to be ready to report any scripts as action.
+  //
+  // Activates the controller, if needed and runs it in the background, without
+  // showing any UI until a script is started or Start() is called.
+  //
+  // Only the context of the first call to Track() is taken into account.
+  //
+  // If non-null |on_first_check_done| is called once the result of the first
+  // check of script availability are in - whether they're positive or negative.
+  void Track(std::unique_ptr<TriggerContext> trigger_context,
+             base::OnceCallback<void()> on_first_check_done);
 
-  // Called when autofill assistant can start executing scripts.
-  void Start(const GURL& deeplink_url,
+  // Called when autofill assistant should start.
+  //
+  // This shows a UI, containing a progress bar, and executes the first
+  // available autostartable script. Starts checking for scripts, if necessary.
+  //
+  // Start() does nothing if called more than once or if a script is already
+  // running.
+  //
+  // Start() will overwrite any context previously set by Track().
+  bool Start(const GURL& deeplink_url,
              std::unique_ptr<TriggerContext> trigger_context);
 
-  // Lets the controller know it's about to be deleted. This is normally called
-  // from the client.
-  void WillShutdown(Metrics::DropOutReason reason);
+  // Returns true if the controller is in a state where UI is necessary.
+  bool NeedsUI() const { return needs_ui_; }
 
   // Overrides ScriptExecutorDelegate:
   const ClientSettings& GetSettings() override;
   const GURL& GetCurrentURL() override;
   const GURL& GetDeeplinkURL() override;
   Service* GetService() override;
-  UiController* GetUiController() override;
   WebController* GetWebController() override;
   ClientMemory* GetClientMemory() override;
   const TriggerContext* GetTriggerContext() override;
@@ -80,26 +100,35 @@ class Controller : public ScriptExecutorDelegate,
   void SetTouchableElementArea(const ElementAreaProto& area) override;
   void SetStatusMessage(const std::string& message) override;
   std::string GetStatusMessage() const override;
+  void SetBubbleMessage(const std::string& message) override;
+  std::string GetBubbleMessage() const override;
   void SetDetails(std::unique_ptr<Details> details) override;
   void SetInfoBox(const InfoBox& info_box) override;
   void ClearInfoBox() override;
   void SetProgress(int progress) override;
   void SetProgressVisible(bool visible) override;
-  void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
-  void SetResizeViewport(bool resize_viewport) override;
+  void SetUserActions(
+      std::unique_ptr<std::vector<UserAction>> user_actions) override;
+  void SetViewportMode(ViewportMode mode) override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
   bool SetForm(std::unique_ptr<FormProto> form,
                base::RepeatingCallback<void(const FormProto::Result*)> callback)
       override;
   bool IsNavigatingToNewDocument() override;
   bool HasNavigationError() override;
+
+  // Show the UI if it's not already shown. This is only meaningful while in
+  // states where showing the UI is optional, such as RUNNING, in tracking mode.
+  void RequireUI() override;
+
   void AddListener(ScriptExecutorDelegate::Listener* listener) override;
   void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
 
   void EnterState(AutofillAssistantState state) override;
-  bool IsCookieExperimentEnabled() const;
   void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) override;
+  void OnScriptError(const std::string& error_message,
+                     Metrics::DropOutReason reason);
 
   // Overrides autofill_assistant::UiDelegate:
   AutofillAssistantState GetState() override;
@@ -109,10 +138,10 @@ class Controller : public ScriptExecutorDelegate,
   const InfoBox* GetInfoBox() const override;
   int GetProgress() const override;
   bool GetProgressVisible() const override;
-  const std::vector<Chip>& GetSuggestions() const override;
-  void SelectSuggestion(int index) override;
-  const std::vector<Chip>& GetActions() const override;
-  void SelectAction(int index) override;
+  const std::vector<UserAction>& GetUserActions() const override;
+  bool PerformUserActionWithContext(
+      int index,
+      std::unique_ptr<TriggerContext> context) override;
   std::string GetDebugContext() override;
   const PaymentRequestOptions* GetPaymentRequestOptions() const override;
   const PaymentInformation* GetPaymentRequestInformation() const override;
@@ -126,11 +155,15 @@ class Controller : public ScriptExecutorDelegate,
   void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) override;
   void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) override;
+  void OnTermsAndConditionsLinkClicked(int link) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
+  void GetRestrictedArea(std::vector<RectF>* area) const override;
   void GetVisualViewport(RectF* visual_viewport) const override;
   void OnFatalError(const std::string& error_message,
                     Metrics::DropOutReason reason) override;
-  bool GetResizeViewport() override;
+  void PerformDelayedShutdownIfNecessary();
+  void MaybeReportFirstCheckDone();
+  ViewportMode GetViewportMode() override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
   void GetOverlayColors(OverlayColors* colors) const override;
   const FormProto* GetForm() const override;
@@ -138,20 +171,33 @@ class Controller : public ScriptExecutorDelegate,
   void SetChoiceSelected(int input_index,
                          int choice_index,
                          bool selected) override;
+  void AddObserver(ControllerObserver* observer) override;
+  void RemoveObserver(const ControllerObserver* observer) override;
 
  private:
   friend ControllerTest;
 
-  void SetWebControllerAndServiceForTest(
-      std::unique_ptr<WebController> web_controller,
-      std::unique_ptr<Service> service);
+  void SetWebControllerForTest(std::unique_ptr<WebController> web_controller);
 
+  // Called when the committed URL has or might have changed.
+  void OnUrlChange();
+
+  // Returns true if the controller should keep checking for scripts according
+  // to the current state.
+  bool ShouldCheckScripts();
+
+  // If the controller's state requires scripts to be checked, check them
+  // once right now and schedule regular checks. Otherwise, do nothing.
   void GetOrCheckScripts();
+
   void OnGetScripts(const GURL& url, bool result, const std::string& response);
 
   // Execute |script_path| and, if execution succeeds, enter |end_state| and
   // call |on_success|.
   void ExecuteScript(const std::string& script_path,
+                     const std::string& start_message,
+                     bool needs_ui,
+                     std::unique_ptr<TriggerContext> context,
                      AutofillAssistantState end_state);
   void OnScriptExecuted(const std::string& script_path,
                         AutofillAssistantState end_state,
@@ -172,25 +218,18 @@ class Controller : public ScriptExecutorDelegate,
 
   void DisableAutostart();
 
-  // Autofill Assistant cookie logic.
-  //
-  // On startup of the controller we set a cookie. If a cookie already existed
-  // for the intial URL, we show a warning that the website has already been
-  // visited and could contain old data. The cookie is cleared (or expires) when
-  // a script terminated with a Stop action.
-  void OnGetCookie(bool has_cookie);
-  void OnSetCookie(bool result);
-  void FinishStart();
   void InitFromParameters();
 
   // Called when a script is selected.
-  void OnScriptSelected(const std::string& script_path);
+  void OnScriptSelected(const ScriptHandle& handle,
+                        std::unique_ptr<TriggerContext> context);
 
   void UpdatePaymentRequestActions();
   void OnPaymentRequestContinueButtonClicked();
+  void OnPaymentRequestAdditionalActionTriggered(int index);
 
   // Overrides ScriptTracker::Listener:
-  void OnNoRunnableScripts() override;
+  void OnNoRunnableScriptsForPage() override;
   void OnRunnableScriptsChanged(
       const std::vector<ScriptHandle>& runnable_scripts) override;
 
@@ -208,9 +247,9 @@ class Controller : public ScriptExecutorDelegate,
       content::RenderWidgetHost* render_widget_host) override;
 
   void OnTouchableAreaChanged(const RectF& visual_viewport,
-                              const std::vector<RectF>& areas);
+                              const std::vector<RectF>& touchable_areas,
+                              const std::vector<RectF>& restricted_areas);
 
-  void SelectChip(std::vector<Chip>* chips, int chip_index);
   void SetOverlayColors(std::unique_ptr<OverlayColors> colors);
   void ReportNavigationStateChanged();
 
@@ -219,12 +258,11 @@ class Controller : public ScriptExecutorDelegate,
 
   ElementArea* touchable_element_area();
   ScriptTracker* script_tracker();
+  bool allow_autostart() { return state_ == AutofillAssistantState::STARTING; }
 
   ClientSettings settings_;
   Client* const client_;
   const base::TickClock* const tick_clock_;
-
-  std::unique_ptr<UiController> noop_ui_controller_;
 
   // Lazily instantiate in GetWebController().
   std::unique_ptr<WebController> web_controller_;
@@ -245,7 +283,6 @@ class Controller : public ScriptExecutorDelegate,
 
   // Domain of the last URL the controller requested scripts from.
   std::string script_domain_;
-  bool allow_autostart_ = true;
 
   // Whether a task for periodic checks is scheduled.
   bool periodic_script_check_scheduled_ = false;
@@ -273,6 +310,9 @@ class Controller : public ScriptExecutorDelegate,
   // Current status message, may be empty.
   std::string status_message_;
 
+  // Current bubble / tooltip message, may be empty.
+  std::string bubble_message_;
+
   // Current details, may be null.
   std::unique_ptr<Details> details_;
 
@@ -285,26 +325,17 @@ class Controller : public ScriptExecutorDelegate,
   // Current visibility of the progress bar. It is initially visible.
   bool progress_visible_ = true;
 
-  // Current set of suggestions. May be null, but never empty.
-  std::unique_ptr<std::vector<Chip>> suggestions_;
+  // Current set of user actions. May be null, but never empty.
+  std::unique_ptr<std::vector<UserAction>> user_actions_;
 
-  // Current set of actions. May be null, but never empty.
-  std::unique_ptr<std::vector<Chip>> actions_;
-
-  // Whether the viewport should be resized.
-  bool resize_viewport_ = false;
+  // Current viewport mode.
+  ViewportMode viewport_mode_ = ViewportMode::NO_RESIZE;
 
   // Current peek mode.
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;
 
   std::unique_ptr<OverlayColors> overlay_colors_;
-
-  // Flag indicates whether it is ready to fetch and execute scripts.
-  bool started_ = false;
-
-  // True once UiController::WillShutdown has been called.
-  bool will_shutdown_ = false;
 
   std::unique_ptr<PaymentRequestOptions> payment_request_options_;
   std::unique_ptr<PaymentInformation> payment_request_info_;
@@ -326,6 +357,36 @@ class Controller : public ScriptExecutorDelegate,
   // actions.
   // Lazily instantiate in script_tracker().
   std::unique_ptr<ScriptTracker> script_tracker_;
+
+  base::ObserverList<ControllerObserver> observers_;
+
+  // If true, the controller is supposed to stay up and running in the
+  // background even without UI, keeping track of scripts.
+  //
+  // This has two main effects:
+  // - the controllers stays alive even after a fatal error, just so it can
+  // immediately report that no actions are available on that website.
+  // - scripts error are not considered fatal errors. The controller reverts
+  // to TRACKING mode.
+  //
+  // This is set by Track().
+  bool tracking_ = false;
+
+  // Whether the controller is in a state in which a UI should be shown.
+  bool needs_ui_ = false;
+
+  // True once the controller has run the first set of scripts and have either
+  // declared it invalid - and entered stopped state - or have processed its
+  // result - and updated the state and set of available actions.
+  bool has_run_first_check_ = false;
+
+  // Callbacks to call when |has_run_first_check_| becomes true.
+  std::vector<base::OnceCallback<void()>> on_has_run_first_check_;
+
+  // If set, the controller entered the STOPPED state but shutdown was delayed
+  // until the browser has left the |script_domain_| for which the decision was
+  // taken.
+  base::Optional<Metrics::DropOutReason> delayed_shutdown_reason_;
 
   base::WeakPtrFactory<Controller> weak_ptr_factory_;
 

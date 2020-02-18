@@ -61,6 +61,8 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
       scroll_state_data.is_in_inertial_phase =
           (event.data.scroll_begin.inertial_phase ==
            WebGestureEvent::InertialPhaseState::kMomentum);
+      scroll_state_data.delta_granularity =
+          static_cast<double>(event.data.scroll_begin.delta_hint_units);
       break;
     case WebInputEvent::kGestureScrollUpdate:
       scroll_state_data.delta_x = -event.data.scroll_update.delta_x;
@@ -70,6 +72,8 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
       scroll_state_data.is_in_inertial_phase =
           event.data.scroll_update.inertial_phase ==
           WebGestureEvent::InertialPhaseState::kMomentum;
+      scroll_state_data.delta_granularity =
+          static_cast<double>(event.data.scroll_update.delta_units);
       break;
     case WebInputEvent::kGestureScrollEnd:
       scroll_state_data.is_ending = true;
@@ -184,8 +188,10 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
         new InputScrollElasticityController(scroll_elasticity_helper));
   }
   compositor_event_queue_ = std::make_unique<CompositorThreadEventQueue>();
-  scroll_predictor_ = std::make_unique<ScrollPredictor>(
-      base::FeatureList::IsEnabled(features::kResamplingScrollEvents));
+  scroll_predictor_ =
+      base::FeatureList::IsEnabled(features::kResamplingScrollEvents)
+          ? std::make_unique<ScrollPredictor>()
+          : nullptr;
 
   if (base::FeatureList::IsEnabled(features::kSkipTouchEventFilter) &&
       GetFieldTrialParamValueByFeature(
@@ -384,19 +390,14 @@ void InputHandlerProxy::EnsureScrollUpdateLatencyComponent(
       (is_first_gesture_scroll_update_)
           ? ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT
           : ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-      original_timestamp, 1);
+      original_timestamp);
 }
 
 void InputHandlerProxy::DispatchQueuedInputEvents() {
   // Calling |NowTicks()| is expensive so we only want to do it once.
   base::TimeTicks now = tick_clock_->NowTicks();
-  while (!compositor_event_queue_->empty()) {
-    std::unique_ptr<EventWithCallback> event_with_callback =
-        scroll_predictor_->ResampleScrollEvents(compositor_event_queue_->Pop(),
-                                                now);
-
-    DispatchSingleInputEvent(std::move(event_with_callback), now);
-  }
+  while (!compositor_event_queue_->empty())
+    DispatchSingleInputEvent(compositor_event_queue_->Pop(), now);
 }
 
 // This function handles creating synthetic Gesture events. It is currently used
@@ -902,14 +903,14 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
   expect_scroll_update_end_ = false;
 #endif
 
-  cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
-  input_handler_->ScrollEnd(&scroll_state, true);
-
   if (scroll_sequence_ignored_)
     return DROP_EVENT;
 
   if (!gesture_scroll_on_impl_thread_)
     return DID_NOT_HANDLE;
+
+  cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
+  input_handler_->ScrollEnd(&scroll_state, true);
 
   if (scroll_elasticity_controller_)
     HandleScrollElasticityOverscroll(gesture_event,
@@ -1091,8 +1092,25 @@ void InputHandlerProxy::UpdateRootLayerStateForSynchronousInputHandler(
   }
 }
 
-void InputHandlerProxy::DeliverInputForBeginFrame() {
-  DispatchQueuedInputEvents();
+void InputHandlerProxy::DeliverInputForBeginFrame(
+    const viz::BeginFrameArgs& args) {
+  if (!scroll_predictor_)
+    DispatchQueuedInputEvents();
+
+  // Resampling GSUs and dispatch queued input events.
+  while (!compositor_event_queue_->empty()) {
+    std::unique_ptr<EventWithCallback> event_with_callback =
+        scroll_predictor_->ResampleScrollEvents(compositor_event_queue_->Pop(),
+                                                args.frame_time);
+
+    DispatchSingleInputEvent(std::move(event_with_callback), args.frame_time);
+  }
+}
+
+void InputHandlerProxy::DeliverInputForHighLatencyMode() {
+  // When prediction enabled, do not handle input after commit complete.
+  if (!scroll_predictor_)
+    DispatchQueuedInputEvents();
 }
 
 void InputHandlerProxy::SetOnlySynchronouslyAnimateRootFlings(

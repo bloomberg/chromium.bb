@@ -4,6 +4,7 @@
 import("//build/buildflag_header.gni")
 import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
+import("//testing/test.gni")
 
 declare_args() {
   # Defines bounds for the output buffer size (in frames)
@@ -14,6 +15,8 @@ declare_args() {
 
 cast_source_set("audio") {
   sources = [
+    "cast_audio_input_stream.cc",
+    "cast_audio_input_stream.h",
     "cast_audio_manager.cc",
     "cast_audio_manager.h",
     "cast_audio_mixer.cc",
@@ -27,6 +30,7 @@ cast_source_set("audio") {
     "//base",
     "//chromecast/base",
     "//chromecast/common/mojom",
+    "//chromecast/media/audio/capture_service:receiver",
     "//chromecast/media/audio/mixer_service:connection",
     "//chromecast/media/audio/mixer_service:proto",
     "//chromecast/media/base",
@@ -43,7 +47,10 @@ cast_source_set("audio") {
       "cast_audio_manager_alsa.cc",
       "cast_audio_manager_alsa.h",
     ]
-    deps += [ "//content/public/browser" ]
+    deps += [
+      ":audio_buildflags",
+      "//content/public/browser",
+    ]
   }
 
   configs += [ "//media/audio:platform_config" ]
@@ -94,10 +101,27 @@ buildflag_header("audio_buildflags") {
     "MINIMUM_OUTPUT_BUFFER_SIZE_IN_FRAMES=$minimum_output_buffer_size_in_frames",
     "MAXIMUM_OUTPUT_BUFFER_SIZE_IN_FRAMES=$maximum_output_buffer_size_in_frames",
     "DEFAULT_OUTPUT_BUFFER_SIZE_IN_FRAMES=$default_output_buffer_size_in_frames",
+    "ENABLE_AUDIO_CAPTURE_SERVICE=$enable_audio_capture_service",
   ]
 
   if (use_alsa) {
     # Currently, this flag will only be used in cast_audio_manager_alsa.cc
     flags += [ "AUDIO_INPUT_SAMPLE_RATE=$audio_input_sample_rate" ]
   }
+}
+
+cast_source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "mock_audio_input_callback.h",
+  ]
+
+  public_deps = [
+    "//testing/gmock",
+  ]
+
+  deps = [
+    "//media",
+  ]
 }

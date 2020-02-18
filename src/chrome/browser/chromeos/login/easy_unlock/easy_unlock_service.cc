@@ -119,18 +119,6 @@ class EasyUnlockService::BluetoothDetector
     adapter_ = adapter;
     adapter_->AddObserver(this);
     service_->OnBluetoothAdapterPresentChanged();
-
-    // TODO(tengs): At the moment, there is no way for Bluetooth discoverability
-    // to be turned on except through the Easy Unlock setup. If we step on any
-    // toes in the future then we need to revisit this guard.
-    if (adapter_->IsDiscoverable())
-      TurnOffBluetoothDiscoverability();
-  }
-
-  void TurnOffBluetoothDiscoverability() {
-    if (adapter_) {
-      adapter_->SetDiscoverable(false, base::DoNothing(), base::DoNothing());
-    }
   }
 
   // Owner of this class and should out-live this class.
@@ -206,7 +194,14 @@ EasyUnlockService::EasyUnlockService(
       tpm_key_checked_(false),
       weak_ptr_factory_(this) {}
 
-EasyUnlockService::~EasyUnlockService() {}
+EasyUnlockService::~EasyUnlockService() {
+  // TODO(crbug.com/969135): Remove this once crbug.com/969135 is resolved.
+  // This CHECK ensures that EasyUnlockService is shutdown before it's deleted.
+  // This is added because the stack trace of the crash in question implies
+  // that a deleted member variable of EasyUnlockService is being touched during
+  // EasyUnlockService::Shutdown().
+  CHECK(shut_down_);
+}
 
 // static
 void EasyUnlockService::RegisterProfilePrefs(
@@ -637,6 +632,9 @@ EasyUnlockService::GetSmartUnlockPasswordAuthEvent() const {
       case ScreenlockState::PHONE_NOT_LOCKABLE:
         return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
             kPhoneNotLockable;
+      case ScreenlockState::PRIMARY_USER_ABSENT:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kPrimaryUserAbsent;
       default:
         NOTREACHED();
         return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
@@ -698,6 +696,8 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
         return PASSWORD_ENTRY_WITH_AUTHENTICATED_PHONE;
       case ScreenlockState::PASSWORD_REAUTH:
         return PASSWORD_ENTRY_FORCED_REAUTH;
+      case ScreenlockState::PRIMARY_USER_ABSENT:
+        return PASSWORD_ENTRY_PRIMARY_USER_ABSENT;
     }
   }
 

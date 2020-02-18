@@ -3,10 +3,9 @@ Tests list of user metrics codes and invocations.
 recordActionTaken:
 {
     AnimationsPlaybackRateChanged : 11
-    Audits2Finished : 30
-    Audits2Started : 29
-    Audits2ViewTrace : 32
-    AuditsStarted : 7
+    AuditsFinished : 30
+    AuditsStarted : 29
+    AuditsViewTrace : 32
     ChangeInspectedNodeInElementsPanel : 26
     CommandEvaluatedInConsolePanel : 15
     ConnectToNodeJSDirectly : 20
@@ -21,6 +20,7 @@ recordActionTaken:
     FileSavedInWorkspace : 9
     FileSystemDirectoryContentReceived : 13
     FilmStripStartedRecording : 33
+    LegacyAuditsStarted-deprecated : 7
     ProfilesCPUProfileTaken : 5
     ProfilesHeapProfileTaken : 6
     ResizedViewInResponsiveMode : 17
@@ -41,8 +41,7 @@ Action taken: WindowUndocked
 
 recordPanelShown:
 {
-    audits : 7
-    audits2 : 18
+    audits : 18
     console : 8
     drawer-animations : 11
     drawer-console-view : 10
@@ -54,6 +53,7 @@ recordPanelShown:
     heap_profiler : 6
     js_profiler : 17
     layers : 9
+    legacy-audits-deprecated : 7
     network : 3
     resources : 2
     security : 16

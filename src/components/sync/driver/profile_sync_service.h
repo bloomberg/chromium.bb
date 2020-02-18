@@ -12,7 +12,6 @@
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -21,6 +20,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "components/invalidation/public/identity_provider.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
@@ -44,7 +44,6 @@
 #include "components/version_info/channel.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -70,7 +69,7 @@ class ProfileSyncService : public SyncService,
                            public SyncPrefObserver,
                            public DataTypeManagerObserver,
                            public UnrecoverableErrorHandler,
-                           public identity::IdentityManager::Observer {
+                           public signin::IdentityManager::Observer {
  public:
   // If AUTO_START, sync will set IsFirstSetupComplete() automatically and sync
   // will begin syncing without the user needing to confirm sync settings.
@@ -89,7 +88,7 @@ class ProfileSyncService : public SyncService,
     ~InitParams();
 
     std::unique_ptr<SyncClient> sync_client;
-    identity::IdentityManager* identity_manager = nullptr;
+    signin::IdentityManager* identity_manager = nullptr;
     std::vector<invalidation::IdentityProvider*>
         invalidations_identity_providers;
     StartBehavior start_behavior = MANUAL_START;
@@ -135,6 +134,8 @@ class ProfileSyncService : public SyncService,
   void TriggerRefresh(const ModelTypeSet& types) override;
   void ReadyForStartChanged(ModelType type) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
+  UserDemographicsResult GetUserNoisedBirthYearAndGender(
+      base::Time now) override;
   void AddObserver(SyncServiceObserver* observer) override;
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;
@@ -185,7 +186,7 @@ class ProfileSyncService : public SyncService,
 
   // IdentityManager::Observer implementation.
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
   // Similar to above but with a callback that will be invoked on completion.
@@ -258,8 +259,6 @@ class ProfileSyncService : public SyncService,
   SyncClient* GetSyncClientForTest();
 
  private:
-  friend class TestProfileSyncService;
-
   // Passed as an argument to StopImpl to control whether or not the sync
   // engine should clear its data directory when it shuts down. See StopImpl
   // for more information.
@@ -345,10 +344,6 @@ class ProfileSyncService : public SyncService,
   // Tell the sync server that this client has disabled sync.
   void RemoveClientFromServer() const;
 
-  // Called when the system is under memory pressure.
-  void OnMemoryPressure(
-      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
-
   // Check if previous shutdown is shutdown cleanly.
   void ReportPreviousSessionMemoryWarningCount();
 
@@ -373,7 +368,7 @@ class ProfileSyncService : public SyncService,
 
   // Encapsulates user signin - used to set/get the user's authenticated
   // email address and sign-out upon error.
-  identity::IdentityManager* const identity_manager_;
+  signin::IdentityManager* const identity_manager_;
 
   // The user-configurable knobs. Non-null between Initialize() and Shutdown().
   std::unique_ptr<SyncUserSettingsImpl> user_settings_;
@@ -482,9 +477,6 @@ class ProfileSyncService : public SyncService,
 
   std::unique_ptr<SyncStoppedReporter> sync_stopped_reporter_;
 
-  // Listens for the system being under memory pressure.
-  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
-
   // Whether the major version has changed since the last time Chrome ran,
   // and therefore a passphrase required state should result in prompting
   // the user. This logic is only enabled on platforms that consume the
@@ -496,9 +488,9 @@ class ProfileSyncService : public SyncService,
   bool is_stopping_and_clearing_;
 
   // This weak factory invalidates its issued pointers when Sync is disabled.
-  base::WeakPtrFactory<ProfileSyncService> sync_enabled_weak_factory_;
+  base::WeakPtrFactory<ProfileSyncService> sync_enabled_weak_factory_{this};
 
-  base::WeakPtrFactory<ProfileSyncService> weak_factory_;
+  base::WeakPtrFactory<ProfileSyncService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

@@ -4,11 +4,13 @@
 
 #include "chrome/browser/chromeos/arc/intent_helper/arc_external_protocol_dialog.h"
 
+#include <map>
 #include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
 #include "chrome/browser/chromeos/apps/intent_helper/chromeos_apps_navigation_throttle.h"
@@ -386,12 +388,13 @@ void OnIntentPickerClosed(int render_process_host_id,
   }
 
   if (!instance)
-    reason = apps::IntentPickerCloseReason::PICKER_ERROR;
+    reason = apps::IntentPickerCloseReason::ERROR_AFTER_PICKER;
 
   if (reason == apps::IntentPickerCloseReason::OPEN_APP ||
       reason == apps::IntentPickerCloseReason::STAY_IN_CHROME) {
     if (selected_app_index == handlers.size()) {
-      reason = apps::IntentPickerCloseReason::PICKER_ERROR;
+      // Selected app does not exist.
+      reason = apps::IntentPickerCloseReason::ERROR_AFTER_PICKER;
     }
   }
 
@@ -423,7 +426,11 @@ void OnIntentPickerClosed(int render_process_host_id,
       LOG(ERROR) << "Chrome is not a valid option for external protocol URLs";
       NOTREACHED();
       return;  // no UMA recording.
-    case apps::IntentPickerCloseReason::PICKER_ERROR:
+    case apps::IntentPickerCloseReason::ERROR_BEFORE_PICKER:
+      // This can happen since an error could occur right before invoking
+      // Show() on the bubble's UI code.
+      FALLTHROUGH;
+    case apps::IntentPickerCloseReason::ERROR_AFTER_PICKER:
       LOG(ERROR) << "IntentPickerBubbleView returned CloseReason::ERROR: "
                  << "instance=" << instance
                  << ", selected_app_index=" << selected_app_index
@@ -436,8 +443,29 @@ void OnIntentPickerClosed(int render_process_host_id,
       break;
   }
 
+  const std::map<base::StringPiece, Scheme> string_to_scheme = {
+      {"bitcoin", Scheme::BITCOIN}, {"geo", Scheme::GEO},
+      {"im", Scheme::IM},           {"irc", Scheme::IRC},
+      {"magnet", Scheme::MAGNET},   {"mailto", Scheme::MAILTO},
+      {"mms", Scheme::MMS},         {"sip", Scheme::SIP},
+      {"skype", Scheme::SKYPE},     {"sms", Scheme::SMS},
+      {"spotify", Scheme::SPOTIFY}, {"ssh", Scheme::SSH},
+      {"tel", Scheme::TEL},         {"telnet", Scheme::TELNET},
+      {"webcal", Scheme::WEBCAL}};
+
+  bool protocol_accepted =
+      (reason == apps::IntentPickerCloseReason::OPEN_APP) ? true : false;
+
+  Scheme url_scheme = Scheme::OTHER;
+  base::StringPiece scheme = url.scheme_piece();
+  auto scheme_it = string_to_scheme.find(scheme);
+  if (scheme_it != string_to_scheme.end())
+    url_scheme = scheme_it->second;
+  RecordUmaDialogAction(url_scheme, protocol_accepted, should_persist);
+
   chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
-      selected_app_package, app_type, reason, should_persist);
+      selected_app_package, app_type, reason, apps::Source::kExternalProtocol,
+      should_persist);
 }
 
 // Called when ARC returned activity icons for the |handlers|.
@@ -474,7 +502,7 @@ void OnAppIconsReceived(
   const bool stay_in_chrome = IsChromeAnAppCandidate(handlers);
   IntentPickerTabHelper::SetShouldShowIcon(web_contents, true);
   browser->window()->ShowIntentPickerBubble(
-      std::move(app_info), stay_in_chrome, /*show_remember_selection=*/true,
+      std::move(app_info), stay_in_chrome, /*show_persistence_options=*/true,
       base::BindOnce(OnIntentPickerClosed, render_process_host_id, routing_id,
                      url, safe_to_bypass_ui, std::move(handlers)));
 }
@@ -521,6 +549,7 @@ void OnUrlHandlerList(int render_process_host_id,
       chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
           std::string(), apps::mojom::AppType::kArc,
           apps::IntentPickerCloseReason::PREFERRED_APP_FOUND,
+          apps::Source::kExternalProtocol,
           /*should_persist=*/false);
     }
     return;  // the |url| has been handled.
@@ -613,6 +642,122 @@ bool GetAndResetSafeToRedirectToArcWithoutUserConfirmationFlagForTesting(
 bool IsChromeAnAppCandidateForTesting(
     const std::vector<mojom::IntentHandlerInfoPtr>& handlers) {
   return IsChromeAnAppCandidate(handlers);
+}
+
+void RecordUmaDialogAction(Scheme scheme, bool accepted, bool persisted) {
+  ProtocolAction action = GetProtocolAction(scheme, accepted, persisted);
+  if (accepted) {
+    base::UmaHistogramEnumeration(
+        "ChromeOS.Apps.ExternalProtocolDialog.Accepted", action,
+        ProtocolAction::kMaxValue);
+  } else {
+    base::UmaHistogramEnumeration(
+        "ChromeOS.Apps.ExternalProtocolDialog.Rejected", action,
+        ProtocolAction::kMaxValue);
+  }
+}
+
+ProtocolAction GetProtocolAction(Scheme scheme, bool accepted, bool persisted) {
+  switch (scheme) {
+    case Scheme::OTHER:
+      if (!accepted)
+        return ProtocolAction::OTHER_REJECTED;
+      if (persisted)
+        return ProtocolAction::OTHER_ACCEPTED_PERSISTED;
+      return ProtocolAction::OTHER_ACCEPTED_NOT_PERSISTED;
+    case Scheme::BITCOIN:
+      if (!accepted)
+        return ProtocolAction::BITCOIN_REJECTED;
+      if (persisted)
+        return ProtocolAction::BITCOIN_ACCEPTED_PERSISTED;
+      return ProtocolAction::BITCOIN_ACCEPTED_NOT_PERSISTED;
+    case Scheme::GEO:
+      if (!accepted)
+        return ProtocolAction::GEO_REJECTED;
+      if (persisted)
+        return ProtocolAction::GEO_ACCEPTED_PERSISTED;
+      return ProtocolAction::GEO_ACCEPTED_NOT_PERSISTED;
+    case Scheme::IM:
+      if (!accepted)
+        return ProtocolAction::IM_REJECTED;
+      if (persisted)
+        return ProtocolAction::IM_ACCEPTED_PERSISTED;
+      return ProtocolAction::IM_ACCEPTED_NOT_PERSISTED;
+    case Scheme::IRC:
+      if (!accepted)
+        return ProtocolAction::IRC_REJECTED;
+      if (persisted)
+        return ProtocolAction::IRC_ACCEPTED_PERSISTED;
+      return ProtocolAction::IRC_ACCEPTED_NOT_PERSISTED;
+    case Scheme::MAGNET:
+      if (!accepted)
+        return ProtocolAction::MAGNET_REJECTED;
+      if (persisted)
+        return ProtocolAction::MAGNET_ACCEPTED_PERSISTED;
+      return ProtocolAction::MAGNET_ACCEPTED_NOT_PERSISTED;
+    case Scheme::MAILTO:
+      if (!accepted)
+        return ProtocolAction::MAILTO_REJECTED;
+      if (persisted)
+        return ProtocolAction::MAILTO_ACCEPTED_PERSISTED;
+      return ProtocolAction::MAILTO_ACCEPTED_NOT_PERSISTED;
+    case Scheme::MMS:
+      if (!accepted)
+        return ProtocolAction::MMS_REJECTED;
+      if (persisted)
+        return ProtocolAction::MMS_ACCEPTED_PERSISTED;
+      return ProtocolAction::MMS_ACCEPTED_NOT_PERSISTED;
+    case Scheme::SIP:
+      if (!accepted)
+        return ProtocolAction::SIP_REJECTED;
+      if (persisted)
+        return ProtocolAction::SIP_ACCEPTED_PERSISTED;
+      return ProtocolAction::SIP_ACCEPTED_NOT_PERSISTED;
+    case Scheme::SKYPE:
+      if (!accepted)
+        return ProtocolAction::SKYPE_REJECTED;
+      if (persisted)
+        return ProtocolAction::SKYPE_ACCEPTED_PERSISTED;
+      return ProtocolAction::SKYPE_ACCEPTED_NOT_PERSISTED;
+    case Scheme::SMS:
+      if (!accepted)
+        return ProtocolAction::SMS_REJECTED;
+      if (persisted)
+        return ProtocolAction::SMS_ACCEPTED_PERSISTED;
+      return ProtocolAction::SMS_ACCEPTED_NOT_PERSISTED;
+    case Scheme::SPOTIFY:
+      if (!accepted)
+        return ProtocolAction::SPOTIFY_REJECTED;
+      if (persisted)
+        return ProtocolAction::SPOTIFY_ACCEPTED_PERSISTED;
+      return ProtocolAction::SPOTIFY_ACCEPTED_NOT_PERSISTED;
+    case Scheme::SSH:
+      if (!accepted)
+        return ProtocolAction::SSH_REJECTED;
+      if (persisted)
+        return ProtocolAction::SSH_ACCEPTED_PERSISTED;
+      return ProtocolAction::SSH_ACCEPTED_NOT_PERSISTED;
+    case Scheme::TEL:
+      if (!accepted)
+        return ProtocolAction::TEL_REJECTED;
+      if (persisted)
+        return ProtocolAction::TEL_ACCEPTED_PERSISTED;
+      return ProtocolAction::TEL_ACCEPTED_NOT_PERSISTED;
+    case Scheme::TELNET:
+      if (!accepted)
+        return ProtocolAction::TELNET_REJECTED;
+      if (persisted)
+        return ProtocolAction::TELNET_ACCEPTED_PERSISTED;
+      return ProtocolAction::TELNET_ACCEPTED_NOT_PERSISTED;
+    case Scheme::WEBCAL:
+      if (!accepted)
+        return ProtocolAction::WEBCAL_REJECTED;
+      if (persisted)
+        return ProtocolAction::WEBCAL_ACCEPTED_PERSISTED;
+      return ProtocolAction::WEBCAL_ACCEPTED_NOT_PERSISTED;
+  }
+  NOTREACHED();
+  return ProtocolAction::OTHER_REJECTED;
 }
 
 }  // namespace arc

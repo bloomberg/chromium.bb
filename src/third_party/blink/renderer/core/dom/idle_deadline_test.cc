@@ -27,6 +27,9 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
   bool ShouldYieldForHighPriorityWork() override { return true; }
   bool CanExceedIdleDeadlineIfRequired() const override { return false; }
   void PostIdleTask(const base::Location&, Thread::IdleTask) override {}
+  void PostDelayedIdleTask(const base::Location&,
+                           base::TimeDelta,
+                           Thread::IdleTask) override {}
   void PostNonNestableIdleTask(const base::Location&,
                                Thread::IdleTask) override {}
   std::unique_ptr<PageScheduler> CreatePageScheduler(
@@ -83,20 +86,20 @@ class IdleDeadlineTest : public testing::Test {
 
 TEST_F(IdleDeadlineTest, DeadlineInFuture) {
   auto* deadline = MakeGarbageCollected<IdleDeadline>(
-      TimeTicks() + TimeDelta::FromSecondsD(1.25),
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(1.25),
       IdleDeadline::CallbackType::kCalledWhenIdle);
   deadline->SetTickClockForTesting(test_task_runner_->GetMockTickClock());
-  test_task_runner_->FastForwardBy(TimeDelta::FromSeconds(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   // Note: the deadline is computed with reduced resolution.
   EXPECT_FLOAT_EQ(250.0, deadline->timeRemaining());
 }
 
 TEST_F(IdleDeadlineTest, DeadlineInPast) {
   auto* deadline = MakeGarbageCollected<IdleDeadline>(
-      TimeTicks() + TimeDelta::FromSecondsD(0.75),
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(0.75),
       IdleDeadline::CallbackType::kCalledWhenIdle);
   deadline->SetTickClockForTesting(test_task_runner_->GetMockTickClock());
-  test_task_runner_->FastForwardBy(TimeDelta::FromSeconds(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FLOAT_EQ(0, deadline->timeRemaining());
 }
 
@@ -105,10 +108,10 @@ TEST_F(IdleDeadlineTest, YieldForHighPriorityWork) {
   ScopedSchedulerOverrider scheduler_overrider(&scheduler);
 
   auto* deadline = MakeGarbageCollected<IdleDeadline>(
-      TimeTicks() + TimeDelta::FromSecondsD(1.25),
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(1.25),
       IdleDeadline::CallbackType::kCalledWhenIdle);
   deadline->SetTickClockForTesting(test_task_runner_->GetMockTickClock());
-  test_task_runner_->FastForwardBy(TimeDelta::FromSeconds(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_FLOAT_EQ(0, deadline->timeRemaining());
 }
 

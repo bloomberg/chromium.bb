@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
@@ -38,7 +39,6 @@
 #include "net/base/ip_address.h"
 #include "net/base/url_util.h"
 #include "net/nqe/effective_connection_type.h"
-#include "services/network/public/cpp/features.h"
 
 namespace previews {
 
@@ -275,6 +275,12 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   bool should_load_page_hints = false;
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, url, is_reload,
+          previews::PreviewsType::DEFER_ALL_SCRIPT)) {
+    previews_state |= content::DEFER_ALL_SCRIPT_ON;
+    should_load_page_hints = true;
+  }
+  if (previews_decider->ShouldAllowPreviewAtNavigationStart(
+          previews_data, url, is_reload,
           previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
     previews_state |= content::RESOURCE_LOADING_HINTS_ON;
     should_load_page_hints = true;
@@ -298,13 +304,21 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     previews_state |= content::LITE_PAGE_REDIRECT_ON;
   }
 
-  if (previews::params::IsClientLoFiEnabled() &&
-      previews_decider->ShouldAllowPreviewAtNavigationStart(
-          previews_data, url, is_reload, previews::PreviewsType::LOFI)) {
-    previews_state |= content::CLIENT_LOFI_ON;
-  }
-
   return previews_state;
+}
+
+content::PreviewsState DetermineCommittedServerPreviewsState(
+    data_reduction_proxy::DataReductionProxyData* data,
+    content::PreviewsState initial_state) {
+  if (!data) {
+    return initial_state &= ~(content::SERVER_LITE_PAGE_ON);
+  }
+  content::PreviewsState updated_state = initial_state;
+  if (!data->lite_page_received()) {
+    // Turn off LitePage bit.
+    updated_state &= ~(content::SERVER_LITE_PAGE_ON);
+  }
+  return updated_state;
 }
 
 void LogCommittedPreview(previews::PreviewsUserData* previews_data,
@@ -341,13 +355,10 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   // If a server preview is set, retain only the bits determined for the server.
   // |previews_state| must already have been updated for server previews from
   // the main frame response headers (so if they are set here, then they are
-  // the specify the committed preview). Note: for Server LoFi we keep the
-  // Client LoFi bit on so that it is applied to both HTTP and HTTPS images.
-  if (previews_state &
-      (content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON)) {
+  // the specify the committed preview).
+  if (previews_state & content::SERVER_LITE_PAGE_ON) {
     LogCommittedPreview(previews_data, PreviewsType::LITE_PAGE);
-    return previews_state & (content::SERVER_LITE_PAGE_ON |
-                             content::SERVER_LOFI_ON | content::CLIENT_LOFI_ON);
+    return previews_state & content::SERVER_LITE_PAGE_ON;
   }
 
   if (previews_data && previews_data->cache_control_no_transform_directive()) {
@@ -364,7 +375,6 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   if (previews_state & content::LITE_PAGE_REDIRECT_ON) {
     if (IsLitePageRedirectPreviewURL(url)) {
       if (navigation_handle &&
-          base::FeatureList::IsEnabled(network::features::kNetworkService) &&
           base::FeatureList::IsEnabled(
               previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
         previews_data->set_server_lite_page_info(
@@ -377,8 +387,58 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   }
   DCHECK(!IsLitePageRedirectPreviewURL(url));
 
+  // Check if the URL is eligible for defer all script preview. A URL
+  // may not be eligible for the preview if it's likely to cause a
+  // client redirect loop.
+  if ((previews::params::DetectDeferRedirectLoopsUsingCache()) &&
+      (previews_state & content::DEFER_ALL_SCRIPT_ON)) {
+    content::WebContents* web_contents =
+        navigation_handle ? navigation_handle->GetWebContents() : nullptr;
+    if (web_contents) {
+      auto* previews_service = PreviewsServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+
+      if (previews_service &&
+          !previews_service->IsUrlEligibleForDeferAllScriptPreview(url)) {
+        previews_state &= ~content::DEFER_ALL_SCRIPT_ON;
+        UMA_HISTOGRAM_BOOLEAN(
+            "Previews.DeferAllScript.RedirectLoopDetectedUsingCache", true);
+      }
+    }
+  }
+
+  if (previews_state & content::DEFER_ALL_SCRIPT_ON) {
+    content::WebContents* web_contents =
+        navigation_handle ? navigation_handle->GetWebContents() : nullptr;
+    if (web_contents) {
+      auto* previews_service = PreviewsServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+
+      if (previews_service &&
+          previews_service->MatchesDeferAllScriptDenyListRegexp(url)) {
+        previews_state &= ~content::DEFER_ALL_SCRIPT_ON;
+        UMA_HISTOGRAM_BOOLEAN("Previews.DeferAllScript.DenyListMatch", true);
+      }
+    }
+  }
+
   // Make priority decision among allowed client preview types that can be
   // decided at Commit time.
+
+  if (previews_state & content::DEFER_ALL_SCRIPT_ON) {
+    // DeferAllScript was allowed for the original URL but only continue with it
+    // if the committed URL has HTTPS scheme and is allowed by decider.
+    if (is_https && previews_decider &&
+        previews_decider->ShouldCommitPreview(
+            previews_data, url, previews::PreviewsType::DEFER_ALL_SCRIPT)) {
+      LogCommittedPreview(previews_data, PreviewsType::DEFER_ALL_SCRIPT);
+      return content::DEFER_ALL_SCRIPT_ON;
+    }
+    // Remove DEFER_ALL_SCRIPT_ON from |previews_state| since we decided not to
+    // commit to it.
+    previews_state = previews_state & ~content::DEFER_ALL_SCRIPT_ON;
+  }
+
   if (previews_state & content::RESOURCE_LOADING_HINTS_ON) {
     // Resource loading hints was chosen for the original URL but only continue
     // with it if the committed URL has HTTPS scheme and is allowed by decider.
@@ -406,10 +466,6 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     // Remove NOSCRIPT_ON from |previews_state| since we decided not to
     // commit to it.
     previews_state = previews_state & ~content::NOSCRIPT_ON;
-  }
-  if (previews_state & content::CLIENT_LOFI_ON) {
-    LogCommittedPreview(previews_data, PreviewsType::LOFI);
-    return content::CLIENT_LOFI_ON;
   }
 
   if (!previews_state) {
@@ -505,14 +561,12 @@ previews::PreviewsType GetMainFramePreviewsType(
     return previews::PreviewsType::LITE_PAGE_REDIRECT;
   if (previews_state & content::SERVER_LITE_PAGE_ON)
     return previews::PreviewsType::LITE_PAGE;
-  if (previews_state & content::SERVER_LOFI_ON)
-    return previews::PreviewsType::LOFI;
+  if (previews_state & content::DEFER_ALL_SCRIPT_ON)
+    return previews::PreviewsType::DEFER_ALL_SCRIPT;
   if (previews_state & content::RESOURCE_LOADING_HINTS_ON)
     return previews::PreviewsType::RESOURCE_LOADING_HINTS;
   if (previews_state & content::NOSCRIPT_ON)
     return previews::PreviewsType::NOSCRIPT;
-  if (previews_state & content::CLIENT_LOFI_ON)
-    return previews::PreviewsType::LOFI;
 
   DCHECK_EQ(content::PREVIEWS_UNSPECIFIED,
             previews_state & ~content::CLIENT_LOFI_AUTO_RELOAD &

@@ -34,7 +34,7 @@
 #include <utility>
 #include "base/feature_list.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -62,7 +62,6 @@
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_proxy.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_thread.h"
@@ -187,7 +186,8 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   // rather than the shadow page's loader.
   shadow_page_ = std::make_unique<WorkerShadowPage>(
       this, nullptr /* loader_factory */,
-      std::move(worker_start_data_.privacy_preferences));
+      std::move(worker_start_data_.privacy_preferences),
+      base::UnguessableToken());
 
   // If we were asked to wait for debugger then now is a good time to do that.
   worker_context_client_->WorkerReadyForInspectionOnMainThread();
@@ -267,12 +267,6 @@ void WebEmbeddedWorkerImpl::BindDevToolsAgent(
           std::move(devtools_agent_request)));
 }
 
-std::unique_ptr<WebApplicationCacheHost>
-WebEmbeddedWorkerImpl::CreateApplicationCacheHost(
-    WebApplicationCacheHostClient*) {
-  return nullptr;
-}
-
 void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
   DCHECK(!asked_to_terminate_);
 
@@ -281,9 +275,16 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
   shadow_page_->GetDocument()->SetAddressSpace(
       worker_start_data_.address_space);
 
-  DCHECK(worker_context_client_);
-  shadow_page_->DocumentLoader()->SetServiceWorkerNetworkProvider(
-      worker_context_client_->CreateServiceWorkerNetworkProviderOnMainThread());
+  // When off-the-main-thread script fetch is enabled, we don't have to set
+  // network provider to the shadow page because we don't use shadow page's
+  // document loader for script fetch.
+  if (!base::FeatureList::IsEnabled(
+          features::kOffMainThreadServiceWorkerScriptFetch)) {
+    DCHECK(worker_context_client_);
+    shadow_page_->DocumentLoader()->SetServiceWorkerNetworkProvider(
+        worker_context_client_
+            ->CreateServiceWorkerNetworkProviderOnMainThread());
+  }
 
   // If this is an installed service worker, we can start the worker thread
   // now. The script will be streamed in by the installed scripts manager in
@@ -318,8 +319,8 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
   main_script_loader_->LoadTopLevelScriptAsynchronously(
       *shadow_page_->GetDocument(), shadow_page_->GetDocument()->Fetcher(),
       worker_start_data_.script_url, mojom::RequestContextType::SERVICE_WORKER,
-      network::mojom::FetchRequestMode::kSameOrigin,
-      network::mojom::FetchCredentialsMode::kSameOrigin, base::OnceClosure(),
+      network::mojom::RequestMode::kSameOrigin,
+      network::mojom::CredentialsMode::kSameOrigin, base::OnceClosure(),
       Bind(&WebEmbeddedWorkerImpl::OnScriptLoaderFinished,
            WTF::Unretained(this)));
   // Do nothing here since OnScriptLoaderFinished() might have been already
@@ -369,11 +370,20 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   // For now we don't use global scope name for service workers.
   const String global_scope_name = g_empty_string;
 
-  // FIXME: this document's origin is pristine and without any extra privileges.
-  // (crbug.com/254993)
-  const SecurityOrigin* starter_origin = document->GetSecurityOrigin();
-  bool starter_secure_context = document->IsSecureContext();
-  const HttpsState starter_https_state = document->GetHttpsState();
+  // TODO(crbug.com/967265,937177): Plumb these starter parameters from an
+  // appropriate Document. See comment in CreateFetchClientSettingsObject() for
+  // details.
+  scoped_refptr<const SecurityOrigin> starter_origin =
+      SecurityOrigin::Create(worker_start_data_.script_url);
+  // This roughly equals to shadow document's IsSecureContext() as a shadow
+  // document have a frame with no parent.
+  // See also Document::InitSecureContextState().
+  bool starter_secure_context =
+      starter_origin->IsPotentiallyTrustworthy() ||
+      SchemeRegistry::SchemeShouldBypassSecureContextCheck(
+          starter_origin->Protocol());
+  const HttpsState starter_https_state =
+      CalculateHttpsState(starter_origin.get());
 
   auto* worker_clients = MakeGarbageCollected<WorkerClients>();
   ProvideIndexedDBClientToWorker(
@@ -381,14 +391,18 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 
   ProvideContentSettingsClientToWorker(worker_clients,
                                        std::move(content_settings_client_));
-  ProvideServiceWorkerGlobalScopeClientToWorker(
-      worker_clients, MakeGarbageCollected<ServiceWorkerGlobalScopeClient>(
-                          *worker_context_client_));
 
-  // |web_worker_fetch_context| is null in some unit tests.
-  scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
-      worker_context_client_->CreateServiceWorkerFetchContextOnMainThread(
-          shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider());
+  scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
+  if (base::FeatureList::IsEnabled(
+          features::kOffMainThreadServiceWorkerScriptFetch)) {
+    web_worker_fetch_context =
+        worker_context_client_->CreateWorkerFetchContextOnMainThread();
+  } else {
+    // |web_worker_fetch_context| is null in some unit tests.
+    web_worker_fetch_context =
+        worker_context_client_->CreateWorkerFetchContextOnMainThreadLegacy(
+            shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider());
+  }
 
   // Create WorkerSettings. Currently we block all mixed-content requests from
   // a ServiceWorker.
@@ -438,7 +452,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         worker_start_data_.user_agent, std::move(web_worker_fetch_context),
         content_security_policy ? content_security_policy->Headers()
                                 : Vector<CSPHeaderAndType>(),
-        referrer_policy, starter_origin, starter_secure_context,
+        referrer_policy, starter_origin.get(), starter_secure_context,
         starter_https_state, worker_clients,
         main_script_loader_->ResponseAddressSpace(),
         main_script_loader_->OriginTrialTokens(), devtools_worker_token_,
@@ -457,7 +471,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         off_main_thread_fetch_option, global_scope_name,
         worker_start_data_.user_agent, std::move(web_worker_fetch_context),
         Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
-        starter_origin, starter_secure_context, starter_https_state,
+        starter_origin.get(), starter_secure_context, starter_https_state,
         worker_clients, base::nullopt /* response_address_space */,
         nullptr /* OriginTrialTokens */, devtools_worker_token_,
         std::move(worker_settings),
@@ -496,8 +510,10 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         return;
       case mojom::ScriptType::kModule:
         worker_thread_->RunInstalledModuleScript(
-            worker_start_data_.script_url, *CreateFetchClientSettingsObject(),
-            network::mojom::FetchCredentialsMode::kOmit);
+            worker_start_data_.script_url,
+            *CreateFetchClientSettingsObject(starter_origin.get(),
+                                             starter_https_state),
+            network::mojom::CredentialsMode::kOmit);
         return;
     }
     NOTREACHED();
@@ -523,7 +539,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
 
   FetchClientSettingsObjectSnapshot* fetch_client_setting_object =
-      CreateFetchClientSettingsObject();
+      CreateFetchClientSettingsObject(starter_origin.get(),
+                                      starter_https_state);
 
   // If this is a new (not installed) service worker, we are in the Update
   // algorithm here:
@@ -546,16 +563,16 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     case mojom::ScriptType::kModule:
       worker_thread_->FetchAndRunModuleScript(
           worker_start_data_.script_url, *fetch_client_setting_object,
-          *resource_timing_notifier,
-          network::mojom::FetchCredentialsMode::kOmit);
+          *resource_timing_notifier, network::mojom::CredentialsMode::kOmit);
       return;
   }
   NOTREACHED();
 }
 
 FetchClientSettingsObjectSnapshot*
-WebEmbeddedWorkerImpl::CreateFetchClientSettingsObject() {
-  DCHECK(shadow_page_->WasInitialized());
+WebEmbeddedWorkerImpl::CreateFetchClientSettingsObject(
+    const SecurityOrigin* security_origin,
+    const HttpsState& https_state) {
   // TODO(crbug.com/967265): Currently we create an incomplete outside settings
   // object from |worker_start_data_| but we should create a proper outside
   // settings objects depending on the situation. For new worker case, this
@@ -567,13 +584,10 @@ WebEmbeddedWorkerImpl::CreateFetchClientSettingsObject() {
   // object over mojo IPCs.
 
   const KURL& script_url = worker_start_data_.script_url;
-  scoped_refptr<const SecurityOrigin> security_origin =
-      SecurityOrigin::Create(script_url);
   return MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
       script_url /* global_object_url */, script_url /* base_url */,
       security_origin, network::mojom::ReferrerPolicy::kDefault,
-      script_url.GetString() /* outgoing_referrer */,
-      CalculateHttpsState(security_origin.get()),
+      script_url.GetString() /* outgoing_referrer */, https_state,
       AllowedByNosniff::MimeTypeCheck::kLax, worker_start_data_.address_space,
       kBlockAllMixedContent /* insecure_requests_policy */,
       FetchClientSettingsObject::InsecureNavigationsSet(),

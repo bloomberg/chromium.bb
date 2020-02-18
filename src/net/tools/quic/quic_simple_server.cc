@@ -13,13 +13,13 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
+#include "net/quic/address_utils.h"
 #include "net/socket/udp_server_socket.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_dispatcher.h"
 #include "net/tools/quic/quic_simple_server_packet_writer.h"
 #include "net/tools/quic/quic_simple_server_session_helper.h"
@@ -55,13 +55,11 @@ QuicSimpleServer::QuicSimpleServer(
       crypto_config_(kSourceAddressTokenSecret,
                      quic::QuicRandom::GetInstance(),
                      std::move(proof_source),
-                     quic::KeyExchangeSource::Default(),
-                     quic::TlsServerHandshaker::CreateSslCtx()),
+                     quic::KeyExchangeSource::Default()),
       read_pending_(false),
       synchronous_read_count_(0),
       read_buffer_(base::MakeRefCounted<IOBufferWithSize>(kReadBufferSize)),
-      quic_simple_server_backend_(quic_simple_server_backend),
-      weak_factory_(this) {
+      quic_simple_server_backend_(quic_simple_server_backend) {
   DCHECK(quic_simple_server_backend);
   Initialize();
 }
@@ -96,7 +94,7 @@ QuicSimpleServer::~QuicSimpleServer() = default;
 
 int QuicSimpleServer::Listen(const IPEndPoint& address) {
   std::unique_ptr<UDPServerSocket> socket(
-      new UDPServerSocket(&net_log_, NetLogSource()));
+      new UDPServerSocket(nullptr, NetLogSource()));
 
   socket->AllowAddressReuse();
 
@@ -211,10 +209,8 @@ void QuicSimpleServer::OnReadComplete(int result) {
 
   quic::QuicReceivedPacket packet(read_buffer_->data(), result,
                                   helper_->GetClock()->Now(), false);
-  dispatcher_->ProcessPacket(
-      quic::QuicSocketAddress(quic::QuicSocketAddressImpl(server_address_)),
-      quic::QuicSocketAddress(quic::QuicSocketAddressImpl(client_address_)),
-      packet);
+  dispatcher_->ProcessPacket(ToQuicSocketAddress(server_address_),
+                             ToQuicSocketAddress(client_address_), packet);
 
   StartReading();
 }

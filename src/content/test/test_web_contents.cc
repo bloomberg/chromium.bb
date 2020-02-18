@@ -22,7 +22,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -38,7 +37,7 @@ namespace content {
 
 namespace {
 
-const RenderProcessHostFactory* GetMockProcessFactory() {
+RenderProcessHostFactory* GetMockProcessFactory() {
   static base::NoDestructor<MockRenderProcessHostFactory> factory;
   return factory.get();
 }
@@ -191,11 +190,11 @@ void TestWebContents::TestDidNavigateWithSequenceNumber(
   rfh->SendNavigateWithParams(&params, was_within_same_document);
 }
 
-const std::string& TestWebContents::GetSaveFrameHeaders() const {
+const std::string& TestWebContents::GetSaveFrameHeaders() {
   return save_frame_headers_;
 }
 
-const base::string16& TestWebContents::GetSuggestedFileName() const {
+const base::string16& TestWebContents::GetSuggestedFileName() {
   return suggested_filename_;
 }
 
@@ -369,13 +368,6 @@ void TestWebContents::SetHistoryOffsetAndLength(int history_offset,
             history_offset);
   EXPECT_EQ(expect_set_history_offset_and_length_history_length_,
             history_length);
-}
-
-void TestWebContents::SetNavigationData(
-    NavigationHandle* navigation_handle,
-    std::unique_ptr<NavigationData> navigation_data) {
-  static_cast<NavigationHandleImpl*>(navigation_handle)
-      ->set_navigation_data(std::move(navigation_data));
 }
 
 void TestWebContents::SetHttpResponseHeaders(

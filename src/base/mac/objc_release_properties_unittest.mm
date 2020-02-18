@@ -217,7 +217,7 @@ struct NumberHolder {
     @selector(baseCvcDynamic), @selector(derivedCvcDynamic),
         @selector(protoCvcDynamic),
   };
-  if (!base::ContainsValue(dynamicMethods, sel)) {
+  if (!base::Contains(dynamicMethods, sel)) {
     return NO;
   }
   id (*imp)() = []() -> id { return nil; };

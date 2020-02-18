@@ -113,20 +113,8 @@ void MediaControlPanelElement::DetachTransitionEventListener() {
     event_listener_->Detach();
 }
 
-void MediaControlPanelElement::DefaultEventHandler(Event& event) {
-  // Suppress the media element activation behavior (toggle play/pause) when
-  // any part of the control panel is clicked.
-  if (event.type() == event_type_names::kClick &&
-      !MediaControlsImpl::IsModern()) {
-    event.SetDefaultHandled();
-    return;
-  }
-  HTMLDivElement::DefaultEventHandler(event);
-}
-
 bool MediaControlPanelElement::KeepEventInNode(const Event& event) const {
-  return (!MediaControlsImpl::IsModern() ||
-          GetMediaControls().ShouldShowAudioControls()) &&
+  return GetMediaControls().ShouldShowAudioControls() &&
          MediaControlElementsHelper::IsUserInteractionEvent(event);
 }
 

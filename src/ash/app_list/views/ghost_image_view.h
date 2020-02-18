@@ -20,12 +20,11 @@ class AppListItemView;
 class GhostImageView : public views::ImageView,
                        public ui::ImplicitAnimationObserver {
  public:
-  GhostImageView(AppListItemView* drag_view,
-                 bool is_folder,
-                 bool is_in_folder,
-                 const gfx::Rect& drop_target_bounds,
-                 int page);
+  GhostImageView(bool is_folder, bool is_in_folder, int page);
   ~GhostImageView() override;
+
+  // Initialize the GhostImageView.
+  void Init(AppListItemView* drag_view, const gfx::Rect& drop_target_bounds);
 
   // Begins the fade out animation.
   void FadeOut();
@@ -52,6 +51,9 @@ class GhostImageView : public views::ImageView,
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override;
 
+  // Returns an ImageSkia with just an outline of the input ImageSkia.
+  gfx::ImageSkia GetIconOutline(const gfx::ImageSkia& original_icon);
+
   // Whether the view is hiding.
   bool is_hiding_;
 
@@ -64,15 +66,18 @@ class GhostImageView : public views::ImageView,
   // Page this this view belongs to, used to calculate transition offset.
   int page_;
 
-  // Bounds for the location of the GhostImageView in parent AppGridView's
-  // coordinates.
-  gfx::Rect drop_target_bounds_;
-
   // Icon bounds used to determine size and placement of the GhostImageView.
   gfx::Rect icon_bounds_;
 
   // The number of items within the GhostImageView folder.
   base::Optional<size_t> num_items_;
+
+  // The outline of the dragged item's icon. Used as the ghost image.
+  gfx::ImageSkia outline_;
+
+  // The outlines of the top icons within a folder. Used for the folder ghost
+  // image.
+  std::vector<gfx::ImageSkia> inner_folder_icon_outlines_;
 
   DISALLOW_COPY_AND_ASSIGN(GhostImageView);
 };

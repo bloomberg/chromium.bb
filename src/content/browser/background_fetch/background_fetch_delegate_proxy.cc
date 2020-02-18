@@ -29,9 +29,7 @@ class BackgroundFetchDelegateProxy::Core
  public:
   Core(const base::WeakPtr<BackgroundFetchDelegateProxy>& io_parent,
        BrowserContext* browser_context)
-      : io_parent_(io_parent),
-        browser_context_(browser_context),
-        weak_ptr_factory_(this) {
+      : io_parent_(io_parent), browser_context_(browser_context) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(browser_context_);
   }
@@ -151,9 +149,9 @@ class BackgroundFetchDelegateProxy::Core
     // Append the Origin header for requests whose CORS flag is set, or whose
     // request method is not GET or HEAD. See section 3.1 of the standard:
     // https://fetch.spec.whatwg.org/#origin-header
-    if (fetch_request->mode == network::mojom::FetchRequestMode::kCors ||
+    if (fetch_request->mode == network::mojom::RequestMode::kCors ||
         fetch_request->mode ==
-            network::mojom::FetchRequestMode::kCorsWithForcedPreflight ||
+            network::mojom::RequestMode::kCorsWithForcedPreflight ||
         (fetch_request->method != "GET" && fetch_request->method != "HEAD")) {
       headers.SetHeader("Origin", origin.Serialize());
     }
@@ -216,7 +214,7 @@ class BackgroundFetchDelegateProxy::Core
 
   BrowserContext* browser_context_;
 
-  base::WeakPtrFactory<Core> weak_ptr_factory_;
+  base::WeakPtrFactory<Core> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -313,8 +311,7 @@ void BackgroundFetchDelegateProxy::Core::GetUploadData(
 }
 
 BackgroundFetchDelegateProxy::BackgroundFetchDelegateProxy(
-    BrowserContext* browser_context)
-    : weak_ptr_factory_(this) {
+    BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Normally it would be unsafe to obtain a weak pointer on the UI thread from

@@ -498,7 +498,6 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   const gfx::Vector2dF root_scroll_offset(1234.5f, 6789.1f);
   const float page_scale_factor = 1337.5f;
   const gfx::SizeF scrollable_viewport_size(1337.7f, 1234.5f);
-  const uint32_t content_source_id = 3;
   const BeginFrameAck begin_frame_ack(5, 10, false);
   const base::TimeTicks local_surface_id_allocation_time =
       base::TimeTicks::Now();
@@ -510,7 +509,6 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   input.metadata.scrollable_viewport_size = scrollable_viewport_size;
   input.render_pass_list.push_back(std::move(render_pass));
   input.resource_list.push_back(resource);
-  input.metadata.content_source_id = content_source_id;
   input.metadata.begin_frame_ack = begin_frame_ack;
   input.metadata.frame_token = 1;
   input.metadata.local_surface_id_allocation_time =
@@ -523,7 +521,6 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   EXPECT_EQ(root_scroll_offset, output.metadata.root_scroll_offset);
   EXPECT_EQ(page_scale_factor, output.metadata.page_scale_factor);
   EXPECT_EQ(scrollable_viewport_size, output.metadata.scrollable_viewport_size);
-  EXPECT_EQ(content_source_id, output.metadata.content_source_id);
   EXPECT_EQ(begin_frame_ack, output.metadata.begin_frame_ack);
   EXPECT_EQ(local_surface_id_allocation_time,
             output.metadata.local_surface_id_allocation_time);
@@ -643,6 +640,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const float top_bar_shown_ratio(1.0f);
   const base::TimeTicks local_surface_id_allocation_time =
       base::TimeTicks::Now();
+  const gfx::Rect mirror_rect(10, 10, 50, 50);
 
 #if defined(OS_ANDROID)
   const float max_page_scale_factor = 4.6f;
@@ -680,6 +678,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.top_controls_height = top_bar_height;
   input.top_controls_shown_ratio = top_bar_shown_ratio;
   input.local_surface_id_allocation_time = local_surface_id_allocation_time;
+  input.mirror_rect = mirror_rect;
 
 #if defined(OS_ANDROID)
   input.max_page_scale_factor = max_page_scale_factor;
@@ -720,6 +719,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(top_bar_shown_ratio, output.top_controls_shown_ratio);
   EXPECT_EQ(local_surface_id_allocation_time,
             output.local_surface_id_allocation_time);
+  EXPECT_EQ(mirror_rect, output.mirror_rect);
 
 #if defined(OS_ANDROID)
   EXPECT_EQ(max_page_scale_factor, output.max_page_scale_factor);
@@ -888,9 +888,10 @@ TEST_F(StructTraitsTest, RenderPass) {
 TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   const RenderPassId render_pass_id = 3u;
   const gfx::Rect output_rect(45, 22, 120, 13);
+  const gfx::Rect damage_rect(56, 123, 19, 43);
   const gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
-  const gfx::Rect damage_rect(56, 123, 19, 43);
+  const base::Optional<gfx::RRectF> backdrop_filter_bounds;
   skcms_Matrix3x3 to_XYZD50 = SkNamedGamut::kXYZ;
   skcms_TransferFunction fn = {1, 0, 1, 0, 0, 0, 1};
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateCustom(to_XYZD50, fn);
@@ -901,9 +902,9 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   std::unique_ptr<RenderPass> input = RenderPass::Create();
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                 cc::FilterOperations(), cc::FilterOperations(),
-                base::Optional<gfx::RRectF>(), color_space,
-                has_transparent_background, cache_render_pass,
-                has_damage_from_contributing_content, generate_mipmap);
+                backdrop_filter_bounds, color_space, has_transparent_background,
+                cache_render_pass, has_damage_from_contributing_content,
+                generate_mipmap);
 
   // Unlike the previous test, don't add any quads to the list; we need to
   // verify that the serialization code can deal with that.
@@ -917,6 +918,7 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   EXPECT_EQ(output_rect, output->output_rect);
   EXPECT_EQ(damage_rect, output->damage_rect);
   EXPECT_EQ(transform_to_root, output->transform_to_root_target);
+  EXPECT_EQ(backdrop_filter_bounds, output->backdrop_filter_bounds);
   EXPECT_EQ(has_transparent_background, output->has_transparent_background);
   EXPECT_EQ(color_space, output->color_space);
 }
@@ -967,8 +969,8 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   RenderPassDrawQuad* render_pass_quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   render_pass_quad->SetNew(sqs, rect4, rect4, render_pass_id, resource_id4,
-                           mask_uv_rect, mask_texture_size, filters_scale,
-                           filters_origin, tex_coord_rect,
+                           mask_uv_rect, mask_texture_size, false,
+                           filters_scale, filters_origin, tex_coord_rect,
                            force_anti_aliasing_off, backdrop_filter_quality);
 
   const gfx::Rect rect5(123, 567, 91011, 131415);
@@ -982,8 +984,8 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   const bool nearest_neighbor = true;
   const bool secure_output_only = true;
   const bool needs_blending = true;
-  const ui::ProtectedVideoType protected_video_type =
-      ui::ProtectedVideoType::kClear;
+  const gfx::ProtectedVideoType protected_video_type =
+      gfx::ProtectedVideoType::kClear;
   const gfx::Size resource_size_in_pixels5(1234, 5678);
   TextureDrawQuad* texture_draw_quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -1044,6 +1046,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(render_pass_id, out_render_pass_draw_quad->render_pass_id);
   EXPECT_EQ(resource_id4, out_render_pass_draw_quad->mask_resource_id());
   EXPECT_EQ(mask_texture_size, out_render_pass_draw_quad->mask_texture_size);
+  EXPECT_FALSE(out_render_pass_draw_quad->mask_applies_to_backdrop);
   EXPECT_EQ(filters_scale, out_render_pass_draw_quad->filters_scale);
   EXPECT_EQ(force_anti_aliasing_off,
             out_render_pass_draw_quad->force_anti_aliasing_off);
@@ -1160,8 +1163,8 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   const float resource_offset = 1337.5f;
   const float resource_multiplier = 1234.6f;
   const uint32_t bits_per_channel = 13;
-  const ui::ProtectedVideoType protected_video_type =
-      ui::ProtectedVideoType::kSoftwareProtected;
+  const gfx::ProtectedVideoType protected_video_type =
+      gfx::ProtectedVideoType::kSoftwareProtected;
 
   SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
   YUVVideoDrawQuad* quad =

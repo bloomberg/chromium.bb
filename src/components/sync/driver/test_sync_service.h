@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/test_sync_user_settings.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
@@ -38,6 +38,9 @@ class TestSyncService : public SyncService {
   void SetPreferredDataTypes(const ModelTypeSet& types);
   void SetActiveDataTypes(const ModelTypeSet& types);
   void SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot);
+  void SetUserDemographics(
+      const UserDemographicsResult& user_demographics_result);
+
   // Convenience versions of the above, for when the caller doesn't care about
   // the particular values in the snapshot, just whether there is one.
   void SetEmptyLastCycleSnapshot();
@@ -97,6 +100,8 @@ class TestSyncService : public SyncService {
       const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback)
       override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
+  UserDemographicsResult GetUserNoisedBirthYearAndGender(
+      base::Time now) override;
 
   // KeyedService implementation.
   void Shutdown() override;
@@ -123,6 +128,8 @@ class TestSyncService : public SyncService {
   base::ObserverList<syncer::SyncServiceObserver>::Unchecked observers_;
 
   GURL sync_service_url_;
+
+  UserDemographicsResult user_demographics_result_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSyncService);
 };

@@ -170,6 +170,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   void SetImageDecodeAcceleratorWorkerForTesting(
       ImageDecodeAcceleratorWorker* worker);
 
+  void LoseAllContexts();
+
  private:
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
 
@@ -180,8 +182,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
   void HandleMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
-
-  void LoseAllContexts();
 
   // These objects manage channels to individual renderer processes. There is
   // one channel for each renderer process that has connected to this GPU
@@ -254,7 +254,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members
   // variable's destructors are executed, rendering them invalid.
-  base::WeakPtrFactory<GpuChannelManager> weak_factory_;
+  base::WeakPtrFactory<GpuChannelManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelManager);
 };

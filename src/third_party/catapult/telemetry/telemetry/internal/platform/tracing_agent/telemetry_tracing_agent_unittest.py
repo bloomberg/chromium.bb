@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 import unittest
 
+import mock
+
 from telemetry.internal.results import page_test_results
 from telemetry.internal.platform.tracing_agent import telemetry_tracing_agent
 from tracing.trace_data import trace_data
@@ -45,19 +47,20 @@ class TelemetryTracingAgentTest(unittest.TestCase):
       trace = builder.AsData().GetTraceFor(trace_data.TELEMETRY_PART)
     self.assertIn('clock_sync', GetEventNames(trace))
 
-  def testWriteTelemetryInfo(self):
-    info = page_test_results.TelemetryInfo()
-    info.benchmark_start_epoch = 1
-    info._trace_start_ms = 2000
-    info.benchmark_name = 'benchmark'
-    info.benchmark_descriptions = 'desc'
-    info._story_name = 'story'
-    info._story_tags = ['tag1', 'tag2']
-    info._storyset_repeat_counter = 0
+  def testWriteBenchmarkMetadata(self):
+    results = page_test_results.PageTestResults(
+        benchmark_name='benchmark',
+        benchmark_description='desc')
 
+    story = mock.Mock()
+    story.name = 'story'
+    story.GetStoryTagsList.return_value = ['tag1', 'tag2']
+    results.WillRunPage(story)
     self.agent.StartAgentTracing(self.config, timeout=10)
-    telemetry_tracing_agent.SetTelemetryInfo(info)
+    telemetry_tracing_agent.RecordBenchmarkMetadata(results)
     self.agent.StopAgentTracing()
+    results.DidRunPage(story)
+
     with trace_data.TraceDataBuilder() as builder:
       self.agent.CollectAgentTraceData(builder)
       trace = builder.AsData().GetTraceFor(trace_data.TELEMETRY_PART)

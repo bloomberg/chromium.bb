@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -61,6 +62,11 @@ bool IsSendingUserClassEnabled() {
   return variations::GetVariationParamByFeatureAsBool(
       ntp_snippets::kArticleSuggestionsFeature, kSendUserClassName,
       /*default_value=*/true);
+}
+
+bool IsSendingOptionalImagesCapabilityEnabled() {
+  return base::FeatureList::IsEnabled(
+      ntp_snippets::kOptionalImagesEnabledFeature);
 }
 
 // Translate the BCP 47 |language_code| into a posix locale string.
@@ -120,8 +126,7 @@ JsonRequest::JsonRequest(
     const ParseJSONCallback& callback)
     : exclusive_category_(exclusive_category),
       clock_(clock),
-      parse_json_callback_(callback),
-      weak_ptr_factory_(this) {
+      parse_json_callback_(callback) {
   creation_time_ = clock_->Now();
 }
 
@@ -273,6 +278,14 @@ JsonRequest::Builder& JsonRequest::Builder::SetUserClassifier(
   return *this;
 }
 
+JsonRequest::Builder& JsonRequest::Builder::SetOptionalImagesCapability(
+    bool supports_optional_images) {
+  if (supports_optional_images && IsSendingOptionalImagesCapabilityEnabled()) {
+    display_capability_ = "CAPABILITY_OPTIONAL_IMAGES";
+  }
+  return *this;
+}
+
 std::unique_ptr<network::ResourceRequest>
 JsonRequest::Builder::BuildResourceRequest() const {
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -311,6 +324,10 @@ std::string JsonRequest::Builder::BuildBody() const {
 
   if (!user_class_.empty()) {
     request->SetString("userActivenessClass", user_class_);
+  }
+
+  if (!display_capability_.empty()) {
+    request->SetString("displayCapability", display_capability_);
   }
 
   language::UrlLanguageHistogram::LanguageInfo ui_language;

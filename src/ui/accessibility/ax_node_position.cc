@@ -43,6 +43,107 @@ base::string16 AXNodePosition::GetText() const {
   return text;
 }
 
+int AXNodePosition::MaxTextOffset() const {
+  if (IsNullPosition())
+    return INVALID_INDEX;
+
+  const AXNode* anchor = GetAnchor();
+  DCHECK(anchor);
+  const std::string& value =
+      anchor->data().GetStringAttribute(ax::mojom::StringAttribute::kValue);
+  if (!value.empty())
+    return value.length();
+
+  if (anchor->IsText()) {
+    return anchor->data()
+        .GetStringAttribute(ax::mojom::StringAttribute::kName)
+        .length();
+  }
+
+  int max_text_offset = 0;
+  for (int i = 0; i < AnchorChildCount(); ++i)
+    max_text_offset += CreateChildPositionAt(i)->MaxTextOffset();
+
+  return max_text_offset;
+}
+
+// static
+AXNodePosition::AXPositionInstance AXNodePosition::CreatePosition(
+    AXTreeID tree_id,
+    const AXNode& node,
+    int offset,
+    ax::mojom::TextAffinity affinity) {
+  AXPositionInstance position = CreateNullPosition();
+  // If either the current anchor, or the 'child after tree position' is
+  // ignored, we must 'fix' the position by finding the nearest unignored
+  // position. 'child after tree position' being the child at the child_offset
+  // that tree position refers to.
+  if (node.IsText()) {
+    position = CreateTextPosition(tree_id, node.id(), offset, affinity);
+  } else {
+    position = CreateTreePosition(tree_id, node.id(), offset);
+  }
+  return position;
+}
+
+bool AXNodePosition::IsIgnoredPosition() const {
+  if (IsNullPosition())
+    return false;
+
+  // If this position is pointing to an ignored node, then consider this
+  // position as ignored.
+  if (GetAnchor()->IsIgnored())
+    return true;
+
+  // If there are any ignored nodes in the parent chain from the leaf node to
+  // this node's anchor, consider the position to be ignored.
+  AXPositionInstance leaf_position = AsLeafTextPosition();
+  AXNode* descendant = leaf_position->GetAnchor();
+  while (descendant && descendant->id() != anchor_id()) {
+    if (descendant->IsIgnored())
+      return true;
+    descendant = descendant->parent();
+  }
+
+  return false;
+}
+
+AXNodePosition::AXPositionInstance AXNodePosition::AsUnignoredTextPosition(
+    AdjustmentBehavior adjustment_behavior) const {
+  if (IsNullPosition())
+    return CreateNullPosition();
+
+  if (!IsLeafTextPosition())
+    return AsLeafTextPosition()->AsUnignoredTextPosition(adjustment_behavior);
+
+  if (!GetAnchor()->IsIgnored())
+    return Clone();
+
+  // Find the next/previous node that is not ignored.
+  AXNode* unignored_node = GetAnchor();
+  while (unignored_node) {
+    switch (adjustment_behavior) {
+      case AdjustmentBehavior::kMoveRight:
+        unignored_node = unignored_node->GetNextUnignoredInTreeOrder();
+        break;
+      case AdjustmentBehavior::kMoveLeft:
+        unignored_node = unignored_node->GetPreviousUnignoredInTreeOrder();
+    }
+    if (unignored_node && unignored_node->IsText()) {
+      switch (adjustment_behavior) {
+        case AdjustmentBehavior::kMoveRight:
+          return CreateTextPosition(tree_id(), unignored_node->id(), 0,
+                                    ax::mojom::TextAffinity::kDownstream);
+        case AdjustmentBehavior::kMoveLeft:
+          return CreateTextPosition(tree_id(), unignored_node->id(), 0,
+                                    ax::mojom::TextAffinity::kDownstream)
+              ->CreatePositionAtEndOfAnchor();
+      }
+    }
+  }
+  return CreateNullPosition();
+}
+
 void AXNodePosition::AnchorChild(int child_index,
                                  AXTreeID* tree_id,
                                  int32_t* child_id) const {
@@ -135,7 +236,7 @@ AXNode* AXNodePosition::GetNodeInTree(AXTreeID tree_id, int32_t node_id) const {
   if (node_id == INVALID_ANCHOR_ID)
     return nullptr;
 
-  // Used for testing via AXNodePosition::SetTreeForTesting
+  // Used for testing via AXNodePosition::SetTree
   if (AXNodePosition::tree_)
     return AXNodePosition::tree_->GetFromId(node_id);
 
@@ -146,13 +247,54 @@ AXNode* AXNodePosition::GetNodeInTree(AXTreeID tree_id, int32_t node_id) const {
   return nullptr;
 }
 
+bool AXNodePosition::IsInLineBreak() const {
+  if (IsNullPosition())
+    return false;
+  DCHECK(GetAnchor());
+  return GetAnchor()->IsLineBreak();
+}
+
+bool AXNodePosition::IsInTextObject() const {
+  if (IsNullPosition())
+    return false;
+  DCHECK(GetAnchor());
+  return GetAnchor()->IsText();
+}
+
 bool AXNodePosition::IsInWhiteSpace() const {
   if (IsNullPosition())
     return false;
-
   DCHECK(GetAnchor());
   return GetAnchor()->IsLineBreak() ||
          base::ContainsOnlyChars(GetText(), base::kWhitespaceUTF16);
+}
+
+bool AXNodePosition::IsInLineBreakingObject() const {
+  if (IsNullPosition())
+    return false;
+  DCHECK(GetAnchor());
+  return GetAnchor()->data().GetBoolAttribute(
+      ax::mojom::BoolAttribute::kIsLineBreakingObject);
+}
+
+ax::mojom::Role AXNodePosition::GetRole() const {
+  if (IsNullPosition())
+    return ax::mojom::Role::kNone;
+  DCHECK(GetAnchor());
+  return GetAnchor()->data().role;
+}
+
+AXNodeTextStyles AXNodePosition::GetTextStyles() const {
+  // Check either the current anchor or its parent for text styles.
+  AXNodeTextStyles current_anchor_text_styles =
+      !IsNullPosition() ? GetAnchor()->data().GetTextStyles()
+                        : AXNodeTextStyles();
+  if (current_anchor_text_styles.IsUnset()) {
+    AXPositionInstance parent = CreateParentPosition();
+    if (!parent->IsNullPosition())
+      return parent->GetAnchor()->data().GetTextStyles();
+  }
+  return current_anchor_text_styles;
 }
 
 std::vector<int32_t> AXNodePosition::GetWordStartOffsets() const {

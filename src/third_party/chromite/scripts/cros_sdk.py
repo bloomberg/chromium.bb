@@ -40,14 +40,15 @@ from chromite.lib import toolchain
 
 cros_build_lib.STRICT_SUDO = True
 
-
 COMPRESSION_PREFERENCE = ('xz', 'bz2')
 
 # TODO(zbehan): Remove the dependency on these, reimplement them in python
-MAKE_CHROOT = [os.path.join(constants.SOURCE_ROOT,
-                            'src/scripts/sdk_lib/make_chroot.sh')]
-ENTER_CHROOT = [os.path.join(constants.SOURCE_ROOT,
-                             'src/scripts/sdk_lib/enter_chroot.sh')]
+MAKE_CHROOT = [
+    os.path.join(constants.SOURCE_ROOT, 'src/scripts/sdk_lib/make_chroot.sh')
+]
+ENTER_CHROOT = [
+    os.path.join(constants.SOURCE_ROOT, 'src/scripts/sdk_lib/enter_chroot.sh')
+]
 
 # Proxy simulator configuration.
 PROXY_HOST_IP = '192.168.240.1'
@@ -59,8 +60,7 @@ PROXY_CONNECT_PORTS = (80, 443, 9418)
 PROXY_APACHE_FALLBACK_USERS = ('www-data', 'apache', 'nobody')
 PROXY_APACHE_MPMS = ('event', 'worker', 'prefork')
 PROXY_APACHE_FALLBACK_PATH = ':'.join(
-    '/usr/lib/apache2/mpm-%s' % mpm for mpm in PROXY_APACHE_MPMS
-)
+    '/usr/lib/apache2/mpm-%s' % mpm for mpm in PROXY_APACHE_MPMS)
 PROXY_APACHE_MODULE_GLOBS = ('/usr/lib*/apache2/modules', '/usr/lib*/apache2')
 
 # We need these tools to run. Very common tools (tar,..) are omitted.
@@ -86,15 +86,12 @@ MAX_UNUSED_IMAGE_GBS = 20
 
 def GetArchStageTarballs(version):
   """Returns the URL for a given arch/version"""
-  extension = {'bz2':'tbz2', 'xz':'tar.xz'}
-  return [toolchain.GetSdkURL(suburl='cros-sdk-%s.%s'
-                              % (version, extension[compressor]))
-          for compressor in COMPRESSION_PREFERENCE]
-
-
-def GetStage3Urls(version):
-  return [toolchain.GetSdkURL(suburl='stage3-amd64-%s.tar.%s' % (version, ext))
-          for ext in COMPRESSION_PREFERENCE]
+  extension = {'bz2': 'tbz2', 'xz': 'tar.xz'}
+  return [
+      toolchain.GetSdkURL(
+          suburl='cros-sdk-%s.%s' % (version, extension[compressor]))
+      for compressor in COMPRESSION_PREFERENCE
+  ]
 
 
 def FetchRemoteTarballs(storage_dir, urls, desc, allow_none=False):
@@ -128,9 +125,10 @@ def FetchRemoteTarballs(storage_dir, urls, desc, allow_none=False):
       continue
     content_length = 0
     logging.debug('Attempting download from %s', url)
-    result = retry_util.RunCurl(
-        ['-I', url], print_cmd=False, debug_level=logging.NOTICE,
-        capture_output=True)
+    result = retry_util.RunCurl(['-I', url],
+                                print_cmd=False,
+                                debug_level=logging.NOTICE,
+                                capture_output=True)
     successful = False
     for header in result.output.splitlines():
       # We must walk the output to find the 200 code for use cases where
@@ -159,7 +157,8 @@ def FetchRemoteTarballs(storage_dir, urls, desc, allow_none=False):
   if current_size < content_length:
     retry_util.RunCurl(
         ['--fail', '-L', '-y', '30', '-C', '-', '--output', tarball_dest, url],
-        print_cmd=False, debug_level=logging.NOTICE)
+        print_cmd=False,
+        debug_level=logging.NOTICE)
 
   # Cleanup old tarballs now since we've successfull fetched; only cleanup
   # the tarballs for our prefix, or unknown ones. This gets a bit tricky
@@ -191,9 +190,10 @@ def CreateChroot(chroot_path, sdk_tarball, cache_dir, nousepkg=False):
         chroot.
   """
 
-  cmd = MAKE_CHROOT + ['--stage3_path', sdk_tarball,
-                       '--chroot', chroot_path,
-                       '--cache_dir', cache_dir]
+  cmd = MAKE_CHROOT + [
+      '--stage3_path', sdk_tarball, '--chroot', chroot_path, '--cache_dir',
+      cache_dir
+  ]
 
   if nousepkg:
     cmd.append('--nousepkg')
@@ -207,8 +207,7 @@ def CreateChroot(chroot_path, sdk_tarball, cache_dir, nousepkg=False):
 
 def DeleteChroot(chroot_path):
   """Deletes an existing chroot"""
-  cmd = MAKE_CHROOT + ['--chroot', chroot_path,
-                       '--delete']
+  cmd = MAKE_CHROOT + ['--chroot', chroot_path, '--delete']
   try:
     logging.notice('Deleting chroot.')
     cros_build_lib.RunCommand(cmd, print_cmd=False)
@@ -247,8 +246,8 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
 
   # ThinLTO opens lots of files at the same time.
   resource.setrlimit(resource.RLIMIT_NOFILE, (32768, 32768))
-  ret = cros_build_lib.RunCommand(cmd, print_cmd=False, error_code_ok=True,
-                                  mute_output=False)
+  ret = cros_build_lib.RunCommand(
+      cmd, print_cmd=False, error_code_ok=True, mute_output=False)
   # If we were in interactive mode, ignore the exit code; it'll be whatever
   # they last ran w/in the chroot and won't matter to us one way or another.
   # Note this does allow chroot entrance to fail and be ignored during
@@ -289,12 +288,15 @@ def CreateChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
     SystemExit: The lvcreate command failed.
   """
   if snapshot_name in ListChrootSnapshots(chroot_vg, chroot_lv):
-    logging.error('Cannot create snapshot %s: A volume with that name already '
-                  'exists.', snapshot_name)
+    logging.error(
+        'Cannot create snapshot %s: A volume with that name already '
+        'exists.', snapshot_name)
     return False
 
-  cmd = ['lvcreate', '-s', '--name', snapshot_name, '%s/%s' % (
-      chroot_vg, chroot_lv)]
+  cmd = [
+      'lvcreate', '-s', '--name', snapshot_name,
+      '%s/%s' % (chroot_vg, chroot_lv)
+  ]
   try:
     logging.notice('Creating snapshot %s from %s in VG %s.', snapshot_name,
                    chroot_lv, chroot_vg)
@@ -320,8 +322,9 @@ def DeleteChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   """
   if snapshot_name in (cros_sdk_lib.CHROOT_LV_NAME,
                        cros_sdk_lib.CHROOT_THINPOOL_NAME):
-    logging.error('Cannot remove LV %s as a snapshot.  Use cros_sdk --delete '
-                  'if you want to remove the whole chroot.', snapshot_name)
+    logging.error(
+        'Cannot remove LV %s as a snapshot.  Use cros_sdk --delete '
+        'if you want to remove the whole chroot.', snapshot_name)
     return
 
   if snapshot_name not in ListChrootSnapshots(chroot_vg, chroot_lv):
@@ -385,9 +388,9 @@ def RestoreChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
       raise SystemExit('Failed to rename %s to chroot and failed to restore '
                        '%s back to chroot.  Failed command: %r' %
                        (snapshot_name, backup_chroot_name, cmd))
-    raise SystemExit('Failed to rename %s to chroot.  Original chroot LV has '
-                     'been restored.  Failed command: %r' %
-                     (snapshot_name, cmd))
+    raise SystemExit(
+        'Failed to rename %s to chroot.  Original chroot LV has '
+        'been restored.  Failed command: %r' % (snapshot_name, cmd))
 
   # Some versions of LVM set snapshots to be skipped at auto-activate time.
   # Other versions don't have this flag at all.  We run lvchange to try
@@ -395,8 +398,8 @@ def RestoreChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   # that don't have the flag should be auto-activated.
   chroot_lv_path = '%s/%s' % (chroot_vg, chroot_lv)
   cmd = ['lvchange', '-kn', chroot_lv_path]
-  cros_build_lib.RunCommand(cmd, print_cmd=False, capture_output=True,
-                            error_code_ok=True)
+  cros_build_lib.RunCommand(
+      cmd, print_cmd=False, capture_output=True, error_code_ok=True)
 
   # Activate the LV in case the lvchange above was needed.  Activating an LV
   # that is already active shouldn't do anything, so this is safe to run even if
@@ -430,11 +433,13 @@ def ListChrootSnapshots(chroot_vg, chroot_lv):
   if not chroot_vg or not chroot_lv:
     return []
 
-  cmd = ['lvs', '-o', 'lv_name,pool_lv,lv_attr', '-O', 'lv_name',
-         '--noheadings', '--separator', '\t', chroot_vg]
+  cmd = [
+      'lvs', '-o', 'lv_name,pool_lv,lv_attr', '-O', 'lv_name', '--noheadings',
+      '--separator', '\t', chroot_vg
+  ]
   try:
-    result = cros_build_lib.RunCommand(cmd, print_cmd=False,
-                                       redirect_stdout=True)
+    result = cros_build_lib.RunCommand(
+        cmd, print_cmd=False, redirect_stdout=True)
   except cros_build_lib.RunCommandError:
     raise SystemExit('Running %r failed!' % cmd)
 
@@ -446,8 +451,7 @@ def ListChrootSnapshots(chroot_vg, chroot_lv):
   snapshot_attrs = re.compile(r'^V.....t.{2,}')  # Matches a thin volume.
   for line in result.output.splitlines():
     lv_name, pool_lv, lv_attr = line.lstrip().split('\t')
-    if (lv_name == chroot_lv or
-        lv_name == cros_sdk_lib.CHROOT_THINPOOL_NAME or
+    if (lv_name == chroot_lv or lv_name == cros_sdk_lib.CHROOT_THINPOOL_NAME or
         pool_lv != cros_sdk_lib.CHROOT_THINPOOL_NAME or
         not snapshot_attrs.match(lv_attr)):
       continue
@@ -486,8 +490,7 @@ def _ReportMissing(missing):
         'The tool(s) %s were not found.\n'
         'Please install the appropriate package in your host.\n'
         'Example(ubuntu):\n'
-        '  sudo apt-get install <packagename>'
-        % ', '.join(missing))
+        '  sudo apt-get install <packagename>' % ', '.join(missing))
 
 
 def _ProxySimSetup(options):
@@ -523,7 +526,7 @@ def _ProxySimSetup(options):
     for mod, so in apache_modules:
       for f in glob.glob(os.path.join(g, so)):
         module_dirs.setdefault(os.path.dirname(f), []).append(so)
-  for apache_module_path, modules_found in module_dirs.iteritems():
+  for apache_module_path, modules_found in module_dirs.items():
     if len(modules_found) == len(apache_modules):
       break
   else:
@@ -574,8 +577,7 @@ def _ProxySimSetup(options):
     # Set up child side of the network.
     commands = (
         ('ip', 'link', 'set', 'up', 'lo'),
-        ('ip', 'address', 'add',
-         '%s/%u' % (PROXY_GUEST_IP, PROXY_NETMASK),
+        ('ip', 'address', 'add', '%s/%u' % (PROXY_GUEST_IP, PROXY_NETMASK),
          'dev', veth_guest),
         ('ip', 'link', 'set', veth_guest, 'up'),
     )
@@ -622,23 +624,22 @@ def _ProxySimSetup(options):
       'Listen %s:%u' % (PROXY_HOST_IP, PROXY_PORT),
       'ServerName %s' % PROXY_HOST_IP,
       'ProxyRequests On',
-      'AllowCONNECT %s' % ' '.join(map(str, PROXY_CONNECT_PORTS)),
+      'AllowCONNECT %s' % ' '.join(str(x) for x in PROXY_CONNECT_PORTS),
   ] + [
       'LoadModule %s %s' % (mod, os.path.join(apache_module_path, so))
       for (mod, so) in apache_modules
   ]
   commands = (
-      ('ip', 'link', 'add', 'name', veth_host,
-       'type', 'veth', 'peer', 'name', veth_guest),
-      ('ip', 'address', 'add',
-       '%s/%u' % (PROXY_HOST_IP, PROXY_NETMASK),
-       'dev', veth_host),
+      ('ip', 'link', 'add', 'name', veth_host, 'type', 'veth', 'peer', 'name',
+       veth_guest),
+      ('ip', 'address', 'add', '%s/%u' % (PROXY_HOST_IP, PROXY_NETMASK), 'dev',
+       veth_host),
       ('ip', 'link', 'set', veth_host, 'up'),
       ([apache_bin, '-f', '/dev/null'] +
        [arg for d in apache_directives for arg in ('-C', d)]),
       ('ip', 'link', 'set', veth_guest, 'netns', str(pid)),
   )
-  cmd = None # Make cros lint happy.
+  cmd = None  # Make cros lint happy.
   try:
     for cmd in commands:
       cros_build_lib.RunCommand(cmd, print_cmd=False)
@@ -677,63 +678,90 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
   """Generate and return the parser with all the options."""
   usage = ('usage: %(prog)s [options] '
            '[VAR1=val1 ... VAR2=val2] [--] [command [args]]')
-  parser = commandline.ArgumentParser(usage=usage, description=__doc__,
-                                      caching=True)
+  parser = commandline.ArgumentParser(
+      usage=usage, description=__doc__, caching=True)
 
   # Global options.
   default_chroot = os.path.join(constants.SOURCE_ROOT,
                                 constants.DEFAULT_CHROOT_DIR)
   parser.add_argument(
-      '--chroot', dest='chroot', default=default_chroot, type='path',
+      '--chroot',
+      dest='chroot',
+      default=default_chroot,
+      type='path',
       help=('SDK chroot dir name [%s]' % constants.DEFAULT_CHROOT_DIR))
-  parser.add_argument('--nouse-image', dest='use_image', action='store_false',
-                      default=True,
-                      help='Do not mount the chroot on a loopback image; '
-                           'instead, create it directly in a directory.')
+  parser.add_argument(
+      '--nouse-image',
+      dest='use_image',
+      action='store_false',
+      default=True,
+      help='Do not mount the chroot on a loopback image; '
+      'instead, create it directly in a directory.')
 
-  parser.add_argument('--chrome_root', type='path',
-                      help='Mount this chrome root into the SDK chroot')
-  parser.add_argument('--chrome_root_mount', type='path',
-                      help='Mount chrome into this path inside SDK chroot')
-  parser.add_argument('--nousepkg', action='store_true', default=False,
-                      help='Do not use binary packages when creating a chroot.')
-  parser.add_argument('-u', '--url', dest='sdk_url',
-                      help='Use sdk tarball located at this url. Use file:// '
-                           'for local files.')
-  parser.add_argument('--self-bootstrap', dest='self_bootstrap', action='store_true',
-                      default=False,
-                      help=('Use previously build sdk for bootstrapping.'))
-  parser.add_argument('--sdk-version',
-                      help=('Use this sdk version.  For prebuilt, current is %r'
-                            ', for bootstrapping it is %r.'
-                            % (sdk_latest_version, bootstrap_latest_version)))
-  parser.add_argument('--goma_dir', type='path',
-                      help='Goma installed directory to mount into the chroot.')
-  parser.add_argument('--goma_client_json', type='path',
-                      help='Service account json file to use goma on bot. '
-                           'Mounted into the chroot.')
+  parser.add_argument(
+      '--chrome-root',
+      '--chrome_root',
+      type='path',
+      help='Mount this chrome root into the SDK chroot')
+  parser.add_argument(
+      '--chrome_root_mount',
+      type='path',
+      help='Mount chrome into this path inside SDK chroot')
+  parser.add_argument(
+      '--nousepkg',
+      action='store_true',
+      default=False,
+      help='Do not use binary packages when creating a chroot.')
+  parser.add_argument(
+      '-u',
+      '--url',
+      dest='sdk_url',
+      help='Use sdk tarball located at this url. Use file:// '
+      'for local files.')
+  parser.add_argument(
+      '--sdk-version',
+      help=('Use this sdk version.  For prebuilt, current is %r'
+            ', for bootstrapping it is %r.' % (sdk_latest_version,
+                                               bootstrap_latest_version)))
+  parser.add_argument(
+      '--goma_dir',
+      type='path',
+      help='Goma installed directory to mount into the chroot.')
+  parser.add_argument(
+      '--goma_client_json',
+      type='path',
+      help='Service account json file to use goma on bot. '
+      'Mounted into the chroot.')
 
   # Use type=str instead of type='path' to prevent the given path from being
   # transfered to absolute path automatically.
-  parser.add_argument('--working-dir', type=str,
-                      help='Run the command in specific working directory in '
-                           'chroot.  If the given directory is a relative '
-                           'path, this program will transfer the path to '
-                           'the corresponding one inside chroot.')
+  parser.add_argument(
+      '--working-dir',
+      type=str,
+      help='Run the command in specific working directory in '
+      'chroot.  If the given directory is a relative '
+      'path, this program will transfer the path to '
+      'the corresponding one inside chroot.')
 
   parser.add_argument('commands', nargs=argparse.REMAINDER)
 
   # Commands.
   group = parser.add_argument_group('Commands')
   group.add_argument(
-      '--enter', action='store_true', default=False,
+      '--enter',
+      action='store_true',
+      default=False,
       help='Enter the SDK chroot.  Implies --create.')
   group.add_argument(
-      '--create', action='store_true', default=False,
+      '--create',
+      action='store_true',
+      default=False,
       help='Create the chroot only if it does not already exist.  '
       'Implies --download.')
   group.add_argument(
-      '--bootstrap', action='store_true', default=False,
+      '--bootstrap',
+      action='store_true',
+      default=False,
       help='Build everything from scratch, including the sdk.  '
       'Use this only if you need to validate a change '
       'that affects SDK creation itself (toolchain and '
@@ -741,14 +769,21 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
       'Note this will quite heavily slow down the build.  '
       'This option implies --create --nousepkg.')
   group.add_argument(
-      '-r', '--replace', action='store_true', default=False,
+      '-r',
+      '--replace',
+      action='store_true',
+      default=False,
       help='Replace an existing SDK chroot.  Basically an alias '
       'for --delete --create.')
   group.add_argument(
-      '--delete', action='store_true', default=False,
+      '--delete',
+      action='store_true',
+      default=False,
       help='Delete the current SDK chroot if it exists.')
   group.add_argument(
-      '--unmount', action='store_true', default=False,
+      '--unmount',
+      action='store_true',
+      default=False,
       help='Unmount and clean up devices associated with the '
       'SDK chroot if it exists.  This does not delete the '
       'backing image file, so the same chroot can be later '
@@ -757,40 +792,55 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
       'cros_sdk or the chroot setup; you should not need it '
       'under normal circumstances.')
   group.add_argument(
-      '--download', action='store_true', default=False,
+      '--download',
+      action='store_true',
+      default=False,
       help='Download the sdk.')
   group.add_argument(
-      '--snapshot-create', metavar='SNAPSHOT_NAME',
+      '--snapshot-create',
+      metavar='SNAPSHOT_NAME',
       help='Create a snapshot of the chroot.  Requires that the chroot was '
-           'created without the --nouse-image option.')
+      'created without the --nouse-image option.')
   group.add_argument(
-      '--snapshot-restore', metavar='SNAPSHOT_NAME',
+      '--snapshot-restore',
+      metavar='SNAPSHOT_NAME',
       help='Restore the chroot to a previously created snapshot.')
   group.add_argument(
-      '--snapshot-delete', metavar='SNAPSHOT_NAME',
+      '--snapshot-delete',
+      metavar='SNAPSHOT_NAME',
       help='Delete a previously created snapshot.  Deleting a snapshot that '
-           'does not exist is not an error.')
+      'does not exist is not an error.')
   group.add_argument(
-      '--snapshot-list', action='store_true', default=False,
+      '--snapshot-list',
+      action='store_true',
+      default=False,
       help='List existing snapshots of the chroot and exit.')
   commands = group
 
   # Namespace options.
   group = parser.add_argument_group('Namespaces')
-  group.add_argument('--proxy-sim', action='store_true', default=False,
-                     help='Simulate a restrictive network requiring an outbound'
-                          ' proxy.')
-  group.add_argument('--no-ns-pid', dest='ns_pid',
-                     default=True, action='store_false',
-                     help='Do not create a new PID namespace.')
+  group.add_argument(
+      '--proxy-sim',
+      action='store_true',
+      default=False,
+      help='Simulate a restrictive network requiring an outbound'
+      ' proxy.')
+  group.add_argument(
+      '--no-ns-pid',
+      dest='ns_pid',
+      default=True,
+      action='store_false',
+      help='Do not create a new PID namespace.')
 
   # Internal options.
   group = parser.add_argument_group(
       'Internal Chromium OS Build Team Options',
       'Caution: these are for meant for the Chromium OS build team only')
-  group.add_argument('--buildbot-log-version', default=False,
-                     action='store_true',
-                     help='Log SDK version for buildbot consumption')
+  group.add_argument(
+      '--buildbot-log-version',
+      default=False,
+      action='store_true',
+      help='Log SDK version for buildbot consumption')
 
   return parser, commands
 
@@ -800,7 +850,13 @@ def main(argv):
       os.path.join(constants.SOURCE_ROOT, constants.SDK_VERSION_FILE),
       ignore_missing=True)
   sdk_latest_version = conf.get('SDK_LATEST_VERSION', '<unknown>')
-  bootstrap_latest_version = conf.get('BOOTSTRAP_LATEST_VERSION', '<unknown>')
+  bootstrap_frozen_version = conf.get('BOOTSTRAP_FROZEN_VERSION', '<unknown>')
+
+  # Use latest SDK for bootstrapping if requested. Use a frozen version of SDK
+  # for bootstrapping if BOOTSTRAP_FROZEN_VERSION is set.
+  bootstrap_latest_version = (
+      sdk_latest_version
+      if bootstrap_frozen_version == '<unknown>' else bootstrap_frozen_version)
   parser, commands = _CreateParser(sdk_latest_version, bootstrap_latest_version)
   options = parser.parse_args(argv)
   chroot_command = options.commands
@@ -819,10 +875,6 @@ def main(argv):
     _ReportMissing(osutils.FindMissingBinaries(PROXY_NEEDED_TOOLS))
   missing_image_tools = osutils.FindMissingBinaries(IMAGE_NEEDED_TOOLS)
 
-  # Use latest SDK for bootstrapping if requested.
-  if options.self_bootstrap:
-    bootstrap_latest_version = sdk_latest_version
-
   if (sdk_latest_version == '<unknown>' or
       bootstrap_latest_version == '<unknown>'):
     cros_build_lib.Die(
@@ -832,14 +884,15 @@ def main(argv):
         'and retry.  If you need to setup a Chromium OS source tree, see\n'
         '  https://dev.chromium.org/chromium-os/developer-guide')
 
-  any_snapshot_operation = (options.snapshot_create or options.snapshot_restore
-                            or options.snapshot_delete or options.snapshot_list)
+  any_snapshot_operation = (
+      options.snapshot_create or options.snapshot_restore or
+      options.snapshot_delete or options.snapshot_list)
   if any_snapshot_operation and not options.use_image:
     cros_build_lib.Die('Snapshot operations are not compatible with '
                        '--nouse-image.')
 
-  if (options.snapshot_delete and options.snapshot_delete ==
-      options.snapshot_restore):
+  if (options.snapshot_delete and
+      options.snapshot_delete == options.snapshot_restore):
     parser.error('Cannot --snapshot_delete the same snapshot you are '
                  'restoring with --snapshot_restore.')
 
@@ -860,8 +913,8 @@ def main(argv):
   # pylint: disable=protected-access
   # This _group_actions access sucks, but upstream decided to not include an
   # alternative to optparse's option_list, and this is what they recommend.
-  options.enter |= not any(getattr(options, x.dest)
-                           for x in commands._group_actions)
+  options.enter |= not any(
+      getattr(options, x.dest) for x in commands._group_actions)
   # pylint: enable=protected-access
   options.enter |= bool(chroot_command)
 
@@ -934,8 +987,7 @@ def main(argv):
   # below if needed.
   if options.create and options.use_image:
     if missing_image_tools:
-      raise SystemExit(
-          '''The tool(s) %s were not found.
+      raise SystemExit('''The tool(s) %s were not found.
 Please make sure the lvm2 and thin-provisioning-tools packages
 are installed on your host.
 Example(ubuntu):
@@ -972,9 +1024,10 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
           lock.write_lock()
           valid_snapshots = ListChrootSnapshots(chroot_vg, chroot_lv)
           if options.snapshot_restore not in valid_snapshots:
-            cros_build_lib.Die('%s is not a valid snapshot to restore to. '
-                               'Valid snapshots: %s', options.snapshot_restore,
-                               ', '.join(valid_snapshots))
+            cros_build_lib.Die(
+                '%s is not a valid snapshot to restore to. '
+                'Valid snapshots: %s', options.snapshot_restore,
+                ', '.join(valid_snapshots))
           osutils.UmountTree(options.chroot)
           if not RestoreChrootSnapshot(options.snapshot_restore, chroot_vg,
                                        chroot_lv):
@@ -1005,8 +1058,8 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
     img_used_bytes = img_stat.st_blocks * 512
 
     mount_stat = os.statvfs(options.chroot)
-    mount_used_bytes = mount_stat.f_frsize * (mount_stat.f_blocks -
-                                              mount_stat.f_bfree)
+    mount_used_bytes = mount_stat.f_frsize * (
+        mount_stat.f_blocks - mount_stat.f_bfree)
 
     extra_gbs = (img_used_bytes - mount_used_bytes) / 2**30
     if extra_gbs > MAX_UNUSED_IMAGE_GBS:
@@ -1016,8 +1069,9 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
       try:
         cros_build_lib.RunCommand(cmd, print_cmd=False)
       except cros_build_lib.RunCommandError as e:
-        logging.warning('Running fstrim failed. Consider running fstrim on '
-                        'your chroot manually.\nError: %s', e)
+        logging.warning(
+            'Running fstrim failed. Consider running fstrim on '
+            'your chroot manually.\nError: %s', e)
 
   # Enter a new set of namespaces.  Everything after here cannot directly affect
   # the hosts's mounts or alter LVM volumes.
@@ -1033,8 +1087,8 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
     sys.exit(0)
 
   if not options.sdk_version:
-    sdk_version = (bootstrap_latest_version if options.bootstrap
-                   else sdk_latest_version)
+    sdk_version = (
+        bootstrap_latest_version if options.bootstrap else sdk_latest_version)
   else:
     sdk_version = options.sdk_version
   if options.buildbot_log_version:
@@ -1044,10 +1098,6 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
   if options.download:
     if options.sdk_url:
       urls = [options.sdk_url]
-    elif options.bootstrap:
-      urls = GetStage3Urls(sdk_version)
-      if options.self_bootstrap:
-        urls = GetArchStageTarballs(sdk_version)
     else:
       urls = GetArchStageTarballs(sdk_version)
 
@@ -1104,8 +1154,11 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
         if cros_sdk_lib.IsChrootReady(options.chroot):
           logging.debug('Chroot already exists.  Skipping creation.')
         else:
-          CreateChroot(options.chroot, sdk_tarball, options.cache_dir,
-                       nousepkg=(options.bootstrap or options.nousepkg))
+          CreateChroot(
+              options.chroot,
+              sdk_tarball,
+              options.cache_dir,
+              nousepkg=(options.bootstrap or options.nousepkg))
 
       if options.enter:
         lock.read_lock()

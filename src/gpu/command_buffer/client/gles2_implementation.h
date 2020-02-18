@@ -750,6 +750,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   GLuint bound_atomic_counter_buffer_;
   GLuint bound_copy_read_buffer_;
   GLuint bound_copy_write_buffer_;
+  GLuint bound_dispatch_indirect_buffer_;
   GLuint bound_pixel_pack_buffer_;
   GLuint bound_pixel_unpack_buffer_;
   GLuint bound_shader_storage_buffer_;
@@ -854,7 +855,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
 
   std::string last_active_url_;
 
-  base::WeakPtrFactory<GLES2Implementation> weak_ptr_factory_;
+  base::WeakPtrFactory<GLES2Implementation> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Implementation);
 };

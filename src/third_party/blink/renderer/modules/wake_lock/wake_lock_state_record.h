@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class Document;
+class ExecutionContext;
 class ScriptPromiseResolver;
 
 // https://w3c.github.io/wake-lock/#concepts-and-state-record
@@ -21,7 +21,7 @@ class ScriptPromiseResolver;
 class MODULES_EXPORT WakeLockStateRecord
     : public GarbageCollectedFinalized<WakeLockStateRecord> {
  public:
-  WakeLockStateRecord(Document*, WakeLockType);
+  WakeLockStateRecord(ExecutionContext*, WakeLockType);
 
   void AcquireWakeLock(ScriptPromiseResolver*);
   void ReleaseWakeLock(ScriptPromiseResolver*);
@@ -33,10 +33,6 @@ class MODULES_EXPORT WakeLockStateRecord
   using ActiveLocksType = HeapHashSet<Member<ScriptPromiseResolver>>;
 
   friend class WakeLockControllerTest;
-
-  // Actually releases a given wake lock. Callers are responsible for passing a
-  // valid |iterator|.
-  void ReleaseWakeLock(ActiveLocksType::iterator iterator);
 
   // Handle connection errors from |wake_lock_|.
   void OnWakeLockConnectionError();
@@ -50,13 +46,14 @@ class MODULES_EXPORT WakeLockStateRecord
   device::mojom::blink::WakeLockPtr wake_lock_;
   device::mojom::blink::WakeLockType wake_lock_type_;
 
-  // Document from which we will connect to |wake_lock_service_|.
-  Member<Document> document_;
+  // ExecutionContext from which we will connect to |wake_lock_service_|.
+  Member<ExecutionContext> execution_context_;
 
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, AcquireWakeLock);
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseAllWakeLocks);
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseNonExistentWakeLock);
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseOneWakeLock);
+  FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseRejectsPromise);
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ClearWakeLocks);
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, WakeLockConnectionError);
 };

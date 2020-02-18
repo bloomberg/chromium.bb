@@ -15,11 +15,13 @@
 #include "dawn_native/CommandBuffer.h"
 
 #include "dawn_native/CommandEncoder.h"
+#include "dawn_native/Texture.h"
 
 namespace dawn_native {
 
-    CommandBufferBase::CommandBufferBase(DeviceBase* device, CommandEncoderBase* encoder)
-        : ObjectBase(device), mResourceUsages(encoder->AcquireResourceUsages()) {
+    CommandBufferBase::CommandBufferBase(CommandEncoderBase* encoder,
+                                         const CommandBufferDescriptor*)
+        : ObjectBase(encoder->GetDevice()), mResourceUsages(encoder->AcquireResourceUsages()) {
     }
 
     CommandBufferBase::CommandBufferBase(DeviceBase* device, ObjectBase::ErrorTag tag)
@@ -35,4 +37,15 @@ namespace dawn_native {
         return mResourceUsages;
     }
 
+    bool IsCompleteSubresourceCopiedTo(const TextureBase* texture,
+                                       const Extent3D copySize,
+                                       const uint32_t mipLevel) {
+        Extent3D extent = texture->GetMipLevelPhysicalSize(mipLevel);
+
+        if (extent.depth == copySize.depth && extent.width == copySize.width &&
+            extent.height == copySize.height) {
+            return true;
+        }
+        return false;
+    }
 }  // namespace dawn_native

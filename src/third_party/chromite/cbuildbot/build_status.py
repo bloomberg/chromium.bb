@@ -31,7 +31,7 @@ class SlaveStatus(object):
   it will only interpret slave statuses by querying CIDB.
   """
 
-  BUILD_START_TIMEOUT_MIN = 5
+  BUILD_START_TIMEOUT_MIN = 30
 
   ACCEPTED_STATUSES = (constants.BUILDER_STATUS_PASSED,
                        constants.BUILDER_STATUS_SKIPPED,)
@@ -117,7 +117,7 @@ class SlaveStatus(object):
       the completed_builds to their CIDBStatusInfos.
     """
     return {build_config: status_info
-            for build_config, status_info in all_cidb_status_dict.iteritems()
+            for build_config, status_info in all_cidb_status_dict.items()
             if build_config not in completed_builds}
 
   def _GetNewSlaveBuildbucketInfo(self, all_buildbucket_info_dict,
@@ -134,13 +134,13 @@ class SlaveStatus(object):
       completed_builds set to their BuildbucketInfos.
     """
     completed_builds = completed_builds or {}
-    return {k: v for k, v in all_buildbucket_info_dict.iteritems()
+    return {k: v for k, v in all_buildbucket_info_dict.items()
             if k not in completed_builds}
 
   def _SetStatusBuildsDict(self):
     """Set status_buildset_dict by sorting the builds into their status set."""
     self.status_buildset_dict = {}
-    for build, info in self.new_buildbucket_info_dict.iteritems():
+    for build, info in self.new_buildbucket_info_dict.items():
       if info.status is not None:
         self.status_buildset_dict.setdefault(info.status, set())
         self.status_buildset_dict[info.status].add(build)
@@ -223,7 +223,7 @@ class SlaveStatus(object):
     """
     if self.new_buildbucket_info_dict is not None:
       return set(build for build, info in
-                 self.new_buildbucket_info_dict.iteritems()
+                 self.new_buildbucket_info_dict.items()
                  if info.status is None)
     else:
       return (set(self._GetExpectedBuilders()) -
@@ -312,7 +312,7 @@ class SlaveStatus(object):
     """
     # current completed builds (not in self.completed_builds) from CIDB
     current_completed = set(
-        b for b, s in self.new_cidb_status_dict.iteritems()
+        b for b, s in self.new_cidb_status_dict.items()
         if s.status in constants.BUILDER_COMPLETED_STATUSES and
         b in self._GetExpectedBuilders())
 
@@ -391,11 +391,11 @@ class SlaveStatus(object):
     )
 
     completed_experimental_builds = set(
-        name for name, info in all_experimental_bb_info_dict.iteritems() if
+        name for name, info in all_experimental_bb_info_dict.items() if
         info.status == constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED
     )
     completed_experimental_builds |= set(
-        name for name, info in all_experimental_cidb_status_dict.iteritems()
+        name for name, info in all_experimental_cidb_status_dict.items()
         if info.status in constants.BUILDER_COMPLETED_STATUSES
     )
 
@@ -571,7 +571,7 @@ class SlaveStatus(object):
         self.completed_builds)
     uncompleted_important_build_buildbucket_ids = set(
         v.buildbucket_id
-        for k, v in self.all_buildbucket_info_dict.iteritems() if k in
+        for k, v in self.all_buildbucket_info_dict.items() if k in
         uncompleted_important_builds)
     uncompleted_build_buildbucket_ids = list(
         uncompleted_important_build_buildbucket_ids |

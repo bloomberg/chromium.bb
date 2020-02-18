@@ -6,8 +6,9 @@
 
 #include <utility>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_prefs_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
@@ -21,11 +22,9 @@
 #include "ash/assistant/util/histogram_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/optional.h"
@@ -45,9 +44,7 @@ constexpr int kWarmerWelcomesMaxTimesTriggered = 3;
 
 // Returns true if device is in tablet mode, false otherwise.
 bool IsTabletMode() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 }  // namespace
@@ -487,7 +484,8 @@ void AssistantInteractionController::OnSuggestionChipPressed(
         FROM_HERE,
         base::BindOnce(&AssistantController::OpenUrl,
                        assistant_controller_->GetWeakPtr(),
-                       suggestion->action_url, /*from_server=*/false));
+                       suggestion->action_url, /*in_background=*/false,
+                       /*from_server=*/false));
     return;
   }
 
@@ -621,14 +619,14 @@ void AssistantInteractionController::OnWaitStarted() {
   OnProcessPendingResponse();
 }
 
-void AssistantInteractionController::OnOpenUrlResponse(const GURL& url) {
-  if (model_.interaction_state() != InteractionState::kActive) {
+void AssistantInteractionController::OnOpenUrlResponse(const GURL& url,
+                                                       bool in_background) {
+  if (model_.interaction_state() != InteractionState::kActive)
     return;
-  }
   // We need to indicate that the navigation attempt is occurring as a result of
   // a server response so that we can differentiate from navigation attempts
   // initiated by direct user interaction.
-  assistant_controller_->OpenUrl(url, /*from_server=*/true);
+  assistant_controller_->OpenUrl(url, in_background, /*from_server=*/true);
 }
 
 void AssistantInteractionController::OnDialogPlateButtonPressed(
@@ -703,7 +701,8 @@ void AssistantInteractionController::OnUiVisible(
             assistant_controller_->ui_controller()->model()->visibility());
 
   const bool launch_with_mic_open =
-      Shell::Get()->voice_interaction_controller()->launch_with_mic_open();
+      assistant_controller_->prefs_controller()->prefs()->GetBoolean(
+          chromeos::assistant::prefs::kAssistantLaunchWithMicOpen);
   const bool prefer_voice = launch_with_mic_open || IsTabletMode();
 
   // We don't explicitly start a new voice interaction if the entry point

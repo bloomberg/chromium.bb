@@ -215,6 +215,420 @@ bidir_fn w_avg
 bidir_fn mask
 
 
+function blend_8bpc_neon, export=1
+        push            {r4-r8,lr}
+        ldr             r4,  [sp, #24]
+        ldr             r5,  [sp, #28]
+        clz             r6,  r3
+        adr             r7,  L(blend_tbl)
+        sub             r6,  r6,  #26
+        ldr             r6,  [r7, r6, lsl #2]
+        add             r7,  r7,  r6
+        bx              r7
+        .align 2
+L(blend_tbl):
+        .word 320f  - L(blend_tbl) + CONFIG_THUMB
+        .word 160f  - L(blend_tbl) + CONFIG_THUMB
+        .word 80f   - L(blend_tbl) + CONFIG_THUMB
+        .word 40f   - L(blend_tbl) + CONFIG_THUMB
+
+40:
+        vmov.i8         d22, #64
+        add             r12, r0,  r1
+        lsl             r1,  r1,  #1
+4:
+        vld1.32         {d2[]},   [r5],  r3
+        vld1.32         {d1[]},   [r2],  r3
+        vld1.32         {d0[]},   [r0]
+        subs            r4,  r4,  #2
+        vld1.32         {d2[1]},  [r5],  r3
+        vld1.32         {d1[1]},  [r2],  r3
+        vld1.32         {d0[1]},  [r12]
+        vsub.i8         d3,  d22, d2
+        vmull.u8        q8,  d1,  d2
+        vmlal.u8        q8,  d0,  d3
+        vrshrn.i16      d20, q8,  #6
+        vst1.32         {d20[0]}, [r0],  r1
+        vst1.32         {d20[1]}, [r12], r1
+        bgt             4b
+        pop             {r4-r8,pc}
+80:
+        vmov.i8         d16, #64
+        add             r12, r0,  r1
+        lsl             r1,  r1,  #1
+8:
+        vld1.u8         {d2},  [r5],  r3
+        vld1.u8         {d4},  [r2],  r3
+        vld1.u8         {d0},  [r0]
+        vsub.i8         d17, d16, d2
+        vld1.u8         {d3},  [r5],  r3
+        vld1.u8         {d5},  [r2],  r3
+        vld1.u8         {d1},  [r12]
+        subs            r4,  r4,  #2
+        vsub.i8         d18, d16, d3
+        vmull.u8        q3,  d2,  d4
+        vmlal.u8        q3,  d0,  d17
+        vmull.u8        q10, d3,  d5
+        vmlal.u8        q10, d1,  d18
+        vrshrn.i16      d22, q3,  #6
+        vrshrn.i16      d23, q10, #6
+        vst1.u8         {d22}, [r0],  r1
+        vst1.u8         {d23}, [r12], r1
+        bgt             8b
+        pop             {r4-r8,pc}
+160:
+        vmov.i8         q12, #64
+        add             r12, r0,  r1
+        lsl             r1,  r1,  #1
+16:
+        vld1.u8         {q2},  [r5],  r3
+        vld1.u8         {q1},  [r2],  r3
+        vld1.u8         {q0},  [r0]
+        subs            r4,  r4,  #2
+        vsub.i8         q11, q12, q2
+        vld1.u8         {q15}, [r5],  r3
+        vld1.u8         {q14}, [r2],  r3
+        vld1.u8         {q13}, [r12]
+        vmull.u8        q3,  d2,  d4
+        vmlal.u8        q3,  d0,  d22
+        vmull.u8        q8,  d3,  d5
+        vmlal.u8        q8,  d1,  d23
+        vsub.i8         q11, q12, q15
+        vrshrn.i16      d18, q3,  #6
+        vrshrn.i16      d19, q8,  #6
+        vmull.u8        q3,  d28, d30
+        vmlal.u8        q3,  d26, d22
+        vmull.u8        q8,  d29, d31
+        vmlal.u8        q8,  d27, d23
+        vrshrn.i16      d20, q3,  #6
+        vrshrn.i16      d21, q8,  #6
+        vst1.u8         {q9},  [r0],  r1
+        vst1.u8         {q10}, [r12], r1
+        bgt             16b
+        pop             {r4-r8,pc}
+
+320:
+        vmov.i8         q10, #64
+32:
+        vld1.u8         {q2, q3},  [r5],  r3
+        vld1.u8         {q8, q9},  [r2],  r3
+        vld1.u8         {q0, q1},  [r0]
+        subs            r4,  r4,  #1
+        vsub.i8         q11, q10, q2
+        vmull.u8        q15, d16, d4
+        vmlal.u8        q15, d0,  d22
+        vmull.u8        q14, d17, d5
+        vmlal.u8        q14, d1,  d23
+        vsub.i8         q11, q10, q3
+        vrshrn.i16      d24, q15, #6
+        vrshrn.i16      d25, q14, #6
+        vmull.u8        q15, d18, d6
+        vmlal.u8        q15, d2,  d22
+        vmull.u8        q14, d19, d7
+        vmlal.u8        q14, d3,  d23
+        vrshrn.i16      d26, q15, #6
+        vrshrn.i16      d27, q14, #6
+        vst1.u8         {q12, q13}, [r0],  r1
+        bgt             32b
+        pop             {r4-r8,pc}
+endfunc
+
+function blend_h_8bpc_neon, export=1
+        push            {r4-r8,lr}
+        ldr             r4,  [sp, #24]
+        movrel          r5,  X(obmc_masks)
+        add             r5,  r5,  r4
+        sub             r4,  r4,  r4,  lsr #2
+        clz             r6,  r3
+        adr             r7,  L(blend_h_tbl)
+        sub             r6,  r6,  #24
+        ldr             r6,  [r7, r6, lsl #2]
+        add             r7,  r7,  r6
+        bx              r7
+        .align 2
+L(blend_h_tbl):
+        .word 1280f  - L(blend_h_tbl) + CONFIG_THUMB
+        .word 640f   - L(blend_h_tbl) + CONFIG_THUMB
+        .word 320f   - L(blend_h_tbl) + CONFIG_THUMB
+        .word 160f   - L(blend_h_tbl) + CONFIG_THUMB
+        .word 80f    - L(blend_h_tbl) + CONFIG_THUMB
+        .word 40f    - L(blend_h_tbl) + CONFIG_THUMB
+        .word 20f    - L(blend_h_tbl) + CONFIG_THUMB
+
+20:
+        vmov.i8         d22, #64
+        add             r12, r0,  r1
+        lsl             r1,  r1,  #1
+2:
+        vld1.16         {d2[], d3[]},  [r5]!
+        vld1.16         {d1[]},  [r2],  r3
+        subs            r4,  r4,  #2
+        vld1.16         {d0[]},  [r0]
+        vzip.8          d2,  d3
+        vld1.16         {d1[1]}, [r2],  r3
+        vsub.i8         d4,  d22, d2
+        vld1.16         {d0[1]}, [r12]
+        vmull.u8        q8,  d1,  d2
+        vmlal.u8        q8,  d0,  d4
+        vrshrn.i16      d20, q8,  #6
+        vst1.16         {d20[0]}, [r0],  r1
+        vst1.16         {d20[1]}, [r12], r1
+        bgt             2b
+        pop             {r4-r8,pc}
+40:
+        vmov.i8         d22, #64
+        add             r12, r0,  r1
+        lsl             r1,  r1,  #1
+4:
+        vld1.u8         {d2[]},  [r5]!
+        vld1.32         {d1[]},  [r2],  r3
+        subs            r4,  r4,  #2
+        vld1.u8         {d6[]},  [r5]!
+        vld1.32         {d1[1]}, [r2],  r3
+        vext.u8         d2,  d2,  d6,   #4
+        vld1.32         {d0[]},  [r0]
+        vsub.i8         d3,  d22, d2
+        vld1.32         {d0[1]}, [r12]
+        vmull.u8        q8,  d1,  d2
+        vmlal.u8        q8,  d0,  d3
+        vrshrn.i16      d20, q8,  #6
+        vst1.32         {d20[0]}, [r0],  r1
+        vst1.32         {d20[1]}, [r12], r1
+        bgt             4b
+        pop             {r4-r8,pc}
+80:
+        vmov.i8         d16, #64
+        add             r12, r0,  r1
+        lsl             r1,  r1,  #1
+8:
+        vld1.u8         {d2[]}, [r5]!
+        vld1.u8         {d4},   [r2],  r3
+        vld1.u8         {d0},   [r0]
+        vsub.i8         d17, d16, d2
+        vld1.u8         {d3[]}, [r5]!
+        vld1.u8         {d5},   [r2],  r3
+        vld1.u8         {d1},   [r12]
+        subs            r4,  r4,  #2
+        vsub.i8         d18, d16, d3
+        vmull.u8        q3,  d2,  d4
+        vmlal.u8        q3,  d0,  d17
+        vmull.u8        q10, d3,  d5
+        vmlal.u8        q10, d1,  d18
+        vrshrn.i16      d22, q3,  #6
+        vrshrn.i16      d23, q10, #6
+        vst1.u8         {d22}, [r0],  r1
+        vst1.u8         {d23}, [r12], r1
+        bgt             8b
+        pop             {r4-r8,pc}
+160:
+        vmov.i8         d24, #64
+        add             r12, r0,  r1
+        lsl             r1,  r1,  #1
+16:
+        vld1.u8         {d4[]},  [r5]!
+        vld1.u8         {q1},    [r2],  r3
+        vsub.i8         d5,  d24, d4
+        vld1.u8         {q0},    [r0]
+        subs            r4,  r4,  #2
+        vld1.u8         {d30[]}, [r5]!
+        vld1.u8         {q14},   [r2],  r3
+        vsub.i8         d31, d24, d30
+        vld1.u8         {q13},   [r12]
+        vmull.u8        q3,  d2,  d4
+        vmlal.u8        q3,  d0,  d5
+        vmull.u8        q8,  d3,  d4
+        vmlal.u8        q8,  d1,  d5
+        vrshrn.i16      d18, q3,  #6
+        vrshrn.i16      d19, q8,  #6
+        vmull.u8        q3,  d28, d30
+        vmlal.u8        q3,  d26, d31
+        vmull.u8        q8,  d29, d30
+        vmlal.u8        q8,  d27, d31
+        vrshrn.i16      d20, q3,  #6
+        vrshrn.i16      d21, q8,  #6
+        vst1.u8         {q9},  [r0],  r1
+        vst1.u8         {q10}, [r12], r1
+        bgt             16b
+        pop             {r4-r8,pc}
+320:
+640:
+1280:
+        vmov.i8         d20, #64
+        sub             r1,  r1,  r3
+321:
+        vld1.u8         {d6[]}, [r5]!
+        vsub.i8         d7,  d20, d6
+        mov             r8,  r3
+32:
+        vld1.u8         {q8, q9}, [r2]!
+        vld1.u8         {q0, q1}, [r0]
+        vmull.u8        q15, d16, d6
+        vmlal.u8        q15, d0,  d7
+        vmull.u8        q14, d17, d6
+        vmlal.u8        q14, d1,  d7
+        vrshrn.i16      d0,  q15, #6
+        vrshrn.i16      d1,  q14, #6
+        vmull.u8        q15, d18, d6
+        vmlal.u8        q15, d2,  d7
+        vmull.u8        q14, d19, d6
+        vmlal.u8        q14, d3,  d7
+        vrshrn.i16      d2,  q15, #6
+        vrshrn.i16      d3,  q14, #6
+        vst1.u8         {q0, q1}, [r0]!
+        subs            r8,  r8,  #32
+        bgt             32b
+        add             r0,  r0,  r1
+        subs            r4,  r4,  #1
+        bgt             321b
+        pop             {r4-r8,pc}
+endfunc
+
+function blend_v_8bpc_neon, export=1
+        push            {r4-r8,lr}
+        ldr             r4,  [sp, #24]
+        movrel          r5,  X(obmc_masks)
+        add             r5,  r5,  r3
+        clz             r8,  r3
+        adr             r7,  L(blend_v_tbl)
+        sub             r8,  r8,  #26
+        ldr             r8,  [r7, r8, lsl #2]
+        add             r7,  r7,  r8
+        bx              r7
+        .align 2
+L(blend_v_tbl):
+        .word 320f  - L(blend_v_tbl) + CONFIG_THUMB
+        .word 160f  - L(blend_v_tbl) + CONFIG_THUMB
+        .word 80f   - L(blend_v_tbl) + CONFIG_THUMB
+        .word 40f   - L(blend_v_tbl) + CONFIG_THUMB
+        .word 20f   - L(blend_v_tbl) + CONFIG_THUMB
+
+20:
+        vmov.i8         d22, #64
+        vld1.8          {d2[]},  [r5]
+        add             r12, r0,  r1
+        lsl             r1,  r1,  #1
+        vsub.i8         d3,  d22, d2
+2:
+        vld1.8          {d1[]},  [r2],  r3
+        vld1.8          {d0[]},  [r0]
+        subs            r4,  r4,  #2
+        vld1.8          {d1[1]}, [r2],  r3
+        vld1.8          {d0[1]}, [r12]
+        vmull.u8        q2,  d1,  d2
+        vmlal.u8        q2,  d0,  d3
+        vrshrn.i16      d6,  q2,  #6
+        vst1.8          {d6[0]}, [r0],  r1
+        vst1.8          {d6[1]}, [r12], r1
+        bgt             2b
+        pop             {r4-r8,pc}
+40:
+        vmov.i8         d22, #64
+        vld1.32         {d4[]},  [r5]
+        add             r12, r0,  r1
+        lsl             r1,  r1,  #1
+        vsub.i8         d5,  d22, d4
+        sub             r1,  r1,  #3
+4:
+        vld1.32         {d2[]},  [r2],  r3
+        vld1.32         {d0[]},  [r0]
+        vld1.32         {d2[1]}, [r2],  r3
+        vld1.32         {d0[1]}, [r12]
+        subs            r4,  r4,  #2
+        vmull.u8        q3,  d2,  d4
+        vmlal.u8        q3,  d0,  d5
+        vrshrn.i16      d20, q3,  #6
+        vst1.16         {d20[0]}, [r0]!
+        vst1.16         {d20[2]}, [r12]!
+        vst1.8          {d20[2]}, [r0]!
+        vst1.8          {d20[6]}, [r12]!
+        add             r0,  r0,  r1
+        add             r12, r12, r1
+        bgt             4b
+        pop             {r4-r8,pc}
+80:
+        vmov.i8         d16, #64
+        vld1.u8         {d2}, [r5]
+        add             r12, r0,  r1
+        lsl             r1,  r1,  #1
+        vsub.i8         d17, d16, d2
+        sub             r1,  r1,  #6
+8:
+        vld1.u8         {d4},  [r2],  r3
+        vld1.u8         {d0},  [r0]
+        vld1.u8         {d5},  [r2],  r3
+        vld1.u8         {d1},  [r12]
+        subs            r4,  r4,  #2
+        vmull.u8        q3,  d2,  d4
+        vmlal.u8        q3,  d0,  d17
+        vmull.u8        q10, d2,  d5
+        vmlal.u8        q10, d1,  d17
+        vrshrn.i16      d22, q3,  #6
+        vrshrn.i16      d23, q10, #6
+        vst1.32         {d22[0]}, [r0]!
+        vst1.32         {d23[0]}, [r12]!
+        vst1.16         {d22[2]}, [r0]!
+        vst1.16         {d23[2]}, [r12]!
+        add             r0,  r0,  r1
+        add             r12, r12, r1
+        bgt             8b
+        pop             {r4-r8,pc}
+160:
+        vmov.i8         q12, #64
+        vld1.u8         {q2},  [r5]
+        add             r12, r0,  r1
+        lsl             r1,  r1,  #1
+        vsub.i8         q11, q12, q2
+        sub             r1,  r1,  #12
+16:
+        vld1.u8         {q1},  [r2],  r3
+        vld1.u8         {q0},  [r0]
+        subs            r4,  r4,  #2
+        vld1.u8         {q14}, [r2],  r3
+        vld1.u8         {q13}, [r12]
+        vmull.u8        q3,  d2,  d4
+        vmlal.u8        q3,  d0,  d22
+        vmull.u8        q8,  d3,  d5
+        vmlal.u8        q8,  d1,  d23
+        vrshrn.i16      d18, q3,  #6
+        vrshrn.i16      d19, q8,  #6
+        vmull.u8        q3,  d28, d4
+        vmlal.u8        q3,  d26, d22
+        vmull.u8        q8,  d29, d5
+        vmlal.u8        q8,  d27, d23
+        vrshrn.i16      d20, q3,  #6
+        vrshrn.i16      d21, q8,  #6
+        vst1.u8         {d18},    [r0]!
+        vst1.u8         {d20},    [r12]!
+        vst1.32         {d19[0]}, [r0]!
+        vst1.32         {d21[0]}, [r12]!
+        add             r0,  r0,  r1
+        add             r12, r12, r1
+        bgt             16b
+        pop             {r4-r8,pc}
+320:
+        vmov.i8         q10, #64
+        vld1.u8         {q2, q3},  [r5]
+        vsub.i8         q11, q10, q2
+        vsub.i8         q12, q10, q3
+32:
+        vld1.u8         {q8, q9},  [r2],  r3
+        vld1.u8         {q0, q1},  [r0]
+        subs            r4,  r4,  #1
+        vmull.u8        q15, d16, d4
+        vmlal.u8        q15, d0,  d22
+        vmull.u8        q14, d17, d5
+        vmlal.u8        q14, d1,  d23
+        vrshrn.i16      d0,  q15, #6
+        vrshrn.i16      d1,  q14, #6
+        vmull.u8        q15, d18, d6
+        vmlal.u8        q15, d2,  d24
+        vrshrn.i16      d2,  q15, #6
+        vst1.u8         {d0, d1, d2}, [r0], r1
+        bgt             32b
+        pop             {r4-r8,pc}
+endfunc
+
+
 // This has got the same signature as the put_8tap functions,
 // assumes that the caller has loaded the h argument into r5,
 // and assumes that r8 is set to (clz(w)-24).
@@ -1112,7 +1526,7 @@ L(\type\()_8tap_v_tbl):
         vmovl_u8        q3,  d6,  q4,  d8,  q8,  d16, q9, d18
         mul_mla_8_2     q12, q13, q12, q13, q14, q15, q1,  q2,  q3,  q4,  q8,  q9
         shift_store_4   \type, \d_strd, q12, d24, d25, q13, d26, d27
-        b               48b
+        bgt             48b
 0:
         vpop            {q4}
         pop             {r4-r11,pc}
@@ -1145,7 +1559,7 @@ L(\type\()_8tap_v_tbl):
 0:
         pop             {r4-r11,pc}
 
-880:    // 8x8, 8x16, 8x32 v
+880:    // 8x6, 8x8, 8x16, 8x32 v
 1680:   // 16x8, 16x16, ...
 320:    // 32x8, 32x16, ...
 640:
@@ -1178,12 +1592,17 @@ L(\type\()_8tap_v_tbl):
         mul_mla_8_1     q3,  q4,  q3,  q4,  q8,  q9,  q10, q11, q12, q13, q14
         shift_store_8   \type, \d_strd, q3,  d6,  q4,  d8
         ble             9f
-        subs            \h,  \h,  #4
-        load_reg        \sr2, \src, \s_strd, d30, d2,  d4,  d6
-        vmovl_u8        q15, d30, q1,  d2,  q2,  d4,  q3,  d6
+        subs            \h,  \h,  #2
+        load_reg        \sr2, \src, \s_strd, d30, d2
+        vmovl_u8        q15, d30, q1,  d2
         mul_mla_8_1     q8,  q9,  q8,  q9,  q10, q11, q12, q13, q14, q15, q1
+        shift_store_8   \type, \d_strd, q8,  d16, q9,  d18
+        ble             9f
+        subs            \h,  \h,  #2
+        load_reg        \sr2, \src, \s_strd, d4,  d6
+        vmovl_u8        q2,  d4,  q3,  d6
         mul_mla_8_1     q10, q11, q10, q11, q12, q13, q14, q15, q1,  q2,  q3
-        shift_store_8   \type, \d_strd, q8,  d16, q9,  d18, q10, d20, q11, d22
+        shift_store_8   \type, \d_strd, q10, d20, q11, d22
         ble             9f
         subs            \h,  \h,  #4
         load_reg        \sr2, \src, \s_strd, d8,  d16, d18, d20

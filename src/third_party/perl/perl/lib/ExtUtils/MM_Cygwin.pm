@@ -9,7 +9,8 @@ require ExtUtils::MM_Unix;
 require ExtUtils::MM_Win32;
 our @ISA = qw( ExtUtils::MM_Unix );
 
-our $VERSION = '6.63_02';
+our $VERSION = '7.36';
+$VERSION =~ tr/_//d;
 
 
 =head1 NAME
@@ -85,35 +86,38 @@ sub init_linker {
 
     if ($Config{useshrplib} eq 'true') {
         my $libperl = '$(PERL_INC)' .'/'. "$Config{libperl}";
-        if( $] >= 5.006002 ) {
-            $libperl =~ s/a$/dll.a/;
+        if( "$]" >= 5.006002 ) {
+            $libperl =~ s/(dll\.)?a$/dll.a/;
         }
         $self->{PERL_ARCHIVE} = $libperl;
     } else {
-        $self->{PERL_ARCHIVE} = 
+        $self->{PERL_ARCHIVE} =
           '$(PERL_INC)' .'/'. ("$Config{libperl}" or "libperl.a");
     }
 
+    $self->{PERL_ARCHIVEDEP} ||= '';
     $self->{PERL_ARCHIVE_AFTER} ||= '';
     $self->{EXPORT_LIST}  ||= '';
 }
 
 =item maybe_command
 
-If our path begins with F</cygdrive/> then we use C<ExtUtils::MM_Win32>
-to determine if it may be a command.  Otherwise we use the tests
-from C<ExtUtils::MM_Unix>.
+Determine whether a file is native to Cygwin by checking whether it
+resides inside the Cygwin installation (using Windows paths). If so,
+use C<ExtUtils::MM_Unix> to determine if it may be a command.
+Otherwise use the tests from C<ExtUtils::MM_Win32>.
 
 =cut
 
 sub maybe_command {
     my ($self, $file) = @_;
 
-    if ($file =~ m{^/cygdrive/}i) {
-        return ExtUtils::MM_Win32->maybe_command($file);
-    }
+    my $cygpath = Cygwin::posix_to_win_path('/', 1);
+    my $filepath = Cygwin::posix_to_win_path($file, 1);
 
-    return $self->SUPER::maybe_command($file);
+    return (substr($filepath,0,length($cygpath)) eq $cygpath)
+    ? $self->SUPER::maybe_command($file) # Unix
+    : ExtUtils::MM_Win32->maybe_command($file); # Win32
 }
 
 =item dynamic_lib
@@ -126,16 +130,31 @@ But for new archdir dll's use the same rebase address if the old exists.
 sub dynamic_lib {
     my($self, %attribs) = @_;
     my $s = ExtUtils::MM_Unix::dynamic_lib($self, %attribs);
-    my $ori = "$self->{INSTALLARCHLIB}/auto/$self->{FULLEXT}/$self->{BASEEXT}.$self->{DLEXT}";
-    if (-e $ori) {
-        my $imagebase = `/bin/objdump -p $ori | /bin/grep ImageBase | /bin/cut -c12-`;
-        chomp $imagebase;
-        if ($imagebase gt "40000000") {
-            my $LDDLFLAGS = $self->{LDDLFLAGS};
-            $LDDLFLAGS =~ s/-Wl,--enable-auto-image-base/-Wl,--image-base=0x$imagebase/;
-            $s =~ s/ \$\(LDDLFLAGS\) / $LDDLFLAGS /m;
-        }
-    }
+    return '' unless $s;
+    return $s unless %{$self->{XS}};
+
+    # do an ephemeral rebase so the new DLL fits to the current rebase map
+    $s .= "\t/bin/find \$\(INST_ARCHLIB\)/auto -xdev -name \\*.$self->{DLEXT} | /bin/rebase -sOT -" if (( $Config{myarchname} eq 'i686-cygwin' ) and not ( exists $ENV{CYGPORT_PACKAGE_VERSION} ));
+    $s;
+}
+
+=item install
+
+Rebase dll's with the global rebase database after installation.
+
+=cut
+
+sub install {
+    my($self, %attribs) = @_;
+    my $s = ExtUtils::MM_Unix::install($self, %attribs);
+    return '' unless $s;
+    return $s unless %{$self->{XS}};
+
+    my $INSTALLDIRS = $self->{INSTALLDIRS};
+    my $INSTALLLIB = $self->{"INSTALL". ($INSTALLDIRS eq 'perl' ? 'ARCHLIB' : uc($INSTALLDIRS)."ARCH")};
+    my $dop = "\$\(DESTDIR\)$INSTALLLIB/auto/";
+    my $dll = "$dop/$self->{FULLEXT}/$self->{BASEEXT}.$self->{DLEXT}";
+    $s =~ s|^(pure_install :: pure_\$\(INSTALLDIRS\)_install\n\t)\$\(NOECHO\) \$\(NOOP\)\n|$1\$(CHMOD) \$(PERM_RWX) $dll\n\t/bin/find $dop -xdev -name \\*.$self->{DLEXT} \| /bin/rebase -sOT -\n|m if (( $Config{myarchname} eq 'i686-cygwin') and not ( exists $ENV{CYGPORT_PACKAGE_VERSION} ));
     $s;
 }
 

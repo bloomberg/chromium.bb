@@ -35,6 +35,9 @@
 #include <xlocale.h>
 #endif
 
+#ifdef HB_NO_SETLOCALE
+#define setlocale(Category, Locale) "C"
+#endif
 
 /**
  * SECTION:hb-common
@@ -67,7 +70,7 @@ _hb_options_init ()
         p = c + strlen (c);
 
 #define OPTION(name, symbol) \
-	if (0 == strncmp (c, name, p - c) && strlen (name) == p - c) do { u.opts.symbol = true; } while (0)
+	if (0 == strncmp (c, name, p - c) && strlen (name) == static_cast<size_t>(p - c)) do { u.opts.symbol = true; } while (0)
 
       OPTION ("uniscribe-bug-compatible", uniscribe_bug_compatible);
       OPTION ("aat", aat);
@@ -1166,7 +1169,7 @@ hb_variation_to_string (hb_variation_t *variation,
  *
  * Return value: Alpha channel value of the given color
  *
- * Since: REPLACEME
+ * Since: 2.1.0
  */
 uint8_t
 (hb_color_get_alpha) (hb_color_t color)
@@ -1180,7 +1183,7 @@ uint8_t
  *
  * Return value: Red channel value of the given color
  *
- * Since: REPLACEME
+ * Since: 2.1.0
  */
 uint8_t
 (hb_color_get_red) (hb_color_t color)
@@ -1194,7 +1197,7 @@ uint8_t
  *
  * Return value: Green channel value of the given color
  *
- * Since: REPLACEME
+ * Since: 2.1.0
  */
 uint8_t
 (hb_color_get_green) (hb_color_t color)
@@ -1208,7 +1211,7 @@ uint8_t
  *
  * Return value: Blue channel value of the given color
  *
- * Since: REPLACEME
+ * Since: 2.1.0
  */
 uint8_t
 (hb_color_get_blue) (hb_color_t color)

@@ -14,7 +14,7 @@ CryptAuthDeviceRegistry::CryptAuthDeviceRegistry() = default;
 
 CryptAuthDeviceRegistry::~CryptAuthDeviceRegistry() = default;
 
-const base::flat_map<std::string, CryptAuthDevice>&
+const CryptAuthDeviceRegistry::InstanceIdToDeviceMap&
 CryptAuthDeviceRegistry::instance_id_to_device_map() const {
   return instance_id_to_device_map_;
 }
@@ -28,25 +28,37 @@ const CryptAuthDevice* CryptAuthDeviceRegistry::GetDevice(
   return &it->second;
 }
 
-void CryptAuthDeviceRegistry::AddDevice(const CryptAuthDevice& device) {
+bool CryptAuthDeviceRegistry::AddDevice(const CryptAuthDevice& device) {
+  const CryptAuthDevice* existing_device = GetDevice(device.instance_id());
+  if (existing_device && device == *existing_device)
+    return false;
+
   instance_id_to_device_map_.insert_or_assign(device.instance_id(), device);
 
   OnDeviceRegistryUpdated();
+  return true;
 }
 
-void CryptAuthDeviceRegistry::DeleteDevice(const std::string& instance_id) {
-  DCHECK(base::ContainsKey(instance_id_to_device_map_, instance_id));
+bool CryptAuthDeviceRegistry::DeleteDevice(const std::string& instance_id) {
+  if (!base::Contains(instance_id_to_device_map_, instance_id))
+    return false;
+
   instance_id_to_device_map_.erase(instance_id);
 
   OnDeviceRegistryUpdated();
+  return true;
 }
 
-void CryptAuthDeviceRegistry::SetRegistry(
-    const base::flat_map<std::string, CryptAuthDevice>&
+bool CryptAuthDeviceRegistry::SetRegistry(
+    const CryptAuthDeviceRegistry::InstanceIdToDeviceMap&
         instance_id_to_device_map) {
+  if (instance_id_to_device_map_ == instance_id_to_device_map)
+    return false;
+
   instance_id_to_device_map_ = instance_id_to_device_map;
 
   OnDeviceRegistryUpdated();
+  return true;
 }
 
 }  // namespace device_sync

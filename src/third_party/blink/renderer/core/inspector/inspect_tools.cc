@@ -33,13 +33,14 @@ namespace {
 
 InspectorHighlightContrastInfo FetchContrast(Node* node) {
   InspectorHighlightContrastInfo result;
-  if (!node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return result;
 
   Vector<Color> bgcolors;
   String font_size;
   String font_weight;
-  InspectorCSSAgent::GetBackgroundColors(ToElement(node), &bgcolors, &font_size,
+  InspectorCSSAgent::GetBackgroundColors(element, &bgcolors, &font_size,
                                          &font_weight);
   if (bgcolors.size() == 1) {
     result.font_size = font_size;
@@ -99,10 +100,9 @@ Node* HoveredNodeForEvent(LocalFrame* frame,
 
 SearchingForNodeTool::SearchingForNodeTool(InspectorDOMAgent* dom_agent,
                                            bool ua_shadow,
-                                           const String& config)
+                                           const std::vector<uint8_t>& config)
     : dom_agent_(dom_agent), ua_shadow_(ua_shadow) {
-  std::unique_ptr<protocol::Value> value =
-      protocol::StringUtil::parseJSON(config);
+  auto value = protocol::Value::parseBinary(config.data(), config.size());
   if (!value)
     return;
   protocol::ErrorSupport errors;
@@ -343,8 +343,8 @@ void NodeHighlightTool::Trace(blink::Visitor* visitor) {
 
 // NearbyDistanceTool ----------------------------------------------------------
 
-CString NearbyDistanceTool::GetDataResourceName() {
-  return "inspect_tool_distances.html";
+String NearbyDistanceTool::GetDataResourceName() {
+  return String("inspect_tool_distances.html");
 }
 
 bool NearbyDistanceTool::HandleMouseDown(const WebMouseEvent& event,
@@ -413,8 +413,8 @@ void ShowViewSizeTool::Draw(float scale) {
   overlay_->EvaluateInOverlay("drawViewSize", "");
 }
 
-CString ShowViewSizeTool::GetDataResourceName() {
-  return "inspect_tool_viewport_size.html";
+String ShowViewSizeTool::GetDataResourceName() {
+  return String("inspect_tool_viewport_size.html");
 }
 
 bool ShowViewSizeTool::ForwardEventsToOverlay() {
@@ -430,8 +430,8 @@ void ScreenshotTool::DoInit() {
   client.SetCursorOverridden(true);
 }
 
-CString ScreenshotTool::GetDataResourceName() {
-  return "inspect_tool_screenshot.html";
+String ScreenshotTool::GetDataResourceName() {
+  return String("inspect_tool_screenshot.html");
 }
 
 void ScreenshotTool::Dispatch(const String& message) {
@@ -500,8 +500,8 @@ void ScreenshotTool::Dispatch(const String& message) {
 
 // PausedInDebuggerTool --------------------------------------------------------
 
-CString PausedInDebuggerTool::GetDataResourceName() {
-  return "inspect_tool_paused.html";
+String PausedInDebuggerTool::GetDataResourceName() {
+  return String("inspect_tool_paused.html");
 }
 
 void PausedInDebuggerTool::Draw(float scale) {

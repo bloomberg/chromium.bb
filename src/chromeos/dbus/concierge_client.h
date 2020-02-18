@@ -128,6 +128,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       const vm_tools::concierge::GetVmInfoRequest& request,
       DBusMethodCallback<vm_tools::concierge::GetVmInfoResponse> callback) = 0;
 
+  // Get enterprise-reporting specific VM info.
+  // |callback| is called after the method call finishes.
+  virtual void GetVmEnterpriseReportingInfo(
+      const vm_tools::concierge::GetVmEnterpriseReportingInfoRequest& request,
+      DBusMethodCallback<
+          vm_tools::concierge::GetVmEnterpriseReportingInfoResponse>
+          callback) = 0;
+
   // Registers |callback| to run when the Concierge service becomes available.
   // If the service is already available, or if connecting to the name-owner-
   // changed signal fails, |callback| will be run once asynchronously.
@@ -164,6 +172,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       const vm_tools::concierge::ListUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse>
           callback) = 0;
+
+  // Starts ARCVM if there is not already one running.
+  // |callback| is called after the method call finishes.
+  virtual void StartArcVm(
+      const vm_tools::concierge::StartArcVmRequest& request,
+      DBusMethodCallback<vm_tools::concierge::StartVmResponse> callback) = 0;
 
   // Creates an instance of ConciergeClient.
   static std::unique_ptr<ConciergeClient> Create();

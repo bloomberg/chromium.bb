@@ -7,14 +7,6 @@
 
 #include "content/common/content_export.h"
 
-namespace gfx {
-class Size;
-}  // namespace gfx
-
-namespace viz {
-class SurfaceId;
-}  // namespace viz
-
 namespace content {
 class OverlayWindow;
 class WebContents;
@@ -34,8 +26,7 @@ class PictureInPictureWindowController {
   virtual ~PictureInPictureWindowController() = default;
 
   // Shows the Picture-in-Picture window.
-  // Returns the size of the window in pixels.
-  virtual gfx::Size Show() = 0;
+  virtual void Show() = 0;
 
   // Called to notify the controller that the window was requested to be closed
   // by the user or the content.
@@ -49,8 +40,6 @@ class PictureInPictureWindowController {
   // window was requested to be closed and destroyed by the system.
   virtual void OnWindowDestroyed() = 0;
 
-  virtual void EmbedSurface(const viz::SurfaceId& surface_id,
-                            const gfx::Size& natural_size) = 0;
   virtual OverlayWindow* GetWindowForTesting() = 0;
   virtual void UpdateLayerBounds() = 0;
   virtual bool IsPlayerActive() = 0;

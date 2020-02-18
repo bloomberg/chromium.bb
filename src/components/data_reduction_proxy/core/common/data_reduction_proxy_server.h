@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "components/data_reduction_proxy/core/common/resource_type_provider.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "net/base/proxy_server.h"
 
@@ -24,9 +23,6 @@ class DataReductionProxyServer {
       default;
 
   bool operator==(const DataReductionProxyServer& other) const;
-
-  bool SupportsResourceType(
-      ResourceTypeProvider::ContentType content_type) const;
 
   const net::ProxyServer& proxy_server() const { return proxy_server_; }
 

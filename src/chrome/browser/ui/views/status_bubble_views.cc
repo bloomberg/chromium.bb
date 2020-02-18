@@ -26,7 +26,6 @@
 #include "ui/base/theme_provider.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -37,6 +36,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scrollbar/scroll_bar_views.h"
 #include "ui/views/style/typography.h"
@@ -63,11 +63,11 @@ const int kMousePadding = 20;
 
 // The horizontal offset of the text within the status bubble, not including the
 // outer shadow ring.
-const int kTextPositionX = 3;
+const int kTextPositionX = 5;
 
 // The minimum horizontal space between the (right) end of the text and the edge
 // of the status bubble, not including the outer shadow ring.
-const int kTextHorizPadding = 1;
+const int kTextHorizPadding = 5;
 
 // Delays before we start hiding or showing the bubble after we receive a
 // show or hide request.
@@ -98,8 +98,9 @@ const gfx::FontList& GetFont() {
 }  // namespace
 
 // StatusBubbleViews::StatusViewAnimation --------------------------------------
-class StatusBubbleViews::StatusViewAnimation : public gfx::LinearAnimation,
-                                               public gfx::AnimationDelegate {
+class StatusBubbleViews::StatusViewAnimation
+    : public gfx::LinearAnimation,
+      public views::AnimationDelegateViews {
  public:
   StatusViewAnimation(StatusView* status_view,
                       float opacity_start,
@@ -125,7 +126,6 @@ class StatusBubbleViews::StatusViewAnimation : public gfx::LinearAnimation,
 
   DISALLOW_COPY_AND_ASSIGN(StatusViewAnimation);
 };
-
 
 // StatusBubbleViews::StatusView -----------------------------------------------
 //
@@ -546,6 +546,7 @@ StatusBubbleViews::StatusViewAnimation::StatusViewAnimation(
     float opacity_start,
     float opacity_end)
     : gfx::LinearAnimation(this, kFramerate),
+      views::AnimationDelegateViews(status_view),
       status_view_(status_view),
       opacity_start_(opacity_start),
       opacity_end_(opacity_end) {}
@@ -577,11 +578,13 @@ void StatusBubbleViews::StatusViewAnimation::AnimationEnded(
 // Manages the expansion and contraction of the status bubble as it accommodates
 // URLs too long to fit in the standard bubble. Changes are passed through the
 // StatusView to paint.
-class StatusBubbleViews::StatusViewExpander : public gfx::LinearAnimation,
-                                              public gfx::AnimationDelegate {
+class StatusBubbleViews::StatusViewExpander
+    : public gfx::LinearAnimation,
+      public views::AnimationDelegateViews {
  public:
   StatusViewExpander(StatusBubbleViews* status_bubble, StatusView* status_view)
       : gfx::LinearAnimation(this, kFramerate),
+        views::AnimationDelegateViews(status_view),
         status_bubble_(status_bubble),
         status_view_(status_view) {}
 
@@ -694,6 +697,12 @@ void StatusBubbleViews::InitPopup() {
     popup_->SetContentsView(view_);
 #if defined(OS_CHROMEOS)
     popup_->GetNativeWindow()->SetProperty(ash::kHideInOverviewKey, true);
+    popup_->GetNativeWindow()->SetProperty(ash::kHideInDeskMiniViewKey, true);
+#endif
+#if !defined(OS_MACOSX)
+    // Stack the popup above the base widget and below higher z-order windows.
+    // This is unnecessary and even detrimental on Mac, see CreateBubbleWidget.
+    popup_->StackAboveWidget(frame);
 #endif
     RepositionPopup();
   }

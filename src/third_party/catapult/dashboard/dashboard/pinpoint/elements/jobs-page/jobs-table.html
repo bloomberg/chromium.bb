@@ -6,6 +6,7 @@ found in the LICENSE file.
 -->
 
 <link rel="import" href="/elements/base-style.html">
+<link rel="import" href="/elements/cancel-job-dialog.html">
 
 <dom-module id="jobs-table">
   <template>
@@ -42,28 +43,45 @@ found in the LICENSE file.
         white-space: nowrap;
         width: 40%;
       }
+
+      .status {
+        white-space: nowrap;
+      }
     </style>
 
     <table id="jobs">
       <thead>
         <tr>
           <th id="name" on-click="columnHeaderClicked">Job name</th>
+          <th id="configuration" on-click="columnHeaderClicked">Configuration</th>
           <th id="user" on-click="columnHeaderClicked">User</th>
           <th id="bug_id" on-click="columnHeaderClicked">Bug</th>
           <th id="created" on-click="columnHeaderClicked">Created</th>
           <th id="comparison_mode" on-click="columnHeaderClicked">Type</th>
           <th id="status" on-click="columnHeaderClicked">Status</th>
           <th id="difference_count" on-click="columnHeaderClicked">Differences</th>
+        </tr>
+      </thead>
       <tbody>
         <template is="dom-repeat" items="[[jobs]]" sort="[[jobSorter(sortBy, sortDescending)]]">
           <tr>
-            <td><a href='/job/[[item.job_id]]'>[[item.name]]</a>
-            <td>[[item.user]]
-            <td><a href="https://crbug.com/[[item.bug_id]]">[[item.bug_id]]</a>
-            <td>[[formatDate(item.created)]]
-            <td>[[formatComparisonMode(item.comparison_mode)]]
-            <td>[[item.status]]
-            <td>[[item.difference_count]]
+            <td><a href='/job/[[item.job_id]]'>[[item.name]]</a></td>
+            <td><a href='[[configurationLink(item.configuration)]]'>[[formatConfiguration(item.configuration)]]</a></td>
+            <td>[[item.user]]</td>
+            <td><a href="https://crbug.com/[[item.bug_id]]">[[item.bug_id]]</a></td>
+            <td>[[formatDate(item.created)]]</td>
+            <td>[[formatComparisonMode(item.comparison_mode)]]</td>
+            <td>
+              <div class="status">
+                [[item.status]]
+                <template is="dom-if" if="[[canBeCancelled(item)]]">
+                  <cancel-job-dialog job="[[item]]"
+                    auth-headers="[[authHeaders]]"></cancel-job-dialog>
+                </template>
+              </div>
+            </td>
+            <td>[[item.difference_count]]</td>
+          </tr>
         </template>
     </table>
   </template>
@@ -159,7 +177,25 @@ found in the LICENSE file.
           return 'try';
         }
         return comparisonMode;
-      }
+      },
+
+      formatConfiguration(configuration) {
+        if (!configuration) {
+          return '(None)';
+        }
+        return configuration;
+      },
+
+      configurationLink(configuration) {
+        if (!configuration) {
+          return '#';
+        }
+        return '/queue-stats/' + configuration;
+      },
+
+      canBeCancelled(job) {
+        return job.status == 'Queued' || job.status == 'Running';
+      },
     });
   </script>
 </dom-module>

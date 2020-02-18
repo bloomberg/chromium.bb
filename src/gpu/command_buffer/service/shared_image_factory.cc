@@ -152,7 +152,9 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   // TODO(ericrk): Make this generic in the future.
   bool allow_legacy_mailbox = false;
   SharedImageBackingFactory* factory = nullptr;
-  if (!using_vulkan_) {
+  if (backing_factory_for_testing_) {
+    factory = backing_factory_for_testing_;
+  } else if (!using_vulkan_) {
     allow_legacy_mailbox = true;
     factory = gl_backing_factory_.get();
   } else {
@@ -186,12 +188,18 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
 }
 
 bool SharedImageFactory::UpdateSharedImage(const Mailbox& mailbox) {
+  return UpdateSharedImage(mailbox, nullptr);
+}
+
+bool SharedImageFactory::UpdateSharedImage(
+    const Mailbox& mailbox,
+    std::unique_ptr<gfx::GpuFence> in_fence) {
   auto it = shared_images_.find(mailbox);
   if (it == shared_images_.end()) {
     LOG(ERROR) << "UpdateSharedImage: Could not find shared image mailbox";
     return false;
   }
-  (*it)->Update();
+  (*it)->Update(std::move(in_fence));
   return true;
 }
 
@@ -256,6 +264,11 @@ bool SharedImageFactory::OnMemoryDump(
   return true;
 }
 
+void SharedImageFactory::RegisterSharedImageBackingFactoryForTesting(
+    SharedImageBackingFactory* factory) {
+  backing_factory_for_testing_ = factory;
+}
+
 bool SharedImageFactory::IsSharedBetweenThreads(uint32_t usage) {
   // If |shared_image_manager_| is thread safe, it means the display is running
   // on a separate thread (which uses a separate GL context or VkDeviceQueue).
@@ -267,6 +280,9 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     uint32_t usage,
     bool* allow_legacy_mailbox,
     gfx::GpuMemoryBufferType gmb_type) {
+  if (backing_factory_for_testing_)
+    return backing_factory_for_testing_;
+
   bool using_dawn = usage & SHARED_IMAGE_USAGE_WEBGPU;
   bool vulkan_usage = using_vulkan_ && (usage & SHARED_IMAGE_USAGE_DISPLAY);
   bool gl_usage = usage & SHARED_IMAGE_USAGE_GLES2;
@@ -277,6 +293,7 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
   bool using_interop_factory = share_between_threads ||
                                share_between_gl_vulkan || using_dawn ||
                                share_between_gl_metal;
+
   // wrapped_sk_image_factory_ is only used for OOPR and supports
   // a limited number of flags (e.g. no SHARED_IMAGE_USAGE_SCANOUT).
   constexpr auto kWrappedSkImageUsage = SHARED_IMAGE_USAGE_RASTER |

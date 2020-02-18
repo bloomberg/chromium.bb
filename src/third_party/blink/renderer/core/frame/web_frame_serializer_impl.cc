@@ -277,12 +277,12 @@ void WebFrameSerializerImpl::EncodeAndFlushBuffer(
   String content = data_buffer_.ToString();
   data_buffer_.Clear();
 
-  CString encoded_content =
+  std::string encoded_content =
       param->text_encoding.Encode(content, WTF::kEntitiesForUnencodables);
 
   // Send result to the client.
   client_->DidSerializeDataForFrame(
-      WebVector<char>(encoded_content.data(), encoded_content.length()),
+      WebVector<char>(encoded_content.c_str(), encoded_content.length()),
       status);
 }
 
@@ -420,13 +420,13 @@ void WebFrameSerializerImpl::BuildContentForNode(Node* node,
   switch (node->getNodeType()) {
     case Node::kElementNode:
       // Process open tag of element.
-      OpenTagToString(ToElement(node), param);
+      OpenTagToString(To<Element>(node), param);
       // Walk through the children nodes and process it.
       for (Node* child = node->firstChild(); child;
            child = child->nextSibling())
         BuildContentForNode(child, param);
       // Process end tag of element.
-      EndTagToString(ToElement(node), param);
+      EndTagToString(To<Element>(node), param);
       break;
     case Node::kTextNode:
       SaveHTMLContentToBuffer(CreateMarkup(node), param);

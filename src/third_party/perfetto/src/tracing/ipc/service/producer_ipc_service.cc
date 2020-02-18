@@ -20,11 +20,11 @@
 
 #include "perfetto/base/logging.h"
 #include "perfetto/base/task_runner.h"
-#include "perfetto/ipc/host.h"
-#include "perfetto/tracing/core/commit_data_request.h"
+#include "perfetto/ext/ipc/host.h"
+#include "perfetto/ext/tracing/core/commit_data_request.h"
+#include "perfetto/ext/tracing/core/tracing_service.h"
 #include "perfetto/tracing/core/data_source_config.h"
 #include "perfetto/tracing/core/data_source_descriptor.h"
-#include "perfetto/tracing/core/tracing_service.h"
 #include "src/tracing/ipc/posix_shared_memory.h"
 
 // The remote Producer(s) are not trusted. All the methods from the ProducerPort
@@ -81,8 +81,9 @@ void ProducerIPCService::InitializeConnection(
   // ConnectProducer will call OnConnect() on the next task.
   producer->service_endpoint = core_service_->ConnectProducer(
       producer.get(), client_info.uid(), req.producer_name(),
-      req.shared_memory_size_hint_bytes(), /*in_process=*/false,
-      smb_scraping_mode);
+      req.shared_memory_size_hint_bytes(),
+      /*in_process=*/false, smb_scraping_mode,
+      req.shared_memory_page_size_hint_bytes());
 
   // Could happen if the service has too many producers connected.
   if (!producer->service_endpoint)

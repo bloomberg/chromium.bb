@@ -1,13 +1,8 @@
 C:\strawberry\perl\bin\SOAPsh.bat
 C:\strawberry\perl\bin\SOAPsh.pl
-C:\strawberry\perl\bin\XMLRPCsh.bat
-C:\strawberry\perl\bin\XMLRPCsh.pl
 C:\strawberry\perl\bin\stubmaker.bat
 C:\strawberry\perl\bin\stubmaker.pl
 C:\strawberry\perl\vendor\lib\Apache\SOAP.pm
-C:\strawberry\perl\vendor\lib\Apache\XMLRPC\Lite.pm
-C:\strawberry\perl\vendor\lib\IO\SessionData.pm
-C:\strawberry\perl\vendor\lib\IO\SessionSet.pm
 C:\strawberry\perl\vendor\lib\SOAP\Client.pod
 C:\strawberry\perl\vendor\lib\SOAP\Constants.pm
 C:\strawberry\perl\vendor\lib\SOAP\Data.pod
@@ -35,11 +30,5 @@ C:\strawberry\perl\vendor\lib\SOAP\Transport\LOCAL.pm
 C:\strawberry\perl\vendor\lib\SOAP\Transport\LOOPBACK.pm
 C:\strawberry\perl\vendor\lib\SOAP\Transport\MAILTO.pm
 C:\strawberry\perl\vendor\lib\SOAP\Transport\POP3.pm
+C:\strawberry\perl\vendor\lib\SOAP\Transport\TCP.pm
 C:\strawberry\perl\vendor\lib\SOAP\Utils.pod
-C:\strawberry\perl\vendor\lib\UDDI\Lite.pm
-C:\strawberry\perl\vendor\lib\XMLRPC\Lite.pm
-C:\strawberry\perl\vendor\lib\XMLRPC\Test.pm
-C:\strawberry\perl\vendor\lib\XMLRPC\Transport\HTTP.pm
-C:\strawberry\perl\vendor\lib\XMLRPC\Transport\POP3.pm
-C:\strawberry\perl\vendor\lib\XMLRPC\Transport\TCP.pm
-C:\strawberry\perl\vendor\lib\XML\Parser\Lite.pm

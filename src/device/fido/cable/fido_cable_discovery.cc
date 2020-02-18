@@ -18,7 +18,7 @@
 #include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/fido/ble/fido_ble_uuids.h"
 #include "device/fido/cable/fido_cable_device.h"
 #include "device/fido/cable/fido_cable_handshake_handler.h"
@@ -100,6 +100,8 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
 
 // CableDiscoveryData -------------------------------------
 
+CableDiscoveryData::CableDiscoveryData() = default;
+
 CableDiscoveryData::CableDiscoveryData(
     uint8_t version,
     const EidArray& client_eid,
@@ -117,6 +119,12 @@ CableDiscoveryData& CableDiscoveryData::operator=(
     const CableDiscoveryData& other) = default;
 
 CableDiscoveryData::~CableDiscoveryData() = default;
+
+bool CableDiscoveryData::operator==(const CableDiscoveryData& other) const {
+  return version == other.version && client_eid == other.client_eid &&
+         authenticator_eid == other.authenticator_eid &&
+         session_pre_key == other.session_pre_key;
+}
 
 // FidoCableDiscovery ---------------------------------------------------------
 
@@ -174,7 +182,7 @@ void FidoCableDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
   if (IsCableDevice(device) && GetCableDiscoveryData(device)) {
     const auto& device_address = device->GetAddress();
     FIDO_LOG(DEBUG) << "caBLE device removed: " << device_address;
-    RemoveDevice(FidoBleDevice::GetId(device_address));
+    RemoveDevice(FidoBleDevice::GetIdForAddress(device_address));
   }
 }
 
@@ -282,8 +290,13 @@ void FidoCableDiscovery::RecordAdvertisementResult(bool is_success) {
 void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
                                           BluetoothDevice* device) {
   const auto* found_cable_device_data = GetCableDiscoveryData(device);
-  if (!found_cable_device_data)
+  const std::string device_address = device->GetAddress();
+  if (!found_cable_device_data ||
+      base::Contains(active_authenticator_eids_,
+                     found_cable_device_data->authenticator_eid) ||
+      base::Contains(active_devices_, device_address)) {
     return;
+  }
 
   FIDO_LOG(EVENT) << "Found new caBLE device.";
   // Nonce is embedded as first 8 bytes of client EID.
@@ -295,6 +308,8 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
 
   auto cable_device =
       std::make_unique<FidoCableDevice>(adapter, device->GetAddress());
+  active_authenticator_eids_.insert(found_cable_device_data->authenticator_eid);
+  active_devices_.insert(device_address);
   StopAdvertisements(
       base::BindOnce(&FidoCableDiscovery::ConductEncryptionHandshake,
                      weak_factory_.GetWeakPtr(), std::move(cable_device),
@@ -305,17 +320,10 @@ void FidoCableDiscovery::ConductEncryptionHandshake(
     std::unique_ptr<FidoCableDevice> cable_device,
     base::span<const uint8_t, kSessionPreKeySize> session_pre_key,
     base::span<const uint8_t, 8> nonce) {
-  // At most one handshake messages should be exchanged for each Cable device.
-  if (base::ContainsKey(cable_handshake_handlers_, cable_device->GetId())) {
-    FIDO_LOG(DEBUG) << "We've already exchanged a handshake with this device.";
-    return;
-  }
-
   auto handshake_handler =
       CreateHandshakeHandler(cable_device.get(), session_pre_key, nonce);
   auto* const handshake_handler_ptr = handshake_handler.get();
-  cable_handshake_handlers_.emplace(cable_device->GetId(),
-                                    std::move(handshake_handler));
+  cable_handshake_handlers_.emplace_back(std::move(handshake_handler));
 
   handshake_handler_ptr->InitiateCableHandshake(
       base::BindOnce(&FidoCableDiscovery::ValidateAuthenticatorHandshakeMessage,

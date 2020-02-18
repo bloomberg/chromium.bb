@@ -776,6 +776,32 @@ VkComponentSwizzle GetSwizzle(const GLenum swizzle)
     }
 }
 
+VkCompareOp GetCompareOp(const GLenum compareFunc)
+{
+    switch (compareFunc)
+    {
+        case GL_NEVER:
+            return VK_COMPARE_OP_NEVER;
+        case GL_LESS:
+            return VK_COMPARE_OP_LESS;
+        case GL_EQUAL:
+            return VK_COMPARE_OP_EQUAL;
+        case GL_LEQUAL:
+            return VK_COMPARE_OP_LESS_OR_EQUAL;
+        case GL_GREATER:
+            return VK_COMPARE_OP_GREATER;
+        case GL_NOTEQUAL:
+            return VK_COMPARE_OP_NOT_EQUAL;
+        case GL_GEQUAL:
+            return VK_COMPARE_OP_GREATER_OR_EQUAL;
+        case GL_ALWAYS:
+            return VK_COMPARE_OP_ALWAYS;
+        default:
+            UNREACHABLE();
+            return VK_COMPARE_OP_ALWAYS;
+    }
+}
+
 void GetOffset(const gl::Offset &glOffset, VkOffset3D *vkOffset)
 {
     vkOffset->x = glOffset.x;
@@ -836,6 +862,16 @@ VkColorComponentFlags GetColorComponentFlags(bool red, bool green, bool blue, bo
 {
     return (red ? VK_COLOR_COMPONENT_R_BIT : 0) | (green ? VK_COLOR_COMPONENT_G_BIT : 0) |
            (blue ? VK_COLOR_COMPONENT_B_BIT : 0) | (alpha ? VK_COLOR_COMPONENT_A_BIT : 0);
+}
+
+VkShaderStageFlags GetShaderStageFlags(gl::ShaderBitSet activeShaders)
+{
+    VkShaderStageFlags flags = 0;
+    for (const gl::ShaderType shaderType : activeShaders)
+    {
+        flags |= kShaderStageMap[shaderType];
+    }
+    return flags;
 }
 
 void GetViewport(const gl::Rectangle &viewport,

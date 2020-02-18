@@ -34,6 +34,11 @@ class BrowserTest(browser_test_case.BrowserTestCase):
     # Different browsers boot up to different things.
     assert self._browser.tabs[0].url
 
+  def testTypExpectationsTagsIncludesBrowserTypeTag(self):
+    with mock.patch.object(
+        self._browser.__class__, 'browser_type', 'reference_debug'):
+      self.assertIn('reference-debug', self._browser.GetTypExpectationsTags())
+
   @decorators.Enabled('has tabs')
   def testNewCloseTab(self):
     existing_tab = self._browser.tabs[0]
@@ -145,6 +150,7 @@ class CommandLineBrowserTest(browser_test_case.BrowserTestCase):
   def CustomizeBrowserOptions(cls, options):
     options.AppendExtraBrowserArgs('--user-agent=telemetry')
 
+  @decorators.Disabled('system-guest', 'cros-chrome-guest')  # crbug.com/985125
   def testCommandLineOverriding(self):
     # This test starts the browser with --user-agent=telemetry. This tests
     # whether the user agent is then set.

@@ -4,7 +4,7 @@ Convert::ASN1 - ASN.1 Encode/Decode library
 
 =head1 VERSION
 
-version 0.23
+version 0.27
 
 =head1 SYNOPSYS
 
@@ -71,6 +71,11 @@ Reference to a hash which contains various decode options.
 
 One of 'BER' or 'DER'. The default is 'BER'
 
+=item tagdefault
+
+One of 'EXPLICIT' or 'IMPLICIT'.
+Default tagging conventions are normally given in the ASN.1 module definition (not supported by the parser). The ASN.1 spec states EXPLICIT tagging is the default, but this option has IMPLICIT tagging default for backward compatibility reasons.
+
 =back
 
 Encode options
@@ -109,7 +114,7 @@ into the PDU as-is.
 
 By default UTCTime and GeneralizedTime will be encoded using the local
 time offset from UTC. This will over-ride that. It is an offset from UTC
-in seconds.  This option can be overriden by passing a reference to a
+in seconds.  This option can be overridden by passing a reference to a
 list of two values as the time value. The list should contain the time
 value and the offset from UTC in seconds.
 
@@ -444,6 +449,24 @@ which will be used as namespaces
     { type => "abc", value => 4 },
     { type => "def", value => -1 },
   ]}
+
+Finally, if you wish to pre-parse ASN.1 and hold it to include
+inline in your PDU, you can coerce it into the ASN.1 spec by
+defining the value as ANY in the schema, and then pass the pre
+encoded value inline.
+
+  # ASN.1
+  int INTEGER,
+  str OCTET STRING,
+  pre ANY
+
+  # Perl
+  { int => 5, str => "text", pre=>"\x03\x03\x00\x0a\x05" }
+
+passes a pre-encoded BIT STRING instance as hex text. -But
+it could be a previous run of $obj->encode() from another run
+held in some variable.
+
 
 =head2 Exceptions
 

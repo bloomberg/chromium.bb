@@ -12,6 +12,7 @@
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "content/browser/network_service_instance_impl.h"
+#include "content/public/test/test_host_resolver.h"
 #include "content/test/test_blink_web_unit_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/blink.h"
@@ -55,8 +56,7 @@ class ResetNetworkServiceBetweenTests : public testing::EmptyTestEventListener {
 
 }  // namespace
 
-UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite,
-                                     const std::string& disabled_features)
+UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
     : test_suite_(test_suite) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   std::string enabled =
@@ -70,18 +70,6 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite,
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new ResetNetworkServiceBetweenTests);
 
-  // base::TestSuite will reset the FeatureList, so modify the underlying
-  // CommandLine object to disable the network service when it's parsed again.
-  if (!disabled_features.empty())
-    disabled += "," + disabled_features;
-  base::CommandLine new_command_line(command_line->GetProgram());
-  base::CommandLine::SwitchMap switches = command_line->GetSwitches();
-  switches.erase(switches::kDisableFeatures);
-  new_command_line.AppendSwitchASCII(switches::kDisableFeatures, disabled);
-  for (const auto& iter : switches)
-    new_command_line.AppendSwitchNative(iter.first, iter.second);
-  *base::CommandLine::ForCurrentProcess() = new_command_line;
-
   // The ThreadPool created by the test launcher is never destroyed.
   // Similarly, the FeatureList created here is never destroyed so it
   // can safely be accessed by the ThreadPool.
@@ -93,7 +81,6 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite,
 #if defined(OS_FUCHSIA)
   // Use headless ozone platform on Fuchsia by default.
   // TODO(crbug.com/865172): Remove this flag.
-  command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kOzonePlatform))
     command_line->AppendSwitchASCII(switches::kOzonePlatform, "headless");
 #endif
@@ -103,6 +90,7 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite,
 #endif
   DCHECK(test_suite);
   blink_test_support_.reset(new TestBlinkWebUnitTestSupport);
+  test_host_resolver_ = std::make_unique<TestHostResolver>();
 }
 
 UnitTestTestSuite::~UnitTestTestSuite() = default;

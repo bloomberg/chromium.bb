@@ -254,7 +254,7 @@ class FakeServiceDiscoveryDeviceLister : public ServiceDiscoveryDeviceLister {
  private:
   void SendUpdate(const ServiceDescription& description) {
     bool is_new;
-    if (!base::ContainsKey(announced_services_, description.service_name)) {
+    if (!base::Contains(announced_services_, description.service_name)) {
       is_new = true;
       announced_services_.insert(description.service_name);
     } else {

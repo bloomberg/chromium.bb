@@ -18,7 +18,8 @@
 #include "components/translate/core/common/translate_util.h"
 #import "components/translate/ios/browser/js_translate_manager.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/web_state/navigation_context.h"
+#include "ios/web/public/js_messaging/web_frame.h"
+#include "ios/web/public/navigation/navigation_context.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -48,9 +49,15 @@ TranslateController::TranslateController(web::WebState* web_state,
   DCHECK(js_manager_);
   DCHECK(web_state_);
   web_state_->AddObserver(this);
-  web_state_->AddScriptCommandCallback(
-      base::Bind(&TranslateController::OnJavascriptCommandReceived,
-                 base::Unretained(this)),
+  subscription_ = web_state_->AddScriptCommandCallback(
+      base::Bind(
+          [](TranslateController* ptr, const base::DictionaryValue& command,
+             const GURL& page_url, bool user_is_interacting,
+             web::WebFrame* sender_frame) {
+            ptr->OnJavascriptCommandReceived(command, page_url,
+                                             user_is_interacting, sender_frame);
+          },
+          base::Unretained(this)),
       kCommandPrefix);
 }
 
@@ -83,11 +90,10 @@ void TranslateController::SetJsTranslateManagerForTesting(
 
 bool TranslateController::OnJavascriptCommandReceived(
     const base::DictionaryValue& command,
-    const GURL& url,
-    bool interacting,
-    bool is_main_frame,
+    const GURL& page_url,
+    bool user_is_interacting,
     web::WebFrame* sender_frame) {
-  if (!is_main_frame) {
+  if (!sender_frame->IsMainFrame()) {
     // Translate is only supported on main frame.
     return false;
   }
@@ -282,7 +288,6 @@ void TranslateController::OnRequestFetchComplete(
 
 void TranslateController::WebStateDestroyed(web::WebState* web_state) {
   DCHECK_EQ(web_state_, web_state);
-  web_state_->RemoveScriptCommandCallback(kCommandPrefix);
   web_state_->RemoveObserver(this);
   web_state_ = nullptr;
 

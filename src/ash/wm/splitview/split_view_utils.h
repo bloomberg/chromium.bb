@@ -80,9 +80,17 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
                                    SplitviewAnimationType type,
                                    const gfx::Transform& target_transform);
 
+// Restores split view and overview based on the current split view's state.
+// If |refresh_snapped_windows| is true, it will update the left and right
+// snapped windows based on the MRU windows snapped states.
+void MaybeRestoreSplitView(bool refresh_snapped_windows);
+
 // Returns true if we allow dragging an overview window to snap to split view in
 // clamshell mode.
 ASH_EXPORT bool IsClamshellSplitViewModeEnabled();
+
+// Checks multi-display support for overview and split view.
+ASH_EXPORT bool AreMultiDisplayOverviewAndSplitViewEnabled();
 
 // Returns true if split view mode is supported.
 ASH_EXPORT bool ShouldAllowSplitView();
@@ -90,6 +98,10 @@ ASH_EXPORT bool ShouldAllowSplitView();
 // Returns true if |window| can be activated and snapped in split screen in
 // tablet mode.
 ASH_EXPORT bool CanSnapInSplitview(aura::Window* window);
+
+// Displays a toast notifying users the application selected for split view is
+// not compatible.
+ASH_EXPORT void ShowAppCannotSnapToast();
 
 ASH_EXPORT bool IsPhysicalLeftOrTop(SplitViewController::SnapPosition position);
 

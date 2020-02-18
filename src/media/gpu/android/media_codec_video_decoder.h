@@ -14,9 +14,11 @@
 #include "base/timer/timer.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
+#include "media/base/android/media_crypto_context.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/base/overlay_info.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_decoder_config.h"
 #include "media/gpu/android/android_video_surface_chooser.h"
 #include "media/gpu/android/codec_allocator.h"
 #include "media/gpu/android/codec_wrapper.h"
@@ -55,8 +57,7 @@ struct PendingDecode {
 // playbacks that need them.
 // TODO: Lazy initialization should be handled at a higher layer of the media
 // stack for both simplicity and cross platform support.
-class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
-                                                public CodecAllocatorClient {
+class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
  public:
   static std::vector<SupportedVideoDecoderConfig> GetSupportedConfigs();
 
@@ -148,10 +149,15 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
   // Creates a codec asynchronously.
   void CreateCodec();
 
-  // CodecAllocatorClient implementation.
-  void OnCodecConfigured(
-      std::unique_ptr<MediaCodecBridge> media_codec,
-      scoped_refptr<AVDASurfaceBundle> surface_bundle) override;
+  // Trampoline helper which ensures correct release of MediaCodecBridge and
+  // CodecSurfaceBundle even if this class goes away.
+  static void OnCodecConfiguredInternal(
+      base::WeakPtr<MediaCodecVideoDecoder> weak_this,
+      CodecAllocator* codec_allocator,
+      scoped_refptr<CodecSurfaceBundle> surface_bundle,
+      std::unique_ptr<MediaCodecBridge> codec);
+  void OnCodecConfigured(scoped_refptr<CodecSurfaceBundle> surface_bundle,
+                         std::unique_ptr<MediaCodecBridge> media_codec);
 
   // Flushes the codec, or if flush() is not supported, releases it and creates
   // a new one.
@@ -250,11 +256,11 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
   // reflects the latest surface choice by |surface_chooser_|. If the codec is
   // configured with some other surface, then a transition is pending. It's
   // non-null from the first surface choice.
-  scoped_refptr<AVDASurfaceBundle> target_surface_bundle_;
+  scoped_refptr<CodecSurfaceBundle> target_surface_bundle_;
 
   // A TextureOwner bundle that is kept for the lifetime of MCVD so that if we
   // have to synchronously switch surfaces we always have one available.
-  scoped_refptr<AVDASurfaceBundle> texture_owner_bundle_;
+  scoped_refptr<CodecSurfaceBundle> texture_owner_bundle_;
 
   // A callback for requesting overlay info updates.
   RequestOverlayInfoCB request_overlay_info_cb_;

@@ -14,6 +14,7 @@
 #include "constants/annotation_common.h"
 #include "constants/annotation_flags.h"
 #include "constants/page_object.h"
+#include "core/fpdfapi/edit/cpdf_contentstream_write_utils.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/page/cpdf_pageobject.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
@@ -50,7 +51,7 @@ bool IsValidRect(const CFX_FloatRect& rect, const CFX_FloatRect& rcPage) {
 void GetContentsRect(CPDF_Document* pDoc,
                      CPDF_Dictionary* pDict,
                      std::vector<CFX_FloatRect>* pRectArray) {
-  auto pPDFPage = pdfium::MakeRetain<CPDF_Page>(pDoc, pDict, false);
+  auto pPDFPage = pdfium::MakeRetain<CPDF_Page>(pDoc, pDict);
   pPDFPage->ParseContent();
 
   for (const auto& pPageObject : *pPDFPage) {
@@ -177,7 +178,7 @@ CPDF_Object* NewIndirectContentsStream(CPDF_Document* pDocument,
                                        const ByteString& contents) {
   CPDF_Stream* pNewContents = pDocument->NewIndirect<CPDF_Stream>(
       nullptr, 0, pDocument->New<CPDF_Dictionary>());
-  pNewContents->SetData(contents.AsRawSpan());
+  pNewContents->SetData(contents.raw_span());
   return pNewContents;
 }
 
@@ -212,7 +213,7 @@ void SetPageContents(const ByteString& key,
       sStream += ByteString(pAcc->GetSpan());
       sStream += "\nQ";
     }
-    pContentsStream->SetDataAndRemoveFilter(sStream.AsRawSpan());
+    pContentsStream->SetDataAndRemoveFilter(sStream.raw_span());
     pContentsArray = pDocument->NewIndirect<CPDF_Array>();
     pContentsArray->AddNew<CPDF_Reference>(pDocument,
                                            pContentsStream->GetObjNum());
@@ -405,9 +406,14 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_Flatten(FPDF_PAGE page, int nFlag) {
     }
     CFX_Matrix matrix = pAPDict->GetMatrixFor("Matrix");
     CFX_Matrix m = GetMatrix(rcAnnot, rcStream, matrix);
-    sStream += ByteString::Format("q %f 0 0 %f %f %f cm /%s Do Q\n", m.a, m.d,
-                                  m.e, m.f, sFormName.c_str());
-    pNewXObject->SetDataAndRemoveFilter(sStream.AsRawSpan());
+    m.b = 0;
+    m.c = 0;
+    std::ostringstream buf;
+    buf << m;
+    ByteString str(buf);
+    sStream += ByteString::Format("q %s cm /%s Do Q\n", str.c_str(),
+                                  sFormName.c_str());
+    pNewXObject->SetDataAndRemoveFilter(sStream.raw_span());
   }
   pPageDict->RemoveFor("Annots");
   return FLATTEN_SUCCESS;

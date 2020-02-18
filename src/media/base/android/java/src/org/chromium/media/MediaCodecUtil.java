@@ -18,6 +18,7 @@ import android.os.Build;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -53,9 +54,11 @@ class MediaCodecUtil {
         public static final String VIDEO_MP4 = "video/mp4";
         public static final String VIDEO_WEBM = "video/webm";
         public static final String VIDEO_H264 = "video/avc";
-        public static final String VIDEO_H265 = "video/hevc";
+        public static final String VIDEO_HEVC = "video/hevc";
         public static final String VIDEO_VP8 = "video/x-vnd.on2.vp8";
         public static final String VIDEO_VP9 = "video/x-vnd.on2.vp9";
+        public static final String VIDEO_AV1 = "video/av01";
+        public static final String AUDIO_OPUS = "audio/opus";
     }
 
     /**
@@ -184,7 +187,11 @@ class MediaCodecUtil {
 
             for (String supportedType : info.getSupportedTypes()) {
                 if (supportedType.equalsIgnoreCase(mime)) {
-                    return info.getCapabilitiesForType(supportedType).colorFormats;
+                    try {
+                        return info.getCapabilitiesForType(supportedType).colorFormats;
+                    } catch (IllegalArgumentException e) {
+                        // Type is not supported.
+                    }
                 }
             }
         }
@@ -199,6 +206,54 @@ class MediaCodecUtil {
       */
     @CalledByNative
     private static boolean canDecode(String mime, boolean isSecure) {
+        // Not supported on blacklisted devices.
+        if (!isDecoderSupportedForDevice(mime)) {
+            Log.e(TAG, "Decoder for type %s is not supported on this device", mime);
+            return false;
+        }
+
+        // MediaCodecInfo.CodecCapabilities.FEATURE_SecurePlayback is available as of
+        // API 21 (LOLLIPOP), which is the same as NewMediaCodecList.
+        MediaCodecListHelper codecListHelper = new MediaCodecListHelper();
+        if (codecListHelper.hasNewMediaCodecList()) {
+            for (MediaCodecInfo info : codecListHelper) {
+                if (info.isEncoder()) continue;
+
+                try {
+                    CodecCapabilities caps = info.getCapabilitiesForType(mime);
+                    if (caps != null) {
+                        // There may be multiple entries in the list for the same family
+                        // (e.g. OMX.qcom.video.decoder.avc and OMX.qcom.video.decoder.avc.secure),
+                        // so return early if this one matches what we're looking for.
+
+                        // If a secure decoder is required, then FEATURE_SecurePlayback must be
+                        // supported.
+                        if (isSecure
+                                && caps.isFeatureSupported(
+                                        CodecCapabilities.FEATURE_SecurePlayback)) {
+                            return true;
+                        }
+
+                        // If a secure decoder is not required, then make sure that
+                        // FEATURE_SecurePlayback is not required. It may work for unsecure
+                        // content, but keep scanning for another codec that supports
+                        // unsecure content directly.
+                        if (!isSecure
+                                && !caps.isFeatureRequired(
+                                        CodecCapabilities.FEATURE_SecurePlayback)) {
+                            return true;
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Type is not supported.
+                }
+            }
+
+            // Unable to find a match for |mime|, so not supported.
+            return false;
+        }
+
+        // On older versions of Android attempt to create a decoder for the specified MIME type.
         // TODO(liberato): Should we insist on software here?
         CodecCreationInfo info = createDecoder(mime, isSecure ? CodecType.SECURE : CodecType.ANY);
         if (info == null || info.mediaCodec == null) return false;
@@ -254,14 +309,19 @@ class MediaCodecUtil {
                 // support. In this case, estimate the level from MediaCodecInfo.VideoCapabilities
                 // instead. Assume VP9 is not supported before L. For more information, consult
                 // https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel.html
-                CodecCapabilities codecCapabilities = info.getCapabilitiesForType(mime);
-                if (mime.endsWith("vp9") && Build.VERSION_CODES.LOLLIPOP <= Build.VERSION.SDK_INT
-                        && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-                    addVp9CodecProfileLevels(profileLevels, codecCapabilities);
-                    continue;
-                }
-                for (CodecProfileLevel profileLevel : codecCapabilities.profileLevels) {
-                    profileLevels.addCodecProfileLevel(mime, profileLevel);
+                try {
+                    CodecCapabilities codecCapabilities = info.getCapabilitiesForType(mime);
+                    if (mime.endsWith("vp9")
+                            && Build.VERSION_CODES.LOLLIPOP <= Build.VERSION.SDK_INT
+                            && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+                        addVp9CodecProfileLevels(profileLevels, codecCapabilities);
+                        continue;
+                    }
+                    for (CodecProfileLevel profileLevel : codecCapabilities.profileLevels) {
+                        profileLevels.addCodecProfileLevel(mime, profileLevel);
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Type is not supported.
                 }
             }
         }
@@ -294,13 +354,6 @@ class MediaCodecUtil {
 
         assert result.mediaCodec == null;
 
-        // Creation of ".secure" codecs sometimes crash instead of throwing exceptions
-        // on pre-JBMR2 devices.
-        if (codecType == CodecType.SECURE
-                && Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            return result;
-        }
-
         // Do not create codec for blacklisted devices.
         if (!isDecoderSupportedForDevice(mime)) {
             Log.e(TAG, "Decoder for type %s is not supported on this device", mime);
@@ -319,7 +372,7 @@ class MediaCodecUtil {
                 // TODO(xhwang): Now b/15587335 is fixed, we should have better
                 // API support.
                 String decoderName = getDefaultCodecName(mime, MediaCodecDirection.DECODER, false);
-                if (decoderName.equals("")) return null;
+                if (decoderName.equals("")) return result;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                     // To work around an issue that we cannot get the codec info
                     // from the secure decoder, create an insecure decoder first
@@ -357,6 +410,10 @@ class MediaCodecUtil {
     /**
      * This is a way to blacklist misbehaving devices.
      * Some devices cannot decode certain codecs, while other codecs work fine.
+     *
+     * Do not access MediaCodec or MediaCodecList in this function since it's
+     * used from the renderer process.
+     *
      * @param mime MIME type as passed to mediaCodec.createDecoderByType(mime).
      * @return true if this codec is supported for decoder on this device.
      */
@@ -365,13 +422,7 @@ class MediaCodecUtil {
         // *************************************************************
         // *** DO NOT ADD ANY NEW CODECS WITHOUT UPDATING MIME_UTIL. ***
         // *************************************************************
-        if (mime.equals("video/x-vnd.on2.vp8")) {
-            // Only support VP8 on Android versions where we don't have to synchronously
-            // tear down the MediaCodec on surface destruction because VP8 requires us to
-            // completely drain the decoder before releasing it, which is difficult and
-            // time consuming to do while the surface is being destroyed.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) return false;
-
+        if (mime.equals(MimeTypes.VIDEO_VP8)) {
             if (Build.MANUFACTURER.toLowerCase(Locale.getDefault()).equals("samsung")) {
                 // Some Samsung devices cannot render VP8 video directly to the surface.
 
@@ -420,7 +471,7 @@ class MediaCodecUtil {
                     && Build.MODEL.startsWith("Lenovo A6000")) {
                 return false;
             }
-        } else if (mime.equals("video/x-vnd.on2.vp9")) {
+        } else if (mime.equals(MimeTypes.VIDEO_VP9)) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return false;
 
             // MediaTek decoders do not work properly on vp9 before Lollipop. See
@@ -434,7 +485,12 @@ class MediaCodecUtil {
             if (Build.MODEL.equals("Nexus Player")) {
                 return false;
             }
-        } else if (mime.equals("audio/opus")
+        } else if (mime.equals(MimeTypes.VIDEO_AV1)) {
+            if (!BuildInfo.isAtLeastQ()) return false;
+        } else if (mime.equals(MimeTypes.AUDIO_OPUS)
+                && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            return false;
+        } else if (mime.equals(MimeTypes.VIDEO_HEVC)
                 && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return false;
         }

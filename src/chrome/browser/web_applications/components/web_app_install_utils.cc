@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/banners/app_banner_manager.h"
@@ -13,7 +14,7 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_metrics.h"
-#include "chrome/browser/web_applications/components/install_options.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
@@ -70,8 +71,8 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
     // should have added ANY if there was no purpose specified in the manifest).
     DCHECK(!icon.purpose.empty());
 
-    if (!base::ContainsValue(icon.purpose,
-                             blink::Manifest::ImageResource::Purpose::ANY)) {
+    if (!base::Contains(icon.purpose,
+                        blink::Manifest::ImageResource::Purpose::ANY)) {
       continue;
     }
 
@@ -202,28 +203,35 @@ void RecordAppBanner(content::WebContents* contents, const GURL& app_url) {
       base::Time::Now());
 }
 
-WebappInstallSource ConvertOptionsToMetricsInstallSource(
-    const InstallOptions& options) {
-  auto metrics_install_source = WebappInstallSource::COUNT;
-  switch (options.install_source) {
-    case InstallSource::kInternal:
-      metrics_install_source = WebappInstallSource::INTERNAL_DEFAULT;
+WebappInstallSource ConvertExternalInstallSourceToInstallSource(
+    ExternalInstallSource external_install_source) {
+  WebappInstallSource install_source;
+  switch (external_install_source) {
+    case ExternalInstallSource::kInternalDefault:
+      install_source = WebappInstallSource::INTERNAL_DEFAULT;
       break;
-    case InstallSource::kExternalDefault:
-      metrics_install_source = WebappInstallSource::EXTERNAL_DEFAULT;
+    case ExternalInstallSource::kExternalDefault:
+      install_source = WebappInstallSource::EXTERNAL_DEFAULT;
       break;
-    case InstallSource::kExternalPolicy:
-      metrics_install_source = WebappInstallSource::EXTERNAL_POLICY;
+    case ExternalInstallSource::kExternalPolicy:
+      install_source = WebappInstallSource::EXTERNAL_POLICY;
       break;
-    case InstallSource::kSystemInstalled:
-      metrics_install_source = WebappInstallSource::SYSTEM_DEFAULT;
+    case ExternalInstallSource::kSystemInstalled:
+      install_source = WebappInstallSource::SYSTEM_DEFAULT;
       break;
-    case InstallSource::kArc:
-      NOTREACHED();
+    case ExternalInstallSource::kArc:
+      install_source = WebappInstallSource::ARC;
       break;
   }
 
-  return metrics_install_source;
+  return install_source;
+}
+
+void RecordExternalAppInstallResultCode(
+    const char* histogram_name,
+    std::map<GURL, InstallResultCode> install_results) {
+  for (const auto& url_and_result : install_results)
+    base::UmaHistogramEnumeration(histogram_name, url_and_result.second);
 }
 
 }  // namespace web_app

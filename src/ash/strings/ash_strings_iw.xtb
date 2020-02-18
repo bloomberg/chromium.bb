@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">ביחד, המכשירים שלך יוכלו לעבוד עוד יותר טוב</translation>
 <translation id="112308213915226829">הסתרה אוטומטית של המדף</translation>
 <translation id="1153356358378277386">מכשירים מותאמים</translation>
+<translation id="1175572348579024023">גלילה</translation>
 <translation id="1178581264944972037">השהה</translation>
 <translation id="1195412055398077112">סריקת יתר</translation>
 <translation id="119944043368869598">ניקוי הכל</translation>
-<translation id="123828989343052515">שולחן עבודה חדש</translation>
 <translation id="1247372569136754018">מיקרופון (פנימי)</translation>
 <translation id="1252999807265626933">טעינה מ-<ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">מה מזג האוויר?</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">מנהל המערכת שלך מגדיר את שיטות הקלט.</translation>
 <translation id="1747827819627189109">המקלדת שמופיעה במסך מופעלת</translation>
 <translation id="1761222317188459878">הפעלה או השבתה של החיבור לרשת. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">גלילה ימינה</translation>
 <translation id="1812997170047690955">מה מופיע במסך שלי?</translation>
+<translation id="1820355135508821526">התכונה <ph name="FEATURE_NAME" /> הושבתה על-ידי מדיניות שהוחלה על המכשיר הזה. יש לפנות את מנהל המערכת כדי לבקש שינויים.</translation>
 <translation id="1823873187264960516">אתרנט: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">‏Assistant (בטעינה...)</translation>
 <translation id="1850504506766569011">‏Wi-Fi כבוי.</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">‎0°‎</translation>
 <translation id="1957958912175573503">בחירת שפה</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" />‏ (USB)</translation>
+<translation id="1978498689038657292">קלט טקסט</translation>
 <translation id="1993072747612765854">מידע נוסף על העדכון האחרון של <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">כיבוי</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">לאורך</translation>
 <translation id="2067602449040652523">בהירות מקלדת</translation>
 <translation id="209965399369889474">לא מחובר לרשת</translation>
+<translation id="2126242104232412123">שולחן עבודה חדש</translation>
 <translation id="2127372758936585790">מטען בעל מתח נמוך</translation>
 <translation id="2135456203358955318">מגדיל במצב מעוגן</translation>
 <translation id="2144487987174258011">‏הפעל מחדש כדי לעדכן את Adobe Flash Player</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">‏Google Assistant אינו זמין בסשן ציבורי.</translation>
 <translation id="2575685495496069081">הכניסה עם מספר חשבונות הושבתה</translation>
 <translation id="2582112259361606227">צריך להפעיל מחדש כדי לעדכן</translation>
-<translation id="2597972630681408282">תאורת לילה: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">‏כרטיס ה-SIM נעול</translation>
+<translation id="2651765386227849097">‏Google Assistant מושבת במכשיר הזה.</translation>
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2658778018866295321">לחיצה וגרירה</translation>
 <translation id="2700493154570097719">בחירת מקלדת</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{מחובר למכשיר אחד}two{מחובר ל-# מכשירים}many{מחובר ל-# מכשירים}other{מחובר ל-# מכשירים}}</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> נוספות</translation>
 <translation id="3236488194889173876">אין רשת סלולרית זמינה</translation>
+<translation id="3249513730522716925">החלון <ph name="WINDOW_TITLE" /> הועבר משולחן העבודה <ph name="ACTIVE_DESK" /> אל שולחן העבודה <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">מה אפשר לעשות?</translation>
 <translation id="3294437725009624529">אורח</translation>
 <translation id="3308453408813785101">ל-<ph name="USER_EMAIL_ADDRESS" /> תהיה עדיין אפשרות להיכנס לחשבון מאוחר יותר.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">שנה בחזרה ל"<ph name="FROM_LOCALE" />" (דורש הפעלה מחדש)</translation>
 <translation id="3576141592585647168">שינוי אזור הזמן</translation>
 <translation id="3595596368722241419">סוללה מלאה</translation>
+<translation id="3604801046548457007">שולחן העבודה <ph name="DESK_TITILE" /> נוצר</translation>
 <translation id="3606978283550408104">צג ברייל מחובר</translation>
 <translation id="3621202678540785336">קלט</translation>
 <translation id="3626281679859535460">בהירות</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">‏שיעור הטעינה של הסוללה הוא ‎<ph name="PERCENTAGE" />%‎ והטעינה נמשכת.</translation>
 <translation id="3995138139523574647">‏מכשיר עם יציאת USB-C (יציאה ימנית-אחורית)</translation>
 <translation id="4017989525502048489">סמן לייזר</translation>
+<translation id="4021716437419160885">גלילה למטה</translation>
 <translation id="4042660782729322247">המסך שלך משותף</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{מושבת לאפליקציה אחת}two{מושבת ל-2 אפליקציות}many{מושבת ל-# אפליקציות}other{מושבת ל-# אפליקציות}}</translation>
 <translation id="4072264167173457037">אות בינוני</translation>
@@ -258,9 +265,11 @@
 <translation id="4895488851634969361">הסוללה טעונה במלואה.</translation>
 <translation id="490375751687810070">אנכי</translation>
 <translation id="4905614135390995787">מקש הקיצור להפעלה או כיבוי של מצב ניגודיות גבוהה השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">%<ph name="BATTERY_PERCENTAGE" /> סוללה</translation>
 <translation id="4917385247580444890">חזק</translation>
 <translation id="4918086044614829423">אשר</translation>
 <translation id="4924411785043111640">הפעלה מחדש ואתחול</translation>
+<translation id="495046168593986294">גלילה למעלה</translation>
 <translation id="4961318399572185831">העברת מסך</translation>
 <translation id="5030687792513154421">נגמר הזמן</translation>
 <translation id="5035236842988137213">מכשיר <ph name="DEVICE_NAME" /> התחבר לטלפון חדש</translation>
@@ -294,6 +303,7 @@
 <translation id="5648021990716966815">שקע מיקרופון</translation>
 <translation id="5669267381087807207">מפעיל</translation>
 <translation id="5673434351075758678">מ"<ph name="FROM_LOCALE" />" ל"<ph name="TO_LOCALE" />" אחרי סנכרון ההגדרות.</translation>
+<translation id="5682642926269496722">‏Google Assistant אינו זמין לחשבון המשתמש הנוכחי.</translation>
 <translation id="5691772641933328258">טביעת האצבע לא זוהתה</translation>
 <translation id="5710450975648804523">מצב 'נא לא להפריע' מופעל</translation>
 <translation id="574392208103952083">בינוני</translation>
@@ -318,6 +328,8 @@
 <translation id="598882571027504733">‏כדי להתקין את העדכון, יש להפעיל מחדש את ה-Chromebook כשהמקלדת מחוברת.</translation>
 <translation id="5992218262414051481">‏מצב ניגודיות גבוהה פועל. הקש שוב על Ctrl+Search+H כדי לכבות אותו.</translation>
 <translation id="6018164090099858612">יציאה ממצב שיקוף</translation>
+<translation id="602001110135236999">גלילה שמאלה</translation>
+<translation id="6040143037577758943">סגור</translation>
 <translation id="6043212731627905357">אין כימיה בין הצג הזה למכשיר ה-<ph name="DEVICE_TYPE" /> שלך (המכשיר לא תומך בצג).</translation>
 <translation id="6043994281159824495">צא עכשיו</translation>
 <translation id="6047696787498798094">שיתוף המסך יפסיק ברגע שתעבור למשתמש אחר. האם ברצונך להמשיך?</translation>
@@ -325,6 +337,7 @@
 <translation id="6064337552080329342">מצטערים, אי אפשר לאמת את הסיסמה שלך. צריך לנסות שוב.</translation>
 <translation id="607652042414456612">‏מכשירי Bluetooth קרובים יכולים לאתר את המחשב שלך, והוא יופיע כ-"<ph name="NAME" />" עם הכתובת <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">טעינה של <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">‏Google Assistant אינו זמין בגלישה כאורח.</translation>
 <translation id="615957422585914272">הצג מקלדת במסך</translation>
 <translation id="6164005077879661055">כל הקבצים והנתונים המקומיים המשויכים למשתמש בפיקוח יימחקו לצמיתות לאחר שמשתמש בפיקוח זה יוסר. המנהל עדיין יוכל לראות את האתרים שבהם משתמש בפיקוח זה ביקר, ואת ההגדרות שלו, בכתובת <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
@@ -366,7 +379,9 @@
 <translation id="6713285437468012787">‏מכשיר ה-Bluetooth‏ "<ph name="DEVICE_NAME" />" הותאם והוא זמין כעת לכל המשתמשים. אתה יכול להסיר את ההתאמה הזו ב'הגדרות'.</translation>
 <translation id="6715542151869432661">לא נמצאו מכשירים ניידים.</translation>
 <translation id="6723839937902243910">חשמל</translation>
+<translation id="6727969043791803658">‏מחובר, ‎<ph name="BATTERY_PERCENTAGE" />%‎ סוללה</translation>
 <translation id="6751826523481687655">מעקב הביצועים פועל</translation>
+<translation id="6752912906630585008">שולחן העבודה <ph name="REMOVED_DESK" /> הוסר ושולב עם שולחן העבודה <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">הפעל</translation>
 <translation id="6803622936009808957">לא ניתן היה לשקף מסכים מכיוון שלא נמצאה רזולוציה נתמכת. במקום זאת התצוגה עברה למצב שולחן עבודה מורחב.</translation>
 <translation id="6820676911989879663">הגיע הזמן להפסקה</translation>
@@ -426,6 +441,7 @@
 <translation id="7692480393933218409">‏טעינת מכשירים מחוברים עם יציאת USB-C</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{הודעה אחת}two{2 הודעות}many{# הודעות}other{# הודעות}}</translation>
+<translation id="7749443890790263709">הגעת למספר המקסימלי של שולחנות עבודה.</translation>
 <translation id="776344839111254542">לחץ כדי להציג את פרטי העדכון</translation>
 <translation id="7780159184141939021">סיבוב המסך</translation>
 <translation id="7796353162336583443">‏כדי לרשום הערה או לצלם צילום מסך, או כדי להשתמש ב-Google Assistant, בסמן הלייזר או בזכוכית המגדלת, צריך להקיש על לחצן הסטיילוס במדף.</translation>
@@ -469,6 +485,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">יצירת הערה</translation>
 <translation id="8375916635258623388">מכשיר <ph name="DEVICE_NAME" /> זה והטלפון יחוברו באופן אוטומטי</translation>
+<translation id="8388750414311082622">לא ניתן להסיר את שולחן העבודה האחרון.</translation>
 <translation id="8392451568018454956">תפריט אפשרויות עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">הורה נעל את המכשיר הזה</translation>
 <translation id="8406981827175133772">זכוכית מגדלת במסך מלא</translation>
@@ -477,6 +494,7 @@
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8433186206711564395">הגדרות רשת</translation>
 <translation id="8433977262951327081">שינינו את קיצור הדרך להצגה של בועת התפריט של אפשרויות הקלט במדף. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">שולחן העבודה <ph name="DESK_TITILE" /> הופעל</translation>
 <translation id="8452135315243592079">‏כרטיס SIM חסר</translation>
 <translation id="8454013096329229812">‏Wi-Fi מופעל.</translation>
 <translation id="847056008324733326">הגדרות קנה המידה של התצוגה</translation>

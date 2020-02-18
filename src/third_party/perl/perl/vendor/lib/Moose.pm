@@ -1,29 +1,23 @@
-package Moose;
-BEGIN {
-  $Moose::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::VERSION = '2.0602';
-}
 use strict;
 use warnings;
+package Moose; # git description: 2.2010-13-g18a585ef2
+our $VERSION = '2.2011';
+our $AUTHORITY = 'cpan:STEVAN';
 
-use 5.008;
+use 5.008003;
 
-use Scalar::Util 'blessed';
-use Carp         'confess';
+use Scalar::Util ();
+use Carp         'carp';
+use Module::Runtime 'module_notional_filename';
 use Class::Load  'is_class_loaded';
-
 
 use Moose::Deprecated;
 use Moose::Exporter;
 
 use Class::MOP;
 
-BEGIN {
-    die "Class::MOP version $Moose::VERSION required--this is version $Class::MOP::VERSION"
-        if $Moose::VERSION && $Class::MOP::VERSION ne $Moose::VERSION;
-}
+die "Class::MOP version $Moose::VERSION required--this is version $Class::MOP::VERSION"
+    if $Class::MOP::VERSION ne $Moose::VERSION;
 
 use Moose::Meta::Class;
 use Moose::Meta::TypeConstraint;
@@ -42,21 +36,17 @@ use Moose::Meta::Role::Application::ToRole;
 use Moose::Meta::Role::Application::ToInstance;
 
 use Moose::Util::TypeConstraints;
-use Moose::Util ();
+use Moose::Util 'throw_exception';
 
 use Moose::Meta::Attribute::Native;
-
-sub throw_error {
-    # FIXME This
-    shift;
-    goto \&confess
-}
 
 sub extends {
     my $meta = shift;
 
-    Moose->throw_error("Must derive at least one class") unless @_;
-
+    unless ( @_ )
+    {
+        throw_exception( ExtendsMissingArgs => class_name => $meta->name );
+    }
     # this checks the metaclass to make sure
     # it is correct, sometimes it can get out
     # of sync when the classes are being built
@@ -67,16 +57,21 @@ sub with {
     Moose::Util::apply_all_roles(shift, @_);
 }
 
+sub throw_error {
+    shift;
+    Class::MOP::Object->throw_error(@_);
+}
+
 sub has {
     my $meta = shift;
     my $name = shift;
 
-    Moose->throw_error('Usage: has \'name\' => ( key => value, ... )')
-        if @_ % 2 == 1;
-
-    my %options = ( definition_context => Moose::Util::_caller_info(), @_ );
+    my %context = Moose::Util::_caller_info;
+    $context{context} = 'has declaration';
+    $context{type} = 'class';
+    my @options = ( definition_context => \%context, @_ );
     my $attrs = ( ref($name) eq 'ARRAY' ) ? $name : [ ($name) ];
-    $meta->add_attribute( $_, %options ) for @$attrs;
+    $meta->add_attribute( $_, @options ) for @$attrs;
 }
 
 sub before {
@@ -96,6 +91,10 @@ our $SUPER_BODY;
 our @SUPER_ARGS;
 
 sub super {
+    if (@_) {
+        carp 'Arguments passed to super() are ignored';
+    }
+
     # This check avoids a recursion loop - see
     # t/bugs/super_recursion.t
     return if defined $SUPER_PACKAGE && $SUPER_PACKAGE ne caller();
@@ -134,8 +133,8 @@ Moose::Exporter->setup_import_methods(
     ],
     as_is => [
         qw( super inner ),
-        \&Carp::confess,
-        \&Scalar::Util::blessed,
+        'Carp::confess',
+        'Scalar::Util::blessed',
     ],
 );
 
@@ -144,15 +143,16 @@ sub init_meta {
     my %args = @_;
 
     my $class = $args{for_class}
-        or Moose->throw_error("Cannot call init_meta without specifying a for_class");
+        or throw_exception( InitMetaRequiresClass => params => \%args );
+
     my $base_class = $args{base_class} || 'Moose::Object';
     my $metaclass  = $args{metaclass}  || 'Moose::Meta::Class';
     my $meta_name  = exists $args{meta_name} ? $args{meta_name} : 'meta';
 
-    Moose->throw_error("The Metaclass $metaclass must be loaded. (Perhaps you forgot to 'use $metaclass'?)")
+    throw_exception( MetaclassNotLoaded => class_name => $metaclass )
         unless is_class_loaded($metaclass);
 
-    Moose->throw_error("The Metaclass $metaclass must be a subclass of Moose::Meta::Class.")
+    throw_exception( MetaclassMustBeASubclassOfMooseMetaClass => class_name => $metaclass )
         unless $metaclass->isa('Moose::Meta::Class');
 
     # make a subtype for each Moose class
@@ -163,11 +163,16 @@ sub init_meta {
 
     if ( $meta = Class::MOP::get_metaclass_by_name($class) ) {
         unless ( $meta->isa("Moose::Meta::Class") ) {
-            my $error_message = "$class already has a metaclass, but it does not inherit $metaclass ($meta).";
             if ( $meta->isa('Moose::Meta::Role') ) {
-                Moose->throw_error($error_message . ' You cannot make the same thing a role and a class. Remove either Moose or Moose::Role.');
+                throw_exception( MetaclassIsARoleNotASubclassOfGivenMetaclass => role_name => $class,
+                                                                                 metaclass => $metaclass,
+                                                                                 role      => $meta
+                               );
             } else {
-                Moose->throw_error($error_message);
+                throw_exception( MetaclassIsNotASubclassOfGivenMetaclass => class_name => $class,
+                                                                            metaclass  => $metaclass,
+                                                                            class      => $meta
+                               );
             }
         }
     } else {
@@ -194,6 +199,9 @@ sub init_meta {
         }
 
         $meta = $metaclass->initialize($class);
+        my $filename = module_notional_filename($meta->name);
+        $INC{$filename} = '(set by Moose)'
+            unless exists $INC{$filename};
     }
 
     if (defined $meta_name) {
@@ -278,9 +286,11 @@ $_->make_immutable(
 
 # ABSTRACT: A postmodern object system for Perl 5
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -288,7 +298,7 @@ Moose - A postmodern object system for Perl 5
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -344,7 +354,7 @@ features which interest you.
 
 The C<MooseX::> namespace is the official place to find Moose extensions.
 These extensions can be found on the CPAN.  The easiest way to find them
-is to search for them (L<http://search.cpan.org/search?query=MooseX::>),
+is to search for them (L<https://metacpan.org/search?q=MooseX::>),
 or to examine L<Task::Moose> which aims to keep an up-to-date, easily
 installable list of Moose extensions.
 
@@ -383,15 +393,27 @@ or coercion.
 =head1 PROVIDED METHODS
 
 Moose provides a number of methods to all your classes, mostly through the
-inheritance of L<Moose::Object>. There is however, one exception.
+inheritance of L<Moose::Object>. There is however, one exception. By default,
+Moose will install a method named C<meta> in any class which uses
+C<Moose>. This method returns the current class's metaclass.
 
-=over 4
+If you'd like to rename this method, you can do so by passing the
+C<-meta_name> option when using Moose:
 
-=item B<meta>
+    use Moose -meta_name => 'my_meta';
 
-This is a method which provides access to the current class's metaclass.
+However, the L<Moose::Object> class I<also> provides a method named C<meta>
+which does the same thing. If your class inherits from L<Moose::Object> (which
+is the default), then you will still have a C<meta> method. However, if your
+class inherits from a parent which provides a C<meta> method of its own, your
+class will inherit that instead.
 
-=back
+If you'd like for Moose to not install a meta method at all, you can pass
+C<undef> as the C<-meta_name> option:
+
+    use Moose -meta_name => undef;
+
+Again, you will still inherit C<meta> from L<Moose::Object> in this case.
 
 =head1 EXPORTED FUNCTIONS
 
@@ -399,14 +421,13 @@ Moose will export a number of functions into the class's namespace which
 may then be used to set up the class. These functions all work directly
 on the current class.
 
-=over 4
+=head2 extends (@superclasses)
 
-=item B<extends (@superclasses)>
+This function will set the superclass(es) for the current class. If the parent
+classes are not yet loaded, then C<extends> tries to load them.
 
-This function will set the superclass(es) for the current class.
-
-This approach is recommended instead of C<use base>, because C<use base>
-actually C<push>es onto the class's C<@ISA>, whereas C<extends> will
+This approach is recommended instead of C<use L<base>>/C<use L<parent>>, because
+C<use base> actually C<push>es onto the class's C<@ISA>, whereas C<extends> will
 replace it. This is important to ensure that classes which do not have
 superclasses still properly inherit from L<Moose::Object>.
 
@@ -419,7 +440,7 @@ only L<-version|Class::MOP/Class Loading Options> is recognized:
 An exception will be thrown if the version requirements are not
 satisfied.
 
-=item B<with (@roles)>
+=head2 with (@roles)
 
 This will apply a given set of C<@roles> to the local class.
 
@@ -435,7 +456,11 @@ exception will be thrown.
 If your role takes options or arguments, they can be passed along in the
 hash reference as well.
 
-=item B<has $name|@$names =E<gt> %options>
+You should only use one C<with>, even if you are consuming multiple roles. If
+you consume roles using multiple C<with> statements Moose cannot detect method
+conflicts between those roles.
+
+=head2 has $name|@$names =E<gt> %options
 
 This will install an attribute of a given C<$name> into the current class. If
 the first parameter is an array reference, it will create an attribute for
@@ -484,7 +509,7 @@ is expected to have consumed.
 
 This marks the attribute as being required. This means a value must be
 supplied during class construction, I<or> the attribute must be lazy
-and have either a default or a builder. Note that c<required> does not
+and have either a default or a builder. Note that C<required> does not
 say anything about the attribute's value, which can be C<undef>.
 
 =item I<weak_ref =E<gt> (1|0)>
@@ -695,7 +720,7 @@ $attr->documentation >>.
 
 =back
 
-=item B<has +$name =E<gt> %options>
+=head2 has +$name =E<gt> %options
 
 This is variation on the normal attribute creator C<has> which allows you to
 clone and extend an attribute from a superclass or from a role. Here is an
@@ -772,56 +797,54 @@ B<are not> overridden, or removed.
 
 =back
 
-=item B<before $name|@names|\@names|qr/.../ =E<gt> sub { ... }>
+=head2 before $name|@names|\@names|qr/.../ =E<gt> sub { ... }
 
-=item B<after $name|@names|\@names|qr/.../ =E<gt> sub { ... }>
+=head2 after $name|@names|\@names|qr/.../ =E<gt> sub { ... }
 
-=item B<around $name|@names|\@names|qr/.../ =E<gt> sub { ... }>
+=head2 around $name|@names|\@names|qr/.../ =E<gt> sub { ... }
 
 These three items are syntactic sugar for the before, after, and around method
 modifier features that L<Class::MOP> provides. More information on these may be
 found in L<Moose::Manual::MethodModifiers> and the
 L<Class::MOP::Class documentation|Class::MOP::Class/"Method Modifiers">.
 
-=item B<override ($name, &sub)>
+=head2 override ($name, &sub)
 
 An C<override> method is a way of explicitly saying "I am overriding this
 method from my superclass". You can call C<super> within this method, and
 it will work as expected. The same thing I<can> be accomplished with a normal
 method call and the C<SUPER::> pseudo-package; it is really your choice.
 
-=item B<super>
+=head2 super
 
 The keyword C<super> is a no-op when called outside of an C<override> method. In
 the context of an C<override> method, it will call the next most appropriate
 superclass method with the same arguments as the original method.
 
-=item B<augment ($name, &sub)>
+=head2 augment ($name, &sub)
 
 An C<augment> method, is a way of explicitly saying "I am augmenting this
 method from my superclass". Once again, the details of how C<inner> and
 C<augment> work is best described in the
 L<Moose::Cookbook::Basics::Document_AugmentAndInner>.
 
-=item B<inner>
+=head2 inner
 
 The keyword C<inner>, much like C<super>, is a no-op outside of the context of
 an C<augment> method. You can think of C<inner> as being the inverse of
 C<super>; the details of how C<inner> and C<augment> work is best described in
 the L<Moose::Cookbook::Basics::Document_AugmentAndInner>.
 
-=item B<blessed>
+=head2 blessed
 
 This is the C<Scalar::Util::blessed> function. It is highly recommended that
 this is used instead of C<ref> anywhere you need to test for an object's class
 name.
 
-=item B<confess>
+=head2 confess
 
 This is the C<Carp::confess> function, and exported here for historical
 reasons.
-
-=back
 
 =head1 METACLASS
 
@@ -839,7 +862,7 @@ details.
 
 By default, when given a trait name, Moose simply tries to load a
 class of the same name. If such a class does not exist, it then looks
-for for a class matching
+for a class matching
 B<Moose::Meta::$type::Custom::Trait::$trait_name>. The C<$type>
 variable here will be one of B<Attribute> or B<Class>, depending on
 what the trait is being applied to.
@@ -901,11 +924,11 @@ respectively.
 
 Metaclass compatibility is a thorny subject. You should start by
 reading the "About Metaclass compatibility" section in the
-C<Class::MOP> docs.
+L<Class::MOP> docs.
 
 Moose will attempt to resolve a few cases of metaclass incompatibility
 when you set the superclasses for a class, in addition to the cases that
-C<Class::MOP> handles.
+L<Class::MOP> handles.
 
 Moose tries to determine if the metaclasses only "differ by roles". This
 means that the parent and child's metaclass share a common ancestor in
@@ -926,10 +949,6 @@ unresolvable conflict.
 
 =head1 CAVEATS
 
-=over 4
-
-=item *
-
 It should be noted that C<super> and C<inner> B<cannot> be used in the same
 method. However, they may be combined within the same class hierarchy; see
 F<t/basics/override_augment_inner_super.t> for an example.
@@ -944,8 +963,6 @@ two features separate (yet interoperable) actually makes them easy to use, since
 their behavior is then easier to predict. Time will tell whether I am right or
 not (UPDATE: so far so good).
 
-=back
-
 =head1 GETTING HELP
 
 We offer both a mailing list and a very active IRC channel.
@@ -957,6 +974,35 @@ L<mailto:moose-subscribe@perl.org>
 You can also visit us at C<#moose> on L<irc://irc.perl.org/#moose>
 This channel is quite active, and questions at all levels (on Moose-related
 topics ;) are welcome.
+
+=head1 WHAT DOES MOOSE STAND FOR?
+
+Moose doesn't stand for one thing in particular, however, if you want, here
+are a few of our favorites. Feel free to contribute more!
+
+=over 4
+
+=item * Make Other Object Systems Envious
+
+=item * Makes Object Orientation So Easy
+
+=item * Makes Object Orientation Spiffy- Er (sorry ingy)
+
+=item * Most Other Object Systems Emasculate
+
+=item * Moose Often Ovulate Sorta Early
+
+=item * Moose Offers Often Super Extensions
+
+=item * Meta Object Obligates Salivary Excitation
+
+=item * Meta Object Orientation Syntax Extensions
+
+=item * Moo, Only Overengineered, Slow, and Execrable (blame rjbs!)
+
+=item * Massive Object-Oriented Stacktrace Emitter
+
+=back
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -983,7 +1029,7 @@ early ideas/feature-requests/encouragement/bug-finding.
 
 =over 4
 
-=item L<http://www.iinteractive.com/moose>
+=item L<http://moose.perl.org/>
 
 This is the official web home of Moose. It contains links to our public git
 repository, as well as links to a number of talks and articles on Moose and
@@ -1007,7 +1053,7 @@ Part 2 - L<http://www.stonehenge.com/merlyn/LinuxMag/col95.html>
 
 =item Several Moose extension modules in the C<MooseX::> namespace.
 
-See L<http://search.cpan.org/search?query=MooseX::> for extensions.
+See L<https://metacpan.org/search?q=MooseX::> for extensions.
 
 =back
 
@@ -1040,7 +1086,8 @@ All complex software has bugs lurking in it, and this module is no
 exception.
 
 Please report any bugs to C<bug-moose@rt.cpan.org>, or through the web
-interface at L<http://rt.cpan.org>.
+interface at L<http://rt.cpan.org>. You can also submit a C<TODO> test as a
+pull request at L<https://github.com/moose/Moose>.
 
 You can also discuss feature requests or possible bugs on the Moose mailing
 list (moose@perl.org) or on IRC at L<irc://irc.perl.org/#moose>.
@@ -1064,23 +1111,7 @@ can contribute.
 There are only a few people with the rights to release a new version
 of Moose. The Moose Cabal are the people to go to with questions regarding
 the wider purview of Moose. They help maintain not just the code
-but the community as well.
-
-Stevan (stevan) Little E<lt>stevan@iinteractive.comE<gt>
-
-Jesse (doy) Luehrs E<lt>doy at tozt dot netE<gt>
-
-Yuval (nothingmuch) Kogman
-
-Shawn (sartak) Moore E<lt>sartak@bestpractical.comE<gt>
-
-Hans Dieter (confound) Pearcey E<lt>hdp@pobox.comE<gt>
-
-Chris (perigrin) Prather
-
-Florian Ragwitz E<lt>rafl@debian.orgE<gt>
-
-Dave (autarch) Rolsky E<lt>autarch@urth.orgE<gt>
+but the community as well. See the list below under C<AUTHORS>.
 
 =head1 CONTRIBUTORS
 
@@ -1182,19 +1213,57 @@ Wallace (wreis) Reis
 
 ... and many other #moose folks
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

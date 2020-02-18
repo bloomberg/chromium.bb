@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_consumer.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notification_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
+#import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -41,10 +42,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
-#include "ios/web/public/favicon_status.h"
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/navigation_manager.h"
+#include "ios/web/public/favicon/favicon_status.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
+#include "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -661,10 +662,13 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 - (void)createSearchMenuItems {
   NSMutableArray* items = [NSMutableArray array];
 
+  // The consumer is expecting an array of arrays of items. Each sub array
+  // represent a section in the popup menu. Having one sub array means having
+  // all the items in the same section.
+  PopupMenuToolsItem* copiedContentItem = nil;
   if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
     ClipboardRecentContent* clipboardRecentContent =
         ClipboardRecentContent::GetInstance();
-    PopupMenuToolsItem* copiedContentItem = nil;
 
     if (search_engines::SupportsSearchByImage(self.templateURLService) &&
         clipboardRecentContent->GetRecentImageFromClipboard()) {
@@ -681,30 +685,49 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
           IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT, PopupMenuActionPasteAndGo,
           @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
     }
-
-    if (copiedContentItem) {
-      [items addObject:copiedContentItem];
-    }
   } else {
     NSString* pasteboardString = [UIPasteboard generalPasteboard].string;
     if (pasteboardString) {
-      PopupMenuToolsItem* pasteAndGo = CreateTableViewItem(
+      copiedContentItem = CreateTableViewItem(
           IDS_IOS_TOOLS_MENU_PASTE_AND_GO, PopupMenuActionPasteAndGo,
           @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
-      [items addObject:pasteAndGo];
+    }
+  }
+  if (copiedContentItem) {
+    if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
+      [items addObject:@[ copiedContentItem ]];
+    } else {
+      [items addObject:copiedContentItem];
     }
   }
 
   PopupMenuToolsItem* QRCodeSearch = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_QR_SCANNER, PopupMenuActionQRCodeSearch,
       @"popup_menu_qr_scanner", kToolsMenuQRCodeSearch);
-  [items addObject:QRCodeSearch];
   PopupMenuToolsItem* voiceSearch = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_VOICE_SEARCH, PopupMenuActionVoiceSearch,
       @"popup_menu_voice_search", kToolsMenuVoiceSearch);
-  [items addObject:voiceSearch];
+  PopupMenuToolsItem* newSearch =
+      CreateTableViewItem(IDS_IOS_TOOLS_MENU_NEW_SEARCH, PopupMenuActionSearch,
+                          @"popup_menu_search", kToolsMenuSearch);
+  PopupMenuToolsItem* newIncognitoSearch = CreateTableViewItem(
+      IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_SEARCH, PopupMenuActionIncognitoSearch,
+      @"popup_menu_new_incognito_tab", kToolsMenuIncognitoSearch);
 
-  self.items = @[ items ];
+  if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
+    [items addObject:@[
+      newSearch, newIncognitoSearch, voiceSearch, QRCodeSearch
+    ]];
+  } else {
+    [items addObject:QRCodeSearch];
+    [items addObject:voiceSearch];
+  }
+
+  if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
+    self.items = items;
+  } else {
+    self.items = @[ items ];
+  }
 }
 
 // Creates the menu items for the tools menu.
@@ -851,14 +874,16 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   }
 
   // Recent Tabs.
-  TableViewItem* recentTabs = CreateTableViewItem(
+  PopupMenuToolsItem* recentTabs = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_RECENT_TABS, PopupMenuActionRecentTabs,
       @"popup_menu_recent_tabs", kToolsMenuOtherDevicesId);
+  recentTabs.enabled = !self.isIncognito;
 
   // History.
-  TableViewItem* history =
+  PopupMenuToolsItem* history =
       CreateTableViewItem(IDS_IOS_TOOLS_MENU_HISTORY, PopupMenuActionHistory,
                           @"popup_menu_history", kToolsMenuHistoryId);
+  history.enabled = !self.isIncognito;
 
   // Settings.
   TableViewItem* settings =

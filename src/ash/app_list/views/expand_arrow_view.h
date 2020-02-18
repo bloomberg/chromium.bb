@@ -9,7 +9,9 @@
 
 #include "ash/app_list/app_list_export.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace gfx {
 class SlideAnimation;
@@ -28,7 +30,8 @@ class ContentsView;
 
 // A tile item for the expand arrow on the start page.
 class APP_LIST_EXPORT ExpandArrowView : public views::Button,
-                                        public views::ButtonListener {
+                                        public views::ButtonListener,
+                                        public views::ViewTargeterDelegate {
  public:
   ExpandArrowView(ContentsView* contents_view, AppListView* app_list_view);
   ~ExpandArrowView() override;
@@ -51,6 +54,12 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
 
+  void MaybeEnableHintingAnimation(bool enabled);
+
+  bool IsHintingAnimationRunningForTest() {
+    return hinting_animation_timer_.IsRunning();
+  }
+
  private:
   // gfx::AnimationDelegate overrides:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -63,6 +72,10 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   void ScheduleHintingAnimation(bool is_first_time);
   void StartHintingAnimation();
   void ResetHintingAnimation();
+
+  // views::ViewTargeterDelegate:
+  bool DoesIntersectRect(const views::View* target,
+                         const gfx::Rect& rect) const override;
 
   ContentsView* const contents_view_;
   AppListView* const app_list_view_;  // Owned by the views hierarchy.
@@ -79,6 +92,8 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
 
   // The y position offset of the arrow in this view.
   int arrow_y_offset_;
+
+  base::OneShotTimer hinting_animation_timer_;
 
   base::WeakPtrFactory<ExpandArrowView> weak_ptr_factory_;
 

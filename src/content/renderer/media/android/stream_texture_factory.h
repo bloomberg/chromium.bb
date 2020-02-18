@@ -20,15 +20,10 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace gpu {
-namespace gles2 {
-class GLES2Interface;
-}  // namespace gles2
 class GpuChannelHost;
+class SharedImageInterface;
+struct SyncToken;
 }  // namespace gpu
-
-namespace ws {
-class ContextProviderCommandBuffer;
-}
 
 namespace content {
 
@@ -36,7 +31,7 @@ class StreamTextureFactory;
 
 // The proxy class for the gpu thread to notify the compositor thread
 // when a new video frame is available.
-class StreamTextureProxy : public StreamTextureHost::Listener {
+class CONTENT_EXPORT StreamTextureProxy : public StreamTextureHost::Listener {
  public:
   ~StreamTextureProxy() override;
 
@@ -50,14 +45,20 @@ class StreamTextureProxy : public StreamTextureHost::Listener {
   // StreamTextureHost::Listener implementation:
   void OnFrameAvailable() override;
 
-  // Set the streamTexture size.
-  void SetStreamTextureSize(const gfx::Size& size);
-
   // Sends an IPC to the GPU process.
   // Asks the StreamTexture to forward its SurfaceTexture to the
   // ScopedSurfaceRequestManager, using the gpu::ScopedSurfaceRequestConduit.
   void ForwardStreamTextureForSurfaceRequest(
       const base::UnguessableToken& request_token);
+
+  // Creates a SharedImage for the provided texture size. Returns the
+  // |mailbox| for the SharedImage, as well as an |unverified_sync_token|
+  // representing SharedImage creation.
+  // If creation fails, returns an empty |mailbox| and does not modify
+  // |unverified_sync_token|.
+  void CreateSharedImage(const gfx::Size& size,
+                         gpu::Mailbox* mailbox,
+                         gpu::SyncToken* unverified_sync_token);
 
   // Clears |received_frame_cb_| in a thread safe way.
   void ClearReceivedFrameCB();
@@ -67,6 +68,7 @@ class StreamTextureProxy : public StreamTextureHost::Listener {
   };
  private:
   friend class StreamTextureFactory;
+  friend class StreamTextureProxyTest;
   explicit StreamTextureProxy(std::unique_ptr<StreamTextureHost> host);
 
   void BindOnThread();
@@ -90,33 +92,26 @@ class CONTENT_EXPORT StreamTextureFactory
     : public base::RefCounted<StreamTextureFactory> {
  public:
   static scoped_refptr<StreamTextureFactory> Create(
-      scoped_refptr<ws::ContextProviderCommandBuffer> context_provider);
+      scoped_refptr<gpu::GpuChannelHost> channel);
 
-  // Create the StreamTextureProxy object. This internally calls
-  // CreateSteamTexture with the recieved arguments. CreateSteamTexture
-  // generates a texture and stores it in  *texture_id, the texture is produced
-  // into a mailbox so it can be shipped in a VideoFrame, it creates a
-  // gpu::StreamTexture and returns its route_id. If this route_id is  invalid
-  // nullptr is returned and *texture_id will be set to 0. If the route_id is
-  // valid it returns StreamTextureProxy object. The caller needs to take care
-  // of cleaning up the texture_id.
-  ScopedStreamTextureProxy CreateProxy(unsigned* texture_id,
-                                       gpu::Mailbox* texture_mailbox);
+  // Create the StreamTextureProxy object. This internally creates a
+  // gpu::StreamTexture and returns its route_id. If this route_id is invalid
+  // nullptr is returned. If the route_id is valid it returns
+  // StreamTextureProxy object.
+  ScopedStreamTextureProxy CreateProxy();
 
-  gpu::gles2::GLES2Interface* ContextGL();
+  // Returns true if the StreamTextureFactory's channel is lost.
+  bool IsLost() const;
+
+  gpu::SharedImageInterface* SharedImageInterface();
 
  private:
   friend class base::RefCounted<StreamTextureFactory>;
-  StreamTextureFactory(
-      scoped_refptr<ws::ContextProviderCommandBuffer> context_provider);
+  StreamTextureFactory(scoped_refptr<gpu::GpuChannelHost> channel);
   ~StreamTextureFactory();
-  // Creates a gpu::StreamTexture and returns its id.  Sets |*texture_id| to the
-  // client-side id of the gpu::StreamTexture. The texture is produced into
-  // a mailbox so it can be shipped in a VideoFrame.
-  unsigned CreateStreamTexture(unsigned* texture_id,
-                               gpu::Mailbox* texture_mailbox);
+  // Creates a gpu::StreamTexture and returns its id.
+  unsigned CreateStreamTexture();
 
-  scoped_refptr<ws::ContextProviderCommandBuffer> context_provider_;
   scoped_refptr<gpu::GpuChannelHost> channel_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureFactory);

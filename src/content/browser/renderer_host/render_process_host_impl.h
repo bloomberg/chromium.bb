@@ -33,9 +33,10 @@
 #include "content/browser/media/video_decoder_proxy.h"
 #include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
 #include "content/browser/renderer_host/frame_sink_provider_impl.h"
+#include "content/browser/renderer_host/media/aec_dump_manager_impl.h"
 #include "content/browser/renderer_host/media/renderer_audio_output_stream_factory_context_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
-#include "content/common/child_control.mojom.h"
+#include "content/common/child_process.mojom.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/common/renderer.mojom.h"
@@ -50,20 +51,23 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/mdns_responder.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
-#include "services/ws/public/mojom/gpu.mojom.h"
+#include "services/viz/public/interfaces/gpu.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/mojom/webdatabase/web_database.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 #if defined(OS_ANDROID)
@@ -207,16 +211,16 @@ class CONTENT_EXPORT RenderProcessHostImpl
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() override;
   bool IsProcessBackgrounded() override;
-  void IncrementKeepAliveRefCount(
-      RenderProcessHost::KeepAliveClientType) override;
-  void DecrementKeepAliveRefCount(
-      RenderProcessHost::KeepAliveClientType) override;
+  void IncrementKeepAliveRefCount() override;
+  void DecrementKeepAliveRefCount() override;
   void DisableKeepAliveRefCount() override;
   bool IsKeepAliveRefCountDisabled() override;
   void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
   void CreateURLLoaderFactory(
       const base::Optional<url::Origin>& origin,
+      const WebPreferences* preferences,
+      const net::NetworkIsolationKey& network_isolation_key,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
       network::mojom::URLLoaderFactoryRequest request) override;
 
@@ -423,10 +427,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // factory must be set back to nullptr before it's destroyed; ownership is not
   // transferred.
   static void set_render_process_host_factory_for_testing(
-      const RenderProcessHostFactory* rph_factory);
+      RenderProcessHostFactory* rph_factory);
   // Gets the global factory used to create new RenderProcessHosts in unit
   // tests.
-  static const RenderProcessHostFactory*
+  static RenderProcessHostFactory*
   get_render_process_host_factory_for_testing();
 
   // Tracks which sites frames are hosted in which RenderProcessHosts.
@@ -564,6 +568,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       blink::mojom::BroadcastChannelProviderRequest request);
   void CreateRendererHost(mojom::RendererHostAssociatedRequest request);
   void BindVideoDecoderService(media::mojom::InterfaceFactoryRequest request);
+  void BindWebDatabaseHostImpl(blink::mojom::WebDatabaseHostRequest request);
 
   // Control message handlers.
   void OnUserMetricsRecordAction(const std::string& action);
@@ -606,10 +611,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // any other that hang off it.
   void ResetIPC();
 
-  void RecordKeepAliveDuration(RenderProcessHost::KeepAliveClientType,
-                               base::TimeTicks start,
-                               base::TimeTicks end);
-
   // Get an existing RenderProcessHost associated with the given browser
   // context, if possible.  The renderer process is chosen randomly from
   // suitable renderers that share the same context and type (determined by the
@@ -634,17 +635,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateMdnsResponder(network::mojom::MdnsResponderRequest request);
 #endif  // BUILDFLAG(ENABLE_MDNS)
 
-  void OnRegisterAecDumpConsumer(int id);
-  void OnUnregisterAecDumpConsumer(int id);
-  void RegisterAecDumpConsumerOnUIThread(int id);
-  void UnregisterAecDumpConsumerOnUIThread(int id);
-  void EnableAecDumpForId(const base::FilePath& file, int id);
-  // Sends |file_for_transit| to the render process.
-  void SendAecDumpFileToRenderer(int id,
-                                 IPC::PlatformFileForTransit file_for_transit);
-  void SendDisableAecDumpToRenderer();
-  base::FilePath GetAecDumpFilePathWithExtensions(const base::FilePath& file);
-  base::SequencedTaskRunner& GetAecDumpFileTaskRunner();
   void NotifyRendererIfLockedToSite();
   void PopulateTerminationInfoRendererFields(ChildProcessTerminationInfo* info);
 
@@ -700,15 +690,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   int connection_filter_id_ =
       ServiceManagerConnection::kInvalidConnectionFilterId;
   scoped_refptr<ConnectionFilterController> connection_filter_controller_;
-  service_manager::mojom::ServicePtr test_service_;
 
   size_t keep_alive_ref_count_;
-
-  // TODO(panicker): Remove these after investigation in
-  // https://crbug.com/823482.
-  static const size_t kNumKeepAliveClients = 4;
-  size_t keep_alive_client_count_[kNumKeepAliveClients];
-  base::TimeTicks keep_alive_client_start_time_[kNumKeepAliveClients];
 
   // Set in DisableKeepAliveRefCount(). When true, |keep_alive_ref_count_| must
   // no longer be modified.
@@ -837,12 +820,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::unique_ptr<P2PSocketDispatcherHost> p2p_socket_dispatcher_host_;
 
   // Must be accessed on UI thread.
-  std::vector<int> aec_dump_consumers_;
+  AecDumpManagerImpl aec_dump_manager_;
 
   WebRtcStopRtpDumpCallback stop_rtp_dump_callback_;
-
-  scoped_refptr<base::SequencedTaskRunner>
-      audio_debug_recordings_file_task_runner_;
 
   std::unique_ptr<MediaStreamTrackMetricsHost, BrowserThread::DeleteOnIOThread>
       media_stream_track_metrics_host_;
@@ -882,7 +862,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::unique_ptr<PluginRegistryImpl, BrowserThread::DeleteOnIOThread>
       plugin_registry_;
 
-  mojom::ChildControlPtr child_control_interface_;
+  mojo::Remote<mojom::ChildProcess> child_process_;
   mojom::RouteProviderAssociatedPtr remote_route_provider_;
   mojom::RendererAssociatedPtr renderer_interface_;
   mojo::AssociatedBinding<mojom::RendererHost> renderer_host_binding_;
@@ -916,7 +896,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   IpcSendWatcher ipc_send_watcher_for_testing_;
 
-  base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
+  base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
 };

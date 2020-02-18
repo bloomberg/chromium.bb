@@ -7,8 +7,6 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -17,9 +15,9 @@
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/modules/push_messaging/push_controller.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_error.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_bridge.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_messaging_client.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_provider.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_callbacks.h"
@@ -53,9 +51,10 @@ Vector<String> PushManager::supportedContentEncodings() {
   return Vector<String>({"aes128gcm", "aesgcm"});
 }
 
-ScriptPromise PushManager::subscribe(ScriptState* script_state,
-                                     const PushSubscriptionOptionsInit* options,
-                                     ExceptionState& exception_state) {
+ScriptPromise PushManager::subscribe(
+    ScriptState* script_state,
+    const PushSubscriptionOptionsInit* options_init,
+    ExceptionState& exception_state) {
   if (!registration_->active()) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
@@ -63,13 +62,12 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
                           "Subscription failed - no active Service Worker"));
   }
 
-  const WebPushSubscriptionOptions& web_options =
-      PushSubscriptionOptions::ToWeb(options, exception_state);
+  PushSubscriptionOptions* options =
+      PushSubscriptionOptions::FromOptionsInit(options_init, exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
 
-  if (web_options.application_server_key.size() != 65 ||
-      web_options.application_server_key[0] != 0x04) {
+  if (!options->IsApplicationServerKeyVapid()) {
     ExecutionContext::From(script_state)
         ->AddConsoleMessage(ConsoleMessage::Create(
             mojom::ConsoleMessageSource::kJavaScript,
@@ -94,14 +92,18 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
                             DOMExceptionCode::kInvalidStateError,
                             "Document is detached from window."));
     }
-    PushController::ClientFrom(frame).Subscribe(
-        registration_->RegistrationId(), web_options,
+
+    PushMessagingClient* messaging_client = PushMessagingClient::From(frame);
+    DCHECK(messaging_client);
+
+    messaging_client->Subscribe(
+        registration_, options,
         LocalFrame::HasTransientUserActivation(frame,
                                                true /* check_if_main_thread */),
         std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
   } else {
     GetPushProvider(registration_)
-        ->Subscribe(web_options,
+        ->Subscribe(options,
                     LocalFrame::HasTransientUserActivation(
                         nullptr, true /* check_if_main_thread */),
                     std::make_unique<PushSubscriptionCallbacks>(resolver,

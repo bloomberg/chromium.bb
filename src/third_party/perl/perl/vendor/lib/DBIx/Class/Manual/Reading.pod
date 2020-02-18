@@ -1,0 +1,191 @@
+
+=head1 NAME
+
+DBIx::Class::Manual::Reading - How to read and write DBIx::Class POD.
+
+=head1 DESCRIPTION
+
+This doc should help users to understand how the examples and
+documentation found in the L<DBIx::Class> distribution can be
+interpreted.
+
+Writers of DBIx::Class POD should also check here to make sure their
+additions are consistent with the rest of the documentation.
+
+=head1 METHODS
+
+Methods should be documented in the files which also contain the code
+for the method, or that file should be hidden from PAUSE completely,
+in which case the methods are documented in the file which loads
+it. Methods may also be documented and referred to in files
+representing the major objects or components on which they can be
+called.
+
+For example, L<DBIx::Class::Relationship> documents the methods
+actually coded in the helper relationship classes like
+DBIx::Class::Relationship::BelongsTo. The BelongsTo file itself is
+hidden from PAUSE as it has no documentation. The accessors created by
+relationships should be mentioned in L<DBIx::Class::Row>, the major
+object that they will be called on.
+
+=head2 Method documentation
+
+=over
+
+=item *
+
+Each method starts with a "head2" statement of its name.
+
+Just the plain method name, not an example of how to call it, or a link.
+This is to ensure easy linking to method documentation from other POD.
+
+=item *
+
+The header is followed by a two-item list. This contains a description
+of the arguments the method is expected to take, and an indication of
+what the method returns.
+
+The first item provides a list of all possible values for the
+arguments of the method in order, separated by C<, >, preceded by the
+text "Arguments: "
+
+Example (for the belongs_to relationship):
+
+  =item Arguments: $accessor_name, $related_class, $fk_column|\%cond|\@cond?, \%attr?
+
+The following possible argument sigils can be shown:
+
+=over
+
+=item *
+
+$var - A scalar (string or numeric) variable.
+
+=item *
+
+\%var - A variable containing reference to a hash.
+
+=item *
+
+\@var - A variable containing a reference to an array.
+
+=item *
+
+\$var - A variable containing a reference to a scalar variable.
+
+=item *
+
+%var - A hashref variable (list of key/value pairs) - rarely used in DBIx::Class.
+
+Reading an argument as a hash variable will consume all subsequent
+method arguments, use with caution.
+
+=item *
+
+@var - An array variable (list of values).
+
+Reading an argument as a array variable will consume all subsequent
+method arguments, use with caution.
+
+=item *
+
+L<$obj|DBIx::Class> - Reference to the source class or object definition
+
+All arguments and return values should provide a link to the object's
+class documentation or definition, even if it's the same class as the current
+documentation.  For example:
+
+  ## Correct, if stated within DBIx::Class::ResultSet
+  L<$resultset|/new>
+
+  ## Correct, if stated outside DBIx::Class::ResultSet
+  L<$resultset|DBIx::Class::ResultSet>
+
+=item *
+
+? - Optional, should be placed after the argument type and name.
+
+  ## Correct
+  \%myhashref|\@myarrayref?
+
+  ## Wrong
+  \%myhashref?|\@myarrayref
+
+Applies to the entire argument.
+
+Optional arguments can be left out of method calls, unless the caller
+needs to pass in any of the following arguments. In which case the
+caller should pass C<undef> in place of the missing argument.
+
+=item *
+
+| - Alternate argument content types.
+
+At least one of these must be supplied unless the argument is also
+marked optional.
+
+=back
+
+The second item starts with the text "Return Value:". The remainder of
+the line is either the text "not defined" or a variable with a descriptive
+name.
+
+  ## Good examples
+  =item Return Value: not defined
+  =item Return Value: L<$schema|DBIx::Class::Schema>
+  =item Return Value: $classname
+
+  ## Bad examples
+  =item Return Value: The names
+
+"not defined" means the method does not deliberately return a value, and
+the caller should not use or rely on anything it does return.  (Perl
+functions always return something, usually the result of the last code
+statement, if there is no explicit return statement.)  This is different
+than specifying "undef", which means that it explicitly returns undef,
+though usually this is used an alternate return (like C<$obj | undef>).
+
+=item *
+
+The argument/return list is followed by a single paragraph describing what
+the method does.
+
+=item *
+
+The description paragraph is followed by another list. Each item in
+the list explains one of the possible argument/type combinations.
+
+This list may be omitted if the author feels that the variable names are
+self-explanatory enough to not require it. Use best judgement.
+
+=item *
+
+The argument/return list is followed by some examples of how to use the
+method, using its various types of arguments.
+
+The examples can also include ways to use the results if
+applicable. For instance, if the documentation is for a relationship
+type, the examples can include how to call the resulting relation
+accessor, how to use the relation name in a search and so on.
+
+If some of the examples assume default values, these should be shown
+with and without the actual arguments, with hints about the equivalent
+calls.
+
+The example should be followed by one or more paragraphs explaining
+what it does.
+
+Examples and explaining paragraphs can be repeated as necessary.
+
+=back
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.

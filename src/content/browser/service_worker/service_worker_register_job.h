@@ -42,6 +42,11 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
                                   ServiceWorkerRegistration* registration)>
       RegistrationCallback;
 
+  enum class UpdateCheckType {
+    kMainScriptDuringStartWorker,  // Only check main script.
+    kAllScriptsBeforeStartWorker,  // Check all scripts.
+  };
+
   // For registration jobs.
   CONTENT_EXPORT ServiceWorkerRegisterJob(
       base::WeakPtr<ServiceWorkerContextCore> context,
@@ -78,11 +83,6 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
     STORE,
     COMPLETE,
     ABORT,
-  };
-
-  enum class UpdateCheckType {
-    kMainScriptDuringStartWorker,  // Only check main script.
-    kAllScriptsBeforeStartWorker,  // Check all scripts.
   };
 
   // Holds internal state of ServiceWorkerRegistrationJob, to compel use of the
@@ -125,9 +125,12 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   UpdateCheckType GetUpdateCheckType() const;
 
   // This method is only called when ServiceWorkerImportedScriptUpdateCheck is
-  // enabled. When some script changed, the parameter |script_changed| is set
-  // to true.
-  void OnUpdateCheckFinished(bool script_changed);
+  // enabled. Refer ServiceWorkerUpdateChecker::UpdateStatusCallback for the
+  // meaning of the parameters.
+  void OnUpdateCheckFinished(
+      ServiceWorkerSingleScriptUpdateChecker::Result result,
+      std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+          failure_info);
 
   void RegisterAndContinue();
   void ContinueWithUninstallingRegistration(
@@ -195,7 +198,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   std::string promise_resolved_status_message_;
   scoped_refptr<ServiceWorkerRegistration> promise_resolved_registration_;
 
-  base::WeakPtrFactory<ServiceWorkerRegisterJob> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerRegisterJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegisterJob);
 };

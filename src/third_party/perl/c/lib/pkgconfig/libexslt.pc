@@ -1,12 +1,12 @@
-prefix=/mingw
+prefix=${pcfiledir}/../..
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
 
 
 Name: libexslt
-Version: 0.8.15
+Version: 0.8.20
 Description: EXSLT Extension library
 Requires: libxml-2.0
-Libs: -L${libdir} -lexslt -lxslt  -L/mingw/lib -lxml2 -lz -liconv -lws2_32  
+Libs: -L${libdir} -lexslt -lxslt -L${pcfiledir}/../../lib -lxml2 -L${pcfiledir}/../../lib -lz -L${pcfiledir}/../../lib -llzma -L${pcfiledir}/../../lib -lws2_32  
 Cflags: -I${includedir}

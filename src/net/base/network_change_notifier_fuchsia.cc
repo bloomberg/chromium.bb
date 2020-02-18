@@ -28,14 +28,18 @@ NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
 
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
     fuchsia::netstack::NetstackPtr netstack,
-    uint32_t required_features)
-    : required_features_(required_features) {
+    uint32_t required_features,
+    SystemDnsConfigChangeNotifier* system_dns_config_notifier)
+    : NetworkChangeNotifier(NetworkChangeCalculatorParams(),
+                            system_dns_config_notifier),
+      required_features_(required_features) {
   DCHECK(netstack);
 
   // Temporarily re-wrap our Netstack channel so we can query the interfaces
   // and routing table synchronously to populate the initial state.
   fuchsia::netstack::NetstackSyncPtr sync_netstack;
   sync_netstack.Bind(netstack.Unbind());
+  DCHECK(sync_netstack);
 
   // Manually fetch the interfaces and routes.
   std::vector<fuchsia::netstack::NetInterface> interfaces;
@@ -48,6 +52,7 @@ NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
 
   // Re-wrap Netstack back into an asynchronous pointer.
   netstack_.Bind(sync_netstack.Unbind());
+  DCHECK(netstack_);
   netstack_.set_error_handler([](zx_status_t status) {
     // TODO(https://crbug.com/901092): Unit tests that use NetworkService are
     // crashing because NetworkService does not clean up properly, and the

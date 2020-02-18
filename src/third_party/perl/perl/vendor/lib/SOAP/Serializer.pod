@@ -4,8 +4,6 @@
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
-# $Id: Serializer.pod 381 2011-08-15 19:28:43Z kutterma $
-#
 # ======================================================================
 
 =pod
@@ -126,7 +124,7 @@ When serializing an object, or blessed hash reference, into XML, C<SOAP::Seriali
 
 =item Naming Convention
 
-The subroutine should always be prepended with C<as_> followed by the type's name. The type's name must have all colons (':') substituded with an underscore ('_').
+The subroutine should always be prepended with C<as_> followed by the type's name. The type's name must have all colons (':') substituted with an underscore ('_').
 
 =item Input
 

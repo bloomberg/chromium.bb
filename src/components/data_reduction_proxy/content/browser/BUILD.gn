@@ -4,10 +4,6 @@
 
 static_library("browser") {
   sources = [
-    "content_lofi_decider.cc",
-    "content_lofi_decider.h",
-    "content_resource_type_provider.cc",
-    "content_resource_type_provider.h",
     "data_reduction_proxy_page_load_timing.cc",
     "data_reduction_proxy_page_load_timing.h",
     "data_reduction_proxy_pingback_client_impl.cc",
@@ -33,8 +29,6 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "content_lofi_decider_unittest.cc",
-    "content_resource_type_provider_unittest.cc",
     "data_reduction_proxy_pingback_client_impl_unittest.cc",
   ]
 

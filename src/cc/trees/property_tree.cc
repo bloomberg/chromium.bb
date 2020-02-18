@@ -233,6 +233,8 @@ void TransformTree::UpdateTransforms(int id) {
   UpdateNodeAndAncestorsHaveIntegerTranslations(node, parent_node);
   UpdateTransformChanged(node, parent_node, source_node);
   UpdateNodeAndAncestorsAreAnimatedOrInvertible(node, parent_node);
+
+  DCHECK(!node->needs_local_transform_update);
 }
 
 bool TransformTree::IsDescendant(int desc_id, int source_id) const {
@@ -374,7 +376,7 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
     scroll_position -= transform_node->snap_amount;
   }
 
-  gfx::RectF clip = constraint.constraint_box_rect;
+  gfx::Rect clip = constraint.constraint_box_rect;
   clip.Offset(scroll_position.x(), scroll_position.y());
 
   // The clip region may need to be offset by the outer viewport bounds, e.g. if
@@ -831,7 +833,6 @@ void EffectTree::UpdateHasMaskingChild(EffectNode* node,
   // when we actually encounter a masking child.
   node->has_masking_child = false;
   if (node->blend_mode == SkBlendMode::kDstIn) {
-    DCHECK(parent_node->HasRenderSurface());
     parent_node->has_masking_child = true;
   }
 }
@@ -850,16 +851,10 @@ void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
   if (transform_node->in_subtree_of_page_scale_layer)
     layer_scale_factor *= transform_tree.page_scale_factor();
 
-  // Note: Copy requests currently expect transform to effect output size.
-  bool use_transform_for_contents_scale =
-      property_trees()->can_adjust_raster_scales ||
-      effect_node->has_copy_request;
   const gfx::Vector2dF old_scale = effect_node->surface_contents_scale;
   effect_node->surface_contents_scale =
-      use_transform_for_contents_scale
-          ? MathUtil::ComputeTransform2dScaleComponents(
-                transform_tree.ToScreen(transform_node->id), layer_scale_factor)
-          : gfx::Vector2dF(layer_scale_factor, layer_scale_factor);
+      MathUtil::ComputeTransform2dScaleComponents(
+          transform_tree.ToScreen(transform_node->id), layer_scale_factor);
 
   // If surface contents scale changes, draw transforms are no longer valid.
   // Invalidates the draw transform cache and updates the clip for the surface.
@@ -1757,7 +1752,6 @@ PropertyTreesCachedData::~PropertyTreesCachedData() = default;
 
 PropertyTrees::PropertyTrees()
     : needs_rebuild(true),
-      can_adjust_raster_scales(true),
       changed(false),
       full_tree_damaged(false),
       sequence_number(0),
@@ -1785,7 +1779,6 @@ bool PropertyTrees::operator==(const PropertyTrees& other) const {
          full_tree_damaged == other.full_tree_damaged &&
          is_main_thread == other.is_main_thread &&
          is_active == other.is_active &&
-         can_adjust_raster_scales == other.can_adjust_raster_scales &&
          sequence_number == other.sequence_number;
 }
 
@@ -1800,7 +1793,6 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
   needs_rebuild = from.needs_rebuild;
   changed = from.changed;
   full_tree_damaged = from.full_tree_damaged;
-  can_adjust_raster_scales = from.can_adjust_raster_scales;
   sequence_number = from.sequence_number;
   is_main_thread = from.is_main_thread;
   is_active = from.is_active;
@@ -1830,7 +1822,6 @@ void PropertyTrees::clear() {
   needs_rebuild = true;
   full_tree_damaged = false;
   changed = false;
-  can_adjust_raster_scales = true;
   sequence_number++;
 
 #if DCHECK_IS_ON()
@@ -2077,17 +2068,6 @@ CombinedAnimationScale PropertyTrees::GetAnimationScales(
       &cached_data_.animation_scales[transform_node_id];
   if (animation_scales->update_number !=
       cached_data_.transform_tree_update_number) {
-    if (!layer_tree_impl->settings()
-             .layer_transforms_should_scale_layer_contents) {
-      animation_scales->update_number =
-          cached_data_.transform_tree_update_number;
-      animation_scales->combined_maximum_animation_target_scale = kNotScaled;
-      animation_scales->combined_starting_animation_scale = kNotScaled;
-      return CombinedAnimationScale(
-          animation_scales->combined_maximum_animation_target_scale,
-          animation_scales->combined_starting_animation_scale);
-    }
-
     TransformNode* node = transform_tree.Node(transform_node_id);
     TransformNode* parent_node = transform_tree.parent(node);
     bool ancestor_is_animating_scale = false;

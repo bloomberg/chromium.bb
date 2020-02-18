@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/css/document_style_sheet_collector.h"
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
+#include "third_party/blink/renderer/core/css/property_registration.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
@@ -94,8 +95,10 @@ StyleEngine::StyleEngine(Document& document)
     global_rule_set_ = MakeGarbageCollected<CSSGlobalRuleSet>();
   // Document is initially style dirty.
   style_recalc_root_.Update(nullptr, &document);
-  if (auto* settings = GetDocument().GetSettings())
+  if (auto* settings = GetDocument().GetSettings()) {
     preferred_color_scheme_ = settings->GetPreferredColorScheme();
+    forced_colors_ = settings->GetForcedColors();
+  }
 }
 
 StyleEngine::~StyleEngine() = default;
@@ -214,11 +217,13 @@ void StyleEngine::AddPendingSheet(StyleEngineContext& context) {
   pending_script_blocking_stylesheets_++;
 
   context.AddingPendingSheet(GetDocument());
-  if (context.AddedPendingSheetBeforeBody()) {
+
+  if (context.AddedPendingSheetBeforeBody() &&
+      !RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled()) {
     pending_render_blocking_stylesheets_++;
   } else {
-    pending_body_stylesheets_++;
-    GetDocument().DidAddPendingStylesheetInBody();
+    pending_parser_blocking_stylesheets_++;
+    GetDocument().DidAddPendingParserBlockingStylesheet();
   }
 }
 
@@ -228,14 +233,15 @@ void StyleEngine::RemovePendingSheet(Node& style_sheet_candidate_node,
   if (style_sheet_candidate_node.isConnected())
     SetNeedsActiveStyleUpdate(style_sheet_candidate_node.GetTreeScope());
 
-  if (context.AddedPendingSheetBeforeBody()) {
+  if (context.AddedPendingSheetBeforeBody() &&
+      !RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled()) {
     DCHECK_GT(pending_render_blocking_stylesheets_, 0);
     pending_render_blocking_stylesheets_--;
   } else {
-    DCHECK_GT(pending_body_stylesheets_, 0);
-    pending_body_stylesheets_--;
-    if (!pending_body_stylesheets_)
-      GetDocument().DidRemoveAllPendingBodyStylesheets();
+    DCHECK_GT(pending_parser_blocking_stylesheets_, 0);
+    pending_parser_blocking_stylesheets_--;
+    if (!pending_parser_blocking_stylesheets_)
+      GetDocument().DidLoadAllPendingParserBlockingStylesheets();
   }
 
   // Make sure we knew this sheet was pending, and that our count isn't out of
@@ -246,7 +252,7 @@ void StyleEngine::RemovePendingSheet(Node& style_sheet_candidate_node,
   if (pending_script_blocking_stylesheets_)
     return;
 
-  GetDocument().DidRemoveAllPendingStylesheet();
+  GetDocument().DidRemoveAllPendingStylesheets();
 }
 
 void StyleEngine::SetNeedsActiveStyleUpdate(TreeScope& tree_scope) {
@@ -1340,6 +1346,7 @@ enum RuleSetFlags {
   kFullRecalcRules = 1 << 2,
   kFontFeatureValuesRules = 1 << 3,
   kFontRules = kFontFaceRules | kFontFeatureValuesRules,
+  kPropertyRules = 1 << 4
 };
 
 unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
@@ -1354,6 +1361,8 @@ unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
       flags |= kFullRecalcRules;
     if (!rule_set->FontFeatureValuesRules().IsEmpty())
       flags |= kFontFeatureValuesRules;
+    if (!rule_set->PropertyRules().IsEmpty())
+      flags |= kPropertyRules;
   }
   return flags;
 }
@@ -1479,6 +1488,20 @@ void StyleEngine::ApplyRuleSetChanges(
 
   if (changed_rule_flags & kKeyframesRules)
     ScopedStyleResolver::KeyframesRulesAdded(tree_scope);
+
+  if (changed_rule_flags & kPropertyRules) {
+    // TODO(https://crbug.com/978786): Don't ignore TreeScope.
+
+    // TODO(https://crbug.com/978781): Support unregistration.
+    // At this point we could have unregistered properties for
+    // change==kActiveSheetsChanged, but we don't yet support that.
+
+    for (auto* it = new_style_sheets.begin(); it != new_style_sheets.end();
+         it++) {
+      DCHECK(it->second);
+      AddPropertyRules(*it->second);
+    }
+  }
 
   if (rebuild_font_cache)
     ClearFontCacheAndAddUserFonts();
@@ -1691,6 +1714,33 @@ void StyleEngine::AddUserKeyframeStyle(StyleRuleKeyframes* rule) {
   }
 }
 
+void StyleEngine::AddPropertyRules(const RuleSet& rule_set) {
+  PropertyRegistry* registry = GetDocument().GetPropertyRegistry();
+  if (!registry)
+    return;
+  const HeapVector<Member<StyleRuleProperty>> property_rules =
+      rule_set.PropertyRules();
+  for (unsigned i = 0; i < property_rules.size(); ++i) {
+    StyleRuleProperty* rule = property_rules[i];
+
+    AtomicString name(rule->GetName());
+
+    // For now, ignore silently if registration already exists.
+    // TODO(https://crbug.com/978781): Support unregistration.
+    if (registry->Registration(name))
+      continue;
+
+    PropertyRegistration* registration =
+        PropertyRegistration::MaybeCreate(GetDocument(), name, *rule);
+
+    if (!registration)
+      continue;
+
+    registry->RegisterProperty(name, *registration);
+    CustomPropertyRegistered();
+  }
+}
+
 StyleRuleKeyframes* StyleEngine::KeyframeStylesForAnimation(
     const AtomicString& animation_name) {
   if (keyframes_rule_map_.IsEmpty())
@@ -1815,6 +1865,10 @@ bool StyleEngine::SupportsDarkColorScheme() {
 void StyleEngine::UpdateColorScheme() {
   auto* settings = GetDocument().GetSettings();
   DCHECK(settings);
+
+  ForcedColors old_forced_colors = forced_colors_;
+  forced_colors_ = settings->GetForcedColors();
+
   PreferredColorScheme old_preferred_color_scheme = preferred_color_scheme_;
   preferred_color_scheme_ = settings->GetPreferredColorScheme();
   bool use_dark_scheme =
@@ -1825,7 +1879,9 @@ void StyleEngine::UpdateColorScheme() {
     // darkening is enabled.
     preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
   }
-  if (preferred_color_scheme_ != old_preferred_color_scheme)
+
+  if (forced_colors_ != old_forced_colors ||
+      preferred_color_scheme_ != old_preferred_color_scheme)
     PlatformColorsChanged();
   UpdateColorSchemeBackground();
 }
@@ -1850,7 +1906,8 @@ void StyleEngine::UpdateColorSchemeBackground() {
 
   bool use_dark_background = false;
 
-  if (preferred_color_scheme_ == PreferredColorScheme::kDark) {
+  if (preferred_color_scheme_ == PreferredColorScheme::kDark &&
+      forced_colors_ != ForcedColors::kActive) {
     const ComputedStyle* style = nullptr;
     if (auto* root_element = GetDocument().documentElement())
       style = root_element->GetComputedStyle();

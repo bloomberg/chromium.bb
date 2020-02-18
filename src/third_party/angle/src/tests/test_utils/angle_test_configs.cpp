@@ -365,12 +365,21 @@ EGLPlatformParameters OPENGLES_NULL()
                                  EGL_DONT_CARE, EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE);
 }
 
-EGLPlatformParameters OPENGL_OR_GLES(bool useNullDevice)
+EGLPlatformParameters OPENGL_OR_GLES()
 {
 #if defined(ANGLE_PLATFORM_ANDROID)
-    return useNullDevice ? OPENGLES_NULL() : OPENGLES();
+    return OPENGLES();
 #else
-    return useNullDevice ? OPENGL_NULL() : OPENGL();
+    return OPENGL();
+#endif
+}
+
+EGLPlatformParameters OPENGL_OR_GLES_NULL()
+{
+#if defined(ANGLE_PLATFORM_ANDROID)
+    return OPENGLES_NULL();
+#else
+    return OPENGL_NULL();
 #endif
 }
 
@@ -656,6 +665,16 @@ PlatformParameters ES3_VULKAN()
 PlatformParameters ES3_VULKAN_NULL()
 {
     return PlatformParameters(3, 0, egl_platform::VULKAN_NULL());
+}
+
+PlatformParameters ES31_VULKAN()
+{
+    return PlatformParameters(3, 1, egl_platform::VULKAN());
+}
+
+PlatformParameters ES31_VULKAN_NULL()
+{
+    return PlatformParameters(3, 1, egl_platform::VULKAN_NULL());
 }
 
 PlatformParameters ES2_WGL()

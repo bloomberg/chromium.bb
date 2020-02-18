@@ -16,11 +16,11 @@ class TextInputClient;
 
 namespace views {
 
-class BridgedNativeWidgetHostImpl;
+class NativeWidgetMacNSWindowHost;
 
 class VIEWS_EXPORT TextInputHost : public remote_cocoa::mojom::TextInputHost {
  public:
-  explicit TextInputHost(BridgedNativeWidgetHostImpl* host_impl);
+  explicit TextInputHost(NativeWidgetMacNSWindowHost* host_impl);
   ~TextInputHost() override;
   void BindRequest(remote_cocoa::mojom::TextInputHostAssociatedRequest request);
 
@@ -78,7 +78,7 @@ class VIEWS_EXPORT TextInputHost : public remote_cocoa::mojom::TextInputHost {
   // IME requests using the old |text_input_client_|.
   ui::TextInputClient* pending_text_input_client_ = nullptr;
 
-  BridgedNativeWidgetHostImpl* const host_impl_;
+  NativeWidgetMacNSWindowHost* const host_impl_;
 
   mojo::AssociatedBinding<remote_cocoa::mojom::TextInputHost> mojo_binding_;
   DISALLOW_COPY_AND_ASSIGN(TextInputHost);

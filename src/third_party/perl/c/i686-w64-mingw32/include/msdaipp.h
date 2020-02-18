@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
@@ -128,11 +128,11 @@ extern "C"{
 #define RESOURCE_ISROOT_MAXLENGTH sizeof(VARIANT_BOOL)
 
   const GUID DBPROPSET_MSDAIPP_INIT = {0x8f1033e3,0xb2cd,0x11d1,{0x9c,0x74,0x0,0x0,0xf8,0x75,0xac,0x61}};
-#define DBPROP_INIT_IGNORECACHEDDATA 2L
-#define DBPROP_INIT_CACHEAGGRESSIVELY 3L
-#define DBPROP_INIT_TREATASOFFLINE 4L
-#define DBPROP_INIT_MARKFOROFFLINE 5L
-#define DBPROP_INIT_PROTOCOLPROVIDER 6L
+#define DBPROP_INIT_IGNORECACHEDDATA __MSABI_LONG(2)
+#define DBPROP_INIT_CACHEAGGRESSIVELY __MSABI_LONG(3)
+#define DBPROP_INIT_TREATASOFFLINE __MSABI_LONG(4)
+#define DBPROP_INIT_MARKFOROFFLINE __MSABI_LONG(5)
+#define DBPROP_INIT_PROTOCOLPROVIDER __MSABI_LONG(6)
 
   enum MFO {
     MFO_DONTCHANGE = 0,MFO_MARK = 1,MFO_UNMARK = 2

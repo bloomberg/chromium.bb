@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//build_overrides/build.gni")
 import("//build_overrides/shaderc.gni")
 
 glslang_dir = shaderc_glslang_dir
@@ -52,6 +53,11 @@ source_set("shaderc_util_sources") {
     "${glslang_dir}:glslang_sources",
     "${spirv_tools_dir}:spvtools",
   ]
+
+  if (build_with_chromium) {
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+  }
 }
 
 config("shaderc_public") {
@@ -86,8 +92,10 @@ component("libshaderc") {
     "${glslang_dir}:glslang_sources",
   ]
 
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  if (build_with_chromium) {
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+  }
 }
 
 config("shaderc_spvc_public") {
@@ -125,6 +133,8 @@ component("libshaderc_spvc") {
     "${spirv_cross_dir}:spirv_cross_full_for_fuzzers",
   ]
 
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  if (build_with_chromium) {
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+  }
 }

@@ -106,7 +106,8 @@ EGLPlatformParameters OPENGLES();
 EGLPlatformParameters OPENGLES(EGLint major, EGLint minor);
 EGLPlatformParameters OPENGLES_NULL();
 
-EGLPlatformParameters OPENGL_OR_GLES(bool useNullDevice);
+EGLPlatformParameters OPENGL_OR_GLES();
+EGLPlatformParameters OPENGL_OR_GLES_NULL();
 
 EGLPlatformParameters VULKAN();
 EGLPlatformParameters VULKAN_NULL();
@@ -177,6 +178,8 @@ PlatformParameters ES2_VULKAN();
 PlatformParameters ES2_VULKAN_NULL();
 PlatformParameters ES3_VULKAN();
 PlatformParameters ES3_VULKAN_NULL();
+PlatformParameters ES31_VULKAN();
+PlatformParameters ES31_VULKAN_NULL();
 
 PlatformParameters ES2_WGL();
 PlatformParameters ES3_WGL();

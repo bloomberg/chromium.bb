@@ -146,6 +146,11 @@ void DisplayEGL::generateExtensions(egl::DisplayExtensions *outExtensions) const
     outExtensions->waitSync =
         eglVersion >= gl::Version(1, 5) || mEGL->hasExtension("EGL_KHR_wait_sync");
 
+    outExtensions->getNativeClientBufferANDROID =
+        mEGL->hasExtension("EGL_ANDROID_get_native_client_buffer");
+
+    outExtensions->nativeFenceSyncANDROID = mEGL->hasExtension("EGL_ANDROID_native_fence_sync");
+
     DisplayGL::generateExtensions(outExtensions);
 }
 

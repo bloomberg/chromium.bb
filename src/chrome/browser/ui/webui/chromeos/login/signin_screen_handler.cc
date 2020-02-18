@@ -59,7 +59,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -120,10 +119,14 @@ const size_t kMaxUsers = 18;
 
 // Timeout to delay first notification about offline state for a
 // current network.
-const int kOfflineTimeoutSec = 5;
+constexpr base::TimeDelta kOfflineTimeout = base::TimeDelta::FromSeconds(1);
+
+// Timeout to delay first notification about offline state when authenticating
+// to a proxy.
+constexpr base::TimeDelta kProxyAuthTimeout = base::TimeDelta::FromSeconds(5);
 
 // Timeout used to prevent infinite connecting to a flaky network.
-const int kConnectingTimeoutSec = 60;
+constexpr base::TimeDelta kConnectingTimeout = base::TimeDelta::FromSeconds(60);
 
 // Max number of Gaia Reload to Show Proxy Auth Dialog.
 const int kMaxGaiaReloadForProxyAuthDialog = 3;
@@ -618,9 +621,8 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
                    true));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, update_state_closure_.callback(),
-        is_offline_timeout_for_test_set_
-            ? offline_timeout_for_test_
-            : base::TimeDelta::FromSeconds(kOfflineTimeoutSec));
+        is_offline_timeout_for_test_set_ ? offline_timeout_for_test_
+                                         : kOfflineTimeout);
     return;
   }
 
@@ -634,8 +636,7 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
                      reason,
                      true));
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, connecting_closure_.callback(),
-          base::TimeDelta::FromSeconds(kConnectingTimeoutSec));
+          FROM_HERE, connecting_closure_.callback(), kConnectingTimeout);
     }
     return;
   }
@@ -981,7 +982,7 @@ void SigninScreenHandler::Observe(int type,
         ReenableNetworkStateUpdatesAfterProxyAuth();
       } else {
         // Gaia is not hidden behind an error yet. Discard last cached network
-        // state notification and wait for |kOfflineTimeoutSec| before
+        // state notification and wait for |kProxyAuthTimeout| before
         // considering network update notifications again (hoping the network
         // will become ONLINE by then).
         update_state_closure_.Cancel();
@@ -990,7 +991,7 @@ void SigninScreenHandler::Observe(int type,
             base::BindOnce(
                 &SigninScreenHandler::ReenableNetworkStateUpdatesAfterProxyAuth,
                 weak_factory_.GetWeakPtr()),
-            base::TimeDelta::FromSeconds(kOfflineTimeoutSec));
+            kProxyAuthTimeout);
       }
       break;
     }
@@ -1057,8 +1058,6 @@ void SigninScreenHandler::AuthenticateExistingUser(const AccountId& account_id,
     user_context = UserContext(*user);
   }
   user_context.SetKey(Key(password));
-  // Save the user's plaintext password for possible authentication to a
-  // network. See https://crbug.com/386606 for details.
   user_context.SetPasswordKey(Key(password));
   user_context.SetIsUsingPin(authenticated_by_pin);
   if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY) {
@@ -1306,7 +1305,10 @@ void SigninScreenHandler::HandleShowLoadingTimeoutError() {
 void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
                                          bool is_large_pod) {
   proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(account_id);
-  if (delegate_)
+  const bool is_same_pod_focused =
+      focused_pod_account_id_ && *focused_pod_account_id_ == account_id;
+
+  if (delegate_ && !is_same_pod_focused)
     delegate_->CheckUserStatus(account_id);
   if (!test_focus_pod_callback_.is_null())
     test_focus_pod_callback_.Run();
@@ -1318,21 +1320,26 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
   // |user| may be nullptr in kiosk mode or unit tests.
   if (user && user->is_logged_in() && !user->is_active()) {
     SessionControllerClientImpl::DoSwitchActiveUser(account_id);
-  } else {
-    lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
-                                          ime_state_.get());
-    lock_screen_utils::SetKeyboardSettings(account_id);
-    if (LoginDisplayHost::default_host() && is_large_pod)
-      LoginDisplayHost::default_host()->LoadWallpaper(account_id);
+    return;
+  }
 
-    bool use_24hour_clock = false;
-    if (user_manager::known_user::GetBooleanPref(
-            account_id, prefs::kUse24HourClock, &use_24hour_clock)) {
-      g_browser_process->platform_part()
-          ->GetSystemClock()
-          ->SetLastFocusedPodHourClockType(
-              use_24hour_clock ? base::k24HourClock : base::k12HourClock);
-    }
+  if (LoginDisplayHost::default_host() && is_large_pod)
+    LoginDisplayHost::default_host()->LoadWallpaper(account_id);
+
+  if (is_same_pod_focused)
+    return;
+
+  lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
+                                        ime_state_.get());
+  lock_screen_utils::SetKeyboardSettings(account_id);
+
+  bool use_24hour_clock = false;
+  if (user_manager::known_user::GetBooleanPref(
+          account_id, prefs::kUse24HourClock, &use_24hour_clock)) {
+    g_browser_process->platform_part()
+        ->GetSystemClock()
+        ->SetLastFocusedPodHourClockType(use_24hour_clock ? base::k24HourClock
+                                                          : base::k12HourClock);
   }
 }
 

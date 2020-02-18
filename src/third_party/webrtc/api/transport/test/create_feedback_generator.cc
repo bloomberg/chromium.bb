@@ -10,8 +10,7 @@
 #include "api/transport/test/create_feedback_generator.h"
 
 #include "absl/memory/memory.h"
-
-#include "test/scenario/network/feedback_generator.h"
+#include "test/network/feedback_generator.h"
 
 namespace webrtc {
 

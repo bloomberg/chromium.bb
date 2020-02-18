@@ -36,30 +36,37 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/execution_context_csp_delegate.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 
-ExecutionContext::ExecutionContext(v8::Isolate* isolate, Agent* agent)
+ExecutionContext::ExecutionContext(v8::Isolate* isolate,
+                                   Agent* agent,
+                                   OriginTrialContext* origin_trial_context)
     : isolate_(isolate),
       circular_sequential_id_(0),
       in_dispatch_error_event_(false),
       is_context_destroyed_(false),
       csp_delegate_(MakeGarbageCollected<ExecutionContextCSPDelegate>(*this)),
       agent_(agent),
+      origin_trial_context_(origin_trial_context),
       window_interaction_tokens_(0),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
-      invalidator_(std::make_unique<InterfaceInvalidator>()) {}
+      invalidator_(std::make_unique<InterfaceInvalidator>()) {
+  if (origin_trial_context_)
+    origin_trial_context_->BindExecutionContext(this);
+}
 
 ExecutionContext::~ExecutionContext() = default;
 
@@ -100,11 +107,6 @@ void ExecutionContext::NotifyContextDestroyed() {
   is_context_destroyed_ = true;
   invalidator_.reset();
   ContextLifecycleNotifier::NotifyContextDestroyed();
-}
-
-bool ExecutionContext::FeatureEnabled(OriginTrialFeature feature) const {
-  const OriginTrialContext* context = OriginTrialContext::From(this);
-  return context && context->IsFeatureEnabled(feature);
 }
 
 void ExecutionContext::AddConsoleMessageImpl(mojom::ConsoleMessageSource source,
@@ -266,6 +268,7 @@ void ExecutionContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_exceptions_);
   visitor->Trace(csp_delegate_);
   visitor->Trace(agent_);
+  visitor->Trace(origin_trial_context_);
   ContextLifecycleNotifier::Trace(visitor);
   ConsoleLogger::Trace(visitor);
   Supplementable<ExecutionContext>::Trace(visitor);
@@ -279,6 +282,31 @@ bool ExecutionContext::IsSameAgentCluster(
   if (this_id.is_empty() || other_id.is_empty())
     return false;
   return this_id == other_id;
+}
+
+v8::MicrotaskQueue* ExecutionContext::GetMicrotaskQueue() const {
+  // TODO(keishi): Convert to DCHECK once we assign agents everywhere.
+  if (!agent_)
+    return nullptr;
+  DCHECK(agent_->event_loop());
+  return agent_->event_loop()->microtask_queue();
+}
+
+bool ExecutionContext::FeatureEnabled(OriginTrialFeature feature) const {
+  return origin_trial_context_ &&
+         origin_trial_context_->IsFeatureEnabled(feature);
+}
+
+void ExecutionContext::CountFeaturePolicyUsage(mojom::WebFeature feature) {
+  UseCounter::Count(*this, feature);
+}
+
+bool ExecutionContext::FeaturePolicyFeatureObserved(
+    mojom::FeaturePolicyFeature feature) {
+  if (parsed_feature_policies_[static_cast<size_t>(feature)])
+    return true;
+  parsed_feature_policies_.set(static_cast<size_t>(feature));
+  return false;
 }
 
 bool ExecutionContext::RequireTrustedTypes() const {

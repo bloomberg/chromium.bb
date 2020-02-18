@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 namespace kerberos {
 class ListAccountsResponse;
@@ -51,8 +51,22 @@ class KerberosAccountsHandler : public ::settings::SettingsPageUIHandler,
   // WebUI "removeKerberosAccount" message callback.
   void HandleRemoveKerberosAccount(const base::ListValue* args);
 
+  // Callback for the credential manager's RemoveAccount method.
+  void OnRemoveAccount(const std::string& callback_id,
+                       kerberos::ErrorType error);
+
+  // WebUI "validateKerberosConfig" message callback.
+  void HandleValidateKerberosConfig(const base::ListValue* args);
+
+  // Callback for the credential manager's ValidateConfig method.
+  void OnValidateConfig(const std::string& callback_id,
+                        const kerberos::ValidateConfigResponse& response);
+
+  // WebUI "setAsActiveKerberosAccount" message callback.
+  void HandleSetAsActiveKerberosAccount(const base::ListValue* args);
+
   // Callback for the credential manager's ListAccounts method.
-  void OnListAccounts(base::Value callback_id,
+  void OnListAccounts(const std::string& callback_id,
                       const kerberos::ListAccountsResponse& response);
 
   // Fires the "kerberos-accounts-changed" event, which refreshes the Kerberos

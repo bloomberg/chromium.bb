@@ -6,17 +6,16 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace {
-// Action button blue background color.
-const CGFloat kBlueHexColor = 0x1A73E8;
-// Default Button title Color.
-const CGFloat kDefaultButtonTitleColor = 0xFFFFFF;
 // Alpha value for the disabled action button.
 const CGFloat kDisabledButtonAlpha = 0.5;
 // Vertical spacing between stackView and cell contentView.
@@ -62,20 +61,46 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
   [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
 
   cell.textLabel.text = self.text;
+  // Decide cell.textLabel.textColor in order:
+  //   1. styler.cellTitleColor
+  //   2. UIColor.cr_secondaryLabelColor
+  if (styler.cellTitleColor) {
+    cell.textLabel.textColor = styler.cellTitleColor;
+  } else {
+    cell.textLabel.textColor = UIColor.cr_secondaryLabelColor;
+  }
   [cell enableItemSpacing:[self.text length]];
   [cell disableButtonIntrinsicWidth:self.disableButtonIntrinsicWidth];
   cell.textLabel.textAlignment = self.textAlignment;
 
   [cell.button setTitle:self.buttonText forState:UIControlStateNormal];
   [cell disableButtonIntrinsicWidth:self.disableButtonIntrinsicWidth];
+  // Decide cell.button titleColor in order:
+  //   1. self.buttonTextColor;
+  //   2. styler.solidButtonTextColor
+  //   3. [UIColor colorNamed:kSolidButtonTextColor]
   if (self.buttonTextColor) {
     [cell.button setTitleColor:self.buttonTextColor
                       forState:UIControlStateNormal];
+  } else if (styler.solidButtonTextColor) {
+    [cell.button setTitleColor:styler.solidButtonTextColor
+                      forState:UIControlStateNormal];
+  } else {
+    [cell.button setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
+                      forState:UIControlStateNormal];
   }
   cell.button.accessibilityIdentifier = self.buttonAccessibilityIdentifier;
-  cell.button.backgroundColor = self.buttonBackgroundColor
-                                    ? self.buttonBackgroundColor
-                                    : UIColorFromRGB(kBlueHexColor);
+  // Decide cell.button.backgroundColor in order:
+  //   1. self.buttonBackgroundColor
+  //   2. styler.tintColor
+  //   3. [UIColor colorNamed:kBlueColor]
+  if (self.buttonBackgroundColor) {
+    cell.button.backgroundColor = self.buttonBackgroundColor;
+  } else if (styler.tintColor) {
+    cell.button.backgroundColor = styler.tintColor;
+  } else {
+    cell.button.backgroundColor = [UIColor colorNamed:kTintColor];
+  }
   cell.button.enabled = self.enabled;
   if (!self.enabled) {
     cell.button.backgroundColor = [cell.button.backgroundColor
@@ -111,13 +136,10 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
     self.textLabel.textAlignment = NSTextAlignmentCenter;
     self.textLabel.font =
         [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
-    self.textLabel.textColor =
-        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+    self.textLabel.textColor = UIColor.cr_secondaryLabelColor;
 
     // Create button.
     self.button = [UIButton buttonWithType:UIButtonTypeSystem];
-    [self.button setTitleColor:UIColorFromRGB(kDefaultButtonTitleColor)
-                      forState:UIControlStateNormal];
     self.button.translatesAutoresizingMaskIntoConstraints = NO;
     [self.button.titleLabel
         setFont:[UIFont boldSystemFontOfSize:kButtonTitleFontSize]];
@@ -182,7 +204,7 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  [self.button setTitleColor:UIColorFromRGB(kDefaultButtonTitleColor)
+  [self.button setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
                     forState:UIControlStateNormal];
   self.textLabel.textAlignment = kDefaultTextAlignment;
   [self disableButtonIntrinsicWidth:NO];

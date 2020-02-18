@@ -1,10 +1,11 @@
-package Moose::Manual::Attributes;
-
+# PODNAME: Moose::Manual::Attributes
 # ABSTRACT: Object attributes with Moose
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Manual::Attributes - Object attributes with Moose
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 INTRODUCTION
 
@@ -52,7 +53,9 @@ The options passed to C<has> define the properties of the attribute. There are
 many options, but in the simplest form you just need to set C<is>, which can
 be either C<ro> (read-only) or C<rw> (read-write). When an attribute is C<rw>,
 you can change it by passing a value to its accessor. When an attribute is
-C<ro>, you may only read the current value of the attribute.
+C<ro>, you may only read the current value of the attribute through its
+accessor. You can, however, set the attribute when creating the object by
+passing it to the constructor.
 
 In fact, you could even omit C<is>, but that gives you an attribute
 that has no accessor. This can be useful with other attribute options,
@@ -177,8 +180,8 @@ There are a couple caveats worth mentioning in regards to what
 "required" actually means.
 
 Basically, all it says is that this attribute (C<name>) must be provided to
-the constructor, or be lazy with either a default or a builder. It does not
-say anything about its value, so it could be C<undef>.
+the constructor or it must have either a default or a builder. It does not say
+anything about its value, so it could be C<undef>.
 
 If you define a clearer method on a required attribute, the clearer
 I<will> work, so even a required attribute can be unset after object
@@ -358,6 +361,13 @@ some CPU time.
 We recommend that you make any attribute with a builder or non-trivial
 default C<lazy> as a matter of course.
 
+=head3 Lazy defaults and C<$_>
+
+Please note that a lazy default or builder can be called anywhere, even inside
+a C<map> or C<grep>. This means that if your default sub or builder changes
+C<$_>, something weird could happen. You can prevent this by adding C<local
+$_> inside your default or builder.
+
 =head2 Constructor parameters (C<init_arg>)
 
 By default, each attribute can be passed by name to the class's
@@ -404,7 +414,7 @@ C<Scalar::Util::weaken> whenever the attribute is set:
 This is very useful when you're building objects that may contain
 circular references.
 
-When the object in a weak references goes out of scope, the attribute's value
+When the object in a weak reference goes out of scope, the attribute's value
 will become C<undef> "behind the scenes". This is done by the Perl interpreter
 directly, so Moose does not see this change. This means that triggers don't
 fire, coercions aren't applied, etc.
@@ -547,8 +557,8 @@ as-is. However, you can change most aspects of the inherited attribute in the
 child class. You cannot change any of its associated method names (reader,
 writer, predicate, etc).
 
-To override an attribute, you simply prepend its name with a plus sign
-(C<+>):
+To change some aspects of an attribute, you simply prepend a plus sign (C<+>)
+to its name:
 
   package LazyPerson;
 
@@ -566,6 +576,16 @@ to C<'Bill'>.
 
 We recommend that you exercise caution when changing the type (C<isa>)
 of an inherited attribute.
+
+=head2 Attribute Inheritance and Method Modifiers
+
+When an inherited attribute is defined, that creates an entirely new set of
+accessors for the attribute (reader, writer, predicate, etc.). This is
+necessary because these may be what was changed when inheriting the attribute.
+
+As a consequence, any method modifiers defined on the attribute's accessors in
+an ancestor class will effectively be ignored, because the new accessors live
+in the child class and do not see the modifiers from the parent class.
 
 =head1 MULTIPLE ATTRIBUTE SHORTCUTS
 
@@ -614,12 +634,13 @@ it.
 
 If your attribute is an array reference or hash reference, the
 C<auto_deref> option will make Moose dereference the value when it is
-returned from the reader method:
+returned from the reader method I<in list context>:
 
   my %map = $object->mapping;
 
 This option only works if your attribute is explicitly typed as an
-C<ArrayRef> or C<HashRef>.
+C<ArrayRef> or C<HashRef>.  When the reader is called in I<scalar> context,
+the reference itself is returned.
 
 However, we recommend that you use L<Moose::Meta::Attribute::Native> traits
 for these types of attributes, which gives you much more control over how
@@ -632,19 +653,57 @@ Moose provides an attribute option called C<initializer>. This is called when
 the attribute's value is being set in the constructor, and lets you change the
 value before it is set.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

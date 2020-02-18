@@ -33,6 +33,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -56,7 +57,6 @@
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
@@ -102,11 +102,11 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/slow_download_http_response.h"
@@ -121,6 +121,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -146,6 +147,10 @@ using download::DownloadUrlParameters;
 using extensions::Extension;
 using net::URLRequestMockHTTPJob;
 using net::test_server::EmbeddedTestServer;
+
+// TODO(crbug.com/971199): tests should be fixed to use base::RunLoop::Run()
+// and base::RunLoop::Quit() instead of content::RunMessageLoop() and the
+// deprecated base::RunLoop::QuitCurrentWhenIdleDeprecated().
 
 namespace {
 
@@ -207,15 +212,14 @@ class CreatedObserver : public content::DownloadManager::Observer {
 
 class OnCanDownloadDecidedObserver {
  public:
-  OnCanDownloadDecidedObserver()
-      : on_decided_called_(false), last_allow_(false) {}
+  OnCanDownloadDecidedObserver() = default;
 
-  void Wait(bool expectation) {
-    if (on_decided_called_) {
-      EXPECT_EQ(last_allow_, expectation);
-      on_decided_called_ = false;
+  void Wait(const std::vector<bool>& expected_decisions) {
+    if (expected_decisions.size() <= decisions_.size()) {
+      EXPECT_TRUE(std::equal(expected_decisions.begin(),
+                             expected_decisions.end(), decisions_.begin()));
     } else {
-      expectation_ = expectation;
+      expected_decisions_ = expected_decisions;
       base::RunLoop run_loop;
       completion_closure_ = run_loop.QuitClosure();
       run_loop.Run();
@@ -223,22 +227,24 @@ class OnCanDownloadDecidedObserver {
   }
 
   void OnCanDownloadDecided(bool allow) {
-    // It is possible this is called before Wait(), so the result needs to
-    // be stored in that case.
-    if (!completion_closure_.is_null()) {
+    decisions_.push_back(allow);
+    if (decisions_.size() == expected_decisions_.size()) {
+      DCHECK(!completion_closure_.is_null());
+      EXPECT_EQ(decisions_, expected_decisions_);
       std::move(completion_closure_).Run();
-      EXPECT_EQ(allow, expectation_);
-    } else {
-      on_decided_called_ = true;
-      last_allow_ = allow;
     }
   }
 
+  void Reset() {
+    decisions_.clear();
+    expected_decisions_.clear();
+    completion_closure_.Reset();
+  }
+
  private:
-  bool expectation_;
+  std::vector<bool> decisions_;
+  std::vector<bool> expected_decisions_;
   base::Closure completion_closure_;
-  bool on_decided_called_;
-  bool last_allow_;
 
   DISALLOW_COPY_AND_ASSIGN(OnCanDownloadDecidedObserver);
 };
@@ -338,35 +344,24 @@ const char kUserScriptPath[] = "extensions/user_script_basic.user.js";
 class DownloadsHistoryDataCollector {
  public:
   explicit DownloadsHistoryDataCollector(Profile* profile)
-      : profile_(profile), result_valid_(false) {}
+      : profile_(profile) {}
 
-  bool WaitForDownloadInfo(
-      std::unique_ptr<std::vector<history::DownloadRow>>* results) {
-    history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
-        profile_, ServiceAccessType::EXPLICIT_ACCESS);
-    DCHECK(hs);
-    hs->QueryDownloads(
-        base::Bind(&DownloadsHistoryDataCollector::OnQueryDownloadsComplete,
-                   base::Unretained(this)));
+  bool WaitForDownloadInfo(std::vector<history::DownloadRow>* results) {
+    EXPECT_TRUE(results);
+    HistoryServiceFactory::GetForProfile(profile_,
+                                         ServiceAccessType::EXPLICIT_ACCESS)
+        ->QueryDownloads(base::BindLambdaForTesting(
+            [&](std::vector<history::DownloadRow> rows) {
+              *results = std::move(rows);
+              base::RunLoop::QuitCurrentWhenIdleDeprecated();
+            }));
 
     content::RunMessageLoop();
-    if (result_valid_) {
-      *results = std::move(results_);
-    }
-    return result_valid_;
+    return true;
   }
 
  private:
-  void OnQueryDownloadsComplete(
-      std::unique_ptr<std::vector<history::DownloadRow>> entries) {
-    result_valid_ = true;
-    results_ = std::move(entries);
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  }
-
   Profile* profile_;
-  std::unique_ptr<std::vector<history::DownloadRow>> results_;
-  bool result_valid_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsHistoryDataCollector);
 };
@@ -489,9 +484,6 @@ class DownloadTest : public InProcessBrowserTest {
   DownloadTest() {}
 
   void SetUpOnMainThread() override {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
     ASSERT_TRUE(InitialSetup());
     host_resolver()->AddRule("www.a.com", "127.0.0.1");
     host_resolver()->AddRule("foo.com", "127.0.0.1");
@@ -991,6 +983,7 @@ class DownloadTest : public InProcessBrowserTest {
         base::FilePath my_downloaded_file = item->GetTargetFilePath();
         EXPECT_TRUE(base::PathExists(my_downloaded_file));
         EXPECT_TRUE(base::DeleteFile(my_downloaded_file, false));
+        item->Remove();
 
         EXPECT_EQ(download_info.should_redirect_to_documents ?
                       std::string::npos :
@@ -1207,9 +1200,7 @@ class DownloadWakeLockTest : public DownloadTest {
   DownloadWakeLockTest() = default;
 
   void Initialize() {
-    auto* connection = content::ServiceManagerConnection::GetForProcess();
-    auto* connector = connection->GetConnector();
-    connector_ = connector->Clone();
+    connector_ = content::GetSystemConnector()->Clone();
     connector_->BindInterface(device::mojom::kServiceName,
                               &wake_lock_provider_);
   }
@@ -1450,11 +1441,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
       browser()->tab_strip_model()->GetActiveWebContents();
   DownloadRequestLimiter::TabDownloadState* tab_download_state =
       g_browser_process->download_request_limiter()->GetDownloadState(
-          web_contents, web_contents, true);
+          web_contents, true);
   ASSERT_TRUE(tab_download_state);
   tab_download_state->set_download_seen();
   tab_download_state->SetDownloadStatusAndNotify(
-      DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
+      same_site_url.GetOrigin(), DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
 
   // Try to start the download via Javascript and wait for the corresponding
   // load stop event.
@@ -1483,7 +1474,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
 }
 
 // Test to make sure 'download' attribute in anchor tag doesn't trigger a
-// downloadd if DownloadRequestLimiter disallows it.
+// download if DownloadRequestLimiter disallows it.
 IN_PROC_BROWSER_TEST_F(DownloadTest,
                        DownloadRequestLimiterDisallowsAnchorDownloadTag) {
   OnCanDownloadDecidedObserver can_download_observer;
@@ -1503,31 +1494,32 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   DownloadRequestLimiter::TabDownloadState* tab_download_state =
       g_browser_process->download_request_limiter()->GetDownloadState(
-          web_contents, web_contents, true);
+          web_contents, true);
   ASSERT_TRUE(tab_download_state);
   // Let the first download to fail.
   tab_download_state->set_download_seen();
   tab_download_state->SetDownloadStatusAndNotify(
-      DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
+      url.GetOrigin(), DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
   bool download_attempted;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(startDownload1());",
       &download_attempted));
   ASSERT_TRUE(download_attempted);
-  can_download_observer.Wait(false);
+  can_download_observer.Wait({false});
+  can_download_observer.Reset();
 
   // Let the 2nd download to succeed.
   std::unique_ptr<content::DownloadTestObserver> observer(
       CreateWaiter(browser(), 1));
   tab_download_state->SetDownloadStatusAndNotify(
-      DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS);
+      url.GetOrigin(), DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS);
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(startDownload2());",
       &download_attempted));
   ASSERT_TRUE(download_attempted);
-  can_download_observer.Wait(true);
+  can_download_observer.Wait({true});
   // Waits for the 2nd download to complete.
   observer->WaitForFinished();
 
@@ -1602,22 +1594,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
   // We should still have 2 windows.
   ExpectWindowCountAfterDownload(2);
 
-#if !defined(OS_MACOSX)
-  // On Mac OS X, the UI window close is delayed until the outermost
-  // message loop runs.  So it isn't possible to get a BROWSER_CLOSED
-  // notification inside of a test.
-  content::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::Source<Browser>(incognito));
-#endif
-
   // Close the Incognito window and don't crash.
   chrome::CloseWindow(incognito);
 
-#if !defined(OS_MACOSX)
-  signal.Wait();
+  ui_test_utils::WaitForBrowserToClose(incognito);
   ExpectWindowCountAfterDownload(1);
-#endif
 
   base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   CheckDownload(browser(), file, file);
@@ -2004,14 +1985,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadHistoryCheck) {
   // Get what was stored in the history.
   observer.WaitForStored();
   // Get the details on what was stored into the history.
-  std::unique_ptr<std::vector<history::DownloadRow>> downloads_in_database;
+  std::vector<history::DownloadRow> downloads_in_database;
   ASSERT_TRUE(DownloadsHistoryDataCollector(
       browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
-  ASSERT_EQ(1u, downloads_in_database->size());
+  ASSERT_EQ(1u, downloads_in_database.size());
 
   // Confirm history storage is what you expect for an interrupted slow download
   // job. The download isn't continuable, so there's no intermediate file.
-  history::DownloadRow& row1(downloads_in_database->at(0));
+  history::DownloadRow& row1(downloads_in_database[0]);
   EXPECT_EQ(DestinationFile(browser(), file), row1.target_path);
   EXPECT_TRUE(row1.current_path.empty());
   ASSERT_EQ(2u, row1.url_chain.size());
@@ -2069,11 +2050,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
 
   // Get history details and confirm it's what you expect.
   observer.WaitForStored();
-  std::unique_ptr<std::vector<history::DownloadRow>> downloads_in_database;
+  std::vector<history::DownloadRow> downloads_in_database;
   ASSERT_TRUE(DownloadsHistoryDataCollector(
       browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
-  ASSERT_EQ(1u, downloads_in_database->size());
-  history::DownloadRow& row1(downloads_in_database->at(0));
+  ASSERT_EQ(1u, downloads_in_database.size());
+  history::DownloadRow& row1(downloads_in_database[0]);
   base::FilePath file(FILE_PATH_LITERAL("downloads/dangerous/dangerous.swf"));
   EXPECT_EQ(DestinationFile(browser(), file), row1.target_path);
   EXPECT_EQ(DestinationFile(browser(), file), row1.current_path);
@@ -3256,6 +3237,52 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsRequests) {
   browser()->tab_strip_model()->GetActiveWebContents()->Close();
 }
 
+// Test the scenario for 3 consecutive <a download> download attempts that all
+// trigger a x-origin redirect to another download. No download is expected to
+// happen.
+IN_PROC_BROWSER_TEST_F(
+    DownloadTest,
+    MultipleAnchorDownloadsRequestsCrossOriginRedirectToAnotherDownload) {
+  std::unique_ptr<content::DownloadTestObserver> downloads_observer(
+      CreateWaiter(browser(), 0u));
+
+  OnCanDownloadDecidedObserver can_download_observer;
+  g_browser_process->download_request_limiter()
+      ->SetOnCanDownloadDecidedCallbackForTesting(base::BindRepeating(
+          &OnCanDownloadDecidedObserver::OnCanDownloadDecided,
+          base::Unretained(&can_download_observer)));
+
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "/downloads/multiple_a_download_x_origin_redirect_to_download.html");
+
+  base::StringPairs port_replacement;
+  port_replacement.push_back(std::make_pair(
+      "{{PORT}}", base::NumberToString(embedded_test_server()->port())));
+  std::string download_url = net::test_server::GetFilePathWithReplacements(
+      "redirect_x_origin_download.html", port_replacement);
+
+  url = GURL(url.spec() + "?download_url=" + download_url);
+
+  // Navigate to a page that triggers 3 consecutive <a download> download
+  // attempts that all trigger a x-origin redirect to another download.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
+
+  // The 1st <a download> attempt should pass the download limiter check,
+  // and prevent further download attempts from passing. The subsequent 2nd/3rd
+  // <a download> attempts as well as the |download as a result of the x-origin
+  // redirect from the 1st download attempt| should all fail the download
+  // limiter check.
+  can_download_observer.Wait({true, false, false, false});
+
+  // Only the 1st <a download> attempt passed the download limiter check, but it
+  // was still aborted by a x-origin redirect, therefore we expect no download
+  // to happen.
+  EXPECT_EQ(
+      0u, downloads_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+}
+
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -4200,10 +4227,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   GURL url =
       embedded_test_server()->GetURL("/" + std::string(kDownloadTest1Path));
 
-#if !defined(OS_MACOSX)
-  // See below.
-  Browser* first_browser = browser();
-#endif
+  const Browser* first_browser = browser();
 
   // Download a file in a new window and wait.
   DownloadAndWaitWithDisposition(browser(), url,
@@ -4227,23 +4251,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   EXPECT_EQ(1, download_browser->tab_strip_model()->count());
   EXPECT_TRUE(download_browser->window()->IsDownloadShelfVisible());
 
-#if !defined(OS_MACOSX)
-  // On Mac OS X, the UI window close is delayed until the outermost
-  // message loop runs.  So it isn't possible to get a BROWSER_CLOSED
-  // notification inside of a test.
-  content::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::Source<Browser>(download_browser));
-#endif
-
   // Close the new window.
   chrome::CloseWindow(download_browser);
 
-#if !defined(OS_MACOSX)
-  signal.Wait();
+  ui_test_utils::WaitForBrowserToClose(download_browser);
   EXPECT_EQ(first_browser, browser());
   ExpectWindowCountAfterDownload(1);
-#endif
 
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   // Download shelf should close.

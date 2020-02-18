@@ -54,8 +54,7 @@ MojoRendererService::MojoRendererService(
     : mojo_cdm_service_context_(mojo_cdm_service_context),
       state_(STATE_UNINITIALIZED),
       playback_rate_(0),
-      renderer_(std::move(renderer)),
-      weak_factory_(this) {
+      renderer_(std::move(renderer)) {
   DVLOG(1) << __func__;
   DCHECK(renderer_);
 
@@ -67,9 +66,7 @@ MojoRendererService::~MojoRendererService() = default;
 void MojoRendererService::Initialize(
     mojom::RendererClientAssociatedPtrInfo client,
     base::Optional<std::vector<mojom::DemuxerStreamPtrInfo>> streams,
-    const base::Optional<GURL>& media_url,
-    const base::Optional<GURL>& site_for_cookies,
-    bool allow_credentials,
+    mojom::MediaUrlParamsPtr media_url_params,
     InitializeCallback callback) {
   DVLOG(1) << __func__;
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
@@ -77,7 +74,7 @@ void MojoRendererService::Initialize(
   client_.Bind(std::move(client));
   state_ = STATE_INITIALIZING;
 
-  if (media_url == base::nullopt) {
+  if (!media_url_params) {
     DCHECK(streams.has_value());
     media_resource_.reset(new MediaResourceShim(
         std::move(*streams), base::Bind(&MojoRendererService::OnStreamReady,
@@ -85,10 +82,11 @@ void MojoRendererService::Initialize(
     return;
   }
 
-  DCHECK(!media_url.value().is_empty());
-  DCHECK(site_for_cookies);
+  DCHECK(!media_url_params->media_url.is_empty());
+  DCHECK(!media_url_params->site_for_cookies.is_empty());
   media_resource_.reset(new MediaUrlDemuxer(
-      nullptr, media_url.value(), site_for_cookies.value(), allow_credentials));
+      nullptr, media_url_params->media_url, media_url_params->site_for_cookies,
+      media_url_params->allow_credentials, media_url_params->is_hls));
   renderer_->Initialize(
       media_resource_.get(), this,
       base::Bind(&MojoRendererService::OnRendererInitializeDone, weak_this_,
@@ -129,13 +127,16 @@ void MojoRendererService::SetCdm(int32_t cdm_id, SetCdmCallback callback) {
     return;
   }
 
-  cdm_context_ref_ = mojo_cdm_service_context_->GetCdmContextRef(cdm_id);
-  if (!cdm_context_ref_) {
+  auto cdm_context_ref = mojo_cdm_service_context_->GetCdmContextRef(cdm_id);
+  if (!cdm_context_ref) {
     DVLOG(1) << "CdmContextRef not found for CDM ID: " << cdm_id;
     std::move(callback).Run(false);
     return;
   }
 
+  // |cdm_context_ref_| must be kept as long as |cdm_context| is used by the
+  // |renderer_|.
+  cdm_context_ref_ = std::move(cdm_context_ref);
   auto* cdm_context = cdm_context_ref_->GetCdmContext();
   DCHECK(cdm_context);
 
@@ -161,9 +162,11 @@ void MojoRendererService::OnStatisticsUpdate(const PipelineStatistics& stats) {
   client_->OnStatisticsUpdate(stats);
 }
 
-void MojoRendererService::OnBufferingStateChange(BufferingState state) {
-  DVLOG(2) << __func__ << "(" << state << ")";
-  client_->OnBufferingStateChange(state);
+void MojoRendererService::OnBufferingStateChange(
+    BufferingState state,
+    BufferingStateChangeReason reason) {
+  DVLOG(2) << __func__ << "(" << state << ", " << reason << ")";
+  client_->OnBufferingStateChange(state, reason);
 }
 
 void MojoRendererService::OnWaiting(WaitingReason reason) {
@@ -186,10 +189,6 @@ void MojoRendererService::OnVideoConfigChange(
 void MojoRendererService::OnVideoNaturalSizeChange(const gfx::Size& size) {
   DVLOG(2) << __func__ << "(" << size.ToString() << ")";
   client_->OnVideoNaturalSizeChange(size);
-}
-
-void MojoRendererService::OnRemotePlayStateChange(MediaStatus::State state) {
-  // TODO(https://crbug.com/956677, tguilbert): Remove this function.
 }
 
 void MojoRendererService::OnVideoOpacityChange(bool opaque) {

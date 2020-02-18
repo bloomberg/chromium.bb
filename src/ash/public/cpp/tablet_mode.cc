@@ -26,4 +26,29 @@ TabletMode::~TabletMode() {
   g_instance = nullptr;
 }
 
+TabletMode::Waiter::Waiter(bool enable) : enable_(enable) {
+  if (TabletMode::Get()->InTabletMode() == enable_)
+    run_loop_.Quit();
+  else
+    TabletMode::Get()->AddObserver(this);
+}
+
+TabletMode::Waiter::~Waiter() {
+  TabletMode::Get()->RemoveObserver(this);
+}
+
+void TabletMode::Waiter::Wait() {
+  run_loop_.Run();
+}
+
+void TabletMode::Waiter::OnTabletModeStarted() {
+  if (enable_)
+    run_loop_.QuitWhenIdle();
+}
+
+void TabletMode::Waiter::OnTabletModeEnded() {
+  if (!enable_)
+    run_loop_.QuitWhenIdle();
+}
+
 }  // namespace ash

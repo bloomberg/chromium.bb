@@ -103,7 +103,7 @@ void WebUIGraphDumpImpl::FaviconRequestHelper::FaviconDataAvailable(
 }
 
 WebUIGraphDumpImpl::WebUIGraphDumpImpl(GraphImpl* graph)
-    : graph_(graph), binding_(this), weak_factory_(this) {
+    : graph_(graph), binding_(this) {
   DCHECK(graph);
 }
 
@@ -147,11 +147,11 @@ void WebUIGraphDumpImpl::SubscribeToChanges(
   change_subscriber_ = std::move(change_subscriber);
 
   // Send creation notifications for all existing nodes and subscribe to them.
-  for (ProcessNodeImpl* process_node : graph_->GetAllProcessNodes()) {
+  for (ProcessNodeImpl* process_node : graph_->GetAllProcessNodeImpls()) {
     SendProcessNotification(process_node, true);
     process_node->AddObserver(this);
   }
-  for (PageNodeImpl* page_node : graph_->GetAllPageNodes()) {
+  for (PageNodeImpl* page_node : graph_->GetAllPageNodeImpls()) {
     SendPageNotification(page_node, true);
     StartPageFaviconRequest(page_node);
     page_node->AddObserver(this);
@@ -220,6 +220,10 @@ void WebUIGraphDumpImpl::OnURLChanged(FrameNodeImpl* frame_node) {
 }
 
 void WebUIGraphDumpImpl::OnIsVisibleChanged(PageNodeImpl* page_node) {
+  SendPageNotification(page_node, false);
+}
+
+void WebUIGraphDumpImpl::OnIsAudibleChanged(PageNodeImpl* page_node) {
   SendPageNotification(page_node, false);
 }
 

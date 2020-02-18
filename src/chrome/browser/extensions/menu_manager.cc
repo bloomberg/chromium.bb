@@ -357,12 +357,12 @@ bool MenuManager::AddContextItem(const Extension* extension,
   const MenuItem::ExtensionKey& key = item->id().extension_key;
 
   // The item must have a non-empty key, and not have already been added.
-  if (key.empty() || base::ContainsKey(items_by_id_, item->id()))
+  if (key.empty() || base::Contains(items_by_id_, item->id()))
     return false;
 
   DCHECK_EQ(extension->id(), key.extension_id);
 
-  bool first_item = !base::ContainsKey(context_items_, key);
+  bool first_item = !base::Contains(context_items_, key);
   context_items_[key].push_back(std::move(item));
   items_by_id_[item_ptr->id()] = item_ptr;
 
@@ -386,7 +386,7 @@ bool MenuManager::AddChildItem(const MenuItem::Id& parent_id,
   if (!parent || parent->type() != MenuItem::NORMAL ||
       parent->incognito() != child->incognito() ||
       parent->extension_id() != child->extension_id() ||
-      base::ContainsKey(items_by_id_, child->id()))
+      base::Contains(items_by_id_, child->id()))
     return false;
   MenuItem* child_ptr = child.get();
   parent->AddChild(std::move(child));
@@ -474,7 +474,7 @@ bool MenuManager::ChangeParent(const MenuItem::Id& child_id,
 }
 
 bool MenuManager::RemoveContextMenuItem(const MenuItem::Id& id) {
-  if (!base::ContainsKey(items_by_id_, id))
+  if (!base::Contains(items_by_id_, id))
     return false;
 
   MenuItem* menu_item = GetItemById(id);
@@ -793,7 +793,7 @@ void MenuManager::SanitizeRadioListsInMenu(
 }
 
 bool MenuManager::ItemUpdated(const MenuItem::Id& id) {
-  if (!base::ContainsKey(items_by_id_, id))
+  if (!base::Contains(items_by_id_, id))
     return false;
 
   MenuItem* menu_item = GetItemById(id);
@@ -879,7 +879,7 @@ void MenuManager::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       const Extension* extension,
                                       UnloadedExtensionReason reason) {
   MenuItem::ExtensionKey extension_key(extension->id());
-  if (base::ContainsKey(context_items_, extension_key)) {
+  if (base::Contains(context_items_, extension_key)) {
     RemoveAllContextItems(extension_key);
   }
 }

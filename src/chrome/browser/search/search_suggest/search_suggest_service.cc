@@ -15,7 +15,8 @@
 #include "chrome/browser/search/search_suggest/search_suggest_loader.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace {
@@ -55,11 +56,11 @@ base::Value ImpressionDictDefaults() {
 }  // namespace
 
 class SearchSuggestService::SigninObserver
-    : public identity::IdentityManager::Observer {
+    : public signin::IdentityManager::Observer {
  public:
   using SigninStatusChangedCallback = base::RepeatingClosure;
 
-  SigninObserver(identity::IdentityManager* identity_manager,
+  SigninObserver(signin::IdentityManager* identity_manager,
                  const SigninStatusChangedCallback& callback)
       : identity_manager_(identity_manager), callback_(callback) {
     if (identity_manager_)
@@ -79,19 +80,19 @@ class SearchSuggestService::SigninObserver
  private:
   // IdentityManager::Observer implementation.
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override {
     callback_.Run();
   }
 
   // May be nullptr in tests.
-  identity::IdentityManager* const identity_manager_;
+  signin::IdentityManager* const identity_manager_;
   SigninStatusChangedCallback callback_;
 };
 
 SearchSuggestService::SearchSuggestService(
     Profile* profile,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     std::unique_ptr<SearchSuggestLoader> loader)
     : loader_(std::move(loader)),
       signin_observer_(std::make_unique<SigninObserver>(

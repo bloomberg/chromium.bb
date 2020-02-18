@@ -101,7 +101,7 @@ net::URLRequestContextGetter* TestBrowserContext::GetRequestContext() {
   return request_context_.get();
 }
 
-base::FilePath TestBrowserContext::GetPath() const {
+base::FilePath TestBrowserContext::GetPath() {
   return browser_context_dir_.GetPath();
 }
 
@@ -112,7 +112,7 @@ std::unique_ptr<ZoomLevelDelegate> TestBrowserContext::CreateZoomLevelDelegate(
 }
 #endif  // !defined(OS_ANDROID)
 
-bool TestBrowserContext::IsOffTheRecord() const {
+bool TestBrowserContext::IsOffTheRecord() {
   return is_off_the_record_;
 }
 
@@ -179,26 +179,7 @@ net::URLRequestContextGetter* TestBrowserContext::CreateRequestContext(
   return GetRequestContext();
 }
 
-net::URLRequestContextGetter*
-TestBrowserContext::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors) {
-  request_interceptors_ = std::move(request_interceptors);
-  // Simply returns the same RequestContext since no tests is relying on the
-  // expected behavior.
-  return GetRequestContext();
-}
-
 net::URLRequestContextGetter* TestBrowserContext::CreateMediaRequestContext() {
-  return nullptr;
-}
-
-net::URLRequestContextGetter*
-TestBrowserContext::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
   return nullptr;
 }
 

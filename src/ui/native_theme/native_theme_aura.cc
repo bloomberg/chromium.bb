@@ -57,6 +57,38 @@ const SkColor kCheckboxAndRadioStrokeColor = SkColorSetRGB(0x73, 0x73, 0x73);
 const SkColor kCheckboxAndRadioStrokeDisabledColor =
     SkColorSetRGB(0xC5, 0xC5, 0xC5);
 
+const int kInputBorderRadius = 2;
+const int kInputBorderWidth = 1;
+const SkColor kInputBorderColor = SkColorSetRGB(0xCE, 0xCE, 0xCE);
+const SkColor kInputBorderHoveredColor = SkColorSetRGB(0x9D, 0x9D, 0x9D);
+const SkColor kInputBorderDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
+
+const SkScalar kButtonBorderRadius = 2.f;
+const SkScalar kButtonBorderWidth = 1.f;
+const SkColor kButtonBackgroundColor = SkColorSetRGB(0xEF, 0xEF, 0xEF);
+const SkColor kButtonBackgroundHoveredColor = SkColorSetRGB(0xF3, 0xF3, 0xF3);
+const SkColor kButtonBackgroundDisabledColor = SkColorSetRGB(0xEF, 0xEF, 0xEF);
+const SkColor kButtonBorderColor = SkColorSetRGB(0xCE, 0xCE, 0xCE);
+const SkColor kButtonBorderHoveredColor = SkColorSetRGB(0x9D, 0x9D, 0x9D);
+const SkColor kButtonBorderDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
+
+const SkScalar kSliderTrackRadius = 40.f;
+const SkColor kSliderTrackColor = SkColorSetRGB(0xCE, 0xCE, 0xCE);
+const SkColor kSliderTrackHoveredColor = SkColorSetRGB(0x9D, 0x9D, 0x9D);
+const SkColor kSliderTrackActiveColor = SkColorSetRGB(0xB5, 0xB5, 0xB5);
+const SkColor kSliderTrackDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
+const SkColor kSliderTrackValueColor = SkColorSetRGB(0x10, 0x10, 0x10);
+
+const int kSliderThumbWidth = 21;
+const int kSliderThumbHeight = 21;
+const SkColor kSliderThumbBackgroundColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
+const SkColor kSliderThumbBorderColor = SkColorSetRGB(0x10, 0x10, 0x10);
+const SkColor kSliderThumbBorderDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
+const SkScalar kSliderThumbBorderWidth = 2.f;
+const SkScalar kSliderThumbBorderHoveredWidth = 4.f;
+
+const SkScalar kMenuListArrowStrokeWidth = 1.f;
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -444,6 +476,242 @@ SkRect NativeThemeAura::PaintCheckboxRadioCommon(
   return skrect;
 }
 
+void NativeThemeAura::PaintTextField(cc::PaintCanvas* canvas,
+                                     State state,
+                                     const gfx::Rect& rect,
+                                     const TextFieldExtraParams& text) const {
+  if (!features::IsFormControlsRefreshEnabled()) {
+    return NativeThemeBase::PaintTextField(canvas, state, rect, text);
+  }
+
+  SkRect bounds = gfx::RectToSkRect(rect);
+  const SkScalar borderWidth = SkIntToScalar(kInputBorderWidth);
+
+  // Paint the background (is not visible behind the rounded corners).
+  bounds.inset(borderWidth / 2, borderWidth / 2);
+  cc::PaintFlags fill_flags;
+  fill_flags.setStyle(cc::PaintFlags::kFill_Style);
+  fill_flags.setColor(text.background_color);
+  canvas->drawRoundRect(bounds, SkIntToScalar(kInputBorderRadius),
+                        SkIntToScalar(kInputBorderRadius), fill_flags);
+
+  // Paint the border: 1px solid.
+  cc::PaintFlags stroke_flags;
+  if (state == kHovered) {
+    stroke_flags.setColor(kInputBorderHoveredColor);
+  } else if (state == kDisabled) {
+    stroke_flags.setColor(kInputBorderDisabledColor);
+  } else {
+    stroke_flags.setColor(kInputBorderColor);
+  }
+  stroke_flags.setStyle(cc::PaintFlags::kStroke_Style);
+  stroke_flags.setStrokeWidth(borderWidth);
+  canvas->drawRoundRect(bounds, SkIntToScalar(kInputBorderRadius),
+                        SkIntToScalar(kInputBorderRadius), stroke_flags);
+}
+
+void NativeThemeAura::PaintButton(cc::PaintCanvas* canvas,
+                                  State state,
+                                  const gfx::Rect& rect,
+                                  const ButtonExtraParams& button) const {
+  if (!features::IsFormControlsRefreshEnabled()) {
+    return NativeThemeBase::PaintButton(canvas, state, rect, button);
+  }
+
+  cc::PaintFlags flags;
+  SkRect skrect = gfx::RectToSkRect(rect);
+
+  SkColor background_color;
+  if (state == kHovered) {
+    background_color = kButtonBackgroundHoveredColor;
+  } else if (state == kDisabled) {
+    background_color = kButtonBackgroundDisabledColor;
+  } else {
+    background_color = kButtonBackgroundColor;
+  }
+
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setColor(background_color);
+
+  // If the button is too small, fallback to drawing a single, solid color.
+  if (rect.width() < 5 || rect.height() < 5) {
+    canvas->drawRect(skrect, flags);
+    return;
+  }
+
+  // Paint the background (is not visible behind the rounded corners).
+  skrect.inset(kButtonBorderWidth / 2, kButtonBorderWidth / 2);
+  canvas->drawRoundRect(skrect, kButtonBorderRadius, kButtonBorderRadius,
+                        flags);
+
+  // Paint the border: 1px solid.
+  if (button.has_border) {
+    SkColor border_color;
+    if (state == kHovered) {
+      border_color = kButtonBorderHoveredColor;
+    } else if (state == kDisabled) {
+      border_color = kButtonBorderDisabledColor;
+    } else {
+      border_color = kButtonBorderColor;
+    }
+
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setStrokeWidth(kButtonBorderWidth);
+    flags.setColor(border_color);
+    canvas->drawRoundRect(skrect, kButtonBorderRadius, kButtonBorderRadius,
+                          flags);
+  }
+}
+
+SkRect AlignSliderTrack(const gfx::Rect& slider_rect,
+                        const NativeTheme::SliderExtraParams& slider,
+                        bool is_value) {
+  const int kAlignment = 2;
+  const int mid_x = slider_rect.x() + slider_rect.width() / 2;
+  const int mid_y = slider_rect.y() + slider_rect.height() / 2;
+  SkRect aligned_rect;
+
+  if (slider.vertical) {
+    const int top = is_value ? slider_rect.y() + slider.thumb_y + kAlignment
+                             : slider_rect.y();
+    aligned_rect.setLTRB(std::max(slider_rect.x(), mid_x - kAlignment), top,
+                         std::min(slider_rect.right(), mid_x + kAlignment),
+                         slider_rect.bottom());
+  } else {
+    const int right = is_value ? slider_rect.x() + slider.thumb_x + kAlignment
+                               : slider_rect.right();
+    aligned_rect.setLTRB(slider_rect.x(),
+                         std::max(slider_rect.y(), mid_y - kAlignment), right,
+                         std::min(slider_rect.bottom(), mid_y + kAlignment));
+  }
+
+  return aligned_rect;
+}
+
+void NativeThemeAura::PaintSliderTrack(cc::PaintCanvas* canvas,
+                                       State state,
+                                       const gfx::Rect& rect,
+                                       const SliderExtraParams& slider) const {
+  if (!features::IsFormControlsRefreshEnabled()) {
+    return NativeThemeBase::PaintSliderTrack(canvas, state, rect, slider);
+  }
+
+  // Paint the entire slider track.
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  switch (state) {
+    case kHovered:
+      flags.setColor(kSliderTrackHoveredColor);
+      break;
+    case kDisabled:
+      flags.setColor(kSliderTrackDisabledColor);
+      break;
+    case kPressed:
+      flags.setColor(kSliderTrackActiveColor);
+      break;
+    default:
+      flags.setColor(kSliderTrackColor);
+      break;
+  }
+  SkRect track_rect = AlignSliderTrack(rect, slider, false);
+  canvas->drawRoundRect(track_rect, kSliderTrackRadius, kSliderTrackRadius,
+                        flags);
+
+  // Paint the value slider track.
+  if (state != kDisabled) {
+    flags.setColor(kSliderTrackValueColor);
+    SkRect value_rect = AlignSliderTrack(rect, slider, true);
+    canvas->drawRoundRect(value_rect, kSliderTrackRadius, kSliderTrackRadius,
+                          flags);
+  }
+}
+
+void NativeThemeAura::PaintSliderThumb(cc::PaintCanvas* canvas,
+                                       State state,
+                                       const gfx::Rect& rect,
+                                       const SliderExtraParams& slider) const {
+  if (!features::IsFormControlsRefreshEnabled()) {
+    return NativeThemeBase::PaintSliderThumb(canvas, state, rect, slider);
+  }
+
+  const SkScalar radius = SkFloatToScalar(
+      static_cast<float>(std::max(rect.width(), rect.height())) * 0.5);
+  SkRect thumb_rect = gfx::RectToSkRect(rect);
+
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  SkScalar border_width = kSliderThumbBorderWidth;
+  if (state == kHovered || state == kPressed) {
+    border_width = kSliderThumbBorderHoveredWidth;
+  }
+
+  // Paint the background (is not visible behind the rounded corners).
+  thumb_rect.inset(border_width / 2, border_width / 2);
+  flags.setColor(kSliderThumbBackgroundColor);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  canvas->drawRoundRect(thumb_rect, radius, radius, flags);
+
+  // Paint the border.
+  flags.setColor(state == kDisabled ? kSliderThumbBorderDisabledColor
+                                    : kSliderThumbBorderColor);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(border_width);
+  canvas->drawRoundRect(thumb_rect, radius, radius, flags);
+}
+
+void NativeThemeAura::PaintMenuList(
+    cc::PaintCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const MenuListExtraParams& menu_list) const {
+  if (!features::IsFormControlsRefreshEnabled()) {
+    return NativeThemeBase::PaintMenuList(canvas, state, rect, menu_list);
+  }
+
+  // If a border radius is specified paint the background and the border of
+  // the menulist, otherwise let the non-theming code paint the background
+  // and the border of the control. The arrow (menulist button) is always
+  // painted by the theming code.
+  if (!menu_list.has_border_radius) {
+    TextFieldExtraParams text_field = {0};
+    text_field.background_color = menu_list.background_color;
+    PaintTextField(canvas, state, rect, text_field);
+  }
+
+  // Paint the arrow.
+  cc::PaintFlags flags;
+  flags.setColor(menu_list.arrow_color);
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(kMenuListArrowStrokeWidth);
+
+  float arrow_width = menu_list.arrow_size;
+  int arrow_height = arrow_width * 0.6;
+  gfx::Rect arrow(menu_list.arrow_x, menu_list.arrow_y - (arrow_height / 2),
+                  arrow_width, arrow_height);
+  arrow.Intersect(rect);
+
+  if (arrow_width != arrow.width() || arrow_height != arrow.height()) {
+    // The arrow is clipped after being constrained to the paint rect so we need
+    // to recalculate its size.
+    int height_clip = arrow_height - arrow.height();
+    int width_clip = arrow_width - arrow.width();
+    if (height_clip > width_clip) {
+      arrow.set_width(arrow.height() * 1.6);
+    } else {
+      arrow.set_height(arrow.width() * 0.6);
+    }
+    arrow.set_y(menu_list.arrow_y - (arrow.height() / 2));
+  }
+
+  SkPath path;
+  path.moveTo(arrow.x(), arrow.y());
+  path.lineTo(arrow.x() + arrow.width() / 2, arrow.y() + arrow.height());
+  path.lineTo(arrow.x() + arrow.width(), arrow.y());
+  canvas->drawPath(path, flags);
+}
+
 gfx::Size NativeThemeAura::GetPartSize(Part part,
                                        State state,
                                        const ExtraParams& extra) const {
@@ -464,6 +732,10 @@ gfx::Size NativeThemeAura::GetPartSize(Part part,
         // crbug.com/657159.
         break;
     }
+  }
+
+  if (part == kSliderThumb && features::IsFormControlsRefreshEnabled()) {
+    return gfx::Size(kSliderThumbWidth, kSliderThumbHeight);
   }
 
   return NativeThemeBase::GetPartSize(part, state, extra);

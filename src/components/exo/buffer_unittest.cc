@@ -64,7 +64,7 @@ TEST_F(BufferTest, ReleaseCallback) {
   viz::TransferableResource resource;
   // Produce a transferable resource for the contents of the buffer.
   bool rv = buffer->ProduceTransferableResource(
-      frame_sink_holder->resource_manager(), false, &resource);
+      frame_sink_holder->resource_manager(), nullptr, false, &resource);
   ASSERT_TRUE(rv);
 
   // Release buffer.
@@ -96,7 +96,7 @@ TEST_F(BufferTest, IsLost) {
   // Acquire a texture transferable resource for the contents of the buffer.
   viz::TransferableResource resource;
   bool rv = buffer->ProduceTransferableResource(
-      frame_sink_holder->resource_manager(), false, &resource);
+      frame_sink_holder->resource_manager(), nullptr, false, &resource);
   ASSERT_TRUE(rv);
 
   scoped_refptr<viz::RasterContextProvider> context_provider =
@@ -123,7 +123,7 @@ TEST_F(BufferTest, IsLost) {
   // buffer.
   viz::TransferableResource new_resource;
   rv = buffer->ProduceTransferableResource(
-      frame_sink_holder->resource_manager(), false, &new_resource);
+      frame_sink_holder->resource_manager(), nullptr, false, &new_resource);
   ASSERT_TRUE(rv);
   buffer->OnDetach();
 
@@ -151,7 +151,7 @@ TEST_F(BufferTest, OnLostResources) {
   // Acquire a texture transferable resource for the contents of the buffer.
   viz::TransferableResource resource;
   bool rv = buffer->ProduceTransferableResource(
-      frame_sink_holder->resource_manager(), false, &resource);
+      frame_sink_holder->resource_manager(), nullptr, false, &resource);
   ASSERT_TRUE(rv);
 
   viz::RasterContextProvider* context_provider =
@@ -184,7 +184,7 @@ TEST_F(BufferTest, SurfaceTreeHostDestruction) {
   viz::TransferableResource resource;
   // Produce a transferable resource for the contents of the buffer.
   bool rv = buffer->ProduceTransferableResource(
-      frame_sink_holder->resource_manager(), false, &resource);
+      frame_sink_holder->resource_manager(), nullptr, false, &resource);
   ASSERT_TRUE(rv);
 
   // Submit frame with resource.
@@ -237,7 +237,7 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
   viz::TransferableResource resource;
   // Produce a transferable resource for the contents of the buffer.
   bool rv = buffer->ProduceTransferableResource(
-      frame_sink_holder->resource_manager(), false, &resource);
+      frame_sink_holder->resource_manager(), nullptr, false, &resource);
   ASSERT_TRUE(rv);
 
   // Submit frame with resource.

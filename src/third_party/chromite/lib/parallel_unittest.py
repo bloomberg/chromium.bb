@@ -11,6 +11,7 @@ import contextlib
 import cPickle
 import mock
 import multiprocessing
+import numbers
 import os
 import signal
 import sys
@@ -87,7 +88,7 @@ class ParallelMock(partial_mock.PartialMock):
 
   @contextlib.contextmanager
   def ParallelTasks(self, steps, max_parallel=None, halt_on_error=False):
-    assert max_parallel is None or isinstance(max_parallel, (int, long))
+    assert max_parallel is None or isinstance(max_parallel, numbers.Integral)
     assert isinstance(halt_on_error, bool)
     try:
       yield
@@ -281,7 +282,7 @@ class TestBackgroundTaskRunnerArgs(TestBackgroundWrapper):
 
       # Since the queue is unordered, need to handle arg2 specially.
       result_arg2s = set()
-      for _ in xrange(3):
+      for _ in range(3):
         result = results.get()
         self.assertEquals(result[0], 'arg1')
         result_arg2s.add(result[1])
@@ -338,7 +339,7 @@ class TestRunParallelSteps(cros_test_lib.TestCase):
       return ret_value
 
     ret_value = ''
-    for _ in xrange(10000):
+    for _ in range(10000):
       ret_value += 'This will be repeated many times.\n'
 
     return_values = parallel.RunParallelSteps([f1], return_values=True)
@@ -374,7 +375,7 @@ class TestParallelMock(TestBackgroundWrapper):
       self.assertEqual(10, self._calls)
       self.assertEqual([], result)
       result = parallel.RunTasksInProcessPool(self._Callback, [[]] * 10)
-      self.assertEqual(range(11, 21), result)
+      self.assertEqual(list(range(11, 21)), result)
 
 
 class TestExceptions(cros_test_lib.MockOutputTestCase):

@@ -100,10 +100,8 @@ enum MetricEnrollment {
   kMetricEnrollmentRegisterPolicyResponseInvalid = 40,
   // OAuth token fetch failed: account not signed up.
   kMetricEnrollmentAccountNotSignedUp = 41,
-  // OAuth token fetch failed: account deleted.
-  kMetricEnrollmentAccountDeleted = 42,
-  // OAuth token fetch failed: account disabled.
-  kMetricEnrollmentAccountDisabled = 43,
+  /* kMetricEnrollmentAccountDeleted = 42 REMOVED */
+  /* kMetricEnrollmentAccountDisabled = 43 REMOVED */
   // Re-enrollment pre-check failed: domain does not match install attributes.
   kMetricEnrollmentPrecheckDomainMismatch = 44,
   // Lockbox backend failed to initialize.
@@ -214,10 +212,21 @@ enum class MetricUserPolicyChromeOSSessionAbortType {
 // from the same enum above can be triggered in different files, and must use
 // the same UMA histogram name.
 POLICY_EXPORT extern const char kMetricUserPolicyRefresh[];
+POLICY_EXPORT extern const char kMetricUserPolicyRefreshFcm[];
+POLICY_EXPORT extern const char kMetricUserPolicyRefreshTicl[];
 POLICY_EXPORT extern const char kMetricUserPolicyInvalidations[];
+POLICY_EXPORT extern const char kMetricUserPolicyInvalidationsFcm[];
+POLICY_EXPORT extern const char kMetricUserPolicyInvalidationsTicl[];
 POLICY_EXPORT extern const char kMetricUserPolicyChromeOSSessionAbort[];
 POLICY_EXPORT extern const char kMetricDevicePolicyRefresh[];
+POLICY_EXPORT extern const char kMetricDevicePolicyRefreshFcm[];
+POLICY_EXPORT extern const char kMetricDevicePolicyRefreshTicl[];
 POLICY_EXPORT extern const char kMetricDevicePolicyInvalidations[];
+POLICY_EXPORT extern const char kMetricDevicePolicyInvalidationsFcm[];
+POLICY_EXPORT extern const char kMetricDevicePolicyInvalidationsTicl[];
+POLICY_EXPORT extern const char kMetricPolicyInvalidationRegistration[];
+POLICY_EXPORT extern const char kMetricPolicyInvalidationRegistrationFcm[];
+POLICY_EXPORT extern const char kMetricPolicyInvalidationRegistrationTicl[];
 
 }  // namespace policy
 

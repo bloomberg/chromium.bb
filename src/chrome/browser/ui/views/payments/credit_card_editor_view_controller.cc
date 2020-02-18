@@ -37,6 +37,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/payments/core/autofill_card_validation.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -192,7 +193,7 @@ CreditCardEditorViewController::CreateHeaderView() {
   // the first input field.
   constexpr int kRowBottomPadding = 6;
   auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       gfx::Insets(kRowBottomPadding, kPaymentRequestRowHorizontalInsets),
       kRowVerticalSpacing);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
@@ -209,7 +210,8 @@ CreditCardEditorViewController::CreateHeaderView() {
   constexpr int kPaddingBetweenCardIcons = 8;
   std::unique_ptr<views::View> icons_row = std::make_unique<views::View>();
   icons_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), kPaddingBetweenCardIcons));
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+      kPaddingBetweenCardIcons));
 
   std::string selected_network =
       credit_card_to_edit_ ? autofill::data_util::GetPaymentRequestData(
@@ -246,7 +248,7 @@ CreditCardEditorViewController::CreateHeaderView() {
   if (IsEditingServerCard()) {
     std::unique_ptr<views::View> data_source = std::make_unique<views::View>();
     data_source->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, gfx::Insets(),
+        views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
         kPaddingBetweenCardIcons));
 
     // "From Google Payments".
@@ -293,7 +295,7 @@ CreditCardEditorViewController::CreateCustomFieldView(
   } else {
     // Two comboboxes, one for month and the other for year.
     views::GridLayout* combobox_layout =
-        view->SetLayoutManager(std::make_unique<views::GridLayout>(view.get()));
+        view->SetLayoutManager(std::make_unique<views::GridLayout>());
     views::ColumnSet* columns = combobox_layout->AddColumnSet(0);
     columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                        1.0, views::GridLayout::USE_PREF, 0, 0);
@@ -313,10 +315,9 @@ CreditCardEditorViewController::CreateCustomFieldView(
         /*required=*/true, EditorField::ControlType::COMBOBOX};
     std::unique_ptr<ValidatingCombobox> month_combobox =
         CreateComboboxForField(tmp_month, error_message);
-    *focusable_field = month_combobox.get();
-    combobox_layout->AddView(month_combobox.release(), 1, 1,
-                             views::GridLayout::FILL, views::GridLayout::FILL,
-                             0, kInputFieldHeight);
+    *focusable_field = combobox_layout->AddView(
+        std::move(month_combobox), 1, 1, views::GridLayout::FILL,
+        views::GridLayout::FILL, 0, kInputFieldHeight);
 
     EditorField tmp_year{
         autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR,
@@ -325,7 +326,7 @@ CreditCardEditorViewController::CreateCustomFieldView(
         /*required=*/true, EditorField::ControlType::COMBOBOX};
     std::unique_ptr<ValidatingCombobox> year_combobox =
         CreateComboboxForField(tmp_year, error_message);
-    combobox_layout->AddView(year_combobox.release(), 1, 1,
+    combobox_layout->AddView(std::move(year_combobox), 1, 1,
                              views::GridLayout::FILL, views::GridLayout::FILL,
                              0, kInputFieldHeight);
   }
@@ -450,10 +451,10 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
   }
 
   // TODO(crbug.com/711365): Display global error message.
-  if (autofill::GetCompletionStatusForCard(
+  if (GetCompletionStatusForCard(
           credit_card, locale,
           state()->GetPersonalDataManager()->GetProfiles()) !=
-      autofill::CREDIT_CARD_COMPLETE) {
+      CREDIT_CARD_COMPLETE) {
     return false;
   }
 
@@ -597,10 +598,9 @@ base::string16 CreditCardEditorViewController::GetSheetTitle() {
     return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_CARD);
 
   // Gets the completion message, or empty if nothing is missing from the card.
-  base::string16 title = autofill::GetCompletionMessageForCard(
-      autofill::GetCompletionStatusForCard(
-          *credit_card_to_edit_, state()->GetApplicationLocale(),
-          state()->GetPersonalDataManager()->GetProfiles()));
+  base::string16 title = GetCompletionMessageForCard(GetCompletionStatusForCard(
+      *credit_card_to_edit_, state()->GetApplicationLocale(),
+      state()->GetPersonalDataManager()->GetProfiles()));
   return title.empty() ? l10n_util::GetStringUTF16(IDS_PAYMENTS_EDIT_CARD)
                        : title;
 }
@@ -615,7 +615,7 @@ void CreditCardEditorViewController::ButtonPressed(views::Button* sender,
         /*on_added=*/
         base::BindOnce(
             &CreditCardEditorViewController::AddAndSelectNewBillingAddress,
-            base::Unretained(this)),
+            weak_ptr_factory_.GetWeakPtr()),
         /*profile=*/nullptr);
   } else {
     EditorViewController::ButtonPressed(sender, event);

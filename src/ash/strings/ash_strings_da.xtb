@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">Dine enheder fungerer endnu bedre sammen</translation>
 <translation id="112308213915226829">Skjul hylde automatisk</translation>
 <translation id="1153356358378277386">Parrede enheder</translation>
+<translation id="1175572348579024023">Rul</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Ryd alle</translation>
-<translation id="123828989343052515">Nyt skrivebord</translation>
 <translation id="1247372569136754018">Mikrofon (indbygget)</translation>
 <translation id="1252999807265626933">Oplader fra <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hvordan er vejret?</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">Indtastningsmetoder konfigureres af din administrator.</translation>
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
 <translation id="1761222317188459878">Slå netværksforbindelse til eller fra. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Rul til højre</translation>
 <translation id="1812997170047690955">Hvad vises der på min skærm?</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" /> er blevet deaktiveret af en politik, der gælder for denne enhed. Kontakt din administrator for at anmode om ændringer.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (indlæser...)</translation>
 <translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Angiv dit sprog</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">Tekstinput</translation>
 <translation id="1993072747612765854">Få flere oplysninger om den nyeste <ph name="SYSTEM_APP_NAME" />-opdatering</translation>
 <translation id="1995660704900986789">Sluk</translation>
 <translation id="2012624427112548395">Ctrl+Søg+H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2067602449040652523">Lysstyrke for tastatur</translation>
 <translation id="209965399369889474">Der er ingen netværksforbindelse</translation>
+<translation id="2126242104232412123">Nyt skrivebord</translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
 <translation id="2135456203358955318">Fastgjort lupvindue</translation>
 <translation id="2144487987174258011">Genstart for at opdatere Adobe Flash Player</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">Google Assistent er ikke tilgængelig i en offentlig session.</translation>
 <translation id="2575685495496069081">Samlet login fra flere konti er deaktiveret</translation>
 <translation id="2582112259361606227">Genstart for at opdatere</translation>
-<translation id="2597972630681408282">Nattelys: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
+<translation id="2651765386227849097">Google Assistent er deaktiveret på denne enhed.</translation>
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="2658778018866295321">Klik og træk</translation>
 <translation id="2700493154570097719">Angiv dit tastatur</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Forbundet til en enhed}one{Forbundet til # enhed}other{Forbundet til # enheder}}</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> andre</translation>
 <translation id="3236488194889173876">Der er ingen tilgængelige mobilnetværk</translation>
+<translation id="3249513730522716925">Vindue <ph name="WINDOW_TITLE" /> blev flyttet fra Skrivebord <ph name="ACTIVE_DESK" /> til Skrivebord <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Hvad kan du gøre?</translation>
 <translation id="3294437725009624529">Gæst</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan stadig logge ind senere.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">Skift tilbage til "<ph name="FROM_LOCALE" />" (kræver genstart)</translation>
 <translation id="3576141592585647168">Skift tidszone</translation>
 <translation id="3595596368722241419">Batteri helt opladet</translation>
+<translation id="3604801046548457007">Skrivebord <ph name="DESK_TITILE" /> blev oprettet</translation>
 <translation id="3606978283550408104">Der er tilsluttet en brailleskærm.</translation>
 <translation id="3621202678540785336">Input</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">Batteriet er på <ph name="PERCENTAGE" /> % og oplader.</translation>
 <translation id="3995138139523574647">USB-C-enhed (porten bagpå i højre side)</translation>
 <translation id="4017989525502048489">Laserpegepind</translation>
+<translation id="4021716437419160885">Rul ned</translation>
 <translation id="4042660782729322247">Du deler din skærm</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Deaktiveret for én app}one{Deaktiveret for # app}other{Deaktiveret for # apps}}</translation>
 <translation id="4072264167173457037">Middel signal</translation>
@@ -258,9 +265,11 @@
 <translation id="4895488851634969361">Batteriet er helt opladet.</translation>
 <translation id="490375751687810070">Lodret</translation>
 <translation id="4905614135390995787">Genvejen til at aktivere eller deaktivere tilstanden Høj kontrast er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
 <translation id="4917385247580444890">Stærk</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4924411785043111640">Genstart og nulstil</translation>
+<translation id="495046168593986294">Rul op</translation>
 <translation id="4961318399572185831">Cast skærm</translation>
 <translation id="5030687792513154421">Tiden er gået</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> har oprettet forbindelse til en ny telefon</translation>
@@ -294,6 +303,7 @@
 <translation id="5648021990716966815">Stik til mikrofon</translation>
 <translation id="5669267381087807207">Aktiverer</translation>
 <translation id="5673434351075758678">Fra "<ph name="FROM_LOCALE" />" til "<ph name="TO_LOCALE" />", efter at du har synkroniseret dine indstillinger.</translation>
+<translation id="5682642926269496722">Google Assistent er ikke tilgængelig for den aktuelle brugerkonto.</translation>
 <translation id="5691772641933328258">Fingeraftrykket kunne ikke genkendes</translation>
 <translation id="5710450975648804523">Forstyr ikke er aktiveret.</translation>
 <translation id="574392208103952083">Mellem</translation>
@@ -318,6 +328,8 @@
 <translation id="598882571027504733">Genstart din Chromebook med det tilsluttede tastatur for at hente opdateringen.</translation>
 <translation id="5992218262414051481">Tilstanden Høj kontrast er aktiveret. Tryk på Ctrl+Søg+H igen for at deaktivere tilstanden.</translation>
 <translation id="6018164090099858612">Lukker spejltilstand</translation>
+<translation id="602001110135236999">Rul til venstre</translation>
+<translation id="6040143037577758943">Luk</translation>
 <translation id="6043212731627905357">Denne skærm fungerer ikke sammen med <ph name="DEVICE_TYPE" /> (skærmen understøttes ikke).</translation>
 <translation id="6043994281159824495">Log ud nu</translation>
 <translation id="6047696787498798094">Skærmdeling ophører, når du skifter til en anden bruger. Vil du fortsætte?</translation>
@@ -325,6 +337,7 @@
 <translation id="6064337552080329342">Din adgangskode blev ikke bekræftet. Prøv igen.</translation>
 <translation id="607652042414456612">Din computer kan registreres af Bluetooth-enheder i nærheden, og den vil blive vist som "<ph name="NAME" />" med adressen <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Oplader <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Google Assistent er ikke tilgængelig i en gæstesession.</translation>
 <translation id="615957422585914272">Vis skærmtastatur</translation>
 <translation id="6164005077879661055">Alle filer og lokale data, der er knyttet til den administrerede bruger, 
 slettes permanent, når den administrerede bruger fjernes. Besøgte websites og indstillinger for denne administrerede bruger er muligvis stadig synlige for administratoren på <ph name="MANAGEMENT_URL" />.</translation>
@@ -367,7 +380,9 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6713285437468012787">Bluetooth-enheden "<ph name="DEVICE_NAME" />" er blevet parret og er nu tilgængelig for alle brugere, Du kan fjerne denne parring i Indstillinger.</translation>
 <translation id="6715542151869432661">Der blev ikke fundet nogen mobilenheder.</translation>
 <translation id="6723839937902243910">Strøm</translation>
+<translation id="6727969043791803658">Tilsluttet, <ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
 <translation id="6751826523481687655">Sporing af effektivitet er slået til</translation>
+<translation id="6752912906630585008">Skrivebord <ph name="REMOVED_DESK" /> blev fjernet og slået sammen med Skrivebord <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Afspil</translation>
 <translation id="6803622936009808957">Skærmene kunne ikke spejles, da der ikke fandtes en understøttet opløsning. I stedet anvendes Udvidet skrivebord.</translation>
 <translation id="6820676911989879663">Hold en pause</translation>
@@ -425,6 +440,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7692480393933218409">Oplader tilsluttede USB-C-enheder</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notifikation}one{# notifikation}other{# notifikationer}}</translation>
+<translation id="7749443890790263709">Det maksimale antal skriveborde er nået.</translation>
 <translation id="776344839111254542">Klik for at se opdateringsoplysninger</translation>
 <translation id="7780159184141939021">Roter skærm</translation>
 <translation id="7796353162336583443">Tryk på knappen for styluspen på hylden for at skrive en note, tage et screenshot eller bruge Google Assistent, laserpegepinden eller luppen.</translation>
@@ -468,6 +484,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Opret note</translation>
 <translation id="8375916635258623388">Denne <ph name="DEVICE_NAME" /> og din telefon forbindes automatisk</translation>
+<translation id="8388750414311082622">Det seneste skrivebord kan ikke fjernes.</translation>
 <translation id="8392451568018454956">Menuen Indstillinger for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Din forælder har låst denne enhed</translation>
 <translation id="8406981827175133772">Forstørrelse af fuld skærm</translation>
@@ -476,6 +493,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8433186206711564395">Netværksindstillinger</translation>
 <translation id="8433977262951327081">Genvejen til menuboblen med indtastningsmuligheder på hylden har ændret sig. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Skrivebord <ph name="DESK_TITILE" /> er aktiveret</translation>
 <translation id="8452135315243592079">SIM-kort mangler</translation>
 <translation id="8454013096329229812">Wi-Fi er slået til.</translation>
 <translation id="847056008324733326">Indstillinger for visningsskala</translation>

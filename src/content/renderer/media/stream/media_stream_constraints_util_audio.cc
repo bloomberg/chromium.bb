@@ -12,7 +12,6 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
-#include "content/public/common/content_features.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"
@@ -338,8 +337,6 @@ class EchoCancellationContainer {
         constraint_set.echo_cancellation);
     BoolSet goog_ec_set = blink::media_constraints::BoolSetFromConstraint(
         constraint_set.goog_echo_cancellation);
-    StringSet ec_type_set = blink::media_constraints::StringSetFromConstraint(
-        constraint_set.echo_cancellation_type);
 
     // Apply echoCancellation constraint.
     ec_allowed_values_ = ec_allowed_values_.Intersection(ec_set);
@@ -350,11 +347,9 @@ class EchoCancellationContainer {
     auto ec_intersection = ec_allowed_values_.Intersection(goog_ec_set);
     if (ec_intersection.IsEmpty())
       return constraint_set.echo_cancellation.GetName();
-    // Apply echoCancellationType constraint.
+    // Translate the boolean values into EC modes.
     ec_mode_allowed_values_ = ec_mode_allowed_values_.Intersection(
-        ToEchoCancellationTypes(ec_intersection, ec_type_set));
-    if (ec_mode_allowed_values_.IsEmpty())
-      return constraint_set.echo_cancellation_type.GetName();
+        ToEchoCancellationTypes(ec_intersection));
 
     // Finally, if this container is empty, fail due to contradiction of the
     // resulting allowed values for goog_ec, ec, and/or ec_type.
@@ -364,8 +359,8 @@ class EchoCancellationContainer {
   std::tuple<Score, EchoCancellationType> SelectSettingsAndScore(
       const ConstraintSet& constraint_set) const {
     EchoCancellationType selected_ec_mode = SelectBestEcMode(constraint_set);
-    double fitness = Fitness(selected_ec_mode, constraint_set.echo_cancellation,
-                             constraint_set.echo_cancellation_type);
+    double fitness =
+        Fitness(selected_ec_mode, constraint_set.echo_cancellation);
     Score score(fitness);
     score.set_ec_mode_score(GetEcModeScore(selected_ec_mode));
     return std::make_tuple(score, selected_ec_mode);
@@ -418,57 +413,30 @@ class EchoCancellationContainer {
     }
   }
 
-  static base::Optional<EchoCancellationType> ToEchoCancellationType(
-      const char* blink_type) {
-    std::string blink_type_str = std::string(blink_type);
-    if (blink_type_str == blink::kEchoCancellationTypeBrowser ||
-        blink_type_str == blink::kEchoCancellationTypeAec3) {
-      return EchoCancellationType::kEchoCancellationAec3;
-    }
-
-    if (blink_type_str == blink::kEchoCancellationTypeSystem)
-      return EchoCancellationType::kEchoCancellationSystem;
-
-    return base::nullopt;
-  }
-
-  static std::vector<EchoCancellationType> ToEchoCancellationTypes(
-      const StringSet& types_set) {
-    std::vector<EchoCancellationType> methods;
-    const char* blink_types[] = {blink::kEchoCancellationTypeBrowser,
-                                 blink::kEchoCancellationTypeAec3,
-                                 blink::kEchoCancellationTypeSystem};
-
-    for (const char* blink_type : blink_types) {
-      if (types_set.Contains(blink_type)) {
-        base::Optional<EchoCancellationType> converted_type =
-            ToEchoCancellationType(blink_type);
-        DCHECK(converted_type);
-        methods.push_back(*converted_type);
-      }
-    }
-
-    return methods;
-  }
-
-  static EchoCancellationTypeSet ToEchoCancellationTypes(
-      const BoolSet ec_set,
-      const StringSet ec_type_set) {
+  static EchoCancellationTypeSet ToEchoCancellationTypes(const BoolSet ec_set) {
     std::vector<EchoCancellationType> types;
 
-    if (ec_set.Contains(false) && ec_type_set.is_universal())
+    if (ec_set.Contains(false))
       types.push_back(EchoCancellationType::kEchoCancellationDisabled);
 
     if (ec_set.Contains(true)) {
-      if (ec_type_set.Contains(blink::kEchoCancellationTypeBrowser) ||
-          ec_type_set.Contains(blink::kEchoCancellationTypeAec3)) {
         types.push_back(EchoCancellationType::kEchoCancellationAec3);
-      }
-      if (ec_type_set.Contains(blink::kEchoCancellationTypeSystem))
         types.push_back(EchoCancellationType::kEchoCancellationSystem);
     }
 
     return EchoCancellationTypeSet(types);
+  }
+
+  static bool ShouldUseExperimentalSystemEchoCanceller(
+      const media::AudioParameters& parameters) {
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+    if (base::FeatureList::IsEnabled(features::kForceEnableSystemAec) &&
+        (parameters.effects() &
+         media::AudioParameters::EXPERIMENTAL_ECHO_CANCELLER)) {
+      return true;
+    }
+#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
+    return false;
   }
 
   EchoCancellationType SelectBestEcMode(
@@ -487,15 +455,6 @@ class EchoCancellationContainer {
       return EchoCancellationType::kEchoCancellationDisabled;
     }
 
-    if (constraint_set.echo_cancellation_type.HasIdeal()) {
-      for (const auto& ideal : constraint_set.echo_cancellation_type.Ideal()) {
-        base::Optional<EchoCancellationType> candidate =
-            ToEchoCancellationType(ideal.Utf8().c_str());
-        if (candidate && ec_mode_allowed_values_.Contains(*candidate))
-          return *candidate;
-      }
-    }
-
     // If no ideal could be selected and the set contains only one value, pick
     // that one.
     if (ec_mode_allowed_values_.elements().size() == 1)
@@ -507,56 +466,38 @@ class EchoCancellationContainer {
     if (device_parameters_.IsValid() &&
         ec_mode_allowed_values_.Contains(
             EchoCancellationType::kEchoCancellationSystem) &&
-        device_parameters_.effects() & media::AudioParameters::ECHO_CANCELLER) {
+        (device_parameters_.effects() &
+             media::AudioParameters::ECHO_CANCELLER ||
+         ShouldUseExperimentalSystemEchoCanceller(device_parameters_))) {
       return EchoCancellationType::kEchoCancellationSystem;
     }
 
-    // If the previous tie breakers were not enough to determine the selected
-    // mode, the resolution is based on pre-defined priorities assigned to the
-    // available echo cancellation modes.
-    DCHECK(ec_mode_allowed_values_.elements().size() > 1);
-    auto best_ec_type = ec_mode_allowed_values_.FirstElement();
-    auto best_score = GetEcModeScore(best_ec_type);
-    for (const auto& type : ec_mode_allowed_values_.elements()) {
-      auto score = GetEcModeScore(type);
-      if (score > best_score) {
-        best_score = score;
-        best_ec_type = type;
-      }
+    // At this point we have at least two elements, hence the only two options
+    // from which to select are either AEC3 or System, where AEC3 has higher
+    // priority.
+    if (ec_mode_allowed_values_.Contains(
+            EchoCancellationType::kEchoCancellationAec3)) {
+      return EchoCancellationType::kEchoCancellationAec3;
     }
-    return best_ec_type;
+
+    DCHECK(ec_mode_allowed_values_.Contains(
+        EchoCancellationType::kEchoCancellationDisabled));
+    return EchoCancellationType::kEchoCancellationDisabled;
   }
 
   // This function computes the fitness score of the given |ec_mode|. The
-  // fitness is determined by the ideal values of two constraints, namely
-  // |ec_type_constraint| and |ec_constraint|.  For each constraint, a score of
-  // 0 is assigned if the ideal constraint cannot be satisfied, or 1 otherwise.
-  // If |ec_mode| satisfies both constraints, the fitness score results in a
-  // value of 2; if only one is satisfied, the result will be 1, and 0 when none
-  // of the ideal values are satisfied.
+  // fitness is determined by the ideal values of |ec_constraint|. If |ec_mode|
+  // satisfies the constraint, the fitness score results in a value of 1, and 0
+  // otherwise. If no ideal value is specified, the fitness is 1.
   double Fitness(const EchoCancellationType& ec_mode,
-                 const BooleanConstraint& ec_constraint,
-                 const StringConstraint& ec_type_constraint) const {
-    double ec_fitness =
-        ec_constraint.HasIdeal()
-            ? ((ec_constraint.Ideal() &&
-                ec_mode != EchoCancellationType::kEchoCancellationDisabled) ||
-               (!ec_constraint.Ideal() &&
-                ec_mode == EchoCancellationType::kEchoCancellationDisabled))
-            : 1.0;
-    double ec_type_fitness = 0.0;
-    if (ec_type_constraint.HasIdeal()) {
-      for (auto ideal : ec_type_constraint.Ideal()) {
-        base::Optional<EchoCancellationType> ideal_type =
-            ToEchoCancellationType(ideal.Utf8().c_str());
-        if (ideal_type && *ideal_type == ec_mode)
-          ec_type_fitness = 1.0;
-      }
-    } else {
-      ec_type_fitness = 1.0;
-    }
-
-    return ec_fitness + ec_type_fitness;
+                 const BooleanConstraint& ec_constraint) const {
+    return ec_constraint.HasIdeal()
+               ? ((ec_constraint.Ideal() &&
+                   ec_mode !=
+                       EchoCancellationType::kEchoCancellationDisabled) ||
+                  (!ec_constraint.Ideal() &&
+                   ec_mode == EchoCancellationType::kEchoCancellationDisabled))
+               : 1.0;
   }
 
   bool EchoCancellationModeContains(bool ec) const {
@@ -714,34 +655,34 @@ class ProcessingBasedContainer {
 
     failed_constraint_name =
         echo_cancellation_container_.ApplyConstraintSet(constraint_set);
-    if (failed_constraint_name != nullptr)
+    if (failed_constraint_name)
       return failed_constraint_name;
 
     failed_constraint_name =
         sample_size_container_.ApplyConstraintSet(constraint_set.sample_size);
-    if (failed_constraint_name != nullptr)
+    if (failed_constraint_name)
       return failed_constraint_name;
 
     failed_constraint_name =
         channels_container_.ApplyConstraintSet(constraint_set.channel_count);
-    if (failed_constraint_name != nullptr)
+    if (failed_constraint_name)
       return failed_constraint_name;
 
     failed_constraint_name =
         sample_rate_container_.ApplyConstraintSet(constraint_set.sample_rate);
-    if (failed_constraint_name != nullptr)
+    if (failed_constraint_name)
       return failed_constraint_name;
 
     failed_constraint_name =
         latency_container_.ApplyConstraintSet(constraint_set.latency);
-    if (failed_constraint_name != nullptr)
+    if (failed_constraint_name)
       return failed_constraint_name;
 
     for (auto& info : kBooleanPropertyContainerInfoMap) {
       failed_constraint_name =
           boolean_containers_[info.index].ApplyConstraintSet(
               constraint_set.*(info.constraint_member));
-      if (failed_constraint_name != nullptr)
+      if (failed_constraint_name)
         return failed_constraint_name;
     }
     return failed_constraint_name;
@@ -1056,9 +997,9 @@ class DeviceContainer {
 
 #if DCHECK_IS_ON()
     if (source_info.type() == SourceType::kNone)
-      DCHECK(processing_based_containers_.size() == 3);
+      DCHECK_EQ(processing_based_containers_.size(), 3u);
     else
-      DCHECK(processing_based_containers_.size() == 1);
+      DCHECK_EQ(processing_based_containers_.size(), 1u);
 #endif
 
     if (source_info.type() == SourceType::kNone)
@@ -1082,12 +1023,12 @@ class DeviceContainer {
 
     failed_constraint_name =
         device_id_container_.ApplyConstraintSet(constraint_set.device_id);
-    if (failed_constraint_name != nullptr)
+    if (failed_constraint_name)
       return failed_constraint_name;
 
     failed_constraint_name =
         group_id_container_.ApplyConstraintSet(constraint_set.group_id);
-    if (failed_constraint_name != nullptr)
+    if (failed_constraint_name)
       return failed_constraint_name;
 
     for (size_t i = 0; i < kNumBooleanContainerIds; ++i) {
@@ -1095,7 +1036,7 @@ class DeviceContainer {
       failed_constraint_name =
           boolean_containers_[info.index].ApplyConstraintSet(
               constraint_set.*(info.constraint_member));
-      if (failed_constraint_name != nullptr)
+      if (failed_constraint_name)
         return failed_constraint_name;
     }
 
@@ -1105,7 +1046,7 @@ class DeviceContainer {
          it != processing_based_containers_.end();) {
       DCHECK(!it->IsEmpty());
       failed_constraint_name = it->ApplyConstraintSet(constraint_set);
-      if (failed_constraint_name != nullptr)
+      if (failed_constraint_name)
         processing_based_containers_.erase(it);
       else
         ++it;
@@ -1240,7 +1181,7 @@ class DeviceContainer {
     base::Optional<int> sample_rate;
     base::Optional<double> latency;
 
-    if (source == nullptr) {
+    if (!source) {
       source_type = SourceType::kNone;
     } else {
       media::AudioParameters source_parameters = source->GetAudioParameters();
@@ -1248,7 +1189,7 @@ class DeviceContainer {
       sample_rate = source_parameters.sample_rate();
       latency = source_parameters.GetBufferDuration().InSecondsF();
 
-      if (processed_source == nullptr) {
+      if (!processed_source) {
         source_type = SourceType::kUnprocessed;
         properties.DisableDefaultProperties();
 
@@ -1429,26 +1370,32 @@ AudioCaptureSettings SelectSettingsAudioCapture(
     blink::MediaStreamAudioSource* source,
     const blink::WebMediaConstraints& constraints) {
   DCHECK(source);
-  if (source->device().type != blink::MEDIA_DEVICE_AUDIO_CAPTURE &&
-      source->device().type != blink::MEDIA_GUM_TAB_AUDIO_CAPTURE &&
-      source->device().type != blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE) {
+  if (source->device().type !=
+          blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE &&
+      source->device().type !=
+          blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE &&
+      source->device().type !=
+          blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE) {
     return AudioCaptureSettings();
   }
 
   std::string media_stream_source = GetMediaStreamSource(constraints);
-  if (source->device().type == blink::MEDIA_DEVICE_AUDIO_CAPTURE &&
+  if (source->device().type ==
+          blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE &&
       !media_stream_source.empty()) {
     return AudioCaptureSettings(
         constraints.Basic().media_stream_source.GetName());
   }
 
-  if (source->device().type == blink::MEDIA_GUM_TAB_AUDIO_CAPTURE &&
+  if (source->device().type ==
+          blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE &&
       !media_stream_source.empty() &&
       media_stream_source != blink::kMediaStreamSourceTab) {
     return AudioCaptureSettings(
         constraints.Basic().media_stream_source.GetName());
   }
-  if (source->device().type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
+  if (source->device().type ==
+          blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE &&
       !media_stream_source.empty() &&
       media_stream_source != blink::kMediaStreamSourceSystem &&
       media_stream_source != blink::kMediaStreamSourceDesktop) {

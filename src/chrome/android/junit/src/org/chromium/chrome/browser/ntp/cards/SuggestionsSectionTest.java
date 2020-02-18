@@ -32,6 +32,7 @@ import static org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePage
 import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.createDummySuggestions;
 
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,6 +62,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
@@ -114,6 +116,9 @@ public class SuggestionsSectionTest {
 
     @Before
     public void setUp() {
+        // These tests fail on touchless builds, see https://crbug.com/981870.
+        Assume.assumeFalse(FeatureUtilities.isNoTouchModeEnabled());
+
         RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
 
@@ -134,7 +139,6 @@ public class SuggestionsSectionTest {
 
         // Set up a test account and initialize to the signed in state.
         NewTabPageTestUtils.setUpTestAccount();
-        SigninManager.setInstanceForTesting(mSigninManager);
         when(mSigninManager.isSignedInOnNative()).thenReturn(false);
         when(mSigninManager.isSignInAllowed()).thenReturn(true);
     }
@@ -143,7 +147,6 @@ public class SuggestionsSectionTest {
     public void tearDown() {
         RecordUserAction.setDisabledForTests(false);
         PrefServiceBridge.setInstanceForTesting(null);
-        SigninManager.setInstanceForTesting(null);
     }
 
     @Test
@@ -1047,8 +1050,8 @@ public class SuggestionsSectionTest {
     }
 
     private SuggestionsSection createSection(SuggestionsCategoryInfo info) {
-        SuggestionsSection section = new SuggestionsSection(
-                mDelegate, mUiDelegate, mock(SuggestionsRanker.class), mBridge, info);
+        SuggestionsSection section = new SuggestionsSection(mDelegate, mUiDelegate,
+                mock(SuggestionsRanker.class), mBridge, info, mSigninManager);
         section.addObserver(mObserver);
         return section;
     }

@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
 import android.support.annotation.VisibleForTesting;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
@@ -23,7 +22,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -38,7 +36,7 @@ import org.chromium.chrome.browser.preferences.PrefChangeRegistrar.PrefObserver;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataTabsFragment;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -57,7 +55,6 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Displays and manages the UI for browsing history.
@@ -138,8 +135,6 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
 
         // 5. Initialize empty view.
         mEmptyView = mSelectableListLayout.initializeEmptyView(
-                VectorDrawableCompat.create(
-                        mActivity.getResources(), R.drawable.history_big, mActivity.getTheme()),
                 R.string.history_manager_empty, R.string.history_manager_no_results);
 
         // 6. Create large icon bridge.
@@ -177,7 +172,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             }});
 
         // 9. Listen to changes in sign in state.
-        SigninManager.get().addSignInStateObserver(this);
+        IdentityServicesProvider.getSigninManager().addSignInStateObserver(this);
 
         // 10. Create PrefChangeRegistrar to receive notifications on preference changes.
         mPrefChangeRegistrar = new PrefChangeRegistrar();
@@ -220,7 +215,6 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             mSelectionDelegate.clearSelection();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_delete_menu_id) {
-            recordSelectionCountHistorgram("Remove");
             recordUserActionWithOptionalSearch("RemoveSelected");
 
             int numItemsRemoved = 0;
@@ -277,7 +271,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mHistoryAdapter.onDestroyed();
         mLargeIconBridge.destroy();
         mLargeIconBridge = null;
-        SigninManager.get().removeSignInStateObserver(this);
+        IdentityServicesProvider.getSigninManager().removeSignInStateObserver(this);
         mPrefChangeRegistrar.destroy();
     }
 
@@ -386,7 +380,8 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      */
     public void openClearBrowsingDataPreference() {
         recordUserAction("ClearBrowsingData");
-        PreferencesLauncher.launchSettingsPage(mActivity, ClearBrowsingDataTabsFragment.class);
+        PreferencesLauncher.launchSettingsPageCompat(
+                mActivity, ClearBrowsingDataTabsFragment.class);
     }
 
     @Override
@@ -416,7 +411,6 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     }
 
     private void openItemsInNewTabs(List<HistoryItem> items, boolean isIncognito) {
-        recordSelectionCountHistorgram("Open");
         recordUserActionWithOptionalSearch("OpenSelected" + (isIncognito ? "Incognito" : ""));
 
         for (HistoryItem item : items) {
@@ -460,16 +454,6 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      */
     void recordUserActionWithOptionalSearch(String action) {
         recordUserAction((mIsSearching ? "Search." : "") + action);
-    }
-
-    /**
-     * Records the number of selected items when a multi-select action is performed.
-     * @param action The multi-select action that was performed.
-     */
-    private void recordSelectionCountHistorgram(String action) {
-        Set<HistoryItem> selectedItems = mSelectionDelegate.getSelectedItems();
-        RecordHistogram.recordCount100Histogram(
-                METRICS_PREFIX + action + "Selected", selectedItems.size());
     }
 
     /**

@@ -21,11 +21,11 @@
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/scoped_generic.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/time/time.h"
 #include "components/exo/wayland/clients/client_base.h"
 #include "components/exo/wayland/clients/client_helper.h"
@@ -572,7 +572,8 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  base::MessageLoopForUI message_loop;
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
   exo::wayland::clients::RectsClient client;
   return client.Run(params, max_frames_pending, num_rects, num_benchmark_runs,
                     base::TimeDelta::FromMilliseconds(benchmark_interval_ms),

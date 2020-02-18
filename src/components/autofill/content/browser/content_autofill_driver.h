@@ -9,13 +9,16 @@
 #include <string>
 
 #include "base/supports_user_data.h"
+#include "build/build_config.h"
 #include "components/autofill/content/browser/key_press_handler_manager.h"
-#include "components/autofill/content/common/autofill_agent.mojom.h"
-#include "components/autofill/content/common/autofill_driver.mojom.h"
+#include "components/autofill/content/browser/webauthn/internal_authenticator_impl.h"
+#include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 
 namespace content {
 class NavigationHandle;
@@ -46,14 +49,18 @@ class ContentAutofillDriver : public AutofillDriver,
   static ContentAutofillDriver* GetForRenderFrameHost(
       content::RenderFrameHost* render_frame_host);
 
-  void BindRequest(mojom::AutofillDriverAssociatedRequest request);
+  void BindPendingReceiver(
+      mojo::PendingAssociatedReceiver<mojom::AutofillDriver> pending_receiver);
 
   // AutofillDriver:
   bool IsIncognito() const override;
   bool IsInMainFrame() const override;
+  ui::AXTreeID GetAxTreeId() const override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool RendererIsAvailable() override;
+  void ConnectToAuthenticator(
+      blink::mojom::InternalAuthenticatorRequest request) override;
   void SendFormDataToRenderer(int query_id,
                               RendererFormDataAction action,
                               const FormData& data) override;
@@ -68,6 +75,7 @@ class ContentAutofillDriver : public AutofillDriver,
   void RendererShouldFillFieldWithValue(const base::string16& value) override;
   void RendererShouldPreviewFieldWithValue(
       const base::string16& value) override;
+  void RendererShouldSetSuggestionAvailability(bool available) override;
   void PopupHidden() override;
   gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) override;
@@ -77,7 +85,7 @@ class ContentAutofillDriver : public AutofillDriver,
                  base::TimeTicks timestamp) override;
   void FormSubmitted(const FormData& form,
                      bool known_success,
-                     SubmissionSource source) override;
+                     mojom::SubmissionSource source) override;
   void TextFieldDidChange(const FormData& form,
                           const FormFieldData& field,
                           const gfx::RectF& bounding_box,
@@ -118,7 +126,7 @@ class ContentAutofillDriver : public AutofillDriver,
   AutofillHandler* autofill_handler() { return autofill_handler_.get(); }
   content::RenderFrameHost* render_frame_host() { return render_frame_host_; }
 
-  const mojom::AutofillAgentAssociatedPtr& GetAutofillAgent();
+  const mojo::AssociatedRemote<mojom::AutofillAgent>& GetAutofillAgent();
 
   // Methods forwarded to key_press_handler_manager_.
   void RegisterKeyPressHandler(
@@ -154,15 +162,20 @@ class ContentAutofillDriver : public AutofillDriver,
   // a common root.
   AutofillManager* autofill_manager_;
 
+#if !defined(OS_ANDROID)
+  // Implementation of the InternalAuthenticator mojom.
+  std::unique_ptr<content::InternalAuthenticatorImpl> authenticator_impl_;
+#endif
+
   // AutofillExternalDelegate instance that this object instantiates in the
   // case where the Autofill native UI is enabled.
   std::unique_ptr<AutofillExternalDelegate> autofill_external_delegate_;
 
   KeyPressHandlerManager key_press_handler_manager_;
 
-  mojo::AssociatedBinding<mojom::AutofillDriver> binding_;
+  mojo::AssociatedReceiver<mojom::AutofillDriver> receiver_{this};
 
-  mojom::AutofillAgentAssociatedPtr autofill_agent_;
+  mojo::AssociatedRemote<mojom::AutofillAgent> autofill_agent_;
 };
 
 }  // namespace autofill

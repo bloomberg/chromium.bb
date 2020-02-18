@@ -99,5 +99,9 @@ performance loss.
 If you feed bad 'machine code' to the register machine, you have a
 good chance of a C<SIGSEGV>.
 
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>, Arnar M. Hrafnkelsson
+
 =cut
 

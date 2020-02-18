@@ -447,10 +447,10 @@ void HungRendererDialogView::ViewHierarchyChanged(
 // HungRendererDialogView, private:
 
 void HungRendererDialogView::Init() {
-  info_label_ = new views::Label(base::string16(), CONTEXT_BODY_TEXT_LARGE,
-                                 STYLE_SECONDARY);
-  info_label_->SetMultiLine(true);
-  info_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  auto info_label = std::make_unique<views::Label>(
+      base::string16(), CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+  info_label->SetMultiLine(true);
+  info_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   hung_pages_table_model_.reset(new HungPagesTableModel(this));
   std::vector<ui::TableColumn> columns;
@@ -460,7 +460,7 @@ void HungRendererDialogView::Init() {
   hung_pages_table_ = hung_pages_table.get();
 
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   constexpr int kColumnSetId = 0;
@@ -469,7 +469,7 @@ void HungRendererDialogView::Init() {
                         views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
-  layout->AddView(info_label_);
+  info_label_ = layout->AddView(std::move(info_label));
 
   layout->AddPaddingRow(
       views::GridLayout::kFixedSize,
@@ -477,8 +477,7 @@ void HungRendererDialogView::Init() {
 
   layout->StartRow(1.0, kColumnSetId);
   layout->AddView(
-      views::TableView::CreateScrollViewWithTable(std::move(hung_pages_table))
-          .release(),
+      views::TableView::CreateScrollViewWithTable(std::move(hung_pages_table)),
       1, 1, views::GridLayout::FILL, views::GridLayout::FILL, kTableViewWidth,
       kTableViewHeight);
 

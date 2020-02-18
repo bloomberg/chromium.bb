@@ -259,8 +259,8 @@ struct fvar
   }
 
   unsigned int get_instance_coords (unsigned int  instance_index,
-					   unsigned int *coords_length, /* IN/OUT */
-					   float        *coords         /* OUT */) const
+				    unsigned int *coords_length, /* IN/OUT */
+				    float        *coords         /* OUT */) const
   {
     const InstanceRecord *instance = get_instance (instance_index);
     if (unlikely (!instance))
@@ -279,6 +279,27 @@ struct fvar
     }
     return axisCount;
   }
+
+  void collect_name_ids (hb_set_t *nameids) const
+  {
+    if (!has_data ()) return;
+
+    + get_axes ()
+    | hb_map (&AxisRecord::axisNameID)
+    | hb_sink (nameids)
+    ;
+
+    + hb_range ((unsigned) instanceCount)
+    | hb_map ([this] (const unsigned _) { return get_instance_subfamily_name_id (_); })
+    | hb_sink (nameids)
+    ;
+
+    + hb_range ((unsigned) instanceCount)
+    | hb_map ([this] (const unsigned _) { return get_instance_postscript_name_id (_); })
+    | hb_sink (nameids)
+    ;
+  }
+
 
   protected:
   hb_array_t<const AxisRecord> get_axes () const

@@ -22,7 +22,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "remoting/host/it2me/it2me_native_messaging_host_chromeos.h"
@@ -48,6 +47,7 @@ constexpr char kCRDResponseHello[] = "helloResponse";
 constexpr char kCRDResponseConnect[] = "connectResponse";
 constexpr char kCRDStateChanged[] = "hostStateChanged";
 constexpr char kCRDResponseDisconnect[] = "disconnectResponse";
+constexpr char kCRDResponseError[] = "error";
 
 // Connect message parameters:
 constexpr char kCRDConnectUserName[] = "userName";
@@ -134,7 +134,8 @@ net::NetworkTrafficAnnotationTag CreateIceConfigRequestAnnotation() {
 }  // namespace
 
 CRDHostDelegate::CRDHostDelegate()
-    : OAuth2TokenService::Consumer("crd_host_delegate"), weak_factory_(this) {}
+    : OAuth2AccessTokenManager::Consumer("crd_host_delegate"),
+      weak_factory_(this) {}
 
 CRDHostDelegate::~CRDHostDelegate() {
 }
@@ -190,7 +191,7 @@ void CRDHostDelegate::FetchOAuthToken(
   chromeos::DeviceOAuth2TokenService* oauth_service =
       chromeos::DeviceOAuth2TokenServiceFactory::Get();
 
-  OAuth2TokenService::ScopeSet scopes;
+  OAuth2AccessTokenManager::ScopeSet scopes;
   scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
   scopes.insert(kCloudDevicesOAuth2Scope);
 
@@ -207,12 +208,12 @@ void CRDHostDelegate::FetchOAuthToken(
   oauth_success_callback_ = std::move(success_callback);
   error_callback_ = std::move(error_callback);
 
-  oauth_request_ = oauth_service->StartRequest(
+  oauth_request_ = oauth_service->StartAccessTokenRequest(
       oauth_service->GetRobotAccountId(), scopes, this);
 }
 
 void CRDHostDelegate::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   oauth_request_.reset();
   error_callback_.Reset();
@@ -220,7 +221,7 @@ void CRDHostDelegate::OnGetTokenSuccess(
 }
 
 void CRDHostDelegate::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const GoogleServiceAuthError& error) {
   oauth_request_.reset();
   oauth_success_callback_.Reset();
@@ -357,7 +358,7 @@ void CRDHostDelegate::PostMessageFromNativeHost(const std::string& message) {
   } else if (type == kCRDResponseDisconnect) {
     OnDisconnectResponse();
     return;
-  } else if (type == kCRDStateChanged) {
+  } else if (type == kCRDStateChanged || type == kCRDResponseError) {
     // Handle CRD host state changes
     auto* state_value =
         message_value->FindKeyOfType(kCRDStateKey, base::Value::Type::STRING);
@@ -383,7 +384,7 @@ void CRDHostDelegate::PostMessageFromNativeHost(const std::string& message) {
     }
     return;
   }
-  LOG(WARNING) << "Unknown message type :" << type;
+  LOG(WARNING) << "Unknown message type: " << type;
 }
 
 void CRDHostDelegate::OnHelloResponse() {

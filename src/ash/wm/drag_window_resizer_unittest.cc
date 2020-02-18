@@ -83,7 +83,8 @@ class DragWindowResizerTest : public AshTestBase {
 
     always_on_top_window_ = window_factory::NewWindow(&delegate2_);
     always_on_top_window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
-    always_on_top_window_->SetProperty(aura::client::kAlwaysOnTopKey, true);
+    always_on_top_window_->SetProperty(aura::client::kZOrderingKey,
+                                       ui::ZOrderLevel::kFloatingWindow);
     always_on_top_window_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(always_on_top_window_.get());
     always_on_top_window_->set_id(2);
@@ -224,7 +225,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     // root window's bounds.
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
     // Window origin should be adjusted for minimum visibility (25px).
-    int expected_x = -50 + wm::kMinimumOnScreenArea;
+    int expected_x = -50 + kMinimumOnScreenArea;
 
     EXPECT_EQ(base::NumberToString(expected_x) + ",10 50x60",
               window_->bounds().ToString());

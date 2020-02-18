@@ -66,10 +66,10 @@ cr.define('extensions', function() {
           Math.min(maxHeight, headerHeight + this.preferredSize_.height);
       const effectiveWidth = Math.max(MIN_WIDTH, this.preferredSize_.width);
 
-      const nativeDialog = this.$.dialog.getNative();
-      nativeDialog.style.height = `${effectiveHeight}px`;
-      nativeDialog.style.width = `${effectiveWidth}px`;
-      nativeDialog.style.opacity = '1';
+      this.$.dialog.style.setProperty(
+          '--dialog-height', `${effectiveHeight}px`);
+      this.$.dialog.style.setProperty('--dialog-width', `${effectiveWidth}px`);
+      this.$.dialog.style.setProperty('--dialog-opacity', 1);
     },
 
     /** @param {chrome.developerPrivate.ExtensionInfo} data */
@@ -113,12 +113,14 @@ cr.define('extensions', function() {
       // still on the details page. We could be on a different page if the
       // user hit back while the options dialog was visible; in that case, the
       // new page is already correct.
-      if (currentPage && currentPage.page == Page.DETAILS) {
+      if (currentPage && currentPage.page == extensions.Page.DETAILS) {
         // This will update the currentPage_ and the NavigationHelper; since
         // the active page is already the details page, no main page
         // transition occurs.
-        extensions.navigation.navigateTo(
-            {page: Page.DETAILS, extensionId: currentPage.extensionId});
+        extensions.navigation.navigateTo({
+          page: extensions.Page.DETAILS,
+          extensionId: currentPage.extensionId
+        });
       }
     },
   });

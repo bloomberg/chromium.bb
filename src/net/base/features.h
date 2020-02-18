@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "net/base/net_export.h"
+#include "net/net_buildflags.h"
 
 namespace net {
 namespace features {
@@ -20,12 +21,6 @@ NET_EXPORT extern const base::Feature kAcceptLanguageHeader;
 // anyone.
 NET_EXPORT extern const base::Feature kCapRefererHeaderLength;
 NET_EXPORT extern const base::FeatureParam<int> kMaxRefererHeaderLength;
-
-// Uses a site isolated code cache that is keyed on the resource url and the
-// origin lock of the renderer that is requesting the resource. The requests
-// to site-isolated code cache are handled by the content/GeneratedCodeCache
-// When this flag is enabled, the metadata field of the HttpCache is unused.
-NET_EXPORT extern const base::Feature kIsolatedCodeCache;
 
 // Enables the additional TLS 1.3 server-random-based downgrade protection
 // described in https://tools.ietf.org/html/rfc8446#section-4.1.3
@@ -41,13 +36,22 @@ NET_EXPORT extern const base::Feature kEnableTLS13EarlyData;
 // quality estimator (NQE).
 NET_EXPORT extern const base::Feature kNetworkQualityEstimator;
 
-// Splits cache entries by the request's top frame's origin if one is available.
-NET_EXPORT extern const base::Feature kSplitCacheByTopFrameOrigin;
+// Splits cache entries by the request's network isolation key if one is
+// available.
+NET_EXPORT extern const base::Feature kSplitCacheByNetworkIsolationKey;
 
 // Partitions connections based on the NetworkIsolationKey associated with a
 // request.
 NET_EXPORT extern const base::Feature
     kPartitionConnectionsByNetworkIsolationKey;
+
+// Partitions TLS sessions and QUIC server configs based on the
+// NetworkIsolationKey associated with a request.
+//
+// This feature requires kPartitionConnectionsByNetworkIsolationKey to be
+// enabled to work.
+NET_EXPORT extern const base::Feature
+    kPartitionSSLSessionsByNetworkIsolationKey;
 
 // Enables sending TLS 1.3 Key Update messages on TLS 1.3 connections in order
 // to ensure that this corner of the spec is exercised. This is currently
@@ -73,6 +77,13 @@ NET_EXPORT extern const base::Feature kSameSiteByDefaultCookies;
 // as secure if set from a secure context. This ONLY has an effect if
 // SameSiteByDefaultCookies is also enabled.
 NET_EXPORT extern const base::Feature kCookiesWithoutSameSiteMustBeSecure;
+
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+// When enabled, use the builtin cert verifier instead of the platform verifier.
+NET_EXPORT extern const base::Feature kCertVerifierBuiltinFeature;
+#endif
+
+NET_EXPORT extern const base::Feature kAppendFrameOriginToNetworkIsolationKey;
 
 }  // namespace features
 }  // namespace net

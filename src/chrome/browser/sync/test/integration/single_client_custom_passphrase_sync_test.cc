@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sync/base/passphrase_enums.h"
-#include "components/sync/base/system_encryptor.h"
 #include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/nigori/cryptographer.h"
 
 namespace {
@@ -30,9 +32,8 @@ using syncer::LoopbackServerEntity;
 using syncer::ModelType;
 using syncer::ModelTypeSet;
 using syncer::PassphraseType;
-using syncer::ProtoPassphraseTypeToEnum;
+using syncer::ProtoPassphraseInt32ToEnum;
 using syncer::SyncService;
-using syncer::SystemEncryptor;
 
 class DatatypeCommitCountingFakeServerObserver : public FakeServer::Observer {
  public:
@@ -140,9 +141,9 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
       const std::string& passphrase) {
     NigoriSpecifics nigori;
     EXPECT_TRUE(GetServerNigori(GetFakeServer(), &nigori));
-    EXPECT_EQ(ProtoPassphraseTypeToEnum(nigori.passphrase_type()),
+    EXPECT_EQ(ProtoPassphraseInt32ToEnum(nigori.passphrase_type()),
               PassphraseType::CUSTOM_PASSPHRASE);
-    auto cryptographer = std::make_unique<Cryptographer>(&system_encryptor_);
+    auto cryptographer = std::make_unique<Cryptographer>();
     InitCustomPassphraseCryptographerFromNigori(nigori, cryptographer.get(),
                                                 passphrase);
     return cryptographer;
@@ -153,7 +154,7 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
   // does not depend on external info.
   std::unique_ptr<Cryptographer> CreateCryptographerWithKeyParams(
       const KeyParams& key_params) {
-    auto cryptographer = std::make_unique<Cryptographer>(&system_encryptor_);
+    auto cryptographer = std::make_unique<Cryptographer>();
     cryptographer->AddKey(key_params);
     return cryptographer;
   }
@@ -169,27 +170,36 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
   }
 
  private:
-  SystemEncryptor system_encryptor_;
-
   DISALLOW_COPY_AND_ASSIGN(SingleClientCustomPassphraseSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
-                       CommitsEncryptedData) {
-  SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
-  ASSERT_TRUE(SetupSync());
+class SingleClientCustomPassphraseSyncTestWithUssTests
+    : public SingleClientCustomPassphraseSyncTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  SingleClientCustomPassphraseSyncTestWithUssTests() {
+    if (GetParam()) {
+      // USS Nigori requires USS implementations to be enabled for all
+      // datatypes.
+      override_features_.InitWithFeatures(
+          /*enabled_features=*/{switches::kSyncUSSBookmarks,
+                                switches::kSyncUSSPasswords,
+                                switches::kSyncUSSAutofillWalletMetadata,
+                                switches::kSyncUSSNigori},
+          /*disabled_features=*/{});
+    } else {
+      // We test Directory Nigori with default values of USS feature flags of
+      // other datatypes.
+      override_features_.InitAndDisableFeature(switches::kSyncUSSNigori);
+    }
+  }
+  ~SingleClientCustomPassphraseSyncTestWithUssTests() override = default;
 
-  ASSERT_TRUE(
-      AddURL(/*profile=*/0, "Hello world", GURL("https://google.com/")));
-  ASSERT_TRUE(
-      AddURL(/*profile=*/0, "Bookmark #2", GURL("https://example.com/")));
-  ASSERT_TRUE(WaitForNigori(PassphraseType::CUSTOM_PASSPHRASE));
+ private:
+  base::test::ScopedFeatureList override_features_;
 
-  EXPECT_TRUE(WaitForEncryptedServerBookmarks(
-      {{"Hello world", GURL("https://google.com/")},
-       {"Bookmark #2", GURL("https://example.com/")}},
-      /*passphrase=*/"hunter2"));
-}
+  DISALLOW_COPY_AND_ASSIGN(SingleClientCustomPassphraseSyncTestWithUssTests);
+};
 
 class SingleClientCustomPassphraseForceDisableScryptSyncTest
     : public SingleClientCustomPassphraseSyncTest {
@@ -202,7 +212,7 @@ class SingleClientCustomPassphraseForceDisableScryptSyncTest
 };
 
 class SingleClientCustomPassphraseDoNotUseScryptSyncTest
-    : public SingleClientCustomPassphraseSyncTest {
+    : public SingleClientCustomPassphraseSyncTestWithUssTests {
  public:
   SingleClientCustomPassphraseDoNotUseScryptSyncTest()
       : features_(/*force_disabled=*/false, /*use_for_new_passphrases=*/false) {
@@ -222,7 +232,43 @@ class SingleClientCustomPassphraseUseScryptSyncTest
   ScopedScryptFeatureToggler features_;
 };
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
+                       CommitsEncryptedData) {
+  SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
+  ASSERT_TRUE(SetupSync());
+
+  ASSERT_TRUE(
+      AddURL(/*profile=*/0, "Hello world", GURL("https://google.com/")));
+  ASSERT_TRUE(
+      AddURL(/*profile=*/0, "Bookmark #2", GURL("https://example.com/")));
+  ASSERT_TRUE(WaitForNigori(PassphraseType::CUSTOM_PASSPHRASE));
+
+  EXPECT_TRUE(WaitForEncryptedServerBookmarks(
+      {{"Hello world", GURL("https://google.com/")},
+       {"Bookmark #2", GURL("https://example.com/")}},
+      /*passphrase=*/"hunter2"));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
+                       CanDecryptPbkdf2KeyEncryptedData) {
+  KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), "hunter2"};
+  InjectEncryptedServerBookmark("PBKDF2-encrypted bookmark",
+                                GURL("http://example.com/doesnt-matter"),
+                                key_params);
+  SetNigoriInFakeServer(GetFakeServer(),
+                        CreateCustomPassphraseNigori(key_params));
+  SetDecryptionPassphraseForClient(/*index=*/0, "hunter2");
+  ASSERT_TRUE(SetupSync());
+  EXPECT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/false));
+
+  EXPECT_TRUE(WaitForClientBookmarkWithTitle("PBKDF2-encrypted bookmark"));
+}
+
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientCustomPassphraseSyncTestWithUssTests,
+                         testing::Values(false, true));
+
+IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        CommitsEncryptedDataUsingPbkdf2WhenScryptDisabled) {
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
   ASSERT_TRUE(SetupSync());
@@ -257,22 +303,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseUseScryptSyncTest,
       /*passphrase=*/"hunter2"));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
-                       CanDecryptPbkdf2KeyEncryptedData) {
-  KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), "hunter2"};
-  InjectEncryptedServerBookmark("PBKDF2-encrypted bookmark",
-                                GURL("http://example.com/doesnt-matter"),
-                                key_params);
-  SetNigoriInFakeServer(GetFakeServer(),
-                        CreateCustomPassphraseNigori(key_params));
-  SetDecryptionPassphraseForClient(/*index=*/0, "hunter2");
-  ASSERT_TRUE(SetupSync());
-  EXPECT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/false));
-
-  EXPECT_TRUE(WaitForClientBookmarkWithTitle("PBKDF2-encrypted bookmark"));
-}
-
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled) {
   KeyParams key_params = {
       KeyDerivationParams::CreateForScrypt("someConstantSalt"), "hunter2"};
@@ -324,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/true));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        DoesNotLeakUnencryptedData) {
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
   DatatypeCommitCountingFakeServerObserver observer(GetFakeServer());
@@ -344,10 +375,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
   EXPECT_TRUE(WaitForEncryptedServerBookmarks(
       {{"Should be encrypted", GURL("https://google.com/encrypted")}},
       {KeyDerivationParams::CreateForPbkdf2(), "hunter2"}));
-  EXPECT_EQ(observer.GetCommitCountForDatatype(syncer::BOOKMARKS), 1);
+  // Initial bookmarks sync would actually create and commit the permanent
+  // bookmark folders. Therefore, should be 2 commits by now.
+  EXPECT_EQ(observer.GetCommitCountForDatatype(syncer::BOOKMARKS), 2);
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        ReencryptsDataWhenPassphraseIsSet) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(WaitForNigori(PassphraseType::KEYSTORE_PASSPHRASE));
@@ -368,5 +401,62 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
   EXPECT_TRUE(WaitForEncryptedServerBookmarks(
       expected, {KeyDerivationParams::CreateForPbkdf2(), "hunter2"}));
 }
+
+// TODO(https://crbug.com/952074): re-enable once flakiness is addressed.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_PRE_ShouldLoadUSSCustomPassphraseInDirectoryMode \
+  DISABLED_PRE_ShouldLoadUSSCustomPassphraseInDirectoryMode
+#else
+#define MAYBE_PRE_ShouldLoadUSSCustomPassphraseInDirectoryMode \
+  PRE_ShouldLoadUSSCustomPassphraseInDirectoryMode
+#endif
+
+IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
+                       PRE_ShouldLoadUSSCustomPassphraseInDirectoryMode) {
+  base::test::ScopedFeatureList override_features;
+  // TODO(crbug.com/922900): Don't disable scrypt derivation and use it as key
+  // derivation method in ShouldLoadUSSCustomPassphraseInDirectoryMode, once
+  // USS implementation support it for new passphrases.
+  override_features.InitWithFeatures(
+      /*enabled_features=*/{switches::kSyncUSSBookmarks,
+                            switches::kSyncUSSPasswords,
+                            switches::kSyncUSSAutofillWalletMetadata,
+                            switches::kSyncUSSNigori},
+      /*disabled_features=*/{switches::kSyncUseScryptForNewCustomPassphrases});
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(WaitForNigori(PassphraseType::KEYSTORE_PASSPHRASE));
+  GetSyncService()->GetUserSettings()->SetEncryptionPassphrase("hunter2");
+  ASSERT_TRUE(WaitForNigori(PassphraseType::CUSTOM_PASSPHRASE));
+}
+
+// TODO(https://crbug.com/952074): re-enable once flakiness is addressed.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_ShouldLoadUSSCustomPassphraseInDirectoryMode \
+  DISABLED_ShouldLoadUSSCustomPassphraseInDirectoryMode
+#else
+#define MAYBE_ShouldLoadUSSCustomPassphraseInDirectoryMode \
+  ShouldLoadUSSCustomPassphraseInDirectoryMode
+#endif
+
+IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
+                       ShouldLoadUSSCustomPassphraseInDirectoryMode) {
+  // We should be able to decrypt bookmarks with passphrase, which was set when
+  // kSyncUSSNigori was enabled, without providing it again once kSyncUSSNigori
+  // is disabled.
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndDisableFeature(switches::kSyncUSSNigori);
+  const KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(),
+                                "hunter2"};
+  InjectEncryptedServerBookmark(
+      "some bookmark", GURL("http://example.com/doesnt-matter"), key_params);
+  ASSERT_TRUE(SetupClients());
+
+  EXPECT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/false));
+  EXPECT_TRUE(WaitForClientBookmarkWithTitle("some bookmark"));
+}
+
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientCustomPassphraseDoNotUseScryptSyncTest,
+                         testing::Values(false, true));
 
 }  // namespace

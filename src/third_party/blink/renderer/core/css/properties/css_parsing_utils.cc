@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_path_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -40,7 +41,6 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -88,11 +89,6 @@ CSSIdentifierValue* ConsumeOverflowPositionKeyword(CSSParserTokenRange& range) {
   return IsOverflowKeyword(range.Peek().Id())
              ? css_property_parser_helpers::ConsumeIdent(range)
              : nullptr;
-}
-
-bool IsBaselineKeyword(CSSValueID id) {
-  return css_property_parser_helpers::IdentMatches<
-      CSSValueID::kFirst, CSSValueID::kLast, CSSValueID::kBaseline>(id);
 }
 
 CSSValueID GetBaselineKeyword(CSSValue& value) {
@@ -142,9 +138,27 @@ CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
       case CSSValueID::kStart:
         position = StepsTimingFunction::StepPosition::START;
         break;
+
       case CSSValueID::kEnd:
         position = StepsTimingFunction::StepPosition::END;
         break;
+
+      case CSSValueID::kJumpBoth:
+        position = StepsTimingFunction::StepPosition::JUMP_BOTH;
+        break;
+
+      case CSSValueID::kJumpEnd:
+        position = StepsTimingFunction::StepPosition::JUMP_END;
+        break;
+
+      case CSSValueID::kJumpNone:
+        position = StepsTimingFunction::StepPosition::JUMP_NONE;
+        break;
+
+      case CSSValueID::kJumpStart:
+        position = StepsTimingFunction::StepPosition::JUMP_START;
+        break;
+
       default:
         return nullptr;
     }
@@ -152,6 +166,12 @@ CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
 
   if (!args.AtEnd())
     return nullptr;
+
+  // Steps(n, jump-none) requires n >= 2.
+  if (position == StepsTimingFunction::StepPosition::JUMP_NONE &&
+      steps->GetIntValue() < 2) {
+    return nullptr;
+  }
 
   range = range_copy;
   return CSSStepsTimingFunctionValue::Create(steps->GetIntValue(), position);
@@ -371,7 +391,7 @@ bool ConsumePerspective(CSSParserTokenRange& args,
       return false;
     }
     context.Count(WebFeature::kUnitlessPerspectiveInTransformProperty);
-    parsed_value = CSSPrimitiveValue::Create(
+    parsed_value = CSSNumericLiteralValue::Create(
         perspective, CSSPrimitiveValue::UnitType::kPixels);
   }
   if (!parsed_value)
@@ -403,6 +423,11 @@ bool ConsumeTranslate3d(CSSParserTokenRange& args,
 }
 
 }  // namespace
+
+bool IsBaselineKeyword(CSSValueID id) {
+  return css_property_parser_helpers::IdentMatches<
+      CSSValueID::kFirst, CSSValueID::kLast, CSSValueID::kBaseline>(id);
+}
 
 bool IsSelfPositionKeyword(CSSValueID id) {
   return css_property_parser_helpers::IdentMatches<
@@ -1181,12 +1206,9 @@ CSSShadowValue* ParseSingleShadow(CSSParserTokenRange& range,
     return nullptr;
 
   CSSPrimitiveValue* blur_radius = css_property_parser_helpers::ConsumeLength(
-      range, css_parser_mode, kValueRangeAll);
+      range, css_parser_mode, kValueRangeNonNegative);
   CSSPrimitiveValue* spread_distance = nullptr;
   if (blur_radius) {
-    // Blur radius must be non-negative.
-    if (blur_radius->GetDoubleValue() < 0)
-      return nullptr;
     if (inset_and_spread == AllowInsetAndSpread::kAllow) {
       spread_distance = css_property_parser_helpers::ConsumeLength(
           range, css_parser_mode, kValueRangeAll);
@@ -1272,20 +1294,23 @@ CSSValue* ConsumeCounter(CSSParserTokenRange& range,
       value = clampTo<int>(counter_value->GetDoubleValue());
     list->Append(*MakeGarbageCollected<CSSValuePair>(
         counter_name,
-        CSSPrimitiveValue::Create(value, CSSPrimitiveValue::UnitType::kInteger),
+        CSSNumericLiteralValue::Create(value,
+                                       CSSPrimitiveValue::UnitType::kInteger),
         CSSValuePair::kDropIdenticalValues));
   } while (!range.AtEnd());
   return list;
 }
 
 CSSValue* ConsumeFontSize(CSSParserTokenRange& range,
-                          CSSParserMode css_parser_mode,
+                          const CSSParserContext& context,
                           css_property_parser_helpers::UnitlessQuirk unitless) {
+  if (range.Peek().Id() == CSSValueID::kWebkitXxxLarge)
+    context.Count(WebFeature::kFontSizeWebkitXxxLarge);
   if (range.Peek().Id() >= CSSValueID::kXxSmall &&
       range.Peek().Id() <= CSSValueID::kLarger)
     return css_property_parser_helpers::ConsumeIdent(range);
   return css_property_parser_helpers::ConsumeLengthOrPercent(
-      range, css_parser_mode, kValueRangeNonNegative, unitless);
+      range, context.Mode(), kValueRangeNonNegative, unitless);
 }
 
 CSSValue* ConsumeLineHeight(CSSParserTokenRange& range,
@@ -1585,7 +1610,7 @@ CSSValue* ConsumeGridBreadth(CSSParserTokenRange& range,
       token.GetUnitType() == CSSPrimitiveValue::UnitType::kFraction) {
     if (range.Peek().NumericValue() < 0)
       return nullptr;
-    return CSSPrimitiveValue::Create(
+    return CSSNumericLiteralValue::Create(
         range.ConsumeIncludingWhitespace().NumericValue(),
         CSSPrimitiveValue::UnitType::kFraction);
   }
@@ -1880,7 +1905,7 @@ CSSValue* ConsumeGridLine(CSSParserTokenRange& range,
                      // invalid.
 
   if (numeric_value) {
-    numeric_value = CSSPrimitiveValue::Create(
+    numeric_value = CSSNumericLiteralValue::Create(
         clampTo(numeric_value->GetIntValue(), -kGridMaxTracks, kGridMaxTracks),
         CSSPrimitiveValue::UnitType::kInteger);
   }
@@ -2553,7 +2578,7 @@ CSSValue* ConsumeTransitionProperty(CSSParserTokenRange& range,
       unresolved_property != CSSPropertyID::kVariable) {
 #if DCHECK_IS_ON()
     DCHECK(CSSProperty::Get(resolveCSSPropertyID(unresolved_property))
-               .IsEnabled());
+               .IsWebExposed());
 #endif
     range.ConsumeIncludingWhitespace();
     return MakeGarbageCollected<CSSCustomIdentValue>(unresolved_property);

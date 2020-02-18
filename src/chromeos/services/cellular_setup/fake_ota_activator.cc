@@ -15,6 +15,11 @@ FakeOtaActivator::FakeOtaActivator(base::OnceClosure on_finished_callback)
 
 FakeOtaActivator::~FakeOtaActivator() = default;
 
+void FakeOtaActivator::OnCarrierPortalStatusChange(
+    mojom::CarrierPortalStatus status) {
+  fake_carrier_portal_handler_.OnCarrierPortalStatusChange(status);
+}
+
 }  // namespace cellular_setup
 
 }  // namespace chromeos

@@ -8,6 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "pc/rtc_stats_collector.h"
+
 #include <ctype.h>
 
 #include <algorithm>
@@ -30,7 +32,6 @@
 #include "p2p/base/port.h"
 #include "pc/media_stream.h"
 #include "pc/media_stream_track.h"
-#include "pc/rtc_stats_collector.h"
 #include "pc/test/fake_peer_connection_for_stats.h"
 #include "pc/test/mock_data_channel.h"
 #include "pc/test/mock_rtp_receiver_internal.h"
@@ -1438,9 +1439,6 @@ TEST_F(RTCStatsCollectorTest,
   cricket::VoiceSenderInfo voice_sender_info_ssrc1;
   voice_sender_info_ssrc1.local_stats.push_back(cricket::SsrcSenderInfo());
   voice_sender_info_ssrc1.local_stats[0].ssrc = 1;
-  voice_sender_info_ssrc1.audio_level = 32767;
-  voice_sender_info_ssrc1.total_input_energy = 0.25;
-  voice_sender_info_ssrc1.total_input_duration = 0.5;
   voice_sender_info_ssrc1.apm_statistics.echo_return_loss = 42.0;
   voice_sender_info_ssrc1.apm_statistics.echo_return_loss_enhancement = 52.0;
 
@@ -1471,9 +1469,6 @@ TEST_F(RTCStatsCollectorTest,
   expected_local_audio_track_ssrc1.remote_source = false;
   expected_local_audio_track_ssrc1.ended = true;
   expected_local_audio_track_ssrc1.detached = false;
-  expected_local_audio_track_ssrc1.audio_level = 1.0;
-  expected_local_audio_track_ssrc1.total_audio_energy = 0.25;
-  expected_local_audio_track_ssrc1.total_samples_duration = 0.5;
   expected_local_audio_track_ssrc1.echo_return_loss = 42.0;
   expected_local_audio_track_ssrc1.echo_return_loss_enhancement = 52.0;
   ASSERT_TRUE(report->Get(expected_local_audio_track_ssrc1.id()))
@@ -1728,7 +1723,6 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Audio) {
   voice_media_info.receivers[0].bytes_rcvd = 3;
   voice_media_info.receivers[0].codec_payload_type = 42;
   voice_media_info.receivers[0].jitter_ms = 4500;
-  voice_media_info.receivers[0].fraction_lost = 5.5f;
   voice_media_info.receivers[0].last_packet_received_timestamp_ms =
       absl::nullopt;
 
@@ -1766,7 +1760,6 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Audio) {
   expected_audio.packets_lost = -1;
   // |expected_audio.last_packet_received_timestamp| should be undefined.
   expected_audio.jitter = 4.5;
-  expected_audio.fraction_lost = 5.5;
   ASSERT_TRUE(report->Get(expected_audio.id()));
   EXPECT_EQ(
       report->Get(expected_audio.id())->cast_to<RTCInboundRTPStreamStats>(),
@@ -1798,13 +1791,14 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Video) {
   video_media_info.receivers[0].packets_rcvd = 2;
   video_media_info.receivers[0].packets_lost = 42;
   video_media_info.receivers[0].bytes_rcvd = 3;
-  video_media_info.receivers[0].fraction_lost = 4.5f;
   video_media_info.receivers[0].codec_payload_type = 42;
   video_media_info.receivers[0].firs_sent = 5;
   video_media_info.receivers[0].plis_sent = 6;
   video_media_info.receivers[0].nacks_sent = 7;
   video_media_info.receivers[0].frames_decoded = 8;
+  video_media_info.receivers[0].key_frames_decoded = 3;
   video_media_info.receivers[0].qp_sum = absl::nullopt;
+  video_media_info.receivers[0].total_decode_time_ms = 9000;
   video_media_info.receivers[0].last_packet_received_timestamp_ms =
       absl::nullopt;
   video_media_info.receivers[0].content_type = VideoContentType::UNSPECIFIED;
@@ -1839,9 +1833,10 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Video) {
   expected_video.packets_received = 2;
   expected_video.bytes_received = 3;
   expected_video.packets_lost = 42;
-  expected_video.fraction_lost = 4.5;
   expected_video.frames_decoded = 8;
+  expected_video.key_frames_decoded = 3;
   // |expected_video.qp_sum| should be undefined.
+  expected_video.total_decode_time = 9.0;
   // |expected_video.last_packet_received_timestamp| should be undefined.
   // |expected_video.content_type| should be undefined.
 
@@ -1942,6 +1937,7 @@ TEST_F(RTCStatsCollectorTest, CollectRTCOutboundRTPStreamStats_Video) {
   video_media_info.senders[0].retransmitted_bytes_sent = 60;
   video_media_info.senders[0].codec_payload_type = 42;
   video_media_info.senders[0].frames_encoded = 8;
+  video_media_info.senders[0].key_frames_encoded = 3;
   video_media_info.senders[0].total_encode_time_ms = 9000;
   video_media_info.senders[0].total_encoded_bytes_target = 1234;
   video_media_info.senders[0].total_packet_send_delay_ms = 10000;
@@ -1989,6 +1985,7 @@ TEST_F(RTCStatsCollectorTest, CollectRTCOutboundRTPStreamStats_Video) {
   expected_video.bytes_sent = 6;
   expected_video.retransmitted_bytes_sent = 60;
   expected_video.frames_encoded = 8;
+  expected_video.key_frames_encoded = 3;
   expected_video.total_encode_time = 9.0;
   expected_video.total_encoded_bytes_target = 1234;
   expected_video.total_packet_send_delay = 10.0;
@@ -2217,6 +2214,9 @@ TEST_F(RTCStatsCollectorTest, RTCAudioSourceStatsCollectedForSenderWithTrack) {
   voice_media_info.senders.push_back(cricket::VoiceSenderInfo());
   voice_media_info.senders[0].local_stats.push_back(cricket::SsrcSenderInfo());
   voice_media_info.senders[0].local_stats[0].ssrc = kSsrc;
+  voice_media_info.senders[0].audio_level = 32767;  // [0,32767]
+  voice_media_info.senders[0].total_input_energy = 2.0;
+  voice_media_info.senders[0].total_input_duration = 3.0;
   auto* voice_media_channel = pc_->AddVoiceChannel("AudioMid", "TransportName");
   voice_media_channel->SetStats(voice_media_info);
   stats_->SetupLocalTrackAndSender(cricket::MEDIA_TYPE_AUDIO,
@@ -2229,6 +2229,9 @@ TEST_F(RTCStatsCollectorTest, RTCAudioSourceStatsCollectedForSenderWithTrack) {
                                      report->timestamp_us());
   expected_audio.track_identifier = "LocalAudioTrackID";
   expected_audio.kind = "audio";
+  expected_audio.audio_level = 1.0;  // [0,1]
+  expected_audio.total_audio_energy = 2.0;
+  expected_audio.total_samples_duration = 3.0;
 
   ASSERT_TRUE(report->Get(expected_audio.id()));
   EXPECT_EQ(report->Get(expected_audio.id())->cast_to<RTCAudioSourceStats>(),

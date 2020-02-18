@@ -126,17 +126,17 @@ class Buffer final : public ui::GbmBuffer {
     DCHECK_LT(plane, handle_.planes.size());
     return handle_.planes[plane].fd.get();
   }
-  int GetPlaneStride(size_t plane) const override {
+  uint32_t GetPlaneStride(size_t plane) const override {
     DCHECK_LT(plane, handle_.planes.size());
     return handle_.planes[plane].stride;
   }
-  int GetPlaneOffset(size_t plane) const override {
+  size_t GetPlaneOffset(size_t plane) const override {
     DCHECK_LT(plane, handle_.planes.size());
     return handle_.planes[plane].offset;
   }
   size_t GetPlaneSize(size_t plane) const override {
     DCHECK_LT(plane, handle_.planes.size());
-    return handle_.planes[plane].size;
+    return static_cast<size_t>(handle_.planes[plane].size);
   }
   uint32_t GetPlaneHandle(size_t plane) const override {
     DCHECK_LT(plane, handle_.planes.size());
@@ -175,16 +175,16 @@ class Buffer final : public ui::GbmBuffer {
     buffer->mmap_data_ = nullptr;
   }
 
-  gbm_bo* bo_ = nullptr;
+  gbm_bo* const bo_;
   void* mmap_data_ = nullptr;
 
-  uint32_t format_ = 0;
-  uint64_t format_modifier_ = 0;
-  uint32_t flags_ = 0;
+  const uint32_t format_;
+  const uint64_t format_modifier_;
+  const uint32_t flags_;
 
-  gfx::Size size_;
+  const gfx::Size size_;
 
-  gfx::NativePixmapHandle handle_;
+  const gfx::NativePixmapHandle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
@@ -261,7 +261,7 @@ class Device final : public ui::GbmDevice {
       uint32_t format,
       const gfx::Size& size,
       gfx::NativePixmapHandle handle) override {
-    DCHECK_EQ(handle.planes[0].offset, 0);
+    DCHECK_EQ(handle.planes[0].offset, 0u);
 
     // Try to use scanout if supported.
     int gbm_flags = GBM_BO_USE_SCANOUT;
@@ -304,7 +304,7 @@ class Device final : public ui::GbmDevice {
   }
 
  private:
-  gbm_device* device_;
+  gbm_device* const device_;
 
   DISALLOW_COPY_AND_ASSIGN(Device);
 };

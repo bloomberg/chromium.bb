@@ -18,8 +18,8 @@
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "mojo/public/interfaces/bindings/tests/new_endpoint_types.test-mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -71,7 +71,7 @@ class FactoryImpl : public mojom::WidgetFactory {
 
  private:
   mojo::Receiver<mojom::WidgetFactory> receiver_;
-  mojo::OwnedReceiverSet<mojom::Widget> widgets_;
+  mojo::UniqueReceiverSet<mojom::Widget> widgets_;
 
   DISALLOW_COPY_AND_ASSIGN(FactoryImpl);
 };

@@ -15,6 +15,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "api/media_transport_interface.h"
@@ -31,6 +32,7 @@
 #include "pc/stats_collector.h"
 #include "pc/stream_collection.h"
 #include "pc/webrtc_session_description_factory.h"
+#include "rtc_base/experiments/field_trial_parser.h"
 #include "rtc_base/race_checker.h"
 #include "rtc_base/unique_id_generator.h"
 
@@ -62,23 +64,45 @@ class PeerConnection : public PeerConnectionInternal,
                        public rtc::MessageHandler,
                        public sigslot::has_slots<> {
  public:
+  // A bit in the usage pattern is registered when its defining event occurs at
+  // least once.
   enum class UsageEvent : int {
     TURN_SERVER_ADDED = 0x01,
     STUN_SERVER_ADDED = 0x02,
     DATA_ADDED = 0x04,
     AUDIO_ADDED = 0x08,
     VIDEO_ADDED = 0x10,
-    SET_LOCAL_DESCRIPTION_CALLED = 0x20,
-    SET_REMOTE_DESCRIPTION_CALLED = 0x40,
+    // |SetLocalDescription| returns successfully.
+    SET_LOCAL_DESCRIPTION_SUCCEEDED = 0x20,
+    // |SetRemoteDescription| returns successfully.
+    SET_REMOTE_DESCRIPTION_SUCCEEDED = 0x40,
+    // A local candidate (with type host, server-reflexive, or relay) is
+    // collected.
     CANDIDATE_COLLECTED = 0x80,
-    REMOTE_CANDIDATE_ADDED = 0x100,
+    // A remote candidate is successfully added via |AddIceCandidate|.
+    ADD_ICE_CANDIDATE_SUCCEEDED = 0x100,
     ICE_STATE_CONNECTED = 0x200,
     CLOSE_CALLED = 0x400,
+    // A local candidate with private IP is collected.
     PRIVATE_CANDIDATE_COLLECTED = 0x800,
+    // A remote candidate with private IP is added, either via AddiceCandidate
+    // or from the remote description.
     REMOTE_PRIVATE_CANDIDATE_ADDED = 0x1000,
+    // A local mDNS candidate is collected.
     MDNS_CANDIDATE_COLLECTED = 0x2000,
+    // A remote mDNS candidate is added, either via AddIceCandidate or from the
+    // remote description.
     REMOTE_MDNS_CANDIDATE_ADDED = 0x4000,
-    MAX_VALUE = 0x8000,
+    // A local candidate with IPv6 address is collected.
+    IPV6_CANDIDATE_COLLECTED = 0x8000,
+    // A remote candidate with IPv6 address is added, either via AddIceCandidate
+    // or from the remote description.
+    REMOTE_IPV6_CANDIDATE_ADDED = 0x10000,
+    // A remote candidate (with type host, server-reflexive, or relay) is
+    // successfully added, either via AddIceCandidate or from the remote
+    // description.
+    REMOTE_CANDIDATE_ADDED = 0x20000,
+    MAX_VALUE = 0x40000,
   };
 
   explicit PeerConnection(PeerConnectionFactory* factory,
@@ -168,6 +192,8 @@ class PeerConnection : public PeerConnectionInternal,
   const SessionDescriptionInterface* pending_remote_description()
       const override;
 
+  void RestartIce() override;
+
   // JSEP01
   void CreateOffer(CreateSessionDescriptionObserver* observer,
                    const RTCOfferAnswerOptions& options) override;
@@ -195,10 +221,6 @@ class PeerConnection : public PeerConnectionInternal,
 
   RTCError SetBitrate(const BitrateSettings& bitrate) override;
 
-  void SetBitrateAllocationStrategy(
-      std::unique_ptr<rtc::BitrateAllocationStrategy>
-          bitrate_allocation_strategy) override;
-
   void SetAudioPlayout(bool playout) override;
   void SetAudioRecording(bool recording) override;
 
@@ -209,8 +231,6 @@ class PeerConnection : public PeerConnectionInternal,
 
   rtc::scoped_refptr<SctpTransportInterface> GetSctpTransport() const override;
 
-  RTC_DEPRECATED bool StartRtcEventLog(rtc::PlatformFile file,
-                                       int64_t max_size_bytes) override;
   bool StartRtcEventLog(std::unique_ptr<RtcEventLogOutput> output,
                         int64_t output_period_ms) override;
   bool StartRtcEventLog(std::unique_ptr<RtcEventLogOutput> output) override;
@@ -292,6 +312,13 @@ class PeerConnection : public PeerConnectionInternal,
  private:
   class SetRemoteDescriptionObserverAdapter;
   friend class SetRemoteDescriptionObserverAdapter;
+  // Represents the [[LocalIceCredentialsToReplace]] internal slot in the spec.
+  // It makes the next CreateOffer() produce new ICE credentials even if
+  // RTCOfferAnswerOptions::ice_restart is false.
+  // https://w3c.github.io/webrtc-pc/#dfn-localufragstoreplace
+  // TODO(hbos): When JsepTransportController/JsepTransport supports rollback,
+  // move this type of logic to JsepTransportController/JsepTransport.
+  class LocalIceCredentialsToReplace;
 
   struct RtpSenderInfo {
     RtpSenderInfo() : first_ssrc(0) {}
@@ -309,6 +336,28 @@ class PeerConnection : public PeerConnectionInternal,
     // An RtpSender can have many SSRCs. The first one is used as a sort of ID
     // for communicating with the lower layers.
     uint32_t first_ssrc;
+  };
+
+  // Field-trial based configuration for datagram transport.
+  struct DatagramTransportConfig {
+    explicit DatagramTransportConfig(const std::string& field_trial)
+        : enabled("enabled", true), default_value("default_value", false) {
+      ParseFieldTrial({&enabled, &default_value}, field_trial);
+    }
+
+    // Whether datagram transport support is enabled at all.  Defaults to true,
+    // allowing datagram transport to be used if (a) the application provides a
+    // factory for it and (b) the configuration specifies its use.  This flag
+    // provides a kill-switch to force-disable datagram transport across all
+    // applications, without code changes.
+    FieldTrialFlag enabled;
+
+    // Whether the datagram transport is enabled or disabled by default.
+    // Defaults to false, meaning that applications must configure use of
+    // datagram transport through RTCConfiguration.  If set to true,
+    // applications will use the datagram transport by default (but may still
+    // explicitly configure themselves not to use it through RTCConfiguration).
+    FieldTrialFlag default_value;
   };
 
   // Implements MessageHandler.
@@ -415,11 +464,17 @@ class PeerConnection : public PeerConnectionInternal,
       PeerConnectionInterface::PeerConnectionState new_state)
       RTC_RUN_ON(signaling_thread());
 
-  // Called any time the IceGatheringState changes
+  // Called any time the IceGatheringState changes.
   void OnIceGatheringChange(IceGatheringState new_state)
       RTC_RUN_ON(signaling_thread());
   // New ICE candidate has been gathered.
   void OnIceCandidate(std::unique_ptr<IceCandidateInterface> candidate)
+      RTC_RUN_ON(signaling_thread());
+  // Gathering of an ICE candidate failed.
+  void OnIceCandidateError(const std::string& host_candidate,
+                           const std::string& url,
+                           int error_code,
+                           const std::string& error_text)
       RTC_RUN_ON(signaling_thread());
   // Some local ICE candidates have been removed.
   void OnIceCandidatesRemoved(const std::vector<cricket::Candidate>& candidates)
@@ -1002,6 +1057,9 @@ class PeerConnection : public PeerConnectionInternal,
       const std::string& transport_name,
       const std::vector<cricket::Candidate>& candidates)
       RTC_RUN_ON(signaling_thread());
+  void OnTransportControllerCandidateError(
+      const cricket::IceCandidateErrorEvent& event)
+      RTC_RUN_ON(signaling_thread());
   void OnTransportControllerCandidatesRemoved(
       const std::vector<cricket::Candidate>& candidates)
       RTC_RUN_ON(signaling_thread());
@@ -1026,6 +1084,10 @@ class PeerConnection : public PeerConnectionInternal,
 
   void ReportNegotiatedCiphers(const cricket::TransportStats& stats,
                                const std::set<cricket::MediaType>& media_types)
+      RTC_RUN_ON(signaling_thread());
+  void ReportIceCandidateCollected(const cricket::Candidate& candidate)
+      RTC_RUN_ON(signaling_thread());
+  void ReportRemoteIceCandidateAdded(const cricket::Candidate& candidate)
       RTC_RUN_ON(signaling_thread());
 
   void NoteUsageEvent(UsageEvent event);
@@ -1114,6 +1176,12 @@ class PeerConnection : public PeerConnectionInternal,
       kIceGatheringNew;
   PeerConnectionInterface::RTCConfiguration configuration_
       RTC_GUARDED_BY(signaling_thread());
+
+  // Field-trial based configuration for datagram transport.
+  const DatagramTransportConfig datagram_transport_config_;
+
+  // Final, resolved value for whether datagram transport is in use.
+  bool use_datagram_transport_ RTC_GUARDED_BY(signaling_thread()) = false;
 
   // Cache configuration_.use_media_transport so that we can access it from
   // other threads.
@@ -1334,6 +1402,8 @@ class PeerConnection : public PeerConnectionInternal,
   std::unique_ptr<webrtc::VideoBitrateAllocatorFactory>
       video_bitrate_allocator_factory_;
 
+  std::unique_ptr<LocalIceCredentialsToReplace>
+      local_ice_credentials_to_replace_ RTC_GUARDED_BY(signaling_thread());
   bool is_negotiation_needed_ RTC_GUARDED_BY(signaling_thread()) = false;
 };
 

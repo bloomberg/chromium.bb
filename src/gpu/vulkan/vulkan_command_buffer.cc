@@ -13,7 +13,9 @@ namespace gpu {
 
 namespace {
 
-VkPipelineStageFlags GetPipelineStageFlags(const VkImageLayout layout) {
+VkPipelineStageFlags GetPipelineStageFlags(
+    const VulkanDeviceQueue* device_queue,
+    const VkImageLayout layout) {
   switch (layout) {
     case VK_IMAGE_LAYOUT_UNDEFINED:
       return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
@@ -26,12 +28,18 @@ VkPipelineStageFlags GetPipelineStageFlags(const VkImageLayout layout) {
       return VK_PIPELINE_STAGE_TRANSFER_BIT;
     case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
       return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-      return VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
-             VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT |
-             VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT |
-             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
-             VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL: {
+      VkPipelineStageFlags flags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
+                                   VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+      if (device_queue->enabled_device_features().tessellationShader) {
+        flags |= VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
+                 VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT;
+      }
+      if (device_queue->enabled_device_features().geometryShader) {
+        flags |= VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
+      }
+      return flags;
+    }
     case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
       return VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
     default:
@@ -207,24 +215,24 @@ bool VulkanCommandBuffer::SubmissionFinished() {
 void VulkanCommandBuffer::TransitionImageLayout(VkImage image,
                                                 VkImageLayout old_layout,
                                                 VkImageLayout new_layout) {
-  VkImageMemoryBarrier barrier = {
-      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-      .srcAccessMask = GetAccessMask(old_layout),
-      .dstAccessMask = GetAccessMask(new_layout),
-      .oldLayout = old_layout,
-      .newLayout = new_layout,
-      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-      .image = image,
-      .subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-      .subresourceRange.baseMipLevel = 0,
-      .subresourceRange.levelCount = 1,
-      .subresourceRange.baseArrayLayer = 0,
-      .subresourceRange.layerCount = 1,
-  };
-  vkCmdPipelineBarrier(command_buffer_, GetPipelineStageFlags(old_layout),
-                       GetPipelineStageFlags(new_layout), 0, 0, nullptr, 0,
-                       nullptr, 1, &barrier);
+  VkImageMemoryBarrier barrier = {};
+  barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+  barrier.srcAccessMask = GetAccessMask(old_layout);
+  barrier.dstAccessMask = GetAccessMask(new_layout);
+  barrier.oldLayout = old_layout;
+  barrier.newLayout = new_layout;
+  barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+  barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+  barrier.image = image;
+  barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  barrier.subresourceRange.baseMipLevel = 0;
+  barrier.subresourceRange.levelCount = 1;
+  barrier.subresourceRange.baseArrayLayer = 0;
+  barrier.subresourceRange.layerCount = 1;
+  vkCmdPipelineBarrier(command_buffer_,
+                       GetPipelineStageFlags(device_queue_, old_layout),
+                       GetPipelineStageFlags(device_queue_, new_layout), 0, 0,
+                       nullptr, 0, nullptr, 1, &barrier);
 }
 
 void VulkanCommandBuffer::CopyBufferToImage(VkBuffer buffer,
@@ -233,17 +241,16 @@ void VulkanCommandBuffer::CopyBufferToImage(VkBuffer buffer,
                                             uint32_t buffer_height,
                                             uint32_t width,
                                             uint32_t height) {
-  VkBufferImageCopy region = {
-      .bufferOffset = 0,
-      .bufferRowLength = buffer_width,
-      .bufferImageHeight = buffer_height,
-      .imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-      .imageSubresource.mipLevel = 0,
-      .imageSubresource.baseArrayLayer = 0,
-      .imageSubresource.layerCount = 1,
-      .imageOffset = {0, 0, 0},
-      .imageExtent = {width, height, 1},
-  };
+  VkBufferImageCopy region = {};
+  region.bufferOffset = 0;
+  region.bufferRowLength = buffer_width;
+  region.bufferImageHeight = buffer_height;
+  region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  region.imageSubresource.mipLevel = 0;
+  region.imageSubresource.baseArrayLayer = 0;
+  region.imageSubresource.layerCount = 1;
+  region.imageOffset = {0, 0, 0};
+  region.imageExtent = {width, height, 1};
   vkCmdCopyBufferToImage(command_buffer_, buffer, image,
                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 }

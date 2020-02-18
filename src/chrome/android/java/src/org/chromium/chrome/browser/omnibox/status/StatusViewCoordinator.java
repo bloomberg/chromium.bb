@@ -42,7 +42,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
                          .build();
 
         PropertyModelChangeProcessor.create(mModel, mStatusView, new StatusViewBinder());
-        mMediator = new StatusMediator(mModel);
+        mMediator = new StatusMediator(mModel, mStatusView.getResources());
 
         Resources res = mStatusView.getResources();
         mMediator.setUrlMinWidth(res.getDimensionPixelSize(R.dimen.location_bar_min_url_width)
@@ -193,5 +193,14 @@ public class StatusViewCoordinator implements View.OnClickListener {
      */
     public void setFirstSuggestionIsSearchType(boolean firstSuggestionIsSearchQuery) {
         mMediator.setFirstSuggestionIsSearchType(firstSuggestionIsSearchQuery);
+    }
+
+    /**
+     * Update information required to display the search engine icon.
+     */
+    public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+            boolean isSearchEngineGoogle, String searchEngineUrl) {
+        mMediator.updateSearchEngineStatusIcon(
+                shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
     }
 }

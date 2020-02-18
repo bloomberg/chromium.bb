@@ -18,6 +18,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.autofill_assistant.R;
 
 /**
  * Decoration added to the actions carousel that add offsets to each action to have the right inner
@@ -41,6 +42,7 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
     private final int mOuterSpace;
     private final int mInnerSpace;
     private final int mVerticalSpacing;
+    private final int mVerticalInset;
     private final int mGradientWidth;
     private final int mLastChildBorderRadius;
     private final int mShadowColor;
@@ -57,37 +59,37 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
             AssistantActionsCarouselCoordinator.CustomLayoutManager layoutManager) {
         mLayoutManager = layoutManager;
         mOuterSpace = context.getResources().getDimensionPixelSize(
-                org.chromium.chrome.autofill_assistant.R.dimen
-                        .autofill_assistant_bottombar_horizontal_spacing);
+                R.dimen.autofill_assistant_bottombar_horizontal_spacing);
         mInnerSpace = context.getResources().getDimensionPixelSize(
-                org.chromium.chrome.autofill_assistant.R.dimen.autofill_assistant_actions_spacing);
+                R.dimen.autofill_assistant_actions_spacing);
+        mVerticalInset = context.getResources().getDimensionPixelSize(
+                R.dimen.autofill_assistant_button_bg_vertical_inset);
+
+        // We remove mVerticalInset from the vertical spacing as that inset will be added above and
+        // below the button by ButtonView.
         mVerticalSpacing = context.getResources().getDimensionPixelSize(
-                org.chromium.chrome.autofill_assistant.R.dimen
-                        .autofill_assistant_bottombar_vertical_spacing);
+                                   R.dimen.autofill_assistant_bottombar_vertical_spacing)
+                - mVerticalInset;
+
         mGradientWidth = context.getResources().getDimensionPixelSize(
-                org.chromium.chrome.autofill_assistant.R.dimen
-                        .autofill_assistant_actions_gradient_width);
+                R.dimen.autofill_assistant_actions_gradient_width);
         mLastChildBorderRadius = context.getResources().getDimensionPixelSize(
-                org.chromium.chrome.autofill_assistant.R.dimen
-                        .autofill_assistant_button_corner_radius);
-        mShadowColor = ApiCompatibilityUtils.getColor(context.getResources(),
-                org.chromium.chrome.autofill_assistant.R.color
-                        .autofill_assistant_actions_shadow_color);
-        mShadowLayerWidth = context.getResources().getDimension(
-                                    org.chromium.chrome.autofill_assistant.R.dimen
-                                            .autofill_assistant_actions_shadow_width)
+                R.dimen.autofill_assistant_button_corner_radius);
+        mShadowColor = ApiCompatibilityUtils.getColor(
+                context.getResources(), R.color.autofill_assistant_actions_shadow_color);
+        mShadowLayerWidth =
+                context.getResources().getDimension(R.dimen.autofill_assistant_actions_shadow_width)
                 / SHADOW_LAYERS;
         mGradientDrawable =
-                context.getResources().getDrawable(org.chromium.chrome.autofill_assistant.R.drawable
-                                                           .autofill_assistant_actions_gradient);
+                context.getResources().getDrawable(R.drawable.autofill_assistant_actions_gradient);
 
         mShadowPaint.setAntiAlias(true);
         mShadowPaint.setDither(true);
         mShadowPaint.setStyle(Paint.Style.STROKE);
         mShadowPaint.setStrokeWidth(mShadowLayerWidth);
 
-        mOverlayPaint.setColor(ApiCompatibilityUtils.getColor(
-                context.getResources(), org.chromium.chrome.R.color.sheet_bg_color));
+        mOverlayPaint.setColor(
+                ApiCompatibilityUtils.getColor(context.getResources(), R.color.sheet_bg_color));
     }
 
     @Override
@@ -99,9 +101,10 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
 
         View lastChild = parent.getChildAt(parent.getChildCount() - 1);
         mLastChildRect.left = lastChild.getLeft() + lastChild.getTranslationX();
-        mLastChildRect.top = lastChild.getTop() + lastChild.getTranslationY();
+        mLastChildRect.top = lastChild.getTop() + lastChild.getTranslationY() + mVerticalInset;
         mLastChildRect.right = lastChild.getRight() + lastChild.getTranslationX();
-        mLastChildRect.bottom = lastChild.getBottom() + lastChild.getTranslationY();
+        mLastChildRect.bottom =
+                lastChild.getBottom() + lastChild.getTranslationY() - mVerticalInset;
 
         canvas.save();
 
@@ -132,9 +135,13 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
             canvas.drawRect(mChildRect, mOverlayPaint);
         }
 
+        View beforeLastChild = parent.getChildAt(parent.getChildCount() - 2);
+
         // Draw a fixed size white-to-transparent linear gradient from left to right.
         mGradientDrawable.setBounds(
                 0, mVerticalSpacing, mGradientWidth, parent.getHeight() - mVerticalSpacing);
+        mGradientDrawable.setAlpha(Math.round(getBoundedLinearValue(
+                beforeLastChild.getLeft(), lastChild.getLeft(), lastChild.getRight(), 255, 0)));
         mGradientDrawable.draw(canvas);
 
         canvas.restore();
@@ -148,7 +155,6 @@ class AssistantActionsDecoration extends RecyclerView.ItemDecoration {
         // Draw shadow composed of 4 layers of colors around the last child. We multiply the
         // original alpha of the shadow color by alphaRatio to hide the shadow when there is no
         // child behind the last child.
-        View beforeLastChild = parent.getChildAt(parent.getChildCount() - 2);
         float alphaRatio = getBoundedLinearValue(
                 beforeLastChild.getLeft(), lastChild.getLeft(), lastChild.getRight(), 1, 0);
 

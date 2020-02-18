@@ -34,8 +34,6 @@
 #include "services/tracing/tracing_service.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/service_impl.h"
-#include "services/viz/public/interfaces/constants.mojom.h"
-#include "services/viz/service.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_adapter_factory.h"           // nogncheck
@@ -110,7 +108,7 @@ void RunNetworkServiceOnIOThread(
     std::unique_ptr<service_manager::BinderRegistry> network_registry,
     scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner) {
   auto service = std::make_unique<network::NetworkService>(
-      std::move(network_registry), nullptr /* request */, nullptr /* net_log */,
+      std::move(network_registry), nullptr /* request */,
       std::move(service_request), true);
 
   // Transfer ownership of the service to itself, and have it post to the main
@@ -173,8 +171,6 @@ void UtilityServiceFactory::RunService(
   } else if (service_name == video_capture::mojom::kServiceName) {
     service = std::make_unique<video_capture::ServiceImpl>(
         std::move(request), base::ThreadTaskRunnerHandle::Get());
-  } else if (service_name == viz::mojom::kVizServiceName) {
-    service = std::make_unique<viz::Service>(std::move(request));
   }
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   else if (service_name == media::mojom::kCdmServiceName) {

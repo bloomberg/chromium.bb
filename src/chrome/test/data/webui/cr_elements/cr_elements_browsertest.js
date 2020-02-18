@@ -478,6 +478,29 @@ TEST_F('CrElementsRadioGroupTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
+function CrElementsButtonTest() {}
+
+CrElementsButtonTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_button/cr_button.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
+    'cr_button_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsButtonTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsIconButtonTest() {}
 
 CrElementsIconButtonTest.prototype = {
@@ -572,7 +595,8 @@ GEN('#endif');
 ////////////////////////////////////////////////////////////////////////////////
 // View Manager Tests
 
-CrElementsViewManagerTest = class extends CrElementsBrowserTest {
+// eslint-disable-next-line no-var
+var CrElementsViewManagerTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.html';

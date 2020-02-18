@@ -244,9 +244,8 @@ RulesetSource RulesetSource::CreateStatic(const Extension& extension) {
 }
 
 // static
-RulesetSource RulesetSource::CreateDynamic(
-    const content::BrowserContext* context,
-    const Extension& extension) {
+RulesetSource RulesetSource::CreateDynamic(content::BrowserContext* context,
+                                           const Extension& extension) {
   base::FilePath dynamic_ruleset_directory =
       context->GetPath()
           .AppendASCII(kDynamicRulesetDirectory)
@@ -368,6 +367,7 @@ ParseInfo RulesetSource::IndexAndPersistRules(std::vector<dnr_api::Rule> rules,
                                               int* ruleset_checksum) const {
   DCHECK_LE(rules.size(), rule_count_limit_);
   DCHECK(ruleset_checksum);
+  DCHECK(IsAPIAvailable());
 
   FlatRulesetIndexer indexer;
 

@@ -65,7 +65,7 @@ SKIP = 'skip'
 # List all exceptions, with a token describing what's odd here.
 SPECIAL_TESTS = {
     # Tests that need to run inside the chroot.
-    'api/controller/board_build_dependency_unittest': INSIDE,
+    'api/controller/dependency_unittest': INSIDE,
     'cbuildbot/stages/sync_stages_unittest': INSIDE,
     'cbuildbot/stages/test_stages_unittest': INSIDE,
     'cli/cros/cros_build_unittest': INSIDE,
@@ -77,10 +77,12 @@ SPECIAL_TESTS = {
     'lib/alerts_unittest': INSIDE,
     'lib/androidbuild_unittest': INSIDE,
     'lib/chroot_util_unittest': INSIDE,
+    'lib/cros_test_unittest': INSIDE,
     'lib/filetype_unittest': INSIDE,
     'lib/paygen/paygen_payload_lib_unittest': INSIDE,
     'lib/paygen/signer_payloads_client_unittest': INSIDE,
     'lib/upgrade_table_unittest': INSIDE,
+    'lib/vm_unittest': INSIDE,
     'mobmonitor/checkfile/manager_unittest': INSIDE,
     'mobmonitor/scripts/mobmonitor_unittest': INSIDE,
     'scripts/cros_extract_deps_unittest': INSIDE,
@@ -220,7 +222,7 @@ def SortTests(tests, jobs=1, timing_cache_file=None):
 
   # Sort the cached list of tests from slowest to fastest.
   sorted_tests = [test for (test, _timing) in
-                  sorted(cache.iteritems(), key=lambda x: x[1], reverse=True)]
+                  sorted(cache.items(), key=lambda x: x[1], reverse=True)]
   # Then extract the tests from the cache list that we care about -- remember
   # that the cache could be stale and contain tests that no longer exist, or
   # the user only wants to run a subset of tests.
@@ -385,10 +387,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False,
     output = tmpfile.read()
     if output:
       failed_tests.append(test)
-      print()
-      logging.error('### LOG: %s', test)
-      print(output.rstrip())
-      print()
+      logging.error('### LOG: %s\n%s\n', test, output.rstrip())
 
   if failed_tests:
     logging.error('The following %i tests failed:\n  %s', len(failed_tests),
@@ -514,7 +513,7 @@ def GetParser():
                       help='Run tests that depend on good network connectivity')
   parser.add_argument('--config_skew', default=False, action='store_true',
                       help='Run tests that check if new config matches legacy '
-                      'config')
+                           'config')
   parser.add_argument('tests', nargs='*', default=None, help='Tests to run')
   return parser
 

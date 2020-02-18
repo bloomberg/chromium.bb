@@ -55,9 +55,20 @@ class PLATFORM_EXPORT ScriptWrappable
  public:
   virtual ~ScriptWrappable() = default;
 
-  virtual void Trace(blink::Visitor*);
+  // The following methods may override lifetime of ScriptWrappable objects when
+  // needed. In particular if |HasPendingActivity| or |HasEventListeners|
+  // returns true *and* the child type also inherits from
+  // |ActiveScriptWrappable|, the objects will not be reclaimed by the GC, even
+  // if they are otherwise unreachable.
+  //
+  // Note: These methods are queried during garbage collection and *must not*
+  // allocate any new objects.
+  virtual bool HasPendingActivity() const { return false; }
+  virtual bool HasEventListeners() const { return false; }
 
   const char* NameInHeapSnapshot() const override;
+
+  virtual void Trace(blink::Visitor*);
 
   template <typename T>
   T* ToImpl() {
@@ -97,11 +108,6 @@ class PLATFORM_EXPORT ScriptWrappable
       v8::Isolate*,
       const WrapperTypeInfo*,
       v8::Local<v8::Object> wrapper);
-
-  // Returns true if the instance needs to be kept alive even when the
-  // instance is unreachable from JavaScript.
-  virtual bool HasPendingActivity() const { return false; }
-  virtual bool HasEventListeners() const { return false; }
 
   // Associates this instance with the given |wrapper| if this instance is not
   // yet associated with any wrapper.  Returns true if the given wrapper is

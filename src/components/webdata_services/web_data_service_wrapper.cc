@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
@@ -24,8 +23,8 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/search_engines/keyword_table.h"
 #include "components/search_engines/keyword_web_data_service.h"
-#include "components/signin/core/browser/webdata/token_service_table.h"
-#include "components/signin/core/browser/webdata/token_web_data.h"
+#include "components/signin/public/webdata/token_service_table.h"
+#include "components/signin/public/webdata/token_web_data.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/webdata/common/web_database_service.h"
 #include "components/webdata/common/webdata_constants.h"
@@ -38,38 +37,21 @@
 
 namespace {
 
-// TODO(jkrcal): Rename this function when the last webdata sync type get
-// converted to USS, e.g. to InitSyncBridgesOnDBSequence(). Check also other
-// related functions.
-void InitSyncableProfileServicesOnDBSequence(
+void InitProfileSyncBridgesOnDBSequence(
     scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
-    const syncer::SyncableService::StartSyncFlare& sync_flare,
     const scoped_refptr<autofill::AutofillWebDataService>& autofill_web_data,
-    const base::FilePath& context_path,
     const std::string& app_locale,
     autofill::AutofillWebDataBackend* autofill_backend) {
   DCHECK(db_task_runner->RunsTasksInCurrentSequence());
 
-  // Currently only Autocomplete and Autofill profiles use the new Sync API, but
-  // all the database data should migrate to this API over time.
   autofill::AutocompleteSyncBridge::CreateForWebDataServiceAndBackend(
       autofill_web_data.get(), autofill_backend);
-
-  if (base::FeatureList::IsEnabled(switches::kSyncUSSAutofillProfile)) {
-    autofill::AutofillProfileSyncBridge::CreateForWebDataServiceAndBackend(
-        app_locale, autofill_backend, autofill_web_data.get());
-  } else {
-    autofill::AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
-        autofill_web_data.get(), autofill_backend, app_locale);
-    autofill::AutofillProfileSyncableService::FromWebDataService(
-        autofill_web_data.get())
-        ->InjectStartSyncFlare(sync_flare);
-  }
+  autofill::AutofillProfileSyncBridge::CreateForWebDataServiceAndBackend(
+      app_locale, autofill_backend, autofill_web_data.get());
 }
 
 // TODO(jkrcal): Rename this function when the last webdata sync type get
-// converted to USS, e.g. to InitSyncBridgesOnDBSequence(). Check also other
-// related functions.
+// converted to USS, e.g. to InitAccountSyncBridgesOnDBSequence().
 void InitSyncableAccountServicesOnDBSequence(
     scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
     const scoped_refptr<autofill::AutofillWebDataService>& autofill_web_data,
@@ -114,7 +96,6 @@ WebDataServiceWrapper::WebDataServiceWrapper(
     const base::FilePath& context_path,
     const std::string& application_locale,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-    const syncer::SyncableService::StartSyncFlare& flare,
     const ShowErrorCallback& show_error_callback) {
   base::FilePath path = context_path.Append(kWebDataFilename);
   // TODO(pkasting): http://crbug.com/740773 This should likely be sequenced,
@@ -161,9 +142,9 @@ WebDataServiceWrapper::WebDataServiceWrapper(
       ui_task_runner);
 #endif
 
-  profile_autofill_web_data_->GetAutofillBackend(base::Bind(
-      &InitSyncableProfileServicesOnDBSequence, db_task_runner, flare,
-      profile_autofill_web_data_, context_path, application_locale));
+  profile_autofill_web_data_->GetAutofillBackend(
+      base::Bind(&InitProfileSyncBridgesOnDBSequence, db_task_runner,
+                 profile_autofill_web_data_, application_locale));
   profile_autofill_web_data_->GetAutofillBackend(
       base::Bind(&InitSyncableAccountServicesOnDBSequence, db_task_runner,
                  profile_autofill_web_data_, context_path, application_locale));

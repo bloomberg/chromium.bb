@@ -243,7 +243,7 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
   if (HasContentEditableAttributeSet())
     return kIncludeObject;
 
-  static const std::set<ax::mojom::Role> always_included_computed_roles = {
+  static const HashSet<ax::mojom::Role> always_included_computed_roles = {
       ax::mojom::Role::kAbbr,
       ax::mojom::Role::kBlockquote,
       ax::mojom::Role::kContentDeletion,
@@ -332,6 +332,12 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
   // it's been initialized.
   DCHECK(initialized_);
 #endif
+
+  // All nodes must have an unignored parent within their tree under
+  // kRootWebArea, so force kRootWebArea to always be unignored.
+  if (role_ == ax::mojom::Role::kRootWebArea)
+    return false;
+
   if (GetLayoutObject()) {
     if (role_ == ax::mojom::Role::kUnknown) {
       if (ignored_reasons)
@@ -341,8 +347,10 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
     return false;
   }
 
-  Element* element = GetNode()->IsElementNode() ? ToElement(GetNode())
-                                                : GetNode()->parentElement();
+  auto* element = DynamicTo<Element>(GetNode());
+  if (!element)
+    element = GetNode()->parentElement();
+
   if (!element)
     return true;
 
@@ -503,7 +511,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
 
   if (const auto* input = ToHTMLInputElementOrNull(*GetNode())) {
     const AtomicString& type = input->type();
-    if (input->DataList())
+    if (input->DataList() && type != input_type_names::kColor)
       return ax::mojom::Role::kTextFieldWithComboBox;
     if (type == input_type_names::kButton) {
       if ((GetNode()->parentNode() &&
@@ -844,13 +852,14 @@ static Element* SiblingWithAriaRole(String role, Node* node) {
 
   for (Node* sibling = LayoutTreeBuilderTraversal::FirstChild(*parent); sibling;
        sibling = LayoutTreeBuilderTraversal::NextSibling(*sibling)) {
-    if (!sibling->IsElementNode())
+    auto* element = DynamicTo<Element>(sibling);
+    if (!element)
       continue;
     const AtomicString& sibling_aria_role =
-        AccessibleNode::GetPropertyOrARIAAttribute(ToElement(sibling),
+        AccessibleNode::GetPropertyOrARIAAttribute(element,
                                                    AOMStringProperty::kRole);
     if (EqualIgnoringASCIICase(sibling_aria_role, role))
-      return ToElement(sibling);
+      return element;
   }
 
   return nullptr;
@@ -868,13 +877,14 @@ Element* AXNodeObject::MouseButtonListener() const {
   if (!node)
     return nullptr;
 
-  if (!node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     node = node->parentElement();
 
   if (!node)
     return nullptr;
 
-  for (Element* element = ToElement(node); element;
+  for (element = To<Element>(node); element;
        element = element->parentElement()) {
     if (element->HasEventListeners(event_type_names::kClick) ||
         element->HasEventListeners(event_type_names::kMousedown) ||
@@ -908,7 +918,8 @@ bool AXNodeObject::IsControl() const {
   if (!node)
     return false;
 
-  return ((node->IsElementNode() && ToElement(node)->IsFormControlElement()) ||
+  auto* element = DynamicTo<Element>(node);
+  return ((element && element->IsFormControlElement()) ||
           AXObject::IsARIAControl(AriaRoleAttribute()));
 }
 
@@ -979,9 +990,9 @@ bool AXNodeObject::IsLink() const {
 // As a workaround, we check if the element is a sectioning element with an ID,
 // or an anchor with a name.
 bool AXNodeObject::IsInPageLinkTarget() const {
-  if (!node_ || !node_->IsElementNode())
+  auto* element = DynamicTo<Element>(node_.Get());
+  if (!element)
     return false;
-  Element* element = ToElement(node_);
   // We exclude elements that are in the shadow DOM.
   if (element->ContainingShadowRoot())
     return false;
@@ -1132,7 +1143,8 @@ bool AXNodeObject::IsClickable() const {
   Node* node = GetNode();
   if (!node)
     return false;
-  if (node->IsElementNode() && ToElement(node)->IsDisabledFormControl()) {
+  auto* element = DynamicTo<Element>(node);
+  if (element && element->IsDisabledFormControl()) {
     return false;
   }
 
@@ -1194,9 +1206,9 @@ AXRestriction AXNodeObject::Restriction() const {
   // See ARIA specification regarding grid/treegrid and readonly.
   if (IsTableCellLikeRole()) {
     AXObject* row = ParentObjectUnignored();
-    if (row->IsTableRowLikeRole()) {
+    if (row && row->IsTableRowLikeRole()) {
       AXObject* table = row->ParentObjectUnignored();
-      if (table->IsTableLikeRole() &&
+      if (table && table->IsTableLikeRole() &&
           (table->RoleValue() == ax::mojom::Role::kGrid ||
            table->RoleValue() == ax::mojom::Role::kTreeGrid)) {
         if (table->Restriction() == kRestrictionReadOnly)
@@ -1216,7 +1228,7 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
   if (GetNode() && IsHTMLSummaryElement(*GetNode())) {
     if (GetNode()->parentNode() &&
         IsHTMLDetailsElement(GetNode()->parentNode()))
-      return ToElement(GetNode()->parentNode())->hasAttribute(kOpenAttr)
+      return To<Element>(GetNode()->parentNode())->hasAttribute(kOpenAttr)
                  ? kExpandedExpanded
                  : kExpandedCollapsed;
   }
@@ -1239,16 +1251,15 @@ bool AXNodeObject::IsModal() const {
     return modal;
 
   if (GetNode() && IsHTMLDialogElement(*GetNode()))
-    return ToElement(GetNode())->IsInTopLayer();
+    return To<Element>(GetNode())->IsInTopLayer();
 
   return false;
 }
 
 bool AXNodeObject::IsRequired() const {
-  Node* n = this->GetNode();
-  if (n && (n->IsElementNode() && ToElement(n)->IsFormControlElement()) &&
-      HasAttribute(kRequiredAttr))
-    return ToHTMLFormControlElement(n)->IsRequired();
+  auto* form_control = DynamicTo<HTMLFormControlElement>(GetNode());
+  if (form_control && form_control->IsRequired())
+    return true;
 
   if (AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kRequired))
     return true;
@@ -1365,6 +1376,17 @@ bool MarkerTypeIsUsedForAccessibility(DocumentMarker::MarkerType type) {
       .Contains(type);
 }
 
+base::Optional<DocumentMarker::MarkerType> GetAriaSpellingOrGrammarMarker(
+    const AXObject& obj) {
+  const AtomicString& attribute_value =
+      obj.GetAOMPropertyOrARIAAttribute(AOMStringProperty::kInvalid);
+  if (EqualIgnoringASCIICase(attribute_value, "spelling"))
+    return DocumentMarker::kSpelling;
+  else if (EqualIgnoringASCIICase(attribute_value, "grammar"))
+    return DocumentMarker::kGrammar;
+  return base::nullopt;
+}
+
 }  // namespace
 
 void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
@@ -1376,11 +1398,35 @@ void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
   if (!text_node)
     return;
 
+  // First use ARIA markers for spelling/grammar if available.
+  // As an optimization, only checks until the nearest block-like ancestor.
+  AXObject* ax_ancestor = ParentObjectUnignored();
+  base::Optional<DocumentMarker::MarkerType> aria_marker;
+  while (ax_ancestor) {
+    aria_marker = GetAriaSpellingOrGrammarMarker(*ax_ancestor);
+    if (aria_marker)
+      break;  // Result obtained.
+    if (ax_ancestor->GetNode()) {
+      if (const ComputedStyle* style =
+              ax_ancestor->GetNode()->GetComputedStyle()) {
+        if (style->IsDisplayBlockContainer())
+          break;  // Do not go higher than block container.
+      }
+    }
+    ax_ancestor = ax_ancestor->ParentObjectUnignored();
+  }
+  if (aria_marker) {
+    marker_types.push_back(aria_marker.value());
+    marker_ranges.push_back(AXRange::RangeOfContents(*this));
+  }
+
   DocumentMarkerController& marker_controller = GetDocument()->Markers();
   DocumentMarkerVector markers = marker_controller.MarkersFor(*text_node);
   for (DocumentMarker* marker : markers) {
-    if (!MarkerTypeIsUsedForAccessibility(marker->GetType()))
+    if (!MarkerTypeIsUsedForAccessibility(marker->GetType()) ||
+        aria_marker == marker->GetType()) {
       continue;
+    }
 
     const Position start_position(*GetNode(), marker->StartOffset());
     const Position end_position(*GetNode(), marker->EndOffset());
@@ -1399,12 +1445,14 @@ void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
 }
 
 AXObject* AXNodeObject::InPageLinkTarget() const {
-  if (!node_ || !IsHTMLAnchorElement(node_) || !GetDocument())
+  if (!IsAnchor() || !GetDocument())
     return AXObject::InPageLinkTarget();
 
-  HTMLAnchorElement* anchor = ToHTMLAnchorElement(node_.Get());
-  DCHECK(anchor);
-  KURL link_url = anchor->Href();
+  const Element* anchor = AnchorElement();
+  if (!anchor)
+    return AXObject::InPageLinkTarget();
+
+  KURL link_url = anchor->HrefURL();
   if (!link_url.IsValid())
     return AXObject::InPageLinkTarget();
   String fragment = link_url.FragmentIdentifier();
@@ -1486,7 +1534,7 @@ AXObject::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
     for (AXObject* child : parent->Children()) {
       DCHECK(child);
       if (child->RoleValue() == ax::mojom::Role::kRadioButton &&
-          !child->AccessibilityIsIgnored()) {
+          child->AccessibilityIsIncludedInTree()) {
         radio_buttons.push_back(child);
       }
     }
@@ -1534,10 +1582,8 @@ String AXNodeObject::GetText() const {
     return ToTextControl(*node).value();
   }
 
-  if (!node->IsElementNode())
-    return String();
-
-  return ToElement(node)->innerText();
+  auto* element = DynamicTo<Element>(node);
+  return element ? element->innerText() : String();
 }
 
 RGBA32 AXNodeObject::ColorValue() const {
@@ -1590,10 +1636,10 @@ ax::mojom::InvalidState AXNodeObject::GetInvalidState() const {
     return ax::mojom::InvalidState::kFalse;
   if (EqualIgnoringASCIICase(attribute_value, "true"))
     return ax::mojom::InvalidState::kTrue;
-  if (EqualIgnoringASCIICase(attribute_value, "spelling"))
-    return ax::mojom::InvalidState::kSpelling;
-  if (EqualIgnoringASCIICase(attribute_value, "grammar"))
-    return ax::mojom::InvalidState::kGrammar;
+  // "spelling" and "grammar" are also invalid values: they are exposed via
+  // Markers() as if they are native errors, but also use the invalid entry
+  // state on the node itself, therefore they are treated like "true".
+  // in terms of the node's invalid state
   // A yet unknown value.
   if (!attribute_value.IsEmpty())
     return ax::mojom::InvalidState::kOther;
@@ -1777,9 +1823,18 @@ bool AXNodeObject::StepValueForRange(float* out_value) const {
 }
 
 KURL AXNodeObject::Url() const {
-  if (IsAnchor() && IsHTMLAnchorElement(GetNode())) {
-    if (HTMLAnchorElement* anchor = ToHTMLAnchorElementOrNull(AnchorElement()))
-      return anchor->Href();
+  if (IsAnchor()) {
+    const Element* anchor = AnchorElement();
+
+    if (const HTMLAnchorElement* html_anchor =
+            ToHTMLAnchorElementOrNull(anchor)) {
+      return html_anchor->Href();
+    }
+
+    // Some non-HTML elements, most notably SVG <a> elements, can act as
+    // links/anchors.
+    if (anchor)
+      return anchor->HrefURL();
   }
 
   if (IsWebArea() && GetDocument())
@@ -1798,6 +1853,24 @@ KURL AXNodeObject::Url() const {
     return ToHTMLInputElement(GetNode())->Src();
 
   return KURL();
+}
+
+AXObject* AXNodeObject::ChooserPopup() const {
+  // When color & date chooser popups are visible, they can be found in the tree
+  // as a WebArea child of the <input> control itself.
+  switch (native_role_) {
+    case ax::mojom::Role::kColorWell:
+    case ax::mojom::Role::kDate:
+    case ax::mojom::Role::kDateTime: {
+      for (const auto& child : children_) {
+        if (child->IsWebArea())
+          return child;
+      }
+      return nullptr;
+    }
+    default:
+      return nullptr;
+  }
 }
 
 String AXNodeObject::StringValue() const {
@@ -1969,7 +2042,7 @@ String AXNodeObject::TextAlternative(bool recursive,
       }
 
       if (auto* text_node = DynamicTo<Text>(node))
-        text_alternative = text_node->wholeText();
+        text_alternative = text_node->data();
       else if (IsHTMLBRElement(node))
         text_alternative = String("\n");
       else
@@ -2365,7 +2438,7 @@ void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
   // getting children, ensure data is not stale.
   child->ClearChildren();
 
-  if (child->AccessibilityIsIgnored()) {
+  if (!child->AccessibilityIsIncludedInTree()) {
     const auto& children = child->Children();
     wtf_size_t length = children.size();
     for (wtf_size_t i = 0; i < length; ++i)
@@ -2390,13 +2463,6 @@ bool AXNodeObject::CanHaveChildren() const {
 
   if (GetNode() && IsHTMLMapElement(GetNode()))
     return false;  // Does not have a role, so check here
-
-  // Placeholder gets exposed as an attribute on the input accessibility node,
-  // so there's no need to add its text children.
-  if (GetElement() && GetElement()->ShadowPseudoId() ==
-                          AtomicString("-webkit-input-placeholder")) {
-    return false;
-  }
 
   switch (native_role_) {
     case ax::mojom::Role::kButton:
@@ -2470,8 +2536,9 @@ Element* AXNodeObject::ActionElement() const {
   if (!node)
     return nullptr;
 
-  if (node->IsElementNode() && IsClickable())
-    return ToElement(node);
+  auto* element = DynamicTo<Element>(node);
+  if (element && IsClickable())
+    return element;
 
   Element* anchor = AnchorElement();
   Element* click_element = MouseButtonListener();
@@ -2494,7 +2561,7 @@ Element* AXNodeObject::AnchorElement() const {
     if (IsHTMLAnchorElement(*node) ||
         (node->GetLayoutObject() &&
          cache.GetOrCreate(node->GetLayoutObject())->IsAnchor()))
-      return ToElement(node);
+      return To<Element>(node);
   }
 
   return nullptr;

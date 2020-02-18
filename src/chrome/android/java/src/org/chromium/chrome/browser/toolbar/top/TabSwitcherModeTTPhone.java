@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
@@ -92,7 +93,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
             mToggleTabStackButton = null;
 
             UiUtils.removeViewFromParent(mNewTabViewButton);
-            mNewTabImageButton = null;
+            mNewTabViewButton = null;
         } else {
             // TODO(twellington): Try to make NewTabButton responsible for handling its own clicks.
             //                    TabSwitcherBottomToolbarCoordinator also uses NewTabButton and
@@ -155,7 +156,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         setAlpha(inTabSwitcherMode ? 0.0f : 1.0f);
 
         boolean showZoomingAnimation = FeatureUtilities.isGridTabSwitcherEnabled()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION);
+                && FeatureUtilities.isTabToGtsAnimationEnabled();
         long duration = showZoomingAnimation
                 ? TopToolbarCoordinator.TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS
                 : TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS;
@@ -380,22 +381,30 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
     }
 
     private void updateIncognitoToggleTabsVisibility() {
+        // TODO(yuezhanggg): Add a regression test for this "New Tab" variation. (crbug: 977546)
         if (!FeatureUtilities.isGridTabSwitcherEnabled() || !ChromeFeatureList.isInitialized()
                 || !ChromeFeatureList
                             .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                     "tab_grid_layout_android_new_tab")
                             .equals("NewTabVariation")
-                || FeatureUtilities.isBottomToolbarEnabled()) {
+                || FeatureUtilities.isBottomToolbarEnabled() || mIncognitoToggleTabLayout == null) {
             return;
         }
-        boolean hasIncognitoTabs =
-                mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(true).getCount()
-                > 0;
+        boolean hasIncognitoTabs = hasIncognitoTabs();
         mIncognitoToggleTabLayout.setVisibility(hasIncognitoTabs ? VISIBLE : GONE);
         if (mNewTabImageButton != null && mNewTabViewButton != null) {
             // Only show one new tab variation at a time.
             mNewTabImageButton.setVisibility(hasIncognitoTabs ? VISIBLE : GONE);
             mNewTabViewButton.setVisibility(hasIncognitoTabs ? GONE : VISIBLE);
         }
+    }
+
+    private boolean hasIncognitoTabs() {
+        // Check if there is no incognito tab, or all the incognito tabs are being closed.
+        TabModel incognitoTabModel = mTabModelSelector.getModel(true);
+        for (int i = 0; i < incognitoTabModel.getCount(); i++) {
+            if (!incognitoTabModel.getTabAt(i).isClosing()) return true;
+        }
+        return false;
     }
 }

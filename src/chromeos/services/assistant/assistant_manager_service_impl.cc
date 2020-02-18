@@ -36,6 +36,7 @@
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "libassistant/shared/public/media_manager.h"
+#include "mojo/public/mojom/base/time.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -133,7 +134,6 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     service_manager::Connector* connector,
     device::mojom::BatteryMonitorPtr battery_monitor,
     Service* service,
-    network::NetworkConnectionTracker* network_connection_tracker,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info)
     : media_session_(std::make_unique<AssistantMediaSession>(connector, this)),
@@ -146,16 +146,13 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
           std::make_unique<AssistantSettingsManagerImpl>(service, this)),
       service_(service),
       background_thread_("background thread"),
-      media_controller_observer_binding_(this),
       app_list_subscriber_binding_(this),
       weak_factory_(this) {
   background_thread_.Start();
   platform_api_ = std::make_unique<PlatformApiImpl>(
       connector, media_session_.get(), std::move(battery_monitor),
       service_->main_task_runner(), background_thread_.task_runner(),
-      network_connection_tracker);
-  connector->BindInterface(ash::mojom::kServiceName,
-                           &ash_message_center_controller_);
+      service->assistant_state()->locale().value());
 
   media_session::mojom::MediaControllerManagerPtr controller_manager_ptr;
   connector->BindInterface(media_session::mojom::kServiceName,
@@ -206,7 +203,7 @@ void AssistantManagerServiceImpl::Stop() {
     assistant_manager_->ResetAllDataAndShutdown();
   }
 
-  media_controller_observer_binding_.Close();
+  media_controller_observer_receiver_.reset();
 
   assistant_manager_internal_ = nullptr;
   assistant_manager_.reset(nullptr);
@@ -271,6 +268,8 @@ void AssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
     case media_session::mojom::MediaSessionAction::kSeekForward:
     case media_session::mojom::MediaSessionAction::kSkipAd:
     case media_session::mojom::MediaSessionAction::kStop:
+    case media_session::mojom::MediaSessionAction::kSeekTo:
+    case media_session::mojom::MediaSessionAction::kScrubTo:
       NOTIMPLEMENTED();
       break;
   }
@@ -278,9 +277,8 @@ void AssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
 
 void AssistantManagerServiceImpl::AddMediaControllerObserver() {
   if (features::IsMediaSessionIntegrationEnabled()) {
-    media_session::mojom::MediaControllerObserverPtr observer;
-    media_controller_observer_binding_.Bind(mojo::MakeRequest(&observer));
-    media_controller_->AddObserver(std::move(observer));
+    media_controller_->AddObserver(
+        media_controller_observer_receiver_.BindNewPipeAndPassRemote());
   }
 }
 
@@ -588,11 +586,12 @@ void AssistantManagerServiceImpl::OnShowText(const std::string& text) {
                      weak_factory_.GetWeakPtr(), text));
 }
 
-void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url) {
+void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url,
+                                            bool is_background) {
   service_->main_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&AssistantManagerServiceImpl::OnOpenUrlOnMainThread,
-                     weak_factory_.GetWeakPtr(), url));
+                     weak_factory_.GetWeakPtr(), url, is_background));
 }
 
 void AssistantManagerServiceImpl::OnShowNotification(
@@ -608,6 +607,11 @@ void AssistantManagerServiceImpl::OnShowNotification(
   notification_ptr->opaque_token = notification.opaque_token;
   notification_ptr->grouping_key = notification.grouping_key;
   notification_ptr->obfuscated_gaia_id = notification.obfuscated_gaia_id;
+
+  if (notification.expiry_timestamp_ms) {
+    notification_ptr->expiry_time =
+        base::Time::FromJavaTime(notification.expiry_timestamp_ms);
+  }
 
   // The server sometimes sends an empty |notification_id|, but our client
   // requires a non-empty |client_id| for notifications. Known instances in
@@ -694,7 +698,7 @@ void AssistantManagerServiceImpl::OnPlayMedia(
     std::string url = GetWebUrlFromMediaArgs(play_media_args_proto);
     // Fallack to web URL.
     if (!url.empty())
-      OnOpenUrlOnMainThread(url);
+      OnOpenUrlOnMainThread(url, /*in_background=*/false);
   }
 }
 
@@ -910,7 +914,8 @@ void AssistantManagerServiceImpl::OnModifySettingsAction(
 
   if (modify_setting_args.setting_id() == kDoNotDisturbDeviceSettingId) {
     HandleOnOffChange(modify_setting_args, [&](bool enabled) {
-      ash_message_center_controller_->SetQuietMode(enabled);
+      this->service_->assistant_notification_controller()->SetQuietMode(
+          enabled);
     });
   }
 
@@ -968,7 +973,8 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
   DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
 
   display_connection_ = std::make_unique<CrosDisplayConnection>(
-      this, assistant::features::IsFeedbackUiEnabled());
+      this, assistant::features::IsFeedbackUiEnabled(),
+      assistant::features::IsMediaSessionIntegrationEnabled());
 
   base::AutoLock lock(new_assistant_manager_lock_);
   new_assistant_manager_.reset(assistant_client::AssistantManager::Create(
@@ -1035,9 +1041,7 @@ void AssistantManagerServiceImpl::PostInitAssistant(
     is_first_init = false;
     // Only sync status at the first init to prevent unexpected corner cases.
     // This still does not handle browser restart.
-    if (base::FeatureList::IsEnabled(
-            assistant::features::kAssistantVoiceMatch) &&
-        service_->assistant_state()->hotword_enabled().value()) {
+    if (service_->assistant_state()->hotword_enabled().value()) {
       assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
     }
   }
@@ -1184,14 +1188,19 @@ void AssistantManagerServiceImpl::UpdateInternalOptions(
         assistant_client::InternalOptions::UserCredentialMode::SIGNED_OUT);
   }
 
-  if (base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch) &&
-      assistant_settings_manager_->speaker_id_enrollment_done()) {
+  if (assistant_settings_manager_->speaker_id_enrollment_done()) {
     internal_options->EnableRequireVoiceMatchVerification();
   }
 
   assistant_manager_internal->SetOptions(*internal_options, [](bool success) {
     DVLOG(2) << "set options: " << success;
   });
+}
+
+void AssistantManagerServiceImpl::MediaSessionChanged(
+    const base::Optional<base::UnguessableToken>& request_id) {
+  if (request_id.has_value())
+    media_session_audio_focus_id_ = std::move(request_id.value());
 }
 
 void AssistantManagerServiceImpl::MediaSessionInfoChanged(
@@ -1304,12 +1313,14 @@ void AssistantManagerServiceImpl::OnShowTextOnMainThread(
       [&text](auto* ptr) { ptr->OnTextResponse(text); });
 }
 
-void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(
-    const std::string& url) {
+void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(const std::string& url,
+                                                        bool in_background) {
   receive_url_response_ = url;
+  const GURL gurl = GURL(url);
 
-  interaction_subscribers_.ForAllPtrs(
-      [&url](auto* ptr) { ptr->OnOpenUrlResponse(GURL(url)); });
+  interaction_subscribers_.ForAllPtrs([&gurl, in_background](auto* ptr) {
+    ptr->OnOpenUrlResponse(gurl, in_background);
+  });
 }
 
 void AssistantManagerServiceImpl::OnPlaybackStateChange(
@@ -1602,11 +1613,15 @@ void AssistantManagerServiceImpl::UpdateMediaState() {
     return;
   }
 
-  // TODO(llin): MediaSession Integrated providers (include the libassistant
-  // internal media provider) will trigger media state change event. Only
-  // update the external media status if the state changes is triggered by
-  // external providers, after the media session API for identifying the source
-  // is available.
+  // MediaSession Integrated providers (include the libassistant internal
+  // media provider) will trigger media state change event. Only update the
+  // external media status if the state changes is triggered by external
+  // providers.
+  if (media_session_ && media_session_->internal_audio_focus_id() ==
+                            media_session_audio_focus_id_) {
+    return;
+  }
+
   MediaStatus media_status;
 
   // Set media metadata.

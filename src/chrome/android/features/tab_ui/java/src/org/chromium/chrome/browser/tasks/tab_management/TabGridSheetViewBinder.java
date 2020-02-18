@@ -5,9 +5,13 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.ADD_CLICK_LISTENER;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.ANIMATION_SOURCE_RECT;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.ANIMATION_PARAMS;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.COLLAPSE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.CONTENT_TOP_MARGIN;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.DIALOG_BACKGROUND_RESOUCE_ID;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.DIALOG_UNGROUP_BAR_TEXT_APPEARANCE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.HEADER_TITLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.IS_DIALOG_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.PRIMARY_COLOR;
@@ -74,10 +78,31 @@ class TabGridSheetViewBinder {
             } else {
                 viewHolder.dialogView.hideDialog();
             }
-        } else if (ANIMATION_SOURCE_RECT == propertyKey) {
-            viewHolder.dialogView.setupDialogAnimation(model.get(ANIMATION_SOURCE_RECT));
+        } else if (ANIMATION_PARAMS == propertyKey) {
+            viewHolder.dialogView.setupDialogAnimation(model.get(ANIMATION_PARAMS));
         } else if (UNGROUP_BAR_STATUS == propertyKey) {
             viewHolder.dialogView.updateUngroupBar(model.get(UNGROUP_BAR_STATUS));
+        } else if (DIALOG_BACKGROUND_RESOUCE_ID == propertyKey) {
+            if (viewHolder.dialogView != null) {
+                int backgroundResourceId = model.get(DIALOG_BACKGROUND_RESOUCE_ID);
+                viewHolder.dialogView.updateDialogContainerBackgroundResource(backgroundResourceId);
+                viewHolder.toolbarView.setBackgroundResource(backgroundResourceId);
+            }
+        } else if (DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID == propertyKey) {
+            if (viewHolder.dialogView != null) {
+                viewHolder.dialogView.updateUngroupBarBackgroundColor(
+                        model.get(DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID));
+            }
+        } else if (DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID == propertyKey) {
+            if (viewHolder.dialogView != null) {
+                viewHolder.dialogView.updateUngroupBarHoveredBackgroundColor(
+                        model.get(DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID));
+            }
+        } else if (DIALOG_UNGROUP_BAR_TEXT_APPEARANCE == propertyKey) {
+            if (viewHolder.dialogView != null) {
+                viewHolder.dialogView.updateUngroupBarTextAppearance(
+                        model.get(DIALOG_UNGROUP_BAR_TEXT_APPEARANCE));
+            }
         }
     }
 }

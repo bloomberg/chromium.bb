@@ -1,12 +1,10 @@
 package Test::Differences;
 
+=encoding utf8
+
 =head1 NAME
 
 Test::Differences - Test strings and data structures and show differences if not ok
-
-=head1 VERSION
-
-0.61
 
 =head1 SYNOPSIS
 
@@ -110,37 +108,6 @@ is designed to be used with Test.pm and with Test::Simple, Test::More,
 and other Test::Builder based testing modules.  As the SYNOPSIS shows,
 another testing module must be used as the basis for your test suite.
 
-These functions assume that you are presenting it with "flat" records,
-looking like:
-
-   - scalars composed of record-per-line
-   - arrays of scalars,
-   - arrays of arrays of scalars,
-   - arrays of hashes containing only scalars
-
-All of these are flattened in to single strings which are then compared
-for differences.  Differently data structures can be compared, as long
-as they flatten identically.
-
-All other data structures are run through Data::Dumper first.  This is a
-bit dangerous, as some versions of perl shipped with Data::Dumpers that
-could do the oddest things with unexpected, like core dump.  Only as of
-5.8.0 does Data::Dumper sort hash keys, which is necessary for HASH
-dumps to be fully predictable.  This will be changed when this bites
-somebody or I get some free time.
-
-C<eq_or_diff()> starts counting records at 0 unless you pass it two text
-strings:
-
-   eq_or_diff $a, $b;   ## First line is line number 1
-   eq_or_diff @a, @b;   ## First element is element 0
-   eq_or_diff $a, @b;   ## First line/element is element 0
-
-If you want to force a first record number of 0, use C<eq_or_diff_data>.  If
-you want to force a first record number of 1, use C<eq_or_diff_text>.  I chose
-this over passing in an options hash because it's clearer and simpler this way.
-YMMV.
-
 =head1 OPTIONS
 
 The options to C<eq_or_diff> give some fine-grained control over the output.
@@ -167,6 +134,10 @@ understand this. You can usually ignore this.
 If passed, whatever value is added is used as the argument for L<Data::Dumper>
 Sortkeys option. See the L<Data::Dumper> docs to understand how you can
 control the Sortkeys behavior.
+
+=item * C<filename_a> and C<filename_b>
+
+The column headers to use in the output. They default to 'Got' and 'Expected'.
 
 =back
 
@@ -213,6 +184,70 @@ You can run the following to understand the different diff output styles:
      oldstyle_diff;
      eq_or_diff $long_string, "-$long_string", 'oldstyle diff';
  }
+
+=head1 UNICODE
+
+Generally you'll find that the following test output is disappointing.
+
+    use Test::Differences;
+
+    my $want = { 'Traditional Chinese' => '中國' };
+    my $have = { 'Traditional Chinese' => '中国' };
+
+    eq_or_diff $have, $want, 'Unicode, baby';
+
+The output looks like this:
+
+    #   Failed test 'Unicode, baby'
+    #   at t/unicode.t line 12.
+    # +----+----------------------------+----------------------------+
+    # | Elt|Got                         |Expected                    |
+    # +----+----------------------------+----------------------------+
+    # |   0|'Traditional Chinese'       |'Traditional Chinese'       |
+    # *   1|'\xe4\xb8\xad\xe5\x9b\xbd'  |'\xe4\xb8\xad\xe5\x9c\x8b'  *
+    # +----+----------------------------+----------------------------+
+    # Looks like you failed 1 test of 1.
+    Dubious, test returned 1 (wstat 256, 0x100)
+
+This is generally not helpful and someone points out that you didn't declare
+your test program as being utf8, so you do that:
+
+    use Test::Differences;
+    use utf8;
+
+    my $want = { 'Traditional Chinese' => '中國' };
+    my $have = { 'Traditional Chinese' => '中国' };
+
+    eq_or_diff $have, $want, 'Unicode, baby';
+
+
+Here's what you get:
+
+    #   Failed test 'Unicode, baby'
+    #   at t/unicode.t line 12.
+    # +----+-----------------------+-----------------------+
+    # | Elt|Got                    |Expected               |
+    # +----+-----------------------+-----------------------+
+    # |   0|'Traditional Chinese'  |'Traditional Chinese'  |
+    # *   1|'\x{4e2d}\x{56fd}'     |'\x{4e2d}\x{570b}'     *
+    # +----+-----------------------+-----------------------+
+    # Looks like you failed 1 test of 1.
+    Dubious, test returned 1 (wstat 256, 0x100)
+    Failed 1/1 subtests
+
+That's better, but still awful. However, if you have C<Text::Diff> 0.40 or
+higher installed, you can add this to your code:
+
+    BEGIN { $ENV{DIFF_OUTPUT_UNICODE} = 1 }
+
+Make sure you do this I<before> you load L<Text::Diff>. Then this is the output:
+
+    # +----+-----------------------+-----------------------+
+    # | Elt|Got                    |Expected               |
+    # +----+-----------------------+-----------------------+
+    # |   0|'Traditional Chinese'  |'Traditional Chinese'  |
+    # *   1|'中国'                 |'中國'                 *
+    # +----+-----------------------+-----------------------+
 
 =head1 DEPLOYING
 
@@ -283,7 +318,7 @@ if you do this.
 
 =cut
 
-our $VERSION = "0.61"; # or "0.001_001" for a dev release
+our $VERSION = "0.67"; # or "0.001_001" for a dev release
 $VERSION = eval $VERSION;
 
 use Exporter;
@@ -300,24 +335,11 @@ use Exporter;
 );
 
 use strict;
+use warnings;
 
 use Carp;
 use Text::Diff;
-
-sub _isnt_ARRAY_of_scalars {
-    return 1 if ref ne "ARRAY";
-    return scalar grep ref, @$_;
-}
-
-sub _isnt_HASH_of_scalars {
-    return 1 if ref ne "HASH";
-    return scalar grep ref, values %$_;
-}
-
-use constant ARRAY_of_scalars           => "ARRAY of scalars";
-use constant ARRAY_of_ARRAYs_of_scalars => "ARRAY of ARRAYs of scalars";
-use constant ARRAY_of_HASHes_of_scalars => "ARRAY of HASHes of scalars";
-use constant HASH_of_scalars            => "HASH of scalars";
+use  Data::Dumper;
 
 {
     my $diff_style = 'Table';
@@ -336,96 +358,6 @@ sub unified_diff  { _diff_style('Unified') }
 sub context_diff  { _diff_style('Context') }
 sub oldstyle_diff { _diff_style('OldStyle') }
 sub table_diff    { _diff_style('Table') }
-
-sub _grok_type {
-    local $_ = shift if @_;
-    return "SCALAR" unless ref;
-    if ( ref eq "ARRAY" ) {
-        return undef unless @$_;
-        return ARRAY_of_scalars
-          unless _isnt_ARRAY_of_scalars;
-        return ARRAY_of_ARRAYs_of_scalars
-          unless grep _isnt_ARRAY_of_scalars, @$_;
-        return ARRAY_of_HASHes_of_scalars
-          unless grep _isnt_HASH_of_scalars, @$_;
-        return 0;
-    }
-    elsif ( ref eq 'HASH' ) {
-        return HASH_of_scalars
-          unless _isnt_HASH_of_scalars($_);
-        return 0;
-    }
-}
-
-## Flatten any acceptable data structure in to an array of lines.
-sub _flatten {
-    my $type = shift;
-    local $_ = shift if @_;
-
-    return [ split /^/m, _quote_str($_) ] unless ref;
-
-    croak "Can't flatten $_" unless $type;
-
-    ## Copy the top level array so we don't trash the originals
-    my ( @recs, %hash_copy );
-    if ( ref $_ eq 'ARRAY' ) {
-        @recs = @$_;
-    }
-    elsif ( ref $_ eq 'HASH' ) {
-        %hash_copy = %$_;
-    }
-    else {
-        die "unsupported ref type";
-    }
-    if ( $type eq ARRAY_of_scalars) {
-        @recs = map { _quote_str($_) } @recs;
-    }
-    elsif ( $type eq ARRAY_of_ARRAYs_of_scalars ) {
-        ## Also copy the inner arrays if need be
-        $_ = [@$_] for @recs;
-    }
-    elsif ( $type eq ARRAY_of_HASHes_of_scalars ) {
-        my %headings;
-        for my $rec (@recs) {
-            $headings{$_} = 1 for keys %$rec;
-        }
-        my @headings = sort keys %headings;
-
-        ## Convert all hashes in to arrays.
-        for my $rec (@recs) {
-            $rec = [ map $rec->{$_}, @headings ],;
-        }
-
-        unshift @recs, \@headings;
-
-        $type = ARRAY_of_ARRAYs_of_scalars;
-    }
-    elsif ( $type eq HASH_of_scalars ) {
-        my @headings = sort keys %hash_copy;
-        @recs = ( \@headings, [ map $hash_copy{$_}, @headings ] );
-        $type = ARRAY_of_ARRAYs_of_scalars;
-    }
-
-    if ( $type eq ARRAY_of_ARRAYs_of_scalars ) {
-        ## Quote strings
-        for my $rec (@recs) {
-            for (@$rec) {
-                $_ = _quote_str($_);
-            }
-            $rec = join ",", @$rec;
-        }
-    }
-
-    return \@recs;
-}
-
-sub _quote_str {
-    my $str = shift;
-    return 'undef' unless defined $str;
-    return $str if $str =~ /^[0-9]+$/;
-    $str =~ s{([\\\'])}{\\$1}g;
-    return "'$str'";
-}
 
 sub _identify_callers_test_package_of_choice {
     ## This is called at each test in case Test::Differences was used before
@@ -461,37 +393,33 @@ sub eq_or_diff {
     $options = pop if @_ > 2 && ref $_[-1];
     ( $vals[0], $vals[1], $name ) = @_;
 
-    my $data_type;
-    $data_type = $options->{data_type} if $options;
+    my($data_type, $filename_a, $filename_b);
+    if($options) {
+        $data_type  = $options->{data_type};
+        $filename_a = $options->{filename_a};
+        $filename_b = $options->{filename_b};
+    }
     $data_type ||= "text" unless ref $vals[0] || ref $vals[1];
     $data_type ||= "data";
 
+    $filename_a ||= 'Got';
+    $filename_b ||= 'Expected';
+
     my @widths;
 
-    my @types = map _grok_type, @vals;
-
-    my $dump_it = !$types[0] || !$types[1];
-
-    my ( $got, $expected );
-    if ($dump_it) {
-        require Data::Dumper;
-        local $Data::Dumper::Indent    = 1;
-        local $Data::Dumper::Purity    = 0;
-        local $Data::Dumper::Terse     = 1;
-        local $Data::Dumper::Deepcopy  = 1;
-        local $Data::Dumper::Quotekeys = 0;
-        local $Data::Dumper::Sortkeys =
-          exists $options->{Sortkeys} ? $options->{Sortkeys} : 1;
-        ( $got, $expected ) = map
-          [ split /^/, Data::Dumper::Dumper($_) ],
-          @vals;
-    }
-    else {
-        ( $got, $expected ) = (
-            _flatten( $types[0], $vals[0] ),
-            _flatten( $types[1], $vals[1] )
-        );
-    }
+    local $Data::Dumper::Deparse   = 1
+        unless($Test::Differences::NoDeparse);
+    local $Data::Dumper::Indent    = 1;
+    local $Data::Dumper::Purity    = 0;
+    local $Data::Dumper::Terse     = 1;
+    local $Data::Dumper::Deepcopy  = 1;
+    local $Data::Dumper::Quotekeys = 0;
+    local $Data::Dumper::Useperl   = 1;
+    local $Data::Dumper::Sortkeys =
+        exists $options->{Sortkeys} ? $options->{Sortkeys} : 1;
+    my ( $got, $expected ) = map
+        [ split /^/, Data::Dumper::Dumper($_) ],
+        @vals;
 
     my $caller = caller;
 
@@ -505,8 +433,7 @@ sub eq_or_diff {
         $context = $options->{context}
           if exists $options->{context};
 
-        $context = $dump_it ? 2**31 : grep( @$_ > 25, $got, $expected ) ? 3 : 25
-          unless defined $context;
+        $context = 2**31 unless defined $context;
 
         confess "context must be an integer: '$context'\n"
           unless $context =~ /\A\d+\z/;
@@ -514,8 +441,8 @@ sub eq_or_diff {
         $diff = diff $got, $expected,
           { CONTEXT     => $context,
             STYLE       => _diff_style(),
-            FILENAME_A  => "Got",
-            FILENAME_B  => "Expected",
+            FILENAME_A  => $filename_a,
+            FILENAME_B  => $filename_b,
             OFFSET_A    => $data_type eq "text" ? 1 : 0,
             OFFSET_B    => $data_type eq "text" ? 1 : 0,
             INDEX_LABEL => $data_type eq "text" ? "Ln" : "Elt",
@@ -594,10 +521,10 @@ with unicode strings.
 =head2 C<Data::Dumper> and older Perls.
 
 Relies on Data::Dumper (for now), which, prior to perl5.8, will not always
-report hashes in the same order.  C< $Data::Dumper::SortKeys > I<is> set to 1,
+report hashes in the same order.  C< $Data::Dumper::Sortkeys > I<is> set to 1,
 so on more recent versions of Data::Dumper, this should not occur.  Check CPAN
 to see if it's been peeled out of the main perl distribution and backported.
-Reported by Ilya Martynov <ilya@martynov.org>, although the SortKeys "future
+Reported by Ilya Martynov <ilya@martynov.org>, although the Sortkeys "future
 perfect" workaround has been set in anticipation of a new Data::Dumper for a
 while.  Note that the two hashes should report the same here:
 
@@ -632,20 +559,32 @@ Yves Orton <demerphq@hotmail.com>.  The plan to address this is to allow
 you to select Data::Denter or some other module of your choice as an
 option.
 
-=head1 AUTHOR
+=head2 Code-refs
 
-    Barrie Slaymaker <barries@slaysys.com>
+Test::Differences turns on C<$Data::Dumper::Deparse>, so any code-refs in your
+data structures will be turned into text before they are examined, using
+L<B::Deparse>. The precise text generated for a sub-ref might not be what you
+expect as it is generated from the compiled version of the code, but it should
+at least be consistent and spot differences correctly.
 
-=head1 MAINTAINER
+You can turn this behaviour off by setting C<$Test::Differences::NoDeparse>.
+
+=head1 AUTHORS
+
+    Barrie Slaymaker <barries@slaysys.com> - original author
 
     Curtis "Ovid" Poe <ovid@cpan.org>
 
+    David Cantrell <david@cantrell.org.uk>
+
 =head1 LICENSE
 
-Copyright 2001-2008 Barrie Slaymaker, All Rights Reserved.
+Copyright Barrie Slaymaker, Curtis "Ovid" Poe, and David Cantrell.
 
-You may use this software under the terms of the GNU public license, any
-version, or the Artistic license.
+All Rights Reserved.
+
+You may use, distribute and modify this software under the terms of the GNU
+public license, any version, or the Artistic license.
 
 =cut
 

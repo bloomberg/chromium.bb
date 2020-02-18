@@ -11,10 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
-namespace base {
-class PowerMonitor;
-}  // namespace base
-
 namespace web {
 class CookieNotificationBridge;
 class ServiceManagerContext;
@@ -64,10 +60,10 @@ class WebMainLoop {
   bool created_threads_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------
-  // The MessageLoop and NetworkChangeNotifier are not owned by the WebMainLoop
-  // but still need to be destroyed in correct order so use ScopedClosureRunner.
-  base::ScopedClosureRunner destroy_message_loop_;
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
+  // The SingleThreadTaskExecutor and NetworkChangeNotifier are not owned by the
+  // WebMainLoop but still need to be destroyed in correct order so use
+  // ScopedClosureRunner.
+  base::ScopedClosureRunner destroy_task_executor_;
   base::ScopedClosureRunner destroy_network_change_notifier_;
 
   // Destroy parts_ before main_message_loop_ (required) and before other

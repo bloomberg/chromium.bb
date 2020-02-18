@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/tpm/install_attributes.h"
 
 namespace chromeos {
 
@@ -28,6 +29,10 @@ bool IsAccountManagerAvailable(const Profile* const profile) {
 
   // Account Manager is unavailable on Managed Guest Sessions / Public Sessions.
   if (profiles::IsPublicSession())
+    return false;
+
+  // Temporarily disabled for Active Directory devices.
+  if (InstallAttributes::Get()->IsActiveDirectoryManaged())
     return false;
 
   // Available in all other cases.

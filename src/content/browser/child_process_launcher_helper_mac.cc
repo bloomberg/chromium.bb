@@ -11,7 +11,7 @@
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/browser/child_process_launcher_helper_posix.h"
-#include "content/browser/mach_broker_mac.h"
+#include "content/browser/child_process_task_port_provider_mac.h"
 #include "content/browser/sandbox_parameters_mac.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/child_process_launcher_utils.h"
@@ -21,7 +21,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
-#include "mojo/public/cpp/platform/features.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #include "services/service_manager/embedder/result_codes.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
@@ -34,12 +33,12 @@ namespace internal {
 
 base::Optional<mojo::NamedPlatformChannel>
 ChildProcessLauncherHelper::CreateNamedPlatformChannelOnClientThread() {
-  DCHECK_CURRENTLY_ON(client_thread_id_);
+  DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
   return base::nullopt;
 }
 
 void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
-  DCHECK_CURRENTLY_ON(client_thread_id_);
+  DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
 }
 
 std::unique_ptr<PosixFileDescriptorInfo>
@@ -61,12 +60,11 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
   base::FieldTrialList::InsertFieldTrialHandleIfNeeded(
       &options->mach_ports_for_rendezvous);
 
-  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
-    options->mach_ports_for_rendezvous.insert(std::make_pair(
-        'mojo', base::MachRendezvousPort(mojo_channel_->TakeRemoteEndpoint()
-                                             .TakePlatformHandle()
-                                             .TakeMachReceiveRight())));
-  }
+  mojo::PlatformHandle endpoint =
+      mojo_channel_->TakeRemoteEndpoint().TakePlatformHandle();
+  DCHECK(endpoint.is_valid_mach_receive());
+  options->mach_ports_for_rendezvous.insert(std::make_pair(
+      'mojo', base::MachRendezvousPort(endpoint.TakeMachReceiveRight())));
 
   options->environment = delegate_->GetEnvironment();
 
@@ -109,20 +107,6 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
         base::StringPrintf("%s%d", sandbox::switches::kSeatbeltClient, pipe));
   }
 
-  // Hold the MachBroker lock for the duration of LaunchProcess. The child will
-  // send its task port to the parent almost immediately after startup. The Mach
-  // message will be delivered to the parent, but updating the record of the
-  // launch will wait until after the placeholder PID is inserted below. This
-  // ensures that while the child process may send its port to the parent prior
-  // to the parent leaving LaunchProcess, the order in which the record in
-  // MachBroker is updated is correct.
-  MachBroker* broker = MachBroker::GetInstance();
-  broker->GetLock().Acquire();
-
-  // Make sure the MachBroker is running, and inform it to expect a check-in
-  // from the new process.
-  broker->EnsureRunning();
-
   return true;
 }
 
@@ -148,15 +132,6 @@ void ChildProcessLauncherHelper::AfterLaunchOnLauncherThread(
   if (process.process.IsValid() && seatbelt_exec_client_.get() != nullptr) {
     seatbelt_exec_client_->SendProfile();
   }
-
-  MachBroker* broker = MachBroker::GetInstance();
-  if (process.process.IsValid()) {
-    broker->AddPlaceholderForPid(process.process.Pid(), child_process_id());
-  }
-
-  // After updating the broker, release the lock and let the child's message be
-  // processed on the broker's thread.
-  broker->GetLock().Release();
 }
 
 ChildProcessTerminationInfo ChildProcessLauncherHelper::GetTerminationInfo(
@@ -192,7 +167,7 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     base::Process process,
     const ChildProcessLauncherPriority& priority) {
   if (process.CanBackgroundProcesses()) {
-    process.SetProcessBackgrounded(MachBroker::GetInstance(),
+    process.SetProcessBackgrounded(ChildProcessTaskPortProvider::GetInstance(),
                                    priority.is_background());
   }
 }

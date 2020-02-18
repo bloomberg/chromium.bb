@@ -26,7 +26,7 @@ void TestWebAppUrlLoader::ProcessLoadUrlRequests() {
     std::tie(url, callback) = std::move(pending_requests_.front());
     pending_requests_.pop();
 
-    DCHECK(base::ContainsKey(next_result_map_, url));
+    DCHECK(base::Contains(next_result_map_, url));
     auto result = next_result_map_[url];
     next_result_map_.erase(url);
 
@@ -35,7 +35,7 @@ void TestWebAppUrlLoader::ProcessLoadUrlRequests() {
 }
 
 void TestWebAppUrlLoader::SetNextLoadUrlResult(const GURL& url, Result result) {
-  DCHECK(!base::ContainsKey(next_result_map_, url)) << url;
+  DCHECK(!base::Contains(next_result_map_, url)) << url;
   next_result_map_[url] = result;
 }
 
@@ -47,7 +47,7 @@ void TestWebAppUrlLoader::LoadUrl(const GURL& url,
     return;
   }
 
-  DCHECK(base::ContainsKey(next_result_map_, url)) << url;
+  DCHECK(base::Contains(next_result_map_, url)) << url;
   auto result = next_result_map_[url];
   next_result_map_.erase(url);
 

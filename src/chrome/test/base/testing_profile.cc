@@ -31,6 +31,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -52,7 +53,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
-#include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -93,6 +93,7 @@
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/policy/core/common/schema.h"
 #include "components/prefs/testing_pref_store.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
@@ -104,6 +105,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -117,8 +119,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -224,7 +224,6 @@ std::unique_ptr<KeyedService> BuildWebDataService(
   return std::make_unique<WebDataServiceWrapper>(
       context_path, g_browser_process->GetApplicationLocale(),
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
-      sync_start_util::GetFlareForSyncableService(context_path),
       base::BindRepeating(&TestProfileErrorCallback));
 }
 
@@ -270,7 +269,8 @@ TestingProfile::TestingProfile(const base::FilePath& path, Delegate* delegate)
           BrowserContextDependencyManager::GetInstance()),
       resource_context_(nullptr),
       delegate_(delegate),
-      profile_name_(kTestingProfile) {
+      profile_name_(kTestingProfile),
+      override_policy_connector_is_managed_(base::nullopt) {
   if (profile_path_.empty()) {
     CreateTempProfileDir();
     profile_path_ = temp_dir_.GetPath();
@@ -300,7 +300,8 @@ TestingProfile::TestingProfile(
     std::unique_ptr<policy::UserCloudPolicyManager> policy_manager,
     std::unique_ptr<policy::PolicyService> policy_service,
     TestingFactories testing_factories,
-    const std::string& profile_name)
+    const std::string& profile_name,
+    base::Optional<bool> override_policy_connector_is_managed)
     : start_time_(Time::Now()),
       prefs_(std::move(prefs)),
       testing_prefs_(nullptr),
@@ -321,6 +322,8 @@ TestingProfile::TestingProfile(
       user_cloud_policy_manager_(std::move(policy_manager)),
       delegate_(delegate),
       profile_name_(profile_name),
+      override_policy_connector_is_managed_(
+          override_policy_connector_is_managed),
       policy_service_(std::move(policy_service)) {
   if (parent)
     parent->SetOffTheRecordProfile(std::unique_ptr<Profile>(this));
@@ -405,7 +408,7 @@ void TestingProfile::Init() {
   BrowserContext::Initialize(this, profile_path_);
 
 #if defined(OS_ANDROID)
-  identity::DisableInteractionWithSystemAccounts();
+  signin::DisableInteractionWithSystemAccounts();
 #endif
 
   // Normally this would happen during browser startup, but for tests
@@ -434,8 +437,10 @@ void TestingProfile::Init() {
     user_prefs::UserPrefs::Set(this, prefs_.get());
   else if (IsOffTheRecord())
     CreateIncognitoPrefService();
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   else if (!supervised_user_id_.empty())
     CreatePrefServiceForSupervisedUser();
+#endif
   else
     CreateTestingPrefService();
 
@@ -677,6 +682,10 @@ void TestingProfile::SetIsNewProfile(bool is_new_profile) {
   is_new_profile_ = is_new_profile;
 }
 
+base::FilePath TestingProfile::GetPath() {
+  return profile_path_;
+}
+
 base::FilePath TestingProfile::GetPath() const {
   return profile_path_;
 }
@@ -713,6 +722,10 @@ Profile::ProfileType TestingProfile::GetProfileType() const {
   if (original_profile_)
     return guest_session_ ? GUEST_PROFILE : INCOGNITO_PROFILE;
   return REGULAR_PROFILE;
+}
+
+bool TestingProfile::IsOffTheRecord() {
+  return original_profile_;
 }
 
 bool TestingProfile::IsOffTheRecord() const {
@@ -774,6 +787,11 @@ bool TestingProfile::IsLegacySupervised() const {
   return IsSupervised() && !IsChild();
 }
 
+bool TestingProfile::IsIndependentOffTheRecordProfile() {
+  return !GetOriginalProfile()->HasOffTheRecordProfile() ||
+         GetOriginalProfile()->GetOffTheRecordProfile() != this;
+}
+
 bool TestingProfile::AllowsBrowserWindows() const {
   return allows_browser_windows_;
 }
@@ -805,6 +823,7 @@ void TestingProfile::CreateTestingPrefService() {
   RegisterUserProfilePrefs(testing_prefs_->registry());
 }
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 void TestingProfile::CreatePrefServiceForSupervisedUser() {
   DCHECK(!prefs_.get());
   DCHECK(!supervised_user_id_.empty());
@@ -823,6 +842,7 @@ void TestingProfile::CreatePrefServiceForSupervisedUser() {
   RegisterUserProfilePrefs(registry.get());
   user_prefs::UserPrefs::Set(this, prefs_.get());
 }
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 void TestingProfile::CreateIncognitoPrefService() {
   DCHECK(original_profile_);
@@ -846,6 +866,9 @@ void TestingProfile::CreateProfilePolicyConnector() {
   }
   profile_policy_connector_.reset(new policy::ProfilePolicyConnector());
   profile_policy_connector_->InitForTesting(std::move(policy_service_));
+  if (override_policy_connector_is_managed_.has_value())
+    profile_policy_connector_->OverrideIsManagedForTesting(
+        override_policy_connector_is_managed_.value());
 }
 
 PrefService* TestingProfile::GetPrefs() {
@@ -871,25 +894,6 @@ DownloadManagerDelegate* TestingProfile::GetDownloadManagerDelegate() {
 
 net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
-}
-
-base::OnceCallback<net::CookieStore*()>
-TestingProfile::GetExtensionsCookieStoreGetter() {
-  return base::BindOnce(
-      [](std::unique_ptr<net::CookieStore,
-                         content::BrowserThread::DeleteOnIOThread>*
-             cookie_store) {
-        if (!*cookie_store) {
-          content::CookieStoreConfig cookie_config;
-          cookie_config.cookieable_schemes.push_back(
-              extensions::kExtensionScheme);
-          cookie_store->reset(
-              content::CreateCookieStore(cookie_config, nullptr /* netlog */)
-                  .release());
-        }
-        return cookie_store->get();
-      },
-      &extensions_cookie_store_);
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -1048,17 +1052,6 @@ net::URLRequestContextGetter* TestingProfile::CreateRequestContext(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 }
 
-net::URLRequestContextGetter*
-TestingProfile::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  // We don't test storage partitions here yet, so returning the same dummy
-  // context is sufficient for now.
-  return GetRequestContext();
-}
-
 net::URLRequestContextGetter* TestingProfile::CreateMediaRequestContext() {
   return nullptr;
 }
@@ -1085,13 +1078,6 @@ std::unique_ptr<service_manager::Service> TestingProfile::HandleServiceRequest(
   return nullptr;
 }
 
-net::URLRequestContextGetter*
-TestingProfile::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
-  return nullptr;
-}
-
 bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
   return true;
 }
@@ -1110,15 +1096,29 @@ Profile::ExitType TestingProfile::GetLastSessionExitType() {
   return last_session_exited_cleanly_ ? EXIT_NORMAL : EXIT_CRASHED;
 }
 
+void TestingProfile::SetNetworkContext(
+    std::unique_ptr<network::mojom::NetworkContext> network_context) {
+  DCHECK(!network_context_);
+  network_context_ = std::move(network_context);
+}
+
 network::mojom::NetworkContextPtr TestingProfile::CreateNetworkContext(
     bool in_memory,
     const base::FilePath& relative_partition_path) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    network::mojom::NetworkContextPtr network_context;
-    network_context_request_ = mojo::MakeRequest(&network_context);
-    return network_context;
+  if (network_context_) {
+    network::mojom::NetworkContextPtr network_context_ptr;
+    network_context_bindings_.AddBinding(
+        network_context_.get(), mojo::MakeRequest(&network_context_ptr));
+    return network_context_ptr;
   }
-  return nullptr;
+  network::mojom::NetworkContextPtr network_context;
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
+  context_params->user_agent = GetUserAgent();
+  context_params->accept_language = "en-us,en";
+  content::GetNetworkService()->CreateNetworkContext(
+      MakeRequest(&network_context), std::move(context_params));
+  return network_context;
 }
 
 TestingProfile::Builder::Builder()
@@ -1182,6 +1182,11 @@ void TestingProfile::Builder::SetProfileName(const std::string& profile_name) {
   profile_name_ = profile_name;
 }
 
+void TestingProfile::Builder::OverridePolicyConnectorIsManagedForTesting(
+    bool is_managed) {
+  override_policy_connector_is_managed_ = is_managed;
+}
+
 void TestingProfile::Builder::AddTestingFactory(
     BrowserContextKeyedServiceFactory* service_factory,
     BrowserContextKeyedServiceFactory::TestingFactory testing_factory) {
@@ -1200,7 +1205,8 @@ std::unique_ptr<TestingProfile> TestingProfile::Builder::Build() {
       std::move(pref_service_), nullptr, guest_session_,
       allows_browser_windows_, std::move(is_new_profile_), supervised_user_id_,
       std::move(user_cloud_policy_manager_), std::move(policy_service_),
-      std::move(testing_factories_), profile_name_));
+      std::move(testing_factories_), profile_name_,
+      override_policy_connector_is_managed_));
 }
 
 TestingProfile* TestingProfile::Builder::BuildIncognito(
@@ -1218,5 +1224,6 @@ TestingProfile* TestingProfile::Builder::BuildIncognito(
       std::move(pref_service_), original_profile, guest_session_,
       allows_browser_windows_, std::move(is_new_profile_), supervised_user_id_,
       std::move(user_cloud_policy_manager_), std::move(policy_service_),
-      std::move(testing_factories_), profile_name_);
+      std::move(testing_factories_), profile_name_,
+      override_policy_connector_is_managed_);
 }

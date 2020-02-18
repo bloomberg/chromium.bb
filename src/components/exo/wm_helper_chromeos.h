@@ -77,6 +77,9 @@ class WMHelperChromeOS : public WMHelper, public VSyncTimingManager::Delegate {
       int64_t display_id) const override;
   const std::vector<uint8_t>& GetDisplayIdentificationData(
       int64_t display_id) const override;
+  bool GetActiveModeForDisplayId(
+      int64_t display_id,
+      display::ManagedDisplayMode* mode) const override;
 
   aura::Window* GetPrimaryDisplayContainer(int container_id) override;
   aura::Window* GetActiveWindow() const override;
@@ -88,8 +91,10 @@ class WMHelperChromeOS : public WMHelper, public VSyncTimingManager::Delegate {
   void RemovePreTargetHandler(ui::EventHandler* handler) override;
   void AddPostTargetHandler(ui::EventHandler* handler) override;
   void RemovePostTargetHandler(ui::EventHandler* handler) override;
-  bool IsTabletModeWindowManagerEnabled() const override;
+  bool InTabletMode() const override;
   double GetDefaultDeviceScaleFactor() const override;
+  void SetImeBlocked(aura::Window* window, bool ime_blocked) override;
+  bool IsImeBlocked(aura::Window* window) const override;
 
   LifetimeManager* GetLifetimeManager() override;
   aura::client::CaptureClient* GetCaptureClient() override;
@@ -98,7 +103,8 @@ class WMHelperChromeOS : public WMHelper, public VSyncTimingManager::Delegate {
   void OnDragEntered(const ui::DropTargetEvent& event) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event) override;
+  int OnPerformDrop(const ui::DropTargetEvent& event,
+                    std::unique_ptr<ui::OSExchangeData> data) override;
 
   // Overridden from VSyncTimingManager::Delegate:
   void AddVSyncParameterObserver(

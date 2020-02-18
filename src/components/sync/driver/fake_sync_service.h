@@ -65,6 +65,8 @@ class FakeSyncService : public SyncService {
       const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback)
       override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
+  UserDemographicsResult GetUserNoisedBirthYearAndGender(
+      base::Time now) override;
 
   // KeyedService implementation.
   void Shutdown() override;

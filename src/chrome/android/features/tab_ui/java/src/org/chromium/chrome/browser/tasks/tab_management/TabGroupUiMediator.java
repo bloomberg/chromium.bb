@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ThemeColorProvider;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
@@ -21,7 +21,11 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.tasks.tab_groups.EmptyTabGroupModelFilterObserver;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -69,7 +73,9 @@ public class TabGroupUiMediator {
     private final TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private boolean mIsTabGroupUiVisible;
+    private boolean mIsShowingOverViewMode;
     private boolean mIsClosingAGroup;
+    private final TabGroupModelFilter.Observer mTabGroupModelFilterObserver;
 
     TabGroupUiMediator(
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController,
@@ -89,8 +95,10 @@ public class TabGroupUiMediator {
             @Override
             public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
                 if (!mIsTabGroupUiVisible) return;
-                if (type == TabSelectionType.FROM_CLOSE && !mIsClosingAGroup) return;
+                if (type == TabSelectionType.FROM_CLOSE) return;
                 if (getRelatedTabsForId(lastId).contains(tab)) return;
+                // TODO(995956): Optimization we can do here if we decided always hide the strip if
+                // related tab size down to 1.
                 resetTabStripWithRelatedTabsForId(tab.getId());
             }
 
@@ -101,7 +109,7 @@ public class TabGroupUiMediator {
                                           .getCurrentTabModelFilter()
                                           .getRelatedTabList(tab.getId());
 
-                mIsClosingAGroup = group.size() == 0;
+                if (group.size() == 1) resetTabStripWithRelatedTabsForId(Tab.INVALID_TAB_ID);
             }
 
             @Override
@@ -114,17 +122,26 @@ public class TabGroupUiMediator {
             @Override
             public void restoreCompleted() {
                 Tab currentTab = mTabModelSelector.getCurrentTab();
+                if (currentTab == null) return;
                 resetTabStripWithRelatedTabsForId(currentTab.getId());
+            }
+
+            @Override
+            public void tabClosureUndone(Tab tab) {
+                if (!mIsTabGroupUiVisible && !mIsShowingOverViewMode)
+                    resetTabStripWithRelatedTabsForId(tab.getId());
             }
         };
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
             public void onOverviewModeStartedShowing(boolean showToolbar) {
+                mIsShowingOverViewMode = true;
                 resetTabStripWithRelatedTabsForId(Tab.INVALID_TAB_ID);
             }
 
             @Override
             public void onOverviewModeFinishedHiding() {
+                mIsShowingOverViewMode = false;
                 Tab tab = mTabModelSelector.getCurrentTab();
                 if (tab == null) return;
                 resetTabStripWithRelatedTabsForId(tab.getId());
@@ -139,7 +156,7 @@ public class TabGroupUiMediator {
                                                .getRelatedTabList(tab.getId());
                 int numTabs = listOfTabs.size();
                 // This is set to zero because the UI is hidden.
-                if (!mIsTabGroupUiVisible) numTabs = 0;
+                if (!mIsTabGroupUiVisible || numTabs == 1) numTabs = 0;
                 RecordHistogram.recordCountHistogram("TabStrip.TabCountOnPageLoad", numTabs);
             }
         };
@@ -152,6 +169,24 @@ public class TabGroupUiMediator {
                 }
             }
         };
+
+        mTabGroupModelFilterObserver = new EmptyTabGroupModelFilterObserver() {
+            @Override
+            public void didMoveTabOutOfGroup(Tab movedTab, int prevFilterIndex) {
+                if (mIsTabGroupUiVisible && movedTab == mTabModelSelector.getCurrentTab()) {
+                    resetTabStripWithRelatedTabsForId(movedTab.getId());
+                }
+            }
+        };
+
+        // TODO(995951): Add observer similar to TabModelSelectorTabModelObserver for
+        // TabModelFilter.
+        ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
+                 false))
+                .addTabGroupObserver(mTabGroupModelFilterObserver);
+        ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
+                 true))
+                .addTabGroupObserver(mTabGroupModelFilterObserver);
 
         mThemeColorObserver = (color, shouldAnimate)
                 -> mToolbarPropertyModel.set(TabStripToolbarViewProperties.PRIMARY_COLOR, color);
@@ -177,7 +212,11 @@ public class TabGroupUiMediator {
             Tab currentTab = mTabModelSelector.getCurrentTab();
             if (currentTab == null) return;
             mResetHandler.resetGridWithListOfTabs(getRelatedTabsForId(currentTab.getId()));
-            RecordUserAction.record("TabGroup.ExpandedFromStrip");
+            if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+                RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridDialog");
+            } else {
+                RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridSheet");
+            }
         });
         mToolbarPropertyModel.set(TabStripToolbarViewProperties.ADD_CLICK_LISTENER, view -> {
             Tab currentTab = mTabModelSelector.getCurrentTab();
@@ -191,7 +230,7 @@ public class TabGroupUiMediator {
             mTabCreatorManager.getTabCreator(currentTab.isIncognito())
                     .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
                             TabLaunchType.FROM_CHROME_UI, parentTabToAttach);
-            RecordUserAction.record("MobileNewTabOpened" + TabGroupUiCoordinator.COMPONENT_NAME);
+            RecordUserAction.record("MobileNewTabOpened." + TabGroupUiCoordinator.COMPONENT_NAME);
         });
     }
 
@@ -216,14 +255,25 @@ public class TabGroupUiMediator {
     }
 
     public void destroy() {
-        if (mTabModelObserver != null && mTabModelSelector != null) {
+        if (mTabModelSelector != null) {
             mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
                     mTabModelObserver);
+            ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
+                     false))
+                    .removeTabGroupObserver(mTabGroupModelFilterObserver);
+            ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
+                     true))
+                    .removeTabGroupObserver(mTabGroupModelFilterObserver);
+            mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         }
         mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
         mThemeColorProvider.removeThemeColorObserver(mThemeColorObserver);
         mThemeColorProvider.removeTintObserver(mTintObserver);
-        mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         mTabModelSelectorTabObserver.destroy();
+    }
+
+    @VisibleForTesting
+    boolean getIsShowingOverViewModeForTesting() {
+        return mIsShowingOverViewMode;
     }
 }

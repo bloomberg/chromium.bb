@@ -17,6 +17,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
 
+import com.google.android.libraries.feed.api.client.scope.ProcessScope;
 import com.google.android.libraries.feed.api.client.scope.StreamScope;
 import com.google.android.libraries.feed.api.client.stream.Header;
 import com.google.android.libraries.feed.api.client.stream.NonDismissibleHeader;
@@ -27,17 +28,17 @@ import com.google.android.libraries.feed.api.host.stream.SnackbarApi;
 import com.google.android.libraries.feed.api.host.stream.SnackbarCallbackApi;
 import com.google.android.libraries.feed.api.host.stream.StreamConfiguration;
 import com.google.android.libraries.feed.api.host.stream.TooltipApi;
-import com.google.android.libraries.feed.api.host.stream.TooltipCallbackApi;
-import com.google.android.libraries.feed.api.host.stream.TooltipInfo;
-import com.google.android.libraries.feed.api.internal.scope.FeedProcessScope;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.feed.action.FeedActionHandler;
+import org.chromium.chrome.browser.feed.tooltip.BasicTooltipApi;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -47,8 +48,9 @@ import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -100,16 +102,21 @@ public class FeedNewTabPage extends NewTabPage {
 
         @Override
         public void show(String message, String action, SnackbarCallbackApi callback) {
-            // TODO(https://crbug.com/924742): Set action text and correctly invoke callback.
-            show(message);
-        }
-    }
+            mManager.showSnackbar(
+                    Snackbar.make(message,
+                                    new SnackbarManager.SnackbarController() {
+                                        @Override
+                                        public void onAction(Object actionData) {
+                                            callback.onDismissedWithAction();
+                                        }
 
-    private static class BasicTooltipApi implements TooltipApi {
-        @Override
-        public boolean maybeShowHelpUi(
-                TooltipInfo tooltipInfo, View view, TooltipCallbackApi tooltipCallback) {
-            return false;
+                                        @Override
+                                        public void onDismissNoAction(Object actionData) {
+                                            callback.onDismissNoAction();
+                                        }
+                                    },
+                                    Snackbar.TYPE_ACTION, Snackbar.UMA_FEED_NTP_STREAM)
+                            .setAction(action, null));
         }
     }
 
@@ -252,10 +259,15 @@ public class FeedNewTabPage extends NewTabPage {
      * @param activity The containing {@link ChromeActivity}.
      * @param nativePageHost The host for this native page.
      * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
+     * @param activityTabProvider Allows us to check if we are the current tab.
+     * @param activityLifecycleDispatcher Allows us to subscribe to backgrounding events.
      */
     public FeedNewTabPage(ChromeActivity activity, NativePageHost nativePageHost,
-            TabModelSelector tabModelSelector) {
-        super(activity, nativePageHost, tabModelSelector);
+            TabModelSelector tabModelSelector, SigninManager signinManager,
+            ActivityTabProvider activityTabProvider,
+            ActivityLifecycleDispatcher activityLifecycleDispatcher) {
+        super(activity, nativePageHost, tabModelSelector, activityTabProvider,
+                activityLifecycleDispatcher);
 
         Resources resources = activity.getResources();
         mDefaultMargin =
@@ -267,7 +279,7 @@ public class FeedNewTabPage extends NewTabPage {
 
         // Mediator should be created before any Stream changes.
         mMediator = new FeedNewTabPageMediator(
-                this, new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout));
+                this, new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout), signinManager);
 
         // Don't store a direct reference to the activity, because it might change later if the tab
         // is reparented.
@@ -279,7 +291,7 @@ public class FeedNewTabPage extends NewTabPage {
 
         mNewTabPageLayout.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
                 mSearchProviderHasLogo,
-                TemplateUrlService.getInstance().isDefaultSearchEngineGoogle(), mMediator,
+                TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(), mMediator,
                 mContextMenuManager, mUiConfig);
     }
 
@@ -348,7 +360,7 @@ public class FeedNewTabPage extends NewTabPage {
             mScrollViewResizer = null;
         }
 
-        FeedProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
+        ProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
         assert feedProcessScope != null;
 
         FeedAppLifecycle appLifecycle = FeedProcessScopeFactory.getFeedAppLifecycle();
@@ -357,7 +369,8 @@ public class FeedNewTabPage extends NewTabPage {
         ChromeActivity chromeActivity = mTab.getActivity();
         Profile profile = mTab.getProfile();
 
-        mImageLoader = new FeedImageLoader(chromeActivity, ChromeApplication.getReferencePool());
+        mImageLoader = new FeedImageLoader(
+                chromeActivity, GlobalDiscardableReferencePool.getReferencePool());
         FeedLoggingBridge loggingBridge = FeedProcessScopeFactory.getFeedLoggingBridge();
         FeedOfflineIndicator offlineIndicator = FeedProcessScopeFactory.getFeedOfflineIndicator();
         Runnable consumptionObserver = () -> {

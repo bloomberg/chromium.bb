@@ -401,7 +401,9 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImageWithSrcSet) {
       "Appears to say: red.png Annotation. Appears to be: red.png 'en' Label");
 }
 
-IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AnnotationLanguages) {
+// Disabled due to flakiness. http://crbug.com/983404
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,
+                       DISABLED_AnnotationLanguages) {
   FakeAnnotator::SetReturnOcrResults(true);
   FakeAnnotator::SetReturnLabelResults(true);
 

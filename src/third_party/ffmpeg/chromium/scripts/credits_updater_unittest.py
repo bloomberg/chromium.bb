@@ -116,6 +116,32 @@ class CreditsUpdaterUnittest(unittest.TestCase):
     credits_lines = ReadCreditsLines()
     self.assertEqual(expected_lines, credits_lines)
 
+  def testGeneratedLicencesOrder(self):
+    # Process files that do not fall into a known bucket and assert that their
+    # licenses are listed in alphabetical order of the file names.
+    files = [
+      'libswresample/swresample.h',
+      'libavcodec/arm/jrevdct_arm.S',
+      'libavcodec/mips/celp_math_mips.c',
+      'libavcodec/mips/acelp_vectors_mips.c',
+      'libavformat/oggparsetheora.c',
+      'libavcodec/x86/xvididct.asm',
+    ]
+    updater = NewCreditsUpdater()
+    for f in files:
+      updater.ProcessFile(f)
+    updater.WriteCredits()
+
+    credits = ''.join(ReadCreditsLines())
+    current_offset = 0
+    for f in sorted(files):
+      i = string.find(credits, f, current_offset)
+      if i == -1:
+        self.fail("Failed to find %s starting at offset %s of content:\n%s" %
+                  (f, current_offset, credits))
+      current_offset = i + len(f)
+
+
   def testKnownFileDigestChange(self):
     updater = NewCreditsUpdater()
 

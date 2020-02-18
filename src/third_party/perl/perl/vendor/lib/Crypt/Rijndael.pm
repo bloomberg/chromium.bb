@@ -1,6 +1,25 @@
+package Crypt::Rijndael;
+
+use strict;
+use warnings;
+
+our $VERSION = '1.13';
+
+use XSLoader;
+
+XSLoader::load('Crypt::Rijndael', $VERSION);
+
+1;
+
+__END__
+
 =head1 NAME
 
 Crypt::Rijndael - Crypt::CBC compliant Rijndael encryption module
+
+=head1 VERSION
+
+Version 1.13
 
 =head1 SYNOPSIS
 
@@ -22,22 +41,6 @@ This module implements the Rijndael cipher, which has just been selected
 as the Advanced Encryption Standard.
 
 =over 4
-
-=cut
-
-package Crypt::Rijndael;
-use strict;
-use vars qw( $VERSION @ISA );
-
-use warnings;
-no warnings;
-
-require DynaLoader;
-
-$VERSION = '1.09';
-@ISA = qw/DynaLoader/;
-
-bootstrap Crypt::Rijndael $VERSION;
 
 =item keysize
 
@@ -61,7 +64,7 @@ codebook mode, the default), C<MODE_CBC> (cipher block chaining, the
 same that C<Crypt::CBC> does), C<MODE_CFB> (128-bit cipher feedback),
 C<MODE_OFB> (128-bit output feedback), or C<MODE_CTR> (counter mode).
 
-ECB mode is very insecure (read a book on cryptography if you dont
+ECB mode is very insecure (read a book on cryptography if you don't
 know why!), so you should probably use CBC mode.
 
 =item $cipher->set_iv($iv)
@@ -111,7 +114,9 @@ Should EXPORT or EXPORT_OK the MODE constants.
 
 =head1 AUTHOR
 
-Currently maintained by brian d foy, C<< <bdfoy@cpan.org> >>.
+Currently maintained by Leon Timmermans C<< leont@cpan.org >>.
+
+Previously maintained by brian d foy, C<< <bdfoy@cpan.org> >>.
 
 Original code by  Rafael R. Sevilla.
 
@@ -122,14 +127,12 @@ and has been selected as the US Government's Advanced Encryption Standard.
 
 This code is in Github:
 
-	git://github.com/briandfoy/crypt-rijndael.git
+	git://github.com/leont/crypt-rijndael.git
 	
 =head1 LICENSE
 
-This software is licensed under the Lesser GNU Public License. See the included
-COPYING file for details.
+This software is licensed under the Lesser GNU Public License v3 (29
+June 2007). See the included COPYING file for details.
 
 =cut
-
-1;
 

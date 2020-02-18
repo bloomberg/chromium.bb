@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace content {
@@ -17,6 +17,10 @@ class MediaSession;
 }  // namespace content
 
 namespace chromecast {
+
+namespace shell {
+class CastMediaBlockerTest;
+}  // namespace shell
 
 // This class implements a blocking mode for web applications and is used in
 // Chromecast internal code. Media is unblocked by default.
@@ -31,9 +35,17 @@ class CastMediaBlocker : public content::WebContentsObserver,
 
   ~CastMediaBlocker() override;
 
-  // Sets if the web contents is allowed to play media or not. If media is
-  // unblocked, previously suspended elements should begin playing again.
+  // Sets if the web contents is allowed to load and play media or not.
+  // If media is unblocked, previously suspended elements should begin playing
+  // again. Media is unblocked when both MediaLoading and MediaStarting blocks
+  // are off.
   void BlockMediaLoading(bool blocked);
+  // Sets if the web contents is allowed to play media or not. If media is
+  // unblocked, previously suspended elements should begin playing again.  Media
+  // is unblocked when both MediaLoading and MediaStarting blocks are off.
+  // This is a more relaxed block than BlockMediaLoading since the block doesn't
+  // block media from loading but it does block media from starting.
+  void BlockMediaStarting(bool blocked);
   void EnableBackgroundVideoPlayback(bool enabled);
 
   // media_session::mojom::MediaSessionObserver implementation:
@@ -48,10 +60,11 @@ class CastMediaBlocker : public content::WebContentsObserver,
       const base::flat_map<media_session::mojom::MediaSessionImageType,
                            std::vector<media_session::MediaImage>>& images)
       override {}
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override {}
 
  private:
-  bool media_loading_blocked() const { return blocked_; }
-
+  friend shell::CastMediaBlockerTest;
   // content::WebContentsObserver implementation:
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderViewReady() override;
@@ -62,17 +75,30 @@ class CastMediaBlocker : public content::WebContentsObserver,
 
   // Blocks or unblocks the render process from loading new media
   // according to |blocked_|.
-  void UpdateMediaBlockedState();
-  void UpdateRenderFrameMediaBlockedState(
+  void UpdateMediaLoadingBlockedState();
+  void UpdateRenderFrameMediaLoadingBlockedState(
       content::RenderFrameHost* render_frame_host);
+
+  void UpdatePlayingState();
 
   void UpdateBackgroundVideoPlaybackState();
   void UpdateRenderFrameBackgroundVideoPlaybackState(
       content::RenderFrameHost* frame);
 
-  // Whether or not media should be blocked. This value cache's the last call to
-  // BlockMediaLoading. Is false by default.
-  bool blocked_;
+  bool PlayingBlocked() const;
+
+  // MediaSession when initialized from WebContesnts is always a
+  // MediaSessionImpl type. This method allows to replace the MediaSession with
+  // mockable MediaSessions for testing.
+  void SetMediaSessionForTesting(content::MediaSession* media_session);
+
+  // Whether or not media loading should be blocked. This value cache's the last
+  // call to BlockMediaLoading. Is false by default.
+  bool media_loading_blocked_;
+
+  // Whether or not media starting should be blocked. This value cache's the
+  // last call to BlockMediaStarting. Is false by default.
+  bool media_starting_blocked_;
 
   // Whether or not the user paused media on the page.
   bool paused_by_user_;
@@ -87,9 +113,9 @@ class CastMediaBlocker : public content::WebContentsObserver,
   // be disabled.
   bool background_video_playback_enabled_;
 
-  content::MediaSession* const media_session_;
+  content::MediaSession* media_session_;
 
-  mojo::Binding<media_session::mojom::MediaSessionObserver> observer_binding_{
+  mojo::Receiver<media_session::mojom::MediaSessionObserver> observer_receiver_{
       this};
 
   DISALLOW_COPY_AND_ASSIGN(CastMediaBlocker);

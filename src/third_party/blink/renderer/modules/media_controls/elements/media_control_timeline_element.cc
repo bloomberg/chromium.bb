@@ -6,7 +6,6 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
-#include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
@@ -14,7 +13,6 @@
 #include "third_party/blink/renderer/core/events/touch_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
-#include "third_party/blink/renderer/core/html/html_style_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html/time_ranges.h"
@@ -24,12 +22,10 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
-#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_current_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_remaining_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
-#include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_shared_helper.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -57,26 +53,10 @@ namespace blink {
 // MediaControlTimelineElement
 //   (-webkit-media-controls-timeline)
 // +-div#thumb (created by the HTMLSliderElement)
-//
-// +-HTMLStyleElement
 MediaControlTimelineElement::MediaControlTimelineElement(
     MediaControlsImpl& media_controls)
     : MediaControlSliderElement(media_controls) {
   SetShadowPseudoId(AtomicString("-webkit-media-controls-timeline"));
-
-  if (MediaControlsImpl::IsModern()) {
-    Element& track = GetTrackElement();
-
-    // TODO(851144): This stylesheet no longer contains animations, so should
-    // be re-combined with the UA sheet.
-    // This stylesheet element contains rules that cannot be present in the UA
-    // stylesheet (e.g. animations).
-    auto* style = MakeGarbageCollected<HTMLStyleElement>(GetDocument(),
-                                                         CreateElementFlags());
-    style->setTextContent(
-        MediaControlsResourceLoader::GetShadowTimelineStyleSheet());
-    track.ParserAppendChild(style);
-  }
 }
 
 bool MediaControlTimelineElement::WillRespondToMouseClickEvents() {
@@ -105,15 +85,6 @@ void MediaControlTimelineElement::SetDuration(double duration) {
   double duration_value = std::isfinite(duration) ? duration : 0;
   SetFloatingPointAttribute(html_names::kMaxAttr, duration_value);
   RenderBarSegments();
-}
-
-void MediaControlTimelineElement::OnPlaying() {
-  Frame* frame = GetDocument().GetFrame();
-  if (!frame)
-    return;
-  metrics_.RecordPlaying(
-      frame->GetChromeClient().GetScreenInfo().orientation_type,
-      MediaElement().IsFullscreen(), TrackWidth());
 }
 
 const char* MediaControlTimelineElement::GetNameForHistograms() const {
@@ -220,7 +191,7 @@ void MediaControlTimelineElement::RenderBarSegments() {
   // Convert 6px into ratio respect to progress bar width since
   // current_position is range from 0 to 1
   double width = TrackWidth() / ZoomFactor();
-  if (width != 0 && current_position != 0) {
+  if (width != 0 && current_position != 0 && !MediaElement().ended()) {
     double offset = kThumbRadius / width;
     current_position += offset - (2 * offset * current_position);
   }
@@ -229,41 +200,23 @@ void MediaControlTimelineElement::RenderBarSegments() {
   MediaControlSliderElement::Position after_segment(0, 0);
 
   // The before segment (i.e. what has been played) should be purely be based on
-  // the current time in the modern controls.
-  if (MediaControlsImpl::IsModern())
-    before_segment.width = current_position;
+  // the current time.
+  before_segment.width = current_position;
 
   base::Optional<unsigned> current_buffered_time_range =
       MediaControlsSharedHelpers::GetCurrentBufferedTimeRange(MediaElement());
 
   if (current_buffered_time_range) {
-    float start = buffered_time_ranges->start(
-        current_buffered_time_range.value(), ASSERT_NO_EXCEPTION);
     float end = buffered_time_ranges->end(current_buffered_time_range.value(),
                                           ASSERT_NO_EXCEPTION);
 
-    double start_position = start / duration;
     double end_position = end / duration;
 
-    if (MediaControlsImpl::IsModern()) {
-      // Draw dark grey highlight to show what we have loaded. This just uses a
-      // width since it just starts at zero just like the before segment.
-      // We use |std::max()| here because |current_position| has an offset added
-      // to it and can therefore be greater than |end_position| in some cases.
-      after_segment.width = std::max(current_position, end_position);
-    } else {
-      // Draw highlight to show what we have played.
-      if (current_position > start_position) {
-        after_segment.left = start_position;
-        after_segment.width = current_position - start_position;
-      }
-
-      // Draw dark grey highlight to show what we have loaded.
-      if (end_position > current_position) {
-        before_segment.left = current_position;
-        before_segment.width = end_position - current_position;
-      }
-    }
+    // Draw dark grey highlight to show what we have loaded. This just uses a
+    // width since it just starts at zero just like the before segment.
+    // We use |std::max()| here because |current_position| has an offset added
+    // to it and can therefore be greater than |end_position| in some cases.
+    after_segment.width = std::max(current_position, end_position);
   }
 
   // Update the positions of the segments.

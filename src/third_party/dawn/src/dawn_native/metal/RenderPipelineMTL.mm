@@ -283,12 +283,11 @@ namespace dawn_native { namespace metal {
         }
 
         MTLWinding MTLFrontFace(dawn::FrontFace face) {
-            // Note that these are inverted because we flip the Y coordinate in the vertex shader
             switch (face) {
                 case dawn::FrontFace::CW:
-                    return MTLWindingCounterClockwise;
-                case dawn::FrontFace::CCW:
                     return MTLWindingClockwise;
+                case dawn::FrontFace::CCW:
+                    return MTLWindingCounterClockwise;
             }
         }
 
@@ -318,13 +317,13 @@ namespace dawn_native { namespace metal {
         const ShaderModule* vertexModule = ToBackend(descriptor->vertexStage->module);
         const char* vertexEntryPoint = descriptor->vertexStage->entryPoint;
         ShaderModule::MetalFunctionData vertexData = vertexModule->GetFunction(
-            vertexEntryPoint, dawn::ShaderStage::Vertex, ToBackend(GetLayout()));
+            vertexEntryPoint, ShaderStage::Vertex, ToBackend(GetLayout()));
         descriptorMTL.vertexFunction = vertexData.function;
 
         const ShaderModule* fragmentModule = ToBackend(descriptor->fragmentStage->module);
         const char* fragmentEntryPoint = descriptor->fragmentStage->entryPoint;
         ShaderModule::MetalFunctionData fragmentData = fragmentModule->GetFunction(
-            fragmentEntryPoint, dawn::ShaderStage::Fragment, ToBackend(GetLayout()));
+            fragmentEntryPoint, ShaderStage::Fragment, ToBackend(GetLayout()));
         descriptorMTL.fragmentFunction = fragmentData.function;
 
         if (HasDepthStencilAttachment()) {
@@ -405,7 +404,7 @@ namespace dawn_native { namespace metal {
         MTLVertexDescriptor* mtlVertexDescriptor = [MTLVertexDescriptor new];
 
         for (uint32_t i : IterateBitSet(GetAttributesSetMask())) {
-            const VertexAttributeDescriptor& info = GetAttribute(i);
+            const VertexAttributeInfo& info = GetAttribute(i);
 
             auto attribDesc = [MTLVertexAttributeDescriptor new];
             attribDesc.format = VertexFormatType(info.format);
@@ -415,8 +414,8 @@ namespace dawn_native { namespace metal {
             [attribDesc release];
         }
 
-        for (uint32_t i : IterateBitSet(GetInputsSetMask())) {
-            const VertexBufferDescriptor& info = GetInput(i);
+        for (uint32_t vbInputSlot : IterateBitSet(GetInputsSetMask())) {
+            const VertexBufferInfo& info = GetInput(vbInputSlot);
 
             auto layoutDesc = [MTLVertexBufferLayoutDescriptor new];
             if (info.stride == 0) {
@@ -425,9 +424,9 @@ namespace dawn_native { namespace metal {
                 // max(attrib.offset + sizeof(attrib) for each attrib)
                 size_t max_stride = 0;
                 for (uint32_t attribIndex : IterateBitSet(GetAttributesSetMask())) {
-                    const VertexAttributeDescriptor& attrib = GetAttribute(attribIndex);
+                    const VertexAttributeInfo& attrib = GetAttribute(attribIndex);
                     // Only use the attributes that use the current input
-                    if (attrib.inputSlot != info.inputSlot) {
+                    if (attrib.inputSlot != vbInputSlot) {
                         continue;
                     }
                     max_stride = std::max(max_stride,
@@ -444,7 +443,7 @@ namespace dawn_native { namespace metal {
                 layoutDesc.stride = info.stride;
             }
             // TODO(cwallez@chromium.org): make the offset depend on the pipeline layout
-            mtlVertexDescriptor.layouts[kMaxBindingsPerGroup + i] = layoutDesc;
+            mtlVertexDescriptor.layouts[kMaxBindingsPerGroup + vbInputSlot] = layoutDesc;
             [layoutDesc release];
         }
         return mtlVertexDescriptor;

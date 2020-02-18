@@ -33,6 +33,7 @@
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/cfx_unicodeencodingex.h"
+#include "core/fxge/text_char_pos.h"
 #include "fxbarcode/BC_Writer.h"
 
 CBC_OneDimWriter::CBC_OneDimWriter() = default;
@@ -172,7 +173,7 @@ void CBC_OneDimWriter::ShowDeviceChars(CFX_RenderDevice* device,
     affine_matrix.Concat(*matrix);
   }
   device->DrawNormalText(str.GetLength(), pCharPos, m_pFont.Get(),
-                         static_cast<float>(iFontSize), &affine_matrix,
+                         static_cast<float>(iFontSize), affine_matrix,
                          m_fontColor, FXTEXT_CLEARTYPE);
 }
 

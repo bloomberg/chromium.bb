@@ -112,8 +112,7 @@ class ExpectStateTransitionObserver : public LifecycleUnitObserver {
     } else {
       LOG(ERROR) << "transition to state "
                  << static_cast<int>(lifecycle_unit_->GetState());
-      EXPECT_TRUE(
-          base::ContainsKey(allowed_states_, lifecycle_unit_->GetState()));
+      EXPECT_TRUE(base::Contains(allowed_states_, lifecycle_unit_->GetState()));
     }
   }
 
@@ -339,13 +338,7 @@ class TabManagerTestWithTwoTabs : public TabManagerTest {
   DISALLOW_COPY_AND_ASSIGN(TabManagerTestWithTwoTabs);
 };
 
-// Flaky on Mac. http://crbug.com/857418
-#if defined(OS_MACOSX)
-#define MAYBE_TabManagerBasics DISABLED_TabManagerBasics
-#else
-#define MAYBE_TabManagerBasics TabManagerBasics
-#endif
-IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
+IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   using content::WindowedNotificationObserver;
 
   // Get three tabs open.
@@ -789,16 +782,17 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
 
   // Simulate that a video stream is now being captured.
   blink::MediaStreamDevices video_devices(1);
-  video_devices[0] =
-      blink::MediaStreamDevice(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
-                               "fake_media_device", "fake_media_device");
+  video_devices[0] = blink::MediaStreamDevice(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, "fake_media_device",
+      "fake_media_device");
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
   dispatcher->SetTestVideoCaptureDevices(video_devices);
   std::unique_ptr<content::MediaStreamUI> video_stream_ui =
       dispatcher->GetMediaStreamCaptureIndicator()->RegisterMediaStream(
           tab, video_devices);
-  video_stream_ui->OnStarted(base::OnceClosure(), base::RepeatingClosure());
+  video_stream_ui->OnStarted(base::OnceClosure(),
+                             content::MediaStreamUI::SourceCallback());
 
   // Should not be able to discard a tab.
   ASSERT_FALSE(
@@ -1559,14 +1553,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   EXPECT_TRUE(IsTabDiscarded(browser4->tab_strip_model()->GetWebContentsAt(1)));
 }
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)
-// Flaky: https://crbug.com/918701
-#define MAYBE_UnfreezeTabOnNavigationEvent DISABLED_UnfreezeTabOnNavigationEvent
-#else
-#define MAYBE_UnfreezeTabOnNavigationEvent UnfreezeTabOnNavigationEvent
-#endif
-IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_UnfreezeTabOnNavigationEvent) {
-  TestTransitionFromActiveToPendingFreeze();
+IN_PROC_BROWSER_TEST_F(TabManagerTest, UnfreezeTabOnNavigationEvent) {
+  TestTransitionFromActiveToFrozen();
 
   browser()->tab_strip_model()->GetWebContentsAt(1)->GetController().Reload(
       content::ReloadType::NORMAL, false);

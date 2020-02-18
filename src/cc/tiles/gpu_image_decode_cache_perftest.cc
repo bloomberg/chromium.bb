@@ -8,8 +8,8 @@
 #include "cc/paint/draw_image.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/raster/tile_task.h"
-#include "cc/test/test_in_process_context_provider.h"
 #include "cc/tiles/gpu_image_decode_cache.h"
+#include "components/viz/test/test_in_process_context_provider.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -45,9 +45,10 @@ class GpuImageDecodeCachePerfTest
       : timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval),
-        context_provider_(base::MakeRefCounted<TestInProcessContextProvider>(
-            UseTransferCache(),
-            false /* support_locking */)),
+        context_provider_(
+            base::MakeRefCounted<viz::TestInProcessContextProvider>(
+                UseTransferCache(),
+                false /* support_locking */)),
         cache_(context_provider_.get(),
                UseTransferCache(),
                kRGBA_8888_SkColorType,
@@ -87,7 +88,7 @@ class GpuImageDecodeCachePerfTest
   }
 
   base::LapTimer timer_;
-  scoped_refptr<TestInProcessContextProvider> context_provider_;
+  scoped_refptr<viz::TestInProcessContextProvider> context_provider_;
   GpuImageDecodeCache cache_;
 };
 

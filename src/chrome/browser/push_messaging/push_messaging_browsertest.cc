@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -54,13 +55,13 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -121,6 +122,7 @@ void LegacyRegisterCallback(const base::Closure& done_callback,
 
 void DidRegister(base::Closure done_callback,
                  const std::string& registration_id,
+                 const GURL& endpoint,
                  const std::vector<uint8_t>& p256dh,
                  const std::vector<uint8_t>& auth,
                  blink::mojom::PushRegistrationStatus status) {
@@ -414,12 +416,16 @@ void PushMessagingBrowserTest::SetupOrphanedPushSubscription(
   // registration id (they increment from 0).
   const int64_t service_worker_registration_id = 1234LL;
 
-  blink::WebPushSubscriptionOptions options;
-  options.user_visible_only = true;
-  options.application_server_key = GetTestApplicationServerKey();
+  auto options = blink::mojom::PushSubscriptionOptions::New();
+  options->user_visible_only = true;
+
+  std::string test_application_server_key = GetTestApplicationServerKey();
+  options->application_server_key = std::vector<uint8_t>(
+      test_application_server_key.begin(), test_application_server_key.end());
+
   base::RunLoop run_loop;
   push_service()->SubscribeFromWorker(
-      requesting_origin, service_worker_registration_id, options,
+      requesting_origin, service_worker_registration_id, std::move(options),
       base::Bind(&DidRegister, run_loop.QuitClosure()));
   run_loop.Run();
 
@@ -483,8 +489,7 @@ void PushMessagingBrowserTest::EndpointToToken(const std::string& endpoint,
                                                std::string* out_token) {
   size_t last_slash = endpoint.rfind('/');
 
-  ASSERT_EQ(push_service()->GetEndpoint(standard_protocol).spec(),
-            endpoint.substr(0, last_slash + 1));
+  ASSERT_EQ(kPushMessagingGcmEndpoint, endpoint.substr(0, last_slash + 1));
 
   ASSERT_LT(last_slash + 1, endpoint.length());  // Token must not be empty.
 
@@ -1594,6 +1599,56 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   EXPECT_EQ("testdata", script_result);
 
   ASSERT_EQ(0u, GetNotificationCount());
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       PushEventIgnoresScheduledNotificationsForEnforcement) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kNotificationTriggers);
+
+  std::string script_result;
+
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully());
+  PushMessagingAppIdentifier app_identifier =
+      GetAppIdentifierForServiceWorkerRegistration(0LL);
+
+  LoadTestPage();  // Reload to become controlled.
+
+  RemoveAllNotifications();
+
+  // We'll need to specify the web_contents in which to eval script, since we're
+  // going to run script in a background tab.
+  content::WebContents* web_contents =
+      GetBrowser()->tab_strip_model()->GetActiveWebContents();
+
+  // Initialize site engagement score to have no budget for silent pushes.
+  SetSiteEngagementScore(web_contents->GetURL(), 0);
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      GetBrowser(), GURL("about:blank"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
+  gcm::IncomingMessage message;
+  message.sender_id = GetTestApplicationServerKey();
+  message.raw_data = "shownotification-with-showtrigger";
+  message.decrypted = true;
+
+  // If the Service Worker push event handler only schedules a notification, we
+  // should show a forced one providing there is no foreground tab and the
+  // origin ran out of budget.
+  SendMessageAndWaitUntilHandled(app_identifier, message);
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
+  EXPECT_EQ("shownotification-with-showtrigger", script_result);
+
+  // Because scheduled notifications do not count as displayed notifications,
+  // this should have shown a default notification.
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(notifications.size(), 1u);
+
+  EXPECT_TRUE(TagEquals(notifications[0], kPushMessagingForcedNotificationTag));
+  EXPECT_TRUE(notifications[0].silent());
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,

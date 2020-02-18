@@ -37,6 +37,10 @@ const char kChooserUsbOverviewURL[] =
 const char kChromeBetaForumURL[] =
     "https://support.google.com/chrome/?p=beta_forum";
 
+// TODO: replace w/link after marketing provides it.
+const char kChromeReleaseNotesURL[] =
+    "https://www.google.com/chromebook/whatsnew/embedded/";
+
 const char kChromeHelpViaKeyboardURL[] =
 #if defined(OS_CHROMEOS)
 #if defined(GOOGLE_CHROME_BUILD)
@@ -60,14 +64,14 @@ const char kChromeHelpViaMenuURL[] =
 #endif  // defined(OS_CHROMEOS)
 
 const char kChromeHelpViaWebUIURL[] =
+    "https://support.google.com/chrome/?p=help&ctx=settings";
 #if defined(OS_CHROMEOS)
+const char kChromeOsHelpViaWebUIURL[] =
 #if defined(GOOGLE_CHROME_BUILD)
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
 #else
     "https://support.google.com/chromebook/?p=help&ctx=settings";
 #endif  // defined(GOOGLE_CHROME_BUILD)
-#else
-    "https://support.google.com/chrome/?p=help&ctx=settings";
 #endif  // defined(OS_CHROMEOS)
 
 const char kChromeNativeScheme[] = "chrome-native";
@@ -307,6 +311,9 @@ const char kGoogleNameserversLearnMoreURL[] =
 
 const char kInstantTetheringLearnMoreURL[] =
     "https://support.google.com/chromebook?p=instant_tethering";
+
+const char kKerberosAccountsLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=kerberos_accounts";
 
 const char kMultiDeviceLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=multi_device";

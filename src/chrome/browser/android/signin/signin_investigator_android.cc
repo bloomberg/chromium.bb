@@ -6,13 +6,13 @@
 
 #include "base/android/jni_string.h"
 #include "base/optional.h"
+#include "chrome/android/chrome_jni_headers/SigninInvestigator_jni.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/investigator_dependency_provider.h"
-#include "components/signin/core/browser/account_info.h"
-#include "jni/SigninInvestigator_jni.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;

@@ -36,15 +36,15 @@ using content::RenderWidgetHostViewMac;
 @end
 
 // Class that owns a RenderWidgetHostViewMac.
-@interface RenderWidgetHostNSViewClientOwner
-    : NSObject<RenderWidgetHostNSViewClientOwner> {
+@interface RenderWidgetHostNSViewHostOwner
+    : NSObject <RenderWidgetHostNSViewHostOwner> {
   RenderWidgetHostViewMac* rwhvm_;
 }
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)rwhvm;
 @end
 
-@implementation RenderWidgetHostNSViewClientOwner
+@implementation RenderWidgetHostNSViewHostOwner
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)rwhvm {
   if ((self = [super init])) {
@@ -53,7 +53,7 @@ using content::RenderWidgetHostViewMac;
   return self;
 }
 
-- (content::mojom::RenderWidgetHostNSViewClient*)renderWidgetHostNSViewClient {
+- (remote_cocoa::mojom::RenderWidgetHostNSViewHost*)renderWidgetHostNSViewHost {
   return rwhvm_;
 }
 
@@ -152,16 +152,16 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest,
 
   ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
 
-  // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa|.
+  // Owned by its |GetInProcessNSView()|, i.e. |rwhv_cocoa|.
   RenderWidgetHostViewMac* rwhv_mac = new RenderWidgetHostViewMac(
       render_widget, false);
   base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa(
-      [rwhv_mac->cocoa_view() retain]);
+      [rwhv_mac->GetInProcessNSView() retain]);
 
   RenderWidgetHostViewMacEditCommandHelper helper;
   NSArray* edit_command_strings = helper.GetEditSelectorNames();
-  RenderWidgetHostNSViewClientOwner* rwhwvm_owner =
-      [[[RenderWidgetHostNSViewClientOwner alloc]
+  RenderWidgetHostNSViewHostOwner* rwhwvm_owner =
+      [[[RenderWidgetHostNSViewHostOwner alloc]
           initWithRenderWidgetHostViewMac:rwhv_mac] autorelease];
 
   helper.AddEditingSelectorsToClass([rwhwvm_owner class]);
@@ -215,8 +215,8 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
 // Test RenderWidgetHostViewMacEditCommandHelper::IsMenuItemEnabled.
 TEST_F(RenderWidgetHostViewMacEditCommandHelperTest, TestMenuItemEnabling) {
   RenderWidgetHostViewMacEditCommandHelper helper;
-  RenderWidgetHostNSViewClientOwner* rwhvm_owner =
-      [[[RenderWidgetHostNSViewClientOwner alloc] init] autorelease];
+  RenderWidgetHostNSViewHostOwner* rwhvm_owner =
+      [[[RenderWidgetHostNSViewHostOwner alloc] init] autorelease];
 
   // The select all menu should always be enabled.
   SEL select_all = NSSelectorFromString(@"selectAll:");

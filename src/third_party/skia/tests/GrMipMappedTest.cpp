@@ -12,7 +12,6 @@
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrContext.h"
-#include "include/private/GrTextureProxy.h"
 #include "src/gpu/GrBackendTextureImageGenerator.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrGpu.h"
@@ -20,6 +19,7 @@
 #include "src/gpu/GrSemaphore.h"
 #include "src/gpu/GrSurfaceProxyPriv.h"
 #include "src/gpu/GrTexturePriv.h"
+#include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/SkGpuDevice.h"
 #include "src/image/SkImage_Base.h"
 #include "src/image/SkSurface_Gpu.h"
@@ -41,7 +41,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrWrappedMipMappedTest, reporter, ctxInfo) {
             // so we don't send any. However, we pretend there is data for the checks below which is
             // fine since we are never actually using these textures for any work on the gpu.
             GrBackendTexture backendTex = context->createBackendTexture(
-                    kSize, kSize, kRGBA_8888_SkColorType, mipMapped, renderable);
+                    kSize, kSize, kRGBA_8888_SkColorType,
+                    SkColors::kTransparent, mipMapped, renderable, GrProtected::kNo);
 
             sk_sp<GrTextureProxy> proxy;
             sk_sp<SkImage> image;
@@ -106,7 +107,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrBackendTextureImageMipMappedTest, reporter,
     for (auto mipMapped : {GrMipMapped::kNo, GrMipMapped::kYes}) {
         for (auto willUseMips : {false, true}) {
             GrBackendTexture backendTex = context->createBackendTexture(
-                    kSize, kSize, kRGBA_8888_SkColorType, mipMapped, GrRenderable::kNo);
+                    kSize, kSize, kRGBA_8888_SkColorType,
+                    SkColors::kTransparent, mipMapped, GrRenderable::kNo, GrProtected::kNo);
 
             sk_sp<SkImage> image = SkImage::MakeFromTexture(context, backendTex,
                                                             kTopLeft_GrSurfaceOrigin,
@@ -248,7 +250,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrImageSnapshotMipMappedTest, reporter, ctxIn
             GrMipMapped mipMapped = willUseMips ? GrMipMapped::kYes : GrMipMapped::kNo;
             sk_sp<SkSurface> surface;
             GrBackendTexture backendTex = context->createBackendTexture(
-                    kSize, kSize, kRGBA_8888_SkColorType, mipMapped, GrRenderable::kYes);
+                    kSize, kSize, kRGBA_8888_SkColorType,
+                    SkColors::kTransparent, mipMapped, GrRenderable::kYes, GrProtected::kNo);
             if (isWrapped) {
                 surface = SkSurface::MakeFromBackendTexture(context,
                                                             backendTex,

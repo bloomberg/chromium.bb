@@ -86,6 +86,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   bool IsAudioPlaying() const;
 
   void SetPaused(bool frame_paused) override;
+  void SetShouldReportPostedTasksWhenDisabled(bool should_report) override;
 
   void SetCrossOrigin(bool cross_origin) override;
   bool IsCrossOrigin() const override;
@@ -275,6 +276,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   static MainThreadTaskQueue::QueueTraits DeferrableTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits PausableTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits UnpausableTaskQueueTraits();
+  static MainThreadTaskQueue::QueueTraits FreezableTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits ForegroundOnlyTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits
   DoesNotUseVirtualTimeTaskQueueTraits();
@@ -298,10 +300,10 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   // |frame_task_queue_controller_| via CreateResourceLoadingTaskRunnerHandle.
   ResourceLoadingTaskQueuePriorityMap resource_loading_task_queue_priorities_;
 
-  MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
-  PageSchedulerImpl* parent_page_scheduler_;        // NOT OWNED
-  FrameScheduler::Delegate* delegate_;              // NOT OWNED
-  base::trace_event::BlameContext* blame_context_;  // NOT OWNED
+  MainThreadSchedulerImpl* const main_thread_scheduler_;  // NOT OWNED
+  PageSchedulerImpl* parent_page_scheduler_;              // NOT OWNED
+  FrameScheduler::Delegate* delegate_;                    // NOT OWNED
+  base::trace_event::BlameContext* blame_context_;        // NOT OWNED
   SchedulingLifecycleState throttling_state_;
   TraceableState<bool, TracingCategoryName::kInfo> frame_visible_;
   TraceableState<bool, TracingCategoryName::kInfo> frame_paused_;
@@ -338,9 +340,9 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
 
   // TODO(altimin): Remove after we have have 1:1 relationship between frames
   // and documents.
-  base::WeakPtrFactory<FrameSchedulerImpl> document_bound_weak_factory_;
+  base::WeakPtrFactory<FrameSchedulerImpl> document_bound_weak_factory_{this};
 
-  base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_;
+  base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FrameSchedulerImpl);
 };

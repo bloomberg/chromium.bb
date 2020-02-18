@@ -21,7 +21,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -143,12 +143,12 @@ base::string16 BookmarkBubbleView::GetDialogButtonLabel(
                                        : IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK);
 }
 
-views::View* BookmarkBubbleView::CreateExtraView() {
+std::unique_ptr<views::View> BookmarkBubbleView::CreateExtraView() {
   auto edit_button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS));
   edit_button->AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
-  edit_button_ = edit_button.release();
-  return edit_button_;
+  edit_button_ = edit_button.get();
+  return edit_button;
 }
 
 bool BookmarkBubbleView::GetExtraViewPadding(int* padding) {
@@ -157,7 +157,7 @@ bool BookmarkBubbleView::GetExtraViewPadding(int* padding) {
   return true;
 }
 
-views::View* BookmarkBubbleView::CreateFootnoteView() {
+std::unique_ptr<views::View> BookmarkBubbleView::CreateFootnoteView() {
 #if defined(OS_CHROMEOS)
   // ChromeOS does not show the signin promo.
   return nullptr;
@@ -174,12 +174,11 @@ views::View* BookmarkBubbleView::CreateFootnoteView() {
       IDS_BOOKMARK_DICE_PROMO_SYNC_MESSAGE;
   params.dice_signin_button_prominent = false;
 
-  footnote_view_ =
-      CreateBubbleSyncPromoView(
-          profile_, delegate_.get(),
-          signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE, params)
-          .release();
-  return footnote_view_;
+  auto footnote_view = CreateBubbleSyncPromoView(
+      profile_, delegate_.get(),
+      signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE, params);
+  footnote_view_ = footnote_view.get();
+  return footnote_view;
 #endif
 }
 
@@ -236,7 +235,7 @@ void BookmarkBubbleView::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   bookmark_contents_view_ = new views::View();
   views::GridLayout* layout = bookmark_contents_view_->SetLayoutManager(
-      std::make_unique<views::GridLayout>(bookmark_contents_view_));
+      std::make_unique<views::GridLayout>());
 
   constexpr int kColumnId = 0;
   ConfigureTextfieldStack(layout, kColumnId);

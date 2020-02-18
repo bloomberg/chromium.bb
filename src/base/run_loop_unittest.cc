@@ -309,7 +309,8 @@ TEST_P(RunLoopTest, RunWithTimeout) {
   EXPECT_FALSE(task3_run);
 }
 
-TEST_P(RunLoopTest, NestedRunWithTimeout) {
+// TODO(https://crbug.com/970187): This test is inherently flaky.
+TEST_P(RunLoopTest, DISABLED_NestedRunWithTimeout) {
   // SimpleSingleThreadTaskRunner doesn't support delayed tasks.
   if (GetParam() == RunLoopTestType::kTestDelegate)
     return;
@@ -402,7 +403,7 @@ TEST_P(RunLoopTest, NestedRunWithTimeoutWhereInnerLoopHasALongerTimeout) {
 // Verify that the QuitWhenIdleClosure() can run after the RunLoop has been
 // deleted. It should have no effect.
 TEST_P(RunLoopTest, QuitWhenIdleClosureAfterRunLoopScope) {
-  Closure quit_when_idle_closure;
+  RepeatingClosure quit_when_idle_closure;
   {
     RunLoop run_loop;
     quit_when_idle_closure = run_loop.QuitWhenIdleClosure();

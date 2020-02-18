@@ -39,12 +39,12 @@ sub free {
     return;
 }
 
-=head2 load( $offset )
-
-This will instantiate and return the sector object that represents the data
-found at $offset.
-
-=cut
+#=head2 load( $offset )
+#
+#This will instantiate and return the sector object that represents the data
+#found at $offset.
+#
+#=cut
 
 sub load {
     my $self = shift;

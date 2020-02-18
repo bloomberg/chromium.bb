@@ -15,7 +15,6 @@
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_endian.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 
@@ -77,8 +76,8 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // |quic_version_|. The visitor should return true after it updates the
   // version of the |framer_| to |received_version| or false to stop processing
   // this packet.
-  virtual bool OnProtocolVersionMismatch(ParsedQuicVersion received_version,
-                                         PacketHeaderFormat form) = 0;
+  virtual bool OnProtocolVersionMismatch(
+      ParsedQuicVersion received_version) = 0;
 
   // Called when a new packet has been received, before it
   // has been validated or processed.
@@ -374,18 +373,18 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       QuicVariableLengthIntegerLength length_length);
 
   // Lightweight parsing of |packet| and populates |format|, |version_flag|,
-  // |version_label|, |destination_connection_id_length|,
-  // |destination_connection_id| and |detailed_error|. Please note,
-  // |expected_connection_id_length| is only used to determine IETF short header
-  // packet's destination connection ID length.
+  // |version_label|, |destination_connection_id|, |source_connection_id| and
+  // |detailed_error|. Please note, |expected_destination_connection_id_length|
+  // is only used to determine IETF short header packet's destination
+  // connection ID length.
   static QuicErrorCode ProcessPacketDispatcher(
       const QuicEncryptedPacket& packet,
-      uint8_t expected_connection_id_length,
+      uint8_t expected_destination_connection_id_length,
       PacketHeaderFormat* format,
       bool* version_flag,
       QuicVersionLabel* version_label,
-      uint8_t* destination_connection_id_length,
       QuicConnectionId* destination_connection_id,
+      QuicConnectionId* source_connection_id,
       std::string* detailed_error);
 
   // Serializes a packet containing |frames| into |buffer|.
@@ -554,19 +553,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   Perspective perspective() const { return perspective_; }
 
-  QuicVersionLabel last_version_label() const { return last_version_label_; }
-
   void set_data_producer(QuicStreamFrameDataProducer* data_producer) {
     data_producer_ = data_producer;
-  }
-
-  // Returns true if we are doing IETF-formatted packets.
-  // In the future this could encompass a wide variety of
-  // versions. Doing the test by name ("ietf format") rather
-  // than version number localizes the version/ietf-ness binding
-  // to this method.
-  bool is_ietf_format() {
-    return version_.transport_version == QUIC_VERSION_99;
   }
 
   QuicTime creation_time() const { return creation_time_; }
@@ -575,18 +563,18 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
     return first_sending_packet_number_;
   }
 
-  // If true, QuicFramer will change its expected connection ID length
-  // to the received destination connection ID length of all IETF long headers.
-  void SetShouldUpdateExpectedServerConnectionIdLength(
-      bool should_update_expected_server_connection_id_length) {
-    should_update_expected_server_connection_id_length_ =
-        should_update_expected_server_connection_id_length;
-  }
-
   // The connection ID length the framer expects on incoming IETF short headers
   // on the server.
   uint8_t GetExpectedServerConnectionIdLength() {
     return expected_server_connection_id_length_;
+  }
+
+  // Change the expected destination connection ID length for short headers on
+  // the client.
+  void SetExpectedClientConnectionIdLength(
+      uint8_t expected_client_connection_id_length) {
+    expected_client_connection_id_length_ =
+        expected_client_connection_id_length;
   }
 
   void EnableMultiplePacketNumberSpacesSupport();
@@ -597,8 +585,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // |packet_length| must be in the range [1200, 65535].
   // |destination_connection_id_bytes| will be sent as the destination
   // connection ID, and must point to |destination_connection_id_length| bytes
-  // of memory. |destination_connection_id_length| must be either 0 or in the
-  // range [4,18]. When targeting Google servers, it is recommended to use a
+  // of memory. |destination_connection_id_length| must be in the range [8,18].
+  // When targeting Google servers, it is recommended to use a
   // |destination_connection_id_length| of 8.
   static bool WriteClientVersionNegotiationProbePacket(
       char* packet_bytes,
@@ -714,10 +702,15 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                   QuicVersionLabel* version_label);
 
   // Validates and updates |destination_connection_id_length| and
-  // |source_connection_id_length|.
+  // |source_connection_id_length|. When
+  // |should_update_expected_server_connection_id_length| is true, length
+  // validation is disabled and |expected_server_connection_id_length| is set
+  // to the appropriate length.
+  // TODO(b/133873272) refactor this method.
   static bool ProcessAndValidateIetfConnectionIdLength(
       QuicDataReader* reader,
       ParsedQuicVersion version,
+      Perspective perspective,
       bool should_update_expected_server_connection_id_length,
       uint8_t* expected_server_connection_id_length,
       uint8_t* destination_connection_id_length,
@@ -963,10 +956,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   QuicPacketNumber largest_decrypted_packet_numbers_[NUM_PACKET_NUMBER_SPACES];
   // Last server connection ID seen on the wire.
   QuicConnectionId last_serialized_server_connection_id_;
-  // The last QUIC version label received.
-  // TODO(fayang): Remove this when deprecating
-  // quic_no_framer_object_in_dispatcher.
-  QuicVersionLabel last_version_label_;
+  // Last client connection ID seen on the wire.
+  QuicConnectionId last_serialized_client_connection_id_;
   // Version of the protocol being used.
   ParsedQuicVersion version_;
   // This vector contains QUIC versions which we currently support.
@@ -1017,17 +1008,11 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool infer_packet_header_type_from_version_;
 
   // IETF short headers contain a destination connection ID but do not
-  // encode its length. This variable contains the length we expect to read.
-  // This is also used to validate the long header connection ID lengths in
-  // older versions of QUIC.
+  // encode its length. These variables contains the length we expect to read.
+  // This is also used to validate the long header destination connection ID
+  // lengths in older versions of QUIC.
   uint8_t expected_server_connection_id_length_;
-
-  // When this is true, QuicFramer will change
-  // expected_server_connection_id_length_ to the received destination
-  // connection ID length of all IETF long headers.
-  // TODO(fayang): Remove this when deprecating
-  // quic_no_framer_object_in_dispatcher.
-  bool should_update_expected_server_connection_id_length_;
+  uint8_t expected_client_connection_id_length_;
 
   // Indicates whether this framer supports multiple packet number spaces.
   bool supports_multiple_packet_number_spaces_;

@@ -29,7 +29,7 @@ This is a perl interface to libxml2's pattern matching support I<<<<<< http://xm
 
 Patterns are a small subset of XPath language, which is limited to
 (disjunctions of) location paths involving the child and descendant axes in
-abbreviated form as described by the extended BNF given below: 
+abbreviated form as described by the extended BNF given below:
 
 
 
@@ -58,11 +58,11 @@ Patterns are particularly useful for stream parsing provided via the C<<<<<< XML
 
 The constructor of a pattern takes a pattern expression (as described by the
 BNF grammar above) and an optional HASH reference mapping prefixes to namespace
-URIs. The method returns a compiled pattern object. 
+URIs. The method returns a compiled pattern object.
 
 Note that if the document has a default namespace, it must still be given an
 prefix in order to be matched (as demanded by the XPath 1.0 specification). For
-example, to match an element C<<<<<< <a xmlns="http://foo.bar"</a> >>>>>>, one should use a pattern like this: 
+example, to match an element C<<<<<< E<lt>a xmlns="http://foo.bar"E<lt>/aE<gt> >>>>>>, one should use a pattern like this:
 
 
 
@@ -87,14 +87,14 @@ L<<<<<< XML::LibXML::Reader >>>>>> for other methods involving compiled patterns
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -105,3 +105,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

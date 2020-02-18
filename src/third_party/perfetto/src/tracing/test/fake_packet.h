@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-#include "perfetto/tracing/core/basic_types.h"
+#include "perfetto/ext/tracing/core/basic_types.h"
 
 namespace perfetto {
 
@@ -64,6 +64,8 @@ class FakeChunk {
 
   // Increments the number of packets in the chunk without adding new data.
   FakeChunk& IncrementNumPackets();
+
+  FakeChunk& SetFlags(uint8_t flags_to_set);
 
   FakeChunk& ClearBytes(size_t offset, size_t len);
 

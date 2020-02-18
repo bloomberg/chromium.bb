@@ -69,6 +69,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1385214448885562192">Nhấn enter để chấp nhận hoặc escape để hủy, mũi tên xuống để chuyển sang kết quả tiếp theo và mũi tên lên để chuyển sang kết quả trước.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Cho biết các thuộc tính của văn bản đa dạng thức</translation>
 <translation id="1405567553485452995">Xanh lục nhạt</translation>
 <translation id="1417889266572670458">Màu xanh hải quân</translation>
 <translation id="1431911867058218151">Màu mận chín</translation>
@@ -319,11 +320,11 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3232388865800379423">Nút bật lên</translation>
 <translation id="3241052487511142956">Liên kết đã truy cập trước đó</translation>
 <translation id="3241638166094654466">Số ô mỗi dòng:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">dọc</translation>
 <translation id="3286390186030710347">Thanh trượt</translation>
 <translation id="3299925995433437805">Không có liên kết đã truy cập tiếp theo nào.</translation>
 <translation id="3300348286427369683">Hỗ trợ văn bản đa dạng thức. ChromeVox hiện hỗ trợ các trường văn bản đa dạng thức, bao gồm cả lệnh di chuyển, định tuyến con trỏ chữ nổi, lựa chọn và các trường khác.</translation>
-<translation id="3304756947457041303">Tùy chỉnh tùy chọn chỉ báo văn bản đa dạng thức</translation>
 <translation id="3307886118343381874">Đi tới cuối bảng</translation>
 <translation id="3311969765485641742">Nhấn Alt+Shift+A để xem lại thông báo</translation>
 <translation id="3312997241656799641">Liên kết đã truy cập tiếp theo</translation>
@@ -444,7 +445,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="4161104397932142764">{COUNT,plural, =1{giây}other{giây}}</translation>
 <translation id="4161663686871496107">Tính năng phản hồi bằng giọng nói ChromeVox đã sẵn sàng</translation>
 <translation id="4173994908659439270">Không có trường văn bản có thể chỉnh sửa tiếp theo nào.</translation>
-<translation id="4176463684765177261">Đã bị vô hiệu</translation>
+<translation id="4176463684765177261">Đã tắt</translation>
 <translation id="4187322598335821254">Vuốt lên hoặc xuống để di chuyển theo dòng</translation>
 <translation id="4188530942454211480">Câu trước</translation>
 <translation id="4191918948604314587">Nút</translation>

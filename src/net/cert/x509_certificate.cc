@@ -37,6 +37,7 @@
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
 #include "net/der/parser.h"
+#include "net/dns/dns_util.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/pkcs7.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
@@ -439,13 +440,13 @@ bool X509Certificate::IsIssuedByEncoded(
   std::string normalized_cert_issuer;
   if (!GetNormalizedCertIssuer(cert_buffer_.get(), &normalized_cert_issuer))
     return false;
-  if (base::ContainsValue(normalized_issuers, normalized_cert_issuer))
+  if (base::Contains(normalized_issuers, normalized_cert_issuer))
     return true;
 
   for (const auto& intermediate : intermediate_ca_certs_) {
     if (!GetNormalizedCertIssuer(intermediate.get(), &normalized_cert_issuer))
       return false;
-    if (base::ContainsValue(normalized_issuers, normalized_cert_issuer))
+    if (base::Contains(normalized_issuers, normalized_cert_issuer))
       return true;
   }
   return false;
@@ -475,11 +476,8 @@ bool X509Certificate::VerifyHostname(
       "[" + hostname + "]" : hostname;
   url::CanonHostInfo host_info;
   std::string reference_name = CanonicalizeHost(host_or_ip, &host_info);
-  // CanonicalizeHost does not normalize absolute vs relative DNS names. If
-  // the input name was absolute (included trailing .), normalize it as if it
-  // was relative.
-  if (!reference_name.empty() && *reference_name.rbegin() == '.')
-    reference_name.resize(reference_name.size() - 1);
+
+  // If the host cannot be canonicalized, fail fast.
   if (reference_name.empty())
     return false;
 
@@ -488,8 +486,23 @@ bool X509Certificate::VerifyHostname(
     base::StringPiece ip_addr_string(
         reinterpret_cast<const char*>(host_info.address),
         host_info.AddressLength());
-    return base::ContainsValue(cert_san_ip_addrs, ip_addr_string);
+    return base::Contains(cert_san_ip_addrs, ip_addr_string);
   }
+
+  // The host portion of a URL may support a variety of name resolution formats
+  // and services. However, the only supported name types in this code are IP
+  // addresses, which have been handled above via iPAddress subjectAltNames,
+  // and DNS names, via dNSName subjectAltNames.
+  // Validate that the host conforms to the DNS preferred name syntax, in
+  // either relative or absolute form, and exclude the "root" label for DNS.
+  if (reference_name == "." || !IsValidDNSDomain(reference_name))
+    return false;
+
+  // CanonicalizeHost does not normalize absolute vs relative DNS names. If
+  // the input name was absolute (included trailing .), normalize it as if it
+  // was relative.
+  if (reference_name.back() == '.')
+    reference_name.pop_back();
 
   // |reference_domain| is the remainder of |host| after the leading host
   // component is stripped off, but includes the leading dot e.g.

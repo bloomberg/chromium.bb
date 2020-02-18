@@ -27,7 +27,7 @@ ArcAppReinstallAppResult::ArcAppReinstallAppResult(
     const arc::mojom::AppReinstallCandidatePtr& mojom_data,
     const gfx::ImageSkia& skia_icon,
     Observer* observer)
-    : observer_(observer) {
+    : observer_(observer), package_name_(mojom_data->package_name) {
   DCHECK(observer_);
   set_id(kPlayStoreAppUrlPrefix + mojom_data->package_name);
   SetResultType(ash::SearchResultType::kPlayStoreReinstallApp);
@@ -49,12 +49,12 @@ ArcAppReinstallAppResult::~ArcAppReinstallAppResult() = default;
 void ArcAppReinstallAppResult::Open(int /*event_flags*/) {
   RecordAction(base::UserMetricsAction("ArcAppReinstall_Clicked"));
   arc::LaunchPlayStoreWithUrl(id());
-  observer_->OnOpened(id());
+  observer_->OnOpened(package_name_);
 }
 
 void ArcAppReinstallAppResult::OnVisibilityChanged(bool visibility) {
   ChromeSearchResult::OnVisibilityChanged(visibility);
-  observer_->OnVisibilityChanged(id(), visibility);
+  observer_->OnVisibilityChanged(package_name_, visibility);
 }
 
 SearchResultType ArcAppReinstallAppResult::GetSearchResultType() const {

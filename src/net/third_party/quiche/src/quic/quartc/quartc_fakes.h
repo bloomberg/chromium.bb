@@ -43,9 +43,8 @@ class FakeQuartcEndpointDelegate : public QuartcEndpoint::Delegate {
   }
 
   // Called when connection closes locally, or remotely by peer.
-  void OnConnectionClosed(QuicErrorCode error_code,
-                          const std::string& error_details,
-                          ConnectionCloseSource source) override {
+  void OnConnectionClosed(const QuicConnectionCloseFrame& /*frame*/,
+                          ConnectionCloseSource /*source*/) override {
     connected_ = false;
   }
 
@@ -63,9 +62,19 @@ class FakeQuartcEndpointDelegate : public QuartcEndpoint::Delegate {
     sent_datagram_ids_.push_back(datagram_id);
   }
 
-  void OnCongestionControlChange(QuicBandwidth bandwidth_estimate,
-                                 QuicBandwidth pacing_rate,
-                                 QuicTime::Delta latest_rtt) override {}
+  void OnMessageAcked(int64_t datagram_id,
+                      QuicTime receive_timestamp) override {
+    acked_datagram_id_to_receive_timestamp_.emplace(datagram_id,
+                                                    receive_timestamp);
+  }
+
+  void OnMessageLost(int64_t datagram_id) override {
+    lost_datagram_ids_.push_back(datagram_id);
+  }
+
+  void OnCongestionControlChange(QuicBandwidth /*bandwidth_estimate*/,
+                                 QuicBandwidth /*pacing_rate*/,
+                                 QuicTime::Delta /*latest_rtt*/) override {}
 
   QuartcSession* session() { return session_; }
 
@@ -83,6 +92,16 @@ class FakeQuartcEndpointDelegate : public QuartcEndpoint::Delegate {
     return sent_datagram_ids_;
   }
 
+  // Returns all ACKEd datagram ids in the order ACKs were received.
+  const std::map<int64_t, QuicTime>& acked_datagram_id_to_receive_timestamp()
+      const {
+    return acked_datagram_id_to_receive_timestamp_;
+  }
+
+  const std::vector<int64_t>& lost_datagram_ids() const {
+    return lost_datagram_ids_;
+  }
+
   bool connected() const { return connected_; }
   QuicTime writable_time() const { return writable_time_; }
   QuicTime crypto_handshake_time() const { return crypto_handshake_time_; }
@@ -97,6 +116,8 @@ class FakeQuartcEndpointDelegate : public QuartcEndpoint::Delegate {
   QuartcStream* last_incoming_stream_;
   std::vector<std::string> incoming_messages_;
   std::vector<int64_t> sent_datagram_ids_;
+  std::map<int64_t, QuicTime> acked_datagram_id_to_receive_timestamp_;
+  std::vector<int64_t> lost_datagram_ids_;
   bool connected_ = true;
   QuartcStream::Delegate* stream_delegate_;
   QuicTime writable_time_ = QuicTime::Zero();
@@ -109,7 +130,7 @@ class FakeQuartcStreamDelegate : public QuartcStream::Delegate {
   size_t OnReceived(QuartcStream* stream,
                     iovec* iov,
                     size_t iov_length,
-                    bool fin) override {
+                    bool /*fin*/) override {
     size_t bytes_consumed = 0;
     for (size_t i = 0; i < iov_length; ++i) {
       received_data_[stream->id()] += std::string(
@@ -123,7 +144,7 @@ class FakeQuartcStreamDelegate : public QuartcStream::Delegate {
     errors_[stream->id()] = stream->stream_error();
   }
 
-  void OnBufferChanged(QuartcStream* stream) override {}
+  void OnBufferChanged(QuartcStream* /*stream*/) override {}
 
   bool has_data() { return !received_data_.empty(); }
   std::map<QuicStreamId, std::string> data() { return received_data_; }

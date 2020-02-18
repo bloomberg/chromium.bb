@@ -22,11 +22,11 @@ package GD::Polyline;
 #
 ############################################################################
 #
-# What's this?  A class with nothing but a $VERSION and and @ISA?
+# What's this?  A class with nothing but a $VERSION and @ISA?
 # Below, this module overrides and adds several modules to 
 # the parent class, GD::Polygon.  Those updated/new methods 
 # act on polygons and polylines, and sometimes those behaviours
-# vary slightly based on whether the object is a polygon or polyine.
+# vary slightly based on whether the object is a polygon or polyline.
 #
 
 use vars qw($VERSION @ISA);
@@ -550,7 +550,7 @@ Center point ($cx, $cy) is optional -- if these are omitted, the function
 will rotate about the origin
 
 In this function and other angle-oriented functions in GD::Polyline,
-positive $angle corrensponds to clockwise rotation.  This is opposite
+positive $angle corresponds to clockwise rotation.  This is opposite
 of the usual Cartesian sense, but that is because the raster is opposite
 of the usual Cartesian sense in that the y-axis goes "down".
 
@@ -691,7 +691,7 @@ via parameters to the algorithm.  For The Hubristic: please
 build a better one!
 
 And for The Impatient: note that addControlPoints() returns a
-polyline, so you can pile up the the call like this, 
+polyline, so you can pile up the call like this,
 if you'd like:
 
 	$image->polyline($polyline->addControlPoints()->toSpline(),$mauve);

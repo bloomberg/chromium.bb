@@ -35,8 +35,6 @@
 #include "components/proxy_config/proxy_prefs.h"
 #include "net/base/proxy_server.h"
 #include "net/socket/socket_test_util.h"
-#include "net/url_request/url_request_context_storage.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -152,29 +150,20 @@ TEST_F(DataReductionProxyMockSettingsAndroidTest,
 class DataReductionProxySettingsAndroidTest : public ::testing::Test {
  public:
   DataReductionProxySettingsAndroidTest()
-      : env_(base::android::AttachCurrentThread()),
-        context_(true),
-        context_storage_(&context_) {
-    context_.set_client_socket_factory(&mock_socket_factory_);
-  }
+      : env_(base::android::AttachCurrentThread()) {}
 
   void Init() {
     drp_test_context_ =
         data_reduction_proxy::DataReductionProxyTestContext::Builder()
-            .WithURLRequestContext(&context_)
-            .WithMockClientSocketFactory(&mock_socket_factory_)
             .Build();
 
     drp_test_context_->DisableWarmupURLFetch();
-    drp_test_context_->AttachToURLRequestContext(&context_storage_);
-    context_.Init();
 
     android_settings_.reset(new TestDataReductionProxySettingsAndroid(
         drp_test_context_->settings()));
   }
 
   JNIEnv* env() { return env_; }
-  net::TestURLRequestContext* context() { return &context_; }
   data_reduction_proxy::DataReductionProxyTestContext* drp_test_context() {
     return drp_test_context_.get();
   }
@@ -191,8 +180,6 @@ class DataReductionProxySettingsAndroidTest : public ::testing::Test {
  private:
   base::MessageLoopForIO message_loop_;
   JNIEnv* env_;
-  net::TestURLRequestContext context_;
-  net::URLRequestContextStorage context_storage_;
   net::MockClientSocketFactory mock_socket_factory_;
   std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
       drp_test_context_;

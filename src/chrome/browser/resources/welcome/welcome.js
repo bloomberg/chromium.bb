@@ -1,30 +1,15 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer({
-  is: 'welcome-app',
+/**
+ * This file should only be included once. It will generate an assert error if
+ * it's included more than once, which can happen when an include is misspelled.
+ */
 
-  /** @private */
-  onAccept_: function() {
-    chrome.send('handleActivateSignIn');
-  },
-
-  /** @private */
-  onDecline_: function() {
-    chrome.send('handleUserDecline');
-  },
-
-  /** @private */
-  onLogoTap_: function() {
-    this.$$('.logo-icon')
-        .animate(
-            {
-              transform: ['none', 'rotate(-10turn)'],
-            },
-            /** @type {!KeyframeEffectOptions} */ ({
-              duration: 500,
-              easing: 'cubic-bezier(1, 0, 0, 1)',
-            }));
-  },
-});
+cr.exportPath('welcome');
+assert(
+    !welcome.defaultResourceLoaded,
+    'welcome.js run twice. You probably have an invalid import.');
+/** Global defined when the main welcome script runs. */
+welcome.defaultResourceLoaded = true;

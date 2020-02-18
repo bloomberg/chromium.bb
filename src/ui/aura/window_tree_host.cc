@@ -259,8 +259,7 @@ void WindowTreeHost::SetSharedInputMethod(ui::InputMethod* input_method) {
 }
 
 ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
-    ui::KeyEvent* event,
-    DispatchKeyEventPostIMECallback callback) {
+    ui::KeyEvent* event) {
   // If dispatch to IME is already disabled we shouldn't reach here.
   DCHECK(!dispatcher_->should_skip_ime());
   dispatcher_->set_skip_ime(true);
@@ -269,7 +268,6 @@ ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
       event_sink()->OnEventFromSource(event);
   if (!dispatch_details.dispatcher_destroyed)
     dispatcher_->set_skip_ime(false);
-  RunDispatchKeyEventPostIMECallback(event, std::move(callback));
   return dispatch_details;
 }
 
@@ -346,8 +344,7 @@ WindowTreeHost::WindowTreeHost(std::unique_ptr<Window> window)
       occlusion_state_(Window::OcclusionState::UNKNOWN),
       last_cursor_(ui::CursorType::kNull),
       input_method_(nullptr),
-      owned_input_method_(false),
-      weak_factory_(this) {
+      owned_input_method_(false) {
   if (!window_)
     window_ = new Window(nullptr);
   display::Screen::GetScreen()->AddObserver(this);
@@ -442,6 +439,11 @@ void WindowTreeHost::OnHostMovedInPixels(
 
 void WindowTreeHost::OnHostResizedInPixels(
     const gfx::Size& new_size_in_pixels) {
+  // The compositor is deleted from WM_DESTROY, but we don't delete things until
+  // WM_NCDESTROY, and it must be possible to still get some messages between
+  // these two.
+  if (!compositor_)
+    return;
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
   device_scale_factor_ = display.device_scale_factor();

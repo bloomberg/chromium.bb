@@ -9,14 +9,17 @@ import("osp/build/config/services.gni")
 # source_sets).
 group("gn_all") {
   deps = [
-    "cast/common/mdns",
+    "cast/common:mdns",
+    "cast/common/certificate/proto",
     "osp",
     "osp/msgs",
-    "osp_base",
     "platform",
     "third_party/abseil",
+    "third_party/protobuf:protoc",
     "third_party/tinycbor",
+    "third_party/zlib",
     "tools/cddl",
+    "util",
   ]
 
   if (use_mdns_responder) {
@@ -35,14 +38,15 @@ group("gn_all") {
 executable("openscreen_unittests") {
   testonly = true
   deps = [
+    "cast/common:mdns_unittests",
     "osp:osp_unittests",
     "osp/impl/discovery/mdns:mdns_unittests",
     "osp/msgs:unittests",
-    "osp_base:osp_base_unittests",
     "platform:platform_unittests",
     "streaming/cast:cast_unittests",
     "third_party/abseil",
     "third_party/googletest:gtest_main",
+    "util:util_unittests",
   ]
 }
 
@@ -55,8 +59,8 @@ if (use_chromium_quic && use_mdns_responder) {
     deps = [
       "//osp:osp_with_chromium_quic",
       "//osp/impl/discovery/mdns",
-      "//osp_base",
       "//platform",
+      "//util",
     ]
   }
 }

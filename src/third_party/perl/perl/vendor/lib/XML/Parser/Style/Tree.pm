@@ -49,7 +49,7 @@ __END__
 
 =head1 NAME
 
-XML::Parser::Style::Tree
+XML::Parser::Style::Tree - Tree style parser
 
 =head1 SYNOPSIS
 

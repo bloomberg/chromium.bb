@@ -44,11 +44,13 @@ namespace blink {
 
 // Delay time in second for start autoscroll if pointer is in border edge of
 // scrollable element.
-constexpr TimeDelta kAutoscrollDelay = TimeDelta::FromSecondsD(0.2);
+constexpr base::TimeDelta kAutoscrollDelay = base::TimeDelta::FromSecondsD(0.2);
 
 static const int kNoMiddleClickAutoscrollRadius = 15;
 
-static const Cursor& MiddleClickAutoscrollCursor(const FloatSize& velocity) {
+static const Cursor& MiddleClickAutoscrollCursor(const FloatSize& velocity,
+                                                 bool scroll_vert,
+                                                 bool scroll_horiz) {
   // At the original click location we draw a 4 arrowed icon. Over this icon
   // there won't be any scroll, So don't change the cursor over this area.
   bool east = velocity.Width() < 0;
@@ -56,24 +58,32 @@ static const Cursor& MiddleClickAutoscrollCursor(const FloatSize& velocity) {
   bool north = velocity.Height() > 0;
   bool south = velocity.Height() < 0;
 
-  if (north) {
-    if (east)
-      return NorthEastPanningCursor();
-    if (west)
-      return NorthWestPanningCursor();
+  if (north && scroll_vert) {
+    if (scroll_horiz) {
+      if (east)
+        return NorthEastPanningCursor();
+      if (west)
+        return NorthWestPanningCursor();
+    }
     return NorthPanningCursor();
   }
-  if (south) {
-    if (east)
-      return SouthEastPanningCursor();
-    if (west)
-      return SouthWestPanningCursor();
+  if (south && scroll_vert) {
+    if (scroll_horiz) {
+      if (east)
+        return SouthEastPanningCursor();
+      if (west)
+        return SouthWestPanningCursor();
+    }
     return SouthPanningCursor();
   }
-  if (east)
+  if (east && scroll_horiz)
     return EastPanningCursor();
-  if (west)
+  if (west && scroll_horiz)
     return WestPanningCursor();
+  if (scroll_vert && !scroll_horiz)
+    return MiddlePanningVerticalCursor();
+  if (scroll_horiz && !scroll_vert)
+    return MiddlePanningHorizontalCursor();
   return MiddlePanningCursor();
 }
 
@@ -156,7 +166,7 @@ void AutoscrollController::UpdateAutoscrollLayoutObject() {
 
 void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
                                              const FloatPoint& event_position,
-                                             TimeTicks event_time) {
+                                             base::TimeTicks event_time) {
   if (!drop_target_node || !drop_target_node->GetLayoutObject()) {
     StopAutoscroll();
     return;
@@ -185,15 +195,15 @@ void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
     return;
   }
 
-  LayoutSize offset =
-      scrollable->CalculateAutoscrollDirection(event_position).ToLayoutSize();
+  PhysicalOffset offset =
+      scrollable->CalculateAutoscrollDirection(event_position);
   if (offset.IsZero()) {
     StopAutoscroll();
     return;
   }
 
   drag_and_drop_autoscroll_reference_position_ =
-      LayoutPoint(event_position) + offset;
+      PhysicalOffset::FromFloatPointRound(event_position) + offset;
 
   if (autoscroll_type_ == kNoAutoscroll) {
     autoscroll_type_ = kAutoscrollForDragAndDrop;
@@ -241,7 +251,8 @@ void AutoscrollController::HandleMouseMoveForMiddleClickAutoscroll(
     if (middle_click_mode_ == kMiddleClickInitial)
       middle_click_mode_ = kMiddleClickHolding;
     page_->GetChromeClient().SetCursorOverridden(false);
-    view->SetCursor(MiddleClickAutoscrollCursor(velocity));
+    view->SetCursor(MiddleClickAutoscrollCursor(
+        velocity, can_scroll_vertically_, can_scroll_horizontally_));
     page_->GetChromeClient().SetCursorOverridden(true);
     page_->GetChromeClient().AutoscrollFling(velocity, frame);
   }
@@ -280,7 +291,9 @@ bool AutoscrollController::MiddleClickAutoscrollInProgress() const {
 void AutoscrollController::StartMiddleClickAutoscroll(
     LocalFrame* frame,
     const FloatPoint& position,
-    const FloatPoint& position_global) {
+    const FloatPoint& position_global,
+    bool scroll_vert,
+    bool scroll_horiz) {
   DCHECK(RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled());
   // We don't want to trigger the autoscroll or the middleClickAutoscroll if
   // it's already active.
@@ -290,14 +303,18 @@ void AutoscrollController::StartMiddleClickAutoscroll(
   autoscroll_type_ = kAutoscrollForMiddleClick;
   middle_click_mode_ = kMiddleClickInitial;
   middle_click_autoscroll_start_pos_global_ = position_global;
+  can_scroll_vertically_ = scroll_vert;
+  can_scroll_horizontally_ = scroll_horiz;
 
   UseCounter::Count(frame->GetDocument(),
                     WebFeature::kMiddleClickAutoscrollStart);
 
   last_velocity_ = FloatSize();
 
-  if (LocalFrameView* view = frame->View())
-    view->SetCursor(MiddleClickAutoscrollCursor(last_velocity_));
+  if (LocalFrameView* view = frame->View()) {
+    view->SetCursor(MiddleClickAutoscrollCursor(
+        last_velocity_, can_scroll_vertically_, can_scroll_horizontally_));
+  }
   page_->GetChromeClient().SetCursorOverridden(true);
   page_->GetChromeClient().AutoscrollStart(
       position.ScaledBy(1 / frame->DevicePixelRatio()), frame);
@@ -315,16 +332,17 @@ void AutoscrollController::Animate() {
 
   EventHandler& event_handler =
       autoscroll_layout_object_->GetFrame()->GetEventHandler();
-  LayoutSize offset = autoscroll_layout_object_
-                          ->CalculateAutoscrollDirection(
-                              event_handler.LastKnownMousePositionInRootFrame())
-                          .ToLayoutSize();
-  LayoutPoint selection_point =
-      LayoutPoint(event_handler.LastKnownMousePositionInRootFrame()) + offset;
+  PhysicalOffset offset =
+      autoscroll_layout_object_->CalculateAutoscrollDirection(
+          event_handler.LastKnownMousePositionInRootFrame());
+  PhysicalOffset selection_point =
+      PhysicalOffset::FromFloatPointRound(
+          event_handler.LastKnownMousePositionInRootFrame()) +
+      offset;
   switch (autoscroll_type_) {
     case kAutoscrollForDragAndDrop:
       ScheduleMainThreadAnimation();
-      if ((CurrentTimeTicks() - drag_and_drop_autoscroll_start_time_) >
+      if ((base::TimeTicks::Now() - drag_and_drop_autoscroll_start_time_) >
           kAutoscrollDelay)
         autoscroll_layout_object_->Autoscroll(
             drag_and_drop_autoscroll_reference_position_);

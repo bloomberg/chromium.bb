@@ -19,6 +19,8 @@
  */
 export interface ObjectById<Class extends{id: string}> { [id: string]: Class; }
 
+export const MAX_TIME = 180;
+
 export const SCROLLING_TRACK_GROUP = 'ScrollingTracks';
 
 export interface TrackState {
@@ -49,7 +51,7 @@ export interface TrackDataRequest {
 export interface EngineConfig {
   id: string;
   ready: boolean;
-  source: string|File;
+  source: string|File|ArrayBuffer;
 }
 
 export interface QueryConfig {
@@ -83,6 +85,7 @@ export interface Note {
   timestamp: number;
   color: string;
   text: string;
+  isMovie: boolean;
 }
 
 export interface NoteSelection {
@@ -119,6 +122,8 @@ export interface LogsPagination {
 }
 
 export interface State {
+  // tslint:disable-next-line:no-any
+  [key: string]: any;
   route: string|null;
   nextId: number;
 
@@ -152,6 +157,11 @@ export interface State {
    * key is most up to date.
    */
   frontendLocalState: FrontendLocalState;
+
+  video: string | null;
+  videoEnabled: boolean;
+  flagPauseEnabled: boolean;
+  videoNoteIds: Array<string>;
 }
 
 export const defaultTraceTime = {
@@ -178,6 +188,11 @@ export interface RecordConfig {
   cpuFreq: boolean;
   cpuCoarse: boolean;
   cpuCoarsePollMs: number;
+  cpuSyscall: boolean;
+
+  screenRecord: boolean;
+
+  gpuFreq: boolean;
 
   ftrace: boolean;
   atrace: boolean;
@@ -220,6 +235,11 @@ export function createEmptyRecordConfig(): RecordConfig {
     cpuSched: false,
     cpuLatency: false,
     cpuFreq: false,
+    cpuSyscall: false,
+
+    screenRecord: false,
+
+    gpuFreq: false,
 
     ftrace: false,
     atrace: false,
@@ -284,5 +304,10 @@ export function createEmptyState(): State {
 
     status: {msg: '', timestamp: 0},
     currentSelection: null,
+
+    video: null,
+    videoEnabled: false,
+    flagPauseEnabled: false,
+    videoNoteIds: [],
   };
 }

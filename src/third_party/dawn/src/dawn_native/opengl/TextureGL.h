@@ -17,17 +17,12 @@
 
 #include "dawn_native/Texture.h"
 
-#include "glad/glad.h"
+#include "dawn_native/opengl/opengl_platform.h"
 
 namespace dawn_native { namespace opengl {
 
     class Device;
-
-    struct TextureFormatInfo {
-        GLenum internalFormat;
-        GLenum format;
-        GLenum type;
-    };
+    struct GLFormat;
 
     class Texture : public TextureBase {
       public:
@@ -40,10 +35,19 @@ namespace dawn_native { namespace opengl {
 
         GLuint GetHandle() const;
         GLenum GetGLTarget() const;
-        TextureFormatInfo GetGLFormat() const;
+        const GLFormat& GetGLFormat() const;
+
+        void EnsureSubresourceContentInitialized(uint32_t baseMipLevel,
+                                                 uint32_t levelCount,
+                                                 uint32_t baseArrayLayer,
+                                                 uint32_t layerCount);
 
       private:
         void DestroyImpl() override;
+        void ClearTexture(GLint baseMipLevel,
+                          GLint levelCount,
+                          GLint baseArrayLayer,
+                          uint32_t layerCount);
 
         GLuint mHandle;
         GLenum mTarget;

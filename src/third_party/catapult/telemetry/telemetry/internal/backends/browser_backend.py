@@ -105,6 +105,9 @@ class BrowserBackend(app_backend.AppBackend):
   def GetMostRecentMinidumpPath(self):
     raise NotImplementedError()
 
+  def GetRecentMinidumpPathWithTimeout(self, timeout_s, oldest_ts):
+    raise NotImplementedError()
+
   def GetAllMinidumpPaths(self):
     raise NotImplementedError()
 
@@ -143,10 +146,6 @@ class BrowserBackend(app_backend.AppBackend):
 
   @property
   def supports_memory_metrics(self):
-    raise NotImplementedError()
-
-  @property
-  def supports_power_metrics(self):
     raise NotImplementedError()
 
   @property

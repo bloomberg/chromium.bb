@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
@@ -35,6 +36,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -92,9 +94,8 @@ void OnCrostiniRestarted(Profile* profile,
   std::move(callback).Run();
 }
 
-void OnContainerApplicationLaunched(const std::string& app_id,
-                                    crostini::CrostiniResult result) {
-  if (result != crostini::CrostiniResult::SUCCESS)
+void OnContainerApplicationLaunched(const std::string& app_id, bool success) {
+  if (!success)
     OnLaunchFailed(app_id);
 }
 
@@ -213,6 +214,17 @@ bool IsCrostiniAllowedForProfileImpl(Profile* profile) {
     return false;
   }
 
+  bool kernelnext = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kKernelnextRestrictVMs);
+  bool kernelnext_override =
+      base::FeatureList::IsEnabled(features::kKernelnextVMs);
+  if (kernelnext && !kernelnext_override) {
+    // The host kernel is on an experimental version. In future updates this
+    // device may not have VM support, so we allow enabling VMs, but guard them
+    // on a chrome://flags switch (enable-experimental-kernel-vm-support).
+    return false;
+  }
+
   return base::FeatureList::IsEnabled(features::kCrostini);
 }
 
@@ -266,6 +278,10 @@ bool IsCrostiniEnabled(Profile* profile) {
 bool IsCrostiniRunning(Profile* profile) {
   return crostini::CrostiniManager::GetForProfile(profile)->IsVmRunning(
       kCrostiniDefaultVmName);
+}
+
+bool IsCrostiniAnsibleInfrastructureEnabled() {
+  return base::FeatureList::IsEnabled(features::kCrostiniAnsibleInfrastructure);
 }
 
 void LaunchCrostiniApp(Profile* profile,
@@ -325,18 +341,15 @@ void LaunchCrostiniApp(Profile* profile,
       return;
     }
 
-    GURL vsh_in_crosh_url = crostini::CrostiniManager::GenerateVshInCroshUrl(
+    GURL vsh_in_crosh_url = GenerateVshInCroshUrl(
         profile, vm_name, container_name, std::vector<std::string>());
-    AppLaunchParams launch_params =
-        crostini::CrostiniManager::GenerateTerminalAppLaunchParams(profile);
+    AppLaunchParams launch_params = GenerateTerminalAppLaunchParams(profile);
     // Create the terminal here so it's created in the right display. If the
     // browser creation is delayed into the callback the root window for new
     // windows setting can be changed due to the launcher or shelf dismissal.
-    Browser* browser = crostini::CrostiniManager::CreateContainerTerminal(
-        launch_params, vsh_in_crosh_url);
-    launch_closure =
-        base::BindOnce(&crostini::CrostiniManager::ShowContainerTerminal,
-                       launch_params, vsh_in_crosh_url, browser);
+    Browser* browser = CreateContainerTerminal(launch_params, vsh_in_crosh_url);
+    launch_closure = base::BindOnce(&ShowContainerTerminal, launch_params,
+                                    vsh_in_crosh_url, browser);
   } else {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
     launch_closure = base::BindOnce(
@@ -453,14 +466,14 @@ void RemoveLxdContainerFromPrefs(Profile* profile,
       vm_name, container_name);
 }
 
-base::string16 GetTimeRemainingMessage(base::Time start, int percent) {
+base::string16 GetTimeRemainingMessage(base::TimeTicks start, int percent) {
   // Only estimate once we've spent at least 3 seconds OR gotten 10% of the way
   // through.
   constexpr base::TimeDelta kMinTimeForEstimate =
       base::TimeDelta::FromSeconds(3);
   constexpr base::TimeDelta kTimeDeltaZero = base::TimeDelta::FromSeconds(0);
   constexpr int kMinPercentForEstimate = 10;
-  base::TimeDelta elapsed = base::Time::Now() - start;
+  base::TimeDelta elapsed = base::TimeTicks::Now() - start;
   if ((elapsed >= kMinTimeForEstimate && percent > 0) ||
       (percent >= kMinPercentForEstimate && elapsed > kTimeDeltaZero)) {
     base::TimeDelta total_time_expected = (elapsed * 100) / percent;

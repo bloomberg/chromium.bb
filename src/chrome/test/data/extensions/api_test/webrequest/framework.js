@@ -8,7 +8,6 @@ var expectedEventData;
 var capturedEventData;
 var capturedUnexpectedData;
 var expectedEventOrder;
-var networkServiceState = "unknown";
 var tabId;
 var tabIdMap;
 var frameIdMap;
@@ -66,11 +65,6 @@ function runTests(tests) {
         runTestsForTab(tests, tab);
       }
     };
-
-    if (config.customArg === "NetworkServiceEnabled")
-      networkServiceState = "enabled";
-    else if (config.customArg === "NetworkServiceDisabled")
-      networkServiceState = "disabled";
 
     chrome.tabs.onUpdated.addListener(waitForAboutBlank);
     chrome.tabs.create({url: "about:blank"});
@@ -174,23 +168,6 @@ function expect(data, order, filter, extraInfoSpec) {
   capturedEventData = [];
   capturedUnexpectedData = [];
   expectedEventOrder = order || [];
-
-  expectedEventData = expectedEventData.filter(function(event) {
-    if (!event.details.requiredNetworkServiceState)
-      return true;
-
-    if (networkServiceState == "unknown") {
-      chrome.test.fail("Test expectations specify a Network Service " +
-          "requirement, but the Network Service was neither explicitly set " +
-          "as enabled or disabled by the test runner. This test should be " +
-          "run with the custom argument NetworkServiceEnabled or " +
-          "NetworkServiceDisabled.");
-    }
-
-    var requiredState = event.details.requiredNetworkServiceState;
-    delete event.details.requiredNetworkServiceState;
-    return networkServiceState === requiredState;
-  });
 
   if (expectedEventData.length > 0) {
     eventsCaptured = chrome.test.callbackAdded();

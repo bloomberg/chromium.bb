@@ -12,7 +12,8 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "media/base/android/mock_android_overlay.h"
-#include "media/gpu/android/avda_surface_bundle.h"
+#include "media/gpu/android/codec_surface_bundle.h"
+#include "media/gpu/android/mock_codec_image.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,7 +25,7 @@ class CodecImageGroupWithDestructionHook : public CodecImageGroup {
  public:
   CodecImageGroupWithDestructionHook(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      scoped_refptr<AVDASurfaceBundle> surface_bundle)
+      scoped_refptr<CodecSurfaceBundle> surface_bundle)
       : CodecImageGroup(std::move(task_runner), std::move(surface_bundle)) {}
 
   void SetDestructionCallback(base::OnceClosure cb) {
@@ -40,20 +41,6 @@ class CodecImageGroupWithDestructionHook : public CodecImageGroup {
   base::OnceClosure destruction_cb_;
 };
 
-// CodecImage with a mocked ReleaseCodecBuffer.
-class MockCodecImage : public CodecImage {
- public:
-  MockCodecImage()
-      : CodecImage(nullptr,
-                   nullptr,
-                   PromotionHintAggregator::NotifyPromotionHintCB()) {}
-
-  MOCK_METHOD0(ReleaseCodecBuffer, void());
-
- protected:
-  ~MockCodecImage() override {}
-};
-
 }  // namespace
 
 class CodecImageGroupTest : public testing::Test {
@@ -67,11 +54,11 @@ class CodecImageGroupTest : public testing::Test {
   void TearDown() override {}
 
   struct Record {
-    scoped_refptr<AVDASurfaceBundle> surface_bundle;
+    scoped_refptr<CodecSurfaceBundle> surface_bundle;
     scoped_refptr<CodecImageGroupWithDestructionHook> image_group;
 
     MockAndroidOverlay* overlay() const {
-      return static_cast<MockAndroidOverlay*>(surface_bundle->overlay.get());
+      return static_cast<MockAndroidOverlay*>(surface_bundle->overlay());
     }
   };
 
@@ -82,7 +69,7 @@ class CodecImageGroupTest : public testing::Test {
     EXPECT_CALL(*overlay.get(), MockAddSurfaceDestroyedCallback());
     Record rec;
     rec.surface_bundle =
-        base::MakeRefCounted<AVDASurfaceBundle>(std::move(overlay));
+        base::MakeRefCounted<CodecSurfaceBundle>(std::move(overlay));
     rec.image_group = base::MakeRefCounted<CodecImageGroupWithDestructionHook>(
         gpu_task_runner_, rec.surface_bundle);
 
@@ -118,8 +105,8 @@ TEST_F(CodecImageGroupTest, GroupRegistersForOverlayDestruction) {
 TEST_F(CodecImageGroupTest, SurfaceBundleWithoutOverlayDoesntCrash) {
   // Make sure that it's okay not to have an overlay.  CodecImageGroup should
   // handle ST surface bundles without crashing.
-  scoped_refptr<AVDASurfaceBundle> surface_bundle =
-      base::MakeRefCounted<AVDASurfaceBundle>();
+  scoped_refptr<CodecSurfaceBundle> surface_bundle =
+      base::MakeRefCounted<CodecSurfaceBundle>();
   scoped_refptr<CodecImageGroup> image_group =
       base::MakeRefCounted<CodecImageGroup>(gpu_task_runner_, surface_bundle);
   // TODO(liberato): we should also make sure that adding an image doesn't call
@@ -146,25 +133,27 @@ TEST_F(CodecImageGroupTest, ImagesRetainRefToGroup) {
   ASSERT_TRUE(was_destroyed);
 }
 
-TEST_F(CodecImageGroupTest, DestroyedImagesForwardsImageDestruction) {
-  // Make sure that CodecImageGroup relays CodecImage destruction callbacks.
+TEST_F(CodecImageGroupTest, RemovingImageAllowsDestructionOfGroup) {
+  // Removing the last image from the group allows its destruction.
   Record rec = CreateImageGroup();
-  scoped_refptr<CodecImage> image_1 = new MockCodecImage();
-  scoped_refptr<CodecImage> image_2 = new MockCodecImage();
-  rec.image_group->SetDestructionCb(base::Bind(
-      &CodecImageGroupTest::OnCodecImageDestroyed, base::Unretained(this)));
-  rec.image_group->AddCodecImage(image_1.get());
-  rec.image_group->AddCodecImage(image_2.get());
+  bool was_destroyed = false;
+  rec.image_group->SetDestructionCallback(
+      base::BindOnce([](bool* flag) -> void { *flag = true; }, &was_destroyed));
 
-  // Destroying |image_1| should call us back.
-  EXPECT_CALL(*this, OnCodecImageDestroyed(image_1.get()));
-  image_1 = nullptr;
-  testing::Mock::VerifyAndClearExpectations(this);
+  scoped_refptr<CodecImage> image = new MockCodecImage();
+  rec.image_group->AddCodecImage(image.get());
 
-  // Same for |image_2|.
-  EXPECT_CALL(*this, OnCodecImageDestroyed(image_2.get()));
-  image_2 = nullptr;
-  testing::Mock::VerifyAndClearExpectations(this);
+  // Dropping our ref should not delete the group, since the image holds it.
+  CodecImageGroup* image_group_raw = rec.image_group.get();
+  rec.image_group = nullptr;
+  ASSERT_FALSE(was_destroyed);
+
+  // Removing the codec image from the group should allow destruction.  Note
+  // that this also (subtly) tests that the CodecImageGroup clears the
+  // destruction CB that it set on the CodecImage; that callback holds a strong
+  // ref, so the group won't be destroyed if it doesn't.
+  image_group_raw->RemoveCodecImage(image.get());
+  ASSERT_TRUE(was_destroyed);
 }
 
 TEST_F(CodecImageGroupTest, ImageGroupDropsForwardsSurfaceDestruction) {

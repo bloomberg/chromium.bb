@@ -83,26 +83,21 @@ def nanobench_flags(api, bot):
       # instead of ES.
       if 'NVIDIA_Shield' not in bot:
         gl_prefix = 'gles'
-      # The NP produces a long error stream when we run with MSAA.
-      # iOS crashes (skia:6399)
+      # iOS crashes with MSAA (skia:6399)
       # Nexus7 (Tegra3) does not support MSAA.
-      if ('NexusPlayer' in bot or
-          'iOS'         in bot or
+      if ('iOS'         in bot or
           'Nexus7'      in bot):
         sample_count = ''
     elif 'Intel' in bot:
-      sample_count = ''
+      # We don't want to test MSAA on older Intel chipsets. These are all newer (Gen9).
+      if 'Iris655' not in bot and 'Iris640' not in bot and 'Iris540' not in bot:
+        sample_count = ''
     elif 'ChromeOS' in bot:
       gl_prefix = 'gles'
 
     configs.extend([gl_prefix, gl_prefix + 'srgb'])
     if sample_count:
       configs.append(gl_prefix + 'msaa' + sample_count)
-      if ('TegraX1' in bot or
-          'Quadro' in bot or
-          'GTX' in bot or
-          ('GT610' in bot and 'Ubuntu17' not in bot)):
-        configs.extend([gl_prefix + 'nvpr' + sample_count])
 
     # We want to test both the OpenGL config and the GLES config on Linux Intel:
     # GL is used by Chrome, GLES is used by ChromeOS.
@@ -111,11 +106,22 @@ def nanobench_flags(api, bot):
 
     if 'CommandBuffer' in bot:
       configs = ['commandbuffer']
+
     if 'Vulkan' in bot:
       configs = ['vk']
+      if 'Android' in bot:
+        configs.append('vkmsaa4')
+      else:
+        # skbug.com/9023
+        if 'IntelHD405' not in bot:
+          configs.append('vkmsaa8')
 
     if 'Metal' in bot:
       configs = ['mtl']
+      if 'iOS' in bot:
+        configs.append('mtlmsaa4')
+      else:
+        configs.append('mtlmsaa8')
 
     if 'ANGLE' in bot:
       # Test only ANGLE configs.
@@ -140,8 +146,7 @@ def nanobench_flags(api, bot):
   if 'NoGPUThreads' in bot:
     args.extend(['--gpuThreads', '0'])
 
-  if 'Valgrind' in bot:
-    # Don't care about Valgrind performance.
+  if 'Debug' in bot or 'ASAN' in bot or 'Valgrind' in bot:
     args.extend(['--loops',   '1'])
     args.extend(['--samples', '1'])
     # Ensure that the bot framework does not think we have timed out.
@@ -202,6 +207,9 @@ def nanobench_flags(api, bot):
     match.append('~top25desk_ebay_com.skp_1.1')
     match.append('~top25desk_ebay.skp_1.1')
     match.append('~top25desk_ebay.skp_1.1_mpd')
+  if 'Vulkan' in bot and ('Nexus5x' in bot or 'GTX660' in bot):
+    # skia:8523 skia:9271
+    match.append('~compositing_images')
   if 'MacBook10.1' in bot and 'CommandBuffer' in bot:
     match.append('~^desk_micrographygirlsvg.skp_1.1$')
   if ('ASAN' in bot or 'UBSAN' in bot) and 'CPU' in bot:
@@ -301,6 +309,8 @@ def perf_steps(api):
       '~shapes_rrect_inner_rrect_50_500x500', # skia:7551
       '~compositing_images',
     ])
+    if 'Debug' in api.vars.builder_name:
+      args.extend(['--loops', '1'])
 
   if upload_perf_results(b):
     now = api.time.utcnow()
@@ -356,7 +366,9 @@ TEST_BUILDERS = [
   'Perf-Android-Clang-Nexus5-GPU-Adreno330-arm-Debug-All-Android',
   ('Perf-Android-Clang-Nexus5x-GPU-Adreno418-arm64-Release-All-'
    'Android_NoGPUThreads'),
+  'Perf-Android-Clang-Nexus5x-GPU-Adreno418-arm64-Release-All-Android_Vulkan',
   'Perf-Android-Clang-NVIDIA_Shield-GPU-TegraX1-arm64-Release-All-Android',
+  'Perf-Android-Clang-P30-GPU-MaliG76-arm64-Release-All-Android_Vulkan',
   'Perf-ChromeOS-Clang-ASUSChromebookFlipC100-GPU-MaliT764-arm-Release-All',
   'Perf-Chromecast-Clang-Chorizo-CPU-Cortex_A7-arm-Debug-All',
   'Perf-Chromecast-Clang-Chorizo-GPU-Cortex_A7-arm-Release-All',
@@ -377,6 +389,7 @@ TEST_BUILDERS = [
     'Valgrind_SK_CPU_LIMIT_SSE41'),
   'Perf-Win10-Clang-Golo-GPU-QuadroP400-x86_64-Release-All-ANGLE',
   'Perf-iOS-Clang-iPadPro-GPU-PowerVRGT7800-arm64-Release-All',
+  'Perf-iOS-Clang-iPhone6-GPU-PowerVRGX6450-arm64-Release-All-Metal',
 ]
 
 

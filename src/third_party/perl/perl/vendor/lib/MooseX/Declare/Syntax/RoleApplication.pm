@@ -1,18 +1,23 @@
 package MooseX::Declare::Syntax::RoleApplication;
-BEGIN {
-  $MooseX::Declare::Syntax::RoleApplication::AUTHORITY = 'cpan:FLORA';
-}
-{
-  $MooseX::Declare::Syntax::RoleApplication::VERSION = '0.35';
-}
 # ABSTRACT: Handle user specified roles
 
+our $VERSION = '0.43';
+
 use Moose::Role;
-
 use aliased 'MooseX::Declare::Context::Namespaced';
+use namespace::autoclean;
 
-use namespace::clean -except => 'meta';
-
+#pod =head1 DESCRIPTION
+#pod
+#pod This role extends L<MooseX::Declare::Syntax::OptionHandling> and provides
+#pod a C<with|/add_with_option_customizations> option.
+#pod
+#pod =head1 CONSUMES
+#pod
+#pod =for :list
+#pod * L<MooseX::Declare::Syntax::OptionHandling>
+#pod
+#pod =cut
 
 with qw(
     MooseX::Declare::Syntax::OptionHandling
@@ -20,6 +25,18 @@ with qw(
 
 around context_traits => sub { shift->(@_), Namespaced };
 
+#pod =method add_with_option_customizations
+#pod
+#pod   Object->add_with_option_customizations (
+#pod       Object   $context,
+#pod       Str      $package,
+#pod       ArrayRef $roles,
+#pod       HashRef  $options
+#pod   )
+#pod
+#pod This will add a call to C<with> in the scope code.
+#pod
+#pod =cut
 
 sub add_with_option_customizations {
     my ($self, $ctx, $package, $roles) = @_;
@@ -37,17 +54,29 @@ sub add_with_option_customizations {
     return 1;
 }
 
+#pod =head1 SEE ALSO
+#pod
+#pod =for :list
+#pod * L<MooseX::Declare>
+#pod * L<MooseX::Declare::Syntax::OptionHandling>
+#pod
+#pod =cut
 
 1;
 
 __END__
+
 =pod
 
-=encoding utf-8
+=encoding UTF-8
 
 =head1 NAME
 
 MooseX::Declare::Syntax::RoleApplication - Handle user specified roles
+
+=head1 VERSION
+
+version 0.43
 
 =head1 DESCRIPTION
 
@@ -91,90 +120,15 @@ L<MooseX::Declare::Syntax::OptionHandling>
 
 =back
 
-=head1 AUTHORS
-
-=over 4
-
-=item *
+=head1 AUTHOR
 
 Florian Ragwitz <rafl@debian.org>
 
-=item *
-
-Ash Berlin <ash@cpan.org>
-
-=item *
-
-Chas. J. Owens IV <chas.owens@gmail.com>
-
-=item *
-
-Chris Prather <chris@prather.org>
-
-=item *
-
-Dave Rolsky <autarch@urth.org>
-
-=item *
-
-Devin Austin <dhoss@cpan.org>
-
-=item *
-
-Hans Dieter Pearcey <hdp@cpan.org>
-
-=item *
-
-Justin Hunter <justin.d.hunter@gmail.com>
-
-=item *
-
-Matt Kraai <kraai@ftbfs.org>
-
-=item *
-
-Michele Beltrame <arthas@cpan.org>
-
-=item *
-
-Nelo Onyiah <nelo.onyiah@gmail.com>
-
-=item *
-
-nperez <nperez@cpan.org>
-
-=item *
-
-Piers Cawley <pdcawley@bofh.org.uk>
-
-=item *
-
-Rafael Kitover <rkitover@io.com>
-
-=item *
-
-Robert 'phaylon' Sedlacek <rs@474.at>
-
-=item *
-
-Stevan Little <stevan.little@iinteractive.com>
-
-=item *
-
-Tomas Doran <bobtfish@bobtfish.net>
-
-=item *
-
-Yanick Champoux <yanick@babyl.dyndns.org>
-
-=back
-
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by Florian Ragwitz.
+This software is copyright (c) 2008 by Florian Ragwitz.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

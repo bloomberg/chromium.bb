@@ -18,13 +18,13 @@
 
 #include <sys/stat.h>
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include "src/traced/probes/ftrace/event_info.h"
 #include "src/traced/probes/ftrace/proto_translation_table.h"
 
 #include "perfetto/base/build_config.h"
-#include "perfetto/base/utils.h"
+#include "perfetto/ext/base/utils.h"
 #include "perfetto/protozero/proto_utils.h"
 #include "perfetto/protozero/scattered_heap_buffer.h"
 #include "perfetto/protozero/scattered_stream_writer.h"

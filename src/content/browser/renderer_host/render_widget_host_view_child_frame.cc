@@ -68,8 +68,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       frame_connector_(nullptr),
       enable_viz_(features::IsVizDisplayCompositorEnabled()),
       enable_surface_synchronization_(
-          features::IsSurfaceSynchronizationEnabled()),
-      weak_factory_(this) {
+          features::IsSurfaceSynchronizationEnabled()) {
   GetHostFrameSinkManager()->RegisterFrameSinkId(
       frame_sink_id_, this,
       enable_surface_synchronization_
@@ -678,6 +677,36 @@ RenderWidgetHostViewChildFrame::GetLocalSurfaceIdAllocation() const {
   return viz::ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceIdAllocation();
 }
 
+void RenderWidgetHostViewChildFrame::NotifyHitTestRegionUpdated(
+    const viz::AggregatedHitTestRegion& region) {
+  gfx::RectF screen_rect(region.rect);
+  if (!region.transform().TransformRectReverse(&screen_rect)) {
+    last_stable_screen_rect_ = gfx::RectF();
+    screen_rect_stable_since_ = base::TimeTicks::Now();
+    return;
+  }
+  if ((ToRoundedSize(screen_rect.size()) !=
+       ToRoundedSize(last_stable_screen_rect_.size())) ||
+      (std::abs(last_stable_screen_rect_.x() - screen_rect.x()) +
+           std::abs(last_stable_screen_rect_.y() - screen_rect.y()) >
+       blink::kMaxChildFrameScreenRectMovement)) {
+    last_stable_screen_rect_ = screen_rect;
+    screen_rect_stable_since_ = base::TimeTicks::Now();
+  }
+}
+
+bool RenderWidgetHostViewChildFrame::ScreenRectIsUnstableFor(
+    const blink::WebInputEvent& event) {
+  if (event.TimeStamp() -
+          base::TimeDelta::FromMilliseconds(blink::kMinScreenRectStableTimeMs) <
+      screen_rect_stable_since_) {
+    return true;
+  }
+  if (RenderWidgetHostViewBase* parent = GetParentView())
+    return parent->ScreenRectIsUnstableFor(event);
+  return false;
+}
+
 void RenderWidgetHostViewChildFrame::PreProcessTouchEvent(
     const blink::WebTouchEvent& event) {
   if (event.GetType() == blink::WebInputEvent::kTouchStart &&
@@ -712,25 +741,10 @@ bool RenderWidgetHostViewChildFrame::HasSize() const {
 gfx::PointF RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpaceF(
     const gfx::PointF& point) {
   viz::SurfaceId surface_id = GetCurrentSurfaceId();
-  // LocalSurfaceId is not needed in Viz hit-test.
-  if (!frame_connector_ || (!use_viz_hit_test_ && !surface_id.is_valid())) {
+  if (!frame_connector_)
     return point;
-  }
 
   return frame_connector_->TransformPointToRootCoordSpace(point, surface_id);
-}
-
-bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpaceLegacy(
-    const gfx::PointF& point,
-    const viz::SurfaceId& original_surface,
-    gfx::PointF* transformed_point) {
-  *transformed_point = point;
-  viz::SurfaceId surface_id = GetCurrentSurfaceId();
-  if (!frame_connector_ || !surface_id.is_valid())
-    return false;
-
-  return frame_connector_->TransformPointToLocalCoordSpaceLegacy(
-      point, original_surface, surface_id, transformed_point);
 }
 
 bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
@@ -738,10 +752,8 @@ bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
     RenderWidgetHostViewBase* target_view,
     gfx::PointF* transformed_point) {
   viz::SurfaceId surface_id = GetCurrentSurfaceId();
-  // LocalSurfaceId is not needed in Viz hit-test.
-  if (!frame_connector_ || (!use_viz_hit_test_ && !surface_id.is_valid())) {
+  if (!frame_connector_)
     return false;
-  }
 
   if (target_view == this) {
     *transformed_point = point;
@@ -860,10 +872,10 @@ void RenderWidgetHostViewChildFrame::ReclaimResources(
 
 void RenderWidgetHostViewChildFrame::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& feedbacks) {
+    const viz::FrameTimingDetailsMap& timing_details) {
   host_->ProgressFlingIfNeeded(args.frame_time);
   if (renderer_compositor_frame_sink_)
-    renderer_compositor_frame_sink_->OnBeginFrame(args, feedbacks);
+    renderer_compositor_frame_sink_->OnBeginFrame(args, timing_details);
 }
 
 void RenderWidgetHostViewChildFrame::OnBeginFramePausedChanged(bool paused) {

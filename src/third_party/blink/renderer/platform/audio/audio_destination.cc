@@ -38,10 +38,10 @@
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/audio/push_pull_fifo.h"
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -87,6 +87,9 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
 
   callback_buffer_size_ = web_audio_device_->FramesPerBuffer();
 
+  metric_reporter_.Initialize(
+      callback_buffer_size_, web_audio_device_->SampleRate());
+
   // Primes the FIFO for the given callback buffer size. This is to prevent
   // first FIFO pulls from causing "underflow" errors.
   const unsigned priming_render_quanta =
@@ -107,13 +110,11 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
     scale_factor =
         context_sample_rate.value() / web_audio_device_->SampleRate();
 
-    resampler_.reset(
-        new MediaMultiChannelResampler(
-            number_of_output_channels,
-            scale_factor,
-            audio_utilities::kRenderQuantumFrames,
-            CrossThreadBind(&AudioDestination::ProvideResamplerInput,
-                            CrossThreadUnretained(this))));
+    resampler_.reset(new MediaMultiChannelResampler(
+        number_of_output_channels, scale_factor,
+        audio_utilities::kRenderQuantumFrames,
+        CrossThreadBindRepeating(&AudioDestination::ProvideResamplerInput,
+                                 CrossThreadUnretained(this))));
     resampler_bus_ =
         media::AudioBus::CreateWrapper(render_bus_->NumberOfChannels());
     for (unsigned int i = 0; i < render_bus_->NumberOfChannels(); ++i) {
@@ -213,16 +214,14 @@ void AudioDestination::RequestRender(size_t frames_requested,
                "frames_to_render", frames_to_render, "timestamp (s)",
                delay_timestamp);
 
+  metric_reporter_.BeginTrace();
+
   frames_elapsed_ -= std::min(frames_elapsed_, prior_frames_skipped);
   output_position_.position =
       frames_elapsed_ / static_cast<double>(web_audio_device_->SampleRate()) -
       delay;
   output_position_.timestamp = delay_timestamp;
-
   base::TimeTicks callback_request = base::TimeTicks::Now();
-  metric_.callback_interval =
-      (callback_request - previous_callback_request_).InSecondsF();
-  metric_.render_duration = previous_render_duration_.InSecondsF();
 
   for (size_t pushed_frames = 0; pushed_frames < frames_to_render;
        pushed_frames += audio_utilities::kRenderQuantumFrames) {
@@ -246,18 +245,15 @@ void AudioDestination::RequestRender(size_t frames_requested,
     } else {
       // Process WebAudio graph and push the rendered output to FIFO.
       callback_.Render(render_bus_.get(), audio_utilities::kRenderQuantumFrames,
-                       output_position_, metric_);
+                       output_position_, metric_reporter_.GetMetric());
     }
 
     fifo_->Push(render_bus_.get());
   }
 
-  // Update the IO callback metric with information from the current iteration.
-  // They are will be picked up in the next render request.
-  previous_callback_request_ = callback_request;
-  previous_render_duration_ = base::TimeTicks::Now() - callback_request;
-
   frames_elapsed_ += frames_requested;
+
+  metric_reporter_.EndTrace();
 }
 
 void AudioDestination::Start() {
@@ -366,6 +362,6 @@ bool AudioDestination::CheckBufferSize() {
 void AudioDestination::ProvideResamplerInput(int resampler_frame_delay,
                                              AudioBus* dest) {
   callback_.Render(dest, audio_utilities::kRenderQuantumFrames,
-                   output_position_, metric_);
+                   output_position_, metric_reporter_.GetMetric());
 }
 }  // namespace blink

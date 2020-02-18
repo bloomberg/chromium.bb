@@ -10,12 +10,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/connection_status.h"
 #include "components/sync/engine/sync_credentials.h"
 #include "net/base/net_errors.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,12 +52,12 @@ class SyncAuthManagerTest : public testing::Test {
                                              base::DoNothing());
   }
 
-  identity::IdentityTestEnvironment* identity_env() { return &identity_env_; }
+  signin::IdentityTestEnvironment* identity_env() { return &identity_env_; }
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_env_;
+  signin::IdentityTestEnvironment identity_env_;
 };
 
 TEST_F(SyncAuthManagerTest, ProvidesNothingInLocalSyncMode) {
@@ -160,7 +160,7 @@ TEST_F(SyncAuthManagerTest, ForwardsSecondaryAccountEvents) {
 
   // Make the account primary.
   EXPECT_CALL(account_state_changed, Run());
-  identity::PrimaryAccountMutator* primary_account_mutator =
+  signin::PrimaryAccountMutator* primary_account_mutator =
       identity_env()->identity_manager()->GetPrimaryAccountMutator();
   primary_account_mutator->SetPrimaryAccount(account_info.account_id);
 

@@ -16,9 +16,9 @@
 #include "osp/impl/mdns_platform_service.h"
 #include "osp/impl/service_listener_impl.h"
 #include "osp/impl/service_publisher_impl.h"
-#include "osp_base/ip_address.h"
 #include "platform/api/network_interface.h"
-#include "platform/base/event_loop.h"
+#include "platform/base/ip_address.h"
+#include "platform/impl/event_loop.h"
 
 namespace openscreen {
 
@@ -46,7 +46,7 @@ class MdnsResponderService final : public ServiceListenerImpl::Delegate,
       const std::vector<platform::NetworkInterfaceIndex> whitelist,
       const std::map<std::string, std::string>& txt_data);
 
-  void HandleNewEvents(const std::vector<platform::ReceivedData>& data);
+  void HandleNewEvents(const std::vector<platform::UdpPacket>& packets);
 
   // ServiceListenerImpl::Delegate overrides.
   void StartListener() override;

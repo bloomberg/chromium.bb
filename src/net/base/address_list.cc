@@ -15,23 +15,6 @@
 
 namespace net {
 
-namespace {
-
-base::Value NetLogAddressListCallback(const AddressList* address_list,
-                                      NetLogCaptureMode capture_mode) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  base::Value list(base::Value::Type::LIST);
-
-  for (const auto& ip_endpoint : *address_list)
-    list.GetList().emplace_back(ip_endpoint.ToString());
-
-  dict.SetKey("address_list", std::move(list));
-  dict.SetStringKey("canonical_name", address_list->canonical_name());
-  return dict;
-}
-
-}  // namespace
-
 AddressList::AddressList() = default;
 
 AddressList::AddressList(const AddressList&) = default;
@@ -91,8 +74,16 @@ void AddressList::SetDefaultCanonicalName() {
   set_canonical_name(front().ToStringWithoutPort());
 }
 
-NetLogParametersCallback AddressList::CreateNetLogCallback() const {
-  return base::Bind(&NetLogAddressListCallback, this);
+base::Value AddressList::NetLogParams() const {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  base::Value list(base::Value::Type::LIST);
+
+  for (const auto& ip_endpoint : *this)
+    list.GetList().emplace_back(ip_endpoint.ToString());
+
+  dict.SetKey("address_list", std::move(list));
+  dict.SetStringKey("canonical_name", canonical_name());
+  return dict;
 }
 
 }  // namespace net

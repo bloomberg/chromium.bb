@@ -89,8 +89,18 @@ struct ScrollData {
   ScrollUpdate? update_details;
 };
 
-struct PinchData {
+struct PinchBeginData {
+  bool needs_wheel_event;
+};
+
+struct PinchUpdateData {
   float scale;
+  bool zoom_disabled;
+  bool needs_wheel_event;
+};
+
+struct PinchEndData {
+  bool needs_wheel_event;
 };
 
 struct FlingData {
@@ -102,6 +112,7 @@ struct FlingData {
 
 struct TapData {
   int32 tap_count;
+  bool needs_wheel_event;
 };
 
 struct GestureData {
@@ -114,7 +125,9 @@ struct GestureData {
   int32 resending_plugin_id;
   gfx.mojom.Size? contact_size;
   ScrollData? scroll_data;
-  PinchData? pinch_data;
+  PinchBeginData? pinch_begin_data;
+  PinchUpdateData? pinch_update_data;
+  PinchEndData? pinch_end_data;
   TapData? tap_data;
   FlingData? fling_data;
 };
@@ -278,9 +291,9 @@ interface WidgetInputHandler {
   // Attach the synchronous compositor interface. This method only
   // should be called for Android WebView.
   AttachSynchronousCompositor(
-      SynchronousCompositorControlHost control_host,
-      associated SynchronousCompositorHost host,
-      associated SynchronousCompositor& compositor_request);
+      pending_remote<SynchronousCompositorControlHost> control_host,
+      pending_associated_remote<SynchronousCompositorHost> host,
+      pending_associated_receiver<SynchronousCompositor> compositor_request);
 };
 
 // This interface provides the input actions associated with the RenderFrame.
@@ -371,6 +384,7 @@ interface FrameInputHandler {
   // Return an associated WidgetInputHandler interface so that input
   // messages to the widget associated with this frame can be sent
   // serially.
-  GetWidgetInputHandler(associated WidgetInputHandler& interface_request,
-                        WidgetInputHandlerHost host);
+  GetWidgetInputHandler(
+      pending_associated_receiver<WidgetInputHandler> interface_request,
+      pending_remote<WidgetInputHandlerHost> host);
 };

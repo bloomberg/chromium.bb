@@ -6,7 +6,7 @@
 
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -18,8 +18,7 @@ WorkerAnimationFrameProvider::WorkerAnimationFrameProvider(
           std::make_unique<BeginFrameProvider>(begin_frame_provider_params,
                                                this)),
       callback_collection_(context),
-      context_(context),
-      weak_factory_(this) {}
+      context_(context) {}
 
 int WorkerAnimationFrameProvider::RegisterCallback(
     FrameRequestCallbackCollection::FrameCallback* callback) {

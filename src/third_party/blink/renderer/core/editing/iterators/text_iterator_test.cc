@@ -148,7 +148,7 @@ std::string TextIteratorTest::IterateWithIterator(
     text_chunks.Append(iterator.GetText().GetTextForTesting());
     text_chunks.Append(']');
   }
-  return std::string(text_chunks.ToString().Utf8().data());
+  return text_chunks.ToString().Utf8();
 }
 
 Range* TextIteratorTest::GetBodyRange() const {

@@ -5,6 +5,7 @@ accelerometer
 ambient-light-sensor
 autoplay
 camera
+document-domain
 encrypted-media
 fullscreen
 geolocation
@@ -14,7 +15,6 @@ microphone
 midi
 payment
 picture-in-picture
-speaker
 sync-xhr
 usb
 vr

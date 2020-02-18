@@ -28,8 +28,7 @@ SharedImageStub::SharedImageStub(GpuChannel* channel, int32_t route_id)
               CommandBufferNamespace::GPU_IO,
               CommandBufferIdFromChannelAndRoute(channel->client_id(),
                                                  route_id),
-              sequence_)),
-      weak_factory_(this) {
+              sequence_)) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "gpu::SharedImageStub", channel_->task_runner());
 }
@@ -208,9 +207,14 @@ void SharedImageStub::OnCreateGMBSharedImage(
   sync_point_client_state_->ReleaseFenceSync(params.release_id);
 }
 
-void SharedImageStub::OnUpdateSharedImage(const Mailbox& mailbox,
-                                          uint32_t release_id) {
+void SharedImageStub::OnUpdateSharedImage(
+    const Mailbox& mailbox,
+    uint32_t release_id,
+    const gfx::GpuFenceHandle& in_fence_handle) {
   TRACE_EVENT0("gpu", "SharedImageStub::OnUpdateSharedImage");
+  std::unique_ptr<gfx::GpuFence> in_fence;
+  if (!in_fence_handle.is_null())
+    in_fence.reset(new gfx::GpuFence(in_fence_handle));
   if (!mailbox.IsSharedImage()) {
     LOG(ERROR) << "SharedImageStub: Trying to access a SharedImage with a "
                   "non-SharedImage mailbox.";
@@ -223,8 +227,8 @@ void SharedImageStub::OnUpdateSharedImage(const Mailbox& mailbox,
     return;
   }
 
-  if (!factory_->UpdateSharedImage(mailbox)) {
-    LOG(ERROR) << "SharedImageStub: Unable to destroy shared image";
+  if (!factory_->UpdateSharedImage(mailbox, std::move(in_fence))) {
+    LOG(ERROR) << "SharedImageStub: Unable to update shared image";
     OnError();
     return;
   }

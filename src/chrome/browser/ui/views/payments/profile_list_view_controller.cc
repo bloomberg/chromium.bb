@@ -150,11 +150,11 @@ class ShippingProfileViewController : public ProfileListViewController,
         /*on_edited=*/
         base::BindOnce(
             &PaymentRequestState::SetSelectedShippingProfile,
-            base::Unretained(state()), profile,
+            state()->AsWeakPtr(), profile,
             PaymentRequestState::SectionSelectionStatus::kEditedSelected),
         /*on_added=*/
         base::BindOnce(&PaymentRequestState::AddAutofillShippingProfile,
-                       base::Unretained(state()), /*selected=*/true),
+                       state()->AsWeakPtr(), /*selected=*/true),
         profile);
   }
 
@@ -265,11 +265,11 @@ class ContactProfileViewController : public ProfileListViewController {
         /*on_edited=*/
         base::BindOnce(
             &PaymentRequestState::SetSelectedContactProfile,
-            base::Unretained(state()), profile,
+            state()->AsWeakPtr(), profile,
             PaymentRequestState::SectionSelectionStatus::kEditedSelected),
         /*on_added=*/
         base::BindOnce(&PaymentRequestState::AddAutofillContactProfile,
-                       base::Unretained(state()), /*selected=*/true),
+                       state()->AsWeakPtr(), /*selected=*/true),
         profile);
   }
 
@@ -359,7 +359,8 @@ void ProfileListViewController::PopulateList() {
 }
 
 void ProfileListViewController::FillContentView(views::View* content_view) {
-  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);

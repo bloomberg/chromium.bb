@@ -30,7 +30,7 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
@@ -266,10 +266,10 @@ bool WEBPImageDecoder::FrameIsReceivedAtIndex(size_t index) const {
   return frame_is_received_at_index;
 }
 
-TimeDelta WEBPImageDecoder::FrameDurationAtIndex(size_t index) const {
+base::TimeDelta WEBPImageDecoder::FrameDurationAtIndex(size_t index) const {
   return index < frame_buffer_cache_.size()
              ? frame_buffer_cache_[index].Duration()
-             : TimeDelta();
+             : base::TimeDelta();
 }
 
 bool WEBPImageDecoder::UpdateDemuxer() {
@@ -593,7 +593,8 @@ void WEBPImageDecoder::InitializeNewFrame(size_t index) {
                      animated_frame.width, animated_frame.height);
   buffer->SetOriginalFrameRect(
       Intersection(frame_rect, IntRect(IntPoint(), Size())));
-  buffer->SetDuration(TimeDelta::FromMilliseconds(animated_frame.duration));
+  buffer->SetDuration(
+      base::TimeDelta::FromMilliseconds(animated_frame.duration));
   buffer->SetDisposalMethod(animated_frame.dispose_method ==
                                     WEBP_MUX_DISPOSE_BACKGROUND
                                 ? ImageFrame::kDisposeOverwriteBgcolor

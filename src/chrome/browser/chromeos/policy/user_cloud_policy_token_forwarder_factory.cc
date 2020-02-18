@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 namespace policy {
 
@@ -33,7 +33,7 @@ KeyedService* UserCloudPolicyTokenForwarderFactory::BuildServiceInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
   UserCloudPolicyManagerChromeOS* manager =
       profile->GetUserCloudPolicyManagerChromeOS();
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   if (!manager || !identity_manager)
     return nullptr;

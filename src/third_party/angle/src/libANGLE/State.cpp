@@ -234,13 +234,15 @@ const angle::PackedEnumMap<BufferBinding, State::BufferBindingSetter> State::kBu
 State::State(ContextID contextIn,
              const State *shareContextState,
              TextureManager *shareTextures,
+             const EGLenum clientType,
              const Version &clientVersion,
              bool debug,
              bool bindGeneratesResource,
              bool clientArraysEnabled,
              bool robustResourceInit,
              bool programBinaryCacheEnabled)
-    : mClientVersion(clientVersion),
+    : mClientType(clientType),
+      mClientVersion(clientVersion),
       mContext(contextIn),
       mBufferManager(AllocateOrGetSharedResourceManager(shareContextState, &State::mBufferManager)),
       mShaderProgramManager(
@@ -282,7 +284,7 @@ State::State(ContextID contextIn,
       mReadFramebuffer(nullptr),
       mDrawFramebuffer(nullptr),
       mProgram(nullptr),
-      mProvokingVertex(gl::ProvokingVertex::LastVertexConvention),
+      mProvokingVertex(gl::ProvokingVertexConvention::LastVertexConvention),
       mVertexArray(nullptr),
       mActiveSampler(0),
       mActiveTexturesCache{},
@@ -367,11 +369,13 @@ void State::initialize(Context *context)
 
     mSamplerTextures[TextureType::_2D].resize(caps.maxCombinedTextureImageUnits);
     mSamplerTextures[TextureType::CubeMap].resize(caps.maxCombinedTextureImageUnits);
+    if (clientVersion >= Version(3, 0) || nativeExtensions.texture3DOES)
+    {
+        mSamplerTextures[TextureType::_3D].resize(caps.maxCombinedTextureImageUnits);
+    }
     if (clientVersion >= Version(3, 0))
     {
-        // TODO: These could also be enabled via extension
         mSamplerTextures[TextureType::_2DArray].resize(caps.maxCombinedTextureImageUnits);
-        mSamplerTextures[TextureType::_3D].resize(caps.maxCombinedTextureImageUnits);
     }
     if (clientVersion >= Version(3, 1) || nativeExtensions.textureMultisample)
     {
@@ -661,9 +665,12 @@ void State::setDepthFunc(GLenum depthFunc)
 
 void State::setDepthRange(float zNear, float zFar)
 {
-    mNearZ = zNear;
-    mFarZ  = zFar;
-    mDirtyBits.set(DIRTY_BIT_DEPTH_RANGE);
+    if (mNearZ != zNear || mFarZ != zFar)
+    {
+        mNearZ = zNear;
+        mFarZ  = zFar;
+        mDirtyBits.set(DIRTY_BIT_DEPTH_RANGE);
+    }
 }
 
 void State::setBlend(bool enabled)
@@ -1189,6 +1196,11 @@ void State::initializeZeroTextures(const Context *context, const TextureMap &zer
             mSamplerTextures[type][textureUnit].set(context, zeroTextures[type].get());
         }
     }
+}
+
+void State::invalidateTexture(TextureType type)
+{
+    mDirtyBits.set(DIRTY_BIT_TEXTURE_BINDINGS);
 }
 
 void State::setSamplerBinding(const Context *context, GLuint textureUnit, Sampler *sampler)
@@ -2210,7 +2222,7 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
         case GL_ALPHA_BITS:
         {
             Framebuffer *framebuffer                 = getDrawFramebuffer();
-            const FramebufferAttachment *colorbuffer = framebuffer->getFirstColorbuffer();
+            const FramebufferAttachment *colorbuffer = framebuffer->getFirstColorAttachment();
 
             if (colorbuffer)
             {
@@ -2239,7 +2251,7 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
         case GL_DEPTH_BITS:
         {
             const Framebuffer *framebuffer           = getDrawFramebuffer();
-            const FramebufferAttachment *depthbuffer = framebuffer->getDepthbuffer();
+            const FramebufferAttachment *depthbuffer = framebuffer->getDepthAttachment();
 
             if (depthbuffer)
             {
@@ -2254,7 +2266,7 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
         case GL_STENCIL_BITS:
         {
             const Framebuffer *framebuffer             = getDrawFramebuffer();
-            const FramebufferAttachment *stencilbuffer = framebuffer->getStencilbuffer();
+            const FramebufferAttachment *stencilbuffer = framebuffer->getStencilAttachment();
 
             if (stencilbuffer)
             {

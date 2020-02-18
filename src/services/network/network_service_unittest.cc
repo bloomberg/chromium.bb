@@ -46,6 +46,7 @@
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_network_service_client.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
@@ -229,9 +230,7 @@ TEST_F(NetworkServiceTest, AuthSchemesNone) {
   EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kNtlmAuthScheme));
 }
 
-// |gssapi_library_name| is only supported on certain POSIX platforms.
-#if BUILDFLAG(USE_KERBEROS) && defined(OS_POSIX) && !defined(OS_ANDROID) && \
-    !defined(OS_CHROMEOS)
+#if BUILDFLAG(USE_EXTERNAL_GSSAPI)
 TEST_F(NetworkServiceTest, AuthGssapiLibraryName) {
   const std::string kGssapiLibraryName = "Jim";
   mojom::HttpAuthStaticParamsPtr auth_params =
@@ -248,7 +247,7 @@ TEST_F(NetworkServiceTest, AuthGssapiLibraryName) {
   EXPECT_EQ(kGssapiLibraryName,
             GetNegotiateFactory(&network_context)->GetLibraryNameForTesting());
 }
-#endif
+#endif  // BUILDFLAG(USE_EXTERNAL_GSSAPI)
 
 TEST_F(NetworkServiceTest, AuthServerWhitelist) {
   // Add one server to the whitelist before creating any NetworkContexts.
@@ -733,7 +732,7 @@ TEST_F(NetworkServiceTestWithService, StartsNetLog) {
   base::File log_file(log_path,
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   network_service_->StartNetLog(
-      std::move(log_file), net::NetLogCaptureMode::Default(), std::move(dict));
+      std::move(log_file), net::NetLogCaptureMode::kDefault, std::move(dict));
   CreateNetworkContext();
   LoadURL(test_server()->GetURL("/echo"));
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
@@ -1449,20 +1448,12 @@ class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegateTest);
 };
 
-class ClearSiteDataNetworkContextClient : public mojom::NetworkContextClient {
+class ClearSiteDataNetworkContextClient : public TestNetworkContextClient {
  public:
   explicit ClearSiteDataNetworkContextClient(
       mojom::NetworkContextClientRequest request)
       : binding_(this, std::move(request)) {}
   ~ClearSiteDataNetworkContextClient() override = default;
-
-  void OnCanSendReportingReports(
-      const std::vector<url::Origin>& origins,
-      OnCanSendReportingReportsCallback callback) override {}
-
-  void OnCanSendDomainReliabilityUpload(
-      const GURL& origin,
-      OnCanSendDomainReliabilityUploadCallback callback) override {}
 
   void OnClearSiteData(uint32_t process_id,
                        int32_t routing_id,

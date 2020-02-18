@@ -33,7 +33,63 @@ load-plugins=chromite.cli.cros.lint
 # multiple times.
 # R9301: logging is deprecated. Use "from chromite.lib import cros_logging as
 # logging" to import chromite/lib/cros_logging
-enable=cros-logging-import
+enable=
+    cros-logging-import,
+    apply-builtin,
+    backtick,
+    bad-python3-import,
+    buffer-builtin,
+    cmp-builtin,
+    cmp-method,
+    coerce-builtin,
+    coerce-method,
+    delslice-method,
+    deprecated-itertools-function,
+    deprecated-str-translate-call,
+    deprecated-string-function,
+    deprecated-types-field,
+    dict-items-not-iterating,
+    dict-iter-method,
+    dict-keys-not-iterating,
+    dict-values-not-iterating,
+    dict-view-method,
+    div-method,
+    exception-message-attribute,
+    execfile-builtin,
+    file-builtin,
+    filter-builtin-not-iterating,
+    getslice-method,
+    hex-method,
+    idiv-method,
+    import-star-module-level,
+    indexing-exception,
+    input-builtin,
+    intern-builtin,
+    invalid-str-codec,
+    long-builtin,
+    map-builtin-not-iterating,
+    metaclass-assignment,
+    next-method-defined,
+    nonzero-method,
+    oct-method,
+    old-raise-syntax,
+    parameter-unpacking,
+    print-statement,
+    raising-string,
+    range-builtin-not-iterating,
+    raw_input-builtin,
+    rdiv-method,
+    reduce-builtin,
+    reload-builtin,
+    setslice-method,
+    standarderror-builtin,
+    sys-max-int,
+    unichr-builtin,
+    unpacking-in-except,
+    using-cmp-argument,
+    xrange-builtin,
+    zip-builtin-not-iterating,
+
 
 # Disable the message, report, category or checker with the given id(s). You
 # can either give multiple identifiers separated by comma (,) or put this
@@ -150,14 +206,17 @@ generated-members=REQUEST,acl_users,aq_parent,AndRaise,AndReturn,InAnyOrder,Mult
 #required-attributes=
 
 # List of builtins function names that should not be used, separated by a comma.
-# XXX: Should we ban map() & filter() for list comprehensions?
 # exit & quit are for the interactive interpreter shell only.
 # https://docs.python.org/3/library/constants.html#constants-added-by-the-site-module
 bad-functions=
     apply,
     exit,
+    filter,
     input,
+    map,
     quit,
+    raw_input,
+    reduce,
 
 # Regular expression which should only match correct module names
 #module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$

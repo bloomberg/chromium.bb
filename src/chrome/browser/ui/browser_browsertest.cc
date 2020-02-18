@@ -28,7 +28,6 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
@@ -62,6 +61,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -89,6 +89,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -889,14 +890,18 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, NewTabFromLinkOpensInGroup) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kTabGroups);
+
   // Add a grouped tab.
-  TabStripModel* model = browser()->tab_strip_model();
+  TabStripModel* const model = browser()->tab_strip_model();
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/empty.html"));
-  model->AddToNewGroup({0});
+  const TabGroupId group_id = model->AddToNewGroup({0});
 
   // Open a new background tab.
-  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* const contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   OpenURLFromTab(
       contents,
       OpenURLParams(embedded_test_server()->GetURL("/empty.html"), Referrer(),
@@ -904,8 +909,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NewTabFromLinkOpensInGroup) {
                     ui::PAGE_TRANSITION_TYPED, false));
 
   // It should have inherited the tab group from the first tab.
-  EXPECT_EQ(browser()->tab_strip_model()->GetTabGroupForTab(0),
-            browser()->tab_strip_model()->GetTabGroupForTab(1));
+  EXPECT_EQ(group_id, browser()->tab_strip_model()->GetTabGroupForTab(1));
 }
 
 // BeforeUnloadAtQuitWithTwoWindows is a regression test for
@@ -957,9 +961,9 @@ IN_PROC_BROWSER_TEST_F(BeforeUnloadAtQuitWithTwoWindows,
   content::PrepContentsForBeforeUnloadTest(contents);
 
   // Open a second browser window at about:blank.
-  ui_test_utils::BrowserAddedObserver browser_added_observer;
   chrome::NewEmptyWindow(browser()->profile());
-  Browser* second_window = browser_added_observer.WaitForSingleNewBrowser();
+  Browser* second_window = BrowserList::GetInstance()->GetLastActive();
+  EXPECT_NE(second_window, browser());
   ui_test_utils::NavigateToURL(second_window, GURL(url::kAboutBlankURL));
 
   // Tell the application to quit. IDC_EXIT calls AttemptUserExit, which on
@@ -1015,9 +1019,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   redirect_popup += https_url.spec();
   redirect_popup += "\";";
 
-  content::WindowedNotificationObserver popup_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter tab_add(browser());
   content::WindowedNotificationObserver nav_observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
@@ -1025,7 +1027,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
       ASCIIToUTF16(redirect_popup));
 
   // Wait for popup window to appear and finish navigating.
-  popup_observer.Wait();
+  tab_add.Wait();
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   WebContents* newtab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(newtab);
@@ -1049,9 +1051,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   refresh_popup += https_url.spec();
   refresh_popup += "\">');w.document.close();";
 
-  content::WindowedNotificationObserver popup_observer2(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter tab_add2(browser());
   content::WindowedNotificationObserver nav_observer2(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
@@ -1059,7 +1059,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
       ASCIIToUTF16(refresh_popup));
 
   // Wait for popup window to appear and finish navigating.
-  popup_observer2.Wait();
+  tab_add2.Wait();
   ASSERT_EQ(3, browser()->tab_strip_model()->count());
   WebContents* newtab2 = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(newtab2);
@@ -1102,9 +1102,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   dont_fork_popup += https_url.spec();
   dont_fork_popup += "\";";
 
-  content::WindowedNotificationObserver popup_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter tab_add(browser());
   content::WindowedNotificationObserver nav_observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
@@ -1112,7 +1110,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
       ASCIIToUTF16(dont_fork_popup));
 
   // Wait for popup window to appear and finish navigating.
-  popup_observer.Wait();
+  tab_add.Wait();
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   WebContents* newtab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(newtab);
@@ -1301,6 +1299,25 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   EXPECT_EQ(expected_tabs, browser()->tab_strip_model()->count());
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserTest, OverscrollEnabledInRegularWindows) {
+  ASSERT_TRUE(browser()->is_type_tabbed());
+  EXPECT_TRUE(browser()->CanOverscrollContent());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, OverscrollEnabledInPopups) {
+  Browser* popup_browser = new Browser(
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true));
+  ASSERT_TRUE(popup_browser->is_type_popup());
+  EXPECT_TRUE(popup_browser->CanOverscrollContent());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, OverscrollDisabledInDevToolsWindows) {
+  DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), false);
+  Browser* dev_tools_browser = chrome::FindLastActive();
+  ASSERT_EQ(dev_tools_browser->app_name(), DevToolsWindow::kDevToolsApp);
+  EXPECT_FALSE(dev_tools_browser->CanOverscrollContent());
+}
+
 // Open an app window and the dev tools window and ensure that the location
 // bar settings are correct.
 IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
@@ -1311,9 +1328,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
   const Extension* extension_app = GetExtension();
 
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
-  WebContents* app_window = OpenApplication(AppLaunchParams(
-      browser()->profile(), extension_app, extensions::LAUNCH_CONTAINER_WINDOW,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
+  WebContents* app_window = OpenApplication(
+      AppLaunchParams(browser()->profile(), extension_app->id(),
+                      extensions::LaunchContainer::kLaunchContainerWindow,
+                      WindowOpenDisposition::NEW_WINDOW,
+                      extensions::AppLaunchSource::kSourceTest));
   ASSERT_TRUE(app_window);
 
   DevToolsWindow* devtools_window =
@@ -1476,11 +1495,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   // Load an app
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
   const Extension* extension_app = GetExtension();
+  ASSERT_TRUE(extension_app);
 
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
-  WebContents* app_window = OpenApplication(AppLaunchParams(
-      browser()->profile(), extension_app, extensions::LAUNCH_CONTAINER_WINDOW,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
+  WebContents* app_window = OpenApplication(
+      AppLaunchParams(browser()->profile(), extension_app->id(),
+                      extensions::LaunchContainer::kLaunchContainerWindow,
+                      WindowOpenDisposition::NEW_WINDOW,
+                      extensions::AppLaunchSource::kSourceTest));
   ASSERT_TRUE(app_window);
 
   // Apps launched in a window from the NTP have an extensions tab helper with
@@ -2142,9 +2164,7 @@ IN_PROC_BROWSER_TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
   CloseBrowserSynchronously(browser());
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
 
-  ui_test_utils::BrowserAddedObserver browser_added_observer;
   chrome::NewEmptyWindow(profile);
-  browser_added_observer.WaitForSingleNewBrowser();
 
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
@@ -2174,9 +2194,7 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
 
   // Starting a browser window should work just fine.
-  ui_test_utils::BrowserAddedObserver browser_added_observer;
   CreateBrowser(ProfileManager::GetActiveUserProfile());
-  browser_added_observer.WaitForSingleNewBrowser();
 
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
@@ -2193,9 +2211,7 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, DontInitSessionServiceForApps) {
       session_service->GetBaseSessionServiceForTest();
   ASSERT_FALSE(ProcessedAnyCommands(base_session_service));
 
-  ui_test_utils::BrowserAddedObserver browser_added_observer;
   CreateBrowserForApp("blah", profile);
-  browser_added_observer.WaitForSingleNewBrowser();
 
   ASSERT_FALSE(ProcessedAnyCommands(base_session_service));
 }
@@ -2611,23 +2627,23 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DefaultMediaDevices) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  auto GetDeviceID = [web_contents](blink::MediaStreamType type) {
+  auto GetDeviceID = [web_contents](blink::mojom::MediaStreamType type) {
     return web_contents->GetDelegate()->GetDefaultMediaDeviceID(web_contents,
                                                                 type);
   };
   EXPECT_EQ(kDefaultAudioCapture1,
-            GetDeviceID(blink::MEDIA_DEVICE_AUDIO_CAPTURE));
+            GetDeviceID(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
   EXPECT_EQ(kDefaultVideoCapture1,
-            GetDeviceID(blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+            GetDeviceID(blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   const std::string kDefaultAudioCapture2 = "test_default_audio_capture_2";
   const std::string kDefaultVideoCapture2 = "test_default_video_capture_2";
   SetString(prefs::kDefaultAudioCaptureDevice, kDefaultAudioCapture2);
   SetString(prefs::kDefaultVideoCaptureDevice, kDefaultVideoCapture2);
   EXPECT_EQ(kDefaultAudioCapture2,
-            GetDeviceID(blink::MEDIA_DEVICE_AUDIO_CAPTURE));
+            GetDeviceID(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
   EXPECT_EQ(kDefaultVideoCapture2,
-            GetDeviceID(blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+            GetDeviceID(blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 }
 
 namespace {
@@ -2660,9 +2676,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ChangeDisplayMode) {
                      browser()->tab_strip_model()->GetActiveWebContents());
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  ui_test_utils::BrowserAddedObserver browser_added_observer;
   Browser* app_browser = CreateBrowserForApp("blah", profile);
-  browser_added_observer.WaitForSingleNewBrowser();
   auto* app_contents = app_browser->tab_strip_model()->GetActiveWebContents();
   CheckDisplayModeMQ(ASCIIToUTF16("standalone"), app_contents);
 
@@ -2678,16 +2692,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ChangeDisplayMode) {
   CheckDisplayModeMQ(ASCIIToUTF16("fullscreen"), app_contents);
 }
 
-#if defined(OS_MACOSX)
-// The size computation on popups is wrong in MacViews, https://crbug.com/834908
-#define MAYBE_TestPopupBounds DISABLED_TestPopupBounds
-#else
-#define MAYBE_TestPopupBounds TestPopupBounds
-#endif
-
 // Test to ensure the bounds of popup, devtool, and app windows are properly
 // restored.
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestPopupBounds) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, TestPopupBounds) {
   // TODO(tdanderson|pkasting): Change this to verify that the contents bounds
   // set by params.initial_bounds are the same as the contents bounds in the
   // initialized window. See crbug.com/585856.

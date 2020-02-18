@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "ui/aura/client/transient_window_client_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -39,7 +40,8 @@ class ScopedOverviewHideWindows;
 // fit in certain bounds. The window's state is restored when this object is
 // destroyed.
 class ASH_EXPORT ScopedOverviewTransformWindow
-    : public ui::ImplicitAnimationObserver {
+    : public ui::ImplicitAnimationObserver,
+      public aura::client::TransientWindowClientObserver {
  public:
   // Overview windows have certain properties if their aspect ratio exceedes a
   // threshold. This enum keeps track of which category the window falls into,
@@ -144,9 +146,11 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // change. Must be called before PositionWindows in OverviewGrid.
   void UpdateWindowDimensionsType();
 
-  // Updates the mask which gives rounded corners on the windows. Shows the mask
-  // if |show| is true, otherwise removes it.
-  void UpdateMask(bool show);
+  // Updates the rounded corners on the window. Makes the rounded corners if
+  // |show| is true, otherwise removes it. If |update_clip| is true, it will
+  // clip the top portion of the window that normally contains the caption (if
+  // any), otherwise it will skip updating that clip.
+  void UpdateRoundedCorners(bool show, bool update_clip);
 
   // Stop listening to any animations to finish.
   void CancelAnimationsListener();
@@ -154,6 +158,12 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // ui::ImplicitAnimationObserver:
   void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override;
   void OnImplicitAnimationsCompleted() override;
+
+  // aura::client::TransientWindowClientObserver:
+  void OnTransientChildWindowAdded(aura::Window* parent,
+                                   aura::Window* transient_child) override;
+  void OnTransientChildWindowRemoved(aura::Window* parent,
+                                     aura::Window* transient_child) override;
 
   aura::Window* window() const { return window_; }
 
@@ -163,12 +173,10 @@ class ASH_EXPORT ScopedOverviewTransformWindow
     return overview_bounds_;
   }
 
-  gfx::Rect GetMaskBoundsForTesting() const;
-
  private:
+  friend class OverviewHighlightControllerTest;
   friend class OverviewSessionTest;
   class LayerCachingAndFilteringObserver;
-  class WindowMask;
   FRIEND_TEST_ALL_PREFIXES(ScopedOverviewTransformWindowWithMaskTest,
                            WindowBoundsChangeTest);
 
@@ -191,9 +199,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // The original opacity of the window before entering overview mode.
   float original_opacity_;
 
-  // For the duration of this object |window_| event targeting policy will be
-  // sent to NONE. Store the original so we can change it back when destroying
-  // this object.
   aura::EventTargetingPolicy original_event_targeting_policy_;
 
   // Specifies how the window is laid out in the grid.
@@ -209,12 +214,18 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   std::vector<std::unique_ptr<LayerCachingAndFilteringObserver>>
       cached_and_filtered_layer_observers_;
 
-  // A mask to be applied on |window_|. This will give |window_| rounded edges
-  // while in overview.
-  std::unique_ptr<WindowMask> mask_;
+  // For the duration of this object |window_| and its transient childrens'
+  // event targeting policy will be sent to NONE. Store the originals so we can
+  // change it back when destroying |this|.
+  base::flat_map<aura::Window*, aura::EventTargetingPolicy>
+      targeting_policy_map_;
 
   // The original mask layer of the window before entering overview mode.
   ui::Layer* original_mask_layer_ = nullptr;
+
+  // The original clipping on the layer of the window before entering overview
+  // mode.
+  gfx::Rect original_clip_rect_;
 
   std::unique_ptr<ScopedOverviewHideWindows> hidden_transient_children_;
 

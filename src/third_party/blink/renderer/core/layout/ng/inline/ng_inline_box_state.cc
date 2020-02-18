@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
@@ -323,6 +324,20 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
   }
 }
 
+void NGInlineLayoutStateStack::ChildInserted(unsigned index) {
+  for (NGInlineBoxState& state : stack_) {
+    if (state.fragment_start >= index)
+      ++state.fragment_start;
+    DCHECK(state.pending_descendants.IsEmpty());
+  }
+  for (BoxData& box_data : box_data_list_) {
+    if (box_data.fragment_start >= index)
+      ++box_data.fragment_start;
+    if (box_data.fragment_end >= index)
+      ++box_data.fragment_end;
+  }
+}
+
 void NGInlineLayoutStateStack::PrepareForReorder(
     NGLineBoxFragmentBuilder::ChildList* line_box) {
   // There's nothing to do if no boxes.
@@ -583,8 +598,8 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   const ComputedStyle& style = *item->Style();
 
   NGFragmentGeometry fragment_geometry;
-  fragment_geometry.border_box_size = size;
-  fragment_geometry.border_box_size.inline_size.ClampNegativeToZero();
+  fragment_geometry.border_box_size = {size.inline_size.ClampNegativeToZero(),
+                                       size.block_size};
   fragment_geometry.padding =
       NGBoxStrut(padding, IsFlippedLinesWritingMode(style.GetWritingMode()));
 

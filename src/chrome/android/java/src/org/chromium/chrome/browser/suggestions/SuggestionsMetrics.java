@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSitesBridge;
 import org.chromium.chrome.browser.tab.Tab;
 
 /**
@@ -131,16 +132,6 @@ public abstract class SuggestionsMetrics {
      */
     public static SpinnerDurationTracker getSpinnerVisibilityReporter() {
         return new SpinnerDurationTracker();
-    }
-
-    /**
-     * Measures the amount of time it takes for date formatting in order to track StrictMode
-     * violations.
-     * See https://crbug.com/639877
-     * @param duration Duration of date formatting.
-     */
-    static void recordDateFormattingDuration(long duration) {
-        RecordHistogram.recordTimesHistogram("Android.StrictMode.SnippetUIBuildTime", duration);
     }
 
     /**

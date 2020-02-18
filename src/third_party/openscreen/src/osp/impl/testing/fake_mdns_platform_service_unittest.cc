@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
 
 namespace openscreen {
 namespace {

@@ -17,6 +17,7 @@
 #include "components/infobars/core/infobar.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
+#include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "content/public/browser/web_contents.h"
@@ -51,11 +52,7 @@ base::string16 UpdatePasswordInfoBarDelegate::GetBranding() const {
 }
 
 bool UpdatePasswordInfoBarDelegate::ShowMultipleAccounts() const {
-  const password_manager::PasswordFormManagerForUI* form_manager =
-      passwords_state_.form_manager();
-  bool is_password_overriden =
-      form_manager && form_manager->IsPasswordOverridden();
-  return GetCurrentForms().size() > 1 && !is_password_overriden;
+  return GetCurrentForms().size() > 1;
 }
 
 const std::vector<std::unique_ptr<autofill::PasswordForm>>&
@@ -115,10 +112,11 @@ bool UpdatePasswordInfoBarDelegate::Accept() {
     int form_index = update_password_infobar->GetIdOfSelectedUsername();
     DCHECK_GE(form_index, 0);
     DCHECK_LT(static_cast<size_t>(form_index), GetCurrentForms().size());
-    form_manager->Update(*GetCurrentForms()[form_index]);
-  } else {
-    form_manager->Update(form_manager->GetPendingCredentials());
+    UpdatePasswordFormUsernameAndPassword(
+        GetCurrentForms()[form_index]->username_value,
+        form_manager->GetPendingCredentials().password_value, form_manager);
   }
+  form_manager->Save();
   return true;
 }
 

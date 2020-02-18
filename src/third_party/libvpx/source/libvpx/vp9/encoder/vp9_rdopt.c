@@ -31,6 +31,9 @@
 #include "vp9/common/vp9_scan.h"
 #include "vp9/common/vp9_seg_common.h"
 
+#if !CONFIG_REALTIME_ONLY
+#include "vp9/encoder/vp9_aq_variance.h"
+#endif
 #include "vp9/encoder/vp9_cost.h"
 #include "vp9/encoder/vp9_encodemb.h"
 #include "vp9/encoder/vp9_encodemv.h"
@@ -40,7 +43,6 @@
 #include "vp9/encoder/vp9_ratectrl.h"
 #include "vp9/encoder/vp9_rd.h"
 #include "vp9/encoder/vp9_rdopt.h"
-#include "vp9/encoder/vp9_aq_variance.h"
 
 #define LAST_FRAME_MODE_MASK \
   ((1 << GOLDEN_FRAME) | (1 << ALTREF_FRAME) | (1 << INTRA_FRAME))
@@ -81,6 +83,8 @@ struct rdcost_block_args {
 };
 
 #define LAST_NEW_MV_INDEX 6
+
+#if !CONFIG_REALTIME_ONLY
 static const MODE_DEFINITION vp9_mode_order[MAX_MODES] = {
   { NEARESTMV, { LAST_FRAME, NONE } },
   { NEARESTMV, { ALTREF_FRAME, NONE } },
@@ -128,6 +132,7 @@ static const REF_DEFINITION vp9_ref_order[MAX_REFS] = {
   { { ALTREF_FRAME, NONE } },         { { LAST_FRAME, ALTREF_FRAME } },
   { { GOLDEN_FRAME, ALTREF_FRAME } }, { { INTRA_FRAME, NONE } },
 };
+#endif  // !CONFIG_REALTIME_ONLY
 
 static void swap_block_ptr(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx, int m, int n,
                            int min_plane, int max_plane) {
@@ -154,6 +159,7 @@ static void swap_block_ptr(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx, int m, int n,
   }
 }
 
+#if !CONFIG_REALTIME_ONLY
 static void model_rd_for_sb(VP9_COMP *cpi, BLOCK_SIZE bsize, MACROBLOCK *x,
                             MACROBLOCKD *xd, int *out_rate_sum,
                             int64_t *out_dist_sum, int *skip_txfm_sb,
@@ -278,6 +284,7 @@ static void model_rd_for_sb(VP9_COMP *cpi, BLOCK_SIZE bsize, MACROBLOCK *x,
   *out_rate_sum = (int)rate_sum;
   *out_dist_sum = dist_sum << VP9_DIST_SCALE_LOG2;
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 #if CONFIG_VP9_HIGHBITDEPTH
 int64_t vp9_highbd_block_error_c(const tran_low_t *coeff,
@@ -1517,6 +1524,7 @@ static int64_t rd_pick_intra_sbuv_mode(VP9_COMP *cpi, MACROBLOCK *x,
   return best_rd;
 }
 
+#if !CONFIG_REALTIME_ONLY
 static int64_t rd_sbuv_dcpred(const VP9_COMP *cpi, MACROBLOCK *x, int *rate,
                               int *rate_tokenonly, int64_t *distortion,
                               int *skippable, BLOCK_SIZE bsize) {
@@ -1728,6 +1736,7 @@ static int64_t encode_inter_mb_segment(VP9_COMP *cpi, MACROBLOCK *x,
 
   return RDCOST(x->rdmult, x->rddiv, *labelyrate, *distortion);
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 typedef struct {
   int eobs;
@@ -1755,6 +1764,7 @@ typedef struct {
   int mvthresh;
 } BEST_SEG_INFO;
 
+#if !CONFIG_REALTIME_ONLY
 static INLINE int mv_check_bounds(const MvLimits *mv_limits, const MV *mv) {
   return (mv->row >> 3) < mv_limits->row_min ||
          (mv->row >> 3) > mv_limits->row_max ||
@@ -2484,20 +2494,18 @@ static void single_motion_search(VP9_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   const int ph = num_4x4_blocks_high_lookup[bsize] << 2;
   MV pred_mv[3];
 
+  int bestsme = INT_MAX;
 #if CONFIG_NON_GREEDY_MV
-  double mv_dist = 0;
-  double mv_cost = 0;
-  double lambda = (pw * ph) / 4;
-  double bestsme;
-  int_mv nb_full_mvs[NB_MVS_NUM];
-  const int nb_full_mv_num = NB_MVS_NUM;
   int gf_group_idx = cpi->twopass.gf_group.index;
   int gf_rf_idx = ref_frame_to_gf_rf_idx(ref);
   BLOCK_SIZE square_bsize = get_square_block_size(bsize);
-  vp9_prepare_nb_full_mvs(&cpi->tpl_stats[gf_group_idx], mi_row, mi_col,
-                          gf_rf_idx, square_bsize, nb_full_mvs);
+  int_mv nb_full_mvs[NB_MVS_NUM];
+  const int nb_full_mv_num =
+      vp9_prepare_nb_full_mvs(&cpi->tpl_stats[gf_group_idx], mi_row, mi_col,
+                              gf_rf_idx, square_bsize, nb_full_mvs);
+  const int lambda = (pw * ph) / 4;
+  assert(pw * ph == lambda << 2);
 #else   // CONFIG_NON_GREEDY_MV
-  int bestsme = INT_MAX;
   int sadpb = x->sadperbit16;
 #endif  // CONFIG_NON_GREEDY_MV
 
@@ -2571,9 +2579,9 @@ static void single_motion_search(VP9_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   mvp_full.row >>= 3;
 
 #if CONFIG_NON_GREEDY_MV
-  bestsme = vp9_full_pixel_diamond_new(
-      cpi, x, &mvp_full, step_param, lambda, 1, &cpi->fn_ptr[bsize],
-      nb_full_mvs, nb_full_mv_num, &tmp_mv->as_mv, &mv_dist, &mv_cost);
+  bestsme = vp9_full_pixel_diamond_new(cpi, x, &mvp_full, step_param, lambda, 1,
+                                       &cpi->fn_ptr[bsize], nb_full_mvs,
+                                       nb_full_mv_num, &tmp_mv->as_mv);
 #else   // CONFIG_NON_GREEDY_MV
   bestsme = vp9_full_pixel_search(
       cpi, x, bsize, &mvp_full, step_param, cpi->sf.mv.search_method, sadpb,
@@ -2583,11 +2591,7 @@ static void single_motion_search(VP9_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   if (cpi->sf.enhanced_full_pixel_motion_search) {
     int i;
     for (i = 0; i < 3; ++i) {
-#if CONFIG_NON_GREEDY_MV
-      double this_me;
-#else   // CONFIG_NON_GREEDY_MV
       int this_me;
-#endif  // CONFIG_NON_GREEDY_MV
       MV this_mv;
       int diff_row;
       int diff_col;
@@ -2614,8 +2618,8 @@ static void single_motion_search(VP9_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 #if CONFIG_NON_GREEDY_MV
       this_me = vp9_full_pixel_diamond_new(
           cpi, x, &mvp_full, VPXMAX(step_param, MAX_MVSEARCH_STEPS - step),
-          lambda, 1, &cpi->fn_ptr[bsize], nb_full_mvs, nb_full_mv_num, &this_mv,
-          &mv_dist, &mv_cost);
+          lambda, 1, &cpi->fn_ptr[bsize], nb_full_mvs, nb_full_mv_num,
+          &this_mv);
 #else   // CONFIG_NON_GREEDY_MV
       this_me = vp9_full_pixel_search(
           cpi, x, bsize, &mvp_full,
@@ -3075,6 +3079,7 @@ static int64_t handle_inter_mode(
   restore_dst_buf(xd, orig_dst, orig_dst_stride);
   return 0;  // The rate-distortion cost will be re-calculated by caller.
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 void vp9_rd_pick_intra_mode_sb(VP9_COMP *cpi, MACROBLOCK *x, RD_COST *rd_cost,
                                BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
@@ -3128,6 +3133,7 @@ void vp9_rd_pick_intra_mode_sb(VP9_COMP *cpi, MACROBLOCK *x, RD_COST *rd_cost,
   rd_cost->rdcost = RDCOST(x->rdmult, x->rddiv, rd_cost->rate, rd_cost->dist);
 }
 
+#if !CONFIG_REALTIME_ONLY
 // This function is designed to apply a bias or adjustment to an rd value based
 // on the relative variance of the source and reconstruction.
 #define LOW_VAR_THRESH 250
@@ -3217,6 +3223,7 @@ static void rd_variance_adjustment(VP9_COMP *cpi, MACROBLOCK *x,
 
   (void)xd;
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 // Do we have an internal image edge (e.g. formatting bars).
 int vp9_internal_image_edge(VP9_COMP *cpi) {
@@ -3287,6 +3294,7 @@ int vp9_active_edge_sb(VP9_COMP *cpi, int mi_row, int mi_col) {
          vp9_active_v_edge(cpi, mi_col, MI_BLOCK_SIZE);
 }
 
+#if !CONFIG_REALTIME_ONLY
 void vp9_rd_pick_inter_mode_sb(VP9_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, int mi_row, int mi_col,
                                RD_COST *rd_cost, BLOCK_SIZE bsize,
@@ -3779,7 +3787,6 @@ void vp9_rd_pick_inter_mode_sb(VP9_COMP *cpi, TileDataEnc *tile_data,
           }
         }
       }
-
       // Apply an adjustment to the rd value based on the similarity of the
       // source variance and reconstructed variance.
       rd_variance_adjustment(cpi, x, bsize, &this_rd, recon, ref_frame,
@@ -4748,3 +4755,4 @@ void vp9_rd_pick_inter_mode_sub8x8(VP9_COMP *cpi, TileDataEnc *tile_data,
   store_coding_context(x, ctx, best_ref_index, best_pred_diff, best_filter_diff,
                        0);
 }
+#endif  // !CONFIG_REALTIME_ONLY

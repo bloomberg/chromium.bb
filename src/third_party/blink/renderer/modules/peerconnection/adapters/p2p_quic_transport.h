@@ -7,7 +7,7 @@
 
 #include "base/logging.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_stats.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/rtc_base/ssl_fingerprint.h"
 
@@ -53,8 +53,8 @@ class P2PQuicTransport {
  public:
   // A config used when starting the QUIC handshake.
   struct StartConfig final {
-    explicit StartConfig(std::vector<std::unique_ptr<rtc::SSLFingerprint>>
-                             remote_fingerprints_in)
+    explicit StartConfig(
+        Vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints_in)
         : remote_fingerprints(std::move(remote_fingerprints_in)) {
       DCHECK_GT(remote_fingerprints.size(), 0u);
     }
@@ -67,7 +67,7 @@ class P2PQuicTransport {
     // These fingerprints are used to verify the self signed remote certificate
     // used in the QUIC handshake. See:
     // https://w3c.github.io/webrtc-quic/#quic-transport*
-    std::vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints;
+    Vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints;
 
     // The pre shared key to be used in the handshake.
     const std::string pre_shared_key;

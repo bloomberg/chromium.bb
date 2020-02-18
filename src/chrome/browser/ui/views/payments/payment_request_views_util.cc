@@ -69,7 +69,7 @@ std::unique_ptr<views::View> GetBaseProfileLabel(
   DCHECK(accessible_content);
   std::unique_ptr<views::View> container = std::make_unique<views::View>();
   std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), 0);
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
   container->SetLayoutManager(std::move(layout));
@@ -190,8 +190,8 @@ void PopulateSheetHeaderView(bool show_back_arrow,
                              std::unique_ptr<views::Background> background) {
   SkColor background_color = background->get_color();
   container->SetBackground(std::move(background));
-  views::GridLayout* layout = container->SetLayoutManager(
-      std::make_unique<views::GridLayout>(container));
+  views::GridLayout* layout =
+      container->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   constexpr int kVerticalInset = 14;
   constexpr int kHeaderHorizontalInset = 16;
@@ -229,10 +229,10 @@ void PopulateSheetHeaderView(bool show_back_arrow,
         static_cast<int>(PaymentRequestCommonTags::BACK_BUTTON_TAG));
     back_arrow->SetID(static_cast<int>(DialogViewID::BACK_BUTTON));
     back_arrow->SetAccessibleName(l10n_util::GetStringUTF16(IDS_PAYMENTS_BACK));
-    layout->AddView(back_arrow.release());
+    layout->AddView(std::move(back_arrow));
   }
 
-  layout->AddView(header_content_view.release());
+  layout->AddView(std::move(header_content_view));
 }
 
 std::unique_ptr<views::ImageView> CreateInstrumentIconView(
@@ -273,7 +273,7 @@ std::unique_ptr<views::View> CreateProductLogoFooterView() {
   std::unique_ptr<views::View> content_view = std::make_unique<views::View>();
 
   auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), 0);
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
@@ -388,8 +388,8 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
   DCHECK(accessible_content);
   std::unique_ptr<views::View> container = std::make_unique<views::View>();
 
-  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical,
-                                                   gfx::Insets(), 0);
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
   container->SetLayoutManager(std::move(layout));
@@ -428,7 +428,7 @@ std::unique_ptr<views::View> CreateWarningView(const base::string16& message,
   // 8 pixels between the warning icon view (if present) and the text.
   constexpr int kRowHorizontalSpacing = 8;
   auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
+      views::BoxLayout::Orientation::kHorizontal,
       gfx::Insets(0, kPaymentRequestRowHorizontalInsets),
       kRowHorizontalSpacing);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);

@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __SQLTYPES
@@ -18,7 +18,11 @@ extern "C" {
 #define EXPORT
 #endif
 
+#if defined(_ARM_)
+#define SQL_API
+#else
 #define SQL_API __stdcall
+#endif
 
 #ifndef RC_INVOKED
 
@@ -30,8 +34,8 @@ extern "C" {
   typedef double SQLDOUBLE;
   typedef double SQLFLOAT;
 #endif
-  typedef long SQLINTEGER;
-  typedef unsigned long SQLUINTEGER;
+  typedef __LONG32 SQLINTEGER;
+  typedef unsigned __LONG32 SQLUINTEGER;
 
 #ifdef _WIN64
   typedef INT64 SQLLEN;
@@ -79,7 +83,7 @@ extern "C" {
 
 #ifndef BASETYPES
 #define BASETYPES
-  typedef unsigned long ULONG;
+  typedef unsigned __LONG32 ULONG;
   typedef ULONG *PULONG;
   typedef unsigned short USHORT;
   typedef USHORT *PUSHORT;
@@ -92,12 +96,12 @@ extern "C" {
 #if (ODBCVER < 0x0300)
   typedef SCHAR SQLSCHAR;
 #endif
-  typedef long int SDWORD;
+  typedef __LONG32 SDWORD;
   typedef short int SWORD;
-  typedef unsigned long int UDWORD;
+  typedef unsigned __LONG32 UDWORD;
   typedef unsigned short int UWORD;
 
-  typedef signed long SLONG;
+  typedef signed __LONG32 SLONG;
   typedef signed short SSHORT;
   typedef double SDOUBLE;
   typedef double LDOUBLE;

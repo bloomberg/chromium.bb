@@ -59,6 +59,7 @@ class AutofillProfile;
 class AutofillType;
 class CreditCard;
 class FormStructureBrowserTest;
+class LogManager;
 
 struct FormData;
 struct FormFieldData;
@@ -68,12 +69,11 @@ extern const int kCreditCardSigninPromoImpressionLimit;
 
 // Enum for the value patterns metric. Don't renumerate existing value. They are
 // used for metrics.
-// TODO(crbug.com/966475): Add support for IBAN
-// (https://en.wikipedia.org/wiki/International_Bank_Account_Number).
 enum class ValuePatternsMetric {
   kNoPatternFound = 0,
-  kUpiVpa = 1,
-  kMaxValue = kUpiVpa,
+  kUpiVpa = 1,  // UPI virtual payment address.
+  kIban = 2,    // International Bank Account Number.
+  kMaxValue = kIban,
 };
 
 // Manages saving and restoring the user's personal information entered into web
@@ -276,7 +276,7 @@ class AutofillManager : public AutofillHandler,
   // AutofillHandler:
   void OnFormSubmittedImpl(const FormData& form,
                            bool known_success,
-                           SubmissionSource source) override;
+                           mojom::SubmissionSource source) override;
   void OnTextFieldDidChangeImpl(const FormData& form,
                                 const FormFieldData& field,
                                 const gfx::RectF& bounding_box,
@@ -520,6 +520,8 @@ class AutofillManager : public AutofillHandler,
 
   AutofillClient* const client_;
 
+  LogManager* log_manager_;
+
   std::string app_locale_;
 
   // The personal data manager, used to save and load personal data to/from the
@@ -614,7 +616,7 @@ class AutofillManager : public AutofillHandler,
   // interaction and re-used throughout the context of this manager.
   AutofillSyncSigninState sync_state_ = AutofillSyncSigninState::kNumSyncStates;
 
-  base::WeakPtrFactory<AutofillManager> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillManager> weak_ptr_factory_{this};
 
   friend class AutofillAssistantTest;
   friend class AutofillManagerTest;
@@ -628,6 +630,7 @@ class AutofillManager : public AutofillHandler,
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DeterminePossibleFieldTypesForUploadStressTest);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, DisambiguateUploadTypes);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, CrowdsourceUPIVPA);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DisabledAutofillDispatchesError);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,

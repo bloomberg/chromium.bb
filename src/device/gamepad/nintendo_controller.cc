@@ -978,10 +978,12 @@ GamepadStandardMappingFunction NintendoController::GetMappingFunction() const {
   if (is_composite_) {
     // In composite mode, we use the same mapping as the Charging Grip.
     return GetGamepadStandardMappingFunction(
-        kVendorNintendo, kProductSwitchChargingGrip, 0, bus_type_);
+        kVendorNintendo, kProductSwitchChargingGrip,
+        /*hid_specification_version=*/0, /*version_number=*/0, bus_type_);
   } else {
     return GetGamepadStandardMappingFunction(
-        device_info_->vendor_id, device_info_->product_id, 0, bus_type_);
+        device_info_->vendor_id, device_info_->product_id,
+        /*hid_specification_version=*/0, /*version_number=*/0, bus_type_);
   }
 }
 

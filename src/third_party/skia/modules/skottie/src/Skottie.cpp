@@ -28,7 +28,6 @@
 #include "modules/sksg/include/SkSGRenderEffect.h"
 #include "modules/sksg/include/SkSGScene.h"
 #include "modules/sksg/include/SkSGTransform.h"
-#include "src/core/SkMakeUnique.h"
 #include "src/core/SkTraceEvent.h"
 
 #include <chrono>
@@ -398,7 +397,8 @@ sk_sp<SkData> ResourceProvider::load(const char[], const char[]) const {
     return nullptr;
 }
 
-sk_sp<ImageAsset> ResourceProvider::loadImageAsset(const char path[], const char name[]) const {
+sk_sp<ImageAsset> ResourceProvider::loadImageAsset(const char path[], const char name[],
+                                                   const char id[]) const {
     return nullptr;
 }
 
@@ -557,12 +557,6 @@ Animation::Animation(std::unique_ptr<sksg::Scene> scene, SkString version, const
 
 Animation::~Animation() = default;
 
-void Animation::setShowInval(bool show) {
-    if (fScene) {
-        fScene->setShowInval(show);
-    }
-}
-
 void Animation::render(SkCanvas* canvas, const SkRect* dstR) const {
     this->render(canvas, dstR, 0);
 }
@@ -592,7 +586,7 @@ void Animation::render(SkCanvas* canvas, const SkRect* dstR, RenderFlags renderF
     fScene->render(canvas);
 }
 
-void Animation::seek(SkScalar t) {
+void Animation::seek(SkScalar t, sksg::InvalidationController* ic) {
     TRACE_EVENT0("skottie", TRACE_FUNC);
 
     if (!fScene)
@@ -601,7 +595,13 @@ void Animation::seek(SkScalar t) {
     // Per AE/Lottie semantics out_point is exclusive.
     const auto kLastValidFrame = std::nextafter(fOutPoint, fInPoint);
 
-    fScene->animate(SkTPin(fInPoint + t * (fOutPoint - fInPoint), fInPoint, kLastValidFrame));
+    fScene->animate(SkTPin(fInPoint + t * (fOutPoint - fInPoint), fInPoint, kLastValidFrame), ic);
+}
+
+void Animation::seekFrameTime(double t, sksg::InvalidationController* ic) {
+    if (double dur = this->duration()) {
+        this->seek((SkScalar)(t / dur), ic);
+    }
 }
 
 sk_sp<Animation> Animation::Make(const char* data, size_t length) {

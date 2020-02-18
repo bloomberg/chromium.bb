@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -44,6 +44,12 @@ class BoxPainter {
   void RecordHitTestData(const PaintInfo&,
                          const PhysicalRect& paint_rect,
                          const DisplayItemClient& background_client);
+
+  // Paint a scroll hit test display item and record scroll hit test data. This
+  // should be called in the background paint phase even if there is no other
+  // painted content.
+  void RecordScrollHitTestData(const PaintInfo&,
+                               const DisplayItemClient& background_client);
 
  private:
   bool BackgroundIsKnownToBeOpaque(const PaintInfo&);

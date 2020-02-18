@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/tabs/tab_animation.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
@@ -18,10 +20,17 @@ constexpr base::TimeDelta kZeroDuration = base::TimeDelta::FromMilliseconds(0);
 
 class TabAnimationTest : public testing::Test {
  public:
+  static TabAnimation CreateAnimation(
+      TabAnimationState initial_state,
+      base::OnceClosure tab_removed_callback = base::BindOnce([]() {})) {
+    return TabAnimation::ForStaticState(TabAnimation::ViewType::kTab,
+                                        initial_state,
+                                        std::move(tab_removed_callback));
+  }
+
   TabAnimationTest()
-      : env_(base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-             base::test::ScopedTaskEnvironment::NowSource::
-                 MAIN_THREAD_MOCK_TIME) {}
+      : env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {
+  }
 
   float PinnednessOf(TabAnimationState state) { return state.pinnedness_; }
 
@@ -33,8 +42,7 @@ TEST_F(TabAnimationTest, StaticAnimationDoesNotChange) {
       TabAnimationState::TabOpenness::kOpen,
       TabAnimationState::TabPinnedness::kUnpinned,
       TabAnimationState::TabActiveness::kInactive, 0);
-  TabAnimation static_animation =
-      TabAnimation::ForStaticState(static_state, base::BindOnce([]() {}));
+  TabAnimation static_animation = CreateAnimation(static_state);
 
   EXPECT_EQ(kZeroDuration, static_animation.GetTimeRemaining());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(0),
@@ -54,8 +62,7 @@ TEST_F(TabAnimationTest, AnimationAnimates) {
       TabAnimationState::TabActiveness::kInactive, 0);
   TabAnimationState target_state =
       initial_state.WithPinnedness(TabAnimationState::TabPinnedness::kPinned);
-  TabAnimation animation =
-      TabAnimation::ForStaticState(initial_state, base::BindOnce([]() {}));
+  TabAnimation animation = CreateAnimation(initial_state);
   animation.AnimateTo(target_state);
 
   EXPECT_LT(kZeroDuration, animation.GetTimeRemaining());
@@ -83,8 +90,7 @@ TEST_F(TabAnimationTest, CompletedAnimationSnapsToTarget) {
       TabAnimationState::TabActiveness::kInactive, 0);
   TabAnimationState target_state =
       initial_state.WithPinnedness(TabAnimationState::TabPinnedness::kPinned);
-  TabAnimation animation =
-      TabAnimation::ForStaticState(initial_state, base::BindOnce([]() {}));
+  TabAnimation animation = CreateAnimation(initial_state);
   animation.AnimateTo(target_state);
 
   animation.CompleteAnimation();
@@ -95,48 +101,6 @@ TEST_F(TabAnimationTest, CompletedAnimationSnapsToTarget) {
             PinnednessOf(animation.GetCurrentState()));
 }
 
-TEST_F(TabAnimationTest, CanceledAnimationStaysAtInitial) {
-  TabAnimationState initial_state = TabAnimationState::ForIdealTabState(
-      TabAnimationState::TabOpenness::kOpen,
-      TabAnimationState::TabPinnedness::kUnpinned,
-      TabAnimationState::TabActiveness::kInactive, 0);
-  TabAnimationState target_state =
-      initial_state.WithPinnedness(TabAnimationState::TabPinnedness::kPinned);
-  TabAnimation animation =
-      TabAnimation::ForStaticState(initial_state, base::BindOnce([]() {}));
-  animation.AnimateTo(target_state);
-
-  animation.CancelAnimation();
-
-  EXPECT_EQ(kZeroDuration, animation.GetTimeRemaining());
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(0), animation.GetTimeRemaining());
-  EXPECT_EQ(PinnednessOf(initial_state),
-            PinnednessOf(animation.GetCurrentState()));
-}
-
-TEST_F(TabAnimationTest, PartwayFinishedCanceledAnimationStaysPartwayFinished) {
-  TabAnimationState initial_state = TabAnimationState::ForIdealTabState(
-      TabAnimationState::TabOpenness::kOpen,
-      TabAnimationState::TabPinnedness::kUnpinned,
-      TabAnimationState::TabActiveness::kInactive, 0);
-  TabAnimationState target_state =
-      initial_state.WithPinnedness(TabAnimationState::TabPinnedness::kPinned);
-  TabAnimation animation =
-      TabAnimation::ForStaticState(initial_state, base::BindOnce([]() {}));
-  animation.AnimateTo(target_state);
-
-  env_.FastForwardBy(TabAnimation::kAnimationDuration / 2.0);
-
-  animation.CancelAnimation();
-
-  EXPECT_EQ(kZeroDuration, animation.GetTimeRemaining());
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(0), animation.GetTimeRemaining());
-  EXPECT_LT(PinnednessOf(initial_state),
-            PinnednessOf(animation.GetCurrentState()));
-  EXPECT_LT(PinnednessOf(animation.GetCurrentState()),
-            PinnednessOf(target_state));
-}
-
 TEST_F(TabAnimationTest, ReplacedAnimationRestartsDuration) {
   TabAnimationState initial_state = TabAnimationState::ForIdealTabState(
       TabAnimationState::TabOpenness::kOpen,
@@ -144,8 +108,7 @@ TEST_F(TabAnimationTest, ReplacedAnimationRestartsDuration) {
       TabAnimationState::TabActiveness::kInactive, 0);
   TabAnimationState target_state =
       initial_state.WithPinnedness(TabAnimationState::TabPinnedness::kPinned);
-  TabAnimation animation =
-      TabAnimation::ForStaticState(initial_state, base::BindOnce([]() {}));
+  TabAnimation animation = CreateAnimation(initial_state);
   animation.AnimateTo(target_state);
 
   env_.FastForwardBy(TabAnimation::kAnimationDuration / 2.0);
@@ -165,8 +128,7 @@ TEST_F(TabAnimationTest, RetargetedAnimationKeepsDuration) {
       TabAnimationState::TabActiveness::kInactive, 0);
   TabAnimationState target_state =
       initial_state.WithPinnedness(TabAnimationState::TabPinnedness::kPinned);
-  TabAnimation animation =
-      TabAnimation::ForStaticState(initial_state, base::BindOnce([]() {}));
+  TabAnimation animation = CreateAnimation(initial_state);
   animation.AnimateTo(target_state);
 
   env_.FastForwardBy(TabAnimation::kAnimationDuration / 2.0);
@@ -194,12 +156,12 @@ TEST_F(TabAnimationTest, TestNotifyCloseCompleted) {
       TabAnimationState::TabPinnedness::kUnpinned,
       TabAnimationState::TabActiveness::kInactive, 0);
   TabClosedDetector tab_closed_detector;
-  TabAnimation static_animation = TabAnimation::ForStaticState(
+  TabAnimation animation = CreateAnimation(
       static_state, base::BindOnce(&TabClosedDetector::NotifyTabClosed,
                                    base::Unretained(&tab_closed_detector)));
   EXPECT_FALSE(tab_closed_detector.was_closed_);
 
-  static_animation.NotifyCloseCompleted();
+  animation.NotifyCloseCompleted();
 
   EXPECT_TRUE(tab_closed_detector.was_closed_);
 }

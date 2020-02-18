@@ -101,12 +101,12 @@ void MetricsRenderFrameObserver::DidObserveNewCssPropertyUsage(
   }
 }
 
-void MetricsRenderFrameObserver::DidObserveLayoutJank(
-    double jank_fraction,
+void MetricsRenderFrameObserver::DidObserveLayoutShift(
+    double score,
     bool after_input_or_scroll) {
   if (page_timing_metrics_sender_)
-    page_timing_metrics_sender_->DidObserveLayoutJank(jank_fraction,
-                                                      after_input_or_scroll);
+    page_timing_metrics_sender_->DidObserveLayoutShift(score,
+                                                       after_input_or_scroll);
 }
 
 void MetricsRenderFrameObserver::DidObserveLazyLoadBehavior(
@@ -175,6 +175,25 @@ void MetricsRenderFrameObserver::DidReceiveTransferSizeUpdate(
     // The provisional frame can be flagged as an ad anytime during the load.
     if (request_id == provisional_frame_resource_id)
       UpdateResourceMetadata(request_id);
+  }
+}
+
+void MetricsRenderFrameObserver::DidLoadResourceFromMemoryCache(
+    const GURL& response_url,
+    int request_id,
+    int64_t encoded_body_length,
+    const std::string& mime_type,
+    bool from_archive) {
+  // Resources from archives, such as subresources from a MHTML archive, do not
+  // have valid request ids and should not be reported to PLM.
+  if (from_archive)
+    return;
+
+  // A provisional frame resource cannot be serviced from the memory cache, so
+  // we do not need to check |provisional_frame_resource_data_use_|.
+  if (page_timing_metrics_sender_) {
+    page_timing_metrics_sender_->DidLoadResourceFromMemoryCache(
+        response_url, request_id, encoded_body_length, mime_type);
   }
 }
 

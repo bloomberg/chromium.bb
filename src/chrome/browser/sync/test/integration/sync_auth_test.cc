@@ -15,14 +15,14 @@
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 
 namespace {
 
@@ -127,7 +127,7 @@ class SyncAuthTest : public SyncTest {
     // Disable retries so that we instantly trigger the case where
     // ProfileSyncService must pick up where OAuth2TokenService left off (in
     // terms of retries).
-    identity::DisableAccessTokenFetchRetries(
+    signin::DisableAccessTokenFetchRetries(
         IdentityManagerFactory::GetForProfile(GetProfile(0)));
   }
 
@@ -409,8 +409,8 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, ShouldTrackDeletionsInSyncPausedState) {
   // Create a bookmark...
   const bookmarks::BookmarkNode* bar = bookmarks_helper::GetBookmarkBarNode(0);
   ASSERT_FALSE(bookmarks_helper::HasNodeWithURL(0, kTestURL));
-  const bookmarks::BookmarkNode* bookmark =
-      bookmarks_helper::AddURL(0, bar, bar->child_count(), "Title", kTestURL);
+  const bookmarks::BookmarkNode* bookmark = bookmarks_helper::AddURL(
+      0, bar, bar->children().size(), "Title", kTestURL);
 
   // ...set a pref...
   ASSERT_FALSE(HasUserPrefValue(pref_service, prefs::kHomePageIsNewTabPage));
@@ -443,8 +443,8 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, ShouldTrackDeletionsInSyncPausedState) {
   // Delete the bookmark and the pref.
   // Note that AttemptToTriggerAuthError() also creates bookmarks, so the index
   // of our test bookmark might have changed.
-  ASSERT_EQ(bar->GetChild(bar->child_count() - 1), bookmark);
-  bookmarks_helper::Remove(0, bar, bar->child_count() - 1);
+  ASSERT_EQ(bar->children().back().get(), bookmark);
+  bookmarks_helper::Remove(0, bar, bar->children().size() - 1);
   ASSERT_FALSE(bookmarks_helper::HasNodeWithURL(0, kTestURL));
   pref_service->ClearPref(prefs::kHomePageIsNewTabPage);
 

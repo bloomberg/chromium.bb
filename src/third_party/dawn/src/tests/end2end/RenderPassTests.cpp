@@ -18,7 +18,7 @@
 #include "utils/DawnHelpers.h"
 
 constexpr uint32_t kRTSize = 16;
-constexpr dawn::TextureFormat kFormat = dawn::TextureFormat::R8G8B8A8Unorm;
+constexpr dawn::TextureFormat kFormat = dawn::TextureFormat::RGBA8Unorm;
 
 class RenderPassTest : public DawnTest {
 protected:
@@ -27,7 +27,7 @@ protected:
 
         // Shaders to draw a bottom-left triangle in blue.
         dawn::ShaderModule vsModule =
-            utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
+            utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
                 #version 450
                 void main() {
                     const vec2 pos[3] = vec2[3](
@@ -36,7 +36,7 @@ protected:
                  })");
 
         dawn::ShaderModule fsModule =
-            utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) out vec4 fragColor;
                 void main() {
@@ -62,8 +62,7 @@ protected:
         descriptor.sampleCount = 1;
         descriptor.format = kFormat;
         descriptor.mipLevelCount = 1;
-        descriptor.usage =
-            dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::TransferSrc;
+        descriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
         return device.CreateTexture(&descriptor);
     }
 

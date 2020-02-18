@@ -68,7 +68,7 @@ public class DownloadGlue implements DownloadObserver {
         if (!canShowDownloadItem(item)) return;
 
         OfflineItem offlineItem = DownloadItem.createOfflineItem(item);
-        mDelegate.onItemUpdated(offlineItem);
+        mDelegate.onItemUpdated(offlineItem, null);
 
         if (offlineItem.externallyRemoved) {
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> removeItem(offlineItem));

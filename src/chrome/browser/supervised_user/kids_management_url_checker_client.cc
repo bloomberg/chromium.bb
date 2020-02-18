@@ -20,12 +20,13 @@
 #include "base/values.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "components/google/core/common/google_util.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
-#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -141,7 +142,7 @@ struct KidsManagementURLCheckerClient::Check {
   Check(Check&&) = default;
 
   GURL url;
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       access_token_fetcher;
   bool access_token_expired;
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader;
@@ -163,7 +164,7 @@ KidsManagementURLCheckerClient::Check::~Check() {
 KidsManagementURLCheckerClient::KidsManagementURLCheckerClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& country,
-    identity::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager)
     : url_loader_factory_(std::move(url_loader_factory)),
       traffic_annotation_(
           net::DefineNetworkTrafficAnnotation("kids_management_url_checker", R"(
@@ -213,18 +214,18 @@ void KidsManagementURLCheckerClient::StartFetching(CheckList::iterator it) {
   // only comes from |checks_in_progress_|, which are owned by this object
   // too.
   it->get()->access_token_fetcher =
-      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+      std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
           "kids_url_classifier", identity_manager_, scopes,
           base::BindOnce(
               &KidsManagementURLCheckerClient::OnAccessTokenFetchComplete,
               base::Unretained(this), it),
-          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 void KidsManagementURLCheckerClient::OnAccessTokenFetchComplete(
     CheckList::iterator it,
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo token_info) {
+    signin::AccessTokenInfo token_info) {
   if (error.state() != GoogleServiceAuthError::NONE) {
     DLOG(WARNING) << "Token error: " << error.ToString();
 
@@ -258,7 +259,7 @@ void KidsManagementURLCheckerClient::OnAccessTokenFetchComplete(
 
 void KidsManagementURLCheckerClient::OnSimpleLoaderComplete(
     CheckList::iterator it,
-    identity::AccessTokenInfo token_info,
+    signin::AccessTokenInfo token_info,
     std::unique_ptr<std::string> response_body) {
   Check* check = it->get();
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader =

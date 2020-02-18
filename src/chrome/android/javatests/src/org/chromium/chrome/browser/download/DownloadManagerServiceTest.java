@@ -26,10 +26,11 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadInfo.Builder;
 import org.chromium.chrome.browser.download.DownloadManagerServiceTest.MockDownloadNotifier.MethodID;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
@@ -296,6 +297,10 @@ public class DownloadManagerServiceTest {
         RecordHistogram.setDisabledForTests(false);
     }
 
+    private static boolean useDownloadOfflineContentProvider() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER);
+    }
+
     private static Handler getTestHandler() {
         HandlerThread handlerThread = new HandlerThread("handlerThread");
         handlerThread.start();
@@ -394,6 +399,7 @@ public class DownloadManagerServiceTest {
     @Feature({"Download"})
     @RetryOnFailure
     public void testDownloadCompletedIsCalled() throws InterruptedException {
+        if (useDownloadOfflineContentProvider()) return;
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         MockDownloadSnackbarController snackbarController = new MockDownloadSnackbarController();
         createDownloadManagerService(notifier, UPDATE_DELAY_FOR_TEST);
@@ -530,28 +536,21 @@ public class DownloadManagerServiceTest {
     }
 
     /**
-     * Test to make sure {@link DownloadManagerService#shouldOpenAfterDownload}
+     * Test to make sure {@link DownloadUtils#shouldAutoOpenDownload}
      * returns the right result for varying MIME types and Content-Dispositions.
      */
     @Test
     @SmallTest
     @Feature({"Download"})
-    public void testShouldOpenAfterDownload() {
+    public void testshouldAutoOpenDownload() {
         // Should not open any download type MIME types.
-        Assert.assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload("application/download", true));
-        Assert.assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload("application/x-download", true));
-        Assert.assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload("application/octet-stream", true));
-        Assert.assertTrue(DownloadManagerService.shouldOpenAfterDownload("application/pdf", true));
-        Assert.assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload("application/pdf", false));
-        Assert.assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload("application/x-download", true));
-        Assert.assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload("application/x-download", true));
-        Assert.assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload("application/x-download", true));
+        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/download", true));
+        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/x-download", true));
+        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/octet-stream", true));
+        Assert.assertTrue(DownloadUtils.shouldAutoOpenDownload("application/pdf", true));
+        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/pdf", false));
+        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/x-download", true));
+        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/x-download", true));
+        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/x-download", true));
     }
 }

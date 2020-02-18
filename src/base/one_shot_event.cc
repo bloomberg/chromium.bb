@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/callback.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"

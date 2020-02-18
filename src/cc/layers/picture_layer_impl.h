@@ -15,6 +15,7 @@
 #include "cc/cc_export.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/tile_size_calculator.h"
 #include "cc/paint/image_id.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
@@ -51,22 +52,25 @@ class CC_EXPORT PictureLayerImpl
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
   void NotifyTileStateChanged(const Tile* tile) override;
+  gfx::Rect GetDamageRect() const override;
+  void ResetChangeTracking() override;
   void ResetRasterScale();
   void DidBeginTracing() override;
   void ReleaseResources() override;
   void ReleaseTileResources() override;
   void RecreateTileResources() override;
   Region GetInvalidationRegionForDebugging() override;
+  gfx::Rect GetEnclosingRectInTargetSpace() const override;
 
   // PictureLayerTilingClient overrides.
   std::unique_ptr<Tile> CreateTile(const Tile::CreateInfo& info) override;
-  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
+  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) override;
   const Region* GetPendingInvalidation() override;
   const PictureLayerTiling* GetPendingOrActiveTwinTiling(
       const PictureLayerTiling* tiling) const override;
   bool HasValidTilePriorities() const override;
   bool RequiresHighResToDraw() const override;
-  gfx::Rect GetEnclosingRectInTargetSpace() const override;
+  const PaintWorkletRecordMap& GetPaintWorkletRecords() const override;
 
   // ImageAnimationController::AnimationDriver overrides.
   bool ShouldAnimate(PaintImage::Id paint_image_id) const override;
@@ -74,9 +78,16 @@ class CC_EXPORT PictureLayerImpl
   void set_gpu_raster_max_texture_size(gfx::Size gpu_raster_max_texture_size) {
     gpu_raster_max_texture_size_ = gpu_raster_max_texture_size;
   }
-  void UpdateRasterSource(scoped_refptr<RasterSource> raster_source,
-                          Region* new_invalidation,
-                          const PictureLayerTilingSet* pending_set);
+
+  gfx::Size gpu_raster_max_texture_size() {
+    return gpu_raster_max_texture_size_;
+  }
+
+  void UpdateRasterSource(
+      scoped_refptr<RasterSource> raster_source,
+      Region* new_invalidation,
+      const PictureLayerTilingSet* pending_set,
+      const PaintWorkletRecordMap* pending_paint_worklet_records);
   bool UpdateTiles();
   // Returns true if the LCD state changed.
   bool UpdateCanUseLCDTextAfterCommit();
@@ -123,9 +134,22 @@ class CC_EXPORT PictureLayerImpl
   ImageInvalidationResult InvalidateRegionForImages(
       const PaintImageIdFlatSet& images_to_invalidate);
 
-  bool RasterSourceUsesLCDTextForTesting() const { return can_use_lcd_text_; }
+  bool can_use_lcd_text() const { return can_use_lcd_text_; }
 
   const Region& InvalidationForTesting() const { return invalidation_; }
+
+  // Set the paint result (PaintRecord) for a given PaintWorkletInput.
+  void SetPaintWorkletRecord(scoped_refptr<PaintWorkletInput>,
+                             sk_sp<PaintRecord>);
+
+  // Retrieve the map of PaintWorkletInputs to their painted results
+  // (PaintRecords). If a PaintWorkletInput has not been painted yet, it will
+  // map to nullptr.
+  const PaintWorkletRecordMap& GetPaintWorkletRecordMap() const {
+    return paint_worklet_records_;
+  }
+
+  gfx::Size content_bounds() { return content_bounds_; }
 
  protected:
   PictureLayerImpl(LayerTreeImpl* tree_impl,
@@ -158,6 +182,12 @@ class CC_EXPORT PictureLayerImpl
 
   void RegisterAnimatedImages();
   void UnregisterAnimatedImages();
+
+  std::unique_ptr<base::DictionaryValue> LayerAsJson() const override;
+
+  // Set the collection of PaintWorkletInputs that are part of this layer.
+  void SetPaintWorkletInputs(
+      const std::vector<scoped_refptr<PaintWorkletInput>>& inputs);
 
   PictureLayerImpl* twin_layer_;
 
@@ -207,6 +237,20 @@ class CC_EXPORT PictureLayerImpl
   // of comparing pointers, since objects pointed to are not guaranteed to
   // exist.
   std::vector<PictureLayerTiling*> last_append_quads_tilings_;
+
+  // The set of PaintWorkletInputs that are part of this PictureLayerImpl, and
+  // their painted results (if any). During commit, Blink hands us a set of
+  // PaintWorkletInputs that are part of this layer. These are then painted
+  // asynchronously on a worklet thread, triggered from
+  // |LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation|.
+  PaintWorkletRecordMap paint_worklet_records_;
+
+  gfx::Size content_bounds_;
+  TileSizeCalculator tile_size_calculator_;
+
+  // Denotes an area that is damaged and needs redraw. This is in the layer's
+  // space.
+  gfx::Rect damage_rect_;
 };
 
 }  // namespace cc

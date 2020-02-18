@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">تعمل أجهزتك بشكل أفضل وهي مرتبطة معًا</translation>
 <translation id="112308213915226829">الإخفاء التلقائي للرف</translation>
 <translation id="1153356358378277386">الأجهزة المقترنة</translation>
+<translation id="1175572348579024023">التمرير</translation>
 <translation id="1178581264944972037">الإيقاف مؤقتًا</translation>
 <translation id="1195412055398077112">الخروج عن إطار الشاشة</translation>
 <translation id="119944043368869598">محو الكل</translation>
-<translation id="123828989343052515">مكتب جديد</translation>
 <translation id="1247372569136754018">ميكروفون (داخلي)</translation>
 <translation id="1252999807265626933">جارٍ الشحن من <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">ما حالة الطقس؟</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">تتم تهيئة طرق الإدخال بواسطة المشرف.</translation>
 <translation id="1747827819627189109">تم تفعيل لوحة المفاتيح على الشاشة</translation>
 <translation id="1761222317188459878">تبديل الاتصال بالشبكة. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">التمرير لليمين</translation>
 <translation id="1812997170047690955">ماذا يظهر على شاشتي؟</translation>
+<translation id="1820355135508821526">أدت السياسة السارية على هذا الجهاز إلى إيقاف <ph name="FEATURE_NAME" />. يُرجى التحدث مع مشرفك لطلب تغييرات.</translation>
 <translation id="1823873187264960516">الإيثرنت: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">المساعد (جارٍ التحميل...)</translation>
 <translation id="1850504506766569011">‏تم إيقاف تشغيل Wi-Fi.</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0 درجة</translation>
 <translation id="1957958912175573503">تعيين اللغة</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">إدخال نصي</translation>
 <translation id="1993072747612765854">مزيد من المعلومات حول آخر تحديث لتطبيق <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">إيقاف التشغيل</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">رأسي</translation>
 <translation id="2067602449040652523">سطوع لوحة المفاتيح</translation>
 <translation id="209965399369889474">لا يتوفّر اتصال بالشبكة</translation>
+<translation id="2126242104232412123">مكتب جديد</translation>
 <translation id="2127372758936585790">شاحن منخفض الطاقة</translation>
 <translation id="2135456203358955318">المكبّر الذي تم إرساؤه</translation>
 <translation id="2144487987174258011">‏إعادة التشغيل لتحديث Adobe Flash Player</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">‏لا يتوفَّر "مساعد Google" في جلسة عامة.</translation>
 <translation id="2575685495496069081">تمّ إيقاف الدخول المتعدّد</translation>
 <translation id="2582112259361606227">إعادة التشغيل للتحديث</translation>
-<translation id="2597972630681408282">إضاءة ليلية: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">‏تم قفل شريحة SIM</translation>
+<translation id="2651765386227849097">‏تم إيقاف "مساعد Google" على هذا الجهاز.</translation>
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="2658778018866295321">انقر واسحب</translation>
 <translation id="2700493154570097719">تعيين لوحة المفاتيح</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{تم الاتصال بجهاز واحد}zero{تم الاتصال بـ # جهاز}two{تم الاتصال بجهازين (#)}few{تم الاتصال بـ # أجهزة}many{تم الاتصال بـ # جهازًا}other{تم الاتصال بـ # جهاز}}</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> والمزيد</translation>
 <translation id="3236488194889173876">ليست هناك شبكة جوّال متاحة</translation>
+<translation id="3249513730522716925">تم نقل النافذة <ph name="WINDOW_TITLE" /> من سطح المكتب <ph name="ACTIVE_DESK" /> إلى سطح المكتب <ph name="TARGET_DESK" />.</translation>
 <translation id="3255483164551725916">ما الإجراء المطلوب؟</translation>
 <translation id="3294437725009624529">ضيف</translation>
 <translation id="3308453408813785101">سيظل بإمكان <ph name="USER_EMAIL_ADDRESS" /> تسجيل الدخول لاحقًا.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">التغيير مرة أخرى إلى "<ph name="FROM_LOCALE" />" (يتطلب إعادة التشغيل)</translation>
 <translation id="3576141592585647168">تغيير المنطقة الزمنية</translation>
 <translation id="3595596368722241419">البطارية ممتلئة</translation>
+<translation id="3604801046548457007">تم إنشاء سطح المكتب <ph name="DESK_TITILE" />.</translation>
 <translation id="3606978283550408104">تم توصيل شاشة برايل.</translation>
 <translation id="3621202678540785336">الإدخال</translation>
 <translation id="3626281679859535460">السطوع</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">مستوى البطارية عند <ph name="PERCENTAGE" />% ويجري شحنها.</translation>
 <translation id="3995138139523574647">‏جهاز USB-C (المنفذ الخلفي الأيمن)</translation>
 <translation id="4017989525502048489">مؤشر الليزر</translation>
+<translation id="4021716437419160885">التمرير لأسفل</translation>
 <translation id="4042660782729322247">أنت تشارك الشاشة</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{الإشعارات متوقفة لتطبيق واحد}zero{الإشعارات متوقفة لـ # تطبيق}two{الإشعارات متوقفة لتطبيقَين (#)}few{الإشعارات متوقفة لـ # تطبيقات}many{الإشعارات متوقفة لـ # تطبيقًا}other{الإشعارات متوقفة لـ # تطبيق}}</translation>
 <translation id="4072264167173457037">إشارة متوسطة</translation>
@@ -220,7 +227,7 @@
 <translation id="4296136865091727875">محو جميع الإشعارات التي يبلغ عددها <ph name="COUNT" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">لقد ضغطت على اختصار لوحة المفاتيح للتباين العالي. هل ترغب في تفعيله؟</translation>
-<translation id="4331809312908958774">Chrome OS</translation>
+<translation id="4331809312908958774">‏نظام تشغيل Chrome</translation>
 <translation id="4338109981321384717">العدسة المكبرة</translation>
 <translation id="4351433414020964307">جارٍ تحميل المساعد...</translation>
 <translation id="435527878592612277">اختيار صورتك</translation>
@@ -258,9 +265,11 @@
 <translation id="4895488851634969361">البطارية مملوءة.</translation>
 <translation id="490375751687810070">عمودي</translation>
 <translation id="4905614135390995787">تم تغيير اختصار تشغيل وضع التباين العالي. يُرجى استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">مستوى شحن البطارية: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">قوية</translation>
 <translation id="4918086044614829423">قبول</translation>
 <translation id="4924411785043111640">إعادة التشغيل وإعادة الضبط</translation>
+<translation id="495046168593986294">التمرير لأعلى</translation>
 <translation id="4961318399572185831">إرسال الشاشة</translation>
 <translation id="5030687792513154421">انتهى الوقت</translation>
 <translation id="5035236842988137213">الجهاز <ph name="DEVICE_NAME" /> متصل بهاتف جديد</translation>
@@ -294,6 +303,7 @@
 <translation id="5648021990716966815">مقبس الميكروفون</translation>
 <translation id="5669267381087807207">تفعيل</translation>
 <translation id="5673434351075758678">من "<ph name="FROM_LOCALE" />" إلى "<ph name="TO_LOCALE" />" بعد مزامنة الإعدادات.</translation>
+<translation id="5682642926269496722">‏لا يتوفر "مساعد Google" لحساب المستخدم الحالي.</translation>
 <translation id="5691772641933328258">لم يتمّ التعرُّف على البصمة</translation>
 <translation id="5710450975648804523">تمّ تفعيل وضع "عدم الإزعاج"</translation>
 <translation id="574392208103952083">متوسط</translation>
@@ -318,6 +328,8 @@
 <translation id="598882571027504733">‏للحصول على التحديث، يُرجى إعادة تشغيل جهاز Chromebook مع توصيل لوحة المفاتيح.</translation>
 <translation id="5992218262414051481">‏تم تفعيل وضع التباين العالي. اضغط على "Ctrl+Search+H" مرة أخرى لإيقافه.</translation>
 <translation id="6018164090099858612">جارٍ الخروج من وضع المرآة</translation>
+<translation id="602001110135236999">التمرير لليسار</translation>
+<translation id="6040143037577758943">إغلاق</translation>
 <translation id="6043212731627905357">لا تتوافق هذه الشاشة مع <ph name="DEVICE_TYPE" /> (هذه الشاشة غير مدعومة).</translation>
 <translation id="6043994281159824495">الخروج الآن</translation>
 <translation id="6047696787498798094">سيتم إيقاف مشاركة الشاشة عند التبديل إلى مستخدم آخر. هل تريد المتابعة؟</translation>
@@ -325,6 +337,7 @@
 <translation id="6064337552080329342">عذرًا، ولكن لا يمكن التحقق من كلمة مرورك. يُرجى إعادة المحاولة.</translation>
 <translation id="607652042414456612">يمكن لأجهزة بلوتوث القريبة اكتشاف جهاز الكمبيوتر وسيظهر كـ "<ph name="NAME" />" بالعنوان <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">جارٍ شحن <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">‏لا يتوفر "مساعد Google" في جلسة ضيف.</translation>
 <translation id="615957422585914272">إظهار لوحة مفاتيح على الشاشة</translation>
 <translation id="6164005077879661055">سيتم حذف جميع الملفات والبيانات المحلية المقترنة بالمستخدم الذي يخضع للإشراف نهائيًا بمجرد 
 إزالة هذا المستخدم الذي يخضع للإشراف. وقد تظل مواقع الويب التي تم الانتقال إليها والإعدادات التابعة للمستخدم الذي يخضع للإشراف مرئية للمدير على <ph name="MANAGEMENT_URL" />.</translation>
@@ -367,7 +380,9 @@
 <translation id="6713285437468012787">تم إقران جهاز بلوتوث "<ph name="DEVICE_NAME" />" وهو الآن متاح لجميع المستخدمين. يمكنك إزالة هذا الإقران باستخدام الإعدادات.</translation>
 <translation id="6715542151869432661">لم يتم العثور على أي أجهزة جوّال.</translation>
 <translation id="6723839937902243910">الطاقة</translation>
+<translation id="6727969043791803658">البلوتوث متصل، ومستوى شحن البطارية: <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">تتبّع الأداء قيْد التفعيل</translation>
+<translation id="6752912906630585008">تمت إزالة سطح المكتب <ph name="REMOVED_DESK" /> ودمجه مع سطح المكتب <ph name="RECEIVE_DESK" />.</translation>
 <translation id="6790428901817661496">التشغيل</translation>
 <translation id="6803622936009808957">تعذر إجراء النسخ المطابق للعروض نظرًا لعدم العثور على درجات دقة متوافقة. تم الدخول إلى سطح المكتب الممتد بدلاً من ذلك.</translation>
 <translation id="6820676911989879663">حان وقت الاستراحة</translation>
@@ -425,6 +440,7 @@
 <translation id="7692480393933218409">‏جارٍ شحن أجهزة USB-C المتصلة</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{إشعار واحد}zero{# إشعار}two{إشعاران (#)}few{# إشعارات}many{# إشعارًا}other{# إشعار}}</translation>
+<translation id="7749443890790263709">تم تجاوز أقصى عدد مسموح به من محطات الإرساء.</translation>
 <translation id="776344839111254542">النقر لعرض تفاصيل التحديث</translation>
 <translation id="7780159184141939021">تدوير الشاشة</translation>
 <translation id="7796353162336583443">‏انقر على زر قلم الشاشة على الرف لتدوين ملاحظة أو الحصول على لقطة شاشة أو استخدام مساعد Google أو مؤشر الليزر أو العدسة المكبرة.</translation>
@@ -468,6 +484,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">إنشاء ملاحظة</translation>
 <translation id="8375916635258623388">سيتم الربط تلقائيًا بين جهاز <ph name="DEVICE_NAME" /> هذا وهاتفك.</translation>
+<translation id="8388750414311082622">تتعذّر إزالة سطح المكتب الأخير.</translation>
 <translation id="8392451568018454956">قائمة الخيارات لـ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">قفّل أحد الوالدين هذا الجهاز</translation>
 <translation id="8406981827175133772">مُكبِّر بوضع ملء الشاشة</translation>
@@ -476,6 +493,7 @@
 <translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8433186206711564395">إعدادات الشبكة</translation>
 <translation id="8433977262951327081">تم تغيير اختصار عرض الفقاعة التفسيرية لقائمة خيارات الإدخال في الرف. يُرجى استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">تم تفعيل سطح المكتب <ph name="DESK_TITILE" />.</translation>
 <translation id="8452135315243592079">‏شريحة SIM مفقودة</translation>
 <translation id="8454013096329229812">‏تم تشغيل Wi-Fi.</translation>
 <translation id="847056008324733326">عرض إعدادات المقياس</translation>

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace web_app {
@@ -44,7 +45,7 @@ void ValidateAllIconsWithURLsArePresent(
   for (const auto& icon : icons_to_check) {
     if (!icon.source_url.is_empty()) {
       bool found = false;
-      if (base::ContainsKey(size_map, icon.bitmap.width())) {
+      if (base::Contains(size_map, icon.bitmap.width())) {
         const BitmapAndSource& mapped_icon = size_map.at(icon.bitmap.width());
         if (mapped_icon.source_url == icon.source_url &&
             mapped_icon.bitmap.width() == icon.bitmap.width()) {
@@ -335,6 +336,17 @@ TEST(WebAppIconGeneratorTest, IconsResizedWhenOnlyAGigantorOneIsProvided) {
   // When an enormous icon is provided, each desired icon size should be resized
   // from it, and no icons should be generated.
   TestIconGeneration(icon_size::k512, 0, 3);
+}
+
+TEST(WebAppIconGeneratorTest, GenerateIconLetterFromUrl) {
+  // ASCII:
+  EXPECT_EQ('E', GenerateIconLetterFromUrl(GURL("http://example.com")));
+  // Cyrillic capital letter ZHE for something like https://zhuk.rf:
+  EXPECT_EQ(0x0416,
+            GenerateIconLetterFromUrl(GURL("https://xn--f1ai0a.xn--p1ai/")));
+  // Arabic:
+  EXPECT_EQ(0x0645,
+            GenerateIconLetterFromUrl(GURL("http://xn--mgbh0fb.example/")));
 }
 
 }  // namespace web_app

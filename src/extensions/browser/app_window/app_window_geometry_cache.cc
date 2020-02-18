@@ -56,7 +56,7 @@ void AppWindowGeometryCache::SaveGeometry(const std::string& extension_id,
   if (extension_data[window_id].bounds == bounds &&
       extension_data[window_id].window_state == window_state &&
       extension_data[window_id].screen_bounds == screen_bounds &&
-      !base::ContainsKey(unsynced_extensions_, extension_id))
+      !base::Contains(unsynced_extensions_, extension_id))
     return;
 
   base::Time now = base::Time::Now();

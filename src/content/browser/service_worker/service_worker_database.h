@@ -21,9 +21,9 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -94,15 +94,32 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   };
 
   struct ResourceRecord {
+    // Represents an error state. Each enum instance should be a negative
+    // value.  This is just temporary for debugging.
+    // TODO(hayato): Remove this once we fix crbug.com/946719.
+    enum class ErrorState : int64_t {
+      // We don't use -1 here to catch an untracked usage of -1 as an error
+      // code.
+      kStartedCaching = -2,
+      kFinishedCachingNoBytesWritten = -3,
+      kFinishedCachingNoContext = -4,
+    };
+
     int64_t resource_id;
     GURL url;
-    // Signed so we can store -1 to specify an unknown or error state.  When
-    // stored to the database, this value should always be >= 0.
+    // Signed so we can store ErrorState. When stored to the database, this
+    // value should always be >= 0.
     int64_t size_bytes;
 
     ResourceRecord() : resource_id(-1), size_bytes(0) {}
     ResourceRecord(int64_t id, GURL url, int64_t size_bytes)
-        : resource_id(id), url(url), size_bytes(size_bytes) {}
+        : resource_id(id), url(url), size_bytes(size_bytes) {
+      DCHECK_GE(size_bytes, 0);
+    }
+    ResourceRecord(int64_t id, GURL url, ErrorState error_state)
+        : resource_id(id),
+          url(url),
+          size_bytes(static_cast<int64_t>(error_state)) {}
   };
 
   // Reads next available ids from the database. Returns OK if they are

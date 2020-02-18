@@ -58,8 +58,8 @@ class LayoutSVGHiddenContainer : public LayoutSVGContainer {
                      MapCoordinatesFlags mode = 0) const final {}
 
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
+                   const HitTestLocation&,
+                   const PhysicalOffset& accumulated_offset,
                    HitTestAction) final;
 };
 }  // namespace blink

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 
 namespace blink {
 

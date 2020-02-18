@@ -35,7 +35,7 @@ class CompoundFailureTest(cros_test_lib.TestCase):
   def _CreateExceptInfos(self, cls, message='', traceback='', num=1):
     """A helper function to create a list of ExceptInfo objects."""
     exc_infos = []
-    for _ in xrange(num):
+    for _ in range(num):
       exc_infos.extend(failures_lib.CreateExceptInfo(cls(message), traceback))
 
     return exc_infos

@@ -8,7 +8,10 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "call/call.h"
+
 #include <string.h>
+
 #include <algorithm>
 #include <map>
 #include <memory>
@@ -18,13 +21,11 @@
 
 #include "absl/memory/memory.h"
 #include "absl/types/optional.h"
-#include "api/task_queue/global_task_queue_factory.h"
 #include "api/transport/network_control.h"
 #include "audio/audio_receive_stream.h"
 #include "audio/audio_send_stream.h"
 #include "audio/audio_state.h"
 #include "call/bitrate_allocator.h"
-#include "call/call.h"
 #include "call/flexfec_receive_stream_impl.h"
 #include "call/receive_time_calculator.h"
 #include "call/rtp_stream_receiver_controller.h"
@@ -36,7 +37,6 @@
 #include "logging/rtc_event_log/events/rtc_event_video_send_stream_config.h"
 #include "logging/rtc_event_log/rtc_event_log.h"
 #include "logging/rtc_event_log/rtc_stream_config.h"
-#include "modules/bitrate_controller/include/bitrate_controller.h"
 #include "modules/congestion_controller/include/receive_side_congestion_controller.h"
 #include "modules/rtp_rtcp/include/flexfec_receiver.h"
 #include "modules/rtp_rtcp/include/rtp_header_extension_map.h"
@@ -214,10 +214,6 @@ class Call final : public webrtc::Call,
 
   // Implements RecoveredPacketReceiver.
   void OnRecoveredPacket(const uint8_t* packet, size_t length) override;
-
-  void SetBitrateAllocationStrategy(
-      std::unique_ptr<rtc::BitrateAllocationStrategy>
-          bitrate_allocation_strategy) override;
 
   void SignalChannelNetworkState(MediaType media, NetworkState state) override;
 
@@ -431,18 +427,14 @@ Call* Call::Create(const Call::Config& config,
                    Clock* clock,
                    std::unique_ptr<ProcessThread> call_thread,
                    std::unique_ptr<ProcessThread> pacer_thread) {
-  // TODO(bugs.webrtc.org/10284): DCHECK task_queue_factory dependency is
-  // always provided in the config.
-  TaskQueueFactory* task_queue_factory = config.task_queue_factory
-                                             ? config.task_queue_factory
-                                             : &GlobalTaskQueueFactory();
+  RTC_DCHECK(config.task_queue_factory);
   return new internal::Call(
       clock, config,
       absl::make_unique<RtpTransportControllerSend>(
           clock, config.event_log, config.network_state_predictor_factory,
           config.network_controller_factory, config.bitrate_config,
-          std::move(pacer_thread), task_queue_factory),
-      std::move(call_thread), task_queue_factory);
+          std::move(pacer_thread), config.task_queue_factory),
+      std::move(call_thread), config.task_queue_factory);
 }
 
 // This method here to avoid subclasses has to implement this method.
@@ -511,12 +503,13 @@ Call::~Call() {
     call_stats_->DeregisterStatsObserver(&receive_side_cc_);
   }
 
-  int64_t first_sent_packet_ms = transport_send_->GetFirstPacketTimeMs();
+  absl::optional<int64_t> first_sent_packet_ms =
+      transport_send_->GetFirstPacketTimeMs();
   // Only update histograms after process threads have been shut down, so that
   // they won't try to concurrently update stats.
-  {
+  if (first_sent_packet_ms) {
     rtc::CritScope lock(&bitrate_crit_);
-    UpdateSendHistograms(first_sent_packet_ms);
+    UpdateSendHistograms(*first_sent_packet_ms);
   }
   UpdateReceiveHistograms();
   UpdateHistograms();
@@ -627,8 +620,6 @@ void Call::UpdateHistograms() {
 }
 
 void Call::UpdateSendHistograms(int64_t first_sent_packet_ms) {
-  if (first_sent_packet_ms == -1)
-    return;
   int64_t elapsed_sec =
       (clock_->TimeInMilliseconds() - first_sent_packet_ms) / 1000;
   if (elapsed_sec < metrics::kMinRunTimeInSeconds)
@@ -1084,24 +1075,6 @@ Call::Stats Call::GetStats() const {
   return stats;
 }
 
-void Call::SetBitrateAllocationStrategy(
-    std::unique_ptr<rtc::BitrateAllocationStrategy>
-        bitrate_allocation_strategy) {
-  // TODO(srte): This function should be moved to RtpTransportControllerSend
-  // when BitrateAllocator is moved there.
-  struct Functor {
-    void operator()() {
-      bitrate_allocator_->SetBitrateAllocationStrategy(
-          std::move(bitrate_allocation_strategy_));
-    }
-    BitrateAllocator* bitrate_allocator_;
-    std::unique_ptr<rtc::BitrateAllocationStrategy>
-        bitrate_allocation_strategy_;
-  };
-  transport_send_ptr_->GetWorkerQueue()->PostTask(Functor{
-      bitrate_allocator_.get(), std::move(bitrate_allocation_strategy)});
-}
-
 void Call::SignalChannelNetworkState(MediaType media, NetworkState state) {
   RTC_DCHECK_RUN_ON(&configuration_sequence_checker_);
   switch (media) {
@@ -1498,7 +1471,13 @@ void Call::NotifyBweOfReceivedPacket(const RtpPacketReceived& packet,
   RTPHeader header;
   packet.GetHeader(&header);
 
-  transport_send_ptr_->OnReceivedPacket(packet);
+  ReceivedPacket packet_msg;
+  packet_msg.size = DataSize::bytes(packet.payload_size());
+  packet_msg.receive_time = Timestamp::ms(packet.arrival_time_ms());
+  if (header.extension.hasAbsoluteSendTime) {
+    packet_msg.send_time = header.extension.GetAbsoluteSendTimestamp();
+  }
+  transport_send_ptr_->OnReceivedPacket(packet_msg);
 
   if (!use_send_side_bwe && header.extension.hasTransportSequenceNumber) {
     // Inconsistent configuration of send side BWE. Do nothing.

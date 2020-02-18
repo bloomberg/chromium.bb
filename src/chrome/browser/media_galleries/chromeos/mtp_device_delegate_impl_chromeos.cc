@@ -28,7 +28,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/media_galleries/chromeos/mtp_device_task_helper_map_service.h"
 #include "chrome/browser/media_galleries/chromeos/snapshot_file_details.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "net/base/io_buffer.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -455,7 +455,7 @@ MTPDeviceDelegateImplLinux::MTPFileNode::MTPFileNode(
       file_id_to_node_map_(file_id_to_node_map) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(file_id_to_node_map_);
-  DCHECK(!base::ContainsKey(*file_id_to_node_map_, file_id_));
+  DCHECK(!base::Contains(*file_id_to_node_map_, file_id_));
   (*file_id_to_node_map_)[file_id_] = this;
 }
 
@@ -492,7 +492,7 @@ void MTPDeviceDelegateImplLinux::MTPFileNode::ClearNonexistentChildren(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   std::vector<std::string> children_to_erase;
   for (const auto& child : children_) {
-    if (base::ContainsKey(children_to_keep, child.first))
+    if (base::Contains(children_to_keep, child.first))
       continue;
     children_to_erase.push_back(child.first);
   }
@@ -793,7 +793,7 @@ void MTPDeviceDelegateImplLinux::AddWatcher(
   const auto it = subscribers_.find(file_path);
   if (it != subscribers_.end()) {
     // Adds to existing origin callback map.
-    if (ContainsKey(it->second, origin)) {
+    if (base::Contains(it->second, origin)) {
       callback.Run(base::File::FILE_ERROR_EXISTS);
       return;
     }

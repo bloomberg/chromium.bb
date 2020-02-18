@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/fullscreen/document_fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -25,6 +24,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -426,13 +426,14 @@ void RootScrollerController::ConsiderForImplicit(Node& node) {
   if (document_->GetPage()->GetChromeClient().IsPopup())
     return;
 
-  if (!node.IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return;
 
-  if (!IsValidImplicitCandidate(ToElement(node)))
+  if (!IsValidImplicitCandidate(*element))
     return;
 
-  implicit_candidates_.insert(&ToElement(node));
+  implicit_candidates_.insert(element);
 }
 
 template <typename Function>

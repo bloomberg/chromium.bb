@@ -47,6 +47,13 @@ const int kBorderInset = 0;
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// ToolbarActionView::Delegate
+
+bool ToolbarActionView::Delegate::CanShowIconInToolbar() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ToolbarActionView
 
 const char ToolbarActionView::kClassName[] = "ToolbarActionView";
@@ -119,7 +126,7 @@ bool ToolbarActionView::IsTriggerableEvent(const ui::Event& event) {
   // closed the menu, when this class handles via |suppress_next_release_|, so
   // it's not necessary.  Bypass it by calling IsTriggerableEventType() instead
   // of IsTriggerableEvent().
-  return views::MenuButton::IsTriggerableEventType(event);
+  return button_controller()->IsTriggerableEventType(event);
 }
 
 SkColor ToolbarActionView::GetInkDropBaseColor() const {
@@ -296,6 +303,10 @@ views::Button* ToolbarActionView::GetReferenceButtonForPopup() {
 
 bool ToolbarActionView::IsMenuRunning() const {
   return menu_ != nullptr;
+}
+
+bool ToolbarActionView::CanShowIconInToolbar() const {
+  return delegate_->CanShowIconInToolbar();
 }
 
 void ToolbarActionView::OnPopupShown(bool by_user) {

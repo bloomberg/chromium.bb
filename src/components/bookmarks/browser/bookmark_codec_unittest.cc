@@ -68,9 +68,11 @@ void AssertNodesEqual(const BookmarkNode* expected,
   } else {
     EXPECT_TRUE(expected->date_folder_modified() ==
                 actual->date_folder_modified());
-    ASSERT_EQ(expected->child_count(), actual->child_count());
-    for (int i = 0; i < expected->child_count(); ++i)
-      AssertNodesEqual(expected->GetChild(i), actual->GetChild(i));
+    ASSERT_EQ(expected->children().size(), actual->children().size());
+    for (size_t i = 0; i < expected->children().size(); ++i) {
+      AssertNodesEqual(expected->children()[i].get(),
+                       actual->children()[i].get());
+    }
   }
 }
 
@@ -226,8 +228,8 @@ class BookmarkCodecTest : public testing::Test {
     int64_t node_id = node->id();
     EXPECT_TRUE(assigned_ids->find(node_id) == assigned_ids->end());
     assigned_ids->insert(node_id);
-    for (int i = 0; i < node->child_count(); ++i)
-      CheckIDs(node->GetChild(i), assigned_ids);
+    for (const auto& child : node->children())
+      CheckIDs(child.get(), assigned_ids);
   }
 
   void ExpectIDsUnique(BookmarkModel* model) {
@@ -304,8 +306,9 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
 
   // The test depends on existence of multiple children under bookmark bar, so
   // make sure that's the case.
-  int bb_child_count = model_to_encode->bookmark_bar_node()->child_count();
-  ASSERT_GT(bb_child_count, 1);
+  size_t bb_child_count =
+      model_to_encode->bookmark_bar_node()->children().size();
+  ASSERT_GT(bb_child_count, 1u);
 
   std::string enc_checksum;
   std::unique_ptr<base::Value> value =
@@ -316,7 +319,7 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
 
   // Change IDs for all children of bookmark bar to be 1.
   base::DictionaryValue* child_value;
-  for (int i = 0; i < bb_child_count; ++i) {
+  for (size_t i = 0; i < bb_child_count; ++i) {
     GetBookmarksBarChildValue(value.get(), i, &child_value);
     std::string id;
     ASSERT_TRUE(child_value->GetString(BookmarkCodec::kIdKey, &id));
@@ -357,12 +360,11 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
   // Add a couple of more items to the decoded bookmark model and make sure
   // ID persistence is working properly.
   const BookmarkNode* bookmark_bar = decoded_model->bookmark_bar_node();
-  decoded_model->AddURL(bookmark_bar,
-                        bookmark_bar->child_count(),
-                        ASCIIToUTF16(kUrl3Title),
-                        GURL(kUrl3Url));
-  const BookmarkNode* folder2_node = decoded_model->AddFolder(
-      bookmark_bar, bookmark_bar->child_count(), ASCIIToUTF16(kFolder2Title));
+  decoded_model->AddURL(bookmark_bar, bookmark_bar->children().size(),
+                        ASCIIToUTF16(kUrl3Title), GURL(kUrl3Url));
+  const BookmarkNode* folder2_node =
+      decoded_model->AddFolder(bookmark_bar, bookmark_bar->children().size(),
+                               ASCIIToUTF16(kFolder2Title));
   decoded_model->AddURL(
       folder2_node, 0, ASCIIToUTF16(kUrl4Title), GURL(kUrl4Url));
 
@@ -396,26 +398,26 @@ TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
   ExpectIDsUnique(decoded_model.get());
 
   const BookmarkNode* bbn = decoded_model->bookmark_bar_node();
-  ASSERT_EQ(1, bbn->child_count());
+  ASSERT_EQ(1u, bbn->children().size());
 
-  const BookmarkNode* child = bbn->GetChild(0);
+  const BookmarkNode* child = bbn->children().front().get();
   EXPECT_EQ(BookmarkNode::FOLDER, child->type());
   EXPECT_EQ(ASCIIToUTF16("Folder A"), child->GetTitle());
-  ASSERT_EQ(1, child->child_count());
+  ASSERT_EQ(1u, child->children().size());
 
-  child = child->GetChild(0);
+  child = child->children().front().get();
   EXPECT_EQ(BookmarkNode::URL, child->type());
   EXPECT_EQ(ASCIIToUTF16("Bookmark Manager"), child->GetTitle());
 
   const BookmarkNode* other = decoded_model->other_node();
-  ASSERT_EQ(1, other->child_count());
+  ASSERT_EQ(1u, other->children().size());
 
-  child = other->GetChild(0);
+  child = other->children().front().get();
   EXPECT_EQ(BookmarkNode::FOLDER, child->type());
   EXPECT_EQ(ASCIIToUTF16("Folder B"), child->GetTitle());
-  ASSERT_EQ(1, child->child_count());
+  ASSERT_EQ(1u, child->children().size());
 
-  child = child->GetChild(0);
+  child = child->children().front().get();
   EXPECT_EQ(BookmarkNode::URL, child->type());
   EXPECT_EQ(ASCIIToUTF16("Get started with Google Chrome"), child->GetTitle());
 
@@ -426,8 +428,8 @@ TEST_F(BookmarkCodecTest, EncodeAndDecodeMetaInfo) {
   // Add meta info and encode.
   std::unique_ptr<BookmarkModel> model(CreateTestModel1());
   model->SetNodeMetaInfo(model->root_node(), "model_info", "value1");
-  model->SetNodeMetaInfo(
-      model->bookmark_bar_node()->GetChild(0), "node_info", "value2");
+  model->SetNodeMetaInfo(model->bookmark_bar_node()->children().front().get(),
+                         "node_info", "value2");
   std::string checksum;
   std::unique_ptr<base::Value> value =
       EncodeHelper(model.get(), /*sync_metadata_str=*/std::string(), &checksum);
@@ -441,8 +443,8 @@ TEST_F(BookmarkCodecTest, EncodeAndDecodeMetaInfo) {
   EXPECT_EQ("value1", meta_value);
   EXPECT_FALSE(model->root_node()->GetMetaInfo("other_key", &meta_value));
   const BookmarkNode* bbn = model->bookmark_bar_node();
-  ASSERT_EQ(1, bbn->child_count());
-  const BookmarkNode* child = bbn->GetChild(0);
+  ASSERT_EQ(1u, bbn->children().size());
+  const BookmarkNode* child = bbn->children().front().get();
   EXPECT_TRUE(child->GetMetaInfo("node_info", &meta_value));
   EXPECT_EQ("value2", meta_value);
   EXPECT_FALSE(child->GetMetaInfo("other_key", &meta_value));
@@ -453,7 +455,7 @@ TEST_F(BookmarkCodecTest, EncodeAndDecodeSyncTransactionVersion) {
   std::unique_ptr<BookmarkModel> model(CreateTestModel2());
   model->SetNodeSyncTransactionVersion(model->root_node(), 1);
   const BookmarkNode* bbn = model->bookmark_bar_node();
-  model->SetNodeSyncTransactionVersion(bbn->GetChild(1), 42);
+  model->SetNodeSyncTransactionVersion(bbn->children()[1].get(), 42);
 
   std::string checksum;
   std::unique_ptr<base::Value> value =
@@ -465,9 +467,9 @@ TEST_F(BookmarkCodecTest, EncodeAndDecodeSyncTransactionVersion) {
                        /*sync_metadata_str=*/nullptr);
   EXPECT_EQ(1, model->root_node()->sync_transaction_version());
   bbn = model->bookmark_bar_node();
-  EXPECT_EQ(42, bbn->GetChild(1)->sync_transaction_version());
+  EXPECT_EQ(42, bbn->children()[1]->sync_transaction_version());
   EXPECT_EQ(BookmarkNode::kInvalidSyncTransactionVersion,
-            bbn->GetChild(0)->sync_transaction_version());
+            bbn->children()[0]->sync_transaction_version());
 }
 
 // Verifies that we can still decode the old codec format after changing the
@@ -489,8 +491,8 @@ TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
   EXPECT_EQ(1, model->root_node()->sync_transaction_version());
   const BookmarkNode* bbn = model->bookmark_bar_node();
   EXPECT_EQ(BookmarkNode::kInvalidSyncTransactionVersion,
-            bbn->GetChild(0)->sync_transaction_version());
-  EXPECT_EQ(42, bbn->GetChild(1)->sync_transaction_version());
+            bbn->children()[0]->sync_transaction_version());
+  EXPECT_EQ(42, bbn->children()[1]->sync_transaction_version());
 
   const char kSyncTransactionVersionKey[] = "sync.transaction_version";
   const char kNormalKey[] = "key";
@@ -499,12 +501,12 @@ TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
   EXPECT_FALSE(
       model->root_node()->GetMetaInfo(kSyncTransactionVersionKey, &meta_value));
   EXPECT_FALSE(
-      bbn->GetChild(1)->GetMetaInfo(kSyncTransactionVersionKey, &meta_value));
-  EXPECT_TRUE(bbn->GetChild(0)->GetMetaInfo(kNormalKey, &meta_value));
+      bbn->children()[1]->GetMetaInfo(kSyncTransactionVersionKey, &meta_value));
+  EXPECT_TRUE(bbn->children()[0]->GetMetaInfo(kNormalKey, &meta_value));
   EXPECT_EQ("value", meta_value);
-  EXPECT_TRUE(bbn->GetChild(1)->GetMetaInfo(kNormalKey, &meta_value));
+  EXPECT_TRUE(bbn->children()[1]->GetMetaInfo(kNormalKey, &meta_value));
   EXPECT_EQ("value2", meta_value);
-  EXPECT_TRUE(bbn->GetChild(0)->GetMetaInfo(kNestedKey, &meta_value));
+  EXPECT_TRUE(bbn->children()[0]->GetMetaInfo(kNestedKey, &meta_value));
   EXPECT_EQ("value3", meta_value);
 }
 

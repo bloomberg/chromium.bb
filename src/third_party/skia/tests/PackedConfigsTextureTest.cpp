@@ -14,9 +14,9 @@
 #include "tests/Test.h"
 
 #include "include/gpu/GrContext.h"
-#include "include/private/GrTextureProxy.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/GrTextureProxy.h"
 #include "tools/gpu/ProxyUtils.h"
 
 static const int DEV_W = 10, DEV_H = 10;
@@ -112,15 +112,15 @@ static void run_test(skiatest::Reporter* reporter, GrContext* context, int array
             SkImageInfo::Make(DEV_W, DEV_H, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
 
     for (auto origin : { kTopLeft_GrSurfaceOrigin, kBottomLeft_GrSurfaceOrigin }) {
-        auto proxy = sk_gpu_test::MakeTextureProxyFromData(context, GrRenderable::kNo,
-                                                           DEV_W, DEV_H, colorType,
-                                                           origin, controlPixelData.begin(), 0);
+        auto proxy = sk_gpu_test::MakeTextureProxyFromData(context, GrRenderable::kNo, DEV_W, DEV_H,
+                                                           colorType, kPremul_SkAlphaType, origin,
+                                                           controlPixelData.begin(), 0);
         SkASSERT(proxy);
 
         sk_sp<GrSurfaceContext> sContext = context->priv().makeWrappedSurfaceContext(
-                                                                        std::move(proxy));
+                std::move(proxy), SkColorTypeToGrColorType(colorType), kPremul_SkAlphaType);
 
-        if (!sContext->readPixels(dstInfo, readBuffer.begin(), 0, 0, 0)) {
+        if (!sContext->readPixels(dstInfo, readBuffer.begin(), 0, {0, 0})) {
             // We only require this to succeed if the format is renderable.
             REPORTER_ASSERT(reporter, !context->colorTypeSupportedAsSurface(colorType));
             return;

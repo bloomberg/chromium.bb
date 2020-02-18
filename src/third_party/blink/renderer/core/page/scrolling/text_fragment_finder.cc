@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/find_buffer.h"
+#include "third_party/blink/renderer/core/editing/finder/find_options.h"
 #include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
@@ -24,9 +25,9 @@ const char kNoContext[] = "";
 EphemeralRangeInFlatTree FindMatchInRange(String search_text,
                                           PositionInFlatTree search_start,
                                           PositionInFlatTree search_end) {
-  const FindOptions find_options = kCaseInsensitive;
   const EphemeralRangeInFlatTree search_range(search_start, search_end);
-  return FindBuffer::FindMatchInRange(search_range, search_text, find_options);
+  return FindBuffer::FindMatchInRange(search_range, search_text,
+                                      kCaseInsensitive);
 }
 
 PositionInFlatTree NextTextPosition(PositionInFlatTree position,
@@ -56,10 +57,9 @@ EphemeralRangeInFlatTree FindImmediateMatch(String search_text,
     return EphemeralRangeInFlatTree();
 
   FindBuffer buffer(EphemeralRangeInFlatTree(search_start, search_end));
-  const FindOptions find_options = kCaseInsensitive;
 
   std::unique_ptr<FindBuffer::Results> match_results =
-      buffer.FindMatches(search_text, find_options);
+      buffer.FindMatches(search_text, kCaseInsensitive);
 
   if (!match_results->IsEmpty() && match_results->front().start == 0u) {
     FindBuffer::BufferMatchResult match = match_results->front();

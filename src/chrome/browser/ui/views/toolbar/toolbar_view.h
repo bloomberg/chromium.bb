@@ -26,6 +26,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/views/accessible_pane_view.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
@@ -43,6 +44,7 @@ class Browser;
 class ExtensionsToolbarButton;
 class ExtensionsToolbarContainer;
 class HomeButton;
+class MediaToolbarButtonView;
 class ReloadButton;
 class ToolbarButton;
 class ToolbarPageActionIconContainerView;
@@ -63,7 +65,7 @@ class FlexLayout;
 class ToolbarView : public views::AccessiblePaneView,
                     public views::MenuButtonListener,
                     public ui::AcceleratorProvider,
-                    public gfx::AnimationDelegate,
+                    public views::AnimationDelegateViews,
                     public LocationBarView::Delegate,
                     public BrowserActionsContainer::Delegate,
                     public CommandObserver,
@@ -115,8 +117,8 @@ class ToolbarView : public views::AccessiblePaneView,
 
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
-      bool show_stay_in_chrome,
-      bool show_remember_selection,
+      bool enable_stay_in_chrome,
+      bool show_persistence_options,
       IntentPickerResponse callback);
 
   // Shows a bookmark bubble and anchors it appropriately.
@@ -139,6 +141,7 @@ class ToolbarView : public views::AccessiblePaneView,
   LocationBarView* location_bar() const { return location_bar_; }
   CustomTabBarView* custom_tab_bar() { return custom_tab_bar_; }
   media_router::CastToolbarButton* cast_button() const { return cast_; }
+  MediaToolbarButtonView* media_button() const { return media_button_; }
   ToolbarPageActionIconContainerView* toolbar_page_action_container() const {
     return toolbar_page_action_container_;
   }
@@ -206,7 +209,7 @@ class ToolbarView : public views::AccessiblePaneView,
   void SetToolbarVisibility(bool visible);
 
  private:
-  // AnimationDelegate:
+  // AnimationDelegateViews:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
 
@@ -266,6 +269,7 @@ class ToolbarView : public views::AccessiblePaneView,
   media_router::CastToolbarButton* cast_ = nullptr;
   ToolbarPageActionIconContainerView* toolbar_page_action_container_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;
+  MediaToolbarButtonView* media_button_ = nullptr;
   BrowserAppMenuButton* app_menu_button_ = nullptr;
 
   Browser* const browser_;

@@ -5,7 +5,6 @@
  * found in the LICENSE file.
  */
 
-#include "include/private/GrTextureProxy.h"
 #include "include/private/SkTo.h"
 #include "src/core/SkClipOpPriv.h"
 #include "src/core/SkMakeUnique.h"
@@ -22,12 +21,13 @@
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/GrSWMaskHelper.h"
-#include "src/gpu/GrShape.h"
 #include "src/gpu/GrStencilAttachment.h"
 #include "src/gpu/GrStyle.h"
+#include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/effects/GrConvexPolyEffect.h"
 #include "src/gpu/effects/GrRRectEffect.h"
 #include "src/gpu/effects/GrTextureDomain.h"
+#include "src/gpu/geometry/GrShape.h"
 
 typedef SkClipStack::Element Element;
 typedef GrReducedClip::InitialState InitialState;
@@ -115,10 +115,8 @@ bool GrClipStackClip::PathNeedsSWRenderer(GrRecordingContext* context,
         }
 
         // We only use this method when rendering coverage clip masks.
-        SkASSERT(GrFSAAType::kNone == renderTargetContext->fsaaType());
-        auto aaTypeFlags = (element->isAA())
-                ? GrPathRenderer::AATypeFlags::kCoverage
-                : GrPathRenderer::AATypeFlags::kNone;
+        SkASSERT(renderTargetContext->numSamples() <= 1);
+        auto aaType = (element->isAA()) ? GrAAType::kCoverage : GrAAType::kNone;
 
         GrPathRendererChain::DrawType type =
                 needsStencil ? GrPathRendererChain::DrawType::kStencilAndColor
@@ -127,10 +125,11 @@ bool GrClipStackClip::PathNeedsSWRenderer(GrRecordingContext* context,
         GrShape shape(path, GrStyle::SimpleFill());
         GrPathRenderer::CanDrawPathArgs canDrawArgs;
         canDrawArgs.fCaps = context->priv().caps();
+        canDrawArgs.fProxy = renderTargetContext->proxy();
         canDrawArgs.fClipConservativeBounds = &scissorRect;
         canDrawArgs.fViewMatrix = &viewMatrix;
         canDrawArgs.fShape = &shape;
-        canDrawArgs.fAATypeFlags = aaTypeFlags;
+        canDrawArgs.fAAType = aaType;
         SkASSERT(!renderTargetContext->wrapsVkSecondaryCB());
         canDrawArgs.fTargetIsWrappedVkSecondaryCB = false;
         canDrawArgs.fHasUserStencilSettings = hasUserStencilSettings;
@@ -205,15 +204,19 @@ bool GrClipStackClip::apply(GrRecordingContext* context, GrRenderTargetContext* 
         return true;
     }
 
+    // An default count of 4 was chosen because of the common pattern in Blink of:
+    //   isect RR
+    //   diff  RR
+    //   isect convex_poly
+    //   isect convex_poly
+    // when drawing rounded div borders.
+    constexpr int kMaxAnalyticFPs = 4;
+
     int maxWindowRectangles = renderTargetContext->priv().maxWindowRectangles();
-    int maxAnalyticFPs = context->priv().caps()->maxClipAnalyticFPs();
-    if (GrFSAAType::kNone != renderTargetContext->fsaaType()) {
-        // With mixed samples (non-msaa color buffer), any coverage info is lost from color once it
-        // hits the color buffer anyway, so we may as well use coverage AA if nothing else in the
-        // pipe is multisampled.
-        if (renderTargetContext->numColorSamples() > 1 || useHWAA || hasUserStencilSettings) {
-            maxAnalyticFPs = 0;
-        }
+    int maxAnalyticFPs = kMaxAnalyticFPs;
+    if (renderTargetContext->numSamples() > 1 || useHWAA || hasUserStencilSettings) {
+        // Disable analytic clips when we have MSAA. In MSAA we never conflate coverage and opacity.
+        maxAnalyticFPs = 0;
         // We disable MSAA when avoiding stencil.
         SkASSERT(!context->priv().caps()->avoidStencilBuffers());
     }
@@ -245,8 +248,7 @@ bool GrClipStackClip::apply(GrRecordingContext* context, GrRenderTargetContext* 
     // The opList ID must not be looked up until AFTER producing the clip mask (if any). That step
     // can cause a flush or otherwise change which opList our draw is going into.
     uint32_t opListID = renderTargetContext->getOpList()->uniqueID();
-    int rtWidth = renderTargetContext->width(), rtHeight = renderTargetContext->height();
-    if (auto clipFPs = reducedClip.finishAndDetachAnalyticFPs(ccpr, opListID, rtWidth, rtHeight)) {
+    if (auto clipFPs = reducedClip.finishAndDetachAnalyticFPs(ccpr, opListID)) {
         out->addCoverageFP(std::move(clipFPs));
     }
 
@@ -265,8 +267,8 @@ bool GrClipStackClip::applyClipMask(GrRecordingContext* context,
     SkASSERT(rtIBounds.contains(scissor)); // Mask shouldn't be larger than the RT.
 #endif
 
-    // If the stencil buffer is multisampled we can use it to do everything.
-    if ((GrFSAAType::kNone == renderTargetContext->fsaaType() && reducedClip.maskRequiresAA()) ||
+    // MIXED SAMPLES TODO: We may want to explore using the stencil buffer for AA clipping.
+    if ((renderTargetContext->numSamples() <= 1 && reducedClip.maskRequiresAA()) ||
         context->priv().caps()->avoidStencilBuffers() ||
         renderTargetContext->wrapsVkSecondaryCB()) {
         sk_sp<GrTextureProxy> result;
@@ -294,8 +296,6 @@ bool GrClipStackClip::applyClipMask(GrRecordingContext* context,
             return false;
         }
     }
-
-    renderTargetContext->setNeedsStencil();
 
     // This relies on the property that a reduced sub-rect of the last clip will contain all the
     // relevant window rectangles that were in the last clip. This subtle requirement will go away
@@ -355,18 +355,19 @@ sk_sp<GrTextureProxy> GrClipStackClip::createAlphaClipMask(GrRecordingContext* c
         return proxy;
     }
 
-    GrBackendFormat format =
-            context->priv().caps()->getBackendFormatFromColorType(kAlpha_8_SkColorType);
+    auto isProtected = proxy->isProtected() ? GrProtected::kYes : GrProtected::kNo;
     sk_sp<GrRenderTargetContext> rtc(
-        context->priv().makeDeferredRenderTargetContextWithFallback(
-                                                                        format,
-                                                                        SkBackingFit::kApprox,
+            context->priv().makeDeferredRenderTargetContextWithFallback(SkBackingFit::kApprox,
                                                                         reducedClip.width(),
                                                                         reducedClip.height(),
-                                                                        kAlpha_8_GrPixelConfig,
-                                                                        nullptr, 1,
+                                                                        GrColorType::kAlpha_8,
+                                                                        nullptr,
+                                                                        1,
                                                                         GrMipMapped::kNo,
-                                                                        kTopLeft_GrSurfaceOrigin));
+                                                                        kTopLeft_GrSurfaceOrigin,
+                                                                        nullptr,
+                                                                        SkBudgeted::kYes,
+                                                                        isProtected));
     if (!rtc) {
         return nullptr;
     }
@@ -493,17 +494,18 @@ sk_sp<GrTextureProxy> GrClipStackClip::createSoftwareClipMask(
         desc.fConfig = kAlpha_8_GrPixelConfig;
 
         GrBackendFormat format =
-                context->priv().caps()->getBackendFormatFromColorType(kAlpha_8_SkColorType);
+                context->priv().caps()->getBackendFormatFromColorType(GrColorType::kAlpha_8);
 
         // MDB TODO: We're going to fill this proxy with an ASAP upload (which is out of order wrt
         // to ops), so it can't have any pending IO.
-        proxy = proxyProvider->createProxy(format, desc, kTopLeft_GrSurfaceOrigin,
-                                           SkBackingFit::kApprox, SkBudgeted::kYes);
+        proxy = proxyProvider->createProxy(format, desc, GrRenderable::kNo, 1,
+                                           kTopLeft_GrSurfaceOrigin, SkBackingFit::kApprox,
+                                           SkBudgeted::kYes, GrProtected::kNo);
 
         auto uploader = skstd::make_unique<GrTDeferredProxyUploader<ClipMaskData>>(reducedClip);
         GrTDeferredProxyUploader<ClipMaskData>* uploaderRaw = uploader.get();
         auto drawAndUploadMask = [uploaderRaw, maskSpaceIBounds] {
-            TRACE_EVENT0("skia", "Threaded SW Clip Mask Render");
+            TRACE_EVENT0("skia.gpu", "Threaded SW Clip Mask Render");
             GrSWMaskHelper helper(uploaderRaw->getPixels());
             if (helper.init(maskSpaceIBounds)) {
                 draw_clip_elements_to_mask_helper(helper, uploaderRaw->data().elements(),

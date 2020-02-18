@@ -34,9 +34,8 @@ class XRReferenceSpace : public XRSpace {
   XRReferenceSpace(XRSession*, XRRigidTransform*, Type);
   ~XRReferenceSpace() override;
 
-  XRPose* getPose(
-      XRSpace* other_space,
-      std::unique_ptr<TransformationMatrix> base_pose_matrix) override;
+  XRPose* getPose(XRSpace* other_space,
+                  const TransformationMatrix* base_pose_matrix) override;
   std::unique_ptr<TransformationMatrix> DefaultPose() override;
   std::unique_ptr<TransformationMatrix> TransformBasePose(
       const TransformationMatrix& base_pose) override;

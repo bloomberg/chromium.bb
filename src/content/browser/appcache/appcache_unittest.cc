@@ -5,12 +5,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
@@ -24,19 +27,20 @@ class AppCacheTest : public testing::Test {
 
 TEST_F(AppCacheTest, CleanupUnusedCache) {
   MockAppCacheService service;
-  scoped_refptr<AppCache> cache(new AppCache(service.storage(), 111));
+  auto cache = base::MakeRefCounted<AppCache>(service.storage(), 111);
   cache->set_complete(true);
-  scoped_refptr<AppCacheGroup> group(
-      new AppCacheGroup(service.storage(), GURL("http://blah/manifest"), 111));
+  auto group = base::MakeRefCounted<AppCacheGroup>(
+      service.storage(), GURL("http://blah/manifest"), 111);
   group->AddCache(cache.get());
 
-  blink::mojom::AppCacheFrontendPtr frontend1;
-  mojo::MakeRequest(&frontend1);
+  mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend1;
+  ignore_result(frontend1.InitWithNewPipeAndPassReceiver());
   AppCacheHost host1(/*host_id=*/base::UnguessableToken::Create(),
                      /*process_id=*/1, /*render_frame_id=*/1,
                      std::move(frontend1), &service);
-  blink::mojom::AppCacheFrontendPtr frontend2;
-  mojo::MakeRequest(&frontend2);
+
+  mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend2;
+  ignore_result(frontend2.InitWithNewPipeAndPassReceiver());
   AppCacheHost host2(/*host_id=*/base::UnguessableToken::Create(),
                      /*process_id=*/2, /*render_frame_id=*/2,
                      std::move(frontend2), &service);
@@ -50,7 +54,7 @@ TEST_F(AppCacheTest, CleanupUnusedCache) {
 
 TEST_F(AppCacheTest, AddModifyRemoveEntry) {
   MockAppCacheService service;
-  scoped_refptr<AppCache> cache(new AppCache(service.storage(), 111));
+  auto cache = base::MakeRefCounted<AppCache>(service.storage(), 111);
 
   EXPECT_TRUE(cache->entries().empty());
   EXPECT_EQ(0L, cache->cache_size());
@@ -104,7 +108,7 @@ TEST_F(AppCacheTest, AddModifyRemoveEntry) {
 TEST_F(AppCacheTest, InitializeWithManifest) {
   MockAppCacheService service;
 
-  scoped_refptr<AppCache> cache(new AppCache(service.storage(), 1234));
+  auto cache = base::MakeRefCounted<AppCache>(service.storage(), 1234);
   EXPECT_TRUE(cache->fallback_namespaces_.empty());
   EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
   EXPECT_FALSE(cache->online_whitelist_all_);
@@ -196,7 +200,7 @@ TEST_F(AppCacheTest, FindResponseForRequest) {
           kInterceptNamespaceWithinFallback, kInterceptNamespaceEntry, false));
 
   // Create a cache with some namespaces and entries.
-  scoped_refptr<AppCache> cache(new AppCache(service.storage(), 1234));
+  auto cache = base::MakeRefCounted<AppCache>(service.storage(), 1234);
   cache->InitializeWithManifest(&manifest);
   cache->AddEntry(
       kFallbackEntryUrl1,
@@ -370,7 +374,7 @@ TEST_F(AppCacheTest, FindInterceptPatternResponseForRequest) {
   manifest.intercept_namespaces.push_back(
       AppCacheNamespace(APPCACHE_INTERCEPT_NAMESPACE,
           kInterceptPatternNamespace, kInterceptNamespaceEntry, true));
-  scoped_refptr<AppCache> cache(new AppCache(service.storage(), 1234));
+  auto cache = base::MakeRefCounted<AppCache>(service.storage(), 1234);
   cache->InitializeWithManifest(&manifest);
   cache->AddEntry(
       kInterceptNamespaceEntry,
@@ -441,7 +445,7 @@ TEST_F(AppCacheTest, FindFallbackPatternResponseForRequest) {
   manifest.fallback_namespaces.push_back(
       AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE, kFallbackPatternNamespace,
                 kFallbackNamespaceEntry, true));
-  scoped_refptr<AppCache> cache(new AppCache(service.storage(), 1234));
+  auto cache = base::MakeRefCounted<AppCache>(service.storage(), 1234);
   cache->InitializeWithManifest(&manifest);
   cache->AddEntry(
       kFallbackNamespaceEntry,
@@ -511,7 +515,7 @@ TEST_F(AppCacheTest, FindNetworkNamespacePatternResponseForRequest) {
       AppCacheNamespace(APPCACHE_NETWORK_NAMESPACE, kNetworkPatternNamespace,
                 GURL(), true));
   manifest.online_whitelist_all = false;
-  scoped_refptr<AppCache> cache(new AppCache(service.storage(), 1234));
+  auto cache = base::MakeRefCounted<AppCache>(service.storage(), 1234);
   cache->InitializeWithManifest(&manifest);
   cache->set_complete(true);
 
@@ -559,9 +563,9 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
     "/whitelist* isPattern\r"
     "*\r");
   MockAppCacheService service;
-  scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(service.storage(), kManifestUrl, kGroupId);
-  scoped_refptr<AppCache> cache(new AppCache(service.storage(), kCacheId));
+  auto cache = base::MakeRefCounted<AppCache>(service.storage(), kCacheId);
+  auto group = base::MakeRefCounted<AppCacheGroup>(service.storage(),
+                                                   kManifestUrl, kGroupId);
   AppCacheManifest manifest;
   EXPECT_TRUE(ParseManifest(kManifestUrl, kData.c_str(), kData.length(),
                             PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
@@ -609,7 +613,7 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   cache = nullptr;
 
   // Create a new AppCache and populate it with those records and verify.
-  cache = new AppCache(service.storage(), kCacheId);
+  cache = base::MakeRefCounted<AppCache>(service.storage(), kCacheId);
   cache->InitializeWithDatabaseRecords(
       cache_record, entries, intercepts,
       fallbacks, whitelists);

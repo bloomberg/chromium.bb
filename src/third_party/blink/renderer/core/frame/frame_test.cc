@@ -4,12 +4,13 @@
 
 #include "third_party/blink/renderer/core/frame/frame.h"
 
-#include "base/test/metrics/histogram_tester.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/document_interface_broker_test_helpers.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -163,7 +164,7 @@ TEST_F(FrameTest, NavigateSameDomainNoGesture) {
 }
 
 TEST_F(FrameTest, UserActivationInterfaceTest) {
-  RuntimeEnabledFeatures::SetUserActivationV2Enabled(true);
+  ScopedUserActivationV2ForTest scoped_feature(true);
 
   // Initially both sticky and transient bits are false.
   EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
@@ -186,35 +187,6 @@ TEST_F(FrameTest, UserActivationInterfaceTest) {
       LocalFrame::ConsumeTransientUserActivation(GetDocument().GetFrame()));
 }
 
-TEST_F(FrameTest, UserActivationHistograms) {
-  RuntimeEnabledFeatures::SetUserActivationV2Enabled(true);
-  base::HistogramTester histograms;
-
-  LocalFrame::HasTransientUserActivation(GetDocument().GetFrame());
-  histograms.ExpectBucketCount("UserActivation.AvailabilityCheck.FrameResult",
-                               0, 1);
-
-  LocalFrame::ConsumeTransientUserActivation(GetDocument().GetFrame());
-  histograms.ExpectBucketCount("UserActivation.Consumption.FrameResult", 0, 1);
-
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
-
-  LocalFrame::HasTransientUserActivation(GetDocument().GetFrame());
-  LocalFrame::HasTransientUserActivation(GetDocument().GetFrame());
-  histograms.ExpectBucketCount("UserActivation.AvailabilityCheck.FrameResult",
-                               3, 2);
-
-  LocalFrame::ConsumeTransientUserActivation(GetDocument().GetFrame());
-  histograms.ExpectBucketCount("UserActivation.Consumption.FrameResult", 3, 1);
-
-  LocalFrame::ConsumeTransientUserActivation(GetDocument().GetFrame());
-  histograms.ExpectBucketCount("UserActivation.Consumption.FrameResult", 0, 2);
-
-  histograms.ExpectTotalCount("UserActivation.AvailabilityCheck.FrameResult",
-                              3);
-  histograms.ExpectTotalCount("UserActivation.Consumption.FrameResult", 3);
-}
-
 TEST_F(FrameTest, TestDocumentInterfaceBrokerOverride) {
   mojom::blink::DocumentInterfaceBrokerPtr doc;
   FrameHostTestDocumentInterfaceBroker frame_interface_broker(
@@ -223,11 +195,11 @@ TEST_F(FrameTest, TestDocumentInterfaceBrokerOverride) {
   GetDocument().GetFrame()->SetDocumentInterfaceBrokerForTesting(
       doc.PassInterface().PassHandle());
 
-  mojom::blink::FrameHostTestInterfacePtr frame_test;
+  mojo::Remote<mojom::blink::FrameHostTestInterface> frame_test;
   GetDocument()
       .GetFrame()
       ->GetDocumentInterfaceBroker()
-      .GetFrameHostTestInterface(mojo::MakeRequest(&frame_test));
+      .GetFrameHostTestInterface(frame_test.BindNewPipeAndPassReceiver());
   frame_test->GetName(base::BindOnce([](const WTF::String& result) {
     EXPECT_EQ(result, kGetNameTestResponse);
   }));

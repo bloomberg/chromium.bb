@@ -89,7 +89,8 @@ class OfflineContentAggregator : public OfflineContentProvider,
   // OfflineContentProvider::Observer implementation.
   void OnItemsAdded(const OfflineItemList& items) override;
   void OnItemRemoved(const ContentId& id) override;
-  void OnItemUpdated(const OfflineItem& item) override;
+  void OnItemUpdated(const OfflineItem& item,
+                     const base::Optional<UpdateDelta>& update_delta) override;
 
   void OnGetAllItemsDone(OfflineContentProvider* provider,
                          const OfflineItemList& items);
@@ -113,7 +114,7 @@ class OfflineContentAggregator : public OfflineContentProvider,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<OfflineContentAggregator> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflineContentAggregator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OfflineContentAggregator);
 };

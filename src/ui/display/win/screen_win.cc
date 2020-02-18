@@ -724,8 +724,10 @@ void ScreenWin::OnWndProc(HWND hwnd,
                           WPARAM wparam,
                           LPARAM lparam) {
   if (message != WM_DISPLAYCHANGE &&
-    !(message == WM_SETTINGCHANGE && wparam == SPI_SETWORKAREA))
+      !(message == WM_ACTIVATEAPP && wparam == TRUE) &&
+      !(message == WM_SETTINGCHANGE && wparam == SPI_SETWORKAREA)) {
     return;
+  }
 
   color_profile_reader_->UpdateIfNeeded();
   if (request_hdr_status_callback_)
@@ -850,7 +852,7 @@ void ScreenWin::RecordDisplayScaleFactors() const {
     // it so that if it's wildly out-of-band we won't send it to the backend.
     const int reported_scale = std::min(
         std::max(base::checked_cast<int>(scale_factor * 100), 0), 1000);
-    if (!base::ContainsValue(unique_scale_factors, reported_scale)) {
+    if (!base::Contains(unique_scale_factors, reported_scale)) {
       unique_scale_factors.push_back(reported_scale);
       base::UmaHistogramSparse("UI.DeviceScale", reported_scale);
     }

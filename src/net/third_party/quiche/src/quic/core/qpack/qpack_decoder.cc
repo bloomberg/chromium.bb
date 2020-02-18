@@ -13,7 +13,7 @@ namespace quic {
 
 QpackDecoder::QpackDecoder(
     EncoderStreamErrorDelegate* encoder_stream_error_delegate,
-    QpackDecoderStreamSender::Delegate* decoder_stream_sender_delegate)
+    QpackStreamSenderDelegate* decoder_stream_sender_delegate)
     : encoder_stream_error_delegate_(encoder_stream_error_delegate),
       encoder_stream_receiver_(this),
       decoder_stream_sender_(decoder_stream_sender_delegate) {
@@ -131,7 +131,7 @@ bool QpackDecoder::EncoderStreamRelativeIndexToAbsoluteIndex(
   return true;
 }
 
-std::unique_ptr<QpackProgressiveDecoder> QpackDecoder::DecodeHeaderBlock(
+std::unique_ptr<QpackProgressiveDecoder> QpackDecoder::CreateProgressiveDecoder(
     QuicStreamId stream_id,
     QpackProgressiveDecoder::HeadersHandlerInterface* handler) {
   return QuicMakeUnique<QpackProgressiveDecoder>(

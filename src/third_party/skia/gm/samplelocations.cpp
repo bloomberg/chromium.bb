@@ -19,8 +19,6 @@
 #include "include/gpu/GrSamplerState.h"
 #include "include/gpu/GrTypes.h"
 #include "include/private/GrRecordingContext.h"
-#include "include/private/GrSurfaceProxy.h"
-#include "include/private/GrTextureProxy.h"
 #include "include/private/GrTypesPriv.h"
 #include "include/private/SkColorData.h"
 #include "src/gpu/GrBuffer.h"
@@ -43,6 +41,8 @@
 #include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/GrShaderVar.h"
+#include "src/gpu/GrSurfaceProxy.h"
+#include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/GrUserStencilSettings.h"
 #include "src/gpu/effects/GrPorterDuffXferProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -79,7 +79,12 @@ public:
             , fOrigin(origin) {}
 
 private:
-    SkString onShortName() override;
+    SkString onShortName() override {
+        return SkStringPrintf("samplelocations%s%s",
+                              (GradType::kHW == fGradType) ? "_hwgrad" : "_swgrad",
+                              (kTopLeft_GrSurfaceOrigin == fOrigin) ? "_topleft" : "_botleft");
+    }
+
     SkISize onISize() override { return SkISize::Make(200, 200); }
     DrawResult onDraw(GrContext*, GrRenderTargetContext*, SkCanvas*, SkString* errorMsg) override;
 
@@ -210,8 +215,8 @@ private:
     FixedFunctionFlags fixedFunctionFlags() const override {
         return FixedFunctionFlags::kUsesHWAA | FixedFunctionFlags::kUsesStencil;
     }
-    GrProcessorSet::Analysis finalize(
-            const GrCaps&, const GrAppliedClip*, GrFSAAType, GrClampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*,
+                                      bool hasMixedSampledCoverage, GrClampType) override {
         return GrProcessorSet::EmptySetAnalysis();
     }
     void onPrepare(GrOpFlushState*) override {}
@@ -227,6 +232,7 @@ private:
         );
 
         GrPipeline pipeline(GrScissorTest::kDisabled, SkBlendMode::kSrcOver,
+                            flushState->drawOpArgs().fOutputSwizzle,
                             GrPipeline::InputFlags::kHWAntialias, &kStencilWrite);
 
         GrMesh mesh(GrPrimitiveType::kTriangleStrip);
@@ -244,25 +250,31 @@ private:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Test.
 
-SkString SampleLocationsGM::onShortName() {
-    SkString name("samplelocations");
-    name.append((GradType::kHW == fGradType) ? "_hwgrad" : "_swgrad");
-    name.append((kTopLeft_GrSurfaceOrigin == fOrigin) ? "_topleft" : "_botleft");
-    return name;
-}
-
 DrawResult SampleLocationsGM::onDraw(
         GrContext* ctx, GrRenderTargetContext* rtc, SkCanvas* canvas, SkString* errorMsg) {
-    if (rtc->numStencilSamples() <= 1) {
-        *errorMsg = "MSAA only.";
-        return DrawResult::kSkip;
-    }
     if (!ctx->priv().caps()->sampleLocationsSupport()) {
         *errorMsg = "Requires support for sample locations.";
         return DrawResult::kSkip;
     }
     if (!ctx->priv().caps()->shaderCaps()->sampleVariablesSupport()) {
         *errorMsg = "Requires support for sample variables.";
+        return DrawResult::kSkip;
+    }
+    if (rtc->numSamples() <= 1 && !ctx->priv().caps()->mixedSamplesSupport()) {
+        *errorMsg = "MSAA and mixed samples only.";
+        return DrawResult::kSkip;
+    }
+
+    auto offscreenRTC = ctx->priv().makeDeferredRenderTargetContext(
+            SkBackingFit::kExact, 200, 200, rtc->colorSpaceInfo().colorType(), nullptr,
+            rtc->numSamples(), GrMipMapped::kNo, fOrigin);
+    if (!offscreenRTC) {
+        *errorMsg = "Failed to create offscreen render target.";
+        return DrawResult::kFail;
+    }
+    if (offscreenRTC->numSamples() <= 1 &&
+        !offscreenRTC->proxy()->canUseMixedSamples(*ctx->priv().caps())) {
+        *errorMsg = "MSAA and mixed samples only.";
         return DrawResult::kSkip;
     }
 
@@ -276,31 +288,25 @@ DrawResult SampleLocationsGM::onDraw(
             0xffff>()
     );
 
-    if (auto offscreenRTC = ctx->priv().makeDeferredRenderTargetContext(
-            rtc->asSurfaceProxy()->backendFormat(), SkBackingFit::kExact, 200, 200,
-            rtc->asSurfaceProxy()->config(), nullptr, rtc->numStencilSamples(), GrMipMapped::kNo,
-            fOrigin)) {
-        offscreenRTC->clear(nullptr, {0,1,0,1}, GrRenderTargetContext::CanClearFullscreen::kYes);
+    offscreenRTC->clear(nullptr, {0,1,0,1}, GrRenderTargetContext::CanClearFullscreen::kYes);
 
-        // Stencil.
-        offscreenRTC->priv().testingOnly_addDrawOp(
-                SampleLocationsTestOp::Make(ctx, canvas->getTotalMatrix(), fGradType));
+    // Stencil.
+    offscreenRTC->priv().testingOnly_addDrawOp(
+            SampleLocationsTestOp::Make(ctx, canvas->getTotalMatrix(), fGradType));
 
-        // Cover.
-        GrPaint coverPaint;
-        coverPaint.setColor4f({1,0,0,1});
-        coverPaint.setXPFactory(GrPorterDuffXPFactory::Get(SkBlendMode::kSrcOver));
-        rtc->priv().drawFilledRect(
-                GrNoClip(), std::move(coverPaint), GrAA::kNo, SkMatrix::I(),
-                SkRect::MakeWH(200, 200), &kStencilCover);
+    // Cover.
+    GrPaint coverPaint;
+    coverPaint.setColor4f({1,0,0,1});
+    coverPaint.setXPFactory(GrPorterDuffXPFactory::Get(SkBlendMode::kSrcOver));
+    rtc->priv().stencilRect(GrNoClip(), &kStencilCover, std::move(coverPaint), GrAA::kNo,
+                            SkMatrix::I(), SkRect::MakeWH(200, 200));
 
-        // Copy offscreen texture to canvas.
-        rtc->drawTexture(
-                GrNoClip(), sk_ref_sp(offscreenRTC->asTextureProxy()),
-                GrSamplerState::Filter::kNearest, SkBlendMode::kSrc, SK_PMColor4fWHITE,
-                {0,0,200,200}, {0,0,200,200}, GrAA::kNo, GrQuadAAFlags::kNone,
-                SkCanvas::SrcRectConstraint::kStrict_SrcRectConstraint, SkMatrix::I(), nullptr);
-    }
+    // Copy offscreen texture to canvas.
+    rtc->drawTexture(
+            GrNoClip(), sk_ref_sp(offscreenRTC->asTextureProxy()),
+            GrSamplerState::Filter::kNearest, SkBlendMode::kSrc, SK_PMColor4fWHITE,
+            {0,0,200,200}, {0,0,200,200}, GrAA::kNo, GrQuadAAFlags::kNone,
+            SkCanvas::SrcRectConstraint::kStrict_SrcRectConstraint, SkMatrix::I(), nullptr);
 
     return skiagm::DrawResult::kOk;
 }

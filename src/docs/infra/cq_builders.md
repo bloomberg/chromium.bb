@@ -1,7 +1,7 @@
 # List of CQ builders
 
 This page is auto generated using the script
-//infra/config/cq_config_presubmit.py. Do not manually edit.
+//infra/config/cq_cfg_presubmit.py. Do not manually edit.
 
 [TOC]
 
@@ -132,6 +132,7 @@ builder.
 
   Path regular expressions:
     * [`//build/chromeos/.+`](https://cs.chromium.org/chromium/src/build/chromeos/)
+    * [`//build/config/chromeos/.*`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:build/config/chromeos/.*)
 
 * [closure_compilation](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/closure_compilation) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/closure_compilation)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+closure_compilation))
 
@@ -176,6 +177,16 @@ builder.
     * [`//third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-unsafe-webgpu)
     * [`//third_party/blink/web_tests/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/webgpu/)
     * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
+
+* [fuchsia-arm64-cast](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/fuchsia-arm64-cast) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/fuchsia-arm64-cast)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+fuchsia-arm64-cast))
+
+  Path regular expressions:
+    * [`//chromecast/.+`](https://cs.chromium.org/chromium/src/chromecast/)
+
+* [fuchsia-x64-cast](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/fuchsia-x64-cast) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/fuchsia-x64-cast)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+fuchsia-x64-cast))
+
+  Path regular expressions:
+    * [`//chromecast/.+`](https://cs.chromium.org/chromium/src/chromecast/)
 
 * [ios-simulator-cronet](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/ios-simulator-cronet) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/ios-simulator-cronet)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+ios-simulator-cronet))
 
@@ -224,13 +235,6 @@ builder.
     * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
     * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=LayoutNG`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=LayoutNG)
     * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=LayoutNG/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-blink-features=LayoutNG/)
-
-* [linux_mojo](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_mojo) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux_mojo)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_mojo))
-
-  Path regular expressions:
-    * [`//services/network/.+`](https://cs.chromium.org/chromium/src/services/network/)
-    * [`//testing/buildbot/filters/mojo\\.fyi\\.network_.*`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:testing/buildbot/filters/mojo\\.fyi\\.network_.*)
-    * [`//third_party/blink/web_tests/FlagExpectations/enable-features=NetworkService`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-features=NetworkService)
 
 * [linux_optional_gpu_tests_rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_optional_gpu_tests_rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux_optional_gpu_tests_rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_optional_gpu_tests_rel))
 
@@ -314,12 +318,6 @@ as required builders.
 * [linux-coverage-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-coverage-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux-coverage-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-coverage-rel))
 
   * Experimental percentage: 10
-
-* [linux-goma-rbe-staging-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-goma-rbe-staging-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/linux-goma-rbe-staging-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-goma-rbe-staging-rel))
-
-  https://crbug.com/855319
-
-  * Experimental percentage: 40
 
 * [win7_chromium_rel_loc_exp](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7_chromium_rel_loc_exp) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/win7_chromium_rel_loc_exp)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win7_chromium_rel_loc_exp))
 

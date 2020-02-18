@@ -76,11 +76,24 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void EnumerateCredentials(base::span<const uint8_t> pin_token,
                             EnumerateCredentialsCallback callback) override;
   void DeleteCredential(base::span<const uint8_t> pin_token,
-                        base::span<const uint8_t> credential_id,
+                        const PublicKeyCredentialDescriptor& credential_id,
                         DeleteCredentialCallback callback) override;
 
-  void GetModality(GetBioEnrollmentInfoCallback callback) override;
-  void GetSensorInfo(GetBioEnrollmentInfoCallback callback) override;
+  void GetModality(BioEnrollmentCallback callback) override;
+  void GetSensorInfo(BioEnrollmentCallback callback) override;
+  void BioEnrollFingerprint(const pin::TokenResponse&,
+                            BioEnrollmentSampleCallback,
+                            BioEnrollmentCallback) override;
+  void BioEnrollCancel(BioEnrollmentCallback) override;
+  void BioEnrollEnumerate(const pin::TokenResponse&,
+                          BioEnrollmentCallback) override;
+  void BioEnrollRename(const pin::TokenResponse&,
+                       std::vector<uint8_t> template_id,
+                       std::string name,
+                       BioEnrollmentCallback) override;
+  void BioEnrollDelete(const pin::TokenResponse&,
+                       std::vector<uint8_t> template_id,
+                       BioEnrollmentCallback) override;
 
   void Reset(ResetCallback callback) override;
   void Cancel() override;
@@ -91,6 +104,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   base::Optional<FidoTransportProtocol> AuthenticatorTransport() const override;
   bool IsInPairingMode() const override;
   bool IsPaired() const override;
+  bool RequiresBlePairingPin() const override;
 #if defined(OS_WIN)
   bool IsWinNativeApiAuthenticator() const override;
 #endif  // defined(OS_WIN)
@@ -110,6 +124,24 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
  private:
   void InitializeAuthenticatorDone(base::OnceClosure callback);
 
+  template <typename... Args>
+  void TaskClearProxy(base::OnceCallback<void(Args...)> callback, Args... args);
+  template <typename... Args>
+  void OperationClearProxy(base::OnceCallback<void(Args...)> callback,
+                           Args... args);
+  template <typename Task, typename Request, typename Response>
+  void RunTask(Request request,
+               base::OnceCallback<void(CtapDeviceResponseCode,
+                                       base::Optional<Response>)> callback);
+  template <typename Request, typename Response>
+  void RunOperation(Request request,
+                    base::OnceCallback<void(CtapDeviceResponseCode,
+                                            base::Optional<Response>)> callback,
+                    base::OnceCallback<base::Optional<Response>(
+                        const base::Optional<cbor::Value>&)> parser,
+                    bool (*string_fixup_predicate)(
+                        const std::vector<const cbor::Value*>&) = nullptr);
+
   struct EnumerateCredentialsState;
   void OnEnumerateRPsDone(EnumerateCredentialsState state,
                           CtapDeviceResponseCode status,
@@ -118,6 +150,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
       EnumerateCredentialsState state,
       CtapDeviceResponseCode status,
       base::Optional<EnumerateCredentialsResponse> response);
+
+  void OnBioEnroll(pin::TokenResponse,
+                   BioEnrollmentSampleCallback sample_callback,
+                   BioEnrollmentCallback completion_callback,
+                   base::Optional<std::vector<uint8_t>> current_template_id,
+                   CtapDeviceResponseCode,
+                   base::Optional<BioEnrollmentResponse>);
 
   const std::unique_ptr<FidoDevice> device_;
   base::Optional<AuthenticatorSupportedOptions> options_;

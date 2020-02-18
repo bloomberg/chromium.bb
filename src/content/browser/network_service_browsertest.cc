@@ -11,6 +11,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -19,7 +20,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/test/browser_test_utils.h"
@@ -28,6 +28,7 @@
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -48,38 +49,11 @@ namespace content {
 
 namespace {
 
-class RenderProcessKilledObserver : public WebContentsObserver {
- public:
-  explicit RenderProcessKilledObserver(WebContents* web_contents)
-      : WebContentsObserver(web_contents) {}
-  ~RenderProcessKilledObserver() override {}
-
-  bool killed() const { return killed_; }
-
-  void RenderProcessGone(base::TerminationStatus status) override {
-    killed_ = true;
-    run_loop_.Quit();
-  }
-
-  void WaitUntilRenderProcessDied() {
-    if (killed_)
-      return;
-    run_loop_.Run();
-  }
-
- private:
-  bool killed_ = false;
-
-  // Used to wait for the render process being killed. Android doesn't
-  // immediately kill the render process.
-  base::RunLoop run_loop_;
-};
-
 class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
  public:
   std::unique_ptr<WebUIController> CreateWebUIControllerForURL(
       WebUI* web_ui,
-      const GURL& url) const override {
+      const GURL& url) override {
     std::string foo(url.path());
     if (url.path() == "/nobinding/")
       web_ui->SetBindings(0);
@@ -87,15 +61,15 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
                                : nullptr;
   }
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-                             const GURL& url) const override {
+                             const GURL& url) override {
     return HasWebUIScheme(url) ? reinterpret_cast<WebUI::TypeID>(1) : nullptr;
   }
   bool UseWebUIForURL(BrowserContext* browser_context,
-                      const GURL& url) const override {
+                      const GURL& url) override {
     return HasWebUIScheme(url);
   }
   bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                              const GURL& url) const override {
+                              const GURL& url) override {
     return HasWebUIScheme(url);
   }
 };
@@ -105,7 +79,7 @@ class TestWebUIDataSource : public URLDataSource {
   TestWebUIDataSource() {}
   ~TestWebUIDataSource() override {}
 
-  std::string GetSource() const override { return "webui"; }
+  std::string GetSource() override { return "webui"; }
 
   void StartDataRequest(
       const std::string& path,
@@ -117,7 +91,7 @@ class TestWebUIDataSource : public URLDataSource {
     callback.Run(response.get());
   }
 
-  std::string GetMimeType(const std::string& path) const override {
+  std::string GetMimeType(const std::string& path) override {
     return "text/html";
   }
 
@@ -217,10 +191,10 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, WebUIBindingsNoHttp) {
   GURL test_url(GetWebUIURL("webui/"));
   NavigateToURL(shell(), test_url);
-  RenderProcessKilledObserver killed_observer(shell()->web_contents());
+  RenderProcessHostKillWaiter kill_waiter(
+      shell()->web_contents()->GetMainFrame()->GetProcess());
   ASSERT_FALSE(CheckCanLoadHttp());
-  killed_observer.WaitUntilRenderProcessDied();
-  ASSERT_TRUE(killed_observer.killed());
+  EXPECT_EQ(bad_message::WEBUI_BAD_SCHEME_ACCESS, kill_waiter.Wait());
 }
 
 // Verifies that WebUI pages without WebUI bindings can make network requests.
@@ -373,8 +347,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
-  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-      mojom::kNetworkServiceName, &network_service_test);
+  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                      &network_service_test);
   // TODO(crbug.com/901026): Make sure the network process is started to avoid a
   // deadlock on Android.
   network_service_test.FlushForTesting();
@@ -402,8 +376,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncXHROnCrash) {
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
-  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-      mojom::kNetworkServiceName, &network_service_test);
+  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                      &network_service_test);
   network::mojom::NetworkServiceTestPtrInfo network_service_test_info =
       network_service_test.PassInterface();
 
@@ -431,8 +405,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncCookieGetOnCrash) {
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
-  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-      mojom::kNetworkServiceName, &network_service_test);
+  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                      &network_service_test);
   network_service_test->CrashOnGetCookieList();
 
   NavigateToURL(shell(), embedded_test_server()->GetURL("/empty.html"));

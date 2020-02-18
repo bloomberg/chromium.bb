@@ -20,13 +20,13 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/snapshot/snapshot.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/snapshot/snapshot_aura.h"
 #endif
 
@@ -231,8 +231,7 @@ NativeDesktopMediaList::NativeDesktopMediaList(
     std::unique_ptr<webrtc::DesktopCapturer> capturer)
     : DesktopMediaListBase(base::TimeDelta::FromMilliseconds(
           kDefaultNativeDesktopMediaListUpdatePeriod)),
-      thread_("DesktopMediaListCaptureThread"),
-      weak_factory_(this) {
+      thread_("DesktopMediaListCaptureThread") {
   type_ = type;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -305,7 +304,7 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
   }
 
   // OnAuraThumbnailCaptured() and UpdateNativeThumbnailsFinished() are
-  // guaranteed to be excuted after RefreshForAuraWindows() and
+  // guaranteed to be executed after RefreshForAuraWindows() and
   // CaptureAuraWindowThumbnail() in the browser UI thread.
   // Therefore pending_aura_capture_requests_ will be set the number of aura
   // windows to be captured and pending_native_thumbnail_capture_ will be set

@@ -39,8 +39,8 @@
 #include "chrome/common/web_application_info.h"
 #include "components/favicon/core/favicon_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/api/management/management_api_constants.h"
 #include "extensions/browser/disable_reason.h"
@@ -70,8 +70,7 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
       const extensions::Extension* extension,
       const base::Callback<void(bool)>& callback)
       : install_prompt_(new ExtensionInstallPrompt(web_contents)),
-        callback_(callback),
-        weak_factory_(this) {
+        callback_(callback) {
     ExtensionInstallPrompt::PromptType type =
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(
             browser_context, extension);
@@ -97,7 +96,7 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
   base::Callback<void(bool)> callback_;
 
   base::WeakPtrFactory<ManagementSetEnabledFunctionInstallPromptDelegate>
-      weak_factory_;
+      weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ManagementSetEnabledFunctionInstallPromptDelegate);
 };
@@ -258,10 +257,10 @@ void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
   // returned.
   extensions::LaunchContainer launch_container =
       GetLaunchContainer(extensions::ExtensionPrefs::Get(context), extension);
-  OpenApplication(AppLaunchParams(Profile::FromBrowserContext(context),
-                                  extension, launch_container,
-                                  WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                                  extensions::SOURCE_MANAGEMENT_API));
+  OpenApplication(AppLaunchParams(
+      Profile::FromBrowserContext(context), extension->id(), launch_container,
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      extensions::AppLaunchSource::kSourceManagementApi));
 
 #if defined(OS_CHROMEOS)
   chromeos::DemoSession::RecordAppLaunchSourceIfInDemoMode(
@@ -288,8 +287,7 @@ void ChromeManagementAPIDelegate::
         extensions::ManagementGetPermissionWarningsByManifestFunction* function,
         const std::string& manifest_str) const {
   data_decoder::SafeJsonParser::Parse(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      manifest_str,
+      content::GetSystemConnector(), manifest_str,
       base::BindOnce(
           &extensions::ManagementGetPermissionWarningsByManifestFunction::
               OnParseSuccess,

@@ -30,7 +30,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
@@ -49,7 +48,7 @@ const char kProfileShortcutNotFound[] = "profileShortcutNotFound";
 }  // namespace
 
 ManageProfileHandler::ManageProfileHandler(Profile* profile)
-    : profile_(profile), observer_(this), weak_factory_(this) {}
+    : profile_(profile), observer_(this) {}
 
 ManageProfileHandler::~ManageProfileHandler() {}
 

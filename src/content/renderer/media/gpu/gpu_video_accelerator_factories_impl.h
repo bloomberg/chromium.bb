@@ -61,7 +61,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const scoped_refptr<ws::ContextProviderCommandBuffer>& context_provider,
+      const scoped_refptr<viz::ContextProviderCommandBuffer>& context_provider,
       bool enable_video_gpu_memory_buffers,
       bool enable_media_stream_gpu_memory_buffers,
       bool enable_video_accelerator,
@@ -79,23 +79,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   bool IsDecoderConfigSupported(
       media::VideoDecoderImplementation implementation,
       const media::VideoDecoderConfig& config) override;
-  std::unique_ptr<media::VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
-      override;
   std::unique_ptr<media::VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
       override;
-  // Creates textures and produces them into mailboxes. Returns true on success
-  // or false on failure.
-  bool CreateTextures(int32_t count,
-                      const gfx::Size& size,
-                      std::vector<uint32_t>* texture_ids,
-                      std::vector<gpu::Mailbox>* texture_mailboxes,
-                      uint32_t texture_target) override;
-  void DeleteTexture(uint32_t texture_id) override;
-  gpu::SyncToken CreateSyncToken() override;
-  void WaitSyncToken(const gpu::SyncToken& sync_token) override;
-  void SignalSyncToken(const gpu::SyncToken& sync_token,
-                       base::OnceClosure callback) override;
-  void ShallowFlushCHROMIUM() override;
 
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
@@ -108,9 +93,6 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   OutputFormat VideoFrameOutputFormat(
       media::VideoPixelFormat pixel_format) override;
 
-  // Called on the media thread. Returns the GLES2Interface unless the
-  // ContextProvider has been lost, in which case it returns null.
-  gpu::gles2::GLES2Interface* ContextGL() override;
   // Called on the media thread. Returns the SharedImageInterface unless the
   // ContextProvider has been lost, in which case it returns null.
   gpu::SharedImageInterface* SharedImageInterface() override;
@@ -127,14 +109,11 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
 
-  media::VideoDecodeAccelerator::Capabilities
-  GetVideoDecodeAcceleratorCapabilities() override;
   std::vector<media::VideoEncodeAccelerator::SupportedProfile>
   GetVideoEncodeAcceleratorSupportedProfiles() override;
 
-  scoped_refptr<ws::ContextProviderCommandBuffer> GetMediaContextProvider()
+  scoped_refptr<viz::ContextProviderCommandBuffer> GetMediaContextProvider()
       override;
-  gpu::ContextSupport* GetMediaContextProviderContextSupport() override;
 
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
 
@@ -151,7 +130,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const scoped_refptr<ws::ContextProviderCommandBuffer>& context_provider,
+      const scoped_refptr<viz::ContextProviderCommandBuffer>& context_provider,
       bool enable_gpu_memory_buffer_video_frames_for_video,
       bool enable_gpu_memory_buffer_video_frames_for_media_stream,
       bool enable_video_accelerator,
@@ -176,7 +155,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // Shared pointer to a shared context provider. It is initially set on main
   // thread, but all subsequent access and destruction should happen only on the
   // media thread.
-  scoped_refptr<ws::ContextProviderCommandBuffer> context_provider_;
+  scoped_refptr<viz::ContextProviderCommandBuffer> context_provider_;
   // Signals if |context_provider_| is alive on the media thread. For use on the
   // main thread.
   bool context_provider_lost_ = false;

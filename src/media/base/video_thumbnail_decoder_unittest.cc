@@ -8,8 +8,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_task_environment.h"
-#include "media/base/gmock_callback_support.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/video_decoder_config.h"
@@ -18,6 +18,8 @@
 #include "media/base/video_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::base::test::RunCallback;
+using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::DoAll;
 
@@ -34,9 +36,9 @@ class VideoThumbnailDecoderTest : public testing::Test {
     auto mock_video_decoder = std::make_unique<MockVideoDecoder>();
     mock_video_decoder_ = mock_video_decoder.get();
     VideoDecoderConfig valid_config(
-        kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420, VideoColorSpace(),
-        kNoTransformation, gfx::Size(1, 1), gfx::Rect(1, 1), gfx::Size(1, 1),
-        EmptyExtraData(), Unencrypted());
+        kCodecVP8, VP8PROFILE_ANY, VideoDecoderConfig::AlphaMode::kIsOpaque,
+        VideoColorSpace(), kNoTransformation, gfx::Size(1, 1), gfx::Rect(1, 1),
+        gfx::Size(1, 1), EmptyExtraData(), Unencrypted());
 
     thumbnail_decoder_ = std::make_unique<VideoThumbnailDecoder>(
         std::move(mock_video_decoder), valid_config, std::vector<uint8_t>{0u});

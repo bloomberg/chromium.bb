@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_REPORTING_PROXY_H_
 
 #include <memory>
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
@@ -128,6 +128,11 @@ class CORE_EXPORT WorkerReportingProxy {
   // Invoked when the thread is stopped and WorkerGlobalScope is being
   // destructed. This is the last method that is called on this interface.
   virtual void DidTerminateWorkerThread() {}
+
+  // This is a quick fix for service worker onion-soup. Don't add a similar
+  // function like IsDedicatedWorkerGlobalScopeProxy().
+  // TODO(leonhsl): Remove this after this becomes unnecessary.
+  virtual bool IsServiceWorkerGlobalScopeProxy() const { return false; }
 };
 
 }  // namespace blink

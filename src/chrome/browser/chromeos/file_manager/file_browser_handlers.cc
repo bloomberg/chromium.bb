@@ -457,7 +457,7 @@ FileBrowserHandlerList FindFileBrowserHandlers(
 
       for (FileBrowserHandlerList::const_iterator itr = handlers.begin();
            itr != handlers.end(); ++itr) {
-        if (base::ContainsKey(common_handler_set, *itr))
+        if (base::Contains(common_handler_set, *itr))
           intersection.push_back(*itr);
       }
 

@@ -4,7 +4,7 @@ use Imager;
 use Imager::Expr::Assem;
 use vars qw($VERSION);
 
-$VERSION = "1.005";
+$VERSION = "1.006";
 
 my %funcs =
   (
@@ -530,5 +530,9 @@ Needs more transformations.
 =head1 SEE ALSO
 
 Imager(3), F<transform.perl>
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>
 
 =cut

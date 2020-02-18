@@ -30,10 +30,14 @@ component("system") {
     "data_pipe.h",
     "data_pipe_drainer.cc",
     "data_pipe_drainer.h",
+    "data_pipe_producer.cc",
+    "data_pipe_producer.h",
     "data_pipe_utils.cc",
     "data_pipe_utils.h",
-    "file_data_pipe_producer.cc",
-    "file_data_pipe_producer.h",
+    "file_data_source.cc",
+    "file_data_source.h",
+    "filtered_data_source.cc",
+    "filtered_data_source.h",
     "functions.h",
     "handle.h",
     "handle_signal_tracker.cc",
@@ -52,8 +56,8 @@ component("system") {
     "scope_to_message_pipe.h",
     "simple_watcher.cc",
     "simple_watcher.h",
-    "string_data_pipe_producer.cc",
-    "string_data_pipe_producer.h",
+    "string_data_source.cc",
+    "string_data_source.h",
     "system_export.h",
     "trap.cc",
     "trap.h",
@@ -67,7 +71,7 @@ component("system") {
     # This file refers to a the base::File::File(path, flags)
     # constructor which does not exist in nacl builds, and the code
     # here is unused in nacl builds anyway.
-    sources -= [ "file_data_pipe_producer.cc" ]
+    sources -= [ "file_data_source.cc" ]
   }
 
   public_deps = [

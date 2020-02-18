@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/android/chrome_jni_headers/AddToHomescreenManager_jni.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/banners/app_banner_manager_android.h"
@@ -19,7 +20,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/AddToHomescreenManager_jni.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/installation/installation.mojom.h"
@@ -70,6 +70,7 @@ void AddToHomescreenManager::AddToHomescreen(
     WebApkInstallService::Get(web_contents->GetBrowserContext())
         ->InstallAsync(web_contents, data_fetcher_->shortcut_info(),
                        data_fetcher_->primary_icon(),
+                       data_fetcher_->has_maskable_primary_icon(),
                        data_fetcher_->badge_icon(),
                        InstallableMetrics::GetInstallSource(
                            web_contents, InstallTrigger::MENU));
@@ -86,8 +87,7 @@ void AddToHomescreenManager::AddToHomescreen(
   // Fire the appinstalled event and do install time logging.
   banners::AppBannerManagerAndroid* app_banner_manager =
       banners::AppBannerManagerAndroid::FromWebContents(web_contents);
-  app_banner_manager->OnInstall(false /* is_native */,
-                                data_fetcher_->shortcut_info().display);
+  app_banner_manager->OnInstall(data_fetcher_->shortcut_info().display);
 }
 
 void AddToHomescreenManager::Start(content::WebContents* web_contents) {

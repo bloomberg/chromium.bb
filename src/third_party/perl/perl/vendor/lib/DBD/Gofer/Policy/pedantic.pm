@@ -1,6 +1,6 @@
 package DBD::Gofer::Policy::pedantic;
 
-#   $Id: pedantic.pm 10087 2007-10-16 12:42:37Z timbo $
+#   $Id: pedantic.pm 10087 2007-10-16 12:42:37Z Tim $
 #
 #   Copyright (c) 2007, Tim Bunce, Ireland
 #
@@ -10,7 +10,7 @@ package DBD::Gofer::Policy::pedantic;
 use strict;
 use warnings;
 
-our $VERSION = sprintf("0.%06d", q$Revision: 10087 $ =~ /(\d+)/o);
+our $VERSION = "0.010088";
 
 use base qw(DBD::Gofer::Policy::Base);
 

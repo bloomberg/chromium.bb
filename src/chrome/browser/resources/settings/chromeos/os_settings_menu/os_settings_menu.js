@@ -14,6 +14,7 @@ Polymer({
   properties: {
     advancedOpened: {
       type: Boolean,
+      value: false,
       notify: true,
     },
 
@@ -38,6 +39,11 @@ Polymer({
     }
 
     this.setSelectedUrl_('');  // Nothing is selected.
+  },
+
+  /** @private */
+  onAdvancedButtonToggle_: function() {
+    this.advancedOpened = !this.advancedOpened;
   },
 
   /**
@@ -82,5 +88,11 @@ Polymer({
    * */
   arrowState_: function(opened) {
     return opened ? 'cr:arrow-drop-up' : 'cr:arrow-drop-down';
+  },
+
+  /** @return {boolean} Whether the advanced submenu is open. */
+  isAdvancedSubmenuOpenedForTest: function() {
+    const submenu = /** @type {IronCollapseElement} */ (this.$.advancedSubmenu);
+    return submenu.opened;
   },
 });

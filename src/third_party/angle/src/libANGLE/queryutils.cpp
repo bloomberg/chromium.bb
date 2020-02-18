@@ -306,6 +306,9 @@ void QueryTexParameterBase(const Texture *texture, GLenum pname, ParamType *para
         case GL_TEXTURE_BORDER_COLOR:
             ConvertFromColor<isPureInteger>(texture->getBorderColor(), params);
             break;
+        case GL_TEXTURE_NATIVE_ID_ANGLE:
+            *params = CastFromStateValue<ParamType>(pname, texture->getNativeID());
+            break;
         default:
             UNREACHABLE();
             break;
@@ -494,7 +497,7 @@ void SetSamplerParameterBase(Context *context,
             break;
     }
 
-    sampler->onStateChange(context, angle::SubjectMessage::ContentsChanged);
+    sampler->onStateChange(angle::SubjectMessage::ContentsChanged);
 }
 
 // Warning: you should ensure binding really matches attrib.bindingIndex before using this function.
@@ -517,16 +520,18 @@ void QueryVertexAttribBase(const VertexAttribute &attrib,
             *params = CastFromStateValue<ParamType>(pname, static_cast<GLint>(attrib.enabled));
             break;
         case GL_VERTEX_ATTRIB_ARRAY_SIZE:
-            *params = CastFromGLintStateValue<ParamType>(pname, attrib.size);
+            *params = CastFromGLintStateValue<ParamType>(pname, attrib.format->channelCount);
             break;
         case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
             *params = CastFromGLintStateValue<ParamType>(pname, attrib.vertexAttribArrayStride);
             break;
         case GL_VERTEX_ATTRIB_ARRAY_TYPE:
-            *params = CastFromGLintStateValue<ParamType>(pname, ToGLenum(attrib.type));
+            *params = CastFromGLintStateValue<ParamType>(
+                pname, gl::ToGLenum(attrib.format->vertexAttribType));
             break;
         case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
-            *params = CastFromStateValue<ParamType>(pname, static_cast<GLint>(attrib.normalized));
+            *params =
+                CastFromStateValue<ParamType>(pname, static_cast<GLint>(attrib.format->isNorm()));
             break;
         case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
             *params = CastFromGLintStateValue<ParamType>(pname, binding.getBuffer().id());
@@ -535,7 +540,7 @@ void QueryVertexAttribBase(const VertexAttribute &attrib,
             *params = CastFromStateValue<ParamType>(pname, binding.getDivisor());
             break;
         case GL_VERTEX_ATTRIB_ARRAY_INTEGER:
-            *params = CastFromGLintStateValue<ParamType>(pname, attrib.pureInteger);
+            *params = CastFromGLintStateValue<ParamType>(pname, attrib.format->isPureInt());
             break;
         case GL_VERTEX_ATTRIB_BINDING:
             *params = CastFromGLintStateValue<ParamType>(pname, attrib.bindingIndex);
@@ -2752,6 +2757,7 @@ unsigned int GetTexParameterCount(GLenum pname)
         case GL_TEXTURE_COMPARE_FUNC:
         case GL_TEXTURE_SRGB_DECODE_EXT:
         case GL_DEPTH_STENCIL_TEXTURE_MODE:
+        case GL_TEXTURE_NATIVE_ID_ANGLE:
             return 1;
         default:
             return 0;

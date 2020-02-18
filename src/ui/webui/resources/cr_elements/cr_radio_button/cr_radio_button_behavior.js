@@ -35,22 +35,20 @@ const CrRadioButtonBehaviorImpl = {
   },
 
   listeners: {
-    blur: 'cancelRipple_',
+    blur: 'hideRipple_',
     focus: 'onFocus_',
-    pointerup: 'cancelRipple_',
+    up: 'hideRipple_',
   },
 
   /** @private */
   onFocus_: function() {
-    this.ensureRipple();
-    this.$$('paper-ripple').holdDown = true;
+    this.getRipple().showAndHoldDown();
     this.$.button.focus();
   },
 
   /** @private */
-  cancelRipple_: function() {
-    this.ensureRipple();
-    this.$$('paper-ripple').holdDown = false;
+  hideRipple_: function() {
+    this.getRipple().clear();
   },
 
   /** @private */

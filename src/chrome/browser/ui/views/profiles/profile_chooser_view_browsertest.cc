@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
-
 #include <stddef.h>
 
 #include "base/command_line.h"
@@ -33,14 +31,16 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -61,7 +61,7 @@ Profile* CreateTestingProfile(const base::FilePath& path) {
   std::unique_ptr<Profile> profile =
       Profile::CreateProfile(path, nullptr, Profile::CREATE_MODE_SYNCHRONOUS);
   Profile* profile_ptr = profile.get();
-  profile_manager->RegisterTestingProfile(profile.release(), true, false);
+  profile_manager->RegisterTestingProfile(std::move(profile), true, false);
   EXPECT_EQ(starting_number_of_profiles + 1,
             profile_manager->GetNumberOfProfiles());
   return profile_ptr;
@@ -142,11 +142,7 @@ class ProfileChooserViewExtensionsTest
       CreateTestingProfile(profile_manager->GenerateNextProfileDirectoryPath());
     }
     if (name == kGuest || name == kDiceGuest) {
-      content::WindowedNotificationObserver browser_creation_observer(
-          chrome::NOTIFICATION_BROWSER_OPENED,
-          content::NotificationService::AllSources());
       profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
-      browser_creation_observer.Wait();
 
       Profile* guest = g_browser_process->profile_manager()->GetProfileByPath(
           ProfileManager::GetGuestProfilePath());
@@ -175,11 +171,6 @@ class ProfileChooserViewExtensionsTest
 
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(ProfileChooserView::IsShowing());
-
-    // Create this observer before lock is pressed to avoid a race condition.
-    window_close_observer_.reset(new content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::Source<Browser>(browser)));
   }
 
   void OpenProfileChooserViews(Browser* browser) {
@@ -217,10 +208,6 @@ class ProfileChooserViewExtensionsTest
     return registry;
   }
 
-  content::WindowedNotificationObserver* window_close_observer() {
-    return window_close_observer_.get();
-  }
-
   ProfileChooserView* current_profile_bubble() {
     return static_cast<ProfileChooserView*>(
         ProfileChooserView::GetBubbleForTesting());
@@ -235,8 +222,6 @@ class ProfileChooserViewExtensionsTest
   }
 
  private:
-  std::unique_ptr<content::WindowedNotificationObserver> window_close_observer_;
-
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserViewExtensionsTest);
 };
 
@@ -339,7 +324,8 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, LockProfile) {
   ClickProfileChooserViewLockButton();
   EXPECT_TRUE(menu->GetItemAt(menu->GetActiveProfileIndex()).signin_required);
 
-  window_close_observer()->Wait();
+  if (!BrowserList::GetInstance()->empty())
+    ui_test_utils::WaitForBrowserToClose(browser());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 
   // Wait until the user manager is shown.
@@ -365,7 +351,10 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
 
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
   ClickProfileChooserViewLockButton();
-  window_close_observer()->Wait();
+
+  if (!BrowserList::GetInstance()->empty())
+    ui_test_utils::WaitForBrowserToClose(browser());
+  EXPECT_TRUE(BrowserList::GetInstance()->empty());
 
   // Wait until the user manager is shown.
   runner->Run();
@@ -400,7 +389,9 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
 
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser_to_lock));
   ClickProfileChooserViewLockButton();
-  window_close_observer()->Wait();
+
+  if (1U != BrowserList::GetInstance()->size())
+    ui_test_utils::WaitForBrowserToClose(browser_to_lock);
   EXPECT_EQ(1U, BrowserList::GetInstance()->size());
 
   // Wait until the user manager is shown.

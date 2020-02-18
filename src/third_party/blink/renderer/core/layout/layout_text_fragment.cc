@@ -186,8 +186,9 @@ LayoutText* LayoutTextFragment::GetFirstLetterPart() const {
   return ToLayoutTextFragment(child);
 }
 
-void LayoutTextFragment::UpdateHitTestResult(HitTestResult& result,
-                                             const LayoutPoint& point) const {
+void LayoutTextFragment::UpdateHitTestResult(
+    HitTestResult& result,
+    const PhysicalOffset& point) const {
   if (result.InnerNode())
     return;
 

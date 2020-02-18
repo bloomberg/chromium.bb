@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
+#include "android_webview/native_jni/AwContentsStatics_jni.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -23,7 +24,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
-#include "jni/AwContentsStatics_jni.h"
 #include "net/cert/cert_database.h"
 
 using base::android::AttachCurrentThread;
@@ -65,7 +65,7 @@ JNI_AwContentsStatics_GetSafeBrowsingPrivacyPolicyUrl(JNIEnv* env) {
   GURL privacy_policy_url(
       security_interstitials::kSafeBrowsingPrivacyPolicyUrl);
   std::string locale =
-      AwBrowserContext::GetDefault()->GetSafeBrowsingUIManager()->app_locale();
+      AwBrowserProcess::GetInstance()->GetSafeBrowsingUIManager()->app_locale();
   privacy_policy_url =
       google_util::AppendGoogleLocaleParam(privacy_policy_url, locale);
   return base::android::ConvertUTF8ToJavaString(env, privacy_policy_url.spec());
@@ -105,7 +105,7 @@ void JNI_AwContentsStatics_SetSafeBrowsingWhitelist(
   std::vector<std::string> rules;
   base::android::AppendJavaStringArrayToStringVector(env, jrules, &rules);
   AwSafeBrowsingWhitelistManager* whitelist_manager =
-      AwBrowserContext::GetDefault()->GetSafeBrowsingWhitelistManager();
+      AwBrowserProcess::GetInstance()->GetSafeBrowsingWhitelistManager();
   whitelist_manager->SetWhitelistOnUIThread(
       std::move(rules),
       base::BindOnce(&SafeBrowsingWhitelistAssigned,

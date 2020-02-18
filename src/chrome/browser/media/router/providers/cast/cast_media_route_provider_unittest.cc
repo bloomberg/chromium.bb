@@ -50,9 +50,10 @@ class CastMediaRouteProviderTest : public testing::Test {
     router_binding_ = std::make_unique<mojo::Binding<mojom::MediaRouter>>(
         &mock_router_, mojo::MakeRequest(&router_ptr));
 
-    CastSessionTracker::SetInstanceForTest(
+    session_tracker_ = std::unique_ptr<CastSessionTracker>(
         new CastSessionTracker(&media_sink_service_, &message_handler_,
                                socket_service_.task_runner()));
+    CastSessionTracker::SetInstanceForTest(session_tracker_.get());
 
     EXPECT_CALL(mock_router_, OnSinkAvailabilityUpdated(_, _));
     provider_ = std::make_unique<CastMediaRouteProvider>(
@@ -67,6 +68,7 @@ class CastMediaRouteProviderTest : public testing::Test {
   void TearDown() override {
     provider_.reset();
     CastSessionTracker::SetInstanceForTest(nullptr);
+    session_tracker_.reset();
   }
 
   void ExpectCreateRouteSuccessAndSetRoute(
@@ -111,6 +113,7 @@ class CastMediaRouteProviderTest : public testing::Test {
   cast_channel::MockCastSocketService socket_service_;
   cast_channel::MockCastMessageHandler message_handler_;
 
+  std::unique_ptr<CastSessionTracker> session_tracker_;
   TestMediaSinkService media_sink_service_;
   MockCastAppDiscoveryService app_discovery_service_;
   std::unique_ptr<CastMediaRouteProvider> provider_;

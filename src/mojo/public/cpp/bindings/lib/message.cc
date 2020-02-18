@@ -218,10 +218,11 @@ Message::Message(Message&& other)
       associated_endpoint_handles_(
           std::move(other.associated_endpoint_handles_)),
       transferable_(other.transferable_),
-      serialized_(other.serialized_) {
+      serialized_(other.serialized_),
+      heap_profiler_tag_(other.heap_profiler_tag_),
+      receiver_connection_group_(other.receiver_connection_group_) {
   other.transferable_ = false;
   other.serialized_ = false;
-  heap_profiler_tag_ = other.heap_profiler_tag_;
 #if defined(ENABLE_IPC_FUZZER)
   interface_name_ = other.interface_name_;
   method_name_ = other.method_name_;
@@ -239,6 +240,35 @@ Message::Message(uint32_t name,
   CreateSerializedMessageObject(name, flags, GetTraceId(this), payload_size,
                                 payload_interface_id_count, handles, &handle_,
                                 &payload_buffer_);
+  transferable_ = true;
+  serialized_ = true;
+}
+
+Message::Message(base::span<const uint8_t> payload,
+                 base::span<ScopedHandle> handles) {
+  MojoResult rv = mojo::CreateMessage(&handle_);
+  DCHECK_EQ(MOJO_RESULT_OK, rv);
+  DCHECK(handle_.is_valid());
+
+  void* buffer;
+  uint32_t buffer_size;
+  DCHECK(base::IsValueInRangeForNumericType<uint32_t>(payload.size()));
+  DCHECK(base::IsValueInRangeForNumericType<uint32_t>(handles.size()));
+  MojoAppendMessageDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
+  rv = MojoAppendMessageData(
+      handle_->value(), static_cast<uint32_t>(payload.size()),
+      reinterpret_cast<MojoHandle*>(handles.data()),
+      static_cast<uint32_t>(handles.size()), &options, &buffer, &buffer_size);
+  DCHECK_EQ(MOJO_RESULT_OK, rv);
+  // Handle ownership has been taken by MojoAppendMessageData.
+  for (auto& handle : handles)
+    ignore_result(handle.release());
+
+  payload_buffer_ = internal::Buffer(buffer, payload.size(), payload.size());
+  std::copy(payload.begin(), payload.end(),
+            static_cast<uint8_t*>(payload_buffer_.data()));
   transferable_ = true;
   serialized_ = true;
 }
@@ -303,7 +333,8 @@ Message& Message::operator=(Message&& other) {
   other.transferable_ = false;
   serialized_ = other.serialized_;
   other.serialized_ = false;
-  other.heap_profiler_tag_ = heap_profiler_tag_;
+  heap_profiler_tag_ = other.heap_profiler_tag_;
+  receiver_connection_group_ = other.receiver_connection_group_;
 #if defined(ENABLE_IPC_FUZZER)
   interface_name_ = other.interface_name_;
   method_name_ = other.method_name_;
@@ -319,6 +350,7 @@ void Message::Reset() {
   transferable_ = false;
   serialized_ = false;
   heap_profiler_tag_ = nullptr;
+  receiver_connection_group_ = nullptr;
 }
 
 const uint8_t* Message::payload() const {

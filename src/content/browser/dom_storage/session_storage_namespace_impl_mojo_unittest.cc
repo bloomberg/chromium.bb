@@ -77,7 +77,8 @@ class SessionStorageNamespaceImplMojoTest
     security_policy->Add(kTestProcessIdAllOrigins, &browser_context_);
     security_policy->Add(kTestProcessIdOrigin3, &browser_context_);
     security_policy->AddIsolatedOrigins(
-        {test_origin1_, test_origin2_, test_origin3_});
+        {test_origin1_, test_origin2_, test_origin3_},
+        ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
     security_policy->LockToOrigin(IsolationContext(&browser_context_),
                                   kTestProcessIdOrigin1,
                                   test_origin1_.GetURL());
@@ -202,7 +203,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, MetadataLoad) {
   std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSync(leveldb_1.get(), &data));
   EXPECT_EQ(1ul, data.size());
-  EXPECT_TRUE(base::ContainsValue(
+  EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
                                         StdStringToUint8Vector("data1"))));
 
@@ -237,10 +238,10 @@ TEST_F(SessionStorageNamespaceImplMojoTest, MetadataLoadWithMapOperations) {
   std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSync(leveldb_1.get(), &data));
   EXPECT_EQ(2ul, data.size());
-  EXPECT_TRUE(base::ContainsValue(
+  EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
                                         StdStringToUint8Vector("data1"))));
-  EXPECT_TRUE(base::ContainsValue(
+  EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key2"),
                                         StdStringToUint8Vector("data2"))));
 
@@ -288,10 +289,10 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneBeforeBind) {
   std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSync(leveldb_2.get(), &data));
   EXPECT_EQ(2ul, data.size());
-  EXPECT_TRUE(base::ContainsValue(
+  EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
                                         StdStringToUint8Vector("data1"))));
-  EXPECT_TRUE(base::ContainsValue(
+  EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key2"),
                                         StdStringToUint8Vector("data2"))));
 
@@ -323,7 +324,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneAfterBind) {
                         kTestProcessIdOrigin1);
 
   // Set that we are waiting for clone, so binding is possible.
-  namespace_impl2->SetWaitingForClonePopulation();
+  namespace_impl2->SetPendingPopulationFromParentNamespace(test_namespace_id1_);
 
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
@@ -351,14 +352,14 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneAfterBind) {
   std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSync(leveldb_n2_o1.get(), &data));
   EXPECT_EQ(1ul, data.size());
-  EXPECT_TRUE(base::ContainsValue(
+  EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
                                         StdStringToUint8Vector("data1"))));
 
   data.clear();
   EXPECT_TRUE(test::GetAllSync(leveldb_n2_o2.get(), &data));
   EXPECT_EQ(1ul, data.size());
-  EXPECT_TRUE(base::ContainsValue(
+  EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key2"),
                                         StdStringToUint8Vector("data2"))));
 

@@ -11,6 +11,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
@@ -18,9 +19,9 @@
 #include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_mojo_media_stream_dispatcher_host.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using ::testing::_;
@@ -52,7 +53,8 @@ class MockVideoCapturerSource : public media::VideoCapturerSource {
   void StopCapture() override { MockStopCapture(); }
   void SetRunning(bool is_running) {
     PostCrossThreadTask(*scheduler::GetSingleThreadTaskRunnerForTesting(),
-                        FROM_HERE, CrossThreadBind(running_cb_, is_running));
+                        FROM_HERE,
+                        CrossThreadBindRepeating(running_cb_, is_running));
   }
   const media::VideoCaptureParams& capture_params() const {
     return capture_params_;
@@ -76,8 +78,8 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
     MediaStreamVideoSink::ConnectToTrack(
         track,
         ConvertToBaseCallback(
-            CrossThreadBind(&FakeMediaStreamVideoSink::OnVideoFrame,
-                            WTF::CrossThreadUnretained(this))),
+            CrossThreadBindRepeating(&FakeMediaStreamVideoSink::OnVideoFrame,
+                                     WTF::CrossThreadUnretained(this))),
         true);
   }
 
@@ -174,7 +176,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 
  protected:
   void OnConstraintsApplied(WebPlatformMediaStreamSource* source,
-                            MediaStreamRequestResult result,
+                            mojom::blink::MediaStreamRequestResult result,
                             const WebString& result_name) {}
 
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
@@ -244,9 +246,9 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
   const scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2));
   frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE, 30.0);
-  PostCrossThreadTask(
-      *Platform::Current()->GetIOTaskRunner(), FROM_HERE,
-      CrossThreadBind(deliver_frame_cb, frame, reference_capture_time));
+  PostCrossThreadTask(*Platform::Current()->GetIOTaskRunner(), FROM_HERE,
+                      CrossThreadBindRepeating(deliver_frame_cb, frame,
+                                               reference_capture_time));
   run_loop.Run();
   fake_sink.DisconnectFromTrack();
   EXPECT_EQ(reference_capture_time, capture_time);
@@ -389,8 +391,9 @@ TEST_F(MediaStreamVideoCapturerSourceTest, ChangeSource) {
   // |ChangeSourceImpl()| will recreate the |delegate_|, so check the
   // |MockStartCapture()| invoking in the |RecreateVideoCapturerSource()|.
   EXPECT_CALL(mock_delegate(), MockStopCapture());
-  MediaStreamDevice fake_video_device(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                                      "Fake_Video_Device", "Fake Video Device");
+  MediaStreamDevice fake_video_device(
+      mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE, "Fake_Video_Device",
+      "Fake Video Device");
   source_->ChangeSourceImpl(fake_video_device);
   EXPECT_EQ(WebMediaStreamSource::kReadyStateLive,
             webkit_source_.GetReadyState());

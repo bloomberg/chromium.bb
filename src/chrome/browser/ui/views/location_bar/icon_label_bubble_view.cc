@@ -159,7 +159,7 @@ void IconLabelBubbleView::InkDropRippleAnimationEnded(
 bool IconLabelBubbleView::ShouldShowLabel() const {
   if (slide_animation_.is_animating() || is_animation_paused_)
     return !IsShrinking() || (width() > image()->GetPreferredSize().width());
-  return label()->GetVisible() && !label()->text().empty();
+  return label()->GetVisible() && !label()->GetText().empty();
 }
 
 void IconLabelBubbleView::SetLabel(const base::string16& label_text) {
@@ -213,16 +213,6 @@ bool IconLabelBubbleView::IsBubbleShowing() const {
   return false;
 }
 
-void IconLabelBubbleView::UpdateBorder() {
-  // Bubbles are given the full internal height of the location bar so that all
-  // child views in the location bar have the same height. The visible height of
-  // the bubble should be smaller, so use an empty border to shrink down the
-  // content bounds so the background gets painted correctly.
-  SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING),
-                  GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left())));
-}
-
 gfx::Size IconLabelBubbleView::CalculatePreferredSize() const {
   // Height will be ignored by the LocationBarView.
   return GetSizeForLabelWidth(label()->GetPreferredSize().width());
@@ -262,8 +252,8 @@ void IconLabelBubbleView::Layout() {
 
   float separator_width =
       GetWidthBetweenIconAndSeparator() + GetEndPaddingWithSeparator();
-  int separator_x = label()->text().empty() ? image()->bounds().right()
-                                            : label()->bounds().right();
+  int separator_x = label()->GetText().empty() ? image()->bounds().right()
+                                               : label()->bounds().right();
   separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
                              separator_height);
 
@@ -324,6 +314,9 @@ void IconLabelBubbleView::OnBlur() {
 }
 
 void IconLabelBubbleView::AnimationEnded(const gfx::Animation* animation) {
+  if (animation != &slide_animation_)
+    return views::LabelButton::AnimationEnded(animation);
+
   if (!is_animation_paused_) {
     // If there is no separator to show, then that means we want the text to
     // disappear after animating.
@@ -336,11 +329,17 @@ void IconLabelBubbleView::AnimationEnded(const gfx::Animation* animation) {
 }
 
 void IconLabelBubbleView::AnimationProgressed(const gfx::Animation* animation) {
+  if (animation != &slide_animation_)
+    return views::LabelButton::AnimationProgressed(animation);
+
   if (!is_animation_paused_)
     PreferredSizeChanged();
 }
 
 void IconLabelBubbleView::AnimationCanceled(const gfx::Animation* animation) {
+  if (animation != &slide_animation_)
+    return views::LabelButton::AnimationCanceled(animation);
+
   AnimationEnded(animation);
 }
 
@@ -505,9 +504,19 @@ void IconLabelBubbleView::UpdateHighlightPath() {
 
   SkPath path;
   path.addRoundRect(rect, corner_radius, corner_radius);
-  SetProperty(views::kHighlightPathKey, new SkPath(path));
+  SetProperty(views::kHighlightPathKey, path);
   if (focus_ring()) {
     focus_ring()->Layout();
     focus_ring()->SchedulePaint();
   }
+}
+
+void IconLabelBubbleView::UpdateBorder() {
+  // Bubbles are given the full internal height of the location bar so that all
+  // child views in the location bar have the same height. The visible height of
+  // the bubble should be smaller, so use an empty border to shrink down the
+  // content bounds so the background gets painted correctly.
+  SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING),
+                  GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left())));
 }

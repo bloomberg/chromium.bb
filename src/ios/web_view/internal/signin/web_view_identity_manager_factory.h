@@ -9,7 +9,7 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -21,15 +21,11 @@ class WebViewBrowserState;
 // BrowserStates.
 class WebViewIdentityManagerFactory : public BrowserStateKeyedServiceFactory {
  public:
-  static identity::IdentityManager* GetForBrowserState(
+  static signin::IdentityManager* GetForBrowserState(
       WebViewBrowserState* browser_state);
 
   // Returns an instance of the WebViewIdentityManagerFactory singleton.
   static WebViewIdentityManagerFactory* GetInstance();
-
-  // Ensures that IdentityManagerFactory and the factories on which it depends
-  // are built.
-  static void EnsureFactoryAndDependeeFactoriesBuilt();
 
  private:
   friend class base::NoDestructor<WebViewIdentityManagerFactory>;

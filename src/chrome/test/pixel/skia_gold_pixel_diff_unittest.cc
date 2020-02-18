@@ -38,6 +38,9 @@ class MockSkiaGoldPixelDiff : public SkiaGoldPixelDiff {
     *image = gfx::Image::CreateFrom1xBitmap(bitmap);
     return true;
   }
+  int LaunchProcess(base::CommandLine::StringType& cmdline) {
+    return 0;
+  }
 };
 
 class SkiaGoldPixelDiffTest : public ::testing::Test {

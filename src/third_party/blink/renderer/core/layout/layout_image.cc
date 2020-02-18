@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
@@ -45,6 +44,7 @@
 #include "third_party/blink/renderer/core/paint/image_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -68,10 +68,6 @@ LayoutImage::~LayoutImage() = default;
 void LayoutImage::WillBeDestroyed() {
   DCHECK(image_resource_);
   image_resource_->Shutdown();
-  if (RuntimeEnabledFeatures::ElementTimingEnabled(&GetDocument())) {
-    if (LocalDOMWindow* window = GetDocument().domWindow())
-      ImageElementTiming::From(*window).NotifyWillBeDestroyed(this);
-  }
 
   LayoutReplaced::WillBeDestroyed();
 }
@@ -220,6 +216,8 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
 
 void LayoutImage::PaintReplaced(const PaintInfo& paint_info,
                                 const PhysicalOffset& paint_offset) const {
+  if (PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+    return;
   ImagePainter(*this).PaintReplaced(paint_info, paint_offset);
 }
 
@@ -293,12 +291,12 @@ HTMLMapElement* LayoutImage::ImageMap() const {
 }
 
 bool LayoutImage::NodeAtPoint(HitTestResult& result,
-                              const HitTestLocation& location_in_container,
-                              const LayoutPoint& accumulated_offset,
+                              const HitTestLocation& hit_test_location,
+                              const PhysicalOffset& accumulated_offset,
                               HitTestAction hit_test_action) {
   HitTestResult temp_result(result);
   bool inside = LayoutReplaced::NodeAtPoint(
-      temp_result, location_in_container, accumulated_offset, hit_test_action);
+      temp_result, hit_test_location, accumulated_offset, hit_test_action);
 
   if (!inside && result.GetHitTestRequest().ListBased())
     result.Append(temp_result);

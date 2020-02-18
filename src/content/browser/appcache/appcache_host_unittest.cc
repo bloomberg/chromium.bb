@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -19,10 +20,12 @@
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/isolation_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/test_web_contents.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/url_request/url_request.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -33,6 +36,10 @@
 #include "url/origin.h"
 
 namespace content {
+
+namespace {
+const int64_t kUnsetCacheId = -222;
+}
 
 class AppCacheHostTest : public testing::Test {
  public:
@@ -55,7 +62,7 @@ class AppCacheHostTest : public testing::Test {
    public:
     MockFrontend(WebContents* web_contents)
         : WebContentsObserver(web_contents),
-          last_cache_id_(-222),
+          last_cache_id_(kUnsetCacheId),
           last_status_(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE),
           last_event_id_(
               blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT),
@@ -176,7 +183,7 @@ class AppCacheHostTest : public testing::Test {
 TEST_F(AppCacheHostTest, Basic) {
   // Construct a host and test what state it appears to be in.
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
-                    nullptr, &service_);
+                    mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   EXPECT_EQ(kHostIdForTest, host.host_id());
   EXPECT_EQ(kProcessIdForTest, host.process_id());
@@ -216,7 +223,7 @@ TEST_F(AppCacheHostTest, SelectNoCache) {
   const url::Origin kOrigin(url::Origin::Create(kDocAndOriginUrl));
   {
     AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
-                      nullptr, &service_);
+                      mojo::NullRemote(), &service_);
     host.set_frontend_for_testing(&mock_frontend_);
     host.SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
                      GURL());
@@ -247,11 +254,11 @@ TEST_F(AppCacheHostTest, ForeignEntry) {
   // Precondition, a cache with an entry that is not marked as foreign.
   const int kCacheId = 22;
   const GURL kDocumentURL("http://origin/document");
-  scoped_refptr<AppCache> cache = new AppCache(service_.storage(), kCacheId);
+  auto cache = base::MakeRefCounted<AppCache>(service_.storage(), kCacheId);
   cache->AddEntry(kDocumentURL, AppCacheEntry(AppCacheEntry::EXPLICIT));
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
-                    nullptr, &service_);
+                    mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   host.MarkAsForeignEntry(kDocumentURL, kCacheId);
 
@@ -284,7 +291,7 @@ TEST_F(AppCacheHostTest, ForeignFallbackEntry) {
   cache->AddEntry(kFallbackURL, AppCacheEntry(AppCacheEntry::FALLBACK));
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
-                    nullptr, &service_);
+                    mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   host.NotifyMainResourceIsNamespaceEntry(kFallbackURL);
   host.MarkAsForeignEntry(GURL("http://origin/missing_document"), kCacheId);
@@ -305,7 +312,7 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
       blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
-                    nullptr, &service_);
+                    mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   EXPECT_FALSE(host.is_selection_pending());
 
@@ -338,7 +345,7 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
 
 TEST_F(AppCacheHostTest, FailedGroupLoad) {
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
-                    nullptr, &service_);
+                    mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
 
   const GURL kMockManifestUrl("http://foo.bar/baz");
@@ -370,7 +377,7 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
 
 TEST_F(AppCacheHostTest, SetSwappableCache) {
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
-                    nullptr, &service_);
+                    mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   host.SetSwappableCache(nullptr);
   EXPECT_FALSE(host.swappable_cache_.get());
@@ -389,7 +396,7 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
   EXPECT_EQ(cache1, host.swappable_cache_.get());
 
   mock_frontend_.last_cache_id_ =
-      -222;  // to verify we received OnCacheSelected
+      kUnsetCacheId;  // to verify we received OnCacheSelected
 
   host.AssociateCompleteCache(cache1.get());
   EXPECT_FALSE(host.swappable_cache_.get());  // was same as associated cache
@@ -475,7 +482,7 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
   const GURL kManifestUrl(GURL("http://whatever/cache.manifest"));
   {
     AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
-                      nullptr, &service_);
+                      mojo::NullRemote(), &service_);
     host.set_frontend_for_testing(&mock_frontend_);
     host.SetFirstPartyUrlForTesting(kDocAndOriginUrl);
     host.SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
@@ -524,7 +531,7 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
   const GURL kManifestUrl(GURL("http://whatever/cache.manifest"));
   {
     AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
-                      nullptr, &service_);
+                      mojo::NullRemote(), &service_);
     host.set_frontend_for_testing(&mock_frontend_);
     host.SetFirstPartyUrlForTesting(kDocAndOriginUrl);
     host.SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
@@ -558,15 +565,15 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
 TEST_F(AppCacheHostTest, SelectCacheTwice) {
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
-                    nullptr, &service_);
+                    mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
-  blink::mojom::AppCacheHostPtr host_ptr;
-  host.BindRequest(mojo::MakeRequest(&host_ptr));
+  mojo::Remote<blink::mojom::AppCacheHost> host_remote;
+  host.BindReceiver(host_remote.BindNewPipeAndPassReceiver());
 
   {
     mojo::test::BadMessageObserver bad_message_observer;
-    host_ptr->SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
-                          GURL());
+    host_remote->SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
+                             GURL());
 
     base::RunLoop().RunUntilIdle();
     EXPECT_FALSE(bad_message_observer.got_bad_message());
@@ -575,20 +582,20 @@ TEST_F(AppCacheHostTest, SelectCacheTwice) {
   // Select methods should bail if cache has already been selected.
   {
     mojo::test::BadMessageObserver bad_message_observer;
-    host_ptr->SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
-                          GURL());
+    host_remote->SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
+                             GURL());
     EXPECT_EQ("ACH_SELECT_CACHE", bad_message_observer.WaitForBadMessage());
   }
   {
     mojo::test::BadMessageObserver bad_message_observer;
-    host_ptr->SelectCacheForSharedWorker(blink::mojom::kAppCacheNoCacheId);
+    host_remote->SelectCacheForSharedWorker(blink::mojom::kAppCacheNoCacheId);
     EXPECT_EQ("ACH_SELECT_CACHE_FOR_SHARED_WORKER",
               bad_message_observer.WaitForBadMessage());
   }
   {
     mojo::test::BadMessageObserver bad_message_observer;
-    host_ptr->MarkAsForeignEntry(kDocAndOriginUrl,
-                                 blink::mojom::kAppCacheNoCacheId);
+    host_remote->MarkAsForeignEntry(kDocAndOriginUrl,
+                                    blink::mojom::kAppCacheNoCacheId);
     EXPECT_EQ("ACH_MARK_AS_FOREIGN_ENTRY",
               bad_message_observer.WaitForBadMessage());
   }
@@ -601,20 +608,183 @@ TEST_F(AppCacheHostTest, SelectCacheInvalidCacheId) {
   // should cause a BadMessage.
   const int kCacheId = 22;
   const GURL kDocumentURL("http://origin/document");
-  scoped_refptr<AppCache> cache = new AppCache(service_.storage(), kCacheId);
+  auto cache = base::MakeRefCounted<AppCache>(service_.storage(), kCacheId);
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
-                    nullptr, &service_);
+                    mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
-  blink::mojom::AppCacheHostPtr host_ptr;
-  host.BindRequest(mojo::MakeRequest(&host_ptr));
+  mojo::Remote<blink::mojom::AppCacheHost> host_remote;
+  host.BindReceiver(host_remote.BindNewPipeAndPassReceiver());
 
   {
     mojo::test::BadMessageObserver bad_message_observer;
-    host_ptr->SelectCache(kDocAndOriginUrl, kCacheId, GURL());
+    host_remote->SelectCache(kDocAndOriginUrl, kCacheId, GURL());
 
     EXPECT_EQ("ACH_SELECT_CACHE_ID_NOT_OWNED",
               bad_message_observer.WaitForBadMessage());
   }
 }
 
+TEST_F(AppCacheHostTest, SelectCacheURLsForWrongSite) {
+  // Lock process to |kProcessLockURL| so we can only accept URLs from
+  // that site.
+  const GURL kProcessLockURL("http://foo.com");
+  ChildProcessSecurityPolicyImpl::GetInstance()->LockToOrigin(
+      IsolationContext(&browser_context_), kProcessIdForTest, kProcessLockURL);
+
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    mojo::NullRemote(), &service_);
+  host.set_frontend_for_testing(&mock_frontend_);
+  mojo::Remote<blink::mojom::AppCacheHost> host_remote;
+  host.BindReceiver(host_remote.BindNewPipeAndPassReceiver());
+
+  // Verify that a document URL from the wrong site triggers a bad message.
+  {
+    const GURL kDocumentURL("http://whatever/");
+    mojo::test::BadMessageObserver bad_message_observer;
+    host_remote->SelectCache(kDocumentURL, blink::mojom::kAppCacheNoCacheId,
+                             GURL());
+
+    EXPECT_EQ("ACH_SELECT_CACHE_DOCUMENT_URL_ACCESS_NOT_ALLOWED",
+              bad_message_observer.WaitForBadMessage());
+  }
+
+  // Verify that a document URL from the wrong site triggers a bad message.
+  {
+    const GURL kDocumentURL = kProcessLockURL;
+    const GURL kManifestURL("http://whatever/");
+    mojo::test::BadMessageObserver bad_message_observer;
+    host_remote->SelectCache(kDocumentURL, blink::mojom::kAppCacheNoCacheId,
+                             kManifestURL);
+
+    EXPECT_EQ("ACH_SELECT_CACHE_MANIFEST_URL_ACCESS_NOT_ALLOWED",
+              bad_message_observer.WaitForBadMessage());
+  }
+}
+
+TEST_F(AppCacheHostTest, ForeignEntryForWrongSite) {
+  // Lock process to |kProcessLockURL| so we can only accept URLs from
+  // that site.
+  const GURL kProcessLockURL("http://foo.com");
+  ChildProcessSecurityPolicyImpl::GetInstance()->LockToOrigin(
+      IsolationContext(&browser_context_), kProcessIdForTest, kProcessLockURL);
+
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    mojo::NullRemote(), &service_);
+  host.set_frontend_for_testing(&mock_frontend_);
+  mojo::Remote<blink::mojom::AppCacheHost> host_remote;
+  host.BindReceiver(host_remote.BindNewPipeAndPassReceiver());
+
+  // Verify that a document URL from the wrong site triggers a bad message.
+  {
+    const GURL kDocumentURL("http://origin/document");
+    mojo::test::BadMessageObserver bad_message_observer;
+    host_remote->MarkAsForeignEntry(kDocumentURL,
+                                    blink::mojom::kAppCacheNoCacheId);
+    EXPECT_EQ("ACH_MARK_AS_FOREIGN_ENTRY_DOCUMENT_URL_ACCESS_NOT_ALLOWED",
+              bad_message_observer.WaitForBadMessage());
+  }
+}
+
+TEST_F(AppCacheHostTest, SelectCacheAfterProcessCleanup) {
+  // Lock process to |kProcessLockURL| so we can only accept URLs from
+  // that site.
+  const GURL kProcessLockURL("http://foo.com");
+  const GURL kDocumentURL("http://foo.com/document");
+  const GURL kManifestURL("http://foo.com/manifest");
+
+  auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  security_policy->LockToOrigin(IsolationContext(&browser_context_),
+                                kProcessIdForTest, kProcessLockURL);
+
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    mojo::NullRemote(), &service_);
+  host.set_frontend_for_testing(&mock_frontend_);
+  mojo::Remote<blink::mojom::AppCacheHost> host_remote;
+  host.BindReceiver(host_remote.BindNewPipeAndPassReceiver());
+
+  EXPECT_TRUE(
+      security_policy->CanAccessDataForOrigin(kProcessIdForTest, kDocumentURL));
+  EXPECT_TRUE(security_policy->HasSecurityState(kProcessIdForTest));
+
+  // Destroy the WebContents so the process gets cleaned up.
+  web_contents_.reset();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(
+      security_policy->CanAccessDataForOrigin(kProcessIdForTest, kDocumentURL));
+  EXPECT_FALSE(security_policy->HasSecurityState(kProcessIdForTest));
+
+  // Verify that the document and manifest URLs do not trigger a bad message.
+  {
+    mojo::test::BadMessageObserver bad_message_observer;
+
+    EXPECT_EQ(kUnsetCacheId, mock_frontend_.last_cache_id_);
+    EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE,
+              mock_frontend_.last_status_);
+
+    host_remote->SelectCache(kDocumentURL, blink::mojom::kAppCacheNoCacheId,
+                             kManifestURL);
+
+    // Run loop to allow the bad message code to run if a bad message was
+    // triggered.
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(bad_message_observer.got_bad_message());
+
+    // Verify the frontend was still called.
+    EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
+    EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+              mock_frontend_.last_status_);
+  }
+}
+
+TEST_F(AppCacheHostTest, ForeignEntryAfterProcessCleanup) {
+  // Lock process to |kProcessLockURL| so we can only accept URLs from
+  // that site.
+  const GURL kProcessLockURL("http://foo.com");
+  const GURL kDocumentURL("http://foo.com/document");
+
+  auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  security_policy->LockToOrigin(IsolationContext(&browser_context_),
+                                kProcessIdForTest, kProcessLockURL);
+
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    mojo::NullRemote(), &service_);
+  host.set_frontend_for_testing(&mock_frontend_);
+  mojo::Remote<blink::mojom::AppCacheHost> host_remote;
+  host.BindReceiver(host_remote.BindNewPipeAndPassReceiver());
+
+  EXPECT_TRUE(
+      security_policy->CanAccessDataForOrigin(kProcessIdForTest, kDocumentURL));
+  EXPECT_TRUE(security_policy->HasSecurityState(kProcessIdForTest));
+
+  // Destroy the WebContents so the process gets cleaned up.
+  web_contents_.reset();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(
+      security_policy->CanAccessDataForOrigin(kProcessIdForTest, kDocumentURL));
+  EXPECT_FALSE(security_policy->HasSecurityState(kProcessIdForTest));
+
+  // Verify that a document URL does not trigger a bad message.
+  {
+    mojo::test::BadMessageObserver bad_message_observer;
+
+    EXPECT_EQ(kUnsetCacheId, mock_frontend_.last_cache_id_);
+    EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE,
+              mock_frontend_.last_status_);
+
+    host_remote->MarkAsForeignEntry(kDocumentURL,
+                                    blink::mojom::kAppCacheNoCacheId);
+
+    // Run loop to allow the bad message code to run if a bad message was
+    // triggered.
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(bad_message_observer.got_bad_message());
+
+    // Verify the frontend was still called.
+    EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
+    EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+              mock_frontend_.last_status_);
+  }
+}
 }  // namespace content

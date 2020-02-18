@@ -430,6 +430,7 @@ def GeneralTemplates(site_config):
       # Chrome binary, that update_engine can't handle in delta payloads due to
       # memory limits. Remove the following lines once crbug.com/329248 is
       # fixed.
+      chrome_sdk=False,
       vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
                                         test_suite='smoke')],
       vm_tests_override=None,
@@ -442,6 +443,7 @@ def GeneralTemplates(site_config):
       profile='ubsan',
       # Need larger rootfs for ubsan builds.
       disk_layout='16gb-rootfs',
+      chrome_sdk=False,
       vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
                                         test_suite='smoke')],
       vm_tests_override=None,
@@ -461,7 +463,8 @@ def GeneralTemplates(site_config):
       # Need larger rootfs since fuzzing also enables asan.
       disk_layout='2gb-rootfs',
       gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-asan',
-      images=['base'],
+      images=[],
+      image_test=None,
       packages=['virtual/target-fuzzers'],
   )
 
@@ -677,6 +680,7 @@ def GeneralTemplates(site_config):
       push_image=True,
       upload_symbols=True,
       run_cpeexport=True,
+      run_build_configs_export=True,
       binhost_bucket='gs://chromeos-dev-installer',
       binhost_key='RELEASE_BINHOST',
       binhost_base_url='https://commondatastorage.googleapis.com/'
@@ -1109,6 +1113,32 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       description='Builds Chrome OS using top-of-tree LLVM',
   )
 
+  site_config.AddTemplate(
+      'afdo_toolchain',
+      site_config.templates.full,
+      site_config.templates.official,
+      site_config.templates.internal,
+      site_config.templates.no_vmtest_builder,
+      site_config.templates.no_hwtest_builder,
+      git_sync=False,
+      images=[],
+      unittests=False,
+      image_test=False,
+      chrome_sdk=False,
+      paygen=False,
+      signer_tests=False,
+      useflags=config_lib.append_useflags(['-cros-debug']),
+      display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
+  )
+
+  site_config.AddTemplate(
+      'afdo_verify',
+      site_config.templates.afdo_toolchain,
+      images=['base', 'test'],
+      image_test=True,
+      unittests=True,
+      afdo_use=True,
+  )
   # This build config is dedicated to improve code layout of Chrome. It adopts
   # the Call-Chain Clustering (C3) approach and other techniques to improve
   # the code layout. It builds Chrome and generates an orderfile as a result.
@@ -1121,10 +1151,46 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddTemplate(
       'orderfile_generate_toolchain',
-      site_config.templates.release,
+      site_config.templates.afdo_toolchain,
+      afdo_use=True,
       orderfile_generate=True,
       useflags=config_lib.append_useflags(['orderfile_generate']),
       description='Build Chrome and generate an orderfile for better layout',
+  )
+
+  site_config.AddTemplate(
+      'orderfile_verify_toolchain',
+      site_config.templates.afdo_verify,
+      orderfile_verify=True,
+      useflags=config_lib.append_useflags(['orderfile_verify',
+                                           '-reorder_text_sections',
+                                           'strict_toolchain_checks']),
+      description='Verify the most recent orderfile is building correctly',
+  )
+
+  # This build config is used to asynchronously generate benchmark
+  # AFDO profile. It inherites from afdo_toolchain template, i.e.
+  # it is essentially a release builder but doesn't run hwtests, etc.
+  # But it should run a special HWTest "AFDOGenerate" to collect
+  # profiling data on a device. So this template needs to build image.
+  site_config.AddTemplate(
+      'benchmark_afdo_generate',
+      site_config.templates.afdo_toolchain,
+      images=['test'],
+      hw_tests=[config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE,
+                                        file_bugs=True)],
+      hw_tests_override=[config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE,
+                                                 file_bugs=True)],
+      description='Generate AFDO profile based on benchmarks.'
+  )
+
+  # This build config is used to verify merged and redacted AFDO profile,
+  # aka. profiles for release, can build packages without any problems.
+  site_config.AddTemplate(
+      'release_afdo_verify',
+      site_config.templates.afdo_verify,
+      description='Verify the most recent AFDO profile for release can '
+                  'build Chrome images correctly.'
   )
 
   ### Toolchain waterfall entries.
@@ -1251,12 +1317,43 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
+      'benchmark-afdo-generate',
+      site_config.templates.benchmark_afdo_generate,
+      boards=['chell'],
+      # TODO: Add a schedule
+  )
+
+  site_config.Add(
+      'release-afdo-verify',
+      site_config.templates.release_afdo_verify,
+      boards=['eve'],
+      # TODO: Add a schedule
+  )
+
+  site_config.Add(
       'orderfile-generate-toolchain',
       site_config.templates.orderfile_generate_toolchain,
       # The board should not matter much, since we are not running
       # anything on the board.
       boards=['terra'],
-      # TODO: Add a schedule to start daily or weekly
+      # 10 AM UTC is 2 AM PST (no daylight savings)
+      schedule='0 10 * * *',
+      health_alert_recipients=['c-compiler-chrome@google.com'],
+      # Send emails if this builder fails once
+      health_threshold=1,
+  )
+
+  site_config.Add(
+      'orderfile-verify-toolchain',
+      site_config.templates.orderfile_verify_toolchain,
+      # Only test on X86 for now.
+      boards=['eve'],
+      # 2 PM UTC is 6 AM PST (no daylight savings)
+      # Start this builder 4 hours after orderfile-generate-toolchain
+      schedule='0 14 * * *',
+      health_alert_recipients=['c-compiler-chrome@google.com'],
+      # Send emails if this builder fails once
+      health_threshold=1,
   )
 
   # This config is manually run when we want to generate a 'release' AFDO
@@ -1376,26 +1473,59 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
   )
   # Add special pre-cq for generic build tests with non-default kernel version
   site_config.AddForBoards(
-      'v4_4-pre-cq',
+      'linux-v4_4-pre-cq',
       boards_dict['generic_kernel_boards'],
       board_configs,
       site_config.templates.pre_cq,
-      useflags=config_lib.append_useflags(['-kernel-4_14', 'kernel-4_4']),
+      useflags=config_lib.append_useflags(['kernel-4_4', '-kernel-4_14',
+                                           '-kernel-4_19']),
   )
   site_config.AddForBoards(
-      'v4_14-pre-cq',
+      'linux-v4_4-buildtest-compile-only-pre-cq',
+      boards_dict['generic_kernel_boards'],
+      board_configs,
+      site_config.templates.compile_only_pre_cq,
+      useflags=config_lib.append_useflags(['kernel-4_4', '-kernel-4_14',
+                                           '-kernel-4_19',
+                                           '-clang', 'buildtest',
+                                           '-chrome_internal']),
+      packages=['sys-kernel/chromeos-kernel-4_4'],
+  )
+  site_config.AddForBoards(
+      'linux-v4_14-pre-cq',
       boards_dict['generic_kernel_boards'],
       board_configs,
       site_config.templates.pre_cq,
-      useflags=config_lib.append_useflags(['-kernel-4_4', 'kernel-4_14']),
+      useflags=config_lib.append_useflags(['-kernel-4_4', 'kernel-4_14',
+                                           '-kernel-4_19']),
   )
   site_config.AddForBoards(
-      'v4_19-pre-cq',
+      'linux-v4_14-buildtest-compile-only-pre-cq',
+      boards_dict['generic_kernel_boards'],
+      board_configs,
+      site_config.templates.compile_only_pre_cq,
+      useflags=config_lib.append_useflags(['-kernel-4_4', 'kernel-4_14',
+                                           '-kernel-4_19',
+                                           '-clang', 'buildtest']),
+      packages=['sys-kernel/chromeos-kernel-4_14'],
+  )
+  site_config.AddForBoards(
+      'linux-v4_19-pre-cq',
       boards_dict['generic_kernel_boards'],
       board_configs,
       site_config.templates.pre_cq,
       useflags=config_lib.append_useflags(['-kernel-4_4', '-kernel-4_14',
                                            'kernel-4_19']),
+  )
+  site_config.AddForBoards(
+      'linux-v4_19-buildtest-compile-only-pre-cq',
+      boards_dict['generic_kernel_boards'],
+      board_configs,
+      site_config.templates.compile_only_pre_cq,
+      useflags=config_lib.append_useflags(['-kernel-4_4', '-kernel-4_14',
+                                           'kernel-4_19',
+                                           '-clang', 'buildtest']),
+      packages=['sys-kernel/chromeos-kernel-4_19'],
   )
   site_config.AddForBoards(
       'no-vmtest-pre-cq',
@@ -1684,7 +1814,9 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   )
 
   _pi_no_hwtest_boards = frozenset([
+      'caroline',
       'coral',
+      'reef',
   ])
   _pi_no_hwtest_experimental_boards = frozenset([])
   _pi_hwtest_boards = frozenset([
@@ -1703,7 +1835,9 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _pi_vmtest_boards = frozenset([
       'betty-arcnext'
   ])
-  _pi_vmtest_experimental_boards = frozenset([])
+  _pi_vmtest_experimental_boards = frozenset([
+      'betty-pi-arc',
+  ])
 
   # Android VM PI master.
   vmpi_master_config = site_config.Add(
@@ -1731,19 +1865,12 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   )
 
   _nyc_hwtest_boards = frozenset([
-      'cyan',
-      'samus',
-      'veyron_minnie',
+      'veyron_jerry',
+      'gandof',
   ])
-  _nyc_hwtest_skylab_boards = frozenset([
-      'samus',
-      'veyron_minnie',
-  ])
+  _nyc_hwtest_skylab_boards = frozenset([])
   _nyc_no_hwtest_boards = frozenset([
-      'bob',
-      'caroline',
-      'hana',
-      'reef',
+      'veyron_tiger',
   ])
   _nyc_no_hwtest_experimental_boards = frozenset([])
   _nyc_vmtest_boards = frozenset([
@@ -2048,23 +2175,6 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       )
   )
 
-  # Experimental full builder to measure impact of goma on build_packages.
-  # This builder is deliberately not marked experimental so that it is allowed
-  # to run until completion without being killed by the master-full builder.
-  # crbug.com/926963
-  master_config.AddSlave(
-      site_config.Add(
-          'amd64-generic-goma-full',
-          site_config.templates.full,
-          site_config.templates.build_external_chrome,
-          boards=['amd64-generic'],
-          internal=True,
-          manifest_repo_url=config_lib.GetSiteParams().MANIFEST_INT_URL,
-          overlays=constants.PUBLIC_OVERLAYS,
-          prebuilts=False,
-          build_all_with_goma=True,
-      ))
-
 
 def CqBuilders(site_config, boards_dict, ge_build_config):
   """Create all CQ build configs.
@@ -2100,7 +2210,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron_paine',
       'auron_yuna',
       'beaglebone',
-      'betty',
       'betty-arc64',
       'betty-arcnext',
       'bob',
@@ -2116,20 +2225,17 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cyan',
       'edgar',
       'elm',
-      'eve',
       'eve-arcnext',
-      'eve-campfire',
-      'falco',
       'fizz',
       'fizz-accelerator',
       'fizz-moblab',
       'flapjack',
-      'glados',
       'gale',
+      'gandof',
+      'glados',
       'gonzo',
-      'grunt',
+      'guado',
       'guado-accelerator',
-      'guado_moblab',
       'hana',
       'hatch',
       'kalista',
@@ -2142,8 +2248,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lakitu-gpu',
       'lakitu-st',
       'lasilla-ground',
-      'leon',
       'littlejoe',
+      'mistral',
       'monroe',
       'nami',
       'nocturne',
@@ -2152,15 +2258,12 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'nyan_kitty',
       'octavius',
       'octopus',
-      'panther',
-      'peppy',
-      'poppy',
-      'quawks',
       'rammus',
       'reef',
       'romer',
       'sarien',
       'samus',
+      'samus-kernelnext',
       'scarlet',
       'sentry',
       'sludge',
@@ -2168,7 +2271,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'tatl',
       'terra',
       'tidus',
-      'tricky',
       'veyron_jaq',
       'veyron_jerry',
       'veyron_mighty',
@@ -2180,7 +2282,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'whirlwind',
       'winky',
       'wizpig',
-      'wolf',
       'wooten',
   ])
 
@@ -2204,16 +2305,21 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # The definition of what paladins run HW tests are in the
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
-      'samus-kernelnext',
+      'drallion',
+      'jacuzzi',
+      'kumo',
+      'kefka-kernelnext',
       'zork',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
-      'mistral', # contact: roopeshr@, b/131190241.
-      'moblab-generic-vm', # contact: alevkoy@, crbug/960998
-      'guado', # contact: mnissler@, crbug/967616
+      'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
+      'betty', # crbug.com/984316
+      'betty-pi-arc', # Promote when we replace betty-arcnext. b/129410042
+      'eve', # crbug.com/984952
+      'grunt', # crbug.com/984614
   ])
 
 
@@ -2256,7 +2362,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_moblab_hwtest_boards = frozenset([
-      'guado_moblab',
       'fizz-moblab',
   ])
 
@@ -2285,7 +2390,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'eve',
       'gale',
       'grunt',
-      'quawks',
       'hana',
       'kevin',
       'kip',
@@ -2295,7 +2399,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'nyan_big',
       'nyan_kitty',
       'octopus',
-      'peppy',
       'reef',
       'scarlet',
       'sentry',
@@ -2306,7 +2409,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'whirlwind',
       'winky',
       'wizpig',
-      'wolf',
   ])
 
   _paladin_separate_unittest_phase = frozenset([
@@ -2460,7 +2562,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # pylint: disable=bad-continuation, bad-whitespace, line-too-long
   _paladin_hwtest_assignments = frozenset([
     # bvt-inline      bvt-cq           bvt-arc             bvt-tast-cq          family
-    ('wolf',          'peppy',         None,               'wolf'),             # slippy (HSW)
     ('winky',         'kip',           None,               'winky'),            # rambi (BYT)
     ('nyan_big',      'nyan_kitty',    None,               'nyan_big'),         # nyan (K1)
     ('auron_paine',   'tidus',         'auron_yuna',       'auron_paine'),      # auron (BDW)
@@ -2535,6 +2636,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           build_before_patching=True,
           compilecheck=True,
           unittests=False,
+          important=False, # crbug.com/984006
       ),
   ])
 
@@ -2543,7 +2645,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   master_config.AddSlaves(
       site_config.AddForBoards(
           'full-compile-paladin',
-          ['falco', 'nyan_kitty'],
+          ['nyan_kitty'],
           board_configs,
           site_config.templates.paladin,
           site_config.templates.no_hwtest_builder,
@@ -2663,10 +2765,6 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
       manifest_version=True,
       slave_configs=[],
       schedule='triggered',
-      triggered_gitiles=[[
-          'https://chrome-internal.googlesource.com/chromeos/manifest-internal',
-          ['refs/heads/snapshot']
-      ]],
   )
 
   for board in boards_dict['all_boards']:
@@ -2686,10 +2784,9 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
       )
 
     if board in postsubmit_boards:
-      # Mark unimportant for postsubmit iff at least one of release, paladin,
+      # Mark unimportant for postsubmit iff at least one of paladin,
       # or pre_cq had it marked unimportant.
-      important = (release_boards_importance.get(board, True)
-                   and paladin_boards_importance.get(board, True)
+      important = (paladin_boards_importance.get(board, True)
                    and pre_cq_boards_importance.get(board, True))
       config.update(important=important)
       master_config.AddSlave(config)
@@ -2787,6 +2884,14 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
+      'kumo-incremental',
+      site_config.templates.incremental,
+      site_config.templates.internal_incremental,
+      site_config.templates.lakitu_notification_emails,
+      board_configs['kumo'],
+  )
+
+  site_config.Add(
       'lakitu-gpu-incremental',
       site_config.templates.incremental,
       site_config.templates.internal_incremental,
@@ -2879,7 +2984,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config, boards_dict, ge_build_config)
 
   _chrome_boards = frozenset(
-      board for board, config in internal_board_configs.iteritems()
+      board for board, config in internal_board_configs.items()
       if config.get('sync_chrome', True))
 
 
@@ -2889,7 +2994,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       'caroline',
       'eve',
       'reks',
-      'tricky',
       'veyron_minnie',
   ])
 
@@ -2973,6 +3077,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build for fuzzing testing',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
+      image_test=None,
       # Every 3 hours.
       schedule='0 */3 * * *',
       board_replace=True,
@@ -2986,6 +3091,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build for fuzzing coverage testing',
       gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-coverage',
       disk_layout='4gb-rootfs',
+      image_test=None,
       # Every 3 hours.
       schedule='0 */3 * * *',
       board_replace=True,
@@ -2999,6 +3105,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build for msan fuzzing testing',
       gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-msan',
       disk_layout='4gb-rootfs',
+      image_test=None,
       # Every 3 hours.
       schedule='0 */3 * * *',
       board_replace=True,
@@ -3027,6 +3134,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build for fuzzing testing',
       gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-ubsan',
       disk_layout='4gb-rootfs',
+      image_test=None,
       # Every 3 hours.
       schedule='0 */3 * * *',
       board_replace=True,
@@ -3086,7 +3194,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       [
           'caroline',
           'eve',
-          'tricky',
           'veyron_minnie',
           'kevin-arcnext',
       ],
@@ -3127,7 +3234,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       site_config, boards_dict, ge_build_config)
 
   _chrome_boards = frozenset(
-      board for board, config in internal_board_configs.iteritems()
+      board for board, config in internal_board_configs.items()
       if config.get('sync_chrome', True))
 
   _chromium_pfq_important_boards = frozenset([
@@ -3207,15 +3314,15 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'kevin64',
       'nocturne',
       'nyan_big',
-      'peppy',
       'reef',
       'terra',
-      'tricky',
       'veyron_minnie',
       'veyron_rialto',
   ])
 
-  _chrome_pfq_experimental_boards = frozenset([])
+  _chrome_pfq_experimental_boards = frozenset([
+      'betty-pi-arc',
+  ])
 
   _chrome_pfq_skylab_boards = frozenset([
       'caroline',
@@ -3223,9 +3330,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'kevin-arcnext',
       'kevin64',
       'grunt',
-      'peppy',
       'reef',
-      'tricky',
       'veyron_minnie',
   ])
 
@@ -3297,17 +3402,8 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
   ACTIVE = 'with 168h interval'  # 1 week interval
   INACTIVE = 'with 720h interval'  # 30 day interval
   firmware_branch_builders = [
-      (INACTIVE, 'firmware-falco_peppy-4389.B', ['falco', 'peppy']),
-      (INACTIVE, 'firmware-wolf-4389.24.B', ['wolf']),
-      (INACTIVE, 'firmware-leon-4389.61.B', ['leon']),
-      (INACTIVE, 'firmware-pit-4482.B', ['peach_pit', 'peach_pi']),
-      (INACTIVE, 'firmware-panther-4920.24.B', ['panther']),
       (INACTIVE, 'firmware-monroe-4921.B', ['monroe']),
-      (INACTIVE, 'firmware-squawks-5216.152.B', ['squawks']),
-      (INACTIVE, 'firmware-glimmer-5216.198.B', ['glimmer']),
-      (INACTIVE, 'firmware-clapper-5216.199.B', ['clapper']),
       (INACTIVE, 'firmware-enguarde-5216.201.B', ['enguarde']),
-      (INACTIVE, 'firmware-quawks-5216.204.B', ['quawks']),
       (INACTIVE, 'firmware-expresso-5216.223.B', ['expresso']),
       (INACTIVE, 'firmware-kip-5216.227.B', ['kip']),
       (INACTIVE, 'firmware-swanky-5216.238.B', ['swanky']),
@@ -3319,12 +3415,8 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
       (INACTIVE, 'firmware-sumo-5216.382.B', ['sumo']),
       (INACTIVE, 'firmware-ninja-5216.383.B', ['ninja']),
       (INACTIVE, 'firmware-heli-5216.392.B', ['heli']),
-      (INACTIVE, 'firmware-zako-5219.B', ['zako']),
-      (INACTIVE, 'firmware-zako-5219.17.B', ['zako']),
       (INACTIVE, 'firmware-nyan-5771.B', ['nyan_big', 'nyan_blaze']),
       (INACTIVE, 'firmware-kitty-5771.61.B', ['nyan_kitty']),
-      (INACTIVE, 'firmware-mccloud-5827.B', ['mccloud']),
-      (INACTIVE, 'firmware-tricky-5829.B', ['tricky']),
       (INACTIVE, 'firmware-samus-6300.B', ['samus']),
       (INACTIVE, 'firmware-auron-6301.B', ['jecht']),
       (INACTIVE, 'firmware-paine-6301.58.B', ['auron_paine']),
@@ -3356,14 +3448,12 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
       (INACTIVE, 'firmware-gale-8281.B', ['gale']),
       (INACTIVE, 'firmware-oak-8438.B', ['oak', 'elm', 'hana']),
       (INACTIVE, 'firmware-gru-8785.B', ['gru', 'kevin', 'bob']),
-      (INACTIVE, 'firmware-servo-9040.B', ['falco']),
       (INACTIVE, 'firmware-reef-9042.B', ['reef', 'pyro', 'sand', 'snappy']),
       (INACTIVE, 'firmware-cr50-9308.B', ['reef']),
       (INACTIVE, 'firmware-cr50-9308.24.B', ['reef']),
       (INACTIVE, 'firmware-cr50-release-9308.25.B', ['reef']),
       (INACTIVE, 'firmware-cr50-mp-release-9308.87.B', ['reef']),
       (INACTIVE, 'firmware-eve-9584.B', ['eve']),
-      (INACTIVE, 'firmware-eve-campfire-9584.131.B', ['eve']),
       (INACTIVE, 'firmware-coral-10068.B', ['coral']),
       (INACTIVE, 'firmware-fizz-10139.B', ['fizz']),
       (INACTIVE, 'firmware-fizz-10139.94.B', ['fizz']),
@@ -3375,6 +3465,7 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
       (ACTIVE, 'firmware-grunt-11031.B', ['grunt']),
       (ACTIVE, 'firmware-rammus-11275.B', ['rammus']),
       (ACTIVE, 'firmware-octopus-11297.B', ['octopus']),
+      (ACTIVE, 'firmware-octopus-11297.83.B', ['octopus']),
       (ACTIVE, 'firmware-kalista-11343.B', ['kalista']),
       (ACTIVE, 'firmware-atlas-11827.B', ['atlas']),
       (ACTIVE, 'firmware-atlas-11827.12.B', ['atlas']),
@@ -3406,9 +3497,7 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
   ACTIVE = 'with 168h interval'  # 1 week interval
   INACTIVE = 'with 720h interval'  # 30 day interval
   branch_builders = [
-      (INACTIVE, 'factory-beltino-5140.14.B', ['tricky', 'mccloud']),
       (INACTIVE, 'factory-rambi-5517.B', [
-          'squawks', 'clapper', 'glimmer', 'quawks',
           'enguarde', 'expresso', 'kip', 'swanky', 'winky']),
       (INACTIVE, 'factory-nyan-5772.B', [
           'nyan_big', 'nyan_blaze', 'nyan_kitty']),
@@ -3453,10 +3542,11 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
       (ACTIVE, 'factory-octopus-11512.B', ['octopus']),
       (ACTIVE, 'factory-atlas-11907.B', ['atlas']),
       (ACTIVE, 'factory-sarien-12033.B', ['sarien']),
+      (ACTIVE, 'factory-mistral-12361.B', ['mistral']),
       # This is intended to create master branch tryjobs, NOT for production
       # builds. Update the associated list of boards as needed.
       (None, 'master', ['atlas', 'octopus', 'rammus', 'coral', 'eve',
-                        'sarien']),
+                        'sarien', 'mistral']),
   ]
 
   _FACTORYBRANCH_TIMEOUT = 12 * 60 * 60
@@ -3873,6 +3963,15 @@ def ApplyCustomOverrides(site_config):
           paygen=False,
       ),
 
+      'kumo-release': config_lib.BuildConfig().apply(
+          site_config.templates.lakitu_notification_emails,
+          sign_types=['base'],
+          paygen=False,
+          vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                            test_suite='smoke')],
+          vm_tests_override=None,
+      ),
+
       'lakitu_next-release': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_notification_emails,
       ),
@@ -3961,6 +4060,11 @@ def ApplyCustomOverrides(site_config):
 
       'flapjack-release': {
           'sign_types': ['recovery', 'factory'],
+          'useflags': config_lib.append_useflags(['kiosk_next']),
+      },
+
+      'jacuzzi-release': {
+          'sign_types': ['recovery', 'factory'],
       },
 
       'kukui-release': {
@@ -3994,9 +4098,6 @@ def ApplyCustomOverrides(site_config):
       'kip-release': {
           'useflags': config_lib.append_useflags(['new_tcmalloc']),
       },
-      'peppy-release': {
-          'useflags': config_lib.append_useflags(['new_tcmalloc']),
-      },
       'setzer-release': {
           'useflags': config_lib.append_useflags(['new_tcmalloc']),
       },
@@ -4006,19 +4107,12 @@ def ApplyCustomOverrides(site_config):
       'veyron_speedy-release': {
           'useflags': config_lib.append_useflags(['new_tcmalloc']),
       },
-
-      # TODO(crbug/871967, b/117991928) Re-enable hwtests on clapper-release
-      # once clapper automated repair is fixed in the lab.
-      'clapper-release': {
-          'hw_tests': [],
-          'hw_tests_override': [],
-      },
   }
 
   # Some boards in toolchain builder are not using the same configuration as
   # release builders. Configure it here since it's easier, for both
   # llvm-toolchain and llvm-next-toolchain builders.
-  for board in ['lakitu', 'guado_moblab', 'gale', 'mistral', 'whirlwind']:
+  for board in ['lakitu', 'fizz-moblab', 'gale', 'mistral', 'whirlwind']:
     if board == 'lakitu':
       overwritten_configs[board+'-llvm-toolchain'] = {
           'vm_tests': [config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
@@ -4028,7 +4122,7 @@ def ApplyCustomOverrides(site_config):
                         config_lib.GCETestConfig(constants.GCE_SUITE_TEST_TYPE,
                                                  test_suite='gce-smoke')]
       }
-    elif board == 'guado_moblab':
+    elif board == 'fizz-moblab':
       overwritten_configs[board+'-llvm-toolchain'] = {
           'enable_skylab_hw_tests': False,
           'hw_tests': [
@@ -4062,10 +4156,10 @@ def ApplyCustomOverrides(site_config):
     overwritten_configs[board+'-llvm-next-toolchain'] = \
       overwritten_configs[board+'-llvm-toolchain']
 
-  for config_name, overrides  in overwritten_configs.iteritems():
+  for config_name, overrides  in overwritten_configs.items():
     # TODO: Turn this assert into a unittest.
     # config = site_config[config_name]
-    # for k, v in overrides.iteritems():
+    # for k, v in overrides.items():
     #   assert config[k] != v, ('Unnecessary override: %s: %s' %
     #                           (config_name, k))
     site_config[config_name].apply(**overrides)
@@ -4142,31 +4236,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.AddWithoutTemplate(
-      'chromiumos-sdk-overhaul-testing',
-      site_config.templates.full,
-      site_config.templates.no_hwtest_builder,
-      # The amd64-host has to be last as that is when the toolchains
-      # are bundled up for inclusion in the sdk.
-      boards=[
-          'arm-generic', 'amd64-generic'
-      ],
-      display_label=config_lib.DISPLAY_LABEL_UTILITY,
-      build_type=constants.CHROOT_BUILDER_TYPE,
-      builder_class_name='sdk_builders.ChrootSdkBuilder',
-      use_sdk=False,
-      self_bootstrap=True,
-      # Do not update SDK version and upload prebuilts to gs://chromiumos-sdk.
-      debug=True,
-      prebuilts=constants.PUBLIC,
-      build_timeout=18 * 60 * 60,
-      description='Rebuild the SDK using previously built SDK for '
-                  'bootstrapping',
-      doc='https://dev.chromium.org/chromium-os/build/builder-overview#'
-          'TOC-Continuous',
-      schedule='with 30m interval',
-  )
-
-  site_config.AddWithoutTemplate(
       'config-updater',
       site_config.templates.internal,
       site_config.templates.no_hwtest_builder,
@@ -4229,9 +4298,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddGroup(
       'test-ap-group',
-      site_config.Add('panther-test-ap',
-                      site_config.templates.test_ap,
-                      boards=['panther']),
       site_config.Add('whirlwind-test-ap',
                       site_config.templates.test_ap,
                       boards=['whirlwind']),
@@ -4261,10 +4327,10 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
-      'reef-android-nyc-pre-flight-branch',
+      'gandof-android-nyc-pre-flight-branch',
       site_config.templates.pre_flight_branch,
       display_label=config_lib.DISPLAY_LABEL_NYC_ANDROID_PFQ,
-      boards=['reef'],
+      boards=['gandof'],
       sync_chrome=True,
       android_rev=constants.ANDROID_REV_LATEST,
       android_package='android-container-nyc',
@@ -4326,7 +4392,7 @@ def TryjobMirrors(site_config):
 
   tryjob_configs = {}
 
-  for build_name, config in site_config.iteritems():
+  for build_name, config in site_config.items():
     # Don't mirror builds that are already tryjob safe.
     if config_lib.isTryjobConfig(config):
       config.apply(hw_tests_override=None, vm_tests_override=None)
@@ -4389,7 +4455,7 @@ def TryjobMirrors(site_config):
     # Save off the new config so we can insert into site_config.
     tryjob_configs[tryjob_name] = tryjob_config
 
-  for tryjob_name, tryjob_config in tryjob_configs.iteritems():
+  for tryjob_name, tryjob_config in tryjob_configs.items():
     site_config[tryjob_name] = tryjob_config
 
 
@@ -4438,6 +4504,11 @@ def BranchScheduleConfig():
   # The three active release branches.
   # (<branch>, [<android PFQs>], <chrome PFQ>)
   RELEASES = [
+      ('release-R76-12239.B',
+       ['gandof-android-nyc-pre-flight-branch',
+        'grunt-android-pi-pre-flight-branch'],
+       'samus-chrome-pre-flight-branch'),
+
       ('release-R75-12105.B',
        ['reef-android-nyc-pre-flight-branch',
         'grunt-android-pi-pre-flight-branch'],

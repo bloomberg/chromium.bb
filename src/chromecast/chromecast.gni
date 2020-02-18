@@ -101,9 +101,6 @@ declare_args() {
   # Set to true to enable wayland server
   enable_cast_wayland_server = false
 
-  # Whether to build cast for Android Things N version
-  build_for_android_things_n = false
-
   # Set to true to enable mixing in CastAudioManager. Only needed on devices
   # that do not have a mixer in the CMA backend.
   enable_cast_audio_manager_mixer =
@@ -118,6 +115,12 @@ declare_args() {
 
   # Recording happens at this sample rate. Must be 16000, 48000 or 96000 Hz.
   audio_input_sample_rate = 16000
+
+  # Whether use unix sockets in Cast input/output stream.
+  use_unix_sockets = is_linux
+
+  # Set to true to enable audio capture service for audio input.
+  enable_audio_capture_service = false
 }
 
 declare_args() {
@@ -152,7 +155,7 @@ enable_chromecast_extensions = enable_extensions
 # Use Chromecast CDMs for protected content. Some Android platforms use
 # MediaDrm for CDM support.
 declare_args() {
-  use_chromecast_cdms = is_cast_using_cma_backend
+  use_chromecast_cdms = true
 }
 
 foreach(target_type,

@@ -17,22 +17,22 @@ namespace enterprise_reporting {
 class RequestTimer {
  public:
   RequestTimer();
-  ~RequestTimer();
+  virtual ~RequestTimer();
 
   // Starts the timer. The first task will be ran after |first_delay|. The
   // following task will be ran with |repeat_delay|. If |first_delay| is larger
   // than the |repeat_delay|, the first request will be fired after
   // |repeat_delay| instead. Also, please note that the repeating task is ran
   // once per Reset call.
-  void Start(const base::Location& posted_from,
-             base::TimeDelta first_delay,
-             base::TimeDelta repeat_delay,
-             base::RepeatingClosure user_task);
+  virtual void Start(const base::Location& posted_from,
+                     base::TimeDelta first_delay,
+                     base::TimeDelta repeat_delay,
+                     base::RepeatingClosure user_task);
   // Stops the timer. The running task will not be abandon.
-  void Stop();
+  virtual void Stop();
   // Resets the timer, ran the task again after |repat_delay| that is set in
   // Start(); This is only available after the first task is ran.
-  void Reset();
+  virtual void Reset();
 
   bool IsRepeatTimerRunning() const;
   bool IsFirstTimerRunning() const;

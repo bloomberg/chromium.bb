@@ -2,8 +2,7 @@
 <html build="$i18n{buildType}"
     dir="$i18n{textdirection}"
     lang="$i18n{language}"
-    screen="$i18n{screenType}"
-    $i18n{dark}>
+    screen="$i18n{screenType}">
 <head>
   <meta charset="utf-8">
   <meta name="google" value="notranslate">
@@ -24,6 +23,8 @@
   <link rel="import" href="/strings.html">
   <link rel="import" href="/user_manager_pages.html">
   <link rel="import" href="/user_manager_tutorial.html">
+  <!-- Make sure cr-button is imported to use in user_pod_template.html -->
+  <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
   <link rel="import" href="chrome://resources/html/cr/ui.html">
   <link rel="import" href="chrome://resources/html/util.html">
   <!-- Make sure iron-icon and cr iconset are imported to use in
@@ -31,12 +32,12 @@
   <link rel="import" href="chrome://resources/cr_elements/icons.html">
   <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-  <!-- Make sure paper-button is imported to use in user_pod_template.html -->
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
   <custom-style>
     <style is="custom-style" include="shared-styles">
-      html[dark] body {
-        background-color: var(--google-grey-900);
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: var(--google-grey-900);
+        }
       }
 
       user-manager-pages,
@@ -147,12 +148,16 @@
         width: 92px;
       }
 
-      html[dark] .pod .main-pane .name-container {
-        background-color: transparent;
+      @media (prefers-color-scheme: dark) {
+        .pod .main-pane .name-container {
+          background-color: transparent;
+        }
       }
 
-      html[dark] .name {
-        color: inherit;
+      @media (prefers-color-scheme: dark) {
+        .name {
+          color: inherit;
+        }
       }
 
       .pod .indicator-container {
@@ -180,8 +185,10 @@
         width: 20px;
       }
 
-      html[dark] .pod .indicator-container > .indicator {
-        background: var(--google-grey-refresh-500);
+      @media (prefers-color-scheme: dark) {
+        .pod .indicator-container > .indicator {
+          background: var(--google-grey-refresh-500);
+        }
       }
 
       .pod.locked .locked-indicator {
@@ -286,17 +293,19 @@
         right: auto;
       }
 
-      html[dark] .action-box-area.active ~ .action-box-menu {
-        background-color: var(--cr-menu-background-color);
-        /* Adds 4% white on top of GG900. To/from are intentionally the same. */
-        background-image: linear-gradient(rgba(255, 255, 255, .04),
-                                          rgba(255, 255, 255, .04));
-        box-shadow: var(--cr-menu-shadow);
-      }
+      @media (prefers-color-scheme: dark) {
+        .action-box-area.active ~ .action-box-menu {
+          background-color: var(--cr-menu-background-color);
+          /* Adds 4% white on top of GG900. To/from are intentionally the same. */
+          background-image: linear-gradient(rgba(255, 255, 255, .04),
+                                            rgba(255, 255, 255, .04));
+          box-shadow: var(--cr-menu-shadow);
+        }
 
-      html[dark] .action-box-menu-remove:focus,
-      html[dark] .action-box-menu-remove:hover {
-        background-color: var(--cr-menu-background-focus-color);
+        .action-box-menu-remove:focus,
+        .action-box-menu-remove:hover {
+          background-color: var(--cr-menu-background-focus-color);
+        }
       }
 
       .action-box-menu-title {
@@ -304,8 +313,10 @@
         padding: 16px 12px;
       }
 
-      html[dark] .action-box-menu-title {
-        border-bottom: var(--cr-separator-line);
+      @media (prefers-color-scheme: dark) {
+        .action-box-menu-title {
+          border-bottom: var(--cr-separator-line);
+        }
       }
 
       .action-box-menu-title-name,
@@ -330,11 +341,13 @@
         padding: var(--vertical-gap) var(--side-gap);
       }
 
-      html[dark] .action-box-menu-remove {
-        border-radius: 0;
-        border-top: none;
-        margin: var(--vertical-gap) 0;
-        padding: 0 var(--side-gap);
+      @media (prefers-color-scheme: dark) {
+        .action-box-menu-remove {
+          border-radius: 0;
+          border-top: none;
+          margin: var(--vertical-gap) 0;
+          padding: 0 var(--side-gap);
+        }
       }
 
       .action-box-remove-user-warning {
@@ -408,6 +421,5 @@
     <include src="../../../../ui/login/account_picker/user_pod_template.html">
   </user-manager-pages>
   <script src="user_manager.js"></script>
-  <link rel="import" href="chrome://resources/html/dark_mode.html">
 </body>
 </html>

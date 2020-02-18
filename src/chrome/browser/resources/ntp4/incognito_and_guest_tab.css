@@ -9,9 +9,11 @@ body {
   font-size: 85%;
 }
 
-[dark] {
-  background: rgb(50, 54, 57);
-  color: rgb(232, 234, 237);  /* --google-grey-200 */
+@media (prefers-color-scheme: dark) {
+  html {
+    background: rgb(50, 54, 57);
+    color: rgb(232, 234, 237);  /* --google-grey-200 */
+  }
 }
 
 h1 {
@@ -44,8 +46,10 @@ a:hover {
   text-decoration: none;
 }
 
-[dark] :-webkit-any(a, .learn-more-button) {
-  color: rgb(138, 180, 248);  /* --google-blue-refresh-300 */
+@media (prefers-color-scheme: dark) {
+  :-webkit-any(a, .learn-more-button) {
+    color: rgb(138, 180, 248);  /* --google-blue-refresh-300 */
+  }
 }
 
 .content {

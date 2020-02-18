@@ -66,12 +66,6 @@ class Goma(object):
       # reduces a lot of I/O and calculation.
       # This is the base file name under GOMA_CACHE_DIR.
       'GOMA_DEPS_CACHE_FILE': 'goma.deps',
-
-      # Set default goma platform to 'chromeos'.
-      # A Chrome OS installation of goma provides additional wrapper scipts
-      # over a typical installation that are necessary for emerge to be able
-      # to use goma while building packages.
-      'PLATFORM': 'chromeos',
   }
 
   def __init__(self, goma_dir, goma_client_json, goma_tmp_dir=None,
@@ -191,25 +185,6 @@ class Goma(object):
     """Stops goma compiler proxy."""
     self._RunGomaCtl('stop')
 
-  def Update(self):
-    """Updates goma."""
-    self._RunGomaCtl('update')
-
-  def ForceUpdate(self):
-    """Clears the existing MANIFEST file and updates goma."""
-    self._ClearManifest()
-    self.Update()
-
-  def _ClearManifest(self):
-    """Deletes the existing goma version MANIFEST file.
-
-    Deleting the MANIFEST file causes goma to not skip updating if it thinks
-    it is already on the latest version. This causes changes in PLATFORM to
-    be considered when selecting what goma package the existing installation
-    should update to.
-    """
-    osutils.SafeUnlink(os.path.join(self.goma_dir, 'MANIFEST'))
-
   def UploadLogs(self, cbb_config_name):
     """Uploads INFO files related to goma.
 
@@ -242,6 +217,7 @@ class GomaLogUploader(object):
         purpose, because datetime.date is unpatchable. In real use case,
         this must be None.
       dry_run: If True, no actual upload. This is for testing purpose.
+      cbb_config_name: Name of cbb_config.
     """
     self._goma_log_dir = goma_log_dir
     logging.info('Goma log directory is: %s', self._goma_log_dir)
@@ -269,10 +245,10 @@ class GomaLogUploader(object):
     ])
     if is_luci:
       # TODO(yyanagisawa): will adjust to valid value if needed.
-      builder_info['builder_id'] =collections.OrderedDict([
-          ("project", "chromeos"),
-          ("builder", "Prod"),
-          ("bucket", "general"),
+      builder_info['builder_id'] = collections.OrderedDict([
+          ('project', 'chromeos'),
+          ('builder', 'Prod'),
+          ('bucket', 'general'),
       ])
     builder_info_json = json.dumps(builder_info)
     logging.info('BuilderInfo: %s', builder_info_json)

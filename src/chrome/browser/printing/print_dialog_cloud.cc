@@ -14,9 +14,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/google/core/common/google_util.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -29,9 +28,7 @@ namespace {
 class SignInObserver : public content::WebContentsObserver {
  public:
   SignInObserver(content::WebContents* web_contents, base::OnceClosure callback)
-      : WebContentsObserver(web_contents),
-        callback_(std::move(callback)),
-        weak_ptr_factory_(this) {}
+      : WebContentsObserver(web_contents), callback_(std::move(callback)) {}
 
  private:
   // Overridden from content::WebContentsObserver:
@@ -58,7 +55,7 @@ class SignInObserver : public content::WebContentsObserver {
   }
 
   base::OnceClosure callback_;
-  base::WeakPtrFactory<SignInObserver> weak_ptr_factory_;
+  base::WeakPtrFactory<SignInObserver> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SignInObserver);
 };

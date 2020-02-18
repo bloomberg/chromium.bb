@@ -8,13 +8,14 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "call/rtp_video_sender.h"
+
 #include <memory>
 #include <string>
 
 #include "absl/memory/memory.h"
 #include "api/task_queue/default_task_queue_factory.h"
 #include "call/rtp_transport_controller_send.h"
-#include "call/rtp_video_sender.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/byte_io.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/nack.h"
@@ -186,9 +187,7 @@ TEST(RtpVideoSenderTest, SendOnOneModule) {
   encoded_image.SetTimestamp(1);
   encoded_image.capture_time_ms_ = 2;
   encoded_image._frameType = VideoFrameType::kVideoFrameKey;
-  encoded_image.Allocate(1);
-  encoded_image.data()[0] = kPayload;
-  encoded_image.set_size(1);
+  encoded_image.SetEncodedData(EncodedImageBuffer::Create(&kPayload, 1));
 
   RtpVideoSenderTestFixture test({kSsrc1}, {kRtxSsrc1}, kPayloadType, {});
   EXPECT_NE(
@@ -217,9 +216,7 @@ TEST(RtpVideoSenderTest, SendSimulcastSetActive) {
   encoded_image_1.SetTimestamp(1);
   encoded_image_1.capture_time_ms_ = 2;
   encoded_image_1._frameType = VideoFrameType::kVideoFrameKey;
-  encoded_image_1.Allocate(1);
-  encoded_image_1.data()[0] = kPayload;
-  encoded_image_1.set_size(1);
+  encoded_image_1.SetEncodedData(EncodedImageBuffer::Create(&kPayload, 1));
 
   RtpVideoSenderTestFixture test({kSsrc1, kSsrc2}, {kRtxSsrc1, kRtxSsrc2},
                                  kPayloadType, {});
@@ -262,9 +259,7 @@ TEST(RtpVideoSenderTest, SendSimulcastSetActiveModules) {
   encoded_image_1.SetTimestamp(1);
   encoded_image_1.capture_time_ms_ = 2;
   encoded_image_1._frameType = VideoFrameType::kVideoFrameKey;
-  encoded_image_1.Allocate(1);
-  encoded_image_1.data()[0] = kPayload;
-  encoded_image_1.set_size(1);
+  encoded_image_1.SetEncodedData(EncodedImageBuffer::Create(&kPayload, 1));
 
   EncodedImage encoded_image_2(encoded_image_1);
   encoded_image_2.SetSpatialIndex(1);
@@ -355,9 +350,7 @@ TEST(RtpVideoSenderTest, FrameCountCallbacks) {
   encoded_image.SetTimestamp(1);
   encoded_image.capture_time_ms_ = 2;
   encoded_image._frameType = VideoFrameType::kVideoFrameKey;
-  encoded_image.Allocate(1);
-  encoded_image.data()[0] = kPayload;
-  encoded_image.set_size(1);
+  encoded_image.SetEncodedData(EncodedImageBuffer::Create(&kPayload, 1));
 
   encoded_image._frameType = VideoFrameType::kVideoFrameKey;
 
@@ -408,9 +401,7 @@ TEST(RtpVideoSenderTest, DoesNotRetrasmitAckedPackets) {
   encoded_image.SetTimestamp(1);
   encoded_image.capture_time_ms_ = 2;
   encoded_image._frameType = VideoFrameType::kVideoFrameKey;
-  encoded_image.Allocate(1);
-  encoded_image.data()[0] = kPayload;
-  encoded_image.set_size(1);
+  encoded_image.SetEncodedData(EncodedImageBuffer::Create(&kPayload, 1));
 
   // Send two tiny images, mapping to two RTP packets. Capture sequence numbers.
   rtc::Event event;
@@ -630,5 +621,24 @@ TEST(RtpVideoSenderTest, EarlyRetransmits) {
   // Wait for pacer to run and send the RTX packet.
   test.clock().AdvanceTimeMilliseconds(33);
   ASSERT_TRUE(event.Wait(kTimeoutMs));
+}
+
+TEST(RtpVideoSenderTest, CanSetZeroBitrateWithOverhead) {
+  test::ScopedFieldTrials trials("WebRTC-SendSideBwe-WithOverhead/Enabled/");
+  RtpVideoSenderTestFixture test({kSsrc1}, {kRtxSsrc1}, kPayloadType, {});
+
+  test.router()->OnBitrateUpdated(/*bitrate_bps*/ 0,
+                                  /*fraction_loss*/ 0,
+                                  /*rtt*/ 0,
+                                  /*framerate*/ 0);
+}
+
+TEST(RtpVideoSenderTest, CanSetZeroBitrateWithoutOverhead) {
+  RtpVideoSenderTestFixture test({kSsrc1}, {kRtxSsrc1}, kPayloadType, {});
+
+  test.router()->OnBitrateUpdated(/*bitrate_bps*/ 0,
+                                  /*fraction_loss*/ 0,
+                                  /*rtt*/ 0,
+                                  /*framerate*/ 0);
 }
 }  // namespace webrtc

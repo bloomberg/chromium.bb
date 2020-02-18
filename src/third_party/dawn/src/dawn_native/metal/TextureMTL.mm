@@ -60,6 +60,8 @@ namespace dawn_native { namespace metal {
                     } else {
                         return (arrayLayers > 1) ? MTLTextureType2DArray : MTLTextureType2D;
                     }
+                default:
+                    UNREACHABLE();
             }
         }
 
@@ -82,7 +84,7 @@ namespace dawn_native { namespace metal {
 
         bool RequiresCreatingNewTextureView(const TextureBase* texture,
                                             const TextureViewDescriptor* textureViewDescriptor) {
-            if (texture->GetFormat() != textureViewDescriptor->format) {
+            if (texture->GetFormat().format != textureViewDescriptor->format) {
                 return true;
             }
 
@@ -108,9 +110,9 @@ namespace dawn_native { namespace metal {
         ResultOrError<dawn::TextureFormat> GetFormatEquivalentToIOSurfaceFormat(uint32_t format) {
             switch (format) {
                 case 'BGRA':
-                    return dawn::TextureFormat::B8G8R8A8Unorm;
+                    return dawn::TextureFormat::BGRA8Unorm;
                 case '2C08':
-                    return dawn::TextureFormat::R8G8Unorm;
+                    return dawn::TextureFormat::RG8Unorm;
                 case 'L008':
                     return dawn::TextureFormat::R8Unorm;
                 default:
@@ -121,22 +123,131 @@ namespace dawn_native { namespace metal {
 
     MTLPixelFormat MetalPixelFormat(dawn::TextureFormat format) {
         switch (format) {
-            case dawn::TextureFormat::R8G8B8A8Unorm:
-                return MTLPixelFormatRGBA8Unorm;
-            case dawn::TextureFormat::R8G8Unorm:
-                return MTLPixelFormatRG8Unorm;
             case dawn::TextureFormat::R8Unorm:
                 return MTLPixelFormatR8Unorm;
-            case dawn::TextureFormat::R8G8B8A8Uint:
-                return MTLPixelFormatRGBA8Uint;
-            case dawn::TextureFormat::R8G8Uint:
-                return MTLPixelFormatRG8Uint;
+            case dawn::TextureFormat::R8Snorm:
+                return MTLPixelFormatR8Snorm;
             case dawn::TextureFormat::R8Uint:
                 return MTLPixelFormatR8Uint;
-            case dawn::TextureFormat::B8G8R8A8Unorm:
+            case dawn::TextureFormat::R8Sint:
+                return MTLPixelFormatR8Sint;
+
+            case dawn::TextureFormat::R16Unorm:
+                return MTLPixelFormatR16Unorm;
+            case dawn::TextureFormat::R16Snorm:
+                return MTLPixelFormatR16Snorm;
+            case dawn::TextureFormat::R16Uint:
+                return MTLPixelFormatR16Uint;
+            case dawn::TextureFormat::R16Sint:
+                return MTLPixelFormatR16Sint;
+            case dawn::TextureFormat::R16Float:
+                return MTLPixelFormatR16Float;
+            case dawn::TextureFormat::RG8Unorm:
+                return MTLPixelFormatRG8Unorm;
+            case dawn::TextureFormat::RG8Snorm:
+                return MTLPixelFormatRG8Snorm;
+            case dawn::TextureFormat::RG8Uint:
+                return MTLPixelFormatRG8Uint;
+            case dawn::TextureFormat::RG8Sint:
+                return MTLPixelFormatRG8Sint;
+
+            case dawn::TextureFormat::R32Uint:
+                return MTLPixelFormatR32Uint;
+            case dawn::TextureFormat::R32Sint:
+                return MTLPixelFormatR32Sint;
+            case dawn::TextureFormat::R32Float:
+                return MTLPixelFormatR32Float;
+            case dawn::TextureFormat::RG16Unorm:
+                return MTLPixelFormatRG16Unorm;
+            case dawn::TextureFormat::RG16Snorm:
+                return MTLPixelFormatRG16Snorm;
+            case dawn::TextureFormat::RG16Uint:
+                return MTLPixelFormatRG16Uint;
+            case dawn::TextureFormat::RG16Sint:
+                return MTLPixelFormatRG16Sint;
+            case dawn::TextureFormat::RG16Float:
+                return MTLPixelFormatRG16Float;
+            case dawn::TextureFormat::RGBA8Unorm:
+                return MTLPixelFormatRGBA8Unorm;
+            case dawn::TextureFormat::RGBA8UnormSrgb:
+                return MTLPixelFormatRGBA8Unorm_sRGB;
+            case dawn::TextureFormat::RGBA8Snorm:
+                return MTLPixelFormatRGBA8Snorm;
+            case dawn::TextureFormat::RGBA8Uint:
+                return MTLPixelFormatRGBA8Uint;
+            case dawn::TextureFormat::RGBA8Sint:
+                return MTLPixelFormatRGBA8Sint;
+            case dawn::TextureFormat::BGRA8Unorm:
                 return MTLPixelFormatBGRA8Unorm;
-            case dawn::TextureFormat::D32FloatS8Uint:
+            case dawn::TextureFormat::BGRA8UnormSrgb:
+                return MTLPixelFormatBGRA8Unorm_sRGB;
+            case dawn::TextureFormat::RGB10A2Unorm:
+                return MTLPixelFormatRGB10A2Unorm;
+            case dawn::TextureFormat::RG11B10Float:
+                return MTLPixelFormatRG11B10Float;
+
+            case dawn::TextureFormat::RG32Uint:
+                return MTLPixelFormatRG32Uint;
+            case dawn::TextureFormat::RG32Sint:
+                return MTLPixelFormatRG32Sint;
+            case dawn::TextureFormat::RG32Float:
+                return MTLPixelFormatRG32Float;
+            case dawn::TextureFormat::RGBA16Unorm:
+                return MTLPixelFormatRGBA16Unorm;
+            case dawn::TextureFormat::RGBA16Snorm:
+                return MTLPixelFormatRGBA16Snorm;
+            case dawn::TextureFormat::RGBA16Uint:
+                return MTLPixelFormatRGBA16Uint;
+            case dawn::TextureFormat::RGBA16Sint:
+                return MTLPixelFormatRGBA16Sint;
+            case dawn::TextureFormat::RGBA16Float:
+                return MTLPixelFormatRGBA16Float;
+
+            case dawn::TextureFormat::RGBA32Uint:
+                return MTLPixelFormatRGBA32Uint;
+            case dawn::TextureFormat::RGBA32Sint:
+                return MTLPixelFormatRGBA32Sint;
+            case dawn::TextureFormat::RGBA32Float:
+                return MTLPixelFormatRGBA32Float;
+
+            case dawn::TextureFormat::Depth32Float:
+                return MTLPixelFormatDepth32Float;
+            case dawn::TextureFormat::Depth24Plus:
+                return MTLPixelFormatDepth32Float;
+            case dawn::TextureFormat::Depth24PlusStencil8:
                 return MTLPixelFormatDepth32Float_Stencil8;
+
+            case dawn::TextureFormat::BC1RGBAUnorm:
+                return MTLPixelFormatBC1_RGBA;
+            case dawn::TextureFormat::BC1RGBAUnormSrgb:
+                return MTLPixelFormatBC1_RGBA_sRGB;
+            case dawn::TextureFormat::BC2RGBAUnorm:
+                return MTLPixelFormatBC2_RGBA;
+            case dawn::TextureFormat::BC2RGBAUnormSrgb:
+                return MTLPixelFormatBC2_RGBA_sRGB;
+            case dawn::TextureFormat::BC3RGBAUnorm:
+                return MTLPixelFormatBC3_RGBA;
+            case dawn::TextureFormat::BC3RGBAUnormSrgb:
+                return MTLPixelFormatBC3_RGBA_sRGB;
+            case dawn::TextureFormat::BC4RSnorm:
+                return MTLPixelFormatBC4_RSnorm;
+            case dawn::TextureFormat::BC4RUnorm:
+                return MTLPixelFormatBC4_RUnorm;
+            case dawn::TextureFormat::BC5RGSnorm:
+                return MTLPixelFormatBC5_RGSnorm;
+            case dawn::TextureFormat::BC5RGUnorm:
+                return MTLPixelFormatBC5_RGUnorm;
+            case dawn::TextureFormat::BC6HRGBSfloat:
+                return MTLPixelFormatBC6H_RGBFloat;
+            case dawn::TextureFormat::BC6HRGBUfloat:
+                return MTLPixelFormatBC6H_RGBUfloat;
+            case dawn::TextureFormat::BC7RGBAUnorm:
+                return MTLPixelFormatBC7_RGBAUnorm;
+            case dawn::TextureFormat::BC7RGBAUnormSrgb:
+                return MTLPixelFormatBC7_RGBAUnorm_sRGB;
+
+            default:
+                UNREACHABLE();
         }
     }
 

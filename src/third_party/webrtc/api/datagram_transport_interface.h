@@ -39,7 +39,7 @@ struct DatagramAck {
 
   // The timestamp at which the remote peer received the identified datagram,
   // according to that peer's clock.
-  Timestamp receive_timestamp;
+  Timestamp receive_timestamp = Timestamp::MinusInfinity();
 };
 
 // All sink methods are called on network thread.
@@ -58,6 +58,9 @@ class DatagramSinkInterface {
   // Called when datagram is ACKed.
   // TODO(sukhanov): Make pure virtual.
   virtual void OnDatagramAcked(const DatagramAck& datagram_ack) {}
+
+  // Called when a datagram is lost.
+  virtual void OnDatagramLost(DatagramId datagram_id) {}
 };
 
 // Datagram transport allows to send and receive unreliable packets (datagrams)
@@ -95,6 +98,9 @@ class DatagramTransportInterface {
   // Datagrams larger than GetLargestDatagramSize() will fail and return error.
   //
   // Datagrams are sent in FIFO order.
+  //
+  // |datagram_id| is only used in ACK/LOST notifications in
+  // DatagramSinkInterface and does not need to be unique.
   virtual RTCError SendDatagram(rtc::ArrayView<const uint8_t> data,
                                 DatagramId datagram_id) = 0;
 
@@ -117,10 +123,24 @@ class DatagramTransportInterface {
   // that the binary blob goes through). This should only be called for the
   // caller's perspective.
   //
-  // TODO(sukhanov): Make pure virtual.
+  // TODO(mellem): Delete.
   virtual absl::optional<std::string> GetTransportParametersOffer() const {
     return absl::nullopt;
   }
+
+  // Retrieves transport parameters for this datagram transport.  May be called
+  // on either client- or server-perspective transports.
+  //
+  // For servers, the parameters represent what kind of connections and data the
+  // server is prepared to accept.  This is generally a superset of acceptable
+  // parameters.
+  //
+  // For clients, the parameters echo the server configuration used to create
+  // the client, possibly removing any fields or parameters which the client
+  // does not understand.
+  //
+  // TODO(mellem): Make pure virtual.
+  virtual std::string GetTransportParameters() const { return ""; }
 };
 
 }  // namespace webrtc

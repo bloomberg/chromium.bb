@@ -27,9 +27,11 @@
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_version_info.h"
@@ -382,7 +384,7 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
     texture_->SetLevelCleared(texture_->target(), 0, true);
   }
 
-  void Update() override {
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
     GLenum target = texture_->target();
     gl::GLApi* api = gl::g_current_gl_context;
     ScopedRestoreTexture scoped_restore(api, target);
@@ -394,6 +396,16 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
       return;
     if (old_state == gles2::Texture::BOUND)
       image->ReleaseTexImage(target);
+
+    if (in_fence) {
+      // TODO(dcastagna): Don't wait for the fence if the SharedImage is going
+      // to be scanned out as an HW overlay. Currently we don't know that at
+      // this point and we always bind the image, therefore we need to wait for
+      // the fence.
+      std::unique_ptr<gl::GLFence> egl_fence =
+          gl::GLFence::CreateFromGpuFence(*in_fence.get());
+      egl_fence->ServerWait();
+    }
     gles2::Texture::ImageState new_state = gles2::Texture::UNBOUND;
     if (image->ShouldBindOrCopy() == gl::GLImage::BIND &&
         image->BindTexImage(target)) {
@@ -518,7 +530,7 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
                                            format, type, info->cleared_rect);
 
       rgb_emulation_texture_->SetLevelImage(target, 0, image, image_state);
-      rgb_emulation_texture_->SetImmutable(true);
+      rgb_emulation_texture_->SetImmutable(true, false);
     }
 
     return std::make_unique<SharedImageRepresentationGLTextureImpl>(
@@ -576,7 +588,7 @@ class SharedImageBackingPassthroughGLTexture
   bool IsCleared() const override { return is_cleared_; }
   void SetCleared() override { is_cleared_ = true; }
 
-  void Update() override {
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
     GLenum target = texture_passthrough_->target();
     gl::GLApi* api = gl::g_current_gl_context;
     ScopedRestoreTexture scoped_restore(api, target);
@@ -752,9 +764,9 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
     info.buffer_format = buffer_format;
     DCHECK_EQ(info.gl_format,
               gpu::InternalFormatForGpuMemoryBufferFormat(buffer_format));
-    if (base::ContainsValue(gpu_preferences.texture_target_exception_list,
-                            gfx::BufferUsageAndFormat(gfx::BufferUsage::SCANOUT,
-                                                      buffer_format)))
+    if (base::Contains(gpu_preferences.texture_target_exception_list,
+                       gfx::BufferUsageAndFormat(gfx::BufferUsage::SCANOUT,
+                                                 buffer_format)))
       info.target_for_scanout = gpu::GetPlatformSpecificTextureTarget();
   }
 }
@@ -866,6 +878,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
   GLuint level_info_internal_format = format_info.gl_format;
   bool is_cleared = false;
   bool needs_subimage_upload = false;
+  bool has_immutable_storage = false;
   if (use_buffer) {
     image = image_factory_->CreateAnonymousImage(
         size, format_info.buffer_format, gfx::BufferUsage::SCANOUT,
@@ -884,6 +897,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
   } else if (format_info.supports_storage) {
     api->glTexStorage2DEXTFn(target, 1, format_info.storage_internal_format,
                              size.width(), size.height());
+    has_immutable_storage = true;
     needs_subimage_upload = !pixel_data.empty();
   } else if (format_info.is_compressed) {
     ScopedResetAndRestoreUnpackState scoped_unpack_state(api, attribs,
@@ -910,12 +924,12 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
                            pixel_data.data());
   }
 
-  return MakeBacking(use_passthrough_, mailbox, target, service_id, image,
-                     gles2::Texture::BOUND, level_info_internal_format,
-                     format_info.gl_format, format_info.gl_type,
-                     format_info.swizzle,
-                     pixel_data.empty() ? is_cleared : true, format, size,
-                     color_space, usage, attribs);
+  return MakeBacking(
+      use_passthrough_, mailbox, target, service_id, image,
+      gles2::Texture::BOUND, level_info_internal_format, format_info.gl_format,
+      format_info.gl_type, format_info.swizzle,
+      pixel_data.empty() ? is_cleared : true, has_immutable_storage, format,
+      size, color_space, usage, attribs);
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -934,7 +948,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
   }
 
   if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, buffer_format)) {
-    LOG(ERROR) << "Invalid image size for format.";
+    LOG(ERROR) << "Invalid image size " << size.ToString() << " for "
+               << gfx::BufferFormatToString(buffer_format);
     return nullptr;
   }
 
@@ -1001,7 +1016,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
 
   return MakeBacking(use_passthrough_, mailbox, target, service_id, image,
                      image_state, internal_format, gl_format, gl_type, nullptr,
-                     true, format, size, color_space, usage, attribs);
+                     true, false, format, size, color_space, usage, attribs);
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -1016,8 +1031,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageForTest(
   return MakeBacking(false, mailbox, target, service_id, nullptr,
                      gles2::Texture::UNBOUND, viz::GLInternalFormat(format),
                      viz::GLDataFormat(format), viz::GLDataType(format),
-                     nullptr, is_cleared, format, size, gfx::ColorSpace(),
-                     usage, UnpackStateAttribs());
+                     nullptr, is_cleared, false, format, size,
+                     gfx::ColorSpace(), usage, UnpackStateAttribs());
 }
 
 scoped_refptr<gl::GLImage> SharedImageBackingFactoryGLTexture::MakeGLImage(
@@ -1066,6 +1081,7 @@ SharedImageBackingFactoryGLTexture::MakeBacking(
     GLuint gl_type,
     const gles2::Texture::CompatibilitySwizzle* swizzle,
     bool is_cleared,
+    bool has_immutable_storage,
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -1102,7 +1118,7 @@ SharedImageBackingFactoryGLTexture::MakeBacking(
       texture->SetCompatibilitySwizzle(swizzle);
     if (image)
       texture->SetLevelImage(target, 0, image.get(), image_state);
-    texture->SetImmutable(true);
+    texture->SetImmutable(true, has_immutable_storage);
 
     return std::make_unique<SharedImageBackingGLTexture>(
         mailbox, format, size, color_space, usage, texture, attribs);

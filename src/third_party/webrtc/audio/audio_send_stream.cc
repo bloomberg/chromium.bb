@@ -113,7 +113,8 @@ AudioSendStream::AudioSendStream(
                                              config.frame_encryptor,
                                              config.crypto_options,
                                              config.rtp.extmap_allow_mixed,
-                                             config.rtcp_report_interval_ms)) {}
+                                             config.rtcp_report_interval_ms,
+                                             config.rtp.ssrc)) {}
 
 AudioSendStream::AudioSendStream(
     Clock* clock,
@@ -239,11 +240,12 @@ void AudioSendStream::ConfigureStream(
   RTC_DCHECK(first_time ||
              old_config.send_transport == new_config.send_transport);
 
-  if (first_time || old_config.rtp.ssrc != new_config.rtp.ssrc) {
+  if (old_config.rtp.ssrc != new_config.rtp.ssrc) {
     channel_send->SetLocalSSRC(new_config.rtp.ssrc);
-    if (stream->suspended_rtp_state_) {
-      stream->rtp_rtcp_module_->SetRtpState(*stream->suspended_rtp_state_);
-    }
+  }
+  if (stream->suspended_rtp_state_ &&
+      (first_time || old_config.rtp.ssrc != new_config.rtp.ssrc)) {
+    stream->rtp_rtcp_module_->SetRtpState(*stream->suspended_rtp_state_);
   }
   if (first_time || old_config.rtp.c_name != new_config.rtp.c_name) {
     channel_send->SetRTCP_CNAME(new_config.rtp.c_name);
@@ -330,7 +332,7 @@ void AudioSendStream::Start() {
   if (allocation_settings_.IncludeAudioInAllocationOnStart(
           config_.min_bitrate_bps, config_.max_bitrate_bps, config_.has_dscp,
           TransportSeqNumId(config_))) {
-    rtp_transport_->packet_sender()->SetAccountForAudioPackets(true);
+    rtp_transport_->AccountForAudioPacketsInPacedSender(true);
     rtp_rtcp_module_->SetAsPartOfAllocation(true);
     rtc::Event thread_sync_event;
     worker_queue_->PostTask([&] {
@@ -362,6 +364,21 @@ void AudioSendStream::Stop() {
 
 void AudioSendStream::SendAudioData(std::unique_ptr<AudioFrame> audio_frame) {
   RTC_CHECK_RUNS_SERIALIZED(&audio_capture_race_checker_);
+  RTC_DCHECK_GT(audio_frame->sample_rate_hz_, 0);
+  double duration = static_cast<double>(audio_frame->samples_per_channel_) /
+                    audio_frame->sample_rate_hz_;
+  {
+    // Note: SendAudioData() passes the frame further down the pipeline and it
+    // may eventually get sent. But this method is invoked even if we are not
+    // connected, as long as we have an AudioSendStream (created as a result of
+    // an O/A exchange). This means that we are calculating audio levels whether
+    // or not we are sending samples.
+    // TODO(https://crbug.com/webrtc/10771): All "media-source" related stats
+    // should move from send-streams to the local audio sources or tracks; a
+    // send-stream should not be required to read the microphone audio levels.
+    rtc::CritScope cs(&audio_level_lock_);
+    audio_level_.ComputeLevel(*audio_frame, duration);
+  }
   channel_send_->ProcessAndEncodeAudio(std::move(audio_frame));
 }
 
@@ -423,10 +440,12 @@ webrtc::AudioSendStream::Stats AudioSendStream::GetStats(
     }
   }
 
-  AudioState::Stats input_stats = audio_state()->GetAudioInputStats();
-  stats.audio_level = input_stats.audio_level;
-  stats.total_input_energy = input_stats.total_energy;
-  stats.total_input_duration = input_stats.total_duration;
+  {
+    rtc::CritScope cs(&audio_level_lock_);
+    stats.audio_level = audio_level_.LevelFullRange();
+    stats.total_input_energy = audio_level_.TotalEnergy();
+    stats.total_input_duration = audio_level_.TotalDuration();
+  }
 
   stats.typing_noise_detected = audio_state()->typing_noise_detected();
   stats.ana_statistics = channel_send_->GetANAStatistics();
@@ -777,7 +796,7 @@ void AudioSendStream::ReconfigureBitrateObserver(
   if (stream->allocation_settings_.IncludeAudioInAllocationOnReconfigure(
           new_config.min_bitrate_bps, new_config.max_bitrate_bps,
           new_config.has_dscp, TransportSeqNumId(new_config))) {
-    stream->rtp_transport_->packet_sender()->SetAccountForAudioPackets(true);
+    stream->rtp_transport_->AccountForAudioPacketsInPacedSender(true);
     rtc::Event thread_sync_event;
     stream->worker_queue_->PostTask([&] {
       RTC_DCHECK_RUN_ON(stream->worker_queue_);
@@ -794,7 +813,7 @@ void AudioSendStream::ReconfigureBitrateObserver(
     thread_sync_event.Wait(rtc::Event::kForever);
     stream->rtp_rtcp_module_->SetAsPartOfAllocation(true);
   } else {
-    stream->rtp_transport_->packet_sender()->SetAccountForAudioPackets(false);
+    stream->rtp_transport_->AccountForAudioPacketsInPacedSender(false);
     stream->RemoveBitrateObserver();
     stream->rtp_rtcp_module_->SetAsPartOfAllocation(false);
   }
@@ -810,7 +829,6 @@ void AudioSendStream::ConfigureBitrateObserver() {
       MediaStreamAllocationConfig{
           constraints.min.bps<uint32_t>(), constraints.max.bps<uint32_t>(), 0,
           allocation_settings_.DefaultPriorityBitrate().bps(), true,
-          config_.track_id,
           allocation_settings_.BitratePriority().value_or(
               config_.bitrate_priority)});
 }

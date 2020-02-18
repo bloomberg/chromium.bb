@@ -126,6 +126,9 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   // Enables background blur for folder icon if |enabled| is true.
   void SetBackgroundBlurEnabled(bool enabled);
 
+  // Ensures this item view has its own layer.
+  void EnsureLayer();
+
   bool is_folder() const { return is_folder_; }
 
  private:
@@ -264,6 +267,9 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   base::OneShotTimer mouse_drag_timer_;
   // A timer to defer showing drag UI when the app item is touch pressed.
   base::OneShotTimer touch_drag_timer_;
+
+  // The shadow margins added to the app list item title.
+  gfx::Insets title_shadow_margins_;
 
   base::WeakPtrFactory<AppListItemView> weak_ptr_factory_;
 

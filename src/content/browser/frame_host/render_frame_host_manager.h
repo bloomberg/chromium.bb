@@ -575,8 +575,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   };
 
   // Create a RenderFrameProxyHost owned by this object.
-  RenderFrameProxyHost* CreateRenderFrameProxyHost(SiteInstance* site_instance,
-                                                   RenderViewHostImpl* rvh);
+  RenderFrameProxyHost* CreateRenderFrameProxyHost(
+      SiteInstance* site_instance,
+      scoped_refptr<RenderViewHostImpl> rvh);
+
   // Delete a RenderFrameProxyHost owned by this object.
   void DeleteRenderFrameProxyHost(SiteInstance* site_instance);
 
@@ -609,9 +611,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Returns the SiteInstance to use for the navigation.
   scoped_refptr<SiteInstance> GetSiteInstanceForNavigation(
       const GURL& dest_url,
-      SiteInstance* source_instance,
-      SiteInstance* dest_instance,
-      SiteInstance* candidate_instance,
+      SiteInstanceImpl* source_instance,
+      SiteInstanceImpl* dest_instance,
+      SiteInstanceImpl* candidate_instance,
       ui::PageTransition transition,
       bool is_failure,
       bool dest_is_restore,
@@ -670,7 +672,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // description, it is returned as is.
   scoped_refptr<SiteInstance> ConvertToSiteInstance(
       const SiteInstanceDescriptor& descriptor,
-      SiteInstance* candidate_instance);
+      SiteInstanceImpl* candidate_instance);
 
   // Returns true if |candidate| is currently on the same web site as dest_url.
   bool IsCurrentlySameSite(RenderFrameHostImpl* candidate,
@@ -827,7 +829,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   AttachToInnerDelegateState attach_to_inner_delegate_state_ =
       AttachToInnerDelegateState::NONE;
 
-  base::WeakPtrFactory<RenderFrameHostManager> weak_factory_;
+  base::WeakPtrFactory<RenderFrameHostManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManager);
 };

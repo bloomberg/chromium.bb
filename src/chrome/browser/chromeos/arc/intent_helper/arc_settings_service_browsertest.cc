@@ -592,17 +592,25 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkProxyConfigTest) {
             1);
 }
 
-IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, ProxyBypassListTest) {
+// Chrome and ARC use different delimiters for the string representation of the
+// proxy bypass list. This test verifies that the string bypass list sent by
+// Chrome to ARC is formatted in a way that Android code understands.
+IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest,
+                       ProxyBypassListStringRepresentationTest) {
   fake_intent_helper_instance_->clear_broadcasts();
 
-  const char kChromeProxyBypassList[] = "test1.org;test2.org;";
+  net::ProxyBypassRules chrome_proxy_bypass_rules;
+  chrome_proxy_bypass_rules.AddRuleForHostname("", "test1.org", -1);
+  chrome_proxy_bypass_rules.AddRuleForHostname("", "test2.org", -1);
+
   const char kArcProxyBypassList[] = "test1.org,test2.org";
 
   base::Value proxy_config(base::Value::Type::DICTIONARY);
   proxy_config.SetKey("mode",
                       base::Value(ProxyPrefs::kFixedServersProxyModeName));
   proxy_config.SetKey("server", base::Value("proxy:8080"));
-  proxy_config.SetKey("bypass_list", base::Value(kChromeProxyBypassList));
+  proxy_config.SetKey("bypass_list",
+                      base::Value(chrome_proxy_bypass_rules.ToString()));
   SetProxyConfigForNetworkService(kDefaultServicePath, std::move(proxy_config));
   RunUntilIdle();
 

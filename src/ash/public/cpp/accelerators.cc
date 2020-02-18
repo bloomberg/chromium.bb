@@ -159,8 +159,6 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_OEM_6, ui::EF_ALT_DOWN, WINDOW_CYCLE_SNAP_RIGHT},
     {true, ui::VKEY_OEM_MINUS, ui::EF_ALT_DOWN, WINDOW_MINIMIZE},
     {true, ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN, TOGGLE_MAXIMIZED},
-    {true, ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
-     WINDOW_POSITION_CENTER},
     {true, ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN, FOCUS_NEXT_PANE},
     {true, ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN, FOCUS_PREVIOUS_PANE},
 
@@ -189,6 +187,28 @@ const AcceleratorData kAcceleratorData[] = {
     // Debugging shortcuts that need to be available to end-users in
     // release builds.
     {true, ui::VKEY_U, kDebugModifier, PRINT_UI_HIERARCHIES},
+
+    // Virtual Desks shortcuts.
+    // Desk creation and removal:
+    // Due to https://crbug.com/976487, Search + "=" is always automatically
+    // rewritten to F12, and so is Search + "-" to F11. So we had to implement
+    // the following two shortcuts as Shift + F11/F12 until we resolve the above
+    // issue, accepting the fact that these two shortcuts might sometimes be
+    // consumed by apps and pages (since they're not search-based).
+    // TODO(afakhry): Change the following to Search+Shift+"+"/"-" once
+    // https://crbug.com/976487 is fixed.
+    {true, ui::VKEY_F12, ui::EF_SHIFT_DOWN, DESKS_NEW_DESK},
+    {true, ui::VKEY_F11, ui::EF_SHIFT_DOWN, DESKS_REMOVE_CURRENT_DESK},
+    // Desk activation:
+    {true, ui::VKEY_OEM_4, ui::EF_COMMAND_DOWN, DESKS_ACTIVATE_DESK},
+    {true, ui::VKEY_OEM_6, ui::EF_COMMAND_DOWN, DESKS_ACTIVATE_DESK},
+    // Moving windows to desks:
+    {true, ui::VKEY_OEM_4, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+     DESKS_MOVE_ACTIVE_ITEM},
+    {true, ui::VKEY_OEM_6, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+     DESKS_MOVE_ACTIVE_ITEM},
+    // TODO(afakhry): Implement activating and moving windows to a desk by
+    // its index directly.
 
     // TODO(yusukes): Handle VKEY_MEDIA_STOP, and
     // VKEY_MEDIA_LAUNCH_MAIL.

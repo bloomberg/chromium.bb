@@ -282,6 +282,18 @@ void ShellContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
           !!extensions::WebViewGuest::FromWebContents(web_contents)));
 }
 
+void ShellContentBrowserClient::
+    RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(
+        content::BrowserContext* browser_context,
+        NonNetworkURLLoaderFactoryMap* factories) {
+  DCHECK(browser_context);
+  DCHECK(factories);
+  factories->emplace(
+      extensions::kExtensionScheme,
+      extensions::CreateExtensionServiceWorkerScriptURLLoaderFactory(
+          browser_context));
+}
+
 void ShellContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
     int render_process_id,
     int render_frame_id,
@@ -299,7 +311,7 @@ bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
     bool is_navigation,
     bool is_download,
     const url::Origin& request_initiator,
-    network::mojom::URLLoaderFactoryRequest* factory_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     bool* bypass_redirect_checks) {
   auto* web_request_api =
@@ -307,7 +319,7 @@ bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
           browser_context);
   bool use_proxy = web_request_api->MaybeProxyURLLoaderFactory(
       browser_context, frame, render_process_id, is_navigation, is_download,
-      factory_request, header_client);
+      factory_receiver, header_client);
   if (bypass_redirect_checks)
     *bypass_redirect_checks = use_proxy;
   return use_proxy;
@@ -321,8 +333,7 @@ bool ShellContentBrowserClient::HandleExternalProtocol(
     bool is_main_frame,
     ui::PageTransition page_transition,
     bool has_user_gesture,
-    network::mojom::URLLoaderFactoryRequest* factory_request,
-    network::mojom::URLLoaderFactory*& out_factory) {
+    network::mojom::URLLoaderFactoryPtr* out_factory) {
   return false;
 }
 
@@ -336,7 +347,7 @@ ShellContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
       process, network_context, header_client, request_initiator);
 }
 
-std::string ShellContentBrowserClient::GetUserAgent() const {
+std::string ShellContentBrowserClient::GetUserAgent() {
   // Must contain a user agent string for version sniffing. For example,
   // pluginless WebRTC Hangouts checks the Chrome version number.
   return content::BuildUserAgentFromProduct("Chrome/" PRODUCT_VERSION);

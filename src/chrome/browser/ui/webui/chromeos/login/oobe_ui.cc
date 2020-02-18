@@ -66,7 +66,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/supervision_onboarding_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
@@ -89,6 +88,7 @@
 #include "chrome/grit/component_extension_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -102,8 +102,8 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/display/display.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/devices/input_device_manager.h"
 
 namespace chromeos {
 
@@ -164,11 +164,6 @@ void AddSyncConsentResources(content::WebUIDataSource* source) {
 #endif
 }
 
-void AddSupervisionOnboardingScreenResources(content::WebUIDataSource* source) {
-  source->AddResourcePath("supervision/onboarding_controller.mojom-lite.js",
-                          IDR_SUPERVISION_ONBOARDING_CONTROLLER_MOJOM_LITE_JS);
-}
-
 // Adds resources for ARC-dependent screens (PlayStore ToS, Assistant, etc...)
 void AddArcScreensResources(content::WebUIDataSource* source) {
   // Required for postprocessing of Goolge PlayStore Terms and Overlay help.
@@ -185,13 +180,21 @@ void AddArcScreensResources(content::WebUIDataSource* source) {
 }
 
 void AddFingerprintResources(content::WebUIDataSource* source) {
-  if (quick_unlock::IsFingerprintReaderOnKeyboard()) {
-    source->AddResourcePath("fingerprint_scanner_animation.png",
-                            IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_ANIMATION);
-  } else {
-    source->AddResourcePath("fingerprint_scanner_animation.png",
-                            IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_ANIMATION);
+  int animation_id;
+  switch (quick_unlock::GetFingerprintLocation()) {
+    case quick_unlock::FingerprintLocation::TABLET_POWER_BUTTON:
+      animation_id =
+          IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_POWER_BUTTON_ANIMATION;
+      break;
+    case quick_unlock::FingerprintLocation::KEYBOARD_BOTTOM_RIGHT:
+      animation_id =
+          IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_BOTTOM_RIGHT_ANIMATION;
+      break;
+    case quick_unlock::FingerprintLocation::KEYBOARD_TOP_RIGHT:
+      animation_id = IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_TOP_RIGHT_ANIMATION;
+      break;
   }
+  source->AddResourcePath("fingerprint_scanner_animation.png", animation_id);
 }
 
 // Default and non-shared resource definition for kOobeDisplay display type.
@@ -252,7 +255,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   AddFingerprintResources(source);
   AddSyncConsentResources(source);
   AddArcScreensResources(source);
-  AddSupervisionOnboardingScreenResources(source);
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyObjectSrc(
@@ -271,7 +273,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
 std::string GetDisplayType(const GURL& url) {
   std::string path = url.path().size() ? url.path().substr(1) : "";
 
-  if (!base::ContainsValue(kKnownDisplayTypes, path)) {
+  if (!base::Contains(kKnownDisplayTypes, path)) {
     LOG(ERROR) << "Unknown display type '" << path << "'. Setting default.";
     return OobeUI::kLoginDisplay;
   }
@@ -421,9 +423,6 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(std::make_unique<EncryptionMigrationScreenHandler>(
       js_calls_container_.get()));
 
-  AddScreenHandler(std::make_unique<SupervisionOnboardingScreenHandler>(
-      js_calls_container_.get()));
-
   AddScreenHandler(std::make_unique<SupervisionTransitionScreenHandler>(
       js_calls_container_.get()));
 
@@ -481,6 +480,14 @@ void OobeUI::BindPrivilegedHostDeviceSetter(
       multidevice_setup::mojom::kServiceName, std::move(request));
 }
 
+void OobeUI::BindCrosNetworkConfig(
+    chromeos::network_config::mojom::CrosNetworkConfigRequest request) {
+  content::BrowserContext::GetConnectorFor(
+      web_ui()->GetWebContents()->GetBrowserContext())
+      ->BindInterface(chromeos::network_config::mojom::kServiceName,
+                      std::move(request));
+}
+
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     : ui::MojoWebUIController(web_ui, true /* enable_chrome_send */) {
   display_type_ = GetDisplayType(url);
@@ -522,6 +529,8 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
                                            base::Unretained(this)));
   AddHandlerToRegistry(base::BindRepeating(
       &OobeUI::BindPrivilegedHostDeviceSetter, base::Unretained(this)));
+  AddHandlerToRegistry(base::BindRepeating(&OobeUI::BindCrosNetworkConfig,
+                                           base::Unretained(this)));
 }
 
 OobeUI::~OobeUI() {

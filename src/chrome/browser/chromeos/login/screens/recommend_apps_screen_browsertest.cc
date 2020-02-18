@@ -238,7 +238,9 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, BasicSelection) {
   screen_waiter.Wait();
 
   // Wait for loading screen.
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-loading"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-loading"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-screen");
 
   std::vector<FakeAppInfo> test_apps = {
@@ -247,7 +249,9 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, BasicSelection) {
       FakeAppInfo("test.app.foo.app3", "Test app 3")};
   recommend_apps_fetcher_->SimulateSuccess(test_apps);
 
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-screen"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-screen"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-loading");
 
   const std::string webview_path =
@@ -305,7 +309,9 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SelectionChange) {
   screen_waiter.Wait();
 
   // Wait for loading screen.
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-loading"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-loading"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-screen");
 
   std::vector<FakeAppInfo> test_apps = {
@@ -314,7 +320,9 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SelectionChange) {
       FakeAppInfo("test.app.foo.app3", "Test app 3")};
   recommend_apps_fetcher_->SimulateSuccess(test_apps);
 
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-screen"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-screen"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-loading");
 
   const std::string webview_path =
@@ -373,7 +381,9 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithSelectedApps) {
   screen_waiter.Wait();
 
   // Wait for loading screen.
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-loading"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-loading"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-screen");
 
   std::vector<FakeAppInfo> test_apps = {
@@ -382,7 +392,9 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithSelectedApps) {
       FakeAppInfo("test.app.foo.app3", "Test app 3")};
   recommend_apps_fetcher_->SimulateSuccess(test_apps);
 
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-screen"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-screen"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-loading");
 
   const std::string webview_path =
@@ -435,7 +447,9 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithNoAppsSelected) {
   screen_waiter.Wait();
 
   // Wait for loading screen.
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-loading"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-loading"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-screen");
 
   std::vector<FakeAppInfo> test_apps = {
@@ -444,7 +458,9 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipWithNoAppsSelected) {
       FakeAppInfo("test.app.foo.app3", "Test app 3")};
   recommend_apps_fetcher_->SimulateSuccess(test_apps);
 
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-screen"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-screen"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-loading");
 
   const std::string webview_path =
@@ -503,14 +519,18 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, InstallWithNoAppsSelected) {
   screen_waiter.Wait();
 
   // Wait for loading screen.
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-loading"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-loading"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-screen");
 
   std::vector<FakeAppInfo> test_apps = {
       FakeAppInfo("test.app.foo.app1", "Test app 1")};
   recommend_apps_fetcher_->SimulateSuccess(test_apps);
 
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-screen"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-screen"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-loading");
 
   const std::string webview_path =
@@ -537,7 +557,8 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, InstallWithNoAppsSelected) {
   EXPECT_EQ(base::Value(base::Value::Type::LIST), *fast_reinstall_packages);
 }
 
-IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, NoRecommendedApps) {
+// Disabled due to flakiness: https://crbug.com/982161
+IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, DISABLED_NoRecommendedApps) {
   recommend_apps_screen_->Show();
 
   OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
@@ -545,12 +566,16 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, NoRecommendedApps) {
   screen_waiter.Wait();
 
   // Wait for loading screen.
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-loading"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-loading"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-screen");
 
   recommend_apps_fetcher_->SimulateSuccess(std::vector<FakeAppInfo>());
 
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-screen"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-screen"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-loading");
 
   const std::initializer_list<base::StringPiece> install_button = {
@@ -588,7 +613,9 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, ParseError) {
   screen_waiter.Wait();
 
   // Wait for loading screen.
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-loading"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-loading"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-screen");
 
   recommend_apps_fetcher_->SimulateParseError();
@@ -606,12 +633,16 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SkipOnLoadError) {
   screen_waiter.Wait();
 
   // Wait for loading screen.
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-loading"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-loading"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-screen");
 
   recommend_apps_fetcher_->SimulateLoadError();
 
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-screen"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-screen"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-loading");
 
   const std::initializer_list<base::StringPiece> install_button = {
@@ -648,12 +679,16 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, RetryOnLoadError) {
   screen_waiter.Wait();
 
   // Wait for loading screen.
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-loading"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-loading"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-screen");
 
   recommend_apps_fetcher_->SimulateLoadError();
 
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-screen"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-screen"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-loading");
 
   const std::initializer_list<base::StringPiece> install_button = {
@@ -673,14 +708,18 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, RetryOnLoadError) {
 
   EXPECT_EQ(1, recommend_apps_fetcher_->retries());
 
-  test::OobeJS().CreateVisibilityWaiter(false, {"recommend-apps-screen"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(false, {"recommend-apps-screen"})
+      ->Wait();
   test::OobeJS().ExpectVisible("recommend-apps-loading");
 
   std::vector<FakeAppInfo> test_apps = {
       FakeAppInfo("test.app.foo.app1", "Test app 1")};
   recommend_apps_fetcher_->SimulateSuccess(test_apps);
 
-  test::OobeJS().CreateVisibilityWaiter(true, {"recommend-apps-screen"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"recommend-apps-screen"})
+      ->Wait();
   test::OobeJS().ExpectHidden("recommend-apps-loading");
 
   const std::string webview_path =

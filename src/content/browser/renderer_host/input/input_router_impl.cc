@@ -90,10 +90,7 @@ InputRouterImpl::InputRouterImpl(
                            config.gesture_config),
       device_scale_factor_(1.f),
       compositor_touch_action_enabled_(
-          base::FeatureList::IsEnabled(features::kCompositorTouchAction)),
-      host_binding_(this),
-      frame_host_binding_(this),
-      weak_ptr_factory_(this) {
+          base::FeatureList::IsEnabled(features::kCompositorTouchAction)) {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
 
   DCHECK(client);
@@ -140,8 +137,7 @@ void InputRouterImpl::SendKeyboardEvent(
 
 void InputRouterImpl::SendGestureEvent(
     const GestureEventWithLatencyInfo& original_gesture_event) {
-  input_stream_validator_.Validate(original_gesture_event.event,
-                                   FlingCancellationIsDeferred());
+  input_stream_validator_.Validate(original_gesture_event.event);
 
   GestureEventWithLatencyInfo gesture_event(original_gesture_event);
 
@@ -246,23 +242,20 @@ base::Optional<cc::TouchAction> InputRouterImpl::ActiveTouchAction() {
   return touch_action_filter_.active_touch_action();
 }
 
-void InputRouterImpl::BindHost(mojom::WidgetInputHandlerHostRequest request,
-                               bool frame_handler) {
-  if (frame_handler) {
-    frame_host_binding_.Close();
-    frame_host_binding_.Bind(std::move(request));
-  } else {
-    host_binding_.Close();
-    host_binding_.Bind(std::move(request));
-  }
+mojo::PendingRemote<mojom::WidgetInputHandlerHost>
+InputRouterImpl::BindNewHost() {
+  host_receiver_.reset();
+  return host_receiver_.BindNewPipeAndPassRemote();
+}
+
+mojo::PendingRemote<mojom::WidgetInputHandlerHost>
+InputRouterImpl::BindNewFrameHost() {
+  frame_host_receiver_.reset();
+  return frame_host_receiver_.BindNewPipeAndPassRemote();
 }
 
 void InputRouterImpl::StopFling() {
   gesture_event_queue_.StopFling();
-}
-
-bool InputRouterImpl::FlingCancellationIsDeferred() {
-  return gesture_event_queue_.FlingCancellationIsDeferred();
 }
 
 void InputRouterImpl::ProcessDeferredGestureEventQueue() {

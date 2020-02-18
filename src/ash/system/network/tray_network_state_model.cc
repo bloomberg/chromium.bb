@@ -78,7 +78,7 @@ const DeviceStateProperties* TrayNetworkStateModel::GetDevice(
 
 DeviceStateType TrayNetworkStateModel::GetDeviceState(NetworkType type) {
   const DeviceStateProperties* device = GetDevice(type);
-  return device ? device->state : DeviceStateType::kUnavailable;
+  return device ? device->device_state : DeviceStateType::kUnavailable;
 }
 
 void TrayNetworkStateModel::SetNetworkTypeEnabledState(NetworkType type,
@@ -134,7 +134,7 @@ void TrayNetworkStateModel::OnGetDeviceStateList(
   devices_.clear();
   for (auto& device : devices) {
     NetworkType type = device->type;
-    if (base::ContainsKey(devices_, type))
+    if (base::Contains(devices_, type))
       continue;  // Ignore multiple entries with the same type.
     devices_.emplace(std::make_pair(type, std::move(device)));
   }

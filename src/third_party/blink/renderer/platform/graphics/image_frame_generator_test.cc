@@ -30,7 +30,6 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
 #include "third_party/blink/renderer/platform/graphics/test/mock_image_decoder.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
@@ -38,6 +37,8 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -95,7 +96,7 @@ class ImageFrameGeneratorTest : public testing::Test,
   int RepetitionCount() const override {
     return frame_count_ == 1 ? kAnimationNone : kAnimationLoopOnce;
   }
-  TimeDelta FrameDuration() const override { return TimeDelta(); }
+  base::TimeDelta FrameDuration() const override { return base::TimeDelta(); }
 
  protected:
   void UseMockImageDecoderFactory() {
@@ -120,7 +121,7 @@ class ImageFrameGeneratorTest : public testing::Test,
       UseMockImageDecoderFactory();
     }
   }
-  void SetSupportedSizes(std::vector<SkISize> sizes) {
+  void SetSupportedSizes(Vector<SkISize> sizes) {
     generator_ = nullptr;
     generator_ = ImageFrameGenerator::Create(
         FullSize(), true, ColorBehavior::Ignore(), std::move(sizes));
@@ -142,9 +143,8 @@ class ImageFrameGeneratorTest : public testing::Test,
 TEST_F(ImageFrameGeneratorTest, GetSupportedSizes) {
   ASSERT_TRUE(FullSize() == SkISize::Make(100, 100));
 
-  std::vector<SkISize> supported_sizes = {SkISize::Make(2, 2),
-                                          SkISize::Make(50, 50),
-                                          SkISize::Make(75, 75), FullSize()};
+  Vector<SkISize> supported_sizes = {SkISize::Make(2, 2), SkISize::Make(50, 50),
+                                     SkISize::Make(75, 75), FullSize()};
   SetSupportedSizes(supported_sizes);
 
   struct Test {

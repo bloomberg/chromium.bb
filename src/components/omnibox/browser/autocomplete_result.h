@@ -31,7 +31,7 @@ class AutocompleteResult {
   typedef ACMatches::iterator iterator;
 
   // Max number of matches we'll show from the various providers.
-  static size_t GetMaxMatches();
+  static size_t GetMaxMatches(bool is_zero_suggest = false);
 
   AutocompleteResult();
   ~AutocompleteResult();
@@ -97,12 +97,10 @@ class AutocompleteResult {
   // Returns the first match in |matches| which might be chosen as default.
   // If |kOmniboxPreserveDefaultMatchScore| is enabled and the page is not
   // the fake box, the scores are not demoted by type.
-  static ACMatches::const_iterator FindTopMatch(
-      metrics::OmniboxEventProto::PageClassification page_classification,
-      const ACMatches& matches);
-  static ACMatches::iterator FindTopMatch(
-      metrics::OmniboxEventProto::PageClassification page_classification,
-      ACMatches* matches);
+  static ACMatches::const_iterator FindTopMatch(const AutocompleteInput& input,
+                                                const ACMatches& matches);
+  static ACMatches::iterator FindTopMatch(const AutocompleteInput& input,
+                                          ACMatches* matches);
 
   const GURL& alternate_nav_url() const { return alternate_nav_url_; }
 
@@ -143,6 +141,10 @@ class AutocompleteResult {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest, ConvertsOpenTabsCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           PedalSuggestionsRemainUnique);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           TestGroupSuggestionsBySearchVsURL);
 
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
 
@@ -154,14 +156,13 @@ class AutocompleteResult {
   typedef ACMatches::iterator::difference_type matches_difference_type;
 #endif
 
-  // Examines |first| and |second| and returns the one that is preferred based
-  // on the constraints we want to enforce when deduping. Note that this may
-  // modify the relevance, allowed_to_be_default_match, or inline_autocompletion
-  // values of the returned match.
-  static std::list<ACMatches::iterator>::iterator BetterMatch(
+  // Examines |first| and |second| and returns the match that is preferred when
+  // choosing between candidate duplicates. Note that this may modify the
+  // relevance, allowed_to_be_default_match, or inline_autocompletion values of
+  // the returned match.
+  static std::list<ACMatches::iterator>::iterator BetterDuplicate(
       std::list<ACMatches::iterator>::iterator first,
-      std::list<ACMatches::iterator>::iterator second,
-      metrics::OmniboxEventProto::PageClassification page_classification);
+      std::list<ACMatches::iterator>::iterator second);
 
   // Returns true if |matches| contains a match with the same destination as
   // |match|.
@@ -173,14 +174,17 @@ class AutocompleteResult {
   // suggestions, remove the non-tail suggestions.
   static void MaybeCullTailSuggestions(ACMatches* matches);
 
-  // Populates |provider_to_matches| from |matches_|.
-  void BuildProviderToMatches(ProviderToMatches* provider_to_matches) const;
+  // Populates |provider_to_matches| from |matches_|. This AutocompleteResult
+  // should not be used after the 'move' version.
+  void BuildProviderToMatchesCopy(ProviderToMatches* provider_to_matches) const;
+  void BuildProviderToMatchesMove(ProviderToMatches* provider_to_matches);
 
-  // Copies matches into this result. |old_matches| gives the matches from the
-  // last result, and |new_matches| the results from this result.
+  // Moves matches into this result. |old_matches| gives the matches from the
+  // last result, and |new_matches| the results from this result. |old_matches|
+  // should not be used afterwards.
   void MergeMatchesByProvider(
       metrics::OmniboxEventProto::PageClassification page_classification,
-      const ACMatches& old_matches,
+      ACMatches* old_matches,
       const ACMatches& new_matches);
 
   // This pulls the relevant fields out of a match for comparison with other
@@ -197,6 +201,12 @@ class AutocompleteResult {
   void LimitNumberOfURLsShown(
       size_t max_url_count,
       const CompareWithDemoteByType<AutocompleteMatch>& comparing_object);
+
+  // This method implements a stateful stable partition. Matches which are
+  // search types, and their submatches regardless of type, are shifted
+  // earlier in the range, while non-search types and their submatches
+  // are shifted later.
+  static void GroupSuggestionsBySearchVsURL(iterator begin, iterator end);
 
   ACMatches matches_;
 

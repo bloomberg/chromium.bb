@@ -104,6 +104,9 @@ class DataReductionProxyMetricsObserverBase
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) final;
 
+  // Records UKM for the data_reduction_proxy event.
+  void RecordUKM(const page_load_metrics::PageLoadExtraInfo& info) const;
+
   // Sends the page load information to the pingback client.
   void SendPingback(const page_load_metrics::mojom::PageLoadTiming& timing,
                     const page_load_metrics::PageLoadExtraInfo& info,
@@ -193,7 +196,8 @@ class DataReductionProxyMetricsObserverBase
   // The status of an attempted lite page redirect preview.
   base::Optional<previews::ServerLitePageStatus> lite_page_redirect_status_;
 
-  base::WeakPtrFactory<DataReductionProxyMetricsObserverBase> weak_ptr_factory_;
+  base::WeakPtrFactory<DataReductionProxyMetricsObserverBase> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyMetricsObserverBase);
 };

@@ -13,11 +13,27 @@ cr.exportPath('settings');
  * Information for a Chrome OS Kerberos account.
  * @typedef {{
  *   principalName: string,
+ *   config: string,
  *   isSignedIn: boolean,
+ *   isActive: boolean,
+ *   isManaged: boolean,
+ *   passwordWasRemembered: boolean,
  *   pic: string,
+ *   validForDuration: string
  * }}
  */
 settings.KerberosAccount;
+
+/**
+ * @typedef {{
+ *   error: !settings.KerberosErrorType,
+ *   errorInfo: !{
+ *     code: !settings.KerberosConfigErrorCode,
+ *     lineIndex: (number|undefined)
+ *   }
+ * }}
+ */
+settings.ValidateKerberosConfigResult;
 
 cr.define('settings', function() {
   /**
@@ -45,6 +61,26 @@ cr.define('settings', function() {
     kDuplicatePrincipalName: 16,
     kInProgress: 17,
     kParsePrincipalFailed: 18,
+    kBadConfig: 19,
+    kJailFailure: 20,
+  };
+
+  /**
+   *  @enum {number}
+   *  Error codes for config validation.
+   *  These values must be kept in sync with the KerberosConfigErrorCode enum in
+   *  third_party/cros_system_api/dbus/kerberos/kerberos_service.proto.
+   */
+  const KerberosConfigErrorCode = {
+    kNone: 0,
+    kSectionNestedInGroup: 1,
+    kSectionSyntax: 2,
+    kExpectedOpeningCurlyBrace: 3,
+    kExtraCurlyBrace: 4,
+    kRelationSyntax: 5,
+    kKeyNotSupported: 6,
+    kSectionNotSupported: 7,
+    kKrb5FailedToParse: 8,
   };
 
   /** @interface */
@@ -60,15 +96,35 @@ cr.define('settings', function() {
      * Attempts to add a new (or update an existing) Kerberos account.
      * @param {string} principalName Kerberos principal (user@realm.com).
      * @param {string} password Account password.
+     * @param {boolean} rememberPassword Whether to store the password.
+     * @param {string} config Kerberos configuration.
+     * @param {boolean} allowExisting Whether existing accounts may be updated.
      * @return {!Promise<!settings.KerberosErrorType>}
      */
-    addAccount(principalName, password) {}
+    addAccount(
+        principalName, password, rememberPassword, config, allowExisting) {}
 
     /**
      * Removes |account| from the set of Kerberos accounts.
      * @param {!settings.KerberosAccount} account
+     * @return {!Promise<!settings.KerberosErrorType>}
      */
     removeAccount(account) {}
+
+    /**
+     * Validates |krb5conf| by making sure that it does not contain syntax
+     *     errors or disallowed configuration options.
+     * @param {string} krb5Conf Kerberos configuration data (krb5.conf)
+     * @return {!Promise<!settings.ValidateKerberosConfigResult>}
+     */
+    validateConfig(krb5Conf) {}
+
+    /**
+     * Sets |account| as currently active account. Kerberos credentials are
+     * consumed from this account.
+     * @param {!settings.KerberosAccount} account
+     */
+    setAsActiveAccount(account) {}
   }
 
   /**
@@ -81,13 +137,26 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    addAccount(principalName, password) {
-      return cr.sendWithPromise('addKerberosAccount', principalName, password);
+    addAccount(
+        principalName, password, rememberPassword, config, allowExisting) {
+      return cr.sendWithPromise(
+          'addKerberosAccount', principalName, password, rememberPassword,
+          config, allowExisting);
     }
 
     /** @override */
     removeAccount(account) {
-      chrome.send('removeKerberosAccount', [account.principalName]);
+      return cr.sendWithPromise('removeKerberosAccount', account.principalName);
+    }
+
+    /** @override */
+    validateConfig(krb5conf) {
+      return cr.sendWithPromise('validateKerberosConfig', krb5conf);
+    }
+
+    /** @override */
+    setAsActiveAccount(account) {
+      chrome.send('setAsActiveKerberosAccount', [account.principalName]);
     }
   }
 
@@ -95,6 +164,7 @@ cr.define('settings', function() {
 
   return {
     KerberosErrorType: KerberosErrorType,
+    KerberosConfigErrorCode: KerberosConfigErrorCode,
     KerberosAccountsBrowserProxy: KerberosAccountsBrowserProxy,
     KerberosAccountsBrowserProxyImpl: KerberosAccountsBrowserProxyImpl,
   };

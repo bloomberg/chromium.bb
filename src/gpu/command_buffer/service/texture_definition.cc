@@ -270,6 +270,7 @@ scoped_refptr<NativeImageBuffer> NativeImageBuffer::Create(GLuint texture_id) {
   switch (gl::GetGLImplementation()) {
 #if !defined(OS_MACOSX)
     case gl::kGLImplementationEGLGLES2:
+    case gl::kGLImplementationEGLANGLE:
       return NativeImageBufferEGL::Create(texture_id);
 #endif
     case gl::kGLImplementationMockGL:
@@ -330,6 +331,7 @@ TextureDefinition::TextureDefinition()
       wrap_t_(0),
       usage_(0),
       immutable_(true),
+      immutable_storage_(false),
       defined_(false) {}
 
 TextureDefinition::TextureDefinition(
@@ -344,7 +346,8 @@ TextureDefinition::TextureDefinition(
       wrap_s_(texture->wrap_s()),
       wrap_t_(texture->wrap_t()),
       usage_(texture->usage()),
-      immutable_(texture->IsImmutable()) {
+      immutable_(texture->IsImmutable()),
+      immutable_storage_(texture->HasImmutableStorage()) {
   const Texture::LevelInfo* level = texture->GetLevelInfo(target_, 0);
   defined_ = !!level;
   DCHECK(!image_buffer_.get() || defined_);
@@ -421,7 +424,7 @@ void TextureDefinition::UpdateTextureInternal(Texture* texture) const {
   }
 
   texture->target_ = target_;
-  texture->SetImmutable(immutable_);
+  texture->SetImmutable(immutable_, immutable_storage_);
   texture->sampler_state_.min_filter = min_filter_;
   texture->sampler_state_.mag_filter = mag_filter_;
   texture->sampler_state_.wrap_s = wrap_s_;

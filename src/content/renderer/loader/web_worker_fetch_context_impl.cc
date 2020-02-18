@@ -28,13 +28,11 @@
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
-#include "content/renderer/worker/service_worker_network_provider_for_worker.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/service_worker/service_worker_types.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -54,8 +52,8 @@ void CreateServiceWorkerSubresourceLoaderFactory(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   ServiceWorkerSubresourceLoaderFactory::Create(
       base::MakeRefCounted<ControllerServiceWorkerConnector>(
-          std::move(container_host_info), nullptr /* controller_ptr */,
-          client_id),
+          std::move(container_host_info),
+          mojo::NullRemote() /* remote_controller */, client_id),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory)),
       std::move(request), std::move(task_runner));
 }
@@ -79,8 +77,7 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
   Factory(base::WeakPtr<ResourceDispatcher> resource_dispatcher,
           scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
       : resource_dispatcher_(std::move(resource_dispatcher)),
-        loader_factory_(std::move(loader_factory)),
-        weak_ptr_factory_(this) {}
+        loader_factory_(std::move(loader_factory)) {}
   ~Factory() override = default;
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
@@ -147,7 +144,7 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
   base::WeakPtr<ResourceDispatcher> resource_dispatcher_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> service_worker_loader_factory_;
-  base::WeakPtrFactory<Factory> weak_ptr_factory_;
+  base::WeakPtrFactory<Factory> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(Factory);
 };
 
@@ -191,11 +188,11 @@ scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
           ChildThreadImpl::current()->thread_safe_sender(),
           ChildThreadImpl::current()->GetConnector()->Clone()));
   if (provider_context) {
-    worker_fetch_context->set_is_controlled_by_service_worker(
-        provider_context->IsControlledByServiceWorker());
+    worker_fetch_context->set_controller_service_worker_mode(
+        provider_context->GetControllerServiceWorkerMode());
     worker_fetch_context->set_client_id(provider_context->client_id());
   } else {
-    worker_fetch_context->set_is_controlled_by_service_worker(
+    worker_fetch_context->set_controller_service_worker_mode(
         blink::mojom::ControllerServiceWorkerMode::kNoController);
   }
   return worker_fetch_context;
@@ -242,9 +239,11 @@ void WebWorkerFetchContextImpl::SetTerminateSyncLoadEvent(
   terminate_sync_load_event_ = terminate_sync_load_event;
 }
 
-scoped_refptr<blink::WebWorkerFetchContext>
-WebWorkerFetchContextImpl::CloneForNestedWorker(
+scoped_refptr<WebWorkerFetchContextImpl>
+WebWorkerFetchContextImpl::CloneForNestedWorkerDeprecated(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  DCHECK(!blink::features::IsPlzDedicatedWorkerEnabled());
+
   blink::mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
   blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
       service_worker_worker_client_registry_ptr_info;
@@ -264,28 +263,59 @@ WebWorkerFetchContextImpl::CloneForNestedWorker(
         mojo::MakeRequest(&host_ptr_info));
   }
 
-  blink::mojom::RendererPreferenceWatcherPtr preference_watcher;
-  auto new_context = base::AdoptRef(new WebWorkerFetchContextImpl(
-      renderer_preferences_, mojo::MakeRequest(&preference_watcher),
-      std::move(service_worker_client_request),
-      std::move(service_worker_worker_client_registry_ptr_info),
-      std::move(host_ptr_info), loader_factory_->Clone(),
-      fallback_factory_->Clone(),
-      throttle_provider_ ? throttle_provider_->Clone() : nullptr,
-      websocket_handshake_throttle_provider_
-          ? websocket_handshake_throttle_provider_->Clone(
-                std::move(task_runner))
-          : nullptr,
-      thread_safe_sender_.get(), service_manager_connection_->Clone()));
-  new_context->is_controlled_by_service_worker_ =
-      is_controlled_by_service_worker_;
-  new_context->is_on_sub_frame_ = is_on_sub_frame_;
-  new_context->ancestor_frame_id_ = ancestor_frame_id_;
-  new_context->frame_request_blocker_ = frame_request_blocker_;
-  new_context->appcache_host_id_ = appcache_host_id_;
-  new_context->top_frame_origin_ = top_frame_origin_;
+  scoped_refptr<WebWorkerFetchContextImpl> new_context =
+      CloneForNestedWorkerInternal(
+          std::move(service_worker_client_request),
+          std::move(service_worker_worker_client_registry_ptr_info),
+          std::move(host_ptr_info), loader_factory_->Clone(),
+          fallback_factory_->Clone(), std::move(task_runner));
+  new_context->controller_service_worker_mode_ =
+      controller_service_worker_mode_;
 
-  child_preference_watchers_.AddPtr(std::move(preference_watcher));
+  return new_context;
+}
+
+scoped_refptr<WebWorkerFetchContextImpl>
+WebWorkerFetchContextImpl::CloneForNestedWorker(
+    ServiceWorkerProviderContext* service_worker_provider_context,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
+  DCHECK(loader_factory_info);
+  DCHECK(fallback_factory_info);
+  DCHECK(task_runner);
+
+  if (!service_worker_provider_context) {
+    return CloneForNestedWorkerInternal(
+        /*service_worker_client_request=*/nullptr,
+        /*service_worker_worker_client_registry_ptr_info=*/nullptr,
+        /*container_host_ptr_info=*/nullptr, std::move(loader_factory_info),
+        std::move(fallback_factory_info), std::move(task_runner));
+  }
+
+  blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+      service_worker_worker_client_registry_ptr_info;
+  service_worker_provider_context->CloneWorkerClientRegistry(
+      mojo::MakeRequest(&service_worker_worker_client_registry_ptr_info));
+
+  blink::mojom::ServiceWorkerWorkerClientPtr worker_client_ptr;
+  blink::mojom::ServiceWorkerWorkerClientRequest service_worker_client_request =
+      mojo::MakeRequest(&worker_client_ptr);
+  service_worker_provider_context->RegisterWorkerClient(
+      std::move(worker_client_ptr));
+
+  blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info =
+      service_worker_provider_context->CloneContainerHostPtrInfo();
+
+  scoped_refptr<WebWorkerFetchContextImpl> new_context =
+      CloneForNestedWorkerInternal(
+          std::move(service_worker_client_request),
+          std::move(service_worker_worker_client_registry_ptr_info),
+          std::move(container_host_ptr_info), std::move(loader_factory_info),
+          std::move(fallback_factory_info), std::move(task_runner));
+  new_context->controller_service_worker_mode_ =
+      service_worker_provider_context->GetControllerServiceWorkerMode();
 
   return new_context;
 }
@@ -392,8 +422,8 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
 }
 
 blink::mojom::ControllerServiceWorkerMode
-WebWorkerFetchContextImpl::IsControlledByServiceWorker() const {
-  return is_controlled_by_service_worker_;
+WebWorkerFetchContextImpl::GetControllerServiceWorkerMode() const {
+  return controller_service_worker_mode_;
 }
 
 void WebWorkerFetchContextImpl::SetIsOnSubframe(bool is_on_sub_frame) {
@@ -454,9 +484,9 @@ WebWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle(
       ancestor_frame_id_, std::move(task_runner));
 }
 
-void WebWorkerFetchContextImpl::set_is_controlled_by_service_worker(
+void WebWorkerFetchContextImpl::set_controller_service_worker_mode(
     blink::mojom::ControllerServiceWorkerMode mode) {
-  is_controlled_by_service_worker_ = mode;
+  controller_service_worker_mode_ = mode;
 }
 
 void WebWorkerFetchContextImpl::set_ancestor_frame_id(int id) {
@@ -504,8 +534,40 @@ void WebWorkerFetchContextImpl::SetApplicationCacheHostID(
 
 void WebWorkerFetchContextImpl::OnControllerChanged(
     blink::mojom::ControllerServiceWorkerMode mode) {
-  set_is_controlled_by_service_worker(mode);
+  set_controller_service_worker_mode(mode);
   ResetServiceWorkerURLLoaderFactory();
+}
+
+scoped_refptr<WebWorkerFetchContextImpl>
+WebWorkerFetchContextImpl::CloneForNestedWorkerInternal(
+    blink::mojom::ServiceWorkerWorkerClientRequest
+        service_worker_client_request,
+    blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+        service_worker_worker_client_registry_ptr_info,
+    blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  blink::mojom::RendererPreferenceWatcherPtr preference_watcher;
+  auto new_context = base::AdoptRef(new WebWorkerFetchContextImpl(
+      renderer_preferences_, mojo::MakeRequest(&preference_watcher),
+      std::move(service_worker_client_request),
+      std::move(service_worker_worker_client_registry_ptr_info),
+      std::move(container_host_ptr_info), std::move(loader_factory_info),
+      std::move(fallback_factory_info),
+      throttle_provider_ ? throttle_provider_->Clone() : nullptr,
+      websocket_handshake_throttle_provider_
+          ? websocket_handshake_throttle_provider_->Clone(
+                std::move(task_runner))
+          : nullptr,
+      thread_safe_sender_.get(), service_manager_connection_->Clone()));
+  new_context->is_on_sub_frame_ = is_on_sub_frame_;
+  new_context->ancestor_frame_id_ = ancestor_frame_id_;
+  new_context->frame_request_blocker_ = frame_request_blocker_;
+  new_context->appcache_host_id_ = appcache_host_id_;
+  new_context->top_frame_origin_ = top_frame_origin_;
+  child_preference_watchers_.AddPtr(std::move(preference_watcher));
+  return new_context;
 }
 
 bool WebWorkerFetchContextImpl::Send(IPC::Message* message) {
@@ -515,7 +577,7 @@ bool WebWorkerFetchContextImpl::Send(IPC::Message* message) {
 void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
   if (!web_loader_factory_)
     return;
-  if (IsControlledByServiceWorker() !=
+  if (GetControllerServiceWorkerMode() !=
       blink::mojom::ControllerServiceWorkerMode::kControlled) {
     web_loader_factory_->SetServiceWorkerURLLoaderFactory(nullptr);
     return;

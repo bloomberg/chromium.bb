@@ -21,11 +21,10 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "net/base/url_util.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_ANDROID)
@@ -130,8 +129,6 @@ std::vector<base::string16> SigninGlobalError::GetBubbleViewMessages() {
     // User credentials are invalid (bad acct, etc).
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::SERVICE_ERROR:
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
       messages.push_back(l10n_util::GetStringUTF16(
           IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE));
       break;
@@ -178,5 +175,5 @@ void SigninGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
 }
 
 void SigninGlobalError::OnErrorChanged() {
-  GlobalErrorServiceFactory::GetForProfile(profile_)->NotifyErrorsChanged(this);
+  GlobalErrorServiceFactory::GetForProfile(profile_)->NotifyErrorsChanged();
 }

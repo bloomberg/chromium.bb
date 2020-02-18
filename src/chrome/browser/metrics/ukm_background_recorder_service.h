@@ -24,6 +24,7 @@ class BrowserContext;
 
 namespace history {
 class HistoryService;
+struct VisibleVisitCountToHostResult;
 }  // namespace history
 
 namespace url {
@@ -64,16 +65,14 @@ class UkmBackgroundRecorderService : public KeyedService {
   void DidGetVisibleVisitCount(
       const url::Origin& origin,
       UkmBackgroundRecorderService::GetBackgroundSourceIdCallback callback,
-      bool did_determine,
-      int num_visits,
-      base::Time first_visit_time);
+      history::VisibleVisitCountToHostResult result);
 
   history::HistoryService* history_service_;
 
   // Task tracker used for querying URLs in the history service.
   base::CancelableTaskTracker task_tracker_;
 
-  base::WeakPtrFactory<UkmBackgroundRecorderService> weak_ptr_factory_;
+  base::WeakPtrFactory<UkmBackgroundRecorderService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UkmBackgroundRecorderService);
 };

@@ -97,8 +97,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SetSSLInfo(const net::SSLInfo& ssl_info) override;
 
   NavigationThrottle::ThrottleCheckResult GetLastThrottleCheckResult() override;
-  NavigationHandleImpl* GetNavigationHandle() const override;
-  content::GlobalRequestID GetGlobalRequestID() const override;
+  NavigationHandleImpl* GetNavigationHandle() override;
+  content::GlobalRequestID GetGlobalRequestID() override;
 
   // Additional utilites usable only inside content/.
 
@@ -209,8 +209,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void OnThrottleChecksComplete(NavigationThrottle::ThrottleCheckResult result);
 
   // Helper method to set the OnThrottleChecksComplete callback on the
-  // NavigationHandle.
-  void PrepareCompleteCallbackOnHandle(NavigationHandleImpl* handle);
+  // NavigationRequest.
+  void PrepareCompleteCallbackOnRequest();
 
   // Check if the navigation corresponds to a same-document navigation.
   // Only use on renderer-initiated navigations.
@@ -337,7 +337,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   mojo::AssociatedInterfaceRequest<mojom::NavigationClient>
       navigation_client_request_;
 
-  base::WeakPtrFactory<NavigationSimulatorImpl> weak_factory_;
+  base::WeakPtrFactory<NavigationSimulatorImpl> weak_factory_{this};
 };
 
 }  // namespace content

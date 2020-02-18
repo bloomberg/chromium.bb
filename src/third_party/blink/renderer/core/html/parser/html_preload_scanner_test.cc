@@ -59,8 +59,8 @@ struct ReferrerPolicyTestCase {
 struct CorsTestCase {
   const char* base_url;
   const char* input_html;
-  network::mojom::FetchRequestMode request_mode;
-  network::mojom::FetchCredentialsMode credentials_mode;
+  network::mojom::RequestMode request_mode;
+  network::mojom::CredentialsMode credentials_mode;
 };
 
 struct CSPTestCase {
@@ -160,15 +160,14 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
 
   void CorsRequestVerification(
       Document* document,
-      network::mojom::FetchRequestMode request_mode,
-      network::mojom::FetchCredentialsMode credentials_mode) {
+      network::mojom::RequestMode request_mode,
+      network::mojom::CredentialsMode credentials_mode) {
     ASSERT_TRUE(preload_request_.get());
     Resource* resource = preload_request_->Start(document);
     ASSERT_TRUE(resource);
-    EXPECT_EQ(request_mode,
-              resource->GetResourceRequest().GetFetchRequestMode());
+    EXPECT_EQ(request_mode, resource->GetResourceRequest().GetMode());
     EXPECT_EQ(credentials_mode,
-              resource->GetResourceRequest().GetFetchCredentialsMode());
+              resource->GetResourceRequest().GetCredentialsMode());
   }
 
   void NonceRequestVerification(const char* nonce) {
@@ -246,8 +245,7 @@ class HTMLPreloadScannerTest : public PageTestBase {
     KURL document_url = KURL("http://whatever.test/");
     if (use_secure_document_url)
       document_url = KURL("https://whatever.test/");
-    GetDocument().SetURL(document_url);
-    GetDocument().SetSecurityOrigin(SecurityOrigin::Create(document_url));
+    NavigateTo(document_url);
     GetDocument().GetSettings()->SetViewportEnabled(viewport_state ==
                                                     kViewportEnabled);
     GetDocument().GetSettings()->SetViewportMetaEnabled(viewport_state ==
@@ -912,27 +910,27 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicy) {
 TEST_F(HTMLPreloadScannerTest, testCors) {
   CorsTestCase test_cases[] = {
       {"http://example.test", "<script src='/script'></script>",
-       network::mojom::FetchRequestMode::kNoCors,
-       network::mojom::FetchCredentialsMode::kInclude},
+       network::mojom::RequestMode::kNoCors,
+       network::mojom::CredentialsMode::kInclude},
       {"http://example.test", "<script crossorigin src='/script'></script>",
-       network::mojom::FetchRequestMode::kCors,
-       network::mojom::FetchCredentialsMode::kSameOrigin},
+       network::mojom::RequestMode::kCors,
+       network::mojom::CredentialsMode::kSameOrigin},
       {"http://example.test",
        "<script crossorigin=use-credentials src='/script'></script>",
-       network::mojom::FetchRequestMode::kCors,
-       network::mojom::FetchCredentialsMode::kInclude},
+       network::mojom::RequestMode::kCors,
+       network::mojom::CredentialsMode::kInclude},
       {"http://example.test", "<script type='module' src='/script'></script>",
-       network::mojom::FetchRequestMode::kCors,
-       network::mojom::FetchCredentialsMode::kSameOrigin},
+       network::mojom::RequestMode::kCors,
+       network::mojom::CredentialsMode::kSameOrigin},
       {"http://example.test",
        "<script type='module' crossorigin='anonymous' src='/script'></script>",
-       network::mojom::FetchRequestMode::kCors,
-       network::mojom::FetchCredentialsMode::kSameOrigin},
+       network::mojom::RequestMode::kCors,
+       network::mojom::CredentialsMode::kSameOrigin},
       {"http://example.test",
        "<script type='module' crossorigin='use-credentials' "
        "src='/script'></script>",
-       network::mojom::FetchRequestMode::kCors,
-       network::mojom::FetchCredentialsMode::kInclude},
+       network::mojom::RequestMode::kCors,
+       network::mojom::CredentialsMode::kInclude},
   };
 
   for (const auto& test_case : test_cases) {
@@ -1237,6 +1235,7 @@ TEST_F(HTMLPreloadScannerTest, LazyLoadImage_DisabledForSmallImages) {
 }
 
 TEST_F(HTMLPreloadScannerTest, LazyLoadImage_FeatureDisabledWithAttribute) {
+  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(false);
   GetDocument().GetSettings()->SetLazyLoadEnabled(true);
   RunSetUp(kViewportEnabled);
   LazyLoadImageTestCase test_cases[] = {
@@ -1275,6 +1274,8 @@ TEST_F(HTMLPreloadScannerTest,
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
   ScopedLazyImageLoadingMetadataFetchForTest
       scoped_lazy_image_loading_metadata_fetch_for_test(true);
+  ScopedAutomaticLazyImageLoadingForTest
+      scoped_automatic_lazy_image_loading_for_test(false);
   GetDocument().GetSettings()->SetLazyLoadEnabled(true);
   RunSetUp(kViewportEnabled);
   LazyLoadImageTestCase test_cases[] = {
@@ -1334,6 +1335,8 @@ TEST_F(HTMLPreloadScannerTest,
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
   ScopedLazyImageLoadingMetadataFetchForTest
       scoped_lazy_image_loading_metadata_fetch_for_test(true);
+  ScopedAutomaticLazyImageLoadingForTest
+      scoped_automatic_lazy_image_loading_for_test(false);
   GetDocument().GetSettings()->SetLazyLoadEnabled(true);
   RunSetUp(kViewportEnabled);
   PreloadScannerTestCase test_cases[] = {
@@ -1393,7 +1396,6 @@ TEST_F(HTMLPreloadScannerTest, LazyLoadImage_DisableMetadataFetch) {
       {true, true, "eager", true, false},
   };
   for (const auto& test_case : test_cases) {
-    ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
     ScopedLazyImageLoadingMetadataFetchForTest
         scoped_lazy_image_loading_metadata_fetch_for_test(
             test_case.metadata_fetch_feature_enabled);

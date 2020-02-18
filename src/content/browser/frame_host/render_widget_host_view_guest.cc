@@ -15,7 +15,6 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
-#include "components/viz/service/surfaces/surface_hittest.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -109,8 +108,7 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     : RenderWidgetHostViewChildFrame(widget_host),
       // |guest| is NULL during test.
       guest_(guest ? guest->AsWeakPtr() : base::WeakPtr<BrowserPluginGuest>()),
-      platform_view_(platform_view),
-      weak_ptr_factory_(this) {
+      platform_view_(platform_view) {
   // In tests |guest_| and therefore |owner| can be null.
   auto* owner = GetOwnerRenderWidgetHostView();
   if (owner)
@@ -239,10 +237,8 @@ gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
 gfx::PointF RenderWidgetHostViewGuest::TransformPointToRootCoordSpaceF(
     const gfx::PointF& point) {
   viz::SurfaceId surface_id = GetCurrentSurfaceId();
-  // LocalSurfaceId is not needed in Viz hit-test.
-  if (!guest_ || (!use_viz_hit_test_ && !surface_id.is_valid())) {
+  if (!guest_)
     return point;
-  }
 
   RenderWidgetHostViewBase* root_rwhv = GetRootView(this);
   if (!root_rwhv)
@@ -257,31 +253,6 @@ gfx::PointF RenderWidgetHostViewGuest::TransformPointToRootCoordSpaceF(
     return point;
   }
   return transformed_point;
-}
-
-bool RenderWidgetHostViewGuest::TransformPointToLocalCoordSpaceLegacy(
-    const gfx::PointF& point,
-    const viz::SurfaceId& original_surface,
-    gfx::PointF* transformed_point) {
-  viz::SurfaceId surface_id = GetCurrentSurfaceId();
-  *transformed_point = point;
-  if (!guest_ || !surface_id.is_valid())
-    return false;
-
-  if (original_surface == surface_id)
-    return true;
-
-  *transformed_point = gfx::ConvertPointToPixel(GetDeviceScaleFactor(), point);
-  viz::SurfaceHittest hittest(nullptr,
-                              GetFrameSinkManager()->surface_manager());
-  if (!hittest.TransformPointToTargetSurface(original_surface, surface_id,
-                                             transformed_point)) {
-    return false;
-  }
-
-  *transformed_point =
-      gfx::ConvertPointToDIP(GetDeviceScaleFactor(), *transformed_point);
-  return true;
 }
 
 gfx::PointF RenderWidgetHostViewGuest::TransformRootPointToViewCoordSpace(

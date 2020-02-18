@@ -15,8 +15,9 @@
 #include "cc/input/scroll_state.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/touch_action.h"
-#include "cc/trees/element_id.h"
+#include "cc/paint/element_id.h"
 #include "cc/trees/swap_promise_monitor.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "ui/events/types/scroll_types.h"
 
 namespace gfx {
@@ -94,7 +95,8 @@ class CC_EXPORT InputHandlerClient {
       float page_scale_factor,
       float min_page_scale_factor,
       float max_page_scale_factor) = 0;
-  virtual void DeliverInputForBeginFrame() = 0;
+  virtual void DeliverInputForBeginFrame(const viz::BeginFrameArgs& args) = 0;
+  virtual void DeliverInputForHighLatencyMode() = 0;
 
  protected:
   InputHandlerClient() = default;
@@ -223,8 +225,8 @@ class CC_EXPORT InputHandler {
   virtual bool IsCurrentlyScrollingViewport() const = 0;
 
   // Whether the layer under |viewport_point| is the currently scrolling layer.
-  virtual bool IsCurrentlyScrollingLayerAt(const gfx::Point& viewport_point,
-                                           ScrollInputType type) const = 0;
+  virtual bool IsCurrentlyScrollingLayerAt(
+      const gfx::Point& viewport_point) const = 0;
 
   virtual EventListenerProperties GetEventListenerProperties(
       EventListenerClass event_class) const = 0;

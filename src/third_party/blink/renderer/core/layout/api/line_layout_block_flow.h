@@ -122,6 +122,11 @@ class LineLayoutBlockFlow : public LineLayoutBox {
         *ToLayoutBox(box.GetLayoutObject()));
   }
 
+  FloatingObject* LastPlacedFloat(
+      FloatingObjectSetIterator* iterator = nullptr) const {
+    return ToBlockFlow()->LastPlacedFloat(iterator);
+  }
+
   bool PlaceNewFloats(LayoutUnit logical_top_margin_edge, LineWidth* width) {
     return ToBlockFlow()->PlaceNewFloats(logical_top_margin_edge, width);
   }

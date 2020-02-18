@@ -132,23 +132,19 @@ cr_slider.SliderTick;
         value: () => [],
       },
 
-      value: {
-        type: Number,
-        value: 0,
-      },
-
-      /** @private */
-      holdDown_: {
-        type: Boolean,
-        value: false,
-        observer: 'onHoldDownChanged_',
-        reflectToAttribute: true,
-      },
+      value: Number,
 
       /** @private */
       label_: {
         type: String,
         value: '',
+      },
+
+      /** @private */
+      showLabel_: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
       },
 
       /** @private */
@@ -180,12 +176,12 @@ cr_slider.SliderTick;
     observers: [
       'onTicksChanged_(ticks.*)',
       'updateUi_(ticks.*, value, min, max)',
-      'updateValue_(value, min, max)',
+      'onValueMinMaxChange_(value, min, max)',
     ],
 
     listeners: {
-      focus: 'onFocus_',
-      blur: 'onBlur_',
+      blur: 'hideRipple_',
+      focus: 'showRipple_',
       keydown: 'onKeyDown_',
       keyup: 'onKeyUp_',
       pointerdown: 'onPointerDown_',
@@ -212,7 +208,10 @@ cr_slider.SliderTick;
       this.draggingEventTracker_ = new EventTracker();
     },
 
-    /** @private */
+    /**
+     * @return {boolean}
+     * @private
+     */
     computeDisabled_: function() {
       return this.disabled || this.ticks.length == 1;
     },
@@ -260,36 +259,25 @@ cr_slider.SliderTick;
       this.draggingEventTracker_.removeAll();
       this.releasePointerCapture(pointerId);
       this.dragging = false;
-      // If there is a ripple animation in progress, setTimeout will hold off
-      // on updating |holdDown_|.
-      setTimeout(() => {
-        this.holdDown_ = false;
-      });
+      this.hideRipple_();
     },
 
     /** @private */
-    onBlur_: function() {
-      this.holdDown_ = false;
+    hideRipple_: function() {
+      this.getRipple().clear();
+      this.showLabel_ = false;
+    },
+
+    /** @private */
+    showRipple_: function() {
+      this.getRipple().showAndHoldDown();
+      this.showLabel_ = true;
     },
 
     /** @private */
     onDisabledChanged_: function() {
       this.setAttribute('tabindex', this.disabled_ ? -1 : 0);
       this.blur();
-    },
-
-    /** @private */
-    onFocus_: function() {
-      this.holdDown_ = true;
-
-      if (this.shadowRoot.activeElement == this.$.knob) {
-        return;
-      }
-    },
-
-    /** @private */
-    onHoldDownChanged_: function() {
-      this.getRipple().holdDown = this.holdDown_;
     },
 
     /**
@@ -325,9 +313,7 @@ cr_slider.SliderTick;
       }
       event.preventDefault();
       event.stopPropagation();
-      setTimeout(() => {
-        this.holdDown_ = true;
-      });
+      this.showRipple_();
     },
 
     /**
@@ -358,17 +344,16 @@ cr_slider.SliderTick;
       this.dragging = true;
       this.transiting_ = true;
       this.updateValueFromClientX_(event.clientX);
-      // If there is a ripple animation in progress, setTimeout will hold off on
-      // updating |holdDown_|.
-      setTimeout(() => {
-        this.$.knob.focus();
-        this.holdDown_ = true;
-      });
+      this.showRipple_();
 
       this.setPointerCapture(event.pointerId);
       const stopDragging = this.stopDragging_.bind(this, event.pointerId);
 
       this.draggingEventTracker_.add(this, 'pointermove', e => {
+        // Prevent unwanted text selection to occur while moving the pointer,
+        // this is important.
+        e.preventDefault();
+
         // If the left-button on the mouse is pressed by itself, then update.
         // Otherwise stop capturing the mouse events because the drag operation
         // is complete.
@@ -396,12 +381,23 @@ cr_slider.SliderTick;
         this.max = this.ticks.length - 1;
         this.min = 0;
       }
-      this.updateValue_(this.value);
+      if (this.value !== undefined) {
+        this.updateValue_(this.value);
+      }
     },
 
     /** @private */
     onTransitionEnd_: function() {
       this.transiting_ = false;
+    },
+
+    /** @private */
+    onValueMinMaxChange_: function() {
+      if (this.value == undefined || this.min == undefined ||
+          this.max == undefined) {
+        return;
+      }
+      this.updateValue_(this.value);
     },
 
     /** @private */
@@ -435,6 +431,7 @@ cr_slider.SliderTick;
      * @private
      */
     updateValue_: function(value) {
+      this.$.container.hidden = false;
       if (this.snaps) {
         // Skip update if |value| has not passed the next value .8 units away.
         // The value will update as the drag approaches the next value.

@@ -496,7 +496,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
   EXPECT_TRUE(active_now);
 
   // Add new text to DOM and try FindNext.
-  Element* i_element = ToElement(GetDocument().body()->lastChild());
+  auto* i_element = To<Element>(GetDocument().body()->lastChild());
   ASSERT_TRUE(i_element);
   i_element->SetInnerHTMLFromString("ZZFindMe");
   GetDocument().UpdateStyleAndLayout();
@@ -550,7 +550,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
   EXPECT_FALSE(active_now);
 
   // Add new text to DOM and try FindNext.
-  Element* i_element = ToElement(GetDocument().body()->lastChild());
+  auto* i_element = To<Element>(GetDocument().body()->lastChild());
   ASSERT_TRUE(i_element);
   i_element->SetInnerHTMLFromString("ZZFindMe");
   GetDocument().UpdateStyleAndLayout();

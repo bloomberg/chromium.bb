@@ -29,11 +29,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_SECURITY_POLICY_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_SECURITY_POLICY_H_
 
-#include "services/network/public/mojom/cors_origin_pattern.mojom-shared.h"
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/cors_origin_pattern.mojom-blink.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -45,6 +45,14 @@ enum ReferrerPolicyLegacyKeywordsSupport {
   kSupportReferrerPolicyLegacyKeywords,
   kDoNotSupportReferrerPolicyLegacyKeywords,
 };
+
+// The ReferrerPolicy enum contains a member kDefault, which not a real referrer
+// policy, but instead a value Blink uses to fallback to
+// kNoReferrerWhenDowngrade at certain times. The function below is provided so
+// that a referrer policy which may be kDefault can be resolved to a valid
+// value.
+PLATFORM_EXPORT network::mojom::ReferrerPolicy ReferrerPolicyResolveDefault(
+    network::mojom::ReferrerPolicy);
 
 class PLATFORM_EXPORT SecurityPolicy {
   STATIC_ONLY(SecurityPolicy);

@@ -19,11 +19,17 @@ import * as m from 'mithril';
 
 import {forwardRemoteCalls} from '../base/remote';
 import {Actions} from '../common/actions';
-import {LogBoundsKey, LogEntriesKey, LogExistsKey} from '../common/logs';
+import {
+  LogBoundsKey,
+  LogEntriesKey,
+  LogExists,
+  LogExistsKey
+} from '../common/logs';
 
 import {globals, QuantizedLoad, SliceDetails, ThreadDesc} from './globals';
 import {HomePage} from './home_page';
 import {openBufferWithLegacyTraceViewer} from './legacy_trace_viewer';
+import {postMessageHandler} from './post_message_handler';
 import {RecordPage} from './record_page';
 import {Router} from './router';
 import {ViewerPage} from './viewer_page';
@@ -35,12 +41,22 @@ class FrontendApi {
   constructor(private router: Router) {}
 
   patchState(patches: Patch[]) {
+    const oldState = globals.state;
     globals.state = applyPatches(globals.state, patches);
+
     // If the visible time in the global state has been updated more recently
     // than the visible time handled by the frontend @ 60fps, update it. This
     // typically happens when restoring the state from a permalink.
     globals.frontendLocalState.mergeState(globals.state.frontendLocalState);
-    this.redraw();
+
+    // Only redraw if something other than the frontendLocalState changed.
+    for (const key in globals.state) {
+      if (key !== 'frontendLocalState' &&
+          oldState[key] !== globals.state[key]) {
+        this.redraw();
+        return;
+      }
+    }
   }
 
   // TODO: we can't have a publish method for each batch of data that we don't
@@ -64,7 +80,8 @@ class FrontendApi {
   publishTrackData(args: {id: string, data: {}}) {
     globals.setTrackData(args.id, args.data);
     if ([LogExistsKey, LogBoundsKey, LogEntriesKey].includes(args.id)) {
-      globals.rafScheduler.scheduleFullRedraw();
+      const data = globals.trackDataStore.get(LogExistsKey) as LogExists;
+      if (data && data.exists) globals.rafScheduler.scheduleFullRedraw();
     } else {
       globals.rafScheduler.scheduleRedraw();
     }
@@ -110,9 +127,17 @@ function main() {
   controller.onerror = e => {
     console.error(e);
   };
-  const channel = new MessageChannel();
-  controller.postMessage(channel.port1, [channel.port1]);
-  const dispatch = controller.postMessage.bind(controller);
+  const frontendChannel = new MessageChannel();
+  const controllerChannel = new MessageChannel();
+  controller.postMessage(
+      {
+        frontendPort: frontendChannel.port1,
+        controllerPort: controllerChannel.port1,
+      },
+      [frontendChannel.port1, controllerChannel.port1]);
+
+  const dispatch =
+      controllerChannel.port2.postMessage.bind(controllerChannel.port2);
   const router = new Router(
       '/',
       {
@@ -121,12 +146,14 @@ function main() {
         '/record': RecordPage,
       },
       dispatch);
-  forwardRemoteCalls(channel.port2, new FrontendApi(router));
+  forwardRemoteCalls(frontendChannel.port2, new FrontendApi(router));
   globals.initialize(dispatch, controller);
 
   globals.rafScheduler.domRedraw = () =>
       m.render(document.body, m(router.resolve(globals.state.route)));
 
+  // Add support for opening traces from postMessage().
+  window.addEventListener('message', postMessageHandler, {passive: true});
 
   // Put these variables in the global scope for better debugging.
   (window as {} as {m: {}}).m = m;

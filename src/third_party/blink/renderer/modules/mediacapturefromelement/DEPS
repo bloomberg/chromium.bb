@@ -20,4 +20,7 @@ specific_include_rules = {
         "+base/run_loop.h",
         "+cc/paint/paint_flags.h",
     ],
+    "html_audio_element_capturer_source_unittest.cc" : [
+        "+media/audio/null_audio_sink.h",
+    ],
 }

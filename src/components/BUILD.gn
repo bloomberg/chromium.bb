@@ -55,14 +55,6 @@ test("components_unittests") {
     ]
   }
 
-  if (is_android) {
-    # The tracing unittests require this for testing unwinding. See
-    # stack_unwinder_android_unittest.cc.
-    if (can_unwind_with_cfi_table && is_official_build) {
-      add_unwind_tables_in_apk = true
-    }
-  }
-
   # Add only ":unit_tests" dependencies here. If your tests have dependencies
   # (this would at least include the component itself), they should be on the
   # test source set and not here.
@@ -91,6 +83,7 @@ test("components_unittests") {
     "//components/content_capture/common:unit_tests",
     "//components/content_settings/core/browser:unit_tests",
     "//components/content_settings/core/common:unit_tests",
+    "//components/crash/core/common:unit_tests",
     "//components/crx_file:unit_tests",
     "//components/device_event_log:unit_tests",
     "//components/dom_distiller/core:unit_tests",
@@ -146,6 +139,10 @@ test("components_unittests") {
     "//components/services/unzip:unit_tests",
     "//components/sessions:unit_tests",
     "//components/signin/core/browser:unit_tests",
+    "//components/signin/internal/identity_manager:unit_tests",
+    "//components/signin/public/base:unit_tests",
+    "//components/signin/public/identity_manager:unit_tests",
+    "//components/signin/public/webdata:unit_tests",
     "//components/ssl_errors:unit_tests",
     "//components/subresource_filter/core/browser:unit_tests",
     "//components/subresource_filter/core/common:unit_tests",
@@ -181,6 +178,7 @@ test("components_unittests") {
 
   if (toolkit_views) {
     deps += [
+      "//components/media_message_center:unit_tests",
       "//components/ui_devtools:unit_tests",
       "//components/ui_devtools/views:unit_tests",
     ]
@@ -217,7 +215,6 @@ test("components_unittests") {
       "//components/contextual_search/core:unit_tests",
       "//components/crash/content/app:unit_tests",
       "//components/crash/content/browser:unit_tests",
-      "//components/crash/core/common:unit_tests",
       "//components/data_reduction_proxy/content/browser:unit_tests",
       "//components/data_reduction_proxy/content/common:unit_tests",
       "//components/data_reduction_proxy/content/renderer:unit_tests",
@@ -298,16 +295,11 @@ test("components_unittests") {
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
       "//components/invalidation/impl",
       "//components/invalidation/impl:java",
-      "//components/journey:unit_tests",
       "//components/policy/android:policy_java",
       "//components/signin/core/browser",
       "//components/signin/core/browser/android:java",
       "//components/spellcheck/browser/android:java",
-      "//components/tracing:tracing_test_helper_java",
       "//components/variations/android:variations_java",
-      "//components/web_restrictions:test_support",
-      "//components/web_restrictions:test_support_java",
-      "//components/web_restrictions:unit_tests",
       "//content/public/android:content_java",
       "//content/public/browser",
       "//net",
@@ -319,6 +311,10 @@ test("components_unittests") {
       deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
     } else {
       deps += [ "//v8:v8_external_startup_data_assets" ]
+    }
+
+    if (enable_chrome_android_internal) {
+      data_deps += [ "//clank/build/bot/filters:components_unittests_filters" ]
     }
   } else {  # !is_android
     deps += [ "//components/keep_alive_registry:unit_tests" ]
@@ -345,8 +341,8 @@ test("components_unittests") {
   if (is_chromeos) {
     deps += [
       "//components/arc:unit_tests",
+      "//components/arc/common:unit_tests",
       "//components/ownership:unit_tests",
-      "//components/pairing:unit_tests",
       "//components/timers:unit_tests",
       "//components/user_manager:unit_tests",
     ]
@@ -369,10 +365,15 @@ test("components_unittests") {
   if (enable_print_preview) {
     deps += [ "//components/pwg_encoder:unit_tests" ]
   }
-  if (safe_browsing_mode == 1 || safe_browsing_mode == 3) {
-    deps += [ "//components/safe_browsing/db:unit_tests_desktop" ]
+  if (safe_browsing_mode == 1) {
+    deps += [
+      "//components/safe_browsing:verdict_cache_manager_unittest",
+      "//components/safe_browsing/db:unit_tests_desktop",
+    ]
   } else if (safe_browsing_mode == 2) {
     deps += [ "//components/safe_browsing/android:unit_tests_mobile" ]
+  } else if (safe_browsing_mode == 3) {
+    deps += [ "//components/safe_browsing/db:unit_tests_desktop" ]
   }
 
   if (!is_ios) {
@@ -380,6 +381,10 @@ test("components_unittests") {
       "//components/webrtc_logging/browser:unit_tests",
       "//components/webrtc_logging/common:unit_tests",
     ]
+  }
+
+  if (use_dbus) {
+    deps += [ "//components/dbus/menu:unit_tests" ]
   }
 
   # No components should depend on Chrome.
@@ -392,6 +397,7 @@ test("components_unittests") {
 
 repack("components_tests_pak") {
   sources = [
+    "$root_gen_dir/components/autofill/core/browser/autofill_address_rewriter_resources.pak",
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/components/omnibox/resources/omnibox_resources_en-US.pak",
     "$root_gen_dir/components/strings/components_locale_settings_en-US.pak",
@@ -400,6 +406,7 @@ repack("components_tests_pak") {
 
   output = "$root_out_dir/components_tests_resources.pak"
   deps = [
+    "//components/autofill/core/browser:autofill_address_rewriter_resources",
     "//components/omnibox/resources:omnibox_resources",
     "//components/resources",
     "//components/strings",
@@ -440,6 +447,7 @@ if (is_android) {
       "//content/public/test/android:content_java_test_support",
       "//content/shell/android:content_shell_browsertests_java",
       "//testing/android/native_test:native_test_java",
+      "//ui/android:ui_full_java",
     ]
     java_files = [
       "test/android/browsertests_apk/src/org/chromium/components_browsertests_apk/ComponentsBrowserTestsActivity.java",
@@ -552,8 +560,8 @@ if (!is_ios) {
         "//components/autofill_assistant/browser",
         "//components/autofill_assistant/browser:proto",
         "//components/download/internal/common:internal_java",
-        "//content/public/test/android:web_test_java_support",
-        "//content/test:web_test_support",
+        "//content/public/test/android:android_test_message_pump_support_java",
+        "//content/test:android_test_message_pump_support",
         "//testing/android/native_test:native_test_support",
       ]
       use_default_launcher = false

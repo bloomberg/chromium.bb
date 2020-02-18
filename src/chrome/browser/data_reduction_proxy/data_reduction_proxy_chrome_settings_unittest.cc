@@ -20,6 +20,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/test/mock_navigation_handle.h"
+#include "net/http/http_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_network_quality_tracker.h"
@@ -50,7 +51,7 @@ class DataReductionProxyChromeSettingsTest
     net::ProxyList proxies;
     proxies.SetFromPacString(kProxyPac);
     test_context_->data_reduction_proxy_service()->SetConfiguredProxiesOnUI(
-        proxies);
+        proxies, {});
     test_context_->test_network_quality_tracker()
         ->ReportEffectiveConnectionTypeForTesting(
             net::EFFECTIVE_CONNECTION_TYPE_4G);
@@ -467,38 +468,4 @@ TEST_F(DataReductionProxyChromeSettingsTest, CreateDataWithLitePage) {
       &handle, headers.get());
 
   EXPECT_TRUE(data->lite_page_received());
-  EXPECT_FALSE(data->lofi_received());
-  EXPECT_FALSE(data->lofi_policy_received());
-}
-
-TEST_F(DataReductionProxyChromeSettingsTest, CreateDataWithLofiPolicyReceived) {
-  std::string raw_headers =
-      "HTTP/1.0 200 OK\n"
-      "chrome-proxy: page-policies=empty-image\n";
-  content::MockNavigationHandle handle(GURL(kUrl), main_rfh());
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(raw_headers));
-  handle.set_response_headers(headers);
-  auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
-      &handle, headers.get());
-
-  EXPECT_FALSE(data->lite_page_received());
-  EXPECT_FALSE(data->lofi_received());
-  EXPECT_TRUE(data->lofi_policy_received());
-}
-
-TEST_F(DataReductionProxyChromeSettingsTest, CreateDataWithLofiReceived) {
-  std::string raw_headers =
-      "HTTP/1.0 200 OK\n"
-      "chrome-proxy-content-transform: empty-image\n";
-  content::MockNavigationHandle handle(GURL(kUrl), main_rfh());
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(raw_headers));
-  handle.set_response_headers(headers);
-  auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
-      &handle, headers.get());
-
-  EXPECT_FALSE(data->lite_page_received());
-  EXPECT_TRUE(data->lofi_received());
-  EXPECT_FALSE(data->lofi_policy_received());
 }

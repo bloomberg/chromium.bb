@@ -4,7 +4,7 @@
 */
 'use strict';
 
-import RequestBase from './request-base.js';
+import {RequestBase} from './request-base.js';
 import {normalize, transformAlert} from './utils.js';
 
 export const LEVEL_OF_DETAIL = Object.freeze({
@@ -14,16 +14,41 @@ export const LEVEL_OF_DETAIL = Object.freeze({
   DETAILS: 'DETAILS',
 });
 
+// A lineDescriptor may require data from multiple timeseries.
+// A lineDescriptor may specify multiple suites, bots, and cases.
+// A fetchDescriptor may specify exactly one suite, one bot, and zero or one
+// case.
+export function createFetchDescriptors(lineDescriptor, levelOfDetail) {
+  let cases = lineDescriptor.cases;
+  if (cases.length === 0) cases = [undefined];
+  const fetchDescriptors = [];
+  for (const suite of lineDescriptor.suites) {
+    for (const bot of lineDescriptor.bots) {
+      for (const cas of cases) {
+        fetchDescriptors.push({
+          suite,
+          bot,
+          measurement: lineDescriptor.measurement,
+          case: cas,
+          statistic: lineDescriptor.statistic,
+          buildType: lineDescriptor.buildType,
+          levelOfDetail,
+        });
+      }
+    }
+  }
+  return fetchDescriptors;
+}
+
 const DETAILS_COLUMNS = new Set([
   'revision',
   'timestamp',
-  'avg', 'std', 'count',  // TODO other statistics
+  'avg', 'std', 'count', 'min', 'max',
   'revisions',
   'annotations',
   'alert',
-  // TODO Uncomment when ready to display these:
-  // 'diagnostics',
-  // 'histogram',
+  'diagnostics',
+  'histogram',
 ]);
 
 export function getColumnsByLevelOfDetail(levelOfDetail, statistic) {

@@ -34,21 +34,24 @@
 namespace blink {
 
 ClipRect::ClipRect()
-    : rect_(LayoutRect::InfiniteIntRect()),
+    : rect_(PhysicalRect::InfiniteIntRect()),
       has_radius_(false),
       is_infinite_(true) {}
 
-ClipRect::ClipRect(const FloatClipRect& rect)
-    : rect_(PhysicalRect::EnclosingRect(rect.Rect())),
-      has_radius_(rect.HasRadius()),
-      is_infinite_(rect.IsInfinite()) {}
+ClipRect::ClipRect(const FloatClipRect& rect) {
+  SetRectInternal(rect);
+}
 
 void ClipRect::SetRect(const FloatClipRect& rect) {
   if (rect.IsInfinite() && IsInfinite())
     return;
-  rect_ = PhysicalRect::EnclosingRect(rect.Rect());
+  SetRectInternal(rect);
+}
+
+void ClipRect::SetRectInternal(const FloatClipRect& rect) {
   has_radius_ = rect.HasRadius();
   is_infinite_ = rect.IsInfinite();
+  rect_ = PhysicalRect::FastAndLossyFromFloatRect(rect.Rect());
 }
 
 void ClipRect::SetRect(const PhysicalRect& rect) {
@@ -77,7 +80,7 @@ void ClipRect::Intersect(const ClipRect& other) {
 bool ClipRect::Intersects(const HitTestLocation& hit_test_location) const {
   if (is_infinite_)
     return true;
-  return hit_test_location.Intersects(rect_.ToLayoutRect());
+  return hit_test_location.Intersects(rect_);
 }
 
 void ClipRect::Reset() {

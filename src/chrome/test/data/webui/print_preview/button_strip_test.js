@@ -55,12 +55,12 @@ cr.define('button_strip_test', function() {
     test(assert(TestNames.ButtonOrder), function() {
       // Verify that there are only 2 buttons.
       assertEquals(
-          2, buttonStrip.shadowRoot.querySelectorAll('paper-button').length);
+          2, buttonStrip.shadowRoot.querySelectorAll('cr-button').length);
 
-      const firstButton = buttonStrip.$$('paper-button:not(:last-child)');
-      const lastButton = buttonStrip.$$('paper-button:last-child');
-      const printButton = buttonStrip.$$('paper-button.action-button');
-      const cancelButton = buttonStrip.$$('paper-button.cancel-button');
+      const firstButton = buttonStrip.$$('cr-button:not(:last-child)');
+      const lastButton = buttonStrip.$$('cr-button:last-child');
+      const printButton = buttonStrip.$$('cr-button.action-button');
+      const cancelButton = buttonStrip.$$('cr-button.cancel-button');
 
       if (cr.isWindows) {
         // On Windows, the print button is on the left.
@@ -75,8 +75,8 @@ cr.define('button_strip_test', function() {
     // Tests that the button strip fires print-requested and cancel-requested
     // events.
     test(assert(TestNames.ButtonStripFiresEvents), function() {
-      const printButton = buttonStrip.$$('paper-button.action-button');
-      const cancelButton = buttonStrip.$$('paper-button.cancel-button');
+      const printButton = buttonStrip.$$('cr-button.action-button');
+      const cancelButton = buttonStrip.$$('cr-button.cancel-button');
 
       const whenPrintRequested =
           test_util.eventToPromise('print-requested', buttonStrip);

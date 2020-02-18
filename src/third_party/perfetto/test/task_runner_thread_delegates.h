@@ -17,7 +17,7 @@
 #ifndef TEST_TASK_RUNNER_THREAD_DELEGATES_H_
 #define TEST_TASK_RUNNER_THREAD_DELEGATES_H_
 
-#include "perfetto/tracing/ipc/service_ipc_host.h"
+#include "perfetto/ext/tracing/ipc/service_ipc_host.h"
 #include "src/traced/probes/probes_producer.h"
 #include "test/fake_producer.h"
 #include "test/task_runner_thread.h"
@@ -29,7 +29,7 @@ class ServiceDelegate : public ThreadDelegate {
   ServiceDelegate(const std::string& producer_socket,
                   const std::string& consumer_socket)
       : producer_socket_(producer_socket), consumer_socket_(consumer_socket) {}
-  ~ServiceDelegate() override = default;
+  ~ServiceDelegate() override;
 
   void Initialize(base::TaskRunner* task_runner) override {
     svc_ = ServiceIPCHost::CreateInstance(task_runner);
@@ -49,7 +49,7 @@ class ProbesProducerDelegate : public ThreadDelegate {
  public:
   ProbesProducerDelegate(const std::string& producer_socket)
       : producer_socket_(producer_socket) {}
-  ~ProbesProducerDelegate() override = default;
+  ~ProbesProducerDelegate() override;
 
   void Initialize(base::TaskRunner* task_runner) override {
     producer_.reset(new ProbesProducer);
@@ -69,7 +69,7 @@ class FakeProducerDelegate : public ThreadDelegate {
       : producer_socket_(producer_socket),
         setup_callback_(std::move(setup_callback)),
         connect_callback_(std::move(connect_callback)) {}
-  ~FakeProducerDelegate() override = default;
+  ~FakeProducerDelegate() override;
 
   void Initialize(base::TaskRunner* task_runner) override {
     producer_.reset(new FakeProducer("android.perfetto.FakeProducer"));

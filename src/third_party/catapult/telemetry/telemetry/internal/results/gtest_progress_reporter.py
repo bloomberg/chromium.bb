@@ -1,108 +1,81 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import print_function
 
-import time
-
-from telemetry.internal.results import progress_reporter
-from telemetry.value import skip
+from telemetry.internal.results import story_run
 
 
-class GTestProgressReporter(progress_reporter.ProgressReporter):
-  """A progress reporter that outputs the progress report in gtest style.
+# Map story_run to gtest status strings.
+_GTEST_STATUS = {
+    story_run.PASS: '[       OK ]',
+    story_run.FAIL: '[  FAILED  ]',
+    story_run.SKIP: '[  SKIPPED ]'
+}
 
-  Be careful each print should only handle one string. Otherwise, the output
-  might be interrupted by Chrome logging, and the output interpretation might
-  be incorrect. For example:
-      print >> self._output_stream, "[ OK ]", testname
-  should be written as
-      print >> self._output_stream, "[ OK ] %s" % testname
-  """
 
-  def __init__(self, output_stream):
-    super(GTestProgressReporter, self).__init__()
+class GTestProgressReporter(object):
+  """A progress reporter that outputs the progress report in gtest style."""
+
+  def __init__(self, output_stream=None):
     self._output_stream = output_stream
-    self._timestamp = None
 
-  def _GetMs(self):
-    assert self._timestamp is not None, 'Did not call WillRunPage.'
-    return (time.time() - self._timestamp) * 1000
+  def _ReportLine(self, line, **kwargs):
+    if self._output_stream is None:
+      return
+    # TODO(crbug.com/984504): The "flush" option for the print function was
+    # only added in Python 3.3. Switch to it when it becomes available.
+    flush = kwargs.pop('flush', False)
+    print(line.format(**kwargs), file=self._output_stream)
+    if flush:
+      self._output_stream.flush()
 
-  def _GenerateGroupingKeyString(self, page):
-    return '' if not page.grouping_keys else '@%s' % str(page.grouping_keys)
+  def _ReportTestCount(self, status, count, end='.', only_if_non_zero=False):
+    if count == 0 and only_if_non_zero:
+      return
+    self._ReportLine('{status} {count} {unit}{end}', status=status, count=count,
+                     unit='test' if count == 1 else 'tests', end=end)
 
-  def DidAddValue(self, value):
-    super(GTestProgressReporter, self).DidAddValue(value)
-    if isinstance(value, skip.SkipValue):
-      print >> self._output_stream, '===== SKIPPING TEST %s: %s =====' % (
-          value.page.name, value.reason)
+  def WillRunStory(self, results):
+    self._ReportLine('[ RUN      ] {benchmark}/{story}',
+                     benchmark=results.benchmark_name,
+                     story=_StoryNameWithGroupingKeys(results.current_story),
+                     flush=True)
 
-  def WillRunPage(self, page_test_results):
-    super(GTestProgressReporter, self).WillRunPage(page_test_results)
-    print >> self._output_stream, '[ RUN      ] %s/%s%s' % (
-        page_test_results.telemetry_info.benchmark_name,
-        page_test_results.current_page.name,
-        self._GenerateGroupingKeyString(page_test_results.current_page))
+  def DidRunStory(self, results):
+    if results.current_story_run.skipped:
+      self._ReportLine('== Skipping story: {reason} ==',
+                       reason=results.current_story_run.skip_reason)
+    self._ReportLine('{status} {benchmark}/{story} ({duration:.0f} ms)',
+                     status=_GTEST_STATUS[results.current_story_run.status],
+                     benchmark=results.benchmark_name,
+                     story=_StoryNameWithGroupingKeys(results.current_story),
+                     duration=results.current_story_run.duration * 1000,
+                     flush=True)
 
-    self._output_stream.flush()
-    self._timestamp = time.time()
+  def DidFinishAllStories(self, results):
+    if self._output_stream is None:
+      return
 
-  def DidRunPage(self, page_test_results):
-    super(GTestProgressReporter, self).DidRunPage(page_test_results)
-    page = page_test_results.current_page
-    if page_test_results.current_page_run.failed:
-      print >> self._output_stream, '[  FAILED  ] %s/%s%s (%0.f ms)' % (
-          page_test_results.telemetry_info.benchmark_name,
-          page.name,
-          self._GenerateGroupingKeyString(page_test_results.current_page),
-          self._GetMs())
-    elif page_test_results.current_page_run.skipped:
-      print >> self._output_stream, '[  SKIPPED ] %s/%s%s (%0.f ms)' % (
-          page_test_results.telemetry_info.benchmark_name,
-          page.name,
-          self._GenerateGroupingKeyString(page_test_results.current_page),
-          self._GetMs())
-    else:
-      print >> self._output_stream, '[       OK ] %s/%s%s (%0.f ms)' % (
-          page_test_results.telemetry_info.benchmark_name,
-          page.name,
-          self._GenerateGroupingKeyString(page_test_results.current_page),
-          self._GetMs())
-    self._output_stream.flush()
+    failed_runs = [run for run in results.IterStoryRuns() if run.failed]
 
-  def DidFinishAllTests(self, page_test_results):
-    super(GTestProgressReporter, self).DidFinishAllTests(page_test_results)
-    successful_runs = []
-    failed_runs = []
-    skipped_runs = []
-    for run in page_test_results.all_page_runs:
-      if run.failed:
-        failed_runs.append(run)
-      elif run.skipped:
-        skipped_runs.append(run)
-      else:
-        successful_runs.append(run)
+    self._ReportTestCount('[  PASSED  ]', results.num_successful)
+    self._ReportTestCount('[  SKIPPED ]', results.num_skipped,
+                          only_if_non_zero=True)
+    if failed_runs:
+      self._ReportTestCount('[  FAILED  ]', len(failed_runs), ', listed below:')
+      for run in failed_runs:
+        self._ReportLine('[  FAILED  ]  {benchmark}/{story}',
+                         benchmark=results.benchmark_name,
+                         story=_StoryNameWithGroupingKeys(run.story))
+      self._ReportLine('')
+      self._ReportLine('{count} FAILED {unit}', count=len(failed_runs),
+                       unit='TEST' if len(failed_runs) == 1 else 'TESTS')
+    self._ReportLine('', flush=True)
 
-    unit = 'test' if len(successful_runs) == 1 else 'tests'
-    print >> self._output_stream, '[  PASSED  ] %d %s.' % (
-        (len(successful_runs), unit))
-    if len(skipped_runs) > 0:
-      unit = 'test' if len(skipped_runs) == 1 else 'tests'
-      print >> self._output_stream, '[  SKIPPED ] %d %s.' % (
-          (len(skipped_runs), unit))
-    if len(failed_runs) > 0:
-      unit = 'test' if len(failed_runs) == 1 else 'tests'
-      print >> self._output_stream, '[  FAILED  ] %d %s, listed below:' % (
-          (len(failed_runs), unit))
-      for failed_run in failed_runs:
-        print >> self._output_stream, '[  FAILED  ]  %s/%s%s' % (
-            page_test_results.telemetry_info.benchmark_name,
-            failed_run.story.name,
-            self._GenerateGroupingKeyString(failed_run.story))
-      print >> self._output_stream
-      count = len(failed_runs)
-      unit = 'TEST' if count == 1 else 'TESTS'
-      print >> self._output_stream, '%d FAILED %s' % (count, unit)
-    print >> self._output_stream
 
-    self._output_stream.flush()
+def _StoryNameWithGroupingKeys(story):
+  name = story.name
+  if story.grouping_keys:
+    name += '@%s' % str(story.grouping_keys)
+  return name

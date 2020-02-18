@@ -119,7 +119,7 @@ LayoutRect TableSectionPainter::TableAlignedRect(
 
   LayoutRect table_aligned_rect =
       layout_table_section_.LogicalRectForWritingModeAndDirection(
-          local_cull_rect.ToLayoutRect());
+          local_cull_rect);
   return table_aligned_rect;
 }
 

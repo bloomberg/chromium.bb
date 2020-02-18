@@ -8,7 +8,7 @@
 #include <tuple>
 
 #include "base/files/file.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -61,7 +61,7 @@ class SandboxedVfs {
   void RegisterVfs();
 
   sqlite3_vfs sandboxed_vfs_;
-  const WTF::Time sqlite_epoch_;
+  const base::Time sqlite_epoch_;
   Platform* const platform_;
   base::File::Error last_error_;
 };

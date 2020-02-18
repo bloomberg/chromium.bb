@@ -15,14 +15,16 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/waiting.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
-#if defined(OS_LINUX)
-#include "media/gpu/linux/platform_video_frame_utils.h"
-#endif
 #include "media/gpu/macros.h"
 #include "media/gpu/test/video_player/frame_renderer.h"
 #include "media/gpu/test/video_player/video.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
+#include "media/gpu/linux/platform_video_frame_utils.h"
+#endif
 
 namespace media {
 namespace test {
@@ -41,8 +43,7 @@ TestVDAVideoDecoder::TestVDAVideoDecoder(
                        : VideoDecodeAccelerator::Config::OutputMode::IMPORT),
       target_color_space_(target_color_space),
       frame_renderer_(frame_renderer),
-      decode_start_timestamps_(kTimestampCacheSize),
-      weak_this_factory_(this) {
+      decode_start_timestamps_(kTimestampCacheSize) {
   DETACH_FROM_SEQUENCE(vda_wrapper_sequence_checker_);
 
   // TODO(crbug.com/933632) Remove support for allocate mode, and always use
@@ -60,8 +61,11 @@ void TestVDAVideoDecoder::Destroy() {
   // Invalidate all scheduled tasks.
   weak_this_factory_.InvalidateWeakPtrs();
 
-  // Delete all video frames and related textures.
+  // Delete all video frames and related textures and the decoder.
   video_frames_.clear();
+  decoder_ = nullptr;
+
+  delete this;
 }
 
 std::string TestVDAVideoDecoder::GetDisplayName() const {
@@ -78,24 +82,25 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                      InitCB init_cb,
                                      const OutputCB& output_cb,
                                      const WaitingCB& waiting_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
+
   output_cb_ = output_cb;
 
   // Create decoder factory.
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> decoder_factory;
-  frame_renderer_->AcquireGLContext();
   bool hasGLContext = frame_renderer_->GetGLContext() != nullptr;
   if (hasGLContext) {
     decoder_factory = GpuVideoDecodeAcceleratorFactory::Create(
         base::BindRepeating(&FrameRenderer::GetGLContext,
                             base::Unretained(frame_renderer_)),
-        base::BindRepeating([]() { return true; }),
+        base::BindRepeating(&FrameRenderer::AcquireGLContext,
+                            base::Unretained(frame_renderer_)),
         base::BindRepeating([](uint32_t, uint32_t,
                                const scoped_refptr<gl::GLImage>&,
                                bool) { return true; }));
   } else {
     decoder_factory = GpuVideoDecodeAcceleratorFactory::CreateWithNoGL();
   }
-  frame_renderer_->ReleaseGLContext();
 
   if (!decoder_factory) {
     LOG_ASSERT(decoder_) << "Failed to create VideoDecodeAccelerator factory";
@@ -172,16 +177,31 @@ int TestVDAVideoDecoder::GetMaxDecodeRequests() const {
 
 void TestVDAVideoDecoder::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
-    VideoPixelFormat pixel_format,
+    VideoPixelFormat format,
     uint32_t textures_per_buffer,
-    const gfx::Size& size,
+    const gfx::Size& dimensions,
+    uint32_t texture_target) {
+  NOTIMPLEMENTED() << "VDA must call ProvidePictureBuffersWithVisibleRect()";
+}
+
+void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
+    uint32_t requested_num_of_buffers,
+    VideoPixelFormat format,
+    uint32_t textures_per_buffer,
+    const gfx::Size& dimensions,
+    const gfx::Rect& visible_rect,
     uint32_t texture_target) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
-  ASSERT_NE(pixel_format, PIXEL_FORMAT_UNKNOWN);
+  ASSERT_EQ(video_frames_.size(), 0u);
   ASSERT_EQ(textures_per_buffer, 1u);
   DVLOGF(4) << "Requested " << requested_num_of_buffers
-            << " picture buffers with size " << size.height() << "x"
-            << size.height();
+            << " picture buffers with size " << dimensions.height() << "x"
+            << dimensions.height();
+
+  // If using allocate mode the format requested here might be
+  // PIXEL_FORMAT_UNKNOWN.
+  if (format == PIXEL_FORMAT_UNKNOWN)
+    format = PIXEL_FORMAT_ARGB;
 
   std::vector<PictureBuffer> picture_buffers;
 
@@ -189,7 +209,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffers(
     case VideoDecodeAccelerator::Config::OutputMode::IMPORT:
       // If using import mode, create a set of DMABuf-backed video frames.
       for (uint32_t i = 0; i < requested_num_of_buffers; ++i) {
-        picture_buffers.emplace_back(GetNextPictureBufferId(), size);
+        picture_buffers.emplace_back(GetNextPictureBufferId(), dimensions);
       }
       decoder_->AssignPictureBuffers(picture_buffers);
 
@@ -197,21 +217,22 @@ void TestVDAVideoDecoder::ProvidePictureBuffers(
       // handles to the video frame's data to the decoder.
       for (const PictureBuffer& picture_buffer : picture_buffers) {
         scoped_refptr<VideoFrame> video_frame;
-#if defined(OS_LINUX)
+#if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
         video_frame = CreatePlatformVideoFrame(
-            pixel_format, size, gfx::Rect(size), size, base::TimeDelta(),
-            gfx::BufferUsage::SCANOUT_VDA_WRITE);
+            format, dimensions, visible_rect, visible_rect.size(),
+            base::TimeDelta(), gfx::BufferUsage::SCANOUT_VDA_WRITE);
 #endif
         LOG_ASSERT(video_frame) << "Failed to create video frame";
         video_frames_.emplace(picture_buffer.id(), video_frame);
         gfx::GpuMemoryBufferHandle handle;
-#if defined(OS_LINUX)
+#if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
         handle = CreateGpuMemoryBufferHandle(video_frame.get());
+        DCHECK(!handle.is_null());
 #else
         NOTREACHED();
 #endif
         LOG_ASSERT(!handle.is_null()) << "Failed to create GPU memory handle";
-        decoder_->ImportBufferForPicture(picture_buffer.id(), pixel_format,
+        decoder_->ImportBufferForPicture(picture_buffer.id(), format,
                                          std::move(handle));
       }
       break;
@@ -221,18 +242,16 @@ void TestVDAVideoDecoder::ProvidePictureBuffers(
       for (uint32_t i = 0; i < requested_num_of_buffers; ++i) {
         uint32_t texture_id;
         auto video_frame = frame_renderer_->CreateVideoFrame(
-            pixel_format, size, texture_target, &texture_id);
+            format, dimensions, texture_target, &texture_id);
         LOG_ASSERT(video_frame) << "Failed to create video frame";
         int32_t picture_buffer_id = GetNextPictureBufferId();
         PictureBuffer::TextureIds texture_ids(1, texture_id);
-        picture_buffers.emplace_back(picture_buffer_id, size, texture_ids,
-                                     texture_ids, texture_target, pixel_format);
+        picture_buffers.emplace_back(picture_buffer_id, dimensions, texture_ids,
+                                     texture_ids, texture_target, format);
         video_frames_.emplace(picture_buffer_id, std::move(video_frame));
       }
       // The decoder requires an active GL context to allocate memory.
-      frame_renderer_->AcquireGLContext();
       decoder_->AssignPictureBuffers(picture_buffers);
-      frame_renderer_->ReleaseGLContext();
       break;
     default:
       LOG(ERROR) << "Unsupported output mode "
@@ -261,37 +280,46 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
   ASSERT_NE(timestamp_it, decode_start_timestamps_.end());
   video_frame->set_timestamp(timestamp_it->second);
 
-  // When using import mode, we wrap the video frame in another video frame that
-  // calls ReusePictureBufferTask() upon destruction. When the renderer and
-  // video frame processors are done using the video frame, the associated
-  // picture buffer will automatically be flagged for reuse.
-  if (output_mode_ == VideoDecodeAccelerator::Config::OutputMode::IMPORT) {
-    base::OnceClosure reuse_cb = BindToCurrentLoop(
-        base::BindOnce(&TestVDAVideoDecoder::ReusePictureBufferTask, weak_this_,
-                       picture.picture_buffer_id()));
+  scoped_refptr<VideoFrame> wrapped_video_frame = nullptr;
 
-    scoped_refptr<VideoFrame> wrapped_video_frame = VideoFrame::WrapVideoFrame(
-        *video_frame, video_frame->format(), video_frame->visible_rect(),
-        video_frame->visible_rect().size());
-    wrapped_video_frame->AddDestructionObserver(std::move(reuse_cb));
-
-    output_cb_.Run(wrapped_video_frame);
+  // Wrap the video frame in another frame that calls ReusePictureBufferTask()
+  // upon destruction. When the renderer and video frame processors are done
+  // using the video frame, the associated picture buffer will automatically be
+  // flagged for reuse. WrapVideoFrame() is not supported for texture-based
+  // video frames (see http://crbug/362521) so we work around this by creating a
+  // new video frame using the same mailbox.
+  if (!video_frame->HasTextures()) {
+    wrapped_video_frame = VideoFrame::WrapVideoFrame(
+        *video_frame, video_frame->format(), picture.visible_rect(),
+        picture.visible_rect().size());
+  } else {
+    gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes];
+    mailbox_holders[0] = video_frame->mailbox_holder(0);
+    wrapped_video_frame = VideoFrame::WrapNativeTextures(
+        video_frame->format(), mailbox_holders, VideoFrame::ReleaseMailboxCB(),
+        video_frame->coded_size(), video_frame->visible_rect(),
+        video_frame->natural_size(), video_frame->timestamp());
   }
 
-  // Wrapping a video frame inside another video frame is not supported in
-  // allocate mode, so we have to render the frame and return the picture buffer
-  // synchronously here. See http://crbug/362521.
-  if (output_mode_ == VideoDecodeAccelerator::Config::OutputMode::ALLOCATE) {
-    PostTaskAndReply(
-        FROM_HERE, base::BindOnce(output_cb_, video_frame),
-        base::BindOnce(&TestVDAVideoDecoder::ReusePictureBufferTask, weak_this_,
-                       picture.picture_buffer_id()));
-    return;
-  }
+  DCHECK(wrapped_video_frame);
+
+  // It's important to bind the original video frame to the destruction callback
+  // of the wrapped frame, to avoid deleting it before rendering of the wrapped
+  // frame is done. A reference to the video frame is already stored in
+  // |video_frames_| to map between picture buffers and frames, but that
+  // reference will be released when the decoder calls DismissPictureBuffer()
+  // (e.g. on a resolution change).
+  base::OnceClosure reuse_cb = BindToCurrentLoop(
+      base::BindOnce(&TestVDAVideoDecoder::ReusePictureBufferTask, weak_this_,
+                     picture.picture_buffer_id(), video_frame));
+  wrapped_video_frame->AddDestructionObserver(std::move(reuse_cb));
+  output_cb_.Run(std::move(wrapped_video_frame));
 }
 
 // Called when a picture buffer is ready to be re-used.
-void TestVDAVideoDecoder::ReusePictureBufferTask(int32_t picture_buffer_id) {
+void TestVDAVideoDecoder::ReusePictureBufferTask(
+    int32_t picture_buffer_id,
+    scoped_refptr<VideoFrame> /*video_frame*/) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
   DCHECK(decoder_);
   DVLOGF(4) << "Picture buffer ID: " << picture_buffer_id;

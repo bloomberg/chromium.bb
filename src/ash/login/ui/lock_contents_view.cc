@@ -14,6 +14,7 @@
 #include "ash/ime/ime_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/lock_screen.h"
+#include "ash/login/ui/lock_screen_media_controls_view.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_big_user_view.h"
 #include "ash/login/ui/login_detachable_base_model.h"
@@ -25,6 +26,7 @@
 #include "ash/login/ui/parent_access_view.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
+#include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shelf/shelf.h"
@@ -43,7 +45,6 @@
 #include "components/user_manager/user_type.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/display/display.h"
@@ -74,6 +75,10 @@ namespace {
 // Any non-zero value used for separator height. Makes debugging easier; this
 // should not affect visual appearance.
 constexpr int kNonEmptyHeightDp = 30;
+
+// Horizontal distance between the auth user and the media controls.
+constexpr int kDistanceBetweenAuthUserAndMediaControlsLandscapeDp = 100;
+constexpr int kDistanceBetweenAuthUserAndMediaControlsPortraitDp = 50;
 
 // Horizontal distance between two users in the low density layout.
 constexpr int kLowDensityDistanceBetweenUsersInLandscapeDp = 118;
@@ -194,15 +199,15 @@ void MakeSectionBold(views::StyledLabel* label,
   add_style(regular_style, *bold_start + bold_length + 1, text.length());
 }
 
-keyboard::KeyboardController* GetKeyboardControllerForWidget(
+keyboard::KeyboardUIController* GetKeyboardControllerForWidget(
     const views::Widget* widget) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (!keyboard_controller->IsEnabled())
+  auto* keyboard_ui_controller = keyboard::KeyboardUIController::Get();
+  if (!keyboard_ui_controller->IsEnabled())
     return nullptr;
 
-  aura::Window* keyboard_window = keyboard_controller->GetRootWindow();
+  aura::Window* keyboard_window = keyboard_ui_controller->GetRootWindow();
   aura::Window* this_window = widget->GetNativeWindow()->GetRootWindow();
-  return keyboard_window == this_window ? keyboard_controller : nullptr;
+  return keyboard_window == this_window ? keyboard_ui_controller : nullptr;
 }
 
 bool IsPublicAccountUser(const LoginUserInfo& user) {
@@ -210,9 +215,7 @@ bool IsPublicAccountUser(const LoginUserInfo& user) {
 }
 
 bool IsTabletMode() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 //
@@ -318,6 +321,11 @@ ScrollableUsersListView* LockContentsView::TestApi::users_list() const {
   return view_->users_list_;
 }
 
+LockScreenMediaControlsView* LockContentsView::TestApi::media_controls_view()
+    const {
+  return view_->media_controls_view_.get();
+}
+
 views::View* LockContentsView::TestApi::note_action() const {
   return view_->note_action_;
 }
@@ -387,7 +395,7 @@ LockContentsView::LockContentsView(
   data_dispatcher_->AddObserver(this);
   display_observer_.Add(display::Screen::GetScreen());
   Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
-  keyboard::KeyboardController::Get()->AddObserver(this);
+  keyboard::KeyboardUIController::Get()->AddObserver(this);
 
   // We reuse the focusable state on this view as a signal that focus should
   // switch to the system tray. LockContentsView should otherwise not be
@@ -401,8 +409,8 @@ LockContentsView::LockContentsView(
 
   // The top header view.
   top_header_ = new views::View();
-  auto top_header_layout =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
+  auto top_header_layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal);
   top_header_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kEnd);
   top_header_->SetLayoutManager(std::move(top_header_layout));
@@ -411,7 +419,7 @@ LockContentsView::LockContentsView(
   system_info_ = new views::View();
   auto* system_info_layout =
       system_info_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, gfx::Insets(6, 8)));
+          views::BoxLayout::Orientation::kVertical, gfx::Insets(6, 8)));
   system_info_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kEnd);
   system_info_->SetVisible(false);
@@ -454,7 +462,7 @@ LockContentsView::LockContentsView(
 LockContentsView::~LockContentsView() {
   Shell::Get()->accelerator_controller()->UnregisterAll(this);
   data_dispatcher_->RemoveObserver(this);
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
   Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(this);
 
   if (unlock_attempt_ > 0) {
@@ -619,6 +627,7 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
   primary_big_view_ = nullptr;
   opt_secondary_big_view_ = nullptr;
   users_list_ = nullptr;
+  media_controls_view_.reset();
   layout_actions_.clear();
   // Removing child views can change focus, which may result in LockContentsView
   // getting focused. Make sure to clear internal references before that happens
@@ -646,8 +655,9 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
   }
 
   // Allocate layout and big user, which are common between all densities.
-  auto* main_layout = main_view_->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  auto* main_layout =
+      main_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal));
   main_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
   main_layout->set_cross_axis_alignment(
@@ -762,8 +772,8 @@ void LockContentsView::OnFingerprintStateChanged(const AccountId& account_id,
         big_view->auth_user()->password_view()->GetPreferredSize().width());
 
     auto* container = new NonAccessibleView();
-    container->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
     container->AddChildView(label);
 
     auth_error_bubble_->SetAnchorView(big_view->auth_user()->password_view());
@@ -958,8 +968,6 @@ void LockContentsView::OnSystemInfoChanged(
     for (int i = 0; i < 3; ++i)
       system_info_->AddChildView(create_info_label());
   }
-  if (::features::IsSingleProcessMash())
-    system_info_->AddChildView(create_info_label());
 
   if (show)
     system_info_->SetVisible(true);
@@ -973,8 +981,6 @@ void LockContentsView::OnSystemInfoChanged(
   update_label(0, os_version_label_text);
   update_label(1, enterprise_info_text);
   update_label(2, bluetooth_name);
-  if (::features::IsSingleProcessMash())
-    update_label(3, "SingleProcessMash");
 
   LayoutTopHeader();
 }
@@ -1149,7 +1155,7 @@ void LockContentsView::OnLockStateChanged(bool locked) {
   }
 }
 
-void LockContentsView::OnKeyboardVisibilityStateChanged(bool is_visible) {
+void LockContentsView::OnKeyboardVisibilityChanged(bool is_visible) {
   if (!primary_big_view_ || keyboard_shown_ == is_visible)
     return;
 
@@ -1184,11 +1190,82 @@ void LockContentsView::FocusNextWidget(bool reverse) {
   }
 }
 
+void LockContentsView::SetLowDensitySpacing(views::View* spacing_middle,
+                                            views::View* secondary_view,
+                                            int landscape_dist,
+                                            int portrait_dist,
+                                            bool landscape) {
+  int total_width = GetPreferredSize().width();
+  int available_width =
+      total_width - (primary_big_view_->GetPreferredSize().width() +
+                     secondary_view->GetPreferredSize().width());
+  if (available_width <= 0) {
+    SetPreferredWidthForView(spacing_middle, 0);
+    return;
+  }
+
+  int desired_width = landscape ? landscape_dist : portrait_dist;
+  SetPreferredWidthForView(spacing_middle,
+                           std::min(available_width, desired_width));
+}
+
+bool LockContentsView::AreMediaControlsEnabled() const {
+  return screen_type_ == LockScreen::ScreenType::kLock &&
+         !expanded_view_->GetVisible() &&
+         Shell::Get()->media_controller()->AreLockScreenMediaKeysEnabled() &&
+         base::FeatureList::IsEnabled(features::kLockScreenMediaControls);
+}
+
+void LockContentsView::HideMediaControlsLayout() {
+  main_view_->RemoveChildView(media_controls_view_->GetMiddleSpacingView());
+  main_view_->RemoveChildView(media_controls_view_.get());
+
+  // Don't allow media keys to be used on lock screen since controls are hidden.
+  Shell::Get()->media_controller()->SetMediaControlsDismissed(true);
+
+  Layout();
+}
+
+void LockContentsView::CreateMediaControlsLayout() {
+  // |media_controls_view_| should not be attached to a parent.
+  DCHECK(!media_controls_view_->parent());
+
+  // Space between primary user and media controls.
+  main_view_->AddChildView(media_controls_view_->GetMiddleSpacingView());
+
+  // Media controls view.
+  main_view_->AddChildView(media_controls_view_.get());
+
+  // Set |spacing_middle|.
+  AddDisplayLayoutAction(base::BindRepeating(
+      &LockContentsView::SetLowDensitySpacing, base::Unretained(this),
+      media_controls_view_->GetMiddleSpacingView(), media_controls_view_.get(),
+      kDistanceBetweenAuthUserAndMediaControlsLandscapeDp,
+      kDistanceBetweenAuthUserAndMediaControlsPortraitDp));
+
+  Layout();
+}
+
 void LockContentsView::CreateLowDensityLayout(
     const std::vector<LoginUserInfo>& users) {
   DCHECK_LE(users.size(), 2u);
 
   main_view_->AddChildView(primary_big_view_);
+
+  // Build media controls view. Using base::Unretained(this) is safe here
+  // because these callbacks are used by |media_controls_view_|, which is
+  // owned by |this|.
+  LockScreenMediaControlsView::Callbacks media_controls_callbacks;
+  media_controls_callbacks.media_controls_enabled = base::BindRepeating(
+      &LockContentsView::AreMediaControlsEnabled, base::Unretained(this));
+  media_controls_callbacks.hide_media_controls = base::BindRepeating(
+      &LockContentsView::HideMediaControlsLayout, base::Unretained(this));
+  media_controls_callbacks.show_media_controls = base::BindRepeating(
+      &LockContentsView::CreateMediaControlsLayout, base::Unretained(this));
+
+  media_controls_view_ = std::make_unique<LockScreenMediaControlsView>(
+      Shell::Get()->connector(), media_controls_callbacks);
+  media_controls_view_->set_owned_by_client();
 
   if (users.size() > 1) {
     // Space between primary user and secondary user.
@@ -1200,28 +1277,12 @@ void LockContentsView::CreateLowDensityLayout(
         AllocateLoginBigUserView(users[1], false /*is_primary*/);
     main_view_->AddChildView(opt_secondary_big_view_);
 
-    // Set |spacing_middle| to the correct size. If there is less spacing
-    // available than desired, use up to the available.
+    // Set |spacing_middle|.
     AddDisplayLayoutAction(base::BindRepeating(
-        [](views::View* host_view, views::View* big_user_view,
-           views::View* spacing_middle, views::View* secondary_big_view,
-           bool landscape) {
-          int total_width = host_view->GetPreferredSize().width();
-          int available_width =
-              total_width - (big_user_view->GetPreferredSize().width() +
-                             secondary_big_view->GetPreferredSize().width());
-          if (available_width <= 0) {
-            SetPreferredWidthForView(spacing_middle, 0);
-            return;
-          }
-
-          int desired_width = landscape
-                                  ? kLowDensityDistanceBetweenUsersInLandscapeDp
-                                  : kLowDensityDistanceBetweenUsersInPortraitDp;
-          SetPreferredWidthForView(spacing_middle,
-                                   std::min(available_width, desired_width));
-        },
-        this, primary_big_view_, spacing_middle, opt_secondary_big_view_));
+        &LockContentsView::SetLowDensitySpacing, base::Unretained(this),
+        spacing_middle, opt_secondary_big_view_,
+        kLowDensityDistanceBetweenUsersInLandscapeDp,
+        kLowDensityDistanceBetweenUsersInPortraitDp));
   }
 }
 
@@ -1328,7 +1389,7 @@ void LockContentsView::DoLayout() {
   // depend on the preferred size to determine layout.
   gfx::Size preferred_size = display.size();
   preferred_size.set_height(preferred_size.height() -
-                            keyboard::KeyboardController::Get()
+                            keyboard::KeyboardUIController::Get()
                                 ->GetWorkspaceOccludedBoundsInScreen()
                                 .height());
   SetPreferredSize(preferred_size);
@@ -1684,13 +1745,13 @@ void LockContentsView::ShowAuthErrorMessage() {
 
   views::StyledLabel* label = new views::StyledLabel(error_text, this);
   MakeSectionBold(label, error_text, bold_start, bold_length);
-  label->set_auto_color_readability_enabled(false);
+  label->SetAutoColorReadabilityEnabled(false);
 
   auto* learn_more_button = new AuthErrorLearnMoreButton(auth_error_bubble_);
 
   auto* container = new NonAccessibleView(kAuthErrorContainerName);
   container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       kLearnMoreButtonVerticalSpacingDp));
   container->AddChildView(label);
   container->AddChildView(learn_more_button);
@@ -1737,7 +1798,7 @@ void LockContentsView::OnParentAccessValidationFinished(bool access_granted) {
   ShowParentAccessDialog(false);
 }
 
-keyboard::KeyboardController* LockContentsView::GetKeyboardControllerForView()
+keyboard::KeyboardUIController* LockContentsView::GetKeyboardControllerForView()
     const {
   return GetWidget() ? GetKeyboardControllerForWidget(GetWidget()) : nullptr;
 }

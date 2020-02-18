@@ -126,7 +126,7 @@ class QUIC_EXPORT_PRIVATE QuicStream
              QuicSession* session,
              bool is_static,
              StreamType type);
-  QuicStream(PendingStream pending, StreamType type, bool is_static);
+  QuicStream(PendingStream* pending, StreamType type, bool is_static);
   QuicStream(const QuicStream&) = delete;
   QuicStream& operator=(const QuicStream&) = delete;
 
@@ -362,12 +362,6 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // TODO(fayang): Let WritevData return boolean.
   QuicConsumedData WritevData(const struct iovec* iov, int iov_count, bool fin);
 
-  // Allows override of the session level writev, for the force HOL
-  // blocking experiment.
-  virtual QuicConsumedData WritevDataInner(size_t write_length,
-                                           QuicStreamOffset offset,
-                                           bool fin);
-
   // Close the read side of the socket.  May cause the stream to be closed.
   // Subclasses and consumers should use StopReading to terminate reading early
   // if expecting a FIN. Can be used directly by subclasses if not expecting a
@@ -377,10 +371,10 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // Called when data of [offset, offset + data_length] is buffered in send
   // buffer.
   virtual void OnDataBuffered(
-      QuicStreamOffset offset,
-      QuicByteCount data_length,
+      QuicStreamOffset /*offset*/,
+      QuicByteCount /*data_length*/,
       const QuicReferenceCountedPointer<QuicAckListenerInterface>&
-          ack_listener) {}
+      /*ack_listener*/) {}
 
   // True if buffered data in send buffer is below buffered_data_threshold_.
   bool CanWriteNewData() const;
@@ -529,7 +523,7 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // or discarded.
   QuicStreamSendBuffer send_buffer_;
 
-  // Latched value of FLAGS_quic_buffered_data_threshold.
+  // Latched value of quic_buffered_data_threshold.
   const QuicByteCount buffered_data_threshold_;
 
   // If true, then this stream has precedence over other streams for write

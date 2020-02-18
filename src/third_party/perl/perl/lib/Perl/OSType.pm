@@ -1,25 +1,15 @@
-#
-# This file is part of Perl-OSType
-#
-# This software is copyright (c) 2010 by David Golden.
-#
-# This is free software; you can redistribute it and/or modify it under
-# the same terms as the Perl 5 programming language system itself.
-#
 use strict;
 use warnings;
+
 package Perl::OSType;
-BEGIN {
-  $Perl::OSType::VERSION = '1.002';
-}
 # ABSTRACT: Map Perl operating system names to generic types
+
+our $VERSION = '1.010';
 
 require Exporter;
 our @ISA = qw(Exporter);
 
-our %EXPORT_TAGS = (
-  all => [ qw( os_type is_os_type ) ]
-);
+our %EXPORT_TAGS = ( all => [qw( os_type is_os_type )] );
 
 our @EXPORT_OK = @{ $EXPORT_TAGS{all} };
 
@@ -28,6 +18,7 @@ my %OSTYPES = qw(
   aix         Unix
   bsdos       Unix
   beos        Unix
+  bitrig      Unix
   dgux        Unix
   dragonfly   Unix
   dynixptx    Unix
@@ -40,6 +31,7 @@ my %OSTYPES = qw(
   darwin      Unix
   machten     Unix
   midnightbsd Unix
+  minix       Unix
   mirbsd      Unix
   next        Unix
   openbsd     Unix
@@ -48,18 +40,21 @@ my %OSTYPES = qw(
   nto         Unix
   svr4        Unix
   svr5        Unix
+  sco         Unix
   sco_sv      Unix
   unicos      Unix
   unicosmk    Unix
   solaris     Unix
   sunos       Unix
   cygwin      Unix
+  msys        Unix
   os2         Unix
   interix     Unix
   gnu         Unix
   gnukfreebsd Unix
   nto         Unix
   qnx         Unix
+  android     Unix
 
   dos         Windows
   MSWin32     Windows
@@ -71,29 +66,30 @@ my %OSTYPES = qw(
 
   MacOS       MacOS
   VMS         VMS
-  VOS         VOS
+  vos         VOS
   riscos      RiscOS
   amigaos     Amiga
   mpeix       MPEiX
 );
 
 sub os_type {
-  my ($os) = @_;
-  $os = $^O unless defined $os;
-  return $OSTYPES{ $os } || q{};
+    my ($os) = @_;
+    $os = $^O unless defined $os;
+    return $OSTYPES{$os} || q{};
 }
 
 sub is_os_type {
-  my ($type, $os) = @_;
-  return unless $type;
-  $os = $^O unless defined $os;
-  return os_type($os) eq $type;
+    my ( $type, $os ) = @_;
+    return unless $type;
+    $os = $^O unless defined $os;
+    return os_type($os) eq $type;
 }
 
 1;
 
-
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -101,7 +97,7 @@ Perl::OSType - Map Perl operating system names to generic types
 
 =head1 VERSION
 
-version 1.002
+version 1.010
 
 =head1 SYNOPSIS
 
@@ -155,20 +151,75 @@ L<Devel::CheckOS>
 
 =back
 
+=for :stopwords cpan testmatrix url annocpan anno bugtracker rt cpants kwalitee diff irc mailto metadata placeholders metacpan
+
+=head1 SUPPORT
+
+=head2 Bugs / Feature Requests
+
+Please report any bugs or feature requests through the issue tracker
+at L<https://github.com/Perl-Toolchain-Gang/Perl-OSType/issues>.
+You will be notified automatically of any progress on your issue.
+
+=head2 Source Code
+
+This is open source software.  The code repository is available for
+public review and contribution under the terms of the license.
+
+L<https://github.com/Perl-Toolchain-Gang/Perl-OSType>
+
+  git clone https://github.com/Perl-Toolchain-Gang/Perl-OSType.git
+
 =head1 AUTHOR
 
 David Golden <dagolden@cpan.org>
 
+=head1 CONTRIBUTORS
+
+=for stopwords Chris 'BinGOs' Williams David Golden Graham Ollis Jonas B. Nielsen Owain G. Ainsworth Paul Green Piotr Roszatycki
+
+=over 4
+
+=item *
+
+Chris 'BinGOs' Williams <chris@bingosnet.co.uk>
+
+=item *
+
+David Golden <xdg@xdg.me>
+
+=item *
+
+Graham Ollis <plicease@cpan.org>
+
+=item *
+
+Jonas B. Nielsen <jonasbn@hoarfrost.local>
+
+=item *
+
+Owain G. Ainsworth <oga@nicotinebsd.org>
+
+=item *
+
+Paul Green <Paul.Green@stratus.com>
+
+=item *
+
+Piotr Roszatycki <piotr.roszatycki@gmail.com>
+
+=back
+
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2010 by David Golden.
+This software is copyright (c) 2016 by David Golden.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
 
-
 __END__
 
 
+# vim: ts=4 sts=4 sw=4 et:

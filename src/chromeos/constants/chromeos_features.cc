@@ -13,10 +13,19 @@ namespace features {
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables more aggressive filtering out of Bluetooth devices with
+// "appearances" that are less likely to be pairable or useful.
+const base::Feature kBluetoothAggressiveAppearanceFilter{
+    "BluetoothAggressiveAppearanceFilter", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature containing param to block provided long term keys.
 const base::Feature kBlueZLongTermKeyBlocklist{
     "BlueZLongTermKeyBlocklist", base::FEATURE_DISABLED_BY_DEFAULT};
 const char kBlueZLongTermKeyBlocklistParamName[] = "ltk_blocklist";
+
+// Enable or disables running the Camera App as a System Web App.
+const base::Feature kCameraSystemWebApp{"CameraSystemWebApp",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Crostini Backup.
 const base::Feature kCrostiniBackup{"CrostiniBackup",
@@ -35,6 +44,10 @@ const base::Feature kCrostiniUsbSupport{"CrostiniUsbSupport",
 const base::Feature kCrostiniUsbAllowUnsupported{
     "CrostiniUsbAllowUnsupported", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the new WebUI Crostini installer.
+const base::Feature kCrostiniWebUIInstaller{"CrostiniWebUIInstaller",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the CryptAuth v2 Enrollment flow.
 const base::Feature kCryptAuthV2Enrollment{"CryptAuthV2Enrollment",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -47,9 +60,18 @@ const base::Feature kDiscoverApp{"DiscoverApp",
 // If enabled, DriveFS will be used for Drive sync.
 const base::Feature kDriveFs{"DriveFS", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// If enabled shows the new visual signals feedback panel.
+// Enables DriveFS' experimental local files mirroring functionality.
+const base::Feature kDriveFsMirroring{"DriveFsMirroring",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled shows the visual signals feedback panel.
 const base::Feature kEnableFileManagerFeedbackPanel{
     "EnableFeedbackPanel", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the enhanced external media formatting dialog in the file manager,
+// with support for labelling and also NTFS/exFAT filesystems.
+const base::Feature kEnableFileManagerFormatDialog{
+    "EnableFileManagerFormatDialog", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable the piex-wasm module for raw image preview image extraction.
 const base::Feature kEnableFileManagerPiexWasm{
@@ -58,7 +80,7 @@ const base::Feature kEnableFileManagerPiexWasm{
 // Enables or disables web push for background notifications in
 // Android Messages Integration on Chrome OS.
 const base::Feature kEnableMessagesWebPush{"EnableMessagesWebPush",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the use of Mojo by Chrome-process code to communicate with Power
 // Manager. In order to use mojo, this feature must be turned on and a callsite
@@ -80,6 +102,14 @@ const base::Feature kEnableSupervisionTransitionScreens{
 const base::Feature kFsNosymfollow{"FsNosymfollow",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable a D-Bus service for accessing gesture properties.
+const base::Feature kGesturePropertiesDBusService{
+    "GesturePropertiesDBusService", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable primary/secondary action buttons on Gaia login screen.
+const base::Feature kGaiaActionButtons{"GaiaActionButtons",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable or disable Unified Input Logic for FST decocder in the IME extension
 // on Chrome OS.
 const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
@@ -88,6 +118,15 @@ const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
 // Enables or disables Instant Tethering on Chrome OS.
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables showing the battery level in the System Tray and Settings
+// UI for supported Bluetooth Devices.
+const base::Feature kShowBluetoothDeviceBattery{
+    "ShowBluetoothDeviceBattery", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables Release Notes on Chrome OS.
+const base::Feature kReleaseNotes{"ReleaseNotes",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Uses the V3 (~2019-05 era) Smart Dim model instead of the default V2
 // (~2018-11) model.
@@ -99,17 +138,6 @@ const base::Feature kSmartDimModelV3{"SmartDimModelV3",
 const base::Feature kSplitSettings{"SplitSettings",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, a new screen will be shown at the end of the OOBE/Login for
-// supervised users. It will display a loading page while we fetch
-// eligibility data.
-const base::Feature kSupervisionOnboardingEligibility{
-    "SupervisionOnboardingEligibility", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, we will display the full onboarding flow for eligible supervised
-// users.
-const base::Feature kSupervisionOnboardingScreens{
-    "SupervisionOnboardingScreens", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables the updated cellular activation UI; see go/cros-cellular-design.
 const base::Feature kUpdatedCellularActivationUi{
     "UpdatedCellularActivationUi", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -117,7 +145,7 @@ const base::Feature kUpdatedCellularActivationUi{
 // Use the messages.google.com domain as part of the "Messages" feature under
 // "Connected Devices" settings.
 const base::Feature kUseMessagesGoogleComDomain{
-    "UseMessagesGoogleComDomain", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseMessagesGoogleComDomain", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use the staging URL as part of the "Messages" feature under "Connected
 // Devices" settings.

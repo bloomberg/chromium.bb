@@ -8,13 +8,13 @@ found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
 part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
-import '../polymer/polymer-legacy.js';
+import '../polymer/polymer_bundled.min.js';
 import '../iron-flex-layout/iron-flex-layout.js';
 import '../paper-styles/color.js';
 
 import {IronRangeBehavior} from '../iron-range-behavior/iron-range-behavior.js';
-import {Polymer} from '../polymer/lib/legacy/polymer-fn.js';
-import {html} from '../polymer/lib/utils/html-tag.js';
+import {Polymer} from '../polymer/polymer_bundled.min.js';
+import {html} from '../polymer/polymer_bundled.min.js';
 
 /**
 Material design: [Progress &
@@ -128,28 +128,22 @@ Polymer({
 
       :host(.transiting) #primaryProgress,
       :host(.transiting) #secondaryProgress {
-        -webkit-transition-property: -webkit-transform;
         transition-property: transform;
 
         /* Duration */
-        -webkit-transition-duration: var(--paper-progress-transition-duration, 0.08s);
         transition-duration: var(--paper-progress-transition-duration, 0.08s);
 
         /* Timing function */
-        -webkit-transition-timing-function: var(--paper-progress-transition-timing-function, ease);
         transition-timing-function: var(--paper-progress-transition-timing-function, ease);
 
         /* Delay */
-        -webkit-transition-delay: var(--paper-progress-transition-delay, 0s);
         transition-delay: var(--paper-progress-transition-delay, 0s);
       }
 
       #primaryProgress,
       #secondaryProgress {
         @apply --layout-fit;
-        -webkit-transform-origin: left center;
         transform-origin: left center;
-        -webkit-transform: scaleX(0);
         transform: scaleX(0);
         will-change: transform;
       }
@@ -171,50 +165,36 @@ Polymer({
       }
 
       :host(:not([disabled])) #primaryProgress.indeterminate {
-        -webkit-transform-origin: right center;
         transform-origin: right center;
-        -webkit-animation: indeterminate-bar var(--paper-progress-indeterminate-cycle-duration, 2s) linear infinite;
         animation: indeterminate-bar var(--paper-progress-indeterminate-cycle-duration, 2s) linear infinite;
       }
 
       :host(:not([disabled])) #primaryProgress.indeterminate::after {
         content: "";
-        -webkit-transform-origin: center center;
         transform-origin: center center;
 
-        -webkit-animation: indeterminate-splitter var(--paper-progress-indeterminate-cycle-duration, 2s) linear infinite;
         animation: indeterminate-splitter var(--paper-progress-indeterminate-cycle-duration, 2s) linear infinite;
       }
 
       @-webkit-keyframes indeterminate-bar {
         0% {
-          -webkit-transform: scaleX(1) translateX(-100%);
         }
         50% {
-          -webkit-transform: scaleX(1) translateX(0%);
         }
         75% {
-          -webkit-transform: scaleX(1) translateX(0%);
-          -webkit-animation-timing-function: cubic-bezier(.28,.62,.37,.91);
         }
         100% {
-          -webkit-transform: scaleX(0) translateX(0%);
         }
       }
 
       @-webkit-keyframes indeterminate-splitter {
         0% {
-          -webkit-transform: scaleX(.75) translateX(-125%);
         }
         30% {
-          -webkit-transform: scaleX(.75) translateX(-125%);
-          -webkit-animation-timing-function: cubic-bezier(.42,0,.6,.8);
         }
         90% {
-          -webkit-transform: scaleX(.75) translateX(125%);
         }
         100% {
-          -webkit-transform: scaleX(.75) translateX(125%);
         }
       }
 

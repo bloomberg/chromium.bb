@@ -27,7 +27,6 @@ from chromite.lib import repo_manifest
 from chromite.lib import repo_util
 from chromite.lib import retry_util
 
-
 # A ProjectBranch is, simply, a git branch on a project.
 #
 # Fields:
@@ -113,8 +112,7 @@ class ManifestRepository(object):
       repo_manifest.Manifest object.
     """
     return repo_manifest.Manifest.FromFile(
-        path,
-        allow_unsupported_features=True)
+        path, allow_unsupported_features=True)
 
   def _ListManifests(self, root_manifests):
     """Finds all manifests included directly or indirectly by root manifests.
@@ -255,8 +253,10 @@ class CrosCheckout(object):
     Args:
       manifest_args: List of args for manifest group of repo_sync_manifest.
     """
-    cmd = [os.path.join(constants.CHROMITE_DIR, 'scripts/repo_sync_manifest'),
-           '--repo-root', self.root] + manifest_args
+    cmd = [
+        os.path.join(constants.CHROMITE_DIR, 'scripts/repo_sync_manifest'),
+        '--repo-root', self.root
+    ] + manifest_args
     if self.repo_url:
       cmd += ['--repo-url', self.repo_url]
     if self.manifest_url:
@@ -296,7 +296,12 @@ class CrosCheckout(object):
       path: Path to the manifest file.
     """
     logging.notice('Syncing checkout %s to manifest %s.', self.root, path)
-    self._Sync(['--manifest-file', path])
+    # SyncFile uses repo sync instead of repo_sync_manifest because
+    # repo_sync_manifest sometimes corrupts .repo/manifest.xml when
+    # syncing to a file. See crbug.com/973106.
+    cmd = ['repo', 'sync', '--manifest-name', os.path.abspath(path)]
+    cros_build_lib.RunCommand(cmd, cwd=self.root, print_cmd=True)
+    self.manifest = repo_util.Repository(self.root).Manifest()
 
   def ReadVersion(self, **kwargs):
     """Returns VersionInfo for the current checkout."""
@@ -378,9 +383,13 @@ class CrosCheckout(object):
       retries: Maximum number of retries for the git command.
     """
     retry_util.RetryCommand(
-        git.RunGit, retries,
-        self.AbsoluteProjectPath(project), cmd,
-        print_cmd=True, sleep=2, log_retries=True)
+        git.RunGit,
+        retries,
+        self.AbsoluteProjectPath(project),
+        cmd,
+        print_cmd=True,
+        sleep=2,
+        log_retries=True)
 
   def GitBranch(self, project):
     """Returns the project's current branch on disk.
@@ -468,7 +477,8 @@ class Branch(object):
     """
     return [
         ProjectBranch(proj, self._ProjectBranchName(branch, proj, original))
-        for proj in filter(CanBranchProject, self.checkout.manifest.Projects())
+        for proj in self.checkout.manifest.Projects()
+        if CanBranchProject(proj)
     ]
 
   def _ValidateBranches(self, branches):
@@ -573,6 +583,18 @@ class Branch(object):
         self.name,
         'Bump %s number after creating branch %s.' % (which_version, self.name),
         dry_run=not push)
+    # Increment branch/build number for source 'master' branch.
+    # manifest_version already does this for release branches.
+    # TODO(@jackneus): Make this less of a hack.
+    # In reality, this whole tool is being deleted pretty soon.
+    if self.__class__.__name__ != 'ReleaseBranch':
+      source_version = 'branch' if which_version == 'patch' else 'build'
+      self.checkout.BumpVersion(
+          source_version,
+          'master',
+          'Bump %s number for source branch after creating branch %s' %
+          (source_version, self.name),
+          dry_run=not push)
 
   def Rename(self, original, push=False, force=False):
     """Create this branch by renaming some other branch.
@@ -628,7 +650,7 @@ class StandardBranch(Branch):
     """
     vinfo = checkout.ReadVersion()
     version = '.'.join(str(comp) for comp in vinfo.VersionComponents() if comp)
-    name = '-'.join(filter(None, args) + (version,)) + '.B'
+    name = '-'.join([x for x in args if x] + [version]) + '.B'
     super(StandardBranch, self).__init__(checkout, name)
 
 
@@ -644,9 +666,7 @@ class ReleaseBranch(StandardBranch):
 
   def __init__(self, checkout, descriptor=None):
     super(ReleaseBranch, self).__init__(
-        checkout,
-        'release',
-        descriptor,
+        checkout, 'release', descriptor,
         'R%s' % checkout.ReadVersion().chrome_branch)
 
   def Create(self, push=False, force=False):
@@ -724,41 +744,41 @@ Delete Examples:
     remote_group = parser.add_argument_group(
         'Remote options',
         description='Arguments determine how branch operations interact with '
-                    'remote repositories.')
+        'remote repositories.')
     remote_group.add_argument(
         '--push',
         action='store_true',
         help='Push branch modifications to remote repos. '
-             'Before setting this flag, ensure that you have the proper '
-             'permissions and that you know what you are doing. Ye be warned.')
+        'Before setting this flag, ensure that you have the proper '
+        'permissions and that you know what you are doing. Ye be warned.')
     remote_group.add_argument(
         '--force',
         action='store_true',
         help='Required for any remote operation that would delete an existing '
-             'branch. Also required when trying to branch from a previously '
-             'branched manifest version.')
+        'branch. Also required when trying to branch from a previously '
+        'branched manifest version.')
 
     sync_group = parser.add_argument_group(
         'Sync options',
         description='Arguments relating to how the checkout is synced. '
-                    'These options are primarily used for testing.')
+        'These options are primarily used for testing.')
     sync_group.add_argument(
         '--root',
         help='Repo root of local checkout to branch. If the root does not '
-             'exist, this tool will create it. If the root is not initialized, '
-             'this tool will initialize it. If --root is not specificed, this '
-             'tool will branch a fresh checkout in a temporary directory.')
+        'exist, this tool will create it. If the root is not initialized, '
+        'this tool will initialize it. If --root is not specificed, this '
+        'tool will branch a fresh checkout in a temporary directory.')
     sync_group.add_argument(
         '--repo-url',
         help='Repo repository location. Defaults to repo '
-             'googlesource URL.')
+        'googlesource URL.')
     sync_group.add_argument('--repo-branch', help='Branch to checkout repo to.')
     sync_group.add_argument(
         '--manifest-url',
         default='https://chrome-internal.googlesource.com'
-                '/chromeos/manifest-internal.git',
+        '/chromeos/manifest-internal.git',
         help='URL of the manifest to be checked out. Defaults to googlesource '
-             'URL for manifest-internal.')
+        'URL for manifest-internal.')
 
     # Create subcommand and flags.
     subparser = parser.add_subparsers(dest='subcommand')
@@ -769,8 +789,13 @@ Delete Examples:
     name_group.add_argument(
         '--descriptor',
         help='Optional descriptor for this branch. Typically, this is a build '
-             'target or a device, depending on the nature of the branch. Used '
-             'to generate the branch name. Cannot be used with --custom.')
+        'target or a device, depending on the nature of the branch. Used '
+        'to generate the branch name. Cannot be used with --custom.')
+    name_group.add_argument(
+        '--yes',
+        dest='yes',
+        action='store_true',
+        help='If set, disables the boolean prompt confirming the branch name.')
 
     manifest_group = create_parser.add_argument_group(
         'Manifest options', description='Which manifest should be branched?')
@@ -779,16 +804,16 @@ Delete Examples:
     manifest_ex_group.add_argument(
         '--version',
         help="Manifest version to branch off, e.g. '10509.0.0'."
-             'You may not branch off of the same version twice unless you run '
-             'with --force.')
+        'You may not branch off of the same version twice unless you run '
+        'with --force.')
     manifest_ex_group.add_argument(
         '--file', help='Path to manifest file to branch off.')
 
     kind_group = create_parser.add_argument_group(
         'Kind options',
         description='What kind of branch is this? '
-                    'These flags affect how manifest metadata is updated and '
-                    'how the branch is named.')
+        'These flags affect how manifest metadata is updated and '
+        'how the branch is named.')
     kind_ex_group = kind_group.add_mutually_exclusive_group(required=True)
     kind_ex_group.add_argument(
         '--release',
@@ -796,36 +821,36 @@ Delete Examples:
         action='store_const',
         const=ReleaseBranch,
         help='The new branch is a release branch. '
-             "Named as 'release-<descriptor>-R<Milestone>-<Major Version>.B'.")
+        "Named as 'release-<descriptor>-R<Milestone>-<Major Version>.B'.")
     kind_ex_group.add_argument(
         '--factory',
         dest='cls',
         action='store_const',
         const=FactoryBranch,
         help='The new branch is a factory branch. '
-             "Named as 'factory-<Descriptor>-<Major Version>.B'.")
+        "Named as 'factory-<Descriptor>-<Major Version>.B'.")
     kind_ex_group.add_argument(
         '--firmware',
         dest='cls',
         action='store_const',
         const=FirmwareBranch,
         help='The new branch is a firmware branch. '
-             "Named as 'firmware-<Descriptor>-<Major Version>.B'.")
+        "Named as 'firmware-<Descriptor>-<Major Version>.B'.")
     kind_ex_group.add_argument(
         '--stabilize',
         dest='cls',
         action='store_const',
         const=StabilizeBranch,
         help='The new branch is a minibranch. '
-             "Named as 'stabilize-<Descriptor>-<Major Version>.B'.")
+        "Named as 'stabilize-<Descriptor>-<Major Version>.B'.")
     kind_ex_group.add_argument(
         '--custom',
         dest='name',
         help='Use a custom branch type with an explicit name. '
-             'WARNING: custom names are dangerous. This tool greps branch '
-             'names to determine which versions have already been branched. '
-             'Version validation is not possible when the naming convention '
-             'is broken. Use this at your own risk.')
+        'WARNING: custom names are dangerous. This tool greps branch '
+        'names to determine which versions have already been branched. '
+        'Version validation is not possible when the naming convention '
+        'is broken. Use this at your own risk.')
 
     # Rename subcommand and flags.
     rename_parser = subparser.add_parser('rename', help='Rename a branch.')
@@ -868,8 +893,8 @@ Delete Examples:
         'chromeos/manifest-internal')
     pattern = '.*-%s\\.B$' % '\\.'.join(
         str(comp) for comp in vinfo.VersionComponents() if comp)
-    if (checkout.BranchExists(manifest_internal, pattern)
-        and not self.options.force):
+    if (checkout.BranchExists(manifest_internal, pattern) and
+        not self.options.force):
       raise BranchError(
           'Already branched %s. Please rerun with --force if you wish to '
           'proceed.' % vinfo.VersionString())
@@ -881,9 +906,10 @@ Delete Examples:
       branch = Branch(checkout, self.options.name)
 
     # Finally, double check the name with the user.
-    proceed = cros_build_lib.BooleanPrompt(
+    proceed = self.options.yes or cros_build_lib.BooleanPrompt(
         prompt='New branch will be named %s. Continue?' % branch.name,
         default=False)
+
     if proceed:
       branch.Create(push=self.options.push, force=self.options.force)
       logging.notice('Successfully created branch %s.', branch.name)
@@ -898,10 +924,10 @@ Delete Examples:
     """
     checkout.SyncBranch(self.options.old)
     branch = Branch(checkout, self.options.new)
-    branch.Rename(self.options.old, push=self.options.push,
-                  force=self.options.force)
-    logging.notice('Successfully renamed branch %s to %s.',
-                   self.options.old, self.options.new)
+    branch.Rename(
+        self.options.old, push=self.options.push, force=self.options.force)
+    logging.notice('Successfully renamed branch %s to %s.', self.options.old,
+                   self.options.new)
 
   def _HandleDelete(self, checkout):
     """Sync to the branch and delete it.
@@ -925,9 +951,11 @@ Delete Examples:
         self.options.manifest_url,
         repo_url=self.options.repo_url,
         repo_branch=self.options.repo_branch)
-    handlers = {'create': self._HandleCreate,
-                'rename': self._HandleRename,
-                'delete': self._HandleDelete}
+    handlers = {
+        'create': self._HandleCreate,
+        'rename': self._HandleRename,
+        'delete': self._HandleDelete
+    }
     handlers[self.options.subcommand](checkout)
 
   def Run(self):

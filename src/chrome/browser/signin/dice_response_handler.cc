@@ -24,14 +24,14 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/signin/core/browser/about_signin_internals.h"
-#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_client.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/accounts_mutator.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 const int kDiceTokenFetchTimeoutSeconds = 10;
 
@@ -226,7 +226,7 @@ DiceResponseHandler* DiceResponseHandler::GetForProfile(Profile* profile) {
 
 DiceResponseHandler::DiceResponseHandler(
     SigninClient* signin_client,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     AccountReconcilor* account_reconcilor,
     AboutSigninInternals* about_signin_internals,
     signin::AccountConsistencyMethod account_consistency,

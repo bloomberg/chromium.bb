@@ -25,7 +25,7 @@
 
 #include "third_party/blink/renderer/core/loader/text_track_loader.h"
 
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -97,7 +97,7 @@ void TextTrackLoader::NotifyFinished(Resource* resource) {
   }
 
   if (!cue_load_timer_.IsActive())
-    cue_load_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    cue_load_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   CancelLoad();
 }
@@ -115,8 +115,8 @@ bool TextTrackLoader::Load(const KURL& url,
   FetchParameters cue_fetch_params(ResourceRequest(url), options);
 
   if (cross_origin == kCrossOriginAttributeNotSet) {
-    cue_fetch_params.MutableResourceRequest().SetFetchRequestMode(
-        network::mojom::FetchRequestMode::kSameOrigin);
+    cue_fetch_params.MutableResourceRequest().SetMode(
+        network::mojom::RequestMode::kSameOrigin);
   } else {
     cue_fetch_params.SetCrossOriginAccessControl(
         GetDocument().GetSecurityOrigin(), cross_origin);
@@ -131,14 +131,14 @@ void TextTrackLoader::NewCuesParsed() {
     return;
 
   new_cues_available_ = true;
-  cue_load_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  cue_load_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void TextTrackLoader::FileFailedToParse() {
   state_ = kFailed;
 
   if (!cue_load_timer_.IsActive())
-    cue_load_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    cue_load_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   CancelLoad();
 }

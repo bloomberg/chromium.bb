@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/ios/block_types.h"
 #include "base/mac/scoped_block.h"
+#import "ios/chrome/app/app_startup_parameters.h"
 #import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/app_state_testing.h"
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
@@ -21,7 +22,6 @@
 #import "ios/chrome/app/application_delegate/user_activity_handler.h"
 #import "ios/chrome/app/main_application_delegate.h"
 #import "ios/chrome/app/startup/content_suggestions_scheduler_notifications.h"
-#import "ios/chrome/browser/app_startup_parameters.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
@@ -50,7 +50,7 @@
 #include "ios/public/provider/chrome/browser/user_feedback/test_user_feedback_provider.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#include "ios/web/public/web_task_traits.h"
+#include "ios/web/public/thread/web_task_traits.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
@@ -153,14 +153,9 @@ class FakeProfileSessionDurationsService
 
 @interface CallTrackingStubBrowserInterfaceProvider
     : StubBrowserInterfaceProvider
-@property(nonatomic) BOOL tabsHalted;
 @property(nonatomic) BOOL deviceManagerCleaned;
 @end
 @implementation CallTrackingStubBrowserInterfaceProvider
-
-- (void)haltAllTabs {
-  self.tabsHalted = YES;
-}
 
 - (void)cleanDeviceSharingManager {
   self.deviceManagerCleaned = YES;
@@ -574,7 +569,6 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
   EXPECT_OCMOCK_VERIFY(application);
   EXPECT_FALSE(interfaceProvider.mainInterface.userInteractionEnabled);
   EXPECT_TRUE(interfaceProvider.deviceManagerCleaned);
-  EXPECT_TRUE(interfaceProvider.tabsHalted);
   FakeAppDistributionProvider* provider =
       static_cast<FakeAppDistributionProvider*>(
           ios::GetChromeBrowserProvider()->GetAppDistributionProvider());
@@ -936,6 +930,7 @@ TEST_F(AppStateTest, applicationDidEnterBackgroundStageBackground) {
   BrowserInitializationStageType stage = INITIALIZATION_STAGE_BACKGROUND;
 
   [[[browserLauncher stub] andReturnValue:@(stage)] browserInitializationStage];
+  [[[browserLauncher stub] andReturn:nil] interfaceProvider];
 
   ASSERT_EQ(NSUInteger(0), [window subviews].count);
 

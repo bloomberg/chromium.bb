@@ -4,16 +4,16 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.Fragment;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.preference.Preference;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.Preference;
 import android.widget.Button;
 
 import org.junit.After;
@@ -32,7 +32,8 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.preferences.MainPreferences;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
-import org.chromium.chrome.browser.preferences.SignInPreference;
+import org.chromium.chrome.browser.preferences.sync.AccountManagementFragment;
+import org.chromium.chrome.browser.preferences.sync.SignInPreference;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -228,7 +229,7 @@ public class SigninTest {
 
             // Start observing the SigninManager.
             mTestSignInObserver = new TestSignInObserver();
-            mSigninManager = SigninManager.get();
+            mSigninManager = IdentityServicesProvider.getSigninManager();
             mSigninManager.addSignInStateObserver(mTestSignInObserver);
 
             // Get these handles in the UI thread.
@@ -318,16 +319,16 @@ public class SigninTest {
         final Preferences prefActivity = mActivityTestRule.startPreferences(null);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-        // Create a monitor to catch the AccountSigninActivity when it is created.
+        // Create a monitor to catch the SigninActivity when it is created.
         ActivityMonitor monitor = InstrumentationRegistry.getInstrumentation().addMonitor(
-                AccountSigninActivity.class.getName(), null, false);
+                SigninActivity.class.getName(), null, false);
 
         // Click sign in.
         TestThreadUtils.runOnUiThreadBlocking(() -> clickSigninPreference(prefActivity));
 
         // Pick the mock account.
-        AccountSigninActivity signinActivity =
-                (AccountSigninActivity) InstrumentationRegistry.getInstrumentation().waitForMonitor(
+        SigninActivity signinActivity =
+                (SigninActivity) InstrumentationRegistry.getInstrumentation().waitForMonitor(
                         monitor);
         Button positiveButton = (Button) signinActivity.findViewById(R.id.positive_button);
         // Press 'sign in'.
@@ -378,7 +379,7 @@ public class SigninTest {
     }
 
     private static MainPreferences getMainPreferences(Preferences prefActivity) {
-        Fragment fragment = prefActivity.getFragmentForTest();
+        Fragment fragment = prefActivity.getMainFragmentCompat();
         Assert.assertNotNull(fragment);
         Assert.assertTrue(fragment instanceof MainPreferences);
         return (MainPreferences) fragment;
@@ -394,7 +395,7 @@ public class SigninTest {
     }
 
     private static void clickSignOut(Preferences prefActivity) {
-        Fragment fragment = prefActivity.getFragmentForTest();
+        Fragment fragment = prefActivity.getMainFragmentCompat();
         Assert.assertNotNull(fragment);
         Assert.assertTrue(fragment instanceof AccountManagementFragment);
         AccountManagementFragment managementFragment = (AccountManagementFragment) fragment;
@@ -405,9 +406,9 @@ public class SigninTest {
         signOutPref.getOnPreferenceClickListener().onPreferenceClick(signOutPref);
     }
 
-    private void acceptAlertDialogWithTag(Activity activity, String tag) {
+    private void acceptAlertDialogWithTag(AppCompatActivity activity, String tag) {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        DialogFragment fragment = ActivityUtils.waitForFragment(activity, tag);
+        DialogFragment fragment = ActivityUtils.waitForFragmentCompat(activity, tag);
         AlertDialog dialog = (AlertDialog) fragment.getDialog();
         Assert.assertTrue(dialog != null);
         Assert.assertTrue(dialog.isShowing());

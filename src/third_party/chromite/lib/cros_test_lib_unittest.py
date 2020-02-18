@@ -64,7 +64,7 @@ class TruthTableTest(cros_test_lib.TestCase):
       self.assertEquals(lines[ix], line)
 
     # Check direct access of input lines.
-    for i in xrange(len(tt)):
+    for i in range(len(tt)):
       self.assertEquals(lines[i], tt.GetInputs(i))
 
     # Check assertions on bad input to GetInputs.

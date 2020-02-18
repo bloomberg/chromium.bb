@@ -30,6 +30,7 @@
 namespace content {
 
 using ::base::TaskPriority;
+using ::testing::ElementsAre;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::SizeIs;
@@ -39,7 +40,8 @@ using QueueType = BrowserTaskQueues::QueueType;
 class BrowserTaskExecutorTest : public testing::Test {
  private:
   TestBrowserThreadBundle thread_bundle_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME};
+      base::test::ScopedTaskEnvironment::MainThreadType::UI,
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 };
 
 using StrictMockTask =
@@ -111,7 +113,7 @@ class BrowserTaskTraitsMappingTest : public BrowserTaskExecutorTest {
     EXPECT_EQ(GetQueueType({ID, TaskPriority::BEST_EFFORT}),
               QueueType::kBestEffort);
     EXPECT_EQ(GetQueueType({ID, TaskPriority::USER_VISIBLE}),
-              QueueType::kDefault);
+              QueueType::kUserVisible);
     EXPECT_EQ(GetQueueType({ID, TaskPriority::USER_BLOCKING}),
               QueueType::kUserBlocking);
 
@@ -138,6 +140,27 @@ TEST_F(BrowserTaskTraitsMappingTest, BrowserTaskTraitsMapToProperPriorities) {
   CheckExpectations<BrowserThread::IO>();
 }
 
+TEST_F(BrowserTaskTraitsMappingTest,
+       UIThreadTaskRunnerHasSamePriorityAsUIBlocking) {
+  auto ui_blocking = base::CreateSingleThreadTaskRunner(
+      {BrowserThread::UI, TaskPriority::USER_BLOCKING});
+  auto thread_task_runner = base::ThreadTaskRunnerHandle::Get();
+
+  std::vector<int> order;
+  ui_blocking->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() { order.push_back(1); }));
+  thread_task_runner->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() { order.push_back(10); }));
+  ui_blocking->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() { order.push_back(2); }));
+  thread_task_runner->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() { order.push_back(20); }));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(order, ElementsAre(1, 10, 2, 20));
+}
+
 class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
  private:
   class ScopedTaskEnvironmentWithCustomScheduler
@@ -146,12 +169,13 @@ class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
     ScopedTaskEnvironmentWithCustomScheduler()
         : base::test::ScopedTaskEnvironment(
               SubclassCreatesDefaultTaskRunner{},
-              base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME) {
+              base::test::ScopedTaskEnvironment::MainThreadType::UI,
+              base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
       std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler =
           BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
                                                      GetTimeDomain());
       DeferredInitFromSubclass(
-          browser_ui_thread_scheduler->GetHandle().GetBrowserTaskRunner(
+          browser_ui_thread_scheduler->GetHandle()->GetBrowserTaskRunner(
               QueueType::kDefault));
       BrowserTaskExecutor::CreateForTesting(
           std::move(browser_ui_thread_scheduler),

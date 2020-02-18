@@ -572,7 +572,8 @@ class ValidationPool(object):
     def IsCrosReview(change):
       return (change.project.startswith('chromiumos/') or
               change.project.startswith('chromeos/') or
-              change.project.startswith('aosp/'))
+              change.project.startswith('aosp/') or
+              change.project.startswith('weave/'))
 
     # First we filter to only Chromium OS repositories.
     changes = [c for c in changes if IsCrosReview(c)]
@@ -1077,7 +1078,7 @@ class ValidationPool(object):
 
     # Map the changes in by_repo_cls to their submission reasons.
     by_repo = dict()
-    for repo, cls in by_repo_cls.iteritems():
+    for repo, cls in by_repo_cls.items():
       by_repo[repo] = {cl:verified_cls[cl] for cl in cls}
 
     submitted_locals, local_submission_errors = self.SubmitLocalChanges(
@@ -1088,7 +1089,7 @@ class ValidationPool(object):
     errors.update(reapply_errors)
     errors.update(local_submission_errors)
     errors.update(remote_errors)
-    for patch, error in errors.iteritems():
+    for patch, error in errors.items():
       logging.error("Could not submit %s, error: %s", patch, error)
       logging.PrintBuildbotLink(
           "Could not submit %s, error: %s" % (patch, error), patch.url)
@@ -1151,7 +1152,7 @@ class ValidationPool(object):
     """
     merged_errors = {}
     submitted = set()
-    for repo, verified_cls in by_repo.iteritems():
+    for repo, verified_cls in by_repo.items():
       changes, errors = self._SubmitRepo(repo, verified_cls)
       submitted |= set(changes)
       merged_errors.update(errors)
@@ -1181,7 +1182,7 @@ class ValidationPool(object):
 
     sha1s = {}
     errors = {}
-    for sha1s_for_branch, branch_errors in filter(bool, push_results):
+    for sha1s_for_branch, branch_errors in (x for x in push_results if x):
       sha1s.update(sha1s_for_branch)
       errors.update(branch_errors)
 
@@ -1285,8 +1286,9 @@ class ValidationPool(object):
     old_changes = cros_patch.PatchCache(changes)
 
     if list(changes) != list(reloaded_changes):
-      logging.error('Changes: %s', map(str, changes))
-      logging.error('Reloaded changes: %s', map(str, reloaded_changes))
+      logging.error('Changes: %s', ' '.join(str(x) for x in changes))
+      logging.error('Reloaded changes: %s',
+                    ' '.join(str(x) for x in reloaded_changes))
       for change in set(changes) - set(reloaded_changes):
         logging.error('%s disappeared after reloading', change)
       for change in set(reloaded_changes) - set(changes):

@@ -194,6 +194,13 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
   }
 
  protected:
+  std::string ServicePathFromGuid(const std::string& guid) {
+    std::string service_path =
+        helper_.service_test()->FindServiceMatchingGUID(guid);
+    EXPECT_FALSE(service_path.empty());
+    return service_path;
+  }
+
   void Connect(const std::string& service_path) {
     network_connection_handler_->ConnectToNetwork(
         service_path,
@@ -331,19 +338,15 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
 namespace {
 
 const char* kNoNetwork = "no-network";
-const char* kWifi0 = "wifi0";
-const char* kWifi1 = "wifi1";
-const char* kWifi2 = "wifi2";
-const char* kWifi3 = "wifi3";
 
-const char* kConfigConnectable =
+const char* kConfigWifi0Connectable =
     "{ \"GUID\": \"wifi0\", \"Type\": \"wifi\", \"State\": \"idle\", "
     "  \"Connectable\": true }";
-const char* kConfigConnected =
+const char* kConfigWifi1Connected =
     "{ \"GUID\": \"wifi1\", \"Type\": \"wifi\", \"State\": \"online\" }";
-const char* kConfigConnecting =
+const char* kConfigWifi2Connecting =
     "{ \"GUID\": \"wifi2\", \"Type\": \"wifi\", \"State\": \"association\" }";
-const char* kConfigRequiresPassphrase =
+const char* kConfigWifi3RequiresPassphrase =
     "{ \"GUID\": \"wifi3\", \"Type\": \"wifi\", "
     "  \"PassphraseRequired\": true }";
 
@@ -356,19 +359,23 @@ const char* kPolicyWifi0 =
 
 TEST_F(NetworkConnectionHandlerImplTest,
        NetworkConnectionHandlerConnectSuccess) {
-  EXPECT_FALSE(ConfigureService(kConfigConnectable).empty());
-  Connect(kWifi0);
+  std::string wifi0_service_path = ConfigureService(kConfigWifi0Connectable);
+  ASSERT_FALSE(wifi0_service_path.empty());
+  Connect(wifi0_service_path);
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
-  EXPECT_EQ(shill::kStateOnline,
-            GetServiceStringProperty(kWifi0, shill::kStateProperty));
+  EXPECT_EQ(
+      shill::kStateOnline,
+      GetServiceStringProperty(wifi0_service_path, shill::kStateProperty));
   // Observer expectations
-  EXPECT_TRUE(network_connection_observer()->GetRequested(kWifi0));
-  EXPECT_EQ(kSuccessResult, network_connection_observer()->GetResult(kWifi0));
+  EXPECT_TRUE(network_connection_observer()->GetRequested(wifi0_service_path));
+  EXPECT_EQ(kSuccessResult,
+            network_connection_observer()->GetResult(wifi0_service_path));
 }
 
 TEST_F(NetworkConnectionHandlerImplTest,
        NetworkConnectionHandlerConnectBlockedByManagedOnly) {
-  EXPECT_FALSE(ConfigureService(kConfigConnectable).empty());
+  std::string wifi0_service_path = ConfigureService(kConfigWifi0Connectable);
+  ASSERT_FALSE(wifi0_service_path.empty());
   base::DictionaryValue global_config;
   global_config.SetKey(
       ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect,
@@ -376,18 +383,19 @@ TEST_F(NetworkConnectionHandlerImplTest,
   SetupPolicy("[]", global_config, false /* load as device policy */);
   SetupPolicy("[]", base::DictionaryValue(), true /* load as user policy */);
   LoginToRegularUser();
-  Connect(kWifi0);
+  Connect(wifi0_service_path);
   EXPECT_EQ(NetworkConnectionHandler::kErrorBlockedByPolicy,
             GetResultAndReset());
 
   SetupPolicy(kPolicyWifi0, global_config, false /* load as device policy */);
-  Connect(kWifi0);
+  Connect(wifi0_service_path);
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
 }
 
 TEST_F(NetworkConnectionHandlerImplTest,
        NetworkConnectionHandlerConnectBlockedByBlacklist) {
-  EXPECT_FALSE(ConfigureService(kConfigConnectable).empty());
+  std::string wifi0_service_path = ConfigureService(kConfigWifi0Connectable);
+  ASSERT_FALSE(wifi0_service_path.empty());
 
   // Set a device policy which blocks wifi0.
   base::Value::ListStorage blacklist;
@@ -400,14 +408,14 @@ TEST_F(NetworkConnectionHandlerImplTest,
 
   LoginToRegularUser();
 
-  Connect(kWifi0);
+  Connect(wifi0_service_path);
   EXPECT_EQ(NetworkConnectionHandler::kErrorBlockedByPolicy,
             GetResultAndReset());
 
   // Set a user policy, which configures wifi0 (==whitelisted).
   SetupPolicy(kPolicyWifi0, base::DictionaryValue(),
               true /* load as user policy */);
-  Connect(kWifi0);
+  Connect(wifi0_service_path);
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
 }
 
@@ -421,27 +429,30 @@ TEST_F(NetworkConnectionHandlerImplTest,
   EXPECT_EQ(NetworkConnectionHandler::kErrorConfigureFailed,
             network_connection_observer()->GetResult(kNoNetwork));
 
-  EXPECT_FALSE(ConfigureService(kConfigConnected).empty());
-  Connect(kWifi1);
+  std::string wifi1_service_path = ConfigureService(kConfigWifi1Connected);
+  ASSERT_FALSE(wifi1_service_path.empty());
+  Connect(wifi1_service_path);
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnected, GetResultAndReset());
-  EXPECT_TRUE(network_connection_observer()->GetRequested(kWifi1));
+  EXPECT_TRUE(network_connection_observer()->GetRequested(wifi1_service_path));
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnected,
-            network_connection_observer()->GetResult(kWifi1));
+            network_connection_observer()->GetResult(wifi1_service_path));
 
-  EXPECT_FALSE(ConfigureService(kConfigConnecting).empty());
-  Connect(kWifi2);
+  std::string wifi2_service_path = ConfigureService(kConfigWifi2Connecting);
+  ASSERT_FALSE(wifi2_service_path.empty());
+  Connect(wifi2_service_path);
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnecting, GetResultAndReset());
-  EXPECT_TRUE(network_connection_observer()->GetRequested(kWifi2));
+  EXPECT_TRUE(network_connection_observer()->GetRequested(wifi2_service_path));
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnecting,
-            network_connection_observer()->GetResult(kWifi2));
+            network_connection_observer()->GetResult(wifi2_service_path));
 
-  EXPECT_FALSE(ConfigureService(kConfigRequiresPassphrase).empty());
-  Connect(kWifi3);
+  std::string wifi3_service_path =
+      ConfigureService(kConfigWifi3RequiresPassphrase);
+  Connect(wifi3_service_path);
   EXPECT_EQ(NetworkConnectionHandler::kErrorPassphraseRequired,
             GetResultAndReset());
-  EXPECT_TRUE(network_connection_observer()->GetRequested(kWifi3));
+  EXPECT_TRUE(network_connection_observer()->GetRequested(wifi3_service_path));
   EXPECT_EQ(NetworkConnectionHandler::kErrorPassphraseRequired,
-            network_connection_observer()->GetResult(kWifi3));
+            network_connection_observer()->GetResult(wifi3_service_path));
 }
 
 namespace {
@@ -474,7 +485,7 @@ TEST_F(NetworkConnectionHandlerImplTest, ConnectCertificateMissing) {
               base::DictionaryValue(),  // no global config
               true);                    // load as user policy
 
-  Connect("wifi4");
+  Connect(ServicePathFromGuid("wifi4"));
   EXPECT_EQ(NetworkConnectionHandler::kErrorCertificateRequired,
             GetResultAndReset());
 }
@@ -489,7 +500,7 @@ TEST_F(NetworkConnectionHandlerImplTest, ConnectWithCertificateSuccess) {
               base::DictionaryValue(),  // no global config
               true);                    // load as user policy
 
-  Connect("wifi4");
+  Connect(ServicePathFromGuid("wifi4"));
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
 }
 
@@ -504,7 +515,7 @@ TEST_F(NetworkConnectionHandlerImplTest,
               base::DictionaryValue(),  // no global config
               true);                    // load as user policy
 
-  Connect("wifi4");
+  Connect(ServicePathFromGuid("wifi4"));
 
   // Connect request came before the cert loader loaded certificates, so the
   // connect request should have been throttled until the certificates are
@@ -521,9 +532,10 @@ TEST_F(NetworkConnectionHandlerImplTest,
 
 TEST_F(NetworkConnectionHandlerImplTest,
        NetworkConnectionHandlerDisconnectSuccess) {
-  EXPECT_FALSE(ConfigureService(kConfigConnected).empty());
-  Disconnect(kWifi1);
-  EXPECT_TRUE(network_connection_observer()->GetRequested(kWifi1));
+  std::string wifi1_service_path = ConfigureService(kConfigWifi1Connected);
+  ASSERT_FALSE(wifi1_service_path.empty());
+  Disconnect(wifi1_service_path);
+  EXPECT_TRUE(network_connection_observer()->GetRequested(wifi1_service_path));
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
 }
 
@@ -533,8 +545,9 @@ TEST_F(NetworkConnectionHandlerImplTest,
   EXPECT_EQ(NetworkConnectionHandler::kErrorConfigureFailed,
             GetResultAndReset());
 
-  EXPECT_FALSE(ConfigureService(kConfigConnectable).empty());
-  Disconnect(kWifi0);
+  std::string wifi0_service_path = ConfigureService(kConfigWifi0Connectable);
+  ASSERT_FALSE(wifi0_service_path.empty());
+  Disconnect(wifi0_service_path);
   EXPECT_EQ(NetworkConnectionHandler::kErrorNotConnected, GetResultAndReset());
 }
 
@@ -546,6 +559,7 @@ TEST_F(NetworkConnectionHandlerImplTest, ConnectToTetherNetwork_Success) {
       100 /* signal_strength */, true /* has_connected_to_host */);
   network_connection_handler()->SetTetherDelegate(fake_tether_delegate());
 
+  // For tether networks, guid == service_path.
   Connect(kTetherGuid /* service_path */);
 
   EXPECT_EQ(FakeTetherDelegate::DelegateFunctionType::CONNECT,
@@ -566,6 +580,7 @@ TEST_F(NetworkConnectionHandlerImplTest, ConnectToTetherNetwork_Failure) {
       100 /* signal_strength */, true /* has_connected_to_host */);
   network_connection_handler()->SetTetherDelegate(fake_tether_delegate());
 
+  // For tether networks, guid == service_path.
   Connect(kTetherGuid /* service_path */);
 
   EXPECT_EQ(FakeTetherDelegate::DelegateFunctionType::CONNECT,
@@ -589,6 +604,7 @@ TEST_F(NetworkConnectionHandlerImplTest,
 
   // Do not set a tether delegate.
 
+  // For tether networks, guid == service_path.
   Connect(kTetherGuid /* service_path */);
 
   EXPECT_EQ(FakeTetherDelegate::DelegateFunctionType::NONE,
@@ -609,6 +625,7 @@ TEST_F(NetworkConnectionHandlerImplTest, DisconnectFromTetherNetwork_Success) {
   network_state_handler()->SetTetherNetworkStateConnecting(kTetherGuid);
   network_connection_handler()->SetTetherDelegate(fake_tether_delegate());
 
+  // For tether networks, guid == service_path.
   Disconnect(kTetherGuid /* service_path */);
 
   EXPECT_EQ(FakeTetherDelegate::DelegateFunctionType::DISCONNECT,
@@ -630,6 +647,7 @@ TEST_F(NetworkConnectionHandlerImplTest, DisconnectFromTetherNetwork_Failure) {
   network_state_handler()->SetTetherNetworkStateConnecting(kTetherGuid);
   network_connection_handler()->SetTetherDelegate(fake_tether_delegate());
 
+  // For tether networks, guid == service_path.
   Disconnect(kTetherGuid /* service_path */);
 
   EXPECT_EQ(FakeTetherDelegate::DelegateFunctionType::DISCONNECT,
@@ -654,6 +672,7 @@ TEST_F(NetworkConnectionHandlerImplTest,
 
   // Do not set a tether delegate.
 
+  // For tether networks, guid == service_path.
   Disconnect(kTetherGuid /* service_path */);
 
   EXPECT_EQ(FakeTetherDelegate::DelegateFunctionType::NONE,

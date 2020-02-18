@@ -23,7 +23,7 @@ DawnBindGroupBinding AsDawnType(const GPUBindGroupBinding* webgpu_binding) {
     GPUBufferBinding* buffer =
         webgpu_binding->resource().GetAsGPUBufferBinding();
     dawn_binding.offset = buffer->offset();
-    dawn_binding.size = buffer->size();
+    dawn_binding.size = buffer->hasSize() ? buffer->size() : DAWN_WHOLE_SIZE;
     dawn_binding.buffer = AsDawnType(buffer->buffer());
 
   } else if (webgpu_binding->resource().IsGPUSampler()) {
@@ -54,7 +54,7 @@ GPUBindGroup* GPUBindGroup::Create(GPUDevice* device,
   std::unique_ptr<DawnBindGroupBinding[]> bindings =
       binding_count != 0 ? AsDawnType(webgpu_desc->bindings()) : nullptr;
 
-  DawnBindGroupDescriptor dawn_desc;
+  DawnBindGroupDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.layout = AsDawnType(webgpu_desc->layout());
   dawn_desc.bindingCount = binding_count;

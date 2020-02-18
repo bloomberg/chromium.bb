@@ -76,7 +76,7 @@ class BookmarkBarNavigationTest : public InProcessBrowserTest {
     test_helper_ = std::make_unique<BookmarkBarViewTestHelper>(bookmark_bar());
   }
 
-  views::LabelButton* GetBookmarkButton(int index) {
+  views::LabelButton* GetBookmarkButton(size_t index) {
     return test_helper_->GetBookmarkButton(index);
   }
 

@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
+#include "chrome/browser/vr/test/multi_class_browser_test.h"
 #include "chrome/browser/vr/test/ui_utils.h"
 #include "chrome/browser/vr/test/webvr_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
@@ -90,10 +91,8 @@ void TestPresentationPixelsImpl(WebXrVrBrowserTestBase* t,
 IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTest, TestPresentationPixels) {
   TestPresentationPixelsImpl(this, "test_webvr_pixels");
 }
-// TODO(https://crbug.com/926048): Port to WMR once the frame data is properly
-// piped back to the test.
-IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestPresentationPixels) {
-  TestPresentationPixelsImpl(this, "test_webxr_pixels");
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestPresentationPixels) {
+  TestPresentationPixelsImpl(t, "test_webxr_pixels");
 }
 
 }  // namespace vr

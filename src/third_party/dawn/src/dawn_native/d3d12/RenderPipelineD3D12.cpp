@@ -138,6 +138,19 @@ namespace dawn_native { namespace d3d12 {
             }
         }
 
+        D3D12_CULL_MODE D3D12CullMode(dawn::CullMode mode) {
+            switch (mode) {
+                case dawn::CullMode::None:
+                    return D3D12_CULL_MODE_NONE;
+                case dawn::CullMode::Front:
+                    return D3D12_CULL_MODE_FRONT;
+                case dawn::CullMode::Back:
+                    return D3D12_CULL_MODE_BACK;
+                default:
+                    UNREACHABLE();
+            }
+        }
+
         D3D12_BLEND D3D12Blend(dawn::BlendFactor factor) {
             switch (factor) {
                 case dawn::BlendFactor::Zero:
@@ -299,13 +312,13 @@ namespace dawn_native { namespace d3d12 {
             const char* compileTarget = nullptr;
             D3D12_SHADER_BYTECODE* shader = nullptr;
             switch (stage) {
-                case dawn::ShaderStage::Vertex:
+                case ShaderStage::Vertex:
                     module = ToBackend(descriptor->vertexStage->module);
                     entryPoint = descriptor->vertexStage->entryPoint;
                     shader = &descriptorD3D12.VS;
                     compileTarget = "vs_5_1";
                     break;
-                case dawn::ShaderStage::Fragment:
+                case ShaderStage::Fragment:
                     module = ToBackend(descriptor->fragmentStage->module);
                     entryPoint = descriptor->fragmentStage->entryPoint;
                     shader = &descriptorD3D12.PS;
@@ -343,8 +356,9 @@ namespace dawn_native { namespace d3d12 {
         }
 
         descriptorD3D12.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
-        descriptorD3D12.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
-        descriptorD3D12.RasterizerState.FrontCounterClockwise = FALSE;
+        descriptorD3D12.RasterizerState.CullMode = D3D12CullMode(GetCullMode());
+        descriptorD3D12.RasterizerState.FrontCounterClockwise =
+            (GetFrontFace() == dawn::FrontFace::CCW) ? TRUE : FALSE;
         descriptorD3D12.RasterizerState.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
         descriptorD3D12.RasterizerState.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
         descriptorD3D12.RasterizerState.SlopeScaledDepthBias =
@@ -400,7 +414,7 @@ namespace dawn_native { namespace d3d12 {
         for (auto i : IterateBitSet(GetAttributesSetMask())) {
             D3D12_INPUT_ELEMENT_DESC& inputElementDescriptor = (*inputElementDescriptors)[count++];
 
-            const VertexAttributeDescriptor& attribute = GetAttribute(i);
+            const VertexAttributeInfo& attribute = GetAttribute(i);
 
             // If the HLSL semantic is TEXCOORDN the SemanticName should be "TEXCOORD" and the
             // SemanticIndex N
@@ -409,7 +423,7 @@ namespace dawn_native { namespace d3d12 {
             inputElementDescriptor.Format = VertexFormatType(attribute.format);
             inputElementDescriptor.InputSlot = attribute.inputSlot;
 
-            const VertexBufferDescriptor& input = GetInput(attribute.inputSlot);
+            const VertexBufferInfo& input = GetInput(attribute.inputSlot);
 
             inputElementDescriptor.AlignedByteOffset = attribute.offset;
             inputElementDescriptor.InputSlotClass = InputStepModeFunction(input.stepMode);

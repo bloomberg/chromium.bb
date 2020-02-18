@@ -68,10 +68,11 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
   EXPECT_EQ(left.disable_oop_rasterization, right.disable_oop_rasterization);
   EXPECT_EQ(left.watchdog_starts_backgrounded,
             right.watchdog_starts_backgrounded);
-  EXPECT_EQ(left.enable_vulkan, right.enable_vulkan);
+  EXPECT_EQ(left.use_vulkan, right.use_vulkan);
   EXPECT_EQ(left.enable_gpu_benchmarking_extension,
             right.enable_gpu_benchmarking_extension);
   EXPECT_EQ(left.enable_webgpu, right.enable_webgpu);
+  EXPECT_EQ(left.message_loop_type, right.message_loop_type);
 }
 
 }  // namespace
@@ -104,6 +105,13 @@ TEST(GpuPreferencesTest, EncodeDecode) {
   EXPECT_NE(default_prefs.name, input_prefs.name); \
   prefs_mojom.name = value;                        \
   EXPECT_EQ(input_prefs.name, prefs_mojom.name);
+
+#define GPU_PREFERENCES_FIELD_ENUM(name, value, mojom_value) \
+  input_prefs.name = value;                                  \
+  EXPECT_NE(default_prefs.name, input_prefs.name);           \
+  prefs_mojom.name = mojom_value;                            \
+  EXPECT_EQ(static_cast<uint32_t>(input_prefs.name),         \
+            static_cast<uint32_t>(prefs_mojom.name));
 
     GPU_PREFERENCES_FIELD(disable_accelerated_video_decode, true)
     GPU_PREFERENCES_FIELD(disable_accelerated_video_encode, true)
@@ -143,9 +151,12 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(enable_oop_rasterization, true)
     GPU_PREFERENCES_FIELD(disable_oop_rasterization, true)
     GPU_PREFERENCES_FIELD(watchdog_starts_backgrounded, true)
-    GPU_PREFERENCES_FIELD(enable_vulkan, true)
+    GPU_PREFERENCES_FIELD_ENUM(use_vulkan, VulkanImplementationName::kNative,
+                               mojom::VulkanImplementationName::kNative)
     GPU_PREFERENCES_FIELD(enable_gpu_benchmarking_extension, true)
     GPU_PREFERENCES_FIELD(enable_webgpu, true)
+    GPU_PREFERENCES_FIELD_ENUM(message_loop_type, base::MessageLoop::TYPE_UI,
+                               base::MessageLoop::TYPE_UI)
 
     input_prefs.texture_target_exception_list.emplace_back(
         gfx::BufferUsage::SCANOUT, gfx::BufferFormat::RGBA_8888);

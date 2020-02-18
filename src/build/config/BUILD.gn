@@ -95,10 +95,7 @@ config("feature_flags") {
     defines += [ "NO_TCMALLOC" ]
   }
   if (is_asan || is_hwasan || is_lsan || is_tsan || is_msan) {
-    defines += [
-      "MEMORY_TOOL_REPLACES_ALLOCATOR",
-      "MEMORY_SANITIZER_INITIAL_SIZE",
-    ]
+    defines += [ "MEMORY_TOOL_REPLACES_ALLOCATOR" ]
   }
   if (is_asan) {
     defines += [ "ADDRESS_SANITIZER" ]
@@ -130,9 +127,12 @@ config("feature_flags") {
   if (is_official_build) {
     defines += [ "OFFICIAL_BUILD" ]
   }
+
+  # TODO(thakis): Remove these in favor of build/branding_buildflags.h.
   if (is_chrome_branded) {
     defines += [ "GOOGLE_CHROME_BUILD" ]
   } else {
+    # TODO(thakis): All uses for this are gone, remove this in a follow-up.
     defines += [ "CHROMIUM_BUILD" ]
   }
 

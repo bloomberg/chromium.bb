@@ -152,6 +152,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool MinValueForRange(float* out_value) const override;
   bool StepValueForRange(float* out_value) const override;
   KURL Url() const override;
+  AXObject* ChooserPopup() const override;
   String StringValue() const override;
 
   // ARIA attributes.

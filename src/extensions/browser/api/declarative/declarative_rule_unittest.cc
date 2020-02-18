@@ -119,7 +119,7 @@ struct FulfillableCondition {
 
   bool IsFulfilled(const MatchData& match_data) const {
     if (condition_set_id != -1 &&
-        !base::ContainsKey(match_data.url_matches, condition_set_id))
+        !base::Contains(match_data.url_matches, condition_set_id))
       return false;
     return match_data.value <= max_value;
   }

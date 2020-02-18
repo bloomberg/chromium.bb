@@ -40,7 +40,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) SamlPasswordAttributes {
   static SamlPasswordAttributes FromJs(const base::DictionaryValue& js_object);
 
   // Load an instance of this class from the given |prefs|.
-  static SamlPasswordAttributes LoadFromPrefs(PrefService* prefs);
+  static SamlPasswordAttributes LoadFromPrefs(const PrefService* prefs);
 
   // Save this instance to the given |prefs|.
   void SaveToPrefs(PrefService* prefs) const;

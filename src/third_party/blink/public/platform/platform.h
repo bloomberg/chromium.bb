@@ -41,12 +41,15 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "media/base/audio_capturer_source.h"
+#include "media/base/audio_renderer_sink.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
+#include "third_party/blink/public/platform/audio/web_audio_device_source_type.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/code_cache_loader.h"
 #include "third_party/blink/public/platform/user_metrics_action.h"
@@ -76,6 +79,12 @@ namespace gpu {
 class GpuMemoryBufferManager;
 }
 
+namespace media {
+struct AudioSinkParameters;
+struct AudioSourceParameters;
+class GpuVideoAcceleratorFactories;
+}
+
 namespace rtc {
 class Thread;
 }
@@ -89,6 +98,10 @@ namespace v8 {
 class Context;
 template <class T>
 class Local;
+}
+
+namespace viz {
+class ContextProvider;
 }
 
 namespace webrtc {
@@ -105,14 +118,10 @@ class WebAudioBus;
 class WebAudioLatencyHint;
 class WebBlobRegistry;
 class WebCrypto;
-class WebDatabaseObserver;
 class WebDedicatedWorker;
 class WebGraphicsContext3DProvider;
 class WebLocalFrame;
 class WebMediaCapabilitiesClient;
-class WebMediaPlayer;
-class WebMediaRecorderHandler;
-class WebMediaStream;
 class WebMediaStreamCenter;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
@@ -123,7 +132,6 @@ class WebSandboxSupport;
 class WebSecurityOrigin;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
-class WebStorageNamespace;
 class WebThemeEngine;
 class WebTransmissionEncodingInfoHandler;
 class WebURLLoaderMockFactory;
@@ -216,54 +224,11 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Database (WebSQL) ---------------------------------------------------
 
-  // Opens a database file.
-  virtual base::File DatabaseOpenFile(const WebString& vfs_file_name,
-                                      int desired_flags) {
-    return base::File();
-  }
-
-  // Deletes a database file and returns the error code.
-  virtual int DatabaseDeleteFile(const WebString& vfs_file_name,
-                                 bool sync_dir) {
-    return 0;
-  }
-
-  // Returns the attributes of the given database file.
-  virtual int32_t DatabaseGetFileAttributes(const WebString& vfs_file_name) {
-    return 0;
-  }
-
-  // Returns the size of the given database file.
-  virtual int64_t DatabaseGetFileSize(const WebString& vfs_file_name) {
-    return 0;
-  }
-
-  // Returns the space available for the given origin.
-  virtual int64_t DatabaseGetSpaceAvailableForOrigin(
-      const WebSecurityOrigin& origin) {
-    return 0;
-  }
-
-  // Set the size of the given database file.
-  virtual bool DatabaseSetFileSize(const WebString& vfs_file_name,
-                                   int64_t size) {
-    return false;
-  }
-
   // Return a filename-friendly identifier for an origin.
   virtual WebString DatabaseCreateOriginIdentifier(
       const WebSecurityOrigin& origin) {
     return WebString();
   }
-
-  // DOM Storage --------------------------------------------------
-
-  // Return a LocalStorage namespace
-  virtual std::unique_ptr<WebStorageNamespace> CreateLocalStorageNamespace();
-
-  // Return a SessionStorage namespace
-  virtual std::unique_ptr<WebStorageNamespace> CreateSessionStorageNamespace(
-      base::StringPiece namespace_id);
 
   // FileSystem ----------------------------------------------------------
 
@@ -586,6 +551,19 @@ class BLINK_PLATFORM_EXPORT Platform {
   // called by platform/graphics/ is fine.
   virtual bool IsGpuCompositingDisabled() { return true; }
 
+  // Media stream ----------------------------------------------------
+  virtual scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
+      blink::WebLocalFrame* web_frame,
+      const media::AudioSourceParameters& params) {
+    return nullptr;
+  }
+
+  virtual viz::ContextProvider* SharedMainThreadContextProvider() {
+    return nullptr;
+  }
+
+  virtual bool RTCSmoothnessAlgorithmEnabled() { return true; }
+
   // WebRTC ----------------------------------------------------------
 
   // Creates a WebRTCPeerConnectionHandler for RTCPeerConnection.
@@ -594,11 +572,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual std::unique_ptr<WebRTCPeerConnectionHandler>
   CreateRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient*,
                                  scoped_refptr<base::SingleThreadTaskRunner>);
-
-  // Creates a WebMediaRecorderHandler to record MediaStreams.
-  // May return null if the functionality is not available or out of resources.
-  virtual std::unique_ptr<WebMediaRecorderHandler> CreateMediaRecorderHandler(
-      scoped_refptr<base::SingleThreadTaskRunner>);
 
   // May return null if WebRTC functionality is not available or out of
   // resources.
@@ -629,13 +602,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual std::unique_ptr<webrtc::AsyncResolverFactory>
   CreateWebRtcAsyncResolverFactory();
 
-  // Fills in the WebMediaStream to capture from the WebMediaPlayer identified
-  // by the second parameter.
-  virtual void CreateHTMLAudioElementCapturer(
-      WebMediaStream*,
-      WebMediaPlayer*,
-      scoped_refptr<base::SingleThreadTaskRunner>) {}
-
   // Returns the most optimistic view of the capabilities of the system for
   // sending or receiving media of the given kind ("audio" or "video").
   virtual std::unique_ptr<webrtc::RtpCapabilities> GetRtpSenderCapabilities(
@@ -647,6 +613,17 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual base::Optional<double> GetWebRtcMaxCaptureFrameRate() {
     return base::nullopt;
+  }
+
+  virtual scoped_refptr<media::AudioRendererSink> NewAudioRendererSink(
+      blink::WebAudioDeviceSourceType source_type,
+      blink::WebLocalFrame* web_frame,
+      const media::AudioSinkParameters& params) {
+    return nullptr;
+  }
+  virtual media::AudioLatency::LatencyType GetAudioSourceLatencyType(
+      blink::WebAudioDeviceSourceType source_type) {
+    return media::AudioLatency::LATENCY_PLAYBACK;
   }
 
   // WebWorker ----------------------------------------------------------
@@ -680,10 +657,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual const char* GetBrowserServiceName() const { return ""; }
 
-  // WebDatabase --------------------------------------------------------
-
-  virtual WebDatabaseObserver* DatabaseObserver() { return nullptr; }
-
   // Media Capabilities --------------------------------------------------
 
   virtual WebMediaCapabilitiesClient* MediaCapabilitiesClient() {
@@ -692,6 +665,12 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual WebTransmissionEncodingInfoHandler*
   TransmissionEncodingInfoHandler() {
+    return nullptr;
+  }
+
+  // GpuVideoAcceleratorFactories --------------------------------------
+
+  virtual media::GpuVideoAcceleratorFactories* GetGpuFactories() {
     return nullptr;
   }
 

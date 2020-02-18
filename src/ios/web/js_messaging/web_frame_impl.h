@@ -15,12 +15,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "crypto/symmetric_key.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "url/gurl.h"
 
 namespace web {
-
-class WebState;
 
 class WebFrameImpl : public WebFrame, public web::WebStateObserver {
  public:
@@ -115,11 +114,10 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
 
   // Handles message from JavaScript with result of executing the function
   // specified in CallJavaScriptFunction.
-  bool OnJavaScriptReply(web::WebState* web_state,
+  void OnJavaScriptReply(web::WebState* web_state,
                          const base::DictionaryValue& command,
                          const GURL& page_url,
                          bool interacting,
-                         bool is_main_frame,
                          WebFrame* sender_frame);
 
   // The JavaScript requests awating a reply.
@@ -140,6 +138,8 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
   GURL security_origin_;
   // The associated web state.
   web::WebState* web_state_ = nullptr;
+  // Subscription for JS message.
+  std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription_;
 
   base::WeakPtrFactory<WebFrameImpl> weak_ptr_factory_;
 

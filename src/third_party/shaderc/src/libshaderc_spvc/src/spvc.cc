@@ -38,9 +38,12 @@ struct shaderc_spvc_compile_options {
   bool validate = true;
   bool remove_unused_variables = false;
   bool flatten_ubo = false;
-  bool webgpu_to_vulkan = false;
+  bool force_es = false;
+  bool forced_es_setting = false;
   std::string entry_point;
   spv_target_env source_env = SPV_ENV_VULKAN_1_0;
+  spv_target_env target_env = SPV_ENV_VULKAN_1_0;
+  std::vector<uint32_t> msl_discrete_descriptor_sets;
   spirv_cross::CompilerGLSL::Options glsl;
   spirv_cross::CompilerHLSL::Options hlsl;
   spirv_cross::CompilerMSL::Options msl;
@@ -51,8 +54,6 @@ shaderc_spvc_compile_options_t shaderc_spvc_compile_options_initialize() {
       new (std::nothrow) shaderc_spvc_compile_options;
   if (options) {
     options->glsl.version = 0;
-    options->hlsl.point_size_compat = true;
-    options->hlsl.point_coord_compat = true;
   }
   return options;
 }
@@ -68,16 +69,14 @@ void shaderc_spvc_compile_options_release(
   delete options;
 }
 
-void shaderc_spvc_compile_options_set_source_env(
-    shaderc_spvc_compile_options_t options, shaderc_target_env env,
-    shaderc_env_version version) {
+spv_target_env get_spv_target_env(shaderc_target_env env,
+                                  shaderc_env_version version) {
   switch (env) {
     case shaderc_target_env_opengl:
     case shaderc_target_env_opengl_compat:
       switch (version) {
         case shaderc_env_version_opengl_4_5:
-          options->source_env = SPV_ENV_OPENGL_4_5;
-          break;
+          return SPV_ENV_OPENGL_4_5;
         default:
           break;
       }
@@ -85,20 +84,31 @@ void shaderc_spvc_compile_options_set_source_env(
     case shaderc_target_env_vulkan:
       switch (version) {
         case shaderc_env_version_vulkan_1_0:
-          options->source_env = SPV_ENV_VULKAN_1_0;
-          break;
+          return SPV_ENV_VULKAN_1_0;
         case shaderc_env_version_vulkan_1_1:
-          options->source_env = SPV_ENV_VULKAN_1_1;
-          break;
+          return SPV_ENV_VULKAN_1_1;
         default:
           break;
       }
       break;
     case shaderc_target_env_webgpu:
-      options->source_env = SPV_ENV_WEBGPU_0;
+      return SPV_ENV_WEBGPU_0;
     default:
       break;
   }
+  return SPV_ENV_VULKAN_1_0;
+}
+
+void shaderc_spvc_compile_options_set_source_env(
+    shaderc_spvc_compile_options_t options, shaderc_target_env env,
+    shaderc_env_version version) {
+  options->source_env = get_spv_target_env(env, version);
+}
+
+void shaderc_spvc_compile_options_set_target_env(
+    shaderc_spvc_compile_options_t options, shaderc_target_env env,
+    shaderc_env_version version) {
+  options->target_env = get_spv_target_env(env, version);
 }
 
 void shaderc_spvc_compile_options_set_entry_point(
@@ -126,14 +136,25 @@ void shaderc_spvc_compile_options_set_flatten_ubo(
   options->flatten_ubo = b;
 }
 
-void shaderc_spvc_compile_options_set_webgpu_to_vulkan(
-    shaderc_spvc_compile_options_t options, bool b) {
-  options->webgpu_to_vulkan = b;
-}
-
 void shaderc_spvc_compile_options_set_glsl_language_version(
     shaderc_spvc_compile_options_t options, uint32_t version) {
   options->glsl.version = version;
+}
+
+void shaderc_spvc_compile_options_set_flatten_multidimensional_arrays(
+    shaderc_spvc_compile_options_t options, bool b) {
+  options->glsl.flatten_multidimensional_arrays = b;
+}
+
+void shaderc_spvc_compile_options_set_es(shaderc_spvc_compile_options_t options,
+                                         bool b) {
+  options->forced_es_setting = b;
+  options->force_es = true;
+}
+
+void shaderc_spvc_compile_options_set_glsl_emit_push_constant_as_ubo(
+    shaderc_spvc_compile_options_t options, bool b) {
+  options->glsl.emit_push_constant_as_uniform_buffer = b;
 }
 
 void shaderc_spvc_compile_options_set_msl_language_version(
@@ -141,9 +162,65 @@ void shaderc_spvc_compile_options_set_msl_language_version(
   options->msl.msl_version = version;
 }
 
-void shaderc_spvc_compile_options_set_shader_model(
+void shaderc_spvc_compile_options_set_msl_swizzle_texture_samples(
+    shaderc_spvc_compile_options_t options, bool b) {
+  options->msl.swizzle_texture_samples = b;
+}
+
+void shaderc_spvc_compile_options_set_msl_platform(
+    shaderc_spvc_compile_options_t options,
+    shaderc_spvc_msl_platform platform) {
+  switch (platform) {
+    case shaderc_spvc_msl_platform_ios:
+      options->msl.platform = spirv_cross::CompilerMSL::Options::iOS;
+    break;
+    case shaderc_spvc_msl_platform_macos:
+      options->msl.platform = spirv_cross::CompilerMSL::Options::macOS;
+    break;
+  }
+}
+
+void shaderc_spvc_compile_options_set_msl_pad_fragment_output(
+    shaderc_spvc_compile_options_t options, bool b) {
+  options->msl.pad_fragment_output_components = b;
+}
+
+void shaderc_spvc_compile_options_set_msl_capture(
+    shaderc_spvc_compile_options_t options, bool b) {
+  options->msl.capture_output_to_buffer = b;
+}
+
+void shaderc_spvc_compile_options_set_msl_domain_lower_left(
+    shaderc_spvc_compile_options_t options, bool b) {
+  options->msl.tess_domain_origin_lower_left = b;
+}
+
+void shaderc_spvc_compile_options_set_msl_argument_buffers(
+    shaderc_spvc_compile_options_t options, bool b) {
+  options->msl.argument_buffers = b;
+}
+
+void shaderc_spvc_compile_options_set_msl_discrete_descriptor_sets(
+    shaderc_spvc_compile_options_t options, const uint32_t* descriptors,
+    size_t num_descriptors) {
+  options->msl_discrete_descriptor_sets.resize(num_descriptors);
+  std::copy_n(descriptors, num_descriptors,
+              options->msl_discrete_descriptor_sets.begin());
+}
+
+void shaderc_spvc_compile_options_set_hlsl_shader_model(
     shaderc_spvc_compile_options_t options, uint32_t model) {
   options->hlsl.shader_model = model;
+}
+
+void shaderc_spvc_compile_options_set_hlsl_point_size_compat(
+    shaderc_spvc_compile_options_t options, bool b) {
+  options->hlsl.point_size_compat = b;
+}
+
+void shaderc_spvc_compile_options_set_hlsl_point_coord_compat(
+    shaderc_spvc_compile_options_t options, bool b) {
+  options->hlsl.point_coord_compat = b;
 }
 
 void shaderc_spvc_compile_options_set_fixup_clipspace(
@@ -154,6 +231,11 @@ void shaderc_spvc_compile_options_set_fixup_clipspace(
 void shaderc_spvc_compile_options_set_flip_vert_y(
     shaderc_spvc_compile_options_t options, bool b) {
   options->glsl.vertex.flip_vert_y = b;
+}
+
+void shaderc_spvc_compile_options_set_validate(
+    shaderc_spvc_compile_options_t options, bool b) {
+  options->validate = b;
 }
 
 size_t shaderc_spvc_compile_options_set_for_fuzzing(
@@ -205,31 +287,46 @@ shaderc_spvc_compilation_result_t validate_and_compile(
         consume_spirv_tools_message, result, std::placeholders::_1,
         std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
     if (!tools.Validate(source, source_len, spvtools::ValidatorOptions())) {
+      result->messages.append("Validation of input source failed.");
+      result->messages.append("\n");
       result->status = shaderc_compilation_status_validation_error;
       return result;
     }
   }
 
   std::vector<uint32_t> intermediate_source;
-  if (options->webgpu_to_vulkan) {
-    if (options->source_env != SPV_ENV_WEBGPU_0) {
-      result->messages.append(
-          "WARNING: Converting from WebGPU to Vulkan, with "
-          "non-WebGPU source env set, this may cause "
-          "unexpected behaviour...\n");
-    }
-    spvtools::Optimizer opt(SPV_ENV_VULKAN_1_1);
+  if (options->source_env != options->target_env) {
+    spvtools::Optimizer opt(options->target_env);
     opt.SetMessageConsumer(std::bind(
         consume_spirv_tools_message, result, std::placeholders::_1,
         std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
-    opt.RegisterWebGPUToVulkanPasses();
+
+    if (options->source_env == SPV_ENV_WEBGPU_0 &&
+        options->target_env == SPV_ENV_VULKAN_1_1) {
+      opt.RegisterWebGPUToVulkanPasses();
+    } else if (options->source_env == SPV_ENV_VULKAN_1_1 &&
+               options->target_env == SPV_ENV_WEBGPU_0) {
+      opt.RegisterVulkanToWebGPUPasses();
+    } else {
+      result->messages.append(
+          "No defined transformation between source and "
+          "target execution environments.");
+      result->messages.append("\n");
+      result->status = shaderc_compilation_status_transformation_error;
+      return result;
+    }
+
     if (!opt.Run(source, source_len, &intermediate_source)) {
-      result->status = shaderc_compilation_status_tranformation_error;
+      result->messages.append(
+          "Transformations between source and target "
+          "execution environments failed.");
+      result->messages.append("\n");
+      result->status = shaderc_compilation_status_transformation_error;
       return result;
     }
 
     if (options->validate) {
-      spvtools::SpirvTools tools(SPV_ENV_VULKAN_1_1);
+      spvtools::SpirvTools tools(options->target_env);
       if (!tools.IsValid()) return nullptr;
       tools.SetMessageConsumer(std::bind(
           consume_spirv_tools_message, result, std::placeholders::_1,
@@ -237,6 +334,8 @@ shaderc_spvc_compilation_result_t validate_and_compile(
       if (!tools.Validate(intermediate_source.data(),
                           intermediate_source.size(),
                           spvtools::ValidatorOptions())) {
+        result->messages.append("Validation of transformed source failed.");
+        result->messages.append("\n");
         result->status = shaderc_compilation_status_validation_error;
         return result;
       }
@@ -298,6 +397,9 @@ shaderc_spvc_compilation_result_t shaderc_spvc_compile_into_glsl(
         options->glsl.es = compiler->get_common_options().es;
       }
     }
+
+    // Override detected setting, if any.
+    if (options->force_es) options->glsl.es = options->forced_es_setting;
 
     auto entry_points = compiler->get_entry_points_and_stages();
     spv::ExecutionModel model = spv::ExecutionModelMax;
@@ -402,6 +504,9 @@ shaderc_spvc_compilation_result_t shaderc_spvc_compile_into_msl(
         new (std::nothrow) spirv_cross::CompilerMSL(source, source_len));
     if (!compiler) return std::make_tuple(nullptr, nullptr);
     compiler->set_common_options(options->glsl);
+    compiler->set_msl_options(options->msl);
+    for (auto i : options->msl_discrete_descriptor_sets)
+      compiler->add_discrete_descriptor_set(i);
     return std::make_tuple(nullptr, compiler.release());
   };
   return validate_and_compile(builder, source, source_len, options);

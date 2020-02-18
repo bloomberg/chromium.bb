@@ -45,7 +45,7 @@ class TextureValidationTest : public ValidationTest {
     static constexpr uint32_t kDefaultMipLevels = 1;
     static constexpr uint32_t kDefaultSampleCount = 1;
 
-    static constexpr dawn::TextureFormat kDefaultTextureFormat = dawn::TextureFormat::R8G8B8A8Unorm;
+    static constexpr dawn::TextureFormat kDefaultTextureFormat = dawn::TextureFormat::RGBA8Unorm;
 };
 
 // Test the validation of sample count
@@ -234,4 +234,129 @@ TEST_F(TextureValidationTest, EncodeDestroySubmit) {
     // Submit should fail due to destroyed texture
     ASSERT_DEVICE_ERROR(queue.Submit(1, &commands));
 }
+
+// Test it is an error to create an OutputAttachment texture with a non-renderable format.
+TEST_F(TextureValidationTest, NonRenderableAndOutputAttachment) {
+    dawn::TextureDescriptor descriptor;
+    descriptor.size = {1, 1, 1};
+    descriptor.usage = dawn::TextureUsageBit::OutputAttachment;
+
+    // Succeeds because RGBA8Unorm is renderable
+    descriptor.format = dawn::TextureFormat::RGBA8Unorm;
+    device.CreateTexture(&descriptor);
+
+    // Fails because RG11B10Float is non-renderable
+    descriptor.format = dawn::TextureFormat::RG11B10Float;
+    ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
+}
+
+// TODO(jiawei.shao@intel.com): use compressed texture formats as extensions.
+// TODO(jiawei.shao@intel.com): add tests to verify we cannot create 1D or 3D textures with
+// compressed texture formats.
+class CompressedTextureFormatsValidationTests : public TextureValidationTest {
+  protected:
+    dawn::TextureDescriptor CreateDefaultTextureDescriptor() {
+        dawn::TextureDescriptor descriptor =
+            TextureValidationTest::CreateDefaultTextureDescriptor();
+        descriptor.usage = dawn::TextureUsageBit::CopySrc | dawn::TextureUsageBit::CopyDst |
+                           dawn::TextureUsageBit::Sampled;
+        return descriptor;
+    }
+
+    const std::array<dawn::TextureFormat, 14> kBCFormats = {
+        dawn::TextureFormat::BC1RGBAUnorm, dawn::TextureFormat::BC1RGBAUnormSrgb,
+        dawn::TextureFormat::BC2RGBAUnorm, dawn::TextureFormat::BC2RGBAUnormSrgb,
+        dawn::TextureFormat::BC3RGBAUnorm, dawn::TextureFormat::BC3RGBAUnormSrgb,
+        dawn::TextureFormat::BC4RUnorm, dawn::TextureFormat::BC4RSnorm,
+        dawn::TextureFormat::BC5RGUnorm, dawn::TextureFormat::BC5RGSnorm,
+        dawn::TextureFormat::BC6HRGBUfloat, dawn::TextureFormat::BC6HRGBSfloat,
+        dawn::TextureFormat::BC7RGBAUnorm, dawn::TextureFormat::BC7RGBAUnormSrgb};
+};
+
+// Test the validation of texture size when creating textures in compressed texture formats.
+TEST_F(CompressedTextureFormatsValidationTests, TextureSize) {
+    // Test that it is invalid to use a number that is not a multiple of 4 (the compressed block
+    // width and height of all BC formats) as the width or height of textures in BC formats.
+    for (dawn::TextureFormat format : kBCFormats) {
+        {
+            dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
+            descriptor.format = format;
+            ASSERT_TRUE(descriptor.size.width % 4 == 0 && descriptor.size.height % 4 == 0);
+            device.CreateTexture(&descriptor);
+        }
+
+        {
+            dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
+            descriptor.format = format;
+            descriptor.size.width = 31;
+            ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
+        }
+
+        {
+            dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
+            descriptor.format = format;
+            descriptor.size.height = 31;
+            ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
+        }
+
+        {
+            dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
+            descriptor.format = format;
+            descriptor.size.width = 12;
+            descriptor.size.height = 32;
+            device.CreateTexture(&descriptor);
+        }
+    }
+}
+
+// Test the validation of texture usages when creating textures in compressed texture formats.
+TEST_F(CompressedTextureFormatsValidationTests, TextureUsage) {
+    // Test that only CopySrc, CopyDst and Sampled are accepted as the texture usage of the
+    // textures in BC formats.
+    for (dawn::TextureFormat format : kBCFormats) {
+        {
+            dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
+            descriptor.format = format;
+            descriptor.usage = dawn::TextureUsageBit::OutputAttachment;
+            ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
+        }
+
+        {
+            dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
+            descriptor.format = format;
+            descriptor.usage = dawn::TextureUsageBit::Storage;
+            ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
+        }
+
+        {
+            dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
+            descriptor.format = format;
+            descriptor.usage = dawn::TextureUsageBit::Present;
+            ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
+        }
+    }
+}
+
+// Test the validation of sample count when creating textures in compressed texture formats.
+TEST_F(CompressedTextureFormatsValidationTests, SampleCount) {
+    // Test that it is invalid to specify SampleCount > 1 when we create a texture in BC formats.
+    for (dawn::TextureFormat format : kBCFormats) {
+        dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
+        descriptor.format = format;
+        descriptor.sampleCount = 4;
+        ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
+    }
+}
+
+// Test the validation of creating 2D array textures in compressed texture formats.
+TEST_F(CompressedTextureFormatsValidationTests, 2DArrayTexture) {
+    // Test that it is allowed to create a 2D array texture in BC formats.
+    for (dawn::TextureFormat format : kBCFormats) {
+        dawn::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
+        descriptor.format = format;
+        descriptor.arrayLayerCount = 6;
+        device.CreateTexture(&descriptor);
+    }
+}
+
 }  // namespace

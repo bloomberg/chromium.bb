@@ -79,8 +79,9 @@ std::unique_ptr<GlobalMemoryDump> DoGlobalDump() {
 
 // *SAN fake some sys calls we need meaning we never get dumps for the
 // processes.
+// Flakes on Android. crbug.com/970058
 #if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
-    defined(THREAD_SANITIZER)
+    defined(THREAD_SANITIZER) || defined(OS_ANDROID)
 #define MAYBE_PrivateFootprintComputation DISABLED_PrivateFootprintComputation
 #else
 #define MAYBE_PrivateFootprintComputation PrivateFootprintComputation

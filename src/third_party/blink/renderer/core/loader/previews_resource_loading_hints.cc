@@ -9,7 +9,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -34,23 +35,42 @@ String GetConsoleLogStringForBlockedLoad(const KURL& url) {
 PreviewsResourceLoadingHints* PreviewsResourceLoadingHints::Create(
     ExecutionContext& execution_context,
     int64_t ukm_source_id,
-    const std::vector<WTF::String>& subresource_patterns_to_block) {
+    const WebVector<WebString>& subresource_patterns_to_block) {
   return MakeGarbageCollected<PreviewsResourceLoadingHints>(
       &execution_context, ukm_source_id, subresource_patterns_to_block);
+}
+
+// static
+PreviewsResourceLoadingHints*
+PreviewsResourceLoadingHints::CreateFromLoadingHintsProvider(
+    ExecutionContext& execution_context,
+    std::unique_ptr<WebLoadingHintsProvider> loading_hints_provider) {
+  WebVector<WebString> subresource_patterns_to_block;
+  for (const auto& pattern :
+       loading_hints_provider->subresource_patterns_to_block) {
+    // |pattern| is guaranteed to be ascii.
+    subresource_patterns_to_block.emplace_back(pattern);
+  }
+
+  return MakeGarbageCollected<PreviewsResourceLoadingHints>(
+      &execution_context, loading_hints_provider->ukm_source_id,
+      subresource_patterns_to_block);
 }
 
 PreviewsResourceLoadingHints::PreviewsResourceLoadingHints(
     ExecutionContext* execution_context,
     int64_t ukm_source_id,
-    const std::vector<WTF::String>& subresource_patterns_to_block)
+    const WebVector<WebString>& subresource_patterns_to_block)
     : execution_context_(execution_context),
       ukm_source_id_(ukm_source_id),
       subresource_patterns_to_block_(subresource_patterns_to_block) {
   DCHECK_NE(ukm::kInvalidSourceId, ukm_source_id_);
 
-  subresource_patterns_to_block_usage_.assign(
-      subresource_patterns_to_block.size(), false);
-  blocked_resource_load_priority_counts_.fill(0);
+  subresource_patterns_to_block_usage_.Fill(
+      false,
+      static_cast<WTF::wtf_size_t>(subresource_patterns_to_block.size()));
+  blocked_resource_load_priority_counts_.Fill(
+      0, static_cast<int>(ResourceLoadPriority::kHighest) + 1);
 
   // Populate which specific resource types are eligible for blocking.
   // Certain resource types are blocked by default since their blocking
@@ -64,7 +84,7 @@ PreviewsResourceLoadingHints::PreviewsResourceLoadingHints(
     // should be either "true" or "false".
     block_resource_type_[i] = base::GetFieldTrialParamByFeatureAsBool(
         features::kPreviewsResourceLoadingHintsSpecificResourceTypes,
-        String::Format("block_resource_type_%d", i).Ascii().data(),
+        String::Format("block_resource_type_%d", i).Ascii(),
         block_resource_type_[i]);
   }
 

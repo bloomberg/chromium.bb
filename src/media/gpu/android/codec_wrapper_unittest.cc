@@ -34,7 +34,7 @@ class CodecWrapperTest : public testing::Test {
   CodecWrapperTest() : other_thread_("Other thread") {
     auto codec = std::make_unique<NiceMock<MockMediaCodecBridge>>();
     codec_ = codec.get();
-    surface_bundle_ = base::MakeRefCounted<AVDASurfaceBundle>();
+    surface_bundle_ = base::MakeRefCounted<CodecSurfaceBundle>();
     wrapper_ = std::make_unique<CodecWrapper>(
         CodecSurfacePair(std::move(codec), surface_bundle_),
         output_buffer_release_cb_.Get(),
@@ -70,7 +70,7 @@ class CodecWrapperTest : public testing::Test {
 
   NiceMock<MockMediaCodecBridge>* codec_;
   std::unique_ptr<CodecWrapper> wrapper_;
-  scoped_refptr<AVDASurfaceBundle> surface_bundle_;
+  scoped_refptr<CodecSurfaceBundle> surface_bundle_;
   NiceMock<base::MockCallback<CodecWrapper::OutputReleasedCB>>
       output_buffer_release_cb_;
   scoped_refptr<DecoderBuffer> fake_decoder_buffer_;
@@ -108,7 +108,7 @@ TEST_F(CodecWrapperTest, TakingTheCodecInvalidatesCodecOutputBuffers) {
 
 TEST_F(CodecWrapperTest, SetSurfaceInvalidatesCodecOutputBuffers) {
   auto codec_buffer = DequeueCodecOutputBuffer();
-  wrapper_->SetSurface(base::MakeRefCounted<AVDASurfaceBundle>());
+  wrapper_->SetSurface(base::MakeRefCounted<CodecSurfaceBundle>());
   ASSERT_FALSE(codec_buffer->ReleaseToSurface());
 }
 
@@ -295,7 +295,7 @@ TEST_F(CodecWrapperTest, SurfaceBundleIsInitializedByConstructor) {
 }
 
 TEST_F(CodecWrapperTest, SurfaceBundleIsUpdatedBySetSurface) {
-  auto new_bundle = base::MakeRefCounted<AVDASurfaceBundle>();
+  auto new_bundle = base::MakeRefCounted<CodecSurfaceBundle>();
   EXPECT_CALL(*codec_, SetSurface(_)).WillOnce(Return(true));
   wrapper_->SetSurface(new_bundle);
   ASSERT_EQ(new_bundle.get(), wrapper_->SurfaceBundle());

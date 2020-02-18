@@ -92,9 +92,18 @@ ClipboardPromise::ClipboardPromise(ScriptState* script_state)
 
 ClipboardPromise::~ClipboardPromise() = default;
 
-void ClipboardPromise::WriteNextRepresentation() {
+void ClipboardPromise::CompleteWriteRepresentation() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   clipboard_writer_.reset();  // The previous write is done.
+  ++clipboard_representation_index_;
+  StartWriteRepresentation();
+}
+
+void ClipboardPromise::StartWriteRepresentation() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Commit to system clipboard when all representations are written.
+  // This is in the start flow so that a |clipboard_item_data_| with 0 items
+  // will still commit gracefully.
   if (clipboard_representation_index_ == clipboard_item_data_.size()) {
     SystemClipboard::GetInstance().CommitWrite();
     script_promise_resolver_->Resolve();
@@ -104,7 +113,6 @@ void ClipboardPromise::WriteNextRepresentation() {
       clipboard_item_data_[clipboard_representation_index_].first;
   const Member<Blob>& blob =
       clipboard_item_data_[clipboard_representation_index_].second;
-  clipboard_representation_index_++;
 
   DCHECK(!clipboard_writer_);
   clipboard_writer_ = ClipboardWriter::Create(type, this);
@@ -236,7 +244,7 @@ void ClipboardPromise::HandleWriteWithPermission(PermissionStatus status) {
   }
 
   DCHECK(!clipboard_representation_index_);
-  WriteNextRepresentation();
+  StartWriteRepresentation();
 }
 
 void ClipboardPromise::HandleWriteTextWithPermission(PermissionStatus status) {

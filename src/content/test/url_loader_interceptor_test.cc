@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest,
             params->client->OnComplete(status);
             return true;
           }),
-      run_loop.QuitClosure());
+      /*completion_status_callback=*/{}, run_loop.QuitClosure());
   run_loop.Run();
   EXPECT_FALSE(NavigateToURL(shell(), GetPageURL()));
   EXPECT_TRUE(seen);
@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest,
               params->client->OnComplete(status);
               return true;
             }),
-        run_loop.QuitClosure());
+        /*completion_status_callback=*/{}, run_loop.QuitClosure());
     run_loop.Run();
 
     ASSERT_FALSE(NavigateToURL(shell(), url));
@@ -163,7 +163,7 @@ class TestBrowserClientWithHeaderClient
       bool is_navigation,
       bool is_download,
       const url::Origin& request_initiator,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks) override {
     if (header_client)

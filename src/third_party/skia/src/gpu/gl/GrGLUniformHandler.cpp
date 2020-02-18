@@ -61,6 +61,7 @@ GrGLSLUniformHandler::UniformHandle GrGLUniformHandler::internalAddUniformArray(
 
 GrGLSLUniformHandler::SamplerHandle GrGLUniformHandler::addSampler(const GrTexture* texture,
                                                                    const GrSamplerState&,
+                                                                   const GrSwizzle& swizzle,
                                                                    const char* name,
                                                                    const GrShaderCaps* shaderCaps) {
     SkASSERT(name && strlen(name));
@@ -69,7 +70,6 @@ GrGLSLUniformHandler::SamplerHandle GrGLUniformHandler::addSampler(const GrTextu
     char prefix = 'u';
     fProgramBuilder->nameVariable(&mangleName, prefix, name, true);
 
-    GrSwizzle swizzle = shaderCaps->configTextureSwizzle(texture->config());
     GrTextureType type = texture->texturePriv().textureType();
 
     UniformInfo& sampler = fSamplers.push_back();
@@ -78,8 +78,10 @@ GrGLSLUniformHandler::SamplerHandle GrGLUniformHandler::addSampler(const GrTextu
     sampler.fVariable.setName(mangleName);
     sampler.fLocation = -1;
     sampler.fVisibility = kFragment_GrShaderFlag;
-    fSamplerSwizzles.push_back(swizzle);
-    SkASSERT(fSamplers.count() == fSamplerSwizzles.count());
+    if (shaderCaps->textureSwizzleAppliedInShader()) {
+        fSamplerSwizzles.push_back(swizzle);
+        SkASSERT(fSamplers.count() == fSamplerSwizzles.count());
+    }
     return GrGLSLUniformHandler::SamplerHandle(fSamplers.count() - 1);
 }
 
@@ -112,8 +114,8 @@ void GrGLUniformHandler::bindUniformLocations(GrGLuint programID, const GrGLCaps
     }
 }
 
-void GrGLUniformHandler::getUniformLocations(GrGLuint programID, const GrGLCaps& caps) {
-    if (!caps.bindUniformLocationSupport()) {
+void GrGLUniformHandler::getUniformLocations(GrGLuint programID, const GrGLCaps& caps, bool force) {
+    if (!caps.bindUniformLocationSupport() || force) {
         int count = fUniforms.count();
         for (int i = 0; i < count; ++i) {
             GrGLint location;

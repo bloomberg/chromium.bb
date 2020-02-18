@@ -27,6 +27,7 @@ import "rpc.proto";
 // Error codes do not need to be sequential per-call.
 // Prefixes by Request/Reply type should be used to help
 // callers know if specialized errors apply.
+// TODO(b/135984863): Rename this.
 enum CryptohomeErrorCode {
   // 0 is the default value of BaseReply::error. It
   // should never be used.
@@ -64,6 +65,10 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_MOUNT_PREVIOUS_MIGRATION_INCOMPLETE = 30;
   CRYPTOHOME_ERROR_MIGRATE_KEY_FAILED = 31;
   CRYPTOHOME_ERROR_REMOVE_FAILED = 32;
+  CRYPTOHOME_ERROR_INVALID_ARGUMENT = 33;
+  CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_GET_FAILED = 34;
+  CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_SET_FAILED = 35;
+  CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_FINALIZE_FAILED = 36;
 }
 
 // This is used by MountRequest to store details about the mount to create
@@ -75,10 +80,13 @@ message CreateRequest {
   // are creating. Currently, only one key is supported.
   // TODO(b/133212955): Change the name of this to "key".
   repeated cryptohome.Key keys = 1;
+
   // Explicitly use the |key| from the AuthorizationRequest.
-  // Setting this value means that the KeyData is filled as it
-  // would be with a Key above or in an AddKeyRequest.
+  // Setting this value means that the |keys| above would be populated with
+  // the |key| specified in MountRequest, so that we can spare the trouble
+  // of specifying |keys| above.
   bool copy_authorization_key = 2;
+
   // If set to true, always use eCryptfs as the encryption method.
   bool force_ecryptfs = 3;
 }
@@ -86,6 +94,8 @@ message CreateRequest {
 ///////////////////////////////////////////////////////////////////////////////
 // Actual request/reply goes below
 ///////////////////////////////////////////////////////////////////////////////
+
+// ------------------------- UserDataAuth Interface -------------------------
 
 // Input parameters to IsMounted()
 message IsMountedRequest {
@@ -101,6 +111,8 @@ message IsMountedReply {
   bool is_mounted = 1;
   // If the mount is ephemeral, that is, if the contents get cleared once
   // the user logs out.
+  // Note that if there's no username specified in the IsMountedRequest,
+  // then this field is set to true if any mount is ephemeral.
   bool is_ephemeral_mount = 2;
 }
 
@@ -316,63 +328,388 @@ message MigrateKeyReply {
 // TODO(b/126307305): For the messages, below, we'll need to add the documentations
 // for them.
 
+// Input parameters to StartMigrateToDircrypto().
 message StartMigrateToDircryptoRequest {
+  // The owner of the cryptohome that we are going to migrate.
   cryptohome.AccountIdentifier account_id = 1;
+
   // If true, only a few paths (specified in cryptohomed) that are necessary for
   // a working profile will be migrated. Most user data will be wiped.
   bool minimal_migration = 2;
 }
 
+// Output parameters for StartMigrateToDircrypto().
 message StartMigrateToDircryptoReply {
+  // Indicates an error if not empty.
   CryptohomeErrorCode error = 1;
 }
 
+// Status code for the message DircryptoMigrationProgress below.
+enum DircryptoMigrationStatus {
+  // 0 means a successful completion.
+  DIRCRYPTO_MIGRATION_SUCCESS = 0;
+  // TODO(kinaba,dspaid): Add error codes as needed here.
+  DIRCRYPTO_MIGRATION_FAILED = 1;
+  // TODO(kinaba,dspaid): Add state codes as needed.
+  DIRCRYPTO_MIGRATION_INITIALIZING = 2;
+  DIRCRYPTO_MIGRATION_IN_PROGRESS = 3;
+}
+
+// The data that comes with DircryptoMigrationProgress signal.
+message DircryptoMigrationProgress {
+  // See cryptohome::dircrypto_data_migrator::MigrationHelper::ProgressCallback
+  // for more information.
+
+  // The status of the migration
+  DircryptoMigrationStatus status = 1;
+
+  // The amount of bytes that we've migrated over.
+  uint64 current_bytes = 2;
+
+  // The total amount of bytes in this migration operation.
+  uint64 total_bytes = 3;
+}
+
+// Input parameters to NeedsDircryptoMigration().
 message NeedsDircryptoMigrationRequest {
+  // The account for which we want to check if Dircrypto migration is needed.
   cryptohome.AccountIdentifier account_id = 1;
 }
 
+// Output parameters for NeedsDircryptoMigration().
 message NeedsDircryptoMigrationReply {
-  bool needs_dircrypto_migration = 1;
+  // Indicates an error if not empty.
+  CryptohomeErrorCode error = 1;
+
+  // Whether Dircrypto migration is needed.
+  // Note that this is invalid and should be disregarded if |error| is not
+  // empty.
+  bool needs_dircrypto_migration = 2;
 }
 
+// Input parameters to GetSupportedKeyPolicies().
 message GetSupportedKeyPoliciesRequest {
 }
 
-// Response that informs the caller which KeyPolicy features are supported.
+// Output parameters for GetSupportedKeyPolicies().
+// This informs the caller which KeyPolicy features are supported.
 message GetSupportedKeyPoliciesReply {
   // Whether low entropy credentials is supported by the policies
   bool low_entropy_credentials_supported = 1;
 }
 
-message GetDiskFeaturesRequest {
-}
-
-message GetDiskFeaturesReply {
-  bool quota_supported = 1;
-}
-
+// Input parameters to GetAccountDiskUsage().
 message GetAccountDiskUsageRequest {
+  // The owner of the home directory that we are going to compute the
+  // size for.
   cryptohome.AccountIdentifier identifier = 1;
 }
 
+// Output parameters for GetAccountDiskUsage().
 message GetAccountDiskUsageReply {
+  // Indicates an error if not empty.
+  // Note that for this API call, it is not an error to supply a non-existent
+  // user in the |GetAccountDiskUsageRequest.identifier| parameter.
   CryptohomeErrorCode error = 1;
-  // The size of cryptohome in bytes.
+
+  // The size of cryptohome in bytes. If a non-existent user is given in the
+  // request, size will be 0.
+  // Negative values are reserved, see HomeDir::ComputeSize() for more
+  // information.
   int64 size = 2;
 }
 
-message GetCurrentSpaceForUidRequest {
+// ------------------------- ArcQuota Interface -------------------------
+
+// Input parameters to GetArcDiskFeatures().
+message GetArcDiskFeaturesRequest {}
+
+// Output parameters for GetArcDiskFeatures().
+message GetArcDiskFeaturesReply {
+  // Set to true if Quota feature is supported for ARC Disk/Storage.
+  bool quota_supported = 1;
+}
+
+// Input parameters to GetCurrentSpaceForArcUid().
+message GetCurrentSpaceForArcUidRequest {
+  // The Android UID for whom we are going to query the disk usage.
+  // Note that Android UID is a shifted UID.
   uint32 uid = 1;
 }
 
-message GetCurrentSpaceForUidReply {
+// Output parameters for GetCurrentSpaceForArcUid().
+message GetCurrentSpaceForArcUidReply {
+  // The current disk space usage for the given Android UID.
+  // Will be a negative number if the request fails. See
+  // cryptohome/arc_disk_quota.h for more details.
   int64 cur_space = 1;
 }
 
-message GetCurrentSpaceForGidRequest {
+// Input parameters to GetCurrentSpaceForArcGid().
+message GetCurrentSpaceForArcGidRequest {
+  // The Android GID for whom we are going to query the disk usage.
+  // Note that Android GID is a shifted GID.
   uint32 gid = 1;
 }
 
-message GetCurrentSpaceForGidReply {
+// Output parameters for GetCurrentSpaceForArcGid().
+message GetCurrentSpaceForArcGidReply {
+  // The current disk space usage for the given Android GID.
+  // Will be a negative number if the request fails. See
+  // cryptohome/arc_disk_quota.h for more details.
   int64 cur_space = 1;
+}
+
+// ------------------------- PKCS#11 Interface -------------------------
+
+// Represents the information about a token in PKCS#11, used by
+// Pkcs11GetTpmTokeInfo()
+message TpmTokenInfo {
+  // The label of the token.
+  string label = 1;
+
+  // The pin that is used to access the token.
+  // Note that in most cases this is a default well known value.
+  string user_pin = 2;
+
+  // The slot number of the token.
+  int32 slot = 3;
+}
+
+// Input parameters to Pkcs11IsTpmTokenReady()
+message Pkcs11IsTpmTokenReadyRequest {
+  // Nothing at the moment.
+}
+
+// Output parameters for Pkcs11IsTpmTokenReady()
+message Pkcs11IsTpmTokenReadyReply {
+  // True if the TPM-backed token store for all mount is ready for access.
+  // That is, every TPM-backed token store associated with a mount is in an
+  // initialized state.
+  bool ready = 1;
+}
+
+// Input parameters to Pkcs11GetTpmTokenInfo()
+message Pkcs11GetTpmTokeInfoRequest {
+  // If username is empty or not set, then the information regarding system TPM
+  // token is returned. Otherwise, the user TPM token is returned.
+  string username = 1;
+}
+
+// Output parameters for Pkcs11GetTpmTokenInfo()
+message Pkcs11GetTpmTokeInfoReply {
+  // The TPM Token information, generally it's the stuffs required to access
+  // the TPM token.
+  TpmTokenInfo token_info = 1;
+}
+
+// Input parameters to Pkcs11Terminate()
+message Pkcs11TerminateRequest {
+  // This call will remove all PKCS#11 token store that is associated with a
+  // mount.
+
+  // Username is currently unused.
+  string username = 1;
+}
+
+// Output parameters for Pkcs11Terminate()
+message Pkcs11TerminateReply {
+  // Nothing at the moment.
+}
+
+// ----------------------- Install Attributes Interface -----------------------
+
+// The possible states of Install Attributes module, this is used by
+// InstallAttributesGetStatus().
+enum InstallAttributesState {
+  // See InstallAttributes::Status in install_attributes.h for definition
+  // of these states.
+  UNKNOWN = 0;
+  TPM_NOT_OWNED = 1;
+  FIRST_INSTALL = 2;
+  VALID = 3;
+  INVALID = 4;
+}
+
+// Input parameters to InstallAttributesGet()
+message InstallAttributesGetRequest {
+  // Name of the install attributes to retrieve.
+  // There's no explicit requirement about the name, so generally it can be
+  // any valid string.
+  string name = 1;
+}
+
+// Output parameters for InstallAttributesGet()
+message InstallAttributesGetReply {
+  // Will be set if an error occurred.
+  CryptohomeErrorCode error = 1;
+
+  // The value associated with the install attributes.
+  bytes value = 2;
+}
+
+// Input parameters to InstallAttributesSet()
+message InstallAttributesSetRequest {
+  // Name of the install attributes to set.
+  // There's no explicit requirement about the name, so generally it can be
+  // any valid string.
+  string name = 1;
+
+  // Value to set for the install attributes.
+  bytes value = 2;
+}
+
+// Output parameters for InstallAttributesSet()
+message InstallAttributesSetReply {
+  // Will be set if an error occurred.
+  CryptohomeErrorCode error = 1;
+}
+
+// Input parameters to InstallAttributesFinalize()
+message InstallAttributesFinalizeRequest {
+  // There's no parameters to InstallAttributesFinalize() right now.
+}
+
+// Output parameters for InstallAttributesFinalize()
+message InstallAttributesFinalizeReply {
+  // If the install attributes are not finalized successfully, then this
+  // error code would be set. Otherwise, the install attribute is correctly
+  // finalized.
+  CryptohomeErrorCode error = 1;
+}
+
+// Input parameters to InstallAttributesGetStatus()
+message InstallAttributesGetStatusRequest {
+}
+
+// Output parameters for InstallAttributesGetStatus()
+message InstallAttributesGetStatusReply {
+  // If there's a problem retrieving the status, this will be set.
+  CryptohomeErrorCode error = 1;
+
+  // How many install attributes are there?
+  int32 count = 2;
+
+  // Returns true if the attribute storage is securely stored. It does not
+  // indicate if the store has been finalized, just if the system TPM/Lockbox
+  // is being used.
+  bool is_secure = 3;
+
+  // The state the install attributes are in.
+  InstallAttributesState state = 4;
+}
+
+// ----------------- Firmware Management Parameters Interface -----------------
+
+// This represents the content of Firmware Management Parameters
+message FirmwareManagementParameters {
+  // The Developer Flags, this is part of the FWMP.
+  uint32 flags = 1;
+
+  // Developer Key Hash, this is part of the FWMP.
+  // For current version of the FWMP (V1.0), this is the size of SHA256.
+  bytes developer_key_hash = 2;
+}
+
+// Input parameters to GetFirmwareManagementParameters()
+message GetFirmwareManagementParametersRequest {
+}
+
+// Output parameters for GetFirmwareManagementParameters()
+message GetFirmwareManagementParametersReply {
+  // If there's a problem retrieving the FWMP, then this will be set.
+  CryptohomeErrorCode error = 1;
+
+  // The firmware management parameters that is retrieved.
+  FirmwareManagementParameters fwmp = 2;
+}
+
+// Input parameters to RemoveFirmwareManagementParameters()
+message RemoveFirmwareManagementParametersRequest {
+  // Note that calling this function will destroy the NVRAM space that
+  // stores the FWMP (if defined).
+}
+
+// Output parameters for RemoveFirmwareManagementParameters()
+message RemoveFirmwareManagementParametersReply {
+  // If there's a problem removing the FWMP, then this will be set.
+  CryptohomeErrorCode error = 1;
+}
+
+// Input parameters to SetFirmwareManagementParameters()
+message SetFirmwareManagementParametersRequest {
+  // The firmware management parameters to set.
+  FirmwareManagementParameters fwmp = 1;
+}
+
+// Output parameters for SetFirmwareManagementParameters()
+message SetFirmwareManagementParametersReply {
+  // If there's a problem setting the FWMP, then this will be set.
+  CryptohomeErrorCode error = 1;
+}
+
+// Input parameters to GetSystemSalt()
+message GetSystemSaltRequest {
+  // No parameter is needed to retrieve the system salt.
+}
+
+// Output parameters for GetSystemSalt()
+message GetSystemSaltReply {
+  // The system salt.
+  // Note that the caller should not expect the system salt to be a particular
+  // size. The length is defined by the CRYPTOHOME_DEFAULT_SALT_LENGTH
+  // constant.
+  bytes salt = 1;
+}
+
+// Input parameters to UpdateCurrentUserActivityTimestamp()
+message UpdateCurrentUserActivityTimestampRequest {
+  // This is the time, expressed in number of seconds since the last
+  // user activity.
+  // For instance, if the unix timestamp now is x, if this value is 5,
+  // then the last user activity happened at x-5 unix timestamp.
+  int32 time_shift_sec = 1;
+}
+
+// Output parameters for UpdateCurrentUserActivityTimestamp()
+message UpdateCurrentUserActivityTimestampReply {
+  // Always successful.
+}
+
+// Input parameters to GetSanitizedUsername()
+message GetSanitizedUsernameRequest {
+  // The username to sanitize.
+  string username = 1;
+}
+
+// Output parameters for GetSanitizedUsername()
+message GetSanitizedUsernameReply {
+  // The sanitized username, this is basically a hashed representation
+  // of the username used in the paths of user's home directory.
+  string sanitized_username = 1;
+}
+
+// Input parameters to GetLoginStatus()
+message GetLoginStatusRequest {}
+
+// Output parameters for GetLoginStatus()
+message GetLoginStatusReply {
+  // This will be set if there's a problem getting login status.
+  CryptohomeErrorCode error = 1;
+
+  // This is set to false if device policy is loaded.
+  bool owner_user_exists = 2;
+
+  // Set to true if the bootlockbox for this user has been finalized.
+  bool boot_lockbox_finalized = 3;
+}
+
+// Input parameters to GetStatusString()
+message GetStatusStringRequest {}
+
+// Output parameters for GetStatusString()
+message GetStatusStringReply {
+  // Contains a JSON string that includes some tpm status, mount status and
+  // install attributes status information.
+  string status = 1;
 }

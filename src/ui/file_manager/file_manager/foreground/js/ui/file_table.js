@@ -405,8 +405,8 @@ class FileTable extends cr.ui.Table {
     /** @private {?function(!Event)} */
     this.onThumbnailLoadedBound_ = null;
 
-    /** @private {?A11yAnnounce} */
-    this.a11y_ = null;
+    /** @public {?A11yAnnounce} */
+    this.a11y = null;
 
     throw new Error('Designed to decorate elements');
   }
@@ -431,7 +431,13 @@ class FileTable extends cr.ui.Table {
     self.metadataModel_ = metadataModel;
     self.volumeManager_ = volumeManager;
     self.historyLoader_ = historyLoader;
-    self.a11y_ = a11y;
+    self.a11y = a11y;
+
+    // Force the list's ending spacer to be tall enough to allow overscroll.
+    let endSpacer = self.querySelector('.spacer:last-child');
+    if (endSpacer) {
+      endSpacer.classList.add('signals-overscroll');
+    }
 
     /** @private {ListThumbnailLoader} */
     self.listThumbnailLoader_ = null;
@@ -588,7 +594,7 @@ class FileTable extends cr.ui.Table {
 
     // Delegate to parent to sort.
     super.sort(index);
-    this.a11y_.speakA11yMessage(msg);
+    this.a11y.speakA11yMessage(msg);
   }
 
   /**
@@ -861,6 +867,25 @@ class FileTable extends cr.ui.Table {
   }
 
   /**
+   * @param {number} index Index of the list item.
+   * @return {string}
+   */
+  getItemLabel(index) {
+    if (index === -1) {
+      return '';
+    }
+
+    /** @type {Entry|FilesAppEntry} */
+    const entry = this.dataModel.item(index);
+    if (!entry) {
+      return '';
+    }
+
+    const locationInfo = this.volumeManager_.getLocationInfo(entry);
+    return util.getEntryLabel(locationInfo, entry);
+  }
+
+  /**
    * Render the Size column of the detail table.
    *
    * @param {Entry} entry The Entry object to render.
@@ -1024,13 +1049,6 @@ class FileTable extends cr.ui.Table {
    * @private
    */
   updateDate_(div, entry) {
-    // For now, Team Drive roots have the incorrect modified date value. Hide it
-    // until we get the proper one (see https://crbug.com/861622).
-    if (util.isTeamDriveRoot(entry)) {
-      div.textContent = '--';
-      return;
-    }
-
     const item = this.metadataModel_.getCache(
         [entry], ['modificationTime', 'modificationByMeTime'])[0];
     const modTime = this.useModificationByMeTime_ ?

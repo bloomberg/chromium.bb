@@ -11,16 +11,15 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -137,9 +136,10 @@ void MediaStreamVideoTrack::FrameDeliverer::AddCallback(
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&FrameDeliverer::AddCallbackOnIO,
-                          WrapRefCounted(this), CrossThreadUnretained(id),
-                          WTF::Passed(CrossThreadBind(std::move(callback)))));
+      CrossThreadBindOnce(
+          &FrameDeliverer::AddCallbackOnIO, WrapRefCounted(this),
+          WTF::CrossThreadUnretained(id),
+          WTF::Passed(CrossThreadBindRepeating(std::move(callback)))));
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::AddCallbackOnIO(
@@ -154,7 +154,7 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallback(VideoSinkId id) {
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,
       CrossThreadBindOnce(&FrameDeliverer::RemoveCallbackOnIO,
-                          WrapRefCounted(this), CrossThreadUnretained(id),
+                          WrapRefCounted(this), WTF::CrossThreadUnretained(id),
                           Thread::Current()->GetTaskRunner()));
 }
 
@@ -309,13 +309,12 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       adapter_settings_(std::make_unique<VideoTrackAdapterSettings>(
           VideoTrackAdapterSettings())),
       is_screencast_(false),
-      source_(source->GetWeakPtr()),
-      weak_factory_(this) {
+      source_(source->GetWeakPtr()) {
   frame_deliverer_ =
       base::MakeRefCounted<MediaStreamVideoTrack::FrameDeliverer>(
           source->io_task_runner(), weak_factory_.GetWeakPtr(), enabled);
   source->AddTrack(this, VideoTrackAdapterSettings(),
-                   ConvertToBaseCallback(CrossThreadBind(
+                   ConvertToBaseCallback(CrossThreadBindRepeating(
                        &MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
                        frame_deliverer_)),
                    media::BindToCurrentLoop(WTF::BindRepeating(
@@ -341,13 +340,12 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       noise_reduction_(noise_reduction),
       is_screencast_(is_screen_cast),
       min_frame_rate_(min_frame_rate),
-      source_(source->GetWeakPtr()),
-      weak_factory_(this) {
+      source_(source->GetWeakPtr()) {
   frame_deliverer_ =
       base::MakeRefCounted<MediaStreamVideoTrack::FrameDeliverer>(
           source->io_task_runner(), weak_factory_.GetWeakPtr(), enabled);
   source->AddTrack(this, adapter_settings,
-                   ConvertToBaseCallback(CrossThreadBind(
+                   ConvertToBaseCallback(CrossThreadBindRepeating(
                        &MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
                        frame_deliverer_)),
                    media::BindToCurrentLoop(WTF::BindRepeating(
@@ -370,7 +368,7 @@ void MediaStreamVideoTrack::AddSink(WebMediaStreamSink* sink,
                                     const VideoCaptureDeliverFrameCB& callback,
                                     bool is_sink_secure) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
-  DCHECK(!base::ContainsValue(sinks_, sink));
+  DCHECK(!base::Contains(sinks_, sink));
   sinks_.push_back(sink);
   frame_deliverer_->AddCallback(sink, callback);
   secure_tracker_.Add(sink, is_sink_secure);

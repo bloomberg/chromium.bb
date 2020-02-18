@@ -13,6 +13,7 @@
 
 #if SK_SUPPORT_GPU
 
+class GrBackendFormat;
 class SkGpuDevice;
 
 class SkSurface_Gpu : public SkSurface_Base {
@@ -36,19 +37,26 @@ public:
                                      RescaleGamma rescaleGamma, SkFilterQuality rescaleQuality,
                                      ReadPixelsCallback callback,
                                      ReadPixelsContext context) override;
+    void onAsyncRescaleAndReadPixelsYUV420(SkYUVColorSpace yuvColorSpace,
+                                           sk_sp<SkColorSpace> dstColorSpace,
+                                           const SkIRect& srcRect, int dstW, int dstH,
+                                           RescaleGamma rescaleGamma,
+                                           SkFilterQuality rescaleQuality,
+                                           ReadPixelsCallbackYUV420 callback,
+                                           ReadPixelsContext context) override;
+
     void onCopyOnWrite(ContentChangeMode) override;
     void onDiscard() override;
     GrSemaphoresSubmitted onFlush(BackendSurfaceAccess access, const GrFlushInfo& info) override;
     bool onWait(int numSemaphores, const GrBackendSemaphore* waitSemaphores) override;
     bool onCharacterize(SkSurfaceCharacterization*) const override;
+    bool onIsCompatible(const SkSurfaceCharacterization&) const override;
     void onDraw(SkCanvas* canvas, SkScalar x, SkScalar y, const SkPaint* paint) override;
-    bool isCompatible(const SkSurfaceCharacterization&) const;
     bool onDraw(const SkDeferredDisplayList*) override;
 
     SkGpuDevice* getDevice() { return fDevice.get(); }
 
-    static bool Valid(const SkImageInfo&);
-    static bool Valid(const GrCaps*, GrPixelConfig, SkColorSpace*);
+    static bool Valid(const GrCaps*, const GrBackendFormat&);
 
 private:
     sk_sp<SkGpuDevice> fDevice;

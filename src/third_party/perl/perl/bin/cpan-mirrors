@@ -1,0 +1,170 @@
+#!perl
+
+use strict;
+use warnings;
+
+use CPAN::HandleConfig;
+use CPAN;
+use CPAN::Mirrors;
+use File::Spec;
+
+my $file = 'MIRRORED.BY';
+
+my $mirrored_by_file = File::Spec->catfile(
+	CPAN::HandleConfig::cpan_home(),
+	$file
+	);
+
+unless( -e $mirrored_by_file ) {
+	eval {
+		CPAN::FTP->localize(
+			$file,
+			$mirrored_by_file,
+			3,1) } or die "Could not fetch a $file: $@\n";
+	}
+
+my $mirrors = CPAN::Mirrors->new( $mirrored_by_file );
+
+my $seen = {};
+my $n = 5;
+
+my $best_continent = $mirrors->find_best_continents( n => $n, seen => $seen, verbose => 1 );
+print "Best continent is $best_continent\n";
+
+my @mirrors = $mirrors->get_mirrors_by_continents( $best_continent );
+
+my $callback = sub {
+	my( $m ) = @_;
+	printf "%s = %s ms\n", $m->hostname, 1000 * $m->rtt
+	};
+my @sorted_mirrors = $mirrors->get_mirrors_timings( \@mirrors, $seen, $callback );
+
+print "Best mirrors are ",
+	join "\n\t", map( $_->hostname, @sorted_mirrors[0..$n-1] ),
+	"\n";
+
+print "Best urls are\n\t",
+	join( "\n\t", map( $_->http, @sorted_mirrors[0..$n-1] ) ),
+	"\n";
+
+=encoding utf8
+
+=head1 NAME
+
+cpan-mirrors - Find the fatest CPAN mirrors nearby
+
+=head1 SYNOPSIS
+
+	% cpan-mirrors
+
+	Testing Africa
+		is.co.za -> 733.72 ms
+		wa.co.za -> 601.56 ms
+		ucu.ac.ug -> 407.99 ms
+		mirror.ac.za -> 614.05 ms
+		zol.co.zw -> 612.57 ms
+		-->median time: 612.57 ms
+	Testing Oceania
+		serversaustralia.com.au -> 38.62 ms
+		cpan.inspire.net.nz -> 67.81 ms
+		digitalpacific.com.au -> 37.89 ms
+		uber.com.au -> 44.47 ms
+		lagoon.nc -> 67.49 ms
+		-->median time: 44.47 ms
+	Testing North America
+		httpupdate40.cpanel.net -> 254.00 ms
+		httpupdate35.cpanel.net -> 409.75 ms
+		mirrors.sonic.net -> 368.56 ms
+		httpupdate8.cpanel.net -> 409.10 ms
+		cpan.cs.utah.edu -> 408.00 ms
+		-->median time: 408.00 ms
+	Testing Asia
+		vinahost.vn -> 146.10 ms
+		yazd.ac.ir -> 469.29 ms
+		mirrors-ru.go-parts.com -> 367.09 ms
+		sohu.com -> 399.76 ms
+		neolabs.kz -> 610.92 ms
+		-->median time: 399.76 ms
+	Testing South America
+		mmgdesigns.com.ar -> 407.96 ms
+		nbtelecom.com.br -> 401.96 ms
+		sunsite.dcc.uchile.cl -> 415.69 ms
+		linorg.usp.br -> 424.65 ms
+		unal.edu.co -> 407.60 ms
+		-->median time: 407.96 ms
+	Testing Europe
+		uk2.net -> 409.37 ms
+		ambiweb.de -> 710.65 ms
+		bibleonline.ru -> 471.49 ms
+		rol.ru -> 469.70 ms
+		rub.de -> 346.57 ms
+		-->median time: 469.70 ms
+	Median result by continent:
+		44 ms  Oceania
+	   400 ms  Asia
+	   408 ms  South America
+	   408 ms  North America
+	   470 ms  Europe
+	   613 ms  Africa
+	Best continent is Oceania
+	cpan.catalyst.net.nz = 78.8369178771973 ms
+	cpan.inspire.net.nz = 69.4258213043213 ms
+	cpan.mirrors.ilisys.com.au = 50.2209663391113 ms
+	digitalpacific.com.au = 40.1251316070557 ms
+	lagoon.nc = 88.8760089874268 ms
+	nautile.nc = 65.7081604003906 ms
+	optusnet.com.au = 41.4729118347168 ms
+	serversaustralia.com.au = 46.1521148681641 ms
+	uber.com.au = 48.2730865478516 ms
+	waia.asn.au = 86.2929821014404 ms
+	webtastix.net = 70.5790519714355 ms
+	Best mirrors are digitalpacific.com.au
+		optusnet.com.au
+		serversaustralia.com.au
+		uber.com.au
+		cpan.mirrors.ilisys.com.au
+
+	Best urls are
+		http://cpan.mirror.digitalpacific.com.au/
+		http://mirror.optusnet.com.au/CPAN/
+		http://cpan.mirror.serversaustralia.com.au/
+		http://cpan.mirror.uber.com.au/
+		http://cpan.mirrors.ilisys.com.au/
+
+=head1 DESCRIPTION
+
+CPAN Mirrors come and go, and maybe you do too. The mirror that was
+fast then might not be fast now, especially if you changed hemispheres.
+
+This program goes through the F<MIRRORED.BY> file and pings a selection
+of mirrors on each continent to find the fastest mirrors. From the best
+continent, it samples several mirrors to find the URL you should add
+to your configuration.
+
+If you don't have a F<MIRRORED.BY> file, this program will download one
+for you. It looks through your existing C<urllist> configuration and
+then default locations. It stores it in C<~/.cpan> (or your configured
+location to store files).
+
+=head1 TO DO
+
+=over 4
+
+=item * Add an option to update the CPAN configuration
+
+=item * Add an option to give JSON output
+
+=back
+
+=head1 AUTHOR
+
+brian d foy C<< <bdfoy@cpan.org> >>
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See L<http://www.perl.com/perl/misc/Artistic.html>
+
+=cut

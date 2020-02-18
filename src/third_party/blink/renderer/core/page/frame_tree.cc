@@ -27,12 +27,11 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/create_window.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 using std::swap;
@@ -377,7 +376,7 @@ static void printFrames(const blink::Frame* frame,
   printIndent(indent);
   printf("  uri=%s\n\n",
          local_frame
-             ? local_frame->GetDocument()->Url().GetString().Utf8().data()
+             ? local_frame->GetDocument()->Url().GetString().Utf8().c_str()
              : nullptr);
 
   for (blink::Frame* child = frame->Tree().FirstChild(); child;

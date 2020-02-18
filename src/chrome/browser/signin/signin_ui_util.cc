@@ -21,10 +21,11 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/identity_utils.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_utils.h"
 #include "components/user_manager/user_manager.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
@@ -56,7 +57,7 @@ void CreateDiceTurnSyncOnHelper(
 namespace signin_ui_util {
 
 base::string16 GetAuthenticatedUsername(
-    const identity::IdentityManager* identity_manager) {
+    const signin::IdentityManager* identity_manager) {
   std::string user_display_name;
 
   if (identity_manager->HasPrimaryAccount()) {
@@ -64,8 +65,8 @@ base::string16 GetAuthenticatedUsername(
 
 #if defined(OS_CHROMEOS)
     if (user_manager::UserManager::IsInitialized()) {
-      // On CrOS user email is sanitized and then passed to the signin manager.
-      // Original email (containing dots) is stored as "display email".
+      // On CrOS user email is sanitized and then passed to the identity
+      // manager. Original email (containing dots) is stored as "display email".
       user_display_name = user_manager::UserManager::Get()->GetUserDisplayEmail(
           AccountId::FromUserEmail(user_display_name));
     }
@@ -145,7 +146,7 @@ void EnableSyncFromPromo(
           ? signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT
           : signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT;
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   bool needs_reauth_before_enable_sync =
       !identity_manager->HasAccountWithRefreshToken(account.account_id) ||
@@ -169,16 +170,16 @@ void EnableSyncFromPromo(
 }  // namespace internal
 
 std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   std::string email =
       identity_manager
           ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
           ->email;
   if (email.empty()) {
-    DCHECK_EQ(identity::IdentityManager::AccountIdMigrationState::
-                  MIGRATION_NOT_STARTED,
-              identity_manager->GetAccountIdMigrationState());
+    DCHECK_EQ(
+        signin::IdentityManager::AccountIdMigrationState::MIGRATION_NOT_STARTED,
+        identity_manager->GetAccountIdMigrationState());
     return account_id;
   }
   return email;
@@ -186,7 +187,7 @@ std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
 
 std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   // Fetch account ids for accounts that have a token.
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   std::vector<AccountInfo> accounts_with_tokens =
       identity_manager->GetExtendedAccountInfoForAccountsWithRefreshToken();
@@ -214,9 +215,8 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   std::vector<AccountInfo> accounts;
   for (auto& account_info : accounts_with_tokens) {
     DCHECK(!account_info.IsEmpty());
-    if (!identity::LegacyIsUsernameAllowedByPatternFromPrefs(
-            g_browser_process->local_state(), account_info.email,
-            prefs::kGoogleServicesUsernamePattern)) {
+    if (!signin::IsUsernameAllowedByPatternFromPrefs(
+            g_browser_process->local_state(), account_info.email)) {
       continue;
     }
     if (account_info.account_id == default_account_id)

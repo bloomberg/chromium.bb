@@ -13,18 +13,18 @@ namespace syncer {
 FakeSyncEncryptionHandler::FakeSyncEncryptionHandler()
     : encrypted_types_(SensitiveTypes()),
       encrypt_everything_(false),
-      passphrase_type_(PassphraseType::IMPLICIT_PASSPHRASE),
-      cryptographer_(&encryptor_) {}
+      passphrase_type_(PassphraseType::IMPLICIT_PASSPHRASE) {}
 FakeSyncEncryptionHandler::~FakeSyncEncryptionHandler() {}
 
-void FakeSyncEncryptionHandler::Init() {
+bool FakeSyncEncryptionHandler::Init() {
   // Set up a basic cryptographer.
   KeyParams keystore_params = {KeyDerivationParams::CreateForPbkdf2(),
                                "keystore_key"};
   cryptographer_.AddKey(keystore_params);
+  return true;
 }
 
-void FakeSyncEncryptionHandler::ApplyNigoriUpdate(
+bool FakeSyncEncryptionHandler::ApplyNigoriUpdate(
     const sync_pb::NigoriSpecifics& nigori,
     syncable::BaseTransaction* const trans) {
   if (nigori.encrypt_everything())
@@ -54,6 +54,8 @@ void FakeSyncEncryptionHandler::ApplyNigoriUpdate(
                                     sync_pb::EncryptedData());
     }
   }
+
+  return true;
 }
 
 void FakeSyncEncryptionHandler::UpdateNigoriFromEncryptedTypes(
@@ -126,6 +128,18 @@ PassphraseType FakeSyncEncryptionHandler::GetPassphraseType(
 
 base::Time FakeSyncEncryptionHandler::GetKeystoreMigrationTime() const {
   return base::Time();
+}
+
+Cryptographer* FakeSyncEncryptionHandler::GetCryptographerUnsafe() {
+  return &cryptographer_;
+}
+
+KeystoreKeysHandler* FakeSyncEncryptionHandler::GetKeystoreKeysHandler() {
+  return this;
+}
+
+syncable::NigoriHandler* FakeSyncEncryptionHandler::GetNigoriHandler() {
+  return this;
 }
 
 }  // namespace syncer

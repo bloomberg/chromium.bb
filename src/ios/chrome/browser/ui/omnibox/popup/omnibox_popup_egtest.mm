@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
-#import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
@@ -27,7 +25,7 @@ namespace {
 // Returns the popup row containing the |url| as suggestion.
 id<GREYMatcher> PopupRowWithUrl(GURL url) {
   return grey_allOf(
-      grey_kindOfClass([OmniboxPopupRow class]),
+      grey_kindOfClassName(@"OmniboxPopupRow"),
       grey_descendant(chrome_test_util::StaticTextWithAccessibilityLabel(
           base::SysUTF8ToNSString(url.GetContent()))),
       nil);
@@ -111,16 +109,13 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testSwitchToOpenTab {
   // Open the first page.
   GURL firstPageURL = self.testServer->GetURL(kPage1URL);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:firstPageURL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage1]);
+  [ChromeEarlGrey loadURL:firstPageURL];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage1];
 
   // Open the second page in another tab.
   [ChromeEarlGreyUI openNewTab];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPage2URL)]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage2]);
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPage2URL)];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage2];
 
   // Type the URL of the first page in the omnibox to trigger it as suggestion.
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(kPage1URL)];
@@ -128,8 +123,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Switch to the first tab.
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(firstPageURL)]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage1]);
+  [ChromeEarlGrey waitForWebStateContainingText:kPage1];
 
   // Check that both tabs are opened (and that we switched tab and not just
   // navigated.
@@ -148,16 +142,13 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   GURL URL2 = self.testServer->GetURL(kPage2URL);
 
   // Open the first page.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPage1URL)]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage1]);
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPage1URL)];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage1];
 
   // Open the second page in another tab.
   [ChromeEarlGreyUI openNewTab];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL2]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage2]);
+  [ChromeEarlGrey loadURL:URL2];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage2];
 
   // Type the URL of the first page in the omnibox to trigger it as suggestion.
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(kPage2URL)];
@@ -178,33 +169,27 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   GURL URL3 = self.testServer->GetURL(kPage3URL);
 
   // Add all the pages to the history.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage1]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL2]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage2]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL3]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage3]);
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage1];
+  [ChromeEarlGrey loadURL:URL2];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage2];
+  [ChromeEarlGrey loadURL:URL3];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage3];
   [[self class] closeAllTabs];
 
   // Load page 1 in non-incognito and page 2 in incognito.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage1]);
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage1];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL2]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage2]);
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey loadURL:URL2];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage2];
 
   // Open page 3 in non-incognito.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL3]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage3]);
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:URL3];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage3];
 
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(URL3.host())];
 
@@ -223,10 +208,9 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       assertWithMatcher:grey_nil()];
 
   // Open page 3 in incognito.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL3]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage3]);
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey loadURL:URL3];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage3];
 
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(URL3.host())];
 
@@ -248,47 +232,42 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testCloseNTPWhenSwitching {
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage1]);
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage1];
 
   // Open a new tab and switch to the first tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  [ChromeEarlGrey openNewTab];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_typeText(base::SysUTF8ToNSString(URL1.host()))];
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage1]);
+  [ChromeEarlGrey waitForWebStateContainingText:kPage1];
 
   // Check that the other tab is closed.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 - (void)testDontCloseNTPWhenSwitchingWithForwardHistory {
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage1]);
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage1];
 
   // Open a new tab, navigate to a page and go back to have forward history.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage1]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage1];
+  [ChromeEarlGrey goBack];
 
   // Navigate to the other tab.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_typeText(base::SysUTF8ToNSString(URL1.host()))];
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage1]);
+  [ChromeEarlGrey waitForWebStateContainingText:kPage1];
 
   // Check that the other tab is not closed.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests that switching to closed tab opens the tab in foreground, except if it
@@ -297,16 +276,13 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   GURL URL1 = self.testServer->GetURL(kPage1URL);
 
   // Open the first page.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage1]);
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage1];
 
   // Open a new tab and load another URL.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPage2URL)]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage2]);
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPage2URL)];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage2];
 
   // Start typing url of the first page.
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(kPage1URL)];
@@ -317,16 +293,16 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Close the first page.
   [ChromeEarlGrey closeTabAtIndex:0];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   // Try to switch to the first tab.
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
       performAction:grey_tap()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Check that the URL has been opened in a new foreground tab.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage1]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey waitForWebStateContainingText:kPage1];
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests that having multiple suggestions with corresponding opened tabs display
@@ -334,19 +310,17 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testMultiplePageOpened {
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage1]);
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage1];
 
   // Open the second page in a new tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  [ChromeEarlGrey openNewTab];
   GURL URL2 = self.testServer->GetURL(kPage2URL);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL2]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPage2]);
+  [ChromeEarlGrey loadURL:URL2];
+  [ChromeEarlGrey waitForWebStateContainingText:kPage2];
 
   // Start typing url of the two opened pages in a new tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  [ChromeEarlGrey openNewTab];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_typeText(@"page")];
 

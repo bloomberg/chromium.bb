@@ -2,8 +2,7 @@ package Crypt::OpenPGP;
 use strict;
 use 5.008_001;
 
-use vars qw( $VERSION );
-$VERSION = '1.06';
+our $VERSION = '1.12'; # VERSION
 
 use Crypt::OpenPGP::Constants qw( DEFAULT_CIPHER );
 use Crypt::OpenPGP::KeyRing;
@@ -11,6 +10,7 @@ use Crypt::OpenPGP::Plaintext;
 use Crypt::OpenPGP::Message;
 use Crypt::OpenPGP::PacketFactory;
 use Crypt::OpenPGP::Config;
+use Crypt::OpenPGP::Util;
 
 use Crypt::OpenPGP::ErrorHandler;
 use base qw( Crypt::OpenPGP::ErrorHandler );
@@ -79,11 +79,11 @@ $Crypt::OpenPGP::Globals::Trim_trailing_ws = 1;
         },
 
         GnuPG => {
-              'sign'    => { Digest => 'RIPEMD160', Version => 4 },
+              'sign'    => { Digest => 'SHA256', Version => 4 },
               'encrypt' => { Cipher => 'Rijndael', Compress => 'Zlib',
                              MDC => 1 },
-              'keygen'  => { Type => 'DSA', Cipher => 'Rijndael',
-                             Version => 4, Digest => 'RIPEMD160' },
+              'keygen'  => { Type => 'RSA', Cipher => 'Rijndael',
+                             Version => 4, Digest => 'SHA256' },
               'Config'  => [
                      $env->('GNUPGHOME', 'options'),
                      $home->( '.gnupg', 'options' ),
@@ -399,7 +399,7 @@ sub verify {
 
 ## pgp2 and pgp5 do not trim trailing whitespace from "canonical text"
 ## signatures, only from cleartext signatures. So we first try to verify
-## the signature using proper RFC2440 canonical text, then if that fails,
+## the signature using proper RFC4880 canonical text, then if that fails,
 ## retry without trimming trailing whitespace.
 ## See:
 ##   http://cert.uni-stuttgart.de/archive/ietf-openpgp/2000/01/msg00033.html
@@ -455,8 +455,7 @@ sub encrypt {
                 Crypt::OpenPGP::Compressed->errstr);
         $ptdata = Crypt::OpenPGP::PacketFactory->save($cdata);
     }
-    require Crypt::Random;
-    my $key_data = Crypt::Random::makerandom_octet( Length => 32 );
+    my $key_data = Crypt::OpenPGP::Util::get_random_bytes(32);
     my $sym_alg = $param{Cipher} ?
         Crypt::OpenPGP::Cipher->alg_id($param{Cipher}) : DEFAULT_CIPHER;
     my(@sym_keys);
@@ -530,7 +529,9 @@ sub encrypt {
         } else {
             $s2k = Crypt::OpenPGP::S2k->new('Salt_Iter');
         }
-        my $keysize = Crypt::OpenPGP::Cipher->new($sym_alg)->keysize;
+        my $cipher = Crypt::OpenPGP::Cipher->new($sym_alg) or
+            return $pgp->error( Crypt::OpenPGP::Cipher->errstr );
+        my $keysize = $cipher->keysize;
         $key_data = $s2k->generate($pass, $keysize);
         push @sym_keys, Crypt::OpenPGP::SKSessionKey->new(
                             Passphrase => $pass,
@@ -1671,7 +1672,7 @@ Trott, cpan@stupidfool.org. All rights reserved.
 
 =over 4
 
-=item 1 RFC2440 - OpenPGP Message Format (1998). http://www.faqs.org/rfcs/rfc2440.html
+=item 1 RFC4880 - OpenPGP Message Format (2007). http://www.faqs.org/rfcs/rfc4880.html
 
 =back 
 

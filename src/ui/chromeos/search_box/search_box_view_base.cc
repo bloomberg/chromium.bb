@@ -96,6 +96,8 @@ class SearchBoxImageButton : public views::ImageButton {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
     SetInkDropMode(InkDropMode::ON);
+    // InkDropState will reset after clicking.
+    set_has_ink_drop_action_on_click(true);
 
     SetPreferredSize({kButtonSizeDip, kButtonSizeDip});
     SetImageHorizontalAlignment(ALIGN_CENTER);
@@ -250,7 +252,7 @@ SearchBoxViewBase::SearchBoxViewBase(SearchBoxViewDelegate* delegate)
 
   box_layout_ =
       content_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(0, kPadding),
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(0, kPadding),
           kInnerPadding -
               views::LayoutProvider::Get()->GetDistanceMetric(
                   views::DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING)));
@@ -448,6 +450,10 @@ bool SearchBoxViewBase::IsSearchBoxTrimmedQueryEmpty() const {
 }
 
 void SearchBoxViewBase::ClearSearch() {
+  // Avoid setting |search_box_| text to empty if it is already empty.
+  if (search_box_->text() == base::string16())
+    return;
+
   search_box_->SetText(base::string16());
   UpdateButtonsVisisbility();
   // Updates model and fires query changed manually because SetText() above

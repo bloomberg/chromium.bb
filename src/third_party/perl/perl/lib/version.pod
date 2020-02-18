@@ -12,12 +12,12 @@ version - Perl extension for Version Objects
   # Declaring a dotted-decimal $VERSION (keep on one line!)
 
   use version; our $VERSION = version->declare("v1.2.3"); # formal
-  use version; our $VERSION = qv("v1.2.3");               # shorthand
-  use version; our $VERSION = qv("v1.2_3");               # alpha
+  use version; our $VERSION = qv("v1.2.3");               # deprecated
+  use version; our $VERSION = qv("v1.2_3");               # deprecated
 
   # Declaring an old-style decimal $VERSION (use quotes!)
 
-  our $VERSION = "1.0203";                                     # recommended
+  our $VERSION = "1.0203";                                # recommended
   use version; our $VERSION = version->parse("1.0203");   # formal
   use version; our $VERSION = version->parse("1.02_03");  # alpha
 
@@ -251,7 +251,7 @@ True if and only if the version object was created with a underscore, e.g.
 
 True only if the version object is a dotted-decimal version, e.g.
 
-  version->parse('v1.2.0')->is_qv;        # TRUE
+  version->parse('v1.2.0')->is_qv;       # TRUE
   version->declare('v1.2')->is_qv;       # TRUE
   qv('1.2')->is_qv;                      # TRUE
   version->parse('1.2')->is_qv;          # FALSE
@@ -266,11 +266,10 @@ leading-v and at least 3 components.
 
 =head2 numify()
 
-Returns a value representing the object in a pure decimal form without
-trailing zeroes.
+Returns a value representing the object in a pure decimal.
 
- version->declare('v1.2')->numify;  # 1.002
- version->parse('1.2')->numify;     # 1.2
+ version->declare('v1.2')->numify;  # 1.002000
+ version->parse('1.2')->numify;     # 1.200
 
 =head2 stringify()
 
@@ -280,7 +279,7 @@ way perl would normally represent it in a string.  This method is used whenever
 a version object is interpolated into a string.
 
  version->declare('v1.2')->stringify;    # v1.2
- version->parse('1.200')->stringify;     # 1.200
+ version->parse('1.200')->stringify;     # 1.2
  version->parse(1.02_30)->stringify;     # 1.023
 
 =head1 EXPORTED FUNCTIONS

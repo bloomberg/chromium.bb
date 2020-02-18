@@ -12,6 +12,7 @@
 
 #if defined(SK_ENABLE_SKOTTIE)
 #include "modules/skottie/include/Skottie.h"
+#include "modules/sksg/include/SkSGInvalidationController.h"
 
 namespace sksg    { class Scene;     }
 
@@ -26,15 +27,16 @@ public:
     SkISize getDimensions() const override;
 
     void draw(SkCanvas*) override;
-    bool animate(const AnimTimer&) override;
+    bool animate(double) override;
 
     bool onChar(SkUnichar) override;
-    bool onMouse(SkScalar x, SkScalar y, sk_app::Window::InputState, uint32_t modifiers) override;
+    bool onMouse(SkScalar x, SkScalar y, InputState, ModifierKey modifiers) override;
 
 private:
     SkString                           fPath;
     sk_sp<skottie::Animation>          fAnimation;
     skottie::Animation::Builder::Stats fAnimationStats;
+    sksg::InvalidationController       fInvalController;
     SkSize                             fWinSize = SkSize::MakeEmpty();
     SkMSec                             fTimeBase  = 0;
     bool                               fShowAnimationInval = false,

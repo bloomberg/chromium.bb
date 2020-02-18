@@ -65,7 +65,7 @@ ChromeCleanerDialog::ChromeCleanerDialog(
   set_margins(
       layout_provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       layout_provider->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   views::Label* label = new views::Label(
@@ -150,14 +150,14 @@ base::string16 ChromeCleanerDialog::GetDialogButtonLabel(
              : DialogDelegate::GetDialogButtonLabel(button);
 }
 
-views::View* ChromeCleanerDialog::CreateExtraView() {
+std::unique_ptr<views::View> ChromeCleanerDialog::CreateExtraView() {
   DCHECK(!details_button_);
 
   auto details_button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(
                 IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL));
-  details_button_ = details_button.release();
-  return details_button_;
+  details_button_ = details_button.get();
+  return details_button;
 }
 
 bool ChromeCleanerDialog::Accept() {

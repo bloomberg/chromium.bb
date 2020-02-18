@@ -7,15 +7,17 @@
 
 #include <string>
 
-#include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/viz/service/main/viz_compositor_thread_runner.h"
 #include "gpu/ipc/in_process_command_buffer.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
 #include "ui/gfx/font_render_params.h"
@@ -95,8 +97,8 @@ class VizMainImpl : public mojom::VizMain {
 
   void SetLogMessagesForHost(LogMessages messages);
 
-  void Bind(mojom::VizMainRequest request);
-  void BindAssociated(mojom::VizMainAssociatedRequest request);
+  void BindAssociated(
+      mojo::PendingAssociatedReceiver<mojom::VizMain> pending_receiver);
 
 #if defined(USE_OZONE)
   bool CanBindInterface(const std::string& interface_name) const;
@@ -106,8 +108,8 @@ class VizMainImpl : public mojom::VizMain {
 
   // mojom::VizMain implementation:
   void CreateGpuService(
-      mojom::GpuServiceRequest request,
-      mojom::GpuHostPtr gpu_host,
+      mojo::PendingReceiver<mojom::GpuService> pending_receiver,
+      mojo::PendingRemote<mojom::GpuHost> pending_gpu_host,
       discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
           discardable_memory_manager,
       mojo::ScopedSharedBufferHandle activity_flags,
@@ -168,9 +170,7 @@ class VizMainImpl : public mojom::VizMain {
   const scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_task_runner_;
 
   std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
-  mojo::Binding<mojom::VizMain> binding_;
-  mojo::AssociatedBinding<mojom::VizMain> associated_binding_;
+  mojo::AssociatedReceiver<mojom::VizMain> receiver_{this};
 
   std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;

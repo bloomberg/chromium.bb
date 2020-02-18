@@ -25,12 +25,12 @@
 #include <utility>
 #include <vector>
 
-#include "perfetto/base/hash.h"
 #include "perfetto/base/logging.h"
-#include "perfetto/base/optional.h"
-#include "perfetto/base/string_view.h"
-#include "perfetto/base/time.h"
-#include "perfetto/base/utils.h"
+#include "perfetto/ext/base/hash.h"
+#include "perfetto/ext/base/optional.h"
+#include "perfetto/ext/base/string_view.h"
+#include "perfetto/ext/base/time.h"
+#include "perfetto/ext/base/utils.h"
 #include "src/trace_processor/ftrace_utils.h"
 #include "src/trace_processor/metadata.h"
 #include "src/trace_processor/stats.h"
@@ -61,6 +61,7 @@ enum TableId : uint8_t {
   kInstants = 3,
   kSched = 4,
   kNestableSlices = 5,
+  kMetadataTable = 6,
 };
 
 // The top 8 bits are set to the TableId and the bottom 32 to the row of the
@@ -71,6 +72,15 @@ static const RowId kInvalidRowId = 0;
 using ArgSetId = uint32_t;
 static const ArgSetId kInvalidArgSetId = 0;
 
+using TrackId = uint32_t;
+
+enum class VirtualTrackScope : uint8_t {
+  // VirtualTrack with global scope, will not have a |upid| set.
+  kGlobal = 0,
+  // VirtualTrack associated with a specific process via |upid|.
+  kProcess = 1
+};
+
 enum RefType {
   kRefNoRef = 0,
   kRefUtid = 1,
@@ -78,6 +88,8 @@ enum RefType {
   kRefIrq = 3,
   kRefSoftIrq = 4,
   kRefUpid = 5,
+  kRefGpuId = 6,
+  kRefTrack = 7,
   kRefMax
 };
 
@@ -96,15 +108,17 @@ class TraceStorage {
   struct Process {
     explicit Process(uint32_t p) : pid(p) {}
     int64_t start_ns = 0;
+    int64_t end_ns = 0;
     StringId name_id = 0;
     uint32_t pid = 0;
-    base::Optional<UniquePid> pupid;
+    base::Optional<UniquePid> parent_upid;
   };
 
   // Information about a unique thread seen in a trace.
   struct Thread {
     explicit Thread(uint32_t t) : tid(t) {}
     int64_t start_ns = 0;
+    int64_t end_ns = 0;
     StringId name_id = 0;
     base::Optional<UniquePid> upid;
     uint32_t tid = 0;
@@ -131,11 +145,23 @@ class TraceStorage {
           case Variadic::Type::kInt:
             hash.Update(arg.value.int_value);
             break;
+          case Variadic::Type::kUint:
+            hash.Update(arg.value.uint_value);
+            break;
           case Variadic::Type::kString:
             hash.Update(arg.value.string_value);
             break;
           case Variadic::Type::kReal:
             hash.Update(arg.value.real_value);
+            break;
+          case Variadic::Type::kPointer:
+            hash.Update(arg.value.pointer_value);
+            break;
+          case Variadic::Type::kBool:
+            hash.Update(arg.value.bool_value);
+            break;
+          case Variadic::Type::kJson:
+            hash.Update(arg.value.json_value);
             break;
         }
         return hash.digest();
@@ -186,6 +212,35 @@ class TraceStorage {
     std::deque<Variadic> arg_values_;
 
     std::unordered_map<ArgSetHash, uint32_t> arg_row_for_hash_;
+  };
+
+  class VirtualTracks {
+   public:
+    inline uint32_t AddVirtualTrack(TrackId track_id,
+                                    StringId name,
+                                    VirtualTrackScope scope,
+                                    UniquePid upid = 0u) {
+      track_ids_.emplace_back(track_id);
+      names_.emplace_back(name);
+      scopes_.emplace_back(scope);
+      upids_.emplace_back(upid);
+      return virtual_track_count() - 1;
+    }
+
+    uint32_t virtual_track_count() const {
+      return static_cast<uint32_t>(track_ids_.size());
+    }
+
+    const std::deque<uint32_t>& track_ids() const { return track_ids_; }
+    const std::deque<StringId>& names() const { return names_; }
+    const std::deque<VirtualTrackScope>& scopes() const { return scopes_; }
+    const std::deque<UniquePid>& upids() const { return upids_; }
+
+   private:
+    std::deque<uint32_t> track_ids_;
+    std::deque<StringId> names_;
+    std::deque<VirtualTrackScope> scopes_;
+    std::deque<UniquePid> upids_;
   };
 
   class Slices {
@@ -257,7 +312,7 @@ class TraceStorage {
                              int64_t duration_ns,
                              int64_t ref,
                              RefType type,
-                             StringId cat,
+                             StringId category,
                              StringId name,
                              uint8_t depth,
                              int64_t stack_id,
@@ -266,7 +321,7 @@ class TraceStorage {
       durations_.emplace_back(duration_ns);
       refs_.emplace_back(ref);
       types_.emplace_back(type);
-      cats_.emplace_back(cat);
+      categories_.emplace_back(category);
       names_.emplace_back(name);
       depths_.emplace_back(depth);
       stack_ids_.emplace_back(stack_id);
@@ -295,7 +350,7 @@ class TraceStorage {
     const std::deque<int64_t>& durations() const { return durations_; }
     const std::deque<int64_t>& refs() const { return refs_; }
     const std::deque<RefType>& types() const { return types_; }
-    const std::deque<StringId>& cats() const { return cats_; }
+    const std::deque<StringId>& categories() const { return categories_; }
     const std::deque<StringId>& names() const { return names_; }
     const std::deque<uint8_t>& depths() const { return depths_; }
     const std::deque<int64_t>& stack_ids() const { return stack_ids_; }
@@ -309,12 +364,134 @@ class TraceStorage {
     std::deque<int64_t> durations_;
     std::deque<int64_t> refs_;
     std::deque<RefType> types_;
-    std::deque<StringId> cats_;
+    std::deque<StringId> categories_;
     std::deque<StringId> names_;
     std::deque<uint8_t> depths_;
     std::deque<int64_t> stack_ids_;
     std::deque<int64_t> parent_stack_ids_;
     std::deque<ArgSetId> arg_set_ids_;
+  };
+
+  class ThreadSlices {
+   public:
+    inline uint32_t AddThreadSlice(uint32_t slice_id,
+                                   int64_t thread_timestamp_ns,
+                                   int64_t thread_duration_ns,
+                                   int64_t thread_instruction_count,
+                                   int64_t thread_instruction_delta) {
+      slice_ids_.emplace_back(slice_id);
+      thread_timestamp_ns_.emplace_back(thread_timestamp_ns);
+      thread_duration_ns_.emplace_back(thread_duration_ns);
+      thread_instruction_counts_.emplace_back(thread_instruction_count);
+      thread_instruction_deltas_.emplace_back(thread_instruction_delta);
+      return slice_count() - 1;
+    }
+
+    uint32_t slice_count() const {
+      return static_cast<uint32_t>(slice_ids_.size());
+    }
+
+    const std::deque<uint32_t>& slice_ids() const { return slice_ids_; }
+    const std::deque<int64_t>& thread_timestamp_ns() const {
+      return thread_timestamp_ns_;
+    }
+    const std::deque<int64_t>& thread_duration_ns() const {
+      return thread_duration_ns_;
+    }
+    const std::deque<int64_t>& thread_instruction_counts() const {
+      return thread_instruction_counts_;
+    }
+    const std::deque<int64_t>& thread_instruction_deltas() const {
+      return thread_instruction_deltas_;
+    }
+
+    base::Optional<uint32_t> FindRowForSliceId(uint32_t slice_id) const {
+      auto it =
+          std::lower_bound(slice_ids().begin(), slice_ids().end(), slice_id);
+      if (it != slice_ids().end() && *it == slice_id) {
+        return static_cast<uint32_t>(std::distance(slice_ids().begin(), it));
+      }
+      return base::nullopt;
+    }
+
+    void UpdateThreadDeltasForSliceId(uint32_t slice_id,
+                                      int64_t end_thread_timestamp_ns,
+                                      int64_t end_thread_instruction_count) {
+      uint32_t row = *FindRowForSliceId(slice_id);
+      int64_t begin_ns = thread_timestamp_ns_[row];
+      thread_duration_ns_[row] = end_thread_timestamp_ns - begin_ns;
+      int64_t begin_ticount = thread_instruction_counts_[row];
+      thread_instruction_deltas_[row] =
+          end_thread_instruction_count - begin_ticount;
+    }
+
+   private:
+    std::deque<uint32_t> slice_ids_;
+    std::deque<int64_t> thread_timestamp_ns_;
+    std::deque<int64_t> thread_duration_ns_;
+    std::deque<int64_t> thread_instruction_counts_;
+    std::deque<int64_t> thread_instruction_deltas_;
+  };
+
+  class VirtualTrackSlices {
+   public:
+    inline uint32_t AddVirtualTrackSlice(uint32_t slice_id,
+                                         int64_t thread_timestamp_ns,
+                                         int64_t thread_duration_ns,
+                                         int64_t thread_instruction_count,
+                                         int64_t thread_instruction_delta) {
+      slice_ids_.emplace_back(slice_id);
+      thread_timestamp_ns_.emplace_back(thread_timestamp_ns);
+      thread_duration_ns_.emplace_back(thread_duration_ns);
+      thread_instruction_counts_.emplace_back(thread_instruction_count);
+      thread_instruction_deltas_.emplace_back(thread_instruction_delta);
+      return slice_count() - 1;
+    }
+
+    uint32_t slice_count() const {
+      return static_cast<uint32_t>(slice_ids_.size());
+    }
+
+    const std::deque<uint32_t>& slice_ids() const { return slice_ids_; }
+    const std::deque<int64_t>& thread_timestamp_ns() const {
+      return thread_timestamp_ns_;
+    }
+    const std::deque<int64_t>& thread_duration_ns() const {
+      return thread_duration_ns_;
+    }
+    const std::deque<int64_t>& thread_instruction_counts() const {
+      return thread_instruction_counts_;
+    }
+    const std::deque<int64_t>& thread_instruction_deltas() const {
+      return thread_instruction_deltas_;
+    }
+
+    base::Optional<uint32_t> FindRowForSliceId(uint32_t slice_id) const {
+      auto it =
+          std::lower_bound(slice_ids().begin(), slice_ids().end(), slice_id);
+      if (it != slice_ids().end() && *it == slice_id) {
+        return static_cast<uint32_t>(std::distance(slice_ids().begin(), it));
+      }
+      return base::nullopt;
+    }
+
+    void UpdateThreadDeltasForSliceId(uint32_t slice_id,
+                                      int64_t end_thread_timestamp_ns,
+                                      int64_t end_thread_instruction_count) {
+      uint32_t row = *FindRowForSliceId(slice_id);
+      int64_t begin_ns = thread_timestamp_ns_[row];
+      thread_duration_ns_[row] = end_thread_timestamp_ns - begin_ns;
+      int64_t begin_ticount = thread_instruction_counts_[row];
+      thread_instruction_deltas_[row] =
+          end_thread_instruction_count - begin_ticount;
+    }
+
+   private:
+    std::deque<uint32_t> slice_ids_;
+    std::deque<int64_t> thread_timestamp_ns_;
+    std::deque<int64_t> thread_duration_ns_;
+    std::deque<int64_t> thread_instruction_counts_;
+    std::deque<int64_t> thread_instruction_deltas_;
   };
 
   class CounterDefinitions {
@@ -566,7 +743,55 @@ class TraceStorage {
   };
   using StatsMap = std::array<Stats, stats::kNumKeys>;
 
-  using MetadataMap = std::array<std::vector<Variadic>, metadata::kNumKeys>;
+  class Metadata {
+   public:
+    const std::deque<metadata::KeyIDs>& keys() const { return keys_; }
+    const std::deque<Variadic>& values() const { return values_; }
+
+    RowId SetScalarMetadata(metadata::KeyIDs key, Variadic value) {
+      PERFETTO_DCHECK(key < metadata::kNumKeys);
+      PERFETTO_DCHECK(metadata::kKeyTypes[key] == metadata::kSingle);
+      PERFETTO_DCHECK(value.type == metadata::kValueTypes[key]);
+
+      // Already set - on release builds, overwrite the previous value.
+      auto it = scalar_indices.find(key);
+      if (it != scalar_indices.end()) {
+        PERFETTO_DFATAL("Setting a scalar metadata entry more than once.");
+        uint32_t index = static_cast<uint32_t>(it->second);
+        values_[index] = value;
+        return TraceStorage::CreateRowId(kMetadataTable, index);
+      }
+      // First time setting this key.
+      keys_.push_back(key);
+      values_.push_back(value);
+      uint32_t index = static_cast<uint32_t>(keys_.size() - 1);
+      scalar_indices[key] = index;
+      return TraceStorage::CreateRowId(kMetadataTable, index);
+    }
+
+    RowId AppendMetadata(metadata::KeyIDs key, Variadic value) {
+      PERFETTO_DCHECK(key < metadata::kNumKeys);
+      PERFETTO_DCHECK(metadata::kKeyTypes[key] == metadata::kMulti);
+      PERFETTO_DCHECK(value.type == metadata::kValueTypes[key]);
+
+      keys_.push_back(key);
+      values_.push_back(value);
+      uint32_t index = static_cast<uint32_t>(keys_.size() - 1);
+      return TraceStorage::CreateRowId(kMetadataTable, index);
+    }
+
+    void OverwriteMetadata(uint32_t index, Variadic value) {
+      PERFETTO_DCHECK(index < values_.size());
+      values_[index] = value;
+    }
+
+   private:
+    std::deque<metadata::KeyIDs> keys_;
+    std::deque<Variadic> values_;
+    // Extraneous state to track locations of entries that should have at most
+    // one row. Used only to maintain uniqueness during insertions.
+    std::map<metadata::KeyIDs, uint32_t> scalar_indices;
+  };
 
   class HeapProfileFrames {
    public:
@@ -638,16 +863,18 @@ class TraceStorage {
    public:
     struct Row {
       StringId build_id;
-      int64_t offset;
+      int64_t exact_offset;
+      int64_t start_offset;
       int64_t start;
       int64_t end;
       int64_t load_bias;
       StringId name_id;
 
       bool operator==(const Row& other) const {
-        return std::tie(build_id, offset, start, end, load_bias, name_id) ==
-               std::tie(other.build_id, other.offset, other.start, other.end,
-                        other.load_bias, other.name_id);
+        return std::tie(build_id, exact_offset, start_offset, start, end,
+                        load_bias, name_id) ==
+               std::tie(other.build_id, other.exact_offset, other.start_offset,
+                        other.start, other.end, other.load_bias, other.name_id);
       }
     };
 
@@ -655,7 +882,8 @@ class TraceStorage {
 
     int64_t Insert(const Row& row) {
       build_ids_.emplace_back(row.build_id);
-      offsets_.emplace_back(row.offset);
+      exact_offsets_.emplace_back(row.exact_offset);
+      start_offsets_.emplace_back(row.start_offset);
       starts_.emplace_back(row.start);
       ends_.emplace_back(row.end);
       load_biases_.emplace_back(row.load_bias);
@@ -664,7 +892,8 @@ class TraceStorage {
     }
 
     const std::deque<StringId>& build_ids() const { return build_ids_; }
-    const std::deque<int64_t>& offsets() const { return offsets_; }
+    const std::deque<int64_t>& exact_offsets() const { return exact_offsets_; }
+    const std::deque<int64_t>& start_offsets() const { return start_offsets_; }
     const std::deque<int64_t>& starts() const { return starts_; }
     const std::deque<int64_t>& ends() const { return ends_; }
     const std::deque<int64_t>& load_biases() const { return load_biases_; }
@@ -672,7 +901,8 @@ class TraceStorage {
 
    private:
     std::deque<StringId> build_ids_;
-    std::deque<int64_t> offsets_;
+    std::deque<int64_t> exact_offsets_;
+    std::deque<int64_t> start_offsets_;
     std::deque<int64_t> starts_;
     std::deque<int64_t> ends_;
     std::deque<int64_t> load_biases_;
@@ -773,23 +1003,19 @@ class TraceStorage {
   // Example usage:
   // SetMetadata(metadata::benchmark_name,
   //             Variadic::String(storage->InternString("foo"));
+  // Returns the RowId of the new entry.
   // Virtual for testing.
-  virtual void SetMetadata(size_t key, Variadic value) {
-    PERFETTO_DCHECK(key < metadata::kNumKeys);
-    PERFETTO_DCHECK(metadata::kKeyTypes[key] == metadata::kSingle);
-    PERFETTO_DCHECK(value.type == metadata::kValueTypes[key]);
-    metadata_[key] = {value};
+  virtual RowId SetMetadata(metadata::KeyIDs key, Variadic value) {
+    return metadata_.SetScalarMetadata(key, value);
   }
 
   // Example usage:
   // AppendMetadata(metadata::benchmark_story_tags,
   //                Variadic::String(storage->InternString("bar"));
+  // Returns the RowId of the new entry.
   // Virtual for testing.
-  virtual void AppendMetadata(size_t key, Variadic value) {
-    PERFETTO_DCHECK(key < metadata::kNumKeys);
-    PERFETTO_DCHECK(metadata::kKeyTypes[key] == metadata::kMulti);
-    PERFETTO_DCHECK(value.type == metadata::kValueTypes[key]);
-    metadata_[key].push_back(value);
+  virtual RowId AppendMetadata(metadata::KeyIDs key, Variadic value) {
+    return metadata_.AppendMetadata(key, value);
   }
 
   class ScopedStatsTracer {
@@ -832,7 +1058,8 @@ class TraceStorage {
   }
 
   // Reading methods.
-  NullTermStringView GetString(StringId id) const {
+  // Virtual for testing.
+  virtual NullTermStringView GetString(StringId id) const {
     return string_pool_.Get(id);
   }
 
@@ -858,11 +1085,24 @@ class TraceStorage {
     return std::make_pair(table_id, row);
   }
 
+  const VirtualTracks& virtual_tracks() const { return virtual_tracks_; }
+  VirtualTracks* mutable_virtual_tracks() { return &virtual_tracks_; }
+
   const Slices& slices() const { return slices_; }
   Slices* mutable_slices() { return &slices_; }
 
   const NestableSlices& nestable_slices() const { return nestable_slices_; }
   NestableSlices* mutable_nestable_slices() { return &nestable_slices_; }
+
+  const ThreadSlices& thread_slices() const { return thread_slices_; }
+  ThreadSlices* mutable_thread_slices() { return &thread_slices_; }
+
+  const VirtualTrackSlices& virtual_track_slices() const {
+    return virtual_track_slices_;
+  }
+  VirtualTrackSlices* mutable_virtual_track_slices() {
+    return &virtual_track_slices_;
+  }
 
   const CounterDefinitions& counter_definitions() const {
     return counter_definitions_;
@@ -885,7 +1125,8 @@ class TraceStorage {
 
   const StatsMap& stats() const { return stats_; }
 
-  const MetadataMap& metadata() const { return metadata_; }
+  const Metadata& metadata() const { return metadata_; }
+  Metadata* mutable_metadata() { return &metadata_; }
 
   const Args& args() const { return args_; }
   Args* mutable_args() { return &args_; }
@@ -952,8 +1193,13 @@ class TraceStorage {
   // Stats about parsing the trace.
   StatsMap stats_{};
 
-  // Trace metadata from chrome and benchmarking infrastructure.
-  MetadataMap metadata_{};
+  // Extra data extracted from the trace. Includes:
+  // * metadata from chrome and benchmarking infrastructure
+  // * descriptions of android packages
+  Metadata metadata_{};
+
+  // Metadata for virtual slice tracks.
+  VirtualTracks virtual_tracks_;
 
   // One entry for each CPU in the trace.
   Slices slices_;
@@ -975,7 +1221,14 @@ class TraceStorage {
   // Slices coming from userspace events (e.g. Chromium TRACE_EVENT macros).
   NestableSlices nestable_slices_;
 
-  // The type of counters in the trace. Can be thought of the the "metadata".
+  // Additional attributes for threads slices (sub-type of NestableSlices).
+  ThreadSlices thread_slices_;
+
+  // Additional attributes for virtual track slices (sub-type of
+  // NestableSlices).
+  VirtualTrackSlices virtual_track_slices_;
+
+  // The type of counters in the trace. Can be thought of as the "metadata".
   CounterDefinitions counter_definitions_;
 
   // The values from the Counter events from the trace. This includes CPU
@@ -1041,8 +1294,10 @@ struct hash<
 
   result_type operator()(const argument_type& r) const {
     return std::hash<::perfetto::trace_processor::StringId>{}(r.build_id) ^
-           std::hash<int64_t>{}(r.offset) ^ std::hash<int64_t>{}(r.start) ^
-           std::hash<int64_t>{}(r.end) ^ std::hash<int64_t>{}(r.load_bias) ^
+           std::hash<int64_t>{}(r.exact_offset) ^
+           std::hash<int64_t>{}(r.start_offset) ^
+           std::hash<int64_t>{}(r.start) ^ std::hash<int64_t>{}(r.end) ^
+           std::hash<int64_t>{}(r.load_bias) ^
            std::hash<::perfetto::trace_processor::StringId>{}(r.name_id);
   }
 };

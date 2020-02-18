@@ -7,7 +7,7 @@
 #include "ash/shell.h"
 #include "base/run_loop.h"
 #include "base/time/default_tick_clock.h"
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 
 namespace ash {
@@ -18,15 +18,15 @@ TabletModeControllerTestApi::TabletModeControllerTestApi()
 TabletModeControllerTestApi::~TabletModeControllerTestApi() = default;
 
 void TabletModeControllerTestApi::EnterTabletMode() {
-  tablet_mode_controller_->AttemptEnterTabletMode();
+  tablet_mode_controller_->SetEnabledForTest(true);
 }
 
 void TabletModeControllerTestApi::LeaveTabletMode() {
-  tablet_mode_controller_->AttemptLeaveTabletMode();
+  tablet_mode_controller_->SetEnabledForTest(false);
 }
 
 void TabletModeControllerTestApi::AttachExternalMouse() {
-  ws::InputDeviceClientTestApi().SetMouseDevices(
+  ui::DeviceDataManagerTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
   base::RunLoop().RunUntilIdle();
   tablet_mode_controller_->OnInputDeviceConfigurationChanged(

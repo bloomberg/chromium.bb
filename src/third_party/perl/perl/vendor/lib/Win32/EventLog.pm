@@ -9,7 +9,7 @@ package Win32::EventLog;
 
 use strict;
 use vars qw($VERSION $AUTOLOAD @ISA @EXPORT $GetMessageText);
-$VERSION = '0.076';
+$VERSION = '0.077';
 
 require Exporter;
 require DynaLoader;
@@ -83,7 +83,7 @@ sub new {
 sub DESTROY {shift->Close}
 
 #
-# Open (the rather braindead old way)
+# Open (the rather brain dead old way)
 # A variable initialized to empty must be supplied as the first
 # arg, followed by whatever new() takes
 #
@@ -112,7 +112,7 @@ sub Close {
 }
 
 # Read
-# Note: the EventInfo arguement requires a hash reference.
+# Note: the EventInfo argument requires a hash reference.
 sub Read {
     my $self = shift;
 
@@ -252,7 +252,7 @@ EventLogs.
 =item Win32::EventLog->new(SOURCENAME [,SERVERNAME]);
 
 The new() method creates a new EventLog object and returns a handle
-to it. This hande is then used to call the methods below.
+to it. This handle is then used to call the methods below.
 
 The method is overloaded in that if the supplied SOURCENAME
 argument contains one or more literal '\' characters (an illegal
@@ -266,7 +266,7 @@ therefore be specified as a UNC path.
 =item $handle->Backup(FILENAME);
 
 The Backup() method backs up the EventLog represented by $handle. It
-takes a single arguemt, FILENAME. When $handle represents an
+takes a single argument, FILENAME. When $handle represents an
 EventLog on a remote machine, FILENAME is filename on the remote
 machine and cannot be a UNC path (i.e you must use F<C:\TEMP\App.EVT>).
 The method will fail if the log file already exists.
@@ -284,8 +284,8 @@ represented by $handle will fail.
 
 =item $handle->GetOldest(SCALARREF);
 
-The GetOldest() method number of the the oldest EventLog record in
-the EventLog represented by $handle. This is required to correctly
+The GetOldest() method returns the number of the oldest EventLog record
+in the EventLog represented by $handle. This is required to correctly
 compute the OFFSET required by the Read() method.
 
 =item $handle->GetNumber(SCALARREF);
@@ -303,7 +303,7 @@ record in the EventLog is therefore computed by
 The Clear() method clears the EventLog represented by $handle.  If
 you provide a non-null FILENAME, the EventLog will be backed up
 into FILENAME before the EventLog is cleared. The method will fail
-if FILENAME is specified and the file refered to exists. Note also
+if FILENAME is specified and the file referred to exists. Note also
 that FILENAME specifies a file local to the machine on which the
 EventLog resides and cannot be specified as a UNC name.
 
@@ -316,7 +316,7 @@ contain the following keys:
 
 =item C<Computer>
 
-The C<Computer> field specfies which computer you want the EventLog
+The C<Computer> field specifies which computer you want the EventLog
 entry recorded.  If this key doesn't exist, the server name used to
 create the $handle is used.
 

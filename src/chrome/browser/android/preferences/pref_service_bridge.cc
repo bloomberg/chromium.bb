@@ -25,6 +25,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/android/chrome_jni_headers/PrefServiceBridge_jni.h"
 #include "chrome/browser/android/preferences/prefs.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -47,14 +48,13 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/strings/grit/components_locale_settings.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/version_info/version_info.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "jni/PrefServiceBridge_jni.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -168,7 +168,8 @@ static jboolean JNI_PrefServiceBridge_IsContentSettingEnabled(
          content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS ||
          content_settings_type == CONTENT_SETTINGS_TYPE_ADS ||
          content_settings_type == CONTENT_SETTINGS_TYPE_CLIPBOARD_READ ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD);
+         content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING);
   ContentSettingsType type =
       static_cast<ContentSettingsType>(content_settings_type);
   return GetBooleanForContentSetting(type);
@@ -184,11 +185,13 @@ static void JNI_PrefServiceBridge_SetContentSettingEnabled(
   DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
          content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS ||
          content_settings_type == CONTENT_SETTINGS_TYPE_ADS ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD);
+         content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING);
 
   ContentSetting value = CONTENT_SETTING_BLOCK;
   if (allow) {
-    if (content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD) {
+    if (content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD ||
+        content_settings_type == CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING) {
       value = CONTENT_SETTING_ASK;
     } else {
       value = CONTENT_SETTING_ALLOW;
@@ -868,14 +871,6 @@ static void JNI_PrefServiceBridge_SetTranslateEnabled(
     const JavaParamRef<jobject>& obj,
     jboolean enabled) {
   GetPrefService()->SetBoolean(prefs::kOfferTranslateEnabled, enabled);
-}
-
-static void JNI_PrefServiceBridge_ResetTranslateDefaults(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
-      ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
-  translate_prefs->ResetToDefaults();
 }
 
 static void JNI_PrefServiceBridge_MigrateJavascriptPreference(

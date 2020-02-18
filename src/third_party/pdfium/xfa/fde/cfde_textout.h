@@ -11,7 +11,6 @@
 #include <memory>
 #include <vector>
 
-#include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/fx_dib.h"
 #include "third_party/base/span.h"
 #include "xfa/fde/cfde_data.h"
@@ -21,6 +20,7 @@ class CFDE_RenderDevice;
 class CFGAS_GEFont;
 class CFX_RenderDevice;
 class CFX_TxtBreak;
+class TextCharPos;
 
 struct FDE_TTOPIECE {
   FDE_TTOPIECE();
@@ -40,7 +40,7 @@ class CFDE_TextOut {
                          const RetainPtr<CFGAS_GEFont>& pFont,
                          pdfium::span<TextCharPos> pCharPos,
                          float fFontSize,
-                         const CFX_Matrix* pMatrix);
+                         const CFX_Matrix& matrix);
 
   CFDE_TextOut();
   ~CFDE_TextOut();

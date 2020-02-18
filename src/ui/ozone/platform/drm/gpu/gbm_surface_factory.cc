@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 
 #include <gbm.h>
+
 #include <memory>
 #include <utility>
 
@@ -18,6 +19,7 @@
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
+#include "ui/ozone/common/linux/scoped_gbm_device.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
@@ -108,25 +110,42 @@ std::vector<gfx::BufferFormat> EnumerateSupportedBufferFormatsForTexturing() {
     if (!dev_path_file.IsValid())
       break;
 
-    gbm_device* device = gbm_create_device(dev_path_file.GetPlatformFile());
+    ScopedGbmDevice device(gbm_create_device(dev_path_file.GetPlatformFile()));
     if (!device) {
       LOG(ERROR) << "Couldn't create Gbm Device at " << dev_path.MaybeAsASCII();
       return supported_buffer_formats;
     }
 
+    // Skip the virtual graphics memory manager device.
+    if (base::LowerCaseEqualsASCII(gbm_device_get_backend_name(device.get()),
+                                   "vgem")) {
+      continue;
+    }
+
     for (int i = 0; i <= static_cast<int>(gfx::BufferFormat::LAST); ++i) {
       const gfx::BufferFormat buffer_format = static_cast<gfx::BufferFormat>(i);
-      if (base::ContainsValue(supported_buffer_formats, buffer_format))
+      if (base::Contains(supported_buffer_formats, buffer_format))
         continue;
       if (gbm_device_is_format_supported(
-              device, GetFourCCFormatFromBufferFormat(buffer_format),
+              device.get(), GetFourCCFormatFromBufferFormat(buffer_format),
               GBM_BO_USE_TEXTURING)) {
         supported_buffer_formats.push_back(buffer_format);
       }
     }
-    gbm_device_destroy(device);
   }
   return supported_buffer_formats;
+}
+
+void OnNativePixmapCreated(GbmSurfaceFactory::NativePixmapCallback callback,
+                           base::WeakPtr<GbmSurfaceFactory> weak_ptr,
+                           std::unique_ptr<GbmBuffer> buffer,
+                           scoped_refptr<DrmFramebuffer> framebuffer) {
+  if (!weak_ptr || !buffer) {
+    std::move(callback).Run(nullptr);
+  } else {
+    std::move(callback).Run(base::MakeRefCounted<GbmPixmap>(
+        weak_ptr.get(), std::move(buffer), std::move(framebuffer)));
+  }
 }
 
 }  // namespace
@@ -275,18 +294,27 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
                                          std::move(framebuffer));
 }
 
+void GbmSurfaceFactory::CreateNativePixmapAsync(gfx::AcceleratedWidget widget,
+                                                VkDevice vk_device,
+                                                gfx::Size size,
+                                                gfx::BufferFormat format,
+                                                gfx::BufferUsage usage,
+                                                NativePixmapCallback callback) {
+  drm_thread_proxy_->CreateBufferAsync(
+      widget, size, format, usage, 0 /* flags */,
+      base::BindOnce(OnNativePixmapCreated, std::move(callback),
+                     weak_factory_.GetWeakPtr()));
+}
+
 scoped_refptr<gfx::NativePixmap>
 GbmSurfaceFactory::CreateNativePixmapFromHandleInternal(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::NativePixmapHandle handle) {
-  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
-  DCHECK_GE(num_planes, handle.planes.size());
-  if (handle.planes.size() != num_planes) {
+  if (handle.planes.size() > GBM_MAX_PLANES) {
     return nullptr;
   }
-
 
   std::unique_ptr<GbmBuffer> buffer;
   scoped_refptr<DrmFramebuffer> framebuffer;

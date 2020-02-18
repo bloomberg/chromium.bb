@@ -13,8 +13,8 @@ source_set("mdns_interface") {
   ]
 
   public_deps = [
-    "../../../../osp_base",
     "../../../../platform",
+    "../../../../util",
   ]
 }
 
@@ -58,8 +58,8 @@ if (use_mdns_responder) {
 
     public_deps = [
       ":mdns_interface",
-      "../../../../osp_base",
       "../../../../platform",
+      "../../../../util",
     ]
 
     deps = [

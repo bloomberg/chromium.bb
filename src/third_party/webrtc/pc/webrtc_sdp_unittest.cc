@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <string.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <map>
@@ -1018,7 +1019,8 @@ class WebRtcSdpTest : public ::testing::Test {
     audio_desc_->AddStream(audio_stream);
     rtc::SocketAddress audio_addr("74.125.127.126", 2345);
     audio_desc_->set_connection_address(audio_addr);
-    desc_.AddContent(kAudioContentName, MediaProtocolType::kRtp, audio_desc_);
+    desc_.AddContent(kAudioContentName, MediaProtocolType::kRtp,
+                     absl::WrapUnique(audio_desc_));
 
     // VideoContentDescription
     video_desc_ = CreateVideoContentDescription();
@@ -1033,7 +1035,8 @@ class WebRtcSdpTest : public ::testing::Test {
     video_desc_->AddStream(video_stream);
     rtc::SocketAddress video_addr("74.125.224.39", 3457);
     video_desc_->set_connection_address(video_addr);
-    desc_.AddContent(kVideoContentName, MediaProtocolType::kRtp, video_desc_);
+    desc_.AddContent(kVideoContentName, MediaProtocolType::kRtp,
+                     absl::WrapUnique(video_desc_));
 
     // TransportInfo
     desc_.AddTransportInfo(TransportInfo(
@@ -1214,8 +1217,10 @@ class WebRtcSdpTest : public ::testing::Test {
 
     desc_.RemoveContentByName(kAudioContentName);
     desc_.RemoveContentByName(kVideoContentName);
-    desc_.AddContent(kAudioContentName, MediaProtocolType::kRtp, audio_desc_);
-    desc_.AddContent(kVideoContentName, MediaProtocolType::kRtp, video_desc_);
+    desc_.AddContent(kAudioContentName, MediaProtocolType::kRtp,
+                     absl::WrapUnique(audio_desc_));
+    desc_.AddContent(kVideoContentName, MediaProtocolType::kRtp,
+                     absl::WrapUnique(video_desc_));
 
     ASSERT_TRUE(jdesc_.Initialize(desc_.Clone(), jdesc_.session_id(),
                                   jdesc_.session_version()));
@@ -1234,7 +1239,8 @@ class WebRtcSdpTest : public ::testing::Test {
       audio_track_2.ssrcs.push_back(kAudioTrack2Ssrc);
     }
     audio_desc_2->AddStream(audio_track_2);
-    desc_.AddContent(kAudioContentName2, MediaProtocolType::kRtp, audio_desc_2);
+    desc_.AddContent(kAudioContentName2, MediaProtocolType::kRtp,
+                     absl::WrapUnique(audio_desc_2));
     desc_.AddTransportInfo(TransportInfo(
         kAudioContentName2, TransportDescription(kUfragVoice2, kPwdVoice2)));
     // Video track 2, in stream 2.
@@ -1247,7 +1253,8 @@ class WebRtcSdpTest : public ::testing::Test {
       video_track_2.ssrcs.push_back(kVideoTrack2Ssrc);
     }
     video_desc_2->AddStream(video_track_2);
-    desc_.AddContent(kVideoContentName2, MediaProtocolType::kRtp, video_desc_2);
+    desc_.AddContent(kVideoContentName2, MediaProtocolType::kRtp,
+                     absl::WrapUnique(video_desc_2));
     desc_.AddTransportInfo(TransportInfo(
         kVideoContentName2, TransportDescription(kUfragVideo2, kPwdVideo2)));
 
@@ -1261,7 +1268,8 @@ class WebRtcSdpTest : public ::testing::Test {
       video_track_3.ssrcs.push_back(kVideoTrack3Ssrc);
     }
     video_desc_3->AddStream(video_track_3);
-    desc_.AddContent(kVideoContentName3, MediaProtocolType::kRtp, video_desc_3);
+    desc_.AddContent(kVideoContentName3, MediaProtocolType::kRtp,
+                     absl::WrapUnique(video_desc_3));
     desc_.AddTransportInfo(TransportInfo(
         kVideoContentName3, TransportDescription(kUfragVideo3, kPwdVideo3)));
     desc_.set_msid_signaling(cricket::kMsidSignalingMediaSection);
@@ -1305,7 +1313,8 @@ class WebRtcSdpTest : public ::testing::Test {
     audio_track_2.set_stream_ids({kStreamId1, kStreamId2});
     audio_track_2.ssrcs.push_back(kAudioTrack2Ssrc);
     audio_desc_2->AddStream(audio_track_2);
-    desc_.AddContent(kAudioContentName2, MediaProtocolType::kRtp, audio_desc_2);
+    desc_.AddContent(kAudioContentName2, MediaProtocolType::kRtp,
+                     absl::WrapUnique(audio_desc_2));
     desc_.AddTransportInfo(TransportInfo(
         kAudioContentName2, TransportDescription(kUfragVoice2, kPwdVoice2)));
 
@@ -1317,7 +1326,8 @@ class WebRtcSdpTest : public ::testing::Test {
     audio_track_3.set_stream_ids({});
     audio_track_3.ssrcs.push_back(kAudioTrack3Ssrc);
     audio_desc_3->AddStream(audio_track_3);
-    desc_.AddContent(kAudioContentName3, MediaProtocolType::kRtp, audio_desc_3);
+    desc_.AddContent(kAudioContentName3, MediaProtocolType::kRtp,
+                     absl::WrapUnique(audio_desc_3));
     desc_.AddTransportInfo(TransportInfo(
         kAudioContentName3, TransportDescription(kUfragVoice3, kPwdVoice3)));
     desc_.set_msid_signaling(msid_signaling);
@@ -1339,7 +1349,8 @@ class WebRtcSdpTest : public ::testing::Test {
     audio_track.id = kAudioTrackId1;
     audio_track.set_stream_ids({kStreamId1});
     audio_desc->AddStream(audio_track);
-    desc_.AddContent(kAudioContentName, MediaProtocolType::kRtp, audio_desc);
+    desc_.AddContent(kAudioContentName, MediaProtocolType::kRtp,
+                     absl::WrapUnique(audio_desc));
 
     // Enable signaling a=msid lines.
     desc_.set_msid_signaling(cricket::kMsidSignalingMediaSection);
@@ -1363,7 +1374,7 @@ class WebRtcSdpTest : public ::testing::Test {
   template <class MCD>
   void CompareMediaContentDescription(const MCD* cd1, const MCD* cd2) {
     // type
-    EXPECT_EQ(cd1->type(), cd1->type());
+    EXPECT_EQ(cd1->type(), cd2->type());
 
     // content direction
     EXPECT_EQ(cd1->direction(), cd2->direction());
@@ -1567,6 +1578,8 @@ class WebRtcSdpTest : public ::testing::Test {
       }
       EXPECT_EQ(transport1.description.transport_options,
                 transport2.description.transport_options);
+      EXPECT_EQ(transport1.description.opaque_parameters,
+                transport2.description.opaque_parameters);
     }
 
     // global attributes
@@ -1660,6 +1673,15 @@ class WebRtcSdpTest : public ::testing::Test {
     desc_.AddTransportInfo(transport_info);
   }
 
+  void AddOpaqueTransportParameters(const std::string& content_name,
+                                    cricket::OpaqueTransportParameters params) {
+    ASSERT_TRUE(desc_.GetTransportInfoByName(content_name) != NULL);
+    cricket::TransportInfo info = *(desc_.GetTransportInfoByName(content_name));
+    desc_.RemoveTransportInfoByName(content_name);
+    info.description.opaque_parameters = params;
+    desc_.AddTransportInfo(info);
+  }
+
   void AddFingerprint() {
     desc_.RemoveTransportInfoByName(kAudioContentName);
     desc_.RemoveTransportInfoByName(kVideoContentName);
@@ -1685,8 +1707,10 @@ class WebRtcSdpTest : public ::testing::Test {
         RtpExtension(kExtmapUri, kExtmapId, encrypted));
     desc_.RemoveContentByName(kAudioContentName);
     desc_.RemoveContentByName(kVideoContentName);
-    desc_.AddContent(kAudioContentName, MediaProtocolType::kRtp, audio_desc_);
-    desc_.AddContent(kVideoContentName, MediaProtocolType::kRtp, video_desc_);
+    desc_.AddContent(kAudioContentName, MediaProtocolType::kRtp,
+                     absl::WrapUnique(audio_desc_));
+    desc_.AddContent(kVideoContentName, MediaProtocolType::kRtp,
+                     absl::WrapUnique(video_desc_));
   }
 
   void RemoveCryptos() {
@@ -1697,7 +1721,8 @@ class WebRtcSdpTest : public ::testing::Test {
   // Removes everything in StreamParams from the session description that is
   // used for a=ssrc lines.
   void RemoveSsrcSignalingFromStreamParams() {
-    for (cricket::ContentInfo content_info : jdesc_.description()->contents()) {
+    for (cricket::ContentInfo& content_info :
+         jdesc_.description()->contents()) {
       // With Unified Plan there should be one StreamParams per m= section.
       StreamParams& stream =
           content_info.media_description()->mutable_streams()[0];
@@ -1761,9 +1786,9 @@ class WebRtcSdpTest : public ::testing::Test {
     desc_.RemoveContentByName(kAudioContentName);
     desc_.RemoveContentByName(kVideoContentName);
     desc_.AddContent(kAudioContentName, MediaProtocolType::kRtp, audio_rejected,
-                     audio_desc_);
+                     absl::WrapUnique(audio_desc_));
     desc_.AddContent(kVideoContentName, MediaProtocolType::kRtp, video_rejected,
-                     video_desc_);
+                     absl::WrapUnique(video_desc_));
     SetIceUfragPwd(kAudioContentName, audio_rejected ? "" : kUfragVoice,
                    audio_rejected ? "" : kPwdVoice);
     SetIceUfragPwd(kVideoContentName, video_rejected ? "" : kUfragVideo,
@@ -1787,7 +1812,7 @@ class WebRtcSdpTest : public ::testing::Test {
     sctp_desc_->set_protocol(cricket::kMediaProtocolUdpDtlsSctp);
     sctp_desc_->set_port(kDefaultSctpPort);
     desc_.AddContent(kDataContentName, MediaProtocolType::kSctp,
-                     data.release());
+                     std::move(data));
     desc_.AddTransportInfo(TransportInfo(
         kDataContentName, TransportDescription(kUfragData, kPwdData)));
   }
@@ -1808,7 +1833,8 @@ class WebRtcSdpTest : public ::testing::Test {
         CryptoParams(1, "AES_CM_128_HMAC_SHA1_80",
                      "inline:FvLcvU2P3ZWmQxgPAgcDu7Zl9vftYElFOjEzhWs5", ""));
     data_desc_->set_protocol(cricket::kMediaProtocolSavpf);
-    desc_.AddContent(kDataContentName, MediaProtocolType::kRtp, data.release());
+    desc_.AddContent(kDataContentName, MediaProtocolType::kRtp,
+                     std::move(data));
     desc_.AddTransportInfo(TransportInfo(
         kDataContentName, TransportDescription(kUfragData, kPwdData)));
   }
@@ -1841,9 +1867,9 @@ class WebRtcSdpTest : public ::testing::Test {
     desc_.RemoveContentByName(kAudioContentName);
     desc_.RemoveContentByName(kVideoContentName);
     desc_.AddContent(kAudioContentName, MediaProtocolType::kRtp, audio_rejected,
-                     audio_desc_);
+                     absl::WrapUnique(audio_desc_));
     desc_.AddContent(kVideoContentName, MediaProtocolType::kRtp, video_rejected,
-                     video_desc_);
+                     absl::WrapUnique(video_desc_));
     SetIceUfragPwd(kAudioContentName, audio_rejected ? "" : kUfragVoice,
                    audio_rejected ? "" : kPwdVoice);
     SetIceUfragPwd(kVideoContentName, video_rejected ? "" : kUfragVideo,
@@ -2187,6 +2213,25 @@ TEST_F(WebRtcSdpTest, SerializeSessionDescriptionWithIceOptions) {
   InjectAfter(kAttributeIcePwdVideo, "a=ice-options:iceoption2 iceoption3\r\n",
               &sdp_with_ice_options);
   EXPECT_EQ(sdp_with_ice_options, message);
+}
+
+TEST_F(WebRtcSdpTest, SerializeSessionDescriptionWithOpaqueTransportParams) {
+  cricket::OpaqueTransportParameters params;
+  params.protocol = "foo";
+  params.parameters = "test64";
+  AddOpaqueTransportParameters(kAudioContentName, params);
+  AddOpaqueTransportParameters(kVideoContentName, params);
+
+  ASSERT_TRUE(jdesc_.Initialize(desc_.Clone(), jdesc_.session_id(),
+                                jdesc_.session_version()));
+  std::string message = webrtc::SdpSerialize(jdesc_);
+
+  std::string sdp_with_transport_parameters = kSdpFullString;
+  InjectAfter(kAttributeIcePwdVoice, "a=x-opaque:foo:dGVzdDY0\r\n",
+              &sdp_with_transport_parameters);
+  InjectAfter(kAttributeIcePwdVideo, "a=x-opaque:foo:dGVzdDY0\r\n",
+              &sdp_with_transport_parameters);
+  EXPECT_EQ(message, sdp_with_transport_parameters);
 }
 
 TEST_F(WebRtcSdpTest, SerializeSessionDescriptionWithRecvOnlyContent) {
@@ -2575,6 +2620,30 @@ TEST_F(WebRtcSdpTest, DeserializeSessionDescriptionWithIceOptions) {
   ASSERT_TRUE(jdesc_.Initialize(desc_.Clone(), jdesc_.session_id(),
                                 jdesc_.session_version()));
   EXPECT_TRUE(CompareSessionDescription(jdesc_, jdesc_with_ice_options));
+}
+
+TEST_F(WebRtcSdpTest, DeserializeSessionDescriptionWithOpaqueTransportParams) {
+  std::string sdp_with_transport_parameters = kSdpFullString;
+  InjectAfter(kAttributeIcePwdVoice, "a=x-opaque:foo:dGVzdDY0\r\n",
+              &sdp_with_transport_parameters);
+  InjectAfter(kAttributeIcePwdVideo, "a=x-opaque:foo:dGVzdDY0\r\n",
+              &sdp_with_transport_parameters);
+
+  JsepSessionDescription jdesc_with_transport_parameters(kDummyType);
+  EXPECT_TRUE(SdpDeserialize(sdp_with_transport_parameters,
+                             &jdesc_with_transport_parameters));
+
+  cricket::OpaqueTransportParameters params;
+  params.protocol = "foo";
+  params.parameters = "test64";
+
+  AddOpaqueTransportParameters(kAudioContentName, params);
+  AddOpaqueTransportParameters(kVideoContentName, params);
+
+  ASSERT_TRUE(jdesc_.Initialize(desc_.Clone(), jdesc_.session_id(),
+                                jdesc_.session_version()));
+  EXPECT_TRUE(
+      CompareSessionDescription(jdesc_, jdesc_with_transport_parameters));
 }
 
 TEST_F(WebRtcSdpTest, DeserializeSessionDescriptionWithUfragPwd) {
@@ -3163,6 +3232,25 @@ TEST_F(WebRtcSdpTest, SerializeSdpWithConferenceFlag) {
   EXPECT_TRUE(video->conference_mode());
 }
 
+TEST_F(WebRtcSdpTest, SerializeAndDeserializeRemoteNetEstimate) {
+  {
+    // By default remote estimates are disabled.
+    JsepSessionDescription dst(kDummyType);
+    SdpDeserialize(webrtc::SdpSerialize(jdesc_), &dst);
+    EXPECT_FALSE(cricket::GetFirstVideoContentDescription(dst.description())
+                     ->remote_estimate());
+  }
+  {
+    // When remote estimate is enabled, the setting is propagated via SDP.
+    cricket::GetFirstVideoContentDescription(jdesc_.description())
+        ->set_remote_estimate(true);
+    JsepSessionDescription dst(kDummyType);
+    SdpDeserialize(webrtc::SdpSerialize(jdesc_), &dst);
+    EXPECT_TRUE(cricket::GetFirstVideoContentDescription(dst.description())
+                    ->remote_estimate());
+  }
+}
+
 TEST_F(WebRtcSdpTest, DeserializeBrokenSdp) {
   const char kSdpDestroyer[] = "!@#$%^&";
   const char kSdpEmptyType[] = " =candidate";
@@ -3404,6 +3492,54 @@ TEST_F(WebRtcSdpTest, DeserializeVideoFmtpWithSpace) {
   EXPECT_EQ(found->second, "40");
 }
 
+TEST_F(WebRtcSdpTest, DeserializePacketizationAttributeWithIllegalValue) {
+  JsepSessionDescription jdesc_output(kDummyType);
+
+  const char kSdpWithPacketizationString[] =
+      "v=0\r\n"
+      "o=- 18446744069414584320 18446462598732840960 IN IP4 127.0.0.1\r\n"
+      "s=-\r\n"
+      "t=0 0\r\n"
+      "m=audio 9 RTP/SAVPF 111\r\n"
+      "a=rtpmap:111 opus/48000/2\r\n"
+      "a=packetization:111 unknownpacketizationattributeforaudio\r\n"
+      "m=video 3457 RTP/SAVPF 120 121 122\r\n"
+      "a=rtpmap:120 VP8/90000\r\n"
+      "a=packetization:120 raw\r\n"
+      "a=rtpmap:121 VP9/90000\r\n"
+      "a=rtpmap:122 H264/90000\r\n"
+      "a=packetization:122 unknownpacketizationattributevalue\r\n";
+
+  SdpParseError error;
+  EXPECT_TRUE(webrtc::SdpDeserialize(kSdpWithPacketizationString, &jdesc_output,
+                                     &error));
+
+  AudioContentDescription* acd =
+      GetFirstAudioContentDescription(jdesc_output.description());
+  ASSERT_TRUE(acd);
+  ASSERT_THAT(acd->codecs(), testing::SizeIs(1));
+  cricket::AudioCodec opus = acd->codecs()[0];
+  EXPECT_EQ(opus.name, "opus");
+  EXPECT_EQ(opus.id, 111);
+
+  const VideoContentDescription* vcd =
+      GetFirstVideoContentDescription(jdesc_output.description());
+  ASSERT_TRUE(vcd);
+  ASSERT_THAT(vcd->codecs(), testing::SizeIs(3));
+  cricket::VideoCodec vp8 = vcd->codecs()[0];
+  EXPECT_EQ(vp8.name, "VP8");
+  EXPECT_EQ(vp8.id, 120);
+  EXPECT_EQ(vp8.packetization, "raw");
+  cricket::VideoCodec vp9 = vcd->codecs()[1];
+  EXPECT_EQ(vp9.name, "VP9");
+  EXPECT_EQ(vp9.id, 121);
+  EXPECT_EQ(vp9.packetization, absl::nullopt);
+  cricket::VideoCodec h264 = vcd->codecs()[2];
+  EXPECT_EQ(h264.name, "H264");
+  EXPECT_EQ(h264.id, 122);
+  EXPECT_EQ(h264.packetization, absl::nullopt);
+}
+
 TEST_F(WebRtcSdpTest, SerializeAudioFmtpWithUnknownParameter) {
   AudioContentDescription* acd = GetFirstAudioContentDescription(&desc_);
 
@@ -3470,6 +3606,22 @@ TEST_F(WebRtcSdpTest, SerializeVideoFmtp) {
   InjectAfter("a=rtpmap:120 VP8/90000\r\n",
               "a=fmtp:120 x-google-min-bitrate=10\r\n", &sdp_with_fmtp);
   EXPECT_EQ(sdp_with_fmtp, message);
+}
+
+TEST_F(WebRtcSdpTest, SerializeVideoPacketizationAttribute) {
+  VideoContentDescription* vcd = GetFirstVideoContentDescription(&desc_);
+
+  cricket::VideoCodecs codecs = vcd->codecs();
+  codecs[0].packetization = "raw";
+  vcd->set_codecs(codecs);
+
+  ASSERT_TRUE(jdesc_.Initialize(desc_.Clone(), jdesc_.session_id(),
+                                jdesc_.session_version()));
+  std::string message = webrtc::SdpSerialize(jdesc_);
+  std::string sdp_with_packetization = kSdpFullString;
+  InjectAfter("a=rtpmap:120 VP8/90000\r\n", "a=packetization:120 raw\r\n",
+              &sdp_with_packetization);
+  EXPECT_EQ(sdp_with_packetization, message);
 }
 
 TEST_F(WebRtcSdpTest, DeserializeAndSerializeSdpWithIceLite) {
@@ -4339,6 +4491,61 @@ TEST_F(WebRtcSdpTest, TestDeserializeIgnoresDuplicateRidLines) {
   CompareRidDescriptionIds(rids, {"1", "3"});
 }
 
+TEST_F(WebRtcSdpTest, TestDeserializeRidSendDirection) {
+  std::string sdp = kUnifiedPlanSdpFullStringNoSsrc;
+  sdp += "a=rid:1 recv\r\n";
+  sdp += "a=rid:2 recv\r\n";
+  sdp += "a=simulcast:send 1;2\r\n";
+  JsepSessionDescription output(kDummyType);
+  SdpParseError error;
+  EXPECT_TRUE(webrtc::SdpDeserialize(sdp, &output, &error));
+  const cricket::ContentInfos& contents = output.description()->contents();
+  const cricket::MediaContentDescription* media =
+      contents.back().media_description();
+  EXPECT_FALSE(media->HasSimulcast());
+}
+
+TEST_F(WebRtcSdpTest, TestDeserializeRidRecvDirection) {
+  std::string sdp = kUnifiedPlanSdpFullStringNoSsrc;
+  sdp += "a=rid:1 send\r\n";
+  sdp += "a=rid:2 send\r\n";
+  sdp += "a=simulcast:recv 1;2\r\n";
+  JsepSessionDescription output(kDummyType);
+  SdpParseError error;
+  EXPECT_TRUE(webrtc::SdpDeserialize(sdp, &output, &error));
+  const cricket::ContentInfos& contents = output.description()->contents();
+  const cricket::MediaContentDescription* media =
+      contents.back().media_description();
+  EXPECT_FALSE(media->HasSimulcast());
+}
+
+TEST_F(WebRtcSdpTest, TestDeserializeIgnoresWrongRidDirectionLines) {
+  std::string sdp = kUnifiedPlanSdpFullStringNoSsrc;
+  sdp += "a=rid:1 send\r\n";
+  sdp += "a=rid:2 send\r\n";
+  sdp += "a=rid:3 send\r\n";
+  sdp += "a=rid:4 recv\r\n";
+  sdp += "a=rid:5 recv\r\n";
+  sdp += "a=rid:6 recv\r\n";
+  sdp += "a=simulcast:send 1;5;3 recv 4;2;6\r\n";
+  JsepSessionDescription output(kDummyType);
+  SdpParseError error;
+  EXPECT_TRUE(webrtc::SdpDeserialize(sdp, &output, &error));
+  const cricket::ContentInfos& contents = output.description()->contents();
+  const cricket::MediaContentDescription* media =
+      contents.back().media_description();
+  EXPECT_TRUE(media->HasSimulcast());
+  const SimulcastDescription& simulcast = media->simulcast_description();
+  EXPECT_EQ(2ul, simulcast.send_layers().size());
+  EXPECT_EQ(2ul, simulcast.receive_layers().size());
+  EXPECT_EQ(2ul, simulcast.send_layers().GetAllLayers().size());
+  EXPECT_EQ(2ul, simulcast.receive_layers().GetAllLayers().size());
+
+  EXPECT_FALSE(media->streams().empty());
+  const std::vector<RidDescription>& rids = media->streams()[0].rids();
+  CompareRidDescriptionIds(rids, {"1", "3"});
+}
+
 // Simulcast serialization integration test.
 // This test will serialize and deserialize the description and compare.
 // More detailed tests for parsing simulcast can be found in
@@ -4355,12 +4562,20 @@ TEST_F(WebRtcSdpTest, SerializeSimulcast_ComplexSerialization) {
   send_rids.push_back(RidDescription("3", RidDirection::kSend));
   send_rids.push_back(RidDescription("4", RidDirection::kSend));
   send_stream.set_rids(send_rids);
+  std::vector<RidDescription> receive_rids;
+  receive_rids.push_back(RidDescription("5", RidDirection::kReceive));
+  receive_rids.push_back(RidDescription("6", RidDirection::kReceive));
+  receive_rids.push_back(RidDescription("7", RidDirection::kReceive));
+  media->set_receive_rids(receive_rids);
 
   SimulcastDescription& simulcast = media->simulcast_description();
   simulcast.send_layers().AddLayerWithAlternatives(
       {SimulcastLayer("2", false), SimulcastLayer("1", true)});
   simulcast.send_layers().AddLayerWithAlternatives(
       {SimulcastLayer("4", false), SimulcastLayer("3", false)});
+  simulcast.receive_layers().AddLayer({SimulcastLayer("5", false)});
+  simulcast.receive_layers().AddLayer({SimulcastLayer("6", false)});
+  simulcast.receive_layers().AddLayer({SimulcastLayer("7", false)});
 
   TestSerialize(jdesc_);
 }

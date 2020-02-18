@@ -3,7 +3,7 @@ package Win32::WinError;
 require Exporter;
 require DynaLoader;
 
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export

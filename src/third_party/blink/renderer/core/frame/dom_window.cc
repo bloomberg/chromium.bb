@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/location.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/core/frame/window_post_message_options.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
@@ -29,6 +28,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -465,15 +465,26 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   if (options->includeUserActivation())
     user_activation = UserActivation::CreateSnapshot(source);
 
+  LocalFrame* source_frame = source->GetFrame();
+
+  bool allow_autoplay = false;
+  if (RuntimeEnabledFeatures::ExperimentalAutoplayDynamicDelegationEnabled(
+          GetExecutionContext()) &&
+      LocalFrame::HasTransientUserActivation(source_frame) &&
+      options->hasAllow()) {
+    Vector<String> policy_entry_list;
+    options->allow().Split(' ', policy_entry_list);
+    allow_autoplay = policy_entry_list.Contains("autoplay");
+  }
+
   MessageEvent* event = MessageEvent::Create(
       std::move(channels), std::move(message), source_origin, String(), source,
-      user_activation, options->transferUserActivation());
+      user_activation, options->transferUserActivation(), allow_autoplay);
 
   // Transfer user activation state in the source's renderer when
   // |transferUserActivation| is true.
   // TODO(lanwei): we should execute the below code after the post task fires
   // (for both local and remote posting messages).
-  LocalFrame* source_frame = source->GetFrame();
   if (RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
       options->transferUserActivation() &&
       LocalFrame::HasTransientUserActivation(source_frame)) {

@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class ScriptPromiseResolver;
 class ScriptState;
 
 class MODULES_EXPORT ServiceWorkerWindowClient final
@@ -21,8 +22,14 @@ class MODULES_EXPORT ServiceWorkerWindowClient final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  using ResolveWindowClientCallback = base::OnceCallback<
+      void(bool, mojom::blink::ServiceWorkerClientInfoPtr, const String&)>;
+
   static ServiceWorkerWindowClient* Create(
       const mojom::blink::ServiceWorkerClientInfo&);
+
+  static ResolveWindowClientCallback CreateResolveWindowClientCallback(
+      ScriptPromiseResolver*);
 
   explicit ServiceWorkerWindowClient(
       const mojom::blink::ServiceWorkerClientInfo&);

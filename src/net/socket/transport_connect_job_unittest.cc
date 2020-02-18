@@ -35,9 +35,7 @@ class TransportConnectJobTest : public WithScopedTaskEnvironment,
  public:
   TransportConnectJobTest()
       : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
         client_socket_factory_(&net_log_),
         common_connect_job_params_(
             &client_socket_factory_,
@@ -49,16 +47,11 @@ class TransportConnectJobTest : public WithScopedTaskEnvironment,
             nullptr /* quic_stream_factory */,
             nullptr /* proxy_delegate */,
             nullptr /* http_user_agent_settings */,
-            SSLClientSocketContext(),
-            SSLClientSocketContext(),
+            nullptr /* ssl_client_context */,
             nullptr /* socket_performance_watcher_factory */,
             nullptr /* network_quality_estimator */,
             &net_log_,
-            nullptr /* websocket_endpoint_lock_manager */) {
-    // Set an initial delay to ensure that calls to TimeTicks::Now() do not
-    // return a null value.
-    FastForwardBy(base::TimeDelta::FromSeconds(1));
-  }
+            nullptr /* websocket_endpoint_lock_manager */) {}
 
   ~TransportConnectJobTest() override {}
 

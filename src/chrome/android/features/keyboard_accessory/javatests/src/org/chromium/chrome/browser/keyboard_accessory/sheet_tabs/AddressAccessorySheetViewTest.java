@@ -115,9 +115,7 @@ public class AddressAccessorySheetViewTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.add(new AccessorySheetDataPiece(
                     createInfo(
-                            /*nameFirst=*/"Maya",
-                            /*nameMiddle=*/"J.",
-                            /*nameLast=*/"Park",
+                            /*nameFull=*/"Maya J. Park",
                             /*companyName=*/"",
                             /*addressHomeLine1=*/"100 Test Str.",
                             /*addressHomeLine2=*/"",
@@ -133,12 +131,12 @@ public class AddressAccessorySheetViewTest {
                     AccessorySheetDataPiece.Type.FOOTER_COMMAND));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(2, () -> mView.get().getChildCount()));
+        // Wait until at least one element is rendered. Test devices with small screens will cause
+        // the footer to not be created. Instantiating a footer still covers potential crashes.
+        CriteriaHelper.pollUiThread(() -> mView.get().getChildCount() > 0);
 
         // Check that the titles are correct:
-        assertThat(getChipText(R.id.name_first), is("Maya"));
-        assertThat(getChipText(R.id.name_middle), is("J."));
-        assertThat(getChipText(R.id.name_last), is("Park"));
+        assertThat(getChipText(R.id.name_full), is("Maya J. Park"));
         assertThat(getChipText(R.id.company_name), is(""));
         assertThat(getChipText(R.id.address_home_line_1), is("100 Test Str."));
         assertThat(getChipText(R.id.address_home_line_2), is(""));
@@ -153,43 +151,38 @@ public class AddressAccessorySheetViewTest {
         assertThat(findChipView(R.id.company_name).isShown(), is(false));
 
         // Chips are clickable:
-        TestThreadUtils.runOnUiThreadBlocking(findChipView(R.id.name_first)::performClick);
+        TestThreadUtils.runOnUiThreadBlocking(findChipView(R.id.name_full)::performClick);
         assertThat(clicked.get(), is(true));
         clicked.set(false);
         TestThreadUtils.runOnUiThreadBlocking(findChipView(R.id.email_address)::performClick);
         assertThat(clicked.get(), is(true));
     }
 
-    private UserInfo createInfo(String nameFirst, String nameMiddle, String nameLast,
-            String companyName, String addressHomeLine1, String addressHomeLine2,
-            String addressHomeZip, String addressHomeCity, String addressHomeState,
-            String addressHomeCountry, String phoneHomeWholeNumber, String emailAddress,
-            AtomicBoolean clickRecorder) {
-        UserInfo info = new UserInfo(null);
+    private UserInfo createInfo(String nameFull, String companyName, String addressHomeLine1,
+            String addressHomeLine2, String addressHomeZip, String addressHomeCity,
+            String addressHomeState, String addressHomeCountry, String phoneHomeWholeNumber,
+            String emailAddress, AtomicBoolean clickRecorder) {
+        UserInfo info = new UserInfo("", null);
         info.addField(
-                new UserInfoField(nameFirst, nameFirst, false, item -> clickRecorder.set(true)));
-        info.addField(
-                new UserInfoField(nameMiddle, nameMiddle, false, item -> clickRecorder.set(true)));
-        info.addField(
-                new UserInfoField(nameLast, nameLast, false, item -> clickRecorder.set(true)));
+                new UserInfoField(nameFull, nameFull, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
-                companyName, companyName, false, item -> clickRecorder.set(true)));
+                companyName, companyName, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
-                addressHomeLine1, addressHomeLine1, false, item -> clickRecorder.set(true)));
+                addressHomeLine1, addressHomeLine1, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
-                addressHomeLine2, addressHomeLine2, false, item -> clickRecorder.set(true)));
+                addressHomeLine2, addressHomeLine2, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
-                addressHomeZip, addressHomeZip, false, item -> clickRecorder.set(true)));
+                addressHomeZip, addressHomeZip, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
-                addressHomeCity, addressHomeCity, false, item -> clickRecorder.set(true)));
+                addressHomeCity, addressHomeCity, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
-                addressHomeState, addressHomeState, false, item -> clickRecorder.set(true)));
-        info.addField(new UserInfoField(
-                addressHomeCountry, addressHomeCountry, false, item -> clickRecorder.set(true)));
-        info.addField(new UserInfoField(phoneHomeWholeNumber, phoneHomeWholeNumber, false,
+                addressHomeState, addressHomeState, "", false, item -> clickRecorder.set(true)));
+        info.addField(new UserInfoField(addressHomeCountry, addressHomeCountry, "", false,
+                item -> clickRecorder.set(true)));
+        info.addField(new UserInfoField(phoneHomeWholeNumber, phoneHomeWholeNumber, "", false,
                 item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
-                emailAddress, emailAddress, false, item -> clickRecorder.set(true)));
+                emailAddress, emailAddress, "", false, item -> clickRecorder.set(true)));
         return info;
     }
 

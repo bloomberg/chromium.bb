@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <zircon/processargs.h>
 
+#include <fuchsia/deprecatedtimezone/cpp/fidl.h>
 #include <fuchsia/fonts/cpp/fidl.h>
 #include <fuchsia/logger/cpp/fidl.h>
 #include <fuchsia/mediacodec/cpp/fidl.h>
@@ -15,6 +16,9 @@
 #include <fuchsia/netstack/cpp/fidl.h>
 #include <fuchsia/sysmem/cpp/fidl.h>
 #include <fuchsia/ui/scenic/cpp/fidl.h>
+#include <lib/sys/cpp/component_context.h>
+#include <lib/sys/cpp/service_directory.h>
+
 #include <memory>
 #include <utility>
 
@@ -22,8 +26,8 @@
 #include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/filtered_service_directory.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -78,9 +82,10 @@ constexpr SandboxConfig kSandboxConfigs[] = {
     },
     {
         SANDBOX_TYPE_NETWORK,
-        base::make_span(
-            (const char* const[]){fuchsia::net::SocketProvider::Name_,
-                                  fuchsia::netstack::Netstack::Name_}),
+        base::make_span((const char* const[]){
+            fuchsia::net::SocketProvider::Name_,
+            fuchsia::net::NameLookup::Name_, fuchsia::netstack::Netstack::Name_,
+            "fuchsia.posix.socket.Provider"}),
         kProvideSslConfig,
     },
     {
@@ -107,8 +112,9 @@ const SandboxConfig& GetConfigForSandboxType(SandboxType type) {
 }
 
 // Services that are passed to all processes.
-constexpr base::span<const char* const> kDefaultServices =
-    base::make_span((const char* const[]){fuchsia::logger::LogSink::Name_});
+constexpr base::span<const char* const> kDefaultServices = base::make_span(
+    (const char* const[]){fuchsia::deprecatedtimezone::Timezone::Name_,
+                          fuchsia::logger::LogSink::Name_});
 
 }  // namespace
 
@@ -141,7 +147,7 @@ void SandboxPolicyFuchsia::Initialize(service_manager::SandboxType type) {
     service_directory_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     service_directory_ =
         std::make_unique<base::fuchsia::FilteredServiceDirectory>(
-            base::fuchsia::ServiceDirectoryClient::ForCurrentProcess());
+            base::fuchsia::ComponentContextForCurrentProcess()->svc().get());
     for (const char* service_name : kDefaultServices) {
       service_directory_->AddService(service_name);
     }
@@ -150,7 +156,7 @@ void SandboxPolicyFuchsia::Initialize(service_manager::SandboxType type) {
     }
     // Bind the service directory and store the client channel for
     // UpdateLaunchOptionsForSandbox()'s use.
-    service_directory_client_ = service_directory_->ConnectClient();
+    service_directory_->ConnectClient(service_directory_client_.NewRequest());
     CHECK(service_directory_client_);
   }
 }

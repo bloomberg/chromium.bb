@@ -7,6 +7,7 @@
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fdio/directory.h>
 #include <lib/fidl/cpp/binding.h>
+#include <lib/zx/socket.h>
 #include <zircon/processargs.h>
 #include <zircon/types.h>
 
@@ -212,6 +213,38 @@ TEST_F(ContextProviderImplTest, LaunchContext) {
   fuchsia::web::CreateContextParams create_params = BuildCreateContextParams();
   provider_ptr_->Create(std::move(create_params), context.NewRequest());
   CheckContextResponsive(&context);
+}
+
+TEST_F(ContextProviderImplTest, LaunchContextInvalidArguments) {
+  {
+    // Attempt to create a Context without specifying a service directory.
+    fidl::InterfacePtr<fuchsia::web::Context> context;
+    fuchsia::web::CreateContextParams create_params;
+    provider_ptr_->Create(std::move(create_params), context.NewRequest());
+    base::RunLoop run_loop;
+    context.set_error_handler([&run_loop](zx_status_t status) {
+      EXPECT_EQ(status, ZX_ERR_INVALID_ARGS);
+      run_loop.Quit();
+    });
+  }
+
+  // Deliberately supply the wrong kind of object as the data-directory.
+  {
+    fidl::InterfacePtr<fuchsia::web::Context> context;
+    fuchsia::web::CreateContextParams create_params =
+        BuildCreateContextParams();
+    zx::socket socket1, socket2;
+    ASSERT_EQ(zx::socket::create(0, &socket1, &socket2), ZX_OK);
+    create_params.set_data_directory(
+        fidl::InterfaceHandle<fuchsia::io::Directory>(
+            zx::channel(socket1.release())));
+    provider_ptr_->Create(std::move(create_params), context.NewRequest());
+    base::RunLoop run_loop;
+    context.set_error_handler([&run_loop](zx_status_t status) {
+      EXPECT_EQ(status, ZX_ERR_INVALID_ARGS);
+      run_loop.Quit();
+    });
+  }
 }
 
 TEST_F(ContextProviderImplTest, MultipleConcurrentClients) {

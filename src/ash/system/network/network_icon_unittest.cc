@@ -10,7 +10,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/active_network_icon.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/network/network_state_handler.h"
@@ -151,7 +150,7 @@ class NetworkIconTest : public testing::Test {
   IconType icon_type_ = ICON_TYPE_TRAY_REGULAR;
 
  private:
-  const base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;
   std::unique_ptr<TrayNetworkStateModel> network_state_model_;
   std::unique_ptr<ActiveNetworkIcon> active_network_icon_;

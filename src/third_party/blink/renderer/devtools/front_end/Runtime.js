@@ -111,7 +111,7 @@ var Runtime = class {  // eslint-disable-line
     return Runtime.loadResourcePromise(url).catch(err => {
       const urlWithFallbackVersion = url.replace(/@[0-9a-f]{40}/, REMOTE_MODULE_FALLBACK_REVISION);
       // TODO(phulce): mark fallbacks in module.json and modify build script instead
-      if (urlWithFallbackVersion === url || !url.includes('audits2_worker_module'))
+      if (urlWithFallbackVersion === url || !url.includes('audits_worker_module'))
         throw err;
       return Runtime.loadResourcePromise(urlWithFallbackVersion);
     });
@@ -741,7 +741,8 @@ Runtime.Module = class {
     const promises = [];
     for (let i = 0; i < resources.length; ++i) {
       const url = this._modularizeURL(resources[i]);
-      promises.push(Runtime._loadResourceIntoCache(url, true));
+      const isHtml = url.endsWith('.html');
+      promises.push(Runtime._loadResourceIntoCache(url, !isHtml /* appendSourceURL */));
     }
     return Promise.all(promises).then(undefined);
   }
@@ -928,6 +929,8 @@ Runtime.ExperimentsSupport = class {
     this._experiments = [];
     this._experimentNames = {};
     this._enabledTransiently = {};
+    /** @type {!Set<string>} */
+    this._serverEnabled = new Set();
   }
 
   /**
@@ -982,6 +985,8 @@ Runtime.ExperimentsSupport = class {
       return false;
     if (this._enabledTransiently[experimentName])
       return true;
+    if (this._serverEnabled.has(experimentName))
+      return true;
     if (!this.supportEnabled())
       return false;
 
@@ -1010,6 +1015,16 @@ Runtime.ExperimentsSupport = class {
   }
 
   /**
+   * @param {!Array.<string>} experimentNames
+   */
+  setServerEnabledExperiments(experimentNames) {
+    for (const experiment of experimentNames) {
+      this._checkExperiment(experiment);
+      this._serverEnabled.add(experiment);
+    }
+  }
+
+  /**
    * @param {string} experimentName
    */
   enableForTest(experimentName) {
@@ -1021,6 +1036,7 @@ Runtime.ExperimentsSupport = class {
     this._experiments = [];
     this._experimentNames = {};
     this._enabledTransiently = {};
+    this._serverEnabled.clear();
   }
 
   cleanUpStaleExperiments() {

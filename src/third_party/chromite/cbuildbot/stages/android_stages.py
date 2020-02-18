@@ -120,15 +120,17 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
     """Updates board metadata to fill in Android build info.
 
     Returns:
-      (versions, branches) where:
+      (versions, branches, targets) where:
         versions: A set of Android versions used in target boards.
         branches: A set of Android branch names used in target boards.
+        targets: A set of Android targets used in target boards.
     """
     # Need to always iterate through and generate the board-specific
     # Android version metadata.  Each board must be handled separately
     # since there might be differing builds in the same release group.
     versions = set()
     branches = set()
+    targets = set()
 
     for builder_run in self._run.GetUngroupedBuilderRuns():
       for board in builder_run.config.boards:
@@ -142,7 +144,7 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
         except cbuildbot_run.NoAndroidVersionError as ex:
           logging.info('Board %s does not contain Android (%s)', board, ex)
         try:
-        # Determine the branch for each board and record metadata.
+          # Determine the branch for each board and record metadata.
           branch = self._run.DetermineAndroidBranch(board)
           builder_run.attrs.metadata.UpdateBoardDictWithDict(
               board, {'android-container-branch': branch})
@@ -150,16 +152,25 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
           logging.info('Board %s has Android branch %s', board, branch)
         except cbuildbot_run.NoAndroidBranchError as ex:
           logging.info('Board %s does not contain Android (%s)', board, ex)
+        try:
+          # Determine the target for each board and record metadata.
+          target = self._run.DetermineAndroidTarget(board)
+          builder_run.attrs.metadata.UpdateBoardDictWithDict(
+              board, {'android-container-target': target})
+          targets.add(target)
+          logging.info('Board %s has Android target %s', board, target)
+        except cbuildbot_run.NoAndroidTargetError as ex:
+          logging.info('Board %s does not contain Android (%s)', board, ex)
         arc_use = self._run.HasUseFlag(board, 'arc')
         logging.info('Board %s %s arc USE flag set.', board,
                      'has' if arc_use else 'does not have')
         builder_run.attrs.metadata.UpdateBoardDictWithDict(
             board, {'arc-use-set': arc_use})
 
-    return (versions, branches)
+    return (versions, branches, targets)
 
   def PerformStage(self):
-    versions, branches = self._UpdateBoardDictsForAndroidBuildInfo()
+    versions, branches, targets = self._UpdateBoardDictsForAndroidBuildInfo()
 
     # Unfortunately we can't inspect Android build info in slaves from masters,
     # so metadata is usually unavailable on masters (e.g. master-release).
@@ -191,16 +202,20 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
 
     metadata_version, debug_version = _Aggregate(list(versions))
     metadata_branch, debug_branch = _Aggregate(list(branches))
+    metadata_target, debug_target = _Aggregate(list(targets))
 
     # Update the primary metadata and upload it.
     self._run.attrs.metadata.UpdateKeyDictWithDict(
         'version',
-        {'android': metadata_version, 'android-branch': metadata_branch})
+        {'android': metadata_version,
+         'android-branch': metadata_branch,
+         'android-target': metadata_target})
     self.UploadMetadata(filename=constants.PARTIAL_METADATA_JSON)
 
     # Leave build info in buildbot steps page for convenience.
     logging.PrintBuildbotStepText('tag %s' % debug_version)
     logging.PrintBuildbotStepText('branch %s' % debug_branch)
+    logging.PrintBuildbotStepText('target %s' % debug_target)
 
 
 class DownloadAndroidDebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
@@ -232,11 +247,21 @@ class DownloadAndroidDebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
         android_version, android_build_branch)
 
     arch = self._run.DetermineAndroidABI(self._current_board)
+    variant = self._run.DetermineAndroidVariant(self._current_board)
+    android_target = self._run.DetermineAndroidTarget(self._current_board)
+    # For user builds, there are no suffix.
+    # For userdebug builds, there is an explicit '_userdebug' suffix.
+    suffix = ''
+    if variant != 'user':
+      suffix = '_' + variant
 
     symbols_file_url = constants.ANDROID_SYMBOLS_URL_TEMPLATE % {
         'branch': android_build_branch,
+        'target': android_target,
         'arch': arch,
-        'version': android_version}
+        'version': android_version,
+        'variant': variant,
+        'suffix': suffix}
     symbols_file = os.path.join(self.archive_path,
                                 constants.ANDROID_SYMBOLS_FILE)
     gs_context = gs.GSContext()

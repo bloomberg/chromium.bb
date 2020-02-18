@@ -23,8 +23,6 @@
 
 namespace sw
 {
-	extern TranscendentalPrecision logPrecision;
-
 	SetupRoutine::SetupRoutine(const SetupProcessor::State &state) : state(state)
 	{
 		routine = 0;
@@ -88,13 +86,13 @@ namespace sw
 					Return(0);
 				}
 
-				Int w0w1w2 = *Pointer<Int>(v0 + OFFSET(Vertex, builtins.position.w)) ^
-							 *Pointer<Int>(v1 + OFFSET(Vertex, builtins.position.w)) ^
-							 *Pointer<Int>(v2 + OFFSET(Vertex, builtins.position.w));
+				Int w0w1w2 = *Pointer<Int>(v0 + OFFSET(Vertex, position.w)) ^
+							 *Pointer<Int>(v1 + OFFSET(Vertex, position.w)) ^
+							 *Pointer<Int>(v2 + OFFSET(Vertex, position.w));
 
 				A = IfThenElse(w0w1w2 < 0, -A, A);
 
-				Bool frontFacing = state.frontFacingCCW ? A > 0.0f : A < 0.0f;
+				Bool frontFacing = (state.frontFace == VK_FRONT_FACE_COUNTER_CLOCKWISE) ? A > 0.0f : A < 0.0f;
 
 				if(state.cullMode & VK_CULL_MODE_FRONT_BIT)
 				{
@@ -270,9 +268,9 @@ namespace sw
 			// Sort by minimum y
 			if(triangle)
 			{
-				Float y0 = *Pointer<Float>(v0 + OFFSET(Vertex, builtins.position.y));
-				Float y1 = *Pointer<Float>(v1 + OFFSET(Vertex, builtins.position.y));
-				Float y2 = *Pointer<Float>(v2 + OFFSET(Vertex, builtins.position.y));
+				Float y0 = *Pointer<Float>(v0 + OFFSET(Vertex, position.y));
+				Float y1 = *Pointer<Float>(v1 + OFFSET(Vertex, position.y));
+				Float y2 = *Pointer<Float>(v2 + OFFSET(Vertex, position.y));
 
 				Float yMin = Min(Min(y0, y1), y2);
 
@@ -283,9 +281,9 @@ namespace sw
 			// Sort by maximum w
 			if(triangle)
 			{
-				Float w0 = *Pointer<Float>(v0 + OFFSET(Vertex, builtins.position.w));
-				Float w1 = *Pointer<Float>(v1 + OFFSET(Vertex, builtins.position.w));
-				Float w2 = *Pointer<Float>(v2 + OFFSET(Vertex, builtins.position.w));
+				Float w0 = *Pointer<Float>(v0 + OFFSET(Vertex, position.w));
+				Float w1 = *Pointer<Float>(v1 + OFFSET(Vertex, position.w));
+				Float w2 = *Pointer<Float>(v2 + OFFSET(Vertex, position.w));
 
 				Float wMax = Max(Max(w0, w1), w2);
 
@@ -293,9 +291,14 @@ namespace sw
 				conditionalRotate2(wMax == w2, v0, v1, v2);
 			}
 
-			Float w0 = *Pointer<Float>(v0 + OFFSET(Vertex, builtins.position.w));
-			Float w1 = *Pointer<Float>(v1 + OFFSET(Vertex, builtins.position.w));
-			Float w2 = *Pointer<Float>(v2 + OFFSET(Vertex, builtins.position.w));
+			*Pointer<Float>(primitive + OFFSET(Primitive, pointCoordX)) =
+				*Pointer<Float>(v0 + OFFSET(Vertex, position.x));
+			*Pointer<Float>(primitive + OFFSET(Primitive, pointCoordY)) =
+				*Pointer<Float>(v0 + OFFSET(Vertex, position.y));
+
+			Float w0 = *Pointer<Float>(v0 + OFFSET(Vertex, position.w));
+			Float w1 = *Pointer<Float>(v1 + OFFSET(Vertex, position.w));
+			Float w2 = *Pointer<Float>(v2 + OFFSET(Vertex, position.w));
 
 			Float4 w012;
 
@@ -439,15 +442,11 @@ namespace sw
 
 			for (int interpolant = 0; interpolant < MAX_INTERFACE_COMPONENTS; interpolant++)
 			{
-				// Note: `sprite` mode controls whether to replace this interpolant with the point sprite PointCoord value.
-				// This was an interesting thing to support for old GL because any texture coordinate could be replaced in this way.
-				// In modern GL and in Vulkan, the [gl_]PointCoord builtin variable to the fragment shader is used instead.
 				if (state.gradient[interpolant].Type != SpirvShader::ATTRIBTYPE_UNUSED)
 					setupGradient(primitive, tri, w012, M, v0, v1, v2,
 							OFFSET(Vertex, v[interpolant]),
 							OFFSET(Primitive, V[interpolant]),
 							state.gradient[interpolant].Flat,
-							false /* is pointcoord */,
 							!state.gradient[interpolant].NoPerspective, 0);
 			}
 
@@ -457,38 +456,15 @@ namespace sw
 		routine = function("SetupRoutine");
 	}
 
-	void SetupRoutine::setupGradient(Pointer<Byte> &primitive, Pointer<Byte> &triangle, Float4 &w012, Float4 (&m)[3], Pointer<Byte> &v0, Pointer<Byte> &v1, Pointer<Byte> &v2, int attribute, int planeEquation, bool flat, bool sprite, bool perspective, int component)
+	void SetupRoutine::setupGradient(Pointer<Byte> &primitive, Pointer<Byte> &triangle, Float4 &w012, Float4 (&m)[3], Pointer<Byte> &v0, Pointer<Byte> &v1, Pointer<Byte> &v2, int attribute, int planeEquation, bool flat, bool perspective, int component)
 	{
-		Float4 i;
-
 		if(!flat)
 		{
-			if(!sprite)
-			{
-				i.x = *Pointer<Float>(v0 + attribute);
-				i.y = *Pointer<Float>(v1 + attribute);
-				i.z = *Pointer<Float>(v2 + attribute);
-				i.w = 0;
-			}
-			else
-			{
-				if(component == 0) i.x = 0.5f;
-				if(component == 1) i.x = 0.5f;
-				if(component == 2) i.x = 0.0f;
-				if(component == 3) i.x = 1.0f;
-
-				if(component == 0) i.y = 1.0f;
-				if(component == 1) i.y = 0.5f;
-				if(component == 2) i.y = 0.0f;
-				if(component == 3) i.y = 1.0f;
-
-				if(component == 0) i.z = 0.5f;
-				if(component == 1) i.z = 1.0f;
-				if(component == 2) i.z = 0.0f;
-				if(component == 3) i.z = 1.0f;
-
-				i.w = 0;
-			}
+			Float4 i;
+			i.x = *Pointer<Float>(v0 + attribute);
+			i.y = *Pointer<Float>(v1 + attribute);
+			i.z = *Pointer<Float>(v2 + attribute);
+			i.w = 0;
 
 			if(!perspective)
 			{

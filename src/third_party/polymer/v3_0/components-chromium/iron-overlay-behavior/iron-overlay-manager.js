@@ -8,12 +8,12 @@ found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
 part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
-import '../polymer/polymer-legacy.js';
+import '../polymer/polymer_bundled.min.js';
 import './iron-overlay-backdrop.js';
 
 import {IronA11yKeysBehavior} from '../iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
-import {dom} from '../polymer/lib/legacy/polymer.dom.js';
-import * as gestures from '../polymer/lib/utils/gestures.js';
+import {dom} from '../polymer/polymer_bundled.min.js';
+import * as gestures from '../polymer/polymer_bundled.min.js';
 
 /**
  * @struct
@@ -231,7 +231,7 @@ IronOverlayManagerClass.prototype = {
     this.backdropElement.opened = !!overlay;
     // Property observers are not fired until element is attached
     // in Polymer 2.x, so we ensure element is attached if needed.
-    // https://github.com/Polymer/polymer/issues/4526
+    // https://github.com/Polymer/polymer/polymer_bundled.min.js4526
     this.backdropElement.prepare();
   },
 

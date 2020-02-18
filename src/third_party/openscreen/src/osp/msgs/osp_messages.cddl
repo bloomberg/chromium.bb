@@ -188,7 +188,8 @@ presentation-connection-close-request = {
 ; type key 112
 presentation-connection-close-response = {
   response
-  1: &result ; result
+  ; TODO(btolsch): Update the spec or revert.
+  1: &(success: 0, invalid-connection-id: 1) ; result
 }
 
 ; type key 113

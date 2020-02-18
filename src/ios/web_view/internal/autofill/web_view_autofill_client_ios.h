@@ -33,7 +33,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
       AutocompleteHistoryManager* autocomplete_history_manager,
       web::WebState* web_state,
       id<CWVAutofillClientIOSBridge> bridge,
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       StrikeDatabase* strike_database,
       scoped_refptr<AutofillWebDataService> autofill_web_data_service,
       syncer::SyncService* sync_service);
@@ -44,7 +44,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
-  identity::IdentityManager* GetIdentityManager() override;
+  signin::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
   payments::PaymentsClient* GetPaymentsClient() override;
   StrikeDatabase* GetStrikeDatabase() override;
@@ -80,6 +80,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
       std::unique_ptr<base::DictionaryValue> legal_message,
       SaveCreditCardOptions options,
       UploadSaveCardPromptCallback callback) override;
+  void CreditCardUploadCompleted(bool card_saved) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
   bool HasCreditCardScanFeature() override;
@@ -116,7 +117,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
   AutocompleteHistoryManager* autocomplete_history_manager_;
   web::WebState* web_state_;
   __weak id<CWVAutofillClientIOSBridge> bridge_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   std::unique_ptr<payments::PaymentsClient> payments_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   StrikeDatabase* strike_database_;

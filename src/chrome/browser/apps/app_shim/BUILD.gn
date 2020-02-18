@@ -20,8 +20,6 @@ source_set("app_shim") {
     "extension_app_shim_handler_mac.h",
     "mach_bootstrap_acceptor.cc",
     "mach_bootstrap_acceptor.h",
-    "unix_domain_socket_acceptor.cc",
-    "unix_domain_socket_acceptor.h",
   ]
 
   deps = [
@@ -36,6 +34,7 @@ source_set("app_shim") {
     "//chrome/common:mojo_bindings",
     "//chrome/common:non_code_constants",
     "//components/crx_file",
+    "//components/remote_cocoa/browser",
     "//components/version_info",
     "//content/public/browser",
     "//content/public/common",

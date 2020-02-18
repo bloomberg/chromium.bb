@@ -8,16 +8,12 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
-
-class Font;
-struct FontRenderParams;
 
 class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
  public:

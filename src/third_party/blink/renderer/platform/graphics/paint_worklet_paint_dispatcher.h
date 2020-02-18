@@ -8,6 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_painter.h"
 #include "third_party/blink/renderer/platform/graphics/platform_paint_worklet_layer_painter.h"
@@ -15,7 +18,6 @@
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
@@ -31,19 +33,27 @@ namespace blink {
 // worklets, and a scheduler, which is not shared. All PaintWorklets for a
 // single renderer process share one PaintWorkletPaintDispatcher on the
 // compositor side.
-class PLATFORM_EXPORT PaintWorkletPaintDispatcher
-    : public ThreadSafeRefCounted<PaintWorkletPaintDispatcher> {
+class PLATFORM_EXPORT PaintWorkletPaintDispatcher {
  public:
   static std::unique_ptr<PlatformPaintWorkletLayerPainter>
   CreateCompositorThreadPainter(
-      scoped_refptr<PaintWorkletPaintDispatcher>& paintee);
+      base::WeakPtr<PaintWorkletPaintDispatcher>* paintee);
 
-  PaintWorkletPaintDispatcher() = default;
+  PaintWorkletPaintDispatcher();
 
-  // Dispatches a single paint class instance - represented by a
-  // PaintWorkletInput - to the appropriate PaintWorklet thread, and blocks
-  // until it receives the result.
-  sk_sp<cc::PaintRecord> Paint(cc::PaintWorkletInput*);
+  // Dispatches a set of paint class instances - each represented by a
+  // PaintWorkletInput - to the appropriate PaintWorklet threads, asynchronously
+  // returning the results on the calling thread via the passed callback.
+  //
+  // Only one dispatch may be going on at a given time; the caller must wait for
+  // the passed callback to be called before calling DispatchWorklets again.
+  void DispatchWorklets(cc::PaintWorkletJobMap,
+                        PlatformPaintWorkletLayerPainter::DoneCallback);
+
+  // Reports whether or not there is an ongoing dispatch (e.g. a set of
+  // PaintWorklet instances have been dispatched to the worklet, but the results
+  // have not yet been received.)
+  bool HasOngoingDispatch() const;
 
   // Register and unregister a PaintWorklet (represented in this context by a
   // PaintWorkletPainter). A given PaintWorklet is registered once all its
@@ -57,6 +67,13 @@ class PLATFORM_EXPORT PaintWorkletPaintDispatcher
                                    scoped_refptr<base::SingleThreadTaskRunner>);
   void UnregisterPaintWorkletPainter(PaintWorkletId);
 
+  // The main thread is given a base::WeakPtr to this class to hand to the
+  // PaintWorklet thread(s), so that they can register and unregister
+  // PaintWorklets. See blink::WebFrameWidgetBase for where this happens.
+  base::WeakPtr<PaintWorkletPaintDispatcher> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
   using PaintWorkletPainterToTaskRunnerMap =
       HashMap<PaintWorkletId,
               std::pair<CrossThreadPersistent<PaintWorkletPainter>,
@@ -66,15 +83,27 @@ class PLATFORM_EXPORT PaintWorkletPaintDispatcher
   }
 
  private:
+  // Called when results are available for the previous call to
+  // |DispatchWorklets|.
+  void AsyncPaintDone();
+
   // This class handles paint class instances for multiple PaintWorklets. These
   // are disambiguated via the PaintWorklets unique id; this map exists to do
   // that disambiguation.
   PaintWorkletPainterToTaskRunnerMap painter_map_;
 
-  // The (Un)registerPaintWorkletPainter comes from the worklet thread, and the
-  // Paint call is initiated from the raster threads - this mutex ensures that
-  // accessing / updating the |painter_map_| is thread safe.
-  Mutex painter_map_mutex_;
+  // Whilst an asynchronous paint is underway (see |DispatchWorklets|), we store
+  // the input jobs and the completion callback. The jobs are shared with the
+  // PaintWorklet thread(s) during the dispatch, whilst the callback only ever
+  // stays on the calling thread.
+  cc::PaintWorkletJobMap ongoing_jobs_;
+  base::OnceCallback<void(cc::PaintWorkletJobMap)> on_async_paint_complete_;
+
+  // Used to ensure that appropriate methods are called on the same thread.
+  // Currently only used for the asynchronous dispatch path.
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<PaintWorkletPaintDispatcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaintWorkletPaintDispatcher);
 };

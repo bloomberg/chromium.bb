@@ -29,7 +29,7 @@
 #include <memory>
 #include <utility>
 
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -211,6 +211,7 @@ class CORE_EXPORT ContentSecurityPolicy
   ~ContentSecurityPolicy();
   void Trace(blink::Visitor*);
 
+  bool IsBound();
   void BindToDelegate(ContentSecurityPolicyDelegate&);
   void SetupSelf(const SecurityOrigin&);
   void SetupSelf(const ContentSecurityPolicy&);
@@ -339,7 +340,8 @@ class CORE_EXPORT ContentSecurityPolicy
 
   // Determine whether to enforce the assignment failure. Also handle reporting.
   // Returns whether enforcing Trusted Types CSP directives are present.
-  bool AllowTrustedTypeAssignmentFailure(const String& message) const;
+  bool AllowTrustedTypeAssignmentFailure(const String& message,
+                                         const String& sample = String()) const;
 
   void UsesScriptHashAlgorithms(uint8_t content_security_policy_hash_algorithm);
   void UsesStyleHashAlgorithms(uint8_t content_security_policy_hash_algorithm);

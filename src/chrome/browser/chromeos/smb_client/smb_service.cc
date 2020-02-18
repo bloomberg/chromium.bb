@@ -149,18 +149,29 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
                        const std::string& password,
                        bool use_chromad_kerberos,
                        bool should_open_file_manager_after_mount,
+                       bool save_credentials,
                        MountResponse callback) {
   DCHECK(temp_file_manager_);
 
   CallMount(options, share_path, username, password, use_chromad_kerberos,
-            should_open_file_manager_after_mount, std::move(callback));
+            should_open_file_manager_after_mount, save_credentials,
+            std::move(callback));
 }
 
 void SmbService::GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
                                        GatherSharesResponse shares_callback) {
-  shares_callback.Run(GetPreconfiguredSharePathsForDropdown());
-  share_finder_->GatherSharesInNetwork(std::move(discovery_callback),
-                                       std::move(shares_callback));
+  auto preconfigured_shares = GetPreconfiguredSharePathsForDropdown();
+  if (!preconfigured_shares.empty()) {
+    shares_callback.Run(std::move(preconfigured_shares), false);
+  }
+  share_finder_->GatherSharesInNetwork(
+      std::move(discovery_callback),
+      base::BindOnce(
+          [](GatherSharesResponse shares_callback,
+             const std::vector<SmbUrl>& shares_gathered) {
+            std::move(shares_callback).Run(shares_gathered, true);
+          },
+          std::move(shares_callback)));
 }
 
 void SmbService::UpdateCredentials(int32_t mount_id,
@@ -220,6 +231,7 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
                            const std::string& password_input,
                            bool use_chromad_kerberos,
                            bool should_open_file_manager_after_mount,
+                           bool save_credentials,
                            MountResponse callback) {
   SmbUrl parsed_url(share_path.value());
   if (!parsed_url.IsValid() || parsed_url.GetShare().empty()) {
@@ -248,16 +260,16 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
   std::string username;
   std::string password;
   std::string workgroup;
+
+  user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+  DCHECK(user);
   if (use_chromad_kerberos) {
     RecordAuthenticationMethod(AuthMethod::kSSOKerberos);
     // Get the user's username and workgroup from their email address to be used
     // for Kerberos authentication.
-    user_manager::User* user =
-        chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-    if (user) {
-      DCHECK(user->IsActiveDirectoryUser());
-      ParseUserPrincipalName(user->GetDisplayEmail(), &username, &workgroup);
-    }
+    DCHECK(user->IsActiveDirectoryUser());
+    ParseUserPrincipalName(user->GetDisplayEmail(), &username, &workgroup);
   } else {
     // Record authentication method metrics.
     if (!username_input.empty() && !password_input.empty()) {
@@ -282,14 +294,20 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
                               : share_finder_->GetResolvedUrl(parsed_url);
   const base::FilePath mount_path(url);
 
+  SmbProviderClient::MountOptions smb_mount_options;
+  smb_mount_options.original_path = parsed_url.ToString();
+  smb_mount_options.username = username;
+  smb_mount_options.workgroup = workgroup;
+  smb_mount_options.ntlm_enabled = IsNTLMAuthenticationEnabled();
+  smb_mount_options.save_password = save_credentials && !use_chromad_kerberos;
+  smb_mount_options.account_hash = user->username_hash();
   GetSmbProviderClient()->Mount(
-      mount_path, IsNTLMAuthenticationEnabled(), workgroup, username,
+      mount_path, smb_mount_options,
       temp_file_manager_->WritePasswordToFile(password),
-      false /* skip_connect */,
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                      base::Passed(&callback), options, share_path,
-                     use_chromad_kerberos,
-                     should_open_file_manager_after_mount));
+                     use_chromad_kerberos, should_open_file_manager_after_mount,
+                     username, workgroup, save_credentials));
 
   profile_->GetPrefs()->SetString(prefs::kMostRecentlyUsedNetworkFileShareURL,
                                   share_path.value());
@@ -301,6 +319,9 @@ void SmbService::OnMountResponse(
     const base::FilePath& share_path,
     bool is_kerberos_chromad,
     bool should_open_file_manager_after_mount,
+    const std::string& username,
+    const std::string& workgroup,
+    bool save_credentials,
     smbprovider::ErrorType error,
     int32_t mount_id) {
   if (error != smbprovider::ERROR_OK) {
@@ -311,8 +332,23 @@ void SmbService::OnMountResponse(
   DCHECK_GE(mount_id, 0);
 
   file_system_provider::MountOptions mount_options(options);
-  mount_options.file_system_id =
-      CreateFileSystemId(share_path, is_kerberos_chromad);
+  if (is_kerberos_chromad) {
+    mount_options.file_system_id =
+        CreateFileSystemId(share_path, is_kerberos_chromad);
+  } else {
+    std::string full_username;
+    if (save_credentials) {
+      // Only save the username if the user request credentials be saved.
+      full_username = username;
+      if (!workgroup.empty()) {
+        DCHECK(!username.empty());
+        full_username.append("@");
+        full_username.append(workgroup);
+      }
+    }
+    mount_options.file_system_id =
+        CreateFileSystemIdForUser(share_path, full_username);
+  }
   mount_id_map_[mount_options.file_system_id] = mount_id;
 
   base::File::Error result =
@@ -410,13 +446,20 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
   std::string workgroup;
   std::string username;
 
+  user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+  DCHECK(user);
   if (is_kerberos_chromad) {
-    user_manager::User* user =
-        chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-    DCHECK(user);
     DCHECK(user->IsActiveDirectoryUser());
 
     ParseUserPrincipalName(user->GetDisplayEmail(), &username, &workgroup);
+  } else {
+    base::Optional<std::string> user_workgroup =
+        GetUserFromFileSystemId(file_system_info.file_system_id());
+    if (user_workgroup &&
+        !ParseUserName(*user_workgroup, &username, &workgroup)) {
+      LOG(ERROR) << "Failed to parse username/workgroup from file system ID";
+    }
   }
 
   SmbUrl parsed_url(share_path.value());
@@ -436,10 +479,18 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
   // An empty password is passed to Mount to conform with the credentials API
   // which expects username & workgroup strings along with a password file
   // descriptor.
+  SmbProviderClient::MountOptions smb_mount_options;
+  smb_mount_options.original_path = parsed_url.ToString();
+  smb_mount_options.username = username;
+  smb_mount_options.workgroup = workgroup;
+  smb_mount_options.ntlm_enabled = IsNTLMAuthenticationEnabled();
+  smb_mount_options.skip_connect = true;
+  smb_mount_options.restore_password =
+      !username.empty() && !is_kerberos_chromad;
+  smb_mount_options.account_hash = user->username_hash();
   GetSmbProviderClient()->Mount(
-      mount_path, IsNTLMAuthenticationEnabled(), workgroup, username,
+      mount_path, smb_mount_options,
       temp_file_manager_->WritePasswordToFile("" /* password */),
-      true /* skip_connect */,
       base::BindOnce(&SmbService::OnRemountResponse, AsWeakPtr(),
                      file_system_info.file_system_id()));
 }
@@ -466,10 +517,12 @@ void SmbService::OnRemountResponse(const std::string& file_system_id,
 void SmbService::Premount(const base::FilePath& share_path) {
   // Premounting is equivalent to remounting, but with an empty username and
   // password.
+  SmbProviderClient::MountOptions smb_mount_options;
+  smb_mount_options.ntlm_enabled = IsNTLMAuthenticationEnabled();
+  smb_mount_options.skip_connect = true;
   GetSmbProviderClient()->Mount(
-      share_path, IsNTLMAuthenticationEnabled(), "", "",
+      share_path, smb_mount_options,
       temp_file_manager_->WritePasswordToFile("" /* password */),
-      true /* skip_connect */,
       base::BindOnce(&SmbService::OnPremountResponse, AsWeakPtr(), share_path));
 }
 
@@ -567,6 +620,19 @@ void SmbService::CompleteSetup(
                           base::Unretained(this))));
   RestoreMounts();
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+
+  if (setup_complete_callback_) {
+    std::move(setup_complete_callback_).Run();
+  }
+}
+
+void SmbService::OnSetupCompleteForTesting(base::OnceClosure callback) {
+  DCHECK(!setup_complete_callback_);
+  if (temp_file_manager_) {
+    std::move(callback).Run();
+    return;
+  }
+  setup_complete_callback_ = std::move(callback);
 }
 
 void SmbService::FireMountCallback(MountResponse callback,

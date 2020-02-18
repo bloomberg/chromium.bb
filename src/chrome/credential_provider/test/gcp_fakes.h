@@ -17,6 +17,7 @@
 #include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
 #include "chrome/credential_provider/gaiacp/os_process_manager.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
+#include "chrome/credential_provider/gaiacp/password_recovery_manager.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
 #include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
@@ -68,6 +69,15 @@ class FakeOSUserManager : public OSUserManager {
                   bool add_to_users_group,
                   BSTR* sid,
                   DWORD* error) override;
+  // Add a user to the OS with domain associated with it.
+  HRESULT AddUser(const wchar_t* username,
+                  const wchar_t* password,
+                  const wchar_t* fullname,
+                  const wchar_t* comment,
+                  bool add_to_users_group,
+                  const wchar_t* domain,
+                  BSTR* sid,
+                  DWORD* error);
   HRESULT ChangeUserPassword(const wchar_t* domain,
                              const wchar_t* username,
                              const wchar_t* password,
@@ -102,8 +112,14 @@ class FakeOSUserManager : public OSUserManager {
                                          const wchar_t* username,
                                          bool allow) override;
 
+  bool IsDeviceDomainJoined() override;
+
   void SetShouldFailUserCreation(bool should_fail) {
     should_fail_user_creation_ = should_fail;
+  }
+
+  void SetIsDeviceDomainJoined(bool is_device_domain_joined) {
+    is_device_domain_joined_ = is_device_domain_joined;
   }
 
   struct UserInfo {
@@ -142,6 +158,20 @@ class FakeOSUserManager : public OSUserManager {
                            const base::string16& email,
                            BSTR* sid);
 
+  // Creates a fake user with the given |username|, |password|, |fullname|,
+  // |comment| and |domain|. If |gaia_id| is non-empty, also associates the
+  // user with the given gaia id. If |email| is non-empty, sets the email to
+  // use for reauth to be this one.
+  // |sid| is allocated and filled with the SID of the new user.
+  HRESULT CreateTestOSUser(const base::string16& username,
+                           const base::string16& password,
+                           const base::string16& fullname,
+                           const base::string16& comment,
+                           const base::string16& gaia_id,
+                           const base::string16& email,
+                           const base::string16& domain,
+                           BSTR* sid);
+
   size_t GetUserCount() const { return username_to_info_.size(); }
   std::vector<std::pair<base::string16, base::string16>> GetUsers() const;
 
@@ -150,6 +180,7 @@ class FakeOSUserManager : public OSUserManager {
   DWORD next_rid_ = 0;
   std::map<base::string16, UserInfo> username_to_info_;
   bool should_fail_user_creation_ = false;
+  bool is_device_domain_joined_ = false;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -185,6 +216,7 @@ class FakeScopedLsaPolicy : public ScopedLsaPolicy {
   HRESULT RetrievePrivateData(const wchar_t* key,
                               wchar_t* value,
                               size_t length) override;
+  bool PrivateDataExists(const wchar_t* key) override;
   HRESULT AddAccountRights(PSID sid, const wchar_t* right) override;
   HRESULT RemoveAccount(PSID sid) override;
 
@@ -248,6 +280,12 @@ class FakeWinHttpUrlFetcherFactory {
       const WinHttpUrlFetcher::Headers& headers,
       const std::string& response,
       HANDLE send_response_event_handle = INVALID_HANDLE_VALUE);
+
+  // Sets the response as a failed http attempt. The return result
+  // from http_url_fetcher.Fetch() would be set as the input HRESULT
+  // to this method.
+  void SetFakeFailedResponse(const GURL& url, HRESULT failed_hr);
+
   size_t requests_created() const { return requests_created_; }
 
  private:
@@ -268,6 +306,7 @@ class FakeWinHttpUrlFetcherFactory {
   };
 
   std::map<GURL, Response> fake_responses_;
+  std::map<GURL, HRESULT> failed_http_fetch_hr_;
   size_t requests_created_ = 0;
 };
 
@@ -291,6 +330,7 @@ class FakeWinHttpUrlFetcher : public WinHttpUrlFetcher {
   Headers response_headers_;
   std::string response_;
   HANDLE send_response_event_handle_;
+  HRESULT response_hr_ = S_OK;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -330,6 +370,23 @@ class FakeInternetAvailabilityChecker : public InternetAvailabilityChecker {
   // always set to HIC_CHECK_ALWAYS to perform a real check at runtime.
   HasInternetConnectionCheckType has_internet_connection_ = kHicForceYes;
 };
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakePasswordRecoveryManager : public PasswordRecoveryManager {
+ public:
+  FakePasswordRecoveryManager();
+  explicit FakePasswordRecoveryManager(base::TimeDelta request_timeout);
+  ~FakePasswordRecoveryManager() override;
+
+  using PasswordRecoveryManager::MakeGenerateKeyPairResponseForTesting;
+  using PasswordRecoveryManager::MakeGetPrivateKeyResponseForTesting;
+  using PasswordRecoveryManager::SetRequestTimeoutForTesting;
+
+ private:
+  PasswordRecoveryManager* original_validator_ = nullptr;
+};
+
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_TEST_GCP_FAKES_H_

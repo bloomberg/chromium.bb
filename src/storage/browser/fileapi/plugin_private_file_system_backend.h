@@ -35,6 +35,7 @@ class Env;
 namespace storage {
 
 class ObfuscatedFileUtil;
+class ObfuscatedFileUtilMemoryDelegate;
 class SpecialStoragePolicy;
 class WatcherManager;
 
@@ -131,6 +132,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) PluginPrivateFileSystemBackend
                                         const GURL& origin_url,
                                         int64_t* total_size,
                                         base::Time* last_modified_time);
+
+  ObfuscatedFileUtilMemoryDelegate* obfuscated_file_util_memory_delegate();
 
  private:
   friend class content::PluginPrivateFileSystemBackendTest;

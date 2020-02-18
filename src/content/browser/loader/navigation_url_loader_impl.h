@@ -23,7 +23,7 @@ struct RedirectInfo;
 
 namespace content {
 
-class NavigationData;
+class BrowserContext;
 class NavigationLoaderInterceptor;
 class PrefetchedSignedExchangeCache;
 class ResourceContext;
@@ -36,6 +36,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   // The caller is responsible for ensuring that |delegate| outlives the loader.
   // Note |initial_interceptors| is there for test purposes only.
   NavigationURLLoaderImpl(
+      BrowserContext* browser_context,
       ResourceContext* resource_context,
       StoragePartition* storage_partition,
       std::unique_ptr<NavigationRequestInfo> request_info,
@@ -56,12 +57,11 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   void ProceedWithResponse() override;
 
   void OnReceiveResponse(
-      scoped_refptr<network::ResourceResponse> response,
+      scoped_refptr<network::ResourceResponse> response_head,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      std::unique_ptr<NavigationData> navigation_data,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       const GlobalRequestID& global_request_id,
       bool is_download,
-      bool is_stream,
       base::TimeDelta total_ui_to_io_time,
       base::Time io_post_time);
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
@@ -100,12 +100,37 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   // URLLoaderFactoryGetter. Called on the UI thread.
   static void CreateURLLoaderFactoryWithHeaderClient(
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
-      network::mojom::URLLoaderFactoryRequest factory_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver,
       StoragePartitionImpl* partition);
 
   // Returns a Request ID for browser-initiated navigation requests. Called on
   // the IO thread.
   static GlobalRequestID MakeGlobalRequestID();
+
+  // Returns true if URLLoaderRequestController will be run on the UI thread.
+  static bool IsNavigationLoaderOnUIEnabled();
+
+  // Returns the BrowserThread::ID that the URLLoaderRequestController will be
+  // running on.
+  static BrowserThread::ID GetLoaderRequestControllerThreadID();
+
+  // Runs |task| on the the loader thread if already on that thread, otherwise
+  // posts a task to the loader thread.
+  static void RunOrPostTaskOnLoaderThread(const base::Location& from_here,
+                                          base::OnceClosure task);
+
+  // Deleter to use for objects that should be deleted on the loader thread.
+  struct DeleteOnLoaderThread {
+    template <typename T>
+    static void Destruct(const T* x) {
+      if (BrowserThread::CurrentlyOn(GetLoaderRequestControllerThreadID())) {
+        delete x;
+      } else {
+        BrowserThread::DeleteSoon(GetLoaderRequestControllerThreadID(),
+                                  FROM_HERE, x);
+      }
+    }
+  };
 
  private:
   class URLLoaderRequestController;
@@ -114,7 +139,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   void BindNonNetworkURLLoaderFactoryRequest(
       int frame_tree_node_id,
       const GURL& url,
-      network::mojom::URLLoaderFactoryRequest factory);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver);
 
   NavigationURLLoaderDelegate* delegate_;
 
@@ -130,7 +155,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   // Counts the time overhead of all the hops from the IO to the UI threads.
   base::TimeDelta io_to_ui_time_;
 
-  base::WeakPtrFactory<NavigationURLLoaderImpl> weak_factory_;
+  base::WeakPtrFactory<NavigationURLLoaderImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NavigationURLLoaderImpl);
 };

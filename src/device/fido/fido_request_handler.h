@@ -29,10 +29,10 @@ class FidoDiscoveryFactory;
 template <class Response>
 class FidoRequestHandler : public FidoRequestHandlerBase {
  public:
-  using CompletionCallback = base::OnceCallback<void(
-      FidoReturnCode status_code,
-      base::Optional<Response> response_data,
-      base::Optional<FidoTransportProtocol> transport_used)>;
+  using CompletionCallback =
+      base::OnceCallback<void(FidoReturnCode status_code,
+                              base::Optional<Response> response_data,
+                              const FidoAuthenticator* authenticator)>;
 
   // The |available_transports| should be the intersection of transports
   // supported by the client and allowed by the relying party.
@@ -46,10 +46,7 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
                                available_transports),
         completion_callback_(std::move(completion_callback)) {}
 
-  ~FidoRequestHandler() override {
-    if (!is_complete())
-      CancelActiveAuthenticators();
-  }
+  ~FidoRequestHandler() override = default;
 
   bool is_complete() const { return completion_callback_.is_null(); }
 
@@ -66,8 +63,7 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
     }
 
     std::move(completion_callback_)
-        .Run(result, std::move(response_data),
-             authenticator->AuthenticatorTransport());
+        .Run(result, std::move(response_data), authenticator);
   }
 
   CompletionCallback completion_callback_;
@@ -90,6 +86,12 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
       // when the user cancels the macOS prompt. External authenticators may
       // return it e.g. after the user fails fingerprint verification.
       case CtapDeviceResponseCode::kCtap2ErrOperationDenied:
+        return FidoReturnCode::kUserConsentDenied;
+
+      // External authenticators may return this error if internal user
+      // verification fails for a make credential request or if the pin token is
+      // not valid.
+      case CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid:
         return FidoReturnCode::kUserConsentDenied;
 
       case CtapDeviceResponseCode::kCtap2ErrKeyStoreFull:

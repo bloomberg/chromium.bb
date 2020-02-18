@@ -17,6 +17,7 @@ enum AuthenticatorStatus {
   PENDING_REQUEST,
   NOT_ALLOWED_ERROR,
   INVALID_DOMAIN,
+  INVALID_ICON_URL,
   CREDENTIAL_EXCLUDED,
 
   // TODO(crbug/964439): Unused in Desktop, but kept around for Android. Delete
@@ -168,8 +169,8 @@ struct PublicKeyCredentialParameters {
 
 // See https://w3c.github.io/webauthn/#enumdef-userverificationrequirement.
 enum UserVerificationRequirement {
-  PREFERRED,
   REQUIRED,
+  PREFERRED,
   DISCOURAGED,
 };
 

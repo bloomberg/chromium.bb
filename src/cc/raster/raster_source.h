@@ -103,6 +103,9 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // Valid rectangle in which everything is recorded and can be rastered from.
   virtual gfx::Rect RecordedViewport() const;
 
+  // Returns true if this raster source may try and draw text.
+  bool HasText() const;
+
   // Tracing functionality.
   virtual void DidBeginTracing();
   virtual void AsValueInto(base::trace_event::TracedValue* array) const;
@@ -112,6 +115,8 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   const scoped_refptr<DisplayItemList>& GetDisplayItemList() const {
     return display_list_;
   }
+
+  std::vector<scoped_refptr<PaintWorkletInput>> GetPaintWorkletInputs() const;
 
   float recording_scale_factor() const { return recording_scale_factor_; }
 

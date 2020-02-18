@@ -42,7 +42,6 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
@@ -232,7 +231,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
       NetLog* net_log,
       const NetLogSource& source) override {
     NOTREACHED();
-    return std::unique_ptr<DatagramClientSocket>();
+    return nullptr;
   }
 
   std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(
@@ -246,12 +245,12 @@ class MockClientSocketFactory : public ClientSocketFactory {
   }
 
   std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      SSLClientContext* context,
       std::unique_ptr<StreamSocket> stream_socket,
       const HostPortPair& host_and_port,
-      const SSLConfig& ssl_config,
-      const SSLClientSocketContext& context) override {
+      const SSLConfig& ssl_config) override {
     NOTIMPLEMENTED();
-    return std::unique_ptr<SSLClientSocket>();
+    return nullptr;
   }
 
   std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
@@ -334,8 +333,7 @@ class TestConnectJob : public ConnectJob {
         client_socket_factory_(client_socket_factory),
         load_state_(LOAD_STATE_IDLE),
         has_established_connection_(false),
-        store_additional_error_state_(false),
-        weak_factory_(this) {}
+        store_additional_error_state_(false) {}
 
   void Signal() {
     DoConnect(waiting_success_, true /* async */, false /* recoverable */);
@@ -524,7 +522,7 @@ class TestConnectJob : public ConnectJob {
   bool has_established_connection_;
   bool store_additional_error_state_;
 
-  base::WeakPtrFactory<TestConnectJob> weak_factory_;
+  base::WeakPtrFactory<TestConnectJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectJob);
 };
@@ -544,8 +542,7 @@ class TestConnectJobFactory
             nullptr /* quic_stream_factory */,
             nullptr /* proxy_delegate */,
             nullptr /* http_user_agent_settings */,
-            SSLClientSocketContext(),
-            SSLClientSocketContext(),
+            nullptr /* ssl_client_context */,
             nullptr /* socket_performance_watcher_factory */,
             nullptr /* network_quality_estimator */,
             net_log,
@@ -629,7 +626,7 @@ class ClientSocketPoolBaseTest : public TestWithScopedTaskEnvironment {
  protected:
   ClientSocketPoolBaseTest()
       : TestWithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         params_(ClientSocketPool::SocketParams::CreateForHttpForTesting()) {
     connect_backup_jobs_enabled_ =
         TransportClientSocketPool::connect_backup_jobs_enabled();
@@ -711,6 +708,9 @@ class ClientSocketPoolBaseTest : public TestWithScopedTaskEnvironment {
   ClientSocketPoolTest test_base_;
 };
 
+// TODO(950069): Add testing for frame_origin in NetworkIsolationKey
+// using kAppendInitiatingFrameOriginToNetworkIsolationKey.
+
 TEST_F(ClientSocketPoolBaseTest, BasicSynchronous) {
   CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
 
@@ -731,8 +731,7 @@ TEST_F(ClientSocketPoolBaseTest, BasicSynchronous) {
   handle.Reset();
   TestLoadTimingInfoNotConnected(handle);
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(5u, entries.size());
   EXPECT_TRUE(LogContainsEvent(
@@ -770,8 +769,7 @@ TEST_F(ClientSocketPoolBaseTest, InitConnectionFailure) {
   EXPECT_FALSE(handle.ssl_cert_request_info());
   TestLoadTimingInfoNotConnected(handle);
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(4u, entries.size());
   EXPECT_TRUE(LogContainsEvent(
@@ -806,9 +804,11 @@ TEST_F(ClientSocketPoolBaseTest, GroupSeparation) {
   const PrivacyMode kPrivacyModes[] = {PrivacyMode::PRIVACY_MODE_DISABLED,
                                        PrivacyMode::PRIVACY_MODE_ENABLED};
 
+  const auto kOriginA = url::Origin::Create(GURL("http://a.test/"));
+  const auto kOriginB = url::Origin::Create(GURL("http://b.test/"));
   const NetworkIsolationKey kNetworkIsolationKeys[] = {
-      NetworkIsolationKey(url::Origin::Create(GURL("http://a.test/"))),
-      NetworkIsolationKey(url::Origin::Create(GURL("http://b.test/"))),
+      NetworkIsolationKey(kOriginA, kOriginA),
+      NetworkIsolationKey(kOriginB, kOriginB),
   };
 
   int total_idle_sockets = 0;
@@ -2016,8 +2016,7 @@ TEST_F(ClientSocketPoolBaseTest, BasicAsynchronous) {
   handle.Reset();
   TestLoadTimingInfoNotConnected(handle);
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(5u, entries.size());
   EXPECT_TRUE(LogContainsEvent(
@@ -2056,8 +2055,7 @@ TEST_F(ClientSocketPoolBaseTest,
   EXPECT_FALSE(handle.is_ssl_error());
   EXPECT_FALSE(handle.ssl_cert_request_info());
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(4u, entries.size());
   EXPECT_TRUE(LogContainsEvent(
@@ -2540,8 +2538,7 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsReuse) {
   EXPECT_EQ(0u, pool_->IdleSocketCountInGroup(TestGroupId("a")));
   EXPECT_EQ(1, pool_->NumActiveSocketsInGroupForTesting(TestGroupId("a")));
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   EXPECT_TRUE(LogContainsEvent(
       entries, 0, NetLogEventType::TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET,
       NetLogEventPhase::NONE));
@@ -2619,8 +2616,7 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsNoReuse) {
   EXPECT_EQ(0u, pool_->IdleSocketCountInGroup(TestGroupId("a")));
   EXPECT_EQ(1, pool_->NumActiveSocketsInGroupForTesting(TestGroupId("a")));
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   EXPECT_FALSE(LogContainsEntryWithType(
       entries, 1, NetLogEventType::SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
 }

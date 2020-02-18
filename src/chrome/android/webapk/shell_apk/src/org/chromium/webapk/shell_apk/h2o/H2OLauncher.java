@@ -22,7 +22,7 @@ import org.chromium.webapk.shell_apk.WebApkSharedPreferences;
 /** Contains methods for launching host browser where ShellAPK shows the splash screen. */
 public class H2OLauncher {
     // Lowest version of Chromium which supports ShellAPK showing the splash screen.
-    static final int MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH = Integer.MAX_VALUE;
+    static final int MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH = 76;
 
     private static final String TAG = "cr_H2OLauncher";
 

@@ -53,22 +53,12 @@ const uint32_t DownloadItem::kInvalidId = 0;
 
 DownloadInterruptReason HandleRequestCompletionStatus(
     net::Error error_code,
-    bool has_strong_validators,
+    bool ignore_content_length_mismatch,
     net::CertStatus cert_status,
+    bool is_partial_request,
     DownloadInterruptReason abort_reason) {
-  // ERR_CONTENT_LENGTH_MISMATCH can be caused by 1 of the following reasons:
-  // 1. Server or proxy closes the connection too early.
-  // 2. The content-length header is wrong.
-  // If the download has strong validators, we can interrupt the download
-  // and let it resume automatically. Otherwise, resuming the download will
-  // cause it to restart and the download may never complete if the error was
-  // caused by reason 2. As a result, downloads without strong validators are
-  // treated as completed here.
-  // TODO(qinmin): check the metrics from downloads with strong validators,
-  // and decide whether we should interrupt downloads without strong validators
-  // rather than complete them.
   if (error_code == net::ERR_CONTENT_LENGTH_MISMATCH &&
-      !has_strong_validators) {
+      ignore_content_length_mismatch) {
     error_code = net::OK;
     RecordDownloadCount(COMPLETED_WITH_CONTENT_LENGTH_MISMATCH_COUNT);
   }
@@ -92,6 +82,12 @@ DownloadInterruptReason HandleRequestCompletionStatus(
     // was explicitly cancelled, then use it.
     return abort_reason;
   }
+
+  // For some servers, a range request could cause the server to send
+  // wrongly encoded content and cause decoding failures. Restart the download
+  // in that case.
+  if (is_partial_request && error_code == net::ERR_CONTENT_DECODING_FAILED)
+    return DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
 
   return ConvertNetErrorToInterruptReason(error_code,
                                           DOWNLOAD_INTERRUPT_FROM_NETWORK);
@@ -190,12 +186,8 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
         (save_info->length > 0 &&
          last_byte != save_info->offset + save_info->length - 1)) {
       // The server returned a different range than the one we requested. Assume
-      // the response is bad.
-      //
-      // In the future we should consider allowing offsets that are less than
-      // the offset we've requested, since in theory we can truncate the partial
-      // file at the offset and continue.
-      return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+      // the server doesn't support range request.
+      return DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
     }
 
     return DOWNLOAD_INTERRUPT_REASON_NONE;
@@ -237,10 +229,15 @@ void HandleResponseHeaders(const net::HttpResponseHeaders* headers,
   // In RFC 7233, a single part 206 partial response must generate
   // Content-Range. Accept-Range may be sent in 200 response to indicate the
   // server can handle range request, but optional in 206 response.
-  create_info->accept_range =
-      headers->HasHeaderValue("Accept-Ranges", "bytes") ||
+  if (headers->HasHeaderValue("Accept-Ranges", "bytes") ||
       (headers->HasHeader("Content-Range") &&
-       headers->response_code() == net::HTTP_PARTIAL_CONTENT);
+       headers->response_code() == net::HTTP_PARTIAL_CONTENT)) {
+    create_info->accept_range = RangeRequestSupportType::kSupport;
+  } else if (headers->HasHeaderValue("Accept-Ranges", "none")) {
+    create_info->accept_range = RangeRequestSupportType::kNoSupport;
+  } else {
+    create_info->accept_range = RangeRequestSupportType::kUnknown;
+  }
 }
 
 std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
@@ -263,7 +260,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   // See also:
   // - https://crbug.com/952834
   // - https://github.com/whatwg/fetch/issues/896#issuecomment-484423278
-  request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
+  request->mode = network::mojom::RequestMode::kNavigate;
 
   bool has_upload_data = false;
   if (params->post_body()) {

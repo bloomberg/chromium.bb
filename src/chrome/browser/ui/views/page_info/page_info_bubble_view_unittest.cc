@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
@@ -103,7 +104,7 @@ class PageInfoBubbleViewTestApi {
   }
 
   base::string16 GetPermissionLabelTextAt(int index) {
-    return GetPermissionSelectorAt(index)->label_->text();
+    return GetPermissionSelectorAt(index)->label_->GetText();
   }
 
   base::string16 GetPermissionComboboxTextAt(int index) {
@@ -207,6 +208,41 @@ class PageInfoBubbleViewTest : public testing::Test {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewTest);
+};
+
+class SafetyTipPageInfoBubbleViewTest : public testing::Test {
+ public:
+  SafetyTipPageInfoBubbleViewTest() {}
+
+  // testing::Test:
+  void SetUp() override {
+    views_helper_.test_views_delegate()->set_layout_provider(
+        ChromeLayoutProvider::CreateLayoutProvider());
+    views::Widget::InitParams parent_params;
+    parent_params.context = views_helper_.GetContext();
+    parent_window_ = new views::Widget();
+    parent_window_->Init(parent_params);
+
+    content::WebContents* web_contents = web_contents_helper_.web_contents();
+    TabSpecificContentSettings::CreateForWebContents(web_contents);
+
+    bubble_ = CreateSafetyTipBubbleForTesting(
+        parent_window_->GetNativeView(), web_contents,
+        safety_tips::SafetyTipType::kBadReputation,
+        GURL("https://www.fakegoogle.tld"), GURL("https://www.google.com"));
+  }
+
+  void TearDown() override { parent_window_->CloseNow(); }
+
+ protected:
+  ScopedWebContentsTestHelper web_contents_helper_;
+  views::ScopedViewsTestHelper views_helper_;
+
+  PageInfoBubbleViewBase* bubble_ = nullptr;
+  views::Widget* parent_window_ = nullptr;  // Weak. Owned by the NativeWidget.
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SafetyTipPageInfoBubbleViewTest);
 };
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -385,7 +421,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
   EXPECT_EQ(4u, children.size());
 
   views::Label* label = static_cast<views::Label*>(children[1]);
-  EXPECT_EQ(base::ASCIIToUTF16("Gizmo"), label->text());
+  EXPECT_EQ(base::ASCIIToUTF16("Gizmo"), label->GetText());
 
   views::Button* button = static_cast<views::Button*>(children[2]);
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
@@ -436,14 +472,14 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicyUsbDevices) {
 
   views::Label* label = static_cast<views::Label*>(children[1]);
   EXPECT_EQ(base::ASCIIToUTF16("Unknown product 0x162E from Google Inc."),
-            label->text());
+            label->GetText());
 
   views::Button* button = static_cast<views::Button*>(children[2]);
   EXPECT_EQ(button->state(), views::Button::STATE_DISABLED);
 
   views::Label* desc_label = static_cast<views::Label*>(children[3]);
   EXPECT_EQ(base::ASCIIToUTF16("USB device allowed by your administrator"),
-            desc_label->text());
+            desc_label->GetText());
 
   // Policy granted USB permissions should not be able to be deleted.
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
@@ -497,13 +533,13 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
     EXPECT_EQ(4u, children.size());
 
     views::Label* label = static_cast<views::Label*>(children[1]);
-    EXPECT_EQ(base::ASCIIToUTF16("Gizmo"), label->text());
+    EXPECT_EQ(base::ASCIIToUTF16("Gizmo"), label->GetText());
 
     views::Button* button = static_cast<views::Button*>(children[2]);
     EXPECT_NE(button->state(), views::Button::STATE_DISABLED);
 
     views::Label* desc_label = static_cast<views::Label*>(children[3]);
-    EXPECT_EQ(base::ASCIIToUTF16("USB device"), desc_label->text());
+    EXPECT_EQ(base::ASCIIToUTF16("USB device"), desc_label->GetText());
 
     views::ButtonListener* button_listener =
         static_cast<views::ButtonListener*>(object_view);
@@ -524,14 +560,14 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
 
     views::Label* label = static_cast<views::Label*>(children[1]);
     EXPECT_EQ(base::ASCIIToUTF16("Unknown product 0x162E from Google Inc."),
-              label->text());
+              label->GetText());
 
     views::Button* button = static_cast<views::Button*>(children[2]);
     EXPECT_EQ(button->state(), views::Button::STATE_DISABLED);
 
     views::Label* desc_label = static_cast<views::Label*>(children[3]);
     EXPECT_EQ(base::ASCIIToUTF16("USB device allowed by your administrator"),
-              desc_label->text());
+              desc_label->GetText());
 
     views::ButtonListener* button_listener =
         static_cast<views::ButtonListener*>(object_view);
@@ -652,7 +688,7 @@ TEST_F(PageInfoBubbleViewTest, ChangingFlashSettingForSiteIsRemembered) {
   api_->CreateView();
   const auto& children = api_->permissions_view()->children();
   views::Label* label = static_cast<views::Label*>(children[1]);
-  EXPECT_EQ(base::ASCIIToUTF16("Flash"), label->text());
+  EXPECT_EQ(base::ASCIIToUTF16("Flash"), label->GetText());
 
   // Change the Flash setting back to the default.
   map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
@@ -662,7 +698,7 @@ TEST_F(PageInfoBubbleViewTest, ChangingFlashSettingForSiteIsRemembered) {
   // Check the Flash permission is still showing since the user changed it
   // previously.
   label = static_cast<views::Label*>(children[1]);
-  EXPECT_EQ(base::ASCIIToUTF16("Flash"), label->text());
+  EXPECT_EQ(base::ASCIIToUTF16("Flash"), label->GetText());
 }
 #endif
 
@@ -707,4 +743,8 @@ TEST_F(PageInfoBubbleViewTest, EnsureCloseCallback) {
   EXPECT_EQ(false, api_->reload_prompt());
   EXPECT_EQ(views::Widget::ClosedReason::kCloseButtonClicked,
             api_->closed_reason());
+}
+
+TEST_F(SafetyTipPageInfoBubbleViewTest, OpenAndClose) {
+  // This test just opens and closes the bubble.
 }

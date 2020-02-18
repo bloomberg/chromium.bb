@@ -25,9 +25,8 @@ public class H2OMainActivity extends TransparentLauncherActivity {
         PackageManager pm = context.getPackageManager();
         ComponentName component = new ComponentName(context, H2OMainActivity.class);
         int enabledSetting = pm.getComponentEnabledSetting(component);
-        // Component is enabled by default.
-        return enabledSetting == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-                || enabledSetting == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
+        // Component is disabled by default.
+        return enabledSetting == PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
     }
 
     @Override

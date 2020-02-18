@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_WORKSPACE_BACKDROP_DELEGATE_IMPL_H_
-#define ASH_WM_WORKSPACE_WORKSPACE_BACKDROP_DELEGATE_IMPL_H_
+#ifndef ASH_WM_WORKSPACE_BACKDROP_CONTROLLER_H_
+#define ASH_WM_WORKSPACE_BACKDROP_CONTROLLER_H_
 
 #include <memory>
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/split_view.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/overview/overview_observer.h"
@@ -30,20 +31,21 @@ class EventHandler;
 
 namespace ash {
 
-class BackdropDelegate;
-
 // A backdrop which gets created for a container |window| and which gets
 // stacked behind the top level, activatable window that meets the following
 // criteria.
 //
 // 1) Has a aura::client::kHasBackdrop property = true.
-// 2) BackdropDelegate::HasBackdrop(aura::Window* window) returns true.
-// 3) Active ARC window when the spoken feedback is enabled.
+// 2) Active ARC window when the spoken feedback is enabled.
+// 3) In tablet mode:
+//        - Bottom-most snapped window in splitview,
+//        - Top-most activatable window if splitview is inactive.
 class ASH_EXPORT BackdropController : public AccessibilityObserver,
                                       public ShellObserver,
                                       public OverviewObserver,
                                       public SplitViewObserver,
-                                      public WallpaperControllerObserver {
+                                      public WallpaperControllerObserver,
+                                      public TabletModeObserver {
  public:
   explicit BackdropController(aura::Window* container);
   ~BackdropController() override;
@@ -58,8 +60,6 @@ class ASH_EXPORT BackdropController : public AccessibilityObserver,
   // Called when the desk content is changed in order to update the state of the
   // backdrop even if overview mode is active.
   void OnDeskContentChanged();
-
-  void SetBackdropDelegate(std::unique_ptr<BackdropDelegate> delegate);
 
   // Update the visibility of, and restack the backdrop relative to
   // the other windows in the container.
@@ -89,6 +89,10 @@ class ASH_EXPORT BackdropController : public AccessibilityObserver,
 
   // WallpaperControllerObserver:
   void OnWallpaperPreviewStarted() override;
+
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
  private:
   friend class WorkspaceControllerTestApi;
@@ -126,15 +130,13 @@ class ASH_EXPORT BackdropController : public AccessibilityObserver,
   void SetBackdropAnimationType(int type);
 
   // The backdrop which covers the rest of the screen.
-  views::Widget* backdrop_ = nullptr;
+  std::unique_ptr<views::Widget> backdrop_;
 
   // aura::Window for |backdrop_|.
   aura::Window* backdrop_window_ = nullptr;
 
   // The container of the window that should have a backdrop.
   aura::Window* container_;
-
-  std::unique_ptr<BackdropDelegate> delegate_;
 
   // Event hanlder used to implement actions for accessibility.
   std::unique_ptr<ui::EventHandler> backdrop_event_handler_;
@@ -150,4 +152,4 @@ class ASH_EXPORT BackdropController : public AccessibilityObserver,
 
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_WORKSPACE_BACKDROP_DELEGATE_IMPL_H_
+#endif  // ASH_WM_WORKSPACE_BACKDROP_CONTROLLER_H_

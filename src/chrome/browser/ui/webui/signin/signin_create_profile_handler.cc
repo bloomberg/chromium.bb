@@ -37,7 +37,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -45,8 +44,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 SigninCreateProfileHandler::SigninCreateProfileHandler()
-    : profile_creation_type_(NO_CREATION_IN_PROGRESS),
-      weak_ptr_factory_(this) {}
+    : profile_creation_type_(NO_CREATION_IN_PROGRESS) {}
 
 SigninCreateProfileHandler::~SigninCreateProfileHandler() {}
 
@@ -63,6 +61,9 @@ void SigninCreateProfileHandler::GetLocalizedValues(
   localized_strings->SetString(
       "createProfileTitle",
       l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_TITLE));
+  localized_strings->SetString(
+      "createProfileNamePlaceholder",
+      l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_NAME_PLACEHOLDER));
   localized_strings->SetString(
       "exitAndChildlockLabel",
       l10n_util::GetStringUTF16(
@@ -87,19 +88,6 @@ void SigninCreateProfileHandler::RequestDefaultProfileIcons(
   web_ui()->CallJavascriptFunctionUnsafe(
       "cr.webUIListenerCallback", base::Value("profile-icons-received"),
       *profiles::GetDefaultProfileAvatarIconsAndLabels());
-
-  SendNewProfileDefaults();
-}
-
-void SigninCreateProfileHandler::SendNewProfileDefaults() {
-  ProfileAttributesStorage& storage =
-      g_browser_process->profile_manager()->GetProfileAttributesStorage();
-  base::DictionaryValue profile_info;
-  profile_info.SetString("name", storage.ChooseNameForNewProfile(0));
-
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.webUIListenerCallback", base::Value("profile-defaults-received"),
-      profile_info);
 }
 
 void SigninCreateProfileHandler::CreateProfile(const base::ListValue* args) {

@@ -85,12 +85,12 @@ Polymer({
 
   /** @private */
   showRipple_: function() {
-    this.getRipple().holdDown = true;
+    this.getRipple().showAndHoldDown();
   },
 
   /** @private */
   hideRipple_: function() {
-    this.getRipple().holdDown = false;
+    this.getRipple().clear();
   },
 
   /**

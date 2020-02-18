@@ -21,9 +21,33 @@ source_set("deprecated") {
     "crw_native_content_holder.h",
     "crw_native_content_provider.h",
     "global_web_state_observer.h",
+    "url_verification_constants.h",
+  ]
+}
+
+# A separate target is needed for util to prevent cyclic dependency, as
+# "web_state:web_state_impl_header" depends on ":deprecated" target.
+source_set("deprecated_web_util") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":deprecated",
+    "//ios/web/public",
+    "//ios/web/web_state:web_state_impl_header",
+    "//ios/web/web_state/ui",
+  ]
+  sources = [
+    "crw_web_controller_util.h",
+    "crw_web_controller_util.mm",
+  ]
+}
+
+source_set("deprecated_navigation_util") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  sources = [
     "navigation_item_list.h",
     "navigation_item_list.mm",
-    "url_verification_constants.h",
   ]
 }
 
@@ -32,8 +56,8 @@ source_set("test_doubles") {
 
   deps = [
     ":deprecated",
+    "//ios/web/js_messaging",
     "//ios/web/public",
-    "//ios/web/web_state/ui:web_view_js_utils",
     "//url",
   ]
 

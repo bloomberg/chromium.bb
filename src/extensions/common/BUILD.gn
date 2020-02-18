@@ -22,6 +22,7 @@ source_set("common_constants") {
 
   deps = [
     "//base",
+    "//components/services/app_service/public/mojom",
     "//ui/base",
   ]
 
@@ -33,14 +34,14 @@ source_set("common_constants") {
 }
 
 if (enable_extensions) {
-  mojom("mojo") {
+  mojom("mojom") {
     # We don't want Blink variants of bindings to be generated.
     disable_variants = true
 
     sources = [
-      "mojo/app_window.mojom",
-      "mojo/guest_view.mojom",
-      "mojo/keep_alive.mojom",
+      "mojom/app_window.mojom",
+      "mojom/guest_view.mojom",
+      "mojom/keep_alive.mojom",
     ]
 
     if (proprietary_codecs && enable_wifi_display) {
@@ -164,8 +165,6 @@ if (enable_extensions) {
       "features/feature_provider.h",
       "features/feature_session_type.cc",
       "features/feature_session_type.h",
-      "features/feature_util.cc",
-      "features/feature_util.h",
       "features/json_feature_provider_source.cc",
       "features/json_feature_provider_source.h",
       "features/manifest_feature.cc",
@@ -229,8 +228,8 @@ if (enable_extensions) {
       "manifest_handlers/options_page_info.h",
       "manifest_handlers/permissions_parser.cc",
       "manifest_handlers/permissions_parser.h",
-      "manifest_handlers/replacement_web_app.cc",
-      "manifest_handlers/replacement_web_app.h",
+      "manifest_handlers/replacement_apps.cc",
+      "manifest_handlers/replacement_apps.h",
       "manifest_handlers/requirements_info.cc",
       "manifest_handlers/requirements_info.h",
       "manifest_handlers/sandboxed_page_info.cc",
@@ -311,7 +310,7 @@ if (enable_extensions) {
 
     public_deps = [
       ":common_constants",
-      ":mojo",
+      ":mojom",
       "//content/public/common",
       "//ipc",
       "//skia",
@@ -383,6 +382,8 @@ if (enable_extensions) {
     sources = [
       "api/declarative_net_request/test_utils.cc",
       "api/declarative_net_request/test_utils.h",
+      "file_test_util.cc",
+      "file_test_util.h",
     ]
 
     deps = [
@@ -427,7 +428,7 @@ if (enable_extensions) {
       "manifest_handlers/incognito_manifest_unittest.cc",
       "manifest_handlers/kiosk_mode_info_unittest.cc",
       "manifest_handlers/oauth2_manifest_unittest.cc",
-      "manifest_handlers/replacement_web_app_unittest.cc",
+      "manifest_handlers/replacement_apps_unittest.cc",
       "manifest_handlers/shared_module_manifest_unittest.cc",
       "message_bundle_unittest.cc",
       "permissions/api_permission_set_unittest.cc",

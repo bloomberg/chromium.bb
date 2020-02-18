@@ -23,14 +23,21 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   explicit BookmarkAppRegistrar(Profile* profile);
   ~BookmarkAppRegistrar() override;
 
-  // AppRegistrar
+  // AppRegistrar:
   void Init(base::OnceClosure callback) override;
   bool IsInstalled(const GURL& start_url) const override;
   bool IsInstalled(const web_app::AppId& app_id) const override;
   bool WasExternalAppUninstalledByUser(
       const web_app::AppId& app_id) const override;
-  bool HasScopeUrl(const web_app::AppId& app_id) const override;
-  GURL GetScopeUrlForApp(const web_app::AppId& app_id) const override;
+  base::Optional<web_app::AppId> FindAppWithUrlInScope(
+      const GURL& url) const override;
+  int CountUserInstalledApps() const override;
+  std::string GetAppShortName(const web_app::AppId& app_id) const override;
+  std::string GetAppDescription(const web_app::AppId& app_id) const override;
+  base::Optional<SkColor> GetAppThemeColor(
+      const web_app::AppId& app_id) const override;
+  const GURL& GetAppLaunchURL(const web_app::AppId& app_id) const override;
+  base::Optional<GURL> GetAppScope(const web_app::AppId& app_id) const override;
 
   // ExtensionRegistryObserver:
   void OnExtensionInstalled(content::BrowserContext* browser_context,

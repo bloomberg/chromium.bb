@@ -57,6 +57,7 @@ int32_t BytesPerElement(gfx::BufferFormat format, int plane) {
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::RGBX_1010102:
     case gfx::BufferFormat::YVU_420:
+    case gfx::BufferFormat::P010:
       NOTREACHED();
       return 0;
   }
@@ -90,6 +91,7 @@ int32_t PixelFormat(gfx::BufferFormat format) {
     // Technically RGBX_1010102 should be accepted as 'R10k', but then it won't
     // be supported by CGLTexImageIOSurface2D(), so it's best to reject it here.
     case gfx::BufferFormat::YVU_420:
+    case gfx::BufferFormat::P010:
       NOTREACHED();
       return 0;
   }
@@ -127,7 +129,7 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size,
   TRACE_EVENT0("ui", "CreateIOSurface");
   base::TimeTicks start_time = base::TimeTicks::Now();
 
-  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+  size_t num_planes = gfx::NumberOfPlanesForLinearBufferFormat(format);
   base::ScopedCFTypeRef<CFMutableArrayRef> planes(CFArrayCreateMutable(
       kCFAllocatorDefault, num_planes, &kCFTypeArrayCallBacks));
 

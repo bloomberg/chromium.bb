@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_interface_binders.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -11,6 +12,7 @@
 #include "base/no_destructor.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
@@ -20,7 +22,7 @@
 #include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/browser/websockets/websocket_manager.h"
+#include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -30,9 +32,9 @@
 #include "content/public/common/content_switches.h"
 #include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
-#include "services/network/restricted_cookie_manager.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
@@ -83,9 +85,10 @@ class RendererInterfaceBinders {
  private:
   void InitializeParameterizedBinderRegistry();
 
-  static void CreateWebSocket(network::mojom::WebSocketRequest request,
-                              RenderProcessHost* host,
-                              const url::Origin& origin);
+  static void CreateWebSocketConnector(
+      blink::mojom::WebSocketConnectorRequest request,
+      RenderProcessHost* host,
+      const url::Origin& origin);
 
   service_manager::BinderRegistryWithArgs<RenderProcessHost*,
                                           const url::Origin&>
@@ -101,17 +104,6 @@ void ForwardServiceRequest(const char* service_name,
                            const url::Origin& origin) {
   auto* connector = BrowserContext::GetConnectorFor(host->GetBrowserContext());
   connector->BindInterface(service_name, std::move(request));
-}
-
-void GetRestrictedCookieManager(
-    network::mojom::RestrictedCookieManagerRequest request,
-    RenderProcessHost* render_process_host,
-    const url::Origin& origin) {
-  StoragePartition* storage_partition =
-      render_process_host->GetStoragePartition();
-  network::mojom::NetworkContext* network_context =
-      storage_partition->GetNetworkContext();
-  network_context->GetRestrictedCookieManager(std::move(request), origin);
 }
 
 // Register renderer-exposed interfaces. Each registered interface binder is
@@ -142,7 +134,7 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
   // TODO(nhiroki): Consider moving this into SharedWorkerHost and
   // ServiceWorkerProviderHost.
   parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(CreateWebSocket));
+      base::BindRepeating(CreateWebSocketConnector));
 
   parameterized_binder_registry_.AddInterface(
       base::Bind([](payments::mojom::PaymentManagerRequest request,
@@ -174,19 +166,14 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
     parameterized_binder_registry_.AddInterface(base::BindRepeating(
         [](blink::mojom::NativeFileSystemManagerRequest request,
            RenderProcessHost* host, const url::Origin& origin) {
-          auto* manager =
-              static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
-                  ->GetNativeFileSystemManager();
           // This code path is only for workers, hence always pass in
           // MSG_ROUTING_NONE as frame ID. Frames themselves go through
           // RenderFrameHostImpl instead.
-          base::PostTaskWithTraits(
-              FROM_HERE, {BrowserThread::IO},
-              base::BindOnce(&NativeFileSystemManagerImpl::BindRequest,
-                             base::Unretained(manager),
-                             NativeFileSystemManagerImpl::BindingContext(
-                                 origin, host->GetID(), MSG_ROUTING_NONE),
-                             std::move(request)));
+          NativeFileSystemManagerImpl::BindRequestFromUIThread(
+              static_cast<StoragePartitionImpl*>(host->GetStoragePartition()),
+              NativeFileSystemManagerImpl::BindingContext(origin, host->GetID(),
+                                                          MSG_ROUTING_NONE),
+              std::move(request));
         }));
   }
   parameterized_binder_registry_.AddInterface(
@@ -204,17 +191,15 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             ->CreateService(std::move(request), origin);
       }));
 
-  parameterized_binder_registry_.AddInterface(
-      base::Bind([](blink::mojom::NotificationServiceRequest request,
-                    RenderProcessHost* host, const url::Origin& origin) {
+  parameterized_binder_registry_.AddInterface(base::BindRepeating(
+      [](blink::mojom::NotificationServiceRequest request,
+         RenderProcessHost* host, const url::Origin& origin) {
         static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
             ->GetPlatformNotificationContext()
             ->CreateService(origin, std::move(request));
       }));
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker));
-  parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(GetRestrictedCookieManager));
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&QuotaDispatcherHost::CreateForWorker));
   parameterized_binder_registry_.AddInterface(base::BindRepeating(
@@ -230,6 +215,8 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
         host->GetBrowserContext()->GetVideoDecodePerfHistory()->BindRequest(
             std::move(request));
       }));
+  parameterized_binder_registry_.AddInterface(
+      base::BindRepeating(&ContentIndexServiceImpl::Create));
 }
 
 RendererInterfaceBinders& GetRendererInterfaceBinders() {
@@ -237,15 +224,15 @@ RendererInterfaceBinders& GetRendererInterfaceBinders() {
   return *binders;
 }
 
-void RendererInterfaceBinders::CreateWebSocket(
-    network::mojom::WebSocketRequest request,
+void RendererInterfaceBinders::CreateWebSocketConnector(
+    blink::mojom::WebSocketConnectorRequest request,
     RenderProcessHost* host,
     const url::Origin& origin) {
   // TODO(jam): is it ok to not send extraHeaders for sockets created from
   // shared and service workers?
-  WebSocketManager::CreateWebSocket(host->GetID(), MSG_ROUTING_NONE, origin,
-                                    network::mojom::kWebSocketOptionNone,
-                                    nullptr, nullptr, std::move(request));
+  mojo::MakeStrongBinding(std::make_unique<WebSocketConnectorImpl>(
+                              host->GetID(), MSG_ROUTING_NONE, origin),
+                          std::move(request));
 }
 
 }  // namespace

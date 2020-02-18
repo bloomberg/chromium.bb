@@ -7,7 +7,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
@@ -18,6 +17,7 @@
 #include "third_party/blink/renderer/core/script/module_record_resolver_impl.h"
 #include "third_party/blink/renderer/core/script/parsed_specifier.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -52,33 +52,49 @@ bool ModulatorImplBase::BuiltInModuleInfraEnabled() const {
       GetExecutionContext());
 }
 
-bool ModulatorImplBase::BuiltInModuleEnabled(
-    blink::layered_api::Module module) const {
+bool ModulatorImplBase::BuiltInModuleEnabled(layered_api::Module module) const {
   DCHECK(BuiltInModuleInfraEnabled());
+  if (RuntimeEnabledFeatures::BuiltInModuleAllEnabled())
+    return true;
   switch (module) {
-    case blink::layered_api::Module::kBlank:
+    case layered_api::Module::kBlank:
       return true;
-    case blink::layered_api::Module::kVirtualScroller:
+    case layered_api::Module::kKvStorage:
+      return RuntimeEnabledFeatures::BuiltInModuleKvStorageEnabled(
+          GetExecutionContext());
+    case layered_api::Module::kElementsInternal:
+      // Union of conditions of KElementsSwitch and kElementsToast.
+      return RuntimeEnabledFeatures::BuiltInModuleSwitchElementEnabled();
+    case layered_api::Module::kElementsSwitch:
+      return RuntimeEnabledFeatures::BuiltInModuleSwitchElementEnabled();
+    case layered_api::Module::kElementsToast:
       return RuntimeEnabledFeatures::BuiltInModuleAllEnabled();
-    case blink::layered_api::Module::kKvStorage:
-      return RuntimeEnabledFeatures::BuiltInModuleAllEnabled() ||
-             RuntimeEnabledFeatures::BuiltInModuleKvStorageEnabled(
-                 GetExecutionContext());
+    case layered_api::Module::kElementsVirtualScroller:
+      return false;
   }
 }
 
 void ModulatorImplBase::BuiltInModuleUseCount(
-    blink::layered_api::Module module) const {
+    layered_api::Module module) const {
   DCHECK(BuiltInModuleInfraEnabled());
   DCHECK(BuiltInModuleEnabled(module));
   switch (module) {
-    case blink::layered_api::Module::kBlank:
+    case layered_api::Module::kBlank:
       break;
-    case blink::layered_api::Module::kVirtualScroller:
+    case layered_api::Module::kElementsInternal:
+      break;
+    case layered_api::Module::kElementsSwitch:
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kBuiltInModuleSwitchImported);
+      break;
+    case layered_api::Module::kElementsToast:
+      UseCounter::Count(GetExecutionContext(), WebFeature::kBuiltInModuleToast);
+      break;
+    case layered_api::Module::kElementsVirtualScroller:
       UseCounter::Count(GetExecutionContext(),
                         WebFeature::kBuiltInModuleVirtualScroller);
       break;
-    case blink::layered_api::Module::kKvStorage:
+    case layered_api::Module::kKvStorage:
       UseCounter::Count(GetExecutionContext(),
                         WebFeature::kBuiltInModuleKvStorage);
       break;
@@ -96,32 +112,9 @@ void ModulatorImplBase::FetchTree(
     const ScriptFetchOptions& options,
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeClient* client) {
-  // <spec label="fetch-a-module-script-tree" step="2">Perform the internal
-  // module script graph fetching procedure given url, settings object,
-  // destination, options, settings object, visited set, "client", and with the
-  // top-level module fetch flag set. If the caller of this algorithm specified
-  // custom perform the fetch steps, pass those along as well.</spec>
-
-  // <spec label="fetch-a-module-worker-script-tree" step="3">Perform the
-  // internal module script graph fetching procedure given url, fetch client
-  // settings object, destination, options, module map settings object, visited
-  // set, "client", and with the top-level module fetch flag set. If the caller
-  // of this algorithm specified custom perform the fetch steps, pass those
-  // along as well.</spec>
-
   ModuleTreeLinker::Fetch(url, fetch_client_settings_object_fetcher,
                           destination, options, this, custom_fetch_type,
                           tree_linker_registry_, client);
-
-  // <spec label="fetch-a-module-script-tree" step="3">When the internal module
-  // script graph fetching procedure asynchronously completes with result,
-  // asynchronously complete this algorithm with result.</spec>
-
-  // <spec label="fetch-a-module-worker-script-tree" step="4">When the internal
-  // module script graph fetching procedure asynchronously completes with
-  // result, asynchronously complete this algorithm with result.</spec>
-
-  // Note: We delegate to ModuleTreeLinker to notify ModuleTreeClient.
 }
 
 void ModulatorImplBase::FetchDescendantsForInlineScript(
@@ -265,14 +258,14 @@ ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
     ModuleRecord record) const {
   // <spec step="1">Let module script be moduleRecord.[[HostDefined]].</spec>
   const ModuleScript* module_script =
-      module_record_resolver_->GetHostDefined(record);
+      module_record_resolver_->GetModuleScriptFromModuleRecord(record);
   DCHECK(module_script);
 
-  // <spec step="2">Let urlString be module script's base URL,
+  // <spec step="3">Let urlString be module script's base URL,
   // serialized.</spec>
   String url_string = module_script->BaseURL().GetString();
 
-  // <spec step="3">Return « Record { [[Key]]: "url", [[Value]]: urlString }
+  // <spec step="4">Return « Record { [[Key]]: "url", [[Value]]: urlString }
   // ».</spec>
   return ModuleImportMeta(url_string);
 }
@@ -416,7 +409,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
   return ScriptValue();
 }
 
-void ModulatorImplBase::Trace(blink::Visitor* visitor) {
+void ModulatorImplBase::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(map_);
   visitor->Trace(tree_linker_registry_);

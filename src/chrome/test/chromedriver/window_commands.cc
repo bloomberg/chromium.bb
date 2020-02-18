@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
@@ -575,9 +576,9 @@ Status ExecuteExecuteScript(Session* session,
     if (script.find("//") != std::string::npos)
       script = script + "\n";
 
-    Status status = web_view->CallUserSyncFunction(
-        session->GetCurrentFrameId(), "function(){" + script + "}", *args,
-        session->script_timeout, value);
+    Status status =
+        web_view->CallUserSyncScript(session->GetCurrentFrameId(), script,
+                                     *args, session->script_timeout, value);
     if (status.code() == kTimeout)
       return Status(kScriptTimeout);
     return status;
@@ -601,11 +602,43 @@ Status ExecuteExecuteAsyncScript(Session* session,
     script = script + "\n";
 
   Status status = web_view->CallUserAsyncFunction(
-      session->GetCurrentFrameId(), "function(){" + script + "}", *args,
+      session->GetCurrentFrameId(), "async function(){" + script + "}", *args,
       session->script_timeout, value);
   if (status.code() == kTimeout)
     return Status(kScriptTimeout);
   return status;
+}
+
+Status ExecuteNewWindow(Session* session,
+                        WebView* web_view,
+                        const base::DictionaryValue& params,
+                        std::unique_ptr<base::Value>* value,
+                        Timeout* timeout) {
+  std::string type = "";
+  // "type" can either be None or a string.
+  auto* type_param = params.FindKey("type");
+  if (!(!type_param || type_param->is_none() ||
+        params.GetString("type", &type)))
+    return Status(kInvalidArgument, "missing or invalid 'type'");
+
+  // By default, creates new tab.
+  Chrome::WindowType window_type = (type == "window")
+                                       ? Chrome::WindowType::kWindow
+                                       : Chrome::WindowType::kTab;
+
+  std::string handle = "";
+  Status status =
+      session->chrome->NewWindow(session->window, window_type, &handle);
+
+  if (status.IsError())
+    return status;
+
+  auto results = std::make_unique<base::DictionaryValue>();
+  results->SetString("handle", WebViewIdToWindowHandle(handle));
+  results->SetString(
+      "type", (window_type == Chrome::WindowType::kWindow) ? "window" : "tab");
+  *value = std::move(results);
+  return Status(kOk);
 }
 
 Status ExecuteSwitchToFrame(Session* session,
@@ -996,22 +1029,6 @@ Status ExecuteTouchScroll(Session* session,
       location.x, location.y, xoffset, yoffset);
 }
 
-Status ExecuteTouchPinch(Session* session,
-                         WebView* web_view,
-                         const base::DictionaryValue& params,
-                         std::unique_ptr<base::Value>* value,
-                         Timeout* timeout) {
-  WebPoint location;
-  if (!params.GetInteger("x", &location.x))
-    return Status(kInvalidArgument, "'x' must be an integer");
-  if (!params.GetInteger("y", &location.y))
-    return Status(kInvalidArgument, "'y' must be an integer");
-  double scale_factor;
-  if (!params.GetDouble("scale", &scale_factor))
-    return Status(kInvalidArgument, "'scale' must be an integer");
-  return web_view->SynthesizePinchGesture(location.x, location.y, scale_factor);
-}
-
 Status ProcessInputActionSequence(
     Session* session,
     const base::DictionaryValue* action_sequence,
@@ -1252,15 +1269,9 @@ Status ExecutePerformActions(Session* session,
                              std::unique_ptr<base::Value>* value,
                              Timeout* timeout) {
   // extract action sequence
-  const base::DictionaryValue* actions_dict;
   const base::ListValue* actions_input;
 
-  // TODO(lanwei): The below line will be removed after this pull request is
-  // merged, https://github.com/web-platform-tests/wpt/pull/14345.
-  if (!params.GetDictionary("actions", &actions_dict))
-    actions_dict = &params;
-
-  if (!actions_dict->GetList("actions", &actions_input))
+  if (!params.GetList("actions", &actions_input))
     return Status(kInvalidArgument, "'actions' must be an array");
 
   // the processed actions
@@ -1418,10 +1429,10 @@ Status ExecutePerformActions(Session* session,
         }
       }
 
-      int init_x, init_y;
-      if (!input_state->GetInteger("x", &init_x) ||
-          !input_state->GetInteger("y", &init_y))
-        return Status(kUnknownError, "invalid input state");
+      int init_x = 0;
+      int init_y = 0;
+      input_state->GetInteger("x", &init_x);
+      input_state->GetInteger("y", &init_y);
 
       if (pointer_type == "mouse" || pointer_type == "pen") {
         longest_mouse_list_size =
@@ -1824,24 +1835,9 @@ Status ExecuteScreenshot(Session* session,
     return status;
 
   std::string screenshot;
-  ChromeDesktopImpl* desktop = NULL;
-  status = session->chrome->GetAsDesktop(&desktop);
-  if (status.IsOk() && !session->force_devtools_screenshot) {
-    AutomationExtension* extension = NULL;
-    status = desktop->GetAutomationExtension(&extension,
-                                             session->w3c_compliant);
-    if (status.IsError())
-      return status;
-    status = extension->CaptureScreenshot(&screenshot);
-  } else {
-    std::unique_ptr<base::DictionaryValue> screenshot_params(
-        const base::DictionaryValue&);
   status = web_view->CaptureScreenshot(&screenshot, base::DictionaryValue());
-  }
   if (status.IsError()) {
     LOG(WARNING) << "screenshot failed, retrying";
-    std::unique_ptr<base::DictionaryValue> screenshot_params(
-        new base::DictionaryValue);
     status = web_view->CaptureScreenshot(&screenshot, base::DictionaryValue());
   }
   if (status.IsError())
@@ -1861,10 +1857,8 @@ Status ExecuteGetCookies(Session* session,
   if (status.IsError())
     return status;
   std::unique_ptr<base::ListValue> cookie_list(new base::ListValue());
-  for (std::list<Cookie>::iterator it = cookies.begin();
+  for (std::list<Cookie>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
-    if (session->w3c_compliant && it->domain[0] == '.')
-      it->domain.erase(0, 1);
     cookie_list->Append(CreateDictionaryFrom(*it));
   }
   *value = std::move(cookie_list);
@@ -1885,11 +1879,9 @@ Status ExecuteGetNamedCookie(Session* session,
   if (status.IsError())
     return status;
 
-  for (std::list<Cookie>::iterator it = cookies.begin();
+  for (std::list<Cookie>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
     if (name == it->name) {
-      if (session->w3c_compliant && it->domain[0] == '.')
-        it->domain.erase(0, 1);
       value->reset(CreateDictionaryFrom(*it)->DeepCopy());
       return Status(kOk);
     }
@@ -1915,6 +1907,11 @@ Status ExecuteAddCookie(Session* session,
   Status status = GetUrl(web_view, session->GetCurrentFrameId(), &url);
   if (status.IsError())
     return status;
+  if (!base::StartsWith(url, "http://", base::CompareCase::INSENSITIVE_ASCII) &&
+      !base::StartsWith(url, "https://",
+                        base::CompareCase::INSENSITIVE_ASCII) &&
+      !base::StartsWith(url, "ftp://", base::CompareCase::INSENSITIVE_ASCII))
+    return Status(kInvalidCookieDomain);
   std::string domain;
   if (!GetOptionalString(cookie, "domain", &domain))
     return Status(kInvalidArgument, "invalid 'domain'");

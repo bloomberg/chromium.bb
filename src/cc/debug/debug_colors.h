@@ -72,6 +72,10 @@ class CC_DEBUG_EXPORT DebugColors {
   static int PaintRectBorderWidth();
   static SkColor PaintRectFillColor(int step);
 
+  static SkColor LayoutShiftRectBorderColor();
+  static int LayoutShiftRectBorderWidth();
+  static SkColor LayoutShiftRectFillColor(int step);
+
   static SkColor PropertyChangedRectBorderColor();
   static int PropertyChangedRectBorderWidth();
   static SkColor PropertyChangedRectFillColor();

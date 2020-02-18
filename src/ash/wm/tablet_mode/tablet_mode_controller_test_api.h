@@ -75,12 +75,8 @@ class TabletModeControllerTestApi {
     return tablet_mode_controller_->CanUseUnstableLidAngle();
   }
 
-  TabletModeController::UiMode force_ui_mode() const {
-    return tablet_mode_controller_->force_ui_mode_;
-  }
-
   bool IsTabletModeStarted() const {
-    return tablet_mode_controller_->IsTabletModeWindowManagerEnabled();
+    return tablet_mode_controller_->InTabletMode();
   }
 
   bool AreEventsBlocked() const {

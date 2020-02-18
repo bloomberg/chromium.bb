@@ -23,6 +23,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/manager/content_protection_manager.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -47,6 +48,7 @@ class RootWindowController;
 class ASH_EXPORT WindowTreeHostManager
     : public display::DisplayObserver,
       public aura::WindowTreeHostObserver,
+      public display::ContentProtectionManager::Observer,
       public display::DisplayManager::Delegate,
       public ui::internal::InputMethodDelegate {
  public:
@@ -164,6 +166,9 @@ class ASH_EXPORT WindowTreeHostManager
   // aura::WindowTreeHostObserver overrides:
   void OnHostResized(aura::WindowTreeHost* host) override;
 
+  // display::ContentProtectionManager::Observer overrides:
+  void OnDisplaySecurityChanged(int64_t display_id, bool secure) override;
+
   // display::DisplayManager::Delegate overrides:
   void CreateOrUpdateMirroringDisplay(
       const display::DisplayInfoList& info_list) override;
@@ -174,8 +179,7 @@ class ASH_EXPORT WindowTreeHostManager
 
   // ui::internal::InputMethodDelegate overrides:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
-      ui::KeyEvent* event,
-      DispatchKeyEventPostIMECallback callback) override;
+      ui::KeyEvent* event) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WindowTreeHostManagerTest, BoundsUpdated);

@@ -218,8 +218,7 @@ APIBinding::APIBinding(const std::string& api_name,
       type_refs_(type_refs),
       request_handler_(request_handler),
       event_handler_(event_handler),
-      access_checker_(access_checker),
-      weak_factory_(this) {
+      access_checker_(access_checker) {
   // TODO(devlin): It might make sense to instantiate the object_template_
   // directly here, which would avoid the need to hold on to
   // |property_definitions_| and |enums_|. However, there are *some* cases where
@@ -663,8 +662,7 @@ void APIBinding::HandleCall(const std::string& name,
     return;
   }
 
-  std::unique_ptr<base::ListValue> converted_arguments;
-  v8::Local<v8::Function> callback;
+  APISignature::JSONParseResult parse_result;
   {
     v8::TryCatch try_catch(isolate);
 
@@ -677,33 +675,30 @@ void APIBinding::HandleCall(const std::string& name,
     // here, but it also means we can't auto-generate the params for the
     // function on the browser side.
     if (updated_args) {
-      bool success = signature->ConvertArgumentsIgnoringSchema(
-          context, argument_list, &converted_arguments, &callback);
-      if (!success) {
-        // Converted arguments passed to us by our bindings should never fail.
-        NOTREACHED();
-        return;
-      }
+      parse_result =
+          signature->ConvertArgumentsIgnoringSchema(context, argument_list);
+      // Converted arguments passed to us by our bindings should never fail.
+      DCHECK(parse_result.succeeded());
     } else {
-      invalid_invocation = !signature->ParseArgumentsToJSON(
-          context, argument_list, *type_refs_, &converted_arguments, &callback,
-          &error);
+      parse_result =
+          signature->ParseArgumentsToJSON(context, argument_list, *type_refs_);
     }
 
     if (try_catch.HasCaught()) {
-      DCHECK(!converted_arguments);
+      DCHECK(!parse_result.succeeded());
       try_catch.ReThrow();
       return;
     }
   }
-  if (invalid_invocation) {
+  if (!parse_result.succeeded()) {
     arguments->ThrowTypeError(api_errors::InvocationError(
-        name, signature->GetExpectedSignature(), error));
+        name, signature->GetExpectedSignature(), *parse_result.error));
     return;
   }
 
-  request_handler_->StartRequest(context, name, std::move(converted_arguments),
-                                 callback, custom_callback, thread);
+  request_handler_->StartRequest(
+      context, name, std::move(parse_result.arguments), parse_result.callback,
+      custom_callback, thread);
 }
 
 }  // namespace extensions

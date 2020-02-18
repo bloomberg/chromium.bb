@@ -50,12 +50,12 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -138,7 +138,7 @@ void ReportBlockedEvent(EventTarget& target,
       " ms due to main thread being busy. "
       "Consider marking event handler as 'passive' to make the page more "
       "responsive.",
-      event.type().GetString().Utf8().data(), delayed.InMilliseconds());
+      event.type().GetString().Utf8().c_str(), delayed.InMilliseconds());
   PerformanceMonitor::ReportGenericViolation(
       target.GetExecutionContext(), PerformanceMonitor::kBlockedEvent,
       message_text, delayed, listener->GetSourceLocation(target));
@@ -377,7 +377,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
         "Consider marking event handler as 'passive' to make the page more "
         "responsive. See "
         "https://www.chromestatus.com/feature/5745543795965952",
-        event_type.GetString().Utf8().data());
+        event_type.GetString().Utf8().c_str());
 
     PerformanceMonitor::ReportGenericViolation(
         GetExecutionContext(), PerformanceMonitor::kDiscouragedAPIUse,
@@ -501,7 +501,7 @@ void EventTarget::AddedEventListener(
       String message_text = String::Format(
           "Added synchronous DOM mutation listener to a '%s' event. "
           "Consider using MutationObserver to make the page more responsive.",
-          event_type.GetString().Utf8().data());
+          event_type.GetString().Utf8().c_str());
       PerformanceMonitor::ReportGenericViolation(
           context, PerformanceMonitor::kDiscouragedAPIUse, message_text,
           base::TimeDelta(), nullptr);
@@ -875,7 +875,7 @@ bool EventTarget::FireEventListeners(Event& event,
   base::TimeTicks now;
   bool should_report_blocked_event = false;
   if (!blocked_event_threshold.is_zero()) {
-    now = CurrentTimeTicks();
+    now = base::TimeTicks::Now();
     should_report_blocked_event =
         now - event.PlatformTimeStamp() > blocked_event_threshold;
   }
@@ -906,7 +906,6 @@ bool EventTarget::FireEventListeners(Event& event,
       break;
 
     event.SetHandlingPassive(EventPassiveMode(registered_listener));
-    bool passive_forced = registered_listener.PassiveForcedForDocumentTarget();
 
     probe::UserCallback probe(context, nullptr, event.type(), false, this);
     probe::AsyncTask async_task(context, listener, "event",
@@ -925,17 +924,6 @@ bool EventTarget::FireEventListeners(Event& event,
         !event.defaultPrevented()) {
       ReportBlockedEvent(*this, event, &entry[i - 1],
                          now - event.PlatformTimeStamp());
-    }
-
-    if (passive_forced) {
-      DEFINE_STATIC_LOCAL(EnumerationHistogram, passive_forced_histogram,
-                          ("Event.PassiveForcedEventDispatchCancelled",
-                           kPassiveForcedListenerResultTypeMax));
-      PassiveForcedListenerResultType breakage_type = kPreventDefaultNotCalled;
-      if (event.PreventDefaultCalledDuringPassive())
-        breakage_type = kDocumentLevelTouchPreventDefaultCalled;
-
-      passive_forced_histogram.Count(breakage_type);
     }
 
     event.SetHandlingPassive(Event::PassiveMode::kNotPassive);

@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
@@ -726,7 +726,7 @@ extern "C" {
     virtual HRESULT WINAPI get_ContentClassName(BSTR *pContentClassName) = 0;
     virtual HRESULT WINAPI put_ContentClassName(BSTR varContentClassName) = 0;
     virtual HRESULT WINAPI get_Parent(IBodyPart **varParent) = 0;
-    virtual HRESULT WINAPI AddBodyPart(long Index,IBodyPart **ppPart) = 0;
+    virtual HRESULT WINAPI AddBodyPart(__LONG32 Index,IBodyPart **ppPart) = 0;
     virtual HRESULT WINAPI SaveToFile(BSTR FileName) = 0;
     virtual HRESULT WINAPI GetEncodedContentStream(_Stream **ppStream) = 0;
     virtual HRESULT WINAPI GetDecodedContentStream(_Stream **ppStream) = 0;
@@ -759,7 +759,7 @@ extern "C" {
       HRESULT (WINAPI *get_ContentClassName)(IBodyPart *This,BSTR *pContentClassName);
       HRESULT (WINAPI *put_ContentClassName)(IBodyPart *This,BSTR varContentClassName);
       HRESULT (WINAPI *get_Parent)(IBodyPart *This,IBodyPart **varParent);
-      HRESULT (WINAPI *AddBodyPart)(IBodyPart *This,long Index,IBodyPart **ppPart);
+      HRESULT (WINAPI *AddBodyPart)(IBodyPart *This,__LONG32 Index,IBodyPart **ppPart);
       HRESULT (WINAPI *SaveToFile)(IBodyPart *This,BSTR FileName);
       HRESULT (WINAPI *GetEncodedContentStream)(IBodyPart *This,_Stream **ppStream);
       HRESULT (WINAPI *GetDecodedContentStream)(IBodyPart *This,_Stream **ppStream);
@@ -833,7 +833,7 @@ extern "C" {
   void __RPC_STUB IBodyPart_put_ContentClassName_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
   HRESULT WINAPI IBodyPart_get_Parent_Proxy(IBodyPart *This,IBodyPart **varParent);
   void __RPC_STUB IBodyPart_get_Parent_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI IBodyPart_AddBodyPart_Proxy(IBodyPart *This,long Index,IBodyPart **ppPart);
+  HRESULT WINAPI IBodyPart_AddBodyPart_Proxy(IBodyPart *This,__LONG32 Index,IBodyPart **ppPart);
   void __RPC_STUB IBodyPart_AddBodyPart_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
   HRESULT WINAPI IBodyPart_SaveToFile_Proxy(IBodyPart *This,BSTR FileName);
   void __RPC_STUB IBodyPart_SaveToFile_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
@@ -904,9 +904,9 @@ extern "C" {
 #if defined(__cplusplus) && !defined(CINTERFACE)
   struct IMessages : public IDispatch {
   public:
-    virtual HRESULT WINAPI get_Item(long Index,IMessage **ppMessage) = 0;
-    virtual HRESULT WINAPI get_Count(long *varCount) = 0;
-    virtual HRESULT WINAPI Delete(long Index) = 0;
+    virtual HRESULT WINAPI get_Item(__LONG32 Index,IMessage **ppMessage) = 0;
+    virtual HRESULT WINAPI get_Count(__LONG32 *varCount) = 0;
+    virtual HRESULT WINAPI Delete(__LONG32 Index) = 0;
     virtual HRESULT WINAPI DeleteAll(void) = 0;
     virtual HRESULT WINAPI get__NewEnum(IUnknown **retval) = 0;
     virtual HRESULT WINAPI get_Filename(VARIANT var,BSTR *Filename) = 0;
@@ -921,9 +921,9 @@ extern "C" {
       HRESULT (WINAPI *GetTypeInfo)(IMessages *This,UINT iTInfo,LCID lcid,ITypeInfo **ppTInfo);
       HRESULT (WINAPI *GetIDsOfNames)(IMessages *This,REFIID riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId);
       HRESULT (WINAPI *Invoke)(IMessages *This,DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,EXCEPINFO *pExcepInfo,UINT *puArgErr);
-      HRESULT (WINAPI *get_Item)(IMessages *This,long Index,IMessage **ppMessage);
-      HRESULT (WINAPI *get_Count)(IMessages *This,long *varCount);
-      HRESULT (WINAPI *Delete)(IMessages *This,long Index);
+      HRESULT (WINAPI *get_Item)(IMessages *This,__LONG32 Index,IMessage **ppMessage);
+      HRESULT (WINAPI *get_Count)(IMessages *This,__LONG32 *varCount);
+      HRESULT (WINAPI *Delete)(IMessages *This,__LONG32 Index);
       HRESULT (WINAPI *DeleteAll)(IMessages *This);
       HRESULT (WINAPI *get__NewEnum)(IMessages *This,IUnknown **retval);
       HRESULT (WINAPI *get_Filename)(IMessages *This,VARIANT var,BSTR *Filename);
@@ -948,11 +948,11 @@ extern "C" {
 #define IMessages_get_Filename(This,var,Filename) (This)->lpVtbl->get_Filename(This,var,Filename)
 #endif
 #endif
-  HRESULT WINAPI IMessages_get_Item_Proxy(IMessages *This,long Index,IMessage **ppMessage);
+  HRESULT WINAPI IMessages_get_Item_Proxy(IMessages *This,__LONG32 Index,IMessage **ppMessage);
   void __RPC_STUB IMessages_get_Item_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI IMessages_get_Count_Proxy(IMessages *This,long *varCount);
+  HRESULT WINAPI IMessages_get_Count_Proxy(IMessages *This,__LONG32 *varCount);
   void __RPC_STUB IMessages_get_Count_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI IMessages_Delete_Proxy(IMessages *This,long Index);
+  HRESULT WINAPI IMessages_Delete_Proxy(IMessages *This,__LONG32 Index);
   void __RPC_STUB IMessages_Delete_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
   HRESULT WINAPI IMessages_DeleteAll_Proxy(IMessages *This);
   void __RPC_STUB IMessages_DeleteAll_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
@@ -1007,12 +1007,12 @@ extern "C" {
 #if defined(__cplusplus) && !defined(CINTERFACE)
   struct IBodyParts : public IDispatch {
   public:
-    virtual HRESULT WINAPI get_Count(long *varCount) = 0;
-    virtual HRESULT WINAPI get_Item(long Index,IBodyPart **ppBody) = 0;
+    virtual HRESULT WINAPI get_Count(__LONG32 *varCount) = 0;
+    virtual HRESULT WINAPI get_Item(__LONG32 Index,IBodyPart **ppBody) = 0;
     virtual HRESULT WINAPI get__NewEnum(IUnknown **retval) = 0;
     virtual HRESULT WINAPI Delete(VARIANT varBP) = 0;
     virtual HRESULT WINAPI DeleteAll(void) = 0;
-    virtual HRESULT WINAPI Add(long Index,IBodyPart **ppPart) = 0;
+    virtual HRESULT WINAPI Add(__LONG32 Index,IBodyPart **ppPart) = 0;
   };
 #else
   typedef struct IBodyPartsVtbl {
@@ -1024,12 +1024,12 @@ extern "C" {
       HRESULT (WINAPI *GetTypeInfo)(IBodyParts *This,UINT iTInfo,LCID lcid,ITypeInfo **ppTInfo);
       HRESULT (WINAPI *GetIDsOfNames)(IBodyParts *This,REFIID riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId);
       HRESULT (WINAPI *Invoke)(IBodyParts *This,DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,EXCEPINFO *pExcepInfo,UINT *puArgErr);
-      HRESULT (WINAPI *get_Count)(IBodyParts *This,long *varCount);
-      HRESULT (WINAPI *get_Item)(IBodyParts *This,long Index,IBodyPart **ppBody);
+      HRESULT (WINAPI *get_Count)(IBodyParts *This,__LONG32 *varCount);
+      HRESULT (WINAPI *get_Item)(IBodyParts *This,__LONG32 Index,IBodyPart **ppBody);
       HRESULT (WINAPI *get__NewEnum)(IBodyParts *This,IUnknown **retval);
       HRESULT (WINAPI *Delete)(IBodyParts *This,VARIANT varBP);
       HRESULT (WINAPI *DeleteAll)(IBodyParts *This);
-      HRESULT (WINAPI *Add)(IBodyParts *This,long Index,IBodyPart **ppPart);
+      HRESULT (WINAPI *Add)(IBodyParts *This,__LONG32 Index,IBodyPart **ppPart);
     END_INTERFACE
   } IBodyPartsVtbl;
   struct IBodyParts {
@@ -1051,9 +1051,9 @@ extern "C" {
 #define IBodyParts_Add(This,Index,ppPart) (This)->lpVtbl->Add(This,Index,ppPart)
 #endif
 #endif
-  HRESULT WINAPI IBodyParts_get_Count_Proxy(IBodyParts *This,long *varCount);
+  HRESULT WINAPI IBodyParts_get_Count_Proxy(IBodyParts *This,__LONG32 *varCount);
   void __RPC_STUB IBodyParts_get_Count_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI IBodyParts_get_Item_Proxy(IBodyParts *This,long Index,IBodyPart **ppBody);
+  HRESULT WINAPI IBodyParts_get_Item_Proxy(IBodyParts *This,__LONG32 Index,IBodyPart **ppBody);
   void __RPC_STUB IBodyParts_get_Item_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
   HRESULT WINAPI IBodyParts_get__NewEnum_Proxy(IBodyParts *This,IUnknown **retval);
   void __RPC_STUB IBodyParts_get__NewEnum_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
@@ -1061,7 +1061,7 @@ extern "C" {
   void __RPC_STUB IBodyParts_Delete_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
   HRESULT WINAPI IBodyParts_DeleteAll_Proxy(IBodyParts *This);
   void __RPC_STUB IBodyParts_DeleteAll_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI IBodyParts_Add_Proxy(IBodyParts *This,long Index,IBodyPart **ppPart);
+  HRESULT WINAPI IBodyParts_Add_Proxy(IBodyParts *This,__LONG32 Index,IBodyPart **ppPart);
   void __RPC_STUB IBodyParts_Add_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
 #endif
 
@@ -1428,67 +1428,67 @@ extern "C" {
 
 #ifndef __CdoErrors_MODULE_DEFINED__
 #define __CdoErrors_MODULE_DEFINED__
-  const LONG CDO_E_UNCAUGHT_EXCEPTION = 0x80040201L;
-  const LONG CDO_E_NOT_OPENED = 0x80040202L;
-  const LONG CDO_E_UNSUPPORTED_DATASOURCE = 0x80040203L;
-  const LONG CDO_E_INVALID_PROPERTYNAME = 0x80040204L;
-  const LONG CDO_E_PROP_UNSUPPORTED = 0x80040205L;
-  const LONG CDO_E_INACTIVE = 0x80040206L;
-  const LONG CDO_E_NO_SUPPORT_FOR_OBJECTS = 0x80040207L;
-  const LONG CDO_E_NOT_AVAILABLE = 0x80040208L;
-  const LONG CDO_E_NO_DEFAULT_DROP_DIR = 0x80040209L;
-  const LONG CDO_E_SMTP_SERVER_REQUIRED = 0x8004020aL;
-  const LONG CDO_E_NNTP_SERVER_REQUIRED = 0x8004020bL;
-  const LONG CDO_E_RECIPIENT_MISSING = 0x8004020cL;
-  const LONG CDO_E_FROM_MISSING = 0x8004020dL;
-  const LONG CDO_E_SENDER_REJECTED = 0x8004020eL;
-  const LONG CDO_E_RECIPIENTS_REJECTED = 0x8004020fL;
-  const LONG CDO_E_NNTP_POST_FAILED = 0x80040210L;
-  const LONG CDO_E_SMTP_SEND_FAILED = 0x80040211L;
-  const LONG CDO_E_CONNECTION_DROPPED = 0x80040212L;
-  const LONG CDO_E_FAILED_TO_CONNECT = 0x80040213L;
-  const LONG CDO_E_INVALID_POST = 0x80040214L;
-  const LONG CDO_E_AUTHENTICATION_FAILURE = 0x80040215L;
-  const LONG CDO_E_INVALID_CONTENT_TYPE = 0x80040216L;
-  const LONG CDO_E_LOGON_FAILURE = 0x80040217L;
-  const LONG CDO_E_HTTP_NOT_FOUND = 0x80040218L;
-  const LONG CDO_E_HTTP_FORBIDDEN = 0x80040219L;
-  const LONG CDO_E_HTTP_FAILED = 0x8004021aL;
-  const LONG CDO_E_MULTIPART_NO_DATA = 0x8004021bL;
-  const LONG CDO_E_INVALID_ENCODING_FOR_MULTIPART = 0x8004021cL;
-  const LONG CDO_E_UNSAFE_OPERATION = 0x8004021dL;
-  const LONG CDO_E_PROP_NOT_FOUND = 0x8004021eL;
-  const LONG CDO_E_INVALID_SEND_OPTION = 0x80040220L;
-  const LONG CDO_E_INVALID_POST_OPTION = 0x80040221L;
-  const LONG CDO_E_NO_PICKUP_DIR = 0x80040222L;
-  const LONG CDO_E_NOT_ALL_DELETED = 0x80040223L;
-  const LONG CDO_E_NO_METHOD = 0x80040224L;
-  const LONG CDO_E_PROP_READONLY = 0x80040227L;
-  const LONG CDO_E_PROP_CANNOT_DELETE = 0x80040228L;
-  const LONG CDO_E_BAD_DATA = 0x80040229L;
-  const LONG CDO_E_PROP_NONHEADER = 0x8004022aL;
-  const LONG CDO_E_INVALID_CHARSET = 0x8004022bL;
-  const LONG CDO_E_ADOSTREAM_NOT_BOUND = 0x8004022cL;
-  const LONG CDO_E_CONTENTPROPXML_NOT_FOUND = 0x8004022dL;
-  const LONG CDO_E_CONTENTPROPXML_WRONG_CHARSET = 0x8004022eL;
-  const LONG CDO_E_CONTENTPROPXML_PARSE_FAILED = 0x8004022fL;
-  const LONG CDO_E_CONTENTPROPXML_CONVERT_FAILED = 0x80040230L;
-  const LONG CDO_E_NO_DIRECTORIES_SPECIFIED = 0x80040231L;
-  const LONG CDO_E_DIRECTORIES_UNREACHABLE = 0x80040232L;
-  const LONG CDO_E_BAD_SENDER = 0x80040233L;
-  const LONG CDO_E_SELF_BINDING = 0x80040234L;
-  const LONG CDO_E_BAD_ATTENDEE_DATA = 0x80040235L;
-  const LONG CDO_E_ROLE_NOMORE_AVAILABLE = 0x80040236L;
-  const LONG CDO_E_BAD_TASKTYPE_ONASSIGN = 0x80040237L;
-  const LONG CDO_E_NOT_ASSIGNEDTO_USER = 0x80040238L;
-  const LONG CDO_E_OUTOFDATE = 0x80040239L;
-  const LONG CDO_E_ARGUMENT1 = 0x80044000L;
-  const LONG CDO_E_ARGUMENT2 = 0x80044001L;
-  const LONG CDO_E_ARGUMENT3 = 0x80044002L;
-  const LONG CDO_E_ARGUMENT4 = 0x80044003L;
-  const LONG CDO_E_ARGUMENT5 = 0x80044004L;
-  const LONG CDO_E_NOT_FOUND = 0x800cce05L;
-  const LONG CDO_E_INVALID_ENCODING_TYPE = 0x800cce1dL;
+  const LONG CDO_E_UNCAUGHT_EXCEPTION = 0x80040201;
+  const LONG CDO_E_NOT_OPENED = 0x80040202;
+  const LONG CDO_E_UNSUPPORTED_DATASOURCE = 0x80040203;
+  const LONG CDO_E_INVALID_PROPERTYNAME = 0x80040204;
+  const LONG CDO_E_PROP_UNSUPPORTED = 0x80040205;
+  const LONG CDO_E_INACTIVE = 0x80040206;
+  const LONG CDO_E_NO_SUPPORT_FOR_OBJECTS = 0x80040207;
+  const LONG CDO_E_NOT_AVAILABLE = 0x80040208;
+  const LONG CDO_E_NO_DEFAULT_DROP_DIR = 0x80040209;
+  const LONG CDO_E_SMTP_SERVER_REQUIRED = 0x8004020a;
+  const LONG CDO_E_NNTP_SERVER_REQUIRED = 0x8004020b;
+  const LONG CDO_E_RECIPIENT_MISSING = 0x8004020c;
+  const LONG CDO_E_FROM_MISSING = 0x8004020d;
+  const LONG CDO_E_SENDER_REJECTED = 0x8004020e;
+  const LONG CDO_E_RECIPIENTS_REJECTED = 0x8004020f;
+  const LONG CDO_E_NNTP_POST_FAILED = 0x80040210;
+  const LONG CDO_E_SMTP_SEND_FAILED = 0x80040211;
+  const LONG CDO_E_CONNECTION_DROPPED = 0x80040212;
+  const LONG CDO_E_FAILED_TO_CONNECT = 0x80040213;
+  const LONG CDO_E_INVALID_POST = 0x80040214;
+  const LONG CDO_E_AUTHENTICATION_FAILURE = 0x80040215;
+  const LONG CDO_E_INVALID_CONTENT_TYPE = 0x80040216;
+  const LONG CDO_E_LOGON_FAILURE = 0x80040217;
+  const LONG CDO_E_HTTP_NOT_FOUND = 0x80040218;
+  const LONG CDO_E_HTTP_FORBIDDEN = 0x80040219;
+  const LONG CDO_E_HTTP_FAILED = 0x8004021a;
+  const LONG CDO_E_MULTIPART_NO_DATA = 0x8004021b;
+  const LONG CDO_E_INVALID_ENCODING_FOR_MULTIPART = 0x8004021c;
+  const LONG CDO_E_UNSAFE_OPERATION = 0x8004021d;
+  const LONG CDO_E_PROP_NOT_FOUND = 0x8004021e;
+  const LONG CDO_E_INVALID_SEND_OPTION = 0x80040220;
+  const LONG CDO_E_INVALID_POST_OPTION = 0x80040221;
+  const LONG CDO_E_NO_PICKUP_DIR = 0x80040222;
+  const LONG CDO_E_NOT_ALL_DELETED = 0x80040223;
+  const LONG CDO_E_NO_METHOD = 0x80040224;
+  const LONG CDO_E_PROP_READONLY = 0x80040227;
+  const LONG CDO_E_PROP_CANNOT_DELETE = 0x80040228;
+  const LONG CDO_E_BAD_DATA = 0x80040229;
+  const LONG CDO_E_PROP_NONHEADER = 0x8004022a;
+  const LONG CDO_E_INVALID_CHARSET = 0x8004022b;
+  const LONG CDO_E_ADOSTREAM_NOT_BOUND = 0x8004022c;
+  const LONG CDO_E_CONTENTPROPXML_NOT_FOUND = 0x8004022d;
+  const LONG CDO_E_CONTENTPROPXML_WRONG_CHARSET = 0x8004022e;
+  const LONG CDO_E_CONTENTPROPXML_PARSE_FAILED = 0x8004022f;
+  const LONG CDO_E_CONTENTPROPXML_CONVERT_FAILED = 0x80040230;
+  const LONG CDO_E_NO_DIRECTORIES_SPECIFIED = 0x80040231;
+  const LONG CDO_E_DIRECTORIES_UNREACHABLE = 0x80040232;
+  const LONG CDO_E_BAD_SENDER = 0x80040233;
+  const LONG CDO_E_SELF_BINDING = 0x80040234;
+  const LONG CDO_E_BAD_ATTENDEE_DATA = 0x80040235;
+  const LONG CDO_E_ROLE_NOMORE_AVAILABLE = 0x80040236;
+  const LONG CDO_E_BAD_TASKTYPE_ONASSIGN = 0x80040237;
+  const LONG CDO_E_NOT_ASSIGNEDTO_USER = 0x80040238;
+  const LONG CDO_E_OUTOFDATE = 0x80040239;
+  const LONG CDO_E_ARGUMENT1 = 0x80044000;
+  const LONG CDO_E_ARGUMENT2 = 0x80044001;
+  const LONG CDO_E_ARGUMENT3 = 0x80044002;
+  const LONG CDO_E_ARGUMENT4 = 0x80044003;
+  const LONG CDO_E_ARGUMENT5 = 0x80044004;
+  const LONG CDO_E_NOT_FOUND = 0x800cce05;
+  const LONG CDO_E_INVALID_ENCODING_TYPE = 0x800cce1d;
 #endif
 
   EXTERN_C const CLSID CLSID_Message;
@@ -1524,14 +1524,14 @@ extern "C" {
 }
 #endif
 
-unsigned long __RPC_API BSTR_UserSize(unsigned long *,unsigned long,BSTR *);
-unsigned char *__RPC_API BSTR_UserMarshal(unsigned long *,unsigned char *,BSTR *);
-unsigned char *__RPC_API BSTR_UserUnmarshal(unsigned long *,unsigned char *,BSTR *);
-void __RPC_API BSTR_UserFree(unsigned long *,BSTR *);
-unsigned long __RPC_API VARIANT_UserSize(unsigned long *,unsigned long,VARIANT *);
-unsigned char *__RPC_API VARIANT_UserMarshal(unsigned long *,unsigned char *,VARIANT *);
-unsigned char *__RPC_API VARIANT_UserUnmarshal(unsigned long *,unsigned char *,VARIANT *);
-void __RPC_API VARIANT_UserFree(unsigned long *,VARIANT *);
+ULONG __RPC_API BSTR_UserSize(ULONG *,ULONG,BSTR *);
+unsigned char *__RPC_API BSTR_UserMarshal(ULONG *,unsigned char *,BSTR *);
+unsigned char *__RPC_API BSTR_UserUnmarshal(ULONG *,unsigned char *,BSTR *);
+void __RPC_API BSTR_UserFree(ULONG *,BSTR *);
+ULONG __RPC_API VARIANT_UserSize(ULONG *,ULONG,VARIANT *);
+unsigned char *__RPC_API VARIANT_UserMarshal(ULONG *,unsigned char *,VARIANT *);
+unsigned char *__RPC_API VARIANT_UserUnmarshal(ULONG *,unsigned char *,VARIANT *);
+void __RPC_API VARIANT_UserFree(ULONG *,VARIANT *);
 
 #ifdef __cplusplus
 }

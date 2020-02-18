@@ -166,7 +166,7 @@ void OpenAndroidDevices(crypto::RSAPrivateKey* rsa_key,
                            base::BindOnce(&OnProbeFinished, callback, devices));
 
   for (const auto& device_info : device_info_list) {
-    if (base::ContainsValue(g_open_devices.Get(), device_info.guid)) {
+    if (base::Contains(g_open_devices.Get(), device_info.guid)) {
       // This device is already open, do not make parallel attempts to connect
       // to it.
       barrier.Run();
@@ -208,8 +208,7 @@ AndroidUsbDevice::AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,
       android_device_info_(android_device_info),
       is_connected_(false),
       signature_sent_(false),
-      last_socket_id_(256),
-      weak_factory_(this) {
+      last_socket_id_(256) {
   DCHECK(device_ptr_);
   device_ptr_.set_connection_error_handler(
       base::BindOnce(&AndroidUsbDevice::Terminate, weak_factory_.GetWeakPtr()));

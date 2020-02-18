@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/payments/payment_request_picker_view_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
@@ -32,10 +33,14 @@
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
+#import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views_utils.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/testing/earl_grey/earl_grey_app.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -46,6 +51,11 @@
 #endif
 
 namespace {
+
+// Identifer for cell at given |index| in the tab grid.
+NSString* IdentifierForCellAtIndex(unsigned int index) {
+  return [NSString stringWithFormat:@"%@%u", kGridCellIdentifierPrefix, index];
+}
 
 id<GREYMatcher> SettingsSwitchIsToggledOn(BOOL is_toggled_on) {
   GREYMatchesBlock matches = ^BOOL(id element) {
@@ -296,6 +306,9 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 }
 
 + (id<GREYMatcher>)showTabsButton {
+  if (IsIPadIdiom()) {
+    return grey_accessibilityID(@"Enter Tab Switcher");
+  }
   return grey_allOf(grey_accessibilityID(kToolbarStackButtonIdentifier),
                     grey_sufficientlyVisible(), nil);
 }
@@ -353,6 +366,12 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
                     ? IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON
                     : IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON;
   return [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:(labelID)];
+}
+
++ (id<GREYMatcher>)unifiedConsentAddAccountButton {
+  return [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabelID:
+          (IDS_IOS_ACCOUNT_UNIFIED_CONSENT_ADD_ACCOUNT)];
 }
 
 + (id<GREYMatcher>)addAccountButton {
@@ -498,6 +517,10 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
                     grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
 }
 
++ (id<GREYMatcher>)voiceSearchInputAccessoryButton {
+  return grey_accessibilityID(kVoiceSearchInputAccessoryViewID);
+}
+
 + (id<GREYMatcher>)settingsCollectionView {
   return grey_accessibilityID(kSettingsTableViewId);
 }
@@ -552,7 +575,8 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 }
 
 + (id<GREYMatcher>)systemSelectionCalloutCopyButton {
-  return grey_accessibilityLabel(@"Copy");
+  return grey_allOf(grey_accessibilityLabel(@"Copy"),
+                    [self systemSelectionCallout], nil);
 }
 
 + (id<GREYMatcher>)contextMenuCopyButton {
@@ -580,6 +604,83 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 
 + (id<GREYMatcher>)historyClearBrowsingDataButton {
   return grey_accessibilityID(kHistoryToolbarClearBrowsingButtonIdentifier);
+}
+
++ (id<GREYMatcher>)openInButton {
+  return [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabelID:IDS_IOS_OPEN_IN];
+}
+
++ (id<GREYMatcher>)tabGridOpenButton {
+  if (IsRegularXRegularSizeClass()) {
+    return [self
+        buttonWithAccessibilityLabelID:IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER];
+  } else {
+    return [self buttonWithAccessibilityLabelID:IDS_IOS_TOOLBAR_SHOW_TABS];
+  }
+}
+
++ (id<GREYMatcher>)tabGridCellAtIndex:(unsigned int)index {
+  return grey_allOf(grey_accessibilityID(IdentifierForCellAtIndex(index)),
+                    grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridDoneButton {
+  return grey_allOf(grey_accessibilityID(kTabGridDoneButtonIdentifier),
+                    grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridCloseAllButton {
+  return grey_allOf(grey_accessibilityID(kTabGridCloseAllButtonIdentifier),
+                    grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridUndoCloseAllButton {
+  return grey_allOf(grey_accessibilityID(kTabGridUndoCloseAllButtonIdentifier),
+                    grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridSelectShowHistoryCell {
+  return grey_allOf(grey_accessibilityID(
+                        kRecentTabsShowFullHistoryCellAccessibilityIdentifier),
+                    grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridRegularTabsEmptyStateView {
+  return grey_allOf(
+      grey_accessibilityID(kTabGridRegularTabsEmptyStateIdentifier),
+      grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridNewTabButton {
+  return grey_allOf(
+      [self buttonWithAccessibilityLabelID:IDS_IOS_TAB_GRID_CREATE_NEW_TAB],
+      grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridNewIncognitoTabButton {
+  return grey_allOf([self buttonWithAccessibilityLabelID:
+                              IDS_IOS_TAB_GRID_CREATE_NEW_INCOGNITO_TAB],
+                    grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridOpenTabsPanelButton {
+  return grey_accessibilityID(kTabGridRegularTabsPageButtonIdentifier);
+}
+
++ (id<GREYMatcher>)tabGridIncognitoTabsPanelButton {
+  return grey_accessibilityID(kTabGridIncognitoTabsPageButtonIdentifier);
+}
+
++ (id<GREYMatcher>)tabGridOtherDevicesPanelButton {
+  return grey_accessibilityID(kTabGridRemoteTabsPageButtonIdentifier);
+}
+
++ (id<GREYMatcher>)tabGridCloseButtonForCellAtIndex:(unsigned int)index {
+  return grey_allOf(
+      grey_ancestor(grey_accessibilityID(IdentifierForCellAtIndex(index))),
+      grey_accessibilityID(kGridCellCloseButtonIdentifier),
+      grey_sufficientlyVisible(), nil);
 }
 
 @end

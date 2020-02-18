@@ -23,6 +23,7 @@
 #include "xfa/fwl/cfwl_scrollbar.h"
 #include "xfa/fwl/cfwl_themebackground.h"
 #include "xfa/fwl/cfwl_themetext.h"
+#include "xfa/fwl/theme/cfwl_widgettp.h"
 #include "xfa/fxfa/cxfa_ffapp.h"
 #include "xfa/fxfa/cxfa_ffwidget.h"
 #include "xfa/fxfa/parser/cxfa_para.h"
@@ -36,14 +37,12 @@ const wchar_t* const g_FWLTheme_CalFonts[] = {
 
 const float kLineHeight = 12.0f;
 
-}  // namespace
-
 CXFA_FFWidget* XFA_ThemeGetOuterWidget(CFWL_Widget* pWidget) {
-  CFWL_Widget* pOuter = pWidget;
-  while (pOuter && pOuter->GetOuter())
-    pOuter = pOuter->GetOuter();
+  CFWL_Widget* pOuter = pWidget ? pWidget->GetOutmost() : nullptr;
   return pOuter ? static_cast<CXFA_FFWidget*>(pOuter->GetFFWidget()) : nullptr;
 }
+
+}  // namespace
 
 CXFA_FWLTheme::CXFA_FWLTheme(CXFA_FFApp* pApp)
     : m_pCheckBoxTP(pdfium::MakeUnique<CFWL_CheckBoxTP>()),
@@ -81,7 +80,7 @@ bool CXFA_FWLTheme::LoadCalendarFont(CXFA_FFDoc* doc) {
 
 CXFA_FWLTheme::~CXFA_FWLTheme() {
   m_pTextOut.reset();
-  FWLTHEME_Release();
+  CFWL_FontManager::DestroyInstance();
 }
 
 void CXFA_FWLTheme::DrawBackground(const CFWL_ThemeBackground& pParams) {

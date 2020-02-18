@@ -76,6 +76,17 @@ class StructTraits<media::mojom::Vp8MetadataDataView, media::Vp8Metadata> {
 };
 
 template <>
+struct EnumTraits<media::mojom::VideoEncodeAcceleratorConfig::StorageType,
+                  media::VideoEncodeAccelerator::Config::StorageType> {
+  static media::mojom::VideoEncodeAcceleratorConfig::StorageType ToMojom(
+      media::VideoEncodeAccelerator::Config::StorageType input);
+
+  static bool FromMojom(
+      media::mojom::VideoEncodeAcceleratorConfig::StorageType,
+      media::VideoEncodeAccelerator::Config::StorageType* output);
+};
+
+template <>
 struct EnumTraits<media::mojom::VideoEncodeAcceleratorConfig::ContentType,
                   media::VideoEncodeAccelerator::Config::ContentType> {
   static media::mojom::VideoEncodeAcceleratorConfig::ContentType ToMojom(
@@ -137,6 +148,17 @@ struct StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
   static bool has_h264_output_level(
       const media::VideoEncodeAccelerator::Config& input) {
     return input.h264_output_level.has_value();
+  }
+
+  static media::VideoEncodeAccelerator::Config::StorageType storage_type(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.storage_type.value_or(
+        media::VideoEncodeAccelerator::Config::StorageType::kShmem);
+  }
+
+  static bool has_storage_type(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.storage_type.has_value();
   }
 
   static media::VideoEncodeAccelerator::Config::ContentType content_type(

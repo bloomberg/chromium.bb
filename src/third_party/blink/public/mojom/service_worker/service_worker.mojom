@@ -7,11 +7,14 @@ module blink.mojom;
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
+import "services/network/public/mojom/url_loader_factory.mojom";
 import "third_party/blink/public/mojom/background_fetch/background_fetch.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_response.mojom";
+import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/notifications/notification.mojom";
 import "third_party/blink/public/mojom/payments/payment_app.mojom";
+import "third_party/blink/public/mojom/push_messaging/push_messaging.mojom";
 import "third_party/blink/public/mojom/service_worker/dispatch_fetch_event_params.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_client.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom";
@@ -207,7 +210,7 @@ interface ServiceWorker {
   // waitUntil() promises have settled. |response_callback| is called once the
   // promise to respondWith() settles, or when the event handler ran without
   // calling respondWith().
-  DispatchFetchEvent(
+  DispatchFetchEventForMainResource(
       DispatchFetchEventParams params,
       ServiceWorkerFetchResponseCallback response_callback)
       => (ServiceWorkerEventStatus status);
@@ -225,6 +228,12 @@ interface ServiceWorker {
   // The payload of a push message can be valid with content, valid with empty
   // content, or null.
   DispatchPushEvent(string? payload)
+      => (ServiceWorkerEventStatus status);
+  // Whenever a PushSubscription changes, a change event is generated with (optionally)
+  // the previous subscription and the new subscription.
+  DispatchPushSubscriptionChangeEvent(
+      PushSubscription old_subscription,
+      PushSubscription new_subscription)
       => (ServiceWorkerEventStatus status);
   // Arguments are passed to the event handler as parameters of SyncEvent.
   // Ref: https://wicg.github.io/BackgroundSync/spec/#sync-event
@@ -251,6 +260,8 @@ interface ServiceWorker {
           => (ServiceWorkerEventStatus status);
   DispatchExtendableMessageEvent(ExtendableMessageEvent event)
       => (ServiceWorkerEventStatus status);
+  // Ref: https://github.com/rknoll/content-index
+  DispatchContentDeleteEvent(string id) => (ServiceWorkerEventStatus status);
 
   // TODO(crbug.com/869714): Remove this code for long living service workers
   // when Android Messages no longer requires it.
@@ -266,4 +277,21 @@ interface ServiceWorker {
   // Lets the idle timer request termination immediately after all inflight
   // events are handled without delay.
   SetIdleTimerDelayToZero();
+};
+
+// This is another interface for talking to a running service worker in
+// addition to the ServiceWorker interface defined above. The reason we have two
+// interfaces is that implementations of these two interfaces live in different
+// places (one in blink and the other in content). Ideally these two interfaces
+// should be merged but we separate them to avoid cumbersome type conversions
+// between blink and content.
+interface ServiceWorkerSubresourceLoaderUpdater {
+  // Provides the worker an updated |subresource_loader_factories|.
+  //
+  // Pushes updated set of subresource URL loader factories to the worker
+  // (for example, after DevTools network interception has been enabled).
+  // Note this does not affect the script loader factory, whose
+  // implementation lives in the browser and may be updated there.
+  UpdateSubresourceLoaderFactories(
+      URLLoaderFactoryBundle subresource_loader_factories);
 };

@@ -20,18 +20,21 @@ _URL_MAPPING = [
     webapp2.Route(r'/api/isolate', handlers.Isolate),
     webapp2.Route(r'/api/isolate/<builder_name>/<git_hash>/<target>',
                   handlers.Isolate),
+    webapp2.Route(r'/api/job/cancel', handlers.Cancel),
     webapp2.Route(r'/api/job/<job_id>', handlers.Job),
     webapp2.Route(r'/api/jobs', handlers.Jobs),
     webapp2.Route(r'/api/migrate', handlers.Migrate),
     webapp2.Route(r'/api/new', handlers.New),
     webapp2.Route(r'/api/results2/<job_id>', handlers.Results2),
     webapp2.Route(r'/api/stats', handlers.Stats),
+    webapp2.Route(r'/api/queue-stats/<configuration>', handlers.QueueStats),
 
     # Used internally by Pinpoint. Not accessible from the public API.
     webapp2.Route(r'/api/run/<job_id>', handlers.Run),
 
     webapp2.Route(r'/cron/isolate-cleanup', handlers.IsolateCleanup),
     webapp2.Route(r'/cron/refresh-jobs', handlers.RefreshJobs),
+    webapp2.Route(r'/cron/fifo-scheduler', handlers.FifoScheduler),
 ]
 
 APP = webapp2.WSGIApplication(_URL_MAPPING, debug=False)

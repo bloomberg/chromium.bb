@@ -136,7 +136,7 @@ class ANGLERenderTest : public ANGLEPerfTest
 
     std::vector<TraceEvent> &getTraceEventBuffer();
 
-    virtual void overrideWorkaroundsD3D(angle::WorkaroundsD3D *workaroundsD3D) {}
+    virtual void overrideWorkaroundsD3D(angle::FeaturesD3D *featuresD3D) {}
 
   protected:
     const RenderTestParams &mTestParams;
@@ -146,6 +146,9 @@ class ANGLERenderTest : public ANGLEPerfTest
 
     void startGpuTimer();
     void stopGpuTimer();
+
+    void beginInternalTraceEvent(const char *name);
+    void endInternalTraceEvent(const char *name);
 
   private:
     void SetUp() override;
@@ -171,5 +174,26 @@ class ANGLERenderTest : public ANGLEPerfTest
     // Handle to the entry point binding library.
     std::unique_ptr<angle::Library> mEntryPointsLib;
 };
+
+// Mixins.
+namespace params
+{
+template <typename ParamsT>
+ParamsT Offscreen(const ParamsT &input)
+{
+    ParamsT output   = input;
+    output.offscreen = true;
+    return output;
+}
+
+template <typename ParamsT>
+ParamsT NullDevice(const ParamsT &input)
+{
+    ParamsT output                  = input;
+    output.eglParameters.deviceType = EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE;
+    output.trackGpuTime             = false;
+    return output;
+}
+}  // namespace params
 
 #endif  // PERF_TESTS_ANGLE_PERF_TEST_H_

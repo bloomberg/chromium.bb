@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 
-#include <string>
 #include <utility>
 
+#include "apps/launcher.h"
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/arc_custom_tab.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/keyboard_shortcut_viewer.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -38,8 +40,10 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
@@ -47,10 +51,14 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/version_info/version_info.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/common/was_activated_option.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -58,9 +66,61 @@
 #include "ui/aura/window.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
 #include "url/url_constants.h"
 
+using arc::mojom::ChromePage;
+
 namespace {
+
+constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
+    {{ChromePage::MULTIDEVICE, chrome::kMultideviceSubPage},
+     {ChromePage::MAIN, ""},
+     {ChromePage::POWER, chrome::kPowerSubPage},
+     {ChromePage::BLUETOOTH, chrome::kBluetoothSubPage},
+     {ChromePage::DATETIME, chrome::kDateTimeSubPage},
+     {ChromePage::DISPLAY, chrome::kDisplaySubPage},
+     {ChromePage::WIFI, chrome::kWiFiSettingsSubPage},
+     {ChromePage::HELP, chrome::kHelpSubPage},
+     {ChromePage::ACCOUNTS, chrome::kAccountSubPage},
+     {ChromePage::BLUETOOTHDEVICES, chrome::kBluetoothSubPage},
+     {ChromePage::CHANGEPICTURE, chrome::kChangePictureSubPage},
+     {ChromePage::CUPSPRINTERS, chrome::kNativePrintingSettingsSubPage},
+     {ChromePage::KEYBOARDOVERLAY, chrome::kKeyboardOverlaySubPage},
+     {ChromePage::LANGUAGES, chrome::kLanguageOptionsSubPage},
+     {ChromePage::LOCKSCREEN, chrome::kLockScreenSubPage},
+     {ChromePage::MANAGEACCESSIBILITY, chrome::kManageAccessibilitySubPage},
+     {ChromePage::NETWORKSTYPEVPN, chrome::kVPNSettingsSubPage},
+     {ChromePage::POINTEROVERLAY, chrome::kPointerOverlaySubPage},
+     {ChromePage::RESET, chrome::kResetSubPage},
+     {ChromePage::STORAGE, chrome::kStorageSubPage},
+     {ChromePage::SYNCSETUP, chrome::kSyncSetupSubPage}};
+
+constexpr std::pair<arc::mojom::ChromePage, const char*>
+    kBrowserSettingsMapping[] = {
+        {ChromePage::APPEARANCE, chrome::kAppearanceSubPage},
+        {ChromePage::AUTOFILL, chrome::kAutofillSubPage},
+        {ChromePage::CLEARBROWSERDATA, chrome::kClearBrowserDataSubPage},
+        {ChromePage::CLOUDPRINTERS, chrome::kCloudPrintersSubPage},
+        {ChromePage::DOWNLOADS, chrome::kDownloadsSubPage},
+        {ChromePage::ONSTARTUP, chrome::kOnStartupSubPage},
+        {ChromePage::PASSWORDS, chrome::kPasswordManagerSubPage},
+        {ChromePage::PRIVACY, chrome::kPrivacySubPage},
+        {ChromePage::SEARCH, chrome::kSearchSubPage}};
+
+constexpr std::pair<arc::mojom::ChromePage, const char*> kAboutPagesMapping[] =
+    {{ChromePage::ABOUTBLANK, url::kAboutBlankURL},
+     {ChromePage::ABOUTDOWNLOADS, "about:downloads"},
+     {ChromePage::ABOUTHISTORY, "about:history"}};
+
+// mojom::ChromePage::LAST returns the amount of valid entries - 1.
+static_assert(base::size(kOSSettingsMapping) +
+                      base::size(kBrowserSettingsMapping) +
+                      base::size(kAboutPagesMapping) ==
+                  static_cast<size_t>(arc::mojom::ChromePage::LAST) + 1,
+              "ChromePage mapping is out of sync");
 
 void RestoreTabUsingProfile(Profile* profile) {
   sessions::TabRestoreService* service =
@@ -100,7 +160,10 @@ std::string GetPathAndQuery(const GURL& url) {
 }
 
 // Implementation of CustomTabSession interface.
-class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
+class CustomTabSessionImpl
+    : public arc::mojom::CustomTabSession,
+      public web_modal::WebContentsModalDialogHost,
+      public web_modal::WebContentsModalDialogManagerDelegate {
  public:
   static arc::mojom::CustomTabSessionPtr Create(
       Profile* profile,
@@ -116,7 +179,32 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
     return ptr;
   }
 
-  // arc::mojom::CustomTabSession override:
+  // web_modal::WebContentsModalDialogManagerDelegate:
+  web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
+      override {
+    return this;
+  }
+
+  // web_modal::WebContentsModalDialogHost:
+  gfx::NativeView GetHostView() const override {
+    return custom_tab_->GetHostView();
+  }
+
+  gfx::Point GetDialogPosition(const gfx::Size& size) override {
+    return web_contents_->GetViewBounds().origin();
+  }
+
+  gfx::Size GetMaximumDialogSize() override {
+    return web_contents_->GetViewBounds().size();
+  }
+
+  void AddObserver(web_modal::ModalDialogHostObserver* observer) override {
+  }
+
+  void RemoveObserver(web_modal::ModalDialogHostObserver* observer) override {
+  }
+
+  // arc::mojom::CustomTabSession:
   void OnOpenInChromeClicked() override { forwarded_to_normal_tab_ = true; }
 
  private:
@@ -145,15 +233,15 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
     UMA_HISTOGRAM_ENUMERATION("Arc.CustomTabs.SessionEndReason",
                               session_end_reason);
     auto elapsed = lifetime_timer_.Elapsed();
-    UMA_HISTOGRAM_MEDIUM_TIMES("Arc.CustomTabs.SessionLifetime.All", elapsed);
+    UMA_HISTOGRAM_LONG_TIMES("Arc.CustomTabs.SessionLifetime2.All", elapsed);
     switch (session_end_reason) {
       case SessionEndReason::CLOSED:
-        UMA_HISTOGRAM_MEDIUM_TIMES("Arc.CustomTabs.SessionLifetime.Closed",
-                                   elapsed);
+        UMA_HISTOGRAM_LONG_TIMES("Arc.CustomTabs.SessionLifetime2.Closed",
+                                 elapsed);
         break;
       case SessionEndReason::FORWARDED_TO_NORMAL_TAB:
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Arc.CustomTabs.SessionLifetime.ForwardedToNormalTab", elapsed);
+        UMA_HISTOGRAM_LONG_TIMES(
+            "Arc.CustomTabs.SessionLifetime2.ForwardedToNormalTab", elapsed);
         break;
     }
   }
@@ -175,8 +263,17 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
     std::unique_ptr<content::WebContents> web_contents =
         content::WebContents::Create(create_params);
 
+    // Use the same version number as browser_commands.cc
+    // TODO(hashimoto): Get the actual Android version from the container.
+    constexpr char kOsOverrideForTabletSite[] =
+        "Linux; Android 9; Chrome tablet";
     // Override the user agent to request mobile version web sites.
-    chrome::SetAndroidOsForTabletSite(web_contents.get());
+    const std::string product =
+        version_info::GetProductNameAndVersionForUserAgent();
+    const std::string user_agent = content::BuildUserAgentFromOSAndProduct(
+        kOsOverrideForTabletSite, product);
+    web_contents->SetUserAgentOverride(user_agent,
+                                       false /*override_in_new_tabs=*/);
 
     content::NavigationController::LoadURLParams load_url_params(url);
     load_url_params.source_site_instance = site_instance;
@@ -187,6 +284,15 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
     // Add a flag to remember this tab originated in the ARC context.
     web_contents->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
                               std::make_unique<arc::ArcWebContentsData>());
+
+    // Attach any required WebContents helpers. Browser tabs automatically get
+    // them attached in TabHelpers::AttachTabHelpers.
+    web_modal::WebContentsModalDialogManager::CreateForWebContents(
+        web_contents.get());
+    web_modal::WebContentsModalDialogManager::FromWebContents(
+        web_contents.get())
+        ->SetDelegate(this);
+
     return web_contents;
   }
 
@@ -202,7 +308,13 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
 
 }  // namespace
 
-ChromeNewWindowClient::ChromeNewWindowClient() {
+ChromeNewWindowClient::ChromeNewWindowClient()
+    : os_settings_pages_(std::cbegin(kOSSettingsMapping),
+                         std::cend(kOSSettingsMapping)),
+      browser_settings_pages_(std::cbegin(kBrowserSettingsMapping),
+                              std::cend(kBrowserSettingsMapping)),
+      about_pages_(std::cbegin(kAboutPagesMapping),
+                   std::cend(kAboutPagesMapping)) {
   arc::ArcIntentHelperBridge::SetOpenUrlDelegate(this);
 }
 
@@ -308,7 +420,7 @@ void ChromeNewWindowClient::OpenFileManager() {
       service->GetInstalledExtension(kFileManagerAppId);
   OpenApplication(CreateAppLaunchParamsUserContainer(
       profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      extensions::SOURCE_KEYBOARD));
+      extensions::AppLaunchSource::kSourceKeyboard));
 }
 
 void ChromeNewWindowClient::OpenCrosh() {
@@ -372,6 +484,23 @@ void ChromeNewWindowClient::OpenFeedbackPage(bool from_assistant) {
   chrome::OpenFeedbackDialog(chrome::FindBrowserWithActiveWindow(), source);
 }
 
+void ChromeNewWindowClient::LaunchCameraApp(const std::string& queries) {
+  Profile* const profile = ProfileManager::GetActiveUserProfile();
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  const extensions::Extension* extension =
+      registry->GetInstalledExtension(extension_misc::kChromeCameraAppId);
+
+  auto url = GURL(extensions::Extension::GetBaseURLFromExtensionId(
+                      extension_misc::kChromeCameraAppId)
+                      .spec() +
+                  queries);
+
+  apps::LaunchPlatformAppWithUrl(profile, extension,
+                                 /*handler_id=*/std::string(), url,
+                                 /*referrer_url=*/GURL());
+}
+
 void ChromeNewWindowClient::OpenUrlFromArc(const GURL& url) {
   if (!url.is_valid())
     return;
@@ -406,7 +535,7 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
 
   const extensions::Extension* extension =
       extensions::util::GetInstalledPwaForUrl(
-          profile, url, extensions::LAUNCH_CONTAINER_WINDOW);
+          profile, url, extensions::LaunchContainer::kLaunchContainerWindow);
   if (!extension) {
     OpenUrlFromArc(url);
     return;
@@ -414,7 +543,7 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
 
   AppLaunchParams params = CreateAppLaunchParamsUserContainer(
       profile, extension, WindowOpenDisposition::NEW_WINDOW,
-      extensions::SOURCE_ARC);
+      extensions::AppLaunchSource::kSourceArc);
   params.override_url = url;
   content::WebContents* tab = OpenApplication(params);
   if (!tab)
@@ -433,7 +562,23 @@ void ChromeNewWindowClient::OpenArcCustomTab(
     arc::mojom::IntentHelperHost::OnOpenCustomTabCallback callback) {
   GURL url_to_open = ConvertArcUrlToExternalFileUrlIfNeeded(url);
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  auto custom_tab = ash::ArcCustomTab::Create(task_id, surface_id, top_margin);
+
+  aura::Window* arc_window = nullptr;
+  for (auto* window : ChromeLauncherController::instance()->GetArcWindows()) {
+    if (arc::GetWindowTaskId(window) == task_id) {
+      arc_window = window;
+      break;
+    }
+  }
+  if (!arc_window) {
+    LOG(ERROR) << "No ARC window with the specified task ID " << task_id;
+    std::move(callback).Run(
+        CustomTabSessionImpl::Create(profile, url, nullptr));
+    return;
+  }
+
+  auto custom_tab =
+      ash::ArcCustomTab::Create(arc_window, surface_id, top_margin);
   std::move(callback).Run(
       CustomTabSessionImpl::Create(profile, url, std::move(custom_tab)));
 }
@@ -477,4 +622,28 @@ content::WebContents* ChromeNewWindowClient::OpenUrlImpl(
         navigate_params.browser->window()->GetNativeWindow());
   }
   return navigate_params.navigated_or_inserted_contents;
+}
+
+void ChromeNewWindowClient::OpenChromePageFromArc(ChromePage page) {
+  auto it = os_settings_pages_.find(page);
+  if (it != os_settings_pages_.end()) {
+    Profile* profile = ProfileManager::GetActiveUserProfile();
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile,
+                                                                 it->second);
+    return;
+  }
+
+  it = browser_settings_pages_.find(page);
+  if (it != browser_settings_pages_.end()) {
+    OpenUrlFromArc(GURL(chrome::kChromeUISettingsURL).Resolve(it->second));
+    return;
+  }
+
+  it = about_pages_.find(page);
+  if (it != about_pages_.end()) {
+    OpenUrlFromArc(GURL(it->second));
+    return;
+  }
+
+  NOTREACHED();
 }

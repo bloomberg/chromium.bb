@@ -28,16 +28,17 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
@@ -94,7 +95,8 @@ scoped_refptr<EncodedFormData> XSSAuditorDelegate::GenerateViolationReport(
   auto report_object = std::make_unique<JSONObject>();
   report_object->SetObject("xss-report", std::move(report_details));
 
-  return EncodedFormData::Create(report_object->ToJSONString().Utf8().data());
+  return EncodedFormData::Create(
+      StringUTF8Adaptor(report_object->ToJSONString()));
 }
 
 void XSSAuditorDelegate::DidBlockScript(const XSSInfo& xss_info) {

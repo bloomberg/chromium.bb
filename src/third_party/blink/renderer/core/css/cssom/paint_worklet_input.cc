@@ -13,11 +13,13 @@ PaintWorkletInput::PaintWorkletInput(
     const FloatSize& container_size,
     float effective_zoom,
     int worklet_id,
-    PaintWorkletStylePropertyMap::CrossThreadData data)
+    PaintWorkletStylePropertyMap::CrossThreadData data,
+    Vector<std::unique_ptr<CrossThreadStyleValue>> parsed_input_arguments)
     : name_(name.IsolatedCopy()),
       container_size_(container_size),
       effective_zoom_(effective_zoom),
       worklet_id_(worklet_id),
-      style_map_data_(std::move(data)) {}
+      style_map_data_(std::move(data)),
+      parsed_input_arguments_(std::move(parsed_input_arguments)) {}
 
 }  // namespace blink

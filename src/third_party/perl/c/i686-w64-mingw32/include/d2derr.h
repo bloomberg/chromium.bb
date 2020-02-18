@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
 
  * d2derr.h - Header file for the Direct2D API
@@ -18,7 +18,7 @@
 #define D2DERR_DISPLAY_STATE_INVALID 0x88990006
 #define D2DERR_EXCEEDS_MAX_BITMAP_SIZE 0x8899001D
 #define D2DERR_INCOMPATIBLE_BRUSH_TYPES 0x88990018
-#define D2DERR_INSUFFICIENT_BUFFER ERROR_INSUFFICIENT_BUFFER (Windows error)
+#define D2DERR_INSUFFICIENT_BUFFER HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)
 #define D2DERR_INTERNAL_ERROR 0x88990008
 #define D2DERR_INVALID_CALL 0x8899000A
 #define D2DERR_LAYER_ALREADY_IN_USE 0x88990013

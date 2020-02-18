@@ -25,14 +25,15 @@ class PLATFORM_EXPORT PlatformPaintWorkletLayerPainter
     : public cc::PaintWorkletLayerPainter {
  public:
   explicit PlatformPaintWorkletLayerPainter(
-      scoped_refptr<PaintWorkletPaintDispatcher>);
+      std::unique_ptr<PaintWorkletPaintDispatcher>);
   ~PlatformPaintWorkletLayerPainter() override;
 
   // cc::PaintWorkletLayerPainter
-  sk_sp<cc::PaintRecord> Paint(cc::PaintWorkletInput*) override;
+  void DispatchWorklets(cc::PaintWorkletJobMap, DoneCallback) override;
+  bool HasOngoingDispatch() const override;
 
  private:
-  scoped_refptr<PaintWorkletPaintDispatcher> dispatcher_;
+  std::unique_ptr<PaintWorkletPaintDispatcher> dispatcher_;
 };
 
 }  // namespace blink

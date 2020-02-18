@@ -260,7 +260,7 @@ bool DownloadRequestCore::OnResponseStarted(
 
   if (request()->response_headers()) {
     download::RecordDownloadHttpResponseCode(
-        request()->response_headers()->response_code());
+        request()->response_headers()->response_code(), false);
   }
 
   std::unique_ptr<download::DownloadCreateInfo> create_info =
@@ -410,9 +410,9 @@ void DownloadRequestCore::OnResponseCompleted(
       error_code = net::ERR_FAILED;
   }
   download::DownloadInterruptReason reason =
-      download::HandleRequestCompletionStatus(error_code, has_strong_validators,
-                                              request()->ssl_info().cert_status,
-                                              abort_reason_);
+      download::HandleRequestCompletionStatus(
+          error_code, !has_strong_validators, request()->ssl_info().cert_status,
+          is_partial_request_, abort_reason_);
 
   std::string accept_ranges;
   if (request()->response_headers()) {

@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -34,7 +34,7 @@ class IdleRequestCallbackWrapper
 
   static void IdleTaskFired(
       scoped_refptr<IdleRequestCallbackWrapper> callback_wrapper,
-      TimeTicks deadline) {
+      base::TimeTicks deadline) {
     if (ScriptedIdleTaskController* controller =
             callback_wrapper->Controller()) {
       // If we are going to yield immediately, reschedule the callback for
@@ -54,7 +54,7 @@ class IdleRequestCallbackWrapper
       scoped_refptr<IdleRequestCallbackWrapper> callback_wrapper) {
     if (ScriptedIdleTaskController* controller =
             callback_wrapper->Controller()) {
-      controller->CallbackFired(callback_wrapper->Id(), CurrentTimeTicks(),
+      controller->CallbackFired(callback_wrapper->Id(), base::TimeTicks::Now(),
                                 IdleDeadline::CallbackType::kCalledByTimeout);
     }
     callback_wrapper->Cancel();
@@ -122,7 +122,7 @@ ScriptedIdleTaskController::RegisterCallback(
   DCHECK(idle_task);
 
   CallbackId id = NextCallbackId();
-  TimeTicks queue_timestamp = TimeTicks::Now();
+  base::TimeTicks queue_timestamp = base::TimeTicks::Now();
   uint32_t timeout_millis = options->timeout();
   idle_tasks_.Set(id, MakeGarbageCollected<QueuedIdleTask>(
                           idle_task, queue_timestamp, timeout_millis));
@@ -153,7 +153,7 @@ void ScriptedIdleTaskController::ScheduleCallback(
             FROM_HERE,
             WTF::Bind(&internal::IdleRequestCallbackWrapper::TimeoutFired,
                       callback_wrapper),
-            TimeDelta::FromMilliseconds(timeout_millis));
+            base::TimeDelta::FromMilliseconds(timeout_millis));
   }
 }
 
@@ -170,7 +170,7 @@ void ScriptedIdleTaskController::CancelCallback(CallbackId id) {
 
 void ScriptedIdleTaskController::CallbackFired(
     CallbackId id,
-    TimeTicks deadline,
+    base::TimeTicks deadline,
     IdleDeadline::CallbackType callback_type) {
   if (!idle_tasks_.Contains(id))
     return;
@@ -190,7 +190,7 @@ void ScriptedIdleTaskController::CallbackFired(
 
 void ScriptedIdleTaskController::RunCallback(
     CallbackId id,
-    TimeTicks deadline,
+    base::TimeTicks deadline,
     IdleDeadline::CallbackType callback_type) {
   DCHECK(!paused_);
 
@@ -205,8 +205,8 @@ void ScriptedIdleTaskController::RunCallback(
   IdleTask* idle_task = queued_idle_task->task();
   DCHECK(idle_task);
 
-  TimeTicks now = CurrentTimeTicks();
-  TimeDelta allotted_time = std::max(deadline - now, TimeDelta());
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta allotted_time = std::max(deadline - now, base::TimeDelta());
 
   probe::AsyncTask async_task(GetExecutionContext(), idle_task);
   probe::UserCallback probe(GetExecutionContext(), "requestIdleCallback",
@@ -252,7 +252,7 @@ void ScriptedIdleTaskController::ContextUnpaused() {
   Vector<CallbackId> pending_timeouts;
   pending_timeouts_.swap(pending_timeouts);
   for (auto& id : pending_timeouts)
-    RunCallback(id, CurrentTimeTicks(),
+    RunCallback(id, base::TimeTicks::Now(),
                 IdleDeadline::CallbackType::kCalledByTimeout);
 
   // Repost idle tasks for any remaining callbacks.
@@ -268,7 +268,7 @@ void ScriptedIdleTaskController::ContextUnpaused() {
 
 void ScriptedIdleTaskController::RecordIdleTaskMetrics(
     QueuedIdleTask* queued_idle_task,
-    TimeTicks run_timestamp,
+    base::TimeTicks run_timestamp,
     IdleDeadline::CallbackType callback_type) {
   UMA_HISTOGRAM_ENUMERATION(
       "WebCore.ScriptedIdleTaskController.IdleTaskCallbackType", callback_type);
@@ -290,7 +290,7 @@ void ScriptedIdleTaskController::RecordIdleTaskMetrics(
 
 ScriptedIdleTaskController::QueuedIdleTask::QueuedIdleTask(
     IdleTask* idle_task,
-    TimeTicks queue_timestamp,
+    base::TimeTicks queue_timestamp,
     uint32_t timeout_millis)
     : task_(idle_task),
       queue_timestamp_(queue_timestamp),

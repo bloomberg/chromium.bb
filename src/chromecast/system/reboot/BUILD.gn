@@ -21,14 +21,11 @@ cast_source_set("reboot_util") {
     sources += [ "reboot_util_dummy.cc" ]
   }
 
-  if (is_android_things && chromecast_branding != "public") {
+  if (is_android && chromecast_branding != "public") {
     deps += [
-      "//chromecast/internal/system/reboot/android:reboot_android_things",
+      "//chromecast/internal/system/reboot/android:reboot_shlib_impl",
       "//chromecast/public",
     ]
-  } else if (is_android) {
-    sources += [ "reboot_dummy.cc" ]
-    deps += [ "//chromecast/public" ]
   } else {
     deps += [ ":libcast_reboot_1.0" ]
   }

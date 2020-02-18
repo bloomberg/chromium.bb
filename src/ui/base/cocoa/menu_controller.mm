@@ -175,6 +175,13 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
     [item setTarget:nil];
     [item setAction:nil];
     [item setSubmenu:submenu];
+    // [item setSubmenu] updates target and action which means clicking on a
+    // submenu entry will not call [self validateUserInterfaceItem].
+    DCHECK_EQ([item action], @selector(submenuAction:));
+    DCHECK_EQ([item target], submenu);
+    // Set the enabled state here as submenu entries do not call into
+    // validateUserInterfaceItem. See crbug.com/981294 and crbug.com/991472.
+    [item setEnabled:model->IsEnabledAt(index)];
   } else {
     // The MenuModel works on indexes so we can't just set the command id as the
     // tag like we do in other menus. Also set the represented object to be

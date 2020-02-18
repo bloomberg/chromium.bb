@@ -29,7 +29,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 
@@ -180,7 +180,7 @@ bool SpatialNavigationController::HandleEnterKeyboardEvent(
                                           nullptr));
       // We need enter to activate links, etc. The click should be after the
       // focus in case the site transfers focus upon clicking.
-      interest_element->DispatchSimulatedClick(event);
+      interest_element->DispatchSimulatedClick(event, kSendMouseUpDownEvents);
     }
   }
 
@@ -196,11 +196,9 @@ bool SpatialNavigationController::HandleImeSubmitKeyboardEvent(
     KeyboardEvent* event) {
   DCHECK(page_->GetSettings().GetSpatialNavigationEnabled());
 
-  if (!IsHTMLFormControlElement(GetFocusedElement()))
+  auto* element = DynamicTo<HTMLFormControlElement>(GetFocusedElement());
+  if (!element)
     return false;
-
-  HTMLFormControlElement* element =
-      ToHTMLFormControlElement(GetFocusedElement());
 
   if (!element->formOwner())
     return false;
@@ -271,15 +269,16 @@ bool SpatialNavigationController::Advance(
 
   Node* container = ScrollableAreaOrDocumentOf(interest_node);
 
-  const LayoutRect visible_rect(page_->GetVisualViewport().VisibleRect());
-  const LayoutRect start_box =
+  const PhysicalRect visible_rect =
+      PhysicalRect::EnclosingRect(page_->GetVisualViewport().VisibleRect());
+  const PhysicalRect start_box =
       SearchOrigin(visible_rect, interest_node, direction);
 
   if (IsScrollableAreaOrDocument(interest_node) &&
       !IsOffscreen(interest_node)) {
     // A visible scroller has interest. Search inside of it from one of its
     // edges.
-    LayoutRect edge = OppositeEdge(direction, start_box);
+    PhysicalRect edge = OppositeEdge(direction, start_box);
     if (AdvanceWithinContainer(*interest_node, edge, direction, nullptr))
       return true;
   }
@@ -312,7 +311,7 @@ bool SpatialNavigationController::Advance(
 
 FocusCandidate SpatialNavigationController::FindNextCandidateInContainer(
     Node& container,
-    const LayoutRect& starting_rect_in_root_frame,
+    const PhysicalRect& starting_rect_in_root_frame,
     SpatialNavigationDirection direction,
     Node* interest_child_in_container) {
   Element* element = ElementTraversal::FirstWithin(container);
@@ -351,7 +350,7 @@ FocusCandidate SpatialNavigationController::FindNextCandidateInContainer(
 
 bool SpatialNavigationController::AdvanceWithinContainer(
     Node& container,
-    const LayoutRect& starting_rect_in_root_frame,
+    const PhysicalRect& starting_rect_in_root_frame,
     SpatialNavigationDirection direction,
     Node* interest_child_in_container) {
   DCHECK(IsScrollableAreaOrDocument(&container));
@@ -367,7 +366,7 @@ bool SpatialNavigationController::AdvanceWithinContainer(
     return ScrollInDirection(&container, direction);
   }
 
-  Element* element = ToElement(candidate.focusable_node);
+  auto* element = To<Element>(candidate.focusable_node.Get());
   DCHECK(element);
   MoveInterestTo(element);
   return true;
@@ -412,7 +411,7 @@ Node* SpatialNavigationController::StartingNode() {
 
 void SpatialNavigationController::MoveInterestTo(Node* next_node) {
   DCHECK(!next_node || next_node->IsElementNode());
-  Element* element = ToElement(next_node);
+  auto* element = To<Element>(next_node);
 
   if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
     if (interest_element_) {
@@ -476,7 +475,7 @@ void SpatialNavigationController::DispatchMouseMoveAt(Element* element) {
   WebMouseEvent fake_mouse_move_event(
       WebInputEvent::kMouseMove, event_position, event_position_screen,
       WebPointerProperties::Button::kNoButton, click_count,
-      WebInputEvent::kRelativeMotionEvent, CurrentTimeTicks());
+      WebInputEvent::kRelativeMotionEvent, base::TimeTicks::Now());
   Vector<WebMouseEvent> coalesced_events, predicted_events;
 
   DCHECK(IsA<LocalFrame>(page_->MainFrame()));

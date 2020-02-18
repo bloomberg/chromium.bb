@@ -226,7 +226,6 @@ class CONTENT_EXPORT ChildProcessLauncher {
               int error_code);
 
   Client* client_;
-  BrowserThread::ID client_thread_id_;
 
   // The process associated with this ChildProcessLauncher. Set in Notify by
   // ChildProcessLauncherHelper once the process was started.
@@ -244,7 +243,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<ChildProcessLauncher> weak_factory_;
+  base::WeakPtrFactory<ChildProcessLauncher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessLauncher);
 };

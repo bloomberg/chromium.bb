@@ -1,4 +1,4 @@
-#  $Id: Driver.xst 14772 2011-03-25 21:45:26Z mjevans $
+#  $Id$
 #  Copyright (c) 1997-2002  Tim Bunce  Ireland
 #  Copyright (c) 2002       Jonathan Leffler
 #
@@ -8,6 +8,27 @@
 
 #include "Driver_xst.h"
 
+# Historically dbd_db_do4, dbd_st_execute, and dbd_st_rows returned an 'int' type.
+# That's only 32 bits (31+sign) so isn't sufficient for very large row counts
+# So now instead of defining those macros, drivers can define dbd_db_do4_iv,
+# dbd_st_execute_iv, and dbd_st_rows_iv to be the names of functions that
+# return an 'IV' type. They could also set DBIc_ROW_COUNT(imp_sth).
+#
+# To save a mess of #ifdef's we arrange for dbd_st_execute (etc) to work
+# as dbd_st_execute_iv if that's defined
+#
+#if defined(dbd_st_execute_iv)
+#undef dbd_st_execute
+#define dbd_st_execute dbd_st_execute_iv
+#endif
+#if defined(dbd_st_rows_iv)
+#undef dbd_st_rows
+#define dbd_st_rows dbd_st_rows_iv
+#endif
+#if defined(dbd_db_do4_iv)
+#undef dbd_db_do4
+#define dbd_db_do4 dbd_db_do4_iv
+#endif
 
 MODULE = DBD::~DRIVER~  PACKAGE = DBD::~DRIVER~
 
@@ -15,7 +36,7 @@ REQUIRE:    1.929
 PROTOTYPES: DISABLE
 
 BOOT:
-    items = 0;  /* avoid 'unused variable' warning */
+    PERL_UNUSED_VAR(items);
     DBISTATE_INIT;
     /* XXX this interface will change: */
     DBI_IMP_SIZE("DBD::~DRIVER~::dr::imp_data_size", sizeof(imp_drh_t));
@@ -46,7 +67,7 @@ discon_all_(drh)
         disconnect_all = 1
     CODE:
     D_imp_drh(drh);
-    if (0) ix = ix;     /* avoid unused variable warning */
+    PERL_UNUSED_VAR(ix);
     ST(0) = dbd_discon_all(drh, imp_drh) ? &PL_sv_yes : &PL_sv_no;
 
 #endif /* dbd_discon_all */
@@ -93,14 +114,15 @@ _login(dbh, dbname, username, password, attribs=Nullsv)
     D_imp_dbh(dbh);
 #if !defined(dbd_db_login6_sv)
     STRLEN lna;
-    char *u = (SvOK(username)) ? SvPV(username,lna) : "";
-    char *p = (SvOK(password)) ? SvPV(password,lna) : "";
+    char *u = (SvOK(username)) ? SvPV(username,lna) : (char*)"";
+    char *p = (SvOK(password)) ? SvPV(password,lna) : (char*)"";
 #endif
 #ifdef dbd_db_login6_sv
     ST(0) = dbd_db_login6_sv(dbh, imp_dbh, dbname, username, password, attribs) ? &PL_sv_yes : &PL_sv_no;
 #elif defined(dbd_db_login6)
     ST(0) = dbd_db_login6(dbh, imp_dbh, SvPV_nolen(dbname), u, p, attribs) ? &PL_sv_yes : &PL_sv_no;
 #else
+    PERL_UNUSED_ARG(attribs);
     ST(0) = dbd_db_login( dbh, imp_dbh, SvPV_nolen(dbname), u, p) ? &PL_sv_yes : &PL_sv_no;
 #endif
     }
@@ -112,6 +134,7 @@ selectall_arrayref(...)
     SV *sth;
     SV **maxrows_svp;
     SV **tmp_svp;
+    SV *tmp_sv;
     SV *attr = &PL_sv_undef;
     imp_sth_t *imp_sth;
     CODE:
@@ -157,7 +180,9 @@ selectall_arrayref(...)
     }
     /* --- fetchall --- */
     maxrows_svp = DBD_ATTRIB_GET_SVP(attr, "MaxRows", 7);
-    ST(0) = dbdxst_fetchall_arrayref(sth, &PL_sv_undef, (maxrows_svp) ? *maxrows_svp : &PL_sv_undef);
+    tmp_sv = dbdxst_fetchall_arrayref(sth, &PL_sv_undef, (maxrows_svp) ? *maxrows_svp : &PL_sv_undef);
+    SPAGAIN;
+    ST(0) = tmp_sv;
 
 
 void
@@ -226,19 +251,27 @@ selectrow_arrayref(...)
 #endif
 
 
-#ifdef dbd_db_do4 /* deebeedee-deebee-doo, deebee-doobee-dah? */
+#if defined(dbd_db_do6) || defined(dbd_db_do4)
 
 void
-do(dbh, statement, params = Nullsv)
+do(dbh, statement, params = Nullsv, ...)
     SV *        dbh
-    char *      statement
+    SV *        statement
     SV *        params
     CODE:
     {
     D_imp_dbh(dbh);
     IV retval;
-    retval = dbd_db_do4(dbh, imp_dbh, statement, params);
-    /* remember that dbd_db_do4 must return <= -2 for error     */
+#ifdef dbd_db_do6
+    /* items is a number of arguments passed to XSUB, supplied by xsubpp compiler */
+    /* ax contains stack base offset used by ST() macro, supplied by xsubpp compiler */
+    retval = dbd_db_do6(dbh, imp_dbh, statement, params, items-3, ax+3);
+#else
+    if (items > 3)
+        croak_xs_usage(cv,  "dbh, statement, params = Nullsv");
+    retval = dbd_db_do4(dbh, imp_dbh, SvPV_nolen(statement), params); /* might be dbd_db_do4_iv via macro */
+#endif
+    /* remember that dbd_db_do* must return <= -2 for error     */
     if (retval == 0)            /* ok with no rows affected     */
         XST_mPV(0, "0E0");      /* (true but zero)              */
     else if (retval < -1)       /* -1 == unknown number of rows */
@@ -253,7 +286,7 @@ do(dbh, statement, params = Nullsv)
 #ifdef dbd_db_last_insert_id
 
 void
-last_insert_id(dbh, catalog, schema, table, field, attr=Nullsv)
+last_insert_id(dbh, catalog=&PL_sv_undef, schema=&PL_sv_undef, table=&PL_sv_undef, field=&PL_sv_undef, attr=Nullsv)
     SV *        dbh
     SV *        catalog
     SV *        schema
@@ -301,7 +334,7 @@ disconnect(dbh)
     /* still exists. This possibly needs some more thought.             */
     if (DBIc_ACTIVE_KIDS(imp_dbh) && DBIc_WARN(imp_dbh) && !PL_dirty) {
         STRLEN lna;
-        char *plural = (DBIc_ACTIVE_KIDS(imp_dbh)==1) ? "" : "s";
+        char *plural = (DBIc_ACTIVE_KIDS(imp_dbh)==1) ? (char*)"" : (char*)"s";
         warn("%s->disconnect invalidates %d active statement handle%s %s",
             SvPV(dbh,lna), (int)DBIc_ACTIVE_KIDS(imp_dbh), plural,
             "(either destroy statement handles or call finish on them before disconnecting)");
@@ -579,16 +612,15 @@ execute(sth, ...)
     SV *        sth
     CODE:
     D_imp_sth(sth);
-    int retval;
+    IV retval;
     if (items > 1) {    /* need to bind params */
         if (!dbdxst_bind_params(sth, imp_sth, items, ax) ) {
             XSRETURN_UNDEF;
         }
     }
     /* XXX this code is duplicated in selectrow_arrayref above  */
-    if (DBIc_ROW_COUNT(imp_sth) > 0) /* reset for re-execute */
-        DBIc_ROW_COUNT(imp_sth) = 0;
-    retval = dbd_st_execute(sth, imp_sth);
+    DBIc_ROW_COUNT(imp_sth) = 0;
+    retval = dbd_st_execute(sth, imp_sth); /* might be dbd_st_execute_iv via macro */
     /* remember that dbd_st_execute must return <= -2 for error */
     if (retval == 0)            /* ok with no rows affected     */
         XST_mPV(0, "0E0");      /* (true but zero)              */
@@ -614,6 +646,24 @@ execute_for_fetch(sth, fetch_tuple_sub, tuple_status = Nullsv)
 #endif
 
 
+#ifdef dbd_st_last_insert_id
+
+void
+last_insert_id(sth, catalog=&PL_sv_undef, schema=&PL_sv_undef, table=&PL_sv_undef, field=&PL_sv_undef, attr=Nullsv)
+    SV *        sth
+    SV *        catalog
+    SV *        schema
+    SV *        table
+    SV *        field
+    SV *        attr
+    CODE:
+    {
+    D_imp_sth(sth);
+    ST(0) = dbd_st_last_insert_id(sth, imp_sth, catalog, schema, table, field, attr);
+    }
+
+#endif
+
 
 void
 fetchrow_arrayref(sth)
@@ -623,7 +673,7 @@ fetchrow_arrayref(sth)
     CODE:
     D_imp_sth(sth);
     AV *av;
-    if (0) ix = ix;     /* avoid unused variable warning */
+    PERL_UNUSED_VAR(ix);
     av = dbd_st_fetch(sth, imp_sth);
     ST(0) = (av) ? sv_2mortal(newRV((SV *)av)) : &PL_sv_undef;
 
@@ -644,7 +694,7 @@ fetchrow_array(sth)
         for(i=0; i < num_fields; ++i) {
             PUSHs(AvARRAY(av)[i]);
         }
-        if (0) ix = ix; /* avoid unused variable warning */
+        PERL_UNUSED_VAR(ix);
     }
 
 
@@ -660,7 +710,9 @@ fetchall_arrayref(sth, slice=&PL_sv_undef, batch_row_count=&PL_sv_undef)
         ST(0) = tmp;
     }
     else {
-        ST(0) = dbdxst_fetchall_arrayref(sth, slice, batch_row_count);
+        SV *tmp = dbdxst_fetchall_arrayref(sth, slice, batch_row_count);
+        SPAGAIN;
+        ST(0) = tmp;
     }
 
 
@@ -731,7 +783,7 @@ FETCH_attrib(sth, keysv)
     CODE:
     D_imp_sth(sth);
     SV *valuesv;
-    if (0) ix = ix;     /* avoid unused variable warning */
+    PERL_UNUSED_VAR(ix);
     valuesv = dbd_st_FETCH_attrib(sth, imp_sth, keysv);
     if (!valuesv)
         valuesv = DBIc_DBISTATE(imp_sth)->get_attr(sth, keysv);

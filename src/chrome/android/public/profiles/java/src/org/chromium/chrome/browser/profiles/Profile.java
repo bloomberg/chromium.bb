@@ -28,7 +28,7 @@ public class Profile {
     public static Profile getLastUsedProfile() {
         // TODO(crbug.com/704025): turn this into an assert once the bug is fixed
         if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
+                        .isFullBrowserStarted()) {
             throw new IllegalStateException("Browser hasn't finished initialization yet!");
         }
         return (Profile) nativeGetLastUsedProfile();
@@ -53,6 +53,10 @@ public class Profile {
 
     public boolean hasOffTheRecordProfile() {
         return nativeHasOffTheRecordProfile(mNativeProfileAndroid);
+    }
+
+    public ProfileKey getProfileKey() {
+        return (ProfileKey) nativeGetProfileKey(mNativeProfileAndroid);
     }
 
     public boolean isOffTheRecord() {
@@ -108,4 +112,5 @@ public class Profile {
     private native boolean nativeIsOffTheRecord(long nativeProfileAndroid);
     private native boolean nativeIsChild(long nativeProfileAndroid);
     private native void nativeWipe(long nativeProfileAndroid);
+    private native Object nativeGetProfileKey(long nativeProfileAndroid);
 }

@@ -180,6 +180,14 @@ static LayerImpl* ClipParent(LayerImpl* layer) {
   return layer->test_properties()->clip_parent;
 }
 
+static bool HasClipRect(Layer* layer) {
+  return !layer->clip_rect().IsEmpty();
+}
+
+static bool HasClipRect(LayerImpl* layer) {
+  return false;
+}
+
 static inline const FilterOperations& Filters(Layer* layer) {
   return layer->filters();
 }
@@ -202,15 +210,6 @@ static bool HasRoundedCorner(Layer* layer) {
 
 static bool HasRoundedCorner(LayerImpl* layer) {
   return !layer->test_properties()->rounded_corner_bounds.IsEmpty();
-}
-
-static gfx::RRectF RoundedCornerBounds(Layer* layer) {
-  return gfx::RRectF(gfx::RectF(gfx::Rect(layer->bounds())),
-                     layer->corner_radii());
-}
-
-static gfx::RRectF RoundedCornerBounds(LayerImpl* layer) {
-  return layer->test_properties()->rounded_corner_bounds;
 }
 
 static PictureLayer* MaskLayer(Layer* layer) {
@@ -310,9 +309,30 @@ static int GetTransformParent(const DataForRecursion& data, LayerType* layer) {
 }
 
 template <typename LayerType>
+static bool LayerClipsSubtreeToItsBounds(LayerType* layer) {
+  return layer->masks_to_bounds() || MaskLayer(layer);
+}
+
+template <typename LayerType>
 static bool LayerClipsSubtree(LayerType* layer) {
-  return layer->masks_to_bounds() || MaskLayer(layer) ||
-         HasRoundedCorner(layer);
+  return LayerClipsSubtreeToItsBounds(layer) || HasRoundedCorner(layer) ||
+         HasClipRect(layer);
+}
+
+gfx::RectF EffectiveClipRect(Layer* layer) {
+  return layer->EffectiveClipRect();
+}
+
+gfx::RectF EffectiveClipRect(LayerImpl* layer) {
+  return gfx::RectF(gfx::PointF(), gfx::SizeF(layer->bounds()));
+}
+
+static gfx::RRectF RoundedCornerBounds(Layer* layer) {
+  return gfx::RRectF(EffectiveClipRect(layer), layer->corner_radii());
+}
+
+static gfx::RRectF RoundedCornerBounds(LayerImpl* layer) {
+  return layer->test_properties()->rounded_corner_bounds;
 }
 
 template <typename LayerType>
@@ -355,6 +375,12 @@ static inline bool HasLatestSequenceNumber(const LayerImpl*, int) {
   return true;
 }
 
+static inline void SetHasClipNode(Layer* layer, bool val) {
+  layer->SetHasClipNode(val);
+}
+
+static inline void SetHasClipNode(LayerImpl* layer, bool val) {}
+
 template <typename LayerType>
 void PropertyTreeBuilderContext<LayerType>::AddClipNodeIfNeeded(
     const DataForRecursion& data_from_ancestor,
@@ -376,8 +402,11 @@ void PropertyTreeBuilderContext<LayerType>::AddClipNodeIfNeeded(
     data_for_children->clip_tree_parent = parent_id;
   } else {
     ClipNode node;
-    node.clip = gfx::RectF(gfx::PointF() + layer->offset_to_transform_parent(),
-                           gfx::SizeF(layer->bounds()));
+    node.clip = EffectiveClipRect(layer);
+
+    // Move the clip bounds so that it is relative to the transform parent.
+    node.clip += layer->offset_to_transform_parent();
+
     node.transform_id = created_transform_node
                             ? data_for_children->transform_tree_parent
                             : GetTransformParent(data_from_ancestor, layer);
@@ -391,6 +420,7 @@ void PropertyTreeBuilderContext<LayerType>::AddClipNodeIfNeeded(
     data_for_children->clip_tree_parent = clip_tree_.Insert(node, parent_id);
   }
 
+  SetHasClipNode(layer, requires_node);
   layer->SetClipTreeIndex(data_for_children->clip_tree_parent);
 }
 
@@ -797,6 +827,14 @@ static inline const base::Optional<gfx::RRectF>& BackdropFilterBounds(
   return layer->test_properties()->backdrop_filter_bounds;
 }
 
+static inline ElementId BackdropMaskElementId(Layer* layer) {
+  return layer->backdrop_mask_element_id();
+}
+
+static inline ElementId BackdropMaskElementId(LayerImpl* layer) {
+  return layer->test_properties()->backdrop_mask_element_id;
+}
+
 static inline float BackdropFilterQuality(Layer* layer) {
   return layer->backdrop_filter_quality();
 }
@@ -819,6 +857,14 @@ static inline bool HasCopyRequest(Layer* layer) {
 
 static inline bool HasCopyRequest(LayerImpl* layer) {
   return !layer->test_properties()->copy_requests.empty();
+}
+
+static inline int MirrorCount(Layer* layer) {
+  return layer->mirror_count();
+}
+
+static inline int MirrorCount(LayerImpl* layer) {
+  return 0;
 }
 
 static inline bool PropertyChanged(Layer* layer) {
@@ -933,6 +979,10 @@ RenderSurfaceReason ComputeRenderSurfaceReason(const MutatorHost& mutator_host,
   if (HasCopyRequest(layer))
     return RenderSurfaceReason::kCopyRequest;
 
+  // If the layer is mirrored.
+  if (MirrorCount(layer))
+    return RenderSurfaceReason::kMirrored;
+
   return RenderSurfaceReason::kNone;
 }
 
@@ -1040,6 +1090,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
   node->backdrop_filters = BackdropFilters(layer);
   node->backdrop_filter_bounds = BackdropFilterBounds(layer);
   node->backdrop_filter_quality = BackdropFilterQuality(layer);
+  node->backdrop_mask_element_id = BackdropMaskElementId(layer);
   node->filters_origin = FiltersOrigin(layer);
   node->trilinear_filtering = TrilinearFiltering(layer);
   node->has_potential_opacity_animation = has_potential_opacity_animation;

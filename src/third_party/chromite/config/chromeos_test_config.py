@@ -61,6 +61,11 @@ class HWTestList(object):
     installer_kwargs = kwargs.copy()
     # Force au suite to run first.
     installer_kwargs['priority'] = constants.HWTEST_CQ_PRIORITY
+    # Context: crbug.com/976834
+    # Because this blocking suite fails a fair bit, it effectively acts as a
+    # rate limiter to the Autotest scheduling system since all of the subsequent
+    # test suites aren't run if this fails.
+    # Making this non-blocking and async will cause Autotest scheduling to fail.
     installer_kwargs['blocking'] = True
     installer_kwargs['async'] = False
 
@@ -468,7 +473,7 @@ def EnsureVmTestsOnVmTestBoards(site_config, boards_dict, _gs_build_config):
     boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  for c in site_config.itervalues():
+  for c in site_config.values():
     if set(c['boards']).intersection(set(boards_dict['no_vmtest_boards'])):
       c.apply(site_config.templates.no_vmtest_builder)
       if c.child_configs:
@@ -588,19 +593,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
 
-      # ARC disabled on these boards (so can't run bvt-arc)
-      'peppy-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
-      'peach_pit-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
-      'tricky-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
       'amd64-generic-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-arc64-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-paladin': site_config.templates.tast_vm_paladin_tests,
@@ -625,15 +617,19 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       # to validate informational Tast tests on amd64-generic:
       # https://crbug.com/946858
       'amd64-generic-full': site_config.templates.tast_vm_canary_tests,
-      'amd64-generic-goma-full': site_config.templates.tast_vm_canary_tests,
       'betty-arc64-release': site_config.templates.tast_vm_canary_tests,
       'betty-release': site_config.templates.tast_vm_canary_tests,
+
+      'kumo-pre-cq': {
+          'vm_tests': [config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                               test_suite='smoke')],
+      }
   }
 
-  for config_name, overrides in overwritten_configs.iteritems():
+  for config_name, overrides in overwritten_configs.items():
     # TODO: Turn this assert into a unittest.
     # config = site_config[config_name]
-    # for k, v in overrides.iteritems():
+    # for k, v in overrides.items():
     #   assert config[k] != v, ('Unnecessary override: %s: %s' %
     #                           (config_name, k))
     site_config[config_name].apply(**overrides)
@@ -677,6 +673,11 @@ def IncrementalBuilders(site_config):
       site_config.templates.lakitu_test_customizations,
   )
 
+  site_config['kumo-incremental'].apply(
+      vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                        test_suite='smoke')],
+  )
+
 
 def PostsubmitBuilders(site_config):
   """Create all postsubmit test configs.
@@ -685,7 +686,7 @@ def PostsubmitBuilders(site_config):
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
   """
-  for config in site_config.itervalues():
+  for config in site_config.values():
     if config.name.endswith('postsubmit'):
       config.apply(
           site_config.templates.no_vmtest_builder,
@@ -988,7 +989,7 @@ def ApplyConfig(site_config, boards_dict, ge_build_config):
   """
 
   # Insert default HwTests for tryjobs.
-  for build in site_config.itervalues():
+  for build in site_config.values():
     InsertHwTestsOverrideDefaults(build)
 
   IncrementalBuilders(site_config)

@@ -190,6 +190,8 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
 
 }  // namespace
 
+// Deprecated in favour of InstallManagerBookmarkAppTest.CreateBookmarkApp.
+// TODO(crbug.com/915043): Erase it.
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
   WebApplicationInfo web_app_info;
   web_app_info.app_url = GURL(kAppUrl);
@@ -223,6 +225,9 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
           .is_null());
 }
 
+// Deprecated in favour of
+// InstallManagerBookmarkAppTest.CreateBookmarkAppDefaultApp.
+// TODO(crbug.com/915043): Erase it.
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppDefaultApp) {
   WebApplicationInfo web_app_info;
   web_app_info.app_url = GURL(kAppUrl);
@@ -242,6 +247,9 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppDefaultApp) {
   EXPECT_FALSE(Manifest::IsPolicyLocation(helper.extension()->location()));
 }
 
+// Deprecated in favour of
+// InstallManagerBookmarkAppTest.CreateBookmarkAppPolicyInstalled.
+// TODO(crbug.com/915043): Erase it.
 TEST_F(BookmarkAppHelperExtensionServiceTest,
        CreateBookmarkAppPolicyInstalled) {
   WebApplicationInfo web_app_info;
@@ -273,6 +281,9 @@ class BookmarkAppHelperExtensionServiceInstallableSiteTest
       BookmarkAppHelperExtensionServiceInstallableSiteTest);
 };
 
+// Deprecated in favour of
+// InstallManagerBookmarkAppInstallableSiteTest.CreateBookmarkAppWithManifest.
+// TODO(crbug.com/915043): Erase it.
 TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
        CreateBookmarkAppWithManifest) {
   WebApplicationInfo web_app_info;
@@ -314,6 +325,10 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
   }
 }
 
+// Deprecated in favour of
+// InstallManagerBookmarkAppInstallableSiteTest
+// .CreateBookmarkAppWithManifestIcons.
+// TODO(crbug.com/915043): Erase it.
 TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
        CreateBookmarkAppWithManifestIcons) {
   WebApplicationInfo web_app_info;
@@ -362,6 +377,10 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
   }
 }
 
+// Deprecated in favour of
+// InstallManagerBookmarkAppInstallableSiteTest
+// .CreateBookmarkAppWithManifestNoScope.
+// TODO(crbug.com/915043): Erase it.
 TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
        CreateBookmarkAppWithManifestNoScope) {
   WebApplicationInfo web_app_info;
@@ -395,6 +414,9 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          ::testing::Values(ForInstallableSite::kNo,
                                            ForInstallableSite::kYes));
 
+// Deprecated in favour of
+// InstallManagerBookmarkAppTest.CreateBookmarkAppDefaultLauncherContainers.
+// TODO(crbug.com/915043): Erase it.
 TEST_F(BookmarkAppHelperExtensionServiceTest,
        CreateBookmarkAppDefaultLauncherContainers) {
   std::map<GURL, std::vector<SkBitmap>> icon_map;
@@ -419,19 +441,19 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
     const Extension* extension =
         service_->GetInstalledExtension(helper.extension()->id());
     EXPECT_TRUE(extension);
-    EXPECT_EQ(LAUNCH_CONTAINER_WINDOW,
+    EXPECT_EQ(LaunchContainer::kLaunchContainerWindow,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
 
     // Mark the app as not locally installed and check that it now opens in a
     // tab.
     SetBookmarkAppIsLocallyInstalled(profile(), extension, false);
-    EXPECT_EQ(LAUNCH_CONTAINER_TAB,
+    EXPECT_EQ(LaunchContainer::kLaunchContainerTab,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
 
     // Mark the app as locally installed and check that it now opens in a
     // window.
     SetBookmarkAppIsLocallyInstalled(profile(), extension, true);
-    EXPECT_EQ(LAUNCH_CONTAINER_WINDOW,
+    EXPECT_EQ(LaunchContainer::kLaunchContainerWindow,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
   }
   {
@@ -450,11 +472,14 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
     const Extension* extension =
         service_->GetInstalledExtension(helper.extension()->id());
     EXPECT_TRUE(extension);
-    EXPECT_EQ(LAUNCH_CONTAINER_TAB,
+    EXPECT_EQ(LaunchContainer::kLaunchContainerTab,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
   }
 }
 
+// Deprecated in favour of
+// InstallManagerBookmarkAppTest.CreateBookmarkAppForcedLauncherContainers.
+// TODO(crbug.com/915043): Erase it.
 TEST_F(BookmarkAppHelperExtensionServiceTest,
        CreateBookmarkAppForcedLauncherContainers) {
   WebApplicationInfo web_app_info;
@@ -477,7 +502,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
     content::RunAllTasksUntilIdle();
     ASSERT_TRUE(helper.extension());
     EXPECT_EQ(
-        LAUNCH_CONTAINER_TAB,
+        LaunchContainer::kLaunchContainerTab,
         GetLaunchContainer(ExtensionPrefs::Get(profile()), helper.extension()));
   }
   {
@@ -493,11 +518,14 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
     content::RunAllTasksUntilIdle();
     ASSERT_TRUE(helper.extension());
     EXPECT_EQ(
-        LAUNCH_CONTAINER_WINDOW,
+        LaunchContainer::kLaunchContainerWindow,
         GetLaunchContainer(ExtensionPrefs::Get(profile()), helper.extension()));
   }
 }
 
+// Deprecated in favour of
+// InstallManagerBookmarkAppTest.CreateBookmarkAppWithoutManifest.
+// TODO(crbug.com/915043): Erase it.
 TEST_F(BookmarkAppHelperExtensionServiceTest,
        CreateBookmarkAppWithoutManifest) {
   WebApplicationInfo web_app_info;

@@ -9,13 +9,13 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
-#include "components/signin/core/browser/test_signin_client.h"
+#include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/base/test_signin_client.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/test/test_cookie_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,10 +25,20 @@ namespace {
 
 // GMock matcher that checks that the consistency cookie has the expected value.
 MATCHER_P(CookieHasValueMatcher, value, "") {
+  net::CookieOptions cookie_options;
+  cookie_options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
   return arg.Name() == "CHROME_ID_CONSISTENCY_STATE" && arg.Value() == value &&
          arg.IncludeForRequestURL(GaiaUrls::GetInstance()->gaia_url(),
-                                  net::CookieOptions()) ==
+                                  cookie_options) ==
              net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
+}
+
+MATCHER(SetPermittedInContext, "") {
+  const net::CanonicalCookie& cookie = testing::get<0>(arg);
+  const net::CookieOptions& cookie_options = testing::get<1>(arg);
+  return cookie.IsSetPermittedInContext(cookie_options) ==
+         net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
 }
 
 class MockCookieManager
@@ -38,7 +48,8 @@ class MockCookieManager
   // specified value.
   void ExpectSetCookieCall(const std::string& value) {
     EXPECT_CALL(*this, SetCanonicalCookie(CookieHasValueMatcher(value), "https",
-                                          testing::_, testing::_));
+                                          testing::_, testing::_))
+        .With(testing::Args<0, 2>(SetPermittedInContext()));
   }
 
   MOCK_METHOD4(
@@ -49,8 +60,7 @@ class MockCookieManager
            network::mojom::CookieManager::SetCanonicalCookieCallback callback));
 };
 
-class FakeConsistencyCookieManager
-    : public signin::ConsistencyCookieManagerBase {
+class FakeConsistencyCookieManager : public ConsistencyCookieManagerBase {
  public:
   FakeConsistencyCookieManager(SigninClient* signin_client,
                                AccountReconcilor* reconcilor)
@@ -97,7 +107,7 @@ class ConsistencyCookieManagerTest : public ::testing::Test {
   MockCookieManager* mock_cookie_manager_ = nullptr;
 
   TestSigninClient signin_client_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<AccountReconcilor> reconcilor_;
 };
 

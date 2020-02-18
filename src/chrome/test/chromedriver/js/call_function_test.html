@@ -3,7 +3,6 @@
 <script src='test.js'></script>
 <script src='call_function.js'></script>
 <script>
-
 function wrap(value) {
   return jsonSerialize(value, []);
 }
@@ -38,53 +37,70 @@ function testUUID() {
   }
 }
 
-function testCallFunctionNoArgs() {
+function testCallFunctionNoArgs(runner) {
   clearCache();
 
-  var result = callFunction(function() { return 1; }, []);
-  assertEquals(0, result.status);
-  assertEquals(1, result.value);
+  callFunction(function() { return 1; }, []).then((result) => {
+    assertEquals(0, result.status);
+    assertEquals(1, result.value);
+    runner.continueTesting();
+  });
+  runner.waitForAsync();
 }
 
-function testCallFunctionThrows() {
+function testCallFunctionThrows(runner) {
   clearCache();
-
-  var result = callFunction(function() { throw new Error('fake error'); },
-      []);
-  assertEquals(StatusCode.JAVA_SCRIPT_ERROR, result.status);
-  assertEquals('fake error', result.value);
-
-  result = callFunction(function() {
-    var e = new Error('fake error');
-    e.code = 77;
-    e.message = 'CUSTOM';
-    throw e;
-  }, []);
-  assertEquals(77, result.status);
-  assertEquals('CUSTOM', result.value);
+  let allComplete = 0;
+  callFunction(function() { throw new Error('fake error'); },
+    []).then((result) => {
+      assertEquals(StatusCode.JAVA_SCRIPT_ERROR, result.status);
+      assertEquals('fake error', result.value);
+      if (allComplete)
+        runner.continueTesting();
+      allComplete += 1;
+    });
+  callFunction(function() {
+      var e = new Error('fake error');
+      e.code = 77;
+      e.message = 'CUSTOM';
+      throw e;
+  }, []).then((result) => {
+    assertEquals(77, result.status);
+    assertEquals('CUSTOM', result.value);
+    if (allComplete)
+      runner.continueTesting();
+    allComplete += 1;
+  });
+  runner.waitForAsync();
 }
 
-function testCallFunctionArgs() {
+function testCallFunctionArgs(runner) {
   clearCache();
 
   function func(primitive, elem) {
     return [primitive, elem.querySelector('div')];
   }
-  var result = callFunction(func, [1, wrap(document)]);
-  assertEquals(0, result.status);
-  assertEquals(1, result.value[0]);
-  var cache = getPageCache();
-  assertEquals(document.querySelector('div'), unwrap(result.value[1], cache));
+  callFunction(func, [1, wrap(document)]).then((result) => {
+    assertEquals(0, result.status);
+    assertEquals(1, result.value[0]);
+    const cache = getPageCache();
+    assertEquals(document.querySelector('div'), unwrap(result.value[1], cache));
+    runner.continueTesting();
+  });
+  runner.waitForAsync();
 }
 
-function testCallFunctionArgsUnwrappedReturn() {
+function testCallFunctionArgsUnwrappedReturn(runner) {
   clearCache();
 
   function func(elem) {
     return elem.querySelector('div');
   }
-  var result = callFunction(func, [wrap(document)], false, true);
-  assertEquals(document.querySelector('div'), result);
+  callFunction(func, [wrap(document)], false, true).then((result) => {
+    assertEquals(document.querySelector('div'), result);
+    runner.continueTesting();
+  });
+  runner.waitForAsync();
 }
 
 function testCacheWrap() {
@@ -206,7 +222,7 @@ function testCacheStaleRef() {
   }
 }
 
-function testCallFunctionWithShadowHost() {
+function testCallFunctionWithShadowHost(runner) {
   clearCache();
 
   // Set up something in the shadow DOM.
@@ -218,17 +234,18 @@ function testCallFunctionWithShadowHost() {
     return element;
   }
   var wrappedHost = wrap(host);
-  
-  var result = callFunction(func, [wrappedHost]);
-  assertEquals(0, result.status);
-  assertEquals(wrappedHost['ELEMENT'], result.value['ELEMENT']);
-  var cache = getPageCache();
-  assertEquals(host, unwrap(result.value, cache));
-  
-  document.body.removeChild(host);
+  callFunction(func, [wrappedHost]).then((result) => {
+    assertEquals(0, result.status);
+    assertEquals(wrappedHost['ELEMENT'], result.value['ELEMENT']);
+    var cache = getPageCache();
+    assertEquals(host, unwrap(result.value, cache));
+    document.body.removeChild(host);
+    runner.continueTesting();
+  });
+  runner.waitForAsync();
 }
 
-function testCallFunctionWithShadowRoot() {
+function testCallFunctionWithShadowRoot(runner) {
   clearCache();
 
   // Set up something in the shadow DOM.
@@ -243,18 +260,21 @@ function testCallFunctionWithShadowRoot() {
   var wrappedRoot = wrap(root);
   
   // Should handle shadow root as an argument.
-  result = callFunction(func, [wrappedRoot]);
-  assertEquals(0, result.status);
-  assertEquals(wrappedRoot['ELEMENT'], result.value['ELEMENT']);
-  var cache = getPageCache();
-  assertEquals(root, unwrap(result.value, cache));
-  
-  document.body.removeChild(host);
+  callFunction(func, [wrappedRoot]).then((result) => {
+    assertEquals(0, result.status);
+    assertEquals(wrappedRoot['ELEMENT'], result.value['ELEMENT']);
+    var cache = getPageCache();
+    assertEquals(root, unwrap(result.value, cache));
+
+    document.body.removeChild(host);
+    runner.continueTesting();
+  });
+  runner.waitForAsync();
 }
 
 function testCacheWithShadowDomAttached() {
   clearCache();
-  var pageCache = getPageCache();
+  const pageCache = getPageCache();
   
   // Set up something in the shadow DOM.
   var host = document.body.appendChild(document.createElement('div'));

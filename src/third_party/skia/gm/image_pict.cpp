@@ -28,11 +28,11 @@
 #include "include/gpu/GrContext.h"
 #include "include/gpu/GrSamplerState.h"
 #include "include/gpu/GrTypes.h"
-#include "include/private/GrTextureProxy.h"
 #include "include/private/GrTypesPriv.h"
 #include "src/core/SkMakeUnique.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrSurfaceContext.h"
+#include "src/gpu/GrTextureProxy.h"
 #include "src/image/SkImage_Base.h"
 #include "src/image/SkImage_Gpu.h"
 
@@ -196,29 +196,11 @@ protected:
             return fProxy;
         }
 
-        // need to copy the subset into a new texture
-        GrSurfaceDesc desc;
-        desc.fWidth = info.width();
-        desc.fHeight = info.height();
-        desc.fConfig = fProxy->config();
-
         GrMipMapped mipMapped = willBeMipped ? GrMipMapped::kYes : GrMipMapped::kNo;
 
-        sk_sp<GrSurfaceContext> dstContext(fCtx->priv().makeDeferredSurfaceContext(
-                fProxy->backendFormat(), desc, fProxy->origin(), mipMapped, SkBackingFit::kExact,
-                SkBudgeted::kYes));
-        if (!dstContext) {
-            return nullptr;
-        }
-
-        if (!dstContext->copy(
-                            fProxy.get(),
-                            SkIRect::MakeXYWH(origin.x(), origin.y(), info.width(), info.height()),
-                            SkIPoint::Make(0, 0))) {
-            return nullptr;
-        }
-
-        return dstContext->asTextureProxyRef();
+        return GrSurfaceProxy::Copy(fCtx.get(), fProxy.get(), mipMapped,
+                SkIRect::MakeXYWH(origin.x(), origin.y(), info.width(), info.height()),
+                SkBackingFit::kExact, SkBudgeted::kYes);
     }
 
 private:

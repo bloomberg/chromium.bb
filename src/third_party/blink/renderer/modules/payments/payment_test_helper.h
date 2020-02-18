@@ -15,16 +15,16 @@
 #include "third_party/blink/renderer/modules/payments/payment_shipping_option.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
-class Document;
 class PaymentMethodData;
 class ScriptState;
 class ScriptValue;
+class V8TestingScope;
 
 enum PaymentTestDetailToChange {
   kPaymentTestDetailNone,
@@ -87,7 +87,12 @@ payments::mojom::blink::PaymentResponsePtr BuildPaymentResponseForTest();
 
 payments::mojom::blink::PaymentAddressPtr BuildPaymentAddressForTest();
 
-void MakePaymentRequestOriginSecure(Document&);
+class PaymentRequestV8TestingScope : public V8TestingScope {
+  STACK_ALLOCATED();
+
+ public:
+  PaymentRequestV8TestingScope();
+};
 
 class PaymentRequestMockFunctionScope {
   STACK_ALLOCATED();

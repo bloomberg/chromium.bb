@@ -92,6 +92,10 @@ std::string GetProfileName(VideoCodecProfile profile) {
       return "dolby vision profile 5";
     case DOLBYVISION_PROFILE7:
       return "dolby vision profile 7";
+    case DOLBYVISION_PROFILE8:
+      return "dolby vision profile 8";
+    case DOLBYVISION_PROFILE9:
+      return "dolby vision profile 9";
     case THEORAPROFILE_ANY:
       return "theora";
     case AV1PROFILE_PROFILE_MAIN:
@@ -756,26 +760,31 @@ bool ParseDolbyVisionCodecId(const std::string& codec_id,
   // Profile string should be two digits.
   unsigned profile_id = 0;
   if (elem[1].size() != 2 || !base::StringToUint(elem[1], &profile_id) ||
-      profile_id > 7) {
+      profile_id > 9) {
     DVLOG(4) << __func__ << ": invalid format or profile_id=" << elem[1];
     return false;
   }
 
-  // Only profiles 0, 4, 5 and 7 are valid. Profile 0 is encoded based on AVC
-  // while profile 4, 5 and 7 are based on HEVC.
+  // Only profiles 0, 4, 5, 7, 8 and 9 are valid. Profile 0 and 9 are encoded
+  // based on AVC while profile 4, 5, 7 and 8 are based on HEVC.
   switch (profile_id) {
     case 0:
+    case 9:
       if (!IsDolbyVisionAVCCodecId(codec_id)) {
         DVLOG(4) << __func__
                  << ": codec id is mismatched with profile_id=" << profile_id;
         return false;
       }
-      *profile = DOLBYVISION_PROFILE0;
+      if (profile_id == 0)
+        *profile = DOLBYVISION_PROFILE0;
+      else if (profile_id == 9)
+        *profile = DOLBYVISION_PROFILE9;
       break;
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
     case 4:
     case 5:
     case 7:
+    case 8:
       if (!IsDolbyVisionHEVCCodecId(codec_id)) {
         DVLOG(4) << __func__
                  << ": codec id is mismatched with profile_id=" << profile_id;
@@ -787,6 +796,8 @@ bool ParseDolbyVisionCodecId(const std::string& codec_id,
         *profile = DOLBYVISION_PROFILE5;
       else if (profile_id == 7)
         *profile = DOLBYVISION_PROFILE7;
+      else if (profile_id == 8)
+        *profile = DOLBYVISION_PROFILE8;
       break;
 #endif
     default:

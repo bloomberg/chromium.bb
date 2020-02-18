@@ -6,22 +6,24 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/metrics/field_trial_param_associator.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/blink_features.h"
+#include "ui/events/blink/prediction/empty_filter.h"
 #include "ui/events/blink/prediction/empty_predictor.h"
+#include "ui/events/blink/prediction/filter_factory.h"
 #include "ui/events/blink/prediction/kalman_predictor.h"
 #include "ui/events/blink/prediction/least_squares_predictor.h"
-
-using blink::WebInputEvent;
-using blink::WebGestureEvent;
+#include "ui/events/blink/prediction/linear_predictor.h"
+#include "ui/events/blink/prediction/predictor_factory.h"
 
 namespace ui {
 namespace test {
 namespace {
+
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
 
 constexpr double kEpsilon = 0.001;
 
@@ -33,8 +35,7 @@ class ScrollPredictorTest : public testing::Test {
 
   void SetUp() override {
     original_events_.clear();
-    scroll_predictor_ =
-        std::make_unique<ScrollPredictor>(true /* enable_resampling */);
+    scroll_predictor_ = std::make_unique<ScrollPredictor>();
     scroll_predictor_->predictor_ = std::make_unique<EmptyPredictor>();
   }
 
@@ -97,7 +98,7 @@ class ScrollPredictorTest : public testing::Test {
     return scroll_predictor_->predictor_->GeneratePrediction(
         WebInputEvent::GetStaticTimeStampForTests() +
             base::TimeDelta::FromMillisecondsD(time_delta_in_milliseconds),
-        false /* is_resampling */, result);
+        result);
   }
 
   gfx::PointF GetLastAccumulatedDelta() {
@@ -108,41 +109,42 @@ class ScrollPredictorTest : public testing::Test {
     return scroll_predictor_->should_resample_scroll_events_;
   }
 
-  void ConfigureFieldTrial(const base::Feature& feature,
-                           const std::string& predictor_type) {
-    const std::string kTrialName = "TestTrial";
-    const std::string kGroupName = "TestGroup";
+  bool isFilteringEnabled() { return scroll_predictor_->filtering_enabled_; }
 
-    field_trial_list_.reset();
-    field_trial_list_.reset(new base::FieldTrialList(nullptr));
-    scoped_refptr<base::FieldTrial> trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-
-    std::map<std::string, std::string> params;
+  void ConfigurePredictorFieldTrial(const base::Feature& feature,
+                                    const std::string& predictor_type) {
+    base::FieldTrialParams params;
     params["predictor"] = predictor_type;
-    base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-        kTrialName, kGroupName, params);
 
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->RegisterFieldTrialOverride(
-        feature.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    base::FeatureList::ClearInstanceForTesting();
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
-
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(feature, params);
     EXPECT_EQ(params["predictor"],
               GetFieldTrialParamValueByFeature(feature, "predictor"));
   }
 
-  void VerifyPredictorType(const std::string& expected_type) {
+  void VerifyPredictorType(const char* expected_type) {
     EXPECT_EQ(expected_type, scroll_predictor_->predictor_->GetName());
+  }
+
+  void ConfigureFilterFieldTrial(const base::Feature& feature,
+                                 const std::string& filter_name) {
+    base::FieldTrialParams params;
+    params["filter"] = filter_name;
+
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(feature, params);
+    EXPECT_EQ(params["filter"],
+              GetFieldTrialParamValueByFeature(feature, "filter"));
+  }
+
+  void VerifyFilterType(const char* expected_type) {
+    EXPECT_EQ(expected_type, scroll_predictor_->filter_->GetName());
   }
 
  protected:
   EventWithCallback::OriginalEventList original_events_;
   std::unique_ptr<ScrollPredictor> scroll_predictor_;
 
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollPredictorTest);
@@ -389,49 +391,85 @@ TEST_F(ScrollPredictorTest, ScrollPredictorNotChangeScrollDirection) {
 }
 
 TEST_F(ScrollPredictorTest, ScrollPredictorTypeSelection) {
-  // Empty Predictor when both kResamplingScrollEvents and
-  // kScrollPredictorTypeChoice are disabled.
-  scroll_predictor_ =
-      std::make_unique<ScrollPredictor>(true /* enable_resampling */);
-  VerifyPredictorType("Empty");
-
-  scroll_predictor_ =
-      std::make_unique<ScrollPredictor>(false /* enable_resampling */);
-  VerifyPredictorType("Empty");
+  // Empty Predictor when kResamplingScrollEvents is disabled.
+  scroll_predictor_ = std::make_unique<ScrollPredictor>();
+  VerifyPredictorType(input_prediction::kScrollPredictorNameEmpty);
 
   // When resampling is enabled, predictor type is set from
   // kResamplingScrollEvents.
-  ConfigureFieldTrial(features::kResamplingScrollEvents, "empty");
-  scroll_predictor_ =
-      std::make_unique<ScrollPredictor>(true /* enable_resampling */);
-  VerifyPredictorType("Empty");
+  ConfigurePredictorFieldTrial(features::kResamplingScrollEvents,
+                               input_prediction::kScrollPredictorNameEmpty);
+  scroll_predictor_ = std::make_unique<ScrollPredictor>();
+  VerifyPredictorType(input_prediction::kScrollPredictorNameEmpty);
 
-  ConfigureFieldTrial(features::kResamplingScrollEvents, "lsq");
-  scroll_predictor_ =
-      std::make_unique<ScrollPredictor>(true /* enable_resampling */);
-  VerifyPredictorType("LSQ");
+  ConfigurePredictorFieldTrial(features::kResamplingScrollEvents,
+                               input_prediction::kScrollPredictorNameLsq);
+  scroll_predictor_ = std::make_unique<ScrollPredictor>();
+  VerifyPredictorType(input_prediction::kScrollPredictorNameLsq);
 
-  ConfigureFieldTrial(features::kResamplingScrollEvents, "kalman");
-  scroll_predictor_ =
-      std::make_unique<ScrollPredictor>(true /* enable_resampling */);
-  VerifyPredictorType("Kalman");
+  ConfigurePredictorFieldTrial(features::kResamplingScrollEvents,
+                               input_prediction::kScrollPredictorNameKalman);
+  scroll_predictor_ = std::make_unique<ScrollPredictor>();
+  VerifyPredictorType(input_prediction::kScrollPredictorNameKalman);
 
-  // When resampling is disabled, predictor type is set from
-  // kScrollPredictorTypeChoice.
-  ConfigureFieldTrial(features::kScrollPredictorTypeChoice, "empty");
-  scroll_predictor_ =
-      std::make_unique<ScrollPredictor>(false /* enable_resampling */);
-  VerifyPredictorType("Empty");
+  ConfigurePredictorFieldTrial(
+      features::kResamplingScrollEvents,
+      input_prediction::kScrollPredictorNameLinearFirst);
+  scroll_predictor_ = std::make_unique<ScrollPredictor>();
+  VerifyPredictorType(input_prediction::kScrollPredictorNameLinearFirst);
+}
 
-  ConfigureFieldTrial(features::kScrollPredictorTypeChoice, "lsq");
-  scroll_predictor_ =
-      std::make_unique<ScrollPredictor>(false /* enable_resampling */);
-  VerifyPredictorType("LSQ");
+// Check the right filter is selected
+TEST_F(ScrollPredictorTest, DefaultFilter) {
+  ConfigureFilterFieldTrial(features::kFilteringScrollPrediction, "");
+  scroll_predictor_ = std::make_unique<ScrollPredictor>();
+  VerifyFilterType(input_prediction::kFilterNameEmpty);
+  EXPECT_TRUE(isFilteringEnabled());
 
-  ConfigureFieldTrial(features::kScrollPredictorTypeChoice, "kalman");
-  scroll_predictor_ =
-      std::make_unique<ScrollPredictor>(false /* enable_resampling */);
-  VerifyPredictorType("Kalman");
+  ConfigureFilterFieldTrial(features::kFilteringScrollPrediction,
+                            input_prediction::kFilterNameEmpty);
+  scroll_predictor_ = std::make_unique<ScrollPredictor>();
+  VerifyFilterType(input_prediction::kFilterNameEmpty);
+  EXPECT_TRUE(isFilteringEnabled());
+}
+
+// We first send 100 events to the scroll predictor with kalman predictor
+// enabled and filetring disable and save the results.
+// We then send the same events with kalman and the empty filter, we should
+// expect the same results.
+TEST_F(ScrollPredictorTest, FilteringPrediction) {
+  ConfigureFilterFieldTrial(features::kResamplingScrollEvents,
+                            input_prediction::kScrollPredictorNameKalman);
+  scroll_predictor_ = std::make_unique<ScrollPredictor>();
+
+  std::vector<double> accumulated_deltas;
+  WebScopedInputEvent gesture_update;
+
+  for (int i = 0; i < 100; i++) {
+    // Create event at time 8*i
+    gesture_update = CreateGestureScrollUpdate(0, 3 * i, 8 * i /* ms */);
+    // Handle the event 5 ms later
+    HandleResampleScrollEvents(gesture_update, 8 * i + 5 /* ms */);
+    EXPECT_FALSE(isFilteringEnabled());
+    accumulated_deltas.push_back(GetLastAccumulatedDelta().y());
+  }
+  EXPECT_EQ((int)accumulated_deltas.size(), 100);
+
+  // Now we enable filtering and compare the deltas
+  ConfigurePredictorFieldTrial(features::kResamplingScrollEvents,
+                               input_prediction::kScrollPredictorNameKalman);
+  ConfigureFilterFieldTrial(features::kFilteringScrollPrediction,
+                            input_prediction::kFilterNameEmpty);
+  scroll_predictor_ = std::make_unique<ScrollPredictor>();
+
+  for (int i = 0; i < 100; i++) {
+    // Create event at time 8*i
+    gesture_update = CreateGestureScrollUpdate(0, 3 * i, 8 * i /* ms */);
+    // Handle the event 5 ms later
+    HandleResampleScrollEvents(gesture_update, 8 * i + 5 /* ms */);
+    EXPECT_TRUE(isFilteringEnabled());
+    EXPECT_NEAR(accumulated_deltas[i], GetLastAccumulatedDelta().y(), 0.00001);
+  }
 }
 
 }  // namespace test

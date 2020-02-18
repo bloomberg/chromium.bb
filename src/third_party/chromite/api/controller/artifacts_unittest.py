@@ -14,6 +14,7 @@ from chromite.api.controller import artifacts
 from chromite.api.gen.chromite.api import artifacts_pb2
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import vm_test_stages
+from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -22,7 +23,7 @@ from chromite.lib import sysroot_lib
 from chromite.service import artifacts as artifacts_svc
 
 
-class BundleTestCase(cros_test_lib.MockTestCase):
+class BundleTestCase(cros_test_lib.MockTempDirTestCase):
   """Basic setup for all artifacts unittests."""
 
   def setUp(self):
@@ -30,6 +31,9 @@ class BundleTestCase(cros_test_lib.MockTestCase):
     self.input_proto.build_target.name = 'target'
     self.input_proto.output_dir = '/tmp/artifacts'
     self.output_proto = artifacts_pb2.BundleResponse()
+    self.sysroot_input_proto = artifacts_pb2.BundleRequest()
+    self.sysroot_input_proto.sysroot.path = '/tmp/sysroot'
+    self.sysroot_input_proto.output_dir = '/tmp/artifacts'
 
     self.PatchObject(constants, 'SOURCE_ROOT', new='/cros')
 
@@ -195,26 +199,68 @@ class BundleAutotestFilesTest(BundleTempDirTestCase):
 class BundleTastFilesTest(BundleTestCase):
   """Unittests for BundleTastFiles."""
 
-  def testBundleTastFiles(self):
-    """BundleTastFiles calls cbuildbot/commands with correct args."""
-    build_tast_bundle_tarball = self.PatchObject(
-        commands,
-        'BuildTastBundleTarball',
-        return_value='/tmp/artifacts/tast.tar.gz')
-    artifacts.BundleTastFiles(self.input_proto, self.output_proto)
-    self.assertEqual(
-        [artifact.path for artifact in self.output_proto.artifacts],
-        ['/tmp/artifacts/tast.tar.gz'])
-    self.assertEqual(build_tast_bundle_tarball.call_args_list, [
-        mock.call('/cros', '/cros/chroot/build/target/build', '/tmp/artifacts')
-    ])
-
   def testBundleTastFilesNoLogs(self):
     """BundleTasteFiles dies when no tast files found."""
     self.PatchObject(commands, 'BuildTastBundleTarball',
                      return_value=None)
     with self.assertRaises(cros_build_lib.DieSystemExit):
       artifacts.BundleTastFiles(self.input_proto, self.output_proto)
+
+  def testBundleTastFilesLegacy(self):
+    """BundleTastFiles handles legacy args correctly."""
+    buildroot = self.tempdir
+    chroot_dir = os.path.join(buildroot, 'chroot')
+    sysroot_path = os.path.join(chroot_dir, 'build', 'board')
+    output_dir = os.path.join(self.tempdir, 'results')
+    osutils.SafeMakedirs(sysroot_path)
+    osutils.SafeMakedirs(output_dir)
+
+    chroot = chroot_lib.Chroot(chroot_dir, env={'FEATURES': 'separatedebug'})
+    sysroot = sysroot_lib.Sysroot('/build/board')
+
+    expected_archive = os.path.join(output_dir, artifacts_svc.TAST_BUNDLE_NAME)
+    # Patch the service being called.
+    bundle_patch = self.PatchObject(artifacts_svc, 'BundleTastFiles',
+                                    return_value=expected_archive)
+    self.PatchObject(constants, 'SOURCE_ROOT', new=buildroot)
+
+    request = artifacts_pb2.BundleRequest(build_target={'name': 'board'},
+                                          output_dir=output_dir)
+    artifacts.BundleTastFiles(request, self.output_proto)
+    self.assertEqual(
+        [artifact.path for artifact in self.output_proto.artifacts],
+        [expected_archive])
+    bundle_patch.assert_called_once_with(chroot, sysroot, output_dir)
+
+  def testBundleTastFiles(self):
+    """BundleTastFiles calls service correctly."""
+    # Setup.
+    sysroot_path = os.path.join(self.tempdir, 'sysroot')
+    output_dir = os.path.join(self.tempdir, 'results')
+    osutils.SafeMakedirs(sysroot_path)
+    osutils.SafeMakedirs(output_dir)
+
+    chroot = chroot_lib.Chroot(self.tempdir, env={'FEATURES': 'separatedebug'})
+    sysroot = sysroot_lib.Sysroot('/sysroot')
+
+    expected_archive = os.path.join(output_dir, artifacts_svc.TAST_BUNDLE_NAME)
+    # Patch the service being called.
+    bundle_patch = self.PatchObject(artifacts_svc, 'BundleTastFiles',
+                                    return_value=expected_archive)
+
+    # Request and response building.
+    request = artifacts_pb2.BundleRequest(chroot={'path': self.tempdir},
+                                          sysroot={'path': '/sysroot'},
+                                          output_dir=output_dir)
+    response = artifacts_pb2.BundleResponse()
+
+    artifacts.BundleTastFiles(request, response)
+
+    # Make sure the artifact got recorded successfully.
+    self.assertTrue(response.artifacts)
+    self.assertEqual(expected_archive, response.artifacts[0].path)
+    # Make sure the service got called correctly.
+    bundle_patch.assert_called_once_with(chroot, sysroot, output_dir)
 
 
 class BundlePinnedGuestImagesTest(BundleTestCase):
@@ -244,16 +290,25 @@ class BundlePinnedGuestImagesTest(BundleTestCase):
 class BundleFirmwareTest(BundleTestCase):
   """Unittests for BundleFirmware."""
 
+  def setUp(self):
+    self.sysroot_path = '/build/target'
+    # Empty input_proto object.
+    self.input_proto = artifacts_pb2.BundleRequest()
+    # Input proto object with sysroot.path and output_dir set up when invoking
+    # the controller BundleFirmware method which will validate proto fields.
+    self.sysroot_input_proto = artifacts_pb2.BundleRequest()
+    self.sysroot_input_proto.sysroot.path = '/tmp/sysroot'
+    self.sysroot_input_proto.output_dir = '/tmp/artifacts'
+    self.output_proto = artifacts_pb2.BundleResponse()
+
   def testBundleFirmware(self):
     """BundleFirmware calls cbuildbot/commands with correct args."""
-    build_firmware_archive = self.PatchObject(
-        commands, 'BuildFirmwareArchive', return_value='firmware.tar.gz')
-    artifacts.BundleFirmware(self.input_proto, self.output_proto)
+    self.PatchObject(artifacts_svc,
+                     'BuildFirmwareArchive', return_value='firmware.tar.gz')
+    artifacts.BundleFirmware(self.sysroot_input_proto, self.output_proto)
     self.assertEqual(
         [artifact.path for artifact in self.output_proto.artifacts],
         ['/tmp/artifacts/firmware.tar.gz'])
-    self.assertEqual(build_firmware_archive.call_args_list,
-                     [mock.call('/cros', 'target', '/tmp/artifacts')])
 
   def testBundleFirmwareNoLogs(self):
     """BundleFirmware dies when no firmware found."""
@@ -305,20 +360,14 @@ class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase):
 
     self.PatchObject(constants, 'SOURCE_ROOT', new=self.source_root)
 
-    def MockGeneratePayloads(image_path, archive_dir, **kwargs):
-      assert kwargs
-      osutils.WriteFile(os.path.join(archive_dir, 'payload.bin'), image_path)
+    def MockPayloads(image_path, archive_dir):
+      osutils.WriteFile(os.path.join(archive_dir, 'payload1.bin'), image_path)
+      osutils.WriteFile(os.path.join(archive_dir, 'payload2.bin'), image_path)
+      return [os.path.join(archive_dir, 'payload1.bin'),
+              os.path.join(archive_dir, 'payload2.bin')]
 
-    self.generate_payloads = self.PatchObject(
-        commands, 'GeneratePayloads', side_effect=MockGeneratePayloads)
-
-    def MockGenerateQuickProvisionPayloads(image_path, archive_dir):
-      osutils.WriteFile(os.path.join(archive_dir, 'payload-qp.bin'), image_path)
-
-    self.generate_quick_provision_payloads = self.PatchObject(
-        commands,
-        'GenerateQuickProvisionPayloads',
-        side_effect=MockGenerateQuickProvisionPayloads)
+    self.bundle_patch = self.PatchObject(
+        artifacts_svc, 'BundleTestUpdatePayloads', side_effect=MockPayloads)
 
   def testBundleTestUpdatePayloads(self):
     """BundleTestUpdatePayloads calls cbuildbot/commands with correct args."""
@@ -331,7 +380,7 @@ class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase):
         os.path.relpath(artifact.path, self.archive_root)
         for artifact in self.output_proto.artifacts
     ]
-    expected = ['payload.bin', 'payload-qp.bin']
+    expected = ['payload1.bin', 'payload2.bin']
     self.assertItemsEqual(actual, expected)
 
     actual = [
@@ -339,13 +388,6 @@ class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase):
         for path in osutils.DirectoryIterator(self.archive_root)
     ]
     self.assertItemsEqual(actual, expected)
-
-    self.assertEqual(self.generate_payloads.call_args_list, [
-        mock.call(image_path, mock.ANY, full=True, stateful=True, delta=True),
-    ])
-
-    self.assertEqual(self.generate_quick_provision_payloads.call_args_list,
-                     [mock.call(image_path, mock.ANY)])
 
   def testBundleTestUpdatePayloadsNoImageDir(self):
     """BundleTestUpdatePayloads dies if no image dir is found."""
@@ -536,3 +578,95 @@ class BundleVmFilesTest(cros_test_lib.MockTestCase):
 
     # Make sure we've seen all of the expected files.
     self.assertFalse(expected_files)
+
+
+class BundleOrderfileGenerationArtifactsTestCase(BundleTempDirTestCase):
+  """Unittests for BundleOrderfileGenerationArtifacts."""
+
+  def setUp(self):
+    self.chroot_dir = os.path.join(self.tempdir, 'chroot_dir')
+    osutils.SafeMakedirs(self.chroot_dir)
+    temp_dir = os.path.join(self.chroot_dir, 'tmp')
+    osutils.SafeMakedirs(temp_dir)
+    self.output_dir = os.path.join(self.tempdir, 'output_dir')
+    osutils.SafeMakedirs(self.output_dir)
+    self.build_target = 'board'
+    self.chrome_version = 'chromeos-chrome-1.0'
+
+    self.does_not_exist = os.path.join(self.tempdir, 'does_not_exist')
+
+  def _GetRequest(self, chroot=None, build_target=None,
+                  output_dir=None, chrome_version=None):
+    """Helper to create a request message instance.
+
+    Args:
+      chroot (str): The chroot path.
+      build_target (str): The build target name.
+      output_dir (str): The output directory.
+      chrome_version (str): The chromeos-chrome version name.
+    """
+    return artifacts_pb2.BundleChromeOrderfileRequest(
+        build_target={'name': build_target},
+        chroot={'path': chroot},
+        output_dir=output_dir,
+        chrome_version=chrome_version
+    )
+
+  def _GetResponse(self):
+    return artifacts_pb2.BundleResponse()
+
+  def testNoBuildTarget(self):
+    """Test no build target fails."""
+    request = self._GetRequest(chroot=self.chroot_dir,
+                               output_dir=self.output_dir,
+                               chrome_version=self.chrome_version)
+    response = self._GetResponse()
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleOrderfileGenerationArtifacts(request, response)
+
+  def testNoChromeVersion(self):
+    """Test no Chrome version fails."""
+    request = self._GetRequest(chroot=self.chroot_dir,
+                               output_dir=self.output_dir,
+                               build_target=self.build_target)
+    response = self._GetResponse()
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleOrderfileGenerationArtifacts(request, response)
+
+  def testNoOutputDir(self):
+    """Test no output dir fails."""
+    request = self._GetRequest(chroot=self.chroot_dir,
+                               chrome_version=self.chrome_version,
+                               build_target=self.build_target)
+    response = self._GetResponse()
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleOrderfileGenerationArtifacts(request, response)
+
+  def testOutputDirDoesNotExist(self):
+    """Test output directory not existing fails."""
+    request = self._GetRequest(chroot=self.chroot_dir,
+                               chrome_version=self.chrome_version,
+                               build_target=self.build_target,
+                               output_dir=self.does_not_exist)
+    response = self._GetResponse()
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleOrderfileGenerationArtifacts(request, response)
+
+  def testOutputHandling(self):
+    """Test response output."""
+    files = [self.chrome_version + '.orderfile.tar.xz',
+             self.chrome_version + '.nm.tar.xz']
+    expected_files = [os.path.join(self.output_dir, f) for f in files]
+    self.PatchObject(artifacts_svc, 'BundleOrderfileGenerationArtifacts',
+                     return_value=expected_files)
+    request = self._GetRequest(chroot=self.chroot_dir,
+                               chrome_version=self.chrome_version,
+                               build_target=self.build_target,
+                               output_dir=self.output_dir)
+
+    response = self._GetResponse()
+
+    artifacts.BundleOrderfileGenerationArtifacts(request, response)
+
+    self.assertTrue(response.artifacts)
+    self.assertItemsEqual(expected_files, [a.path for a in response.artifacts])

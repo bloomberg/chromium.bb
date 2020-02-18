@@ -27,6 +27,10 @@ class CookieStore;
 
 namespace network {
 
+namespace mojom {
+class NetworkContextClient;
+}  // namespace mojom
+
 class CookieSettings;
 
 // RestrictedCookieManager implementation.
@@ -36,10 +40,20 @@ class CookieSettings;
 class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
     : public mojom::RestrictedCookieManager {
  public:
-  // |*cookie_store|, |*cookie_settings| must outlive this.
-  RestrictedCookieManager(net::CookieStore* cookie_store,
+  // All the pointers passed to the constructor are expected to point to
+  // objects that will outlive |this|.
+  //
+  // |is_service_worker|, |process_id| and |frame_id| will be used when
+  // reporting activity to |network_context_client|.
+  RestrictedCookieManager(mojom::RestrictedCookieManagerRole role,
+                          net::CookieStore* cookie_store,
                           const CookieSettings* cookie_settings,
-                          const url::Origin& origin);
+                          const url::Origin& origin,
+                          mojom::NetworkContextClient* network_context_client,
+                          bool is_service_worker,
+                          int32_t process_id,
+                          int32_t frame_id);
+
   ~RestrictedCookieManager() override;
 
   const CookieSettings* cookie_settings() const { return cookie_settings_; }
@@ -59,6 +73,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
                          mojom::CookieChangeListenerPtr listener,
                          AddChangeListenerCallback callback) override;
 
+  void SetCookieFromString(const GURL& url,
+                           const GURL& site_for_cookies,
+                           const std::string& cookie,
+                           SetCookieFromStringCallback callback) override;
+
+  void GetCookiesString(const GURL& url,
+                        const GURL& site_for_cookies,
+                        GetCookiesStringCallback callback) override;
+  void CookiesEnabledFor(const GURL& url,
+                         const GURL& site_for_cookies,
+                         CookiesEnabledForCallback callback) override;
+
  private:
   // The state associated with a CookieChangeListener.
   class Listener;
@@ -67,10 +93,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   void CookieListToGetAllForUrlCallback(
       const GURL& url,
       const GURL& site_for_cookies,
+      const net::CookieOptions& net_options,
       mojom::CookieManagerGetOptionsPtr options,
       GetAllForUrlCallback callback,
       const net::CookieList& cookie_list,
       const net::CookieStatusList& excluded_cookies);
+
+  // Reports the result of setting the cookie to |network_context_client_|, and
+  // invokes the user callback.
+  void SetCanonicalCookieResult(
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const net::CanonicalCookie& cookie,
+      const net::CookieOptions& net_options,
+      SetCanonicalCookieCallback user_callback,
+      net::CanonicalCookie::CookieInclusionStatus status);
 
   // Called when the Mojo pipe associated with a listener is closed.
   void RemoveChangeListener(Listener* listener);
@@ -84,15 +121,20 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   // mojo::ReportBadMessage(), which closes the pipe.
   bool ValidateAccessToCookiesAt(const GURL& url);
 
+  const mojom::RestrictedCookieManagerRole role_;
   net::CookieStore* const cookie_store_;
   const CookieSettings* const cookie_settings_;
   const url::Origin origin_;
+  mojom::NetworkContextClient* const network_context_client_;
+  const bool is_service_worker_;
+  const int32_t process_id_;
+  const int32_t frame_id_;
 
   base::LinkedList<Listener> listeners_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<RestrictedCookieManager> weak_ptr_factory_;
+  base::WeakPtrFactory<RestrictedCookieManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RestrictedCookieManager);
 };

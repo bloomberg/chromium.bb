@@ -7,8 +7,8 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/geolocation/geoposition.h"
 #include "chromeos/timezone/timezone_provider.h"
 #include "chromeos/timezone/timezone_resolver.h"
@@ -159,7 +159,7 @@ class TimeZoneReceiver {
 
 class TimeZoneTest : public testing::Test {
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(TimeZoneTest, ResponseOK) {

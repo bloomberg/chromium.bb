@@ -24,7 +24,7 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
   static NativeThemeAura* instance();
   static NativeThemeAura* web_instance();
 
-  // Overridden from NativeThemeBase:
+  // NativeThemeBase:
   SkColor GetSystemColor(ColorId color_id) const override;
   void PaintMenuPopupBackground(
       cc::PaintCanvas* canvas,
@@ -60,6 +60,26 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
                   State state,
                   const gfx::Rect& rect,
                   const ButtonExtraParams& button) const override;
+  void PaintTextField(cc::PaintCanvas* canvas,
+                      State state,
+                      const gfx::Rect& rect,
+                      const TextFieldExtraParams& text) const override;
+  void PaintButton(cc::PaintCanvas* canvas,
+                   State state,
+                   const gfx::Rect& rect,
+                   const ButtonExtraParams& button) const override;
+  void PaintSliderTrack(cc::PaintCanvas* canvas,
+                        State state,
+                        const gfx::Rect& rect,
+                        const SliderExtraParams& slider) const override;
+  void PaintSliderThumb(cc::PaintCanvas* canvas,
+                        State state,
+                        const gfx::Rect& rect,
+                        const SliderExtraParams& slider) const override;
+  void PaintMenuList(cc::PaintCanvas* canvas,
+                     State state,
+                     const gfx::Rect& rect,
+                     const MenuListExtraParams& menu_list) const override;
   gfx::Size GetPartSize(Part part,
                         State state,
                         const ExtraParams& extra) const override;

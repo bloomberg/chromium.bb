@@ -40,15 +40,12 @@ public class UmaSessionStats {
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
 
     private final Context mContext;
-    private final boolean mIsMultiWindowCapable;
     private ComponentCallbacks mComponentCallbacks;
 
     private boolean mKeyboardConnected;
 
     public UmaSessionStats(Context context) {
         mContext = context;
-        mIsMultiWindowCapable = context.getPackageManager().hasSystemFeature(
-                SAMSUNG_MULTWINDOW_PACKAGE);
     }
 
     private void recordPageLoadStats(Tab tab) {
@@ -126,18 +123,6 @@ public class UmaSessionStats {
         // destroyed.
         if (sNativeUmaSessionStats == 0) {
             sNativeUmaSessionStats = nativeInit();
-        }
-    }
-
-    /**
-     * Logs screen ratio on Samsung MultiWindow devices.
-     */
-    public void logMultiWindowStats(int windowArea, int displayArea, int instanceCount) {
-        if (mIsMultiWindowCapable) {
-            if (displayArea == 0) return;
-            int areaPercent = (windowArea * 100) / displayArea;
-            int safePercent = areaPercent > 0 ? areaPercent : 0;
-            nativeRecordMultiWindowSession(safePercent, instanceCount);
         }
     }
 
@@ -237,7 +222,7 @@ public class UmaSessionStats {
      */
     public static boolean isMetricsServiceAvailable() {
         return BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                .isStartupSuccessfullyCompleted();
+                .isFullBrowserStarted();
     }
 
     private static native long nativeInit();
@@ -252,7 +237,6 @@ public class UmaSessionStats {
             String studyName, int[] experimentIds);
     private static native void nativeRegisterSyntheticFieldTrial(
             String trialName, String groupName);
-    private static native void nativeRecordMultiWindowSession(int areaPercent, int instanceCount);
     private static native void nativeRecordTabCountPerLoad(int numTabsOpen);
     private static native void nativeRecordPageLoaded(boolean isDesktopUserAgent);
     private static native void nativeRecordPageLoadedWithKeyboard();

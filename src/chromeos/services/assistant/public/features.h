@@ -20,10 +20,6 @@ extern const base::Feature kAssistantAudioEraser;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantFeedbackUi;
 
-// Enables Assistant voice match enrollment.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::Feature kAssistantVoiceMatch;
-
 // Enables Assistant warmer welcome.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantWarmerWelcomeFeature;
@@ -79,10 +75,6 @@ extern const base::Feature kEnableTextQueriesWithClientDiscourseContext;
 // notifications will be updated at each tick.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kTimerTicks;
-
-// Enables Assistant key remapping on keyboards.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::Feature kAssistantKeyRemapping;
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAlarmTimerManagerEnabled();
 

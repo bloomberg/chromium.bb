@@ -75,6 +75,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId server_connection_id,
       server_connection_id_included_(CONNECTION_ID_PRESENT),
       packet_size_(0),
       server_connection_id_(server_connection_id),
+      client_connection_id_(EmptyQuicConnectionId()),
       packet_(QuicPacketNumber(),
               PACKET_1BYTE_PACKET_NUMBER,
               nullptr,
@@ -83,7 +84,9 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId server_connection_id,
               false),
       pending_padding_bytes_(0),
       needs_full_padding_(false),
-      can_set_transmission_type_(false) {
+      can_set_transmission_type_(false),
+      fix_get_packet_header_size_(
+          GetQuicReloadableFlag(quic_fix_get_packet_header_size)) {
   SetMaxPacketLength(kDefaultMaxPacketSize);
 }
 
@@ -123,7 +126,7 @@ void QuicPacketCreator::SetMaxPacketLength(QuicByteCount length) {
 // maximum packet size if we stop sending version before it is serialized.
 void QuicPacketCreator::StopSendingVersion() {
   DCHECK(send_version_in_packet_);
-  DCHECK_LE(framer_->transport_version(), QUIC_VERSION_43);
+  DCHECK(!VersionHasIetfInvariantHeader(framer_->transport_version()));
   send_version_in_packet_ = false;
   if (packet_size_ > 0) {
     DCHECK_LT(kQuicVersionSize, packet_size_);
@@ -192,7 +195,7 @@ bool QuicPacketCreator::ConsumeData(QuicStreamId id,
   }
   CreateStreamFrame(id, data_size, offset, fin, frame);
   // Explicitly disallow multi-packet CHLOs.
-  if (FLAGS_quic_enforce_single_packet_chlo &&
+  if (GetQuicFlag(FLAGS_quic_enforce_single_packet_chlo) &&
       StreamFrameIsClientHello(frame->stream_frame) &&
       frame->stream_frame.data_length < data_size) {
     const std::string error_details =
@@ -436,14 +439,25 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
   QUIC_BUG_IF(iov_offset == write_length && !fin)
       << "Creating a stream frame with no data or fin.";
   const size_t remaining_data_size = write_length - iov_offset;
-  const size_t min_frame_size = QuicFramer::GetMinStreamFrameSize(
+  size_t min_frame_size = QuicFramer::GetMinStreamFrameSize(
       framer_->transport_version(), id, stream_offset,
       /* last_frame_in_packet= */ true, remaining_data_size);
-  const size_t available_size =
+  size_t available_size =
       max_plaintext_size_ - writer.length() - min_frame_size;
-  const size_t bytes_consumed =
-      std::min<size_t>(available_size, remaining_data_size);
-  const size_t plaintext_bytes_written = min_frame_size + bytes_consumed;
+  size_t bytes_consumed = std::min<size_t>(available_size, remaining_data_size);
+  size_t plaintext_bytes_written = min_frame_size + bytes_consumed;
+  bool needs_padding = false;
+  if (plaintext_bytes_written < MinPlaintextPacketSize(framer_->version())) {
+    needs_padding = true;
+    // Recalculate sizes with the stream frame not being marked as the last
+    // frame in the packet.
+    min_frame_size = QuicFramer::GetMinStreamFrameSize(
+        framer_->transport_version(), id, stream_offset,
+        /* last_frame_in_packet= */ false, remaining_data_size);
+    available_size = max_plaintext_size_ - writer.length() - min_frame_size;
+    bytes_consumed = std::min<size_t>(available_size, remaining_data_size);
+    plaintext_bytes_written = min_frame_size + bytes_consumed;
+  }
 
   const bool set_fin = fin && (bytes_consumed == remaining_data_size);
   QuicStreamFrame frame(id, set_fin, stream_offset, bytes_consumed);
@@ -452,19 +466,21 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
   }
   QUIC_DVLOG(1) << ENDPOINT << "Adding frame: " << frame;
 
+  QUIC_DVLOG(2) << ENDPOINT << "Serializing stream packet " << header << frame;
+
   // TODO(ianswett): AppendTypeByte and AppendStreamFrame could be optimized
   // into one method that takes a QuicStreamFrame, if warranted.
-  if (!framer_->AppendTypeByte(QuicFrame(frame),
-                               /* no stream frame length */ true, &writer)) {
+  bool omit_frame_length = !needs_padding;
+  if (!framer_->AppendTypeByte(QuicFrame(frame), omit_frame_length, &writer)) {
     QUIC_BUG << "AppendTypeByte failed";
     return;
   }
-  if (!framer_->AppendStreamFrame(frame, /* no stream frame length */ true,
-                                  &writer)) {
+  if (!framer_->AppendStreamFrame(frame, omit_frame_length, &writer)) {
     QUIC_BUG << "AppendStreamFrame failed";
     return;
   }
-  if (plaintext_bytes_written < MinPlaintextPacketSize(framer_->version()) &&
+  if (needs_padding &&
+      plaintext_bytes_written < MinPlaintextPacketSize(framer_->version()) &&
       !writer.WritePaddingBytes(MinPlaintextPacketSize(framer_->version()) -
                                 plaintext_bytes_written)) {
     QUIC_BUG << "Unable to add padding bytes";
@@ -531,7 +547,7 @@ size_t QuicPacketCreator::ExpansionOnNewFrame() const {
   if (!has_trailing_stream_frame) {
     return 0;
   }
-  if (framer_->transport_version() == QUIC_VERSION_99) {
+  if (VersionHasIetfQuicFrames(framer_->transport_version())) {
     return QuicDataWriter::GetVarInt62Len(
         queued_frames_.back().stream_frame.data_length);
   }
@@ -580,6 +596,9 @@ void QuicPacketCreator::SerializePacket(char* encrypted_buffer,
 
   MaybeAddPadding();
 
+  QUIC_DVLOG(2) << ENDPOINT << "Serializing packet " << header
+                << QuicFramesToString(queued_frames_);
+
   DCHECK_GE(max_plaintext_size_, packet_size_);
   // Use the packet_size_ instead of the buffer size to ensure smaller
   // packet sizes are properly used.
@@ -625,7 +644,7 @@ QuicPacketCreator::SerializeVersionNegotiationPacket(
   DCHECK_EQ(Perspective::IS_SERVER, framer_->perspective());
   std::unique_ptr<QuicEncryptedPacket> encrypted =
       QuicFramer::BuildVersionNegotiationPacket(server_connection_id_,
-                                                EmptyQuicConnectionId(),
+                                                client_connection_id_,
                                                 ietf_quic, supported_versions);
   DCHECK(encrypted);
   DCHECK_GE(max_packet_length_, encrypted->length());
@@ -634,11 +653,14 @@ QuicPacketCreator::SerializeVersionNegotiationPacket(
 
 OwningSerializedPacketPointer
 QuicPacketCreator::SerializeConnectivityProbingPacket() {
-  QUIC_BUG_IF(framer_->transport_version() == QUIC_VERSION_99)
+  QUIC_BUG_IF(VersionHasIetfQuicFrames(framer_->transport_version()))
       << "Must not be version 99 to serialize padded ping connectivity probe";
   QuicPacketHeader header;
   // FillPacketHeader increments packet_number_.
   FillPacketHeader(&header);
+
+  QUIC_DVLOG(2) << ENDPOINT << "Serializing connectivity probing packet "
+                << header;
 
   std::unique_ptr<char[]> buffer(new char[kMaxOutgoingPacketSize]);
   size_t length = framer_->BuildConnectivityProbingPacket(
@@ -664,13 +686,15 @@ QuicPacketCreator::SerializeConnectivityProbingPacket() {
 OwningSerializedPacketPointer
 QuicPacketCreator::SerializePathChallengeConnectivityProbingPacket(
     QuicPathFrameBuffer* payload) {
-  QUIC_BUG_IF(framer_->transport_version() != QUIC_VERSION_99)
+  QUIC_BUG_IF(!VersionHasIetfQuicFrames(framer_->transport_version()))
       << "Must be version 99 to serialize path challenge connectivity probe, "
          "is version "
       << framer_->transport_version();
   QuicPacketHeader header;
   // FillPacketHeader increments packet_number_.
   FillPacketHeader(&header);
+
+  QUIC_DVLOG(2) << ENDPOINT << "Serializing path challenge packet " << header;
 
   std::unique_ptr<char[]> buffer(new char[kMaxOutgoingPacketSize]);
   size_t length = framer_->BuildPaddedPathChallengePacket(
@@ -698,13 +722,15 @@ OwningSerializedPacketPointer
 QuicPacketCreator::SerializePathResponseConnectivityProbingPacket(
     const QuicDeque<QuicPathFrameBuffer>& payloads,
     const bool is_padded) {
-  QUIC_BUG_IF(framer_->transport_version() != QUIC_VERSION_99)
+  QUIC_BUG_IF(!VersionHasIetfQuicFrames(framer_->transport_version()))
       << "Must be version 99 to serialize path response connectivity probe, is "
          "version "
       << framer_->transport_version();
   QuicPacketHeader header;
   // FillPacketHeader increments packet_number_.
   FillPacketHeader(&header);
+
+  QUIC_DVLOG(2) << ENDPOINT << "Serializing path response packet " << header;
 
   std::unique_ptr<char[]> buffer(new char[kMaxOutgoingPacketSize]);
   size_t length = framer_->BuildPathResponsePacket(
@@ -738,9 +764,9 @@ QuicConnectionId QuicPacketCreator::GetDestinationConnectionId() const {
   if (!GetQuicRestartFlag(quic_do_not_override_connection_id)) {
     return server_connection_id_;
   }
-  QUIC_RESTART_FLAG_COUNT_N(quic_do_not_override_connection_id, 1, 5);
+  QUIC_RESTART_FLAG_COUNT_N(quic_do_not_override_connection_id, 1, 7);
   if (framer_->perspective() == Perspective::IS_SERVER) {
-    return EmptyQuicConnectionId();
+    return client_connection_id_;
   }
   return server_connection_id_;
 }
@@ -749,20 +775,21 @@ QuicConnectionId QuicPacketCreator::GetSourceConnectionId() const {
   if (!GetQuicRestartFlag(quic_do_not_override_connection_id)) {
     return server_connection_id_;
   }
-  QUIC_RESTART_FLAG_COUNT_N(quic_do_not_override_connection_id, 6, 6);
+  QUIC_RESTART_FLAG_COUNT_N(quic_do_not_override_connection_id, 6, 7);
   if (framer_->perspective() == Perspective::IS_CLIENT) {
-    return EmptyQuicConnectionId();
+    return client_connection_id_;
   }
   return server_connection_id_;
 }
 
 QuicConnectionIdIncluded QuicPacketCreator::GetDestinationConnectionIdIncluded()
     const {
-  if (framer_->transport_version() > QUIC_VERSION_43 ||
+  if (VersionHasIetfInvariantHeader(framer_->transport_version()) ||
       GetQuicRestartFlag(quic_do_not_override_connection_id)) {
-    // Packets sent by client always include destination connection ID, and
-    // those sent by the server do not include destination connection ID.
-    return framer_->perspective() == Perspective::IS_CLIENT
+    // In versions that do not support client connection IDs, the destination
+    // connection ID is only sent from client to server.
+    return (framer_->perspective() == Perspective::IS_CLIENT ||
+            framer_->version().SupportsClientConnectionIds())
                ? CONNECTION_ID_PRESENT
                : CONNECTION_ID_ABSENT;
   }
@@ -772,12 +799,16 @@ QuicConnectionIdIncluded QuicPacketCreator::GetDestinationConnectionIdIncluded()
 QuicConnectionIdIncluded QuicPacketCreator::GetSourceConnectionIdIncluded()
     const {
   // Long header packets sent by server include source connection ID.
-  if (HasIetfLongHeader() && framer_->perspective() == Perspective::IS_SERVER) {
+  // Ones sent by the client only include source connection ID if the version
+  // supports client connection IDs.
+  if (HasIetfLongHeader() &&
+      (framer_->perspective() == Perspective::IS_SERVER ||
+       framer_->version().SupportsClientConnectionIds())) {
     return CONNECTION_ID_PRESENT;
   }
   if (GetQuicRestartFlag(quic_do_not_override_connection_id) &&
       framer_->perspective() == Perspective::IS_SERVER) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_do_not_override_connection_id, 2, 5);
+    QUIC_RESTART_FLAG_COUNT_N(quic_do_not_override_connection_id, 2, 7);
     return server_connection_id_included_;
   }
   return CONNECTION_ID_ABSENT;
@@ -803,7 +834,8 @@ QuicConnectionIdLength QuicPacketCreator::GetSourceConnectionIdLength() const {
 }
 
 QuicPacketNumberLength QuicPacketCreator::GetPacketNumberLength() const {
-  if (HasIetfLongHeader() && framer_->transport_version() != QUIC_VERSION_99) {
+  if (HasIetfLongHeader() &&
+      !framer_->version().SendsVariableLengthPacketNumberInLongHeader()) {
     return PACKET_4BYTE_PACKET_NUMBER;
   }
   return packet_.packet_number_length;
@@ -997,7 +1029,7 @@ bool QuicPacketCreator::IncludeNonceInPublicHeader() const {
 }
 
 bool QuicPacketCreator::IncludeVersionInHeader() const {
-  if (framer_->transport_version() > QUIC_VERSION_43) {
+  if (VersionHasIetfInvariantHeader(framer_->transport_version())) {
     return packet_.encryption_level < ENCRYPTION_FORWARD_SECURE;
   }
   return send_version_in_packet_;
@@ -1032,6 +1064,15 @@ void QuicPacketCreator::SetServerConnectionId(
   server_connection_id_ = server_connection_id;
 }
 
+void QuicPacketCreator::SetClientConnectionId(
+    QuicConnectionId client_connection_id) {
+  DCHECK(client_connection_id.IsEmpty() ||
+         framer_->version().SupportsClientConnectionIds());
+  DCHECK(client_connection_id.IsEmpty() ||
+         GetQuicRestartFlag(quic_do_not_override_connection_id));
+  client_connection_id_ = client_connection_id;
+}
+
 void QuicPacketCreator::SetTransmissionType(TransmissionType type) {
   DCHECK(can_set_transmission_type_);
 
@@ -1045,7 +1086,7 @@ void QuicPacketCreator::SetTransmissionType(TransmissionType type) {
 }
 
 QuicPacketLength QuicPacketCreator::GetCurrentLargestMessagePayload() const {
-  if (framer_->transport_version() <= QUIC_VERSION_44) {
+  if (!VersionSupportsMessageFrames(framer_->transport_version())) {
     return 0;
   }
   const size_t packet_header_size = GetPacketHeaderSize(
@@ -1061,7 +1102,7 @@ QuicPacketLength QuicPacketCreator::GetCurrentLargestMessagePayload() const {
 }
 
 QuicPacketLength QuicPacketCreator::GetGuaranteedLargestMessagePayload() const {
-  if (framer_->transport_version() <= QUIC_VERSION_44) {
+  if (!VersionSupportsMessageFrames(framer_->transport_version())) {
     return 0;
   }
   // QUIC Crypto server packets may include a diversification nonce.
@@ -1070,9 +1111,15 @@ QuicPacketLength QuicPacketCreator::GetGuaranteedLargestMessagePayload() const {
       framer_->perspective() == Perspective::IS_SERVER;
   // IETF QUIC long headers include a length on client 0RTT packets.
   QuicVariableLengthIntegerLength length_length =
-      framer_->perspective() == Perspective::IS_CLIENT
-          ? VARIABLE_LENGTH_INTEGER_LENGTH_2
-          : VARIABLE_LENGTH_INTEGER_LENGTH_0;
+      VARIABLE_LENGTH_INTEGER_LENGTH_0;
+  if (framer_->perspective() == Perspective::IS_CLIENT) {
+    length_length = VARIABLE_LENGTH_INTEGER_LENGTH_2;
+  }
+  if (!QuicVersionHasLongHeaderLengths(framer_->transport_version()) &&
+      fix_get_packet_header_size_) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_fix_get_packet_header_size, 3, 3);
+    length_length = VARIABLE_LENGTH_INTEGER_LENGTH_0;
+  }
   const size_t packet_header_size = GetPacketHeaderSize(
       framer_->transport_version(), GetDestinationConnectionIdLength(),
       // Assume CID lengths don't change, but version may be present.
@@ -1091,10 +1138,11 @@ QuicPacketLength QuicPacketCreator::GetGuaranteedLargestMessagePayload() const {
 }
 
 bool QuicPacketCreator::HasIetfLongHeader() const {
-  return framer_->transport_version() > QUIC_VERSION_43 &&
+  return VersionHasIetfInvariantHeader(framer_->transport_version()) &&
          packet_.encryption_level < ENCRYPTION_FORWARD_SECURE;
 }
 
+// static
 size_t QuicPacketCreator::MinPlaintextPacketSize(
     const ParsedQuicVersion& version) {
   if (!version.HasHeaderProtection()) {

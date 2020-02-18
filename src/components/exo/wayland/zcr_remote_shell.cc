@@ -9,13 +9,13 @@
 #include <wayland-server-protocol-core.h>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_util.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/work_area_insets.h"
@@ -313,13 +313,13 @@ void remote_surface_pin(wl_client* client,
                         wl_resource* resource,
                         int32_t trusted) {
   GetUserDataAs<ClientControlledShellSurface>(resource)->SetPinned(
-      trusted ? ash::mojom::WindowPinType::TRUSTED_PINNED
-              : ash::mojom::WindowPinType::PINNED);
+      trusted ? ash::WindowPinType::kTrustedPinned
+              : ash::WindowPinType::kPinned);
 }
 
 void remote_surface_unpin(wl_client* client, wl_resource* resource) {
   GetUserDataAs<ClientControlledShellSurface>(resource)->SetPinned(
-      ash::mojom::WindowPinType::NONE);
+      ash::WindowPinType::kNone);
 }
 
 void remote_surface_set_system_modal(wl_client* client, wl_resource* resource) {
@@ -525,6 +525,14 @@ void remote_surface_set_bounds(wl_client* client,
       gfx::Rect(x, y, width, height));
 }
 
+void remote_surface_block_ime(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetImeBlocked(true);
+}
+
+void remote_surface_unblock_ime(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetImeBlocked(false);
+}
+
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -568,7 +576,9 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_orientation_lock,
     remote_surface_pip,
     remote_surface_set_bounds,
-    remote_surface_set_aspect_ratio};
+    remote_surface_set_aspect_ratio,
+    remote_surface_block_ime,
+    remote_surface_unblock_ime};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -629,7 +639,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
     helper->AddActivationObserver(this);
     display::Screen::GetScreen()->AddObserver(this);
 
-    layout_mode_ = helper->IsTabletModeWindowManagerEnabled()
+    layout_mode_ = helper->InTabletMode()
                        ? ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET
                        : ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
 
@@ -1031,6 +1041,8 @@ void remote_shell_get_remote_surface(wl_client* client,
   shell_surface->set_geometry_changed_callback(
       base::BindRepeating(&HandleRemoteSurfaceGeometryChangedCallback,
                           base::Unretained(remote_surface_resource)));
+  shell_surface->set_surface_destroyed_callback(base::BindOnce(
+      &wl_resource_destroy, base::Unretained(remote_surface_resource)));
 
   DCHECK(wl_resource_get_version(remote_surface_resource) >= 10);
   shell_surface->set_bounds_changed_callback(

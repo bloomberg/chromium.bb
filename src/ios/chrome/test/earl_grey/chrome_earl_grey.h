@@ -38,6 +38,11 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // will properly synchronize the UI for Earl Grey tests.
 @interface ChromeEarlGreyImpl : BaseEGTestHelperImpl
 
+#pragma mark - Device Utilities
+
+// Returns YES if running on an iPad.
+- (BOOL)isIPadIdiom;
+
 #pragma mark - History Utilities (EG2)
 // Clears browsing history. Raises an EarlGrey exception if history is not
 // cleared within a timeout.
@@ -50,70 +55,51 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // waits for the loading to complete within a timeout.
 // Returns nil on success, or else an NSError indicating why the operation
 // failed.
-- (NSError*)loadURL:(const GURL&)URL waitForCompletion:(BOOL)wait;
+- (void)loadURL:(const GURL&)URL waitForCompletion:(BOOL)wait;
 
 // Loads |URL| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED, and waits for the loading to complete within a
 // timeout.
 // If the condition is not met within a timeout returns an NSError indicating
 // why the operation failed, otherwise nil.
-// TODO(crbug.com/963613): Change return type to avoid when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)loadURL:(const GURL&)URL;
+- (void)loadURL:(const GURL&)URL;
 
 // Returns YES if the current WebState is loading.
 - (BOOL)isLoading WARN_UNUSED_RESULT;
 
 // Reloads the page and waits for the loading to complete within a timeout, or a
 // GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)reload;
+- (void)reload;
 
 // Navigates back to the previous page and waits for the loading to complete
 // within a timeout, or a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)goBack;
+- (void)goBack;
 
 // Navigates forward to the next page and waits for the loading to complete
 // within a timeout, or a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)goForward;
+- (void)goForward;
 
 // Waits for the page to finish loading within a timeout, or a GREYAssert is
 // induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForPageToFinishLoading;
+- (void)waitForPageToFinishLoading;
 
 // Waits for the matcher to return an element that is sufficiently visible.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForSufficientlyVisibleElementWithMatcher:
-    (id<GREYMatcher>)matcher;
+- (void)waitForSufficientlyVisibleElementWithMatcher:(id<GREYMatcher>)matcher;
 
 // Waits for there to be |count| number of non-incognito tabs within a timeout,
 // or a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForMainTabCount:(NSUInteger)count;
+- (void)waitForMainTabCount:(NSUInteger)count;
 
 // Waits for there to be |count| number of incognito tabs within a timeout, or a
 // GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForIncognitoTabCount:(NSUInteger)count;
+- (void)waitForIncognitoTabCount:(NSUInteger)count;
 
-#pragma mark - Settings Utilities
+#pragma mark - Settings Utilities (EG2)
 
 // Sets value for content setting.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)setContentSettings:(ContentSetting)setting;
+- (void)setContentSettings:(ContentSetting)setting;
 
-#pragma mark - Sync Utilities
+#pragma mark - Sync Utilities (EG2)
 
 // Clears fake sync server data.
 - (void)clearSyncServerData;
@@ -146,21 +132,60 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // the real one.
 - (void)tearDownFakeSyncServer;
 
+// Gets the number of entities of the given |type|.
+- (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type WARN_UNUSED_RESULT;
+
+// Adds typed URL into HistoryService.
+- (void)addHistoryServiceTypedURL:(const GURL&)URL;
+
+// Deletes typed URL from HistoryService.
+- (void)deleteHistoryServiceTypedURL:(const GURL&)URL;
+
+// Injects a bookmark with |URL| and |title| into the fake sync server.
+- (void)addFakeSyncServerBookmarkWithURL:(const GURL&)URL
+                                   title:(const std::string&)title;
+
+// Injects typed URL to sync FakeServer.
+- (void)addFakeSyncServerTypedURL:(const GURL&)URL;
+
+// Triggers a sync cycle for a |type|.
+- (void)triggerSyncCycleForType:(syncer::ModelType)type;
+
+// Deletes an autofill profile from the fake sync server with |GUID|, if it
+// exists. If it doesn't exist, nothing is done.
+- (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID;
+
+// Verifies the sessions hierarchy on the Sync FakeServer. |URLs| is
+// the collection of URLs that are to be expected for a single window. A
+// GREYAssert is induced on failure. See the SessionsHierarchy class for
+// documentation regarding the verification.
+- (void)verifySyncServerURLs:(NSArray<NSString*>*)URLs;
+
+// Waits until sync server contains |count| entities of the given |type| and
+// |name|. Folders are not included in this count.
+// If the condition is not met within a timeout a GREYAssert is induced.
+- (void)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
+                                     name:(const std::string&)UTF8Name
+                                    count:(size_t)count
+                                  timeout:(NSTimeInterval)timeout;
+
+// Induces a GREYAssert if |expected_present| is YES and the provided |url| is
+// not present, or vice versa.
+- (void)waitForTypedURL:(const GURL&)URL
+          expectPresent:(BOOL)expectPresent
+                timeout:(NSTimeInterval)timeout;
+
 #pragma mark - Tab Utilities (EG2)
 
 // Opens a new tab and waits for the new tab animation to complete within a
 // timeout, or a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)openNewTab;
+- (void)openNewTab;
 
 // Closes the current tab and waits for the UI to complete.
 - (void)closeCurrentTab;
 
 // Opens a new incognito tab and waits for the new tab animation to complete.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)openNewIncognitoTab;
+- (void)openNewIncognitoTab;
 
 // Closes all tabs in the current mode (incognito or normal), and waits for the
 // UI to complete. If current mode is Incognito, mode will be switched to
@@ -169,9 +194,7 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Closes all incognito tabs and waits for the UI to complete within a
 // timeout, or a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)closeAllIncognitoTabs;
+- (void)closeAllIncognitoTabs;
 
 // Closes all tabs in the all modes (incognito and main (non-incognito)), and
 // does not wait for the UI to complete. If current mode is Incognito, mode will
@@ -213,23 +236,19 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // exception if operation not succeeded.
 - (void)resetTabUsageRecorder;
 
-#pragma mark - SignIn Utilities
+#pragma mark - SignIn Utilities (EG2)
 
 // Signs the user out, clears the known accounts entirely and checks whether the
 // accounts were correctly removed from the keychain. Induces a GREYAssert if
 // the operation fails.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)signOutAndClearAccounts;
+- (void)signOutAndClearAccounts;
 
 #pragma mark - Sync Utilities (EG2)
 
 // Waits for sync to be initialized or not. If not succeeded a GREYAssert is
 // induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForSyncInitialized:(BOOL)isInitialized
-                       syncTimeout:(NSTimeInterval)timeout;
+- (void)waitForSyncInitialized:(BOOL)isInitialized
+                   syncTimeout:(NSTimeInterval)timeout;
 
 // Returns the current sync cache GUID. The sync server must be running when
 // calling this.
@@ -239,39 +258,51 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Taps html element with |elementID| in the current web state.
 // A GREYAssert is induced on failure.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)tapWebStateElementWithID:(NSString*)elementID;
+- (void)tapWebStateElementWithID:(NSString*)elementID;
 
 // Attempts to tap the element with |element_id| within window.frames[0] of the
 // current WebState using a JavaScript click() event. This only works on
 // same-origin iframes.
 // A GREYAssert is induced on failure.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)tapWebStateElementInIFrameWithID:(const std::string&)elementID;
+- (void)tapWebStateElementInIFrameWithID:(const std::string&)elementID;
 
 // Waits for the current web state to contain an element matching |selector|.
 // If the condition is not met within a timeout a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector;
+- (void)waitForWebStateContainingElement:(ElementSelector*)selector;
 
-// Waits for there to be no web state containing |text|.
+// Attempts to submit form with |formID| in the current WebState.
+// Induces a GREYAssert if the operation fails.
+- (void)submitWebStateFormWithID:(const std::string&)formID;
+
+// Waits for the current web state to contain |UTF8Text|. If the condition is
+// not met within a timeout a GREYAssert is induced.
+- (void)waitForWebStateContainingText:(const std::string&)UTF8Text;
+
+// Waits for there to be no web state containing |UTF8Text|.
 // If the condition is not met within a timeout a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForWebStateNotContainingText:(std::string)text;
+- (void)waitForWebStateNotContainingText:(const std::string&)UTF8Text;
+
+// Waits for there to be a web state containing a blocked |imageID|.  When
+// blocked, the image element will be smaller than the actual image size.
+// If the condition is not met within a timeout a GREYAssert is induced.
+- (void)waitForWebStateContainingBlockedImageElementWithID:
+    (const std::string&)UTF8ImageID;
+
+// Waits for there to be a web state containing loaded image with |imageID|.
+// When loaded, the image element will have the same size as actual image.
+// If the condition is not met within a timeout a GREYAssert is induced.
+- (void)waitForWebStateContainingLoadedImageElementWithID:
+    (const std::string&)UTF8ImageID;
 
 #pragma mark - Bookmarks Utilities (EG2)
 
 // Waits for the bookmark internal state to be done loading.
 // If the condition is not met within a timeout a GREYAssert is induced.
-- (NSError*)waitForBookmarksToFinishLoading;
+- (void)waitForBookmarksToFinishLoading;
 
 // Clears bookmarks if any bookmark still presents. A GREYAssert is induced if
 // bookmarks can not be cleared.
-- (NSError*)clearBookmarks;
+- (void)clearBookmarks;
 
 #pragma mark - JavaScript Utilities (EG2)
 
@@ -280,12 +311,49 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // induced.
 - (id)executeJavaScript:(NSString*)javaScript;
 
-#pragma mark - Cookie Utilities
+#pragma mark - Cookie Utilities (EG2)
 
 // Returns cookies as key value pairs, where key is a cookie name and value is a
 // cookie value.
 // A GREYAssert is induced if cookies can not be returned.
 - (NSDictionary*)cookies;
+
+#pragma mark - Accessibility Utilities (EG2)
+
+// Verifies that all interactive elements on screen (or at least one of their
+// descendants) are accessible.
+// A GREYAssert is induced if not all elements are accessible.
+- (void)verifyAccessibilityForCurrentScreen;
+
+#pragma mark - Feature enables checkers (EG2)
+
+// Returns YES if SlimNavigationManager feature is enabled.
+- (BOOL)isSlimNavigationManagerEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if BlockNewTabPagePendingLoad feature is enabled.
+- (BOOL)isBlockNewTabPagePendingLoadEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if NewOmniboxPopupLayout feature is enabled.
+- (BOOL)isNewOmniboxPopupLayoutEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if UmaCellular feature is enabled.
+- (BOOL)isUMACellularEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if UKM feature is enabled.
+- (BOOL)isUKMEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if WebPaymentsModifiers feature is enabled.
+- (BOOL)isWebPaymentsModifiersEnabled WARN_UNUSED_RESULT;
+
+#pragma mark - Popup Blocking
+
+// Gets the current value of the popup content setting preference for the
+// original browser state.
+- (ContentSetting)popupPrefValue;
+
+// Sets the popup content setting preference to the given value for the original
+// browser state.
+- (void)setPopupPrefValue:(ContentSetting)value;
 
 @end
 
@@ -294,95 +362,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // TODO(crbug.com/922813): Update these helpers to compile under EG2 and move
 // them into the main class declaration as they are converted.
 @interface ChromeEarlGreyImpl (EG1)
-
-#pragma mark - Navigation Utilities
-
-// Waits for a static html view containing |text|. If the condition is not met
-// within a timeout, a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForStaticHTMLViewContainingText:(NSString*)text;
-
-// Waits for there to be no static html view, or a static html view that does
-// not contain |text|. If the condition is not met within a timeout, a
-// GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForStaticHTMLViewNotContainingText:(NSString*)text;
-
-// Waits for a Chrome error page.
-// If the condition is not met within a timeout returns an NSError indicating
-// why the operation failed, otherwise nil.
-- (NSError*)waitForErrorPage WARN_UNUSED_RESULT;
-
-#pragma mark - WebState Utilities
-
-// Attempts to submit form with |formID| in the current WebState.
-- (NSError*)submitWebStateFormWithID:(const std::string&)formID
-    WARN_UNUSED_RESULT;
-
-// Waits for the current web state to contain |text|. Returns nil if the
-// condition is met within a timeout, otherwise an NSError indicating why the
-// operation failed.
-- (NSError*)waitForWebStateContainingText:(std::string)text WARN_UNUSED_RESULT;
-
-// Waits for there to be a web state containing a blocked |image_id|.  When
-// blocked, the image element will be smaller than the actual image size.
-- (NSError*)waitForWebStateContainingBlockedImageElementWithID:
-    (std::string)imageID WARN_UNUSED_RESULT;
-
-// Waits for there to be a web state containing loaded image with |image_id|.
-// When loaded, the image element will have the same size as actual image.
-- (NSError*)waitForWebStateContainingLoadedImageElementWithID:
-    (std::string)imageID WARN_UNUSED_RESULT;
-
-#pragma mark - Sync Utilities
-
-// Verifies that |count| entities of the given |type| and |name| exist on the
-// sync FakeServer. Folders are not included in this count. Returns nil on
-// success, or else an NSError indicating why the operation failed.
-- (NSError*)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
-                                         name:(const std::string&)name
-                                        count:(size_t)count
-                                      timeout:(NSTimeInterval)timeout
-    WARN_UNUSED_RESULT;
-
-// Gets the number of entities of the given |type|.
-- (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type WARN_UNUSED_RESULT;
-
-// Injects a bookmark into the fake sync server with |URL| and |title|.
-- (void)injectBookmarkOnFakeSyncServerWithURL:(const std::string&)URL
-                                bookmarkTitle:(const std::string&)title;
-
-// Adds typed URL into HistoryService.
-- (void)addTypedURL:(const GURL&)URL;
-
-// Triggers a sync cycle for a |type|.
-- (void)triggerSyncCycleForType:(syncer::ModelType)type;
-
-// If the provided |url| is present (or not) if |expected_present|
-// is YES (or NO) returns nil, otherwise an NSError indicating why the operation
-// failed.
-- (NSError*)waitForTypedURL:(const GURL&)URL
-              expectPresent:(BOOL)expectPresent
-                    timeout:(NSTimeInterval)timeout WARN_UNUSED_RESULT;
-
-// Deletes typed URL from HistoryService.
-- (void)deleteTypedURL:(const GURL&)URL;
-
-// Injects typed URL to sync FakeServer.
-- (void)injectTypedURLOnFakeSyncServer:(const std::string&)URL;
-
-// Deletes an autofill profile from the fake sync server with |GUID|, if it
-// exists. If it doesn't exist, nothing is done.
-- (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID;
-
-// Verifies the sessions hierarchy on the Sync FakeServer. |expected_urls| is
-// the collection of URLs that are to be expected for a single window. Returns
-// nil on success, or else an NSError indicating why the operation failed. See
-// the SessionsHierarchy class for documentation regarding the verification.
-- (NSError*)verifySyncServerURLs:(const std::multiset<std::string>&)URLs
-    WARN_UNUSED_RESULT;
 
 @end
 

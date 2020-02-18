@@ -11,6 +11,7 @@
 
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
+#include "fuchsia/engine/browser/web_engine_remote_debugging.h"
 #include "fuchsia/engine/web_engine_export.h"
 
 namespace content {
@@ -40,15 +41,21 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
   // Returns |true| if JS injection was enabled for this Context.
   bool IsJavaScriptInjectionAllowed();
 
+  // Called by Frames to signal a document has been loaded and signal to the
+  // debug listeners in |web_engine_remote_debugging_| that they can now
+  // successfully connect ChromeDriver.
+  void OnDebugDevToolsPortReady();
+
   // fuchsia::web::Context implementation.
   void CreateFrame(fidl::InterfaceRequest<fuchsia::web::Frame> frame) override;
+  void GetRemoteDebuggingPort(GetRemoteDebuggingPortCallback callback) override;
 
   // Gets the underlying FrameImpl service object associated with a connected
   // |frame_ptr| client.
   FrameImpl* GetFrameImplForTest(fuchsia::web::FramePtr* frame_ptr);
 
  private:
-  content::BrowserContext* browser_context_;
+  content::BrowserContext* const browser_context_;
 
   // TODO(crbug.com/893236): Make this false by default, and allow it to be
   // initialized at Context creation time.
@@ -57,6 +64,8 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
   // Tracks all active FrameImpl instances, so that we can request their
   // destruction when this ContextImpl is destroyed.
   std::set<std::unique_ptr<FrameImpl>, base::UniquePtrComparator> frames_;
+
+  WebEngineRemoteDebugging web_engine_remote_debugging_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextImpl);
 };

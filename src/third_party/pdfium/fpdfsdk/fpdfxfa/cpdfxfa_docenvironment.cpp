@@ -16,6 +16,7 @@
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
+#include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
@@ -237,7 +238,7 @@ bool CPDFXFA_DocEnvironment::GetPopupPos(CXFA_FFWidget* hWidget,
 }
 
 bool CPDFXFA_DocEnvironment::PopupMenu(CXFA_FFWidget* hWidget,
-                                       CFX_PointF ptPopup) {
+                                       const CFX_PointF& ptPopup) {
   if (!hWidget)
     return false;
 
@@ -549,7 +550,7 @@ void CPDFXFA_DocEnvironment::SetFocusWidget(CXFA_FFDoc* hDoc,
     return;
 
   if (!hWidget) {
-    CPDFSDK_Annot::ObservedPtr pNull;
+    ObservedPtr<CPDFSDK_Annot> pNull;
     m_pContext->GetFormFillEnv()->SetFocusAnnot(&pNull);
     return;
   }
@@ -560,7 +561,7 @@ void CPDFXFA_DocEnvironment::SetFocusWidget(CXFA_FFDoc* hDoc,
     if (!pPageView)
       continue;
 
-    CPDFSDK_Annot::ObservedPtr pAnnot(pPageView->GetAnnotByXFAWidget(hWidget));
+    ObservedPtr<CPDFSDK_Annot> pAnnot(pPageView->GetAnnotByXFAWidget(hWidget));
     if (pAnnot) {
       m_pContext->GetFormFillEnv()->SetFocusAnnot(&pAnnot);
       break;
@@ -637,8 +638,7 @@ bool CPDFXFA_DocEnvironment::OnBeforeNotifySubmit() {
   CXFA_Node* pNode = it->MoveToNext();
 
   while (pNode) {
-    int fRet = pNode->ProcessValidate(docView, -1);
-    if (fRet == XFA_EVENTERROR_Error) {
+    if (pNode->ProcessValidate(docView, -1) == XFA_EventError::kError) {
       CPDFSDK_FormFillEnvironment* pFormFillEnv = m_pContext->GetFormFillEnv();
       if (!pFormFillEnv)
         return false;

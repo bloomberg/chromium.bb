@@ -9,12 +9,11 @@ import android.os.Handler;
 import android.os.Message;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.modaldialog.TabModalPresenter;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -134,6 +133,11 @@ public class TabStateBrowserControlsVisibilityDelegate
     }
 
     @Override
+    public boolean canShowBrowserControls() {
+        return true;
+    }
+
+    @Override
     public boolean canAutoHideBrowserControls() {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DONT_AUTO_HIDE_BROWSER_CONTROLS)
                 && mTab.getActivity() != null && mTab.getActivity().getToolbarManager() != null
@@ -159,18 +163,12 @@ public class TabStateBrowserControlsVisibilityDelegate
         enableHidingBrowserControls &= !mTab.isShowingErrorPage();
         enableHidingBrowserControls &= !webContents.isShowingInterstitialPage();
         enableHidingBrowserControls &= !mTab.isRendererUnresponsive();
-        enableHidingBrowserControls &= (FullscreenManager.from(mTab) != null);
+        enableHidingBrowserControls &= !mTab.isHidden();
         enableHidingBrowserControls &= DeviceClassManager.enableFullscreen();
         enableHidingBrowserControls &= !mIsFullscreenWaitingForLoad;
         enableHidingBrowserControls &= !TabModalPresenter.isDialogShowing(mTab);
 
         return enableHidingBrowserControls;
-    }
-
-    @Override
-    public boolean canShowBrowserControls() {
-        FullscreenManager manager = FullscreenManager.from(mTab);
-        return manager != null ? !manager.getPersistentFullscreenMode() : true;
     }
 
     /**

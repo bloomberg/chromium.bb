@@ -4,6 +4,8 @@
 
 // https://wicg.github.io/native-file-system/#filesystemdirectoryhandle
 [
+    Exposed=(Window,Worker),
+    SecureContext,
     RuntimeEnabled=NativeFileSystem,
     ImplementedAs=NativeFileSystemDirectoryHandle
 ] interface FileSystemDirectoryHandle : FileSystemHandle {
@@ -11,7 +13,7 @@
     [CallWith=ScriptState] Promise<FileSystemDirectoryHandle> getDirectory(USVString name, optional FileSystemGetDirectoryOptions options);
     [CallWith=ScriptState] object getEntries();
 
-    [CallWith=ScriptState] Promise<void> removeRecursively();
+    [CallWith=ScriptState] Promise<void> removeEntry(USVString name, optional FileSystemRemoveOptions options);
 
     [CallWith=ScriptState]
     static Promise<FileSystemDirectoryHandle> getSystemDirectory(GetSystemDirectoryOptions options);

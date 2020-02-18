@@ -12,9 +12,11 @@
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data_impl.h"
+#include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
+#include "chrome/browser/performance_manager/public/graph/node.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,12 +29,25 @@ namespace {
 constexpr size_t kFooDataSize = sizeof(uintptr_t);
 
 // A dummy node type so that we can exercise node attached storage code paths.
-class DummyNode : public NodeBase {
+class DummyNode : public NodeBase, public Node {
  public:
   explicit DummyNode(GraphImpl* graph)
       : NodeBase(NodeTypeEnum::kInvalidType, graph) {}
 
   ~DummyNode() override = default;
+
+  // NodeBase implementation:
+  const Node* ToNode() const override { return static_cast<const Node*>(this); }
+
+  // Node implementation:
+  Graph* GetGraph() const override { return graph(); }
+  uintptr_t GetImplType() const override {
+    static const uintptr_t kImplType = reinterpret_cast<uintptr_t>(&kImplType);
+    return kImplType;
+  }
+  const void* GetImpl() const override {
+    return static_cast<const NodeBase*>(this);
+  }
 
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kInvalidType; }
 
@@ -109,20 +124,20 @@ class NodeAttachedDataTest : public GraphTestHarness {
   NodeAttachedDataTest() = default;
   ~NodeAttachedDataTest() override = default;
 
-  static void AttachInMap(const NodeBase* node,
+  static void AttachInMap(const Node* node,
                           std::unique_ptr<NodeAttachedData> data) {
     return NodeAttachedDataMapHelper::AttachInMap(node, std::move(data));
   }
 
   // Retrieves the data associated with the provided |node| and |key|. This
   // returns nullptr if no data exists.
-  static NodeAttachedData* GetFromMap(const NodeBase* node, const void* key) {
+  static NodeAttachedData* GetFromMap(const Node* node, const void* key) {
     return NodeAttachedDataMapHelper::GetFromMap(node, key);
   }
 
   // Detaches the data associated with the provided |node| and |key|. It is
   // harmless to call this when no data exists.
-  static std::unique_ptr<NodeAttachedData> DetachFromMap(const NodeBase* node,
+  static std::unique_ptr<NodeAttachedData> DetachFromMap(const Node* node,
                                                          const void* key) {
     return NodeAttachedDataMapHelper::DetachFromMap(node, key);
   }

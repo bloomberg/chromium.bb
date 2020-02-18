@@ -20,9 +20,11 @@ PPI::Token::Operator - Token class for operators
   <<   >>   lt   gt   le   ge   cmp  ~~
   ==   !=   <=>  .    ..   ...  ,
   &    |    ^    &&   ||   //
-  ?    :    =    +=   -=   *=   .=   //=
-  <    >    <=   >=   <>   =>   ->
-  and  or   dor  not  eq   ne
+  ?    :    **=  +=   -=   .=   *=   /=
+  %=   x=   &=   |=   ^=   <<=  >>=  &&=
+  ||=  //=  <    >    <=   >=   <>   =>   ->
+  and  or   xor  not  eq   ne   <<>>
+
 
 =head1 DESCRIPTION
 
@@ -35,35 +37,15 @@ object.
 There are no additional methods beyond those provided by the parent
 L<PPI::Token> and L<PPI::Element> classes.
 
-Got any ideas for methods? Submit a report to rt.cpan.org!
-
 =cut
 
 use strict;
 use PPI::Token ();
+use PPI::Singletons '%OPERATOR';
 
-use vars qw{$VERSION @ISA %OPERATOR};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Token';
+our $VERSION = '1.269'; # VERSION
 
-	# Build the operator index
-	### NOTE - This is accessed several times explicitly
-	###        in PPI::Token::Word. Do not rename this
-	###        without also correcting them.
-	%OPERATOR = map { $_ => 1 } (
-		qw{
-		-> ++ -- ** ! ~ + -
-		=~ !~ * / % x . << >>
-		< > <= >= lt gt le ge
-		== != <=> eq ne cmp ~~
-		& | ^ && || // .. ...
-		? : = += -= *= .= /= //=
-		=> <>
-		and or xor not
-		}, ',' 	# Avoids "comma in qw{}" warning
-		);
-}
+our @ISA = "PPI::Token";
 
 
 
@@ -78,6 +60,11 @@ sub __TOKENIZER__on_char {
 
 	# Are we still an operator if we add the next character
 	my $content = $t->{token}->{content};
+	# special case for <<>> operator
+	if(length($content) < 4 &&
+		$content . substr( $t->{line}, $t->{line_cursor}, 4 - length($content) ) eq '<<>>') {
+		return 1;
+	}
 	return 1 if $OPERATOR{ $content . $char };
 
 	# Handle the special case of a .1234 decimal number
@@ -91,11 +78,12 @@ sub __TOKENIZER__on_char {
 
 	# Handle the special case if we might be a here-doc
 	if ( $content eq '<<' ) {
-		my $line = substr( $t->{line}, $t->{line_cursor} );
-		# Either <<FOO or << 'FOO' or <<\FOO
+		pos $t->{line} = $t->{line_cursor};
+		# Either <<FOO  or << 'FOO'  or <<\FOO  or
+		#        <<~FOO or <<~ 'FOO' or <<~\FOO
 		### Is the zero-width look-ahead assertion really
 		### supposed to be there?
-		if ( $line =~ /^(?: (?!\d)\w | \s*['"`] | \\\w ) /x ) {
+		if ( $t->{line} =~ m/\G ~? (?: (?!\d)\w | \s*['"`] | \\\w ) /gcx ) {
 			# This is a here-doc.
 			# Change the class and move to the HereDoc's own __TOKENIZER__on_char method.
 			$t->{class} = $t->{token}->set_class('HereDoc');
@@ -104,9 +92,8 @@ sub __TOKENIZER__on_char {
 	}
 
 	# Handle the special case of the null Readline
-	if ( $content eq '<>' ) {
-		$t->{class} = $t->{token}->set_class('QuoteLike::Readline');
-	}
+	$t->{class} = $t->{token}->set_class('QuoteLike::Readline')
+		if $content eq '<>' or $content eq '<<>>';
 
 	# Finalize normally
 	$t->_finalize_token->__TOKENIZER__on_char( $t );

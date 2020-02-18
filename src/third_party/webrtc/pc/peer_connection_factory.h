@@ -69,7 +69,7 @@ class PeerConnectionFactory : public PeerConnectionFactoryInterface {
       const std::string& id,
       AudioSourceInterface* audio_source) override;
 
-  bool StartAecDump(rtc::PlatformFile file, int64_t max_size_bytes) override;
+  bool StartAecDump(FILE* file, int64_t max_size_bytes) override;
   void StopAecDump() override;
 
   virtual std::unique_ptr<cricket::SctpTransportInternalFactory>

@@ -11,7 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/trace_event/trace_event.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_packet.pb.h"
 
@@ -216,7 +216,7 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
   // Delegate to the subclasses to parse the packets. It will create
   // ScopedJSONTraceEventAppenders to write the contained events along with
   // other trace fields.
-  ProcessPackets(packets);
+  ProcessPackets(packets, has_more);
 
   if (!has_more) {
     if (label_filter_.empty()) {
@@ -582,6 +582,11 @@ void JSONTraceExporter::ScopedJSONTraceEventAppender::AddThreadDuration(
 void JSONTraceExporter::ScopedJSONTraceEventAppender::AddThreadTimestamp(
     int64_t thread_timestamp) {
   out_->AppendF(",\"tts\":%" PRId64, thread_timestamp);
+}
+
+void JSONTraceExporter::ScopedJSONTraceEventAppender::AddThreadInstructionDelta(
+    int64_t thread_instruction_delta) {
+  out_->AppendF(",\"tidelta\":%" PRId64, thread_instruction_delta);
 }
 
 void JSONTraceExporter::ScopedJSONTraceEventAppender::AddBindId(

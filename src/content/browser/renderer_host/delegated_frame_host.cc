@@ -24,7 +24,6 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/public/common/content_switches.h"
@@ -53,19 +52,12 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
       enable_viz_(features::IsVizDisplayCompositorEnabled()),
       should_register_frame_sink_id_(should_register_frame_sink_id),
       host_frame_sink_manager_(GetHostFrameSinkManager()),
-      frame_evictor_(std::make_unique<viz::FrameEvictor>(this)),
-      weak_factory_(this) {
+      frame_evictor_(std::make_unique<viz::FrameEvictor>(this)) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
   DCHECK(host_frame_sink_manager_);
-  viz::ReportFirstSurfaceActivation should_report_first_surface_activation =
-      viz::ReportFirstSurfaceActivation::kNo;
-#ifdef OS_CHROMEOS
-  should_report_first_surface_activation =
-      viz::ReportFirstSurfaceActivation::kYes;
-#endif
   host_frame_sink_manager_->RegisterFrameSinkId(
-      frame_sink_id_, this, should_report_first_surface_activation);
+      frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
   host_frame_sink_manager_->EnableSynchronizationReporting(
       frame_sink_id_, "Compositing.MainFrameSynchronization.Duration");
   host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_,
@@ -121,9 +113,15 @@ bool DelegatedFrameHost::HasSavedFrame() const {
   return frame_evictor_->has_surface();
 }
 
-void DelegatedFrameHost::WasHidden() {
-  frame_evictor_->SetVisible(false);
+void DelegatedFrameHost::WasHidden(HiddenCause cause) {
   tab_switch_time_recorder_.TabWasHidden();
+#if defined(OS_WIN)
+  // Ignore if the native window was occluded.
+  // Windows needs the frame host to display tab previews.
+  if (cause == HiddenCause::kOccluded)
+    return;
+#endif
+  frame_evictor_->SetVisible(false);
 }
 
 void DelegatedFrameHost::CopyFromCompositingSurface(
@@ -191,23 +189,6 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceInternal(
 
 bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
   return local_surface_id_.is_valid();
-}
-
-bool DelegatedFrameHost::TransformPointToLocalCoordSpaceLegacy(
-    const gfx::PointF& point,
-    const viz::SurfaceId& original_surface,
-    gfx::PointF* transformed_point) {
-  viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
-  if (!surface_id.is_valid() || enable_viz_)
-    return false;
-  *transformed_point = point;
-  if (original_surface == surface_id)
-    return true;
-
-  viz::SurfaceHittest hittest(nullptr,
-                              GetFrameSinkManager()->surface_manager());
-  return hittest.TransformPointToTargetSurface(original_surface, surface_id,
-                                               transformed_point);
 }
 
 void DelegatedFrameHost::SetNeedsBeginFrames(bool needs_begin_frames) {
@@ -278,15 +259,10 @@ void DelegatedFrameHost::EmbedSurface(
     return;
   }
 
-#ifdef OS_CHROMEOS
-  if (seen_first_activation_)
-    frame_evictor_->OnNewSurfaceEmbedded();
-#else
   // Ignore empty frames. Extensions often create empty background page frames
   // which shouldn't count against the saved frames.
   if (!new_dip_size.IsEmpty())
     frame_evictor_->OnNewSurfaceEmbedded();
-#endif
 
   if (!primary_surface_id ||
       primary_surface_id->local_surface_id() != local_surface_id_) {
@@ -352,13 +328,7 @@ void DelegatedFrameHost::OnBeginFramePausedChanged(bool paused) {
 
 void DelegatedFrameHost::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-#ifdef OS_CHROMEOS
-  if (!seen_first_activation_)
-    frame_evictor_->OnNewSurfaceEmbedded();
-  seen_first_activation_ = true;
-#else
   NOTREACHED();
-#endif
 }
 
 void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token) {
@@ -367,9 +337,9 @@ void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token) {
 
 void DelegatedFrameHost::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& feedbacks) {
+    const viz::FrameTimingDetailsMap& timing_details) {
   if (renderer_compositor_frame_sink_)
-    renderer_compositor_frame_sink_->OnBeginFrame(args, feedbacks);
+    renderer_compositor_frame_sink_->OnBeginFrame(args, timing_details);
   client_->OnBeginFrame(args.frame_time);
 }
 

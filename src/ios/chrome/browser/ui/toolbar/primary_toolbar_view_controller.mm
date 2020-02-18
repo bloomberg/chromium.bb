@@ -68,7 +68,8 @@
 
 - (void)resetAfterSideSwipeSnapshot {
   [super resetAfterSideSwipeSnapshot];
-  self.view.backgroundColor = nil;
+  self.view.backgroundColor =
+      self.buttonFactory.toolbarConfiguration.backgroundColor;
   self.view.locationBarContainer.hidden = NO;
 }
 
@@ -89,6 +90,7 @@
                (progress - 1));
   }
   self.view.locationBarContainer.alpha = progress;
+  self.view.separator.alpha = progress;
 
   // When the locationBarContainer is hidden, show the |fakeOmniboxTarget|.
   if (progress == 0 && !self.view.fakeOmniboxTarget) {
@@ -208,10 +210,13 @@
 
 - (void)animateFullscreenWithAnimator:(FullscreenAnimator*)animator {
   CGFloat finalProgress = animator.finalProgress;
-  [animator addAnimations:^{
-    [self updateForFullscreenProgress:finalProgress];
-    [self.view layoutIfNeeded];
-  }];
+  // Using the animator doesn't work as the animation doesn't trigger a relayout
+  // of the constraints (see crbug.com/978462, crbug.com/950994).
+  [UIView animateWithDuration:animator.duration
+                   animations:^{
+                     [self updateForFullscreenProgress:finalProgress];
+                     [self.view layoutIfNeeded];
+                   }];
 }
 
 #pragma mark - ToolbarAnimatee

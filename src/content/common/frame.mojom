@@ -6,6 +6,7 @@ module content.mojom;
 
 import "content/common/document_scoped_interface_bundle.mojom";
 import "content/common/frame_messages.mojom";
+import "content/common/native_types.mojom";
 import "content/common/navigation_client.mojom";
 import "content/common/navigation_params.mojom";
 import "content/public/common/resource_type.mojom";
@@ -35,7 +36,7 @@ import "third_party/blink/public/mojom/service_worker/service_worker_provider.mo
 import "third_party/blink/public/mojom/devtools/devtools_agent.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
 import "third_party/blink/public/mojom/window_features/window_features.mojom";
-import "ui/base/mojo/window_open_disposition.mojom";
+import "ui/base/mojom/window_open_disposition.mojom";
 import "url/mojom/url.mojom";
 import "url/mojom/origin.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -62,6 +63,12 @@ interface Frame {
 
   // Set the lifecycle state.
   SetLifecycleState(blink.mojom.FrameLifecycleState state);
+
+  // Retrieves the text surrounding the current selection for the frame up to
+  // the length specified by |max_length|, along with its start and end offsets.
+  GetTextSurroundingSelection(uint32 max_length)
+      => (mojo_base.mojom.String16 content, uint32 start_offset,
+          uint32 end_offset);
 
   // Samsung Galaxy Note-specific "smart clip" stylus text getter.
   // Extracts the data at the given rect.
@@ -93,6 +100,9 @@ interface FrameNavigationControl {
   // Note: |url_loader_client_endpoints| will be empty iff the navigation URL
   // wasn't handled by the network stack (i.e. about:blank, ...)
   //
+  // Note: |response_body| is only used when NavigationImmediateResponseBody is
+  // enabled. It contains the datapipe used to read the response body.
+  //
   // When the Network Service is enabled, |subresource_loader_factories| may
   // also be provided by the browser as a a means for the renderer to load
   // subresources where applicable.
@@ -117,15 +127,16 @@ interface FrameNavigationControl {
   // TODO(crbug.com/783506): Replace devtools navigation token with the generic
   // navigation token that can be passed from renderer to the browser.
   CommitNavigation(
-      network.mojom.URLResponseHead head,
       CommonNavigationParams common_params,
       CommitNavigationParams request_params,
+      network.mojom.URLResponseHead response_head,
+      handle<data_pipe_consumer>? response_body,
       network.mojom.URLLoaderClientEndpoints? url_loader_client_endpoints,
       blink.mojom.URLLoaderFactoryBundle? subresource_loader_factories,
       array<TransferrableURLLoader>? subresource_overrides,
       blink.mojom.ControllerServiceWorkerInfo? controller_service_worker_info,
-      blink.mojom.ServiceWorkerProviderInfoForWindow? provider_info,
-      network.mojom.URLLoaderFactory? prefetch_loader_factory,
+      blink.mojom.ServiceWorkerProviderInfoForClient? provider_info,
+      pending_remote<network.mojom.URLLoaderFactory>? prefetch_loader_factory,
       mojo_base.mojom.UnguessableToken devtools_navigation_token)
       => (blink.mojom.CommitResult commit_result);
 
@@ -199,7 +210,8 @@ interface FrameNavigationControl {
   JavaScriptExecuteRequestForTests(
       mojo_base.mojom.String16 javascript,
       bool wants_result,
-      bool has_user_gesture)
+      bool has_user_gesture,
+      int32 world_id)
       => (mojo_base.mojom.Value result);
 
   // Same as JavaScriptExecuteRequest above except the script is run in the
@@ -237,10 +249,11 @@ interface FrameNavigationControl {
   // PortalActivateEvent. The return value |was_adopted| indicates if the portal
   // for the predecessor (identified by |portal_token|) was adopted by the
   // current frame.
-  OnPortalActivated(mojo_base.mojom.UnguessableToken portal_token,
-                    associated blink.mojom.Portal portal,
-                    associated blink.mojom.PortalClient& portal_client,
-                    blink.mojom.TransferableMessage data) => (bool was_adopted);
+  OnPortalActivated(
+      mojo_base.mojom.UnguessableToken portal_token,
+      pending_associated_remote<blink.mojom.Portal> portal,
+      pending_associated_receiver<blink.mojom.PortalClient> portal_client,
+      blink.mojom.TransferableMessage data) => (bool was_adopted);
 };
 
 // Implemented by the frame (e.g. renderer processes).
@@ -353,17 +366,20 @@ interface FrameHost {
   // used to communicate back with the caller. Returns |proxy_routing_id|, which
   // is the routing id of the RenderFrameProxy and |portal_token|, which is the
   // unique identifier for the portal.
-  [Sync] CreatePortal(associated blink.mojom.Portal& portal,
-                      associated blink.mojom.PortalClient client)
+  [Sync] CreatePortal(
+      pending_associated_receiver<blink.mojom.Portal> portal,
+      pending_associated_remote<blink.mojom.PortalClient> client)
       => (int32 proxy_routing_id,
           mojo_base.mojom.UnguessableToken portal_token,
           mojo_base.mojom.UnguessableToken devtools_frame_token);
 
   // Requests that this frame adopts the portal identified by |portal_token|.
   // Returns |proxy_routing_id|, which is the routing id of the portal's
-  // RenderFrameProxy.
+  // RenderFrameProxy, |replicated_state|, the replicated state associated with
+  // that RFP, and the |devtools_frame_token|.
   [Sync] AdoptPortal(mojo_base.mojom.UnguessableToken portal_token)
       => (int32 proxy_routing_id,
+          FrameReplicationState replicated_state,
           mojo_base.mojom.UnguessableToken devtools_frame_token);
 
   // Creates and returns a KeepAliveHandle.
@@ -470,6 +486,10 @@ interface FrameHost {
   // status.
   VisibilityChanged(blink.mojom.FrameVisibility visibility);
 
+  // Notifies the browser that the current frame has changed its lifecycle
+  // state.
+  LifecycleStateChanged(blink.mojom.FrameLifecycleState state);
+
   // Updates information to determine whether a user gesture should carryover to
   // future navigations. This is needed so navigations within a certain
   // timeframe of a request initiated by a gesture will be treated as if they
@@ -520,4 +540,18 @@ interface FrameHost {
       url.mojom.Url url,
       int32 error_code,
       mojo_base.mojom.String16 error_description);
+
+  // Sent to the browser process to transfer the user activation state from the
+  // source frame to the frame sending this IPC. The browser will update the
+  // user activation state of the frames in the frame tree in the non-source and
+  // non-target renderer processes.
+  TransferUserActivationFrom(int32 source_routing_id);
+
+  // Causes a window previously opened via RenderMessageFilter::CreateNewWindow
+  // to be shown on the screen. This message is routed to the preexisting frame
+  // that opened the window, and |pending_widget_routing_id| corresponds to the
+  // widget routing id from the CreateNewWindow reply.
+  ShowCreatedWindow(int32 pending_widget_routing_id,
+                    ui.mojom.WindowOpenDisposition disposition,
+                    gfx.mojom.Rect rect, bool opened_by_user_gesture);
 };

@@ -14,6 +14,8 @@
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_storage.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_packet_writer.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_stream.h"
 
@@ -68,7 +70,7 @@ class QuartcSession : public QuicSession,
 
   // Return true if transport support message frame.
   bool CanSendMessage() const {
-    return connection()->transport_version() > QUIC_VERSION_44;
+    return VersionSupportsMessageFrames(connection()->transport_version());
   }
 
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
@@ -80,8 +82,7 @@ class QuartcSession : public QuicSession,
   void OnCanWrite() override;
   bool SendProbingData() override;
 
-  void OnConnectionClosed(QuicErrorCode error,
-                          const std::string& error_details,
+  void OnConnectionClosed(const QuicConnectionCloseFrame& frame,
                           ConnectionCloseSource source) override;
 
   // QuartcSession methods.
@@ -133,8 +134,7 @@ class QuartcSession : public QuicSession,
 
     // Called when the connection is closed. This means all of the streams will
     // be closed and no new streams can be created.
-    virtual void OnConnectionClosed(QuicErrorCode error_code,
-                                    const std::string& error_details,
+    virtual void OnConnectionClosed(const QuicConnectionCloseFrame& frame,
                                     ConnectionCloseSource source) = 0;
 
     // Called when message (sent as SendMessage) is received.
@@ -156,6 +156,15 @@ class QuartcSession : public QuicSession,
     // plumb that signal up to RTP's congestion control.
     virtual void OnMessageSent(int64_t datagram_id) = 0;
 
+    // Called when message with |datagram_id| gets acked.  |receive_timestamp|
+    // indicates when the peer received this message, according to its own
+    // clock.
+    virtual void OnMessageAcked(int64_t datagram_id,
+                                QuicTime receive_timestamp) = 0;
+
+    // Called when message with |datagram_id| is lost.
+    virtual void OnMessageLost(int64_t datagram_id) = 0;
+
     // TODO(zhihuang): Add proof verification.
   };
 
@@ -171,6 +180,12 @@ class QuartcSession : public QuicSession,
 
   void OnMessageReceived(QuicStringPiece message) override;
 
+  // Called when message with |message_id| gets acked.
+  void OnMessageAcked(QuicMessageId message_id,
+                      QuicTime receive_timestamp) override;
+
+  void OnMessageLost(QuicMessageId message_id) override;
+
   // Returns number of queued (not sent) messages submitted by
   // SendOrQueueMessage. Messages are queued if connection is congestion
   // controlled.
@@ -179,11 +194,9 @@ class QuartcSession : public QuicSession,
  protected:
   // QuicSession override.
   QuicStream* CreateIncomingStream(QuicStreamId id) override;
-  QuicStream* CreateIncomingStream(PendingStream pending) override;
+  QuicStream* CreateIncomingStream(PendingStream* pending) override;
 
   std::unique_ptr<QuartcStream> CreateDataStream(QuicStreamId id,
-                                                 spdy::SpdyPriority priority);
-  std::unique_ptr<QuartcStream> CreateDataStream(PendingStream pending,
                                                  spdy::SpdyPriority priority);
   // Activates a QuartcStream.  The session takes ownership of the stream, but
   // returns an unowned pointer to the stream for convenience.
@@ -200,9 +213,9 @@ class QuartcSession : public QuicSession,
 
   // Holds message until it's sent.
   struct QueuedMessage {
-    QueuedMessage(QuicMemSlice the_message, int64_t the_datagram_id)
-        : message(std::move(the_message)), datagram_id(the_datagram_id) {}
-    QuicMemSlice message;
+    QueuedMessage() : message(nullptr, 0, nullptr, 0), datagram_id(0) {}
+
+    QuicMemSliceStorage message;
     int64_t datagram_id;
   };
 
@@ -226,6 +239,10 @@ class QuartcSession : public QuicSession,
   // yet or blocked by congestion control. Messages are queued in the order
   // of sent by SendOrQueueMessage().
   QuicDeque<QueuedMessage> send_message_queue_;
+
+  // Maps message ids to datagram ids, so we could translate message ACKs
+  // received from QUIC to datagram ACKs that are propagated up the stack.
+  QuicUnorderedMap<QuicMessageId, int64_t> message_to_datagram_id_;
 };
 
 class QuartcClientSession : public QuartcSession,

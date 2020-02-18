@@ -53,9 +53,9 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
   MOCK_CONST_METHOD1(IsSavingAndFillingEnabled, bool(const GURL&));
   MOCK_CONST_METHOD1(IsFillingEnabled, bool(const GURL&));
-  MOCK_CONST_METHOD2(AutofillHttpAuth,
-                     void(const autofill::PasswordForm&,
-                          const PasswordFormManagerForUI*));
+  MOCK_METHOD2(AutofillHttpAuth,
+               void(const autofill::PasswordForm&,
+                    const PasswordFormManagerForUI*));
   MOCK_CONST_METHOD0(GetPasswordStore, PasswordStore*());
   MOCK_METHOD0(PromptUserToSaveOrUpdatePasswordPtr, void());
 
@@ -185,6 +185,7 @@ TEST_F(HttpAuthManagerTest, HttpAuthSaving) {
     submitted_form.username_value = ASCIIToUTF16("user");
     submitted_form.password_value = ASCIIToUTF16("1234");
     httpauth_manager()->OnPasswordFormSubmitted(submitted_form);
+    httpauth_manager()->OnPasswordFormDismissed();
 
     // Expect save prompt on successful submission.
     std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;

@@ -8,12 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "base/debug/leak_annotations.h"
 #include "base/strings/string16.h"
 #include "base/test/scoped_feature_list.h"
-#include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_event_recorder.h"
-#include "content/browser/accessibility/accessibility_tree_formatter.h"
+#include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/test/content_browser_test.h"
 
 namespace content {
@@ -71,11 +69,6 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
   // and return it as a string.
   base::string16 DumpUnfilteredAccessibilityTreeAsString();
 
-  // Utility helper that does a comment-aware equality check.
-  // Returns array of lines from expected file which are different.
-  std::vector<int> DiffLines(const std::vector<std::string>& expected_lines,
-                             const std::vector<std::string>& actual_lines);
-
   // Parse the test html file and parse special directives, usually
   // beginning with an '@' and inside an HTML comment, that control how the
   // test is run and how the results are interpreted.
@@ -116,11 +109,6 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
 
   // The node filters loaded from the test file.
   std::vector<AccessibilityTreeFormatter::NodeFilter> node_filters_;
-
-#if defined(LEAK_SANITIZER) && !defined(OS_NACL)
-  // http://crbug.com/568674
-  ScopedLeakSanitizerDisabler lsan_disabler;
-#endif
 
   // The current tree-formatter and event-recorder factories.
   AccessibilityTreeFormatter::FormatterFactory formatter_factory_;

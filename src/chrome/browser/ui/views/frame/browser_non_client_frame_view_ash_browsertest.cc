@@ -10,12 +10,11 @@
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
+#include "ash/public/cpp/shelf_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shelf_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"                                  // mash-ok
 #include "ash/wm/overview/overview_controller.h"        // mash-ok
 #include "ash/wm/splitview/split_view_controller.h"     // mash-ok
@@ -26,6 +25,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -33,7 +33,6 @@
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
-#include "chrome/browser/ssl/chrome_mock_cert_verifier.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager.h"
@@ -75,6 +74,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -98,7 +98,7 @@ namespace {
 
 // Toggles fullscreen mode and waits for the notification.
 void ToggleFullscreenModeAndWait(Browser* browser) {
-  FullscreenNotificationObserver waiter;
+  FullscreenNotificationObserver waiter(browser);
   chrome::ToggleFullscreenMode(browser);
   waiter.Wait();
 }
@@ -106,7 +106,7 @@ void ToggleFullscreenModeAndWait(Browser* browser) {
 // Enters fullscreen mode for tab and waits for the notification.
 void EnterFullscreenModeForTabAndWait(Browser* browser,
                                       content::WebContents* web_contents) {
-  FullscreenNotificationObserver waiter;
+  FullscreenNotificationObserver waiter(browser);
   browser->exclusive_access_manager()
       ->fullscreen_controller()
       ->EnterFullscreenModeForTab(web_contents, GURL());
@@ -116,33 +116,23 @@ void EnterFullscreenModeForTabAndWait(Browser* browser,
 // Exits fullscreen mode for tab and waits for the notification.
 void ExitFullscreenModeForTabAndWait(Browser* browser,
                                      content::WebContents* web_contents) {
-  FullscreenNotificationObserver waiter;
+  FullscreenNotificationObserver waiter(browser);
   browser->exclusive_access_manager()
       ->fullscreen_controller()
       ->ExitFullscreenModeForTab(web_contents);
   waiter.Wait();
 }
 
-// Exits fullscreen mode and waits for the notification.
-void ExitFullscreenModeAndWait(BrowserView* browser_view) {
-  FullscreenNotificationObserver waiter;
-  browser_view->ExitFullscreen();
-  waiter.Wait();
+void StartOverview() {
+  ash::Shell::Get()->overview_controller()->StartOverview();
 }
 
-void ToggleOverview() {
-    ash::Shell::Get()->overview_controller()->ToggleOverview();
+void EndOverview() {
+  ash::Shell::Get()->overview_controller()->EndOverview();
 }
 
 bool IsShelfVisible() {
-  ash::mojom::ShelfTestApiPtr shelf_test_api;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &shelf_test_api);
-  ash::mojom::ShelfTestApiAsyncWaiter shelf(shelf_test_api.get());
-  bool shelf_visible = true;
-  shelf.IsVisible(&shelf_visible);
-  return shelf_visible;
+  return ash::ShelfTestApi::Create()->IsVisible();
 }
 
 BrowserNonClientFrameViewAsh* GetFrameViewAsh(BrowserView* browser_view) {
@@ -493,7 +483,11 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest, ImmersiveFullscreen) {
 
   // Exiting immersive fullscreen should make the caption buttons and the frame
   // visible again.
-  ExitFullscreenModeAndWait(browser_view);
+  {
+    FullscreenNotificationObserver waiter(browser());
+    browser_view->ExitFullscreen();
+    waiter.Wait();
+  }
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
   EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_LT(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
@@ -654,7 +648,7 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
 
   // Set locked fullscreen state.
   browser()->window()->GetNativeWindow()->SetProperty(
-      ash::kWindowPinTypeKey, ash::mojom::WindowPinType::TRUSTED_PINNED);
+      ash::kWindowPinTypeKey, ash::WindowPinType::kTrustedPinned);
 
   // We're fullscreen, immersive is disabled in locked fullscreen, and while
   // we're at it, also make sure that the shelf is hidden.
@@ -680,7 +674,7 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
 
   // Set locked fullscreen state.
   browser()->window()->GetNativeWindow()->SetProperty(
-      ash::kWindowPinTypeKey, ash::mojom::WindowPinType::TRUSTED_PINNED);
+      ash::kWindowPinTypeKey, ash::WindowPinType::kTrustedPinned);
 
   // We're fullscreen, immersive is disabled in locked fullscreen, and while
   // we're at it, also make sure that the shelf is hidden.
@@ -865,7 +859,7 @@ class HostedAppNonClientFrameViewAshTest
  private:
   // For mocking a secure site.
   net::EmbeddedTestServer https_server_;
-  ChromeMockCertVerifier cert_verifier_;
+  content::ContentMockCertVerifier cert_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppNonClientFrameViewAshTest);
 };
@@ -913,9 +907,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
   SetUpHostedApp();
   EXPECT_TRUE(hosted_app_button_container_->GetVisible());
 
-  ToggleOverview();
+  StartOverview();
   EXPECT_FALSE(hosted_app_button_container_->GetVisible());
-  ToggleOverview();
+  EndOverview();
   EXPECT_TRUE(hosted_app_button_container_->GetVisible());
 }
 
@@ -1253,8 +1247,10 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, TopViewInset) {
   EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
 }
 
+// Test that for a browser window, its caption buttons are always hidden in
+// tablet mode.
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
-                       HeaderVisibilityInOverviewAndSplitview) {
+                       BrowserHeaderVisibilityInTabletModeTest) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   Widget* widget = browser_view->GetWidget();
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
@@ -1263,15 +1259,30 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
       aura::client::kResizeBehaviorKey,
       aura::client::kResizeBehaviorCanMaximize |
           aura::client::kResizeBehaviorCanResize);
-
-  // Test that the header is invisible for the browser window in overview mode
-  // and visible when not in overview mode.
-  ToggleOverview();
-  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
-  ToggleOverview();
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
-  // Create another browser window.
+  StartOverview();
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  EndOverview();
+  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+
+  ASSERT_NO_FATAL_FAILURE(
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  StartOverview();
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  EndOverview();
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  ash::Shell::Get()->split_view_controller()->SnapWindow(
+      widget->GetNativeWindow(), ash::SplitViewController::LEFT);
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+}
+
+// Test that for a browser app window, its caption buttons may or may not hide
+// in tablet mode.
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
+                       AppHeaderVisibilityInTabletModeTest) {
+  // Create a browser app window.
   Browser::CreateParams params = Browser::CreateParams::CreateForApp(
       "test_browser_app", true /* trusted_source */, gfx::Rect(),
       browser()->profile(), true);
@@ -1285,33 +1296,22 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
       aura::client::kResizeBehaviorKey,
       aura::client::kResizeBehaviorCanMaximize |
           aura::client::kResizeBehaviorCanResize);
-
-  // Test that when one browser window is snapped, the header is visible for
-  // the snapped browser window, but invisible for the browser window still in
-  // overview mode.
-  ash::Shell* shell = ash::Shell::Get();
-  ash::SplitViewController* split_view_controller =
-      shell->split_view_controller();
-
-  ToggleOverview();
-  split_view_controller->SnapWindow(widget->GetNativeWindow(),
-                                    ash::SplitViewController::LEFT);
-  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+  StartOverview();
   EXPECT_FALSE(frame_view2->caption_button_container_->GetVisible());
-
-  // When both browser windows are snapped, the headers are both visible.
-  split_view_controller->SnapWindow(widget2->GetNativeWindow(),
-                                    ash::SplitViewController::RIGHT);
-  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+  EndOverview();
   EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
 
-  // Toggle overview mode while splitview mode is active. Test that the header
-  // is visible for the snapped browser window but not for the other browser
-  // window in overview mode.
-  ToggleOverview();
-
-  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+  ASSERT_NO_FATAL_FAILURE(
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
+  StartOverview();
   EXPECT_FALSE(frame_view2->caption_button_container_->GetVisible());
+
+  EndOverview();
+  EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
+
+  ash::Shell::Get()->split_view_controller()->SnapWindow(
+      widget2->GetNativeWindow(), ash::SplitViewController::RIGHT);
+  EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
 }
 
 // Regression test for https://crbug.com/879851.
@@ -1374,7 +1374,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 
   // The kTopViewInset is the same as in overview mode.
   const int inset_normal = window->GetProperty(aura::client::kTopViewInset);
-  ToggleOverview();
+  StartOverview();
   const int inset_in_overview_mode =
       window->GetProperty(aura::client::kTopViewInset);
   EXPECT_EQ(inset_normal, inset_in_overview_mode);
@@ -1408,16 +1408,16 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
 
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(true));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
 
-  ToggleOverview();
+  StartOverview();
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
-  ToggleOverview();
+  EndOverview();
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(false));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(false));
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 }
 
@@ -1440,17 +1440,17 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
 
   // Tablet mode doesn't affect app's caption button's visibility.
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(true));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
   // However, overview mode does.
-  ToggleOverview();
+  StartOverview();
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
-  ToggleOverview();
+  EndOverview();
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(false));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(false));
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 }
 

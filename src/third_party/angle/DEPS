@@ -1,3 +1,7 @@
+# This file is used to manage the dependencies of the ANGLE git repo. It is
+# used by gclient to determine what version of each dependency to check out, and
+# where.
+
 vars = {
   'android_git': 'https://android.googlesource.com',
   'chromium_git': 'https://chromium.googlesource.com',
@@ -8,17 +12,21 @@ vars = {
   # This variable is overrided in Chromium's DEPS file.
   'build_with_chromium': False,
 
+  # By default, do not check out angle-internal. This can be overridden e.g. with custom_vars.
+  # We overload Chromium's 'src-internal' for infra simplicity.
+  'checkout_src_internal': False,
+
   # Current revision of dEQP.
-  'deqp_revision': '39894bc13c69b22c4aea018979b7daabc8dfc602',
+  'deqp_revision': 'd3eef28e67ce6795ba3a2124aaa977819729d45f',
 
   # Current revision of glslang, the Khronos SPIRV compiler.
-  'glslang_revision': '625eb25d6e801311af2f587a38ff35412876dfe0',
+  'glslang_revision': '9f2236e58ed06c770a6beffe8a3b6b4a32111c42',
 
   # Current revision fo the SPIRV-Headers Vulkan support library.
-  'spirv_headers_revision': '7ac42f80c0e8a72eb0da29dbd673efad2b6cb421',
+  'spirv_headers_revision': '123dc278f204f8e833e1a88d31c46d0edf81d4b2',
 
   # Current revision of SPIRV-Tools for Vulkan.
-  'spirv_tools_revision': 'e7866de4b1dc2a7e8672867caeb0bdca49f458d3',
+  'spirv_tools_revision': '3855447d93eb9a79723e0711b895b57ae444ce3f',
 
   # Current revision of Khronos Vulkan-Headers.
   'vulkan_headers_revision': '982f0f84dccf6f281b48318c77261a9028000126',
@@ -34,6 +42,11 @@ vars = {
 }
 
 deps = {
+
+  '{angle_root}/angle-internal': {
+    'url': 'https://chrome-internal.googlesource.com/angle/angle-internal.git@05522f9eb159afbbe35a246d5027893c56926a76',
+    'condition': 'checkout_src_internal',
+  },
 
   '{angle_root}/build': {
     'url': '{chromium_git}/chromium/src/build.git@54ea0e7fd122348de2f73ac21d1b6eafb9b78969',
@@ -326,6 +339,9 @@ hooks = [
 ]
 
 recursedeps = [
+  # angle-internal has its own DEPS file to pull additional internal repos
+  '{angle_root}/angle-internal',
+
   # buildtools provides clang_format.
   '{angle_root}/buildtools',
 ]

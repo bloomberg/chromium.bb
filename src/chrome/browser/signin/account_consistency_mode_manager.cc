@@ -16,8 +16,8 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "google_apis/google_api_keys.h"
 
 #if defined(OS_CHROMEOS)
@@ -51,10 +51,29 @@ enum class DiceMigrationStatus {
   kEnabled,
   kDisabledReadyForMigration,
   kDisabledNotReadyForMigration,
+  kDisabled,
 
   // This is the last value. New values should be inserted above.
   kDiceMigrationStatusCount
 };
+
+DiceMigrationStatus GetDiceMigrationStatus(
+    AccountConsistencyMethod account_consistency,
+    bool is_ready_for_dice) {
+  switch (account_consistency) {
+    case AccountConsistencyMethod::kDice:
+      return DiceMigrationStatus::kEnabled;
+    case AccountConsistencyMethod::kDiceMigration:
+      return is_ready_for_dice
+                 ? DiceMigrationStatus::kDisabledReadyForMigration
+                 : DiceMigrationStatus::kDisabledNotReadyForMigration;
+    case AccountConsistencyMethod::kDisabled:
+      return DiceMigrationStatus::kDisabled;
+    case AccountConsistencyMethod::kMirror:
+      NOTREACHED();
+      return DiceMigrationStatus::kDisabled;
+  }
+}
 #endif
 
 }  // namespace
@@ -90,22 +109,22 @@ AccountConsistencyModeManager::AccountConsistencyModeManager(Profile* profile)
   account_consistency_ = ComputeAccountConsistencyMethod(profile_);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  bool is_ready_for_dice = IsReadyForDiceMigration(profile_);
-  if (is_ready_for_dice &&
-      signin::DiceMethodGreaterOrEqual(
-          account_consistency_, AccountConsistencyMethod::kDiceMigration)) {
-    if (account_consistency_ != AccountConsistencyMethod::kDice)
+  bool is_ready_for_dice = false;
+  if (account_consistency_ == AccountConsistencyMethod::kDiceMigration) {
+    is_ready_for_dice = IsReadyForDiceMigration(profile_);
+    if (is_ready_for_dice) {
       VLOG(1) << "Profile is migrating to Dice";
-    profile_->GetPrefs()->SetBoolean(kDiceMigrationCompletePref, true);
-    account_consistency_ = AccountConsistencyMethod::kDice;
+      prefs->SetBoolean(kDiceMigrationCompletePref, true);
+      account_consistency_ = AccountConsistencyMethod::kDice;
+    } else {
+      UMA_HISTOGRAM_BOOLEAN(
+          "Signin.TokenServiceDiceCompatible",
+          prefs->GetBoolean(prefs::kTokenServiceDiceCompatible));
+    }
   }
   UMA_HISTOGRAM_ENUMERATION(
       kDiceMigrationStatusHistogram,
-      account_consistency_ == AccountConsistencyMethod::kDice
-          ? DiceMigrationStatus::kEnabled
-          : (is_ready_for_dice
-                 ? DiceMigrationStatus::kDisabledReadyForMigration
-                 : DiceMigrationStatus::kDisabledNotReadyForMigration),
+      GetDiceMigrationStatus(account_consistency_, is_ready_for_dice),
       DiceMigrationStatus::kDiceMigrationStatusCount);
 #endif
 

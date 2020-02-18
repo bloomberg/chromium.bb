@@ -7,10 +7,13 @@
 #include <ctype.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/big_endian.h"
+#include "base/bind_helpers.h"
 #include "base/hash/md5.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -19,7 +22,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "chromeos/printing/usb_printer_id.h"
 #include "services/device/public/cpp/usb/usb_utils.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -40,6 +45,69 @@ constexpr uint8_t kPrinterInterfaceSubclass = 1;
 // Protocol for ippusb printing.
 // (http://www.usb.org/developers/docs/devclass_docs/IPP.zip).
 constexpr uint8_t kPrinterIppusbProtocol = 4;
+
+// Configuration for a GET_DEVICE_ID Printer Class-Specific Request.
+const int kGetDeviceIdRequest = 0;
+const int kDefaultInterface = 0;
+const int kDefaultConfiguration = 0;
+
+// Callback for device.mojom.UsbDevice.ControlTransferIn.
+// Expects |data| to hold a newly queried Device ID.
+void OnControlTransfer(device::mojom::UsbDevicePtr device_ptr,
+                       GetDeviceIdCallback cb,
+                       device::mojom::UsbTransferStatus status,
+                       const std::vector<uint8_t>& data) {
+  if (status != device::mojom::UsbTransferStatus::COMPLETED || data.empty()) {
+    return std::move(cb).Run({});
+  }
+
+  // Cleanup device_ptr.
+  device_ptr->ReleaseInterface(kDefaultInterface, base::DoNothing());
+  device_ptr->Close(base::DoNothing());
+
+  return std::move(cb).Run(UsbPrinterId(data));
+}
+
+// Callback for device.mojom.UsbDevice.ClaimInterface.
+// If interface was claimed successfully, attempts to query printer for a
+// Device ID.
+void OnClaimInterface(device::mojom::UsbDevicePtr device_ptr,
+                      GetDeviceIdCallback cb,
+                      bool success) {
+  if (!success) {
+    return std::move(cb).Run({});
+  }
+
+  auto params = device::mojom::UsbControlTransferParams::New();
+  params->type = device::mojom::UsbControlTransferType::CLASS;
+  params->recipient = device::mojom::UsbControlTransferRecipient::INTERFACE;
+  params->request = kGetDeviceIdRequest;
+  params->value = kDefaultConfiguration;  // default config index
+  params->index = kDefaultInterface;      // default interface index
+
+  // Query for IEEE1284 string.
+  auto* device = device_ptr.get();
+  device->ControlTransferIn(
+      std::move(params), 255 /* max size */, 2000 /* 2 second timeout */,
+      base::BindOnce(OnControlTransfer, std::move(device_ptr), std::move(cb)));
+}
+
+// Callback for device.mojom.UsbDevice.Open.
+// If device was opened successfully, attempts to claim printer's default
+// interface.
+void OnDeviceOpen(device::mojom::UsbDevicePtr device_ptr,
+                  GetDeviceIdCallback cb,
+                  device::mojom::UsbOpenDeviceError error) {
+  if (error != device::mojom::UsbOpenDeviceError::OK || !device_ptr) {
+    return std::move(cb).Run({});
+  }
+
+  // Claim interface.
+  auto* device = device_ptr.get();
+  device->ClaimInterface(
+      kDefaultInterface,
+      base::BindOnce(OnClaimInterface, std::move(device_ptr), std::move(cb)));
+}
 
 // Escape URI strings the same way cups does it, so we end up with a URI cups
 // recognizes.  Cups hex-encodes '%', ' ', and anything not in the standard
@@ -89,17 +157,6 @@ void MD5UpdateString16(base::MD5Context* ctx, const base::string16& str) {
   base::MD5Update(ctx, base::StringPiece(tmp.data(), tmp.size()));
 }
 
-uint16_t GetUsbVersion(const UsbDeviceInfo& device_info) {
-  return device_info.usb_version_major << 8 |
-         device_info.usb_version_minor << 4 | device_info.usb_version_subminor;
-}
-
-uint16_t GetDeviceVersion(const UsbDeviceInfo& device_info) {
-  return device_info.device_version_major << 8 |
-         device_info.device_version_minor << 4 |
-         device_info.device_version_subminor;
-}
-
 // Get the usb printer id for |device|.  This is used both as the identifier for
 // the printer in the user's PrintersManager and as the name of the printer in
 // CUPS, so it has to satisfy the naming restrictions of both.  CUPS in
@@ -108,7 +165,7 @@ uint16_t GetDeviceVersion(const UsbDeviceInfo& device_info) {
 // possible for that device.  So we basically toss every bit of stable
 // information from the device into an MD5 hash, and then hexify the hash value
 // as a suffix to "usb-" as the final printer id.
-std::string UsbPrinterId(const UsbDeviceInfo& device_info) {
+std::string CreateUsbPrinterId(const UsbDeviceInfo& device_info) {
   // Paranoid checks; in the unlikely event someone messes with the USB device
   // definition, our (supposedly stable) hashes will change.
   static_assert(sizeof(device_info.class_code) == 1, "Class size changed");
@@ -118,7 +175,7 @@ std::string UsbPrinterId(const UsbDeviceInfo& device_info) {
                 "Protocol size changed");
   static_assert(sizeof(device_info.vendor_id) == 2, "Vendor id size changed");
   static_assert(sizeof(device_info.product_id) == 2, "Product id size changed");
-  static_assert(sizeof(GetDeviceVersion(device_info)) == 2,
+  static_assert(sizeof(device::GetDeviceVersion(device_info)) == 2,
                 "Version size changed");
 
   base::MD5Context ctx;
@@ -128,7 +185,7 @@ std::string UsbPrinterId(const UsbDeviceInfo& device_info) {
   MD5UpdateBigEndian(&ctx, device_info.protocol_code);
   MD5UpdateBigEndian(&ctx, device_info.vendor_id);
   MD5UpdateBigEndian(&ctx, device_info.product_id);
-  MD5UpdateBigEndian(&ctx, GetDeviceVersion(device_info));
+  MD5UpdateBigEndian(&ctx, device::GetDeviceVersion(device_info));
   MD5UpdateString16(&ctx, GetManufacturerName(device_info));
   MD5UpdateString16(&ctx, GetProductName(device_info));
   MD5UpdateString16(&ctx, GetSerialNumber(device_info));
@@ -171,10 +228,10 @@ std::string UsbPrinterDeviceDetailsAsString(const UsbDeviceInfo& device_info) {
       " manufacturer string: %s\n"
       " product string:      %s\n"
       " serial number:       %s",
-      device_info.guid.c_str(), GetUsbVersion(device_info),
+      device_info.guid.c_str(), device::GetUsbVersion(device_info),
       device_info.class_code, device_info.subclass_code,
       device_info.protocol_code, device_info.vendor_id, device_info.product_id,
-      GetDeviceVersion(device_info),
+      device::GetDeviceVersion(device_info),
       base::UTF16ToUTF8(GetManufacturerName(device_info)).c_str(),
       base::UTF16ToUTF8(GetProductName(device_info)).c_str(),
       base::UTF16ToUTF8(GetSerialNumber(device_info)).c_str());
@@ -258,9 +315,17 @@ std::unique_ptr<Printer> UsbDeviceToPrinter(const UsbDeviceInfo& device_info) {
 
   printer->set_description(printer->display_name());
   printer->set_uri(UsbPrinterUri(device_info));
-  printer->set_id(UsbPrinterId(device_info));
+  printer->set_id(CreateUsbPrinterId(device_info));
   printer->set_supports_ippusb(UsbDeviceSupportsIppusb(device_info));
   return printer;
+}
+
+void GetDeviceId(device::mojom::UsbDevicePtr device_ptr,
+                 GetDeviceIdCallback cb) {
+  // Open device.
+  auto* device = device_ptr.get();
+  device->Open(
+      base::BindOnce(OnDeviceOpen, std::move(device_ptr), std::move(cb)));
 }
 
 }  // namespace chromeos

@@ -15,7 +15,7 @@
 #include "components/viz/client/frame_evictor.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/common/presentation_feedback_map.h"
+#include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -90,7 +90,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args,
-                    const viz::PresentationFeedbackMap& feedbacks) override;
+                    const viz::FrameTimingDetailsMap& timing_details) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFramePausedChanged(bool paused) override;
@@ -107,7 +107,14 @@ class CONTENT_EXPORT DelegatedFrameHost
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
       base::Optional<viz::HitTestRegionList> hit_test_region_list);
-  void WasHidden();
+
+  // kOccluded means the native window for the host was
+  // occluded/hidden, kOther is for other causes, e.g., a tab became a
+  // background tab.
+  enum class HiddenCause { kOccluded, kOther };
+
+  void WasHidden(HiddenCause cause);
+
   // TODO(ccameron): Include device scale factor here.
   void WasShown(const viz::LocalSurfaceId& local_surface_id,
                 const gfx::Size& dip_size,
@@ -137,15 +144,6 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   bool CanCopyFromCompositingSurface() const;
   const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
-
-  // Given the SurfaceID of a Surface that is contained within this class'
-  // Surface, find the relative transform between the Surfaces and apply it
-  // to a point. Returns false if a Surface has not yet been created or if
-  // |original_surface| is not embedded within our current Surface.
-  bool TransformPointToLocalCoordSpaceLegacy(
-      const gfx::PointF& point,
-      const viz::SurfaceId& original_surface,
-      gfx::PointF* transformed_point);
 
   void SetNeedsBeginFrames(bool needs_begin_frames);
   void SetWantsAnimateOnlyBeginFrames();
@@ -240,10 +238,6 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   viz::LocalSurfaceId first_local_surface_id_after_navigation_;
 
-#ifdef OS_CHROMEOS
-  bool seen_first_activation_ = false;
-#endif
-
   enum class FrameEvictionState {
     kNotStarted = 0,          // Frame eviction is ready.
     kPendingEvictionRequests  // Frame eviction is paused with pending requests.
@@ -258,7 +252,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   TabSwitchTimeRecorder tab_switch_time_recorder_;
 
-  base::WeakPtrFactory<DelegatedFrameHost> weak_factory_;
+  base::WeakPtrFactory<DelegatedFrameHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DelegatedFrameHost);
 };

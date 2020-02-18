@@ -177,12 +177,14 @@ class ThreatDetails : public content::WebContentsObserver {
   // ID of the element within the frame. |tag_name| is the tag of the element.
   // |parent_element_node_id| is the unique ID of the parent element within the
   // frame. |attributes| contains the names and values of the element's
-  // attributes. |resource| is set if this element is a resource.
+  // attributes. |inner_html| is set if the element contains inline JavaScript.
+  // |resource| is set if this element is a resource.
   void AddDomElement(const int frame_tree_node_id,
                      const int element_node_id,
                      const std::string& tag_name,
                      const int parent_element_node_id,
                      const std::vector<mojom::AttributeNameValuePtr> attributes,
+                     const std::string& inner_html,
                      const ClientSafeBrowsingReportRequest::Resource* resource);
 
   // Populates the referrer chain data in |report_|. This may be skipped if the
@@ -271,7 +273,7 @@ class ThreatDetails : public content::WebContentsObserver {
   std::vector<content::RenderFrameHost*> pending_render_frame_hosts_;
 
   // Used for references to |this| bound in callbacks.
-  base::WeakPtrFactory<ThreatDetails> weak_factory_;
+  base::WeakPtrFactory<ThreatDetails> weak_factory_{this};
 
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HistoryServiceUrls);
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HttpsResourceSanitization);

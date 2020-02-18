@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -55,9 +56,9 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
     views::View* view = dialog_view()->GetViewByID(
         static_cast<int>(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
     EXPECT_TRUE(!view || !view->GetVisible() ||
-                static_cast<views::Label*>(view)->text().empty())
+                static_cast<views::Label*>(view)->GetText().empty())
         << "Found unexpected display item: "
-        << static_cast<views::Label*>(view)->text();
+        << static_cast<views::Label*>(view)->GetText();
   }
 
   // Verifies that the shipping address section does not display any warning
@@ -68,7 +69,7 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
     if (!view || !view->GetVisible())
       return;
 
-    EXPECT_EQ(base::string16(), static_cast<views::Label*>(view)->text());
+    EXPECT_EQ(base::string16(), static_cast<views::Label*>(view)->GetText());
   }
 
   // Verifies that the shipping address section has |expected_message| in the
@@ -116,6 +117,7 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, DigitalGoods) {
+  base::HistogramTester histogram_tester;
   NavigateTo("/show_promise/digital_goods.html");
   InstallEchoPaymentHandlerForBasicCard();
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "create();"));
@@ -131,6 +133,16 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, DigitalGoods) {
   Pay();
 
   ExpectBodyContains({R"({"currency":"USD","value":"1.00"})"});
+
+  // The initial total in digital_goods.js is 99.99 while the final total
+  // is 1.00. Verify that transaction amount metrics are recorded only once and
+  // with final total rather than the initial one. The final total falls into
+  // micro transaction category.
+  const uint32_t kMicroTransaction = 1;
+  histogram_tester.ExpectUniqueSample(
+      "PaymentRequest.TransactionAmount.Triggered", kMicroTransaction, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PaymentRequest.TransactionAmount.Completed", kMicroTransaction, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, SingleOptionShipping) {
@@ -236,10 +248,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, CannotShipError) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, SkipUI) {
+  SetSkipUiForForBasicCard();
   NavigateTo("/show_promise/digital_goods.html");
   InstallEchoPaymentHandlerForBasicCard();
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "create();"));
-  EnableSkipUIForForBasicCard();
   ResetEventWaiterForSequence(
       {DialogEvent::PROCESSING_SPINNER_SHOWN,
        DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,

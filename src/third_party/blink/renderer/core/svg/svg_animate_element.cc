@@ -339,8 +339,7 @@ void SVGAnimateElement::CalculateAnimatedValue(float percentage,
   DCHECK_EQ(from_property_->GetType(), GetAnimatedPropertyType());
   DCHECK(to_property_);
 
-  SVGAnimateElement* result_animation_element =
-      ToSVGAnimateElement(result_element);
+  auto* result_animation_element = To<SVGAnimateElement>(result_element);
   DCHECK(result_animation_element->animated_value_);
   DCHECK_EQ(result_animation_element->GetAnimatedPropertyType(),
             GetAnimatedPropertyType());
@@ -352,7 +351,7 @@ void SVGAnimateElement::CalculateAnimatedValue(float percentage,
     percentage = percentage < 0.5 ? 0 : 1;
 
   // Target element might have changed.
-  SVGElement* target_element = this->targetElement();
+  SVGElement* target_element = targetElement();
 
   // Values-animation accumulates using the last values entry corresponding to
   // the end of duration time.
@@ -419,8 +418,8 @@ bool SVGAnimateElement::CalculateFromAndByValues(const String& from_string,
 void SVGAnimateElement::ResetAnimatedType() {
   ResolveTargetProperty();
 
-  SVGElement* target_element = this->targetElement();
-  const QualifiedName& attribute_name = this->AttributeName();
+  SVGElement* target_element = targetElement();
+  const QualifiedName& attribute_name = AttributeName();
 
   if (!ShouldApplyAnimation(*target_element, attribute_name))
     return;
@@ -451,7 +450,7 @@ void SVGAnimateElement::ClearAnimatedType() {
   // the lock is held. See crbug.com/581546.
   DCHECK(!AnimatedTypeIsLocked());
 
-  SVGElement* target_element = this->targetElement();
+  SVGElement* target_element = targetElement();
   if (!target_element) {
     animated_value_.Clear();
     return;
@@ -489,7 +488,8 @@ void SVGAnimateElement::ApplyResultsToTarget() {
   if (!animated_value_)
     return;
 
-  if (!ShouldApplyAnimation(*targetElement(), AttributeName()))
+  SVGElement* target_element = targetElement();
+  if (!ShouldApplyAnimation(*target_element, AttributeName()))
     return;
 
   // We do update the style and the animation property independent of each
@@ -497,15 +497,17 @@ void SVGAnimateElement::ApplyResultsToTarget() {
   if (IsAnimatingCSSProperty()) {
     // CSS properties animation code-path.
     // Convert the result of the animation to a String and apply it as CSS
-    // property on the target.
-    MutableCSSPropertyValueSet* property_set =
-        targetElement()->EnsureAnimatedSMILStyleProperties();
-    if (property_set
-            ->SetProperty(
-                css_property_id_, animated_value_->ValueAsString(), false,
-                targetElement()->GetDocument().GetSecureContextMode(), nullptr)
-            .did_change) {
-      targetElement()->SetNeedsStyleRecalc(
+    // property on the target_element.
+    MutableCSSPropertyValueSet* properties =
+        target_element->EnsureAnimatedSMILStyleProperties();
+    auto animated_value_string = animated_value_->ValueAsString();
+    auto secure_context_mode =
+        target_element->GetDocument().GetSecureContextMode();
+    auto set_result =
+        properties->SetProperty(css_property_id_, animated_value_string, false,
+                                secure_context_mode, nullptr);
+    if (set_result.did_change) {
+      target_element->SetNeedsStyleRecalc(
           kLocalStyleChange,
           StyleChangeReasonForTracing::Create(style_change_reason::kAnimation));
     }

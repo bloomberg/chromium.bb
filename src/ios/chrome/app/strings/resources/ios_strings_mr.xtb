@@ -113,6 +113,7 @@
 <translation id="2500374554657206846">पासवर्ड सेव्ह करण्यासाठी पर्याय</translation>
 <translation id="2523363575747517183">ही वेबसाइट वारंवार दुसरे अ‍ॅप्लिकेशन उघडण्याचा प्रयत्न करत आहे.</translation>
 <translation id="2529021024822217800">सर्व उघडा</translation>
+<translation id="2562041823070056534"><ph name="DEVICE_NAME" /> ला पाठवत आहे…</translation>
 <translation id="2570206273416014374">ॲड्रेस बार आणि सर्च बॉक्समधून तुमच्या डीफॉल्ट शोध इंजिनला काही कुकी आणि शोध पाठवते.</translation>
 <translation id="2572712655377361602">डिव्हाइस धोरणाने तुमच्या फोटोंंचा अॅक्सेस ब्लॉक केला</translation>
 <translation id="2578571896248130439">वेबपेज पाठवा</translation>
@@ -150,6 +151,7 @@
 <translation id="2933759065870693102">टॉर्च</translation>
 <translation id="2958718410589002129">पासवर्ड</translation>
 <translation id="2969979262385602596">साइन इन करण्यात अयशस्वी. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
+<translation id="298306318844797842">पेमेंट पद्धत जोडा…</translation>
 <translation id="2989805286512600854">नवीन टॅबमध्ये उघडा</translation>
 <translation id="3037605927509011580">च्चक!</translation>
 <translation id="3112556859945124369">चिन्हांकित करा…</translation>
@@ -314,6 +316,7 @@
 <translation id="5556459405103347317">रीलोड करा</translation>
 <translation id="5614553682702429503">पासवर्ड सेव्ह करायचा आहे का?</translation>
 <translation id="5626245204502895507">यावेळी फाईल डाऊनलोड केली जाऊ शकली नाही.</translation>
+<translation id="5631164295104953411">पेमेंट पद्धत जोडा</translation>
 <translation id="5659593005791499971">ईमेल</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">आवृत्ती <ph name="PRODUCT_VERSION" /></translation>
@@ -465,6 +468,7 @@
 <translation id="7772032839648071052">सांकेतिक पासफ्रेझ निश्चित करा</translation>
 <translation id="7781829728241885113">काल</translation>
 <translation id="778855399387580014">एका नवीन Chrome टॅबमध्ये शोध सुरू करा.</translation>
+<translation id="7791543448312431591">जोडा</translation>
 <translation id="780301667611848630">नाही, नको</translation>
 <translation id="7840771868269352570">तुम्ही निवडलेले आयटम काढून टाकले जातील.</translation>
 <translation id="7856733331829174190">डाउनलोड करता आले नाही</translation>
@@ -478,6 +482,7 @@
 <translation id="7961015016161918242">कधीही नाही</translation>
 <translation id="7971521879845308059">पॉप-अप अवरोधित करा</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
+<translation id="8007420562015504427">गुप्त शोध</translation>
 <translation id="8019783059653722575">हे तुम्हाला फोटो सेव्ह आणि अपलोड करू देते.</translation>
 <translation id="802154636333426148">डाउनलोड अयशस्वी झाले</translation>
 <translation id="8023878949384262191">विभाग विस्तृत करते.</translation>
@@ -492,6 +497,7 @@
 <translation id="8225985093977202398">कॅश   इमेज आणि फायली</translation>
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="8281781826761538115">डीफॉल्ट - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8319076807703933069">नवीन शोध</translation>
 <translation id="8328777765163860529">सर्व बंद करा</translation>
 <translation id="8381750437846184350">शोध, जाहिरात आणि इतर Google सेवा पर्सनलाइझ करण्यास Google तुमच्या ब्राउझिंग इतिहासाचा कसा वापर करते ते नियंत्रित करा</translation>
 <translation id="8407669440184693619">या साइटसाठी पासवर्ड सापडले नाहीत</translation>
@@ -508,7 +514,6 @@
 <translation id="8532105204136943229">कालबाह्य होण्याचे वर्ष</translation>
 <translation id="8534481786647257214">Google+ पोस्ट पूर्ण केले.</translation>
 <translation id="8548878600947630424">पृष्ठामध्ये शोधा...</translation>
-<translation id="8583866649835978847">तुमच्या डिव्हाइसपैकी एकाला <ph name="TITLE" /> पाठवा.</translation>
 <translation id="8605219856220328675">टॅब बंद करा.</translation>
 <translation id="8620640915598389714">संपादित करा</translation>
 <translation id="8636825310635137004">आपल्या इतर डिव्हाइसेस मधून तुमचे टॅब प्राप्त करण्यासाठी, संकालन चालू करा</translation>
@@ -531,7 +536,6 @@
 <translation id="8976382372951310360">मदत</translation>
 <translation id="8981454092730389528">Google ॲक्टिव्हिटी नियंत्रणे</translation>
 <translation id="8985320356172329008">Google मध्ये हे म्हणून साइन इन केले</translation>
-<translation id="9016406938567631235">पाठवत आहे…</translation>
 <translation id="902659348151742535">शोध, जाहिरात आणि इतर Google सेवा पर्सनलाइझ करण्यासाठी Google तुमच्या ब्राउझिंग इतिहासाचा वापर करू शकते.</translation>
 <translation id="9034759925968272072">तुम्हाला आपल्या Google खात्यामधून साइन आउट केले जाणार नाही. आपल्या Google खात्यात <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> वर ब्राउझिंग इतिहासाची इतर स्वरूपे असू शकतात.</translation>
 <translation id="9039373489628511875">बँडविड्थ</translation>

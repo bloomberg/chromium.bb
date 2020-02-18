@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/engine/data_type_activation_response.h"
@@ -59,6 +59,17 @@ ModelTypeController::ModelTypeController(
 }
 
 ModelTypeController::~ModelTypeController() {}
+
+std::unique_ptr<DataTypeActivationResponse>
+ModelTypeController::ActivateManuallyForNigori() {
+  // To avoid abuse of this temporary API, we restrict it to NIGORI.
+  DCHECK_EQ(NIGORI, type());
+  DCHECK_EQ(MODEL_LOADED, state_);
+  DCHECK(activation_response_);
+  state_ = RUNNING;
+  activated_ = true;  // Not relevant, but for consistency.
+  return std::move(activation_response_);
+}
 
 bool ModelTypeController::ShouldLoadModelBeforeConfigure() const {
   // USS datatypes require loading models because model controls storage where

@@ -7,8 +7,11 @@ from __future__ import division
 from __future__ import absolute_import
 
 import json
+import logging
 import urlparse
 
+from dashboard.pinpoint.models import change as change_module
+from dashboard.pinpoint.models import errors
 from dashboard.pinpoint.models import isolate
 from dashboard.pinpoint.models.quest import execution
 from dashboard.pinpoint.models.quest import quest
@@ -17,17 +20,6 @@ from dashboard.services import gerrit_service
 
 
 BUCKET = 'master.tryserver.chromium.perf'
-
-
-class IsolateNotFoundError(execution.FatalError):
-  """Raised when the build succeeds, but Pinpoint can't find the isolate.
-
-  This error is fatal to the Job.
-  """
-
-
-class BuildError(execution.InformationalError):
-  """Raised when the build fails."""
 
 
 class FindIsolate(quest.Quest):
@@ -96,6 +88,8 @@ class _FindIsolateExecution(execution.Execution):
     return details
 
   def _Poll(self):
+    logging.debug('_FindIsolateExecution Polling: %s', self._AsDict())
+
     if self._CheckIsolateCache():
       return
 
@@ -115,12 +109,14 @@ class _FindIsolateExecution(execution.Execution):
       isolate_server, isolate_hash = isolate.Get(
           self._builder_name, self._change, self._target)
     except KeyError:
+      logging.debug('NOT found in isolate cache')
       return False
 
     result_arguments = {
         'isolate_server': isolate_server,
         'isolate_hash': isolate_hash,
     }
+    logging.debug('Found in isolate cache: %s', result_arguments)
     self._Complete(result_arguments=result_arguments)
     return True
 
@@ -131,6 +127,7 @@ class _FindIsolateExecution(execution.Execution):
       BuildError: The build failed, was canceled, or didn't produce an isolate.
     """
     build = buildbucket_service.GetJobStatus(self._build)['build']
+    logging.debug('buildbucket response: %s', build)
 
     self._build_url = build.get('url')
 
@@ -138,9 +135,9 @@ class _FindIsolateExecution(execution.Execution):
       return
 
     if build['result'] == 'FAILURE':
-      raise BuildError('Build failed: ' + build['failure_reason'])
+      raise errors.BuildFailed(build['failure_reason'])
     if build['result'] == 'CANCELED':
-      raise BuildError('Build was canceled: ' + build['cancelation_reason'])
+      raise errors.BuildCancelled(build['cancelation_reason'])
 
     # The build succeeded. Parse the result and complete this Quest.
     properties = json.loads(build['result_details_json'])['properties']
@@ -150,9 +147,7 @@ class _FindIsolateExecution(execution.Execution):
     key = '_'.join(('swarm_hashes', commit_position, suffix))
 
     if self._target not in properties[key]:
-      raise IsolateNotFoundError(
-          'Buildbucket says the build completed successfully, '
-          "but Pinpoint can't find the isolate hash.")
+      raise errors.BuildIsolateNotFound()
 
     result_arguments = {
         'isolate_server': properties['isolate_server'],
@@ -172,10 +167,14 @@ class _FindIsolateExecution(execution.Execution):
     If a previous Execution already requested a build for this Change, returns
     that build instead of requesting a new one.
     """
+    logging.debug('_FindIsolateExecution _RequestBuild')
+
     if self._change in self._previous_builds:
+      logging.debug('%s in list of previous_builds', self._change)
       # If another Execution already requested a build, reuse that one.
       self._build = self._previous_builds[self._change]
     else:
+      logging.debug('Requesting a build')
       # Request a build!
       buildbucket_info = _RequestBuild(
           self._builder_name, self._change, self.bucket)
@@ -188,19 +187,15 @@ def _RequestBuild(builder_name, change, bucket):
   base_as_dict = change.base_commit.AsDict()
   review_url = base_as_dict.get('review_url')
   if not review_url:
-    raise BuildError(
-        'Could not find gerrit review url for commit: ' + str(base_as_dict))
-
-  change_id = base_as_dict.get('change_id')
-  if not change_id:
-    raise BuildError(
-        'Could not find gerrit change id for commit: ' + str(base_as_dict))
+    raise errors.BuildGerritUrlNotFound(str(change.base_commit))
 
   url_parts = urlparse.urlparse(review_url)
   base_review_url = urlparse.urlunsplit(
       (url_parts.scheme, url_parts.netloc, '', '', ''))
 
-  change_info = gerrit_service.GetChange(base_review_url, change_id)
+  patch = change_module.GerritPatch.FromUrl(review_url)
+
+  change_info = gerrit_service.GetChange(base_review_url, patch.change)
 
   commit_url_parts = urlparse.urlparse(base_as_dict['url'])
 
@@ -228,6 +223,10 @@ def _RequestBuild(builder_name, change, bucket):
 
   if change.patch:
     parameters['properties'].update(change.patch.BuildParameters())
+
+  logging.debug('bucket: %s', bucket)
+  logging.debug('builder_tags: %s', builder_tags)
+  logging.debug('parameters: %s', parameters)
 
   # TODO: Look up Buildbucket bucket from builder_name.
   return buildbucket_service.Put(bucket, builder_tags, parameters)

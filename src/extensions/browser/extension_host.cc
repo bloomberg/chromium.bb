@@ -453,7 +453,7 @@ void ExtensionHost::RequestMediaAccessPermission(
 bool ExtensionHost::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    blink::MediaStreamType type) {
+    blink::mojom::MediaStreamType type) {
   return delegate_->CheckMediaAccessPermission(
       render_frame_host, security_origin, type, extension());
 }
@@ -463,7 +463,7 @@ bool ExtensionHost::IsNeverVisible(content::WebContents* web_contents) {
   return view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
 }
 
-gfx::Size ExtensionHost::EnterPictureInPicture(
+content::PictureInPictureResult ExtensionHost::EnterPictureInPicture(
     content::WebContents* web_contents,
     const viz::SurfaceId& surface_id,
     const gfx::Size& natural_size) {

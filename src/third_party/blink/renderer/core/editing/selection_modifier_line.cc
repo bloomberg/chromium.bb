@@ -109,7 +109,7 @@ class AbstractLineBox {
     return AbstractLineBox();
   }
 
-  LayoutPoint AbsoluteLineDirectionPointToLocalPointInBlock(
+  PhysicalOffset AbsoluteLineDirectionPointToLocalPointInBlock(
       LayoutUnit line_direction_point) {
     DCHECK(!IsNull());
     const LayoutBlockFlow& containing_block = GetBlock();
@@ -121,31 +121,24 @@ class AbstractLineBox {
           PhysicalOffset(containing_block.ScrolledContentOffset());
     }
 
-    if (containing_block.Style()->IsHorizontalWritingMode()) {
-      return LayoutPoint(
-          LayoutUnit(line_direction_point - absolute_block_point.left),
-          BlockDirectionPointInLine());
+    if (containing_block.IsHorizontalWritingMode()) {
+      return PhysicalOffset(line_direction_point - absolute_block_point.left,
+                            PhysicalBlockOffset());
     }
-
-    return LayoutPoint(
-        BlockDirectionPointInLine(),
-        LayoutUnit(line_direction_point - absolute_block_point.top));
+    return PhysicalOffset(PhysicalBlockOffset(),
+                          line_direction_point - absolute_block_point.top);
   }
 
   const LayoutObject* ClosestLeafChildForPoint(
-      const LayoutPoint& point,
+      const PhysicalOffset& point,
       bool only_editable_leaves) const {
     DCHECK(!IsNull());
     if (IsOldLayout()) {
-      return GetRootInlineBox().ClosestLeafChildForPoint(point,
-                                                         only_editable_leaves);
+      return GetRootInlineBox().ClosestLeafChildForPoint(
+          GetBlock().FlipForWritingMode(point), only_editable_leaves);
     }
-    const LayoutSize unit_square(1, 1);
-    const PhysicalRect physical_rect =
-        GetBlock().FlipForWritingMode(LayoutRect(point, unit_square));
-    const PhysicalOffset physical_point = physical_rect.offset;
     const PhysicalOffset local_physical_point =
-        physical_point - ng_box_fragment_->Children()[ng_child_index_].offset;
+        point - ng_box_fragment_->Children()[ng_child_index_].offset;
     return GetLineBoxFragment().ClosestLeafChildForPoint(local_physical_point,
                                                          only_editable_leaves);
   }
@@ -173,17 +166,17 @@ class AbstractLineBox {
     return *To<LayoutBlockFlow>(ng_box_fragment_->GetLayoutObject());
   }
 
-  LayoutUnit BlockDirectionPointInLine() const {
+  LayoutUnit PhysicalBlockOffset() const {
     DCHECK(!IsNull());
-    if (IsOldLayout())
-      return GetRootInlineBox().BlockDirectionPointInLine();
+    if (IsOldLayout()) {
+      return GetBlock().FlipForWritingMode(
+          GetRootInlineBox().BlockDirectionPointInLine());
+    }
     const PhysicalOffset physical_offset =
         ng_box_fragment_->Children()[ng_child_index_].offset;
-    const LogicalOffset logical_offset = physical_offset.ConvertToLogical(
-        ng_box_fragment_->Style().GetWritingMode(),
-        GetLineBoxFragment().BaseDirection(), ng_box_fragment_->Size(),
-        GetLineBoxFragment().Size());
-    return logical_offset.block_offset;
+    return ng_box_fragment_->Style().IsHorizontalWritingMode()
+               ? physical_offset.top
+               : physical_offset.left;
   }
 
   bool IsOldLayout() const { return type_ == Type::kOldLayout; }
@@ -425,7 +418,7 @@ VisiblePosition SelectionModifier::PreviousLinePosition(
 
   if (!line.IsNull()) {
     // FIXME: Can be wrong for multi-column layout and with transforms.
-    LayoutPoint point_in_line =
+    PhysicalOffset point_in_line =
         line.AbsoluteLineDirectionPointToLocalPointInBlock(
             line_direction_point);
     const LayoutObject* closest_leaf_child =
@@ -495,7 +488,7 @@ VisiblePosition SelectionModifier::NextLinePosition(
 
   if (!line.IsNull()) {
     // FIXME: Can be wrong for multi-column layout and with transforms.
-    LayoutPoint point_in_line =
+    PhysicalOffset point_in_line =
         line.AbsoluteLineDirectionPointToLocalPointInBlock(
             line_direction_point);
     const LayoutObject* closest_leaf_child =

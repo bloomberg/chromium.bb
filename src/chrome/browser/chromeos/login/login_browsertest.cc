@@ -22,8 +22,8 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/test/rect_test_util.h"
 
 using ::gfx::test::RectContains;
@@ -97,11 +97,7 @@ void TestSystemTrayIsVisible(bool otr) {
   EXPECT_TRUE(tray->GetVisible());
 
   // This check flakes for LoginGuestTest: https://crbug.com/693106.
-  // This check is suppressed for Mash since the warning button of Mash changes
-  // the tray bounds which triggers the failure. See: https://crbug.com/892730
-  // TODO(jamescook): remove this when Mash is on by default or the button is
-  // removed.
-  if (!otr && !features::IsUsingWindowService())
+  if (!otr)
     EXPECT_TRUE(RectContains(primary_win->bounds(), tray->GetBoundsInScreen()));
 }
 

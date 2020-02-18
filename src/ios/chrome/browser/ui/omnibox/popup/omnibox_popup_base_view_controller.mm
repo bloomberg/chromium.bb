@@ -22,21 +22,6 @@
 
 namespace {
 const CGFloat kTopAndBottomPadding = 8.0;
-UIColor* BackgroundColorTablet() {
-  return [UIColor whiteColor];
-}
-UIColor* BackgroundColorPhone() {
-  return [UIColor colorWithRed:(245 / 255.0)
-                         green:(245 / 255.0)
-                          blue:(246 / 255.0)
-                         alpha:1.0];
-}
-UIColor* BackgroundColorIncognito() {
-  return [UIColor colorWithRed:(50 / 255.0)
-                         green:(50 / 255.0)
-                          blue:(50 / 255.0)
-                         alpha:1.0];
-}
 }  // namespace
 
 @interface OmniboxPopupBaseViewController () <UITableViewDataSource>
@@ -107,15 +92,10 @@ UIColor* BackgroundColorIncognito() {
 
   // Initialize the same size as the parent view, autoresize will correct this.
   [self.view setFrame:CGRectZero];
-  if (self.incognito) {
-    self.view.backgroundColor = BackgroundColorIncognito();
-  } else {
-    self.view.backgroundColor =
-        IsIPadIdiom() ? BackgroundColorTablet() : BackgroundColorPhone();
-  }
-
   [self.view setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                                   UIViewAutoresizingFlexibleHeight)];
+
+  [self updateBackgroundColor];
 
   // Table configuration.
   self.tableView.allowsMultipleSelectionDuringEditing = NO;
@@ -133,15 +113,7 @@ UIColor* BackgroundColorIncognito() {
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-
-  ToolbarConfiguration* configuration = [[ToolbarConfiguration alloc]
-      initWithStyle:self.incognito ? INCOGNITO : NORMAL];
-
-  if (IsRegularXRegularSizeClass(self)) {
-    self.view.backgroundColor = configuration.backgroundColor;
-  } else {
-    self.view.backgroundColor = [UIColor clearColor];
-  }
+  [self updateBackgroundColor];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -470,6 +442,19 @@ UIColor* BackgroundColorIncognito() {
 
 - (void)updateTableViewWithAnimation:(BOOL)animation {
   // for subclassing
+}
+
+// Updates the color of the background based on the incognito-ness and the size
+// class.
+- (void)updateBackgroundColor {
+  ToolbarConfiguration* configuration = [[ToolbarConfiguration alloc]
+      initWithStyle:self.incognito ? INCOGNITO : NORMAL];
+
+  if (IsRegularXRegularSizeClass(self)) {
+    self.view.backgroundColor = configuration.backgroundColor;
+  } else {
+    self.view.backgroundColor = [UIColor clearColor];
+  }
 }
 
 #pragma mark Action for append UIButton

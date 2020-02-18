@@ -74,7 +74,7 @@ class MojoVideoDecoder final : public VideoDecoder,
   void OnInitializeDone(bool status,
                         bool needs_bitstream_conversion,
                         int32_t max_decode_requests);
-  void OnDecodeDone(uint64_t decode_id, DecodeStatus status);
+  void OnDecodeDone(uint64_t decode_id, int64_t timestamp, DecodeStatus status);
   void OnResetDone();
 
   void BindRemoteDecoder();
@@ -126,7 +126,7 @@ class MojoVideoDecoder final : public VideoDecoder,
   VideoDecoderImplementation video_decoder_implementation_;
 
   base::WeakPtr<MojoVideoDecoder> weak_this_;
-  base::WeakPtrFactory<MojoVideoDecoder> weak_factory_;
+  base::WeakPtrFactory<MojoVideoDecoder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoVideoDecoder);
 };

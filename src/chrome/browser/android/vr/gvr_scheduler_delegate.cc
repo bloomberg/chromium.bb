@@ -174,9 +174,9 @@ void GvrSchedulerDelegate::ConnectPresentingService(
   device::mojom::XRFrameDataProviderPtr frame_data_provider;
   frame_data_binding_.Bind(mojo::MakeRequest(&frame_data_provider));
 
-  gfx::Size webxr_size(
-      display_info->leftEye->renderWidth + display_info->rightEye->renderWidth,
-      display_info->leftEye->renderHeight);
+  gfx::Size webxr_size(display_info->left_eye->render_width +
+                           display_info->right_eye->render_width,
+                       display_info->left_eye->render_height);
   DVLOG(1) << __func__ << ": resize initial to " << webxr_size.width() << "x"
            << webxr_size.height();
 
@@ -1328,6 +1328,13 @@ void GvrSchedulerDelegate::GetEnvironmentIntegrationProvider(
   // Environment integration is not supported. This call should not
   // be made on this device.
   mojo::ReportBadMessage("Environment integration is not supported.");
+}
+
+void GvrSchedulerDelegate::SetInputSourceButtonListener(
+    device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo) {
+  // Input eventing is not supported. This call should not
+  // be made on this device.
+  mojo::ReportBadMessage("Input eventing is not supported.");
 }
 
 }  // namespace vr

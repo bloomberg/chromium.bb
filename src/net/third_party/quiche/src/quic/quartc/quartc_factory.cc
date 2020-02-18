@@ -54,17 +54,8 @@ void ConfigureGlobalQuicSettings() {
   // Fixes behavior of StopReading() with level-triggered stream sequencers.
   SetQuicReloadableFlag(quic_stop_reading_when_level_triggered, true);
 
-  // Fix b/110259444.
-  SetQuicReloadableFlag(quic_fix_spurious_ack_alarm, true);
-
-  // Enable version 46 to enable SendMessage API and 'quic bit' per draft 17.
-  SetQuicReloadableFlag(quic_enable_version_46, true);
-
   // Enable version 47 to enable variable-length connection ids.
   SetQuicReloadableFlag(quic_enable_version_47, true);
-
-  // Fix for inconsistent reporting of crypto handshake.
-  SetQuicReloadableFlag(quic_fix_has_pending_crypto_data, true);
 
   // Ensure that we don't drop data because QUIC streams refuse to buffer it.
   // TODO(b/120099046):  Replace this with correct handling of WriteMemSlices().
@@ -82,8 +73,10 @@ void ConfigureGlobalQuicSettings() {
   // SetQuicReloadableFlag() gets stubbed out.
   SetQuicReloadableFlag(quic_bbr_less_probe_rtt, true);   // Enable BBR6,7,8.
   SetQuicReloadableFlag(quic_unified_iw_options, true);   // Enable IWXX opts.
-  SetQuicReloadableFlag(quic_bbr_slower_startup3, true);  // Enable BBQX opts.
   SetQuicReloadableFlag(quic_bbr_flexible_app_limited, true);  // Enable BBR9.
+
+  // Fix GetPacketHeaderSize
+  SetQuicReloadableFlag(quic_fix_get_packet_header_size, true);
 }
 
 QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config) {
@@ -96,7 +89,7 @@ QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config) {
 
   // In exoblaze this may return false. DCHECK to avoid problems caused by
   // incorrect flags configuration.
-  DCHECK(GetQuicReloadableFlag(quic_enable_version_46))
+  DCHECK(GetQuicReloadableFlag(quic_enable_version_47))
       << "Your build does not support quic reloadable flags and shouldn't "
          "place Quartc calls";
 
@@ -213,7 +206,9 @@ std::unique_ptr<QuicConnection> CreateQuicConnection(
   // The p-time can go up to as high as 120ms, and when it does, it's
   // when the low overhead is the most important thing. Ideally it should be
   // above 120ms, but it cannot be higher than 0.5*RTO, which equals to 100ms.
-  sent_packet_manager.set_delayed_ack_time(
+  sent_packet_manager.set_local_max_ack_delay(
+      QuicTime::Delta::FromMilliseconds(100));
+  sent_packet_manager.set_peer_max_ack_delay(
       QuicTime::Delta::FromMilliseconds(100));
 
   quic_connection->set_fill_up_link_during_probing(true);

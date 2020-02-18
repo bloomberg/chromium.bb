@@ -21,10 +21,6 @@ namespace content {
 class RenderFrameHost;
 }
 
-namespace net {
-class NetLog;
-}
-
 namespace safe_browsing {
 class UrlCheckerDelegate;
 }
@@ -46,6 +42,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // platform. For details, see
   // https://developer.android.com/reference/android/security/NetworkSecurityPolicy.html#isCleartextTrafficPermitted().
   static void set_check_cleartext_permitted(bool permitted);
+  static bool get_check_cleartext_permitted();
 
   // |aw_feature_list_creator| should not be null.
   explicit AwContentBrowserClient(
@@ -62,7 +59,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
-  network::mojom::NetworkContextParamsPtr GetNetworkContextParams();
 
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
@@ -71,7 +67,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   void RenderProcessWillLaunch(
       content::RenderProcessHost* host,
       service_manager::mojom::ServiceRequest* service_request) override;
-  bool ShouldUseMobileFlingCurve() const override;
+  bool ShouldUseMobileFlingCurve() override;
   bool IsHandledURL(const GURL& url) override;
   bool ForceSniffingFileUrlsForHtml() override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
@@ -79,21 +75,12 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   std::string GetApplicationLocale() override;
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   gfx::ImageSkia GetDefaultFavicon() override;
+  bool AllowAppCacheOnIO(const GURL& manifest_url,
+                         const GURL& first_party,
+                         content::ResourceContext* context) override;
   bool AllowAppCache(const GURL& manifest_url,
                      const GURL& first_party,
-                     content::ResourceContext* context) override;
-  bool AllowGetCookie(const GURL& url,
-                      const GURL& first_party,
-                      const net::CookieList& cookie_list,
-                      content::ResourceContext* context,
-                      int render_process_id,
-                      int render_frame_id) override;
-  bool AllowSetCookie(const GURL& url,
-                      const GURL& first_party,
-                      const net::CanonicalCookie& cookie,
-                      content::ResourceContext* context,
-                      int render_process_id,
-                      int render_frame_id) override;
+                     content::BrowserContext* context) override;
   void AllowWorkerFileSystem(
       const GURL& url,
       content::ResourceContext* context,
@@ -121,7 +108,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       bool expired_previous_decision,
       const base::Callback<void(content::CertificateRequestResultType)>&
           callback) override;
-  void SelectClientCertificate(
+  base::OnceClosure SelectClientCertificate(
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       net::ClientCertIdentityList client_certs,
@@ -140,7 +127,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                        bool opener_suppressed,
                        bool* no_javascript_access) override;
   void ResourceDispatcherHostCreated() override;
-  net::NetLog* GetNetLog() override;
   base::FilePath GetDefaultDownloadDirectory() override;
   std::string GetDefaultDownloadName() override;
   void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
@@ -180,10 +166,20 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       service_manager::BinderRegistry* registry,
       blink::AssociatedInterfaceRegistry* associated_registry,
       content::RenderProcessHost* render_process_host) override;
+  void ExposeInterfacesToMediaService(
+      service_manager::BinderRegistry* registry,
+      content::RenderFrameHost* render_frame_host) override;
+  std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+  CreateURLLoaderThrottlesOnIO(
+      const network::ResourceRequest& request,
+      content::ResourceContext* resource_context,
+      const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+      content::NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id) override;
   std::vector<std::unique_ptr<content::URLLoaderThrottle>>
   CreateURLLoaderThrottles(
       const network::ResourceRequest& request,
-      content::ResourceContext* resource_context,
+      content::BrowserContext* browser_context,
       const base::RepeatingCallback<content::WebContents*()>& wc_getter,
       content::NavigationUIData* navigation_ui_data,
       int frame_tree_node_id) override;
@@ -214,8 +210,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
-      network::mojom::URLLoaderFactory*& out_factory) override;
+      network::mojom::URLLoaderFactoryPtr* out_factory) override;
   void RegisterNonNetworkSubresourceURLLoaderFactories(
       int render_process_id,
       int render_frame_id,
@@ -229,22 +224,26 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       bool is_navigation,
       bool is_download,
       const url::Origin& request_initiator,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks) override;
   void WillCreateURLLoaderFactoryForAppCacheSubresource(
       int render_process_id,
-      network::mojom::URLLoaderFactoryPtrInfo* factory_ptr_info) override;
-  void WillCreateWebSocket(
-      content::RenderFrameHost* frame,
-      network::mojom::WebSocketRequest* request,
-      network::mojom::AuthenticationHandlerPtr* authentication_handler,
-      network::mojom::TrustedHeaderClientPtr* header_client,
-      uint32_t* options) override;
-  std::string GetProduct() const override;
-  std::string GetUserAgent() const override;
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>* pending_factory)
+      override;
+  uint32_t GetWebSocketOptions(content::RenderFrameHost* frame) override;
+  bool WillCreateRestrictedCookieManager(
+      network::mojom::RestrictedCookieManagerRole role,
+      content::BrowserContext* browser_context,
+      const url::Origin& origin,
+      bool is_service_worker,
+      int process_id,
+      int routing_id,
+      network::mojom::RestrictedCookieManagerRequest* request) override;
+  std::string GetProduct() override;
+  std::string GetUserAgent() override;
   ContentBrowserClient::WideColorGamutHeuristic GetWideColorGamutHeuristic()
-      const override;
+      override;
 
   AwFeatureListCreator* aw_feature_list_creator() {
     return aw_feature_list_creator_;
@@ -253,12 +252,13 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   content::SpeechRecognitionManagerDelegate*
   CreateSpeechRecognitionManagerDelegate() override;
 
+  net::NetLog* GetNonNetworkServiceNetLog();
+
   static void DisableCreatingThreadPool();
 
  private:
-  safe_browsing::UrlCheckerDelegate* GetSafeBrowsingUrlCheckerDelegate();
-
-  std::unique_ptr<net::NetLog> net_log_;
+  scoped_refptr<safe_browsing::UrlCheckerDelegate>
+  GetSafeBrowsingUrlCheckerDelegate();
 
   // Android WebView currently has a single global (non-off-the-record) browser
   // context.

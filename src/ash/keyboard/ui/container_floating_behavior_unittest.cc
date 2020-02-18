@@ -12,12 +12,6 @@
 
 namespace keyboard {
 
-class ContainerFloatingBehaviorTest : public testing::Test {
- public:
-  ContainerFloatingBehaviorTest() {}
-  ~ContainerFloatingBehaviorTest() override {}
-};
-
 TEST(ContainerFloatingBehaviorTest, AdjustSetBoundsRequest) {
   ContainerFloatingBehavior floating_behavior(nullptr);
 

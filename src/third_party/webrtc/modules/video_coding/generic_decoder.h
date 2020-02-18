@@ -35,6 +35,7 @@ struct VCMFrameInformation {
   VideoContentType content_type;
   EncodedImage::Timing timing;
   int64_t ntp_time_ms;
+  RtpPacketInfos packet_infos;
   // ColorSpace is not storred here, as it might be modified by decoders.
 };
 

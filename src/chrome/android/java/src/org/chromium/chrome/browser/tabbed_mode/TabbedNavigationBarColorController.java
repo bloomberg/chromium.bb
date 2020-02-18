@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ObservableSupplier;
 import org.chromium.chrome.R;
@@ -29,6 +28,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.ui.UiUtils;
@@ -89,7 +89,7 @@ class TabbedNavigationBarColorController implements VrModeObserver {
 
         // If we're not using a light navigation bar, it will always be black so there's no need
         // to register observers and manipulate coloring.
-        if (!mResources.getBoolean(R.bool.window_light_navigation_bar) || BuildInfo.isAtLeastQ()) {
+        if (!mResources.getBoolean(R.bool.window_light_navigation_bar)) {
             mTabModelSelector = null;
             mTabModelSelectorObserver = null;
             return;
@@ -183,7 +183,8 @@ class TabbedNavigationBarColorController implements VrModeObserver {
         boolean useLightNavigation;
         if (ChromeFeatureList.isInitialized()
                 && (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
-                        || DeviceClassManager.enableAccessibilityLayout())) {
+                        || DeviceClassManager.enableAccessibilityLayout()
+                        || FeatureUtilities.isGridTabSwitcherEnabled())) {
             useLightNavigation = !mTabModelSelector.isIncognitoSelected();
         } else {
             useLightNavigation = !mTabModelSelector.isIncognitoSelected() || overviewVisible;

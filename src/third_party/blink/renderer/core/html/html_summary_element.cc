@@ -87,9 +87,9 @@ bool HTMLSummaryElement::IsMainSummary() const {
 }
 
 static bool IsClickableControl(Node* node) {
-  if (!node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return false;
-  Element* element = ToElement(node);
   if (element->IsFormControlElement())
     return true;
   Element* host = element->OwnerShadowHost();

@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/media/media_custom_controls_fullscreen_detector.h"
@@ -58,7 +57,8 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
@@ -387,7 +387,7 @@ bool HTMLVideoElement::IsPersistent() const {
 }
 
 void HTMLVideoElement::UpdateDisplayState() {
-  if (PosterImageURL().IsEmpty())
+  if (PosterImageURL().IsEmpty() || HasAvailableVideoFrame())
     SetDisplayMode(kVideo);
   else if (GetDisplayMode() < kPoster)
     SetDisplayMode(kPoster);
@@ -516,13 +516,9 @@ bool HTMLVideoElement::PrepareVideoFrameForWebGL(
 }
 
 bool HTMLVideoElement::HasAvailableVideoFrame() const {
-  if (!GetWebMediaPlayer())
-    return false;
-
-  // The ready state maximum is used here instead of the current ready state
-  // since a frame is still available during a seek.
-  return GetWebMediaPlayer()->HasVideo() &&
-         ready_state_maximum_ >= kHaveCurrentData;
+  if (auto* wmp = GetWebMediaPlayer())
+    return wmp->HasAvailableVideoFrame();
+  return false;
 }
 
 void HTMLVideoElement::webkitEnterFullscreen() {
@@ -643,11 +639,13 @@ scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
   }
 
   IntSize intrinsic_size(videoWidth(), videoHeight());
-  // FIXME: Not sure if we dhould we be doing anything with the AccelerationHint
+  // TODO(fserb): this should not be default software.
+  // FIXME: Not sure if we should we be doing anything with the AccelerationHint
   // argument here? Currently we use unacceleration mode.
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
-          intrinsic_size, CanvasResourceProvider::kSoftwareResourceUsage,
+          intrinsic_size,
+          CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
           nullptr,  // context_provider_wrapper
           0,        // msaa_sample_count
           CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,

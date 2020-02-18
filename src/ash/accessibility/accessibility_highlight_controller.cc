@@ -6,13 +6,12 @@
 
 #include <vector>
 
-#include "ash/accessibility/accessibility_focus_ring_controller.h"
+#include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
+#include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "ash/shell.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/event.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -34,10 +33,10 @@ ui::InputMethod* GetSharedInputMethod() {
 
 void SetFocusRing(AccessibilityFocusRingController* controller,
                   std::vector<gfx::Rect> rects) {
-  mojom::FocusRingPtr focus_ring = mojom::FocusRing::New();
+  auto focus_ring = std::make_unique<AccessibilityFocusRingInfo>();
   focus_ring->rects_in_screen = rects;
-  focus_ring->behavior = mojom::FocusRingBehavior::FADE_OUT_FOCUS_RING;
-  focus_ring->type = mojom::FocusRingType::GLOW;
+  focus_ring->behavior = FocusRingBehavior::FADE_OUT;
+  focus_ring->type = FocusRingType::GLOW;
   focus_ring->color = kFocusColor;
 
   controller->SetFocusRing(kHighlightCallerId, std::move(focus_ring));
@@ -49,21 +48,17 @@ AccessibilityHighlightController::AccessibilityHighlightController() {
   Shell::Get()->AddPreTargetHandler(this);
   Shell::Get()->cursor_manager()->AddObserver(this);
 
-  // In-process ash uses the InputMethod shared between ash and browser. Mash
-  // receives caret updates from the browser over mojo.
-  if (!::features::IsMultiProcessMash())
-    GetSharedInputMethod()->AddObserver(this);
+  GetSharedInputMethod()->AddObserver(this);
 }
 
 AccessibilityHighlightController::~AccessibilityHighlightController() {
-  AccessibilityFocusRingController* controller =
+  AccessibilityFocusRingControllerImpl* controller =
       Shell::Get()->accessibility_focus_ring_controller();
   SetFocusRing(controller, std::vector<gfx::Rect>());
   controller->HideCaretRing();
   controller->HideCursorRing();
 
-  if (!::features::IsMultiProcessMash())
-    GetSharedInputMethod()->RemoveObserver(this);
+  GetSharedInputMethod()->RemoveObserver(this);
   Shell::Get()->cursor_manager()->RemoveObserver(this);
   Shell::Get()->RemovePreTargetHandler(this);
 }
@@ -162,7 +157,7 @@ bool AccessibilityHighlightController::IsCaretVisible(
 }
 
 void AccessibilityHighlightController::UpdateFocusAndCaretHighlights() {
-  AccessibilityFocusRingController* controller =
+  AccessibilityFocusRingControllerImpl* controller =
       Shell::Get()->accessibility_focus_ring_controller();
 
   // The caret highlight takes precedence over the focus highlight if
@@ -183,7 +178,7 @@ void AccessibilityHighlightController::UpdateFocusAndCaretHighlights() {
 }
 
 void AccessibilityHighlightController::UpdateCursorHighlight() {
-  AccessibilityFocusRingController* controller =
+  AccessibilityFocusRingControllerImpl* controller =
       Shell::Get()->accessibility_focus_ring_controller();
   if (cursor_ && IsCursorVisible())
     controller->SetCursorRing(cursor_point_);

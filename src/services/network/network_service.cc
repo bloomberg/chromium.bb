@@ -31,6 +31,7 @@
 #include "net/cert/cert_database.h"
 #include "net/cert/ct_log_response_parser.h"
 #include "net/cert/signed_tree_head.h"
+#include "net/dns/dns_config.h"
 #include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
@@ -39,6 +40,7 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_util.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "net/url_request/url_request_context.h"
@@ -73,7 +75,6 @@ namespace network {
 
 namespace {
 
-bool g_disable_network_change_notifier = false;
 NetworkService* g_network_service = nullptr;
 
 net::NetLog* GetNetLog() {
@@ -90,8 +91,7 @@ std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
     net::NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype) {
   // There is a global singleton net::NetworkChangeNotifier if NetworkService
   // is running inside of the browser process.
-  if (!g_disable_network_change_notifier &&
-      !net::NetworkChangeNotifier::HasNetworkChangeNotifier()) {
+  if (!net::NetworkChangeNotifier::HasNetworkChangeNotifier()) {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     // On Android and ChromeOS, network change events are synced from the
     // browser process.
@@ -103,7 +103,7 @@ std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
     NOTIMPLEMENTED();
     return nullptr;
 #else
-    return base::WrapUnique(net::NetworkChangeNotifier::Create());
+    return net::NetworkChangeNotifier::Create();
 #endif
   }
   return nullptr;
@@ -150,7 +150,9 @@ class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
   ~NetworkServiceAuthNegotiateAndroid() override = default;
 
   // HttpNegotiateAuthSystem implementation:
-  bool Init() override { return auth_negotiate_.Init(); }
+  bool Init(const net::NetLogWithSource& net_log) override {
+    return auth_negotiate_.Init(net_log);
+  }
 
   bool NeedsIdentity() const override {
     return auth_negotiate_.NeedsIdentity();
@@ -169,6 +171,7 @@ class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
                         const std::string& spn,
                         const std::string& channel_bindings,
                         std::string* auth_token,
+                        const net::NetLogWithSource& net_log,
                         net::CompletionOnceCallback callback) override {
     network_service_->client()->OnGenerateHttpNegotiateAuthToken(
         auth_negotiate_.server_auth_token(), auth_negotiate_.can_delegate(),
@@ -209,6 +212,7 @@ std::unique_ptr<net::HttpNegotiateAuthSystem> CreateAuthSystem(
 // NetworkService is running in a separate process - otherwise the existing bad
 // message handling inside the Browser process is sufficient).
 void HandleBadMessage(const std::string& error) {
+  LOG(WARNING) << "Mojo error in NetworkService:" << error;
   static auto* bad_message_reason = base::debug::AllocateCrashKeyString(
       "bad_message_reason", base::debug::CrashKeySize::Size256);
   base::debug::SetCrashKeyString(bad_message_reason, error);
@@ -220,15 +224,11 @@ void HandleBadMessage(const std::string& error) {
 NetworkService::NetworkService(
     std::unique_ptr<service_manager::BinderRegistry> registry,
     mojom::NetworkServiceRequest request,
-    net::NetLog* net_log,
     service_manager::mojom::ServiceRequest service_request,
     bool delay_initialization_until_set_client)
-    : registry_(std::move(registry)), binding_(this) {
+    : net_log_(GetNetLog()), registry_(std::move(registry)), binding_(this) {
   DCHECK(!g_network_service);
   g_network_service = this;
-
-  metrics_trigger_timer_.Start(FROM_HERE, base::TimeDelta::FromMinutes(5), this,
-                               &NetworkService::ReportMetrics);
 
   // In testing environments, |service_request| may not be provided.
   if (service_request.is_pending())
@@ -247,12 +247,6 @@ NetworkService::NetworkService(
         base::BindRepeating(&NetworkService::Bind, base::Unretained(this)));
   } else if (request.is_pending()) {
     Bind(std::move(request));
-  }
-
-  if (net_log) {
-    net_log_ = net_log;
-  } else {
-    net_log_ = GetNetLog();
   }
 
   if (!delay_initialization_until_set_client)
@@ -304,7 +298,7 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params) {
 
   trace_net_log_observer_.WatchForTraceStart(net_log_);
 
-  // Add an observer that will emit network change events to the ChromeNetLog.
+  // Add an observer that will emit network change events to |net_log_|.
   // Assuming NetworkChangeNotifier dispatches in FIFO order, we should be
   // logging the network change before other IO thread consumers respond to it.
   network_change_observer_ =
@@ -351,9 +345,8 @@ void NetworkService::set_os_crypt_is_configured() {
 
 std::unique_ptr<NetworkService> NetworkService::Create(
     mojom::NetworkServiceRequest request,
-    net::NetLog* net_log,
     service_manager::mojom::ServiceRequest service_request) {
-  return std::make_unique<NetworkService>(nullptr, std::move(request), net_log,
+  return std::make_unique<NetworkService>(nullptr, std::move(request),
                                           std::move(service_request));
 }
 
@@ -379,7 +372,7 @@ std::unique_ptr<NetworkService> NetworkService::CreateForTesting(
     service_manager::mojom::ServiceRequest service_request) {
   return std::make_unique<NetworkService>(
       std::make_unique<service_manager::BinderRegistry>(),
-      nullptr /* request */, nullptr /* net_log */, std::move(service_request));
+      nullptr /* request */, std::move(service_request));
 }
 
 void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
@@ -483,6 +476,8 @@ void NetworkService::ConfigureStubHostResolver(
     overrides.dns_over_https_servers.value().emplace_back(
         doh_server->server_template, doh_server->use_post);
   }
+  // TODO(dalyk): Allow the secure dns mode to be set.
+  overrides.secure_dns_mode = net::DnsConfig::SecureDnsMode::AUTOMATIC;
   host_resolver_manager_->SetDnsConfigOverrides(overrides);
 }
 
@@ -500,8 +495,7 @@ void NetworkService::SetUpHttpAuth(
 
   http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
       &http_auth_preferences_, http_auth_static_params->supported_schemes
-#if (defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)) || \
-    defined(OS_FUCHSIA)
+#if BUILDFLAG(USE_EXTERNAL_GSSAPI)
       ,
       http_auth_static_params->gssapi_library_name
 #endif
@@ -667,6 +661,11 @@ void NetworkService::OnMemoryPressure(
   base::MemoryPressureListener::NotifyMemoryPressure(memory_pressure_level);
 }
 
+void NetworkService::OnPeerToPeerConnectionsCountChange(uint32_t count) {
+  network_quality_estimator_manager_->GetNetworkQualityEstimator()
+      ->OnPeerToPeerConnectionsCountChange(count);
+}
+
 #if defined(OS_ANDROID)
 void NetworkService::OnApplicationStateChange(
     base::android::ApplicationState state) {
@@ -681,6 +680,18 @@ void NetworkService::SetEnvironment(
   for (const auto& variable : environment)
     env->SetVar(variable->name, variable->value);
 }
+
+#if defined(OS_ANDROID)
+void NetworkService::DumpWithoutCrashing(base::Time dump_request_time) {
+  static base::debug::CrashKeyString* time_key =
+      base::debug::AllocateCrashKeyString("time_since_dump_request_ms",
+                                          base::debug::CrashKeySize::Size32);
+  base::debug::ScopedCrashKeyString(
+      time_key, base::NumberToString(
+                    (base::Time::Now() - dump_request_time).InMilliseconds()));
+  base::debug::DumpWithoutCrashing();
+}
+#endif
 
 net::HttpAuthHandlerFactory* NetworkService::GetHttpAuthHandlerFactory() {
   if (!http_auth_handler_factory_) {
@@ -830,23 +841,6 @@ void NetworkService::AckUpdateLoadInfo() {
   MaybeStartUpdateLoadInfoTimer();
 }
 
-void NetworkService::ReportMetrics() {
-  size_t cache_size = 0;
-  size_t memory_pressure_in_bytes = 0;
-  size_t loader_count = 0;
-  for (auto* context : network_contexts_) {
-    cors::PreflightCache::Metrics metrics =
-        context->ReportAndGatherCorsPreflightCacheSizeMetric();
-    cache_size += metrics.num_entries;
-    memory_pressure_in_bytes += metrics.memory_pressure_in_bytes;
-    loader_count += context->GatherActiveLoaderCount();
-  }
-  UMA_HISTOGRAM_COUNTS_10000("Net.Cors.PreflightCacheTotalEntries", cache_size);
-  UMA_HISTOGRAM_COUNTS_10M("Net.Cors.PreflightCacheTotalMemoryPressureInBytes",
-                           memory_pressure_in_bytes);
-  UMA_HISTOGRAM_COUNTS_1000("Net.Cors.ActiveLoaderCount", loader_count);
-}
-
 void NetworkService::Bind(mojom::NetworkServiceRequest request) {
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
@@ -855,12 +849,6 @@ void NetworkService::Bind(mojom::NetworkServiceRequest request) {
 // static
 NetworkService* NetworkService::GetNetworkServiceForTesting() {
   return g_network_service;
-}
-
-// static
-void NetworkService::DisableNetworkChangeNotifierForTesting() {
-  DCHECK(!g_network_service);
-  g_disable_network_change_notifier = true;
 }
 
 }  // namespace network

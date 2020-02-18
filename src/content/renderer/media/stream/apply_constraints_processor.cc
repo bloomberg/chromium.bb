@@ -13,11 +13,11 @@
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_audio.h"
-#include "content/renderer/media/stream/media_stream_constraints_util_video_content.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_content.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
@@ -41,8 +41,7 @@ ApplyConstraintsProcessor::ApplyConstraintsProcessor(
     MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
-      task_runner_(std::move(task_runner)),
-      weak_factory_(this) {}
+      task_runner_(std::move(task_runner)) {}
 
 ApplyConstraintsProcessor::~ApplyConstraintsProcessor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -106,7 +105,7 @@ void ApplyConstraintsProcessor::ProcessVideoRequest() {
   }
 
   const blink::MediaStreamDevice& device_info = video_source_->device();
-  if (device_info.type == blink::MEDIA_DEVICE_VIDEO_CAPTURE) {
+  if (device_info.type == blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE) {
     ProcessVideoDeviceRequest();
   } else {
     FinalizeVideoRequest();

@@ -69,6 +69,13 @@ void SliderThumbElement::SetPositionFromValue() {
   if (GetLayoutObject()) {
     GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
         layout_invalidation_reason::kSliderValueChanged);
+    if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+      HTMLInputElement* input(HostInput());
+      if (input && input->GetLayoutObject()) {
+        // the slider track selected value needs to be updated.
+        input->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+      }
+    }
   }
 }
 
@@ -160,10 +167,7 @@ void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
   // FIXME: This is no longer being set from renderer. Consider updating the
   // method name.
   input->SetValueFromRenderer(value_string);
-  if (GetLayoutObject()) {
-    GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
-        layout_invalidation_reason::kSliderValueChanged);
-  }
+  SetPositionFromValue();
 }
 
 void SliderThumbElement::StartDragging() {
@@ -258,14 +262,14 @@ bool SliderThumbElement::WillRespondToMouseClickEvents() {
   return HTMLDivElement::WillRespondToMouseClickEvents();
 }
 
-void SliderThumbElement::DetachLayoutTree(const AttachContext& context) {
+void SliderThumbElement::DetachLayoutTree(bool performing_reattach) {
   if (in_drag_mode_) {
     if (LocalFrame* frame = GetDocument().GetFrame()) {
       frame->GetEventHandler().ReleasePointerCapture(
           PointerEventFactory::kMouseId, this);
     }
   }
-  HTMLDivElement::DetachLayoutTree(context);
+  HTMLDivElement::DetachLayoutTree(performing_reattach);
 }
 
 HTMLInputElement* SliderThumbElement::HostInput() const {

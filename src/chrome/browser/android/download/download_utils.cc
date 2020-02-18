@@ -4,19 +4,19 @@
 
 #include "chrome/browser/android/download/download_utils.h"
 
+#include <utility>
+
 #include "base/android/jni_string.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/android/chrome_jni_headers/DownloadUtils_jni.h"
 #include "chrome/browser/android/chrome_feature_list.h"
-#include "chrome/browser/download/download_offline_content_provider.h"
 #include "chrome/browser/download/offline_item_utils.h"
-#include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_utils.h"
-#include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
-#include "jni/DownloadUtils_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -24,8 +24,6 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
-using OfflineContentAggregator =
-    offline_items_collection::OfflineContentAggregator;
 
 namespace {
 // If received bytes is more than the size limit and resumption will restart
@@ -33,8 +31,8 @@ namespace {
 int kDefaultAutoResumptionSizeLimit = 10 * 1024 * 1024;  // 10 MB
 const char kAutoResumptionSizeLimitParamName[] = "AutoResumptionSizeLimit";
 
-static DownloadOfflineContentProvider* g_download_provider = nullptr;
-static DownloadOfflineContentProvider* g_download_provider_incognito = nullptr;
+// Mime type for OMA download descriptor.
+const char kOmaDownloadDescriptorMimeType[] = "application/vnd.oma.dd+xml";
 
 }  // namespace
 
@@ -112,29 +110,15 @@ std::string DownloadUtils::RemapGenericMimeType(const std::string& mime_type,
 }
 
 // static
-DownloadOfflineContentProvider*
-DownloadUtils::GetDownloadOfflineContentProvider(
-    content::BrowserContext* browser_context) {
-  OfflineContentAggregator* aggregator =
-      OfflineContentAggregatorFactory::GetForBrowserContext(browser_context);
-  bool is_off_the_record =
-      browser_context ? browser_context->IsOffTheRecord() : false;
+bool DownloadUtils::ShouldAutoOpenDownload(download::DownloadItem* item) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_DownloadUtils_shouldAutoOpenDownload(
+      env, ConvertUTF8ToJavaString(env, item->GetMimeType()),
+      item->HasUserGesture());
+}
 
-  // Only create the provider if it is needed for the given |browser_context|.
-  if (!is_off_the_record && !g_download_provider) {
-    std::string name_space = OfflineContentAggregator::CreateUniqueNameSpace(
-        OfflineItemUtils::GetDownloadNamespacePrefix(false), false);
-    g_download_provider =
-        new DownloadOfflineContentProvider(aggregator, name_space);
-  }
-
-  if (is_off_the_record && !g_download_provider_incognito) {
-    std::string name_space = OfflineContentAggregator::CreateUniqueNameSpace(
-        OfflineItemUtils::GetDownloadNamespacePrefix(true), true);
-    g_download_provider_incognito =
-        new DownloadOfflineContentProvider(aggregator, name_space);
-  }
-
-  return is_off_the_record ? g_download_provider_incognito
-                           : g_download_provider;
+// static
+bool DownloadUtils::IsOmaDownloadDescription(const std::string& mime_type) {
+  return base::EqualsCaseInsensitiveASCII(mime_type,
+                                          kOmaDownloadDescriptorMimeType);
 }

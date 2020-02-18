@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.preference.Preference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -22,7 +23,6 @@ import org.chromium.ui.base.LocalizationUtils;
  */
 public class HyperlinkPreference extends Preference {
 
-    private final int mTitleResId;
     private final int mUrlResId;
     private final int mColor;
     private final boolean mImitateWebLink;
@@ -34,7 +34,6 @@ public class HyperlinkPreference extends Preference {
         mUrlResId = a.getResourceId(R.styleable.HyperlinkPreference_url, 0);
         mImitateWebLink = a.getBoolean(R.styleable.HyperlinkPreference_imitateWebLink, false);
         a.recycle();
-        mTitleResId = getTitleRes();
         mColor = ApiCompatibilityUtils.getColor(
                 context.getResources(), R.color.default_text_color_link);
     }
@@ -46,9 +45,9 @@ public class HyperlinkPreference extends Preference {
     }
 
     @Override
-    protected void onBindView(View view) {
-        super.onBindView(view);
-        TextView titleView = (TextView) view.findViewById(android.R.id.title);
+    public void onBindViewHolder(PreferenceViewHolder holder) {
+        super.onBindViewHolder(holder);
+        TextView titleView = (TextView) holder.findViewById(android.R.id.title);
         titleView.setSingleLine(false);
 
         if (mImitateWebLink) {

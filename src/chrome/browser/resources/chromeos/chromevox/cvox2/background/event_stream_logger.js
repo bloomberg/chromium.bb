@@ -59,7 +59,7 @@ EventStreamLogger.prototype = {
     logStr += ', TargetName = ' + evt.target.name;
     logStr += ', RootName = ' + evt.target.root.name;
     logStr += ', DocumentURL = ' + evt.target.docUrl;
-
+    console.log(logStr);
     LogStore.getInstance().writeTextLog(logStr, TextLog.LogType.EVENT);
   },
 

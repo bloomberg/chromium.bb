@@ -89,7 +89,7 @@ v8::Local<v8::String> ResourceBundleSourceMap::GetSource(
 }
 
 bool ResourceBundleSourceMap::Contains(const std::string& name) const {
-  return base::ContainsKey(resource_map_, name);
+  return base::Contains(resource_map_, name);
 }
 
 }  // namespace extensions

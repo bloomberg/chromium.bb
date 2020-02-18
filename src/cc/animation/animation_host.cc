@@ -81,8 +81,7 @@ AnimationHost::AnimationHost(ThreadInstance thread_instance)
       thread_instance_(thread_instance),
       supports_scroll_animations_(false),
       needs_push_properties_(false),
-      mutator_(nullptr),
-      weak_factory_(this) {
+      mutator_(nullptr) {
   if (thread_instance_ == ThreadInstance::IMPL) {
     scroll_offset_animations_impl_ =
         std::make_unique<ScrollOffsetAnimationsImpl>(this);
@@ -649,6 +648,18 @@ bool AnimationHost::HasTickingKeyframeModelForTesting(
                             : false;
 }
 
+void AnimationHost::ImplOnlyAutoScrollAnimationCreate(
+    ElementId element_id,
+    const gfx::ScrollOffset& target_offset,
+    const gfx::ScrollOffset& current_offset,
+    float autoscroll_velocity,
+    base::TimeDelta animation_start_offset) {
+  DCHECK(scroll_offset_animations_impl_);
+  scroll_offset_animations_impl_->AutoScrollAnimationCreate(
+      element_id, target_offset, current_offset, autoscroll_velocity,
+      animation_start_offset);
+}
+
 void AnimationHost::ImplOnlyScrollAnimationCreate(
     ElementId element_id,
     const gfx::ScrollOffset& target_offset,
@@ -690,7 +701,7 @@ bool AnimationHost::IsImplOnlyScrollAnimating() const {
 }
 
 void AnimationHost::AddToTicking(scoped_refptr<Animation> animation) {
-  DCHECK(!base::ContainsValue(ticking_animations_, animation));
+  DCHECK(!base::Contains(ticking_animations_, animation));
   ticking_animations_.push_back(animation);
 }
 

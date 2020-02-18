@@ -7,6 +7,9 @@
 
 #include <string>
 
+#include "build/build_config.h"
+#include "components/services/quarantine/public/mojom/quarantine.mojom.h"
+
 class GURL;
 
 namespace base {
@@ -15,21 +18,7 @@ class FilePath;
 
 namespace quarantine {
 
-// Return value for QuarantineFile.
-enum class QuarantineFileResult {
-  OK,             // Success.
-  ACCESS_DENIED,  // Access to the file was denied. The safety of the file could
-                  // not be determined.
-  BLOCKED_BY_POLICY,  // Downloads from |source_url| are not allowed by policy.
-                      // The file has been deleted.
-  ANNOTATION_FAILED,  // Unable to write the mark-of-the-web or otherwise
-                      // annotate the file as being downloaded from
-                      // |source_url|.
-  FILE_MISSING,       // |file| does not name a valid file.
-  SECURITY_CHECK_FAILED,  // An unknown error occurred while checking |file|.
-                          // The file may have been deleted.
-  VIRUS_INFECTED  // |file| was found to be infected by a virus and was deleted.
-};
+using mojom::QuarantineFileResult;
 
 // Quarantine a file that was downloaded from the internet.
 //
@@ -71,10 +60,23 @@ enum class QuarantineFileResult {
 //   |referrer_url|: Referring URL. This is empty for off-the-record download.
 //   |client_guid|: Only used on Windows. Identifies the client application
 //     that downloaded the file.
+//
+// Note: The |source_url| and |referrer_url| will be stripped of unnecessary
+//   parts using SanitizeUrlForQuarantine() before they are used for annotation
+//   or notification purposes. If the URLs are sensitive -- e.g. because the
+//   download was made using an off-the-record profile -- then pass in an empty
+//   GURL() instead.
 QuarantineFileResult QuarantineFile(const base::FilePath& file,
                                     const GURL& source_url,
                                     const GURL& referrer_url,
                                     const std::string& client_guid);
+
+#if defined(OS_WIN)
+QuarantineFileResult SetInternetZoneIdentifierDirectly(
+    const base::FilePath& full_path,
+    const GURL& source_url,
+    const GURL& referrer_url);
+#endif
 
 }  // namespace quarantine
 

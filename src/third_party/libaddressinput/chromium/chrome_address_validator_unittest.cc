@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_problem.h"
@@ -922,7 +922,7 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
     load_rules_success_ = success;
   }
 
-  base::MessageLoop ui_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(FailingAddressValidatorTest);
 };

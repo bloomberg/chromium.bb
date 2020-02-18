@@ -30,6 +30,13 @@ class WritableStreamNative;
 // See https://streams.spec.whatwg.org/#rs-model for background.
 class ReadableStreamNative : public ReadableStream {
  public:
+  struct PipeOptions {
+    PipeOptions() = default;
+    bool prevent_close = false;
+    bool prevent_abort = false;
+    bool prevent_cancel = false;
+  };
+
   enum State : uint8_t { kReadable, kClosed, kErrored };
 
   // Implements ReadableStream::Create() when this implementation is enabled.
@@ -60,14 +67,11 @@ class ReadableStreamNative : public ReadableStream {
 
   ReadableStreamNative();
 
-  // TODO(ricea): Remove |enable_blink_lock_notifications| once
-  // blink::ReadableStreamOperations has been updated to use
-  // CreateReadableStream.
   // https://streams.spec.whatwg.org/#rs-constructor
   ReadableStreamNative(ScriptState*,
                        ScriptValue raw_underlying_source,
                        ScriptValue raw_strategy,
-                       bool enable_blink_lock_notifications,
+                       bool created_by_ua,
                        ExceptionState&);
 
   ~ReadableStreamNative() override;
@@ -146,6 +150,10 @@ class ReadableStreamNative : public ReadableStream {
 
   void Serialize(ScriptState*, MessagePort* port, ExceptionState&) override;
 
+  static ReadableStreamNative* Deserialize(ScriptState*,
+                                           MessagePort* port,
+                                           ExceptionState&);
+
   bool IsBroken() const override { return false; }
 
   //
@@ -161,6 +169,12 @@ class ReadableStreamNative : public ReadableStream {
   static bool IsLocked(const ReadableStreamNative* stream) {
     return stream->reader_;
   }
+
+  // https://streams.spec.whatwg.org/#readable-stream-pipe-to
+  static ScriptPromise PipeTo(ScriptState*,
+                              ReadableStreamNative*,
+                              WritableStreamNative*,
+                              PipeOptions);
 
   //
   // Functions exported for use by TransformStream. Not part of the standard.
@@ -190,7 +204,6 @@ class ReadableStreamNative : public ReadableStream {
   friend class ReadableStreamDefaultController;
   friend class ReadableStreamReader;
 
-  struct PipeOptions;
   class PipeToEngine;
   class ReadHandleImpl;
   class TeeEngine;
@@ -203,12 +216,6 @@ class ReadableStreamNative : public ReadableStream {
                                                     ReadableStreamNative*,
                                                     bool for_author_code,
                                                     ExceptionState&);
-
-  // https://streams.spec.whatwg.org/#readable-stream-pipe-to
-  static ScriptPromise PipeTo(ScriptState*,
-                              ReadableStreamNative*,
-                              WritableStreamNative*,
-                              PipeOptions);
 
   // https://streams.spec.whatwg.org/#readable-stream-add-read-request
   static StreamPromiseResolver* AddReadRequest(ScriptState*,

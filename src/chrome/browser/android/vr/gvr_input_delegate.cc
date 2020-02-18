@@ -19,17 +19,6 @@
 namespace {
 constexpr gfx::Vector3dF kForwardVector = {0.0f, 0.0f, -1.0f};
 
-// TODO(https://crbug.com/957806): Copies of this function live in device/vr and
-// device/gamepad, which will be consolidated. Is there a way to also remove
-// this duplicate even though this is in under chrome/browser instead of device?
-void CopyToUString(const base::string16& src,
-                   base::char16* dest,
-                   size_t dest_length) {
-  const size_t copy_char_count = std::min(src.size(), dest_length - 1);
-  src.copy(dest, copy_char_count);
-  std::fill(dest + copy_char_count, dest + dest_length, 0);
-}
-
 device::Gamepad CreateGamepad(const device::GvrGamepadData& data) {
   device::Gamepad gamepad;
 
@@ -42,8 +31,7 @@ device::Gamepad CreateGamepad(const device::GvrGamepadData& data) {
 
   // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
   // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
-  CopyToUString(base::UTF8ToUTF16("daydream-controller"), gamepad.id,
-                base::size(gamepad.id));
+  gamepad.SetID(base::UTF8ToUTF16("daydream-controller"));
 
   gamepad.hand = data.right_handed ? device::GamepadHand::kRight
                                    : device::GamepadHand::kLeft;

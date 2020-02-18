@@ -41,21 +41,31 @@ std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrentIfNeeded(
 
 }  // namespace
 
-CodecImage::CodecImage(
-    std::unique_ptr<CodecOutputBuffer> output_buffer,
-    scoped_refptr<TextureOwner> texture_owner,
-    PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb)
-    : phase_(Phase::kInCodec),
-      output_buffer_(std::move(output_buffer)),
-      texture_owner_(std::move(texture_owner)),
-      promotion_hint_cb_(std::move(promotion_hint_cb)) {}
+CodecImage::CodecImage() = default;
 
 CodecImage::~CodecImage() {
+  if (now_unused_cb_)
+    std::move(now_unused_cb_).Run(this);
   if (destruction_cb_)
     std::move(destruction_cb_).Run(this);
 }
 
-void CodecImage::SetDestructionCb(DestructionCb destruction_cb) {
+void CodecImage::Initialize(
+    std::unique_ptr<CodecOutputBuffer> output_buffer,
+    scoped_refptr<TextureOwner> texture_owner,
+    PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb) {
+  DCHECK(output_buffer);
+  phase_ = Phase::kInCodec;
+  output_buffer_ = std::move(output_buffer);
+  texture_owner_ = std::move(texture_owner);
+  promotion_hint_cb_ = std::move(promotion_hint_cb);
+}
+
+void CodecImage::SetNowUnusedCB(NowUnusedCB now_unused_cb) {
+  now_unused_cb_ = std::move(now_unused_cb);
+}
+
+void CodecImage::SetDestructionCB(DestructionCB destruction_cb) {
   destruction_cb_ = std::move(destruction_cb);
 }
 
@@ -280,5 +290,14 @@ CodecImage::GetAHardwareBuffer() {
   RenderToTextureOwnerFrontBuffer(BindingsMode::kDontRestoreIfBound);
   return texture_owner_->GetAHardwareBuffer();
 }
+
+CodecImageHolder::CodecImageHolder(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    scoped_refptr<CodecImage> codec_image)
+    : base::RefCountedDeleteOnSequence<CodecImageHolder>(
+          std::move(task_runner)),
+      codec_image_(std::move(codec_image)) {}
+
+CodecImageHolder::~CodecImageHolder() = default;
 
 }  // namespace media

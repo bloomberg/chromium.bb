@@ -15,7 +15,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace gfx {
-class FontList;
 class ImageSkia;
 class Rect;
 }
@@ -69,8 +68,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
                                  Widget::Widgets* owned);
   static void ReparentNativeView(gfx::NativeView native_view,
                                  gfx::NativeView new_parent);
-
-  static gfx::FontList GetWindowTitleFontList();
 
   // Returns the NativeView with capture, otherwise NULL if there is no current
   // capture set, or if |native_view| has no root.
@@ -190,8 +187,8 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void Activate() = 0;
   virtual void Deactivate() = 0;
   virtual bool IsActive() const = 0;
-  virtual void SetAlwaysOnTop(bool always_on_top) = 0;
-  virtual bool IsAlwaysOnTop() const = 0;
+  virtual void SetZOrderLevel(ui::ZOrderLevel order) = 0;
+  virtual ui::ZOrderLevel GetZOrderLevel() const = 0;
   virtual void SetVisibleOnAllWorkspaces(bool always_visible) = 0;
   virtual bool IsVisibleOnAllWorkspaces() const = 0;
   virtual void Maximize() = 0;
@@ -207,7 +204,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void SetAspectRatio(const gfx::SizeF& aspect_ratio) = 0;
   virtual void FlashFrame(bool flash) = 0;
   virtual void RunShellDrag(View* view,
-                            const ui::OSExchangeData& data,
+                            std::unique_ptr<ui::OSExchangeData> data,
                             const gfx::Point& location,
                             int operation,
                             ui::DragDropTypes::DragEventSource source) = 0;
@@ -233,7 +230,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual bool IsTranslucentWindowOpacitySupported() const = 0;
   virtual ui::GestureRecognizer* GetGestureRecognizer() = 0;
   virtual void OnSizeConstraintsChanged() = 0;
-  virtual void OnCanActivateChanged();
 
   // Returns an internal name that matches the name of the associated Widget.
   virtual std::string GetName() const = 0;

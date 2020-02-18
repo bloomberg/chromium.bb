@@ -11,27 +11,17 @@
 namespace web {
 namespace features {
 
-bool StorePendingItemInContext() {
-  return base::FeatureList::IsEnabled(kStorePendingItemInContext);
-}
-
 const base::Feature kIgnoresViewportScaleLimits{
     "IgnoresViewportScaleLimits", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSlimNavigationManager{"SlimNavigationManager",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kStorePendingItemInContext{
-    "StorePendingItemInContext", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kWKHTTPSystemCookieStore{"WKHTTPSystemCookieStore",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCrashOnUnexpectedURLChange{
     "CrashOnUnexpectedURLChange", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kDisconnectScrollProxyDuringRestore{
-    "DisconnectScrollProxyDuringRestore", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kHistoryClobberWorkaround{
     "WKWebViewHistoryClobberWorkaround", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -41,6 +31,9 @@ const base::Feature kBlockUniversalLinksInOffTheRecordMode{
 
 const base::Feature kKeepsRenderProcessAlive{"KeepsRenderProcessAlive",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kSSLCommittedInterstitials{
+    "SSLCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace web

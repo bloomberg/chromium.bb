@@ -9,7 +9,6 @@
 
 #include "base/atomicops.h"
 #include "base/files/file.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -18,7 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/stream/aec_dump_message_filter.h"
+#include "content/renderer/media/stream/aec_dump_agent_impl.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "media/webrtc/audio_delay_stats_reporter.h"
@@ -49,9 +48,9 @@ using webrtc::AudioProcessorInterface;
 // on the getUserMedia constraints, processes the data and outputs it in a unit
 // of 10 ms data chunk.
 class CONTENT_EXPORT MediaStreamAudioProcessor
-    : public WebRtcPlayoutDataSource::Sink,
+    : public blink::WebRtcPlayoutDataSource::Sink,
       public AudioProcessorInterface,
-      public AecDumpMessageFilter::AecDumpDelegate {
+      public AecDumpAgentImpl::Delegate {
  public:
   // |playout_data_source| is used to register this class as a sink to the
   // WebRtc playout data for processing AEC. If clients do not enable AEC,
@@ -59,8 +58,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   //
   // Threading note: The constructor assumes it is being run on the main render
   // thread.
-  MediaStreamAudioProcessor(const blink::AudioProcessingProperties& properties,
-                            WebRtcPlayoutDataSource* playout_data_source);
+  MediaStreamAudioProcessor(
+      const blink::AudioProcessingProperties& properties,
+      blink::WebRtcPlayoutDataSource* playout_data_source);
 
   // Called when the format of the capture data has changed.
   // Called on the main render thread. The caller is responsible for stopping
@@ -105,11 +105,10 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   // Accessor to check if the audio processing is enabled or not.
   bool has_audio_processing() const { return audio_processing_ != NULL; }
 
-  // AecDumpMessageFilter::AecDumpDelegate implementation.
+  // AecDumpAgentImpl::Delegate implementation.
   // Called on the main render thread.
-  void OnAecDumpFile(const IPC::PlatformFileForTransit& file_handle) override;
-  void OnDisableAecDump() override;
-  void OnIpcClosing() override;
+  void OnStartDump(base::File dump_file) override;
+  void OnStopDump() override;
 
   // Returns true if MediaStreamAudioProcessor would modify the audio signal,
   // based on |properties|. If the audio signal would not be modified, there is
@@ -127,7 +126,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   FRIEND_TEST_ALL_PREFIXES(MediaStreamAudioProcessorTest,
                            GetAecDumpMessageFilter);
 
-  // WebRtcPlayoutDataSource::Sink implementation.
+  // blink::WebRtcPlayoutDataSource::Sink implementation.
   void OnPlayoutData(media::AudioBus* audio_bus,
                      int sample_rate,
                      int audio_delay_milliseconds) override;
@@ -183,9 +182,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   media::AudioParameters input_format_;
   media::AudioParameters output_format_;
 
-  // Raw pointer to the WebRtcPlayoutDataSource, which is valid for the
+  // Raw pointer to the blink::WebRtcPlayoutDataSource, which is valid for the
   // lifetime of RenderThread.
-  WebRtcPlayoutDataSource* playout_data_source_;
+  blink::WebRtcPlayoutDataSource* playout_data_source_;
 
   // Task runner for the main render thread.
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
@@ -205,7 +204,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   base::subtle::Atomic32 typing_detected_;
 
   // Communication with browser for AEC dump.
-  scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
+  std::unique_ptr<AecDumpAgentImpl> aec_dump_agent_impl_;
 
   // Flag to avoid executing Stop() more than once.
   bool stopped_;

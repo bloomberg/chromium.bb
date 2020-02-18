@@ -4,12 +4,13 @@
 
 #include "third_party/blink/renderer/modules/encryptedmedia/media_key_system_access_initializer_base.h"
 
+#include "media/base/eme_constants.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
@@ -17,9 +18,9 @@ namespace blink {
 
 namespace {
 
-static WebVector<WebEncryptedMediaInitDataType> ConvertInitDataTypes(
+static WebVector<media::EmeInitDataType> ConvertInitDataTypes(
     const Vector<String>& init_data_types) {
-  WebVector<WebEncryptedMediaInitDataType> result(init_data_types.size());
+  WebVector<media::EmeInitDataType> result(init_data_types.size());
   for (wtf_size_t i = 0; i < init_data_types.size(); ++i)
     result[i] = EncryptedMediaUtils::ConvertToInitDataType(init_data_types[i]);
   return result;

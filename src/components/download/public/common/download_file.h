@@ -22,6 +22,10 @@
 
 class GURL;
 
+namespace service_manager {
+class Connector;
+}
+
 namespace download {
 
 // These objects live exclusively on the download sequence and handle the
@@ -82,11 +86,17 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFile {
   // Rename the download file to |full_path| and annotate it with
   // "Mark of the Web" information about its source.  No uniquification
   // will be performed.
-  virtual void RenameAndAnnotate(const base::FilePath& full_path,
-                                 const std::string& client_guid,
-                                 const GURL& source_url,
-                                 const GURL& referrer_url,
-                                 const RenameCompletionCallback& callback) = 0;
+  // connector is a clone of the service manager connector from
+  // DownloadItemImpl's delegate. It used to create the quarantine service.
+  // In the unexpected case that connector is null, or the service otherwise
+  // fails, mark-of-the-web is manually applied as a fallback.
+  virtual void RenameAndAnnotate(
+      const base::FilePath& full_path,
+      const std::string& client_guid,
+      const GURL& source_url,
+      const GURL& referrer_url,
+      std::unique_ptr<service_manager::Connector> connector,
+      const RenameCompletionCallback& callback) = 0;
 
   // Detach the file so it is not deleted on destruction.
   virtual void Detach() = 0;
@@ -109,13 +119,16 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFile {
   virtual void Resume() = 0;
 
 #if defined(OS_ANDROID)
-  // Create an intermediate URI to write the download file. Once completes,
-  // |callback| is called with a content URI to be written into.
-  virtual void CreateIntermediateUriForPublish(
+  // Renames the download file to an intermediate URI. If current_path is a
+  // content URI, it will be used for the renaming. Otherwise, A new
+  // intermediate URI will be created to write the download file. Once
+  // completes, |callback| is called with a content URI to be written into.
+  virtual void RenameToIntermediateUri(
       const GURL& original_url,
       const GURL& referrer_url,
       const base::FilePath& file_name,
       const std::string& mime_type,
+      const base::FilePath& current_path,
       const RenameCompletionCallback& callback) = 0;
 
   // Publishes the download to public. Once completes, |callback| is called with

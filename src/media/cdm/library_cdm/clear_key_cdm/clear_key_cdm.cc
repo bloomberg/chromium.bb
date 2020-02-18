@@ -187,20 +187,9 @@ void* CreateCdmInstance(int cdm_interface_version,
     return nullptr;
   }
 
-  // We support CDM_9, CDM_10 and CDM_11.
-  using CDM_9 = cdm::ContentDecryptionModule_9;
+  // We support CDM_10 and CDM_11.
   using CDM_10 = cdm::ContentDecryptionModule_10;
   using CDM_11 = cdm::ContentDecryptionModule_11;
-
-  if (cdm_interface_version == CDM_9::kVersion) {
-    CDM_9::Host* host = static_cast<CDM_9::Host*>(
-        get_cdm_host_func(CDM_9::Host::kVersion, user_data));
-    if (!host)
-      return nullptr;
-
-    DVLOG(1) << __func__ << ": Create ClearKeyCdm with CDM_9::Host.";
-    return static_cast<CDM_9*>(new media::ClearKeyCdm(host, key_system_string));
-  }
 
   if (cdm_interface_version == CDM_10::kVersion) {
     CDM_10::Host* host = static_cast<CDM_10::Host*>(
@@ -289,40 +278,9 @@ namespace media {
 
 namespace {
 
-cdm::InputBuffer_2 ToInputBuffer_2(cdm::InputBuffer_1 encrypted_buffer) {
-  cdm::InputBuffer_2 buffer = {};
-  buffer.data = encrypted_buffer.data;
-  buffer.data_size = encrypted_buffer.data_size;
-  buffer.key_id = encrypted_buffer.key_id;
-  buffer.key_id_size = encrypted_buffer.key_id_size;
-  buffer.iv = encrypted_buffer.iv;
-  buffer.iv_size = encrypted_buffer.iv_size;
-  buffer.subsamples = encrypted_buffer.subsamples;
-  buffer.num_subsamples = encrypted_buffer.num_subsamples;
-  buffer.timestamp = encrypted_buffer.timestamp;
-  // InputBuffer_1 must be either 'cenc' or unencrypted.
-  buffer.encryption_scheme = (buffer.iv_size == 0)
-                                 ? cdm::EncryptionScheme::kUnencrypted
-                                 : cdm::EncryptionScheme::kCenc;
-  buffer.pattern = {0, 0};
-  return buffer;
-}
-
 // See ISO 23001-8:2016, section 7. Value 2 means "Unspecified".
 constexpr cdm::ColorSpace kUnspecifiedColorSpace = {2, 2, 2,
                                                     cdm::ColorRange::kInvalid};
-
-cdm::VideoDecoderConfig_3 ToVideoDecoderConfig_3(
-    cdm::VideoDecoderConfig_1 config) {
-  // VideoDecoderConfig_1 doesn't specify the encryption scheme, but only
-  // supports 'cenc' or unencrypted media, so expect encrypted video.
-  cdm::VideoDecoderConfig_3 result = {
-      config.codec,           config.profile,
-      config.format,          kUnspecifiedColorSpace,
-      config.coded_size,      config.extra_data,
-      config.extra_data_size, cdm::EncryptionScheme::kCenc};
-  return result;
-}
 
 cdm::VideoDecoderConfig_3 ToVideoDecoderConfig_3(
     cdm::VideoDecoderConfig_2 config) {
@@ -385,7 +343,8 @@ ClearKeyCdm::ClearKeyCdm(HostInterface* host, const std::string& key_system)
 ClearKeyCdm::~ClearKeyCdm() = default;
 
 void ClearKeyCdm::Initialize(bool allow_distinctive_identifier,
-                             bool allow_persistent_state) {
+                             bool allow_persistent_state,
+                             bool /* use_hw_secure_codecs */) {
   // Implementation doesn't use distinctive identifier and will only need
   // to check persistent state permission.
   allow_persistent_state_ = allow_persistent_state;
@@ -398,12 +357,6 @@ void ClearKeyCdm::Initialize(bool allow_distinctive_identifier,
   }
 
   cdm_host_proxy_->OnInitialized(true);
-}
-
-void ClearKeyCdm::Initialize(bool allow_distinctive_identifier,
-                             bool allow_persistent_state,
-                             bool use_hw_secure_codecs) {
-  Initialize(allow_distinctive_identifier, allow_persistent_state);
 }
 
 void ClearKeyCdm::GetStatusForPolicy(uint32_t promise_id,
@@ -651,11 +604,6 @@ static void CopyDecryptResults(media::Decryptor::Status* status_copy,
   *buffer_copy = std::move(buffer);
 }
 
-cdm::Status ClearKeyCdm::Decrypt(const cdm::InputBuffer_1& encrypted_buffer,
-                                 cdm::DecryptedBlock* decrypted_block) {
-  return Decrypt(ToInputBuffer_2(encrypted_buffer), decrypted_block);
-}
-
 cdm::Status ClearKeyCdm::Decrypt(const cdm::InputBuffer_2& encrypted_buffer,
                                  cdm::DecryptedBlock* decrypted_block) {
   DVLOG(1) << __func__;
@@ -683,21 +631,6 @@ cdm::Status ClearKeyCdm::Decrypt(const cdm::InputBuffer_2& encrypted_buffer,
 }
 
 cdm::Status ClearKeyCdm::InitializeAudioDecoder(
-    const cdm::AudioDecoderConfig_1& audio_decoder_config) {
-  // AudioDecoderConfig_1 doesn't specify the encryption scheme, but only
-  // supports 'cenc' or unencrypted media, so expect encrypted audio.
-  cdm::AudioDecoderConfig_2 audio_config = {
-      audio_decoder_config.codec,
-      audio_decoder_config.channel_count,
-      audio_decoder_config.bits_per_channel,
-      audio_decoder_config.samples_per_second,
-      audio_decoder_config.extra_data,
-      audio_decoder_config.extra_data_size,
-      cdm::EncryptionScheme::kCenc};
-  return InitializeAudioDecoder(audio_config);
-}
-
-cdm::Status ClearKeyCdm::InitializeAudioDecoder(
     const cdm::AudioDecoderConfig_2& audio_decoder_config) {
   if (key_system_ == kExternalClearKeyDecryptOnlyKeySystem ||
       key_system_ == kExternalClearKeyCdmProxyKeySystem) {
@@ -716,11 +649,6 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
 #else
   return cdm::kInitializationError;
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
-}
-
-cdm::Status ClearKeyCdm::InitializeVideoDecoder(
-    const cdm::VideoDecoderConfig_1& video_decoder_config) {
-  return InitializeVideoDecoder(ToVideoDecoderConfig_3(video_decoder_config));
 }
 
 cdm::Status ClearKeyCdm::InitializeVideoDecoder(
@@ -781,13 +709,6 @@ void ClearKeyCdm::DeinitializeDecoder(cdm::StreamType decoder_type) {
 }
 
 cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
-    const cdm::InputBuffer_1& encrypted_buffer,
-    cdm::VideoFrame* decoded_frame) {
-  return DecryptAndDecodeFrame(ToInputBuffer_2(encrypted_buffer),
-                               decoded_frame);
-}
-
-cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
     const cdm::InputBuffer_2& encrypted_buffer,
     cdm::VideoFrame* decoded_frame) {
   CdmVideoFrameAdapter adapted_frame(decoded_frame);
@@ -807,13 +728,6 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
     return status;
 
   return video_decoder_->Decode(buffer, decoded_frame);
-}
-
-cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
-    const cdm::InputBuffer_1& encrypted_buffer,
-    cdm::AudioFrames* audio_frames) {
-  return DecryptAndDecodeSamples(ToInputBuffer_2(encrypted_buffer),
-                                 audio_frames);
 }
 
 cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(

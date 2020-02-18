@@ -13,6 +13,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 #include <set>
 #include <string>
@@ -26,10 +27,10 @@
 #include "modules/remote_bitrate_estimator/include/remote_bitrate_estimator.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"  // RTCPPacketType
-#include "modules/rtp_rtcp/source/packet_loss_stats.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/tmmb_item.h"
 #include "modules/rtp_rtcp/source/rtcp_receiver.h"
 #include "modules/rtp_rtcp/source/rtcp_sender.h"
+#include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
 #include "modules/rtp_rtcp/source/rtp_sender.h"
 #include "rtc_base/critical_section.h"
 #include "rtc_base/gtest_prod_util.h"
@@ -75,7 +76,8 @@ class ModuleRtpRtcpImpl : public RtpRtcp, public RTCPReceiver::ModuleRtpRtcp {
 
   int32_t DeregisterSendRtpHeaderExtension(RTPExtensionType type) override;
 
-  bool HasBweExtensions() const override;
+  bool SupportsPadding() const override;
+  bool SupportsRtxPayloadPadding() const override;
 
   // Get start timestamp.
   uint32_t StartTimestamp() const override;
@@ -140,10 +142,16 @@ class ModuleRtpRtcpImpl : public RtpRtcp, public RTCPReceiver::ModuleRtpRtcp {
       bool retransmission,
       const PacedPacketInfo& pacing_info) override;
 
+  bool TrySendPacket(RtpPacketToSend* packet,
+                     const PacedPacketInfo& pacing_info) override;
+
   // Returns the number of padding bytes actually sent, which can be more or
   // less than |bytes|.
   size_t TimeToSendPadding(size_t bytes,
                            const PacedPacketInfo& pacing_info) override;
+
+  std::vector<std::unique_ptr<RtpPacketToSend>> GeneratePadding(
+      size_t target_size_bytes) override;
 
   // RTCP part.
 
@@ -192,11 +200,6 @@ class ModuleRtpRtcpImpl : public RtpRtcp, public RTCPReceiver::ModuleRtpRtcp {
       StreamDataCounters* rtp_counters,
       StreamDataCounters* rtx_counters) const override;
 
-  void GetRtpPacketLossStats(
-      bool outgoing,
-      uint32_t ssrc,
-      struct RtpPacketLossStats* loss_stats) const override;
-
   // Get received RTCP report, report block.
   int32_t RemoteRTCPStat(
       std::vector<RTCPReportBlock>* receive_blocks) const override;
@@ -242,6 +245,8 @@ class ModuleRtpRtcpImpl : public RtpRtcp, public RTCPReceiver::ModuleRtpRtcp {
   void SetReportBlockDataObserver(ReportBlockDataObserver* observer) override;
 
   bool SendFeedbackPacket(const rtcp::TransportFeedback& packet) override;
+  bool SendNetworkStateEstimatePacket(
+      const rtcp::RemoteEstimate& packet) override;
   // (APP) Application specific data.
   int32_t SetRTCPApplicationSpecificData(uint8_t sub_type,
                                          uint32_t name,
@@ -254,16 +259,10 @@ class ModuleRtpRtcpImpl : public RtpRtcp, public RTCPReceiver::ModuleRtpRtcp {
   bool RtcpXrRrtrStatus() const override;
 
   // Video part.
-
-  // Set method for requesting a new key frame.
-  int32_t SetKeyFrameRequestMethod(KeyFrameRequestMethod method) override;
-
-  // Send a request for a keyframe.
-  int32_t RequestKeyFrame() override;
-
   int32_t SendLossNotification(uint16_t last_decoded_seq_num,
                                uint16_t last_received_seq_num,
-                               bool decodability_flag) override;
+                               bool decodability_flag,
+                               bool buffering_allowed) override;
 
   bool LastReceivedNTP(uint32_t* NTPsecs,
                        uint32_t* NTPfrac,
@@ -332,16 +331,11 @@ class ModuleRtpRtcpImpl : public RtpRtcp, public RTCPReceiver::ModuleRtpRtcp {
   int64_t nack_last_time_sent_full_ms_;
   uint16_t nack_last_seq_number_sent_;
 
-  KeyFrameRequestMethod key_frame_req_method_;
-
   RemoteBitrateEstimator* const remote_bitrate_;
 
   RtcpAckObserver* const ack_observer_;
 
   RtcpRttStats* const rtt_stats_;
-
-  PacketLossStats send_loss_stats_;
-  PacketLossStats receive_loss_stats_;
 
   // The processed RTT from RtcpRttStats.
   rtc::CriticalSection critical_section_rtt_;

@@ -83,8 +83,8 @@ class MHTMLLoadingTest : public testing::Test {
   Page* GetPage() const { return helper_.GetWebView()->GetPage(); }
 
  private:
-  frame_test_helpers::WebViewHelper helper_;
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
+  frame_test_helpers::WebViewHelper helper_;
 };
 
 // Checks that the domain is set to the actual MHTML file, not the URL it was
@@ -102,7 +102,7 @@ TEST_F(MHTMLLoadingTest, CheckDomain) {
   EXPECT_EQ(kFileURL, frame->DomWindow()->location()->toString());
 
   const SecurityOrigin* origin = document->GetSecurityOrigin();
-  EXPECT_STRNE("localhost", origin->Domain().Ascii().data());
+  EXPECT_NE("localhost", origin->Domain().Ascii());
 }
 
 // Checks that full sandboxing protection has been turned on.

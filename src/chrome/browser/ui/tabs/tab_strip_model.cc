@@ -14,6 +14,8 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/numerics/ranges.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -45,7 +47,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
@@ -287,7 +289,7 @@ struct TabStripModel::DetachNotifications {
 // TabStripModel, public:
 
 TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
-    : delegate_(delegate), profile_(profile), weak_factory_(this) {
+    : delegate_(delegate), profile_(profile) {
   DCHECK(delegate_);
   order_controller_.reset(new TabStripModelOrderController(this));
 
@@ -417,7 +419,6 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
     return nullptr;
   DCHECK(ContainsIndex(index));
 
-  NotifyGroupChange(index, UngroupTab(index), base::nullopt);
   FixOpeners(index);
 
   // Ask the delegate to save an entry for this tab in the historical tab
@@ -425,6 +426,8 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
   WebContents* raw_web_contents = GetWebContentsAtImpl(index);
   if (create_historical_tab)
     delegate_->CreateHistoricalTab(raw_web_contents);
+
+  NotifyGroupChange(index, UngroupTab(index), base::nullopt);
 
   int next_selected_index = order_controller_->DetermineNewSelectedIndex(index);
   std::unique_ptr<WebContentsData> old_data = std::move(contents_data_[index]);
@@ -455,8 +458,6 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
 
 void TabStripModel::SendDetachWebContentsNotifications(
     DetachNotifications* notifications) {
-  std::vector<TabStripModelChange::Delta> deltas;
-
   // Sort the DetachedWebContents in decreasing order of
   // |index_before_any_removals|. This is because |index_before_any_removals| is
   // used by observers to update their own copy of TabStripModel state, and each
@@ -769,7 +770,7 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
 }
 
 bool TabStripModel::IsTabPinned(int index) const {
-  DCHECK(ContainsIndex(index));
+  DCHECK(ContainsIndex(index)) << index;
   return contents_data_[index]->pinned();
 }
 
@@ -778,12 +779,12 @@ bool TabStripModel::IsTabBlocked(int index) const {
 }
 
 const TabGroupData* TabStripModel::GetDataForGroup(TabGroupId group) const {
-  DCHECK(base::ContainsKey(group_data_, group));
-  return group_data_.at(group).get();
+  DCHECK(base::Contains(group_data_, group));
+  return &group_data_.at(group);
 }
 
 base::Optional<TabGroupId> TabStripModel::GetTabGroupForTab(int index) const {
-  return (index == kNoTab) ? base::nullopt : contents_data_[index]->group();
+  return ContainsIndex(index) ? contents_data_[index]->group() : base::nullopt;
 }
 
 std::vector<TabGroupId> TabStripModel::ListTabGroups() const {
@@ -905,6 +906,17 @@ void TabStripModel::AddWebContents(std::unique_ptr<WebContents> contents,
       index = count();
   }
 
+  // Prevent the tab from being inserted at an index that would make the group
+  // non-contiguous. Most commonly, the new-tab button always attempts to insert
+  // at the end of the tab strip. Extensions can insert at an arbitrary index,
+  // so we have to handle the general case.
+  if (group.has_value()) {
+    auto grouped_tabs = ListTabsInGroup(group.value());
+    DCHECK(base::STLIsSorted(grouped_tabs));
+    index = base::ClampToRange(index, grouped_tabs.front(),
+                               grouped_tabs.back() + 1);
+  }
+
   if (ui::PageTransitionTypeIncludingQualifiersIs(transition,
                                                   ui::PAGE_TRANSITION_TYPED) &&
       index == count()) {
@@ -981,39 +993,17 @@ void TabStripModel::MoveTabPrevious() {
   MoveWebContentsAt(active_index(), new_index, true);
 }
 
-void TabStripModel::AddToNewGroup(const std::vector<int>& indices) {
+TabGroupId TabStripModel::AddToNewGroup(const std::vector<int>& indices) {
   DCHECK(!reentrancy_guard_);
   base::AutoReset<bool> resetter(&reentrancy_guard_, true);
 
+  // The odds of |new_group| colliding with an existing group are astronomically
+  // low. If there is a collision, a DCHECK will fail in |AddToNewGroupImpl()|,
+  // in which case there is probably something wrong with
+  // |TabGroupId::GenerateNew()|.
   const TabGroupId new_group = TabGroupId::GenerateNew();
-  // If the random generator is working correctly, the odds of this happening
-  // are astronomically low. If this DCHECK fails, something is probably wrong
-  // in |TabGroupId::GenerateNew()|.
-  DCHECK(!std::any_of(
-      contents_data_.cbegin(), contents_data_.cend(),
-      [new_group](const auto& datum) { return datum->group() == new_group; }));
-
-  group_data_[new_group] = std::make_unique<TabGroupData>();
-
-  // Find a destination for the first tab that's not inside another group. We
-  // will stack the rest of the tabs up to its right.
-  int destination_index = -1;
-  for (int i = indices[0]; i < count(); i++) {
-    const int destination_candidate = i + 1;
-    const bool end_of_strip = !ContainsIndex(destination_candidate);
-    if (end_of_strip || !GetTabGroupForTab(destination_candidate).has_value() ||
-        GetTabGroupForTab(destination_candidate) !=
-            GetTabGroupForTab(indices[0])) {
-      destination_index = destination_candidate;
-      break;
-    }
-  }
-
-  std::vector<int> new_indices = indices;
-  if (IsTabPinned(new_indices[0]))
-    new_indices = SetTabsPinned(new_indices, true);
-
-  MoveTabsIntoGroup(new_indices, destination_index, new_group);
+  AddToNewGroupImpl(indices, new_group);
+  return new_group;
 }
 
 void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
@@ -1021,25 +1011,19 @@ void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
   DCHECK(!reentrancy_guard_);
   base::AutoReset<bool> resetter(&reentrancy_guard_, true);
 
-  int destination_index = -1;
-  bool pin = false;
-  for (int i = contents_data_.size() - 1; i >= 0; i--) {
-    if (contents_data_[i]->group() == group) {
-      destination_index = i + 1;
-      pin = IsTabPinned(i);
-      break;
-    }
-  }
+  AddToExistingGroupImpl(indices, group);
+}
 
-  // Ignore indices that are already in the group.
-  std::vector<int> new_indices;
-  for (int candidate_index : indices) {
-    if (GetTabGroupForTab(candidate_index) != group)
-      new_indices.push_back(candidate_index);
-  }
-  new_indices = SetTabsPinned(new_indices, pin);
+void TabStripModel::AddToGroupForRestore(const std::vector<int>& indices,
+                                         TabGroupId group) {
+  DCHECK(!reentrancy_guard_);
+  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
 
-  MoveTabsIntoGroup(new_indices, destination_index, group);
+  const bool group_exists = base::Contains(group_data_, group);
+  if (group_exists)
+    AddToExistingGroupImpl(indices, group);
+  else
+    AddToNewGroupImpl(indices, group);
 }
 
 void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
@@ -1154,7 +1138,7 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
                                 TabStripModel::NEW_TAB_ENUM_COUNT);
       delegate()->AddTabAt(GURL(), context_index + 1, true,
                            GetTabGroupForTab(context_index));
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
       auto* new_tab_tracker =
           feature_engagement::NewTabTrackerFactory::GetInstance()
               ->GetForProfile(profile_);
@@ -1502,6 +1486,9 @@ int TabStripModel::InsertWebContentsAtImpl(
     }
     data->set_opener(active_contents);
   }
+  data->set_group(group);
+  if (group.has_value())
+    group_data_[group.value()].TabAdded();
 
   // TODO(gbillock): Ask the modal dialog manager whether the WebContents should
   // be blocked, or just let the modal dialog manager make the blocking call
@@ -1525,14 +1512,13 @@ int TabStripModel::InsertWebContentsAtImpl(
                              /*triggered_by_other_operation=*/true);
   }
 
-  if (group.has_value())
-    contents_data_[index]->set_group(group);
-
   TabStripModelChange::Insert insert;
   insert.contents.push_back({raw_contents, index});
   TabStripModelChange change(std::move(insert));
   for (auto& observer : observers_)
     observer.OnTabStripModelChanged(this, change, selection);
+  if (group.has_value())
+    NotifyGroupChange(index, base::nullopt, group);
 
   return index;
 }
@@ -1767,6 +1753,58 @@ void TabStripModel::MoveSelectedTabsToImpl(int index,
   }
 }
 
+void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
+                                      TabGroupId new_group) {
+  DCHECK(!std::any_of(
+      contents_data_.cbegin(), contents_data_.cend(),
+      [new_group](const auto& datum) { return datum->group() == new_group; }));
+
+  group_data_.emplace(new_group, TabGroupData());
+
+  // Find a destination for the first tab that's not inside another group. We
+  // will stack the rest of the tabs up to its right.
+  int destination_index = -1;
+  for (int i = indices[0]; i < count(); i++) {
+    const int destination_candidate = i + 1;
+    const bool end_of_strip = !ContainsIndex(destination_candidate);
+    if (end_of_strip || !GetTabGroupForTab(destination_candidate).has_value() ||
+        GetTabGroupForTab(destination_candidate) !=
+            GetTabGroupForTab(indices[0])) {
+      destination_index = destination_candidate;
+      break;
+    }
+  }
+
+  std::vector<int> new_indices = indices;
+  if (IsTabPinned(new_indices[0]))
+    new_indices = SetTabsPinned(new_indices, true);
+
+  MoveTabsIntoGroup(new_indices, destination_index, new_group);
+}
+
+void TabStripModel::AddToExistingGroupImpl(const std::vector<int>& indices,
+                                           TabGroupId group) {
+  int destination_index = -1;
+  bool pin = false;
+  for (int i = contents_data_.size() - 1; i >= 0; i--) {
+    if (contents_data_[i]->group() == group) {
+      destination_index = i + 1;
+      pin = IsTabPinned(i);
+      break;
+    }
+  }
+
+  // Ignore indices that are already in the group.
+  std::vector<int> new_indices;
+  for (int candidate_index : indices) {
+    if (GetTabGroupForTab(candidate_index) != group)
+      new_indices.push_back(candidate_index);
+  }
+  new_indices = SetTabsPinned(new_indices, pin);
+
+  MoveTabsIntoGroup(new_indices, destination_index, group);
+}
+
 void TabStripModel::MoveTabsIntoGroup(const std::vector<int>& indices,
                                       int destination_index,
                                       TabGroupId group) {
@@ -1803,8 +1841,9 @@ void TabStripModel::MoveAndSetGroup(int index,
   // is not possible right now.
   if (index != new_index)
     MoveWebContentsAtImpl(index, new_index, false);
-  WebContentsData* contents_data = contents_data_[new_index].get();
-  contents_data->set_group(new_group);
+  contents_data_[new_index]->set_group(new_group);
+  if (new_group.has_value())
+    group_data_[new_group.value()].TabAdded();
 
   NotifyGroupChange(new_index, old_group, new_group);
 }
@@ -1831,15 +1870,11 @@ base::Optional<TabGroupId> TabStripModel::UngroupTab(int index) {
     return base::nullopt;
 
   contents_data_[index]->set_group(base::nullopt);
-
+  TabGroupData* group_data = &group_data_[group.value()];
+  group_data->TabRemoved();
   // Delete the group if we just ungrouped the last tab in that group.
-  if ((!ContainsIndex(index + 1) || GetTabGroupForTab(index + 1) != group) &&
-      (!ContainsIndex(index - 1) || GetTabGroupForTab(index - 1) != group)) {
-    DCHECK(!std::any_of(
-        contents_data_.cbegin(), contents_data_.cend(),
-        [group](const auto& datum) { return datum->group() == group; }));
+  if (group_data->empty())
     group_data_.erase(group.value());
-  }
   return group;
 }
 

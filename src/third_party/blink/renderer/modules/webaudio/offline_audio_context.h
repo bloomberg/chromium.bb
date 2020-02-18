@@ -76,7 +76,7 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
   void FireCompletionEvent();
 
   bool HandlePreRenderTasks(const AudioIOPosition* output_position,
-                            const AudioIOCallbackMetric* metric) final;
+                            const AudioCallbackMetric* metric) final;
   void HandlePostRenderTasks() final;
 
   // Resolve a suspend scheduled at the specified frame. With this specified
@@ -98,8 +98,6 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
 
   // Document notification
   bool HasPendingActivity() const final;
-
-  double RenderCapacity() final;
 
  private:
   // Fetch directly the destination handler.

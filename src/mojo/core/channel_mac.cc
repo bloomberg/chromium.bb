@@ -133,8 +133,8 @@ class ChannelMac : public Channel,
     }
 
     for (uint16_t i = 0; i < mach_ports_header->num_ports; ++i) {
-      auto type = static_cast<PlatformHandle::Type>(
-          mach_ports_header->entries[i].mach_entry.type);
+      auto type =
+          static_cast<PlatformHandle::Type>(mach_ports_header->entries[i].type);
       if (type == PlatformHandle::Type::kNone) {
         return false;
       } else if (type == PlatformHandle::Type::kFd &&
@@ -353,8 +353,8 @@ class ChannelMac : public Channel,
         sizeof(mach_msg_header_t) + sizeof(mach_msg_body_t) +
         (message->num_handles() * sizeof(mach_msg_port_descriptor_t));
     const size_t expected_message_size =
-        round_msg(mach_header_size + message->data_num_bytes() +
-                  sizeof(mach_msg_audit_trailer_t));
+        round_msg(mach_header_size + sizeof(uint64_t) +
+                  message->data_num_bytes() + sizeof(mach_msg_audit_trailer_t));
     const bool transfer_message_ool =
         expected_message_size >= send_buffer_.size();
 
@@ -703,9 +703,8 @@ class ChannelMac : public Channel,
 
 }  // namespace
 
-// TODO(crbug.com/932175): This will be renamed Channel::Create.
 MOJO_SYSTEM_IMPL_EXPORT
-scoped_refptr<Channel> ChannelMacCreate(
+scoped_refptr<Channel> Channel::Create(
     Channel::Delegate* delegate,
     ConnectionParams connection_params,
     Channel::HandlePolicy handle_policy,

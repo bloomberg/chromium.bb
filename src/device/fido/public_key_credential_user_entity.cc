@@ -54,9 +54,21 @@ PublicKeyCredentialUserEntity::CreateFromCBORValue(const cbor::Value& cbor) {
   return user;
 }
 
+PublicKeyCredentialUserEntity::PublicKeyCredentialUserEntity() = default;
+
 PublicKeyCredentialUserEntity::PublicKeyCredentialUserEntity(
-    std::vector<uint8_t> in_id)
-    : id(std::move(in_id)) {}
+    std::vector<uint8_t> id_)
+    : id(std::move(id_)) {}
+
+PublicKeyCredentialUserEntity::PublicKeyCredentialUserEntity(
+    std::vector<uint8_t> id_,
+    base::Optional<std::string> name_,
+    base::Optional<std::string> display_name_,
+    base::Optional<GURL> icon_url_)
+    : id(std::move(id_)),
+      name(std::move(name_)),
+      display_name(std::move(display_name_)),
+      icon_url(std::move(icon_url_)) {}
 
 PublicKeyCredentialUserEntity::PublicKeyCredentialUserEntity(
     const PublicKeyCredentialUserEntity& other) = default;
@@ -71,6 +83,12 @@ PublicKeyCredentialUserEntity& PublicKeyCredentialUserEntity::operator=(
     PublicKeyCredentialUserEntity&& other) = default;
 
 PublicKeyCredentialUserEntity::~PublicKeyCredentialUserEntity() = default;
+
+bool PublicKeyCredentialUserEntity::operator==(
+    const PublicKeyCredentialUserEntity& other) const {
+  return id == other.id && name == other.name &&
+         display_name == other.display_name && icon_url == other.icon_url;
+}
 
 cbor::Value AsCBOR(const PublicKeyCredentialUserEntity& user) {
   cbor::Value::MapValue user_map;

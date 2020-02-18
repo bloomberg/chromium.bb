@@ -67,13 +67,12 @@ DEFINE_VARIATION_PARAM(kIPHContextualSearchPromotePanelOpenFeature,
                        "IPH_ContextualSearchPromotePanelOpen");
 DEFINE_VARIATION_PARAM(kIPHContextualSearchOptInFeature,
                        "IPH_ContextualSearchOptIn");
-DEFINE_VARIATION_PARAM(kIPHContextualSuggestionsFeature,
-                       "IPH_ContextualSuggestions");
 DEFINE_VARIATION_PARAM(kIPHDownloadSettingsFeature, "IPH_DownloadSettings");
 DEFINE_VARIATION_PARAM(kIPHDownloadInfoBarDownloadContinuingFeature,
                        "IPH_DownloadInfoBarDownloadContinuing");
 DEFINE_VARIATION_PARAM(kIPHDownloadInfoBarDownloadsAreFasterFeature,
                        "IPH_DownloadInfoBarDownloadsAreFaster");
+DEFINE_VARIATION_PARAM(kIPHFeedCardMenuFeature, "IPH_FeedCardMenu");
 DEFINE_VARIATION_PARAM(kIPHHomePageButtonFeature, "IPH_HomePageButton");
 DEFINE_VARIATION_PARAM(kIPHHomepageTileFeature, "IPH_HomepageTile");
 DEFINE_VARIATION_PARAM(kIPHIdentityDiscFeature, "IPH_IdentityDisc");
@@ -91,17 +90,12 @@ DEFINE_VARIATION_PARAM(kIPHTabGroupsTapToSeeAnotherTabFeature,
                        "IPH_TabGroupsTapToSeeAnotherTab");
 DEFINE_VARIATION_PARAM(kIPHTabGroupsYourTabsAreTogetherFeature,
                        "IPH_TabGroupsYourTabsTogether");
+DEFINE_VARIATION_PARAM(kIPHTabGroupsDragAndDropFeature,
+                       "IPH_TabGroupsDragAndDrop");
 DEFINE_VARIATION_PARAM(kIPHTranslateMenuButtonFeature,
                        "IPH_TranslateMenuButton");
 DEFINE_VARIATION_PARAM(kIPHExploreSitesTileFeature, "IPH_ExploreSitesTile");
 #endif  // defined(OS_ANDROID)
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-DEFINE_VARIATION_PARAM(kIPHBookmarkFeature, "IPH_Bookmark");
-DEFINE_VARIATION_PARAM(kIPHIncognitoWindowFeature, "IPH_IncognitoWindow");
-DEFINE_VARIATION_PARAM(kIPHNewTabFeature, "IPH_NewTab");
-DEFINE_VARIATION_PARAM(kIPHReopenTabFeature, "IPH_ReopenTab");
-DEFINE_VARIATION_PARAM(kIPHFocusModeFeature, "IPH_FocusMode");
-#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 #if defined(OS_IOS)
 DEFINE_VARIATION_PARAM(kIPHBottomToolbarTipFeature, "IPH_BottomToolbarTip");
 DEFINE_VARIATION_PARAM(kIPHLongPressToolbarTipFeature,
@@ -112,6 +106,18 @@ DEFINE_VARIATION_PARAM(kIPHBadgedReadingListFeature, "IPH_BadgedReadingList");
 DEFINE_VARIATION_PARAM(kIPHBadgedTranslateManualTriggerFeature,
                        "IPH_BadgedTranslateManualTrigger");
 #endif  // defined(OS_IOS)
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+DEFINE_VARIATION_PARAM(kIPHReopenTabFeature, "IPH_ReopenTab");
+DEFINE_VARIATION_PARAM(kIPHFocusModeFeature, "IPH_FocusMode");
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
+DEFINE_VARIATION_PARAM(kIPHBookmarkFeature, "IPH_Bookmark");
+DEFINE_VARIATION_PARAM(kIPHIncognitoWindowFeature, "IPH_IncognitoWindow");
+DEFINE_VARIATION_PARAM(kIPHNewTabFeature, "IPH_NewTab");
+#endif  // BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -134,10 +140,10 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHContextualSearchPromoteTapFeature),
         VARIATION_ENTRY(kIPHContextualSearchPromotePanelOpenFeature),
         VARIATION_ENTRY(kIPHContextualSearchOptInFeature),
-        VARIATION_ENTRY(kIPHContextualSuggestionsFeature),
         VARIATION_ENTRY(kIPHDownloadSettingsFeature),
         VARIATION_ENTRY(kIPHDownloadInfoBarDownloadContinuingFeature),
         VARIATION_ENTRY(kIPHDownloadInfoBarDownloadsAreFasterFeature),
+        VARIATION_ENTRY(kIPHFeedCardMenuFeature),
         VARIATION_ENTRY(kIPHHomePageButtonFeature),
         VARIATION_ENTRY(kIPHHomepageTileFeature),
         VARIATION_ENTRY(kIPHIdentityDiscFeature),
@@ -149,14 +155,9 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHTabGroupsQuicklyComparePagesFeature),
         VARIATION_ENTRY(kIPHTabGroupsTapToSeeAnotherTabFeature),
         VARIATION_ENTRY(kIPHTabGroupsYourTabsAreTogetherFeature),
+        VARIATION_ENTRY(kIPHTabGroupsDragAndDropFeature),
         VARIATION_ENTRY(kIPHTranslateMenuButtonFeature),
         VARIATION_ENTRY(kIPHExploreSitesTileFeature),
-#elif BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-        VARIATION_ENTRY(kIPHBookmarkFeature),
-        VARIATION_ENTRY(kIPHIncognitoWindowFeature),
-        VARIATION_ENTRY(kIPHNewTabFeature),
-        VARIATION_ENTRY(kIPHReopenTabFeature),
-        VARIATION_ENTRY(kIPHFocusModeFeature),
 #elif defined(OS_IOS)
         VARIATION_ENTRY(kIPHBottomToolbarTipFeature),
         VARIATION_ENTRY(kIPHLongPressToolbarTipFeature),
@@ -164,9 +165,17 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHNewIncognitoTabTipFeature),
         VARIATION_ENTRY(kIPHBadgedReadingListFeature),
         VARIATION_ENTRY(kIPHBadgedTranslateManualTriggerFeature),
-#else
-        VARIATION_ENTRY(kIPHDummyFeature),  // Ensures non-empty array.
-#endif
+#elif defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+        VARIATION_ENTRY(kIPHReopenTabFeature),
+        VARIATION_ENTRY(kIPHFocusModeFeature),
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
+        VARIATION_ENTRY(kIPHBookmarkFeature),
+        VARIATION_ENTRY(kIPHIncognitoWindowFeature),
+        VARIATION_ENTRY(kIPHNewTabFeature),
+#endif  // BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
 };
 
 #undef DEFINE_VARIATION_PARAM

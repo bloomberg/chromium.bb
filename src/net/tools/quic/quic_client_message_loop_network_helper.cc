@@ -47,7 +47,7 @@ bool QuicClientMessageLooplNetworkHelper::CreateUDPSocketAndBind(
     quic::QuicIpAddress bind_to_address,
     int bind_to_port) {
   auto socket = std::make_unique<UDPClientSocket>(DatagramSocket::DEFAULT_BIND,
-                                                  &net_log_, NetLogSource());
+                                                  nullptr, NetLogSource());
 
   if (bind_to_address.IsInitialized()) {
     client_address_ =
@@ -85,8 +85,7 @@ bool QuicClientMessageLooplNetworkHelper::CreateUDPSocketAndBind(
     LOG(ERROR) << "GetLocalAddress failed: " << ErrorToShortString(rc);
     return false;
   }
-  client_address_ =
-      quic::QuicSocketAddress(quic::QuicSocketAddressImpl(address));
+  client_address_ = ToQuicSocketAddress(address);
 
   socket_.swap(socket);
   packet_reader_.reset(new QuicChromiumPacketReader(

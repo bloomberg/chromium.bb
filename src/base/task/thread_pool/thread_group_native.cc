@@ -79,53 +79,67 @@ void ThreadGroupNative::JoinForTesting() {
 }
 
 void ThreadGroupNative::RunNextTaskSourceImpl() {
-  RegisteredTaskSource task_source = GetWork();
+  RunIntentWithRegisteredTaskSource run_intent_with_task_source = GetWork();
 
-  if (task_source) {
+  if (run_intent_with_task_source) {
     BindToCurrentThread();
-    task_source = task_tracker_->RunAndPopNextTask(std::move(task_source));
+    RegisteredTaskSource task_source = task_tracker_->RunAndPopNextTask(
+        std::move(run_intent_with_task_source));
     UnbindFromCurrentThread();
 
     if (task_source) {
       ScopedWorkersExecutor workers_executor(this);
       ScopedReenqueueExecutor reenqueue_executor;
-      auto task_source_and_transaction =
-          RegisteredTaskSourceAndTransaction::FromTaskSource(
+      auto transaction_with_task_source =
+          TransactionWithRegisteredTaskSource::FromTaskSource(
               std::move(task_source));
       CheckedAutoLock auto_lock(lock_);
       ReEnqueueTaskSourceLockRequired(&workers_executor, &reenqueue_executor,
-                                      std::move(task_source_and_transaction));
+                                      std::move(transaction_with_task_source));
     }
   }
 }
 
-RegisteredTaskSource ThreadGroupNative::GetWork() {
+void ThreadGroupNative::UpdateMinAllowedPriorityLockRequired() {
+  // Tasks should yield as soon as there is work of higher priority in
+  // |priority_queue_|.
+  min_allowed_priority_.store(priority_queue_.IsEmpty()
+                                  ? TaskPriority::BEST_EFFORT
+                                  : priority_queue_.PeekSortKey().priority(),
+                              std::memory_order_relaxed);
+}
+
+RunIntentWithRegisteredTaskSource ThreadGroupNative::GetWork() {
+  ScopedWorkersExecutor workers_executor(this);
   CheckedAutoLock auto_lock(lock_);
   DCHECK_GT(num_pending_threadpool_work_, 0U);
   --num_pending_threadpool_work_;
-  // There can be more pending threadpool work than TaskSources in the
-  // PriorityQueue after RemoveTaskSource().
-  if (priority_queue_.IsEmpty())
-    return nullptr;
 
-  // Enforce the CanRunPolicy.
-  const TaskPriority priority = priority_queue_.PeekSortKey().priority();
-  if (!task_tracker_->CanRunPriority(priority))
-    return nullptr;
-  return priority_queue_.PopTaskSource();
+  RunIntentWithRegisteredTaskSource task_source;
+  TaskPriority priority;
+  while (!task_source && !priority_queue_.IsEmpty()) {
+    priority = priority_queue_.PeekSortKey().priority();
+    // Enforce the CanRunPolicy.
+    if (!task_tracker_->CanRunPriority(priority))
+      return nullptr;
+
+    task_source = TakeRunIntentWithRegisteredTaskSource(&workers_executor);
+  }
+  UpdateMinAllowedPriorityLockRequired();
+  return task_source;
 }
 
 void ThreadGroupNative::UpdateSortKey(
-    TaskSourceAndTransaction task_source_and_transaction) {
+    TransactionWithOwnedTaskSource transaction_with_task_source) {
   ScopedWorkersExecutor executor(this);
-  UpdateSortKeyImpl(&executor, std::move(task_source_and_transaction));
+  UpdateSortKeyImpl(&executor, std::move(transaction_with_task_source));
 }
 
 void ThreadGroupNative::PushTaskSourceAndWakeUpWorkers(
-    RegisteredTaskSourceAndTransaction task_source_and_transaction) {
+    TransactionWithRegisteredTaskSource transaction_with_task_source) {
   ScopedWorkersExecutor executor(this);
   PushTaskSourceAndWakeUpWorkersImpl(&executor,
-                                     std::move(task_source_and_transaction));
+                                     std::move(transaction_with_task_source));
 }
 
 void ThreadGroupNative::EnsureEnoughWorkersLockRequired(
@@ -135,8 +149,8 @@ void ThreadGroupNative::EnsureEnoughWorkersLockRequired(
   // Ensure that there is at least one pending threadpool work per TaskSource in
   // the PriorityQueue.
   const size_t desired_num_pending_threadpool_work =
-      GetNumQueuedCanRunBestEffortTaskSources() +
-      GetNumQueuedCanRunForegroundTaskSources();
+      GetNumAdditionalWorkersForBestEffortTaskSourcesLockRequired() +
+      GetNumAdditionalWorkersForForegroundTaskSourcesLockRequired();
 
   if (desired_num_pending_threadpool_work > num_pending_threadpool_work_) {
     static_cast<ScopedWorkersExecutor*>(executor)
@@ -144,6 +158,9 @@ void ThreadGroupNative::EnsureEnoughWorkersLockRequired(
             desired_num_pending_threadpool_work - num_pending_threadpool_work_);
     num_pending_threadpool_work_ = desired_num_pending_threadpool_work;
   }
+  // This function is called every time a task source is queued or re-enqueued,
+  // hence the minimum priority needs to be updated.
+  UpdateMinAllowedPriorityLockRequired();
 }
 
 size_t ThreadGroupNative::GetMaxConcurrentNonBlockedTasksDeprecated() const {

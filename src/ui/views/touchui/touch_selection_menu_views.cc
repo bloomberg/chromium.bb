@@ -54,8 +54,9 @@ TouchSelectionMenuViews::TouchSelectionMenuViews(
   set_adjust_if_offscreen(true);
   EnableCanvasFlippingForRTLUI(true);
 
-  SetLayoutManager(std::make_unique<BoxLayout>(
-      BoxLayout::kHorizontal, gfx::Insets(), kSpacingBetweenButtons));
+  SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::Orientation::kHorizontal,
+                                  gfx::Insets(), kSpacingBetweenButtons));
 }
 
 void TouchSelectionMenuViews::ShowMenu(const gfx::Rect& anchor_rect,
@@ -182,5 +183,9 @@ void TouchSelectionMenuViews::ButtonPressed(Button* sender,
   else
     client_->RunContextMenu();
 }
+
+BEGIN_METADATA(TouchSelectionMenuViews)
+METADATA_PARENT_CLASS(BubbleDialogDelegateView)
+END_METADATA()
 
 }  // namespace views

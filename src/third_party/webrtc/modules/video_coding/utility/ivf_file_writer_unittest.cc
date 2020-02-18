@@ -11,11 +11,11 @@
 #include "modules/video_coding/utility/ivf_file_writer.h"
 
 #include <string.h>
+
 #include <memory>
 #include <string>
 
 #include "modules/rtp_rtcp/source/byte_io.h"
-#include "rtc_base/platform_file.h"
 #include "test/gtest.h"
 #include "test/testsupport/file_utils.h"
 
@@ -33,7 +33,7 @@ class IvfFileWriterTest : public ::testing::Test {
     file_name_ =
         webrtc::test::TempFilename(webrtc::test::OutputPath(), "test_file");
   }
-  void TearDown() override { rtc::RemoveFile(file_name_); }
+  void TearDown() override { webrtc::test::RemoveFile(file_name_); }
 
   bool WriteDummyTestFrames(VideoCodecType codec_type,
                             int width,
@@ -41,8 +41,8 @@ class IvfFileWriterTest : public ::testing::Test {
                             int num_frames,
                             bool use_capture_tims_ms) {
     EncodedImage frame;
-    frame.Allocate(sizeof(dummy_payload));
-    memcpy(frame.data(), dummy_payload, sizeof(dummy_payload));
+    frame.SetEncodedData(
+        EncodedImageBuffer::Create(dummy_payload, sizeof(dummy_payload)));
     frame._encodedWidth = width;
     frame._encodedHeight = height;
     for (int i = 1; i <= num_frames; ++i) {

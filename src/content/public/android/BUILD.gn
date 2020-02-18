@@ -142,12 +142,12 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/LauncherThread.java",
     "java/src/org/chromium/content/browser/LollipopTtsPlatformImpl.java",
     "java/src/org/chromium/content/browser/MediaSessionImpl.java",
-    "java/src/org/chromium/content/browser/MemoryMonitorAndroid.java",
     "java/src/org/chromium/content/browser/MotionEventSynthesizerImpl.java",
     "java/src/org/chromium/content/browser/NfcHost.java",
     "java/src/org/chromium/content/browser/TtsPlatformImpl.java",
     "java/src/org/chromium/content/browser/PopupController.java",
     "java/src/org/chromium/content/browser/RenderCoordinatesImpl.java",
+    "java/src/org/chromium/content/browser/RenderWidgetHostViewImpl.java",
     "java/src/org/chromium/content/browser/ScreenOrientationProviderImpl.java",
     "java/src/org/chromium/content/browser/SmsReceiver.java",
     "java/src/org/chromium/content/browser/SpareChildConnection.java",
@@ -269,6 +269,7 @@ android_library("content_java") {
     "java/src/org/chromium/content_public/browser/NavigationHistory.java",
     "java/src/org/chromium/content_public/browser/RenderCoordinates.java",
     "java/src/org/chromium/content_public/browser/RenderFrameHost.java",
+    "java/src/org/chromium/content_public/browser/RenderWidgetHostView.java",
     "java/src/org/chromium/content_public/browser/ScreenOrientationDelegate.java",
     "java/src/org/chromium/content_public/browser/ScreenOrientationProvider.java",
     "java/src/org/chromium/content_public/browser/SelectionClient.java",
@@ -376,7 +377,6 @@ java_cpp_strings("content_public_android_java_switches_srcjar") {
 }
 
 generate_jar_jni("jar_jni") {
-  jni_package = "content"
   classes = [
     "java/util/HashSet.class",
     "android/view/DragEvent.class",
@@ -404,8 +404,8 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/JavascriptInjectorImpl.java",
     "java/src/org/chromium/content/browser/LauncherThread.java",
     "java/src/org/chromium/content/browser/MediaSessionImpl.java",
-    "java/src/org/chromium/content/browser/MemoryMonitorAndroid.java",
     "java/src/org/chromium/content/browser/NfcHost.java",
+    "java/src/org/chromium/content/browser/RenderWidgetHostViewImpl.java",
     "java/src/org/chromium/content/browser/ScreenOrientationProviderImpl.java",
     "java/src/org/chromium/content/browser/SmsReceiver.java",
     "java/src/org/chromium/content/browser/SpeechRecognitionImpl.java",
@@ -435,7 +435,6 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content_public/common/ResourceRequestBody.java",
     "java/src/org/chromium/content_public/common/UseZoomForDSFPolicy.java",
   ]
-  jni_package = "content"
 }
 
 group("jni") {
@@ -450,7 +449,7 @@ android_library("content_javatests") {
 
   srcjar_deps = [
     "//content/shell/android:content_javatests_aidl",
-    "//third_party/blink/public:blink_cursor_type_java_enums_srcjar",
+    "//ui/base:ui_base_cursor_type_java_enums_srcjar",
   ]
 
   deps = [
@@ -548,7 +547,6 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/scheduler/UiThreadSchedulerTest.java",
     "javatests/src/org/chromium/content/browser/webcontents/AccessibilitySnapshotTest.java",
     "javatests/src/org/chromium/content/browser/webcontents/WebContentsTest.java",
-    "javatests/src/org/chromium/content/common/ServiceManagerConnectionImplTest.java",
   ]
 
   data = [

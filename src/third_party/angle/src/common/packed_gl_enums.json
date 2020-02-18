@@ -258,7 +258,7 @@
         "MirroredRepeat": "GL_MIRRORED_REPEAT",
         "Repeat": "GL_REPEAT"
     },
-    "ProvokingVertex":
+    "ProvokingVertexConvention":
     {
         "FirstVertexConvention": "GL_FIRST_VERTEX_CONVENTION",
         "LastVertexConvention": "GL_LAST_VERTEX_CONVENTION"
@@ -269,6 +269,7 @@
     },
     "ImageLayout":
     {
+        "Undefined": "GL_NONE",
         "General": "GL_LAYOUT_GENERAL_EXT",
         "ColorAttachment": "GL_LAYOUT_COLOR_ATTACHMENT_EXT",
         "DepthStencilAttachment": "GL_LAYOUT_DEPTH_STENCIL_ATTACHMENT_EXT",

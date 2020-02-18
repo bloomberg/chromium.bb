@@ -19,12 +19,12 @@
 #include "include/gpu/GrContext.h"
 #include "include/gpu/GrTexture.h"
 #include "include/private/GrRecordingContext.h"
-#include "include/private/GrTextureProxy.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrCoordTransform.h"
 #include "src/gpu/GrFixedClip.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -472,10 +472,7 @@ static sk_sp<SkSpecialImage> apply_morphology(
     sk_sp<GrTextureProxy> srcTexture(input->asTextureProxyRef(context));
     SkASSERT(srcTexture);
     sk_sp<SkColorSpace> colorSpace = sk_ref_sp(outputProperties.colorSpace());
-    SkColorType colorType = outputProperties.colorType();
-    GrBackendFormat format =
-            context->priv().caps()->getBackendFormatFromColorType(colorType);
-    GrPixelConfig config = SkColorType2GrPixelConfig(colorType);
+    GrColorType colorType = SkColorTypeToGrColorType(outputProperties.colorType());
 
     // setup new clip
     const GrFixedClip clip(SkIRect::MakeWH(srcTexture->width(), srcTexture->height()));
@@ -486,9 +483,18 @@ static sk_sp<SkSpecialImage> apply_morphology(
     SkASSERT(radius.width() > 0 || radius.height() > 0);
 
     if (radius.fWidth > 0) {
-        sk_sp<GrRenderTargetContext> dstRTContext(
-            context->priv().makeDeferredRenderTargetContext(
-                format, SkBackingFit::kApprox, rect.width(), rect.height(), config, colorSpace));
+        sk_sp<GrRenderTargetContext> dstRTContext(context->priv().makeDeferredRenderTargetContext(
+                SkBackingFit::kApprox,
+                rect.width(),
+                rect.height(),
+                colorType,
+                colorSpace,
+                1,
+                GrMipMapped::kNo,
+                kBottomLeft_GrSurfaceOrigin,
+                nullptr,
+                SkBudgeted::kYes,
+                srcTexture->isProtected() ? GrProtected::kYes : GrProtected::kNo));
         if (!dstRTContext) {
             return nullptr;
         }
@@ -505,9 +511,18 @@ static sk_sp<SkSpecialImage> apply_morphology(
         srcRect = dstRect;
     }
     if (radius.fHeight > 0) {
-        sk_sp<GrRenderTargetContext> dstRTContext(
-            context->priv().makeDeferredRenderTargetContext(
-                format, SkBackingFit::kApprox, rect.width(), rect.height(), config, colorSpace));
+        sk_sp<GrRenderTargetContext> dstRTContext(context->priv().makeDeferredRenderTargetContext(
+                SkBackingFit::kApprox,
+                rect.width(),
+                rect.height(),
+                colorType,
+                colorSpace,
+                1,
+                GrMipMapped::kNo,
+                kBottomLeft_GrSurfaceOrigin,
+                nullptr,
+                SkBudgeted::kYes,
+                srcTexture->isProtected() ? GrProtected::kYes : GrProtected::kNo));
         if (!dstRTContext) {
             return nullptr;
         }

@@ -6,13 +6,15 @@
 
 #include <memory>
 
-#include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 namespace openscreen {
 namespace {
 
 using ::testing::Expectation;
+using ::testing::NiceMock;
+
 using State = ServicePublisher::State;
 
 class MockObserver final : public ServicePublisher::Observer {
@@ -28,7 +30,7 @@ class MockObserver final : public ServicePublisher::Observer {
   MOCK_METHOD1(OnMetrics, void(ServicePublisher::Metrics));
 };
 
-class MockMdnsDelegate final : public ServicePublisherImpl::Delegate {
+class MockMdnsDelegate : public ServicePublisherImpl::Delegate {
  public:
   MockMdnsDelegate() = default;
   ~MockMdnsDelegate() override = default;
@@ -50,7 +52,7 @@ class ServicePublisherImplTest : public ::testing::Test {
         std::make_unique<ServicePublisherImpl>(nullptr, &mock_delegate_);
   }
 
-  MockMdnsDelegate mock_delegate_;
+  NiceMock<MockMdnsDelegate> mock_delegate_;
   std::unique_ptr<ServicePublisherImpl> service_publisher_;
 };
 
@@ -131,7 +133,7 @@ TEST_F(ServicePublisherImplTest, SuspendAndResume) {
 
 TEST_F(ServicePublisherImplTest, ObserverTransitions) {
   MockObserver observer;
-  MockMdnsDelegate mock_delegate;
+  NiceMock<MockMdnsDelegate> mock_delegate;
   service_publisher_ =
       std::make_unique<ServicePublisherImpl>(&observer, &mock_delegate);
 

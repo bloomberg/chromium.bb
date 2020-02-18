@@ -76,7 +76,7 @@ bool DoesOriginMatchMaskAndURLs(
     return false;
 
   const std::vector<std::string>& schemes = url::GetWebStorageSchemes();
-  bool is_web_scheme = base::ContainsValue(schemes, origin.scheme());
+  bool is_web_scheme = base::Contains(schemes, origin.scheme());
 
   // If a websafe origin is unprotected, it matches iff UNPROTECTED_WEB.
   if ((!policy || !policy->IsStorageProtected(origin.GetURL())) &&
@@ -111,8 +111,7 @@ BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
       remove_mask_(-1),
       origin_type_mask_(-1),
       is_removing_(false),
-      storage_partition_for_testing_(nullptr),
-      weak_ptr_factory_(this) {
+      storage_partition_for_testing_(nullptr) {
   DCHECK(browser_context_);
 }
 
@@ -149,7 +148,7 @@ void BrowsingDataRemoverImpl::SetEmbedderDelegate(
 bool BrowsingDataRemoverImpl::DoesOriginMatchMask(
     int origin_type_mask,
     const url::Origin& origin,
-    storage::SpecialStoragePolicy* policy) const {
+    storage::SpecialStoragePolicy* policy) {
   BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher embedder_matcher;
   if (embedder_delegate_)
     embedder_matcher = embedder_delegate_->GetOriginTypeMatcher();

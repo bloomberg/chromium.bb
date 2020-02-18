@@ -8,7 +8,10 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "rtc_base/physical_socket_server.h"
+
 #include <signal.h>
+
 #include <algorithm>
 #include <memory>
 
@@ -16,7 +19,6 @@
 #include "rtc_base/ip_address.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/network_monitor.h"
-#include "rtc_base/physical_socket_server.h"
 #include "rtc_base/socket_unittest.h"
 #include "rtc_base/test_utils.h"
 #include "rtc_base/thread.h"
@@ -594,21 +596,6 @@ TEST_F(PosixSignalDeliveryTest, SignalDuringWait) {
   EXPECT_TRUE(ExpectNone());
 }
 
-class RaiseSigTermRunnable : public Runnable {
-  void Run(Thread* thread) override {
-    thread->socketserver()->Wait(1000, false);
-
-    // Allow SIGTERM. This will be the only thread with it not masked so it will
-    // be delivered to us.
-    sigset_t mask;
-    sigemptyset(&mask);
-    pthread_sigmask(SIG_SETMASK, &mask, nullptr);
-
-    // Raise it.
-    raise(SIGTERM);
-  }
-};
-
 // Test that it works no matter what thread the kernel chooses to give the
 // signal to (since it's not guaranteed to be the one that Wait() runs on).
 // TODO(webrtc:7864): Fails on real iOS devices
@@ -628,8 +615,19 @@ TEST_F(PosixSignalDeliveryTest, DISABLED_SignalOnDifferentThread) {
   // thread. Our implementation should safely handle it and dispatch
   // RecordSignal() on this thread.
   std::unique_ptr<Thread> thread(Thread::CreateWithSocketServer());
-  std::unique_ptr<RaiseSigTermRunnable> runnable(new RaiseSigTermRunnable());
-  thread->Start(runnable.get());
+  thread->Start();
+  thread->PostTask(RTC_FROM_HERE, [&thread]() {
+    thread->socketserver()->Wait(1000, false);
+    // Allow SIGTERM. This will be the only thread with it not masked so it will
+    // be delivered to us.
+    sigset_t mask;
+    sigemptyset(&mask);
+    pthread_sigmask(SIG_SETMASK, &mask, nullptr);
+
+    // Raise it.
+    raise(SIGTERM);
+  });
+
   EXPECT_TRUE(ss_->Wait(1500, true));
   EXPECT_TRUE(ExpectSignal(SIGTERM));
   EXPECT_EQ(Thread::Current(), signaled_thread_);

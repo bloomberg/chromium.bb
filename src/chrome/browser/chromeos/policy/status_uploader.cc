@@ -167,14 +167,14 @@ bool StatusUploader::IsSessionDataUploadAllowed() {
 
 void StatusUploader::OnRequestUpdate(int render_process_id,
                                      int render_frame_id,
-                                     blink::MediaStreamType stream_type,
+                                     blink::mojom::MediaStreamType stream_type,
                                      const content::MediaRequestState state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // If a video or audio capture stream is opened, set a flag so we disallow
   // upload of potentially sensitive data.
   if (state == content::MEDIA_REQUEST_STATE_OPENING &&
-      (stream_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE ||
-       stream_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE)) {
+      (stream_type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE ||
+       stream_type == blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE)) {
     has_captured_media_ = true;
   }
 }

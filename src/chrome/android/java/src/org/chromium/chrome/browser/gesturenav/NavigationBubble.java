@@ -42,7 +42,8 @@ public class NavigationBubble extends LinearLayout {
         mRippleBackgroundHelper = new RippleBackgroundHelper(this,
                 R.color.navigation_bubble_background_color, R.color.navigation_bubble_ripple_color,
                 getResources().getDimensionPixelSize(R.dimen.navigation_bubble_default_height),
-                R.color.navigation_bubble_stroke_color, R.dimen.navigation_bubble_border_width);
+                R.color.navigation_bubble_stroke_color, R.dimen.navigation_bubble_border_width,
+                getResources().getDimensionPixelSize(R.dimen.navigation_bubble_bg_vertical_inset));
     }
 
     @Override

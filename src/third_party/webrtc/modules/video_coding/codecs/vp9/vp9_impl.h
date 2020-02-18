@@ -19,12 +19,12 @@
 #include <string>
 #include <vector>
 
-#include "modules/video_coding/codecs/vp9/include/vp9.h"
-
+#include "api/fec_controller_override.h"
+#include "api/video_codecs/video_encoder.h"
 #include "media/base/vp9_profile.h"
+#include "modules/video_coding/codecs/vp9/include/vp9.h"
 #include "modules/video_coding/codecs/vp9/vp9_frame_buffer_pool.h"
 #include "modules/video_coding/utility/framerate_controller.h"
-
 #include "vpx/vp8cx.h"
 #include "vpx/vpx_decoder.h"
 #include "vpx/vpx_encoder.h"
@@ -35,13 +35,15 @@ class VP9EncoderImpl : public VP9Encoder {
  public:
   explicit VP9EncoderImpl(const cricket::VideoCodec& codec);
 
-  virtual ~VP9EncoderImpl();
+  ~VP9EncoderImpl() override;
+
+  void SetFecControllerOverride(
+      FecControllerOverride* fec_controller_override) override;
 
   int Release() override;
 
   int InitEncode(const VideoCodec* codec_settings,
-                 int number_of_cores,
-                 size_t max_payload_size) override;
+                 const Settings& settings) override;
 
   int Encode(const VideoFrame& input_image,
              const std::vector<VideoFrameType>* frame_types) override;
@@ -196,7 +198,6 @@ class VP9DecoderImpl : public VP9Decoder {
  private:
   int ReturnFrame(const vpx_image_t* img,
                   uint32_t timestamp,
-                  int64_t ntp_time_ms,
                   int qp,
                   const webrtc::ColorSpace* explicit_color_space);
 

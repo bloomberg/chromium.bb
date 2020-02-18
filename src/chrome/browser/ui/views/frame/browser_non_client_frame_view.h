@@ -104,7 +104,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Called by BrowserView to signal the frame color has changed and needs
   // to be repainted.
-  void UpdateFrameColor();
+  virtual void UpdateFrameColor();
 
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
@@ -172,6 +172,11 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   }
 
  private:
+  // views::NonClientFrameView:
+#if defined(OS_WIN)
+  int GetSystemMenuY() const override;
+#endif
+
   void MaybeObserveTabstrip();
 
   // Gets a theme provider that should be non-null even before we're added to a

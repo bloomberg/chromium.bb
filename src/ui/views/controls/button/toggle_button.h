@@ -17,8 +17,6 @@ class VIEWS_EXPORT ToggleButton : public Button {
  public:
   METADATA_HEADER(ToggleButton);
 
-  static const char kViewClassName[];
-
   explicit ToggleButton(ButtonListener* listener);
   ~ToggleButton() override;
 
@@ -49,7 +47,6 @@ class VIEWS_EXPORT ToggleButton : public Button {
   SkColor GetTrackColor(bool is_on) const;
 
   // views::View:
-  const char* GetClassName() const override;
   bool CanAcceptEvent(const ui::Event& event) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnThemeChanged() override;

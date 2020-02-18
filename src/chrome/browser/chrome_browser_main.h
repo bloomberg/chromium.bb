@@ -26,7 +26,6 @@ class Profile;
 class StartupBrowserCreator;
 class StartupTimeBomb;
 class ShutdownWatcherHelper;
-class ThreadProfiler;
 class WebUsbDetector;
 
 namespace tracing {
@@ -66,8 +65,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   void PostMainMessageLoopStart() override;
   int PreCreateThreads() override;
   void PostCreateThreads() override;
-  void ServiceManagerConnectionStarted(
-      content::ServiceManagerConnection* connection) override;
   void PreMainMessageLoopRun() override;
   bool MainMessageLoopRun(int* result_code) override;
   void PostMainMessageLoopRun() override;
@@ -152,9 +149,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Vector of additional ChromeBrowserMainExtraParts.
   // Parts are deleted in the inverse order they are added.
   std::vector<ChromeBrowserMainExtraParts*> chrome_extra_parts_;
-
-  // A profiler that periodically samples stack traces on the UI thread.
-  std::unique_ptr<ThreadProfiler> ui_thread_profiler_;
 
   // The controller schedules UMA heap profiles collections and forwarding down
   // the reporting pipeline.

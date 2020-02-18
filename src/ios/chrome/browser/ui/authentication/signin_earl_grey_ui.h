@@ -29,6 +29,11 @@
 // visible on short devices (e.g. iPhone 5s).
 + (void)confirmSigninConfirmationDialog;
 
+// Taps on the "ADD ACCOUNT" button in the unified consent, to display the
+// SSO dialog.
+// This method should only be used with UnifiedConsent flag.
++ (void)tapAddAccountButton;
+
 // Checks that the sign-in promo view (with a close button) is visible using the
 // right mode.
 + (void)checkSigninPromoVisibleWithMode:(SigninPromoViewMode)mode;

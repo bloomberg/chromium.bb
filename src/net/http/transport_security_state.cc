@@ -218,7 +218,7 @@ std::string HashHost(const std::string& canonicalized_host) {
 bool HashesIntersect(const HashValueVector& a,
                      const HashValueVector& b) {
   for (const auto& hash : a) {
-    if (base::ContainsValue(b, hash))
+    if (base::Contains(b, hash))
       return true;
   }
   return false;

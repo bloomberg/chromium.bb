@@ -18,7 +18,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/test/browser_test_utils.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/widget/widget.h"
 
 namespace test {
@@ -79,7 +79,7 @@ class SadTabViewInteractiveUITest : public InProcessBrowserTest {
   views::View* GetFocusedView() { return GetFocusManager()->GetFocusedView(); }
 
   const char* ActionButtonClassName() {
-    return views::LabelButton::kViewClassName;
+    return views::MdTextButton::kViewClassName;
   }
 
   bool IsFocusedViewInsideViewClass(const char* view_class) {
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(SadTabViewInteractiveUITest,
   // Kill the renderer process, resulting in a sad tab.
   KillRendererForActiveWebContentsSync();
 
-  // Focus should now be on a label button inside the sad tab.
+  // Focus should now be on a MdText button inside the sad tab.
   ASSERT_STREQ(GetFocusedView()->GetClassName(), ActionButtonClassName());
   ASSERT_TRUE(IsFocusedViewInsideSadTab());
   ASSERT_FALSE(IsFocusedViewInsideBrowserToolbar());

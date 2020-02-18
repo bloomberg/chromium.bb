@@ -295,6 +295,19 @@ base::string16 AuthenticatorNotRegisteredErrorModel::GetCancelButtonLabel()
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
+bool AuthenticatorNotRegisteredErrorModel::IsAcceptButtonVisible() const {
+  return dialog_model()->request_may_start_over();
+}
+
+bool AuthenticatorNotRegisteredErrorModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16 AuthenticatorNotRegisteredErrorModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_RETRY);
+}
+
 const gfx::VectorIcon&
 AuthenticatorNotRegisteredErrorModel::GetStepIllustration(
     ImageColorScheme color_scheme) const {
@@ -312,6 +325,10 @@ base::string16 AuthenticatorNotRegisteredErrorModel::GetStepDescription()
       IDS_WEBAUTHN_ERROR_WRONG_KEY_SIGN_DESCRIPTION);
 }
 
+void AuthenticatorNotRegisteredErrorModel::OnAccept() {
+  dialog_model()->StartOver();
+}
+
 // AuthenticatorAlreadyRegisteredErrorModel -----------------------------------
 
 bool AuthenticatorAlreadyRegisteredErrorModel::IsBackButtonVisible() const {
@@ -321,6 +338,19 @@ bool AuthenticatorAlreadyRegisteredErrorModel::IsBackButtonVisible() const {
 base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetCancelButtonLabel()
     const {
   return l10n_util::GetStringUTF16(IDS_CLOSE);
+}
+
+bool AuthenticatorAlreadyRegisteredErrorModel::IsAcceptButtonVisible() const {
+  return dialog_model()->request_may_start_over();
+}
+
+bool AuthenticatorAlreadyRegisteredErrorModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_RETRY);
 }
 
 const gfx::VectorIcon&
@@ -340,8 +370,31 @@ base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetStepDescription()
       IDS_WEBAUTHN_ERROR_WRONG_KEY_REGISTER_DESCRIPTION);
 }
 
+void AuthenticatorAlreadyRegisteredErrorModel::OnAccept() {
+  dialog_model()->StartOver();
+}
+
 // AuthenticatorInternalUnrecognizedErrorSheetModel
 // -----------------------------------
+bool AuthenticatorInternalUnrecognizedErrorSheetModel::IsBackButtonVisible()
+    const {
+  return dialog_model()->request_may_start_over();
+}
+
+bool AuthenticatorInternalUnrecognizedErrorSheetModel::IsAcceptButtonVisible()
+    const {
+  return dialog_model()->request_may_start_over();
+}
+
+bool AuthenticatorInternalUnrecognizedErrorSheetModel::IsAcceptButtonEnabled()
+    const {
+  return true;
+}
+
+base::string16
+AuthenticatorInternalUnrecognizedErrorSheetModel::GetAcceptButtonLabel() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_RETRY);
+}
 
 const gfx::VectorIcon&
 AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepIllustration(
@@ -360,6 +413,14 @@ base::string16
 AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(
       IDS_WEBAUTHN_ERROR_INTERNAL_UNRECOGNIZED_DESCRIPTION);
+}
+
+void AuthenticatorInternalUnrecognizedErrorSheetModel::OnBack() {
+  dialog_model()->StartOver();
+}
+
+void AuthenticatorInternalUnrecognizedErrorSheetModel::OnAccept() {
+  dialog_model()->StartOver();
 }
 
 // AuthenticatorBlePowerOnManualSheetModel ------------------------------------
@@ -551,7 +612,7 @@ base::string16 AuthenticatorBlePinEntrySheetModel::GetStepTitle() const {
   DCHECK(ble_authenticator);
   return l10n_util::GetStringFUTF16(
       IDS_WEBAUTHN_BLE_PIN_ENTRY_TITLE,
-      ble_authenticator->authenticator_display_name());
+      ble_authenticator->authenticator_display_name);
 }
 
 base::string16 AuthenticatorBlePinEntrySheetModel::GetStepDescription() const {
@@ -1151,4 +1212,30 @@ base::string16 AttestationPermissionRequestSheetModel::GetCancelButtonLabel()
   // TODO(martinkr): This should be its own string definition; but we had to
   // make a change post string freeze and therefore reused this.
   return l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
+}
+
+// AuthenticatorQRSheetModel --------------------------------------------------
+
+AuthenticatorQRSheetModel::AuthenticatorQRSheetModel(
+    AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model) {}
+
+AuthenticatorQRSheetModel::~AuthenticatorQRSheetModel() = default;
+
+const gfx::VectorIcon& AuthenticatorQRSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return color_scheme == ImageColorScheme::kDark ? kWebauthnPermissionDarkIcon
+                                                 : kWebauthnPermissionIcon;
+}
+
+base::string16 AuthenticatorQRSheetModel::GetStepTitle() const {
+  // TODO: this UI is not yet reachable, but will need a translated string
+  // once it is.
+  return base::UTF8ToUTF16("Title");
+}
+
+base::string16 AuthenticatorQRSheetModel::GetStepDescription() const {
+  // TODO: this UI is not yet reachable, but will need a translated string
+  // once it is.
+  return base::UTF8ToUTF16("Description");
 }

@@ -13,6 +13,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/fake_mojo_message_dispatch_context.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "storage/common/database/database_identifier.h"
@@ -29,18 +30,6 @@ base::string16 ConstructVfsFileName(const url::Origin& origin,
   return base::UTF8ToUTF16(identifier) + base::ASCIIToUTF16("/") + name +
          base::ASCIIToUTF16("#") + suffix;
 }
-
-class FakeMojoMessageDispatchContext {
- public:
-  FakeMojoMessageDispatchContext()
-      : dummy_message_(0, 0, 0, 0, nullptr), context_(&dummy_message_) {}
-
- private:
-  mojo::Message dummy_message_;
-  mojo::internal::MessageDispatchContext context_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeMojoMessageDispatchContext);
-};
 
 }  // namespace
 
@@ -113,7 +102,9 @@ TEST_F(WebDatabaseHostImplTest, BadMessagesUnauthorized) {
       ConstructVfsFileName(incorrect_origin, db_name, suffix);
 
   auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  security_policy->AddIsolatedOrigins({correct_origin, incorrect_origin});
+  security_policy->AddIsolatedOrigins(
+      {correct_origin, incorrect_origin},
+      ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
 
   security_policy->LockToOrigin(IsolationContext(browser_context()),
                                 process_id(), correct_origin.GetURL());
@@ -198,7 +189,9 @@ TEST_F(WebDatabaseHostImplTest, ProcessShutdown) {
       ConstructVfsFileName(incorrect_origin, db_name, suffix);
 
   auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  security_policy->AddIsolatedOrigins({correct_origin, incorrect_origin});
+  security_policy->AddIsolatedOrigins(
+      {correct_origin, incorrect_origin},
+      ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
   security_policy->LockToOrigin(IsolationContext(browser_context()),
                                 process_id(), correct_origin.GetURL());
 

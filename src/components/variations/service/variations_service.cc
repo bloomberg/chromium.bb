@@ -296,8 +296,7 @@ VariationsService::VariationsService(
                                MaybeImportFirstRunSeed(local_state),
                                base::BindOnce(&OnInitialSeedStored)),
                            ui_string_overrider),
-      last_request_was_http_retry_(false),
-      weak_ptr_factory_(this) {
+      last_request_was_http_retry_(false) {
   DCHECK(client_);
   DCHECK(resource_request_allowed_notifier_);
 }
@@ -401,7 +400,7 @@ GURL VariationsService::GetVariationsServerURL(HttpOptions http_options) {
                                                   GetPlatformString());
 
   // Add channel to the request URL.
-  version_info::Channel channel = client_->GetChannel();
+  version_info::Channel channel = client_->GetChannelForVariations();
   if (channel != version_info::Channel::UNKNOWN) {
     server_url = net::AppendOrReplaceQueryParameter(
         server_url, "channel", version_info::GetChannelString(channel));
@@ -453,6 +452,10 @@ void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   // This preference will only be written by the policy service, which will fill
   // it according to a value stored in the User Policy.
   registry->RegisterStringPref(prefs::kVariationsRestrictParameter,
+                               std::string());
+  // This preference is used to override the variations country code which is
+  // consistent across different chrome version.
+  registry->RegisterStringPref(prefs::kVariationsPermanentOverriddenCountry,
                                std::string());
   // This preference keeps track of the country code used to filter
   // permanent-consistency studies.
@@ -925,7 +928,16 @@ void VariationsService::StartRepeatedVariationsSeedFetchForTesting() {
   return StartRepeatedVariationsSeedFetch();
 }
 
+std::string VariationsService::GetOverriddenPermanentCountry() {
+  return local_state_->GetString(prefs::kVariationsPermanentOverriddenCountry);
+}
+
 std::string VariationsService::GetStoredPermanentCountry() {
+  const std::string variations_overridden_country =
+      GetOverriddenPermanentCountry();
+  if (!variations_overridden_country.empty())
+    return variations_overridden_country;
+
   const base::ListValue* list_value =
       local_state_->GetList(prefs::kVariationsPermanentConsistencyCountry);
   std::string stored_country;
@@ -941,21 +953,13 @@ bool VariationsService::OverrideStoredPermanentCountry(
     const std::string& country_override) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (country_override.empty())
+  const std::string stored_country =
+      local_state_->GetString(prefs::kVariationsPermanentOverriddenCountry);
+
+  if (stored_country == country_override)
     return false;
 
-  const base::ListValue* list_value =
-      local_state_->GetList(prefs::kVariationsPermanentConsistencyCountry);
-
-  std::string stored_country;
-  const bool got_stored_country =
-      list_value->GetSize() == 2 && list_value->GetString(1, &stored_country);
-
-  if (got_stored_country && stored_country == country_override)
-    return false;
-
-  base::Version version(version_info::GetVersionNumber());
-  field_trial_creator_.StorePermanentCountry(version, country_override);
+  field_trial_creator_.StoreVariationsOverriddenCountry(country_override);
   return true;
 }
 

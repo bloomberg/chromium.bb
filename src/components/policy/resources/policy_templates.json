@@ -107,7 +107,7 @@
 #
 #   Currently supported product names:
 #       'chrome_frame', 'chrome_os', 'android', 'webview_android',
-#       'chrome.win', 'chrome.linux', 'chrome.mac', 'chrome.*'
+#       'chrome.win', 'chrome.win7', 'chrome.linux', 'chrome.mac', 'chrome.*'
 #     For example if 'chrome.*:5-10' is specified for a policy, then it should
 #     be read as:
 #       'chrome.linux:5-10', 'chrome.mac:5-10', 'chrome.win:5-10'
@@ -479,8 +479,8 @@
       # after fixing https://crbug.com/106682
       'name': 'ContentSettings',
       'type': 'group',
-      'caption': '''Content Settings''',
-      'desc': '''Content Settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) is handled.''',
+      'caption': '''Content settings''',
+      'desc': '''Content settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) is handled.''',
       'policies': [
         'DefaultCookiesSetting',
         'DefaultImagesSetting',
@@ -617,7 +617,6 @@
         'HighContrastEnabled',
         'VirtualKeyboardEnabled',
         'StickyKeysEnabled',
-        'DockedMagnifierEnabled',
         'KeyboardDefaultToFunctionKeys',
         'ScreenMagnifierType',
         'DeviceLoginScreenDefaultLargeCursorEnabled',
@@ -630,7 +629,7 @@
     {
       'name': 'Attestation',
       'type': 'group',
-      'caption': 'Remote Attestation',
+      'caption': 'Remote attestation',
       'desc': 'Configure the remote attestation with TPM mechanism.',
       'policies': [
         'AttestationEnabledForDevice',
@@ -950,6 +949,7 @@
         'DeviceNativePrintersWhitelist',
         'PrintPreviewUseSystemDefaultPrinter',
         'UserNativePrintersAllowed',
+        'ExternalPrintServers',
       ]
     },
     {
@@ -993,6 +993,7 @@
         'CrostiniAllowed',
         'DeviceUnaffiliatedCrostiniAllowed',
         'CrostiniExportImportUIAllowed',
+        'CrostiniRootAccessAllowed',
       ]
     },
     {
@@ -1099,7 +1100,7 @@
       'name': 'DefaultBrowserSettingEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:11-'],
+      'supported_on': ['chrome.win7:11-', 'chrome.mac:11-', 'chrome.linux:11-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -1337,7 +1338,8 @@
       'name': 'Http09OnNonDefaultPortsEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:54-', 'chrome_os:54-'],
+      'supported_on': ['chrome.*:54-77', 'chrome_os:54-77'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -1346,7 +1348,9 @@
       'id': 345,
       'caption': '''Enable HTTP/0.9 support on non-default ports''',
       'tags': [],
-      'desc': '''This policy enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
+      'desc': '''This policy is deprecated, and slated for removal in Chrome 78, with no replacement.
+
+      This policy enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
 
       This policy is disabled by default, and if enabled, leaves users open to the security issue https://crbug.com/600352.
 
@@ -2827,7 +2831,7 @@
       'name': 'MediaCacheSize',
       'type': 'int',
       'schema': { 'type': 'integer' },
-      'supported_on': ['chrome.*:17-'],
+      'supported_on': ['chrome.*:17-71'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -3345,7 +3349,7 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
-      'example_value': '*example.com,foobar.com,*baz',
+      'example_value': '*.example.com,example.com',
       'id': 29,
       'caption': '''Authentication server whitelist''',
       'tags': [],
@@ -3595,9 +3599,9 @@
       'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> provides for the secure update and installation of extensions. However, the content of some extensions hosted outside of the Chrome Web Store may only be protected by insecure signing or hashing algorithms such as SHA1. When this policy is disabled, fresh installation of and updates to such extensions will not be permitted by Chrome (until the extension developers rebuild the extension with stronger algorithms). When this policy is enabled, installation and updates for such extensions will be permitted.
 
           This will default to the enabled behavior when unset.
-          Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 75, this will default to the disabled behavior when unset.
+          Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 76, this will default to the disabled behavior when unset.
 
-          Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 77, this policy will be ignored and treated as disabled.''',
+          Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 78, this policy will be ignored and treated as disabled.''',
     },
     {
       'name': 'ExtensionAllowedTypes',
@@ -3689,7 +3693,7 @@
             'properties': {
               'installation_mode': {
                 'type': 'string',
-                'enum': ['blocked', 'allowed']
+                'enum': ['blocked', 'allowed', 'removed']
               },
               'blocked_permissions': {
                 '$ref': 'ListOfPermissions',
@@ -3706,7 +3710,7 @@
             'properties': {
               'installation_mode': {
                 'type': 'string',
-                'enum': ['blocked', 'allowed']
+                'enum': ['blocked', 'allowed', 'removed']
               },
               'blocked_permissions': {
                 '$ref': 'ListOfPermissions',
@@ -4764,7 +4768,58 @@
 
         If this policy is left not set, the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
 
-        URL patterns in this policy should not clash with the ones configured via WebUsbBlockedForUrls. If there is a clash, this policy will take precedence over WebUsbBlockedForUrls and WebUsbAskForUrls.''',
+        URL patterns in this policy should not clash with the ones configured via WebUsbBlockedForUrls. If there is a clash, this policy will take precedence over WebUsbBlockedForUrls and WebUsbAskForUrls.
+
+        Values for this policy and the DeviceWebUsbAllowDevicesForUrls policy are merged together.''',
+    },
+    {
+      'name': 'DeviceWebUsbAllowDevicesForUrls',
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'devices': {
+              'type': 'array',
+              'items': {
+                'type': 'object',
+                'properties': {
+                  'vendor_id': { 'type': 'integer' },
+                  'product_id': { 'type': 'integer' }
+                }
+              }
+            },
+            'urls': {
+              'type': 'array',
+              'items': { 'type': 'string' }
+            }
+          },
+          'required': ['devices', 'urls']
+        }
+      },
+      'supported_on': ['chrome_os:77-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': [{
+        'devices': [{'vendor_id': 1234, 'product_id': 5678}],
+        'urls': ['https://google.com', 'https://requesting.com,https://embedded.com'],
+      }],
+      'id': 569,
+      'caption': '''Automatically grant permission to these sites to connect to USB devices with the given vendor and product IDs.''',
+      'tags': ['website-sharing'],
+      'desc': '''Allows you to set a list of urls that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs. Each item in the list must contain both devices and urls in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid and will be ignored.
+
+        The USB permission model uses the URL of the requesting site ("requesting URL") and the URL of the top-level frame site ("embedding URL") to grant permission to the requesting URL to access the USB device. The requesting URL may be different than the embedding URL when the requesting site is loaded in an iframe. Therefore, the "urls" field can contain up to two URL strings delimited by a comma to specify the requesting and embedding URL respectively. If only one URL is specified, then access to the corresponding USB devices will be granted when the requesting site's URL matches this URL regardless of embedding status. The URLs in "urls" must be valid URLs, otherwise the policy will be ignored.
+
+        If this policy is left not set, the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
+
+        URL patterns in this policy should not clash with the ones configured via WebUsbBlockedForUrls. If there is a clash, this policy will take precedence over WebUsbBlockedForUrls and WebUsbAskForUrls.
+
+        Values for this policy and the WebUsbAllowDevicesForUrls policy are merged together.''',
     },
     {
       'name': 'WebUsbAskForUrls',
@@ -6713,6 +6768,26 @@
       See https://g.co/chrome/symantecpkicerts for more details on this deprecation.''',
     },
     {
+      'name': 'BuiltinCertificateVerifierEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:77-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 575,
+      'caption': '''Determines whether the built-in certificate verifier will be used to verify server certificates''',
+      'tags': [],
+      'desc': '''When this setting is enabled, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will perform verification of server certificates using the built-in certificate verifier.
+      When this setting is disabled, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will perform verification of server certificates using the legacy certificate verifier provided by the platform.
+      When this setting is not set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> the built-in or the legacy certificate verifier may be used.
+
+      This policy is planned to be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 81, when support for the legacy certificate verifier on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> is planned to be removed.
+      ''',
+    },
+    {
       'name': 'ForceEphemeralProfiles',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -7145,6 +7220,7 @@
       'schema': {
         'type': 'array',
         'items': { 'type': 'string' },
+        'sensitiveValue': True,
       },
       'supported_on': ['chrome_os:12-'],
       'device_only': True,
@@ -7828,11 +7904,13 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['pjkljhegncpnkpknbcohdijeoejaedia', 'com.google.android.gm'],
+      'example_value': ['pjkljhegncpnkpknbcohdijeoejaedia', 'com.google.android.gm', 'https://google.com/maps'],
       'id': 144,
       'caption': '''List of pinned apps to show in the launcher''',
       'tags': [],
       'desc': '''Lists the application identifiers <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows as pinned apps in the launcher bar.
+
+      Chrome Apps are specified by their Id, e.g. "pjkljhegncpnkpknbcohdijeoejaedia", Android Apps by their package name, e.g. "com.google.android.gm", and Web Apps are specified by the URL used in WebAppInstallForceList e.g. "https://google.com/maps".
 
       If this policy is configured, the set of applications is fixed and can't be changed by the user.
 
@@ -9183,7 +9261,9 @@
 
           If you set this policy, users cannot change or override it.
 
-          If this policy is left unset, Accessibility options will not appear in the system tray menu, but the user can cause the Accessibility options to appear via the Settings page.'''
+          If this policy is left unset, Accessibility options will not appear in the system tray menu, but the user can cause the Accessibility options to appear via the Settings page.
+
+          When accessiblity features are enabled by other means (e.g by a key combination), Accessibility options will always appear in system tray menu.'''
     },
     {
       'name': 'LargeCursorEnabled',
@@ -9306,28 +9386,28 @@
           If this policy is left unset, the sticky keys is disabled initially but can be enabled by the user anytime.'''
     },
     {
-      'name': 'DockedMagnifierEnabled',
+      'name': 'SelectToSpeakEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:76-'],
+      'supported_on': ['chrome_os:77-'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
         'per_profile': True,
       },
       'example_value': True,
-      'id': 562,
-      'caption': '''Enable docked magnifier''',
+      'id': 573,
+      'caption': '''Enable select to speak''',
       'tags': [],
-      'desc': '''Enable the docked magnifier accessibility feature.
+      'desc': '''Enable the select to speak accessibility feature.
 
-          If this policy is set to true, the docked magnifier will always be enabled.
+          If this policy is set to true, the select to speak will always be enabled.
 
-          If this policy is set to false, the docked magnifier will always be disabled.
+          If this policy is set to false, the select to speak will always be disabled.
 
           If you set this policy, users cannot change or override it.
 
-          If this policy is left unset, the docked magnifier is disabled initially but can be enabled by the user anytime.'''
+          If this policy is left unset, the select to speak is disabled initially but can be enabled by the user anytime.'''
     },
     {
       'name': 'KeyboardDefaultToFunctionKeys',
@@ -9354,7 +9434,7 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1 ],
+        'enum': [ 0, 1, 2 ],
       },
       'items': [
         {
@@ -9366,6 +9446,11 @@
           'name': 'Full-screen',
           'value': 1,
           'caption': '''Full-screen magnifier enabled''',
+        },
+        {
+          'name': 'Docked',
+          'value': 2,
+          'caption': '''Docked magnifier enabled''',
         },
       ],
       'supported_on': ['chrome_os:29-'],
@@ -9481,7 +9566,7 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1 ],
+        'enum': [ 0, 1, 2 ],
       },
       'items': [
         {
@@ -9493,6 +9578,11 @@
           'name': 'Full-screen',
           'value': 1,
           'caption': '''Full-screen magnifier enabled''',
+        },
+        {
+          'name': 'Docked',
+          'value': 2,
+          'caption': '''Docked magnifier enabled''',
         },
       ],
       'supported_on': ['chrome_os:29-'],
@@ -10172,6 +10262,23 @@
       If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not allow guest profiles to be started.''',
     },
     {
+      'name': 'BrowserGuestModeEnforced',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:77-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 574,
+      'caption': '''Enforce browser guest mode''',
+      'tags': [],
+      'desc': '''If this policy is set to enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will enforce guest sessions and prevents profile logins. Guest logins are <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profiles where all windows are in incognito mode.
+
+      If this policy is set to disabled or not set or browser guest mode is disabled by <ph name="BROWSER_GUEST_MODE_ENABLED_POLICY_NAME">BrowserGuestModeEnabled</ph> policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow using new and existing profiles.''',
+    },
+    {
       'name': 'BrowserAddPersonEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -10247,7 +10354,7 @@
 
       If the policy is set to "Enable browser sign-in," then the user is allowed to sign in to the browser and is automatically signed in to the browser when signed in to Google web services like Gmail. Being signed in to the browser means the user's account information will be kept by the browser. However, it does not mean that Chrome sync will be turned on per default; the user must separately opt-in to use this feature. Enabling this policy will prevent the user from turning off the setting that allows browser sign-in. To control the availability of Chrome sync, use the "SyncDisabled" policy.
 
-      If the policy is set to "Force browser sign-in" the user is presented with an account selection dialog and has to choose and sign in to an account to use the browser. This ensures that for managed accounts the policies associated with the account are applied and enforced. By default this turns on Chrome sync for the account, except for the case when sync was disabled by the domain admin or via the "SyncDisabled" policy. The default value of BrowserGuestModeEnabled will be set to false. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help center article: https://support.google.com/chrome/a/answer/7572556.
+      If the policy is set to "Force browser sign-in" the user is presented with an account selection dialog and has to choose and sign in to an account to use the browser. This ensures that for managed accounts the policies associated with the account are applied and enforced. By default this turns on Chrome sync for the account, except for the case when sync was disabled by the domain admin or via the "SyncDisabled" policy. The default value of BrowserGuestModeEnabled will be set to false. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help center article: https://support.google.com/chrome/a/answer/7572556. This option does not support Linux and will fallback to "Enable browser sign-in" if used.
 
       If this policy is not set then the user can decide if they want to enable the browser sign in option and use it as they see fit.''',
     },
@@ -10688,7 +10795,7 @@
     },
     {
       'name': 'WelcomePageOnOSUpgradeEnabled',
-      'supported_on': ['chrome.win:45-'],
+      'supported_on': ['chrome.win:45-62'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'id': 303,
@@ -11564,8 +11671,6 @@
       See https://developers.google.com/safe-browsing for more info on Safe Browsing.''',
     },
     {
-      # TODO(nikitapodguzov): Move the ppd_resource properties description to
-      # the schema after adding display of schemas in the HTML page.
       'name': 'NativePrinters',
       'type': 'list',
       'schema': {
@@ -11588,8 +11693,14 @@
               'type': 'object',
               'id': 'PpdResource',
               'properties': {
-                'effective_model': { 'type': 'string' },
-                'autoconf': { 'type': 'boolean' }
+                'effective_model': {
+                  'type': 'string',
+                  'description': 'This field must match one of the strings which represent a <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> supported printer. The string will be used to identify and install the appropriate PPD for the printer. More information can be found at https://support.google.com/chrome?p=noncloudprint.'
+                },
+                'autoconf': {
+                  'type': 'boolean',
+                  'description': 'Boolean flag indicating whether IPP Everywhere should be used to set up the printer. This flag is supported on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 76 and higher.'
+                }
               }
             }
           }
@@ -11623,10 +11734,6 @@
       their users.
 
       <ph name="PRINTER_DISPLAY_NAME">display_name</ph> and <ph name="PRINTER_DESCRIPTION">description</ph> are free-form strings that can be customized for ease of printer selection. <ph name="PRINTER_MANUFACTURER">manufacturer</ph> and <ph name="PRINTER_MODEL">model</ph> serve to ease printer identification by end users. They represent the manufacturer and model of the printer. <ph name="PRINTER_URI">uri</ph> should be an address reachable from a client computer including the <ph name="URI_SCHEME">scheme</ph>, <ph name="URI_PORT">port</ph>, and <ph name="URI_QUEUE">queue</ph>. <ph name="PRINTER_UUID">uuid</ph> is optional. If provided, it is used to help deduplicate <ph name="ZEROCONF_DISCOVERY">zeroconf</ph> printers.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL">effective_model</ph> must match one of the strings which represent a <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> supported printer. The string will be used to identify and install the appropriate PPD for the printer. More information can be found at https://support.google.com/chrome?p=noncloudprint.
-
-      <ph name="PRINTER_AUTOCONF">autoconf</ph> is a boolean flag indicating whether IPP Everywhere should be used to setup the printer. This flag is supported on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 76 and higher.
 
       Either <ph name="PRINTER_EFFECTIVE_MODEL">effective_model</ph> should contain the name of the printer or <ph name="PRINTER_AUTOCONF">autoconf</ph> should be set to true. The printers with both or without any properties will be ignored.
 
@@ -12692,7 +12799,7 @@
       If the policy is enabled, users will be unable to opt out of the default behavior where each site runs in its own process.
       If the policy is not configured or disabled, the user will be able to opt out of site isolation
       (e.g. using "Disable site isolation" entry in chrome://flags).  Setting the policy to disabled and/or not configuring the policy does not turn off Site Isolation.
-      On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME">DeviceLoginScreenSitePerProcess</ph> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 76 and earlier, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME">DeviceLoginScreenSitePerProcess</ph> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
 
       NOTE: This policy does not apply on Android. To enable SitePerProcess on Android, use the SitePerProcessAndroid policy setting.
       ''',
@@ -12721,7 +12828,7 @@
       'name': 'DeviceLoginScreenSitePerProcess',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:66-'],
+      'supported_on': ['chrome_os:66-76'],
       'device_only': True,
       'features': {
         'dynamic_refresh': False,
@@ -12733,9 +12840,6 @@
       'tags': ['system-security'],
       'desc': '''
       This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME">SitePerProcess</ph> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      This setting, DeviceLoginScreenSitePerProcess, may be used to disallow users from opting out of the default behavior of isolating all sites. Note that the DeviceLoginScreenIsolateOrigins policy may also be useful for isolating additional, finer-grained origins.
-      If the policy is enabled, users will be unable to opt out of the default behavior where each site runs in its own process.
-      If the policy is not configured or disabled, the user will be able to change this setting (e.g. using "Disable site isolation" entry in chrome://flags).
       ''',
     },
     {
@@ -13275,6 +13379,25 @@
       'desc': '''If the policy is set to false, the export / import UI will not be available to users, however it is still possible to use 'lxc' commands directly in the virtual machine to export and import container images.''',
     },
     {
+      'name': 'CrostiniRootAccessAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:77-'],
+      'future': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 576,
+      'caption': '''User is allowed to have root access to Crostini containers''',
+      'tags': ['system-security'],
+      'desc': '''Allow this user root access to Crostini containers.
+
+      If the policy is set to true of left unset root access to Crostini containers will be granted to the user.
+      If the policy is set to false, root access to both existing and new Crostini containers will not be granted to the user.''',
+    },
+    {
       'name': 'SafeBrowsingWhitelistDomains',
       'type': 'list',
       'schema': {
@@ -13339,7 +13462,7 @@
       In order for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to correctly capture the new password fingerprint on this change password page, please make sure your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       If this setting is enabled, then password protection service will send users to this URL to change their password after seeing a warning in the browser.
-      If this setting is disabled or not set, then password protection service will send users to https://myaccounts.google.com to change their password.
+      If this setting is disabled or not set, then password protection service will send users to https://myaccount.google.com to change their password.
       This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management.''',
     },
     {
@@ -13948,17 +14071,18 @@
       'name': 'ContextualSuggestionsEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['android:69-'],
+      'supported_on': ['android:69-75'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 452,
       'caption': '''Enable contextual suggestions of related web pages''',
       'tags': ['google-sharing'],
       'desc':
-      '''If this is set to true or unset, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will suggest pages related to the current page.
+      '''This feature never launched, therefore the policy is deprecated. If this is set to true or unset, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will suggest pages related to the current page.
       These suggestions are fetched remotely from Google servers.
 
       If this setting is set to false, suggestions will not be fetched or displayed.''',
@@ -14372,7 +14496,7 @@
       'tags': [],
       'desc': '''Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled nor disabled by the user.
 
-      Each list item of the policy is an object with a mandatory member: "url" and two optional members: "default_launch_container" and "create_desktop_shortcut". "url" should be the URL of the web app to install, "launch_container" should be either "window" or "tab" to indicate how the Web App will be opened once installed, and "create_desktop_shortcut" should be true if a desktop shortcut should be created on Linux and Windows. If "default_launch_container" is omitted, the app will open in a tab by default. Regardless of the value of "default_launch_container", users are able to change which container the app will open in. If "create_desktop_shortcuts" is omitted, no desktop shortcuts will be created.''',
+      Each list item of the policy is an object with a mandatory member: "url" and two optional members: "default_launch_container" and "create_desktop_shortcut". "url" should be the URL of the web app to install, "launch_container" should be either "window" or "tab" to indicate how the Web App will be opened once installed, and "create_desktop_shortcut" should be true if a desktop shortcut should be created on Linux and Windows. If "default_launch_container" is omitted, the app will open in a tab by default. Regardless of the value of "default_launch_container", users are able to change which container the app will open in. If "create_desktop_shortcuts" is omitted, no desktop shortcuts will be created. See <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME">PinnedLauncherApps</ph> policy for pinning apps to the ChromeOS shelf.''',
       'label': '''URLs for Web Apps to be silently installed.''',
     },
     {
@@ -15162,7 +15286,7 @@
       When this policy is unset it is not possible to verify Parent Access Code on child user's device.'''
     },
     {
-      'name': 'CertificateManagementAllowed',
+      'name': 'ClientCertificateManagementAllowed',
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -15193,8 +15317,8 @@
       },
       'example_value': 1,
       'id': 518,
-      'caption': '''Allow users to manage installed certificates.''',
-      'desc': '''This policy controls whether user are able to import and remove certificates via Certificate Manager.
+      'caption': '''Allow users to manage installed client certificates.''',
+      'desc': '''This policy controls whether user are able to import and remove client certificates via Certificate Manager.
 
       If this policy is set to ''Allow users to manage all certificates'' or left not set, users will be able to manage certificates.
 
@@ -15299,7 +15423,7 @@
 
       If the policy is enabled, Google Assistant would listen for the voice activation phrase.
       If the policy is disabled, Google Assistant would not listen for the voice activation phrase.
-      If the policy is not set, Google Assistant would not listen for the voice activation phrase.
+      If the policy is not set, users can decide whether to allow Google Assistant to listen for the voice activation phrase.
       ''',
     },
     {
@@ -15312,6 +15436,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'future': True,
       'example_value': False,
       'id': 532,
       'caption': '''Allows wilco diagnostics and telemetry controller''',
@@ -15361,6 +15486,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'future': True,
       'example_value': {
         "url": "https://example.com/wilcodtcconfig",
         "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
@@ -15611,6 +15737,26 @@
       But, these notifications will only be shown if password expiry information is sent to the device by the SAML identity provider during the SAML login flow.
 
       If this policy is set, the user cannot change or override it.''',
+    },
+    {
+      'name': 'UserFeedbackAllowed',
+      'type': 'main',
+      'schema': {
+        'type': 'boolean',
+      },
+      'supported_on': ['chrome.*:77-', 'chrome_os:77-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 570,
+      'caption': '''Allow user feedback''',
+      'tags': [],
+      'desc': '''Allow user feedback.
+        If the policy is set to false, users can not send feedback to Google.
+
+        If the policy is unset or set to true, users can send feedback to Google via Menu->Help->Report an Issue or key combination.'''
     },
     {
       'name': 'SamlPasswordExpirationAdvanceWarningDays',
@@ -15865,10 +16011,10 @@
             '$ref': 'WeekDay'
           },
           'day_of_month': {
-            'description': '''Day of month [1-31] when the update check should happen, interpreted in the device's local time zone. Only used when 'frequency' is 'MONTHLY'. If this is more than the maximum number of days in a given month then the last day of the month will be chosen.''',
+            'description': '''Day of month [1-28] when the update check should happen, interpreted in the device's local time zone. Only used when 'frequency' is 'MONTHLY'. If this is more than the maximum number of days in a given month then the last day of the month will be chosen. Currently it is restricted to 28 to resolve month rollover ambiguities.''',
             'type': 'integer',
             'minimum': 1,
-            'maximum': 31
+            'maximum': 28
           }
         },
         'required': ['update_check_time', 'frequency']
@@ -15959,13 +16105,15 @@
             'principal': {
               'description': '''User principal 'user@realm'. The placeholder ${{LOGIN_ID}} is replaced by the username 'user'. The placeholder ${{LOGIN_EMAIL}} is replaced by the full principal 'user@realm'.''',
               'type': 'string',
+              'pattern': '^(?:[^@]+@[^@]+)|(?:\\${LOGIN_ID})|(?:\\${LOGIN_EMAIL})$',
             },
             'password': {
               'description': '''Kerberos password. The placeholder ${{PASSWORD}} is replaced by the login password.''',
               'type': 'string',
+              'sensitiveValue': True,
             },
             'remember_password': {
-              'description': '''Whether to remember the Kerberos password. Ignored if the password is specified.''',
+              'description': '''Whether to remember the Kerberos password. If not set or set to false, the password is not remembered. Ignored if the password is not specified.''',
               'type': 'boolean',
             },
             'krb5conf': {
@@ -15976,6 +16124,7 @@
               },
             },
           },
+          'required': ['principal'],
         },
       },
       'supported_on': ['chrome_os:75-'],
@@ -15987,8 +16136,8 @@
       'future': True,
       'example_value': [
         {
-          "principal":"${{LOGIN_EMAIL}}",
-          "password":"${{PASSWORD}}"
+          "principal":"${LOGIN_EMAIL}",
+          "password":"${PASSWORD}"
         },
         {
           "principal":"user1@REALM.COM",
@@ -16060,13 +16209,123 @@
 
           If this policy is disabled or not set, the browser window is allowed to launch. Note that the browser window might not launch due to other policies or command-line flags.''',
     },
+    {
+      'id': 571,
+      'name': 'DevicePowerwashAllowed',
+      'type': 'main',
+      'schema': {
+        'type': 'boolean',
+      },
+      'device_only': True,
+      'example_value': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'supported_on': ['chrome_os:77-'],
+      'caption': '''Allow the device to request powerwash''',
+      'tags': [],
+      'desc': '''
+      This policy when set to False, does not allow the device to trigger powerwash.
+      When set to True, it allows the device to trigger powerwash.
+      If left unset, it defaults to False, meaning it doesn't allow the device to powerwash.
+      '''
+    },
+    {
+      'name': 'ExternalPrintServers',
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'url': {
+            'description': 'URL to a JSON file with a list of print servers.',
+            'type': 'string',
+          },
+          'hash': {
+            'description': 'The SHA-256 hash of the file.',
+            'type': 'string',
+          },
+        },
+      },
+      'id': 572,
+      'supported_on': ['chrome_os:78-'],
+      'future': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': {
+        "url": "https://example.com/printserverpolicy",
+        "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeafdeadbeefdeadbeef"
+      },
+      'max_size': 1048576,
+      'caption': '''External print servers''',
+      'tags': [],
+      'desc': '''Provides configurations of available print servers.
+
+      This policy allows you to provide configuration of external print servers to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices as JSON file.
+
+      The size of the file must not exceed 1MB and must contain an array of records (JSON objects). Each record must contain fields "url" and "display_name".
+
+      The file is downloaded and cached. The cryptographic hash is used to verify the integrity of the download. The file will be re-downloaded whenever the URL or the hash changes.
+
+      When this policy is set to correct value, devices will try to query specified print servers for available printers using IPP protocol.
+
+      If this policy is unset or set to incorrect value, no server printers are visible to users.
+
+      Currently, the number of print servers is limited to 16. Only the first 16 print servers from the list will be queried.
+      ''',
+    },
+    {
+      'name': 'VmManagementCliAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:77-'],
+      'future': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 577,
+      'caption': '''Specify VM CLI permission''',
+      'tags': [],
+      'desc': '''Instructs <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> to enable or disable virtual machine management console tools.
+
+      If the policy is set to true or left unset, the user will be able to use VM management CLI.
+      Otherwise, all of VM management CLI is disabled and hidden.
+      ''',
+    },
+    {
+      'name': 'SafeBrowsingRealTimeLookupEnabled',
+      'type': 'main',
+      'schema': {
+        'type': 'boolean',
+      },
+      'example_value': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'id': 578,
+      'supported_on': ['chrome.*:77-','chrome_os:77-'],
+      'caption': '''Check SafeBrowsing reputation of visited URLs in real time''',
+      'tags': ['google-sharing'],
+      'desc': '''When this policy is set to enabled, all visited URLs will be checked with Safe Browsing in real time.
+
+      When this policy is set to disabled, or not set, the consumer Safe Browsing checks will be applied.'''
+    }
   ],
 
   'messages': {
     # Messages that are not associated to any policies.
-    'win_supported_win7': {
+    'win_supported_all': {
       'desc': '''A label specifying the oldest possible compatible version of Windows. This text will appear right next to a label containing the text 'Supported on:'.''',
       'text': '''Microsoft Windows 7 or later'''
+    },
+    'win_supported_win7': {
+      'desc': '''A label specifying the policy compatibles with Windows 7. This text will appear right next to a label containing the text 'Supported on:'.''',
+      'text': '''Microsoft Windows 7'''
     },
     'mac_chrome_preferences': {
       'desc': '''A text indicating in Mac OS X Workgroup Manager, that currently the preferences of Chromium are being edited''',
@@ -16140,6 +16399,10 @@
       'desc': '''Caption text of the field 'windows (Chrome OS clients)' in the summary chart of a policy in the generated documentation''',
       'text': '''Windows (<ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> clients):'''
     },
+    'doc_banner': {
+      'desc': '''A banner shown at the top of the policy documentation''',
+      'text': '''The Chrome Enterprise policy list is moving! Please update your bookmarks to <ph name="POLICY_DOCUMENTATION_URL">https://cloud.google.com/docs/chrome-enterprise/policies/<ex>https://cloud.google.com/docs/chrome-enterprise/policies/</ex></ph>.'''
+    },
     'doc_intro': {
       'desc': '''Introduction text for the generated policy documentation''',
       'text': '''Both Chromium and Google Chrome support the same set of policies. Please note that this document may include unreleased policies (i.e. their 'Supported on' entry refers to a not-yet released version of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>) which are subject to change or removal without notice and for which no guarantees of any kind are provided, including no guarantees with respect to their security and privacy properties.
@@ -16149,6 +16412,18 @@ These policies are strictly intended to be used to configure instances of <ph na
 These settings don't need to be configured manually! Easy-to-use templates for Windows, Mac and Linux are available for download from <ph name="POLICY_TEMPLATE_DOWNLOAD_URL">https://www.chromium.org/administrators/policy-templates<ex> https://www.chromium.org/administrators/policy-templates</ex></ph>.
 
 The recommended way to configure policy on Windows is via GPO, although provisioning policy via registry is still supported for Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.'''
+    },
+    'doc_group_intro': {
+      'desc': '''Introduction text for the generated policy atomic group documentation''',
+      'text': '''Both Chromium and Google Chrome have some groups of policies that depend on each other to provide control over a feature. These sets are represented by the following policy groups. Given that policies can have multiple sources, only values coming from the highest priority source will be applied. Values coming from a lower priority source in the same group will be ignored. The order of priority is defined in <ph name="POLICY_PRIORITY_DOC_URL">https://support.google.com/chrome/a/?p=policy_order<ex>https://support.google.com/chrome/a/?p=policy_order</ex></ph>.'''
+    },
+    'doc_policy_in_atomic_group': {
+      'desc': '''Label notifying that a policy is part of an atomic policy group''',
+      'text': '''This policy is part of the following atomic group (only policies from the highest priority source present in the group are applied) :'''
+    },
+    'doc_policy_atomic_group': {
+      'desc': '''Caption text of the 'policy atomic group' in the summary chart of a policy in the generated documentation''',
+      'text': '''Policy atomic group:'''
     },
     'doc_back_to_top': {
       'desc': '''Text of a link in the generated policy documentation, that takes the user to the top of the page''',
@@ -16390,12 +16665,15 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceBatteryChargeMode': 'device_battery_charge_mode.battery_charge_mode',
     'DeviceBatteryChargeCustomStartCharging': 'device_battery_charge_mode.custom_charge_start',
     'DeviceBatteryChargeCustomStopCharging': 'device_battery_charge_mode.custom_charge_stop',
-    'DeviceScheduledUpdateCheck': 'device_scheduled_update_check.device_scheduled_update_check_settings'
+    'DeviceScheduledUpdateCheck': 'device_scheduled_update_check.device_scheduled_update_check_settings',
+    'DeviceWebUsbAllowDevicesForUrls': 'device_webusb_allow_devices_for_urls.device_webusb_allow_devices_for_urls',
+    'DevicePowerwashAllowed': 'device_powerwash_allowed.device_powerwash_allowed'
   },
   'policy_atomic_group_definitions': [
     {
       'id': 1,
       'name': 'Homepage',
+      'caption': '''Homepage''',
       'policies': [
         'HomepageLocation',
         'HomepageIsNewTabPage',
@@ -16406,6 +16684,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 2,
       'name': 'RemoteAccess',
+      'caption': '''Remote access''',
       'policies': [
         'RemoteAccessClientFirewallTraversal',
         'RemoteAccessHostClientDomain',
@@ -16432,6 +16711,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 3,
       'name': 'PasswordManager',
+      'caption': '''Password manager''',
       'policies': [
         'PasswordManagerEnabled',
         'PasswordManagerAllowShowPasswords',
@@ -16440,6 +16720,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 4,
       'name': 'Proxy',
+      'caption': '''Proxy''',
       'policies': [
         'ProxyMode',
         'ProxyServerMode',
@@ -16452,6 +16733,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 5,
       'name': 'Extensions',
+      'caption': '''Extensions''',
       'policies': [
         'ExtensionInstallBlacklist',
         'ExtensionInstallWhitelist',
@@ -16464,7 +16746,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
     {
       'id': 6,
-      'name': 'RestoreOnStartupGroup',
+      'name': 'RestoreOnStartup',
+      'caption': '''Action on startup''',
       'policies': [
         'RestoreOnStartup',
         'RestoreOnStartupURLs',
@@ -16473,6 +16756,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 7,
       'name': 'DefaultSearchProvider',
+      'caption': '''Default search provider''',
       'policies': [
         'DefaultSearchProviderEnabled',
         'DefaultSearchProviderName',
@@ -16495,6 +16779,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 8,
       'name': 'ImageSettings',
+      'caption': '''Image settings''',
       'policies': [
         'DefaultImagesSetting',
         'ImagesAllowedForUrls',
@@ -16504,6 +16789,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 9,
       'name': 'CookiesSettings',
+      'caption': '''Cookies settings''',
       'policies': [
         'DefaultCookiesSetting',
         'CookiesAllowedForUrls',
@@ -16514,6 +16800,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 10,
       'name': 'JavascriptSettings',
+      'caption': '''Javascript settings''',
       'policies': [
         'DefaultJavaScriptSetting',
         'JavaScriptAllowedForUrls',
@@ -16523,6 +16810,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 11,
       'name': 'PluginsSettings',
+      'caption': '''Plugins settings''',
       'policies': [
         'DefaultPluginsSetting',
         'PluginsAllowedForUrls',
@@ -16532,6 +16820,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 12,
       'name': 'PopupsSettings',
+      'caption': '''Popups settings''',
       'policies': [
         'DefaultPopupsSetting',
         'PopupsAllowedForUrls',
@@ -16541,6 +16830,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 13,
       'name': 'KeygenSettings',
+      'caption': '''Keygen settings''',
       'policies': [
         'DefaultKeygenSetting',
         'KeygenAllowedForUrls',
@@ -16550,6 +16840,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 14,
       'name': 'NotificationsSettings',
+      'caption': '''Notification settings''',
       'policies': [
         'DefaultNotificationsSetting',
         'NotificationsAllowedForUrls',
@@ -16559,8 +16850,10 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 15,
       'name': 'WebUsbSettings',
+      'caption': '''Web USB settings''',
       'policies': [
         'DefaultWebUsbGuardSetting',
+        'DeviceWebUsbAllowDevicesForUrls',
         'WebUsbAllowDevicesForUrls',
         'WebUsbAskForUrls',
         'WebUsbBlockedForUrls',
@@ -16569,6 +16862,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 16,
       'name': 'NativeMessaging',
+      'caption': '''Native messaging''',
       'policies': [
         'NativeMessagingBlacklist',
         'NativeMessagingWhitelist',
@@ -16578,6 +16872,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 17,
       'name': 'Drive',
+      'caption': '''Drive''',
       'policies': [
         'DriveDisabled',
         'DriveDisabledOverCellular',
@@ -16586,6 +16881,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 18,
       'name': 'Attestation',
+      'caption': '''Attestation''',
       'policies': [
         'AttestationEnabledForDevice',
         'AttestationEnabledForUser',
@@ -16596,6 +16892,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 19,
       'name': 'ContentPack',
+      'caption': '''Content pack''',
       'policies': [
         'ContentPackDefaultFilteringBehavior',
         'ContentPackManualBehaviorHosts',
@@ -16605,6 +16902,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 20,
       'name': 'SupervisedUsers',
+      'caption': '''Supervised users''',
       'policies': [
         'SupervisedUsersEnabled',
         'SupervisedUserCreationEnabled',
@@ -16614,6 +16912,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 21,
       'name': 'GoogleCast',
+      'caption': '''Google Cast''',
       'policies': [
         'CastReceiverEnabled',
         'CastReceiverName',
@@ -16622,6 +16921,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 22,
       'name': 'QuickUnlock',
+      'caption': '''Quick unlock''',
       'policies': [
         'QuickUnlockModeWhitelist',
         'QuickUnlockTimeout',
@@ -16630,6 +16930,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 23,
       'name': 'PinUnlock',
+      'caption': '''Pin unlock''',
       'policies': [
         'PinUnlockMinimumLength',
         'PinUnlockMaximumLength',
@@ -16639,6 +16940,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 24,
       'name': 'SafeBrowsing',
+      'caption': '''Safe Browsing settings''',
       'policies': [
         'SafeBrowsingEnabled',
         'SafeBrowsingExtendedReportingEnabled',
@@ -16649,6 +16951,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 25,
       'name': 'PasswordProtection',
+      'caption': '''Password protection''',
       'policies': [
         'PasswordProtectionWarningTrigger',
         'PasswordProtectionLoginURLs',
@@ -16658,6 +16961,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 26,
       'name': 'NetworkFileShares',
+      'caption': '''Network File Shares settings''',
       'policies': [
         'NetworkFileSharesAllowed',
         'NetBiosShareDiscoveryEnabled',
@@ -16668,6 +16972,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 27,
       'name': 'ChromeReportingExtension',
+      'caption': '''Chrome Reporting Extension''',
       'policies': [
         'ReportVersionData',
         'ReportPolicyData',
@@ -16681,6 +16986,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 28,
       'name': 'BrowserSwitcher',
+      'caption': '''Legacy Browser Support''',
       'policies': [
         'AlternativeBrowserPath',
         'AlternativeBrowserParameters',
@@ -16699,6 +17005,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 29,
       'name': 'PluginVm',
+      'caption': '''PluginVm''',
       'policies': [
         'PluginVmAllowed',
         'PluginVmLicenseKey',
@@ -16707,7 +17014,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
     {
       'id': 30,
-      'name': 'DeviceSAML',
+      'name': 'SAML',
+      'caption': '''SAML''',
       'policies': [
         'DeviceSamlLoginAuthenticationType',
         'DeviceTransferSAMLCookies',
@@ -16715,7 +17023,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
     {
       'id': 31,
-      'name': 'DeviceLoginScreenOrigins',
+      'name': 'LoginScreenOrigins',
+      'caption': '''Login and screen origins''',
       'policies': [
         'DeviceLoginScreenIsolateOrigins',
         'DeviceLoginScreenSitePerProcess',
@@ -16724,6 +17033,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 32,
       'name': 'UserAndDeviceReporting',
+      'caption': '''User and device reporting''',
       'policies': [
         'ReportDeviceVersionInfo',
         'ReportDeviceBootMode',
@@ -16746,7 +17056,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
     {
       'id': 33,
-      'name': 'DeviceWiFi',
+      'name': 'WiFi',
+      'caption': '''WiFi''',
       'policies': [
         'DeviceWiFiFastTransitionEnabled',
         'DeviceWiFiAllowed'
@@ -16755,6 +17066,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 34,
       'name': 'Kiosk',
+      'caption': '''Kiosk settings''',
       'policies': [
         'DeviceLocalAccounts',
         'DeviceLocalAccountAutoLoginId',
@@ -16766,6 +17078,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 35,
       'name': 'DateAndTime',
+      'caption': '''Date and time''',
       'policies': [
         'SystemTimezone',
         'SystemTimezoneAutomaticDetection',
@@ -16774,6 +17087,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 36,
       'name': 'Display',
+      'caption': '''Display''',
       'policies': [
         'DeviceDisplayResolution',
         'DisplayRotationDefault',
@@ -16782,6 +17096,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     {
       'id': 37,
       'name': 'ActiveDirectoryManagement',
+      'caption': '''<ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> management settings''',
       'policies': [
         'DeviceMachinePasswordChangeRate',
         'DeviceUserPolicyLoopbackProcessingMode',
@@ -16792,7 +17107,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   ],
   'placeholders': [],
-  'deleted_policy_ids': [412, 546],
-  'highest_id_currently_used': 568,
+  'deleted_policy_ids': [412, 546, 562],
+  'highest_id_currently_used': 578,
   'highest_atomic_group_id_currently_used': 37
 }

@@ -14,6 +14,9 @@ Profiler.IsolateSelector = class extends UI.VBox {
     this._items = new UI.ListModel();
     /** @type {!UI.ListControl<!Profiler.IsolateSelector.ListItem>} */
     this._list = new UI.ListControl(this._items, this, UI.ListMode.NonViewport);
+    UI.ARIAUtils.markAsListBox(this._list.element);
+    this._list.element.tabIndex = 0;
+    UI.ARIAUtils.setAccessibleName(this._list.element, ls`JavaScript VM instances`);
     this.contentElement.appendChild(this._list.element);
 
     /** @type {!Map<!SDK.IsolateManager.Isolate, !Profiler.IsolateSelector.ListItem>} */
@@ -196,11 +199,12 @@ Profiler.IsolateSelector.ListItem = class {
     this._isolate = isolate;
     const trendIntervalMinutes = Math.round(SDK.IsolateManager.MemoryTrendWindowMs / 60e3);
     this.element = createElementWithClass('div', 'profile-memory-usage-item hbox');
+    UI.ARIAUtils.markAsOption(this.element);
     this._heapDiv = this.element.createChild('div', 'profile-memory-usage-item-size');
-    this._trendDiv = this.element.createChild('div', 'profile-memory-usage-item-trend');
-    this._nameDiv = this.element.createChild('div', 'profile-memory-usage-item-name');
     this._heapDiv.title = ls`Heap size in use by live JS objects.`;
+    this._trendDiv = this.element.createChild('div', 'profile-memory-usage-item-trend');
     this._trendDiv.title = ls`Heap size change trend over the last ${trendIntervalMinutes} minutes.`;
+    this._nameDiv = this.element.createChild('div', 'profile-memory-usage-item-name');
     this.updateTitle();
   }
 
@@ -228,9 +232,14 @@ Profiler.IsolateSelector.ListItem = class {
       modelCountByName.set(title, (modelCountByName.get(title) || 0) + 1);
     }
     this._nameDiv.removeChildren();
+    const titles = [];
     for (const [name, count] of modelCountByName) {
       const title = count > 1 ? `${name} (${count})` : name;
-      this._nameDiv.appendChild(UI.html`<div title="${title}">${title}</div>`);
+      titles.push(title);
+      const titleDiv = this._nameDiv.createChild('div');
+      titleDiv.textContent = title;
+      titleDiv.title = title;
     }
+    UI.ARIAUtils.setAccessibleName(this.element, titles.join(' '));
   }
 };

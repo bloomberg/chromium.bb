@@ -20,7 +20,6 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
   out->force_antialiasing = data.force_antialiasing();
   out->force_blending_with_shaders = data.force_blending_with_shaders();
   out->partial_swap_enabled = data.partial_swap_enabled();
-  out->finish_rendering_on_resize = data.finish_rendering_on_resize();
   out->should_clear_root_render_pass = data.should_clear_root_render_pass();
   out->release_overlay_resources_after_gpu_query =
       data.release_overlay_resources_after_gpu_query();
@@ -30,7 +29,6 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
   out->slow_down_compositing_scale_factor =
       data.slow_down_compositing_scale_factor();
   out->use_skia_renderer = data.use_skia_renderer();
-  out->use_skia_renderer_non_ddl = data.use_skia_renderer_non_ddl();
   out->record_sk_picture = data.record_sk_picture();
   out->allow_overlays = data.allow_overlays();
   out->requires_alpha_channel = data.requires_alpha_channel();

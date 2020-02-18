@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "chrome/android/chrome_jni_headers/WebsitePreferenceBridge_jni.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -39,7 +40,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "jni/WebsitePreferenceBridge_jni.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -187,7 +187,7 @@ void JNI_WebsitePreferenceBridge_GetOrigins(
 
   for (const auto& settings_it : embargo_settings) {
     const std::string origin = settings_it.primary_pattern.ToString();
-    if (base::ContainsValue(seen_origins, origin)) {
+    if (base::Contains(seen_origins, origin)) {
       // This origin has already been added to the list, so don't add it again.
       continue;
     }

@@ -16,6 +16,8 @@
 #define VK_SHADER_MODULE_HPP_
 
 #include "VkObject.hpp"
+
+#include <atomic>
 #include <vector>
 
 namespace rr
@@ -37,14 +39,20 @@ public:
 	// guts' operations, and this copy.
 	std::vector<uint32_t> getCode() const { return std::vector<uint32_t>{ code, code + wordCount };}
 
+	uint32_t getSerialID() const { return serialID; }
+	static uint32_t nextSerialID() { return serialCounter++; }
+
 private:
+	const uint32_t serialID;
+	static std::atomic<uint32_t> serialCounter;
+
 	uint32_t* code = nullptr;
 	uint32_t wordCount = 0;
 };
 
 static inline ShaderModule* Cast(VkShaderModule object)
 {
-	return reinterpret_cast<ShaderModule*>(object.get());
+	return ShaderModule::Cast(object);
 }
 
 } // namespace vk

@@ -53,7 +53,7 @@ class CONTENT_EXPORT IndexedDBObserver {
     return options_.operation_types[static_cast<size_t>(type)];
   }
   bool IsRecordingObjectStore(int64_t object_store_id) const {
-    return base::ContainsKey(object_store_ids_, object_store_id);
+    return base::Contains(object_store_ids_, object_store_id);
   }
   bool include_transaction() const { return options_.include_transaction; }
   bool no_records() const { return options_.no_records; }

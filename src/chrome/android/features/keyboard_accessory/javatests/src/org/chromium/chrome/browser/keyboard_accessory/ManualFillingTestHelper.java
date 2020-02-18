@@ -11,6 +11,8 @@ import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 
 import static org.hamcrest.core.AllOf.allOf;
 
+import static org.chromium.autofill.mojom.FocusedFieldType.FILLABLE_NON_SEARCH_FIELD;
+import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabTestHelper.isKeyboardAccessoryTabLayout;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
@@ -45,6 +47,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AddressAccessorySheetCoordinator;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.CreditCardAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.ImeAdapter;
@@ -114,7 +117,8 @@ public class ManualFillingTestHelper {
             final ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mWebContentsRef.get());
             mInputMethodManagerWrapper = TestInputMethodManagerWrapper.create(imeAdapter);
             imeAdapter.setInputMethodManagerWrapper(mInputMethodManagerWrapper);
-            getManualFillingCoordinator().registerPasswordProvider(mSheetSuggestionsProvider);
+            getManualFillingCoordinator().registerSheetDataProvider(
+                    AccessoryTabType.PASSWORDS, mSheetSuggestionsProvider);
         });
         if (waitForNode) DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), PASSWORD_NODE_ID);
         cacheCredentials(new String[0], new String[0]); // This caches the empty state.
@@ -136,6 +140,20 @@ public class ManualFillingTestHelper {
     ManualFillingCoordinator getManualFillingCoordinator() {
         return (ManualFillingCoordinator) mActivityTestRule.getActivity()
                 .getManualFillingComponent();
+    }
+
+    public RecyclerView getAccessoryBarView() {
+        final ViewGroup keyboardAccessory = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory));
+        assert keyboardAccessory != null;
+        return (RecyclerView) keyboardAccessory.findViewById(R.id.bar_items_view);
+    }
+
+    public View getFirstAccessorySuggestion() {
+        ViewGroup recyclerView = getAccessoryBarView();
+        assert recyclerView != null;
+        View view = recyclerView.getChildAt(0);
+        return isKeyboardAccessoryTabLayout().matches(view) ? null : view;
     }
 
     public void focusPasswordField() throws TimeoutException, InterruptedException {
@@ -167,12 +185,22 @@ public class ManualFillingTestHelper {
 
     public void clickNodeAndShowKeyboard(String node)
             throws TimeoutException, InterruptedException {
-        clickNode(node);
+        clickNodeAndShowKeyboard(node, FILLABLE_NON_SEARCH_FIELD);
+    }
+
+    public void clickNodeAndShowKeyboard(String node, int focusedFieldType)
+            throws TimeoutException, InterruptedException {
+        clickNode(node, focusedFieldType);
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
     }
 
-    public void clickNode(String node) throws TimeoutException, InterruptedException {
+    public void clickNode(String node, int focusedFieldType)
+            throws TimeoutException, InterruptedException {
         DOMUtils.clickNode(mWebContentsRef.get(), node);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ManualFillingComponentBridge.notifyFocusedFieldType(
+                    mActivityTestRule.getWebContents(), focusedFieldType);
+        });
     }
 
     /**
@@ -209,6 +237,10 @@ public class ManualFillingTestHelper {
     }
 
     public void waitForKeyboardAccessoryToBeShown() {
+        waitForKeyboardAccessoryToBeShown(false);
+    }
+
+    public void waitForKeyboardAccessoryToBeShown(boolean waitForSuggestionsToLoad) {
         CriteriaHelper.pollInstrumentationThread(() -> {
             KeyboardAccessoryCoordinator accessory =
                     getManualFillingCoordinator().getMediatorForTesting().getKeyboardAccessory();
@@ -218,6 +250,11 @@ public class ManualFillingTestHelper {
             View accessory = mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory);
             return accessory != null && accessory.isShown();
         });
+        if (waitForSuggestionsToLoad) {
+            CriteriaHelper.pollUiThread(()
+                                                -> getFirstAccessorySuggestion() != null,
+                    "Waited for suggestions that never appeared.");
+        }
     }
 
     public DropdownPopupWindowInterface waitForAutofillPopup(String filterInput) {
@@ -254,11 +291,21 @@ public class ManualFillingTestHelper {
     }
 
     public PasswordAccessorySheetCoordinator getOrCreatePasswordAccessorySheet() {
-        return getManualFillingCoordinator().getMediatorForTesting().getOrCreatePasswordSheet();
+        return (PasswordAccessorySheetCoordinator) getManualFillingCoordinator()
+                .getMediatorForTesting()
+                .getOrCreateSheet(AccessoryTabType.PASSWORDS);
     }
 
     public AddressAccessorySheetCoordinator getOrCreateAddressAccessorySheet() {
-        return getManualFillingCoordinator().getMediatorForTesting().getOrCreateAddressSheet();
+        return (AddressAccessorySheetCoordinator) getManualFillingCoordinator()
+                .getMediatorForTesting()
+                .getOrCreateSheet(AccessoryTabType.ADDRESSES);
+    }
+
+    public CreditCardAccessorySheetCoordinator getOrCreateCreditCardAccessorySheet() {
+        return (CreditCardAccessorySheetCoordinator) getManualFillingCoordinator()
+                .getMediatorForTesting()
+                .getOrCreateSheet(AccessoryTabType.CREDIT_CARDS);
     }
 
     // ----------------------------------

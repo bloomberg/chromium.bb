@@ -7,8 +7,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_host.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -25,8 +25,7 @@ IceTransportProxy::IceTransportProxy(
       feature_handle_for_scheduler_(frame.GetFrameScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebRTC,
           {SchedulingPolicy::DisableAggressiveThrottling(),
-           SchedulingPolicy::RecordMetricsForBackForwardCache()})),
-      weak_ptr_factory_(this) {
+           SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
   DCHECK(host_thread_);
   DCHECK(delegate_);
   DCHECK(adapter_factory);
@@ -66,7 +65,7 @@ scoped_refptr<base::SingleThreadTaskRunner> IceTransportProxy::host_thread()
 void IceTransportProxy::StartGathering(
     const cricket::IceParameters& local_parameters,
     const cricket::ServerAddresses& stun_servers,
-    const std::vector<cricket::RelayServerConfig>& turn_servers,
+    const WebVector<cricket::RelayServerConfig>& turn_servers,
     IceTransportPolicy policy) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
@@ -79,7 +78,7 @@ void IceTransportProxy::StartGathering(
 void IceTransportProxy::Start(
     const cricket::IceParameters& remote_parameters,
     cricket::IceRole role,
-    const std::vector<cricket::Candidate>& initial_remote_candidates) {
+    const Vector<cricket::Candidate>& initial_remote_candidates) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *host_thread_, FROM_HERE,

@@ -21,6 +21,8 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/appcache_service.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -47,18 +49,19 @@ class AppCachePolicy;
 class AppCacheServiceImplTest;
 class AppCacheStorageImplTest;
 class AppCacheStorage;
+class StoragePartitionImpl;
 
 // Refcounted container to manage the lifetime of the old storage instance
 // during Reinitialization.
 class CONTENT_EXPORT AppCacheStorageReference
     : public base::RefCounted<AppCacheStorageReference> {
  public:
+  explicit AppCacheStorageReference(std::unique_ptr<AppCacheStorage> storage);
+
   AppCacheStorage* storage() const { return storage_.get(); }
 
  private:
-  friend class AppCacheServiceImpl;
   friend class base::RefCounted<AppCacheStorageReference>;
-  explicit AppCacheStorageReference(std::unique_ptr<AppCacheStorage> storage);
   ~AppCacheStorageReference();
 
   std::unique_ptr<AppCacheStorage> storage_;
@@ -73,6 +76,9 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
 
   class CONTENT_EXPORT Observer {
    public:
+    Observer(const Observer&) = delete;
+    Observer& operator=(const Observer&) = delete;
+
     // Called just prior to the instance being deleted.
     virtual void OnServiceDestructionImminent(AppCacheServiceImpl* service) {}
 
@@ -82,11 +88,17 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
     // ref provided.
     virtual void OnServiceReinitialized(
         AppCacheStorageReference* old_storage_ref) {}
-    virtual ~Observer() {}
+
+   protected:
+    // The constructor and destructor exist to facilitate subclassing, and
+    // should not be called directly.
+    Observer() noexcept = default;
+    virtual ~Observer() = default;
   };
 
   // If not using quota management, the proxy may be NULL.
-  explicit AppCacheServiceImpl(storage::QuotaManagerProxy* quota_manager_proxy);
+  AppCacheServiceImpl(storage::QuotaManagerProxy* quota_manager_proxy,
+                      base::WeakPtr<StoragePartitionImpl> partition);
   ~AppCacheServiceImpl() override;
 
   void Initialize(const base::FilePath& cache_directory);
@@ -103,16 +115,19 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   // without relaunching the browser.
   void ScheduleReinitialize();
 
-  // AppCacheService implementation:
+  // AppCacheService
   void GetAllAppCacheInfo(AppCacheInfoCollection* collection,
                           OnceCompletionCallback callback) override;
-  void DeleteAppCacheGroup(const GURL& manifest_url,
-                           net::CompletionOnceCallback callback) override;
-
-  // Deletes all appcaches for the origin, 'callback' is invoked upon
-  // completion. This method always completes asynchronously.
   void DeleteAppCachesForOrigin(const url::Origin& origin,
                                 net::CompletionOnceCallback callback) override;
+
+  // Deletes the group identified by 'manifest_url', 'callback' is
+  // invoked upon completion. Upon completion, the cache group and
+  // any resources within the group are no longer loadable and all
+  // subresource loads for pages associated with a deleted group
+  // will fail. This method always completes asynchronously.
+  void DeleteAppCacheGroup(const GURL& manifest_url,
+                           net::CompletionOnceCallback callback);
 
   // Checks the integrity of 'response_id' by reading the headers and data.
   // If it cannot be read, the cache group for 'manifest_url' is deleted.
@@ -146,7 +161,8 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
     return quota_manager_proxy_.get();
   }
 
-  AppCacheQuotaClient* quota_client() const {
+  // This WeakPtr should only be checked on the IO thread.
+  base::WeakPtr<AppCacheQuotaClient> quota_client() const {
     return quota_client_;
   }
 
@@ -181,12 +197,14 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
     return url_loader_factory_getter_.get();
   }
 
+  base::WeakPtr<StoragePartitionImpl> partition() { return partition_; }
+
   // Returns a pointer to a registered host. It retains ownership.
   AppCacheHost* GetHost(const base::UnguessableToken& host_id);
   bool EraseHost(const base::UnguessableToken& host_id);
   void RegisterHostForFrame(
-      blink::mojom::AppCacheHostRequest host_request,
-      blink::mojom::AppCacheFrontendPtrInfo frontend,
+      mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
+      mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
       const base::UnguessableToken& host_id,
       int32_t render_frame_id,
       int process_id,
@@ -209,7 +227,7 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   base::FilePath cache_directory_;
   scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
   AppCachePolicy* appcache_policy_;
-  AppCacheQuotaClient* quota_client_;
+  base::WeakPtr<AppCacheQuotaClient> quota_client_;
   std::unique_ptr<AppCacheStorage> storage_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
@@ -229,14 +247,17 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   // URLLoaderFactoryGetter instance which is used to get to the network
   // URL loader factory.
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
+  // If NavigationLoaderOnUI is enabled, |partition_| will be used to get the
+  // network URL loader factory.
+  base::WeakPtr<StoragePartitionImpl> partition_;
 
  private:
   // TODO: Once we remove 'blink::mojom::AppCacheBackend', remove this together.
   friend class content::AppCacheBackendImpl;
 
   void RegisterHostInternal(
-      blink::mojom::AppCacheHostRequest host_request,
-      blink::mojom::AppCacheFrontendPtr frontend,
+      mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
+      mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
       const base::UnguessableToken& host_id,
       int32_t render_frame_id,
       int process_id,
@@ -246,7 +267,7 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
       std::map<base::UnguessableToken, std::unique_ptr<AppCacheHost>>;
   AppCacheHostProcessMap hosts_;
 
-  base::WeakPtrFactory<AppCacheServiceImpl> weak_factory_;
+  base::WeakPtrFactory<AppCacheServiceImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheServiceImpl);
 };

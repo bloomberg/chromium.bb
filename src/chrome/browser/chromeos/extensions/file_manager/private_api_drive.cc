@@ -40,18 +40,19 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
+#include "chromeos/components/drivefs/drivefs_util.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/drive/chromeos/search_metadata.h"
 #include "components/drive/event_logger.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/drive_api_url_generator.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/common/fileapi/file_system_info.h"
@@ -659,8 +660,8 @@ class SingleEntryPropertiesGetterForDriveFs {
     properties_->size = std::make_unique<double>(metadata->size);
     properties_->present = std::make_unique<bool>(metadata->available_offline);
     properties_->dirty = std::make_unique<bool>(metadata->dirty);
-    properties_->hosted = std::make_unique<bool>(
-        metadata->type == drivefs::mojom::FileMetadata::Type::kHosted);
+    properties_->hosted =
+        std::make_unique<bool>(drivefs::IsHosted(metadata->type));
     properties_->available_offline = std::make_unique<bool>(
         metadata->available_offline || *properties_->hosted);
     properties_->available_when_metered = std::make_unique<bool>(
@@ -720,7 +721,7 @@ class SingleEntryPropertiesGetterForDriveFs {
     properties_->can_share =
         std::make_unique<bool>(metadata->capabilities->can_share);
 
-    if (metadata->type != drivefs::mojom::FileMetadata::Type::kDirectory) {
+    if (drivefs::IsAFile(metadata->type)) {
       properties_->thumbnail_url = std::make_unique<std::string>(
           base::StrCat({"drivefs:", file_system_url_.ToGURL().spec()}));
       properties_->cropped_thumbnail_url =
@@ -897,8 +898,7 @@ void OnSearchDriveFs(
     entry.SetKey("fileSystemName", base::Value(fs_name));
     entry.SetKey("fileSystemRoot", base::Value(fs_root));
     entry.SetKey("fileFullPath", base::Value(item->path.AsUTF8Unsafe()));
-    bool is_dir =
-        item->metadata->type == drivefs::mojom::FileMetadata::Type::kDirectory;
+    bool is_dir = drivefs::IsADirectory(item->metadata->type);
     entry.SetKey("fileIsDirectory", base::Value(is_dir));
     entry.SetKey(kAvailableOfflinePropertyName,
                  base::Value(item->metadata->available_offline));
@@ -1815,7 +1815,7 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
   }
   download_url_ = std::move(download_url);
   const ChromeExtensionFunctionDetails chrome_details(this);
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(chrome_details.GetProfile());
   const std::string& account_id = identity_manager->GetPrimaryAccountId();
   std::vector<std::string> scopes;

@@ -9,6 +9,8 @@
 
 namespace device {
 
+struct SubmittedFrameData;
+
 class MockWMRHolographicFramePrediction : public WMRHolographicFramePrediction {
  public:
   MockWMRHolographicFramePrediction();
@@ -32,7 +34,11 @@ class MockWMRHolographicFrame : public WMRHolographicFrame {
   bool TryPresentUsingCurrentPrediction() override;
 
  private:
+  bool CopyTextureDataIntoFrameData(SubmittedFrameData* data,
+                                    unsigned int index);
+
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_ = nullptr;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> backbuffer_texture_ = nullptr;
   DISALLOW_COPY_AND_ASSIGN(MockWMRHolographicFrame);
 };
 

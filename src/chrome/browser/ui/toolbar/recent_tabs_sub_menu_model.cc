@@ -18,12 +18,11 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/favicon_utils.h"
-#include "chrome/browser/favicon/large_icon_service_factory.h"
+#include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -32,12 +31,12 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/favicon/core/history_ui_favicon_request_handler.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync/driver/sync_service_utils.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_sessions/synced_session.h"
@@ -132,31 +131,6 @@ gfx::Image CreateFavicon(const gfx::VectorIcon& icon) {
       gfx::CreateVectorIcon(icon, 16,
                             native_theme->GetSystemColor(
                                 ui::NativeTheme::kColorId_DefaultIconColor)));
-}
-
-scoped_refptr<base::RefCountedMemory> RecentTabsGetSyncedFaviconForPageURL(
-    sync_sessions::SessionSyncService* session_sync_service,
-    const GURL& page_url) {
-  DCHECK(session_sync_service);
-  sync_sessions::OpenTabsUIDelegate* open_tabs =
-      session_sync_service->GetOpenTabsUIDelegate();
-  return open_tabs ? open_tabs->GetSyncedFaviconForPageURL(page_url.spec())
-                   : nullptr;
-}
-
-// Check if user settings allow querying a Google server using history
-// information.
-bool CanSendHistoryDataToServer(bool is_local_tab, Browser* browser) {
-  // If |is_local_tab|, the local lookup done inside |favicon_request_handler_|
-  // will usually succeed. However, it will fail if the website has no favicon,
-  // and we shouldn't share the url with the favicon server in such case, for
-  // privacy. So we don't allow server queries for any local tabs.
-  return !is_local_tab &&
-         syncer::GetUploadToGoogleState(
-             ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-                 browser->profile()),
-             syncer::ModelType::HISTORY_DELETE_DIRECTIVES) ==
-             syncer::UploadState::ACTIVE;
 }
 
 }  // namespace
@@ -275,6 +249,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
                               LIMIT_RECENT_TAB_ACTION);
     UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ShowHistory",
                                menu_opened_timer_.Elapsed());
+    LogWrenchMenuAction(MENU_ACTION_SHOW_HISTORY);
     // We show all "other devices" on the history page.
     chrome::ExecuteCommandWithDisposition(browser_, IDC_SHOW_HISTORY,
         ui::DispositionFromEventFlags(event_flags));
@@ -595,22 +570,38 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
   // Set default icon first.
   SetIcon(index_in_menu, favicon::GetDefaultFavicon());
 
-  sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
   bool is_local_tab = command_id < kFirstOtherDevicesTabCommandId;
-  favicon_request_handler_.GetFaviconImageForPageURL(
-      url,
-      base::BindOnce(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
-                     base::Unretained(this), command_id),
-      favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS,
-      FaviconServiceFactory::GetForProfile(browser_->profile(),
-                                           ServiceAccessType::EXPLICIT_ACCESS),
-      LargeIconServiceFactory::GetForBrowserContext(browser_->profile()),
-      open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL(),
-      base::BindOnce(&RecentTabsGetSyncedFaviconForPageURL,
-                     base::Unretained(session_sync_service_)),
-      CanSendHistoryDataToServer(is_local_tab, browser_),
-      is_local_tab ? &local_tab_cancelable_task_tracker_
-                   : &other_devices_tab_cancelable_task_tracker_);
+  if (is_local_tab) {
+    // Request only from local storage to avoid leaking user data.
+    favicon::FaviconService* favicon_service =
+        FaviconServiceFactory::GetForProfile(
+            browser_->profile(), ServiceAccessType::EXPLICIT_ACCESS);
+    // Can be null for tests.
+    if (!favicon_service)
+      return;
+    favicon_service->GetFaviconImageForPageURL(
+        url,
+        base::Bind(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
+                   weak_ptr_factory_.GetWeakPtr(), command_id),
+        &local_tab_cancelable_task_tracker_);
+  } else {
+    favicon::HistoryUiFaviconRequestHandler*
+        history_ui_favicon_request_handler =
+            HistoryUiFaviconRequestHandlerFactory::GetForBrowserContext(
+                browser_->profile());
+    // Can be null for tests.
+    if (!history_ui_favicon_request_handler)
+      return;
+    sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
+    history_ui_favicon_request_handler->GetFaviconImageForPageURL(
+        url,
+        base::BindOnce(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
+                       weak_ptr_factory_.GetWeakPtr(), command_id),
+
+        favicon::HistoryUiFaviconRequestOrigin::kRecentTabs,
+        open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL(),
+        &other_devices_tab_cancelable_task_tracker_);
+  }
 }
 
 void RecentTabsSubMenuModel::OnFaviconDataAvailable(

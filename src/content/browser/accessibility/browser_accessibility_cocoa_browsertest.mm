@@ -10,12 +10,12 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/accessibility_browser_test_utils.h"
 #include "net/base/data_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -48,9 +48,10 @@ class BrowserAccessibilityCocoaBrowserTest : public ContentBrowserTest {
                                           ax::mojom::Role role) {
     if (node.GetRole() == role)
       return &node;
-    for (unsigned int i = 0; i < node.PlatformChildCount(); ++i) {
-      BrowserAccessibility* result =
-          FindNodeInSubtree(*node.PlatformGetChild(i), role);
+    for (BrowserAccessibility::PlatformChildIterator it =
+             node.PlatformChildrenBegin();
+         it != node.PlatformChildrenEnd(); ++it) {
+      BrowserAccessibility* result = FindNodeInSubtree(*it, role);
       if (result)
         return result;
     }

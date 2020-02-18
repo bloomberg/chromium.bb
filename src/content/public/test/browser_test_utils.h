@@ -69,6 +69,17 @@ class EmbeddedTestServer;
 using test_server::EmbeddedTestServer;
 }
 
+#if defined(OS_WIN)
+namespace Microsoft {
+namespace WRL {
+template <typename>
+class ComPtr;
+}  // namespace WRL
+}  // namespace Microsoft
+
+typedef int PROPERTYID;
+#endif
+
 // A collections of functions designed for use with content_browsertests and
 // browser_tests.
 // TO BE CLEAR: any function here must work against both binaries. If it only
@@ -78,14 +89,17 @@ using test_server::EmbeddedTestServer;
 
 namespace content {
 
+class BrowserAccessibility;
 class BrowserContext;
 struct FrameVisualProperties;
 class FrameTreeNode;
 class InterstitialPage;
 class NavigationHandle;
 class NavigationHandleImpl;
+class RenderFrameMetadataProviderImpl;
 class RenderWidgetHost;
 class RenderWidgetHostView;
+class ScopedAllowRendererCrashes;
 class WebContents;
 
 // Navigates |web_contents| to |url|, blocking until the navigation finishes.
@@ -736,6 +750,8 @@ enum EvalJsOptions {
 //    other callers of domAutomationController.send() -- script results carry
 //    a GUID.
 //  - Lists, dicts, null values, etc. can be returned as base::Values.
+//
+// It is guaranteed that EvalJs works even when the target frame is frozen.
 EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
                     const std::string& script,
                     int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
@@ -865,6 +881,39 @@ void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
 
 // Get a snapshot of a web page's accessibility tree.
 ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents);
+
+// Returns the root accessibility node for the given WebContents.
+BrowserAccessibility* GetRootAccessibilityNode(WebContents* web_contents);
+
+// Finds an accessibility node matching the given criteria.
+struct FindAccessibilityNodeCriteria {
+  FindAccessibilityNodeCriteria();
+  ~FindAccessibilityNodeCriteria();
+  base::Optional<ax::mojom::Role> role;
+  base::Optional<std::string> name;
+};
+BrowserAccessibility* FindAccessibilityNode(
+    WebContents* web_contents,
+    const FindAccessibilityNodeCriteria& criteria);
+BrowserAccessibility* FindAccessibilityNodeInSubtree(
+    BrowserAccessibility* node,
+    const FindAccessibilityNodeCriteria& criteria);
+
+#if defined(OS_WIN)
+// Retrieve the specified interface from an accessibility node.
+template <typename T>
+Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
+    BrowserAccessibility* browser_accessibility);
+
+// Call GetPropertyValue with the given UIA property id with variant type
+// VT_ARRAY | VT_UNKNOWN  on the target browser accessibility node to retrieve
+// an array of automation elements, then validate the name property of the
+// automation elements with the expected names.
+void UiaGetPropertyValueVtArrayVtUnknownValidate(
+    PROPERTYID property_id,
+    BrowserAccessibility* target_browser_accessibility,
+    const std::vector<std::string>& expected_names);
+#endif
 
 // Find out if the BrowserPlugin for a guest WebContents is focused. Returns
 // false if the WebContents isn't a guest with a BrowserPlugin.
@@ -997,6 +1046,8 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
   WatchType type_;
   bool did_exit_normally_;
 
+  std::unique_ptr<ScopedAllowRendererCrashes> allow_renderer_crashes_;
+
   base::RunLoop run_loop_;
   base::OnceClosure quit_closure_;
 
@@ -1016,6 +1067,10 @@ class DOMMessageQueue : public NotificationObserver,
   // Same as the default constructor, but only listens for messages
   // sent from a particular |web_contents|.
   explicit DOMMessageQueue(WebContents* web_contents);
+
+  // Same as the constructor with a WebContents, but observes the
+  // RenderFrameHost deletion.
+  explicit DOMMessageQueue(RenderFrameHost* render_frame_host);
 
   ~DOMMessageQueue() override;
 
@@ -1037,12 +1092,14 @@ class DOMMessageQueue : public NotificationObserver,
 
   // Overridden WebContentsObserver methods.
   void RenderProcessGone(base::TerminationStatus status) override;
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
 
  private:
   NotificationRegistrar registrar_;
   base::queue<std::string> message_queue_;
   base::OnceClosure quit_closure_;
   bool renderer_crashed_ = false;
+  RenderFrameHost* render_frame_host_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DOMMessageQueue);
 };
@@ -1112,7 +1169,7 @@ class RenderFrameSubmissionObserver
     : public RenderFrameMetadataProvider::Observer {
  public:
   explicit RenderFrameSubmissionObserver(
-      RenderFrameMetadataProvider* render_frame_metadata_provider);
+      RenderFrameMetadataProviderImpl* render_frame_metadata_provider);
   explicit RenderFrameSubmissionObserver(FrameTreeNode* node);
   explicit RenderFrameSubmissionObserver(WebContents* web_contents);
   ~RenderFrameSubmissionObserver() override;
@@ -1170,7 +1227,7 @@ class RenderFrameSubmissionObserver
   // OnRenderFrameMetadataChangedAfterActivation.
   bool break_on_any_frame_ = false;
 
-  RenderFrameMetadataProvider* render_frame_metadata_provider_ = nullptr;
+  RenderFrameMetadataProviderImpl* render_frame_metadata_provider_ = nullptr;
   base::OnceClosure quit_closure_;
   int render_frame_count_ = 0;
 };
@@ -1423,7 +1480,7 @@ class TestNavigationManager : public WebContentsObserver {
   base::OnceClosure quit_closure_;
   base::RunLoop::Type message_loop_type_ = base::RunLoop::Type::kDefault;
 
-  base::WeakPtrFactory<TestNavigationManager> weak_factory_;
+  base::WeakPtrFactory<TestNavigationManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationManager);
 };

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
+
 #include "core/fpdfapi/page/cpdf_psengine.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -94,15 +96,98 @@ TEST(CPDF_PSEngine, Basic) {
 TEST(CPDF_PSEngine, Ceiling) {
   CPDF_PSEngine engine;
 
+  // Smallest positive float value.
+  float min_float = std::numeric_limits<float>::min();
+  // Largest positive float value.
+  float max_float = std::numeric_limits<float>::max();
+  EXPECT_FLOAT_EQ(1.0f, DoOperator1(&engine, min_float, PSOP_CEILING));
+  EXPECT_FLOAT_EQ(max_float, DoOperator1(&engine, max_float, PSOP_CEILING));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, -min_float, PSOP_CEILING));
+  EXPECT_FLOAT_EQ(-max_float, DoOperator1(&engine, -max_float, PSOP_CEILING));
   EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, -0.9f, PSOP_CEILING));
   EXPECT_FLOAT_EQ(1.0f, DoOperator1(&engine, 0.0000000001f, PSOP_CEILING));
   EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, 0.0f, PSOP_CEILING));
+  EXPECT_FLOAT_EQ(3.0f, DoOperator1(&engine, 2.3f, PSOP_CEILING));
+  EXPECT_FLOAT_EQ(4.0f, DoOperator1(&engine, 3.8f, PSOP_CEILING));
+  EXPECT_FLOAT_EQ(6.0f, DoOperator1(&engine, 5.5f, PSOP_CEILING));
+  EXPECT_FLOAT_EQ(-2.0f, DoOperator1(&engine, -2.3f, PSOP_CEILING));
+  EXPECT_FLOAT_EQ(-3.0f, DoOperator1(&engine, -3.8f, PSOP_CEILING));
+  EXPECT_FLOAT_EQ(-5.0f, DoOperator1(&engine, -5.5f, PSOP_CEILING));
 }
 
 TEST(CPDF_PSEngine, Floor) {
   CPDF_PSEngine engine;
 
+  // Smallest positive float value.
+  float min_float = std::numeric_limits<float>::min();
+  // Largest positive float value.
+  float max_float = std::numeric_limits<float>::max();
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, min_float, PSOP_FLOOR));
+  EXPECT_FLOAT_EQ(max_float, DoOperator1(&engine, max_float, PSOP_FLOOR));
+  EXPECT_FLOAT_EQ(-1.0f, DoOperator1(&engine, -min_float, PSOP_FLOOR));
+  EXPECT_FLOAT_EQ(-max_float, DoOperator1(&engine, -max_float, PSOP_FLOOR));
   EXPECT_FLOAT_EQ(5.0f, DoOperator1(&engine, 5.9f, PSOP_FLOOR));
   EXPECT_FLOAT_EQ(-4.0f, DoOperator1(&engine, -4.0000000001f, PSOP_FLOOR));
   EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, 0.0f, PSOP_FLOOR));
+  EXPECT_FLOAT_EQ(-1.0f, DoOperator1(&engine, -0.9f, PSOP_FLOOR));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, 0.0000000001f, PSOP_FLOOR));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, 0.0f, PSOP_FLOOR));
+  EXPECT_FLOAT_EQ(2.0f, DoOperator1(&engine, 2.3f, PSOP_FLOOR));
+  EXPECT_FLOAT_EQ(3.0f, DoOperator1(&engine, 3.8f, PSOP_FLOOR));
+  EXPECT_FLOAT_EQ(5.0f, DoOperator1(&engine, 5.5f, PSOP_FLOOR));
+  EXPECT_FLOAT_EQ(-3.0f, DoOperator1(&engine, -2.3f, PSOP_FLOOR));
+  EXPECT_FLOAT_EQ(-4.0f, DoOperator1(&engine, -3.8f, PSOP_FLOOR));
+  EXPECT_FLOAT_EQ(-6.0f, DoOperator1(&engine, -5.5f, PSOP_FLOOR));
+}
+
+TEST(CPDF_PSEngine, Round) {
+  CPDF_PSEngine engine;
+
+  EXPECT_FLOAT_EQ(6.0f, DoOperator1(&engine, 5.9f, PSOP_ROUND));
+  EXPECT_FLOAT_EQ(-4.0f, DoOperator1(&engine, -4.0000000001f, PSOP_ROUND));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, 0.0f, PSOP_ROUND));
+  EXPECT_FLOAT_EQ(-1.0f, DoOperator1(&engine, -0.9f, PSOP_ROUND));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, 0.0000000001f, PSOP_ROUND));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, 0.0f, PSOP_ROUND));
+  // Smallest positive float value.
+  float min_float = std::numeric_limits<float>::min();
+  // Largest positive float value.
+  float max_float = std::numeric_limits<float>::max();
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, min_float, PSOP_ROUND));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, -min_float, PSOP_ROUND));
+  EXPECT_FLOAT_EQ(max_float, DoOperator1(&engine, max_float, PSOP_ROUND));
+  EXPECT_FLOAT_EQ(-max_float, DoOperator1(&engine, -max_float, PSOP_ROUND));
+  EXPECT_FLOAT_EQ(2.0f, DoOperator1(&engine, 2.3f, PSOP_ROUND));
+  EXPECT_FLOAT_EQ(4.0f, DoOperator1(&engine, 3.8f, PSOP_ROUND));
+  EXPECT_FLOAT_EQ(6.0f, DoOperator1(&engine, 5.5f, PSOP_ROUND));
+  EXPECT_FLOAT_EQ(-2.0f, DoOperator1(&engine, -2.3f, PSOP_ROUND));
+  EXPECT_FLOAT_EQ(-4.0f, DoOperator1(&engine, -3.8f, PSOP_ROUND));
+  EXPECT_FLOAT_EQ(-5.0f, DoOperator1(&engine, -5.5f, PSOP_ROUND));
+}
+
+TEST(CPDF_PSEngine, Truncate) {
+  CPDF_PSEngine engine;
+
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, -0.9f, PSOP_TRUNCATE));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, 0.0000000001f, PSOP_TRUNCATE));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, 0.0f, PSOP_TRUNCATE));
+  // Smallest positive float value.
+  float min_float = std::numeric_limits<float>::min();
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, min_float, PSOP_TRUNCATE));
+  EXPECT_FLOAT_EQ(0.0f, DoOperator1(&engine, -min_float, PSOP_TRUNCATE));
+  EXPECT_FLOAT_EQ(2.0f, DoOperator1(&engine, 2.3f, PSOP_TRUNCATE));
+  EXPECT_FLOAT_EQ(3.0f, DoOperator1(&engine, 3.8f, PSOP_TRUNCATE));
+  EXPECT_FLOAT_EQ(5.0f, DoOperator1(&engine, 5.5f, PSOP_TRUNCATE));
+  EXPECT_FLOAT_EQ(-2.0f, DoOperator1(&engine, -2.3f, PSOP_TRUNCATE));
+  EXPECT_FLOAT_EQ(-3.0f, DoOperator1(&engine, -3.8f, PSOP_TRUNCATE));
+  EXPECT_FLOAT_EQ(-5.0f, DoOperator1(&engine, -5.5f, PSOP_TRUNCATE));
+
+  // Truncate does not behave according to the PostScript Language Reference for
+  // values beyond the range of integers. This seems to match Acrobat's
+  // behavior. See https://crbug.com/1314.
+  float max_int = std::numeric_limits<int>::max();
+  EXPECT_FLOAT_EQ(-max_int,
+                  DoOperator1(&engine, max_int * 2.0f, PSOP_TRUNCATE));
+  EXPECT_FLOAT_EQ(-max_int,
+                  DoOperator1(&engine, max_int * -1.5f, PSOP_TRUNCATE));
 }

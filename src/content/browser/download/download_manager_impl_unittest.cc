@@ -95,7 +95,7 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
   MOCK_METHOD5(ChooseSavePath, void(
       WebContents*, const base::FilePath&, const base::FilePath::StringType&,
       bool, const SavePackagePathPickedCallback&));
-  MOCK_CONST_METHOD0(ApplicationClientIdForFileScanning, std::string());
+  MOCK_METHOD0(ApplicationClientIdForFileScanning, std::string());
 };
 
 MockDownloadManagerDelegate::MockDownloadManagerDelegate() {}
@@ -768,7 +768,7 @@ TEST_F(DownloadManagerTest, OnInProgressDownloadsLoaded) {
   ASSERT_TRUE(download_manager_->GetDownloadByGuid(kGuid));
   std::vector<download::DownloadItem*> vector;
   download_manager_->GetAllDownloads(&vector);
-  ASSERT_EQ(1u, vector.size());
+  ASSERT_EQ(0u, vector.size());
 
   EXPECT_CALL(GetMockDownloadManagerDelegate(), GetNextId(_))
       .WillOnce(RunCallback<0>(1));
@@ -776,6 +776,8 @@ TEST_F(DownloadManagerTest, OnInProgressDownloadsLoaded) {
   ASSERT_TRUE(download_manager_->GetDownloadByGuid(kGuid));
   download::DownloadItem* download =
       download_manager_->GetDownloadByGuid(kGuid);
+  download_manager_->GetAllDownloads(&vector);
+  ASSERT_EQ(1u, vector.size());
   download->Remove();
   ASSERT_FALSE(download_manager_->GetDownloadByGuid(kGuid));
 }

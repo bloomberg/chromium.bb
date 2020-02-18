@@ -61,12 +61,10 @@ jumbo_static_library("renderer") {
     "media/chrome_key_systems.h",
     "media/chrome_key_systems_provider.cc",
     "media/chrome_key_systems_provider.h",
-    "media/chrome_webrtc_log_message_delegate.cc",
-    "media/chrome_webrtc_log_message_delegate.h",
     "media/flash_embed_rewrite.cc",
     "media/flash_embed_rewrite.h",
-    "media/webrtc_logging_message_filter.cc",
-    "media/webrtc_logging_message_filter.h",
+    "media/webrtc_logging_agent_impl.cc",
+    "media/webrtc_logging_agent_impl.h",
     "net/net_error_helper.cc",
     "net/net_error_helper.h",
     "net/net_error_helper_core.cc",
@@ -96,14 +94,14 @@ jumbo_static_library("renderer") {
     "prerender/prerender_helper.h",
     "prerender/prerenderer_client.cc",
     "prerender/prerenderer_client.h",
+    "previews/resource_loading_hints_agent.cc",
+    "previews/resource_loading_hints_agent.h",
     "sandbox_status_extension_android.cc",
     "sandbox_status_extension_android.h",
     "security_interstitials/security_interstitial_page_controller.cc",
     "security_interstitials/security_interstitial_page_controller.h",
     "subresource_redirect/subresource_redirect_params.cc",
     "subresource_redirect/subresource_redirect_params.h",
-    "subresource_redirect/subresource_redirect_switches.cc",
-    "subresource_redirect/subresource_redirect_switches.h",
     "subresource_redirect/subresource_redirect_url_loader_throttle.cc",
     "subresource_redirect/subresource_redirect_url_loader_throttle.h",
     "subresource_redirect/subresource_redirect_util.cc",
@@ -145,12 +143,12 @@ jumbo_static_library("renderer") {
     "//components/omnibox/common",
     "//components/page_image_annotation/content/renderer",
     "//components/plugins/renderer",
-    "//components/rappor/public/interfaces",
+    "//components/rappor/public/mojom",
     "//components/resources:components_resources",
     "//components/safe_browsing/common:interfaces",
     "//components/safe_browsing/renderer:throttles",
     "//components/security_interstitials/core:",
-    "//components/security_interstitials/core/common/interfaces:",
+    "//components/security_interstitials/core/common/mojom:",
     "//components/spellcheck:buildflags",
     "//components/startup_metric_utils/common:interfaces",
     "//components/subresource_filter/content/renderer",
@@ -182,7 +180,6 @@ jumbo_static_library("renderer") {
     "//third_party/icu",
     "//third_party/re2",
     "//third_party/widevine/cdm:buildflags",
-    "//third_party/zlib/google:compression_utils",
     "//ui/surface",
     "//v8",
   ]
@@ -282,6 +279,8 @@ jumbo_static_library("renderer") {
 
   if (enable_extensions) {
     sources += [
+      "extensions/accessibility_private_hooks_delegate.cc",
+      "extensions/accessibility_private_hooks_delegate.h",
       "extensions/app_hooks_delegate.cc",
       "extensions/app_hooks_delegate.h",
       "extensions/chrome_extensions_dispatcher_delegate.cc",
@@ -386,10 +385,6 @@ jumbo_static_library("renderer") {
       "extensions/file_manager_private_custom_bindings.h",
       "extensions/platform_keys_natives.cc",
       "extensions/platform_keys_natives.h",
-      "resources/extensions/certificate_provider_custom_bindings.js",
-      "resources/extensions/file_browser_handler_custom_bindings.js",
-      "resources/extensions/file_manager_private_custom_bindings.js",
-      "resources/extensions/file_system_provider_custom_bindings.js",
     ]
   }
 
@@ -402,6 +397,8 @@ jumbo_static_library("renderer") {
       "searchbox/searchbox_extension.cc",
       "searchbox/searchbox_extension.h",
     ]
+
+    deps += [ "//chrome/common/search:generate_chrome_colors_info" ]
   }
 
   if (is_android) {
@@ -430,8 +427,6 @@ jumbo_static_library("test_support") {
   sources = [
     "chrome_mock_render_thread.cc",
     "chrome_mock_render_thread.h",
-    "media/mock_webrtc_logging_message_filter.cc",
-    "media/mock_webrtc_logging_message_filter.h",
     "safe_browsing/mock_feature_extractor_clock.cc",
     "safe_browsing/mock_feature_extractor_clock.h",
     "safe_browsing/test_utils.cc",

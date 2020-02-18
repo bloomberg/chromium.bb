@@ -41,7 +41,13 @@ class SubscriptionWrapper {
  public:
   SubscriptionWrapper() : weak_factory_(this) {}
 
+  enum Mode {
+    kByCookie,
+    kByUrl,
+  };
+
   std::unique_ptr<net::CookieChangeSubscription> Subscribe(
+      Mode mode,
       const GURL& url,
       const std::string& name,
       net::CookieChangeCallback callback) {
@@ -49,7 +55,7 @@ class SubscriptionWrapper {
     DCHECK(callback_list_.empty());
 
     nested_subscription_ =
-        NestedSubscription::Create(url, name, weak_factory_.GetWeakPtr());
+        NestedSubscription::Create(mode, url, name, weak_factory_.GetWeakPtr());
     return std::make_unique<AwCookieChangeSubscription>(
         callback_list_.Add(std::move(callback)));
   }
@@ -62,13 +68,14 @@ class SubscriptionWrapper {
       : public base::RefCountedDeleteOnSequence<NestedSubscription> {
    public:
     static scoped_refptr<NestedSubscription> Create(
+        Mode mode,
         const GURL& url,
         const std::string& name,
         base::WeakPtr<SubscriptionWrapper> subscription_wrapper) {
       auto subscription = base::WrapRefCounted(
           new NestedSubscription(std::move(subscription_wrapper)));
       PostTaskToCookieStoreTaskRunner(base::BindOnce(
-          &NestedSubscription::Subscribe, subscription, url, name));
+          &NestedSubscription::Subscribe, subscription, mode, url, name));
       return subscription;
     }
 
@@ -85,11 +92,20 @@ class SubscriptionWrapper {
 
     ~NestedSubscription() {}
 
-    void Subscribe(const GURL& url, const std::string& name) {
-      subscription_ =
-          GetCookieStore()->GetChangeDispatcher().AddCallbackForCookie(
-              url, name,
-              base::BindRepeating(&NestedSubscription::OnChanged, this));
+    void Subscribe(Mode mode, const GURL& url, const std::string& name) {
+      switch (mode) {
+        case kByCookie:
+          subscription_ =
+              GetCookieStore()->GetChangeDispatcher().AddCallbackForCookie(
+                  url, name,
+                  base::BindRepeating(&NestedSubscription::OnChanged, this));
+          break;
+        case kByUrl:
+          subscription_ =
+              GetCookieStore()->GetChangeDispatcher().AddCallbackForUrl(
+                  url,
+                  base::BindRepeating(&NestedSubscription::OnChanged, this));
+      }
     }
 
     void OnChanged(const net::CanonicalCookie& cookie,
@@ -149,16 +165,21 @@ AwCookieChangeDispatcherWrapper::AddCallbackForCookie(
   // subscription when the AwCookieStoreWrapper is destroyed a bit ugly.
   // TODO(mmenke):  Still worth adding a DCHECK?
   SubscriptionWrapper* subscription = new SubscriptionWrapper();
-  return subscription->Subscribe(url, name, std::move(callback));
+  return subscription->Subscribe(SubscriptionWrapper::kByCookie, url, name,
+                                 std::move(callback));
 }
 
 std::unique_ptr<net::CookieChangeSubscription>
 AwCookieChangeDispatcherWrapper::AddCallbackForUrl(
     const GURL& url,
     net::CookieChangeCallback callback) {
-  // Implement when needed by Android Webview consumers.
-  NOTIMPLEMENTED();
-  return nullptr;
+#if DCHECK_IS_ON()
+  DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
+#endif  // DCHECK_IS_ON()
+
+  SubscriptionWrapper* subscription = new SubscriptionWrapper();
+  return subscription->Subscribe(SubscriptionWrapper::kByUrl, url,
+                                 /* name=, ignored */ "", std::move(callback));
 }
 
 std::unique_ptr<net::CookieChangeSubscription>

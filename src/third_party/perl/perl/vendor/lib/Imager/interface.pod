@@ -323,7 +323,7 @@ If this is not the case then these functions will just crash :)
 
 =head2 Sample macros
 
-C<Imagei.h> defines several macros for converting samples between
+C<imagei.h> defines several macros for converting samples between
 different sizes.
 
 Each macro is of the form C<Sample>I<size>C<To>I<size> where I<size> is one
@@ -344,5 +344,9 @@ of 8, 16, or F (for floating-point samples).
 =item Sample8To16(num)
 
 =back
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>, Arnar M. Hrafnkelsson
 
 =cut

@@ -11,35 +11,47 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/android/autofill_assistant/assistant_form_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_overlay_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_payment_request_delegate.h"
 #include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/client.h"
+#include "components/autofill_assistant/browser/controller_observer.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/overlay_state.h"
-#include "components/autofill_assistant/browser/ui_controller.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
+#include "components/autofill_assistant/browser/user_action.h"
 
 namespace autofill_assistant {
-// Class implements UiController, Client and starts the Controller.
+
+// Starts and owns the UI elements required to display AA.
+//
+// This class and its UI elements are tied to a ChromeActivity. A
+// UiControllerAndroid can be attached and detached from an AA controller, which
+// is tied to a BrowserContent.
+//
 // TODO(crbug.com/806868): This class should be renamed to
 // AssistantMediator(Android) and listen for state changes to forward those
 // changes to the UI model.
-class UiControllerAndroid : public UiController {
+class UiControllerAndroid : public ControllerObserver {
  public:
   static std::unique_ptr<UiControllerAndroid> CreateFromWebContents(
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      const base::android::JavaParamRef<jobject>& jonboarding_coordinator);
 
   // pointers to |web_contents|, |client| must remain valid for the lifetime of
   // this instance.
   //
   // Pointer to |ui_delegate| must remain valid for the lifetime of this
   // instance or until WillShutdown is called.
-  UiControllerAndroid(JNIEnv* env,
-                      const base::android::JavaRef<jobject>& jactivity);
+  UiControllerAndroid(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jactivity,
+      const base::android::JavaParamRef<jobject>& jonboarding_coordinator);
   ~UiControllerAndroid() override;
 
   // Attaches the UI to the given client, its web contents and delegate.
@@ -48,23 +60,31 @@ class UiControllerAndroid : public UiController {
   // instance or until Attach() is called again, with different pointers.
   //
   // |ui_delegate| must remain valid for the lifetime of this instance or until
-  // either Attach() or WillShutdown() are called.
+  // either Attach() or Detach() are called.
   void Attach(content::WebContents* web_contents,
               Client* client,
               UiDelegate* ui_delegate);
 
-  // Called by ClientAndroid.
-  void ShowOnboarding(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jstring>& jexperiment_ids,
-      const base::android::JavaParamRef<jobject>& on_accept);
+  // Detaches the UI from the its delegate. This guarantees the delegate is not
+  // called anymore after the call.
+  void Detach();
+
+  // Returns true if the UI is attached to a delegate.
+  bool IsAttached() { return ui_delegate_; }
+
+  // Have the UI react as if a close or cancel button was pressed.
+  //
+  // If action_index != -1, execute that action as close/cancel. Otherwise
+  // execute the default close or cancel action.
+  void CloseOrCancel(int action_index,
+                     std::unique_ptr<TriggerContext> trigger_context);
 
   // Overrides UiController:
   void OnStateChanged(AutofillAssistantState new_state) override;
   void OnStatusMessageChanged(const std::string& message) override;
-  void WillShutdown(Metrics::DropOutReason reason) override;
-  void OnSuggestionsChanged(const std::vector<Chip>& suggestions) override;
-  void OnActionsChanged(const std::vector<Chip>& actions) override;
+  void OnBubbleMessageChanged(const std::string& message) override;
+  void CloseCustomTab() override;
+  void OnUserActionsChanged(const std::vector<UserAction>& actions) override;
   void OnPaymentRequestOptionsChanged(
       const PaymentRequestOptions* options) override;
   void OnPaymentRequestInformationChanged(
@@ -73,9 +93,11 @@ class UiControllerAndroid : public UiController {
   void OnInfoBoxChanged(const InfoBox* info_box) override;
   void OnProgressChanged(int progress) override;
   void OnProgressVisibilityChanged(bool visible) override;
-  void OnTouchableAreaChanged(const RectF& visual_viewport,
-                              const std::vector<RectF>& areas) override;
-  void OnResizeViewportChanged(bool resize_viewport) override;
+  void OnTouchableAreaChanged(
+      const RectF& visual_viewport,
+      const std::vector<RectF>& touchable_areas,
+      const std::vector<RectF>& restricted_areas) override;
+  void OnViewportModeChanged(ViewportMode mode) override;
   void OnPeekModeChanged(
       ConfigureBottomSheetProto::PeekMode peek_mode) override;
   void OnOverlayColorsChanged(const UiDelegate::OverlayColors& colors) override;
@@ -99,6 +121,7 @@ class UiControllerAndroid : public UiController {
                             std::string email);
   void OnCreditCardChanged(std::unique_ptr<autofill::CreditCard> card);
   void OnTermsAndConditionsChanged(TermsAndConditionsState state);
+  void OnTermsAndConditionsLinkClicked(int link);
 
   // Called by AssistantFormDelegate:
   void OnCounterChanged(int input_index, int counter_index, int value);
@@ -120,12 +143,9 @@ class UiControllerAndroid : public UiController {
   base::android::ScopedJavaLocalRef<jstring> GetPrimaryAccountName(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
-  void OnSuggestionSelected(JNIEnv* env,
+  void OnUserActionSelected(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& jcaller,
                             jint index);
-  void OnActionSelected(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& jcaller,
-                        jint index);
   void OnCancelButtonClicked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
@@ -166,21 +186,25 @@ class UiControllerAndroid : public UiController {
   std::string GetDebugContext();
   void DestroySelf();
   void Shutdown(Metrics::DropOutReason reason);
-  void UpdateActions();
+  void UpdateActions(const std::vector<UserAction>& GetUserActions);
+  void UpdateSuggestions(const std::vector<UserAction>& GetUserActions);
 
   // Hide the UI, show a snackbar with an undo button, and execute the given
   // action after a short delay unless the user taps the undo button.
   void ShowSnackbar(const std::string& message,
                     base::OnceCallback<void()> action);
-  void OnCancelButtonClicked();
-  void OnCancelButtonWithActionIndexClicked(int action_index);
-  void OnCancel(int action_index);
+
+  void OnCancel(int action_index, std::unique_ptr<TriggerContext> context);
 
   // Updates the state of the UI to reflect the UIDelegate's state.
   void SetupForState();
 
   // Makes the whole of AA invisible or visible again.
   void SetVisible(bool visible);
+
+  // Timer started when reaching the STOPPED state. It allows keeping the UI up
+  // for a few seconds before it destroys itself.
+  std::unique_ptr<base::OneShotTimer> destroy_timer_;
 
   // Debug context captured previously. If non-empty, GetDebugContext() returns
   // this context.

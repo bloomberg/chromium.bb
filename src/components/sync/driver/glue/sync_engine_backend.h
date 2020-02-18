@@ -27,10 +27,12 @@
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/engine/sync_encryption_handler.h"
+#include "components/sync/syncable/user_share.h"
 #include "url/gurl.h"
 
 namespace syncer {
 
+class ModelTypeController;
 class SyncEngineImpl;
 
 class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
@@ -53,8 +55,7 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   void OnInitializationComplete(
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-      bool success,
-      ModelTypeSet restored_types) override;
+      bool success) override;
   void OnConnectionStatusChange(ConnectionStatus status) override;
   void OnActionableError(const SyncProtocolError& sync_error) override;
   void OnMigrationRequested(ModelTypeSet types) override;
@@ -208,8 +209,24 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // Our encryptor, which uses Chrome's encryption functions.
   SystemEncryptor encryptor_;
 
+  // We hold |user_share_| here as a dependency for |sync_encryption_handler_|.
+  // Should outlive |sync_encryption_handler_| and |sync_manager_|.
+  UserShare user_share_;
+
+  // Points to either SyncEncryptionHandlerImpl or NigoriSyncBridgeImpl
+  // depending on whether USS implementation of Nigori is enabled or not.
+  // Should outlive |sync_manager_|.
+  std::unique_ptr<SyncEncryptionHandler> sync_encryption_handler_;
+
   // The top-level syncapi entry point.  Lives on the sync thread.
   std::unique_ptr<SyncManager> sync_manager_;
+
+  // Required for |nigori_controller_| LoadModels().
+  std::string authenticated_account_id_;
+
+  // Initialized in OnInitializationComplete() iff USS implementation of Nigori
+  // is enabled.
+  std::unique_ptr<ModelTypeController> nigori_controller_;
 
   // Temporary holder of sync manager's initialization results. Set by
   // OnInitializeComplete, and consumed when we pass it via OnEngineInitialized
@@ -240,7 +257,7 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // Checks that we are on the sync thread.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<SyncEngineBackend> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncEngineBackend> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncEngineBackend);
 };

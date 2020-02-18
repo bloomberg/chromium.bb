@@ -22,7 +22,7 @@ class MockBufferMapReadCallback {
                void(DawnBufferMapAsyncStatus status,
                     const uint32_t* ptr,
                     uint64_t data_length,
-                    DawnCallbackUserdata userdata));
+                    void* userdata));
 };
 
 std::unique_ptr<StrictMock<MockBufferMapReadCallback>>
@@ -30,7 +30,7 @@ std::unique_ptr<StrictMock<MockBufferMapReadCallback>>
 void ToMockBufferMapReadCallback(DawnBufferMapAsyncStatus status,
                                  const void* ptr,
                                  uint64_t data_length,
-                                 DawnCallbackUserdata userdata) {
+                                 void* userdata) {
   // Assume the data is uint32_t
   mock_buffer_map_read_callback->Call(status, static_cast<const uint32_t*>(ptr),
                                       data_length, userdata);
@@ -38,12 +38,11 @@ void ToMockBufferMapReadCallback(DawnBufferMapAsyncStatus status,
 
 class MockDeviceErrorCallback {
  public:
-  MOCK_METHOD2(Call, void(const char* message, DawnCallbackUserdata userdata));
+  MOCK_METHOD2(Call, void(const char* message, void* userdata));
 };
 
 std::unique_ptr<StrictMock<MockDeviceErrorCallback>> mock_device_error_callback;
-void ToMockDeviceErrorCallback(const char* message,
-                               DawnCallbackUserdata userdata) {
+void ToMockDeviceErrorCallback(const char* message, void* userdata) {
   mock_device_error_callback->Call(message, userdata);
 }
 
@@ -142,7 +141,7 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     webgpu()->FlushCommands();
 
     webgpu()->AssociateMailbox(0, 0, reservation.id, reservation.generation,
-                               DAWN_TEXTURE_USAGE_BIT_TRANSFER_SRC,
+                               DAWN_TEXTURE_USAGE_BIT_COPY_SRC,
                                reinterpret_cast<GLbyte*>(&mailbox));
     dawn::Texture texture = dawn::Texture::Acquire(reservation.texture);
 
@@ -150,13 +149,13 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     dawn::BufferDescriptor buffer_desc;
     buffer_desc.size = 4;
     buffer_desc.usage =
-        dawn::BufferUsageBit::MapRead | dawn::BufferUsageBit::TransferDst;
+        dawn::BufferUsageBit::MapRead | dawn::BufferUsageBit::CopyDst;
     dawn::Buffer readback_buffer = device.CreateBuffer(&buffer_desc);
 
     dawn::TextureCopyView copy_src;
     copy_src.texture = texture;
-    copy_src.level = 0;
-    copy_src.slice = 0;
+    copy_src.mipLevel = 0;
+    copy_src.arrayLayer = 0;
     copy_src.origin = {0, 0, 0};
 
     dawn::BufferCopyView copy_dst;

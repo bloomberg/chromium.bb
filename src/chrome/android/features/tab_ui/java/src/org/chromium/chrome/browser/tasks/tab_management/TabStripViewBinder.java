@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.view.ViewCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.widget.FrameLayout;
 
@@ -45,17 +47,20 @@ class TabStripViewBinder {
                     item.get(TabProperties.TAB_CLOSED_LISTENER).run(holder.getTabId());
                 });
                 holder.button.setContentDescription(holder.itemView.getContext().getString(
-                        org.chromium.chrome.R.string.accessibility_tabstrip_btn_close_tab, title));
+                        R.string.accessibility_tabstrip_btn_close_tab, title));
             } else {
                 holder.button.setOnClickListener(view -> {
                     item.get(TabProperties.TAB_SELECTED_LISTENER).run(holder.getTabId());
                 });
                 holder.button.setContentDescription(holder.itemView.getContext().getString(
-                        org.chromium.chrome.R.string.accessibility_tabstrip_tab, title));
+                        R.string.accessibility_tabstrip_tab, title));
             }
         } else if (TabProperties.FAVICON == propertyKey) {
             Drawable faviconDrawable = item.get(TabProperties.FAVICON);
             holder.button.setBackgroundResource(R.drawable.tabstrip_favicon_background);
+            ViewCompat.setBackgroundTintList(holder.button,
+                    AppCompatResources.getColorStateList(holder.button.getContext(),
+                            item.get(TabProperties.TABSTRIP_FAVICON_BACKGROUND_COLOR_ID)));
             if (faviconDrawable != null) {
                 holder.button.setImageDrawable(faviconDrawable);
             }

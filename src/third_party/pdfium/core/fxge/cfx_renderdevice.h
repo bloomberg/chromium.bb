@@ -14,48 +14,8 @@
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/fx_dib.h"
-
-#define FXDC_DEVICE_CLASS 1
-#define FXDC_PIXEL_WIDTH 2
-#define FXDC_PIXEL_HEIGHT 3
-#define FXDC_BITS_PIXEL 4
-#define FXDC_HORZ_SIZE 5
-#define FXDC_VERT_SIZE 6
-#define FXDC_RENDER_CAPS 7
-#define FXDC_DISPLAY 1
-#define FXDC_PRINTER 2
-
-#define FXRC_GET_BITS 0x01
-#define FXRC_BIT_MASK 0x02
-#define FXRC_ALPHA_PATH 0x10
-#define FXRC_ALPHA_IMAGE 0x20
-#define FXRC_ALPHA_OUTPUT 0x40
-#define FXRC_BLEND_MODE 0x80
-#define FXRC_SOFT_CLIP 0x100
-#define FXRC_CMYK_OUTPUT 0x200
-#define FXRC_BITMASK_OUTPUT 0x400
-#define FXRC_BYTEMASK_OUTPUT 0x800
-#define FXRENDER_IMAGE_LOSSY 0x1000
-#define FXRC_FILLSTROKE_PATH 0x2000
-#define FXRC_SHADING 0x4000
-
-#define FXFILL_ALTERNATE 1
-#define FXFILL_WINDING 2
-#define FXFILL_FULLCOVER 4
-#define FXFILL_RECT_AA 8
-#define FX_FILL_STROKE 16
-#define FX_STROKE_ADJUST 32
-#define FX_STROKE_TEXT_MODE 64
-#define FX_FILL_TEXT_MODE 128
-#define FX_ZEROAREA_FILL 256
-#define FXFILL_NOPATHSMOOTH 512
-
-#define FXTEXT_CLEARTYPE 0x01
-#define FXTEXT_BGR_STRIPE 0x02
-#define FXTEXT_PRINTGRAPHICTEXT 0x04
-#define FXTEXT_NO_NATIVETEXT 0x08
-#define FXTEXT_PRINTIMAGETEXT 0x10
-#define FXTEXT_NOSMOOTH 0x20
+#include "core/fxge/render_defines.h"
+#include "core/fxge/renderdevicedriver_iface.h"
 
 class CFX_DIBBase;
 class CFX_DIBitmap;
@@ -64,31 +24,10 @@ class CFX_GraphStateData;
 class CFX_ImageRenderer;
 class CFX_PathData;
 class PauseIndicatorIface;
-class RenderDeviceDriverIface;
+class TextCharPos;
 struct CFX_Color;
 
 enum class BorderStyle { SOLID, DASH, BEVELED, INSET, UNDERLINE };
-
-enum class FXPT_TYPE : uint8_t { LineTo, BezierTo, MoveTo };
-
-class TextCharPos {
- public:
-  TextCharPos();
-  TextCharPos(const TextCharPos&);
-  ~TextCharPos();
-
-  CFX_PointF m_Origin;
-  uint32_t m_Unicode = 0;
-  uint32_t m_GlyphIndex = 0;
-  uint32_t m_FontCharWidth = 0;
-#if defined(OS_MACOSX)
-  uint32_t m_ExtGID = 0;
-#endif
-  int32_t m_FallbackFontPosition = 0;
-  bool m_bGlyphAdjust = false;
-  bool m_bFontStyle = false;
-  float m_AdjustMatrix[4];
-};
 
 class CFX_RenderDevice {
  public:
@@ -119,7 +58,7 @@ class CFX_RenderDevice {
 
   int GetWidth() const { return m_Width; }
   int GetHeight() const { return m_Height; }
-  int GetDeviceClass() const { return m_DeviceClass; }
+  DeviceType GetDeviceType() const { return m_DeviceType; }
   int GetRenderCaps() const { return m_RenderCaps; }
   int GetDeviceCaps(int id) const;
   RetainPtr<CFX_DIBitmap> GetBitmap() const;
@@ -166,7 +105,7 @@ class CFX_RenderDevice {
   bool SetDIBitsWithBlend(const RetainPtr<CFX_DIBBase>& pBitmap,
                           int left,
                           int top,
-                          BlendMode blend_type);
+                          BlendMode blend_mode);
   bool StretchDIBits(const RetainPtr<CFX_DIBBase>& pBitmap,
                      int left,
                      int top,
@@ -182,11 +121,11 @@ class CFX_RenderDevice {
                                       int dest_width,
                                       int dest_height,
                                       const FXDIB_ResampleOptions& options,
-                                      BlendMode blend_type);
+                                      BlendMode blend_mode);
   bool SetBitMask(const RetainPtr<CFX_DIBBase>& pBitmap,
                   int left,
                   int top,
-                  uint32_t color);
+                  uint32_t argb);
   bool StretchBitMask(const RetainPtr<CFX_DIBBase>& pBitmap,
                       int left,
                       int top,
@@ -198,7 +137,7 @@ class CFX_RenderDevice {
                                int top,
                                int dest_width,
                                int dest_height,
-                               uint32_t color,
+                               uint32_t argb,
                                const FXDIB_ResampleOptions& options);
   bool StartDIBits(const RetainPtr<CFX_DIBBase>& pBitmap,
                    int bitmap_alpha,
@@ -211,25 +150,25 @@ class CFX_RenderDevice {
   }
   bool StartDIBitsWithBlend(const RetainPtr<CFX_DIBBase>& pBitmap,
                             int bitmap_alpha,
-                            uint32_t color,
+                            uint32_t argb,
                             const CFX_Matrix& matrix,
                             const FXDIB_ResampleOptions& options,
                             std::unique_ptr<CFX_ImageRenderer>* handle,
-                            BlendMode blend_type);
+                            BlendMode blend_mode);
   bool ContinueDIBits(CFX_ImageRenderer* handle, PauseIndicatorIface* pPause);
 
   bool DrawNormalText(int nChars,
                       const TextCharPos* pCharPos,
                       CFX_Font* pFont,
                       float font_size,
-                      const CFX_Matrix* pText2Device,
+                      const CFX_Matrix& mtText2Device,
                       uint32_t fill_color,
                       uint32_t text_flags);
   bool DrawTextPath(int nChars,
                     const TextCharPos* pCharPos,
                     CFX_Font* pFont,
                     float font_size,
-                    const CFX_Matrix* pText2User,
+                    const CFX_Matrix& mtText2User,
                     const CFX_Matrix* pUser2Device,
                     const CFX_GraphStateData* pGraphState,
                     uint32_t fill_color,
@@ -309,7 +248,7 @@ class CFX_RenderDevice {
   int m_Height = 0;
   int m_bpp = 0;
   int m_RenderCaps = 0;
-  int m_DeviceClass = 0;
+  DeviceType m_DeviceType = DeviceType::kUnknown;
   FX_RECT m_ClipBox;
   std::unique_ptr<RenderDeviceDriverIface> m_pDeviceDriver;
 };

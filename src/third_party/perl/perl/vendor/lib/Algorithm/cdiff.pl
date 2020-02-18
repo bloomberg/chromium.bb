@@ -135,7 +135,7 @@ sub new {
     # Save the start & beginning of each array. If the array doesn't exist
     # though (e.g., we're only adding items in this block), then figure
     # out the line number based on the line number of the other file and
-    # the current difference in file lenghts
+    # the current difference in file lengths
     my @remove_array = $block->remove;
     my @insert_array = $block->insert;
     my ($a1, $a2, $b1, $b2, $start1, $start2, $end1, $end2);

@@ -62,7 +62,10 @@ source_set("inlined_vector_internal") {
   ]
   deps = [
     ":compressed_tuple",
+    "../base:core_headers",
+    "../memory",
     "../meta:type_traits",
+    "../types:span",
   ]
 }
 

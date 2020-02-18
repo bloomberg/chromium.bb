@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_page_host_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -14,9 +15,9 @@
 
 <dom-module id="management-ui">
   <template>
-    <style include="cr-icons cr-hidden-style">
+    <style include="cr-icons cr-hidden-style cr-page-host-style
+        cr-shared-style">
       :host {
-        @apply --cr-page-host;
         color: var(--cr-secondary-text-color);
         display: flex;
         flex-direction: column;
@@ -92,15 +93,6 @@
         font-weight: 500;
       }
 
-      h2 {
-        @apply --cr-title-text;
-        font-size: 13px;
-      }
-
-      .page-subtitle h2 {
-        font-size: 14px;
-      }
-
       .subtitle {
         margin-top: 16px;
       }
@@ -116,6 +108,7 @@
       }
 
       section:not(.page-subtitle) h2 {
+        font-size: 100%;
         margin: 0;
       }
 
@@ -190,7 +183,7 @@
             <cr-icon-button class="icon-arrow-back" id="closeButton"
                 on-click="onTapBack_" aria-label="$i18n{backButton}">
             </cr-icon-button>
-            <h2>
+            <h2 class="cr-title-text">
               [[subtitle_]]
             </h2>
           </section>
@@ -209,7 +202,7 @@
 <if expr="chromeos">
           <div hidden="[[!localTrustRoots_]]">
             <section>
-              <h2>$i18n{localTrustRoots}</h2>
+              <h2 class="cr-title-text">$i18n{localTrustRoots}</h2>
               <div class="subtitle" id="trust-roots-configuration">
                 [[localTrustRoots_]]</div>
             </section>
@@ -217,7 +210,7 @@
           <template is="dom-if"
               if="[[showDeviceReportingInfo_(deviceReportingInfo_)]]">
             <section>
-              <h2>$i18n{deviceReporting}</h2>
+              <h2 class="cr-title-text">$i18n{deviceReporting}</h2>
               <div class="subtitle">
                 $i18n{deviceConfiguration}
               </div>
@@ -237,7 +230,7 @@
           <template is="dom-if"
               if="[[showBrowserReportingInfo_(browserReportingInfo_)]]">
             <section>
-              <h2>$i18n{browserReporting}</h2>
+              <h2 class="cr-title-text">$i18n{browserReporting}</h2>
               <div class="subtitle">
                 $i18n{browserReportingExplanation}
               </div>
@@ -260,7 +253,7 @@
           <template is="dom-if"
               if="[[showExtensionReportingInfo_(extensions_)]]">
             <section class="extension-reporting">
-              <h2>$i18n{extensionReporting}</h2>
+              <h2 class="cr-title-text">$i18n{extensionReporting}</h2>
               <div class="subtitle">
                 [[extensionReportingSubtitle_]]
               </div>

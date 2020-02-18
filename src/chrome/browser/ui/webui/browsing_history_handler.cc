@@ -35,6 +35,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/favicon/core/large_icon_service.h"
+#include "components/favicon_base/favicon_url_parser.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/prefs/pref_service.h"
 #include "components/query_parser/snippet.h"
@@ -132,11 +133,27 @@ void SetHistoryEntryUrlAndTitle(
   result->SetString("title", title_to_set);
 }
 
+// Helper function to check if entry is present in user remote data (server-side
+// history).
+bool IsEntryInRemoteUserData(
+    const BrowsingHistoryService::HistoryEntry& entry) {
+  switch (entry.entry_type) {
+    case BrowsingHistoryService::HistoryEntry::EntryType::EMPTY_ENTRY:
+    case BrowsingHistoryService::HistoryEntry::EntryType::LOCAL_ENTRY:
+      return false;
+    case BrowsingHistoryService::HistoryEntry::EntryType::REMOTE_ENTRY:
+    case BrowsingHistoryService::HistoryEntry::EntryType::COMBINED_ENTRY:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 // Converts |entry| to a DictionaryValue to be owned by the caller.
 std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
     const BrowsingHistoryService::HistoryEntry& entry,
     BookmarkModel* bookmark_model,
-    SupervisedUserService* supervised_user_service,
+    Profile* profile,
     const syncer::DeviceInfoTracker* tracker,
     base::Clock* clock) {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
@@ -206,6 +223,11 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
   result->SetString("deviceType", device_type);
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  SupervisedUserService* supervised_user_service = nullptr;
+  if (profile->IsSupervised()) {
+    supervised_user_service =
+        SupervisedUserServiceFactory::GetForProfile(profile);
+  }
   if (supervised_user_service) {
     const SupervisedUserURLFilter* url_filter =
         supervised_user_service->GetURLFilter();
@@ -222,6 +244,7 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
   result->SetBoolean("starred", bookmark_model->IsBookmarked(entry.url));
   result->SetInteger("hostFilteringBehavior", host_filtering_behavior);
   result->SetBoolean("blockedVisit", is_blocked_visit);
+  result->SetBoolean("isUrlInRemoteUserData", IsEntryInRemoteUserData(entry));
 
   return result;
 }
@@ -244,8 +267,9 @@ void BrowsingHistoryHandler::RegisterMessages() {
       this, local_history, sync_service);
 
   // Create our favicon data source.
-  content::URLDataSource::Add(profile,
-                              std::make_unique<FaviconSource>(profile));
+  content::URLDataSource::Add(
+      profile, std::make_unique<FaviconSource>(
+                   profile, chrome::FaviconUrlFormat::kFavicon2));
 
   web_ui()->RegisterMessageCallback(
       "queryHistory",
@@ -356,12 +380,6 @@ void BrowsingHistoryHandler::OnQueryComplete(
   Profile* profile = Profile::FromWebUI(web_ui());
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
-  SupervisedUserService* supervised_user_service = NULL;
-#if defined(ENABLE_SUPERVISED_USERS)
-  if (profile->IsSupervised())
-    supervised_user_service =
-        SupervisedUserServiceFactory::GetForProfile(profile);
-#endif
 
   const syncer::DeviceInfoTracker* tracker =
       DeviceInfoSyncServiceFactory::GetForProfile(profile)
@@ -371,8 +389,8 @@ void BrowsingHistoryHandler::OnQueryComplete(
   DCHECK(tracker);
   base::ListValue results_value;
   for (const BrowsingHistoryService::HistoryEntry& entry : results) {
-    std::unique_ptr<base::Value> value(HistoryEntryToValue(
-        entry, bookmark_model, supervised_user_service, tracker, clock_));
+    std::unique_ptr<base::Value> value(
+        HistoryEntryToValue(entry, bookmark_model, profile, tracker, clock_));
     results_value.Append(std::move(value));
   }
 

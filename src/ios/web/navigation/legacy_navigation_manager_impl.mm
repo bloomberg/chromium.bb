@@ -15,8 +15,8 @@
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_impl_list.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
-#import "ios/web/public/navigation_item.h"
-#include "ios/web/public/reload_type.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#include "ios/web/public/navigation/reload_type.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ui/base/page_transition_types.h"
@@ -112,8 +112,7 @@ void LegacyNavigationManagerImpl::CommitPendingItem() {
 
 void LegacyNavigationManagerImpl::CommitPendingItem(
     std::unique_ptr<NavigationItemImpl> item) {
-  if (web::features::StorePendingItemInContext() &&
-      GetPendingItemIndex() == -1) {
+  if (item) {
     [session_controller_ commitPendingItem:std::move(item)];
   } else {
     CommitPendingItem();

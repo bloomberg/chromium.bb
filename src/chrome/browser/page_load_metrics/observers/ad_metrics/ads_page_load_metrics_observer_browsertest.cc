@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h"
@@ -62,16 +63,8 @@ const char kSmallestDimensionHistogramId[] =
     "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
     "SmallestDimension";
 
-const char kAdFrameSizeInterventionHistogramId[] =
-    "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
-    "SizeIntervention";
-
-const char kAdFrameSizeInterventionMediaStatusHistogramId[] =
-    "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
-    "SizeIntervention.MediaStatus";
-
-const char kAggregateCpuPercentHistogramId[] =
-    "PageLoad.Clients.Ads.Cpu.FullPage.PercentUsage";
+const char kPeakWindowdPercentHistogramId[] =
+    "PageLoad.Clients.Ads.Cpu.FullPage.PeakWindowedPercent";
 
 }  // namespace
 
@@ -532,6 +525,68 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       "PageLoad.Clients.Ads.Bytes.FullPage.PercentSameOrigin", 12.5, 1);
 }
 
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       AdFrameRecordMediaStatusNotPlayed) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/ads_observer/same_origin_ad.html"));
+
+  waiter->AddMinimumCompleteResourcesExpectation(4);
+  waiter->Wait();
+
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(), ukm::builders::AdFrameLoad::kStatus_MediaName,
+      static_cast<int>(FrameData::MediaStatus::kNotPlayed));
+}
+
+// Flaky on all platforms, http://crbug.com/972822.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       DISABLED_AdFrameRecordMediaStatusPlayed) {
+  base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/ad_tagging/frame_factory.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Create a second frame that will not receive activation.
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+      web_contents,
+      "createAdFrame('/ad_tagging/multiple_mimes.html', 'test');"));
+
+  waiter->AddMinimumCompleteResourcesExpectation(8);
+  waiter->Wait();
+
+  // Wait for the video to autoplay in the frame.
+  content::RenderFrameHost* ad_frame =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  const std::string play_script =
+      "var video = document.getElementsByTagName('video')[0];"
+      "video.onplaying = () => { "
+      "window.domAutomationController.send('true'); };"
+      "video.play();";
+  EXPECT_EQ("true", content::EvalJsWithManualReply(ad_frame, play_script));
+
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(), ukm::builders::AdFrameLoad::kStatus_MediaName,
+      static_cast<int>(FrameData::MediaStatus::kPlayed));
+}
+
 class AdsPageLoadMetricsTestWaiter
     : public page_load_metrics::PageLoadMetricsTestWaiter {
  public:
@@ -810,206 +865,6 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       entries.front(), ukm::builders::AdFrameLoad::kLoading_CacheBytesName, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
-                       AdFrameSizeInterventionTriggered) {
-  base::HistogramTester histogram_tester;
-  ukm::TestAutoSetUkmRecorder ukm_recorder;
-  SetRulesetWithRules(
-      {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js")});
-  embedded_test_server()->ServeFilesFromSourceDirectory(
-      "chrome/test/data/ads_observer");
-  content::SetupCrossSiteRedirector(embedded_test_server());
-
-  const char kHttpResponseHeader[] =
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Type: text/html; charset=utf-8\r\n"
-      "\r\n";
-  auto resource_response =
-      std::make_unique<net::test_server::ControllableHttpResponse>(
-          embedded_test_server(), "/incomplete_resource.js",
-          true /*relative_url_is_prefix*/);
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
-
-  browser()->OpenURL(content::OpenURLParams(
-      embedded_test_server()->GetURL("/ad_with_incomplete_resource.html"),
-      content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
-      ui::PAGE_TRANSITION_TYPED, false));
-
-  waiter->AddMinimumCompleteResourcesExpectation(3);
-  waiter->Wait();
-
-  // Load a resource large enough to trigger intervention.
-  resource_response->WaitForRequest();
-  resource_response->Send(kHttpResponseHeader);
-  resource_response->Send(
-      std::string(FrameData::kFrameSizeInterventionByteThreshold, ' '));
-  resource_response->Done();
-
-  // Wait for the resource to finish loading.
-  waiter->AddMinimumCompleteResourcesExpectation(4);
-  waiter->Wait();
-
-  // Close all tabs to report metrics.
-  browser()->tab_strip_model()->CloseAllTabs();
-
-  histogram_tester.ExpectBucketCount(
-      kAdFrameSizeInterventionHistogramId,
-      FrameData::FrameSizeInterventionStatus::kTriggered, 1);
-  histogram_tester.ExpectBucketCount(
-      kAdFrameSizeInterventionMediaStatusHistogramId,
-      FrameData::MediaStatus::kNotPlayed, 1);
-  histogram_tester.ExpectBucketCount(
-      "Blink.UseCounter.Features",
-      blink::mojom::WebFeature::kAdFrameSizeIntervention, 1);
-
-  auto entries =
-      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
-  EXPECT_EQ(1u, entries.size());
-  ukm_recorder.ExpectEntryMetric(
-      entries.front(), ukm::builders::AdFrameLoad::kStatus_MediaName,
-      static_cast<int>(FrameData::MediaStatus::kNotPlayed));
-}
-
-IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
-                       AdFrameSizeInterventionMediaStatusPlayed) {
-  base::HistogramTester histogram_tester;
-  ukm::TestAutoSetUkmRecorder ukm_recorder;
-  embedded_test_server()->ServeFilesFromSourceDirectory(
-      "chrome/test/data/ad_tagging");
-  content::SetupCrossSiteRedirector(embedded_test_server());
-
-  const char kHttpResponseHeader[] =
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Type: text/html; charset=utf-8\r\n"
-      "\r\n";
-  auto resource_response =
-      std::make_unique<net::test_server::ControllableHttpResponse>(
-          embedded_test_server(), "/style.css",
-          true /*relative_url_is_prefix*/);
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL url = embedded_test_server()->GetURL("foo.com", "/frame_factory.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  // This frame will load a video.
-  EXPECT_TRUE(
-      ExecJs(contents, "createAdFrame('multiple_mimes.html', 'test');"));
-
-  // Intercept one of the resources loaded by "multiple_mimes.html" and load
-  // enough bytes to trigger the intervention.
-  resource_response->WaitForRequest();
-  resource_response->Send(kHttpResponseHeader);
-  resource_response->Send(
-      std::string(FrameData::kFrameSizeInterventionByteThreshold, ' '));
-  resource_response->Done();
-
-  waiter->AddMinimumAdResourceExpectation(8);
-  waiter->Wait();
-
-  // Wait for the video to autoplay in the frame.
-  content::RenderFrameHost* ad_frame =
-      ChildFrameAt(contents->GetMainFrame(), 0);
-  EXPECT_EQ("true", content::EvalJsWithManualReply(
-                        ad_frame,
-                        "var video = document.getElementsByTagName('video')[0];"
-                        "video.onplaying = () => { "
-                        "window.domAutomationController.send('true'); };"
-                        "video.play();",
-                        content::EXECUTE_SCRIPT_NO_USER_GESTURE));
-
-  // Close all tabs to report metrics.
-  browser()->tab_strip_model()->CloseAllTabs();
-
-  histogram_tester.ExpectBucketCount(
-      kAdFrameSizeInterventionHistogramId,
-      FrameData::FrameSizeInterventionStatus::kTriggered, 1);
-  histogram_tester.ExpectBucketCount(
-      kAdFrameSizeInterventionMediaStatusHistogramId,
-      FrameData::MediaStatus::kPlayed, 1);
-  histogram_tester.ExpectBucketCount(
-      "Blink.UseCounter.Features",
-      blink::mojom::WebFeature::kAdFrameSizeIntervention, 1);
-
-  auto entries =
-      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
-  EXPECT_EQ(1u, entries.size());
-  ukm_recorder.ExpectEntryMetric(
-      entries.front(), ukm::builders::AdFrameLoad::kStatus_MediaName,
-      static_cast<int>(FrameData::MediaStatus::kPlayed));
-}
-
-IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
-                       AdFrameSizeInterventionNotActivatedOnFrameWithGesture) {
-  base::HistogramTester histogram_tester;
-  ukm::TestAutoSetUkmRecorder ukm_recorder;
-  SetRulesetWithRules(
-      {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js")});
-  embedded_test_server()->ServeFilesFromSourceDirectory(
-      "chrome/test/data/ads_observer");
-  content::SetupCrossSiteRedirector(embedded_test_server());
-
-  const char kHttpResponseHeader[] =
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Type: text/html; charset=utf-8\r\n"
-      "\r\n";
-  auto resource_response =
-      std::make_unique<net::test_server::ControllableHttpResponse>(
-          embedded_test_server(), "/incomplete_resource.js",
-          true /*relative_url_is_prefix*/);
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
-
-  browser()->OpenURL(content::OpenURLParams(
-      embedded_test_server()->GetURL("/ad_with_incomplete_resource.html"),
-      content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
-      ui::PAGE_TRANSITION_TYPED, false));
-
-  waiter->AddMinimumCompleteResourcesExpectation(3);
-  waiter->Wait();
-
-  // Activate one frame by executing a dummy script.
-  content::RenderFrameHost* ad_frame =
-      ChildFrameAt(web_contents()->GetMainFrame(), 0);
-  const std::string no_op_script = "// No-op script";
-  EXPECT_TRUE(ExecuteScript(ad_frame, no_op_script));
-
-  // Load a resource large enough to trigger intervention.
-  resource_response->WaitForRequest();
-  resource_response->Send(kHttpResponseHeader);
-  resource_response->Send(
-      std::string(FrameData::kFrameSizeInterventionByteThreshold, ' '));
-  resource_response->Done();
-
-  // Wait for the resource to finish loading.
-  waiter->AddMinimumCompleteResourcesExpectation(4);
-  waiter->Wait();
-
-  // Close all tabs to report metrics.
-  browser()->tab_strip_model()->CloseAllTabs();
-
-  histogram_tester.ExpectBucketCount(
-      kAdFrameSizeInterventionHistogramId,
-      FrameData::FrameSizeInterventionStatus::kNone, 1);
-  histogram_tester.ExpectTotalCount(
-      kAdFrameSizeInterventionMediaStatusHistogramId, 0);
-  histogram_tester.ExpectBucketCount(
-      "Blink.UseCounter.Features",
-      blink::mojom::WebFeature::kAdFrameSizeIntervention, 0);
-  auto entries =
-      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
-  EXPECT_EQ(1u, entries.size());
-  ukm_recorder.ExpectEntryMetric(
-      entries.front(), ukm::builders::AdFrameLoad::kStatus_UserActivationName,
-      static_cast<int>(FrameData::UserActivationStatus::kReceivedActivation));
-}
-
 // Verify that UKM metrics are recorded correctly.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                        RecordedUKMMetrics) {
@@ -1081,7 +936,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/iframe_blank.html"));
   waiter->AddMinimumAggregateCpuTimeExpectation(
-      base::TimeDelta::FromMilliseconds(200));
+      base::TimeDelta::FromMilliseconds(300));
 
   // Navigate the iframe to a page with a delayed rAF, waiting for it to
   // complete. Long enough to guarantee the frame client sees a cpu time
@@ -1089,7 +944,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   NavigateIframeToURL(
       web_contents(), "test",
       embedded_test_server()->GetURL(
-          "a.com", "/ads_observer/expensive_animation_frame.html?delay=200"));
+          "a.com", "/ads_observer/expensive_animation_frame.html?delay=300"));
 
   // Wait until we've received the cpu update and navigate away.
   waiter->Wait();
@@ -1097,15 +952,14 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 
   // The elapsed_time is an upper bound on the overall page time, as it runs
   // from just before to just after activation.  The task itself is guaranteed
-  // to have run at least 200ms, so we can derive a minimum percent of cpu time
+  // to have run at least 300ms, so we can derive a minimum percent of cpu time
   // that the task should have taken.
   base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
-  EXPECT_GE(elapsed_time.InMilliseconds(), 200);
+  EXPECT_GE(elapsed_time.InMilliseconds(), 300);
 
   // Ensure that there is a single entry that is at least the percent specified.
-  int min_percent = 100 * 200 / elapsed_time.InMilliseconds();
-  auto samples =
-      histogram_tester.GetAllSamples(kAggregateCpuPercentHistogramId);
+  int min_percent = 100 * 300 / FrameData::kCpuWindowSize.InMilliseconds();
+  auto samples = histogram_tester.GetAllSamples(kPeakWindowdPercentHistogramId);
   EXPECT_EQ(1u, samples.size());
   EXPECT_EQ(1, samples.front().count);
   EXPECT_LE(min_percent, samples.front().min);
@@ -1120,6 +974,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   // Navigate to the page and set up the waiter.
   content::DOMMessageQueue message_queue(web_contents());
   base::TimeTicks start_time = base::TimeTicks::Now();
+
+  // Each rAF frame in two_raf_frames delays for 200ms.
   ui_test_utils::NavigateToURL(
       browser(),
       embedded_test_server()->GetURL("/ads_observer/two_raf_frames.html"));
@@ -1136,10 +992,10 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
   EXPECT_GE(elapsed_time.InMilliseconds(), 200);
 
-  // Ensure that there is a single entry that is at least the percent specified.
-  int min_percent = 100 * 200 / elapsed_time.InMilliseconds();
-  auto samples =
-      histogram_tester.GetAllSamples(kAggregateCpuPercentHistogramId);
+  // Ensure that there is a single entry that is at least the peak windowed
+  // percent of 400ms.
+  int min_percent = 100 * 400 / FrameData::kCpuWindowSize.InMilliseconds();
+  auto samples = histogram_tester.GetAllSamples(kPeakWindowdPercentHistogramId);
   EXPECT_EQ(1u, samples.size());
   EXPECT_EQ(1, samples.front().count);
   EXPECT_LE(min_percent, samples.front().min);
@@ -1147,12 +1003,11 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 
 // Test that cpu time aggregation across a subframe navigation is cumulative.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
-                       CpuTimesCumulativeOverSubframeNavigate) {
+                       AggregateCpuTriggersCpuUpdateOverSubframeNavigate) {
   base::HistogramTester histogram_tester;
   auto waiter = CreatePageLoadMetricsTestWaiter();
 
   // Navigate to the page and set up the waiter.
-  base::TimeTicks start_time = base::TimeTicks::Now();
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/iframe_blank.html"));
   waiter->AddMinimumAggregateCpuTimeExpectation(
@@ -1174,23 +1029,55 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       embedded_test_server()->GetURL(
           "a.com", "/ads_observer/expensive_animation_frame.html?delay=50"));
 
+  // Wait until we've received the cpu update and navigate away. If CPU is
+  // not cumulative, this hangs waiting for a CPU update indefinitely.
+  waiter->Wait();
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+}
+
+// Test that cpu metrics are cumulative across subframe navigations.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       SubframeNavigate_CpuTimesCumulative) {
+  base::HistogramTester histogram_tester;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+
+  // Navigate to the page and set up the waiter.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/iframe_blank.html"));
+
+  waiter->AddMinimumAggregateCpuTimeExpectation(
+      base::TimeDelta::FromMilliseconds(300));
+
+  // Navigate twice to a page with enough cumulative time to measure
+  // at least 1% peak windowed percent (300ms), either individually leads to 0
+  // % peak windowed percent.
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  content::DOMMessageQueue message_queue(web_contents());
+  NavigateIframeToURL(
+      web_contents(), "test",
+      embedded_test_server()->GetURL(
+          "a.com", "/ads_observer/expensive_animation_frame.html?delay=200"));
+  WaitForRAF(&message_queue);
+  NavigateIframeToURL(
+      web_contents(), "test",
+      embedded_test_server()->GetURL(
+          "a.com", "/ads_observer/expensive_animation_frame.html?delay=100"));
+
   // Wait until we've received the cpu update and navigate away.
   waiter->Wait();
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
   // The elapsed_time is an upper bound on the overall page time, as it runs
-  // from just before to just after activation.  The tasks themselves are
-  // guaranteed to have run at least 50+50=100ms, so we can derive a minimum
-  // percent of cpu time that the task should have taken.  Each event by itself
-  // would not be enough to trigger an update, but together, they should for the
-  // subframe.
+  // from just before to just after activation.  The tasks in aggregate are
+  // guaranteed to have run for at least 300ms, so we can derive a minimum
+  // percent of cpu time that the tasks should have taken.
   base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
-  EXPECT_GE(elapsed_time.InMilliseconds(), 100);
+  EXPECT_GE(elapsed_time.InMilliseconds(), 300);
 
-  // Ensure that there is a single entry that is at least the percent specified.
-  int min_percent = 100 * 100 / elapsed_time.InMilliseconds();
-  auto samples =
-      histogram_tester.GetAllSamples(kAggregateCpuPercentHistogramId);
+  // Ensure that there is a single entry that is at least the peak windowed
+  // percent of 400ms.
+  int min_percent = 100 * 300 / FrameData::kCpuWindowSize.InMilliseconds();
+  auto samples = histogram_tester.GetAllSamples(kPeakWindowdPercentHistogramId);
   EXPECT_EQ(1u, samples.size());
   EXPECT_EQ(1, samples.front().count);
   EXPECT_LE(min_percent, samples.front().min);

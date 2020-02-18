@@ -75,6 +75,12 @@ class StubBufferHandleProvider
     return std::make_unique<StubBufferHandle>(mapped_size_, data_);
   }
 
+#if defined(OS_CHROMEOS)
+  gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() override {
+    return gfx::GpuMemoryBufferHandle();
+  }
+#endif
+
  private:
   const size_t mapped_size_;
   uint8_t* const data_;
@@ -157,11 +163,11 @@ class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
               *buffer = CreateStubBuffer(0, frame_format.ImageAllocationSize());
               return VideoCaptureDevice::Client::ReserveResult::kSucceeded;
             }));
-    ON_CALL(*result, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
+    ON_CALL(*result, OnIncomingCapturedData(_, _, _, _, _, _, _, _, _))
         .WillByDefault(Invoke(
             [this](const uint8_t*, int,
                    const media::VideoCaptureFormat& frame_format,
-                   const gfx::ColorSpace&, int, base::TimeTicks,
+                   const gfx::ColorSpace&, int, bool, base::TimeTicks,
                    base::TimeDelta, int) { OnFrameCaptured(frame_format); }));
     ON_CALL(*result, OnIncomingCapturedGfxBuffer(_, _, _, _, _, _))
         .WillByDefault(
@@ -188,7 +194,7 @@ class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
 
   void OnFrameCaptured(const VideoCaptureFormat& format) {
     last_format_ = format;
-    run_loop_->QuitClosure().Run();
+    run_loop_->Quit();
   }
 
   void WaitForCapturedFrame() {

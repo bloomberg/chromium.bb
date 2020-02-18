@@ -25,8 +25,9 @@
 #include "modules/rtp_rtcp/include/flexfec_sender.h"
 #include "modules/rtp_rtcp/include/receive_statistics.h"
 #include "modules/rtp_rtcp/include/report_block_data.h"
+#include "modules/rtp_rtcp/include/rtp_packet_sender.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
-#include "modules/rtp_rtcp/source/rtp_sender.h"
+#include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/deprecation.h"
 
@@ -39,6 +40,7 @@ class RateLimiter;
 class ReceiveStatisticsProvider;
 class RemoteBitrateEstimator;
 class RtcEventLog;
+class RTPSender;
 class Transport;
 class VideoBitrateAllocationObserver;
 
@@ -50,6 +52,7 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
  public:
   struct Configuration {
     Configuration();
+    Configuration(Configuration&& rhs);
 
     // True for a audio version of the RTP/RTCP module object false will create
     // a video version.
@@ -75,6 +78,7 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
     // stream.
     RtcpBandwidthObserver* bandwidth_callback = nullptr;
 
+    NetworkStateEstimateObserver* network_state_estimate_observer = nullptr;
     TransportFeedbackObserver* transport_feedback_callback = nullptr;
     VideoBitrateAllocationObserver* bitrate_allocation_observer = nullptr;
     RtcpRttStats* rtt_stats = nullptr;
@@ -117,6 +121,11 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
     // If set, field trials are read from |field_trials|, otherwise
     // defaults to  webrtc::FieldTrialBasedConfig.
     const WebRtcKeyValueConfig* field_trials = nullptr;
+
+    // SSRCs for sending media and retransmission, respectively.
+    // FlexFec SSRC is fetched from |flexfec_sender|.
+    absl::optional<uint32_t> media_send_ssrc;
+    absl::optional<uint32_t> rtx_send_ssrc;
 
    private:
     RTC_DISALLOW_COPY_AND_ASSIGN(Configuration);
@@ -167,7 +176,13 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
 
   virtual int32_t DeregisterSendRtpHeaderExtension(RTPExtensionType type) = 0;
 
-  virtual bool HasBweExtensions() const = 0;
+  // Returns true if RTP module is send media, and any of the extensions
+  // required for bandwidth estimation is registered.
+  virtual bool SupportsPadding() const = 0;
+  // Same as SupportsPadding(), but additionally requires that
+  // SetRtxSendStatus() has been called with the kRtxRedundantPayloads option
+  // enabled.
+  virtual bool SupportsRtxPayloadPadding() const = 0;
 
   // Returns start timestamp.
   virtual uint32_t StartTimestamp() const = 0;
@@ -191,6 +206,7 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
   uint32_t SSRC() const override = 0;
 
   // Sets SSRC, default is a random number.
+  // TODO(bugs.webrtc.org/10774): Remove.
   virtual void SetSSRC(uint32_t ssrc) = 0;
 
   // Sets the value for sending in the RID (and Repaired) RTP header extension.
@@ -218,6 +234,7 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
 
   // Sets the SSRC to use when sending RTX packets. This doesn't enable RTX,
   // only the SSRC is set.
+  // TODO(bugs.webrtc.org/10774): Remove.
   virtual void SetRtxSsrc(uint32_t ssrc) = 0;
 
   // Sets the payload type to use when sending RTX packets. Note that this
@@ -268,8 +285,17 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
       bool retransmission,
       const PacedPacketInfo& pacing_info) = 0;
 
+  // Try to send the provided packet. Returns true iff packet matches any of
+  // the SSRCs for this module (media/rtx/fec etc) and was forwarded to the
+  // transport.
+  virtual bool TrySendPacket(RtpPacketToSend* packet,
+                             const PacedPacketInfo& pacing_info) = 0;
+
   virtual size_t TimeToSendPadding(size_t bytes,
                                    const PacedPacketInfo& pacing_info) = 0;
+
+  virtual std::vector<std::unique_ptr<RtpPacketToSend>> GeneratePadding(
+      size_t target_size_bytes) = 0;
 
   // Called on generation of new statistics after an RTP send.
   virtual void RegisterSendChannelRtpStatisticsCallback(
@@ -336,12 +362,6 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
   virtual void GetSendStreamDataCounters(
       StreamDataCounters* rtp_counters,
       StreamDataCounters* rtx_counters) const = 0;
-
-  // Returns packet loss statistics for the RTP stream.
-  virtual void GetRtpPacketLossStats(
-      bool outgoing,
-      uint32_t ssrc,
-      struct RtpPacketLossStats* loss_stats) const = 0;
 
   // Returns received RTCP report block.
   // Returns -1 on failure else 0.
@@ -423,19 +443,18 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
   // Video
   // **************************************************************************
 
-  // Set method for requestion a new key frame.
-  // Returns -1 on failure else 0.
-  virtual int32_t SetKeyFrameRequestMethod(KeyFrameRequestMethod method) = 0;
-
-  // Sends a request for a keyframe.
-  // Returns -1 on failure else 0.
-  virtual int32_t RequestKeyFrame() = 0;
+  // Requests new key frame.
+  // using PLI, https://tools.ietf.org/html/rfc4585#section-6.3.1.1
+  void SendPictureLossIndication() { SendRTCP(kRtcpPli); }
+  // using FIR, https://tools.ietf.org/html/rfc5104#section-4.3.1.2
+  void SendFullIntraRequest() { SendRTCP(kRtcpFir); }
 
   // Sends a LossNotification RTCP message.
   // Returns -1 on failure else 0.
   virtual int32_t SendLossNotification(uint16_t last_decoded_seq_num,
                                        uint16_t last_received_seq_num,
-                                       bool decodability_flag) = 0;
+                                       bool decodability_flag,
+                                       bool buffering_allowed) = 0;
 };
 
 }  // namespace webrtc

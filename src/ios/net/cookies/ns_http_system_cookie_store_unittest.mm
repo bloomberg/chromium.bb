@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "ios/net/cookies/system_cookie_store_unittest_template.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -55,7 +55,7 @@ class NSHTTPSystemCookieStoreTestDelegate {
   SystemCookieStore* GetCookieStore() { return store_.get(); }
 
  private:
-  base::MessageLoop loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client_;
   NSHTTPCookieStorage* shared_store_;
   std::unique_ptr<net::NSHTTPSystemCookieStore> store_;

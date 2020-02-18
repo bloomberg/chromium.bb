@@ -136,7 +136,8 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void OnError(PipelineStatus error);
   void OnEnded();
   void OnMetadata(const PipelineMetadata& metadata);
-  void OnBufferingStateChange(BufferingState state);
+  void OnBufferingStateChange(BufferingState state,
+                              BufferingStateChangeReason reason);
   void OnDurationChange(base::TimeDelta duration);
   void OnWaiting(WaitingReason reason);
   void OnAudioConfigChange(const AudioDecoderConfig& config);
@@ -144,8 +145,8 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void OnVideoNaturalSizeChange(const gfx::Size& size);
   void OnVideoOpacityChange(bool opaque);
   void OnVideoAverageKeyframeDistanceUpdate();
-  void OnAudioDecoderChange(const std::string& name);
-  void OnVideoDecoderChange(const std::string& name);
+  void OnAudioDecoderChange(const PipelineDecoderInfo& info);
+  void OnVideoDecoderChange(const PipelineDecoderInfo& info);
   void OnRemotePlayStateChange(MediaStatus::State state);
 
   // Task completion callbacks from RendererWrapper.
@@ -194,7 +195,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   bool is_suspended_;
 
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<PipelineImpl> weak_factory_;
+  base::WeakPtrFactory<PipelineImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PipelineImpl);
 };

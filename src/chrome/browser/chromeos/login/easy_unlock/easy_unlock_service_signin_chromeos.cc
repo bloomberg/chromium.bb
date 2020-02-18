@@ -321,6 +321,10 @@ void EasyUnlockServiceSignin::ShutdownInternal() {
     return;
   service_active_ = false;
 
+  remote_device_cache_.reset();
+  challenge_wrapper_.reset();
+  pref_manager_.reset();
+
   weak_ptr_factory_.InvalidateWeakPtrs();
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
   user_data_.clear();
@@ -407,6 +411,8 @@ void EasyUnlockServiceSignin::OnScreenDidUnlock(
           ? SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kSmartLock
           : SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kOther);
 
+  // TODO(crbug.com/972156): A KeyedService shutting itself seems dangerous;
+  // look into other ways to "reset state" besides this.
   Shutdown();
 }
 
@@ -577,8 +583,8 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
   std::string local_device_id;
 
   for (const auto& remote_device : remote_devices) {
-    if (base::ContainsKey(remote_device.software_features,
-                          multidevice::SoftwareFeature::kSmartLockHost) &&
+    if (base::Contains(remote_device.software_features,
+                       multidevice::SoftwareFeature::kSmartLockHost) &&
         remote_device.software_features.at(
             multidevice::SoftwareFeature::kSmartLockHost) ==
             multidevice::SoftwareFeatureState::kEnabled) {

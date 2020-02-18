@@ -65,8 +65,7 @@ FakeGCMClient::FakeGCMClient(
       start_mode_(DELAYED_START),
       start_mode_overridding_(RESPECT_START_MODE),
       ui_thread_(ui_thread),
-      io_thread_(io_thread),
-      weak_ptr_factory_(this) {}
+      io_thread_(io_thread) {}
 
 FakeGCMClient::~FakeGCMClient() {
 }
@@ -75,6 +74,7 @@ void FakeGCMClient::Initialize(
     const ChromeBuildInfo& chrome_build_info,
     const base::FilePath& store_path,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     base::RepeatingCallback<
         void(network::mojom::ProxyResolvingSocketFactoryRequest)>
         get_socket_factory_callback,

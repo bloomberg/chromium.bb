@@ -2041,12 +2041,13 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleOverlayPlaneCHROMIUM(
   GLfloat uv_y = static_cast<GLfloat>(c.uv_y);
   GLfloat uv_width = static_cast<GLfloat>(c.uv_width);
   GLfloat uv_height = static_cast<GLfloat>(c.uv_height);
+  bool enable_blend = static_cast<bool>(c.enable_blend);
   GLuint gpu_fence_id = static_cast<GLuint>(c.gpu_fence_id);
 
-  return DoScheduleOverlayPlaneCHROMIUM(plane_z_order, plane_transform,
-                                        overlay_texture_id, bounds_x, bounds_y,
-                                        bounds_width, bounds_height, uv_x, uv_y,
-                                        uv_width, uv_height, gpu_fence_id);
+  return DoScheduleOverlayPlaneCHROMIUM(
+      plane_z_order, plane_transform, overlay_texture_id, bounds_x, bounds_y,
+      bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height,
+      enable_blend, gpu_fence_id);
 }
 
 error::Error
@@ -2063,14 +2064,17 @@ GLES2DecoderPassthroughImpl::HandleScheduleCALayerSharedStateCHROMIUM(
   uint32_t shm_id = c.shm_id;
   uint32_t shm_offset = c.shm_offset;
 
+  // 4 for |clip_rect|, 5 for |rounded_corner_bounds|, 16 for |transform|.
   const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(shm_id, shm_offset,
-                                                         20 * sizeof(GLfloat));
+                                                         25 * sizeof(GLfloat));
   if (!mem) {
     return error::kOutOfBounds;
   }
   const GLfloat* clip_rect = mem + 0;
-  const GLfloat* transform = mem + 4;
+  const GLfloat* rounded_corner_bounds = mem + 4;
+  const GLfloat* transform = mem + 9;
   return DoScheduleCALayerSharedStateCHROMIUM(opacity, is_clipped, clip_rect,
+                                              rounded_corner_bounds,
                                               sorting_context_id, transform);
 }
 
@@ -2083,6 +2087,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleCALayerCHROMIUM(
   GLuint contents_texture_id = static_cast<GLint>(c.contents_texture_id);
   GLuint background_color = static_cast<GLuint>(c.background_color);
   GLuint edge_aa_mask = static_cast<GLuint>(c.edge_aa_mask);
+  GLenum filter = static_cast<GLenum>(c.filter);
   uint32_t shm_id = c.shm_id;
   uint32_t shm_offset = c.shm_offset;
 
@@ -2094,7 +2099,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleCALayerCHROMIUM(
   const GLfloat* contents_rect = mem;
   const GLfloat* bounds_rect = mem + 4;
   return DoScheduleCALayerCHROMIUM(contents_texture_id, contents_rect,
-                                   background_color, edge_aa_mask, bounds_rect);
+                                   background_color, edge_aa_mask, filter,
+                                   bounds_rect);
 }
 
 error::Error GLES2DecoderPassthroughImpl::HandleSetColorSpaceMetadataCHROMIUM(

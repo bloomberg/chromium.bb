@@ -23,11 +23,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/discardable_memory/common/discardable_memory_export.h"
-#include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
+#include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
 
 namespace base {
 class WaitableEvent;
@@ -51,6 +52,11 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
  public:
   DiscardableSharedMemoryManager();
   ~DiscardableSharedMemoryManager() override;
+
+  // Returns the global instance of DiscardableSharedMemoryManager, usable from
+  // any thread. May return null if no DiscardableSharedMemoryManager has been
+  // created in the current process.
+  static DiscardableSharedMemoryManager* Get();
 
   // Bind the manager to a mojo interface request.
   void Bind(mojom::DiscardableSharedMemoryManagerRequest request,
@@ -164,12 +170,13 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   // A prerequisite for this is allowing objects to be bound to the lifetime
   // of a sequence directly.
   base::MessageLoopCurrent mojo_thread_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> mojo_thread_task_runner_;
 
-  base::WeakPtrFactory<DiscardableSharedMemoryManager> weak_ptr_factory_;
+  base::WeakPtrFactory<DiscardableSharedMemoryManager> weak_ptr_factory_{this};
 
   // WeakPtrFractory for generating weak pointers used in the mojo thread.
   base::WeakPtrFactory<DiscardableSharedMemoryManager>
-      mojo_thread_weak_ptr_factory_;
+      mojo_thread_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DiscardableSharedMemoryManager);
 };

@@ -167,7 +167,7 @@ input:focus::after {
 }
 
 .bottom-stripe {
-  bottom: 56px;
+  bottom: var(--bottom-line);
   position: absolute;
   transform: translateY(50%);
 }
@@ -225,7 +225,7 @@ body.tablet-landscape .actions-group {
   height: calc(var(--modes-height) - var(--modes-gradient-padding) * 2);
   justify-content: flex-start;
   overflow: scroll;
-  padding: var(--modes-gradient-padding) 3px;
+  padding: var(--modes-gradient-padding) 8px;
   pointer-events: auto;
 }
 
@@ -244,13 +244,20 @@ div.mode-item>span {
   line-height: 32px;
   margin: 8px 0;
   padding: 0 12px;
+  position: relative;
   text-shadow: 0 2px 3px rgba(32, 33, 36, 0.3);
+  z-index: 0;
 }
 
 .mode-item>input {
   height: 100%;
   position: absolute;
   width: 100%;
+  z-index: 1;
+}
+
+.mode-item>input:focus::after {
+  display: none;
 }
 
 .mode-item>input:checked + span {
@@ -259,8 +266,15 @@ div.mode-item>span {
   text-shadow: none;
 }
 
-.mode-item>input:focus + span {
-  margin-bottom: 6px;
+.mode-item>input:focus + span::after {
+  border: 2px solid rgba(37, 129, 223, 0.7);
+  border-radius: 20px/50%;
+  bottom: -7px;
+  content: '';
+  left: -7px;
+  position: absolute;
+  right: -7px;
+  top: -7px;
 }
 
 button.shutter {
@@ -391,16 +405,23 @@ body.mode-switching:not(.streaming) #camera-mode {
 }
 
 #options-group {
-  bottom: calc((var(--bottom-line) + (var(--big-icon) / 2)) + 30px);
+  --option-item-vpadding: 12px;
+  --switch-device-gap: 32px;
+  bottom: calc(var(--bottom-line) + (var(--big-icon) / 2) + var(--switch-device-gap) - var(--option-item-vpadding));
   flex-direction: column-reverse;
 }
 
 body:not(.multi-camera) #options-group {
-  bottom: calc((var(--bottom-line) - 18px) - (var(--small-icon) / 2));
+  bottom: calc(var(--bottom-line) - var(--option-item-vpadding) - (var(--small-icon) / 2));
+}
+
+body.max-wnd #options-group {
+  --option-item-vpadding: 18px;
+  --switch-device-gap: 48px;
 }
 
 #options-group input {
-  margin: 18px 0;
+  margin: var(--option-item-vpadding) 0;
 }
 
 body._3sec #toggle-timer:checked {
@@ -437,6 +458,18 @@ body._10sec #toggle-timer:checked {
 
 #toggle-mic {
   background-image: url(../images/camera_button_mic_off.svg);
+}
+
+#toggle-fps {
+  display: none;
+}
+
+body._30fps #toggle-fps {
+  background-image: url(../images/camera_button_fps_30.svg);
+}
+
+body._60fps #toggle-fps {
+  background-image: url(../images/camera_button_fps_60.svg);
 }
 
 #open-settings {
@@ -514,12 +547,16 @@ body.videoresolutionsettings #resolutionsettings {
 
 #camera {
   --big-icon: 48px;
-  --bottom-line: 56px;
+  --bottom-line: 40px;
   --mode-item-height: 48px;
   --modes-bottom: calc((var(--bottom-line) + (var(--big-icon) / 2)) + 24px);
   --modes-gradient-padding: 16px;
   --modes-height: 140px;
   --small-icon: 40px;
+}
+
+body.max-wnd #camera {
+  --bottom-line: 56px;
 }
 
 @media screen and (min-height: 800px) {
@@ -982,7 +1019,7 @@ body.ext-fs #browser-export {
   background: rgba(0, 0, 0, 0.75);
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 100vh;
   left: 0;
   min-width: 360px;
   opacity: 0.9;

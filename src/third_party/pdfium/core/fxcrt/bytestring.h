@@ -9,6 +9,7 @@
 
 #include <functional>
 #include <iterator>
+#include <ostream>
 #include <sstream>
 #include <utility>
 
@@ -36,8 +37,8 @@ class ByteString {
 
   static ByteString FormatInteger(int i) WARN_UNUSED_RESULT;
   static ByteString FormatFloat(float f) WARN_UNUSED_RESULT;
-  static ByteString Format(const char* lpszFormat, ...) WARN_UNUSED_RESULT;
-  static ByteString FormatV(const char* lpszFormat,
+  static ByteString Format(const char* pFormat, ...) WARN_UNUSED_RESULT;
+  static ByteString FormatV(const char* pFormat,
                             va_list argList) WARN_UNUSED_RESULT;
 
   ByteString();
@@ -54,11 +55,11 @@ class ByteString {
   // NOLINTNEXTLINE(runtime/explicit)
   ByteString(wchar_t) = delete;
 
-  ByteString(const char* ptr, size_t len);
-  ByteString(const uint8_t* ptr, size_t len);
+  ByteString(const char* pStr, size_t len);
+  ByteString(const uint8_t* pStr, size_t len);
 
   explicit ByteString(ByteStringView bstrc);
-  ByteString(ByteStringView bstrc1, ByteStringView bstrc2);
+  ByteString(ByteStringView str1, ByteStringView str2);
   ByteString(const std::initializer_list<ByteStringView>& list);
   explicit ByteString(const std::ostringstream& outStream);
 
@@ -85,11 +86,11 @@ class ByteString {
 
   // Explicit conversion to span.
   // Note: Any subsequent modification of |this| will invalidate the result.
-  pdfium::span<const char> AsSpan() const {
+  pdfium::span<const char> span() const {
     return pdfium::make_span(m_pData ? m_pData->m_String : nullptr,
                              GetLength());
   }
-  pdfium::span<const uint8_t> AsRawSpan() const {
+  pdfium::span<const uint8_t> raw_span() const {
     return pdfium::make_span(raw_str(), GetLength());
   }
 
@@ -130,15 +131,15 @@ class ByteString {
   bool operator<(ByteStringView str) const;
   bool operator<(const ByteString& other) const;
 
-  const ByteString& operator=(const char* str);
-  const ByteString& operator=(ByteStringView bstrc);
-  const ByteString& operator=(const ByteString& that);
-  const ByteString& operator=(ByteString&& that);
+  ByteString& operator=(const char* str);
+  ByteString& operator=(ByteStringView str);
+  ByteString& operator=(const ByteString& that);
+  ByteString& operator=(ByteString&& that);
 
-  const ByteString& operator+=(char ch);
-  const ByteString& operator+=(const char* str);
-  const ByteString& operator+=(const ByteString& str);
-  const ByteString& operator+=(ByteStringView bstrc);
+  ByteString& operator+=(char ch);
+  ByteString& operator+=(const char* str);
+  ByteString& operator+=(const ByteString& str);
+  ByteString& operator+=(ByteStringView str);
 
   CharType operator[](const size_t index) const {
     CHECK(IsValidIndex(index));
@@ -159,14 +160,14 @@ class ByteString {
 
   // Note: any modification of the string (including ReleaseBuffer()) may
   // invalidate the span, which must not outlive its buffer.
-  pdfium::span<char> GetBuffer(size_t len);
-  void ReleaseBuffer(size_t len);
+  pdfium::span<char> GetBuffer(size_t nMinBufLength);
+  void ReleaseBuffer(size_t nNewLength);
 
   ByteString Mid(size_t first, size_t count) const;
   ByteString Left(size_t count) const;
   ByteString Right(size_t count) const;
 
-  Optional<size_t> Find(ByteStringView lpszSub, size_t start = 0) const;
+  Optional<size_t> Find(ByteStringView subStr, size_t start = 0) const;
   Optional<size_t> Find(char ch, size_t start = 0) const;
   Optional<size_t> ReverseFind(char ch) const;
 
@@ -193,7 +194,7 @@ class ByteString {
   void TrimRight(char target);
   void TrimRight(ByteStringView targets);
 
-  size_t Replace(ByteStringView lpszOld, ByteStringView lpszNew);
+  size_t Replace(ByteStringView pOld, ByteStringView pNew);
   size_t Remove(char ch);
 
   uint32_t GetID() const { return AsStringView().GetID(); }
@@ -205,7 +206,7 @@ class ByteString {
   void AllocBeforeWrite(size_t nNewLen);
   void AllocCopy(ByteString& dest, size_t nCopyLen, size_t nCopyIndex) const;
   void AssignCopy(const char* pSrcData, size_t nSrcLen);
-  void Concat(const char* lpszSrcData, size_t nSrcLen);
+  void Concat(const char* pSrcData, size_t nSrcLen);
   intptr_t ReferenceCountForTesting() const;
 
   RetainPtr<StringData> m_pData;

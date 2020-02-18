@@ -223,6 +223,7 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
       type_(type),
       sub_type_(sub_type),
       style_variant_((unsigned)builder->style_variant_),
+      is_hidden_for_paint_(builder->is_hidden_for_paint_),
       has_floating_descendants_(false),
       is_fieldset_container_(false),
       is_legacy_layout_root_(false) {
@@ -239,6 +240,7 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
       type_(type),
       sub_type_(sub_type),
       style_variant_((unsigned)style_variant),
+      is_hidden_for_paint_(false),
       has_floating_descendants_(false),
       is_fieldset_container_(false),
       is_legacy_layout_root_(false) {
@@ -340,7 +342,7 @@ bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
   const LayoutBlock* container = layout_object_.ContainingBlock();
   if (!container)
     return false;
-  return container->IsLayoutNGMixin() || container->IsLayoutNGFlexibleBox();
+  return container->IsLayoutNGMixin();
 }
 
 const NGPhysicalFragment* NGPhysicalFragment::PostLayout() const {
@@ -357,6 +359,66 @@ const NGPhysicalFragment* NGPhysicalFragment::PostLayout() const {
 }
 
 #if DCHECK_IS_ON()
+void NGPhysicalFragment::CheckType() const {
+  switch (Type()) {
+    case kFragmentBox:
+    case kFragmentRenderedLegend:
+      if (IsInlineBox()) {
+        DCHECK(layout_object_.IsLayoutInline());
+      } else {
+        DCHECK(layout_object_.IsBox());
+      }
+      if (IsColumnBox()) {
+        // Column fragments are associated with the same layout object as their
+        // multicol container. The fragments themselves are regular in-flow
+        // block container fragments for most purposes.
+        DCHECK(layout_object_.IsLayoutBlockFlow());
+        DCHECK(IsBox());
+        DCHECK(!IsFloating());
+        DCHECK(!IsOutOfFlowPositioned());
+        DCHECK(!IsAtomicInline());
+        DCHECK(!IsBlockFormattingContextRoot());
+        break;
+      }
+      if (layout_object_.IsLayoutNGListMarker()) {
+        // List marker is an atomic inline if it appears in a line box, or a
+        // block box.
+        DCHECK(!IsFloating());
+        DCHECK(!IsOutOfFlowPositioned());
+        DCHECK(IsAtomicInline() || (IsBox() && BoxType() == kBlockFlowRoot));
+        break;
+      }
+      DCHECK_EQ(IsFloating(), layout_object_.IsFloating());
+      DCHECK_EQ(IsOutOfFlowPositioned(),
+                layout_object_.IsOutOfFlowPositioned());
+      DCHECK_EQ(IsAtomicInline(), layout_object_.IsInline() &&
+                                      layout_object_.IsAtomicInlineLevel());
+      break;
+    case kFragmentText:
+      if (To<NGPhysicalTextFragment>(this)->IsGeneratedText()) {
+        // Ellipsis has the truncated in-flow LayoutObject.
+        DCHECK(layout_object_.IsText() ||
+               (layout_object_.IsInline() &&
+                layout_object_.IsAtomicInlineLevel()) ||
+               layout_object_.IsLayoutInline());
+      } else {
+        DCHECK(layout_object_.IsText());
+      }
+      DCHECK(!IsFloating());
+      DCHECK(!IsOutOfFlowPositioned());
+      DCHECK(!IsInlineBox());
+      DCHECK(!IsAtomicInline());
+      break;
+    case kFragmentLineBox:
+      DCHECK(layout_object_.IsLayoutBlockFlow());
+      DCHECK(!IsFloating());
+      DCHECK(!IsOutOfFlowPositioned());
+      DCHECK(!IsInlineBox());
+      DCHECK(!IsAtomicInline());
+      break;
+  }
+}
+
 void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {
   if (!GetLayoutObject())
     return;
@@ -470,12 +532,12 @@ bool NGPhysicalFragment::ShouldPaintDragCaret() const {
 String NGPhysicalFragment::ToString() const {
   StringBuilder output;
   output.AppendFormat("Type: '%d' Size: '%s'", Type(),
-                      Size().ToString().Ascii().data());
+                      Size().ToString().Ascii().c_str());
   switch (Type()) {
     case kFragmentBox:
     case kFragmentRenderedLegend:
       output.AppendFormat(", BoxType: '%s'",
-                          StringForBoxType(*this).Ascii().data());
+                          StringForBoxType(*this).Ascii().c_str());
       break;
     case kFragmentText: {
       const auto& text = To<NGPhysicalTextFragment>(*this);
@@ -505,12 +567,24 @@ String NGPhysicalFragment::DumpFragmentTree(
 #if DCHECK_IS_ON()
 void NGPhysicalFragment::ShowFragmentTree() const {
   DumpFlags dump_flags = DumpAll;
-  LOG(INFO) << "\n" << DumpFragmentTree(dump_flags).Utf8().data();
+  LOG(INFO) << "\n" << DumpFragmentTree(dump_flags).Utf8();
 }
 #endif
 
 PhysicalRect NGPhysicalFragmentWithOffset::RectInContainerBox() const {
   return {offset_to_container_box, fragment->Size()};
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const NGPhysicalFragment& fragment) {
+  return out << fragment.ToString();
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const NGPhysicalFragment* fragment) {
+  if (!fragment)
+    return out << "<null>";
+  return out << *fragment;
 }
 
 }  // namespace blink

@@ -8,7 +8,7 @@ use Number::Compare;
 use Carp qw/croak/;
 use File::Find (); # we're only wrapping for now
 
-our $VERSION = '0.33';
+our $VERSION = '0.34';
 
 # we'd just inherit from Exporter, but I want the colon
 sub import {
@@ -294,7 +294,7 @@ sub any {
         code => '(' . join( ' || ', map '( ' . $_->_compile . ' )', @_ ). ')',
         args => \@_,
     };
-    
+
     # merge all the subs hashes of the kids into ourself
     %{ $self->{subs} } = map { %{ $_->{subs} } } $self, @_;
     $self;
@@ -323,7 +323,7 @@ sub not {
         args => \@_,
         code => '(' . join ( ' && ', map { "!(". $_->_compile . ")" } @_ ) . ")",
     };
-    
+
     # merge all the subs hashes into us
     %{ $self->{subs} } = map { %{ $_->{subs} } } $self, @_;
     $self;
@@ -485,6 +485,23 @@ sub relative () {
     $self;
 }
 
+=item C<canonpath>
+
+Normalize paths found using C<File::Spec->canonpath>. This will return paths
+with a file-seperator that is native to your OS (as determined by L<File::Spec>),
+ instead of the default C</>.
+
+For example, this will return C<tmp/foobar> on Unix-ish OSes
+and C<tmp\foobar> on Win32.
+
+=cut
+
+sub canonpath () {
+    my $self = _force_object shift;
+    $self->{canonpath} = 1;
+    $self;
+}
+
 =item C<not_*>
 
 Negated version of the rule.  An effective shortand related to ! in
@@ -544,6 +561,7 @@ sub in {
         my $maxdepth = $self->{maxdepth};
         my $mindepth = $self->{mindepth};
         my $relative = $self->{relative};
+        my $canonpath = $self->{canonpath};
 
         # figure out the relative path and depth
         my $relpath = $File::Find::name;
@@ -564,10 +582,12 @@ sub in {
         return unless ' . $fragment . ';
         return if $discarded;
         if ($relative) {
-            push @found, $relpath if $relpath ne "";
+            if ($relpath ne "") {
+                push @found, $canonpath ? File::Spec->canonpath($relpath) : $relpath;
+            }
         }
         else {
-            push @found, $path;
+            push @found, $canonpath ? File::Spec->canonpath($path) : $path;
         }
     }';
 
@@ -724,7 +744,7 @@ system will flag as insecure but you can use the L</extras> feature to ask
 L<File::Find> to internally C<untaint> file paths with a regex like so:
 
     my $rule = File::Find::Rule->extras({ untaint => 1 });
-    
+
 Please consult L<File::Find>'s documentation for C<untaint>,
 C<untaint_pattern>, and C<untaint_skip> for more information.
 

@@ -55,9 +55,7 @@ class IDBFactoryTest : public testing::Test {
 };
 
 TEST_F(IDBFactoryTest, WebIDBGetDBInfoCallbacksResolvesPromise) {
-  V8TestingScope scope;
-  scope.GetDocument().SetSecurityOrigin(
-      SecurityOrigin::Create(KURL("https://example.com")));
+  V8TestingScope scope(KURL("https://example.com"));
   auto web_factory = std::make_unique<MockWebIDBFactory>();
   std::unique_ptr<WebIDBCallbacks> callbacks;
   web_factory->SetCallbacksPointer(&callbacks);
@@ -88,9 +86,7 @@ TEST_F(IDBFactoryTest, WebIDBGetDBInfoCallbacksResolvesPromise) {
 }
 
 TEST_F(IDBFactoryTest, WebIDBGetDBNamesCallbacksRejectsPromise) {
-  V8TestingScope scope;
-  scope.GetDocument().SetSecurityOrigin(
-      SecurityOrigin::Create(KURL("https://example.com")));
+  V8TestingScope scope(KURL("https://example.com"));
   auto web_factory = std::make_unique<MockWebIDBFactory>();
   std::unique_ptr<WebIDBCallbacks> callbacks;
   web_factory->SetCallbacksPointer(&callbacks);

@@ -186,8 +186,7 @@ InterstitialPageImpl::InterstitialPageImpl(
       create_view_(true),
       pause_throbber_(false),
       delegate_(delegate),
-      widget_observer_(this),
-      weak_ptr_factory_(this) {
+      widget_observer_(this) {
   InitInterstitialPageMap();
 }
 
@@ -433,50 +432,43 @@ ui::AXMode InterstitialPageImpl::GetAccessibilityMode() {
 }
 
 void InterstitialPageImpl::Cut() {
-  FrameTreeNode* focused_node = frame_tree_->GetFocusedFrame();
-  if (!focused_node)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
-
-  focused_node->current_frame_host()->GetFrameInputHandler()->Cut();
+  input_handler->Cut();
   RecordAction(base::UserMetricsAction("Cut"));
 }
 
 void InterstitialPageImpl::ExecuteEditCommand(
     const std::string& command,
     const base::Optional<base::string16>& value) {
-  FrameTreeNode* focused_node = frame_tree_->GetFocusedFrame();
-  if (!focused_node)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
-
-  focused_node->current_frame_host()
-      ->GetFrameInputHandler()
-      ->ExecuteEditCommand(command, value);
+  input_handler->ExecuteEditCommand(command, value);
 }
 
 void InterstitialPageImpl::Copy() {
-  FrameTreeNode* focused_node = frame_tree_->GetFocusedFrame();
-  if (!focused_node)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
-
-  focused_node->current_frame_host()->GetFrameInputHandler()->Copy();
+  input_handler->Copy();
   RecordAction(base::UserMetricsAction("Copy"));
 }
 
 void InterstitialPageImpl::Paste() {
-  FrameTreeNode* focused_node = frame_tree_->GetFocusedFrame();
-  if (!focused_node)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
-
-  focused_node->current_frame_host()->GetFrameInputHandler()->Paste();
+  input_handler->Paste();
   RecordAction(base::UserMetricsAction("Paste"));
 }
 
 void InterstitialPageImpl::SelectAll() {
-  FrameTreeNode* focused_node = frame_tree_->GetFocusedFrame();
-  if (!focused_node)
+  auto* input_handler = GetFocusedFrameInputHandler();
+  if (!input_handler)
     return;
-
-  focused_node->current_frame_host()->GetFrameInputHandler()->SelectAll();
+  input_handler->SelectAll();
   RecordAction(base::UserMetricsAction("SelectAll"));
 }
 
@@ -1098,6 +1090,14 @@ void InterstitialPageImpl::AudioContextPlaybackStopped(RenderFrameHost* host,
                                                        int context_id) {
   // Interstitial pages should not be playing any sound via WebAudio.
   NOTREACHED();
+}
+
+mojom::FrameInputHandler* InterstitialPageImpl::GetFocusedFrameInputHandler() {
+  FrameTreeNode* focused_node = frame_tree_->GetFocusedFrame();
+  if (!focused_node)
+    return nullptr;
+
+  return focused_node->current_frame_host()->GetFrameInputHandler();
 }
 
 }  // namespace content

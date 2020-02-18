@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "osp/impl/discovery/mdns/mdns_responder_adapter.h"
-#include "osp_base/error.h"
-#include "platform/api/socket.h"
+#include "platform/api/udp_socket.h"
+#include "platform/base/error.h"
 #include "third_party/mDNSResponder/src/mDNSCore/mDNSEmbeddedAPI.h"
 
 namespace openscreen {

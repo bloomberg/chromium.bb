@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
+#include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
 
 class GURL;
 
@@ -53,10 +54,12 @@ class AppCacheService;
 class BackgroundSyncContext;
 class BrowserContext;
 class CacheStorageContext;
+class ContentIndexContext;
 class DOMStorageContext;
 class DevToolsBackgroundServicesContext;
 class IndexedDBContext;
 class GeneratedCodeCacheContext;
+class NativeFileSystemEntryFactory;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
 class SharedWorkerService;
@@ -97,10 +100,25 @@ class CONTENT_EXPORT StoragePartition {
   // network process restarts.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcess() = 0;
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactoryForBrowserProcessWithCORBEnabled() = 0;
   virtual std::unique_ptr<network::SharedURLLoaderFactoryInfo>
   GetURLLoaderFactoryForBrowserProcessIOThread() = 0;
   virtual network::mojom::CookieManager*
   GetCookieManagerForBrowserProcess() = 0;
+
+  // See documentation for
+  // ContentBrowserClient::WillCreateRestrictedCookieManager for description of
+  // the parameters. The method here is expected pass things through that hook
+  // and then go to the NetworkContext if needed.
+  virtual void CreateRestrictedCookieManager(
+      network::mojom::RestrictedCookieManagerRole role,
+      const url::Origin& origin,
+      bool is_service_worker,
+      int process_id,
+      int routing_id,
+      network::mojom::RestrictedCookieManagerRequest request) = 0;
+
   virtual storage::QuotaManager* GetQuotaManager() = 0;
   virtual AppCacheService* GetAppCacheService() = 0;
   virtual BackgroundSyncContext* GetBackgroundSyncContext() = 0;
@@ -108,12 +126,14 @@ class CONTENT_EXPORT StoragePartition {
   virtual storage::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual IndexedDBContext* GetIndexedDBContext() = 0;
+  virtual NativeFileSystemEntryFactory* GetNativeFileSystemEntryFactory() = 0;
   virtual ServiceWorkerContext* GetServiceWorkerContext() = 0;
   virtual SharedWorkerService* GetSharedWorkerService() = 0;
   virtual CacheStorageContext* GetCacheStorageContext() = 0;
   virtual GeneratedCodeCacheContext* GetGeneratedCodeCacheContext() = 0;
   virtual DevToolsBackgroundServicesContext*
   GetDevToolsBackgroundServicesContext() = 0;
+  virtual ContentIndexContext* GetContentIndexContext() = 0;
 #if !defined(OS_ANDROID)
   virtual HostZoomMap* GetHostZoomMap() = 0;
   virtual HostZoomLevelContext* GetHostZoomLevelContext() = 0;

@@ -4,7 +4,7 @@
 
 #include "osp/public/endpoint_request_ids.h"
 
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
 
 namespace openscreen {
 

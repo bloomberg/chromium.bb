@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/editing/commands/apply_style_command.h"
 
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -48,7 +49,6 @@
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/editing/writing_direction.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_font_element.h"
 #include "third_party/blink/renderer/core/html/html_span_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -510,8 +511,8 @@ void ApplyStyleCommand::ApplyRelativeFontStyleChange(
     if (current_font_size != desired_font_size) {
       inline_style->SetProperty(
           CSSPropertyID::kFontSize,
-          *CSSPrimitiveValue::Create(desired_font_size,
-                                     CSSPrimitiveValue::UnitType::kPixels),
+          *CSSNumericLiteralValue::Create(desired_font_size,
+                                          CSSPrimitiveValue::UnitType::kPixels),
           false);
       SetNodeAttribute(element, kStyleAttr,
                        AtomicString(inline_style->AsText()));
@@ -532,11 +533,14 @@ void ApplyStyleCommand::ApplyRelativeFontStyleChange(
 }
 
 static ContainerNode* DummySpanAncestorForNode(const Node* node) {
-  while (node && (!node->IsElementNode() ||
-                  !IsStyleSpanOrSpanWithOnlyStyleAttribute(ToElement(node))))
-    node = node->parentNode();
+  if (!node)
+    return nullptr;
 
-  return node ? node->parentNode() : nullptr;
+  for (Node& current : NodeTraversal::InclusiveAncestorsOf(*node)) {
+    if (IsStyleSpanOrSpanWithOnlyStyleAttribute(DynamicTo<Element>(current)))
+      return current.parentNode();
+  }
+  return nullptr;
 }
 
 void ApplyStyleCommand::CleanupUnstyledAppleStyleSpans(
@@ -615,7 +619,7 @@ HTMLElement* ApplyStyleCommand::SplitAncestorsWithUnicodeBidi(
   // Split every ancestor through highest ancestor with embedding.
   Node* current_node = node;
   while (current_node) {
-    Element* parent = ToElement(current_node->parentNode());
+    auto* parent = To<Element>(current_node->parentNode());
     if (before ? current_node->previousSibling() : current_node->nextSibling())
       SplitElement(parent, before ? current_node : current_node->nextSibling());
     if (parent == highest_ancestor_with_unicode_bidi)
@@ -639,7 +643,7 @@ void ApplyStyleCommand::RemoveEmbeddingUpToEnclosingBlock(
     if (!runner.IsStyledElement())
       continue;
 
-    Element* element = ToElement(&runner);
+    auto* element = To<Element>(&runner);
     CSSValueID unicode_bidi = GetIdentifierValue(
         MakeGarbageCollected<CSSComputedStyleDeclaration>(element),
         CSSPropertyID::kUnicodeBidi);
@@ -1283,7 +1287,7 @@ static Element* UnsplittableElementForPosition(const Position& p) {
   // Since enclosingNodeOfType won't search beyond the highest root editable
   // node, this code works even if the closest table cell was outside of the
   // root editable node.
-  Element* enclosing_cell = ToElement(EnclosingNodeOfType(p, &IsTableCell));
+  auto* enclosing_cell = To<Element>(EnclosingNodeOfType(p, &IsTableCell));
   if (enclosing_cell)
     return enclosing_cell;
 
@@ -1376,8 +1380,8 @@ void ApplyStyleCommand::PushDownInlineStyleAroundNode(
     GetChildNodes(To<ContainerNode>(*current), current_children);
     Element* styled_element = nullptr;
     if (current->IsStyledElement() &&
-        IsStyledInlineElementToRemove(ToElement(current))) {
-      styled_element = ToElement(current);
+        IsStyledInlineElementToRemove(To<Element>(current))) {
+      styled_element = To<Element>(current);
       elements_to_push_down.push_back(styled_element);
     }
 
@@ -1699,8 +1703,8 @@ bool ApplyStyleCommand::MergeStartWithPreviousIfIdentical(
 
   if (previous_sibling &&
       AreIdenticalElements(*start_node, *previous_sibling)) {
-    Element* previous_element = ToElement(previous_sibling);
-    Element* element = ToElement(start_node);
+    auto* previous_element = To<Element>(previous_sibling);
+    auto* element = To<Element>(start_node);
     Node* start_child = element->firstChild();
     DCHECK(start_child);
     MergeIdenticalElements(previous_element, element, editing_state);
@@ -1742,8 +1746,8 @@ bool ApplyStyleCommand::MergeEndWithNextIfIdentical(
 
   Node* next_sibling = end_node->nextSibling();
   if (next_sibling && AreIdenticalElements(*end_node, *next_sibling)) {
-    Element* next_element = ToElement(next_sibling);
-    Element* element = ToElement(end_node);
+    auto* next_element = To<Element>(next_sibling);
+    auto* element = To<Element>(end_node);
     Node* next_child = next_element->firstChild();
 
     MergeIdenticalElements(element, next_element, editing_state);
@@ -1797,22 +1801,22 @@ void ApplyStyleCommand::SurroundNodeRangeWithElement(
 
   Node* next_sibling = element->nextSibling();
   Node* previous_sibling = element->previousSibling();
-  if (next_sibling && next_sibling->IsElementNode() &&
-      HasEditableStyle(*next_sibling) &&
-      AreIdenticalElements(*element, ToElement(*next_sibling))) {
-    MergeIdenticalElements(element, ToElement(next_sibling), editing_state);
+  auto* next_sibling_element = DynamicTo<Element>(next_sibling);
+  if (next_sibling_element && HasEditableStyle(*next_sibling) &&
+      AreIdenticalElements(*element, *next_sibling_element)) {
+    MergeIdenticalElements(element, next_sibling_element, editing_state);
     if (editing_state->IsAborted())
       return;
   }
 
-  if (previous_sibling && previous_sibling->IsElementNode() &&
-      HasEditableStyle(*previous_sibling)) {
-    Node* merged_element = previous_sibling->nextSibling();
-    if (merged_element->IsElementNode() && HasEditableStyle(*merged_element) &&
-        AreIdenticalElements(ToElement(*previous_sibling),
-                             ToElement(*merged_element))) {
-      MergeIdenticalElements(ToElement(previous_sibling),
-                             ToElement(merged_element), editing_state);
+  auto* previous_sibling_element = DynamicTo<Element>(previous_sibling);
+  if (previous_sibling_element && HasEditableStyle(*previous_sibling)) {
+    auto* merged_element = DynamicTo<Element>(previous_sibling->nextSibling());
+    if (merged_element &&
+        HasEditableStyle(*(previous_sibling->nextSibling())) &&
+        AreIdenticalElements(*previous_sibling_element, *merged_element)) {
+      MergeIdenticalElements(previous_sibling_element, merged_element,
+                             editing_state);
       if (editing_state->IsAborted())
         return;
     }
@@ -2041,12 +2045,12 @@ float ApplyStyleCommand::ComputedFontSize(Node* node) {
     return 0;
 
   const auto* value = To<CSSPrimitiveValue>(
-      style->GetPropertyCSSValue(GetCSSPropertyFontSize()));
+      style->GetPropertyCSSValue(CSSPropertyID::kFontSize));
   if (!value)
     return 0;
 
   // TODO(yosin): We should have printer for |CSSPrimitiveValue::UnitType|.
-  DCHECK(value->TypeWithCalcResolved() == CSSPrimitiveValue::UnitType::kPixels);
+  DCHECK(value->IsPx());
   return value->GetFloatValue();
 }
 

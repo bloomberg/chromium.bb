@@ -26,10 +26,13 @@
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
+#include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "components/favicon_base/favicon_url_parser.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -227,6 +230,8 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
       if (info->has_reactivation_score)
         info->reactivation_score = reactivation_score.value();
       info->site_engagement_score = GetSiteEngagementScore(contents);
+      info->state_change_time =
+          lifecycle_unit->GetStateChangeTime() - base::TimeTicks::UnixEpoch();
       // TODO(crbug.com/876340): The focus is used to compute the page lifecycle
       // state. This should be replaced with the actual page lifecycle state
       // information from Blink, but this depends on implementing the passive
@@ -431,6 +436,10 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, source.release());
+
+  content::URLDataSource::Add(
+      profile, std::make_unique<FaviconSource>(
+                   profile, chrome::FaviconUrlFormat::kFavicon2));
 
   AddHandlerToRegistry(base::BindRepeating(
       &DiscardsUI::BindDiscardsDetailsProvider, base::Unretained(this)));

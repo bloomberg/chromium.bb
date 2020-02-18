@@ -17,7 +17,6 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
@@ -29,6 +28,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_transitioning_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_delegate.h"
@@ -42,8 +42,8 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
-#import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/referrer.h"
+#import "ios/web/public/navigation/navigation_manager.h"
+#include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -114,7 +114,8 @@ enum class PresentedState {
 
 @property(nonatomic, strong) BookmarkMediator* mediator;
 
-@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, readonly, weak) id<ApplicationCommands, BrowserCommands>
+    dispatcher;
 
 // The transitioning delegate that is used when presenting
 // |self.bookmarkBrowser|.
@@ -122,7 +123,7 @@ enum class PresentedState {
     BookmarkTransitioningDelegate* bookmarkTransitioningDelegate;
 
 // Builds a controller and brings it on screen.
-- (void)presentBookmarkEditorForBookmarkedTab:(Tab*)tab;
+- (void)presentBookmarkEditorForBookmarkedURL:(const GURL&)URL;
 
 // Dismisses the bookmark browser.  If |urlsToOpen| is not empty, then the user
 // has selected to navigate to those URLs with specified tab mode.
@@ -153,10 +154,11 @@ enum class PresentedState {
 @synthesize folderEditor = _folderEditor;
 @synthesize mediator = _mediator;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                    parentController:(UIViewController*)parentController
-                          dispatcher:(id<ApplicationCommands>)dispatcher
-                        webStateList:(WebStateList*)webStateList {
+- (instancetype)
+    initWithBrowserState:(ios::ChromeBrowserState*)browserState
+        parentController:(UIViewController*)parentController
+              dispatcher:(id<ApplicationCommands, BrowserCommands>)dispatcher
+            webStateList:(WebStateList*)webStateList {
   self = [super init];
   if (self) {
     // Bookmarks are always opened with the main browser state, even in
@@ -181,38 +183,36 @@ enum class PresentedState {
   _bookmarkEditor.delegate = nil;
 }
 
-- (void)presentBookmarkEditorForBookmarkedTab:(Tab*)tab {
-  DCHECK(tab && tab.webState);
-
+- (void)presentBookmarkEditorForBookmarkedURL:(const GURL&)URL {
   const BookmarkNode* bookmark =
-      self.bookmarkModel->GetMostRecentlyAddedUserNodeForURL(
-          tab.webState->GetLastCommittedURL());
+      self.bookmarkModel->GetMostRecentlyAddedUserNodeForURL(URL);
   if (!bookmark)
     return;
   [self presentEditorForNode:bookmark];
 }
 
-- (void)presentBookmarkEditorForTab:(Tab*)tab
-                currentlyBookmarked:(BOOL)bookmarked {
+- (void)presentBookmarkEditorForWebState:(web::WebState*)webState
+                     currentlyBookmarked:(BOOL)bookmarked {
   if (!self.bookmarkModel->loaded())
     return;
-  if (!tab || !tab.webState)
+  if (!webState)
     return;
 
+  GURL bookmarkedURL = webState->GetLastCommittedURL();
+
   if (bookmarked) {
-    [self presentBookmarkEditorForBookmarkedTab:tab];
+    [self presentBookmarkEditorForBookmarkedURL:bookmarkedURL];
   } else {
     __weak BookmarkInteractionController* weakSelf = self;
-    __weak Tab* weakTab = tab;
     void (^editAction)() = ^{
-      BookmarkInteractionController* strongSelf = weakSelf;
-      if (!strongSelf || !weakTab || !weakTab.webState)
-        return;
-      [strongSelf presentBookmarkEditorForBookmarkedTab:weakTab];
+      [weakSelf presentBookmarkEditorForBookmarkedURL:bookmarkedURL];
     };
-    [self.mediator addBookmarkWithTitle:tab_util::GetTabTitle(tab.webState)
-                                    URL:tab.webState->GetLastCommittedURL()
-                             editAction:editAction];
+    [self.dispatcher
+        showSnackbarMessage:[self.mediator
+                                addBookmarkWithTitle:tab_util::GetTabTitle(
+                                                         webState)
+                                                 URL:bookmarkedURL
+                                          editAction:editAction]];
   }
 }
 
@@ -260,7 +260,8 @@ enum class PresentedState {
     self.currentPresentedState = PresentedState::BOOKMARK_EDITOR;
     BookmarkEditViewController* bookmarkEditor =
         [[BookmarkEditViewController alloc] initWithBookmark:node
-                                                browserState:_browserState];
+                                                browserState:_browserState
+                                                  dispatcher:self.dispatcher];
     self.bookmarkEditor = bookmarkEditor;
     self.bookmarkEditor.delegate = self;
     editorController = bookmarkEditor;
@@ -270,7 +271,8 @@ enum class PresentedState {
         [BookmarkFolderEditorViewController
             folderEditorWithBookmarkModel:self.bookmarkModel
                                    folder:node
-                             browserState:_browserState];
+                             browserState:_browserState
+                               dispatcher:self.dispatcher];
     folderEditor.delegate = self;
     self.folderEditor = folderEditor;
     editorController = folderEditor;

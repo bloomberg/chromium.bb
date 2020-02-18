@@ -23,6 +23,7 @@
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
+#include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -872,6 +873,27 @@ TEST_F(CrostiniPackageServiceTest, SecondUninstallStartsWhenFirstFails) {
                            IsUninstallProgressNotification(0, SECOND_APP)));
 }
 
+TEST_F(CrostiniPackageServiceTest, DuplicateUninstallSucceeds) {
+  service_->QueueUninstallApplication(kDefaultAppId);
+  service_->QueueUninstallApplication(kDefaultAppId);
+
+  UninstallPackageOwningFileRequest request;
+  StartAndSignalUninstall(UninstallPackageProgressSignal::UNINSTALLING,
+                          50 /*progress_percent*/, kDefaultAppFileId, &request);
+
+  crostini_test_helper_->RemoveApp(0);
+
+  UninstallPackageProgressSignal signal_success = MakeUninstallSignal(request);
+  signal_success.set_status(UninstallPackageProgressSignal::SUCCEEDED);
+  fake_cicerone_client_->UninstallPackageProgress(signal_success);
+
+  EXPECT_THAT(
+      Printable(notification_display_service_->GetDisplayedNotificationsForType(
+          NotificationHandler::Type::TRANSIENT)),
+      UnorderedElementsAre(IsUninstallSuccessNotification(DEFAULT_APP),
+                           IsUninstallSuccessNotification(DEFAULT_APP)));
+}
+
 TEST_F(CrostiniPackageServiceTest,
        AfterSecondInstallStartsProgressAppliesToSecond) {
   service_->QueueUninstallApplication(kDefaultAppId);
@@ -1035,6 +1057,28 @@ TEST_F(CrostiniPackageServiceTest,
       Printable(notification_display_service_->GetDisplayedNotificationsForType(
           NotificationHandler::Type::TRANSIENT)),
       UnorderedElementsAre(IsUninstallSuccessNotification(DEFAULT_APP)));
+}
+
+TEST_F(CrostiniPackageServiceTest, UninstallNotificationFailsOnVmShutdown) {
+  // Use two apps to ensure one is queued up.
+  service_->QueueUninstallApplication(kDefaultAppId);
+  service_->QueueUninstallApplication(kSecondAppId);
+
+  base::RunLoop run_loop;
+  CrostiniManager::GetForProfile(profile_.get())
+      ->StopVm(kCrostiniDefaultVmName,
+               base::BindOnce(
+                   [](base::OnceClosure quit, crostini::CrostiniResult) {
+                     std::move(quit).Run();
+                   },
+                   run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_THAT(
+      Printable(notification_display_service_->GetDisplayedNotificationsForType(
+          NotificationHandler::Type::TRANSIENT)),
+      UnorderedElementsAre(IsUninstallFailedNotification(DEFAULT_APP),
+                           IsUninstallFailedNotification(SECOND_APP)));
 }
 
 TEST_F(CrostiniPackageServiceTest, ClosingSuccessNotificationWorks) {
@@ -1819,6 +1863,31 @@ TEST_F(CrostiniPackageServiceTest,
       Printable(notification_display_service_->GetDisplayedNotificationsForType(
           NotificationHandler::Type::TRANSIENT)),
       UnorderedElementsAre(IsInstallSuccessNotification()));
+}
+
+TEST_F(CrostiniPackageServiceTest, InstallNotificationFailsOnVmShutdown) {
+  service_->InstallLinuxPackage(kCrostiniDefaultVmName,
+                                kCrostiniDefaultContainerName, kPackageFilePath,
+                                base::DoNothing());
+
+  base::RunLoop().RunUntilIdle();
+
+  StartAndSignalInstall(InstallLinuxPackageProgressSignal::INSTALLING);
+
+  base::RunLoop run_loop;
+  CrostiniManager::GetForProfile(profile_.get())
+      ->StopVm(kCrostiniDefaultVmName,
+               base::BindOnce(
+                   [](base::OnceClosure quit, crostini::CrostiniResult) {
+                     std::move(quit).Run();
+                   },
+                   run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_THAT(
+      Printable(notification_display_service_->GetDisplayedNotificationsForType(
+          NotificationHandler::Type::TRANSIENT)),
+      UnorderedElementsAre(IsInstallFailedNotification()));
 }
 
 TEST_F(CrostiniPackageServiceTest, UninstallsQueuesBehindStartingUpInstall) {

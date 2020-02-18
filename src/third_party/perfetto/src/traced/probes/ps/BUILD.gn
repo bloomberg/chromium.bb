@@ -19,7 +19,7 @@ source_set("ps") {
   deps = [
     "..:data_source",
     "../../../../gn:default_deps",
-    "../../../../include/perfetto/traced",
+    "../../../../include/perfetto/ext/traced",
     "../../../../protos/perfetto/config:zero",
     "../../../../protos/perfetto/trace/ps:zero",
     "../../../base",
@@ -35,7 +35,7 @@ source_set("unittests") {
   deps = [
     ":ps",
     "../../../../gn:default_deps",
-    "../../../../gn:gtest_deps",
+    "../../../../gn:gtest_and_gmock",
     "../../../../protos/perfetto/config:zero",
     "../../../../protos/perfetto/trace/ps:zero",
     "../../../../src/base:test_support",

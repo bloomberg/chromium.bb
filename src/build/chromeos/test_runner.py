@@ -44,7 +44,7 @@ CROS_RUN_TEST_PATH = os.path.abspath(os.path.join(
     CHROMITE_PATH, 'bin', 'cros_run_test'))
 
 # GN target that corresponds to the cros browser sanity test.
-SANITY_TEST_TARGET = 'cros_vm_sanity_test'
+SANITY_TEST_TARGET = 'cros_browser_sanity_test'
 
 # This is a special hostname that resolves to a different DUT in the lab
 # depending on which lab machine you're on.
@@ -64,10 +64,10 @@ class RemoteTest(object):
 
     # /home is mounted with "noexec" in the device, but some of our tools
     # and tests use the home dir as a workspace (eg: vpython downloads
-    # python binaries to ~/.vpython-root). /tmp doesn't have this
+    # python binaries to ~/.vpython-root). /usr/local/tmp doesn't have this
     # restriction, so change the location of the home dir for the
     # duration of the test.
-    'export HOME=/tmp',
+    'export HOME=/usr/local/tmp',
   ]
 
   def __init__(self, args, unknown_args):
@@ -297,12 +297,6 @@ class TastTest(RemoteTest):
           './' + os.path.relpath(self._on_device_script, self._path_to_outdir)
       ]
     else:
-      self._test_cmd += [
-          # Since we're not in a chroot, the tast bin won't automatically handle
-          # ssh auth. So point it to the ssh keys in chromite.
-          '--private-key',
-          os.path.join(CHROMITE_PATH, 'ssh_keys', 'testing_rsa'),
-      ]
       # Capture tast's results in the logs dir as well.
       if self._logs_dir:
         self._test_cmd += [
@@ -366,6 +360,11 @@ class TastTest(RemoteTest):
 
     if not suite_results.DidRunPass():
       return 1
+    elif return_code:
+      logging.warning(
+          'No failed tests found, but exit code of %d was returned from '
+          'cros_run_test.', return_code)
+      return return_code
     return 0
 
 
@@ -397,6 +396,7 @@ class GTestTest(RemoteTest):
     self._test_launcher_total_shards = args.test_launcher_total_shards
 
     self._on_device_script = None
+    self._stop_ui = args.stop_ui
 
   @property
   def suite_name(self):
@@ -445,13 +445,6 @@ class GTestTest(RemoteTest):
               vpython_spec_path),
       ])
 
-    # Load vivid before running capture_unittests
-    # TODO(crbug.com/904730): Once we start loading vivid in init service,
-    # we can remove this code.
-    if self._test_exe == 'capture_unittests':
-      device_test_script_contents.append(
-          'echo "test0000" | sudo -S modprobe vivid n_devs=1 node_types=0x1')
-
     test_invocation = (
         './%s --test-launcher-shard-index=%d '
         '--test-launcher-total-shards=%d' % (
@@ -464,9 +457,7 @@ class GTestTest(RemoteTest):
     if self._additional_args:
       test_invocation += ' %s' % ' '.join(self._additional_args)
 
-    if self._test_exe == 'interactive_ui_tests':
-      # interactive_ui_tests needs some special setup. See crbug.com/946685#c4
-      # TODO(bpastene): Put all this behind a flag if more suites need it.
+    if self._stop_ui:
       device_test_script_contents += [
           'stop ui',
       ]
@@ -560,9 +551,9 @@ class BrowserSanityTest(RemoteTest):
               '--gtest_repeat')]
 
     if self._additional_args:
-      raise TestFormatError(
-          'Sanity test should not have additional args: %s' % (
-              self._additional_args))
+      logging.error(
+          'Sanity test should not have additional args: These will be '
+          'ignored: %s', self._additional_args)
 
     # VMs don't have the disk space for an unstripped version of Chrome
     # instrumented for code coverage, so only strip in that case.
@@ -645,6 +636,12 @@ def host_cmd(args, unknown_args):
     ]
   if args.verbose:
     cros_run_test_cmd.append('--debug')
+
+  if args.logs_dir:
+    cros_run_test_cmd += [
+        '--results-src', '/var/log/',
+        '--results-dest-dir', args.logs_dir,
+    ]
 
   test_env = setup_env()
   if args.deploy_chrome:
@@ -767,6 +764,9 @@ def main():
       '--test-launcher-total-shards',
       type=int, default=os.environ.get('GTEST_TOTAL_SHARDS', 1),
       help='Total number of external shards.')
+  gtest_parser.add_argument(
+      '--stop-ui', action='store_true',
+      help='Will stop the UI service in the device before running the test.')
 
   # Tast test args.
   # pylint: disable=line-too-long

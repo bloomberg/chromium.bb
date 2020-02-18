@@ -5,6 +5,8 @@
 """The 'grit xmb' tool.
 """
 
+from __future__ import print_function
+
 import getopt
 import os
 import sys
@@ -20,7 +22,7 @@ from grit.tool import interface
 
 # Used to collapse presentable content to determine if
 # xml:space="preserve" is needed.
-_WHITESPACES_REGEX = lazy_re.compile(ur'\s\s*')
+_WHITESPACES_REGEX = lazy_re.compile(r'\s\s*')
 
 
 # See XmlEscape below.
@@ -192,12 +194,12 @@ Other options:
         self.ShowUsage()
         sys.exit(0)
     if not len(args) == 1:
-      print ('grit xmb takes exactly one argument, the path to the XMB file '
-             'to output.')
+      print('grit xmb takes exactly one argument, the path to the XMB file '
+            'to output.')
       return 2
 
     xmb_path = args[0]
-    res_tree = grd_reader.Parse(opts.input, debug=opts.extra_verbose)
+    res_tree = grd_reader.Parse(opts.input, debug=opts.extra_verbose, defines=self.defines)
     res_tree.SetOutputLanguage('en')
     res_tree.SetDefines(self.defines)
     res_tree.OnlyTheseTranslations([])
@@ -208,7 +210,7 @@ Other options:
         res_tree, output_file, limit_file, limit_is_grd, limit_file_dir)
     if limit_file:
       limit_file.close()
-    print "Wrote %s" % xmb_path
+    print("Wrote %s" % xmb_path)
 
   def Process(self, res_tree, output_file, limit_file=None, limit_is_grd=False,
               dir=None):

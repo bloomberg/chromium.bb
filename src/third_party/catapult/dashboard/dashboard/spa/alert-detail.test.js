@@ -4,15 +4,20 @@
 */
 'use strict';
 
-import AlertDetail from './alert-detail.js';
-import ExistingBugRequest from './existing-bug-request.js';
-import NewBugRequest from './new-bug-request.js';
-import findElements from './find-elements.js';
+import {AlertDetail} from './alert-detail.js';
+import {ExistingBugRequest} from './existing-bug-request.js';
+import {NewBugRequest} from './new-bug-request.js';
 import {STORE} from './element-base.js';
 import {TimeseriesRequest} from './timeseries-request.js';
 import {UPDATE} from './simple-redux.js';
-import {afterRender, animationFrame, timeout} from './utils.js';
 import {assert} from 'chai';
+import {findElements} from './find-elements.js';
+
+import {
+  afterRender,
+  animationFrame,
+  setDebugForTesting,
+} from './utils.js';
 
 suite('alert-detail', function() {
   async function fixture(options) {
@@ -30,7 +35,7 @@ suite('alert-detail', function() {
   let existingBugBody;
   let newBugBody;
   setup(() => {
-    window.IS_DEBUG = true;
+    setDebugForTesting(true);
     originalFetch = window.fetch;
     window.fetch = async(url, options) => {
       return {
@@ -78,7 +83,7 @@ suite('alert-detail', function() {
     });
     await afterRender();
     const unassign = findElements(ad, e =>
-      e.matches('raised-button') && /Unassign/.test(e.textContent))[0];
+      e.matches('chops-button') && /Unassign/.test(e.textContent))[0];
     unassign.click();
     await afterRender();
     assert.strictEqual(0, ad.bugId);
@@ -89,7 +94,7 @@ suite('alert-detail', function() {
     const ad = await fixture({
     });
     const nudge = findElements(ad, e =>
-      e.matches('raised-button') && /Nudge/.test(e.textContent))[0];
+      e.matches('chops-button') && /Nudge/.test(e.textContent))[0];
     nudge.click();
     await afterRender();
     assert.isTrue(STORE.getState().test.nudge.isOpen);
@@ -122,11 +127,12 @@ suite('alert-detail', function() {
     });
     await afterRender();
     const ignore = findElements(ad, e =>
-      e.matches('raised-button') && /Ignore/.test(e.textContent))[0];
+      e.matches('chops-button') && /Ignore/.test(e.textContent))[0];
     ignore.click();
     await afterRender();
-    assert.strictEqual(-2, ad.bugId);
-    assert.strictEqual('-2', existingBugBody.get('bug'));
+    assert.strictEqual(ExistingBugRequest.IGNORE_BUG_ID, ad.bugId);
+    assert.strictEqual('' + ExistingBugRequest.IGNORE_BUG_ID,
+        existingBugBody.get('bug'));
   });
 
   test('new bug', async function() {
@@ -138,7 +144,7 @@ suite('alert-detail', function() {
     });
     await afterRender();
     const newBug = findElements(ad, e =>
-      e.matches('raised-button') && /New Bug/.test(e.textContent))[0];
+      e.matches('chops-button') && /New Bug/.test(e.textContent))[0];
     newBug.click();
     await afterRender();
     let resolveNewBug;
@@ -146,7 +152,7 @@ suite('alert-detail', function() {
       resolveNewBug = resolve;
     });
     const submit = findElements(ad, e =>
-      e.matches('raised-button') && /Submit/.test(e.textContent))[0];
+      e.matches('chops-button') && /Submit/.test(e.textContent))[0];
     submit.click();
     await afterRender();
     assert.strictEqual('[creating]', ad.bugId);
@@ -165,7 +171,7 @@ suite('alert-detail', function() {
     });
     await afterRender();
     const existingBug = findElements(ad, e =>
-      e.matches('raised-button') && /Existing Bug/.test(e.textContent))[0];
+      e.matches('chops-button') && /Existing Bug/.test(e.textContent))[0];
     existingBug.click();
     await afterRender();
     STORE.dispatch(UPDATE('test.existingBug', {bugId: '123456'}));
@@ -177,7 +183,7 @@ suite('alert-detail', function() {
     });
     const menu = findElements(ad, e => e.matches('triage-existing'))[0];
     const submit = findElements(menu, e =>
-      e.matches('raised-button') && /Submit/.test(e.textContent))[0];
+      e.matches('chops-button') && /Submit/.test(e.textContent))[0];
     submit.click();
     await afterRender();
     assert.strictEqual('123456', ad.bugId);

@@ -15,7 +15,6 @@
 #include "chrome/browser/sessions/session_restore_test_utils.h"
 #include "chrome/browser/sessions/tab_loader_tester.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/variations/variations_params_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -103,9 +102,9 @@ class TabLoaderTest : public testing::Test {
     // TabLoadTracker needs the resource_coordinator WebContentsData to be
     // initialized.
     ResourceCoordinatorTabHelper::CreateForWebContents(test_contents);
-    restored_tabs_.push_back(
-        RestoredTab(test_contents, is_active /* is_active */,
-                    false /* is_app */, false /* is_pinned */));
+    restored_tabs_.push_back(RestoredTab(
+        test_contents, is_active /* is_active */, false /* is_app */,
+        false /* is_pinned */, base::nullopt /* group */));
 
     // If the tab is active start "loading" it right away for consistency with
     // session restore code.

@@ -45,6 +45,8 @@ const char kHandlePowerButtonAcknowledgmentMethod[] =
 const char kIgnoreNextPowerButtonPressMethod[] = "IgnoreNextPowerButtonPress";
 const char kRecordDarkResumeWakeReasonMethod[] = "RecordDarkResumeWakeReason";
 const char kGetInactivityDelaysMethod[] = "GetInactivityDelays";
+// TODO(alanlxl): remove kDeferScreenDimMethod after chrome is uprevved.
+// https://crrev.com/c/1598921
 const char kDeferScreenDimMethod[] = "DeferScreenDim";
 const char kCreateArcTimersMethod[] = "CreateArcTimers";
 const char kStartArcTimerMethod[] = "StartArcTimer";
@@ -59,6 +61,8 @@ const char kSuspendImminentSignal[] = "SuspendImminent";
 const char kDarkSuspendImminentSignal[] = "DarkSuspendImminent";
 const char kSuspendDoneSignal[] = "SuspendDone";
 const char kInputEventSignal[] = "InputEvent";
+// TODO(alanlxl): remove kScreenDimImminentSignal after chrome is uprevved.
+// https://crrev.com/c/1598921
 const char kScreenDimImminentSignal[] = "ScreenDimImminent";
 const char kIdleActionImminentSignal[] = "IdleActionImminent";
 const char kIdleActionDeferredSignal[] = "IdleActionDeferred";

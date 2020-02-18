@@ -37,12 +37,6 @@ chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }
 
-int64_t GetSpeed(base::TimeTicks start_tick, int64_t units_processed) {
-  const base::TimeDelta diff = base::TimeTicks::Now() - start_tick;
-  const int64_t diff_ms = diff.InMilliseconds();
-  return diff_ms == 0 ? 0 : units_processed * 1000 / diff_ms;
-}
-
 }  // namespace
 
 namespace plugin_vm {
@@ -97,7 +91,7 @@ void PluginVmImageManager::OnDownloadProgressUpdated(uint64_t bytes_downloaded,
   if (observer_) {
     observer_->OnDownloadProgressUpdated(
         bytes_downloaded, content_length,
-        GetSpeed(download_start_tick_, bytes_downloaded));
+        base::TimeTicks::Now() - download_start_tick_);
   }
 }
 
@@ -285,7 +279,7 @@ void PluginVmImageManager::OnDiskImageProgress(
     case vm_tools::concierge::DiskImageStatus::DISK_STATUS_IN_PROGRESS:
       if (observer_) {
         observer_->OnImportProgressUpdated(
-            percent_completed, GetSpeed(import_start_tick_, percent_completed));
+            percent_completed, base::TimeTicks::Now() - import_start_tick_);
       }
       return;
     default:
@@ -413,7 +407,8 @@ std::string PluginVmImageManager::GetCurrentDownloadGuidForTesting() {
 
 PluginVmImageManager::PluginVmImageManager(Profile* profile)
     : profile_(profile),
-      download_service_(DownloadServiceFactory::GetForBrowserContext(profile)),
+      download_service_(
+          DownloadServiceFactory::GetForKey(profile->GetProfileKey())),
       weak_ptr_factory_(this) {}
 
 GURL PluginVmImageManager::GetPluginVmImageDownloadUrl() {
@@ -460,12 +455,33 @@ download::DownloadParams PluginVmImageManager::GetDownloadParams(
   params.guid = base::GenerateGUID();
   params.callback = base::BindRepeating(&PluginVmImageManager::OnStartDownload,
                                         weak_ptr_factory_.GetWeakPtr());
-  // TODO(https://crbug.com/966399): Create annotation.
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("plugin_vm_image_download", R"(
+        semantics {
+          sender: "Plugin VM image manager"
+          description: "Request to download Plugin VM image is sent in order "
+            "to allow user to run Plugin VM."
+          trigger: "User clicking on Plugin VM icon when Plugin VM is not yet "
+            "installed."
+          data: "Request to download Plugin VM image. Sends cookies to "
+            "authenticate the user."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user"
+          chrome_policy {
+            PluginVmImage {
+              PluginVmImage: "{'url': 'example.com', 'hash': 'sha256hash'}"
+            }
+          }
+        }
+      )");
   params.traffic_annotation =
-      net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET);
+      net::MutableNetworkTrafficAnnotationTag(traffic_annotation);
 
   // RequestParams
-
   params.request_params.url = url;
   params.request_params.method = "GET";
 

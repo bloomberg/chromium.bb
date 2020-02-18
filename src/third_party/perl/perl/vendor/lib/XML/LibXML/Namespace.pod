@@ -8,7 +8,7 @@ XML::LibXML::Namespace - XML::LibXML Namespace Implementation
 
   use XML::LibXML;
   # Only methods specific to Namespace nodes are listed here,
-  # see XML::LibXML::Node manpage for other methods
+  # see the XML::LibXML::Node manpage for other methods
 
   my $ns = XML::LibXML::Namespace->new($nsURI);
   print $ns->nodeName();
@@ -19,6 +19,7 @@ XML::LibXML::Namespace - XML::LibXML Namespace Implementation
   print $ns->value();
   $known_uri = $ns->getNamespaceURI();
   $known_prefix = $ns->getPrefix();
+  $key = $ns->unique_key();
 
 =head1 DESCRIPTION
 
@@ -118,19 +119,29 @@ Returns the string "http://www.w3.org/2000/xmlns/"
 Returns the string "xmlns"
 
 
+=item unique_key
+
+  $key = $ns->unique_key();
+
+This method returns a key guaranteed to be unique for this namespace, and to
+always be the same value for this namespace. Two namespace objects return the
+same key if and only if they have the same prefix and the same URI. The
+returned key value is useful as a key in hashes.
+
+
 
 =back
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -141,3 +152,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

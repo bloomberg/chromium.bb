@@ -51,7 +51,7 @@
 #include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_from_url.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
@@ -63,14 +63,6 @@ namespace blink {
 using namespace html_names;
 
 namespace {
-
-// Used for histograms, do not change the order.
-enum PluginRequestObjectResult {
-  kPluginRequestObjectResultFailure = 0,
-  kPluginRequestObjectResultSuccess = 1,
-  // Keep at the end.
-  kPluginRequestObjectResultMax
-};
 
 String GetMIMETypeFromURL(const KURL& url) {
   String filename = url.LastPathComponent();
@@ -164,57 +156,6 @@ void HTMLPlugInElement::SetFocused(bool focused, WebFocusType focus_type) {
   HTMLFrameOwnerElement::SetFocused(focused, focus_type);
 }
 
-bool HTMLPlugInElement::RequestObjectInternal(
-    const PluginParameters& plugin_params) {
-  if (url_.IsEmpty() && service_type_.IsEmpty())
-    return false;
-
-  if (ProtocolIsJavaScript(url_))
-    return false;
-
-  KURL completed_url =
-      url_.IsEmpty() ? KURL() : GetDocument().CompleteURL(url_);
-  if (!AllowedToLoadObject(completed_url, service_type_))
-    return false;
-
-  ObjectContentType object_type = GetObjectContentType();
-  bool handled_externally =
-      object_type == ObjectContentType::kExternalPlugin &&
-      AllowedToLoadPlugin(completed_url, service_type_) &&
-      GetDocument().GetFrame()->Client()->IsPluginHandledExternally(
-          *this, completed_url,
-          service_type_.IsEmpty() ? GetMIMETypeFromURL(completed_url)
-                                  : service_type_);
-  if (handled_externally)
-    ResetInstance();
-  if (object_type == ObjectContentType::kFrame ||
-      object_type == ObjectContentType::kImage || handled_externally) {
-    if (ContentFrame() && ContentFrame()->IsRemoteFrame()) {
-      // During lazy reattaching, the plugin element loses EmbeddedContentView.
-      // Since the ContentFrame() is not torn down the options here are to
-      // either re-create a new RemoteFrameView or reuse the old one. The former
-      // approach requires CommitNavigation for OOPF to be sent back here in
-      // the parent process. It is easier to just reuse the current FrameView
-      // instead until plugin element issue are properly resolved (for context
-      // see https://crbug.com/781880).
-      DCHECK(!OwnedEmbeddedContentView());
-      SetEmbeddedContentView(ContentFrame()->View());
-      DCHECK(OwnedEmbeddedContentView());
-    }
-    // If the plugin element already contains a subframe,
-    // loadOrRedirectSubframe will re-use it. Otherwise, it will create a
-    // new frame and set it as the LayoutEmbeddedContent's EmbeddedContentView,
-    // causing what was previously in the EmbeddedContentView to be torn down.
-    return LoadOrRedirectSubframe(completed_url, GetNameAttribute(), true);
-  }
-
-  // If an object's content can't be handled and it has no fallback, let
-  // it be handled as a plugin to show the broken plugin icon.
-  bool use_fallback =
-      object_type == ObjectContentType::kNone && HasFallbackContent();
-  return LoadPlugin(completed_url, service_type_, plugin_params, use_fallback);
-}
-
 bool HTMLPlugInElement::CanProcessDrag() const {
   return PluginEmbeddedContentView() &&
          PluginEmbeddedContentView()->CanProcessDrag();
@@ -294,10 +235,8 @@ void HTMLPlugInElement::AttachLayoutTree(AttachContext& context) {
 }
 
 void HTMLPlugInElement::IntrinsicSizingInfoChanged() {
-  if (auto* layout_object = GetLayoutObject()) {
-    layout_object->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-        layout_invalidation_reason::kUnknown);
-  }
+  if (auto* embedded_object = GetLayoutEmbeddedObject())
+    embedded_object->IntrinsicSizeChanged();
 }
 
 void HTMLPlugInElement::UpdatePlugin() {
@@ -335,7 +274,7 @@ ParsedFeaturePolicy HTMLPlugInElement::ConstructContainerPolicy(
   return container_policy;
 }
 
-void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
+void HTMLPlugInElement::DetachLayoutTree(bool performing_reattach) {
   // Update the EmbeddedContentView the next time we attach (detaching destroys
   // the plugin).
   // FIXME: None of this "needsPluginUpdate" related code looks right.
@@ -347,7 +286,7 @@ void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
     GetDocument().DecrementLoadEventDelayCount();
   }
 
-  bool keep_plugin = context.performing_reattach && !dispose_view_;
+  bool keep_plugin = performing_reattach && !dispose_view_;
 
   // Only try to persist a plugin we actually own.
   WebPluginContainerImpl* plugin = OwnedPlugin();
@@ -370,12 +309,12 @@ void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
   // state. But only if we're reattaching. Otherwise we need to throw it away,
   // since there's no telling what's going to happen next, and it wouldn't be
   // safe to keep it.
-  if (!context.performing_reattach)
+  if (!performing_reattach)
     SetDisposeView();
 
   ResetInstance();
 
-  HTMLFrameOwnerElement::DetachLayoutTree(context);
+  HTMLFrameOwnerElement::DetachLayoutTree(performing_reattach);
 }
 
 LayoutObject* HTMLPlugInElement::CreateLayoutObject(const ComputedStyle& style,
@@ -602,11 +541,9 @@ bool HTMLPlugInElement::IsImageType() const {
 }
 
 LayoutEmbeddedObject* HTMLPlugInElement::GetLayoutEmbeddedObject() const {
-  // HTMLObjectElement and HTMLEmbedElement may return arbitrary layoutObjects
+  // HTMLObjectElement and HTMLEmbedElement may return arbitrary LayoutObjects
   // when using fallback content.
-  if (!GetLayoutObject() || !GetLayoutObject()->IsEmbeddedObject())
-    return nullptr;
-  return ToLayoutEmbeddedObject(GetLayoutObject());
+  return ToLayoutEmbeddedObjectOrNull(GetLayoutObject());
 }
 
 // We don't use url_, as it may not be the final URL that the object loads,
@@ -619,15 +556,53 @@ bool HTMLPlugInElement::AllowedToLoadFrameURL(const String& url) {
 }
 
 bool HTMLPlugInElement::RequestObject(const PluginParameters& plugin_params) {
-  bool result = RequestObjectInternal(plugin_params);
+  if (url_.IsEmpty() && service_type_.IsEmpty())
+    return false;
 
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, result_histogram,
-      ("Plugin.RequestObjectResult", kPluginRequestObjectResultMax));
-  result_histogram.Count(result ? kPluginRequestObjectResultSuccess
-                                : kPluginRequestObjectResultFailure);
+  if (ProtocolIsJavaScript(url_))
+    return false;
 
-  return result;
+  KURL completed_url =
+      url_.IsEmpty() ? KURL() : GetDocument().CompleteURL(url_);
+  if (!AllowedToLoadObject(completed_url, service_type_))
+    return false;
+
+  ObjectContentType object_type = GetObjectContentType();
+  bool handled_externally =
+      object_type == ObjectContentType::kExternalPlugin &&
+      AllowedToLoadPlugin(completed_url, service_type_) &&
+      GetDocument().GetFrame()->Client()->IsPluginHandledExternally(
+          *this, completed_url,
+          service_type_.IsEmpty() ? GetMIMETypeFromURL(completed_url)
+                                  : service_type_);
+  if (handled_externally)
+    ResetInstance();
+  if (object_type == ObjectContentType::kFrame ||
+      object_type == ObjectContentType::kImage || handled_externally) {
+    if (ContentFrame() && ContentFrame()->IsRemoteFrame()) {
+      // During lazy reattaching, the plugin element loses EmbeddedContentView.
+      // Since the ContentFrame() is not torn down the options here are to
+      // either re-create a new RemoteFrameView or reuse the old one. The former
+      // approach requires CommitNavigation for OOPF to be sent back here in
+      // the parent process. It is easier to just reuse the current FrameView
+      // instead until plugin element issue are properly resolved (for context
+      // see https://crbug.com/781880).
+      DCHECK(!OwnedEmbeddedContentView());
+      SetEmbeddedContentView(ContentFrame()->View());
+      DCHECK(OwnedEmbeddedContentView());
+    }
+    // If the plugin element already contains a subframe,
+    // loadOrRedirectSubframe will re-use it. Otherwise, it will create a
+    // new frame and set it as the LayoutEmbeddedContent's EmbeddedContentView,
+    // causing what was previously in the EmbeddedContentView to be torn down.
+    return LoadOrRedirectSubframe(completed_url, GetNameAttribute(), true);
+  }
+
+  // If an object's content can't be handled and it has no fallback, let
+  // it be handled as a plugin to show the broken plugin icon.
+  bool use_fallback =
+      object_type == ObjectContentType::kNone && HasFallbackContent();
+  return LoadPlugin(completed_url, service_type_, plugin_params, use_fallback);
 }
 
 bool HTMLPlugInElement::LoadPlugin(const KURL& url,

@@ -10,14 +10,18 @@
 
 namespace cc {
 
-class PaintWorkletInput;
-
 class TestPaintWorkletLayerPainter : public PaintWorkletLayerPainter {
  public:
   TestPaintWorkletLayerPainter();
   ~TestPaintWorkletLayerPainter() override;
 
-  sk_sp<PaintRecord> Paint(PaintWorkletInput*) override;
+  void DispatchWorklets(PaintWorkletJobMap, DoneCallback) override;
+  bool HasOngoingDispatch() const override;
+
+  DoneCallback TakeDoneCallback() { return std::move(done_callback_); }
+
+ private:
+  DoneCallback done_callback_;
 };
 
 }  // namespace cc

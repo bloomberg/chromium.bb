@@ -24,7 +24,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_backend.h"
@@ -48,6 +48,13 @@
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
+
+// TODO(crbug.com/961068): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_TestQuotaOnTruncation DISABLED_TestQuotaOnTruncation
+#else
+#define MAYBE_TestQuotaOnTruncation TestQuotaOnTruncation
+#endif
 
 using content::AsyncFileTestHelper;
 using storage::FileSystemContext;
@@ -978,7 +985,7 @@ TEST_P(ObfuscatedFileUtilTest, TestTruncate) {
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
-TEST_P(ObfuscatedFileUtilTest, TestQuotaOnTruncation) {
+TEST_P(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnTruncation) {
   bool created = false;
   FileSystemURL url = CreateURLFromUTF8("file");
 

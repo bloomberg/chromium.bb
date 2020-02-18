@@ -34,46 +34,77 @@ class SliceTracker {
   explicit SliceTracker(TraceProcessorContext*);
   virtual ~SliceTracker();
 
-  void BeginAndroid(int64_t timestamp,
-                    uint32_t ftrace_tid,
-                    uint32_t atrace_tgid,
-                    StringId cat,
-                    StringId name);
+  base::Optional<uint32_t> BeginAndroid(int64_t timestamp,
+                                        uint32_t ftrace_tid,
+                                        uint32_t atrace_tgid,
+                                        StringId category,
+                                        StringId name);
 
   // virtual for testing
-  virtual void Begin(int64_t timestamp,
-                     UniqueTid utid,
-                     StringId cat,
-                     StringId name,
-                     SetArgsCallback args_callback = SetArgsCallback());
+  virtual base::Optional<uint32_t> Begin(
+      int64_t timestamp,
+      int64_t ref,
+      RefType ref_type,
+      StringId category,
+      StringId name,
+      SetArgsCallback args_callback = SetArgsCallback());
 
   // virtual for testing
-  virtual void Scoped(int64_t timestamp,
-                      UniqueTid utid,
-                      StringId cat,
-                      StringId name,
-                      int64_t duration,
-                      SetArgsCallback args_callback = SetArgsCallback());
+  virtual base::Optional<uint32_t> Scoped(
+      int64_t timestamp,
+      int64_t ref,
+      RefType ref_type,
+      StringId category,
+      StringId name,
+      int64_t duration,
+      SetArgsCallback args_callback = SetArgsCallback());
 
-  void EndAndroid(int64_t timestamp, uint32_t ftrace_tid, uint32_t atrace_tgid);
+  base::Optional<uint32_t> EndAndroid(int64_t timestamp,
+                                      uint32_t ftrace_tid,
+                                      uint32_t atrace_tgid);
 
   // virtual for testing
-  virtual void End(int64_t timestamp,
-                   UniqueTid utid,
-                   StringId opt_cat = {},
-                   StringId opt_name = {},
-                   SetArgsCallback args_callback = SetArgsCallback());
+  virtual base::Optional<uint32_t> End(
+      int64_t timestamp,
+      int64_t ref,
+      RefType ref_type,
+      StringId opt_category = {},
+      StringId opt_name = {},
+      SetArgsCallback args_callback = SetArgsCallback());
+
+  void FlushPendingSlices();
 
  private:
   using SlicesStack = std::vector<std::pair<uint32_t /* row */, ArgsTracker>>;
 
-  void StartSlice(int64_t timestamp,
-                  int64_t duration,
-                  UniqueTid utid,
-                  StringId cat,
-                  StringId name,
-                  SetArgsCallback args_callback);
-  void CompleteSlice(UniqueTid tid);
+  struct StackMapKey {
+    int64_t ref;
+    RefType type;
+
+    bool operator==(const StackMapKey& rhs) const {
+      return std::tie(ref, type) == std::tie(rhs.ref, rhs.type);
+    }
+  };
+
+  struct StackMapHash {
+    size_t operator()(const StackMapKey& p) const {
+      base::Hash hash;
+      hash.Update(p.ref);
+      hash.Update(p.type);
+      return static_cast<size_t>(hash.digest());
+    }
+  };
+
+  using StackMap = std::unordered_map<StackMapKey, SlicesStack, StackMapHash>;
+
+  base::Optional<uint32_t> StartSlice(int64_t timestamp,
+                                      int64_t duration,
+                                      int64_t ref,
+                                      RefType ref_type,
+                                      StringId category,
+                                      StringId name,
+                                      SetArgsCallback args_callback);
+  base::Optional<uint32_t> CompleteSlice(StackMapKey stack_key);
 
   void MaybeCloseStack(int64_t end_ts, SlicesStack*);
   int64_t GetStackHash(const SlicesStack&);
@@ -83,7 +114,7 @@ class SliceTracker {
   int64_t prev_timestamp_ = 0;
 
   TraceProcessorContext* const context_;
-  std::unordered_map<UniqueTid, SlicesStack> threads_;
+  StackMap stacks_;
   std::unordered_map<uint32_t, uint32_t> ftrace_to_atrace_tgid_;
 };
 

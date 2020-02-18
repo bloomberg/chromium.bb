@@ -32,19 +32,19 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_transform.h"
 #include "third_party/blink/renderer/core/animation/effect_input.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
-#include "third_party/blink/renderer/core/animation/keyframe_effect_options.h"
 #include "third_party/blink/renderer/core/animation/sampled_effect.h"
 #include "third_party/blink/renderer/core/animation/timing_input.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -275,10 +275,6 @@ bool KeyframeEffect::HasActiveAnimationsOnCompositor(
 
 bool KeyframeEffect::CancelAnimationOnCompositor(
     CompositorAnimation* compositor_animation) {
-  // FIXME: cancelAnimationOnCompositor is called from withins style recalc.
-  // This queries compositingState, which is not necessarily up to date.
-  // https://code.google.com/p/chromium/issues/detail?id=339847
-  DisableCompositingQueryAsserts disabler;
   if (!HasActiveAnimationsOnCompositor())
     return false;
   if (!target_ || !target_->GetLayoutObject())
@@ -333,6 +329,47 @@ void KeyframeEffect::Trace(blink::Visitor* visitor) {
   AnimationEffect::Trace(visitor);
 }
 
+bool KeyframeEffect::AnimationsPreserveAxisAlignment(
+    const PropertyHandle& property) const {
+  const auto* keyframes = Model()->GetPropertySpecificKeyframes(property);
+  if (!keyframes)
+    return true;
+  for (const auto& keyframe : *keyframes) {
+    const auto* value = keyframe->GetCompositorKeyframeValue();
+    if (!value)
+      continue;
+    DCHECK(value->IsTransform());
+    const auto& transform_operations =
+        ToCompositorKeyframeTransform(value)->GetTransformOperations();
+    if (!transform_operations.PreservesAxisAlignment())
+      return false;
+  }
+  return true;
+}
+
+namespace {
+
+static const size_t num_transform_properties = 4;
+
+const CSSProperty** TransformProperties() {
+  static const CSSProperty* kTransformProperties[num_transform_properties] = {
+      &GetCSSPropertyTransform(), &GetCSSPropertyScale(),
+      &GetCSSPropertyRotate(), &GetCSSPropertyTranslate()};
+  return kTransformProperties;
+}
+
+}  // namespace
+
+bool KeyframeEffect::AnimationsPreserveAxisAlignment() const {
+  static const auto** properties = TransformProperties();
+  for (size_t i = 0; i < num_transform_properties; i++) {
+    if (!AnimationsPreserveAxisAlignment(PropertyHandle(*properties[i])))
+      return false;
+  }
+
+  return true;
+}
+
 EffectModel::CompositeOperation KeyframeEffect::CompositeInternal() const {
   return model_->Composite();
 }
@@ -351,12 +388,12 @@ void KeyframeEffect::ApplyEffects() {
   bool changed = false;
   if (sampled_effect_) {
     changed = model_->Sample(clampTo<int>(iteration, 0), Progress().value(),
-                             IterationDuration(),
+                             SpecifiedTiming().IterationDuration(),
                              sampled_effect_->MutableInterpolations());
   } else {
     HeapVector<Member<Interpolation>> interpolations;
     model_->Sample(clampTo<int>(iteration, 0), Progress().value(),
-                   IterationDuration(), interpolations);
+                   SpecifiedTiming().IterationDuration(), interpolations);
     if (!interpolations.IsEmpty()) {
       auto* sampled_effect =
           MakeGarbageCollected<SampledEffect>(this, owner_->SequenceNumber());
@@ -436,19 +473,20 @@ double KeyframeEffect::CalculateTimeToEffectChange(
     double local_time,
     double time_to_next_iteration) const {
   const double start_time = SpecifiedTiming().start_delay;
-  const double end_time_minus_end_delay = start_time + RepeatedDuration();
+  const double end_time_minus_end_delay =
+      start_time + SpecifiedTiming().ActiveDuration();
   const double end_time =
       end_time_minus_end_delay + SpecifiedTiming().end_delay;
   const double after_time = std::min(end_time_minus_end_delay, end_time);
 
   switch (GetPhase()) {
-    case kPhaseNone:
+    case Timing::kPhaseNone:
       return std::numeric_limits<double>::infinity();
-    case kPhaseBefore:
+    case Timing::kPhaseBefore:
       DCHECK_GE(start_time, local_time);
       return forwards ? start_time - local_time
                       : std::numeric_limits<double>::infinity();
-    case kPhaseActive:
+    case Timing::kPhaseActive:
       if (forwards) {
         // Need service to apply fill / fire events.
         const double time_to_end = after_time - local_time;
@@ -458,13 +496,16 @@ double KeyframeEffect::CalculateTimeToEffectChange(
         return time_to_end;
       }
       return 0;
-    case kPhaseAfter:
+    case Timing::kPhaseAfter:
       DCHECK_GE(local_time, after_time);
-      // If this KeyframeEffect is still in effect then it will need to update
-      // when its parent goes out of effect. We have no way of knowing when
-      // that will be, however, so the parent will need to supply it.
-      return forwards ? std::numeric_limits<double>::infinity()
-                      : local_time - after_time;
+      if (forwards) {
+        // If an animation has a positive-valued end delay, we need an
+        // additional tick at the end time to ensure that the finished event is
+        // delivered.
+        return end_time > local_time ? end_time - local_time
+                                     : std::numeric_limits<double>::infinity();
+      }
+      return local_time - after_time;
     default:
       NOTREACHED();
       return std::numeric_limits<double>::infinity();
@@ -478,14 +519,14 @@ bool KeyframeEffect::HasIncompatibleStyle() const {
   if (!target_->GetComputedStyle())
     return false;
 
-  bool affects_transform = Affects(PropertyHandle(GetCSSPropertyTransform())) ||
-                           Affects(PropertyHandle(GetCSSPropertyScale())) ||
-                           Affects(PropertyHandle(GetCSSPropertyRotate())) ||
-                           Affects(PropertyHandle(GetCSSPropertyTranslate()));
-
   if (HasActiveAnimationsOnCompositor()) {
-    if (target_->GetComputedStyle()->HasOffset() && affects_transform)
-      return true;
+    if (target_->GetComputedStyle()->HasOffset()) {
+      static const auto** properties = TransformProperties();
+      for (size_t i = 0; i < num_transform_properties; i++) {
+        if (Affects(PropertyHandle(*properties[i])))
+          return true;
+      }
+    }
     return HasMultipleTransformProperties();
   }
 

@@ -10,6 +10,7 @@
 #include "video/video_quality_test.h"
 
 #include <stdio.h>
+
 #include <algorithm>
 #include <deque>
 #include <map>
@@ -17,10 +18,12 @@
 #include <vector>
 
 #include "absl/memory/memory.h"
+#include "api/fec_controller_override.h"
 #include "api/media_transport_config.h"
 #include "api/rtc_event_log_output_file.h"
 #include "api/task_queue/default_task_queue_factory.h"
 #include "api/video/builtin_video_bitrate_allocator_factory.h"
+#include "api/video_codecs/video_encoder.h"
 #include "call/fake_network_pipe.h"
 #include "call/simulated_network.h"
 #include "media/engine/adm_helpers.h"
@@ -66,6 +69,8 @@ constexpr uint32_t kThumbnailSendSsrcStart = 0xE0000;
 constexpr uint32_t kThumbnailRtxSsrcStart = 0xF0000;
 
 constexpr int kDefaultMaxQp = cricket::WebRtcVideoChannel::kDefaultQpMax;
+
+const VideoEncoder::Capabilities kCapabilities(false);
 
 std::pair<uint32_t, uint32_t> GetMinMaxBitratesBps(const VideoCodec& codec,
                                                    size_t spatial_idx) {
@@ -131,12 +136,15 @@ class QualityTestVideoEncoder : public VideoEncoder,
   }
 
   // Implement VideoEncoder
+  void SetFecControllerOverride(
+      FecControllerOverride* fec_controller_override) {
+    // Ignored.
+  }
+
   int32_t InitEncode(const VideoCodec* codec_settings,
-                     int32_t number_of_cores,
-                     size_t max_payload_size) override {
+                     const Settings& settings) override {
     codec_settings_ = *codec_settings;
-    return encoder_->InitEncode(codec_settings, number_of_cores,
-                                max_payload_size);
+    return encoder_->InitEncode(codec_settings, settings);
   }
 
   int32_t RegisterEncodeCompleteCallback(
@@ -267,11 +275,11 @@ std::unique_ptr<VideoDecoder> VideoQualityTest::CreateVideoDecoder(
   std::unique_ptr<VideoDecoder> decoder;
   if (format.name == "multiplex") {
     decoder = absl::make_unique<MultiplexDecoderAdapter>(
-        &internal_decoder_factory_, SdpVideoFormat(cricket::kVp9CodecName));
+        decoder_factory_.get(), SdpVideoFormat(cricket::kVp9CodecName));
   } else if (format.name == "FakeCodec") {
     decoder = webrtc::FakeVideoDecoderFactory::CreateVideoDecoder();
   } else {
-    decoder = internal_decoder_factory_.CreateVideoDecoder(format);
+    decoder = decoder_factory_->CreateVideoDecoder(format);
   }
   if (!params_.logging.encoded_frame_base_path.empty()) {
     rtc::StringBuilder str;
@@ -289,15 +297,15 @@ std::unique_ptr<VideoEncoder> VideoQualityTest::CreateVideoEncoder(
     VideoAnalyzer* analyzer) {
   std::unique_ptr<VideoEncoder> encoder;
   if (format.name == "VP8") {
-    encoder = absl::make_unique<EncoderSimulcastProxy>(
-        &internal_encoder_factory_, format);
+    encoder = absl::make_unique<EncoderSimulcastProxy>(encoder_factory_.get(),
+                                                       format);
   } else if (format.name == "multiplex") {
     encoder = absl::make_unique<MultiplexEncoderAdapter>(
-        &internal_encoder_factory_, SdpVideoFormat(cricket::kVp9CodecName));
+        encoder_factory_.get(), SdpVideoFormat(cricket::kVp9CodecName));
   } else if (format.name == "FakeCodec") {
     encoder = webrtc::FakeVideoEncoderFactory::CreateVideoEncoder();
   } else {
-    encoder = internal_encoder_factory_.CreateVideoEncoder(format);
+    encoder = encoder_factory_->CreateVideoEncoder(format);
   }
 
   std::vector<FileWrapper> encoded_frame_dump_files;
@@ -364,6 +372,16 @@ VideoQualityTest::VideoQualityTest(
   if (injection_components_ == nullptr) {
     injection_components_ = absl::make_unique<InjectionComponents>();
   }
+  if (injection_components_->video_decoder_factory != nullptr) {
+    decoder_factory_ = std::move(injection_components_->video_decoder_factory);
+  } else {
+    decoder_factory_ = absl::make_unique<InternalDecoderFactory>();
+  }
+  if (injection_components_->video_encoder_factory != nullptr) {
+    encoder_factory_ = std::move(injection_components_->video_encoder_factory);
+  } else {
+    encoder_factory_ = absl::make_unique<InternalEncoderFactory>();
+  }
 
   payload_type_map_ = test::CallTest::payload_type_map_;
   RTC_DCHECK(payload_type_map_.find(kPayloadTypeH264) ==
@@ -372,9 +390,12 @@ VideoQualityTest::VideoQualityTest(
              payload_type_map_.end());
   RTC_DCHECK(payload_type_map_.find(kPayloadTypeVP9) ==
              payload_type_map_.end());
+  RTC_DCHECK(payload_type_map_.find(kPayloadTypeGeneric) ==
+             payload_type_map_.end());
   payload_type_map_[kPayloadTypeH264] = webrtc::MediaType::VIDEO;
   payload_type_map_[kPayloadTypeVP8] = webrtc::MediaType::VIDEO;
   payload_type_map_[kPayloadTypeVP9] = webrtc::MediaType::VIDEO;
+  payload_type_map_[kPayloadTypeGeneric] = webrtc::MediaType::VIDEO;
 
   fec_controller_factory_ =
       std::move(injection_components_->fec_controller_factory);
@@ -705,6 +726,7 @@ void VideoQualityTest::SetupVideo(Transport* send_transport,
   size_t num_video_substreams = params_.ss[0].streams.size();
   RTC_CHECK(num_video_streams_ > 0);
   video_encoder_configs_.resize(num_video_streams_);
+  std::string generic_codec_name;
   for (size_t video_idx = 0; video_idx < num_video_streams_; ++video_idx) {
     video_send_configs_.push_back(VideoSendStream::Config(send_transport));
     video_encoder_configs_.push_back(VideoEncoderConfig());
@@ -726,8 +748,13 @@ void VideoQualityTest::SetupVideo(Transport* send_transport,
     } else if (params_.video[video_idx].codec == "FakeCodec") {
       payload_type = kFakeVideoSendPayloadType;
     } else {
-      RTC_NOTREACHED() << "Codec not supported!";
-      return;
+      RTC_CHECK(generic_codec_name.empty() ||
+                generic_codec_name == params_.video[video_idx].codec)
+          << "Supplying multiple generic codecs is unsupported.";
+      RTC_LOG(LS_INFO) << "Treating codec " << params_.video[video_idx].codec
+                       << " as generic.";
+      payload_type = kPayloadTypeGeneric;
+      generic_codec_name = params_.video[video_idx].codec;
     }
     video_send_configs_[video_idx].encoder_settings.encoder_factory =
         (video_idx == 0) ? &video_encoder_factory_with_analyzer_
@@ -1354,7 +1381,8 @@ void VideoQualityTest::InitializeAudioDevice(Call::Config* send_call_config,
     audio_device = CreateAudioDevice();
   } else {
     // By default, create a test ADM which fakes audio.
-    audio_device = TestAudioDeviceModule::CreateTestAudioDeviceModule(
+    audio_device = TestAudioDeviceModule::Create(
+        task_queue_factory_.get(),
         TestAudioDeviceModule::CreatePulsedNoiseCapturer(32000, 48000),
         TestAudioDeviceModule::CreateDiscardRenderer(48000), 1.f);
   }

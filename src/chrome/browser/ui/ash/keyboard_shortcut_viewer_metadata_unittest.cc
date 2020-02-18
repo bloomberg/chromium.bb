@@ -9,6 +9,7 @@
 
 #include "ash/components/shortcut_viewer/keyboard_shortcut_item.h"
 #include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
+#include "ash/components/strings/grit/ash_components_strings.h"
 #include "ash/public/cpp/accelerators.h"
 #include "base/hash/md5.h"
 #include "base/macros.h"
@@ -20,9 +21,9 @@
 namespace {
 
 // The total number of Ash accelerators.
-constexpr int kAshAcceleratorsTotalNum = 104;
+constexpr int kAshAcceleratorsTotalNum = 109;
 // The hash of Ash accelerators.
-constexpr char kAshAcceleratorsHash[] = "abc138d68a319b5ba56430ff56c54a6e";
+constexpr char kAshAcceleratorsHash[] = "8b62c1607085b5ca6a65ef43b97deac0";
 #if defined(GOOGLE_CHROME_BUILD)
 // Internal builds add an extra accelerator for the Feedback app.
 // The total number of Chrome accelerators (available on Chrome OS).
@@ -33,7 +34,7 @@ constexpr char kChromeAcceleratorsHash[] = "15a6c673dc62825b04e80036ad690514";
 // The total number of Chrome accelerators (available on Chrome OS).
 constexpr int kChromeAcceleratorsTotalNum = 92;
 // The hash of Chrome accelerators (available on Chrome OS).
-constexpr char kChromeAcceleratorsHash[] = "ef8dbf7ba5329cf7de66fdaebc3f5108";
+constexpr char kChromeAcceleratorsHash[] = "7c45362e298cf77aae142dec7154adcf";
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 const char* BooleanToString(bool value) {
@@ -156,6 +157,18 @@ class KeyboardShortcutViewerMetadataTest : public testing::Test {
 TEST_F(KeyboardShortcutViewerMetadataTest, CheckAcceleratorIdHasAccelerator) {
   for (const auto& shortcut_item :
        keyboard_shortcut_viewer::GetKeyboardShortcutItemList()) {
+    if (shortcut_item.description_message_id ==
+            IDS_KSV_DESCRIPTION_DESKS_NEW_DESK ||
+        shortcut_item.description_message_id ==
+            IDS_KSV_DESCRIPTION_DESKS_REMOVE_CURRENT_DESK) {
+      // Ignore these for now until https://crbug.com/976487 is fixed.
+      // These two accelerators have to be listed differently in the keyboard
+      // shortcut viewer than how they are actually defined in the accelerator
+      // table due to the SEARCH + "=" and "-" remapping to F11 and F12
+      // respectively.
+      continue;
+    }
+
     for (const auto& accelerator_id : shortcut_item.accelerator_ids) {
       int number_of_accelerator = ash_accelerator_ids_.count(accelerator_id) +
                                   chrome_accelerator_ids_.count(accelerator_id);

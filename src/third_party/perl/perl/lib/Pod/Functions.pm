@@ -8,7 +8,7 @@ Pod::Functions - Group Perl's functions a la perlfunc.pod
 =head1 SYNOPSIS
 
     use Pod::Functions;
-    
+
     my @misc_ops = @{ $Kinds{ 'Misc' } };
     my $misc_dsc = $Type_Description{ 'Misc' };
 
@@ -54,7 +54,7 @@ L<perlfunc/"Perl Functions by Category"> section.
 
 =cut
 
-our $VERSION = '1.05';
+our $VERSION = '1.13';
 
 require Exporter;
 
@@ -148,14 +148,14 @@ connect	Socket	connect to a remote socket
 continue	Flow	optional trailing block in a while or foreach
 cos	Math	cosine function
 crypt	String	one-way passwd-style encryption
-dbmclose	Objects	I/O	breaks binding on a tied dbm file
-dbmopen	Objects	I/O	create binding on a tied dbm file
+dbmclose	I/O	Objects	breaks binding on a tied dbm file
+dbmopen	I/O	Objects	create binding on a tied dbm file
 defined	Misc	test whether a value, variable, or function is defined
 delete	HASH	deletes a value from a hash
 die	Flow	I/O	raise an exception or bail out
-do	Modules	Flow	turn a BLOCK into a TERM
+do	Flow	Modules	turn a BLOCK into a TERM
 dump	Flow	create an immediate core dump
-each	HASH	ARRAY	retrieve the next key/value pair from a hash
+each	ARRAY	HASH	retrieve the next key/value pair from a hash
 endgrent	User	be done using group file
 endhostent	User	be done using hosts file
 endnetent	User	be done using networks file
@@ -207,18 +207,18 @@ glob	File	expand filenames using wildcards
 gmtime	Time	convert UNIX time into record or string using Greenwich time
 goto	Flow	create spaghetti code
 grep	LIST	locate elements in a list test true against a given criterion
-hex	String	Math	convert a string to a hexadecimal number
+hex	Math	String	convert a hexadecimal string to a number
 import	Modules	Namespace	patch a module's namespace into your own
 index	String	find a substring within a string
 int	Math	get the integer portion of a number
 ioctl	File	system-dependent device control system call
 join	LIST	join a list into a string using a separator
-keys	HASH	ARRAY	retrieve list of indices from a hash
+keys	ARRAY	HASH	retrieve list of indices from a hash
 kill	Process	send a signal to a process or process group
 last	Flow	exit a block prematurely
 lc	String	return lower-case version of a string
 lcfirst	String	return a string with just the next letter in lower case
-length	String	return the number of bytes in a string
+length	String	return the number of characters in a string
 __LINE__	Flow	the current source line number
 link	File	create a hard link in the filesystem
 listen	Socket	register your socket as a server
@@ -237,13 +237,13 @@ msgsnd	SysV	send a SysV IPC message to a message queue
 my	Namespace	declare and assign a local variable (lexical scoping)
 next	Flow	iterate a block prematurely
 no	Modules	unimport some module symbols or semantics at compile time
-oct	String	Math	convert a string to an octal number
+oct	Math	String	convert a string to an octal number
 open	File	open a file, pipe, or descriptor
 opendir	File	open a directory
 ord	String	find a character's numeric representation
 our	Namespace	declare and assign a package variable (lexical scoping)
-pack	String	Binary	convert a list into a binary representation
-package	Modules	Objects	Namespace	declare a separate global namespace
+pack	Binary	String	convert a list into a binary representation
+package	Modules	Namespace	Objects	declare a separate global namespace
 __PACKAGE__	Flow	the current package
 pipe	Process	open a pair of connected filehandles
 pop	ARRAY	remove the last element from an array and return it
@@ -271,7 +271,7 @@ rename	File	change a filename
 require	Modules	load in external functions from a library at runtime
 reset	Misc	clear all variables of a given name
 return	Flow	get out of a function early
-reverse	String	LIST	flip a string or a list
+reverse	LIST	String	flip a string or a list
 rewinddir	I/O	reset directory handle
 rindex	String	right-to-left substring search
 rmdir	File	remove a directory
@@ -280,7 +280,7 @@ say	I/O	output a list to a filehandle, appending a newline
 scalar	Misc	force a scalar context
 seek	I/O	reposition file pointer for random-access I/O
 seekdir	I/O	reposition directory pointer
-select	I/O	reset default output or do I/O multiplexing
+select	File	I/O	reset default output or do I/O multiplexing
 semctl	SysV	SysV semaphore control operations
 semget	SysV	get set of SysV semaphores
 semop	SysV	SysV semaphore operations
@@ -312,7 +312,7 @@ sqrt	Math	square root function
 srand	Math	seed the random number generator
 stat	File	get a file's status information
 state	Namespace	declare and assign a persistent lexical variable
-study	Regexp	optimize input data for repeated searches
+study	Regexp	no-op, formerly optimized input data for repeated searches
 sub	Flow	declare a subroutine, possibly anonymously
 __SUB__	Flow	the current subroutine, or C<undef> if not in a subroutine
 substr	String	get or alter a portion of a string
@@ -328,7 +328,7 @@ telldir	I/O	get current seekpointer on a directory handle
 tie	Objects	bind a variable to an object class
 tied	Objects	get a reference to the object underlying a tied variable
 time	Time	return number of seconds since 1970
-times	Time	Process	return elapsed time for self and child processes
+times	Process	Time	return elapsed time for self and child processes
 tr///	String	transliterate a string
 truncate	I/O	shorten a file
 uc	String	return upper-case version of a string
@@ -339,12 +339,12 @@ unlink	File	remove one link to a file
 unpack	Binary	LIST	convert binary structure into normal perl variables
 unshift	ARRAY	prepend more elements to the beginning of a list
 untie	Objects	break a tie binding to a variable
-use	Modules	Objects	Namespace	load in a module at compile time and import its namespace
+use	Modules	Namespace	Objects	load in a module at compile time and import its namespace
 utime	File	set a file's last access and modify times
-values	HASH	ARRAY	return a list of the values in a hash
+values	ARRAY	HASH	return a list of the values in a hash
 vec	Binary	test or set particular bits in a string
 wait	Process	wait for any child process to die
-waitpid	Process	wait for  a particular child process to die
+waitpid	Process	wait for a particular child process to die
 wantarray	Flow	get void vs scalar vs list context of current subroutine call
 warn	I/O	print debugging info
 write	I/O	print a picture record

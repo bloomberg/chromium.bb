@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/picture_snapshot.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -96,31 +97,31 @@ static std::unique_ptr<protocol::LayerTree::ScrollRect> BuildScrollRect(
 
 static std::unique_ptr<Array<protocol::LayerTree::ScrollRect>>
 BuildScrollRectsForLayer(const cc::Layer* layer, bool report_wheel_scrollers) {
-  std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scroll_rects =
-      Array<protocol::LayerTree::ScrollRect>::create();
+  auto scroll_rects =
+      std::make_unique<protocol::Array<protocol::LayerTree::ScrollRect>>();
   const cc::Region& non_fast_scrollable_rects =
       layer->non_fast_scrollable_region();
   for (const gfx::Rect& rect : non_fast_scrollable_rects) {
-    scroll_rects->addItem(BuildScrollRect(
+    scroll_rects->emplace_back(BuildScrollRect(
         IntRect(rect),
         protocol::LayerTree::ScrollRect::TypeEnum::RepaintsOnScroll));
   }
-  const cc::Region& touch_event_handler_region =
-      layer->touch_action_region().region();
+  const cc::Region& touch_event_handler_regions =
+      layer->touch_action_region().GetAllRegions();
 
-  for (const gfx::Rect& rect : touch_event_handler_region) {
-    scroll_rects->addItem(BuildScrollRect(
+  for (const gfx::Rect& rect : touch_event_handler_regions) {
+    scroll_rects->emplace_back(BuildScrollRect(
         IntRect(rect),
         protocol::LayerTree::ScrollRect::TypeEnum::TouchEventHandler));
   }
   if (report_wheel_scrollers) {
-    scroll_rects->addItem(BuildScrollRect(
+    scroll_rects->emplace_back(BuildScrollRect(
         // TODO(yutak): This truncates the floating point position to integers.
         gfx::Rect(layer->position().x(), layer->position().y(),
                   layer->bounds().width(), layer->bounds().height()),
         protocol::LayerTree::ScrollRect::TypeEnum::WheelEventHandler));
   }
-  return scroll_rects->length() ? std::move(scroll_rects) : nullptr;
+  return scroll_rects->empty() ? nullptr : std::move(scroll_rects);
 }
 
 // TODO(flackr): We should be getting the sticky position constraints from the
@@ -215,10 +216,10 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
   }
 
   if (!transform.IsIdentity()) {
-    auto transform_array = Array<double>::create();
+    auto transform_array = std::make_unique<protocol::Array<double>>();
     for (int col = 0; col < 4; ++col) {
       for (int row = 0; row < 4; ++row)
-        transform_array->addItem(transform.matrix().get(row, col));
+        transform_array->emplace_back(transform.matrix().get(row, col));
     }
     layer_object->setTransform(std::move(transform_array));
     // FIXME: rename these to setTransformOrigin*
@@ -336,8 +337,7 @@ InspectorLayerTreeAgent::BuildLayerTree() {
   if (!root_layer)
     return nullptr;
 
-  std::unique_ptr<Array<protocol::LayerTree::Layer>> layers =
-      Array<protocol::LayerTree::Layer>::create();
+  auto layers = std::make_unique<protocol::Array<protocol::LayerTree::Layer>>();
   auto* root_frame = inspected_frames_->Root();
   auto* layer_for_scrolling =
       root_frame->View()->LayoutViewport()->LayerForScrolling();
@@ -361,7 +361,7 @@ void InspectorLayerTreeAgent::GatherLayers(
   if (client_->IsInspectorLayer(layer))
     return;
   int layer_id = layer->id();
-  layers->addItem(BuildObjectForLayer(
+  layers->emplace_back(BuildObjectForLayer(
       RootLayer(), layer,
       has_wheel_event_handlers && layer_id == scrolling_layer_id));
   for (auto child : layer->children()) {
@@ -405,21 +405,14 @@ Response InspectorLayerTreeAgent::compositingReasons(
   if (!response.isSuccess())
     return response;
   CompositingReasons reasons = layer->compositing_reasons();
-  *reason_strings = Array<String>::create();
+  *reason_strings = std::make_unique<protocol::Array<String>>();
   for (const char* name : CompositingReason::ShortNames(reasons))
-    (*reason_strings)->addItem(name);
+    (*reason_strings)->emplace_back(name);
   return Response::OK();
 }
 
 Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
                                                String* snapshot_id) {
-  const cc::Layer* layer = nullptr;
-  Response response = LayerById(layer_id, layer);
-  if (!response.isSuccess())
-    return response;
-  if (!layer->DrawsContent())
-    return Response::Error("Layer does not draw content");
-
   suppress_layer_paint_events_ = true;
 
   // If we hit a devtool break point in the middle of document lifecycle, for
@@ -436,6 +429,13 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
 
   suppress_layer_paint_events_ = false;
 
+  const cc::Layer* layer = nullptr;
+  Response response = LayerById(layer_id, layer);
+  if (!response.isSuccess())
+    return response;
+  if (!layer->DrawsContent())
+    return Response::Error("Layer does not draw content");
+
   auto picture = layer->GetPicture();
   if (!picture)
     return Response::Error("Layer does not produce picture");
@@ -450,15 +450,15 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
 Response InspectorLayerTreeAgent::loadSnapshot(
     std::unique_ptr<Array<protocol::LayerTree::PictureTile>> tiles,
     String* snapshot_id) {
-  if (!tiles->length())
+  if (tiles->empty())
     return Response::Error("Invalid argument, no tiles provided");
-  if (tiles->length() > UINT_MAX)
+  if (tiles->size() > UINT_MAX)
     return Response::Error("Invalid argument, too many tiles provided");
-  wtf_size_t tiles_length = static_cast<wtf_size_t>(tiles->length());
+  wtf_size_t tiles_length = static_cast<wtf_size_t>(tiles->size());
   Vector<scoped_refptr<PictureSnapshot::TilePictureStream>> decoded_tiles;
   decoded_tiles.Grow(tiles_length);
   for (wtf_size_t i = 0; i < tiles_length; ++i) {
-    protocol::LayerTree::PictureTile* tile = tiles->get(i);
+    protocol::LayerTree::PictureTile* tile = (*tiles)[i].get();
     decoded_tiles[i] = base::AdoptRef(new PictureSnapshot::TilePictureStream());
     decoded_tiles[i]->layer_offset.Set(tile->getX(), tile->getY());
     const protocol::Binary& data = tile->getPicture();
@@ -505,16 +505,11 @@ Response InspectorLayerTreeAgent::replaySnapshot(const String& snapshot_id,
   Response response = GetSnapshotById(snapshot_id, snapshot);
   if (!response.isSuccess())
     return response;
-  Vector<char> base64_data = snapshot->Replay(
-      from_step.fromMaybe(0), to_step.fromMaybe(0), scale.fromMaybe(1.0));
-  if (base64_data.IsEmpty())
+  auto png_data = snapshot->Replay(from_step.fromMaybe(0), to_step.fromMaybe(0),
+                                   scale.fromMaybe(1.0));
+  if (png_data.IsEmpty())
     return Response::Error("Image encoding failed");
-  static constexpr char kUrlPrefix[] = "data:image/png;base64,";
-  StringBuilder url;
-  url.ReserveCapacity(sizeof(kUrlPrefix) + base64_data.size());
-  url.Append(kUrlPrefix);
-  url.Append(base64_data.begin(), base64_data.size());
-  *data_url = url.ToString();
+  *data_url = "data:image/png;base64," + Base64Encode(png_data);
   return Response::OK();
 }
 
@@ -536,16 +531,16 @@ Response InspectorLayerTreeAgent::profileSnapshot(
   FloatRect rect;
   if (clip_rect.isJust())
     ParseRect(clip_rect.fromJust(), &rect);
-  auto timings =
-      snapshot->Profile(min_repeat_count.fromMaybe(1),
-                        TimeDelta::FromSecondsD(min_duration.fromMaybe(0)),
-                        clip_rect.isJust() ? &rect : nullptr);
-  *out_timings = Array<Array<double>>::create();
+  auto timings = snapshot->Profile(
+      min_repeat_count.fromMaybe(1),
+      base::TimeDelta::FromSecondsD(min_duration.fromMaybe(0)),
+      clip_rect.isJust() ? &rect : nullptr);
+  *out_timings = std::make_unique<Array<Array<double>>>();
   for (const auto& row : timings) {
-    std::unique_ptr<Array<double>> out_row = Array<double>::create();
-    for (TimeDelta delta : row)
-      out_row->addItem(delta.InSecondsF());
-    (*out_timings)->addItem(std::move(out_row));
+    auto out_row = std::make_unique<protocol::Array<double>>();
+    for (base::TimeDelta delta : row)
+      out_row->emplace_back(delta.InSecondsF());
+    (*out_timings)->emplace_back(std::move(out_row));
   }
   return Response::OK();
 }
@@ -560,8 +555,9 @@ Response InspectorLayerTreeAgent::snapshotCommandLog(
   protocol::ErrorSupport errors;
   std::unique_ptr<protocol::Value> log_value = protocol::StringUtil::parseJSON(
       snapshot->SnapshotCommandLog()->ToJSONString());
-  *command_log =
-      Array<protocol::DictionaryValue>::fromValue(log_value.get(), &errors);
+  *command_log = protocol::ValueConversions<
+      protocol::Array<protocol::DictionaryValue>>::fromValue(log_value.get(),
+                                                             &errors);
   if (errors.hasErrors())
     return Response::Error(errors.errors());
   return Response::OK();

@@ -239,7 +239,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   // Flip the rect so it aligns with the coordinates used by the rowPos and
   // columnPos vectors.
-  LayoutRect LogicalRectForWritingModeAndDirection(const LayoutRect&) const;
+  LayoutRect LogicalRectForWritingModeAndDirection(const PhysicalRect&) const;
 
   // Sets |rows| and |columns| to cover all cells needing repaint in
   // |damage_rect|.
@@ -306,8 +306,8 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
+                   const HitTestLocation&,
+                   const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
  private:

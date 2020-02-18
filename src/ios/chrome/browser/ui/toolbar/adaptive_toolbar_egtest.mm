@@ -10,7 +10,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
-#import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
@@ -21,9 +20,9 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/testing/earl_grey/disabled_test_macros.h"
@@ -114,7 +113,7 @@ id<GREYMatcher> CancelButton() {
 
 // Returns a matcher for the search button.
 id<GREYMatcher> SearchButton() {
-  return grey_accessibilityID(kToolbarOmniboxButtonIdentifier);
+  return grey_accessibilityID(kToolbarSearchButtonIdentifier);
 }
 
 // Returns a matcher for the tab grid button.
@@ -203,7 +202,7 @@ UITraitCollection* RotateOrChangeTraitCollection(
     UIViewController* topViewController) {
   // Change the orientation or the trait collection.
   UITraitCollection* secondTraitCollection = nil;
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Simulate a multitasking by overriding the trait collections of the view
     // controllers. The rotation doesn't work on iPad.
     UITraitCollection* horizontalCompact = [UITraitCollection
@@ -364,7 +363,7 @@ void CheckCurrentURLContainsString(std::string string) {
     [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
         assertWithMatcher:chrome_test_util::OmniboxContainingText(string)];
 
-    if (IsIPadIdiom()) {
+    if ([ChromeEarlGrey isIPadIdiom]) {
       // Defocus omnibox by tapping the typing shield.
       [[EarlGrey
           selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
@@ -406,8 +405,8 @@ void FocusOmnibox() {
   }
 
   // Setup the bookmarks.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForBookmarksToFinishLoading]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
 
   // Setup the server.
   self.testServer->RegisterRequestHandler(
@@ -415,8 +414,7 @@ void FocusOmnibox() {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 
   // Navigate to a page and check the bookmark button is not spotlighted.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)]);
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
   [[EarlGrey selectElementWithMatcher:BookmarkButton()]
       assertWithMatcher:grey_allOf(grey_kindOfClass([UIControl class]),
                                    grey_not(Spotlighted()), nil)];
@@ -428,20 +426,18 @@ void FocusOmnibox() {
       assertWithMatcher:Spotlighted()];
 
   // Navigate to a different page and check the button is not selected.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL2)]);
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL2)];
   [[EarlGrey selectElementWithMatcher:BookmarkButton()]
       assertWithMatcher:grey_allOf(grey_kindOfClass([UIControl class]),
                                    grey_not(Spotlighted()), nil)];
 
   // Navigate back to the bookmarked page and check the button.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)]);
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
   [[EarlGrey selectElementWithMatcher:BookmarkButton()]
       assertWithMatcher:Spotlighted()];
 
   // Clean the bookmarks
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBookmarks]);
+  [ChromeEarlGrey clearBookmarks];
 }
 
 // Tests that tapping a button cancels the focus on the omnibox.
@@ -451,7 +447,7 @@ void FocusOmnibox() {
   }
 
   // Navigate to a page to enable the back button.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("chrome://version")]);
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
 
   FocusOmnibox();
 
@@ -466,7 +462,7 @@ void FocusOmnibox() {
 // different orientation than the default one.
 - (void)testFocusOmniboxFromOtherOrientation {
   // Load a page to have the toolbar visible (hidden on NTP).
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("chrome://version")]);
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
 
   // Get the original trait collection.
   UIViewController* topViewController =
@@ -484,7 +480,7 @@ void FocusOmnibox() {
   CheckToolbarButtonVisibility(secondTraitCollection, YES);
 
   // Revert the orientation/trait collection to the original.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Remove the override.
     for (UIViewController* child in topViewController.childViewControllers) {
       [topViewController setOverrideTraitCollection:originalTraitCollection
@@ -504,7 +500,7 @@ void FocusOmnibox() {
 // the default orientation.
 - (void)testFocusOmniboxFromPortrait {
   // Load a page to have the toolbar visible (hidden on NTP).
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("chrome://version")]);
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
 
   FocusOmnibox();
 
@@ -524,7 +520,7 @@ void FocusOmnibox() {
   // Check the visiblity after a size class change.
   CheckToolbarButtonVisibility(secondTraitCollection, YES);
 
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Remove the override.
     for (UIViewController* child in topViewController.childViewControllers) {
       [topViewController setOverrideTraitCollection:originalTraitCollection
@@ -556,8 +552,7 @@ void FocusOmnibox() {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 
   // Navigate to a page.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)]);
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
 
   GREYAssert(AddInfobar(), @"Failed to add infobar.");
 
@@ -636,10 +631,8 @@ void FocusOmnibox() {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 
   // Loads two url and check the navigation buttons status.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL2)]);
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL2)];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       assertWithMatcher:grey_interactable()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
@@ -696,7 +689,7 @@ void FocusOmnibox() {
   }
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kToolbarOmniboxButtonIdentifier)]
+                                          kToolbarSearchButtonIdentifier)]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:firstResponder()];
@@ -704,7 +697,7 @@ void FocusOmnibox() {
 
 // Tests share button is enabled only on pages that can be shared.
 - (void)testShareButton {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     // If this test is run on an iPhone, rotate it to have the unsplit toolbar.
     [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
                              errorOrNil:nil];
@@ -717,11 +710,11 @@ void FocusOmnibox() {
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
   // Navigate to another page and check that the share button is enabled.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
+  [ChromeEarlGrey loadURL:pageURL];
   [[EarlGrey selectElementWithMatcher:ShareButton()]
       assertWithMatcher:grey_interactable()];
 
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     // Cancel rotation.
     [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
                              errorOrNil:nil];
@@ -750,7 +743,7 @@ void FocusOmnibox() {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdleWithTimeout:2];
 
   [[self class] closeAllTabs];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
+  [ChromeEarlGrey openNewTab];
 
   // Check that the bottom toolbar is visible.
   [[EarlGrey selectElementWithMatcher:SearchButton()]
@@ -760,7 +753,7 @@ void FocusOmnibox() {
 // Verifies the existence and state of toolbar UI elements.
 - (void)testToolbarUI {
   // Load a page to have the toolbar visible (hidden on NTP).
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("chrome://version")]);
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
 
   // Get the original trait collection.
   UIViewController* topViewController =
@@ -778,7 +771,7 @@ void FocusOmnibox() {
   // Check the visiblity after a size class change.
   CheckToolbarButtonVisibility(secondTraitCollection, NO);
 
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Remove the override.
     for (UIViewController* child in topViewController.childViewControllers) {
       [topViewController setOverrideTraitCollection:originalTraitCollection

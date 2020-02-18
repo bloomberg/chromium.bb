@@ -8,8 +8,8 @@
 #include "apps/test/app_window_waiter.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
-#include "ash/public/interfaces/login_screen_test_api.test-mojom-test-utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
@@ -68,14 +68,16 @@
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -96,7 +98,6 @@
 #include "services/audio/public/cpp/fake_system_info.h"
 #include "services/audio/public/cpp/sounds/audio_stream_handler.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -112,6 +113,10 @@ namespace {
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
 //       detail/ggaeimfdpnmlhdhpcikgoblffmkckdmn
 const char kTestKioskApp[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn";
+
+// This is the same as above, but packed in deprecated CRX2. It should work
+// before full deprecation of CRX2.
+const char kTestKioskCrx2App[] = "ggbflgnkafappblpkiflbgpmkfdpnhhe";
 
 // This app creates a window and declares usage of the identity API in its
 // manifest, so we can test device robot token minting via the identity API.
@@ -467,10 +472,7 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
 
 class KioskTest : public OobeBaseTest {
  public:
-  KioskTest()
-      : settings_helper_(false),
-        fake_cws_(new FakeCWS),
-        verifier_format_override_(crx_file::VerifierFormat::CRX3) {
+  KioskTest() : settings_helper_(false), fake_cws_(new FakeCWS) {
     set_exit_when_last_browser_closes(false);
 
     // This test does not operate any real App, so App data does not exist.
@@ -548,14 +550,7 @@ class KioskTest : public OobeBaseTest {
     // TODO(https://crbug.com/932323): Implement or remove diagnostic mode.
     if (diagnostic_mode)
       return false;
-    ash::mojom::LoginScreenTestApiPtr test_api_;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName, &test_api_);
-    ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
-    bool found;
-    login_screen.LaunchApp(app_id, &found);
-    return found;
+    return ash::LoginScreenTestApi::LaunchApp(app_id);
   }
 
   void ReloadKioskApps() {
@@ -844,8 +839,6 @@ class KioskTest : public OobeBaseTest {
   std::string test_crx_file_;
   std::unique_ptr<FakeCWS> fake_cws_;
   std::unique_ptr<MockUserManager> mock_user_manager_;
-  extensions::SandboxedUnpacker::ScopedVerifierFormatOverrideForTest
-      verifier_format_override_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskTest);
 };
@@ -1365,6 +1358,39 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoEnterpriseAutoLaunchWhenUntrusted) {
 
   // Check that no launch has started.
   EXPECT_FALSE(login_display_host->GetAppLaunchController());
+}
+
+class KioskCrx2Test : public KioskTest {
+ public:
+  KioskCrx2Test()
+      : KioskTest(),
+        test_install_attributes_(
+            chromeos::StubInstallAttributes::CreateCloudManaged("example.com",
+                                                                "fake-id")) {}
+
+ private:
+  // Set up fake install attributes to make the device appeared as
+  // enterprise-managed. This is needed because CRX2 is only allowed for
+  // policy-based kiosk apps.
+  chromeos::ScopedStubInstallAttributes test_install_attributes_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskCrx2Test);
+};
+
+// Test that CRX2-packed apps still work for kiosk. This is a regression for
+// crbug.com/960428. TODO(crbug.com/740715): This test should fail in M78 after
+// full deprecation of CRX2.
+IN_PROC_BROWSER_TEST_F(KioskCrx2Test, InstallAndLaunchCrx2App) {
+  set_test_app_id(kTestKioskCrx2App);
+  set_test_crx_file(test_app_id() + ".crx");
+  set_use_consumer_kiosk_mode(false);
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  WaitForAppLaunchSuccess();
+  KioskAppManager::App app;
+  ASSERT_TRUE(KioskAppManager::Get()->GetApp(test_app_id(), &app));
+  EXPECT_FALSE(app.was_auto_launched_with_zero_delay);
+  EXPECT_EQ(extensions::Manifest::EXTERNAL_POLICY, GetInstalledAppLocation());
 }
 
 class KioskUpdateTest : public KioskTest {
@@ -2395,10 +2421,7 @@ class KioskVirtualKeyboardTestSoundsManagerTestImpl
     }
 
     auto handler = std::make_unique<audio::AudioStreamHandler>(
-        content::ServiceManagerConnection::GetForProcess()
-            ->GetConnector()
-            ->Clone(),
-        iter->second);
+        content::GetSystemConnector()->Clone(), iter->second);
     if (!handler->IsInitialized()) {
       LOG(WARNING) << "Can't initialize AudioStreamHandler for key = " << key;
       return false;

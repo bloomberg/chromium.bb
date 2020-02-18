@@ -90,6 +90,9 @@ protected:
         //        and the last frame is not discarded (its t1 is assumed -> inf)
         //
 
+        SkPoint prev_c0 = { 0, 0 },
+                prev_c1 = prev_c0;
+
         for (const skjson::ObjectValue* jframe : jframes) {
             if (!jframe) continue;
 
@@ -130,20 +133,28 @@ protected:
                 continue;
             }
 
-            // default is linear lerp
-            static constexpr SkPoint kDefaultC0 = { 0, 0 },
-                                     kDefaultC1 = { 1, 1 };
-            const auto c0 = ParseDefault<SkPoint>((*jframe)["i"], kDefaultC0),
-                       c1 = ParseDefault<SkPoint>((*jframe)["o"], kDefaultC1);
+            const auto cubic_mapper_index = [&]() -> int {
+                // Do we have non-linear control points?
+                SkPoint c0, c1;
+                if (!Parse((*jframe)["o"], &c0) ||
+                    !Parse((*jframe)["i"], &c1) ||
+                    SkCubicMap::IsLinear(c0, c1)) {
+                    // No need for a cubic mapper.
+                    return -1;
+                }
 
-            int cm_idx = -1;
-            if (c0 != kDefaultC0 || c1 != kDefaultC1) {
-                // TODO: is it worth de-duping these?
-                cm_idx = SkToInt(fCubicMaps.size());
-                fCubicMaps.emplace_back(c1, c0);
-            }
+                // De-dupe sequential cubic mappers.
+                if (c0 != prev_c0 || c1 != prev_c1) {
+                    fCubicMaps.emplace_back(c0, c1);
+                    prev_c0 = c0;
+                    prev_c1 = c1;
+                }
 
-            fRecs.push_back({t0, t0, v0_idx, v1_idx, cm_idx });
+                SkASSERT(!fCubicMaps.empty());
+                return SkToInt(fCubicMaps.size()) - 1;
+            };
+
+            fRecs.push_back({t0, t0, v0_idx, v1_idx, cubic_mapper_index()});
         }
 
         if (!fRecs.empty()) {
@@ -221,17 +232,14 @@ private:
 template <typename T>
 class KeyframeAnimator final : public KeyframeAnimatorBase {
 public:
-    static std::unique_ptr<KeyframeAnimator> Make(const skjson::ArrayValue* jv,
-                                                  const AnimationBuilder* abuilder,
-                                                  std::function<void(const T&)>&& apply) {
+    static sk_sp<KeyframeAnimator> Make(const skjson::ArrayValue* jv,
+                                        const AnimationBuilder* abuilder,
+                                        std::function<void(const T&)>&& apply) {
         if (!jv) return nullptr;
 
-        std::unique_ptr<KeyframeAnimator> animator(
-            new KeyframeAnimator(*jv, abuilder, std::move(apply)));
-        if (!animator->count())
-            return nullptr;
+        sk_sp<KeyframeAnimator> animator(new KeyframeAnimator(*jv, abuilder, std::move(apply)));
 
-        return animator;
+        return animator->count() ? animator : nullptr;
     }
 
 protected:
@@ -348,14 +356,13 @@ static inline bool BindPropertyImpl(const skjson::ObjectValue* jprop,
 
 class SplitPointAnimator final : public sksg::Animator {
 public:
-    static std::unique_ptr<SplitPointAnimator> Make(const skjson::ObjectValue* jprop,
-                                                    const AnimationBuilder* abuilder,
-                                                    std::function<void(const VectorValue&)>&& apply,
-                                                    const VectorValue*) {
+    static sk_sp<SplitPointAnimator> Make(const skjson::ObjectValue* jprop,
+                                          const AnimationBuilder* abuilder,
+                                          std::function<void(const VectorValue&)>&& apply,
+                                          const VectorValue*) {
         if (!jprop) return nullptr;
 
-        std::unique_ptr<SplitPointAnimator> split_animator(
-            new SplitPointAnimator(std::move(apply)));
+        sk_sp<SplitPointAnimator> split_animator(new SplitPointAnimator(std::move(apply)));
 
         // This raw pointer is captured in lambdas below. But the lambdas are owned by
         // the object itself, so the scope is bound to the life time of the object.
@@ -409,7 +416,7 @@ bool BindSplitPositionProperty(const skjson::Value& jv,
                                std::function<void(const VectorValue&)>&& apply,
                                const VectorValue* noop) {
     if (auto split_animator = SplitPointAnimator::Make(jv, abuilder, std::move(apply), noop)) {
-        ascope->push_back(std::unique_ptr<sksg::Animator>(split_animator.release()));
+        ascope->push_back(std::move(split_animator));
         return true;
     }
 

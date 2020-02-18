@@ -38,9 +38,9 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -389,10 +389,13 @@ void OfflineAudioContext::FireCompletionEvent() {
 
 bool OfflineAudioContext::HandlePreRenderTasks(
     const AudioIOPosition* output_position,
-    const AudioIOCallbackMetric* metric) {
-  DCHECK(IsAudioThread());
+    const AudioCallbackMetric* metric) {
+  // TODO(hongchan, rtoy): passing |nullptr| as an argument is not a good
+  // pattern. Consider rewriting this method/interface.
   DCHECK_EQ(output_position, nullptr);
   DCHECK_EQ(metric, nullptr);
+
+  DCHECK(IsAudioThread());
 
   // OfflineGraphAutoLocker here locks the audio graph for this scope. Note
   // that this locker does not use tryLock() inside because the timing of
@@ -482,13 +485,6 @@ bool OfflineAudioContext::ShouldSuspend() {
 
 bool OfflineAudioContext::HasPendingActivity() const {
   return is_rendering_started_;
-}
-
-double OfflineAudioContext::RenderCapacity() {
-  DCHECK(IsMainThread());
-
-  // Offline contexts don't have a meaningful render capacity. So return 0.
-  return 0.0;
 }
 
 }  // namespace blink

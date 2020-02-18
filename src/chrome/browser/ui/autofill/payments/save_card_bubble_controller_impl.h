@@ -14,7 +14,7 @@
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/ui/payments/save_card_bubble_controller.h"
 #include "components/security_state/core/security_state.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -84,6 +84,15 @@ class SaveCardBubbleControllerImpl
   // Sets up the controller for the Manage Cards view. This displays the card
   // just saved and links the user to manage their other cards.
   void ShowBubbleForManageCardsForTesting(const CreditCard& card);
+
+  // Update the icon when card is successfully saved. This will dismiss the icon
+  // and trigger a highlight animation of the avatar button.
+  void UpdateIconForSaveCardSuccess();
+
+  // Updates the save card icon when credit card upload failed. This will only
+  // update the icon image and stop icon from animating. The actual bubble will
+  // be shown when users click on the icon.
+  void UpdateIconForSaveCardFailure();
 
   // For testing. Sets up the controller for showing the
   // save card failure bubble.

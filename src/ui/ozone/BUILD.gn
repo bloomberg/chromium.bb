@@ -70,7 +70,6 @@ constructor_list_cc_file = "$target_gen_dir/constructor_list.cc"
 
 jumbo_component("ozone_base") {
   sources = [
-    "ozone_base_export.h",
     "public/cursor_factory_ozone.cc",
     "public/cursor_factory_ozone.h",
     "public/gl_ozone.h",
@@ -96,9 +95,10 @@ jumbo_component("ozone_base") {
     "public/surface_factory_ozone.h",
     "public/surface_ozone_canvas.h",
     "public/swap_completion_callback.h",
+    "public/system_input_injector.h",
   ]
 
-  defines = [ "OZONE_BASE_IMPLEMENTATION" ]
+  defines = [ "IS_OZONE_BASE_IMPL" ]
 
   public_deps = [
     "//base",
@@ -117,6 +117,7 @@ jumbo_component("ozone_base") {
     "//ui/gfx/ipc/geometry",
     "//ui/gfx/ipc/skia",
     "//ui/gl",
+    "//ui/ozone/public/interfaces:gesture_properties_service",
   ]
 
   if (enable_vulkan) {
@@ -131,6 +132,7 @@ jumbo_component("ozone_base") {
     "//ui/ozone/common/*",
     "//ui/ozone/public/interfaces",
     "//ui/ozone/platform/*",
+    "//ui/base/ime/chromeos/*",
   ]
 
   # Out of tree platforms can depend on this.
@@ -141,7 +143,6 @@ source_set("platform") {
   sources = [
     "common/stub_client_native_pixmap_factory.cc",
     "common/stub_client_native_pixmap_factory.h",
-    "ozone_export.h",
     "platform_constructor_list.h",
     "platform_object.h",
     "platform_object_internal.h",
@@ -161,7 +162,7 @@ source_set("platform") {
     "public/ozone_platform.h",
   ]
 
-  defines = [ "OZONE_IMPLEMENTATION" ]
+  defines = [ "IS_OZONE_IMPL" ]
 
   public_deps = [
     ":ozone_base",
@@ -292,6 +293,10 @@ test("ozone_unittests") {
   # Platform tests link ozone statically. Make sure we're not getting a
   # 2nd copy of any code via the component.
   assert_no_deps = [ "//ui/ozone" ]
+
+  data_deps = [
+    "//testing/buildbot/filters:ozone_unittests_filters",
+  ]
 }
 
 # X11 backend has its own test suite only built when we are using the x11

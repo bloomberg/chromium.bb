@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/managed_ui.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -37,30 +36,11 @@ class ManagedUiTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ManagedUiTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ManagedUiTest, ShouldDisplayManagedUiFlagDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitFromCommandLine("", "ShowManagedUi");
-
-  PolicyMap policy_map;
-  policy_map.Set("test-policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                 POLICY_SOURCE_PLATFORM,
-                 std::make_unique<base::Value>("hello world"), nullptr);
-  provider()->UpdateChromePolicy(policy_map);
-
-  EXPECT_FALSE(chrome::ShouldDisplayManagedUi(browser()->profile()));
-}
-
 IN_PROC_BROWSER_TEST_F(ManagedUiTest, ShouldDisplayManagedUiNoPolicies) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitFromCommandLine("ShowManagedUi", "");
-
   EXPECT_FALSE(chrome::ShouldDisplayManagedUi(browser()->profile()));
 }
 
 IN_PROC_BROWSER_TEST_F(ManagedUiTest, ShouldDisplayManagedUiOnDesktop) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitFromCommandLine("ShowManagedUi", "");
-
   PolicyMap policy_map;
   policy_map.Set("test-policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                  POLICY_SOURCE_PLATFORM,

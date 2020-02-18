@@ -14,13 +14,12 @@
 
 #define PERL_MAGIC_sv             '\0' /* Special scalar variable */
 #define PERL_MAGIC_arylen         '#' /* Array length ($#ary) */
-#define PERL_MAGIC_rhash          '%' /* extra data for restricted hashes */
+#define PERL_MAGIC_rhash          '%' /* Extra data for restricted hashes */
+#define PERL_MAGIC_debugvar       '*' /* $DB::single, signal, trace vars */
 #define PERL_MAGIC_pos            '.' /* pos() lvalue */
-#define PERL_MAGIC_symtab         ':' /* extra data for symbol tables */
-#define PERL_MAGIC_backref        '<' /* for weak ref data */
-#define PERL_MAGIC_arylen_p       '@' /* to move arylen out of XPVAV */
-#define PERL_MAGIC_overload       'A' /* %OVERLOAD hash */
-#define PERL_MAGIC_overload_elem  'a' /* %OVERLOAD hash element */
+#define PERL_MAGIC_symtab         ':' /* Extra data for symbol tables */
+#define PERL_MAGIC_backref        '<' /* For weak ref data */
+#define PERL_MAGIC_arylen_p       '@' /* To move arylen out of XPVAV */
 #define PERL_MAGIC_bm             'B' /* Boyer-Moore (fast string search) */
 #define PERL_MAGIC_overload_table 'c' /* Holds overload table (AMT) on stash */
 #define PERL_MAGIC_regdata        'D' /* Regex match position data
@@ -29,7 +28,6 @@
 #define PERL_MAGIC_env            'E' /* %ENV hash */
 #define PERL_MAGIC_envelem        'e' /* %ENV hash element */
 #define PERL_MAGIC_fm             'f' /* Formline ('compiled' format) */
-#define PERL_MAGIC_study          'G' /* study()ed string */
 #define PERL_MAGIC_regex_global   'g' /* m//g target */
 #define PERL_MAGIC_hints          'H' /* %^H hash */
 #define PERL_MAGIC_hintselem      'h' /* %^H hash element */
@@ -44,7 +42,7 @@
 #define PERL_MAGIC_tied           'P' /* Tied array or hash */
 #define PERL_MAGIC_tiedelem       'p' /* Tied array or hash element */
 #define PERL_MAGIC_tiedscalar     'q' /* Tied scalar or handle */
-#define PERL_MAGIC_qr             'r' /* precompiled qr// regex */
+#define PERL_MAGIC_qr             'r' /* Precompiled qr// regex */
 #define PERL_MAGIC_sig            'S' /* %SIG hash */
 #define PERL_MAGIC_sigelem        's' /* %SIG hash element */
 #define PERL_MAGIC_taint          't' /* Taintedness */
@@ -54,19 +52,21 @@
 #define PERL_MAGIC_vec            'v' /* vec() lvalue */
 #define PERL_MAGIC_utf8           'w' /* Cached UTF-8 information */
 #define PERL_MAGIC_substr         'x' /* substr() lvalue */
+#define PERL_MAGIC_nonelem        'Y' /* Array element that does not exist */
 #define PERL_MAGIC_defelem        'y' /* Shadow "foreach" iterator variable /
                                          smart parameter vivification */
-#define PERL_MAGIC_checkcall      ']' /* inlining/mutation of call to this CV */
+#define PERL_MAGIC_lvref          '\\' /* Lvalue reference constructor */
+#define PERL_MAGIC_checkcall      ']' /* Inlining/mutation of call to this CV */
 #define PERL_MAGIC_ext            '~' /* Available for use by extensions */
 
 enum {		/* pass one of these to get_vtbl */
-    want_vtbl_amagic,
-    want_vtbl_amagicelem,
     want_vtbl_arylen,
     want_vtbl_arylen_p,
     want_vtbl_backref,
+    want_vtbl_checkcall,
     want_vtbl_collxfrm,
     want_vtbl_dbline,
+    want_vtbl_debugvar,
     want_vtbl_defelem,
     want_vtbl_env,
     want_vtbl_envelem,
@@ -74,8 +74,10 @@ enum {		/* pass one of these to get_vtbl */
     want_vtbl_hintselem,
     want_vtbl_isa,
     want_vtbl_isaelem,
+    want_vtbl_lvref,
     want_vtbl_mglob,
     want_vtbl_nkeys,
+    want_vtbl_nonelem,
     want_vtbl_ovrld,
     want_vtbl_pack,
     want_vtbl_packelem,
@@ -90,19 +92,18 @@ enum {		/* pass one of these to get_vtbl */
     want_vtbl_utf8,
     want_vtbl_uvar,
     want_vtbl_vec,
-    want_vtbl_vstring,
     magic_vtable_max
 };
 
 #ifdef DOINIT
-EXTCONST char *PL_magic_vtable_names[magic_vtable_max] = {
-    "amagic",
-    "amagicelem",
+EXTCONST char * const PL_magic_vtable_names[magic_vtable_max] = {
     "arylen",
     "arylen_p",
     "backref",
+    "checkcall",
     "collxfrm",
     "dbline",
+    "debugvar",
     "defelem",
     "env",
     "envelem",
@@ -110,8 +111,10 @@ EXTCONST char *PL_magic_vtable_names[magic_vtable_max] = {
     "hintselem",
     "isa",
     "isaelem",
+    "lvref",
     "mglob",
     "nkeys",
+    "nonelem",
     "ovrld",
     "pack",
     "packelem",
@@ -125,11 +128,10 @@ EXTCONST char *PL_magic_vtable_names[magic_vtable_max] = {
     "taint",
     "utf8",
     "uvar",
-    "vec",
-    "vstring"
+    "vec"
 };
 #else
-EXTCONST char *PL_magic_vtable_names[magic_vtable_max];
+EXTCONST char * const PL_magic_vtable_names[magic_vtable_max];
 #endif
 
 /* These all need to be 0, not NULL, as NULL can be (void*)0, which is a
@@ -151,17 +153,17 @@ EXTCONST char *PL_magic_vtable_names[magic_vtable_max];
 
 #ifdef DOINIT
 EXT_MGVTBL PL_magic_vtables[magic_vtable_max] = {
-  { 0, Perl_magic_setamagic, 0, 0, Perl_magic_setamagic, 0, 0, 0 },
-  { 0, Perl_magic_setamagic, 0, 0, Perl_magic_setamagic, 0, 0, 0 },
   { (int (*)(pTHX_ SV *, MAGIC *))Perl_magic_getarylen, Perl_magic_setarylen, 0, 0, 0, 0, 0, 0 },
-  { 0, 0, 0, 0, Perl_magic_freearylen_p, 0, 0, 0 },
+  { 0, 0, 0, Perl_magic_cleararylen_p, Perl_magic_freearylen_p, 0, 0, 0 },
   { 0, 0, 0, 0, Perl_magic_killbackrefs, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, Perl_magic_copycallchecker, 0, 0 },
 #ifdef USE_LOCALE_COLLATE
   { 0, Perl_magic_setcollxfrm, 0, 0, 0, 0, 0, 0 },
 #else
   { 0, 0, 0, 0, 0, 0, 0, 0 },
 #endif
   { 0, Perl_magic_setdbline, 0, 0, 0, 0, 0, 0 },
+  { Perl_magic_getdebugvar, Perl_magic_setdebugvar, 0, 0, 0, 0, 0, 0 },
   { Perl_magic_getdefelem, Perl_magic_setdefelem, 0, 0, 0, 0, 0, 0 },
   { 0, Perl_magic_set_all_env, 0, Perl_magic_clear_all_env, 0, 0, 0, 0 },
   { 0, Perl_magic_setenv, 0, Perl_magic_clearenv, 0, 0, 0, 0 },
@@ -169,8 +171,10 @@ EXT_MGVTBL PL_magic_vtables[magic_vtable_max] = {
   { 0, Perl_magic_sethint, 0, Perl_magic_clearhint, 0, 0, 0, 0 },
   { 0, Perl_magic_setisa, 0, Perl_magic_clearisa, 0, 0, 0, 0 },
   { 0, Perl_magic_setisa, 0, 0, 0, 0, 0, 0 },
+  { 0, Perl_magic_setlvref, 0, 0, 0, 0, 0, 0 },
   { 0, Perl_magic_setmglob, 0, 0, 0, 0, 0, 0 },
   { Perl_magic_getnkeys, Perl_magic_setnkeys, 0, 0, 0, 0, 0, 0 },
+  { 0, Perl_magic_setnonelem, 0, 0, 0, 0, 0, 0 },
   { 0, 0, 0, 0, Perl_magic_freeovrld, 0, 0, 0 },
   { 0, 0, Perl_magic_sizepack, Perl_magic_wipepack, 0, 0, 0, 0 },
   { Perl_magic_getpack, Perl_magic_setpack, 0, Perl_magic_clearpack, 0, 0, 0, 0 },
@@ -184,12 +188,11 @@ EXT_MGVTBL PL_magic_vtables[magic_vtable_max] = {
   { 0, 0, 0, 0, 0, 0, 0, 0 },
 #endif
   { Perl_magic_getsubstr, Perl_magic_setsubstr, 0, 0, 0, 0, 0, 0 },
-  { Perl_magic_get, Perl_magic_set, Perl_magic_len, 0, 0, 0, 0, 0 },
+  { Perl_magic_get, Perl_magic_set, 0, 0, 0, 0, 0, 0 },
   { Perl_magic_gettaint, Perl_magic_settaint, 0, 0, 0, 0, 0, 0 },
   { 0, Perl_magic_setutf8, 0, 0, 0, 0, 0, 0 },
   { Perl_magic_getuvar, Perl_magic_setuvar, 0, 0, 0, 0, 0, 0 },
-  { Perl_magic_getvec, Perl_magic_setvec, 0, 0, 0, 0, 0, 0 },
-  { 0, Perl_magic_setvstring, 0, 0, 0, 0, 0, 0 }
+  { Perl_magic_getvec, Perl_magic_setvec, 0, 0, 0, 0, 0, 0 }
 };
 #else
 EXT_MGVTBL PL_magic_vtables[magic_vtable_max];
@@ -198,14 +201,14 @@ EXT_MGVTBL PL_magic_vtables[magic_vtable_max];
 #define want_vtbl_bm want_vtbl_regexp
 #define want_vtbl_fm want_vtbl_regexp
 
-#define PL_vtbl_amagic PL_magic_vtables[want_vtbl_amagic]
-#define PL_vtbl_amagicelem PL_magic_vtables[want_vtbl_amagicelem]
 #define PL_vtbl_arylen PL_magic_vtables[want_vtbl_arylen]
 #define PL_vtbl_arylen_p PL_magic_vtables[want_vtbl_arylen_p]
 #define PL_vtbl_backref PL_magic_vtables[want_vtbl_backref]
 #define PL_vtbl_bm PL_magic_vtables[want_vtbl_bm]
+#define PL_vtbl_checkcall PL_magic_vtables[want_vtbl_checkcall]
 #define PL_vtbl_collxfrm PL_magic_vtables[want_vtbl_collxfrm]
 #define PL_vtbl_dbline PL_magic_vtables[want_vtbl_dbline]
+#define PL_vtbl_debugvar PL_magic_vtables[want_vtbl_debugvar]
 #define PL_vtbl_defelem PL_magic_vtables[want_vtbl_defelem]
 #define PL_vtbl_env PL_magic_vtables[want_vtbl_env]
 #define PL_vtbl_envelem PL_magic_vtables[want_vtbl_envelem]
@@ -214,8 +217,10 @@ EXT_MGVTBL PL_magic_vtables[magic_vtable_max];
 #define PL_vtbl_hintselem PL_magic_vtables[want_vtbl_hintselem]
 #define PL_vtbl_isa PL_magic_vtables[want_vtbl_isa]
 #define PL_vtbl_isaelem PL_magic_vtables[want_vtbl_isaelem]
+#define PL_vtbl_lvref PL_magic_vtables[want_vtbl_lvref]
 #define PL_vtbl_mglob PL_magic_vtables[want_vtbl_mglob]
 #define PL_vtbl_nkeys PL_magic_vtables[want_vtbl_nkeys]
+#define PL_vtbl_nonelem PL_magic_vtables[want_vtbl_nonelem]
 #define PL_vtbl_ovrld PL_magic_vtables[want_vtbl_ovrld]
 #define PL_vtbl_pack PL_magic_vtables[want_vtbl_pack]
 #define PL_vtbl_packelem PL_magic_vtables[want_vtbl_packelem]
@@ -230,6 +235,5 @@ EXT_MGVTBL PL_magic_vtables[magic_vtable_max];
 #define PL_vtbl_utf8 PL_magic_vtables[want_vtbl_utf8]
 #define PL_vtbl_uvar PL_magic_vtables[want_vtbl_uvar]
 #define PL_vtbl_vec PL_magic_vtables[want_vtbl_vec]
-#define PL_vtbl_vstring PL_magic_vtables[want_vtbl_vstring]
 
 /* ex: set ro: */

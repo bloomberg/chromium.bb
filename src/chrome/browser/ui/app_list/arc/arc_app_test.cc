@@ -168,27 +168,47 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
   app.sticky = true;
   fake_default_apps_.push_back(app);
 
-  base::flat_map<arc::mojom::AppPermission, bool> permissions;
-  permissions.insert(std::make_pair(arc::mojom::AppPermission::CAMERA, 0));
+  base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
+      permissions1;
+  permissions1.emplace(arc::mojom::AppPermission::CAMERA,
+                       arc::mojom::PermissionState::New(false /* granted */,
+                                                        false /* managed */));
   fake_packages_.emplace_back(arc::mojom::ArcPackageInfo::New(
       kPackageName1 /* package_name */, 1 /* package_version */,
       1 /* last_backup_android_id */, 1 /* last_backup_time */,
       false /* sync */, false /* system */, false /* vpn_provider */,
-      nullptr /* web_app_info */, permissions));
+      nullptr /* web_app_info */, base::nullopt, std::move(permissions1)));
 
-  permissions.insert(std::make_pair(arc::mojom::AppPermission::MICROPHONE, 0));
+  base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
+      permissions2;
+  permissions2.emplace(arc::mojom::AppPermission::CAMERA,
+                       arc::mojom::PermissionState::New(false /* granted */,
+                                                        false /* managed */));
+  permissions2.emplace(arc::mojom::AppPermission::MICROPHONE,
+                       arc::mojom::PermissionState::New(false /* granted */,
+                                                        false /* managed */));
   fake_packages_.emplace_back(arc::mojom::ArcPackageInfo::New(
       kPackageName2 /* package_name */, 2 /* package_version */,
       2 /* last_backup_android_id */, 2 /* last_backup_time */, true /* sync */,
       false /* system */, false /* vpn_provider */, nullptr /* web_app_info */,
-      permissions));
+      base::nullopt, std::move(permissions2)));
 
-  permissions.insert(std::make_pair(arc::mojom::AppPermission::LOCATION, 1));
+  base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
+      permissions3;
+  permissions3.emplace(arc::mojom::AppPermission::CAMERA,
+                       arc::mojom::PermissionState::New(false /* granted */,
+                                                        false /* managed */));
+  permissions3.emplace(arc::mojom::AppPermission::MICROPHONE,
+                       arc::mojom::PermissionState::New(false /* granted */,
+                                                        false /* managed */));
+  permissions3.emplace(arc::mojom::AppPermission::LOCATION,
+                       arc::mojom::PermissionState::New(true /* granted */,
+                                                        false /* managed */));
   fake_packages_.emplace_back(arc::mojom::ArcPackageInfo::New(
       kPackageName3 /* package_name */, 3 /* package_version */,
       3 /* last_backup_android_id */, 3 /* last_backup_time */,
       false /* sync */, false /* system */, false /* vpn_provider */,
-      nullptr /* web_app_info */, permissions));
+      nullptr /* web_app_info */, base::nullopt, std::move(permissions3)));
 
   for (int i = 0; i < 3; ++i) {
     arc::mojom::ShortcutInfo shortcut_info;

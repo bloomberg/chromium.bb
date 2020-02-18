@@ -38,10 +38,10 @@ class ModuleDatabaseTest : public testing::Test {
       : dll1_(kDll1),
         dll2_(kDll2),
         test_browser_thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::MainThreadType::UI,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
         module_database_(std::make_unique<ModuleDatabase>(
-            nullptr,
             /* third_party_blocking_policy_enabled = */ false)) {}
 
   ~ModuleDatabaseTest() override {

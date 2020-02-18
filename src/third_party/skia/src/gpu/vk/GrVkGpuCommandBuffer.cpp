@@ -46,23 +46,19 @@ private:
 
 class Copy : public GrVkPrimaryCommandBufferTask {
 public:
-    Copy(GrSurface* src, GrSurfaceOrigin srcOrigin, const SkIRect& srcRect,
-         const SkIPoint& dstPoint, bool shouldDiscardDst)
+    Copy(GrSurface* src, const SkIRect& srcRect, const SkIPoint& dstPoint, bool shouldDiscardDst)
             : fSrc(src)
-            , fSrcOrigin(srcOrigin)
             , fSrcRect(srcRect)
             , fDstPoint(dstPoint)
             , fShouldDiscardDst(shouldDiscardDst) {}
 
     void execute(const Args& args) override {
-        args.fGpu->copySurface(args.fSurface, args.fOrigin, fSrc.get(), fSrcOrigin, fSrcRect,
-                               fDstPoint, fShouldDiscardDst);
+        args.fGpu->copySurface(args.fSurface, fSrc.get(), fSrcRect, fDstPoint, fShouldDiscardDst);
     }
 
 private:
     using Src = GrPendingIOResource<GrSurface, kRead_GrIOType>;
     Src fSrc;
-    GrSurfaceOrigin fSrcOrigin;
     SkIRect fSrcRect;
     SkIPoint fDstPoint;
     bool fShouldDiscardDst;
@@ -94,9 +90,10 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////
 
-void GrVkGpuTextureCommandBuffer::copy(GrSurface* src, GrSurfaceOrigin srcOrigin,
-                                       const SkIRect& srcRect, const SkIPoint& dstPoint) {
-    fTasks.emplace<Copy>(src, srcOrigin, srcRect, dstPoint, false);
+void GrVkGpuTextureCommandBuffer::copy(GrSurface* src, const SkIRect& srcRect,
+                                       const SkIPoint& dstPoint) {
+    SkASSERT(!src->isProtected() || (fTexture->isProtected() && fGpu->protectedContext()));
+    fTasks.emplace<Copy>(src, srcRect, dstPoint, false);
 }
 
 void GrVkGpuTextureCommandBuffer::transferFrom(const SkIRect& srcRect, GrColorType bufferColorType,
@@ -109,7 +106,7 @@ void GrVkGpuTextureCommandBuffer::insertEventMarker(const char* msg) {
 }
 
 void GrVkGpuTextureCommandBuffer::submit() {
-    GrVkPrimaryCommandBufferTask::Args taskArgs{fGpu, fTexture, fOrigin};
+    GrVkPrimaryCommandBufferTask::Args taskArgs{fGpu, fTexture};
     for (auto& task : fTasks) {
         task.execute(taskArgs);
     }
@@ -231,7 +228,7 @@ void GrVkGpuRTCommandBuffer::submit() {
     GrStencilAttachment* stencil = fRenderTarget->renderTargetPriv().getStencilAttachment();
     auto currPreCmd = fPreCommandBufferTasks.begin();
 
-    GrVkPrimaryCommandBufferTask::Args taskArgs{fGpu, fRenderTarget, fOrigin};
+    GrVkPrimaryCommandBufferTask::Args taskArgs{fGpu, fRenderTarget};
     for (int i = 0; i < fCommandBufferInfos.count(); ++i) {
         CommandBufferInfo& cbInfo = fCommandBufferInfos[i];
 
@@ -331,6 +328,10 @@ void GrVkGpuRTCommandBuffer::set(GrRenderTarget* rt, GrSurfaceOrigin origin,
     SkASSERT(fGpu == rt->getContext()->priv().getGpu());
     SkASSERT(!fLastPipelineState);
 
+#ifdef SK_DEBUG
+    fIsActive = true;
+#endif
+
     this->INHERITED::set(rt, origin);
 
     if (this->wrapsSecondaryCommandBuffer()) {
@@ -364,6 +365,10 @@ void GrVkGpuRTCommandBuffer::reset() {
 
     fLastPipelineState = nullptr;
     fRenderTarget = nullptr;
+
+#ifdef SK_DEBUG
+    fIsActive = false;
+#endif
 }
 
 bool GrVkGpuRTCommandBuffer::wrapsSecondaryCommandBuffer() const {
@@ -372,38 +377,6 @@ bool GrVkGpuRTCommandBuffer::wrapsSecondaryCommandBuffer() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-void GrVkGpuRTCommandBuffer::discard() {
-    GrVkRenderTarget* vkRT = static_cast<GrVkRenderTarget*>(fRenderTarget);
-
-    CommandBufferInfo& cbInfo = fCommandBufferInfos[fCurrentCmdInfo];
-    if (cbInfo.fIsEmpty) {
-        // Change the render pass to do a don't-care load for both color & stencil
-        GrVkRenderPass::LoadStoreOps vkColorOps(VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                                VK_ATTACHMENT_STORE_OP_STORE);
-        GrVkRenderPass::LoadStoreOps vkStencilOps(VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                                  VK_ATTACHMENT_STORE_OP_STORE);
-
-        const GrVkRenderPass* oldRP = cbInfo.fRenderPass;
-
-        const GrVkResourceProvider::CompatibleRPHandle& rpHandle =
-            vkRT->compatibleRenderPassHandle();
-        if (rpHandle.isValid()) {
-            cbInfo.fRenderPass = fGpu->resourceProvider().findRenderPass(rpHandle,
-                                                                         vkColorOps,
-                                                                         vkStencilOps);
-        } else {
-            cbInfo.fRenderPass = fGpu->resourceProvider().findRenderPass(*vkRT,
-                                                                         vkColorOps,
-                                                                         vkStencilOps);
-        }
-
-        SkASSERT(cbInfo.fRenderPass->isCompatible(*oldRP));
-        oldRP->unref(fGpu);
-        cbInfo.fBounds.join(fRenderTarget->getBoundsRect());
-        cbInfo.fLoadStoreState = LoadStoreState::kStartsWithDiscard;
-    }
-}
 
 void GrVkGpuRTCommandBuffer::insertEventMarker(const char* msg) {
     // TODO: does Vulkan have a correlate?
@@ -604,7 +577,7 @@ void GrVkGpuRTCommandBuffer::inlineUpload(GrOpFlushState* state,
     ++fCommandBufferInfos[fCurrentCmdInfo].fNumPreCmds;
 }
 
-void GrVkGpuRTCommandBuffer::copy(GrSurface* src, GrSurfaceOrigin srcOrigin, const SkIRect& srcRect,
+void GrVkGpuRTCommandBuffer::copy(GrSurface* src, const SkIRect& srcRect,
                                   const SkIPoint& dstPoint) {
     CommandBufferInfo& cbInfo = fCommandBufferInfos[fCurrentCmdInfo];
     if (!cbInfo.fIsEmpty || LoadStoreState::kStartsWithClear == cbInfo.fLoadStoreState) {
@@ -612,8 +585,7 @@ void GrVkGpuRTCommandBuffer::copy(GrSurface* src, GrSurfaceOrigin srcOrigin, con
     }
 
     fPreCommandBufferTasks.emplace<Copy>(
-            src, srcOrigin, srcRect, dstPoint,
-            LoadStoreState::kStartsWithDiscard == cbInfo.fLoadStoreState);
+            src, srcRect, dstPoint, LoadStoreState::kStartsWithDiscard == cbInfo.fLoadStoreState);
     ++fCommandBufferInfos[fCurrentCmdInfo].fNumPreCmds;
 
     if (LoadStoreState::kLoadAndStore != cbInfo.fLoadStoreState) {
@@ -626,6 +598,7 @@ void GrVkGpuRTCommandBuffer::copy(GrSurface* src, GrSurfaceOrigin srcOrigin, con
         const GrVkRenderPass* oldRP = cbInfo.fRenderPass;
 
         GrVkRenderTarget* vkRT = static_cast<GrVkRenderTarget*>(fRenderTarget);
+        SkASSERT(!src->isProtected() || (fRenderTarget->isProtected() && fGpu->protectedContext()));
         const GrVkResourceProvider::CompatibleRPHandle& rpHandle =
                 vkRT->compatibleRenderPassHandle();
         if (rpHandle.isValid()) {
@@ -756,7 +729,7 @@ GrVkPipelineState* GrVkGpuRTCommandBuffer::prepareDrawState(
     }
     GrVkPipeline::SetDynamicViewportState(fGpu, cbInfo.currentCmdBuf(), fRenderTarget);
     GrVkPipeline::SetDynamicBlendConstantState(fGpu, cbInfo.currentCmdBuf(),
-                                               fRenderTarget->config(),
+                                               pipeline.outputSwizzle(),
                                                pipeline.getXferProcessor());
 
     return pipelineState;
@@ -792,6 +765,9 @@ void GrVkGpuRTCommandBuffer::onDraw(const GrPrimitiveProcessor& primProc,
             }
         }
         cbInfo.fSampledTextures.push_back(vkTexture);
+
+        SkASSERT(!texture->isProtected() ||
+                 (fRenderTarget->isProtected() && fGpu->protectedContext()));
     };
 
     if (dynamicStateArrays && dynamicStateArrays->fPrimitiveProcessorTextures) {

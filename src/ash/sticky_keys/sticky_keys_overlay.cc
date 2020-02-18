@@ -79,15 +79,15 @@ void StickyKeyOverlayLabel::SetKeyState(StickyKeyState state) {
   switch (state) {
     case STICKY_KEY_STATE_ENABLED:
       style = gfx::Font::NORMAL;
-      label_color = SkColorSetA(enabled_color(), 0xFF);
+      label_color = SkColorSetA(GetEnabledColor(), 0xFF);
       break;
     case STICKY_KEY_STATE_LOCKED:
       style = gfx::Font::UNDERLINE;
-      label_color = SkColorSetA(enabled_color(), 0xFF);
+      label_color = SkColorSetA(GetEnabledColor(), 0xFF);
       break;
     default:
       style = gfx::Font::NORMAL;
-      label_color = SkColorSetA(enabled_color(), 0x80);
+      label_color = SkColorSetA(GetEnabledColor(), 0x80);
   }
 
   SetEnabledColor(label_color);
@@ -142,7 +142,7 @@ StickyKeysOverlayView::StickyKeysOverlayView() {
   int child_spacing = font_size - 2 * font_padding;
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       gfx::Insets(vertical_spacing, horizontal_spacing), child_spacing));
   AddKeyLabel(ui::EF_CONTROL_DOWN,
               l10n_util::GetStringUTF8(IDS_ASH_CONTROL_KEY));
@@ -211,7 +211,7 @@ StickyKeysOverlay::StickyKeysOverlay()
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.accept_events = false;
-  params.keep_on_top = true;
+  params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   params.bounds = CalculateOverlayBounds();
   params.parent = Shell::GetContainer(Shell::GetRootWindowForNewWindows(),
                                       kShellWindowId_OverlayContainer);

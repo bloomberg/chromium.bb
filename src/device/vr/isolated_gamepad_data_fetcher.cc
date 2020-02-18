@@ -5,6 +5,7 @@
 #include "device/vr/isolated_gamepad_data_fetcher.h"
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/buildflag.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/vr_device.h"
@@ -105,45 +106,45 @@ GamepadPose GamepadPoseFromXRPose(device::mojom::VRPose* pose) {
 
   if (pose->position) {
     ret.position.not_null = true;
-    ret.position.x = (*pose->position)[0];
-    ret.position.y = (*pose->position)[1];
-    ret.position.z = (*pose->position)[2];
+    ret.position.x = pose->position->x();
+    ret.position.y = pose->position->y();
+    ret.position.z = pose->position->z();
   }
 
   if (pose->orientation) {
     ret.orientation.not_null = true;
-    ret.orientation.x = (*pose->orientation)[0];
-    ret.orientation.y = (*pose->orientation)[1];
-    ret.orientation.z = (*pose->orientation)[2];
-    ret.orientation.w = (*pose->orientation)[3];
+    ret.orientation.x = pose->orientation->x();
+    ret.orientation.y = pose->orientation->y();
+    ret.orientation.z = pose->orientation->z();
+    ret.orientation.w = pose->orientation->w();
   }
 
-  if (pose->angularVelocity) {
+  if (pose->angular_velocity) {
     ret.angular_velocity.not_null = true;
-    ret.angular_velocity.x = (*pose->angularVelocity)[0];
-    ret.angular_velocity.y = (*pose->angularVelocity)[1];
-    ret.angular_velocity.z = (*pose->angularVelocity)[2];
+    ret.angular_velocity.x = pose->angular_velocity->x();
+    ret.angular_velocity.y = pose->angular_velocity->y();
+    ret.angular_velocity.z = pose->angular_velocity->z();
   }
 
-  if (pose->linearVelocity) {
+  if (pose->linear_velocity) {
     ret.linear_velocity.not_null = true;
-    ret.linear_velocity.x = (*pose->linearVelocity)[0];
-    ret.linear_velocity.y = (*pose->linearVelocity)[1];
-    ret.linear_velocity.z = (*pose->linearVelocity)[2];
+    ret.linear_velocity.x = pose->linear_velocity->x();
+    ret.linear_velocity.y = pose->linear_velocity->y();
+    ret.linear_velocity.z = pose->linear_velocity->z();
   }
 
-  if (pose->angularAcceleration) {
+  if (pose->angular_acceleration) {
     ret.angular_acceleration.not_null = true;
-    ret.angular_acceleration.x = (*pose->angularAcceleration)[0];
-    ret.angular_acceleration.y = (*pose->angularAcceleration)[1];
-    ret.angular_acceleration.z = (*pose->angularAcceleration)[2];
+    ret.angular_acceleration.x = pose->angular_acceleration->x();
+    ret.angular_acceleration.y = pose->angular_acceleration->y();
+    ret.angular_acceleration.z = pose->angular_acceleration->z();
   }
 
-  if (pose->linearAcceleration) {
+  if (pose->linear_acceleration) {
     ret.linear_acceleration.not_null = true;
-    ret.linear_acceleration.x = (*pose->linearAcceleration)[0];
-    ret.linear_acceleration.y = (*pose->linearAcceleration)[1];
-    ret.linear_acceleration.z = (*pose->linearAcceleration)[2];
+    ret.linear_acceleration.x = pose->linear_acceleration->x();
+    ret.linear_acceleration.y = pose->linear_acceleration->y();
+    ret.linear_acceleration.z = pose->linear_acceleration->z();
   }
 
   return ret;
@@ -185,6 +186,8 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
 
     seen_gamepads.insert(source->controller_id);
     dest.timestamp = TimeInMicroseconds(source->timestamp);
+    // WebVR did not support mapping.
+    dest.mapping = GamepadMapping::kNone;
     dest.pose = GamepadPoseFromXRPose(source->pose.get());
     dest.pose.has_position = source->can_provide_position;
     dest.pose.has_orientation = source->can_provide_orientation;
@@ -215,18 +218,14 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     // a headset.  This doesn't change behavior, but the device/display naming
     // could be confusing here.
     if (this->source() == GAMEPAD_SOURCE_OPENVR) {
-      swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-               L"OpenVR Gamepad");
+      dest.SetID(base::UTF8ToUTF16("OpenVR Gamepad"));
     } else if (this->source() == GAMEPAD_SOURCE_OCULUS) {
       if (dest.hand == GamepadHand::kLeft) {
-        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-                 L"Oculus Touch (Left)");
+        dest.SetID(base::UTF8ToUTF16("Oculus Touch (Left)"));
       } else if (dest.hand == GamepadHand::kRight) {
-        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-                 L"Oculus Touch (Right)");
+        dest.SetID(base::UTF8ToUTF16("Oculus Touch (Right)"));
       } else {
-        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-                 L"Oculus Remote");
+        dest.SetID(base::UTF8ToUTF16("Oculus Remote"));
       }
     } else if (this->source() == GAMEPAD_SOURCE_WIN_MR) {
       // For compatibility with Edge and existing libraries, Win MR may plumb
@@ -239,19 +238,16 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
           source->pose->input_state.value()[0]->gamepad) {
         Gamepad id_gamepad =
             source->pose->input_state.value()[0]->gamepad.value();
-        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-                 id_gamepad.id);
+        dest.SetID(id_gamepad.id);
       } else {
-        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-                 L"Spatial Controller (Spatial Interaction Source) 0000-0000");
+        dest.SetID(base::UTF8ToUTF16(
+            "Spatial Controller (Spatial Interaction Source) 0000-0000"));
       }
     }
 
     TRACE_COUNTER1(
         "input", "XR gamepad sample age (ms)",
         (base::TimeTicks::Now() - source->timestamp).InMilliseconds());
-
-    dest.mapping[0] = 0;
   }
 
   // Remove any gamepads that aren't connected.

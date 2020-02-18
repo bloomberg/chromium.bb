@@ -28,8 +28,8 @@ class WallpaperControllerClientTest : public testing::Test {
 };
 
 TEST_F(WallpaperControllerClientTest, Construction) {
-  WallpaperControllerClient client;
   TestWallpaperController controller;
+  WallpaperControllerClient client;
   client.InitForTesting(&controller);
 
   // Singleton was initialized.

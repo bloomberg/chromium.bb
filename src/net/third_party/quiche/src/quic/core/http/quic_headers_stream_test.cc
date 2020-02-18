@@ -144,13 +144,19 @@ class MockVisitor : public SpdyFramerVisitorInterface {
 struct TestParams {
   TestParams(const ParsedQuicVersion& version, Perspective perspective)
       : version(version), perspective(perspective) {
-    QUIC_LOG(INFO) << "TestParams: version: "
-                   << ParsedQuicVersionToString(version)
-                   << ", perspective: " << perspective;
+    QUIC_LOG(INFO) << "TestParams:  " << *this;
   }
 
   TestParams(const TestParams& other)
       : version(other.version), perspective(other.perspective) {}
+
+  friend std::ostream& operator<<(std::ostream& os, const TestParams& tp) {
+    os << "{ version: " << ParsedQuicVersionToString(tp.version)
+       << ", perspective: "
+       << (tp.perspective == Perspective::IS_CLIENT ? "client" : "server")
+       << "}";
+    return os;
+  }
 
   ParsedQuicVersion version;
   Perspective perspective;
@@ -182,6 +188,7 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParams> {
             /*offset=*/0,
             ""),
         next_promised_stream_id_(2) {
+    QuicSpdySessionPeer::SetMaxInboundHeaderListSize(&session_, 256 * 1024);
     session_.Initialize();
     headers_stream_ = QuicSpdySessionPeer::GetHeadersStream(&session_);
     headers_[":version"] = "HTTP/1.1";
@@ -390,6 +397,9 @@ TEST_P(QuicHeadersStreamTest, WriteHeaders) {
 }
 
 TEST_P(QuicHeadersStreamTest, WritePushPromises) {
+  if (GetParam().version.DoesNotHaveHeadersStream()) {
+    return;
+  }
   for (QuicStreamId stream_id = client_id_1_; stream_id < client_id_3_;
        stream_id += next_stream_id_) {
     QuicStreamId promised_stream_id = NextPromisedStreamId();
@@ -461,6 +471,9 @@ TEST_P(QuicHeadersStreamTest, ProcessRawData) {
 }
 
 TEST_P(QuicHeadersStreamTest, ProcessPushPromise) {
+  if (GetParam().version.DoesNotHaveHeadersStream()) {
+    return;
+  }
   if (perspective() == Perspective::IS_SERVER) {
     return;
   }
@@ -470,6 +483,7 @@ TEST_P(QuicHeadersStreamTest, ProcessPushPromise) {
     SpdyPushPromiseIR push_promise(stream_id, promised_stream_id,
                                    headers_.Clone());
     SpdySerializedFrame frame(framer_->SerializeFrame(push_promise));
+    bool connection_closed = false;
     if (perspective() == Perspective::IS_SERVER) {
       EXPECT_CALL(*connection_,
                   CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
@@ -477,6 +491,8 @@ TEST_P(QuicHeadersStreamTest, ProcessPushPromise) {
           .WillRepeatedly(InvokeWithoutArgs(
               this, &QuicHeadersStreamTest::TearDownLocalConnectionState));
     } else {
+      ON_CALL(*connection_, CloseConnection(_, _, _))
+          .WillByDefault(testing::Assign(&connection_closed, true));
       EXPECT_CALL(session_, OnPromiseHeaderList(stream_id, promised_stream_id,
                                                 frame.size(), _))
           .WillOnce(
@@ -487,12 +503,18 @@ TEST_P(QuicHeadersStreamTest, ProcessPushPromise) {
     headers_stream_->OnStreamFrame(stream_frame_);
     if (perspective() == Perspective::IS_CLIENT) {
       stream_frame_.offset += frame.size();
+      // CheckHeaders crashes if the connection is closed so this ensures we
+      // fail the test instead of crashing.
+      ASSERT_FALSE(connection_closed);
       CheckHeaders();
     }
   }
 }
 
 TEST_P(QuicHeadersStreamTest, ProcessPriorityFrame) {
+  if (GetParam().version.DoesNotHaveHeadersStream()) {
+    return;
+  }
   QuicStreamId parent_stream_id = 0;
   for (SpdyPriority priority = 0; priority < 7; ++priority) {
     for (QuicStreamId stream_id = client_id_1_; stream_id < client_id_3_;
@@ -548,7 +570,6 @@ TEST_P(QuicHeadersStreamTest, ProcessLargeRawData) {
     return;
   }
 
-  QuicSpdySessionPeer::SetMaxUncompressedHeaderBytes(&session_, 256 * 1024);
   // We want to create a frame that is more than the SPDY Framer's max control
   // frame size, which is 16K, but less than the HPACK decoders max decode
   // buffer size, which is 32K.
@@ -982,6 +1003,22 @@ TEST_P(QuicHeadersStreamTest, HeadersGetAckedMultipleTimes) {
   EXPECT_TRUE(headers_stream_->OnStreamFrameAcked(
       22, 20, false, QuicTime::Delta::Zero(), &newly_acked_length));
   EXPECT_EQ(17u, newly_acked_length);
+}
+
+TEST_P(QuicHeadersStreamTest, CloseOnPushPromiseToServer) {
+  if (perspective() == Perspective::IS_CLIENT) {
+    return;
+  }
+  QuicStreamId promised_id = 1;
+  SpdyPushPromiseIR push_promise(client_id_1_, promised_id, headers_.Clone());
+  SpdySerializedFrame frame = framer_->SerializeFrame(push_promise);
+  stream_frame_.data_buffer = frame.data();
+  stream_frame_.data_length = frame.size();
+  EXPECT_CALL(session_, OnStreamHeaderList(_, _, _, _));
+  // TODO(lassey): Check for HTTP_WRONG_STREAM error code.
+  EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
+                                            "PUSH_PROMISE not supported.", _));
+  headers_stream_->OnStreamFrame(stream_frame_);
 }
 
 }  // namespace

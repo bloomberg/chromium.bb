@@ -13,8 +13,8 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/test/layer_tree_pixel_test.h"
 #include "cc/test/pixel_comparator.h"
-#include "cc/test/test_in_process_context_provider.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "components/viz/test/test_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
 #if !defined(OS_ANDROID)
@@ -29,10 +29,6 @@ class LayerTreeHostScrollbarsPixelTest
   LayerTreeHostScrollbarsPixelTest() = default;
 
   RendererType renderer_type() { return GetParam(); }
-
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->layer_transforms_should_scale_layer_contents = true;
-  }
 
   void SetupTree() override {
     SetInitialDeviceScaleFactor(device_scale_factor_);
@@ -89,10 +85,17 @@ class PaintedScrollbar : public Scrollbar {
   gfx::Rect rect_;
 };
 
+LayerTreeTest::RendererType const kRendererTypes[] = {
+    LayerTreeTest::RENDERER_GL,
+    LayerTreeTest::RENDERER_SKIA_GL,
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    LayerTreeTest::RENDERER_SKIA_VK,
+#endif
+};
+
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostScrollbarsPixelTest,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL));
+                         ::testing::ValuesIn(kRendererTypes));
 
 TEST_P(LayerTreeHostScrollbarsPixelTest, NoScale) {
   scoped_refptr<SolidColorLayer> background =
@@ -167,9 +170,9 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, MAYBE_HugeTransformScale) {
   layer->SetBounds(gfx::Size(10, 400));
   background->AddChild(layer);
 
-  scoped_refptr<TestInProcessContextProvider> context(
-      new TestInProcessContextProvider(/*enable_oop_rasterization=*/false,
-                                       /*support_locking=*/false));
+  auto context = base::MakeRefCounted<viz::TestInProcessContextProvider>(
+      /*enable_oop_rasterization=*/false,
+      /*support_locking=*/false);
   gpu::ContextResult result = context->BindToCurrentThread();
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   int max_texture_size = 0;
@@ -189,7 +192,8 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, MAYBE_HugeTransformScale) {
   scale_transform.Scale(scale, scale);
   layer->SetTransform(scale_transform);
 
-  if (renderer_type() == RENDERER_SKIA_GL)
+  if (renderer_type() == RENDERER_SKIA_GL ||
+      renderer_type() == RENDERER_SKIA_VK)
     pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 
   RunPixelTest(renderer_type(), background,
@@ -256,8 +260,7 @@ class PaintedOverlayScrollbar : public PaintedScrollbar {
 
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostOverlayScrollbarsPixelTest,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL));
+                         ::testing::ValuesIn(kRendererTypes));
 
 // Simulate increasing the thickness of a painted overlay scrollbar. Ensure that
 // the scrollbar border remains crisp.

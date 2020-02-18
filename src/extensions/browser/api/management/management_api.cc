@@ -40,7 +40,7 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
-#include "extensions/common/manifest_handlers/replacement_web_app.h"
+#include "extensions/common/manifest_handlers/replacement_apps.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -733,7 +733,7 @@ ExtensionFunction::ResponseAction ManagementSetLaunchTypeFunction::Run() {
       GetAvailableLaunchTypes(*extension, delegate);
 
   management::LaunchType app_launch_type = params->launch_type;
-  if (!base::ContainsValue(available_launch_types, app_launch_type)) {
+  if (!base::Contains(available_launch_types, app_launch_type)) {
     return RespondNow(Error(keys::kLaunchTypeNotAvailableError));
   }
 
@@ -842,9 +842,9 @@ ManagementInstallReplacementWebAppFunction::Run() {
         Error(keys::kGestureNeededForInstallReplacementWebAppError));
   }
 
-  DCHECK(ReplacementWebAppInfo::HasReplacementWebApp(extension()));
+  DCHECK(ReplacementAppsInfo::HasReplacementWebApp(extension()));
   const GURL& web_app_url =
-      ReplacementWebAppInfo::GetReplacementWebApp(extension());
+      ReplacementAppsInfo::GetReplacementWebApp(extension());
 
   DCHECK(web_app_url.is_valid());
   DCHECK(web_app_url.SchemeIs(url::kHttpsScheme));

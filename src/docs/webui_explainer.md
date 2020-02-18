@@ -219,8 +219,11 @@ void OvenHandler::RegisterMessages() {
 }
 
 void OverHandler::HandleBakeDonuts(const base::ListValue* args) {
-  double num_donuts;
-  CHECK(args->GetDouble(0, &num_donuts));  // JavaScript numbers are doubles.
+  AllowJavascript();
+
+  CHECK_EQ(1u, args->GetSize());
+  // JavaScript numbers are doubles.
+  double num_donuts = args->GetList()[0].GetDouble();
   GetOven()->BakeDonuts(static_cast<int>(num_donuts));
 }
 ```
@@ -429,7 +432,7 @@ There's a number of situations that result in this method being called:
 
 * renderer doesn't exist yet
 * renderer exists but isn't ready
-* renderer is ready but application-specifici JS isn't ready yet
+* renderer is ready but application-specific JS isn't ready yet
 * tab refresh
 * renderer crash
 
@@ -467,12 +470,11 @@ callbacks in the chain.
 
 ```c++
 void OvenHandler::HandleBakeDonuts(const base::ListValue* args) {
-base::Value* callback_id;
-args->Get(0, &callback_id);
-if (!GetOven()->HasGas()) {
-  RejectJavascriptCallback(callback_id,
-                           base::StringValue("need gas to cook the donuts!"));
-}
+  AllowJavascript();
+  if (!GetOven()->HasGas()) {
+    RejectJavascriptCallback(args->GetList()[0],
+                             base::StringValue("need gas to cook the donuts!"));
+  }
 ```
 
 This method is basically just a
@@ -509,10 +511,9 @@ Some handling C++ might do this:
 
 ```c++
 void OvenHandler::HandleBakeDonuts(const base::ListValue* args) {
-  base::Value* callback_id;
-  args->Get(0, &callback_id);
+  AllowJavascript();
   double num_donuts_baked = GetOven()->BakeDonuts();
-  ResolveJavascriptCallback(*callback_id, num_donuts_baked);
+  ResolveJavascriptCallback(args->GetList()[0], num_donuts_baked);
 }
 ```
 
@@ -649,10 +650,11 @@ JavaScript and calling the `then()` function.
 
 ```c++
 void DonutHandler::HandleGetNumberOfDonuts(const base::ListValue* args) {
-  base::Value* callback_id;
-  args->Get(0, &callback_id);
+  AllowJavascript();
+
+  const base::Value& callback_id = args->GetList()[0];
   size_t num_donuts = GetOven()->GetNumberOfDonuts();
-  ResolveJavascriptCallback(*callback_id, base::FundamentalValue(num_donuts));
+  ResolveJavascriptCallback(callback_id, base::FundamentalValue(num_donuts));
 }
 ```
 

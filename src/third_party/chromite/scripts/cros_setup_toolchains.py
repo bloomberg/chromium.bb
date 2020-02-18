@@ -585,7 +585,7 @@ def CleanTargets(targets, root='/'):
 
   # Cleaning doesn't care about consistency and rebuilding package.* files.
   packages = []
-  for pkg, vers in unmergemap.iteritems():
+  for pkg, vers in unmergemap.items():
     packages.extend('=%s-%s' % (pkg, ver) for ver in vers if ver != '9999')
 
   if packages:
@@ -1036,7 +1036,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
         link = sym_paths[elf]
         GeneratePathWrapper(output_dir, link, elf)
 
-    for lib, lib_data in e['libs'].iteritems():
+    for lib, lib_data in e['libs'].items():
       if lib in donelibs:
         continue
 
@@ -1165,10 +1165,10 @@ def _ProcessSysrootWrappers(_target, output_dir, srcpath):
     if contents[0] == '#!/usr/bin/python2 -S':
       contents[0] = '#!/usr/bin/env python2'
 
-    for num in xrange(len(contents)):
-      if '@CCACHE_DEFAULT@' in contents[num]:
-        assert 'True' in contents[num]
-        contents[num] = contents[num].replace('True', 'False')
+    for num, line in enumerate(contents):
+      if '@CCACHE_DEFAULT@' in line:
+        assert 'True' in line
+        contents[num] = line.replace('True', 'False')
         break
     # Can't update the wrapper in place since it's a hardlink to a file in /.
     os.unlink(sysroot_wrapper)

@@ -129,7 +129,7 @@ std::string TransmissionEncodingInfoHandler::ExtractSupportedCodecFromMimeType(
   } else if (base::StartsWith(mime_type, audio_prefix,
                               base::CompareCase::SENSITIVE)) {
     const std::string codec_name = mime_type.substr(strlen(audio_prefix));
-    if (base::ContainsKey(supported_audio_codecs_, codec_name))
+    if (base::Contains(supported_audio_codecs_, codec_name))
       return codec_name;
   }
   return "";
@@ -167,7 +167,7 @@ void TransmissionEncodingInfoHandler::EncodingInfo(
     info->supported = !codec_name.empty();
     if (info->supported) {
       const bool is_hardware_accelerated =
-          base::ContainsKey(hardware_accelerated_video_codecs_, codec_name);
+          base::Contains(hardware_accelerated_video_codecs_, codec_name);
       info->smooth =
           is_hardware_accelerated || CanCpuEncodeSmoothly(video_config);
       info->power_efficient = is_hardware_accelerated;

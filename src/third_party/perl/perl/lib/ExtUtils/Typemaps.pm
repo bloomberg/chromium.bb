@@ -2,8 +2,7 @@ package ExtUtils::Typemaps;
 use 5.006001;
 use strict;
 use warnings;
-our $VERSION = '3.16';
-#use Carp qw(croak);
+our $VERSION = '3.38';
 
 require ExtUtils::ParseXS;
 require ExtUtils::ParseXS::Constants;
@@ -23,7 +22,7 @@ ExtUtils::Typemaps - Read/Write/Modify Perl/XS typemap files
   # $typemap = ExtUtils::Typemaps->new();
   # alternatively create an in-memory typemap by parsing a string
   # $typemap = ExtUtils::Typemaps->new(string => $sometypemap);
-  
+
   # add a mapping
   $typemap->add_typemap(ctype => 'NV', xstype => 'T_NV');
   $typemap->add_inputmap(
@@ -34,13 +33,13 @@ ExtUtils::Typemaps - Read/Write/Modify Perl/XS typemap files
   );
   $typemap->add_string(string => $typemapstring);
                                            # will be parsed and merged
-  
+
   # remove a mapping (same for remove_typemap and remove_outputmap...)
   $typemap->remove_inputmap(xstype => 'SomeType');
-  
+
   # save a typemap to a file
   $typemap->write(file => 'anotherfile.map');
-  
+
   # merge the other typemap into this one
   $typemap->merge(typemap => $another_typemap);
 
@@ -110,6 +109,7 @@ sub _init {
     $self->_parse(\$string, $self->{lineno_offset}, $self->{file});
   }
 }
+
 
 =head2 file
 
@@ -344,7 +344,7 @@ sub remove_typemap {
     my %args = @_;
     $ctype = $args{ctype};
     die("Need ctype argument") if not defined $ctype;
-    $ctype = _tidy_type($ctype);
+    $ctype = tidy_type($ctype);
   }
   else {
     $ctype = $_[0]->tidy_ctype;
@@ -443,7 +443,7 @@ sub get_typemap {
   my %args = @_;
   my $ctype = $args{ctype};
   die("Need ctype argument") if not defined $ctype;
-  $ctype = _tidy_type($ctype);
+  $ctype = tidy_type($ctype);
 
   my $index = $self->{typemap_lookup}{$ctype};
   return() if not defined $index;
@@ -536,7 +536,7 @@ sub get_outputmap {
 
 Write the typemap to a file. Optionally takes a C<file> argument. If given, the
 typemap will be written to the specified file. If not, the typemap is written
-to the currently stored file name (see C<-E<gt>file> above, this defaults to the file
+to the currently stored file name (see L</file> above, this defaults to the file
 it was read from if any).
 
 =cut
@@ -781,7 +781,9 @@ corresponding OUTPUT code:
                 $var.context.value().size());
   ',
     'T_OUT' => '    {
-            GV *gv = newGVgen("$Package");
+            GV *gv = (GV *)sv_newmortal();
+            gv_init_pvn(gv, gv_stashpvs("$Package",1),
+                       "__ANONIO__",10,0);
             if ( do_open(gv, "+>&", 3, FALSE, 0, 0, $var) )
                 sv_setsv(
                   $arg,
@@ -860,7 +862,7 @@ sub validate {
   my %args = @_;
 
   if ( exists $args{ctype}
-       and exists $self->{typemap_lookup}{_tidy_type($args{ctype})} )
+       and exists $self->{typemap_lookup}{tidy_type($args{ctype})} )
   {
     die("Multiple definition of ctype '$args{ctype}' in TYPEMAP section");
   }
@@ -879,6 +881,84 @@ sub validate {
 
   return 1;
 }
+
+=head2 clone
+
+Creates and returns a clone of a full typemaps object.
+
+Takes named parameters: If C<shallow> is true,
+the clone will share the actual individual type/input/outputmap objects,
+but not share their storage. Use with caution. Without C<shallow>,
+the clone will be fully independent.
+
+=cut
+
+sub clone {
+  my $proto = shift;
+  my %args = @_;
+
+  my $self;
+  if ($args{shallow}) {
+    $self = bless( {
+      %$proto,
+      typemap_section => [@{$proto->{typemap_section}}],
+      typemap_lookup  => {%{$proto->{typemap_lookup}}},
+      input_section   => [@{$proto->{input_section}}],
+      input_lookup    => {%{$proto->{input_lookup}}},
+      output_section  => [@{$proto->{output_section}}],
+      output_lookup   => {%{$proto->{output_lookup}}},
+    } => ref($proto) );
+  }
+  else {
+    $self = bless( {
+      %$proto,
+      typemap_section => [map $_->new, @{$proto->{typemap_section}}],
+      typemap_lookup  => {%{$proto->{typemap_lookup}}},
+      input_section   => [map $_->new, @{$proto->{input_section}}],
+      input_lookup    => {%{$proto->{input_lookup}}},
+      output_section  => [map $_->new, @{$proto->{output_section}}],
+      output_lookup   => {%{$proto->{output_lookup}}},
+    } => ref($proto) );
+  }
+
+  return $self;
+}
+
+=head2 tidy_type
+
+Function to (heuristically) canonicalize a C type. Works to some
+degree with C++ types.
+
+    $halfway_canonical_type = tidy_type($ctype);
+
+Moved from C<ExtUtils::ParseXS>.
+
+=cut
+
+sub tidy_type {
+  local $_ = shift;
+
+  # for templated C++ types, do some bit of flawed canonicalization
+  # wrt. templates at least
+  if (/[<>]/) {
+    s/\s*([<>])\s*/$1/g;
+    s/>>/> >/g;
+  }
+
+  # rationalise any '*' by joining them into bunches and removing whitespace
+  s#\s*(\*+)\s*#$1#g;
+  s#(\*+)# $1 #g ;
+
+  # trim leading & trailing whitespace
+  s/^\s+//; s/\s+$//;
+
+  # change multiple whitespace into a single space
+  s/\s+/ /g;
+
+  $_;
+}
+
+
 
 sub _parse {
   my $self = shift;
@@ -970,24 +1050,6 @@ sub _parse {
 }
 
 # taken from ExtUtils::ParseXS
-sub _tidy_type {
-  local $_ = shift;
-
-  # rationalise any '*' by joining them into bunches and removing whitespace
-  s#\s*(\*+)\s*#$1#g;
-  s#(\*+)# $1 #g ;
-
-  # trim leading & trailing whitespace
-  s/^\s+//; s/\s+$//;
-
-  # change multiple whitespace into a single space
-  s/\s+/ /g;
-
-  $_;
-}
-
-
-# taken from ExtUtils::ParseXS
 sub _valid_proto_string {
   my $string = shift;
   if ($string =~ /^$ExtUtils::ParseXS::Constants::PrototypeRegexp+$/o) {
@@ -1020,7 +1082,7 @@ Steffen Mueller C<<smueller@cpan.org>>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2009, 2010, 2011, 2012 Steffen Mueller
+Copyright 2009, 2010, 2011, 2012, 2013 Steffen Mueller
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

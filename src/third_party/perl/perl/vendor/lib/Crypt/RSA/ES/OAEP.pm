@@ -1,22 +1,19 @@
-#!/usr/bin/perl -sw
-##
+package Crypt::RSA::ES::OAEP; 
+use strict;
+use warnings;
+
 ## Crypt::RSA::ES::OAEP 
 ##
 ## Copyright (c) 2001, Vipul Ved Prakash.  All rights reserved.
 ## This code is free software; you can redistribute it and/or modify
 ## it under the same terms as Perl itself.
-##
-## $Id: OAEP.pm,v 1.24 2001/06/22 23:27:37 vipul Exp $
 
-package Crypt::RSA::ES::OAEP; 
-use strict;
 use base 'Crypt::RSA::Errorhandler';
-use Crypt::Random          qw(makerandom_octet);
+use Math::Prime::Util  qw/random_bytes/;
 use Crypt::RSA::DataFormat qw(bitsize os2ip i2osp octet_xor mgf1 octet_len);
 use Crypt::RSA::Primitives;
 use Crypt::RSA::Debug      qw(debug);
-use Digest::SHA1           qw(sha1);
-use Math::Pari             qw(floor);
+use Digest::SHA            qw(sha1);
 use Sort::Versions         qw(versioncmp);
 use Carp;
 
@@ -90,7 +87,7 @@ sub encode {
     }
     my $phash = $self->hash ($P);
     my $db = $phash . $PS . chr(1) . $M; 
-    my $seed = makerandom_octet (Length => $hlen);
+    my $seed = random_bytes($hlen);
     my $dbmask = $self->mgf ($seed, $emlen-$hlen);
     my $maskeddb = octet_xor ($db, $dbmask);
     my $seedmask = $self->mgf ($maskeddb, $hlen);

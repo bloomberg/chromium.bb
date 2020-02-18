@@ -25,8 +25,7 @@ ServiceWorkerProcessManager::ServiceWorkerProcessManager(
     : browser_context_(browser_context),
       storage_partition_(nullptr),
       process_id_for_test_(ChildProcessHost::kInvalidUniqueID),
-      new_process_id_for_test_(ChildProcessHost::kInvalidUniqueID),
-      weak_this_factory_(this) {
+      new_process_id_for_test_(ChildProcessHost::kInvalidUniqueID) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context);
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -66,8 +65,7 @@ void ServiceWorkerProcessManager::Shutdown() {
       if (it.second->HasProcess()) {
         RenderProcessHost* process = it.second->GetProcess();
         if (!process->IsKeepAliveRefCountDisabled())
-          process->DecrementKeepAliveRefCount(
-              RenderProcessHost::KeepAliveClientType::kServiceWorker);
+          process->DecrementKeepAliveRefCount();
       }
     }
   }
@@ -104,7 +102,7 @@ ServiceWorkerProcessManager::AllocateWorkerProcess(
     return blink::ServiceWorkerStatusCode::kErrorAbort;
   }
 
-  DCHECK(!base::ContainsKey(worker_process_map_, embedded_worker_id))
+  DCHECK(!base::Contains(worker_process_map_, embedded_worker_id))
       << embedded_worker_id << " already has a process allocated";
 
   // Create a SiteInstance to get the renderer process from. Use the site URL
@@ -146,8 +144,7 @@ ServiceWorkerProcessManager::AllocateWorkerProcess(
 
   worker_process_map_.emplace(embedded_worker_id, std::move(site_instance));
   if (!rph->IsKeepAliveRefCountDisabled())
-    rph->IncrementKeepAliveRefCount(
-        RenderProcessHost::KeepAliveClientType::kServiceWorker);
+    rph->IncrementKeepAliveRefCount();
   out_info->process_id = rph->GetID();
   out_info->start_situation = start_situation;
   return blink::ServiceWorkerStatusCode::kOk;
@@ -177,8 +174,7 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
   if (it->second->HasProcess()) {
     RenderProcessHost* process = it->second->GetProcess();
     if (!process->IsKeepAliveRefCountDisabled())
-      process->DecrementKeepAliveRefCount(
-          RenderProcessHost::KeepAliveClientType::kServiceWorker);
+      process->DecrementKeepAliveRefCount();
   }
   worker_process_map_.erase(it);
 }

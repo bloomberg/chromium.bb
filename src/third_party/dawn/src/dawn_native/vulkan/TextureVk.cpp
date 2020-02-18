@@ -51,13 +51,13 @@ namespace dawn_native { namespace vulkan {
         }
 
         // Computes which vulkan access type could be required for the given Dawn usage.
-        VkAccessFlags VulkanAccessFlags(dawn::TextureUsageBit usage, dawn::TextureFormat format) {
+        VkAccessFlags VulkanAccessFlags(dawn::TextureUsageBit usage, const Format& format) {
             VkAccessFlags flags = 0;
 
-            if (usage & dawn::TextureUsageBit::TransferSrc) {
+            if (usage & dawn::TextureUsageBit::CopySrc) {
                 flags |= VK_ACCESS_TRANSFER_READ_BIT;
             }
-            if (usage & dawn::TextureUsageBit::TransferDst) {
+            if (usage & dawn::TextureUsageBit::CopyDst) {
                 flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
             }
             if (usage & dawn::TextureUsageBit::Sampled) {
@@ -67,7 +67,7 @@ namespace dawn_native { namespace vulkan {
                 flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
             }
             if (usage & dawn::TextureUsageBit::OutputAttachment) {
-                if (TextureFormatHasDepthOrStencil(format)) {
+                if (format.HasDepthOrStencil()) {
                     flags |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
                              VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
                 } else {
@@ -88,7 +88,7 @@ namespace dawn_native { namespace vulkan {
         }
 
         // Chooses which Vulkan image layout should be used for the given Dawn usage
-        VkImageLayout VulkanImageLayout(dawn::TextureUsageBit usage, dawn::TextureFormat format) {
+        VkImageLayout VulkanImageLayout(dawn::TextureUsageBit usage, const Format& format) {
             if (usage == dawn::TextureUsageBit::None) {
                 return VK_IMAGE_LAYOUT_UNDEFINED;
             }
@@ -99,22 +99,22 @@ namespace dawn_native { namespace vulkan {
 
             // Usage has a single bit so we can switch on its value directly.
             switch (usage) {
-                case dawn::TextureUsageBit::TransferDst:
+                case dawn::TextureUsageBit::CopyDst:
                     return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
                 case dawn::TextureUsageBit::Sampled:
                     return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 // Vulkan texture copy functions require the image to be in _one_  known layout.
                 // Depending on whether parts of the texture have been transitioned to only
-                // TransferSrc or a combination with something else, the texture could be in a
+                // CopySrc or a combination with something else, the texture could be in a
                 // combination of GENERAL and TRANSFER_SRC_OPTIMAL. This would be a problem, so we
-                // make TransferSrc use GENERAL.
-                case dawn::TextureUsageBit::TransferSrc:
+                // make CopySrc use GENERAL.
+                case dawn::TextureUsageBit::CopySrc:
                 // Writable storage textures must use general. If we could know the texture is read
                 // only we could use SHADER_READ_ONLY_OPTIMAL
                 case dawn::TextureUsageBit::Storage:
                     return VK_IMAGE_LAYOUT_GENERAL;
                 case dawn::TextureUsageBit::OutputAttachment:
-                    if (TextureFormatHasDepthOrStencil(format)) {
+                    if (format.HasDepthOrStencil()) {
                         return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
                     } else {
                         return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -128,7 +128,7 @@ namespace dawn_native { namespace vulkan {
 
         // Computes which Vulkan pipeline stage can access a texture in the given Dawn usage
         VkPipelineStageFlags VulkanPipelineStage(dawn::TextureUsageBit usage,
-                                                 dawn::TextureFormat format) {
+                                                 const Format& format) {
             VkPipelineStageFlags flags = 0;
 
             if (usage == dawn::TextureUsageBit::None) {
@@ -136,7 +136,7 @@ namespace dawn_native { namespace vulkan {
                 // which case there is no need to wait on anything to stop accessing this texture.
                 return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
             }
-            if (usage & (dawn::TextureUsageBit::TransferSrc | dawn::TextureUsageBit::TransferDst)) {
+            if (usage & (dawn::TextureUsageBit::CopySrc | dawn::TextureUsageBit::CopyDst)) {
                 flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
             }
             if (usage & (dawn::TextureUsageBit::Sampled | dawn::TextureUsageBit::Storage)) {
@@ -145,7 +145,7 @@ namespace dawn_native { namespace vulkan {
                          VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
             }
             if (usage & dawn::TextureUsageBit::OutputAttachment) {
-                if (TextureFormatHasDepthOrStencil(format)) {
+                if (format.HasDepthOrStencil()) {
                     flags |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
                              VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
                     // TODO(cwallez@chromium.org): This is missing the stage where the depth and
@@ -170,22 +170,20 @@ namespace dawn_native { namespace vulkan {
         }
 
         // Computes which Vulkan texture aspects are relevant for the given Dawn format
-        VkImageAspectFlags VulkanAspectMask(dawn::TextureFormat format) {
-            bool isDepth = TextureFormatHasDepth(format);
-            bool isStencil = TextureFormatHasStencil(format);
-
-            VkImageAspectFlags flags = 0;
-            if (isDepth) {
-                flags |= VK_IMAGE_ASPECT_DEPTH_BIT;
+        VkImageAspectFlags VulkanAspectMask(const Format& format) {
+            switch (format.aspect) {
+                case Format::Aspect::Color:
+                    return VK_IMAGE_ASPECT_COLOR_BIT;
+                case Format::Aspect::Depth:
+                    return VK_IMAGE_ASPECT_DEPTH_BIT;
+                case Format::Aspect::Stencil:
+                    return VK_IMAGE_ASPECT_STENCIL_BIT;
+                case Format::Aspect::DepthStencil:
+                    return VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+                default:
+                    UNREACHABLE();
+                    return 0;
             }
-            if (isStencil) {
-                flags |= VK_IMAGE_ASPECT_STENCIL_BIT;
-            }
-
-            if (flags != 0) {
-                return flags;
-            }
-            return VK_IMAGE_ASPECT_COLOR_BIT;
         }
 
         VkExtent3D VulkanExtent3D(const Extent3D& extent) {
@@ -213,22 +211,129 @@ namespace dawn_native { namespace vulkan {
     // Converts Dawn texture format to Vulkan formats.
     VkFormat VulkanImageFormat(dawn::TextureFormat format) {
         switch (format) {
-            case dawn::TextureFormat::R8G8B8A8Unorm:
-                return VK_FORMAT_R8G8B8A8_UNORM;
-            case dawn::TextureFormat::R8G8Unorm:
-                return VK_FORMAT_R8G8_UNORM;
             case dawn::TextureFormat::R8Unorm:
                 return VK_FORMAT_R8_UNORM;
-            case dawn::TextureFormat::R8G8B8A8Uint:
-                return VK_FORMAT_R8G8B8A8_UINT;
-            case dawn::TextureFormat::R8G8Uint:
-                return VK_FORMAT_R8G8_UINT;
+            case dawn::TextureFormat::R8Snorm:
+                return VK_FORMAT_R8_SNORM;
             case dawn::TextureFormat::R8Uint:
                 return VK_FORMAT_R8_UINT;
-            case dawn::TextureFormat::B8G8R8A8Unorm:
+            case dawn::TextureFormat::R8Sint:
+                return VK_FORMAT_R8_SINT;
+
+            case dawn::TextureFormat::R16Unorm:
+                return VK_FORMAT_R16_UNORM;
+            case dawn::TextureFormat::R16Snorm:
+                return VK_FORMAT_R16_SNORM;
+            case dawn::TextureFormat::R16Uint:
+                return VK_FORMAT_R16_UINT;
+            case dawn::TextureFormat::R16Sint:
+                return VK_FORMAT_R16_SINT;
+            case dawn::TextureFormat::R16Float:
+                return VK_FORMAT_R16_SFLOAT;
+            case dawn::TextureFormat::RG8Unorm:
+                return VK_FORMAT_R8G8_UNORM;
+            case dawn::TextureFormat::RG8Snorm:
+                return VK_FORMAT_R8G8_SNORM;
+            case dawn::TextureFormat::RG8Uint:
+                return VK_FORMAT_R8G8_UINT;
+            case dawn::TextureFormat::RG8Sint:
+                return VK_FORMAT_R8G8_SINT;
+
+            case dawn::TextureFormat::R32Uint:
+                return VK_FORMAT_R32_UINT;
+            case dawn::TextureFormat::R32Sint:
+                return VK_FORMAT_R32_SINT;
+            case dawn::TextureFormat::R32Float:
+                return VK_FORMAT_R32_SFLOAT;
+            case dawn::TextureFormat::RG16Unorm:
+                return VK_FORMAT_R16G16_UNORM;
+            case dawn::TextureFormat::RG16Snorm:
+                return VK_FORMAT_R16G16_SNORM;
+            case dawn::TextureFormat::RG16Uint:
+                return VK_FORMAT_R16G16_UINT;
+            case dawn::TextureFormat::RG16Sint:
+                return VK_FORMAT_R16G16_SINT;
+            case dawn::TextureFormat::RG16Float:
+                return VK_FORMAT_R16G16_SFLOAT;
+            case dawn::TextureFormat::RGBA8Unorm:
+                return VK_FORMAT_R8G8B8A8_UNORM;
+            case dawn::TextureFormat::RGBA8UnormSrgb:
+                return VK_FORMAT_R8G8B8A8_SRGB;
+            case dawn::TextureFormat::RGBA8Snorm:
+                return VK_FORMAT_R8G8B8A8_SNORM;
+            case dawn::TextureFormat::RGBA8Uint:
+                return VK_FORMAT_R8G8B8A8_UINT;
+            case dawn::TextureFormat::RGBA8Sint:
+                return VK_FORMAT_R8G8B8A8_SINT;
+            case dawn::TextureFormat::BGRA8Unorm:
                 return VK_FORMAT_B8G8R8A8_UNORM;
-            case dawn::TextureFormat::D32FloatS8Uint:
+            case dawn::TextureFormat::BGRA8UnormSrgb:
+                return VK_FORMAT_B8G8R8A8_SRGB;
+            case dawn::TextureFormat::RGB10A2Unorm:
+                return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+            case dawn::TextureFormat::RG11B10Float:
+                return VK_FORMAT_B10G11R11_UFLOAT_PACK32;
+
+            case dawn::TextureFormat::RG32Uint:
+                return VK_FORMAT_R32G32_UINT;
+            case dawn::TextureFormat::RG32Sint:
+                return VK_FORMAT_R32G32_SINT;
+            case dawn::TextureFormat::RG32Float:
+                return VK_FORMAT_R32G32_SFLOAT;
+            case dawn::TextureFormat::RGBA16Unorm:
+                return VK_FORMAT_R16G16B16A16_UNORM;
+            case dawn::TextureFormat::RGBA16Snorm:
+                return VK_FORMAT_R16G16B16A16_SNORM;
+            case dawn::TextureFormat::RGBA16Uint:
+                return VK_FORMAT_R16G16B16A16_UINT;
+            case dawn::TextureFormat::RGBA16Sint:
+                return VK_FORMAT_R16G16B16A16_SINT;
+            case dawn::TextureFormat::RGBA16Float:
+                return VK_FORMAT_R16G16B16A16_SFLOAT;
+
+            case dawn::TextureFormat::RGBA32Uint:
+                return VK_FORMAT_R32G32B32A32_UINT;
+            case dawn::TextureFormat::RGBA32Sint:
+                return VK_FORMAT_R32G32B32A32_SINT;
+            case dawn::TextureFormat::RGBA32Float:
+                return VK_FORMAT_R32G32B32A32_SFLOAT;
+
+            case dawn::TextureFormat::Depth32Float:
+                return VK_FORMAT_D32_SFLOAT;
+            case dawn::TextureFormat::Depth24Plus:
+                return VK_FORMAT_D32_SFLOAT;
+            case dawn::TextureFormat::Depth24PlusStencil8:
                 return VK_FORMAT_D32_SFLOAT_S8_UINT;
+
+            case dawn::TextureFormat::BC1RGBAUnorm:
+                return VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
+            case dawn::TextureFormat::BC1RGBAUnormSrgb:
+                return VK_FORMAT_BC1_RGBA_SRGB_BLOCK;
+            case dawn::TextureFormat::BC2RGBAUnorm:
+                return VK_FORMAT_BC2_UNORM_BLOCK;
+            case dawn::TextureFormat::BC2RGBAUnormSrgb:
+                return VK_FORMAT_BC2_SRGB_BLOCK;
+            case dawn::TextureFormat::BC3RGBAUnorm:
+                return VK_FORMAT_BC3_UNORM_BLOCK;
+            case dawn::TextureFormat::BC3RGBAUnormSrgb:
+                return VK_FORMAT_BC3_SRGB_BLOCK;
+            case dawn::TextureFormat::BC4RSnorm:
+                return VK_FORMAT_BC4_SNORM_BLOCK;
+            case dawn::TextureFormat::BC4RUnorm:
+                return VK_FORMAT_BC4_UNORM_BLOCK;
+            case dawn::TextureFormat::BC5RGSnorm:
+                return VK_FORMAT_BC5_SNORM_BLOCK;
+            case dawn::TextureFormat::BC5RGUnorm:
+                return VK_FORMAT_BC5_UNORM_BLOCK;
+            case dawn::TextureFormat::BC6HRGBSfloat:
+                return VK_FORMAT_BC6H_SFLOAT_BLOCK;
+            case dawn::TextureFormat::BC6HRGBUfloat:
+                return VK_FORMAT_BC6H_UFLOAT_BLOCK;
+            case dawn::TextureFormat::BC7RGBAUnorm:
+                return VK_FORMAT_BC7_UNORM_BLOCK;
+            case dawn::TextureFormat::BC7RGBAUnormSrgb:
+                return VK_FORMAT_BC7_SRGB_BLOCK;
+
             default:
                 UNREACHABLE();
         }
@@ -236,13 +341,13 @@ namespace dawn_native { namespace vulkan {
 
     // Converts the Dawn usage flags to Vulkan usage flags. Also needs the format to choose
     // between color and depth attachment usages.
-    VkImageUsageFlags VulkanImageUsage(dawn::TextureUsageBit usage, dawn::TextureFormat format) {
+    VkImageUsageFlags VulkanImageUsage(dawn::TextureUsageBit usage, const Format& format) {
         VkImageUsageFlags flags = 0;
 
-        if (usage & dawn::TextureUsageBit::TransferSrc) {
+        if (usage & dawn::TextureUsageBit::CopySrc) {
             flags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
         }
-        if (usage & dawn::TextureUsageBit::TransferDst) {
+        if (usage & dawn::TextureUsageBit::CopyDst) {
             flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
         }
         if (usage & dawn::TextureUsageBit::Sampled) {
@@ -252,7 +357,7 @@ namespace dawn_native { namespace vulkan {
             flags |= VK_IMAGE_USAGE_STORAGE_BIT;
         }
         if (usage & dawn::TextureUsageBit::OutputAttachment) {
-            if (TextureFormatHasDepthOrStencil(format)) {
+            if (format.HasDepthOrStencil()) {
                 flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
             } else {
                 flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -283,7 +388,7 @@ namespace dawn_native { namespace vulkan {
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
         createInfo.imageType = VulkanImageType(GetDimension());
-        createInfo.format = VulkanImageFormat(GetFormat());
+        createInfo.format = VulkanImageFormat(GetFormat().format);
         createInfo.extent = VulkanExtent3D(GetSize());
         createInfo.mipLevels = GetNumMipLevels();
         createInfo.arrayLayers = GetArrayLayers();
@@ -300,6 +405,11 @@ namespace dawn_native { namespace vulkan {
         if (GetArrayLayers() >= 6 && GetSize().width == GetSize().height) {
             createInfo.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
         }
+
+        // We always set VK_IMAGE_USAGE_TRANSFER_DST_BIT unconditionally beause the Vulkan images
+        // that are used in vkCmdClearColorImage() must have been created with this flag, which is
+        // also required for the implementation of robust resource initialization.
+        createInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
         if (device->fn.CreateImage(device->GetVkDevice(), &createInfo, nullptr, &mHandle) !=
             VK_SUCCESS) {
@@ -326,16 +436,27 @@ namespace dawn_native { namespace vulkan {
             range.levelCount = GetNumMipLevels();
             range.baseArrayLayer = 0;
             range.layerCount = GetArrayLayers();
-
-            // TODO(natlee@microsoft.com): use correct union member depending on the texture format
-            VkClearColorValue clear_color = {{1.0, 1.0, 1.0, 1.0}};
-
             TransitionUsageNow(ToBackend(GetDevice())->GetPendingCommandBuffer(),
-                               dawn::TextureUsageBit::TransferDst);
-            ToBackend(GetDevice())
-                ->fn.CmdClearColorImage(ToBackend(GetDevice())->GetPendingCommandBuffer(),
-                                        GetHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                        &clear_color, 1, &range);
+                               dawn::TextureUsageBit::CopyDst);
+
+            if (GetFormat().HasDepthOrStencil()) {
+                VkClearDepthStencilValue clear_color[1];
+                clear_color[0].depth = 1.0f;
+                clear_color[0].stencil = 1u;
+                ToBackend(GetDevice())
+                    ->fn.CmdClearDepthStencilImage(
+                        ToBackend(GetDevice())->GetPendingCommandBuffer(), GetHandle(),
+                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, clear_color, 1, &range);
+            } else {
+                // TODO(natlee@microsoft.com): use correct union member depending on the texture
+                // format
+                VkClearColorValue clear_color = {{1.0, 1.0, 1.0, 1.0}};
+
+                ToBackend(GetDevice())
+                    ->fn.CmdClearColorImage(ToBackend(GetDevice())->GetPendingCommandBuffer(),
+                                            GetHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                            &clear_color, 1, &range);
+            }
         }
     }
 
@@ -380,7 +501,7 @@ namespace dawn_native { namespace vulkan {
             return;
         }
 
-        dawn::TextureFormat format = GetFormat();
+        const Format& format = GetFormat();
 
         VkPipelineStageFlags srcStages = VulkanPipelineStage(mLastUsage, format);
         VkPipelineStageFlags dstStages = VulkanPipelineStage(usage, format);
@@ -410,6 +531,62 @@ namespace dawn_native { namespace vulkan {
         mLastUsage = usage;
     }
 
+    void Texture::ClearTexture(VkCommandBuffer commands,
+                               uint32_t baseMipLevel,
+                               uint32_t levelCount,
+                               uint32_t baseArrayLayer,
+                               uint32_t layerCount) {
+        VkImageSubresourceRange range = {};
+        range.aspectMask = GetVkAspectMask();
+        range.baseMipLevel = baseMipLevel;
+        range.levelCount = levelCount;
+        range.baseArrayLayer = baseArrayLayer;
+        range.layerCount = layerCount;
+
+        TransitionUsageNow(commands, dawn::TextureUsageBit::CopyDst);
+        if (GetFormat().HasDepthOrStencil()) {
+            VkClearDepthStencilValue clear_color[1];
+            clear_color[0].depth = 0.0f;
+            clear_color[0].stencil = 0u;
+            ToBackend(GetDevice())
+                ->fn.CmdClearDepthStencilImage(commands, GetHandle(),
+                                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, clear_color, 1,
+                                               &range);
+        } else {
+            VkClearColorValue clear_color[1];
+            clear_color[0].float32[0] = 0.0f;
+            clear_color[0].float32[1] = 0.0f;
+            clear_color[0].float32[2] = 0.0f;
+            clear_color[0].float32[3] = 0.0f;
+            ToBackend(GetDevice())
+                ->fn.CmdClearColorImage(commands, GetHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                        clear_color, 1, &range);
+        }
+        SetIsSubresourceContentInitialized(baseMipLevel, levelCount, baseArrayLayer, layerCount);
+    }
+
+    void Texture::EnsureSubresourceContentInitialized(VkCommandBuffer commands,
+                                                      uint32_t baseMipLevel,
+                                                      uint32_t levelCount,
+                                                      uint32_t baseArrayLayer,
+                                                      uint32_t layerCount) {
+        if (!GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
+            return;
+        }
+        if (!IsSubresourceContentInitialized(baseMipLevel, levelCount, baseArrayLayer,
+                                             layerCount)) {
+            // TODO(jiawei.shao@intel.com): initialize textures in BC formats with Buffer-to-Texture
+            // copies.
+            if (GetFormat().isCompressed) {
+                return;
+            }
+
+            // If subresource has not been initialized, clear it to black as it could contain dirty
+            // bits from recycled memory
+            ClearTexture(commands, baseMipLevel, levelCount, baseArrayLayer, layerCount);
+        }
+    }
+
     // TODO(jiawei.shao@intel.com): create texture view by TextureViewDescriptor
     TextureView::TextureView(TextureBase* texture, const TextureViewDescriptor* descriptor)
         : TextureViewBase(texture, descriptor) {
@@ -424,7 +601,7 @@ namespace dawn_native { namespace vulkan {
         createInfo.format = VulkanImageFormat(descriptor->format);
         createInfo.components = VkComponentMapping{VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
                                                    VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
-        createInfo.subresourceRange.aspectMask = VulkanAspectMask(descriptor->format);
+        createInfo.subresourceRange.aspectMask = VulkanAspectMask(GetFormat());
         createInfo.subresourceRange.baseMipLevel = descriptor->baseMipLevel;
         createInfo.subresourceRange.levelCount = descriptor->mipLevelCount;
         createInfo.subresourceRange.baseArrayLayer = descriptor->baseArrayLayer;

@@ -118,6 +118,7 @@ void LoadFrameDontWait(WebLocalFrame* frame, const WebURL& url) {
     params->url = url;
     params->navigation_timings.navigation_start = base::TimeTicks::Now();
     params->navigation_timings.fetch_start = base::TimeTicks::Now();
+    params->is_browser_initiated = true;
     FillNavigationParamsResponse(params.get());
     impl->CommitNavigation(std::move(params), nullptr /* extra_data */);
   }
@@ -315,7 +316,8 @@ WebRemoteFrameImpl* CreateRemoteChild(
   return frame;
 }
 
-WebViewHelper::WebViewHelper() : web_view_(nullptr) {}
+WebViewHelper::WebViewHelper()
+    : web_view_(nullptr), platform_(Platform::Current()) {}
 
 WebViewHelper::~WebViewHelper() {
   // Close the WebViewImpl before the WebViewClient/WebWidgetClient are
@@ -437,6 +439,10 @@ void WebViewHelper::LoadAhem() {
 }
 
 void WebViewHelper::Reset() {
+  DCHECK_EQ(platform_, Platform::Current())
+      << "Platform::Current() should be the same for the life of a test, "
+         "including shutdown.";
+
   if (test_web_view_client_)
     test_web_view_client_->DestroyChildViews();
   if (web_view_) {
@@ -468,6 +474,9 @@ void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
       WebView::Create(test_web_view_client_,
                       /*is_hidden=*/false,
                       /*compositing_enabled=*/true, opener));
+  // This property must be set at initialization time, it is not supported to be
+  // changed afterward, and does nothing.
+  web_view_->GetSettings()->SetViewportEnabled(viewport_enabled_);
   web_view_->GetSettings()->SetJavaScriptEnabled(true);
   web_view_->GetSettings()->SetPluginsEnabled(true);
   // Enable (mocked) network loads of image URLs, as this simplifies
@@ -486,8 +495,7 @@ int TestWebFrameClient::loads_in_progress_ = 0;
 
 TestWebFrameClient::TestWebFrameClient()
     : interface_provider_(new service_manager::InterfaceProvider()),
-      effective_connection_type_(WebEffectiveConnectionType::kTypeUnknown),
-      weak_factory_(this) {}
+      effective_connection_type_(WebEffectiveConnectionType::kTypeUnknown) {}
 
 void TestWebFrameClient::Bind(WebLocalFrame* frame,
                               std::unique_ptr<TestWebFrameClient> self_owned) {
@@ -609,9 +617,6 @@ content::LayerTreeView* LayerTreeViewFactory::Initialize(
   // Use synchronous compositing so that the MessageLoop becomes idle and the
   // test makes progress.
   settings.single_thread_proxy_scheduler = false;
-  // For web contents, layer transforms should scale up the contents of layers
-  // to keep content always crisp when possible.
-  settings.layer_transforms_should_scale_layer_contents = true;
   // Both BlinkGenPropertyTrees and CompositeAfterPaint should imply layer lists
   // in the compositor. Some code across the boundaries makes assumptions based
   // on this so ensure tests run using this configuration as well.
@@ -663,9 +668,38 @@ void TestWebWidgetClient::InjectGestureScrollEvent(
     ScrollGranularity granularity,
     cc::ElementId scrollable_area_element_id,
     WebInputEvent::Type injected_type) {
-  if (injected_type == WebInputEvent::kGestureScrollUpdate) {
-    injected_gesture_scroll_update_count_++;
-  }
+  InjectedScrollGestureData data{delta, granularity, scrollable_area_element_id,
+                                 injected_type};
+  injected_scroll_gesture_data_.push_back(data);
+}
+
+void TestWebWidgetClient::SetHaveScrollEventHandlers(bool have_handlers) {
+  have_scroll_event_handlers_ = have_handlers;
+}
+
+void TestWebWidgetClient::SetEventListenerProperties(
+    cc::EventListenerClass event_class,
+    cc::EventListenerProperties properties) {
+  layer_tree_host()->SetEventListenerProperties(event_class, properties);
+}
+
+cc::EventListenerProperties TestWebWidgetClient::EventListenerProperties(
+    cc::EventListenerClass event_class) const {
+  return layer_tree_host()->event_listener_properties(event_class);
+}
+
+std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+TestWebWidgetClient::DeferMainFrameUpdate() {
+  return layer_tree_host()->DeferMainFrameUpdate();
+}
+
+void TestWebWidgetClient::StartDeferringCommits(base::TimeDelta timeout) {
+  layer_tree_host()->StartDeferringCommits(timeout);
+}
+
+void TestWebWidgetClient::StopDeferringCommits(
+    cc::PaintHoldingCommitTrigger trigger) {
+  layer_tree_host()->StopDeferringCommits(trigger);
 }
 
 void TestWebWidgetClient::RegisterViewportLayers(

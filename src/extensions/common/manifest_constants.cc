@@ -112,6 +112,7 @@ const char kName[] = "name";
 const char kNaClModules[] = "nacl_modules";
 const char kNaClModulesMIMEType[] = "mime_type";
 const char kNaClModulesPath[] = "path";
+const char kNativelyConnectable[] = "natively_connectable";
 const char kOAuth2[] = "oauth2";
 const char kOAuth2AutoApprove[] = "oauth2.auto_approve";
 const char kOAuth2ClientId[] = "oauth2.client_id";
@@ -134,6 +135,7 @@ const char kPlatformAppBackgroundScripts[] = "app.background.scripts";
 const char kPlatformAppContentSecurityPolicy[] = "app.content_security_policy";
 const char kPublicKey[] = "key";
 const char kRemoveButton[] = "remove_button";
+const char kReplacementAndroidApp[] = "replacement_android_app";
 const char kReplacementWebApp[] = "replacement_web_app";
 const char kRequirements[] = "requirements";
 const char kRunAt[] = "run_at";
@@ -557,6 +559,10 @@ const char kInvalidMinimumChromeVersion[] =
     "Invalid value for 'minimum_chrome_version'.";
 const char kInvalidName[] =
     "Required value 'name' is missing or invalid.";
+const char kInvalidNativelyConnectable[] =
+    "Invalid natively_connectable. Must be a list.";
+const char kInvalidNativelyConnectableValue[] =
+    "Invalid natively_connectable value. Must be a non-empty string.";
 const char kInvalidNaClModules[] =
     "Invalid value for 'nacl_modules'.";
 const char kInvalidNaClModulesPath[] =
@@ -593,6 +599,8 @@ const char kInvalidPermissions[] =
     "Invalid value for 'permissions'.";
 const char kInvalidPermissionScheme[] =
     "Invalid scheme for 'permissions[*]'.";
+const char kInvalidReplacementAndroidApp[] =
+    "Invalid value for 'replacement_android_app'";
 const char kInvalidReplacementWebApp[] =
     "Invalid value for 'replacement_web_app'.";
 const char kInvalidRequirement[] =
@@ -747,6 +755,9 @@ const char kSandboxPagesCSPKeyNotAllowed[] =
     "'content_security_policy.sandbox'.";
 const char kRulesFileIsInvalid[] =
     "Invalid value for key '*.*': The provided path is invalid.";
+const char kTransientBackgroundConflictsWithPersistentBackground[] =
+    "The 'transientBackground' permission cannot be used with a persistent "
+    "background page.";
 const char kTtsGenderIsDeprecated[] =
     "Voice gender is deprecated and values will be ignored starting in Chrome "
     "71";

@@ -119,6 +119,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
 
   // DemuxerStream methods.
   void Read(const ReadCB& read_cb) override;
+  bool IsReadPending() const override;
   Type type() const override;
   Liveness liveness() const override;
   AudioDecoderConfig audio_decoder_config() override;
@@ -521,11 +522,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // references to these streams, so we need to keep them alive. But they'll be
   // in a shut down state, so reading from them will return EOS.
   std::vector<std::unique_ptr<ChunkDemuxerStream>> removed_streams_;
-
-  // Accumulate, by type, detected track counts across the SourceBuffers.
-  int detected_audio_track_count_;
-  int detected_video_track_count_;
-  int detected_text_track_count_;
 
   // Callback for reporting the number of bytes appended to this ChunkDemuxer.
   BytesReceivedCB bytes_received_cb_;

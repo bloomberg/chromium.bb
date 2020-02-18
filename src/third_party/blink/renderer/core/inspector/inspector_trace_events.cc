@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "cc/layers/picture_layer.h"
-#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -156,7 +156,7 @@ void InspectorTraceEvents::DidReceiveData(uint64_t identifier,
 
 void InspectorTraceEvents::DidFinishLoading(uint64_t identifier,
                                             DocumentLoader* loader,
-                                            TimeTicks finish_time,
+                                            base::TimeTicks finish_time,
                                             int64_t encoded_data_length,
                                             int64_t decoded_body_length,
                                             bool should_report_corb_blocking) {
@@ -176,7 +176,7 @@ void InspectorTraceEvents::DidFailLoading(uint64_t identifier,
   TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish",
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        inspector_resource_finish_event::Data(
-                           loader, identifier, TimeTicks(), true, 0, 0));
+                           loader, identifier, base::TimeTicks(), true, 0, 0));
 }
 
 void InspectorTraceEvents::Will(const probe::ExecuteScript&) {}
@@ -682,6 +682,7 @@ const char kAnonymousBlockChange[] = "Anonymous block change";
 const char kFullscreen[] = "Fullscreen change";
 const char kChildChanged[] = "Child changed";
 const char kListValueChange[] = "List value change";
+const char kListStyleTypeChange[] = "List style type change";
 const char kImageChanged[] = "Image changed";
 const char kLineBoxesChanged[] = "Line boxes changed";
 const char kSliderValueChanged[] = "Slider value changed";
@@ -713,19 +714,6 @@ std::unique_ptr<TracedValue> inspector_layout_invalidation_tracking_event::Data(
   SetGeneratingNodeInfo(value.get(), layout_object, "nodeId", "nodeName");
   value->SetString("reason", reason);
   SourceLocation::Capture()->ToTracedValue(value.get(), "stackTrace");
-  return value;
-}
-
-std::unique_ptr<TracedValue> inspector_paint_invalidation_tracking_event::Data(
-    const LayoutObject& layout_object) {
-  auto value = std::make_unique<TracedValue>();
-  value->SetString("frame",
-                   IdentifiersFactory::FrameId(layout_object.GetFrame()));
-  const auto* paint_container =
-      layout_object.IsRooted() ? &layout_object.ContainerForPaintInvalidation()
-                               : nullptr;
-  SetGeneratingNodeInfo(value.get(), paint_container, "paintId");
-  SetGeneratingNodeInfo(value.get(), &layout_object, "nodeId", "nodeName");
   return value;
 }
 
@@ -853,7 +841,7 @@ std::unique_ptr<TracedValue> inspector_receive_data_event::Data(
 std::unique_ptr<TracedValue> inspector_resource_finish_event::Data(
     DocumentLoader* loader,
     uint64_t identifier,
-    TimeTicks finish_time,
+    base::TimeTicks finish_time,
     bool did_fail,
     int64_t encoded_data_length,
     int64_t decoded_body_length) {
@@ -887,7 +875,7 @@ static std::unique_ptr<TracedValue> GenericTimerData(ExecutionContext* context,
 std::unique_ptr<TracedValue> inspector_timer_install_event::Data(
     ExecutionContext* context,
     int timer_id,
-    TimeDelta timeout,
+    base::TimeDelta timeout,
     bool single_shot) {
   std::unique_ptr<TracedValue> value = GenericTimerData(context, timer_id);
   value->SetDouble("timeout", timeout.InMillisecondsF());
@@ -1006,35 +994,6 @@ static void LocalToPageQuad(const LayoutObject& layout_object,
   quad->SetP2(LocalCoordToFloatPoint(view, absolute.P2()));
   quad->SetP3(LocalCoordToFloatPoint(view, absolute.P3()));
   quad->SetP4(LocalCoordToFloatPoint(view, absolute.P4()));
-}
-
-const char inspector_layer_invalidation_tracking_event::
-    kSquashingLayerGeometryWasUpdated[] =
-        "Squashing layer geometry was updated";
-const char
-    inspector_layer_invalidation_tracking_event::kAddedToSquashingLayer[] =
-        "The layer may have been added to an already-existing squashing layer";
-const char
-    inspector_layer_invalidation_tracking_event::kRemovedFromSquashingLayer[] =
-        "Removed the layer from a squashing layer";
-const char
-    inspector_layer_invalidation_tracking_event::kReflectionLayerChanged[] =
-        "Reflection layer change";
-const char inspector_layer_invalidation_tracking_event::kNewCompositedLayer[] =
-    "Assigned a new composited layer";
-
-std::unique_ptr<TracedValue> inspector_layer_invalidation_tracking_event::Data(
-    const PaintLayer* layer,
-    const char* reason) {
-  const LayoutObject& paint_invalidation_container =
-      layer->GetLayoutObject().ContainerForPaintInvalidation();
-
-  auto value = std::make_unique<TracedValue>();
-  value->SetString("frame", IdentifiersFactory::FrameId(
-                                paint_invalidation_container.GetFrame()));
-  SetGeneratingNodeInfo(value.get(), &paint_invalidation_container, "paintId");
-  value->SetString("reason", reason);
-  return value;
 }
 
 std::unique_ptr<TracedValue> inspector_paint_event::Data(

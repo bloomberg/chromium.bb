@@ -28,6 +28,8 @@ class StyledLabel;
 class View;
 }  // namespace views
 
+class PageInfoBubbleViewBrowserTest;
+
 // A button taking the full width of its parent that shows a background color
 // when hovered over.
 class HoverButton : public views::MenuButton, public views::MenuButtonListener {
@@ -64,7 +66,6 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void SetBorder(std::unique_ptr<views::Border> b) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  bool IsTriggerableEventType(const ui::Event& event) override;
   gfx::Insets GetInsets() const override;
 
   // Updates the title text, and applies the secondary style to the text
@@ -120,11 +121,12 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
                            SetStatusLabel);
   FRIEND_TEST_ALL_PREFIXES(ExtensionsMenuButtonTest,
                            UpdatesToDisplayCorrectActionTitle);
+  friend class PageInfoBubbleViewBrowserTest;
 
-  views::StyledLabel* title_;
-  views::Label* subtitle_;
-  views::View* icon_view_;
-  views::View* secondary_view_;
+  views::StyledLabel* title_ = nullptr;
+  views::Label* subtitle_ = nullptr;
+  views::View* icon_view_ = nullptr;
+  views::View* secondary_view_ = nullptr;
 
   // The horizontal space the padding and icon take up. Used for calculating the
   // available space for |title_|, if it exists.

@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import android.app.Fragment;
 import android.os.Build;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.support.v4.app.Fragment;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,15 +21,14 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchPrefs;
 import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
-import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.browser.test.ScreenShooter;
+import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -58,38 +57,33 @@ public class NotificationsPreferencesTest {
     @SmallTest
     @Feature({"Preferences", "UiCatalogue"})
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1)
-    @CommandLineFlags.Add("enable-features=ContentSuggestionsNotifications")
-    @Features.DisableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
+    @CommandLineFlags.Add("enable-features=OfflinePagesPrefetching")
     public void testContentSuggestionsToggle() {
         // clang-format on
 
-        final PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
-        final ChromeSwitchPreference toggle = (ChromeSwitchPreference) fragment.findPreference(
-                NotificationsPreferences.PREF_SUGGESTIONS);
+        final PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) mActivity.getMainFragmentCompat();
+        final ChromeSwitchPreferenceCompat toggle =
+                (ChromeSwitchPreferenceCompat) fragment.findPreference(
+                        NotificationsPreferences.PREF_SUGGESTIONS);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Make sure the toggle reflects the state correctly.
             boolean initiallyChecked = toggle.isChecked();
-            Assert.assertEquals(toggle.isChecked(),
-                    PrefServiceBridge.getInstance().getBoolean(
-                            Pref.CONTENT_SUGGESTIONS_NOTIFICATIONS_ENABLED));
+            Assert.assertEquals(toggle.isChecked(), PrefetchPrefs.getNotificationEnabled());
 
             // Make sure we can change the state.
-            PreferencesTest.clickPreference(fragment, toggle);
+            toggle.performClick();
             Assert.assertEquals(toggle.isChecked(), !initiallyChecked);
-            Assert.assertEquals(toggle.isChecked(),
-                    PrefServiceBridge.getInstance().getBoolean(
-                            Pref.CONTENT_SUGGESTIONS_NOTIFICATIONS_ENABLED));
+            Assert.assertEquals(toggle.isChecked(), PrefetchPrefs.getNotificationEnabled());
 
             // Make sure we can change it back.
-            PreferencesTest.clickPreference(fragment, toggle);
+            toggle.performClick();
             Assert.assertEquals(toggle.isChecked(), initiallyChecked);
-            Assert.assertEquals(toggle.isChecked(),
-                    PrefServiceBridge.getInstance().getBoolean(
-                            Pref.CONTENT_SUGGESTIONS_NOTIFICATIONS_ENABLED));
+            Assert.assertEquals(toggle.isChecked(), PrefetchPrefs.getNotificationEnabled());
 
             // Click it one last time so we're in a toggled state for the UI Capture.
-            PreferencesTest.clickPreference(fragment, toggle);
+            toggle.performClick();
         });
 
         mScreenShooter.shoot("ContentSuggestionsToggle");
@@ -101,14 +95,15 @@ public class NotificationsPreferencesTest {
     @SmallTest
     @Feature({"Preferences", "UiCatalogue"})
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1)
-    @CommandLineFlags.Add("disable-features=NTPArticleSuggestions")
-    @Features.DisableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
-    public void testToggleDisabledWhenSuggestionsDisabled() {
+    @CommandLineFlags.Add("disable-features=OfflinePagesPrefetching")
+    public void testToggleDisabledWhenPrefetchingDisabled() {
         // clang-format on
 
-        PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
-        ChromeSwitchPreference toggle = (ChromeSwitchPreference) fragment.findPreference(
-                NotificationsPreferences.PREF_SUGGESTIONS);
+        PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) mActivity.getMainFragmentCompat();
+        ChromeSwitchPreferenceCompat toggle =
+                (ChromeSwitchPreferenceCompat) fragment.findPreference(
+                        NotificationsPreferences.PREF_SUGGESTIONS);
 
         Assert.assertFalse(toggle.isEnabled());
         Assert.assertFalse(toggle.isChecked());
@@ -122,16 +117,16 @@ public class NotificationsPreferencesTest {
     @SmallTest
     @Feature({"Preferences", "UiCatalogue"})
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1)
-    @Features.DisableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
     public void testLinkToWebsiteNotifications() {
         // clang-format on
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
+            PreferenceFragmentCompat fragment =
+                    (PreferenceFragmentCompat) mActivity.getMainFragmentCompat();
             Preference fromWebsites =
                     fragment.findPreference(NotificationsPreferences.PREF_FROM_WEBSITES);
 
-            PreferencesTest.clickPreference(fragment, fromWebsites);
+            fromWebsites.performClick();
         });
 
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -148,23 +143,17 @@ public class NotificationsPreferencesTest {
         mScreenShooter.shoot("LinkToWebsiteNotifications");
     }
 
-    /** Gets the fragment of the top Activity. Assumes the top Activity is a Preferences. */
-    private static Fragment getTopFragment() {
-        Preferences preferences = (Preferences) ApplicationStatus.getLastTrackedFocusedActivity();
-        return preferences.getFragmentForTest();
-    }
-
     // TODO(https://crbug.com/894334): Remove format suppression once formatting bug is fixed.
     // clang-format off
     @Test
     @SmallTest
     @Feature({"Preferences"})
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1)
-    @Features.DisableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
     public void testWebsiteNotificationsSummary() {
         // clang-format on
 
-        final PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
+        final PreferenceFragmentCompat fragment =
+                (PreferenceFragmentCompat) mActivity.getMainFragmentCompat();
         final Preference fromWebsites =
                 fragment.findPreference(NotificationsPreferences.PREF_FROM_WEBSITES);
 
@@ -181,18 +170,10 @@ public class NotificationsPreferencesTest {
         });
     }
 
-    // TODO(https://crbug.com/894334): Remove format suppression once formatting bug is fixed.
-    // clang-format off
-    @Test
-    @SmallTest
-    @Feature({"Preferences"})
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1)
-    @Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
-    public void prefHiddenWhenOnFeed() {
-        // clang-format on
-
-        final PreferenceFragment fragment = (PreferenceFragment) mActivity.getFragmentForTest();
-        Assert.assertNull(fragment.findPreference(NotificationsPreferences.PREF_SUGGESTIONS));
+    /** Gets the fragment of the top Activity. Assumes the top Activity is a Preferences. */
+    private static Fragment getTopFragment() {
+        Preferences preferences = (Preferences) ApplicationStatus.getLastTrackedFocusedActivity();
+        return preferences.getMainFragmentCompat();
     }
 
     /** Gets the summary text that should be used for site specific notifications. */

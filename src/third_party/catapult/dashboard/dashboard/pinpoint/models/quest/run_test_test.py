@@ -11,6 +11,7 @@ import unittest
 
 import mock
 
+from dashboard.pinpoint.models import errors
 from dashboard.pinpoint.models.quest import run_test
 
 
@@ -104,7 +105,7 @@ class _RunTestExecutionTest(unittest.TestCase):
             'extra_args': ['arg'],
             'dimensions': DIMENSIONS,
             'execution_timeout_secs': '21600',
-            'io_timeout_secs': '1200',
+            'io_timeout_secs': '14400',
             'caches': [
                 {
                     'name': 'swarming_module_cache_vpython',
@@ -152,31 +153,6 @@ class _RunTestExecutionTest(unittest.TestCase):
                     'value': ['.swarming_module_cache/vpython'],
                 },
             ],
-        },
-    }
-    swarming_tasks_new.assert_called_with(body)
-
-  def assertNewTaskHasBotId(self, swarming_tasks_new):
-    body = {
-        'name': 'Pinpoint job',
-        'user': 'Pinpoint',
-        'priority': '100',
-        'expiration_secs': '86400',
-        'properties': {
-            'inputs_ref': {
-                'isolatedserver': 'isolate server',
-                'isolated': 'input isolate hash',
-            },
-            'extra_args': ['arg'],
-            'dimensions': [
-                {'key': 'pool', 'value': 'Chrome-perf-pinpoint'},
-                {'key': 'id', 'value': 'bot id'},
-            ],
-            'execution_timeout_secs': '21600',
-            'io_timeout_secs': '1200',
-            'caches': mock.ANY,
-            'cipd_input': mock.ANY,
-            'env_prefixes': mock.ANY,
         },
     }
     swarming_tasks_new.assert_called_with(body)
@@ -260,7 +236,7 @@ class RunTestFullTest(_RunTestExecutionTest):
     execution = quest.Start('change_2', 'isolate server', 'input isolate hash')
     execution.Poll()
 
-    self.assertNewTaskHasBotId(swarming_tasks_new)
+    self.assertNewTaskHasDimensions(swarming_tasks_new)
 
     # Start an Execution on the same Change. It should use a new bot_id.
     execution = quest.Start('change_2', 'isolate server', 'input isolate hash')
@@ -291,7 +267,7 @@ class SwarmingTaskStatusTest(_RunTestExecutionTest):
 
     self.assertTrue(execution.completed)
     self.assertTrue(execution.failed)
-    last_exception_line = execution.exception.splitlines()[-1]
+    last_exception_line = execution.exception['traceback'].splitlines()[-1]
     self.assertTrue(last_exception_line.startswith('SwarmingTaskError'))
 
   @mock.patch('dashboard.services.swarming.Task.Stdout')
@@ -313,8 +289,8 @@ class SwarmingTaskStatusTest(_RunTestExecutionTest):
 
     self.assertTrue(execution.completed)
     self.assertTrue(execution.failed)
-    last_exception_line = execution.exception.splitlines()[-1]
-    self.assertTrue(last_exception_line.startswith('SwarmingTestError'))
+    last_exception_line = execution.exception['traceback'].splitlines()[-1]
+    self.assertTrue(last_exception_line.startswith('SwarmingTaskFailed'))
 
   @mock.patch('dashboard.services.swarming.Task.Stdout')
   def testTestErrorWithPythonException(
@@ -342,7 +318,7 @@ AttributeError: 'Namespace' object has no attribute 'benchmark_names'"""
 
     self.assertTrue(execution.completed)
     self.assertTrue(execution.failed)
-    last_exception_line = execution.exception.splitlines()[-1]
+    last_exception_line = execution.exception['traceback'].splitlines()[-1]
     self.assertRegexpMatches(last_exception_line, '^AttributeError.*')
 
 
@@ -360,7 +336,7 @@ class BotIdHandlingTest(_RunTestExecutionTest):
     quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS)
     execution = quest.Start('change_1', 'isolate server', 'input isolate hash')
     execution.Poll()
-    with self.assertRaises(run_test.SwarmingExpiredError):
+    with self.assertRaises(errors.SwarmingExpired):
       execution.Poll()
 
   def testFirstExecutionFailedWithNoBotId(
@@ -392,13 +368,11 @@ class BotIdHandlingTest(_RunTestExecutionTest):
 
     self.assertTrue(execution.completed)
     self.assertTrue(execution.failed)
-    last_exception_line = execution.exception.splitlines()[-1]
-    self.assertTrue(last_exception_line.startswith('RunTestError'))
+    last_exception_line = execution.exception['traceback'].splitlines()[-1]
+    self.assertTrue(last_exception_line.startswith('SwarmingNoBots'))
 
   def testSimultaneousExecutions(self, swarming_task_result,
                                  swarming_tasks_new):
-    # Executions after the first must wait for the first execution to get a bot
-    # ID. To preserve device affinity, they must use the same bot.
     quest = run_test.RunTest('server', DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS)
     execution_1 = quest.Start('change_1', 'input isolate server',
                               'input isolate hash')
@@ -410,7 +384,7 @@ class BotIdHandlingTest(_RunTestExecutionTest):
     execution_1.Poll()
     execution_2.Poll()
 
-    self.assertEqual(swarming_tasks_new.call_count, 1)
+    self.assertEqual(swarming_tasks_new.call_count, 2)
 
     swarming_task_result.return_value = {
         'bot_id': 'bot id',

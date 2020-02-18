@@ -24,36 +24,24 @@
  * DAMAGE.
  */
 
-var global = {argumentsReceived: false, params: null};
 
-/**
- * @param {Event} event
- */
-function handleMessage(event) {
-  initialize(JSON.parse(event.data));
-  global.argumentsReceived = true;
+function initializeColorSuggestionPicker() {
+  new ColorSuggestionPicker(main, global.params);
 }
 
 /**
  * @param {!Object} args
+ * @return {?string} An error message, or null if the argument has no errors.
  */
-function initialize(args) {
-  global.params = args;
-  var main = $('main');
-  main.innerHTML = '';
-  var errorString = validateArguments(args);
-  if (errorString) {
-    main.textContent = 'Internal error: ' + errorString;
-    resizeWindow(main.offsetWidth, main.offsetHeight);
-  } else
-    new ColorPicker(main, args);
+function validateColorSuggestionPickerArguments(args) {
+  if (!args.shouldShowColorSuggestionPicker)
+    return 'Should not be showing the color suggestion picker.'
+  if (!args.values)
+    return 'No values.';
+  if (!args.otherColorLabel)
+    return 'No otherColorLabel.';
+  return null;
 }
-
-// The DefaultColorPalette is used when the list of values are empty.
-var DefaultColorPalette = [
-  '#000000', '#404040', '#808080', '#c0c0c0', '#ffffff', '#980000', '#ff0000', '#ff9900', '#ffff00', '#00ff00',
-  '#00ffff', '#4a86e8', '#0000ff', '#9900ff', '#ff00ff'
-];
 
 function handleArgumentsTimeout() {
   if (global.argumentsReceived)
@@ -62,19 +50,7 @@ function handleArgumentsTimeout() {
   initialize(args);
 }
 
-/**
- * @param {!Object} args
- * @return {?string} An error message, or null if the argument has no errors.
- */
-function validateArguments(args) {
-  if (!args.values)
-    return 'No values.';
-  if (!args.otherColorLabel)
-    return 'No otherColorLabel.';
-  return null;
-}
-
-function ColorPicker(element, config) {
+function ColorSuggestionPicker(element, config) {
   Picker.call(this, element, config);
   this._config = config;
   if (this._config.values.length === 0)
@@ -85,14 +61,14 @@ function ColorPicker(element, config) {
   this._element.addEventListener('mousemove', this._handleMouseMove.bind(this));
   this._element.addEventListener('mousedown', this._handleMouseDown.bind(this));
 }
-ColorPicker.prototype = Object.create(Picker.prototype);
+ColorSuggestionPicker.prototype = Object.create(Picker.prototype);
 
 var SwatchBorderBoxWidth = 24;   // keep in sync with CSS
 var SwatchBorderBoxHeight = 24;  // keep in sync with CSS
 var SwatchesPerRow = 5;
 var SwatchesMaxRow = 4;
 
-ColorPicker.prototype._layout = function() {
+ColorSuggestionPicker.prototype._layout = function() {
   var container = createElement('div', 'color-swatch-container');
   container.addEventListener('click', this._handleSwatchClick.bind(this), false);
   for (var i = 0; i < this._config.values.length; ++i) {
@@ -110,7 +86,7 @@ ColorPicker.prototype._layout = function() {
   container.style.maxHeight = (SwatchBorderBoxHeight * SwatchesMaxRow) + 'px';
   this._element.appendChild(container);
   var otherButton = createElement('button', 'other-color', this._config.otherColorLabel);
-  otherButton.addEventListener('click', this.chooseOtherColor.bind(this), false);
+  otherButton.addEventListener('click', this._onOtherButtonClick.bind(this), false);
   this._element.appendChild(otherButton);
   this._container = container;
   this._otherButton = otherButton;
@@ -119,23 +95,39 @@ ColorPicker.prototype._layout = function() {
   resizeWindow(elementWidth, elementHeight);
 };
 
-ColorPicker.prototype.selectColorAtIndex = function(index) {
+ColorSuggestionPicker.prototype._onOtherButtonClick = function() {
+  if (global.params.isFormControlsRefreshEnabled) {
+    var main = $('main');
+    main.innerHTML = '';
+    main.classList.remove('color-suggestion-picker-main');
+    main.classList.add('color-picker-main');
+    // Replace document.body with a deep clone to drop all event listeners.
+    var oldBody = document.body;
+    var newBody = oldBody.cloneNode(true);
+    oldBody.parentElement.replaceChild(newBody, oldBody);
+    initializeColorPicker();
+  } else {
+    this.chooseOtherColor();
+  }
+}
+
+ColorSuggestionPicker.prototype.selectColorAtIndex = function(index) {
   index = Math.max(Math.min(this._container.childNodes.length - 1, index), 0);
   this._container.childNodes[index].focus();
 };
 
-ColorPicker.prototype._handleMouseMove = function(event) {
+ColorSuggestionPicker.prototype._handleMouseMove = function(event) {
   if (event.target.classList.contains('color-swatch'))
     event.target.focus();
 };
 
-ColorPicker.prototype._handleMouseDown = function(event) {
+ColorSuggestionPicker.prototype._handleMouseDown = function(event) {
   // Prevent blur.
   if (event.target.classList.contains('color-swatch'))
     event.preventDefault();
 };
 
-ColorPicker.prototype._handleKeyDown = function(event) {
+ColorSuggestionPicker.prototype._handleKeyDown = function(event) {
   var key = event.key;
   if (key === 'Escape')
     this.handleCancel();
@@ -172,14 +164,7 @@ ColorPicker.prototype._handleKeyDown = function(event) {
   event.preventDefault();
 };
 
-ColorPicker.prototype._handleSwatchClick = function(event) {
+ColorSuggestionPicker.prototype._handleSwatchClick = function(event) {
   if (event.target.classList.contains('color-swatch'))
     this.submitValue(event.target.dataset.value);
 };
-
-if (window.dialogArguments) {
-  initialize(dialogArguments);
-} else {
-  window.addEventListener('message', handleMessage, false);
-  window.setTimeout(handleArgumentsTimeout, 1000);
-}

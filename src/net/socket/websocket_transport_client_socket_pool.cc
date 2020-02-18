@@ -36,8 +36,7 @@ WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
       common_connect_job_params_(common_connect_job_params),
       max_sockets_(max_sockets),
       handed_out_socket_count_(0),
-      flushing_(false),
-      weak_factory_(this) {
+      flushing_(false) {
   DCHECK(common_connect_job_params_->websocket_endpoint_lock_manager);
 }
 
@@ -113,10 +112,9 @@ int WebSocketTransportClientSocketPool::RequestSocket(
   // Regardless of the outcome of |connect_job|, it will always be bound to
   // |handle|, since this pool uses early-binding. So the binding is logged
   // here, without waiting for the result.
-  request_net_log.AddEvent(NetLogEventType::SOCKET_POOL_BOUND_TO_CONNECT_JOB,
-                           connect_job_delegate->connect_job_net_log()
-                               .source()
-                               .ToEventParametersCallback());
+  request_net_log.AddEventReferencingSource(
+      NetLogEventType::SOCKET_POOL_BOUND_TO_CONNECT_JOB,
+      connect_job_delegate->connect_job_net_log().source());
 
   if (result == ERR_IO_PENDING) {
     // TODO(ricea): Implement backup job timer?
@@ -373,9 +371,9 @@ void WebSocketTransportClientSocketPool::HandOutSocket(
   handle->set_group_generation(0);
   handle->set_connect_timing(connect_timing);
 
-  net_log.AddEvent(
+  net_log.AddEventReferencingSource(
       NetLogEventType::SOCKET_POOL_BOUND_TO_SOCKET,
-      handle->socket()->NetLog().source().ToEventParametersCallback());
+      handle->socket()->NetLog().source());
 
   ++handed_out_socket_count_;
 }

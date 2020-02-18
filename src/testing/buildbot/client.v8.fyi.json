@@ -164,12 +164,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "android",
           "--build-revision",
-          "${got_revision}",
+          "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}"
         ],
@@ -178,12 +176,14 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -196,7 +196,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -345,7 +346,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -373,7 +374,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -401,7 +402,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -429,7 +430,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -464,7 +465,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -480,12 +481,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "linux",
           "--build-revision",
-          "${got_revision}",
+          "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}"
         ],
@@ -494,12 +493,14 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -507,11 +508,12 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -536,7 +538,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -564,7 +566,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -594,7 +596,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -623,7 +625,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -656,7 +658,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -684,7 +686,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -712,7 +714,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -740,7 +742,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -775,7 +777,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -791,12 +793,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "linux",
           "--build-revision",
-          "${got_revision}",
+          "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}"
         ],
@@ -805,12 +805,14 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -818,11 +820,12 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -847,7 +850,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -875,7 +878,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -905,7 +908,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -934,7 +937,7 @@
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -967,7 +970,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -994,7 +997,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1021,7 +1024,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1048,7 +1051,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1082,7 +1085,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1097,12 +1100,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
-          "${got_revision}",
+          "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}"
         ],
@@ -1111,12 +1112,14 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -1124,10 +1127,11 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1152,7 +1156,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1179,7 +1183,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1208,7 +1212,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false,
@@ -1236,7 +1240,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false,
@@ -1254,7 +1258,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-blink-features=LayoutNG"
+          "--disable-blink-features=LayoutNG"
         ],
         "merge": {
           "args": [],
@@ -1265,7 +1269,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ],
           "hard_timeout": 900
@@ -1291,7 +1295,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ],
           "hard_timeout": 900,
@@ -1508,12 +1512,10 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "win",
           "--build-revision",
-          "${got_revision}",
+          "${got_cr_revision}",
           "--test-machine-name",
           "${buildername}"
         ],
@@ -1522,12 +1524,14 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -1539,7 +1543,8 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {

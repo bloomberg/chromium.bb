@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -54,22 +54,20 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
 
   // Toggle the browser's fullscreen state.
   void ToggleFullscreen() {
-    // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously. The notification
-    // is used to trigger changes in whether the shelf is auto hidden and
-    // whether a "light bar" version of the tab strip is used when the
-    // top-of-window views are hidden.
-    std::unique_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
+    // The fullscreen change notification is sent asynchronously. The
+    // notification is used to trigger changes in whether the shelf is auto
+    // hidden and whether a "light bar" version of the tab strip is used when
+    // the top-of-window views are hidden.
+    FullscreenNotificationObserver waiter(browser());
     chrome::ToggleFullscreenMode(browser());
-    waiter->Wait();
+    waiter.Wait();
   }
 
   // Set whether the browser is in tab fullscreen.
   void SetTabFullscreen(bool tab_fullscreen) {
     content::WebContents* web_contents =
         browser_view()->contents_web_view()->GetWebContents();
-    std::unique_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
+    FullscreenNotificationObserver waiter(browser());
     if (tab_fullscreen) {
       browser()
           ->exclusive_access_manager()
@@ -81,7 +79,7 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
           ->fullscreen_controller()
           ->ExitFullscreenModeForTab(web_contents);
     }
-    waiter->Wait();
+    waiter.Wait();
   }
 
   // Attempt revealing the top-of-window views.

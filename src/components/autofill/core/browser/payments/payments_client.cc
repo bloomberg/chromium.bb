@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -31,13 +32,13 @@
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -270,33 +271,42 @@ class GetUnmaskDetailsRequest : public PaymentsRequest {
 
   void ParseResponse(const base::Value& response) override {
     const auto* method = response.FindStringKey("authentication_method");
-    auth_method_ = method ? *method : std::string();
+    if (method) {
+      if (*method == "CVC") {
+        unmask_details_.unmask_auth_method =
+            AutofillClient::UnmaskAuthMethod::CVC;
+      } else if (*method == "FIDO") {
+        unmask_details_.unmask_auth_method =
+            AutofillClient::UnmaskAuthMethod::FIDO;
+      }
+    }
 
-    const auto* offer_opt_in =
-        response.FindKeyOfType("offer_opt_in", base::Value::Type::BOOLEAN);
-    offer_opt_in_ = offer_opt_in && offer_opt_in->GetBool();
+    const auto* offer_fido_opt_in =
+        response.FindKeyOfType("offer_fido_opt_in", base::Value::Type::BOOLEAN);
+    unmask_details_.offer_fido_opt_in =
+        offer_fido_opt_in && offer_fido_opt_in->GetBool();
 
     const auto* dictionary_value = response.FindKeyOfType(
-        "request_options", base::Value::Type::DICTIONARY);
+        "fido_request_options", base::Value::Type::DICTIONARY);
     if (dictionary_value)
-      request_options_ =
-          std::make_unique<base::Value>(dictionary_value->Clone());
+      unmask_details_.fido_request_options = dictionary_value->Clone();
 
     const auto* fido_eligible_card_ids = response.FindKeyOfType(
         "fido_eligible_credit_card_id", base::Value::Type::LIST);
     if (fido_eligible_card_ids) {
       for (const base::Value& result : fido_eligible_card_ids->GetList()) {
-        fido_eligible_card_ids_.insert(result.GetString());
+        unmask_details_.fido_eligible_card_ids.insert(result.GetString());
       }
     }
   }
 
-  bool IsResponseComplete() override { return !auth_method_.empty(); }
+  bool IsResponseComplete() override {
+    return unmask_details_.unmask_auth_method !=
+           AutofillClient::UnmaskAuthMethod::UNKNOWN;
+  }
 
   void RespondToDelegate(AutofillClient::PaymentsRpcResult result) override {
-    std::move(callback_).Run(result, auth_method_, offer_opt_in_,
-                             std::move(request_options_),
-                             fido_eligible_card_ids_);
+    std::move(callback_).Run(result, unmask_details_);
   }
 
  private:
@@ -304,16 +314,9 @@ class GetUnmaskDetailsRequest : public PaymentsRequest {
   std::string app_locale_;
   const bool full_sync_enabled_;
 
-  // The type of authentication method suggested for card unmask.
-  std::string auth_method_;
-  // Set to true if the user should be offered opt-in for FIDO Authentication.
-  bool offer_opt_in_;
-  // Public Key Credential Request Options required for authentication.
-  // https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrequestoptions
-  std::unique_ptr<base::Value> request_options_;
-  // Set of credit cards ids that are eligible for FIDO Authentication.
-  std::set<std::string> fido_eligible_card_ids_;
-
+  // Suggested authentication method and other information to facilitate card
+  // unmasking.
+  AutofillClient::UnmaskDetails unmask_details_;
   DISALLOW_COPY_AND_ASSIGN(GetUnmaskDetailsRequest);
 };
 
@@ -369,6 +372,11 @@ class UnmaskCardRequest : public PaymentsRequest {
     if (base::StringToInt(request_details_.user_response.exp_year, &value))
       request_dict.SetKey("expiration_year", base::Value(value));
 
+    if (request_details_.fido_assertion_info.is_dict()) {
+      request_dict.SetKey("fido_assertion_info",
+                          std::move(request_details_.fido_assertion_info));
+    }
+
     std::string json_request;
     base::JSONWriter::Write(request_dict, &json_request);
     std::string request_content = base::StringPrintf(
@@ -377,6 +385,19 @@ class UnmaskCardRequest : public PaymentsRequest {
         net::EscapeUrlEncodedData(
             base::UTF16ToASCII(request_details_.user_response.cvc), true)
             .c_str());
+
+    // Payments is reporting receiving blank or non-standard-length CVCs.
+    // Log CVC length being sent to gauge how often this is happening.
+    if (request_details_.reason == AutofillClient::UNMASK_FOR_AUTOFILL) {
+      base::UmaHistogramCounts1000("Autofill.CardUnmask.CvcLength.ForAutofill",
+                                   request_details_.user_response.cvc.length());
+    } else if (request_details_.reason ==
+               AutofillClient::UNMASK_FOR_PAYMENT_REQUEST) {
+      base::UmaHistogramCounts1000(
+          "Autofill.CardUnmask.CvcLength.ForPaymentRequest",
+          request_details_.user_response.cvc.length());
+    }
+
     VLOG(3) << "getrealpan request body: " << request_content;
     return request_content;
   }
@@ -833,7 +854,14 @@ const char PaymentsClient::kPhoneNumber[] = "phone_number";
 
 PaymentsClient::UnmaskRequestDetails::UnmaskRequestDetails() {}
 PaymentsClient::UnmaskRequestDetails::UnmaskRequestDetails(
-    const UnmaskRequestDetails& other) = default;
+    const UnmaskRequestDetails& other) {
+  billing_customer_number = other.billing_customer_number;
+  reason = other.reason;
+  card = other.card;
+  risk_data = other.risk_data;
+  user_response = other.user_response;
+  fido_assertion_info = other.fido_assertion_info.Clone();
+}
 PaymentsClient::UnmaskRequestDetails::~UnmaskRequestDetails() {}
 
 PaymentsClient::UploadRequestDetails::UploadRequestDetails() {}
@@ -848,15 +876,14 @@ PaymentsClient::MigrationRequestDetails::~MigrationRequestDetails() {}
 
 PaymentsClient::PaymentsClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     AccountInfoGetter* account_info_getter,
     bool is_off_the_record)
     : url_loader_factory_(url_loader_factory),
       identity_manager_(identity_manager),
       account_info_getter_(account_info_getter),
       is_off_the_record_(is_off_the_record),
-      has_retried_authorization_(false),
-      weak_ptr_factory_(this) {}
+      has_retried_authorization_(false) {}
 
 PaymentsClient::~PaymentsClient() {}
 
@@ -1052,7 +1079,7 @@ void PaymentsClient::OnSimpleLoaderCompleteInternal(int response_code,
 
 void PaymentsClient::AccessTokenFetchFinished(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   DCHECK(token_fetcher_);
   token_fetcher_.reset();
 
@@ -1095,7 +1122,7 @@ void PaymentsClient::StartTokenFetch(bool invalidate_old) {
       account_id, kTokenFetchId, payments_scopes,
       base::BindOnce(&PaymentsClient::AccessTokenFetchFinished,
                      base::Unretained(this)),
-      identity::AccessTokenFetcher::Mode::kImmediate);
+      signin::AccessTokenFetcher::Mode::kImmediate);
 }
 
 void PaymentsClient::SetOAuth2TokenAndStartRequest() {

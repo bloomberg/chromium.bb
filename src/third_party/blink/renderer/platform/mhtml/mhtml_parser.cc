@@ -117,7 +117,7 @@ class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
   }
   String ContentLocation() const { return content_location_; }
   String ContentID() const { return content_id_; }
-  WTF::Time Date() const { return date_; }
+  base::Time Date() const { return date_; }
 
   // Multi-part type and boundaries are only valid for multipart MIME headers.
   String MultiPartType() const { return multipart_type_; }
@@ -134,7 +134,7 @@ class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
   Encoding content_transfer_encoding_;
   String content_location_;
   String content_id_;
-  WTF::Time date_;
+  base::Time date_;
   String multipart_type_;
   String end_of_part_boundary_;
   String end_of_document_boundary_;
@@ -221,11 +221,11 @@ MIMEHeader* MIMEHeader::ParseHeader(SharedBufferChunkReader* buffer) {
 
   mime_parameters_iterator = key_value_pairs.find("date");
   if (mime_parameters_iterator != key_value_pairs.end()) {
-    WTF::Time parsed_time;
+    base::Time parsed_time;
     // Behave like //net and parse time-valued headers with a default time zone
     // of UTC.
-    if (WTF::Time::FromUTCString(mime_parameters_iterator->value.Utf8().data(),
-                                 &parsed_time))
+    if (base::Time::FromUTCString(
+            mime_parameters_iterator->value.Utf8().c_str(), &parsed_time))
       mime_header->date_ = parsed_time;
   }
 
@@ -276,7 +276,7 @@ HeapVector<Member<ArchiveResource>> MHTMLParser::ParseArchive() {
   return resources;
 }
 
-WTF::Time MHTMLParser::CreationDate() const {
+base::Time MHTMLParser::CreationDate() const {
   return creation_date_;
 }
 
@@ -363,7 +363,7 @@ ArchiveResource* MHTMLParser::ParseNextPart(
     // read the part content till reaching the boundary without CRLF. So the
     // part content may contain CRLF at the end, which will be stripped off
     // later.
-    line_reader_.SetSeparator(end_of_part_boundary.Utf8().data());
+    line_reader_.SetSeparator(end_of_part_boundary.Utf8().c_str());
     if (!line_reader_.NextChunk(content)) {
       DVLOG(1) << "Binary contents requires end of part";
       return nullptr;
@@ -412,7 +412,7 @@ ArchiveResource* MHTMLParser::ParseNextPart(
       }
       // Note that we use line.utf8() and not line.ascii() as ascii turns
       // special characters (such as tab, line-feed...) into '?'.
-      content.Append(line.Utf8().data(), line.length());
+      content.Append(line.Utf8().c_str(), line.length());
       if (content_transfer_encoding == MIMEHeader::Encoding::kQuotedPrintable) {
         // The line reader removes the \r\n, but we need them for the content in
         // this case as the QuotedPrintable decoder expects CR-LF terminated

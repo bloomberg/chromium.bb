@@ -274,6 +274,7 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
 
   // First connect request fails right away.
   EXPECT_CALL(*gatt_client_, Connect(kTestAddr1)).WillOnce(Return(false));
+  EXPECT_CALL(*gatt_client_, ClearPendingConnect(kTestAddr1)).WillOnce(Return(true));
   EXPECT_CALL(cb_, Run(false));
   device->Connect(cb_.Get());
   EXPECT_FALSE(device->IsConnected());
@@ -302,7 +303,8 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
 
   EXPECT_CALL(*gatt_client_, Disconnect(kTestAddr1)).WillOnce(Return(true));
   device->Disconnect({});
-  EXPECT_TRUE(device->IsConnected());
+  // Should declare device as not connected after disconnect starts
+  EXPECT_FALSE(device->IsConnected());
 
   EXPECT_CALL(*observer_, OnConnectChanged(device, false));
   delegate->OnConnectChanged(kTestAddr1, true /* status */,
@@ -483,6 +485,7 @@ TEST_F(GattClientManagerTest, ConnectTimeout) {
   // Let Connect request timeout
   base::TestMockTimeTaskRunner::ScopedContext context(fake_task_runner_);
   // We should expect to receive Connect failure message
+  EXPECT_CALL(*gatt_client_, ClearPendingConnect(kTestAddr1)).WillOnce(Return(true));
   EXPECT_CALL(cb_, Run(false));
   fake_task_runner_->FastForwardBy(GattClientManagerImpl::kConnectTimeout);
   EXPECT_FALSE(device->IsConnected());
@@ -611,6 +614,8 @@ TEST_F(GattClientManagerTest, DisconnectAllTimeout) {
 
   // Let the fist Disconnect request timeout
   base::TestMockTimeTaskRunner::ScopedContext context(fake_task_runner_);
+
+  EXPECT_CALL(*gatt_client_, ClearPendingDisconnect(kTestAddr1)).WillOnce(Return(true));;
 
   // We should expect to receive DisconnectAll failure message
   EXPECT_CALL(cb, Run(false));

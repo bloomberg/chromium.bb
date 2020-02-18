@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/public/cpp/notification_utils.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -25,6 +24,7 @@
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -206,8 +206,14 @@ void TransferHttpAuthCaches() {
       &TransferHttpAuthCacheToSystemNetworkContext, completion_callback));
 }
 
-// Record UMA for password login of regular user when Easy sign-in is enabled.
+// Record UMA for password login of regular user when Signin with Smart Lock is
+// enabled. Excludes signins in the multi-signin context; only records for the
+// signin screen context.
 void RecordPasswordLoginEvent(const UserContext& user_context) {
+  // If a user is already logged in, this is a multi-signin attempt. Disregard.
+  if (session_manager::SessionManager::Get()->IsInSecondaryLoginScreen())
+    return;
+
   EasyUnlockService* easy_unlock_service =
       EasyUnlockService::Get(ProfileHelper::GetSigninProfile());
   if (user_context.GetUserType() == user_manager::USER_TYPE_REGULAR &&
@@ -1020,8 +1026,9 @@ void ExistingUserController::ShowAutoLaunchManagedGuestSessionNotification() {
       l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_BUTTON)));
   const base::string16 title =
       l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_TITLE);
-  const base::string16 message = l10n_util::GetStringUTF16(
-      IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING);
+  const base::string16 message = l10n_util::GetStringFUTF16(
+      IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING,
+      base::UTF8ToUTF16(connector->GetEnterpriseDisplayDomain()));
   auto delegate =
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating([](base::Optional<int> button_index) {
@@ -1579,21 +1586,6 @@ gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
 void ExistingUserController::ShowError(int error_id,
                                        const std::string& details) {
   VLOG(1) << details;
-  HelpAppLauncher::HelpTopic help_topic_id;
-  if (login_performer_) {
-    switch (login_performer_->error().state()) {
-      case GoogleServiceAuthError::ACCOUNT_DISABLED:
-        help_topic_id = HelpAppLauncher::HELP_ACCOUNT_DISABLED;
-        break;
-      default:
-        help_topic_id = HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT;
-        break;
-    }
-  } else {
-    // login_performer_ will be null if an error occurred during OAuth2 token
-    // fetch. In this case, show a generic error.
-    help_topic_id = HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT;
-  }
 
   if (error_id == IDS_LOGIN_ERROR_AUTHENTICATING) {
     if (num_login_attempts_ > 1) {
@@ -1605,7 +1597,8 @@ void ExistingUserController::ShowError(int error_id,
     }
   }
 
-  GetLoginDisplay()->ShowError(error_id, num_login_attempts_, help_topic_id);
+  GetLoginDisplay()->ShowError(error_id, num_login_attempts_,
+                               HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 }
 
 void ExistingUserController::SendAccessibilityAlert(

@@ -8,6 +8,7 @@
 #include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -52,6 +53,8 @@ class CORE_EXPORT FrameView : public EmbeddedContentView {
                                     bool subtree_throttled,
                                     bool recurse = false);
 
+  bool RectInParentIsStable(const base::TimeTicks& timestamp) const;
+
  protected:
   virtual void SetViewportIntersection(const IntRect& viewport_intersection,
                                        FrameOcclusionState occlusion_state) = 0;
@@ -62,7 +65,11 @@ class CORE_EXPORT FrameView : public EmbeddedContentView {
   // lifecycle updates for a frame outside the viewport.
   void UpdateFrameVisibility(bool);
 
+  bool DisplayLockedInParentFrame();
+
  private:
+  PhysicalRect rect_in_parent_;
+  base::TimeTicks rect_in_parent_stable_since_;
   blink::mojom::FrameVisibility frame_visibility_ =
       blink::mojom::FrameVisibility::kRenderedInViewport;
   bool hidden_for_throttling_;

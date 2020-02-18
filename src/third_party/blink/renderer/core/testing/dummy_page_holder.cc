@@ -63,7 +63,8 @@ DummyPageHolder::DummyPageHolder(
     const IntSize& initial_view_size,
     Page::PageClients* page_clients_argument,
     LocalFrameClient* local_frame_client,
-    FrameSettingOverrideFunction setting_overrider) {
+    base::OnceCallback<void(Settings&)> setting_overrider,
+    const base::TickClock* clock) {
   Page::PageClients page_clients;
   if (!page_clients_argument)
     FillWithEmptyClients(page_clients);
@@ -72,14 +73,18 @@ DummyPageHolder::DummyPageHolder(
   page_ = Page::CreateNonOrdinary(page_clients);
   Settings& settings = page_->GetSettings();
   if (setting_overrider)
-    (*setting_overrider)(settings);
+    std::move(setting_overrider).Run(settings);
 
   local_frame_client_ = local_frame_client;
   if (!local_frame_client_)
     local_frame_client_ = MakeGarbageCollected<DummyLocalFrameClient>();
 
-  frame_ = MakeGarbageCollected<LocalFrame>(local_frame_client_.Get(), *page_,
-                                            nullptr);
+  // Create new WindowAgentFactory as this page will be isolated from others.
+  frame_ =
+      MakeGarbageCollected<LocalFrame>(local_frame_client_.Get(), *page_,
+                                       /* FrameOwner* */ nullptr,
+                                       /* WindowAgentFactory* */ nullptr,
+                                       /* InterfaceRegistry* */ nullptr, clock);
   frame_->SetView(
       MakeGarbageCollected<LocalFrameView>(*frame_, initial_view_size));
   frame_->View()->GetPage()->GetVisualViewport().SetSize(initial_view_size);

@@ -13,10 +13,11 @@
 
 package AppConfig;
 
+use 5.006;
 use strict;
 use warnings;
 use base 'Exporter';
-our $VERSION = 1.66;
+our $VERSION = '1.71';
 
 # variable expansion constants
 use constant EXPAND_NONE   => 0;
@@ -199,37 +200,37 @@ AppConfig - Perl5 module for reading configuration files and parsing command lin
 =head1 SYNOPSIS
 
     use AppConfig;
-    
+
     # create a new AppConfig object
     my $config = AppConfig->new( \%cfg );
-    
+
     # define a new variable
     $config->define( $varname => \%varopts );
-    
+
     # create/define combined
     my $config = AppConfig->new( \%cfg, 
         $varname => \%varopts,
         $varname => \%varopts,
         ...
     );
-    
+
     # set/get the value
     $config->set( $varname, $value );
     $config->get($varname);
-    
+
     # shortcut form
     $config->varname($value);
     $config->varname;
-    
+
     # read configuration file
     $config->file($file);
-    
+
     # parse command line options
     $config->args(\@args);      # default to \@ARGV
-    
+
     # advanced command line options with Getopt::Long
     $config->getopt(\@args);    # default to \@ARGV
-    
+
     # parse CGI parameters (GET method)
     $config->cgi($query);       # default to $ENV{ QUERY_STRING }
 
@@ -249,14 +250,14 @@ by its configuration when defined.
     verbose 
     nohelp
     debug = On
-    
+
     # single value
     home  = /home/abw/
-    
+
     # multiple list value
     file = /tmp/file1
     file = /tmp/file2
-    
+
     # multiple hash value
     book  camel = Programming Perl
     book  llama = Learning Perl
@@ -284,7 +285,7 @@ Configuration files may be arranged in blocks as per the style of Win32
     src  = ~/websrc/docs/$site
     lib  = ~/websrc/lib
     dest = ~/public_html/$site
-    
+
     [page]
     header = $lib/header
     footer = $lib/footer
@@ -296,7 +297,7 @@ text in a configuration file.
     line 1
     line 2
     FOOBAR
-    
+
     paths  exe  = "${PATH}:${HOME}/.bin"
     paths  link = <<'FOO'
     ${LD_LIBARRAY_PATH}:${HOME}/lib
@@ -331,9 +332,9 @@ manual page explains:
     CPAN stands for the Comprehensive Perl Archive Network.
     This is a globally replicated collection of all known Perl
     materials, including hundreds of unbundled modules.  
-    
+
     [...]
-    
+
     For an up-to-date listing of CPAN sites, see
     http://www.perl.com/perl/ or ftp://ftp.perl.com/perl/ .
 
@@ -401,10 +402,10 @@ See L<CONSTANT DEFINITIONS> below for more information on the constant
 tagsets defined by AppConfig.
 
 AppConfig is implemented using object-oriented methods.  A 
-new AppConfig object is created and initialised using the 
+new AppConfig object is created and initialized using the 
 new() method.  This returns a reference to a new AppConfig 
 object.
-       
+
     my $config = AppConfig->new();
 
 This will create and return a reference to a new AppConfig object.
@@ -470,7 +471,7 @@ AppConfig::State object:
 
     # create AppConfig
     my $config = AppConfig->new('foo', 'bar');
-    
+
     # methods get passed through to internal AppConfig::State
     $config->foo(100);
     $config->set('bar', 200);
@@ -507,19 +508,19 @@ constructor are applied by default when variables are created.  e.g.
             ARGCOUNT => ARGCOUNT_ONE,
         }
     } );
-    
+
     $config->define("foo");
     $config->define("bar", { ARGCOUNT => ARGCOUNT_NONE } );
 
 is equivalent to:
 
     my $config = AppConfig->new();
-    
+
     $config->define( "foo", {
         DEFAULT  => "<undef>",
         ARGCOUNT => ARGCOUNT_ONE,
     } );
-    
+
     $config->define( "bar", 
         DEFAULT  => "<undef>",
         ARGCOUNT => ARGCOUNT_NONE,
@@ -573,7 +574,7 @@ configuration files.  Constants in C<:expand> tag set define:
 =item VALIDATE
 
 Regex which the intended variable value should match or code reference 
-which returns 1 to indicate successful validaton (variable may now be set).
+which returns 1 to indicate successful validation (variable may now be set).
 
 =item ACTION
 
@@ -604,34 +605,34 @@ of the "=s" element (e.g. "=f").  The entire E<lt>argoptsE<gt> element
 is stored in the ARGS parameter for the variable and is passed intact to 
 Getopt::Long when the getopt() method is called.  
 
-The following examples demonstrate use of the comapct format, with their
+The following examples demonstrate use of the compact format, with their
 equivalent full specifications:
 
     $config->define("foo|bar|baz!");
-    
+
     $config->define(
             "foo" => { 
                 ALIAS    => "bar|baz", 
                 ARGCOUNT => ARGCOUNT_NONE,
             });
-    
+
     $config->define("name=s");
-    
+
     $config->define(
             "name" => { 
                 ARGCOUNT => ARGCOUNT_ONE,
             });
-    
+
     $config->define("file|filelist|f=s@");
-    
+
     $config->define(
             "file" => { 
                 ALIAS    => "filelist|f", 
                 ARGCOUNT => ARGCOUNT_LIST,
             });
-    
+
     $config->define("user|u=s%");
-    
+
     $config->define(
             "user" => { 
                 ALIAS    => "u", 
@@ -642,7 +643,7 @@ Additional configuration options may be specified by hash reference, as per
 normal.  The compact definition format will override any configuration 
 values provided for ARGS and ARGCOUNT.
 
-    $config->define("file|filelist|f=s@", { VALIDATE = \&check_file() } );
+    $config->define("file|filelist|f=s@", { VALIDATE => \&check_file } );
 
 =head2 READING AND MODIFYING VARIABLE VALUES
 
@@ -784,7 +785,7 @@ previously set values for the variable.
 
 A reference to a list of values is returned when the variable is requested.
 
-    my $beverages = $config->drinks();
+    my $beverages = $config->drink();
     print join(", ", @$beverages);      # prints "coffee, tea"
 
 Variables may also be defined as hash lists (ARGCOUNT = ARGCOUNT_HASH).
@@ -817,10 +818,10 @@ Three different expansion types may be applied:
 
     bin = ~/bin          # expand '~' to home dir if EXPAND_UID
     tmp = ~abw/tmp       # as above, but home dir for user 'abw'
-    
+
     perl = $bin/perl     # expand value of 'bin' variable if EXPAND_VAR
     ripl = $(bin)/ripl   # as above with explicit parens
-    
+
     home = ${HOME}       # expand HOME environment var if EXPAND_ENV
 
 See L<AppConfig::State> for more information on expanding variable values.
@@ -834,7 +835,7 @@ file.
 
     [block1]
     foo = 10             # block1_foo = 10
-    
+
     [block2]
     foo = 20             # block2_foo = 20
 
@@ -886,18 +887,18 @@ the value of the argument following it.
     myprog -f /tmp/myfile                # $config->file('/tmp/file');
 
 Variables that expect multiple values (ARGCOUNT = ARGCOUNT_LIST or
-ARGCOUNT_HASH) will have sucessive values added each time the option
+ARGCOUNT_HASH) will have successive values added each time the option
 is encountered.
 
     myprog -file /tmp/foo -file /tmp/bar # $config->file('/tmp/foo')
                                          # $config->file('/tmp/bar')
-    
+
     # file => [ '/tmp/foo', '/tmp/bar' ]
-    
+
     myprog -door "jim=Jim Morrison" -door "ray=Ray Manzarek"
                                     # $config->door("jim=Jim Morrison");
                                     # $config->door("ray=Ray Manzarek");
-    
+
     # door => { 'jim' => 'Jim Morrison', 'ray' => 'Ray Manzarek' }
 
 See L<AppConfig::Args> for further details on parsing command line
@@ -920,7 +921,7 @@ default.
 See Getopt::Long for details of the configuration options available.
 
 The getopt() method constructs a specification string for each internal
-variable and then initialises Getopt::Long with these values.  The
+variable and then initializes Getopt::Long with these values.  The
 specification string is constructed from the name, any aliases (delimited
 by a vertical bar '|') and the value of the ARGS parameter.
 
@@ -928,7 +929,7 @@ by a vertical bar '|') and the value of the ARGS parameter.
         ARGS  => "=i",
         ALIAS => "bar|baz",
     });
-    
+
     # Getopt::Long specification: "foo|bar|baz=i"
 
 Errors and warning generated by the Getopt::Long module are trapped and 
@@ -963,10 +964,10 @@ The AppConfig::CGI module automatically unescapes the CGI query string
 to restore the parameters to their intended values.
 
     http://where.com/mycgi?title=%22The+Wrong+Trousers%22
-    
+
     # $config->title('"The Wrong Trousers"');
 
-Please be considerate of the security implications of providing writeable
+Please be considerate of the security implications of providing writable
 access to script variables via CGI.
 
     http://rebel.alliance.com/cgi-bin/...
@@ -974,7 +975,7 @@ access to script variables via CGI.
 
 To avoid any accidental or malicious changing of "private" variables, 
 define only the "public" variables before calling the cgi() (or any 
-other) method.  Further variables can subequently be defined which 
+other) method.  Further variables can subsequently be defined which 
 can not be influenced by the CGI parameters.
 
     $config->define('verbose', 'debug')
@@ -1026,6 +1027,10 @@ See AppConfig::State for full details of the use of these constants.
 
 =back
 
+=head1 REPOSITORY
+
+L<https://github.com/neilbowers/AppConfig>
+
 =head1 AUTHOR
 
 Andy Wardley, E<lt>abw@wardley.orgE<gt>
@@ -1045,7 +1050,7 @@ under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-AppConfig::State, AppConfig::File, AppConfig::Args, AppConfig::Getopt,
-AppConfig::CGI, Getopt::Long
+L<AppConfig::State>, L<AppConfig::File>, L<AppConfig::Args>, L<AppConfig::Getopt>,
+L<AppConfig::CGI>, L<Getopt::Long>
 
 =cut

@@ -2,6 +2,11 @@
 * Copyright 2016 Google Inc.
 *
 * Use of this source code is governed by a BSD-style license that can be
+* f 49
+* Prev
+* Up
+*
+*
 * found in the LICENSE file.
 */
 
@@ -10,6 +15,7 @@
 #include "tools/sk_app/unix/WindowContextFactory_unix.h"
 
 #include "src/utils/SkUTF.h"
+#include "tools/ModifierKey.h"
 #include "tools/sk_app/GLWindowContext.h"
 #include "tools/sk_app/unix/Window_unix.h"
 #include "tools/timer/Timer.h"
@@ -224,17 +230,17 @@ static Window::Key get_key(KeySym keysym) {
     return Window::Key::kNONE;
 }
 
-static uint32_t get_modifiers(const XEvent& event) {
+static ModifierKey get_modifiers(const XEvent& event) {
     static const struct {
         unsigned    fXMask;
-        unsigned    fSkMask;
+        ModifierKey  fSkMask;
     } gModifiers[] = {
-        { ShiftMask,   Window::kShift_ModifierKey },
-        { ControlMask, Window::kControl_ModifierKey },
-        { Mod1Mask,    Window::kOption_ModifierKey },
+        { ShiftMask,   ModifierKey::kShift },
+        { ControlMask, ModifierKey::kControl },
+        { Mod1Mask,    ModifierKey::kOption },
     };
 
-    auto modifiers = 0;
+    ModifierKey modifiers = ModifierKey::kNone;
     for (size_t i = 0; i < SK_ARRAY_COUNT(gModifiers); ++i) {
         if (event.xkey.state & gModifiers[i].fXMask) {
             modifiers |= gModifiers[i].fSkMask;
@@ -262,7 +268,7 @@ bool Window_unix::handleEvent(const XEvent& event) {
             switch (event.xbutton.button) {
                 case Button1:
                     this->onMouse(event.xbutton.x, event.xbutton.y,
-                                  Window::kDown_InputState, get_modifiers(event));
+                                  InputState::kDown, get_modifiers(event));
                     break;
                 case Button4:
                     this->onMouseWheel(1.0f, get_modifiers(event));
@@ -276,13 +282,13 @@ bool Window_unix::handleEvent(const XEvent& event) {
         case ButtonRelease:
             if (event.xbutton.button == Button1) {
                 this->onMouse(event.xbutton.x, event.xbutton.y,
-                              Window::kUp_InputState, get_modifiers(event));
+                              InputState::kUp, get_modifiers(event));
             }
             break;
 
         case MotionNotify:
             this->onMouse(event.xmotion.x, event.xmotion.y,
-                          Window::kMove_InputState, get_modifiers(event));
+                          InputState::kMove, get_modifiers(event));
             break;
 
         case KeyPress: {
@@ -290,7 +296,7 @@ bool Window_unix::handleEvent(const XEvent& event) {
             KeySym keysym = XkbKeycodeToKeysym(fDisplay, event.xkey.keycode, 0, shiftLevel);
             Window::Key key = get_key(keysym);
             if (key != Window::Key::kNONE) {
-                if (!this->onKey(key, Window::kDown_InputState, get_modifiers(event))) {
+                if (!this->onKey(key, InputState::kDown, get_modifiers(event))) {
                     if (keysym == XK_Escape) {
                         return true;
                     }
@@ -308,7 +314,7 @@ bool Window_unix::handleEvent(const XEvent& event) {
             KeySym keysym = XkbKeycodeToKeysym(fDisplay, event.xkey.keycode,
                                                0, shiftLevel);
             Window::Key key = get_key(keysym);
-            (void) this->onKey(key, Window::kUp_InputState,
+            (void) this->onKey(key, InputState::kUp,
                                get_modifiers(event));
         } break;
 

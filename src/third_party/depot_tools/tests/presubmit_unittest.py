@@ -614,12 +614,102 @@ class PresubmitUnittest(PresubmitTestsBase):
     output = presubmit.DoPresubmitChecks(
         change=change, committing=False, verbose=True,
         output_stream=None, input_stream=None,
-        default_presubmit=None, may_prompt=False, gerrit_obj=None)
+        default_presubmit=None, may_prompt=False,
+        gerrit_obj=None, json_output=None)
     self.failUnless(output.should_continue())
     self.assertEqual(output.getvalue().count('!!'), 0)
     self.assertEqual(output.getvalue().count('??'), 0)
     self.assertEqual(output.getvalue().count(
         'Running presubmit upload checks ...\n'), 1)
+
+  def testDoPresubmitChecksJsonOutput(self):
+    fake_error = 'Missing LGTM'
+    fake_error_items = '["!", "!!", "!!!"]'
+    fake_error_long_text = "Error long text..."
+    fake_error2 = 'This failed was found in file fake.py'
+    fake_error2_items = '["!!!", "!!", "!"]'
+    fake_error2_long_text = " Error long text" * 3
+    fake_warning = 'Line 88 is more than 80 characters.'
+    fake_warning_items = '["W", "w"]'
+    fake_warning_long_text = 'Warning long text...'
+    fake_notify = 'This is a dry run'
+    fake_notify_items = '["N"]'
+    fake_notify_long_text = 'Notification long text...'
+    always_fail_presubmit_script = """
+def CheckChangeOnUpload(input_api, output_api):
+  return [
+    output_api.PresubmitError("%s",%s, "%s"),
+    output_api.PresubmitError("%s",%s, "%s"),
+    output_api.PresubmitPromptWarning("%s",%s, "%s"),
+    output_api.PresubmitNotifyResult("%s",%s, "%s")
+  ]
+def CheckChangeOnCommit(input_api, output_api):
+  raise Exception("Test error")
+""" % (fake_error, fake_error_items, fake_error_long_text,
+       fake_error2, fake_error2_items, fake_error2_long_text,
+       fake_warning, fake_warning_items, fake_warning_long_text,
+       fake_notify, fake_notify_items, fake_notify_long_text
+       )
+
+    inherit_path = presubmit.os.path.join(
+        self.fake_root_dir, self._INHERIT_SETTINGS)
+    presubmit.os.path.isfile(inherit_path).AndReturn(False)
+    presubmit.os.listdir(self.fake_root_dir).AndReturn([])
+    presubmit.os.listdir(presubmit.os.path.join(
+        self.fake_root_dir, 'haspresubmit')).AndReturn(['PRESUBMIT.py'])
+    presubmit.os.path.isfile(presubmit.os.path.join(
+        self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')).AndReturn(False)
+    presubmit.random.randint(0, 4).AndReturn(0)
+
+    change = self.ExampleChange(extra_lines=['ERROR=yes'])
+
+    temp_path = 'temp.json'
+
+    fake_result = {
+        'notifications': [
+          {
+            'message': fake_notify,
+            'items': json.loads(fake_notify_items),
+            'fatal': False,
+            'long_text': fake_notify_long_text
+          }
+        ],
+        'errors': [
+          {
+            'message': fake_error,
+            'items': json.loads(fake_error_items),
+            'fatal': True,
+            'long_text': fake_error_long_text
+          },
+          {
+            'message': fake_error2,
+            'items': json.loads(fake_error2_items),
+            'fatal': True,
+            'long_text': fake_error2_long_text
+          }
+        ],
+        'warnings': [
+          {
+            'message': fake_warning,
+            'items': json.loads(fake_warning_items),
+            'fatal': False,
+            'long_text': fake_warning_long_text
+          }
+        ]
+    }
+
+    fake_result_json = json.dumps(fake_result)
+    presubmit.gclient_utils.FileWrite(temp_path, fake_result_json)
+
+    self.mox.ReplayAll()
+
+    output = presubmit.DoPresubmitChecks(
+        change=change, committing=False, verbose=True,
+        output_stream=None, input_stream=None,
+        default_presubmit=always_fail_presubmit_script,
+        may_prompt=False, gerrit_obj=None, json_output=temp_path)
+
+    self.failIf(output.should_continue())
 
   def testDoPresubmitChecksPromptsAfterWarnings(self):
     presubmit_path = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
@@ -649,7 +739,8 @@ class PresubmitUnittest(PresubmitTestsBase):
     output = presubmit.DoPresubmitChecks(
         change=change, committing=False, verbose=True,
         output_stream=None, input_stream=input_buf,
-        default_presubmit=None, may_prompt=True, gerrit_obj=None)
+        default_presubmit=None, may_prompt=True,
+        gerrit_obj=None, json_output=None)
     self.failIf(output.should_continue())
     self.assertEqual(output.getvalue().count('??'), 2)
 
@@ -657,7 +748,8 @@ class PresubmitUnittest(PresubmitTestsBase):
     output = presubmit.DoPresubmitChecks(
         change=change, committing=False, verbose=True,
         output_stream=None, input_stream=input_buf,
-        default_presubmit=None, may_prompt=True, gerrit_obj=None)
+        default_presubmit=None, may_prompt=True,
+        gerrit_obj=None, json_output=None)
     self.failUnless(output.should_continue())
     self.assertEquals(output.getvalue().count('??'), 2)
     self.assertEqual(output.getvalue().count(
@@ -688,7 +780,8 @@ class PresubmitUnittest(PresubmitTestsBase):
     output = presubmit.DoPresubmitChecks(
         change=change, committing=False, verbose=True,
         output_stream=None, input_stream=None,
-        default_presubmit=None, may_prompt=False, gerrit_obj=None)
+        default_presubmit=None, may_prompt=False,
+        gerrit_obj=None, json_output=None)
     # A warning is printed, and should_continue is True.
     self.failUnless(output.should_continue())
     self.assertEquals(output.getvalue().count('??'), 2)
@@ -719,7 +812,8 @@ class PresubmitUnittest(PresubmitTestsBase):
     output = presubmit.DoPresubmitChecks(
         change=change, committing=False, verbose=True,
         output_stream=None, input_stream=None,
-        default_presubmit=None, may_prompt=True, gerrit_obj=None)
+        default_presubmit=None, may_prompt=True,
+        gerrit_obj=None, json_output=None)
     self.failIf(output.should_continue())
     self.assertEqual(output.getvalue().count('??'), 0)
     self.assertEqual(output.getvalue().count('!!'), 2)
@@ -753,7 +847,7 @@ def CheckChangeOnCommit(input_api, output_api):
         change=change, committing=False, verbose=True,
         output_stream=None, input_stream=input_buf,
         default_presubmit=always_fail_presubmit_script,
-        may_prompt=False, gerrit_obj=None)
+        may_prompt=False, gerrit_obj=None, json_output=None)
     self.failIf(output.should_continue())
     text = (
         'Running presubmit upload checks ...\n'
@@ -895,7 +989,8 @@ def CheckChangeOnCommit(input_api, output_api):
     presubmit.DoPresubmitChecks(mox.IgnoreArg(), False, False,
                                 mox.IgnoreArg(),
                                 mox.IgnoreArg(),
-                                None, False, None, None, None).AndReturn(output)
+                                None, False, None, None, None,
+                                None).AndReturn(output)
     self.mox.ReplayAll()
 
     self.assertEquals(
@@ -1354,8 +1449,7 @@ class InputApiUnittest(PresubmitTestsBase):
         self.fake_change,
         presubmit_path='foo/path/PRESUBMIT.py',
         is_committing=False, gerrit_obj=None, verbose=False)
-    input_api.tempfile.NamedTemporaryFile = self.mox.CreateMock(
-        input_api.tempfile.NamedTemporaryFile)
+    self.mox.StubOutWithMock(presubmit.tempfile, 'NamedTemporaryFile')
     input_api.tempfile.NamedTemporaryFile(
         delete=False).AndReturn(MockTemporaryFile('foo'))
     input_api.tempfile.NamedTemporaryFile(

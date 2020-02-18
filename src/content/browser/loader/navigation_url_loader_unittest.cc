@@ -13,10 +13,10 @@
 #include "base/unguessable_token.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader.h"
-#include "content/browser/loader/prefetched_signed_exchange_cache.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/test_resource_handler.h"
 #include "content/browser/loader_delegate_impl.h"
+#include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_ui_data.h"
@@ -99,14 +99,16 @@ class NavigationURLLoaderTest : public testing::Test {
     common_params.url = url;
     common_params.initiator_origin = url::Origin::Create(url);
 
+    url::Origin origin = url::Origin::Create(url);
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(common_params, std::move(begin_params), url,
-                                  url::Origin::Create(url), true, false, false,
-                                  -1, false, false, false, false, nullptr,
+                                  net::NetworkIsolationKey(origin, origin),
+                                  true, false, false, -1, false, false, false,
+                                  false, nullptr,
                                   base::UnguessableToken::Create(),
                                   base::UnguessableToken::Create()));
     return NavigationURLLoader::Create(
-        browser_context_->GetResourceContext(),
+        browser_context_.get(), browser_context_->GetResourceContext(),
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
         std::move(request_info), nullptr, nullptr, nullptr, nullptr, delegate);
   }

@@ -15,6 +15,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #import "ios/web/common/crw_content_view.h"
 #include "ios/web/common/url_util.h"
+#import "ios/web/js_messaging/crw_js_injector.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_context_impl.h"
@@ -25,24 +26,23 @@
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/deprecated/crw_native_content.h"
 #import "ios/web/public/deprecated/crw_native_content_holder.h"
-#include "ios/web/public/favicon_url.h"
+#include "ios/web/public/favicon/favicon_url.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
-#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/web_state_policy_decider.h"
+#include "ios/web/public/service/web_state_interface_provider.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
+#include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
-#include "ios/web/public/web_state/web_state_interface_provider.h"
 #include "ios/web/public/web_state/web_state_observer.h"
-#import "ios/web/public/web_state/web_state_policy_decider.h"
-#include "ios/web/public/web_thread.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 #import "ios/web/security/web_interstitial_impl.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
 #include "ios/web/web_state/global_web_state_event_tracker.h"
-#import "ios/web/web_state/ui/crw_js_injector.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
@@ -87,8 +87,10 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
       is_loading_(false),
       is_being_destroyed_(false),
       web_controller_(nil),
+      web_frames_manager_(*this),
       interstitial_(nullptr),
-      created_with_opener_(params.created_with_opener) {
+      created_with_opener_(params.created_with_opener),
+      weak_factory_(this) {
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     navigation_manager_ = std::make_unique<WKBasedNavigationManagerImpl>();
   } else {
@@ -112,8 +114,8 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
 }
 
 WebStateImpl::~WebStateImpl() {
-  [web_controller_ close];
   is_being_destroyed_ = true;
+  [web_controller_ close];
 
   // WebUI depends on web state so it must be destroyed first in case any WebUI
   // implementations depends on accessing web state during destruction.
@@ -125,7 +127,6 @@ WebStateImpl::~WebStateImpl() {
     observer.WebStateDestroyed();
   for (auto& observer : policy_deciders_)
     observer.ResetWebState();
-  DCHECK(script_command_callbacks_.empty());
   SetDelegate(nullptr);
 }
 
@@ -198,23 +199,21 @@ void WebStateImpl::OnRenderProcessGone() {
     observer.RenderProcessGone(this);
 }
 
-bool WebStateImpl::OnScriptCommandReceived(const std::string& command,
+void WebStateImpl::OnScriptCommandReceived(const std::string& command,
                                            const base::DictionaryValue& value,
-                                           const GURL& url,
+                                           const GURL& page_url,
                                            bool user_is_interacting,
-                                           bool is_main_frame,
                                            web::WebFrame* sender_frame) {
   size_t dot_position = command.find_first_of('.');
   if (dot_position == 0 || dot_position == std::string::npos)
-    return false;
+    return;
 
   std::string prefix = command.substr(0, dot_position);
   auto it = script_command_callbacks_.find(prefix);
   if (it == script_command_callbacks_.end())
-    return false;
+    return;
 
-  return it->second.Run(value, url, user_is_interacting, is_main_frame,
-                        sender_frame);
+  it->second.Notify(value, page_url, user_is_interacting, sender_frame);
 }
 
 void WebStateImpl::SetIsLoading(bool is_loading) {
@@ -280,12 +279,20 @@ void WebStateImpl::OnFaviconUrlUpdated(
     observer.FaviconUrlUpdated(this, candidates);
 }
 
+const NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() const {
+  return *navigation_manager_;
+}
+
 NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() {
   return *navigation_manager_;
 }
 
-const NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() const {
-  return *navigation_manager_;
+const WebFramesManagerImpl& WebStateImpl::GetWebFramesManagerImpl() const {
+  return web_frames_manager_;
+}
+
+WebFramesManagerImpl& WebStateImpl::GetWebFramesManagerImpl() {
+  return web_frames_manager_;
 }
 
 const SessionCertificatePolicyCacheImpl&
@@ -308,13 +315,6 @@ void WebStateImpl::ClearWebUI() {
 
 bool WebStateImpl::HasWebUI() {
   return !!web_ui_;
-}
-
-void WebStateImpl::ProcessWebUIMessage(const GURL& source_url,
-                                       const std::string& message,
-                                       const base::ListValue& args) {
-  if (web_ui_)
-    web_ui_->ProcessWebUIIOSMessage(source_url, message, args);
 }
 
 const base::string16& WebStateImpl::GetTitle() const {
@@ -417,9 +417,20 @@ void WebStateImpl::RunJavaScriptDialog(
     std::move(callback).Run(false, nil);
     return;
   }
+  running_javascript_dialog_ = true;
+  DialogClosedCallback presenter_callback =
+      base::BindOnce(&WebStateImpl::JavaScriptDialogClosed,
+                     weak_factory_.GetWeakPtr(), std::move(callback));
   presenter->RunJavaScriptDialog(this, origin_url, javascript_dialog_type,
                                  message_text, default_prompt_text,
-                                 std::move(callback));
+                                 std::move(presenter_callback));
+}
+
+void WebStateImpl::JavaScriptDialogClosed(DialogClosedCallback callback,
+                                          bool success,
+                                          NSString* user_input) {
+  running_javascript_dialog_ = false;
+  std::move(callback).Run(success, user_input);
 }
 
 WebState* WebStateImpl::CreateNewWebState(const GURL& url,
@@ -615,6 +626,14 @@ NavigationManager* WebStateImpl::GetNavigationManager() {
   return &GetNavigationManagerImpl();
 }
 
+const WebFramesManager* WebStateImpl::GetWebFramesManager() const {
+  return &web_frames_manager_;
+}
+
+WebFramesManager* WebStateImpl::GetWebFramesManager() {
+  return &web_frames_manager_;
+}
+
 const SessionCertificatePolicyCache*
 WebStateImpl::GetSessionCertificatePolicyCache() const {
   return &GetSessionCertificatePolicyCacheImpl();
@@ -741,21 +760,14 @@ GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
   return result;
 }
 
-void WebStateImpl::AddScriptCommandCallback(
-    const ScriptCommandCallback& callback,
-    const std::string& command_prefix) {
+std::unique_ptr<WebState::ScriptCommandSubscription>
+WebStateImpl::AddScriptCommandCallback(const ScriptCommandCallback& callback,
+                                       const std::string& command_prefix) {
   DCHECK(!command_prefix.empty());
   DCHECK(command_prefix.find_first_of('.') == std::string::npos);
-  DCHECK(script_command_callbacks_.find(command_prefix) ==
-         script_command_callbacks_.end());
-  script_command_callbacks_[command_prefix] = callback;
-}
-
-void WebStateImpl::RemoveScriptCommandCallback(
-    const std::string& command_prefix) {
-  DCHECK(script_command_callbacks_.find(command_prefix) !=
-         script_command_callbacks_.end());
-  script_command_callbacks_.erase(command_prefix);
+  DCHECK(script_command_callbacks_.count(command_prefix) == 0 ||
+         script_command_callbacks_[command_prefix].empty());
+  return script_command_callbacks_[command_prefix].Add(callback);
 }
 
 id<CRWWebViewProxy> WebStateImpl::GetWebViewProxy() const {
@@ -770,14 +782,22 @@ void WebStateImpl::SetHasOpener(bool has_opener) {
   created_with_opener_ = has_opener;
 }
 
+bool WebStateImpl::CanTakeSnapshot() const {
+  // The WKWebView snapshot API depends on IPC execution that does not function
+  // properly when JavaScript dialogs are running.
+  return !running_javascript_dialog_;
+}
+
 void WebStateImpl::TakeSnapshot(const gfx::RectF& rect,
                                 SnapshotCallback callback) {
+  DCHECK(CanTakeSnapshot());
+  // Move the callback to a __block pointer, which will be in scope as long
+  // as the callback is retained.
   __block SnapshotCallback shared_callback = std::move(callback);
-  [web_controller_
-      takeSnapshotWithRect:rect.ToCGRect()
-                completion:^(UIImage* snapshot) {
-                  std::move(shared_callback).Run(gfx::Image(snapshot));
-                }];
+  [web_controller_ takeSnapshotWithRect:rect.ToCGRect()
+                             completion:^(UIImage* snapshot) {
+                               shared_callback.Run(gfx::Image(snapshot));
+                             }];
 }
 
 void WebStateImpl::OnNavigationStarted(web::NavigationContextImpl* context) {
@@ -843,6 +863,10 @@ void WebStateImpl::ClearTransientContent() {
     }
   }
   [web_controller_ clearTransientContentView];
+}
+
+void WebStateImpl::ClearDialogs() {
+  CancelDialogs();
 }
 
 void WebStateImpl::RecordPageStateInNavigationItem() {

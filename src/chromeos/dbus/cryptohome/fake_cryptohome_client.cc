@@ -50,14 +50,7 @@ FakeCryptohomeClient* g_instance = nullptr;
 // static
 constexpr char FakeCryptohomeClient::kStubTpmPassword[] = "Stub-TPM-password";
 
-FakeCryptohomeClient::FakeCryptohomeClient()
-    : service_is_available_(true),
-      service_reported_not_available_(false),
-      remove_firmware_management_parameters_from_tpm_call_count_(0),
-      async_call_id_(1),
-      unmount_result_(true),
-      system_salt_(GetStubSystemSalt()),
-      weak_ptr_factory_(this) {
+FakeCryptohomeClient::FakeCryptohomeClient() {
   DCHECK(!g_instance);
   g_instance = this;
 
@@ -171,6 +164,15 @@ void FakeCryptohomeClient::MountGuestEx(
   ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
+void FakeCryptohomeClient::GetRsuDeviceId(
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  cryptohome::BaseReply reply;
+  cryptohome::GetRsuDeviceIdReply* get_rsu_lookup_key_reply =
+      reply.MutableExtension(cryptohome::GetRsuDeviceIdReply::reply);
+  get_rsu_lookup_key_reply->set_rsu_device_id(rsu_device_id_);
+  ReturnProtobufMethodCallback(reply, std::move(callback));
+}
+
 void FakeCryptohomeClient::TpmIsReady(DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
@@ -178,11 +180,11 @@ void FakeCryptohomeClient::TpmIsReady(DBusMethodCallback<bool> callback) {
 
 void FakeCryptohomeClient::TpmIsEnabled(DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
+      FROM_HERE, base::BindOnce(std::move(callback), tpm_is_enabled_));
 }
 
 bool FakeCryptohomeClient::CallTpmIsEnabledAndBlock(bool* enabled) {
-  *enabled = true;
+  *enabled = tpm_is_enabled_;
   return true;
 }
 
@@ -403,11 +405,11 @@ void FakeCryptohomeClient::TpmAttestationDoesKeyExist(
   bool result = false;
   switch (key_type) {
     case attestation::KEY_DEVICE:
-      result = base::ContainsKey(device_certificate_map_, key_name);
+      result = base::Contains(device_certificate_map_, key_name);
       break;
     case attestation::KEY_USER:
-      result = base::ContainsKey(user_certificate_map_,
-                                 std::make_pair(cryptohome_id, key_name));
+      result = base::Contains(user_certificate_map_,
+                              std::make_pair(cryptohome_id, key_name));
       break;
   }
 
@@ -602,6 +604,8 @@ void FakeCryptohomeClient::MountEx(
       request.force_dircrypto_if_available()) {
     error = cryptohome::CRYPTOHOME_ERROR_MOUNT_OLD_ENCRYPTION;
   }
+  if (mount_create_required_ && !request.has_create())
+    error = cryptohome::CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND;
   reply.set_error(error);
   ReturnProtobufMethodCallback(reply, std::move(callback));
 }

@@ -40,7 +40,6 @@ public class WebappDataStorage {
     static final String KEY_LAST_USED = "last_used";
     static final String KEY_HAS_BEEN_LAUNCHED = "has_been_launched";
     static final String KEY_URL = "url";
-    static final String KEY_SPLASH_SCREEN_URL = "splash_screen_url";
     static final String KEY_SCOPE = "scope";
     static final String KEY_ICON = "icon";
     static final String KEY_NAME = "name";
@@ -77,6 +76,15 @@ public class WebappDataStorage {
 
     // The path where serialized update data is written before uploading to the WebAPK server.
     static final String KEY_PENDING_UPDATE_FILE_PATH = "pending_update_file_path";
+
+    // Whether to force an update.
+    static final String KEY_SHOULD_FORCE_UPDATE = "should_force_update";
+
+    // Whether an update has been scheduled.
+    static final String KEY_UPDATE_SCHEDULED = "update_scheduled";
+
+    // Status indicating a WebAPK is not updatable through chrome://webapks.
+    public static final String NOT_UPDATABLE = "Not updatable";
 
     // Number of milliseconds between checks for whether the WebAPK's Web Manifest has changed.
     public static final long UPDATE_INTERVAL = DateUtils.DAY_IN_MILLIS;
@@ -217,7 +225,6 @@ public class WebappDataStorage {
                         KEY_THEME_COLOR, ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
                 mPreferences.getLong(
                         KEY_BACKGROUND_COLOR, ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
-                mPreferences.getString(KEY_SPLASH_SCREEN_URL, ""),
                 mPreferences.getBoolean(KEY_IS_ICON_GENERATED, false),
                 mPreferences.getBoolean(KEY_IS_ICON_ADAPTIVE, false));
     }
@@ -257,9 +264,6 @@ public class WebappDataStorage {
         // cleared together.
         if (mPreferences.getInt(KEY_VERSION, VERSION_INVALID)
                 != ShortcutHelper.WEBAPP_SHORTCUT_VERSION) {
-            editor.putString(KEY_SPLASH_SCREEN_URL,
-                    IntentUtils.safeGetStringExtra(
-                            shortcutIntent, ShortcutHelper.EXTRA_SPLASH_SCREEN_URL));
             editor.putString(KEY_NAME, IntentUtils.safeGetStringExtra(
                         shortcutIntent, ShortcutHelper.EXTRA_NAME));
             editor.putString(KEY_SHORT_NAME, IntentUtils.safeGetStringExtra(
@@ -389,6 +393,15 @@ public class WebappDataStorage {
     }
 
     /**
+     * Update the package name of the WebAPK. Used for testing.
+     * @param webApkPackageName The package name of the WebAPK.
+     */
+    @VisibleForTesting
+    void updateWebApkPackageNameForTests(String webApkPackageName) {
+        mPreferences.edit().putString(KEY_WEBAPK_PACKAGE_NAME, webApkPackageName).apply();
+    }
+
+    /**
      * Updates the last used time of this object.
      */
     void updateLastUsedTime() {
@@ -443,7 +456,7 @@ public class WebappDataStorage {
      * Returns the time, in milliseconds, that the last WebAPK update request completed
      * (successfully or unsuccessfully). This time needs to be set when the WebAPK is registered.
      */
-    long getLastWebApkUpdateRequestCompletionTimeMs() {
+    public long getLastWebApkUpdateRequestCompletionTimeMs() {
         return mPreferences.getLong(KEY_LAST_UPDATE_REQUEST_COMPLETE_TIME, TIMESTAMP_INVALID);
     }
 
@@ -519,6 +532,43 @@ public class WebappDataStorage {
         return mPreferences.getBoolean(KEY_RELAX_UPDATES, false);
     }
 
+    /** Sets whether an update has been scheduled. */
+    public void setUpdateScheduled(boolean isUpdateScheduled) {
+        mPreferences.edit().putBoolean(KEY_UPDATE_SCHEDULED, isUpdateScheduled).apply();
+    }
+
+    /** Gets whether an update has been scheduled. */
+    public boolean isUpdateScheduled() {
+        return mPreferences.getBoolean(KEY_UPDATE_SCHEDULED, false);
+    }
+
+    /** Whether a WebAPK is unbound. */
+    private boolean isUnboundWebApk() {
+        String webApkPackageName = getWebApkPackageName();
+        return (webApkPackageName != null
+                && !webApkPackageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX));
+    }
+
+    /** Sets whether an update should be forced. */
+    public void setShouldForceUpdate(boolean forceUpdate) {
+        if (!isUnboundWebApk()) {
+            mPreferences.edit().putBoolean(KEY_SHOULD_FORCE_UPDATE, forceUpdate).apply();
+        }
+    }
+
+    /** Whether to force an update. */
+    public boolean shouldForceUpdate() {
+        return mPreferences.getBoolean(KEY_SHOULD_FORCE_UPDATE, false);
+    }
+
+    /** Returns the update status. */
+    public String getUpdateStatus() {
+        if (isUnboundWebApk()) return NOT_UPDATABLE;
+        if (isUpdateScheduled()) return "Scheduled";
+        if (shouldForceUpdate()) return "Pending";
+        return didPreviousUpdateSucceed() ? "Succeeded" : "Failed";
+    }
+
     /**
      * Returns file where WebAPK update data should be stored and stores the file name in
      * SharedPreferences.
@@ -561,6 +611,7 @@ public class WebappDataStorage {
 
     /** Returns whether we should check for update. */
     boolean shouldCheckForUpdate() {
+        if (shouldForceUpdate()) return true;
         long checkUpdatesInterval =
                 shouldRelaxUpdates() ? RELAXED_UPDATE_INTERVAL : UPDATE_INTERVAL;
         long now = sClock.currentTimeMillis();

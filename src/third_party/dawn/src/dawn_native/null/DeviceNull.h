@@ -85,7 +85,8 @@ namespace dawn_native { namespace null {
         Device(Adapter* adapter, const DeviceDescriptor* descriptor);
         ~Device();
 
-        CommandBufferBase* CreateCommandBuffer(CommandEncoderBase* encoder) override;
+        CommandBufferBase* CreateCommandBuffer(CommandEncoderBase* encoder,
+                                               const CommandBufferDescriptor* descriptor) override;
 
         Serial GetCompletedCommandSerial() const final override;
         Serial GetLastSubmittedCommandSerial() const final override;
@@ -141,16 +142,21 @@ namespace dawn_native { namespace null {
         Buffer(Device* device, const BufferDescriptor* descriptor);
         ~Buffer();
 
-        void MapReadOperationCompleted(uint32_t serial, void* ptr, bool isWrite);
+        void MapOperationCompleted(uint32_t serial, void* ptr, bool isWrite);
+        void CopyFromStaging(StagingBufferBase* staging,
+                             uint64_t sourceOffset,
+                             uint64_t destinationOffset,
+                             uint64_t size);
 
       private:
         // Dawn API
-        MaybeError SetSubDataImpl(uint32_t start, uint32_t count, const uint8_t* data) override;
-        void MapReadAsyncImpl(uint32_t serial) override;
-        void MapWriteAsyncImpl(uint32_t serial) override;
+        MaybeError SetSubDataImpl(uint32_t start, uint32_t count, const void* data) override;
+        MaybeError MapReadAsyncImpl(uint32_t serial) override;
+        MaybeError MapWriteAsyncImpl(uint32_t serial) override;
         void UnmapImpl() override;
         void DestroyImpl() override;
 
+        bool IsMapWritable() const override;
         MaybeError MapAtCreationImpl(uint8_t** mappedPointer) override;
         void MapAsyncImplCommon(uint32_t serial, bool isWrite);
 
@@ -159,7 +165,7 @@ namespace dawn_native { namespace null {
 
     class CommandBuffer : public CommandBufferBase {
       public:
-        CommandBuffer(Device* device, CommandEncoderBase* encoder);
+        CommandBuffer(CommandEncoderBase* encoder, const CommandBufferDescriptor* descriptor);
         ~CommandBuffer();
 
       private:
@@ -201,9 +207,11 @@ namespace dawn_native { namespace null {
     class StagingBuffer : public StagingBufferBase {
       public:
         StagingBuffer(size_t size, Device* device);
+        ~StagingBuffer() override;
         MaybeError Initialize() override;
 
       private:
+        Device* mDevice;
         std::unique_ptr<uint8_t[]> mBuffer;
     };
 

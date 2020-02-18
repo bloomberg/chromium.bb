@@ -28,8 +28,7 @@ ContentLayerClientImpl::ContentLayerClientImpl()
       raster_invalidator_(
           base::BindRepeating(&ContentLayerClientImpl::InvalidateRect,
                               base::Unretained(this))),
-      layer_state_(PropertyTreeState::Uninitialized()),
-      weak_ptr_factory_(this) {
+      layer_state_(PropertyTreeState::Uninitialized()) {
   cc_picture_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
 }
 
@@ -187,6 +186,11 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
     paint_chunk_debug_data_->PushObject(std::move(json));
   }
 #endif
+
+  // The raster invalidator will only handle invalidations within a cc::Layer so
+  // we need this invalidation if the layer's properties have changed.
+  if (layer_state != layer_state_)
+    cc_picture_layer_->SetSubtreePropertyChanged();
 
   raster_invalidator_.Generate(paint_artifact, paint_chunks, layer_bounds,
                                layer_state);

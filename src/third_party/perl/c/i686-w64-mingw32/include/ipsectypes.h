@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_IPSECTYPES
@@ -54,7 +54,7 @@ typedef enum IPSEC_PFS_GROUP_ {
 } IPSEC_PFS_GROUP;
 
 typedef enum IPSEC_TRANSFORM_TYPE_ {
-  IPSEC_TRANSFORM_AH,
+  IPSEC_TRANSFORM_AH = 1,
   IPSEC_TRANSFORM_ESP_AUTH,
   IPSEC_TRANSFORM_ESP_CIPHER,
   IPSEC_TRANSFORM_ESP_AUTH_AND_CIPHER,
@@ -73,7 +73,7 @@ typedef enum IPSEC_AUTH_TYPE_ {
 } IPSEC_AUTH_TYPE;
 
 typedef enum IPSEC_CIPHER_TYPE_ {
-  IPSEC_CIPHER_TYPE_DES,
+  IPSEC_CIPHER_TYPE_DES = 1,
   IPSEC_CIPHER_TYPE_3DES,
   IPSEC_CIPHER_TYPE_AES_128,
   IPSEC_CIPHER_TYPE_AES_192,

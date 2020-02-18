@@ -11,12 +11,11 @@
 #include <memory>
 #include <vector>
 
+#include "core/fpdfapi/page/cpdf_occontext.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
-#include "core/fpdfapi/render/cpdf_occontext.h"
-#include "core/fxcrt/observable.h"
+#include "core/fxcrt/observed_ptr.h"
 #include "fpdfsdk/cpdfsdk_annot.h"
-#include "fpdfsdk/cpdfsdk_helpers.h"
 #include "public/fpdf_formfill.h"
 
 class CFFL_InteractiveFormFiller;
@@ -26,6 +25,10 @@ class CPDFSDK_AnnotHandlerMgr;
 class CPDFSDK_InteractiveForm;
 class CPDFSDK_PageView;
 class IJS_Runtime;
+
+#if defined(PDF_ENABLE_XFA)
+class CPDFXFA_Context;
+#endif  // defined(PDF_ENABLE_XFA)
 
 // NOTE: |bsUTF16LE| must outlive the use of the result. Care must be taken
 // since modifying the result would impact |bsUTF16LE|.
@@ -42,8 +45,7 @@ FPDF_WIDESTRING AsFPDFWideString(ByteString* bsUTF16LE);
 // hierarcy back to the form fill environment itself, so as to flag any
 // lingering lifetime issues via the memory tools.
 
-class CPDFSDK_FormFillEnvironment final
-    : public Observable<CPDFSDK_FormFillEnvironment> {
+class CPDFSDK_FormFillEnvironment final : public Observable {
  public:
   CPDFSDK_FormFillEnvironment(CPDF_Document* pDoc, FPDF_FORMFILLINFO* pFFinfo);
   ~CPDFSDK_FormFillEnvironment();
@@ -52,16 +54,16 @@ class CPDFSDK_FormFillEnvironment final
   static bool IsCTRLKeyDown(uint32_t nFlag);
   static bool IsALTKeyDown(uint32_t nFlag);
 
-  CPDFSDK_PageView* GetPageView(IPDF_Page* pPage, bool renew);
+  CPDFSDK_PageView* GetPageView(IPDF_Page* pUnderlyingPage, bool renew);
   CPDFSDK_PageView* GetPageView(int nIndex);
 #ifdef PDF_ENABLE_V8
   CPDFSDK_PageView* GetCurrentView();
 #endif
-  void RemovePageView(IPDF_Page* pPage);
+  void RemovePageView(IPDF_Page* pUnderlyingPage);
   void UpdateAllViews(CPDFSDK_PageView* pSender, CPDFSDK_Annot* pAnnot);
 
   CPDFSDK_Annot* GetFocusAnnot() const { return m_pFocusAnnot.Get(); }
-  bool SetFocusAnnot(CPDFSDK_Annot::ObservedPtr* pAnnot);
+  bool SetFocusAnnot(ObservedPtr<CPDFSDK_Annot>* pAnnot);
   bool KillFocusAnnot(uint32_t nFlag);
   void ClearAllFocusedAnnots();
 
@@ -112,6 +114,7 @@ class CPDFSDK_FormFillEnvironment final
 #ifdef PDF_ENABLE_XFA
   CPDFXFA_Context* GetXFAContext() const;
   int GetPageViewCount() const;
+  bool ContainsXFAForm() const;
 
   void DisplayCaret(CPDFXFA_Page* page,
                     FPDF_BOOL bVisible,
@@ -131,7 +134,7 @@ class CPDFSDK_FormFillEnvironment final
   bool PopupMenu(CPDFXFA_Page* page,
                  FPDF_WIDGET hWidget,
                  int menuFlag,
-                 CFX_PointF pt);
+                 const CFX_PointF& pt);
 
   void EmailTo(FPDF_FILEHANDLER* fileHandler,
                FPDF_WIDESTRING pTo,
@@ -217,7 +220,7 @@ class CPDFSDK_FormFillEnvironment final
   std::unique_ptr<IJS_Runtime> m_pIJSRuntime;
   std::map<IPDF_Page*, std::unique_ptr<CPDFSDK_PageView>> m_PageMap;
   std::unique_ptr<CPDFSDK_InteractiveForm> m_pInteractiveForm;
-  CPDFSDK_Annot::ObservedPtr m_pFocusAnnot;
+  ObservedPtr<CPDFSDK_Annot> m_pFocusAnnot;
   UnownedPtr<CPDF_Document> const m_pCPDFDoc;
   std::unique_ptr<CFFL_InteractiveFormFiller> m_pFormFiller;
   std::unique_ptr<CFX_SystemHandler> m_pSysHandler;

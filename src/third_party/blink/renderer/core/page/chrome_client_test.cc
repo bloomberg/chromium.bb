@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
@@ -40,7 +41,7 @@ class ChromeClientTest : public testing::Test {};
 TEST_F(ChromeClientTest, SetToolTipFlood) {
   ChromeClientToolTipLogger logger;
   ChromeClient* client = &logger;
-  HitTestLocation location(LayoutPoint(10, 20));
+  HitTestLocation location(PhysicalOffset(10, 20));
   HitTestResult result(HitTestRequest(HitTestRequest::kMove), location);
   auto* doc = MakeGarbageCollected<Document>();
   auto* element = MakeGarbageCollected<HTMLElement>(html_names::kDivTag, *doc);
@@ -73,7 +74,7 @@ TEST_F(ChromeClientTest, SetToolTipFlood) {
 
 TEST_F(ChromeClientTest, SetToolTipEmptyString) {
   ChromeClient* client = MakeGarbageCollected<EmptyChromeClient>();
-  HitTestLocation location(LayoutPoint(10, 20));
+  HitTestLocation location(PhysicalOffset(10, 20));
   HitTestResult result(HitTestRequest(HitTestRequest::kMove), location);
   auto& doc = *MakeGarbageCollected<Document>();
   auto& input_element =

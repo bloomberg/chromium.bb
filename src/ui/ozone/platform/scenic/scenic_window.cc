@@ -32,19 +32,16 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
       scenic_session_(manager_->GetScenic()),
       view_(&scenic_session_, std::move(view_token.value), "chromium window"),
       node_(&scenic_session_),
-      input_node_(&scenic_session_),
       render_node_(&scenic_session_) {
   scenic_session_.set_error_handler(
       fit::bind_member(this, &ScenicWindow::OnScenicError));
   scenic_session_.set_event_handler(
       fit::bind_member(this, &ScenicWindow::OnScenicEvents));
+  scenic_session_.SetDebugName("Chromium");
 
   // Subscribe to metrics events from the node. These events are used to
   // get the device pixel ratio for the screen.
   node_.SetEventMask(fuchsia::ui::gfx::kMetricsEventMask);
-
-  // Add input shape.
-  node_.AddChild(input_node_);
 
   // Add rendering subtree. Hit testing is disabled to prevent GPU process from
   // receiving input.
@@ -58,14 +55,14 @@ ScenicWindow::~ScenicWindow() {
   manager_->RemoveWindow(window_id_, this);
 }
 
-void ScenicWindow::ExportRenderingEntity(
-    fuchsia::ui::gfx::ExportToken export_token) {
+void ScenicWindow::AttachSurface(
+    fuchsia::ui::gfx::ExportToken surface_export_token) {
   scenic::EntityNode export_node(&scenic_session_);
 
   render_node_.DetachChildren();
   render_node_.AddChild(export_node);
 
-  export_node.Export(std::move(export_token.value));
+  export_node.Export(std::move(surface_export_token.value));
   scenic_session_.Present(
       /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 }
@@ -135,7 +132,15 @@ void ScenicWindow::Restore() {
 }
 
 PlatformWindowState ScenicWindow::GetPlatformWindowState() const {
-  return PLATFORM_WINDOW_STATE_NORMAL;
+  return PlatformWindowState::kNormal;
+}
+
+void ScenicWindow::Activate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void ScenicWindow::Deactivate() {
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ScenicWindow::SetCursor(PlatformCursor cursor) {
@@ -148,11 +153,6 @@ void ScenicWindow::MoveCursorTo(const gfx::Point& location) {
 
 void ScenicWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
-}
-
-PlatformImeController* ScenicWindow::GetPlatformImeController() {
-  NOTIMPLEMENTED();
-  return nullptr;
 }
 
 void ScenicWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
@@ -181,10 +181,6 @@ void ScenicWindow::UpdateSize() {
 
   // Scale the render node so that surface rect can always be 1x1.
   render_node_.SetScale(size_dips_.width(), size_dips_.height(), 1.f);
-
-  // Resize input node to cover the whole surface.
-  input_node_.SetShape(scenic::Rectangle(&scenic_session_, size_dips_.width(),
-                                         size_dips_.height()));
 
   // This is necessary when using vulkan because ImagePipes are presented
   // separately and we need to make sure our sizes change is committed.

@@ -23,8 +23,6 @@ source_set("base") {
     "leaky_bucket.cc",
     "leaky_bucket.h",
     "name_value_map.h",
-    "platform_details.cc",
-    "platform_details.h",
     "rate_counter.cc",
     "rate_counter.h",
     "remoting_bot.cc",
@@ -79,7 +77,6 @@ source_set("base") {
     sources -= [
       "chromium_url_request.cc",
       "chromoting_event.cc",
-      "platform_details.cc",
       "telemetry_log_writer.cc",
       "url_request_context_getter.cc",
     ]
@@ -103,6 +100,8 @@ source_set("authorization") {
     "oauth_token_getter_proxy.h",
     "offline_token_exchanger.cc",
     "offline_token_exchanger.h",
+    "passthrough_oauth_token_getter.cc",
+    "passthrough_oauth_token_getter.h",
   ]
 
   configs += [
@@ -177,6 +176,7 @@ source_set("unit_tests") {
     "buffered_socket_writer_unittest.cc",
     "capabilities_unittest.cc",
     "compound_buffer_unittest.cc",
+    "leaky_bucket_unittest.cc",
     "oauth_token_getter_proxy_unittest.cc",
     "rate_counter_unittest.cc",
     "result_unittest.cc",

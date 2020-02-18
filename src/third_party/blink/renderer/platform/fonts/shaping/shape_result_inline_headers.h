@@ -35,7 +35,7 @@
 #include <hb.h>
 #include <memory>
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -142,7 +142,7 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
   unsigned NumGraphemes(unsigned start, unsigned end) const;
 
   // For memory reporting.
-  size_t ByteSize() const { return sizeof(this) + glyph_data_.ByteSize(); }
+  size_t ByteSize() const { return sizeof(*this) + glyph_data_.ByteSize(); }
 
   // Represents a range of HarfBuzzRunGlyphData. |begin| and |end| follow the
   // iterator pattern; i.e., |begin| is lower or equal to |end| in the address
@@ -251,37 +251,6 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
     template <bool has_non_zero_glyph_offsets>
     struct iterator final {};
 
-    // For non-zero glyph offset array
-    template <>
-    struct iterator<true> final {
-      // The constructor for ShapeResult
-      explicit iterator(const GlyphOffsetArray& array)
-          : pointer(array.storage_.get()) {
-        DCHECK(pointer);
-      }
-
-      // The constructor for ShapeResultView
-      explicit iterator(const GlyphDataRange& range) : pointer(range.offsets) {
-        DCHECK(pointer);
-      }
-
-      GlyphOffset operator*() const { return *pointer; }
-      void operator++() { ++pointer; }
-
-      const GlyphOffset* pointer;
-    };
-
-    // For zero glyph offset array
-    template <>
-    struct iterator<false> final {
-      explicit iterator(const GlyphOffsetArray& array) {
-        DCHECK(!array.HasStorage());
-      }
-      explicit iterator(const GlyphDataRange& range) { DCHECK(!range.offsets); }
-      GlyphOffset operator*() const { return GlyphOffset(); }
-      void operator++() {}
-    };
-
     template <bool has_non_zero_glyph_offsets>
     iterator<has_non_zero_glyph_offsets> GetIterator() const {
       return iterator<has_non_zero_glyph_offsets>(*this);
@@ -301,7 +270,7 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
 
     void CopyFromRange(const GlyphDataRange& range) {
       DCHECK_EQ(range.size(), size());
-      if (!range.offsets) {
+      if (!range.offsets || range.size() == 0) {
         storage_.reset();
         return;
       }
@@ -493,6 +462,37 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
   unsigned start_index_;
   unsigned num_characters_;
   float width_;
+};
+
+// For non-zero glyph offset array
+template <>
+struct ShapeResult::RunInfo::GlyphOffsetArray::iterator<true> final {
+  // The constructor for ShapeResult
+  explicit iterator(const GlyphOffsetArray& array)
+      : pointer(array.storage_.get()) {
+    DCHECK(pointer);
+  }
+
+  // The constructor for ShapeResultView
+  explicit iterator(const GlyphDataRange& range) : pointer(range.offsets) {
+    DCHECK(pointer);
+  }
+
+  GlyphOffset operator*() const { return *pointer; }
+  void operator++() { ++pointer; }
+
+  const GlyphOffset* pointer;
+};
+
+// For zero glyph offset array
+template <>
+struct ShapeResult::RunInfo::GlyphOffsetArray::iterator<false> final {
+  explicit iterator(const GlyphOffsetArray& array) {
+    DCHECK(!array.HasStorage());
+  }
+  explicit iterator(const GlyphDataRange& range) { DCHECK(!range.offsets); }
+  GlyphOffset operator*() const { return GlyphOffset(); }
+  void operator++() {}
 };
 
 // Find the range of HarfBuzzRunGlyphData for the specified character index

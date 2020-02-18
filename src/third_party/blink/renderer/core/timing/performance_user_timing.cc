@@ -33,7 +33,7 @@
 #include "third_party/blink/renderer/core/timing/performance_mark_options.h"
 #include "third_party/blink/renderer/core/timing/performance_measure.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
@@ -110,6 +110,11 @@ PerformanceMark* UserTiming::CreatePerformanceMark(
   DOMHighResTimeStamp start = 0.0;
   if (mark_options && mark_options->hasStartTime()) {
     start = mark_options->startTime();
+    if (start < 0.0) {
+      exception_state.ThrowTypeError("'" + mark_name +
+                                     "' cannot have a negative start time.");
+      return nullptr;
+    }
   } else {
     start = performance_->now();
   }
@@ -130,16 +135,17 @@ PerformanceMark* UserTiming::CreatePerformanceMark(
     return nullptr;
   }
 
-  return PerformanceMark::Create(script_state, mark_name, start, detail);
+  return PerformanceMark::Create(script_state, mark_name, start, detail,
+                                 exception_state);
 }
 
 void UserTiming::AddMarkToPerformanceTimeline(PerformanceMark& mark) {
   if (performance_->timing()) {
-    TRACE_EVENT_COPY_MARK1("blink.user_timing", mark.name().Utf8().data(),
+    TRACE_EVENT_COPY_MARK1("blink.user_timing", mark.name().Utf8().c_str(),
                            "data",
                            performance_->timing()->GetNavigationTracingData());
   } else {
-    TRACE_EVENT_COPY_MARK("blink.user_timing", mark.name().Utf8().data());
+    TRACE_EVENT_COPY_MARK("blink.user_timing", mark.name().Utf8().c_str());
   }
   InsertPerformanceEntry(marks_map_, mark);
   DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram,
@@ -191,14 +197,20 @@ double UserTiming::FindExistingMarkStartTime(const AtomicString& mark_name,
   return value - timing->navigationStart();
 }
 
-double UserTiming::GetTimeOrFindMarkTime(const StringOrDouble& mark_or_time,
+double UserTiming::GetTimeOrFindMarkTime(const AtomicString& measure_name,
+                                         const StringOrDouble& mark_or_time,
                                          ExceptionState& exception_state) {
   if (mark_or_time.IsString()) {
     return FindExistingMarkStartTime(AtomicString(mark_or_time.GetAsString()),
                                      exception_state);
   }
   DCHECK(mark_or_time.IsDouble());
-  return mark_or_time.GetAsDouble();
+  const double time = mark_or_time.GetAsDouble();
+  if (time < 0.0) {
+    exception_state.ThrowTypeError("'" + measure_name +
+                                   "' cannot have a negative time stamp.");
+  }
+  return time;
 }
 
 PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
@@ -208,12 +220,15 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
                                         const ScriptValue& detail,
                                         ExceptionState& exception_state) {
   double start_time =
-      start.IsNull() ? 0.0 : GetTimeOrFindMarkTime(start, exception_state);
+      start.IsNull()
+          ? 0.0
+          : GetTimeOrFindMarkTime(measure_name, start, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
-  double end_time = end.IsNull() ? performance_->now()
-                                 : GetTimeOrFindMarkTime(end, exception_state);
+  double end_time =
+      end.IsNull() ? performance_->now()
+                   : GetTimeOrFindMarkTime(measure_name, end, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -228,14 +243,17 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
   WTF::AddFloatToHash(hash, end_time);
 
   TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-      "blink.user_timing", measure_name.Utf8().data(), hash,
+      "blink.user_timing", measure_name.Utf8().c_str(), hash,
       trace_event::ToTraceTimestamp(start_time_monotonic));
   TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
-      "blink.user_timing", measure_name.Utf8().data(), hash,
+      "blink.user_timing", measure_name.Utf8().c_str(), hash,
       trace_event::ToTraceTimestamp(end_time_monotonic));
 
-  auto* measure = MakeGarbageCollected<PerformanceMeasure>(
-      script_state, measure_name, start_time, end_time, detail);
+  PerformanceMeasure* measure =
+      PerformanceMeasure::Create(script_state, measure_name, start_time,
+                                 end_time, detail, exception_state);
+  if (!measure)
+    return nullptr;
   InsertPerformanceEntry(measures_map_, *measure);
   if (end_time >= start_time) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(

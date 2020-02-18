@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "url/gurl.h"
@@ -72,8 +73,13 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
     cell.URLLabel.backgroundColor = styler.tableViewBackgroundColor;
     cell.metadataLabel.backgroundColor = styler.tableViewBackgroundColor;
   }
+
   if (styler.cellTitleColor)
     cell.titleLabel.textColor = styler.cellTitleColor;
+  if (styler.cellDetailColor) {
+    cell.URLLabel.textColor = styler.cellDetailColor;
+    cell.metadataLabel.textColor = styler.cellDetailColor;
+  }
 
   [cell configureUILayout];
 }
@@ -165,13 +171,11 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
     _URLLabel.font =
         [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
     _URLLabel.adjustsFontForContentSizeCategory = YES;
-    _URLLabel.textColor =
-        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+    _URLLabel.textColor = UIColor.cr_secondaryLabelColor;
     _URLLabel.hidden = YES;
     _metadataLabel.font =
         [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
-    _metadataLabel.textColor =
-        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+    _metadataLabel.textColor = UIColor.cr_secondaryLabelColor;
     _metadataLabel.adjustsFontForContentSizeCategory = YES;
     _metadataLabel.hidden = YES;
 

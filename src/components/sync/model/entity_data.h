@@ -55,7 +55,7 @@ struct EntityData {
   std::string server_defined_unique_tag;
 
   // Entity name, used mostly for Debug purposes.
-  std::string non_unique_name;
+  std::string name;
 
   // Model type specific sync data.
   sync_pb::EntitySpecifics specifics;

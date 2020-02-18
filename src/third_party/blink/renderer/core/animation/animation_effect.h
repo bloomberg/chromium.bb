@@ -53,14 +53,6 @@ enum TimingUpdateReason {
   kTimingUpdateForAnimationFrame
 };
 
-static inline bool IsNull(double value) {
-  return std::isnan(value);
-}
-
-static inline double NullValue() {
-  return std::numeric_limits<double>::quiet_NaN();
-}
-
 // Represents the content of an Animation and its fractional timing state.
 // https://drafts.csswg.org/web-animations/#the-animationeffect-interface
 class CORE_EXPORT AnimationEffect : public ScriptWrappable {
@@ -75,13 +67,6 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   friend class EffectStack;
 
  public:
-  // Note that logic in CSSAnimations depends on the order of these values.
-  enum Phase {
-    kPhaseBefore,
-    kPhaseActive,
-    kPhaseAfter,
-    kPhaseNone,
-  };
   // Represents the animation direction from the Web Animations spec, see
   // https://drafts.csswg.org/web-animations-1/#animation-direction.
   enum AnimationDirection {
@@ -102,7 +87,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   virtual bool IsKeyframeEffect() const { return false; }
   virtual bool IsInertEffect() const { return false; }
 
-  Phase GetPhase() const { return EnsureCalculated().phase; }
+  Timing::Phase GetPhase() const { return EnsureCalculated().phase; }
   bool IsCurrent() const { return EnsureCalculated().is_current; }
   bool IsInEffect() const { return EnsureCalculated().is_in_effect; }
   bool IsInPlay() const { return EnsureCalculated().is_in_play; }
@@ -119,10 +104,6 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
     return EnsureCalculated().time_to_reverse_effect_change;
   }
   double LocalTime() const { return EnsureCalculated().local_time; }
-
-  AnimationTimeDelta IterationDuration() const;
-  double RepeatedDuration() const;
-  double EndTimeInternal() const;
 
   const Timing& SpecifiedTiming() const { return timing_; }
   void UpdateSpecifiedTiming(const Timing&);
@@ -159,9 +140,15 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   void ClearEventDelegate() { event_delegate_ = nullptr; }
 
   virtual void UpdateChildrenAndEffects() const = 0;
+
+  // This is the value of the iteration duration when it is specified as 'auto'.
+  // In web-animations-1, auto is treated as "the value zero for the purpose of
+  // timing model calculations and for the result of the duration member
+  // returned from getComputedTiming()".
   virtual AnimationTimeDelta IntrinsicIterationDuration() const {
     return AnimationTimeDelta();
   }
+
   virtual double CalculateTimeToEffectChange(
       bool forwards,
       double local_time,
@@ -174,22 +161,10 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   Timing timing_;
   Member<EventDelegate> event_delegate_;
 
-  mutable struct CalculatedTiming {
-    DISALLOW_NEW();
-    Phase phase;
-    double current_iteration;
-    base::Optional<double> progress;
-    bool is_current;
-    bool is_in_effect;
-    bool is_in_play;
-    double local_time = NullValue();
-    double time_to_forwards_effect_change;
-    double time_to_reverse_effect_change;
-  } calculated_;
+  mutable Timing::CalculatedTiming calculated_;
   mutable bool needs_update_;
   mutable double last_update_time_;
-
-  const CalculatedTiming& EnsureCalculated() const;
+  const Timing::CalculatedTiming& EnsureCalculated() const;
 };
 
 }  // namespace blink

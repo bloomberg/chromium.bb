@@ -16,7 +16,7 @@ loadScript('components/mirroring/mojom/cast_message_channel.mojom');
 loadScript('components/mirroring/mojom/mirroring_service_host.mojom');
 loadScript('components/mirroring/mojom/session_observer.mojom');
 loadScript('components/mirroring/mojom/session_parameters.mojom');
-loadScript('extensions/common/mojo/keep_alive.mojom');
+loadScript('extensions/common/mojom/keep_alive.mojom');
 loadScript('media/mojo/interfaces/mirror_service_remoting.mojom');
 loadScript('media/mojo/interfaces/remoting_common.mojom');
 loadScript('mojo/public/mojom/base/time.mojom');
@@ -97,22 +97,6 @@ CastMediaSinkAdapter.prototype.toNewVersion = function() {
 };
 
 /**
- * Adapter for mediaRouter.mojom.HangoutsMediaStatusExtraData.
- * @constructor
- */
-function HangoutsMediaStatusExtraDataAdapter(fields) {
-  this.local_present = false;
-
-  assignFields(this, fields);
-}
-
-HangoutsMediaStatusExtraDataAdapter.prototype.toNewVersion = function() {
-  return new mediaRouter.mojom.HangoutsMediaStatusExtraData({
-    'localPresent': this.local_present,
-  });
-};
-
-/**
  * Adapter for net.interfaces.IPAddress.
  * @constructor
  */
@@ -174,7 +158,6 @@ function MediaStatusAdapter(fields) {
   this.volume = 0;
   this.duration = null;
   this.current_time = null;
-  this.hangouts_extra_data = null;
 
   assignFields(this, fields);
 }
@@ -193,8 +176,6 @@ MediaStatusAdapter.prototype.toNewVersion = function() {
     'volume': this.volume,
     'duration': this.duration,
     'currentTime': this.current_time,
-    'hangoutsExtraData':
-        this.hangouts_extra_data && this.hangouts_extra_data.toNewVersion(),
   });
 };
 
@@ -740,9 +721,6 @@ MediaRouter.prototype.getMojoExports = function() {
     Binding: mojo.Binding,
     DialMediaSink: DialMediaSinkAdapter,
     CastMediaSink: CastMediaSinkAdapter,
-    HangoutsMediaRouteController:
-        mediaRouter.mojom.HangoutsMediaRouteController,
-    HangoutsMediaStatusExtraData: HangoutsMediaStatusExtraDataAdapter,
     IPAddress: IPAddressAdapter,
     IPEndpoint: IPEndpointAdapter,
     InterfacePtrController: mojo.InterfacePtrController,
@@ -800,7 +778,6 @@ MediaRouter.prototype.start = function() {
                 'enable_cast_discovery': response.config.enableCastDiscovery,
                 'enable_dial_sink_query': response.config.enableDialSinkQuery,
                 'enable_cast_sink_query': response.config.enableCastSinkQuery,
-                'use_views_dialog': response.config.useViewsDialog,
                 'use_mirroring_service': response.config.useMirroringService,
               }
             };

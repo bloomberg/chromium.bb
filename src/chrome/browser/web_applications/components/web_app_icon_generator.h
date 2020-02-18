@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
@@ -53,7 +54,10 @@ std::map<int, BitmapAndSource> ConstrainBitmapsToSizes(
 
 // Generates a square container icon of |output_size| by drawing the given
 // |letter| into a rounded background of |color|.
-SkBitmap GenerateBitmap(int output_size, SkColor color, char letter);
+SkBitmap GenerateBitmap(int output_size, SkColor color, base::char16 letter);
+
+// Returns the letter that will be painted on the generated icon.
+base::char16 GenerateIconLetterFromUrl(const GURL& app_url);
 
 // Resize icons to the accepted sizes, and generate any that are missing.
 // Note that |app_url| is the launch URL for the app.

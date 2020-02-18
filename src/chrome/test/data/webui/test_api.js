@@ -144,13 +144,6 @@ Test.prototype = {
   mockHandler: null,
 
   /**
-   * This should be initialized by the test fixture and can be referenced
-   * during the test run. It holds any mocked global functions.
-   * @type {?Mock4JS.Mock}
-   */
-  mockGlobals: null,
-
-  /**
    * Value is passed through call to C++ RunJavascriptF to invoke this test.
    * @type {boolean}
    */
@@ -278,37 +271,6 @@ Test.prototype = {
     this.mockHandler = mock(MockClass);
     registerMockMessageCallbacks(this.mockHandler, MockClass);
     return this.mockHandler;
-  },
-
-  /**
-   * Create a new class to handle |functionNames|, assign it to
-   * |this.mockGlobals|, register its global overrides, and return it.
-   * @return {Mock} Mock handler class assigned to |this.mockGlobals|.
-   * @see registerMockGlobals
-   */
-  makeAndRegisterMockGlobals: function(functionNames) {
-    var MockClass = makeMockClass(functionNames);
-    this.mockGlobals = mock(MockClass);
-    registerMockGlobals(this.mockGlobals, MockClass);
-    return this.mockGlobals;
-  },
-
-  /**
-   * Create a container of mocked standalone functions to handle
-   * '.'-separated |apiNames|, assign it to |this.mockApis|, register its API
-   * overrides and return it.
-   * @return {Mock} Mock handler class.
-   * @see makeMockFunctions
-   * @see registerMockApis
-   */
-  makeAndRegisterMockApis: function(apiNames) {
-    var apiMockNames = apiNames.map(function(name) {
-      return name.replace(/\./g, '_');
-    });
-
-    this.mockApis = makeMockFunctions(apiMockNames);
-    registerMockApis(this.mockApis);
-    return this.mockApis;
   },
 
   /**
@@ -612,73 +574,12 @@ function registerMockMessageCallbacks(mockObject, mockClass) {
 }
 
 /**
- * Holds the mapping of name -> global override information.
- * @type {Object}
- */
-var globalOverrides = {};
-
-/**
  * When preloading JavaScript libraries, this is true until the
  * DOMContentLoaded event has been received as globals cannot be overridden
  * until the page has loaded its JavaScript.
  * @type {boolean}
  */
 var deferGlobalOverrides = false;
-
-/**
- * Override the global function |funcName| with its registered mock. This
- * should not be called twice for the same |funcName|.
- * @param {string} funcName The name of the global function to override.
- */
-function overrideGlobal(funcName) {
-  assertNotEquals(undefined, this[funcName]);
-  var globalOverride = globalOverrides[funcName];
-  assertNotEquals(undefined, globalOverride);
-  assertEquals(undefined, globalOverride.original);
-  globalOverride.original = this[funcName];
-  this[funcName] = globalOverride.callback.bind(globalOverride.object);
-}
-
-/**
- * Registers the global function name, object and callback.
- * @param {string} name The name of the message to route to this |callback|.
- * @param {Object} object Pass as |this| when calling the |callback|.
- * @param {function(...)} callback Called by {@code chrome.send}.
- * @see overrideGlobal
- */
-function registerMockGlobal(name, object, callback) {
-  assertEquals(undefined, globalOverrides[name]);
-  globalOverrides[name] = {
-    object: object,
-    callback: callback,
-  };
-
-  if (!deferGlobalOverrides) {
-    overrideGlobal(name);
-  }
-}
-
-/**
- * Registers the mock API call and its function.
- * @param {string} name The '_'-separated name of the API call.
- * @param {function(...)} theFunction Mock function for this API call.
- */
-function registerMockApi(name, theFunction) {
-  var path = name.split('_');
-
-  var namespace = this;
-  for (var i = 0; i < path.length - 1; i++) {
-    var fieldName = path[i];
-    if (!namespace[fieldName]) {
-      namespace[fieldName] = {};
-    }
-
-    namespace = namespace[fieldName];
-  }
-
-  var fieldName = path[path.length - 1];
-  namespace[fieldName] = theFunction;
-}
 
 /**
  * Empty function for use in making mocks.
@@ -724,37 +625,6 @@ function makeMockFunctions(functionNames) {
   };
 
   return mockFunctions;
-}
-
-/**
- * Register all methods of {@code mockClass.prototype} as overrides to global
- * functions of the same name as the method, using the proxy of the
- * |mockObject| to handle the functions.
- * @param {Mock4JS.Mock} mockObject The mock to register callbacks against.
- * @param {function(new:Object)} mockClass Constructor for the mocked class.
- * @see registerMockGlobal
- */
-function registerMockGlobals(mockObject, mockClass) {
-  var mockProxy = mockObject.proxy();
-  for (var func in mockClass.prototype) {
-    if (typeof mockClass.prototype[func] === 'function') {
-      registerMockGlobal(func, mockProxy, mockProxy[func]);
-    }
-  }
-}
-
-/**
- * Register all functions in |mockObject.functions()| as global API calls.
- * @param {Mock4JS.Mock} mockObject The mock to register callbacks against.
- * @see registerMockApi
- */
-function registerMockApis(mockObject) {
-  var functions = mockObject.functions();
-  for (var func in functions) {
-    if (typeof functions[func] === 'function') {
-      registerMockApi(func, functions[func]);
-    }
-  }
 }
 
 /**
@@ -834,9 +704,9 @@ function testDone(result) {
         Mojo.bindInterface(
             webUiTest.mojom.TestRunner.name,
             mojo.makeRequest(testRunner).handle);
-      } else if (webUiTest.mojom.TestRunnerProxy) {
+      } else if (webUiTest.mojom.TestRunnerRemote) {
         // For mojo-lite WebUI tests.
-        testRunner = webUiTest.mojom.TestRunner.getProxy();
+        testRunner = webUiTest.mojom.TestRunner.getRemote();
       } else {
         assertNotReached(
             'Mojo bindings found, but no valid test interface loaded');
@@ -1217,9 +1087,6 @@ function preloadJavascriptLibraries(testFixture, testName) {
     // Override globals at load time so they will be defined.
     assertTrue(deferGlobalOverrides);
     deferGlobalOverrides = false;
-    for (var funcName in globalOverrides) {
-      overrideGlobal(funcName);
-    }
   }, true);
   currentTestCase = createTestCase(testFixture, testName);
   currentTestCase.preLoad();
@@ -1512,54 +1379,6 @@ function callFunctionWithSavedArgs(savedArgs, func) {
 }
 
 /**
- * CallGlobalAction as a subclass of CallFunctionAction looks up the original
- * global object in |globalOverrides| using |funcName| as the key. This allows
- * tests, which need to wait until a global function to be called in order to
- * start the test to run the original function. When used with runAllActions
- * or runAllActionsAsync, Mock4JS expectations may call start or continue the
- * test after calling the original function.
- * @param {?SaveMockArguments} savedArgs when non-null, saved arguments are
- *     passed to the global function |funcName|.
- * @param {string} funcName The name of the global function to call.
- * @param {Array} args Any arguments to pass to func.
- * @constructor
- * @extends {CallFunctionAction}
- * @see globalOverrides
- */
-function CallGlobalAction(savedArgs, funcName, args) {
-  CallFunctionAction.call(this, null, savedArgs, funcName, args);
-}
-
-CallGlobalAction.prototype = {
-  __proto__: CallFunctionAction.prototype,
-
-  /**
-   * Fetch and return the original global function to call.
-   * @return {Function} The global function to invoke.
-   * @override
-   */
-  get func() {
-    var func = globalOverrides[this.func_].original;
-    assertNotEquals(undefined, func);
-    return func;
-  },
-};
-
-/**
- * Syntactic sugar for use with will() on a Mock4JS.Mock.
- * @param {SaveMockArguments} savedArgs Arguments saved with this object
- *     are passed to the global function |funcName|.
- * @param {string} funcName The name of a registered mock global function to
- *     call when the method is invoked.
- * @param {...*} var_args Arguments to pass when calling func.
- * @return {CallGlobalAction} Action for use in Mock4JS will().
- */
-function callGlobalWithSavedArgs(savedArgs, funcName) {
-  return new CallGlobalAction(
-      savedArgs, funcName, Array.prototype.slice.call(arguments, 2));
-}
-
-/**
  * When to call testDone().
  * @enum {number}
  */
@@ -1693,29 +1512,6 @@ function runAllActionsAsync(whenTestDone) {
 }
 
 /**
- * Syntactic sugar for use with will() on a Mock4JS.Mock.
- * Creates an action for will() that invokes a callback that the tested code
- * passes to a mocked function.
- * @param {SaveMockArguments} savedArgs Arguments that will contain the
- *     callback once the mocked function is called.
- * @param {number} callbackParameter Index of the callback parameter in
- *     |savedArgs|.
- * @param {...Object} var_args Arguments to pass to the callback.
- * @return {CallFunctionAction} Action for use in will().
- */
-function invokeCallback(savedArgs, callbackParameter, var_args) {
-  var callbackArguments = Array.prototype.slice.call(arguments, 2);
-  return callFunction(function() {
-    savedArgs.arguments[callbackParameter].apply(null, callbackArguments);
-
-    // Mock4JS does not clear the saved args after invocation.
-    // To allow reuse of the same SaveMockArguments for multiple
-    // invocations with similar arguments, clear them here.
-    savedArgs.arguments.splice(0, savedArgs.arguments.length);
-  });
-}
-
-/**
  * Mock4JS matcher object that matches the actual argument and the expected
  * value iff their JSON representations are same.
  * @param {Object} expectedValue
@@ -1753,46 +1549,6 @@ MatchJSON.prototype = {
  */
 function eqJSON(expectedValue) {
   return new MatchJSON(expectedValue);
-}
-
-/**
- * Mock4JS matcher object that matches the actual argument and the expected
- * value iff the the string representation of the actual argument is equal to
- * the expected value.
- * @param {string} expectedValue
- * @constructor
- */
-function MatchToString(expectedValue) {
-  this.expectedValue_ = expectedValue;
-}
-
-MatchToString.prototype = {
-  /**
-   * Checks that the the string representation of the actual argument matches
-   * the expected value.
-   * @param {*} actualArgument The argument to match.
-   * @return {boolean} Result of the comparison.
-   */
-  argumentMatches: function(actualArgument) {
-    return this.expectedValue_ === String(actualArgument);
-  },
-
-  /**
-   * Describes the matcher.
-   * @return {string} Description of this Mock4JS matcher.
-   */
-  describe: function() {
-    return 'eqToString("' + this.expectedValue_ + '")';
-  },
-};
-
-/**
- * Builds a MatchToString argument matcher for a given expected value.
- * @param {Object} expectedValue
- * @return {MatchToString} Resulting Mock4JS matcher.
- */
-function eqToString(expectedValue) {
-  return new MatchToString(expectedValue);
 }
 
 /**
@@ -1838,10 +1594,7 @@ function exportExpects() {
 function exportMock4JsHelpers() {
   exports.callFunction = callFunction;
   exports.callFunctionWithSavedArgs = callFunctionWithSavedArgs;
-  exports.callGlobalWithSavedArgs = callGlobalWithSavedArgs;
   exports.eqJSON = eqJSON;
-  exports.eqToString = eqToString;
-  exports.invokeCallback = invokeCallback;
   exports.SaveMockArguments = SaveMockArguments;
 
   // Import the Mock4JS helpers.
@@ -1859,8 +1612,6 @@ exports.preloadJavascriptLibraries = preloadJavascriptLibraries;
 exports.setWaitUser = setWaitUser;
 exports.go = go;
 exports.registerMessageCallback = registerMessageCallback;
-exports.registerMockGlobals = registerMockGlobals;
-exports.registerMockMessageCallbacks = registerMockMessageCallbacks;
 exports.resetTestState = resetTestState;
 exports.runAccessibilityAudit = runAccessibilityAudit;
 exports.runAllActions = runAllActions;

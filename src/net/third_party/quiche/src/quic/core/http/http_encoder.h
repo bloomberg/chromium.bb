@@ -5,12 +5,9 @@
 #ifndef QUICHE_QUIC_CORE_HTTP_HTTP_ENCODER_H_
 #define QUICHE_QUIC_CORE_HTTP_HTTP_ENCODER_H_
 
-#include <cstddef>
-
 #include "net/third_party/quiche/src/quic/core/http/http_frames.h"
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 
 namespace quic {
 
@@ -79,6 +76,9 @@ class QUIC_EXPORT_PRIVATE HttpEncoder {
 
   QuicByteCount GetTotalLength(QuicByteCount payload_length,
                                HttpFrameType type);
+
+  // Write prioritized element id and element dependency id if needed.
+  bool MaybeWriteIds(const PriorityFrame& priority, QuicDataWriter* writer);
 };
 
 }  // namespace quic

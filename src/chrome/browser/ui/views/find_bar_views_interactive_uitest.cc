@@ -6,16 +6,20 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
+#include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/test/base/find_result_waiter.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -55,6 +59,8 @@ class FindInPageTest : public InProcessBrowserTest {
     return GetFindBarHost()->GetFindBarTesting()->GetFindSelectedText();
   }
 
+  bool IsFindBarVisible() { return GetFindBarHost()->IsFindBarVisible(); }
+
   void ClickOnView(views::View* view) {
     // EventGenerator and ui_test_utils can't target the find bar (on Windows).
     view->OnMousePressed(ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(),
@@ -75,15 +81,10 @@ class FindInPageTest : public InProcessBrowserTest {
   }
 
   FindNotificationDetails WaitForFindResult() {
-    content::Source<WebContents> source(
-        browser()->tab_strip_model()->GetActiveWebContents());
-    ui_test_utils::WindowedNotificationObserverWithDetails
-        <FindNotificationDetails> observer(
-            chrome::NOTIFICATION_FIND_RESULT_AVAILABLE, source);
-    observer.Wait();
-    FindNotificationDetails details;
-    EXPECT_TRUE(observer.GetDetailsFor(source.map_key(), &details));
-    return details;
+    WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ui_test_utils::FindResultWaiter(web_contents).Wait();
+    return FindTabHelper::FromWebContents(web_contents)->find_result();
   }
 
   FindNotificationDetails WaitForFinalFindResult() {
@@ -166,7 +167,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, NavigationByKeyEvent) {
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON));
 }
 
-IN_PROC_BROWSER_TEST_F(FindInPageTest, ButtonsDoNotAlterFocus) {
+// Flaky on Mac. https://crbug.com/986571
+#if defined(OS_MACOSX)
+#define MAYBE_ButtonsDoNotAlterFocus DISABLED_ButtonsDoNotAlterFocus
+#else
+#define MAYBE_ButtonsDoNotAlterFocus ButtonsDoNotAlterFocus
+#endif
+IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_ButtonsDoNotAlterFocus) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Make sure Chrome is in the foreground, otherwise sending input
   // won't do anything and the test will hang.
@@ -260,8 +267,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   browser()->GetFindBarController()->Show();
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 
   // Focus the location bar, find something on the page, close the find box,
@@ -273,8 +279,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       ASCIIToUTF16("a"), true, false, NULL, NULL);
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 
   // Focus the location bar, open and close the find box, focus should return to
@@ -285,8 +290,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   browser()->GetFindBarController()->Show();
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 }
 
@@ -530,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_PasteWithoutTextChange) {
       browser(), ui::VKEY_C, true, false, false, false));
 
   base::string16 str;
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
                                                  &str);
 
   // Make sure the text is copied successfully.
@@ -576,4 +580,28 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_CtrlEnter) {
       browser(), ui::VKEY_RETURN, true, false, false, false));
 
   observer.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(FindInPageTest, GlobalEscapeClosesFind) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  // Make sure Chrome is in the foreground, otherwise sending input
+  // won't do anything and the test will hang.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(kSimplePage));
+
+  // Open find
+  browser()->GetFindBarController()->Show();
+  EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+
+  // Put focus into location bar
+  chrome::FocusLocationBar(browser());
+
+  // Close find with escape
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE, false,
+                                              false, false, false));
+
+  // Find should be closed
+  ASSERT_FALSE(IsFindBarVisible());
 }

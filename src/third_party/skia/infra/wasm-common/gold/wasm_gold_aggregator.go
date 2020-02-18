@@ -25,8 +25,8 @@ import (
 	"strings"
 	"sync"
 
-	"go.skia.org/infra/golden/go/goldingestion"
 	"go.skia.org/infra/golden/go/jsonio"
+	"go.skia.org/infra/golden/go/types"
 )
 
 // This allows us to use upload_dm_results.py out of the box
@@ -132,9 +132,9 @@ func reporter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultsMutex.Lock()
- 	defer resultsMutex.Unlock()
+	defer resultsMutex.Unlock()
 	results = append(results, &jsonio.Result{
-		Digest: hash,
+		Digest: types.Digest(hash),
 		Key: map[string]string{
 			"name":   testOutput.TestName,
 			"config": testOutput.OutputType,
@@ -175,19 +175,16 @@ func dumpJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dmresults := goldingestion.DMResults{
-		GoldResults: &jsonio.GoldResults{
-			BuildBucketID: *buildBucketID,
-			Builder:       *builder,
-			GitHash:       *gitHash,
-			Issue:         *issue,
-			Key:           defaultKeys,
-			Patchset:      *patchset,
-			Results:       results,
-			TaskID:        *taskId,
-		},
+	dmresults := jsonio.GoldResults{
+		BuildBucketID: *buildBucketID,
+		Builder:       *builder,
+		GitHash:       *gitHash,
+		Issue:         *issue,
+		Key:           defaultKeys,
+		Patchset:      *patchset,
+		Results:       results,
+		TaskID:        *taskId,
 	}
-
 	enc := json.NewEncoder(outputFile)
 	enc.SetIndent("", "  ") // Make it human readable.
 	if err := enc.Encode(&dmresults); err != nil {

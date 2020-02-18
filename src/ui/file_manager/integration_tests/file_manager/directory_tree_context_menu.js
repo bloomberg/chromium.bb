@@ -583,6 +583,125 @@
   };
 
   /**
+   * Tests renaming removable volume with the keyboard.
+   */
+  testcase.dirRenameRemovableWithKeyboard = async () => {
+    // Open Files app on local downloads.
+    const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+    // Mount a single partition NTFS USB volume: they can be renamed.
+    await sendTestMessage({name: 'mountFakeUsb', filesystem: 'ntfs'});
+
+    // Wait for the USB mount and click the USB volume.
+    const usbVolume = '#directory-tree [volume-type-icon="removable"]';
+    await remoteCall.waitAndClickElement(appId, usbVolume);
+
+    // Check: the USB should be the current directory tree selection.
+    const usbVolumeSelected =
+        '#directory-tree .tree-row[selected] [volume-type-icon="removable"]';
+    await remoteCall.waitForElement(appId, usbVolumeSelected);
+
+    // Focus the directory tree.
+    await remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree']);
+
+    // Check: the USB volume is still the current directory tree selection.
+    await remoteCall.waitForElement(appId, usbVolumeSelected);
+
+    // Press rename <Ctrl>-Enter keyboard shortcut on the USB.
+    const renameKey =
+        ['#directory-tree .tree-row[selected]', 'Enter', true, false, false];
+    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, renameKey);
+
+    // Check: the renaming text input element should appear.
+    const textInput = '#directory-tree .tree-row[selected] input';
+    await remoteCall.waitForElement(appId, textInput);
+
+    // Enter the new name for the USB volume.
+    await remoteCall.callRemoteTestUtil(
+        'inputText', appId, [textInput, 'usb-was-renamed']);
+
+    // Press Enter key to end text input.
+    const enterKey = [textInput, 'Enter', false, false, false];
+    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, enterKey);
+
+    // Wait for the renaming input element to disappear.
+    await remoteCall.waitForElementLost(appId, textInput);
+
+    // Check: the USB volume .label text should be the new name.
+    const element = await remoteCall.waitForElement(
+        appId, '#directory-tree:focus .tree-row[selected] .label');
+    chrome.test.assertEq('usb-was-renamed', element.text);
+
+    // Even though the Files app rename flow worked, the background.js page
+    // console errors about not being able to 'mount' the older volume name
+    // due to a disk_mount_manager.cc error: user/fake-usb not found.
+    return IGNORE_APP_ERRORS;
+  };
+
+  /**
+   * Tests renaming removable volume with the context menu.
+   */
+  testcase.dirRenameRemovableWithContentMenu = async () => {
+    // Open Files app on local downloads.
+    const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+    // Mount a single partition NTFS USB volume: they can be renamed.
+    await sendTestMessage({name: 'mountFakeUsb', filesystem: 'ntfs'});
+
+    // Wait for the USB mount and click the USB volume.
+    const usbVolume = '#directory-tree [volume-type-icon="removable"]';
+    await remoteCall.waitAndClickElement(appId, usbVolume);
+
+    // Check: the USB should be the current directory tree selection.
+    const usbVolumeSelected =
+        '#directory-tree .tree-row[selected] [volume-type-icon="removable"]';
+    await remoteCall.waitForElement(appId, usbVolumeSelected);
+
+    // Focus the directory tree.
+    await remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree']);
+
+    // Check: the USB volume is still the current directory tree selection.
+    await remoteCall.waitForElement(appId, usbVolumeSelected);
+
+    // Right-click the USB volume.
+    const usb = '#directory-tree:focus .tree-row[selected]';
+    await remoteCall.callRemoteTestUtil('fakeMouseRightClick', appId, [usb]);
+
+    // Check: a context menu with a 'rename' item should appear.
+    const renameItem =
+        'cr-menu-item[command="#rename"]:not([hidden]):not([disabled])';
+    await remoteCall.waitForElement(appId, renameItem);
+
+    // Click the context menu 'rename' item.
+    await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [renameItem]);
+
+    // Check: the renaming text input element should appear.
+    const textInput = '#directory-tree .tree-row[selected] input';
+    await remoteCall.waitForElement(appId, textInput);
+
+    // Enter the new name for the USB volume.
+    await remoteCall.callRemoteTestUtil(
+        'inputText', appId, [textInput, 'usb-was-renamed']);
+
+    // Press Enter key to end text input.
+    const enterKey = [textInput, 'Enter', false, false, false];
+    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, enterKey);
+
+    // Wait for the renaming input element to disappear.
+    await remoteCall.waitForElementLost(appId, textInput);
+
+    // Check: the USB volume .label text should be the new name.
+    const element = await remoteCall.waitForElement(
+        appId, '#directory-tree:focus .tree-row[selected] .label');
+    chrome.test.assertEq('usb-was-renamed', element.text);
+
+    // Even though the Files app rename flow worked, the background.js page
+    // console errors about not being able to 'mount' the older volume name
+    // due to a disk_mount_manager.cc error: user/fake-usb not found.
+    return IGNORE_APP_ERRORS;
+  };
+
+  /**
    * Tests creating a folder with the context menu.
    */
   testcase.dirCreateWithContextMenu = () => {
@@ -681,13 +800,76 @@
         !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key),
         'fakeKeyDown failed');
 
+    // Check the context menu for a folder inside the zip.
+    await checkContextMenu(
+        appId, '/archive.zip/folder', folderMenus, false /* rootMenu */);
+
     // Check the context menu is on desired state.
     await checkContextMenu(
         appId, '/archive.zip', zipMenus, true /* rootMenu */);
 
-    // Check the context menu for a folder inside the zip.
-    await checkContextMenu(
-        appId, '/archive.zip/folder', folderMenus, false /* rootMenu */);
+    // checkContextMenu leaves the context menu open, so just click on the eject
+    // menu item.
+    await remoteCall.waitAndClickElement(
+        appId, '#roots-context-menu [command="#unmount"]:not([disabled])');
+
+    // Ensure the archive has been removed.
+    await remoteCall.waitForElementLost(
+        appId, '#directory-tree [entry-label="archive.zip"]');
+  };
+
+  /**
+   * Tests context menu on the eject button of a zip root.
+   * crbug.com/991002
+   */
+  testcase.dirEjectContextMenuZip = async () => {
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.zipArchive.targetPath],
+      openType: 'launch'
+    });
+
+    // Open Files app on Downloads containing a zip file.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.zipArchive], []);
+
+    // Select the zip file.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'selectFile', appId, ['archive.zip']),
+        'selectFile failed');
+
+    // Press the Enter key to mount the zip file.
+    const key = ['#file-list', 'Enter', false, false, false];
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key),
+        'fakeKeyDown failed');
+
+    // Wait for the eject button to appear.
+    const ejectButtonQuery =
+        ['#directory-tree [entry-label="archive.zip"] button.root-eject'];
+    await remoteCall.waitForElement(appId, ejectButtonQuery);
+
+    // Focus on the eject button.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('focus', appId, ejectButtonQuery),
+        'focus failed: eject button');
+
+    // Right click the eject button.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'fakeMouseRightClick', appId, ejectButtonQuery),
+        'fakeMouseRightClick failed');
+
+    // Wait for, and click the eject menu item.
+    await remoteCall.waitAndClickElement(
+        appId,
+        '#roots-context-menu:not([hidden]) ' +
+            '[command="#unmount"]:not([disabled])');
+
+    // Ensure the archive has been removed.
+    await remoteCall.waitForElementLost(
+        appId, '#directory-tree [entry-label="archive.zip"]');
   };
 
   /**
@@ -696,7 +878,7 @@
   testcase.dirContextMenuShortcut = async () => {
     const menus = [
       ['#rename', false],
-      ['#remove-folder-shortcut', true],
+      ['#unpin-folder', true],
       ['#share-with-linux', true],
     ];
     const entry = ENTRIES.directoryD;
@@ -712,6 +894,59 @@
     await checkContextMenu(
         appId, `/${entryName}`, menus, true /* rootMenu */,
         `/My Drive/${entryName}`);
+  };
+
+  /**
+   * Tests context menu for MyFiles, Downloads and sub-folder.
+   */
+  testcase.dirContextMenuMyFilesWithPaste = async () => {
+    const myFilesMenus = [
+      ['#share-with-linux', true],
+      ['#new-folder', true],
+    ];
+    const downloadsMenus = [
+      ['#cut', false],
+      ['#copy', true],
+      ['#paste-into-folder', true],
+      ['#share-with-linux', true],
+      ['#delete', false],
+      ['#new-folder', true],
+    ];
+    const photosMenus = [
+      ['#cut', true],
+      ['#copy', true],
+      ['#paste-into-folder', false],
+      ['#share-with-linux', true],
+      ['#rename', true],
+      ['#delete', true],
+      ['#new-folder', true],
+    ];
+
+    // Open Files app on local Downloads.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.beautiful, ENTRIES.photos, ENTRIES.hello],
+        []);
+
+    // Select and copy hello.txt into the clipboard to test paste-into-folder
+    // command.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['photos']),
+        'selectFile failed');
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('execCommand', appId, ['copy']),
+        'execCommand failed');
+
+    // Check the context menu is on desired state for MyFiles.
+    await checkContextMenu(
+        appId, '/My files', myFilesMenus, false /* rootMenu */);
+
+    // Check the context menu for MyFiles>Downloads.
+    await checkContextMenu(
+        appId, '/My files/Downloads', downloadsMenus, false /* rootMenu */);
+
+    // Check the context menu for MyFiles>Downloads>photos.
+    await checkContextMenu(
+        appId, '/My files/Downloads/photos', photosMenus, false /* rootMenu */);
   };
 
   /**
@@ -755,6 +990,24 @@
     // Check the context menu for MyFiles>Downloads>photos.
     await checkContextMenu(
         appId, '/My files/Downloads/photos', photosMenus, false /* rootMenu */);
+
+    // Right click Linux files (FakeEntry).
+    const query = '#directory-tree [dir-type="FakeItem"]' +
+        '[entry-label="Linux files"]';
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'fakeMouseRightClick', appId, [query]),
+        'fakeMouseRightClick failed');
+
+    // Wait a few milliseconds to give menu a chance to display.
+    await wait(REPEAT_UNTIL_INTERVAL);
+
+    // Fetch all visible cr-menu's.
+    const elements = await remoteCall.callRemoteTestUtil(
+        'queryAllElements', appId, ['cr-menu:not([hidden])']);
+
+    // Check: No context menus should be visible for FakeEntry.
+    chrome.test.assertEq(0, elements.length);
   };
 
   /**
@@ -843,10 +1096,16 @@
    * Tests context menu for USB root (single and multiple partitions).
    */
   testcase.dirContextMenuUsbs = async () => {
-    const singleUsbMenus = [
+    const ext4UsbMenus = [
       ['#unmount', true],
       ['#format', true],
       ['#rename', false],
+      ['#share-with-linux', true],
+    ];
+    const ntfsUsbMenus = [
+      ['#unmount', true],
+      ['#format', true],
+      ['#rename', true],
       ['#share-with-linux', true],
     ];
     const partitionsRootMenus = [
@@ -872,17 +1131,17 @@
 
     // Mount removable volumes.
     await sendTestMessage({name: 'mountUsbWithPartitions'});
-    await sendTestMessage({name: 'mountFakeUsb'});
+    await sendTestMessage({name: 'mountFakeUsb', filesystem: 'ext4'});
 
     // Open Files app on local Downloads.
     const appId = await setupAndWaitUntilReady(
         RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
 
-    // Check the context menu for single partition USB.
+    // Check the context menu for single partition ext4 USB.
     await checkContextMenu(
-        appId, '/fake-usb', singleUsbMenus, true /* rootMenu */);
+        appId, '/fake-usb', ext4UsbMenus, true /* rootMenu */);
 
-    // Check the context menu for a folder inside a singlue USB partition.
+    // Check the context menu for a folder inside a single USB partition.
     await checkContextMenu(
         appId, '/fake-usb/A', folderMenus, false /* rootMenu */);
 
@@ -897,8 +1156,15 @@
 
     // Check the context menu for a folder inside a partition1.
     await checkContextMenu(
-        appId, '/Drive Label/partition-1/Folder', folderMenus,
-        false /* rootMenu */);
+        appId, '/Drive Label/partition-1/A', folderMenus, false /* rootMenu */);
+
+    // Remount the single partition ext4 USB as NTFS
+    await sendTestMessage({name: 'unmountUsb'});
+    await sendTestMessage({name: 'mountFakeUsb', filesystem: 'ntfs'});
+
+    // Check the context menu for a single partition NTFS USB.
+    await checkContextMenu(
+        appId, '/fake-usb', ntfsUsbMenus, true /* rootMenu */);
   };
 
   /**
@@ -1135,7 +1401,7 @@
       ['#paste-into-folder', false],
       ['#share-with-linux', true],
       ['#rename', false],
-      ['#create-folder-shortcut', true],
+      ['#pin-folder', true],
       ['#delete', false],
       ['#new-folder', false],
     ];
@@ -1145,7 +1411,7 @@
       ['#paste-into-folder', true],
       ['#share-with-linux', true],
       ['#rename', true],
-      ['#create-folder-shortcut', true],
+      ['#pin-folder', true],
       ['#delete', true],
       ['#new-folder', true],
     ];
@@ -1206,7 +1472,7 @@
       ['#paste-into-folder', true],
       ['#share-with-linux', true],
       ['#rename', true],
-      ['#create-folder-shortcut', true],
+      ['#pin-folder', true],
       ['#delete', true],
       ['#new-folder', true],
     ];
@@ -1225,7 +1491,7 @@
       ['#paste-into-folder', false],
       ['#share-with-linux', true],
       ['#rename', false],
-      ['#create-folder-shortcut', true],
+      ['#pin-folder', true],
       ['#delete', false],
       ['#new-folder', false],
     ];
@@ -1376,7 +1642,7 @@
       ['#paste-into-folder', true],
       ['#share-with-linux', true],
       ['#rename', false],
-      ['#create-folder-shortcut', true],
+      ['#pin-folder', true],
       ['#delete', true],
       ['#new-folder', true],
     ];
@@ -1411,5 +1677,37 @@
     // Check the context menu for a folder inside a computer.
     await checkContextMenu(
         appId, '/Computers/Computer A/A', folderMenus, false /* rootMenu */);
+  };
+
+  /**
+   * Tests that context menu in directory tree gets the focus, so ChromeVox can
+   * announce it.
+   */
+  testcase.dirContextMenuFocus = async () => {
+    // Open Files app on local Downloads.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
+
+    // Wait for /My files/Downloads to appear in the directory tree.
+    const query =
+        '#directory-tree [entry-label="My files"] [entry-label="Downloads"]';
+    await remoteCall.waitForElement(appId, query);
+
+    // Right-click the /My files/Downloads tree row.
+    chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+        'fakeMouseRightClick', appId, [query]));
+
+    // Wait for the context menu to appear.
+    await remoteCall.waitForElement(
+        appId, '#directory-tree-context-menu:not([hidden])');
+
+    // Wait for the menu item to get focus.
+    await remoteCall.waitForElement(
+        appId, '#directory-tree-context-menu cr-menu-item:focus');
+
+    // Check currently focused element.
+    const focusedElement =
+        await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+    chrome.test.assertEq('menuitem', focusedElement.attributes.role);
   };
 })();

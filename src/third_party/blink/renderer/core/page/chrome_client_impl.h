@@ -67,9 +67,11 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   bool CanTakeFocus(WebFocusType) override;
   void TakeFocus(WebFocusType) override;
   void FocusedElementChanged(Element* from_node, Element* to_node) override;
-  void BeginLifecycleUpdates() override;
-  void StartDeferringCommits(base::TimeDelta timeout) override;
-  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
+  void BeginLifecycleUpdates(LocalFrame& main_frame) override;
+  void StartDeferringCommits(LocalFrame& main_frame,
+                             base::TimeDelta timeout) override;
+  void StopDeferringCommits(LocalFrame& main_frame,
+                            cc::PaintHoldingCommitTrigger) override;
   bool HadFormInteraction() const override;
   void StartDragging(LocalFrame*,
                      const WebDragData&,
@@ -130,7 +132,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   bool DoubleTapToZoomEnabled() const override;
   void PageScaleFactorChanged() const override;
   float ClampPageScaleFactorToLimits(float scale) const override;
-  void MainFrameScrollOffsetChanged() const override;
+  void MainFrameScrollOffsetChanged(LocalFrame& main_frame) const override;
   void ResizeAfterLayout() const override;
   void MainFrameLayoutUpdated() const override;
   void ShowMouseOverURL(const HitTestResult&) override;
@@ -150,10 +152,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void SetCursor(const Cursor&, LocalFrame*) override;
   void SetCursorOverridden(bool) override;
   Cursor LastSetCursorForTesting() const override;
-  // The client keeps track of which touch/mousewheel event types have handlers,
-  // and if they do, whether the handlers are passive and/or blocking. This
-  // allows the client to know which optimizations can be used for the
-  // associated event classes.
   void SetEventListenerProperties(LocalFrame*,
                                   cc::EventListenerClass,
                                   cc::EventListenerProperties) override;
@@ -264,6 +262,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
                                              bool visible) override;
+
+  void DidUpdateTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) override;
 
  private:
   bool IsChromeClientImpl() const override { return true; }

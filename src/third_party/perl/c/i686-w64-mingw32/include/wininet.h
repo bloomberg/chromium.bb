@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _WININET_
@@ -198,6 +198,7 @@ extern "C" {
 #define INTERNET_PER_CONN_AUTOCONFIG_RELOAD_DELAY_MINS 7
 #define INTERNET_PER_CONN_AUTOCONFIG_LAST_DETECT_TIME 8
 #define INTERNET_PER_CONN_AUTOCONFIG_LAST_DETECT_URL 9
+#define INTERNET_PER_CONN_FLAGS_UI 10
 
 #define PROXY_TYPE_DIRECT 0x00000001
 #define PROXY_TYPE_PROXY 0x00000002
@@ -648,7 +649,7 @@ extern "C" {
     WINBOOL fAllowSession;
   } CookieDecision;
 
-#define INTERNET_INVALID_STATUS_CALLBACK ((INTERNET_STATUS_CALLBACK)(-1L))
+#define INTERNET_INVALID_STATUS_CALLBACK ((INTERNET_STATUS_CALLBACK)(INT_PTR)-1)
 
 #define FTP_TRANSFER_TYPE_UNKNOWN 0x00000000
 #define FTP_TRANSFER_TYPE_ASCII 0x00000001
@@ -1590,11 +1591,11 @@ extern "C" {
 
   INTERNETAPI_(WINBOOL) InternetSetPerSiteCookieDecisionA(LPCSTR pchHostName,DWORD dwDecision);
   INTERNETAPI_(WINBOOL) InternetSetPerSiteCookieDecisionW(LPCWSTR pchHostName,DWORD dwDecision);
-  INTERNETAPI_(WINBOOL) InternetGetPerSiteCookieDecisionA(LPCSTR pchHostName,unsigned long *pResult);
-  INTERNETAPI_(WINBOOL) InternetGetPerSiteCookieDecisionW(LPCWSTR pchHostName,unsigned long *pResult);
+  INTERNETAPI_(WINBOOL) InternetGetPerSiteCookieDecisionA(LPCSTR pchHostName,unsigned __LONG32 *pResult);
+  INTERNETAPI_(WINBOOL) InternetGetPerSiteCookieDecisionW(LPCWSTR pchHostName,unsigned __LONG32 *pResult);
   INTERNETAPI_(WINBOOL) InternetClearAllPerSiteCookieDecisions();
-  INTERNETAPI_(WINBOOL) InternetEnumPerSiteCookieDecisionA(LPSTR pszSiteName,unsigned long *pcSiteNameSize,unsigned long *pdwDecision,unsigned long dwIndex);
-  INTERNETAPI_(WINBOOL) InternetEnumPerSiteCookieDecisionW(LPWSTR pszSiteName,unsigned long *pcSiteNameSize,unsigned long *pdwDecision,unsigned long dwIndex);
+  INTERNETAPI_(WINBOOL) InternetEnumPerSiteCookieDecisionA(LPSTR pszSiteName,unsigned __LONG32 *pcSiteNameSize,unsigned __LONG32 *pdwDecision,unsigned __LONG32 dwIndex);
+  INTERNETAPI_(WINBOOL) InternetEnumPerSiteCookieDecisionW(LPWSTR pszSiteName,unsigned __LONG32 *pcSiteNameSize,unsigned __LONG32 *pdwDecision,unsigned __LONG32 dwIndex);
 
 #define INTERNET_IDENTITY_FLAG_PRIVATE_CACHE 0x01
 #define INTERNET_IDENTITY_FLAG_SHARED_CACHE 0x02

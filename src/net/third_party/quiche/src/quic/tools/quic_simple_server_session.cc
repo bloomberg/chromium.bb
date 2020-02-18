@@ -32,7 +32,11 @@ QuicSimpleServerSession::QuicSimpleServerSession(
                             crypto_config,
                             compressed_certs_cache),
       highest_promised_stream_id_(
-          QuicUtils::GetInvalidStreamId(connection->transport_version())),
+          VersionHasStreamType(connection->transport_version())
+              ? QuicUtils::GetFirstUnidirectionalStreamId(
+                    connection->transport_version(),
+                    Perspective::IS_SERVER)
+              : QuicUtils::GetInvalidStreamId(connection->transport_version())),
       quic_simple_server_backend_(quic_simple_server_backend) {
   DCHECK(quic_simple_server_backend_);
 }
@@ -96,9 +100,9 @@ QuicSpdyStream* QuicSimpleServerSession::CreateIncomingStream(QuicStreamId id) {
 }
 
 QuicSpdyStream* QuicSimpleServerSession::CreateIncomingStream(
-    PendingStream pending) {
+    PendingStream* pending) {
   QuicSpdyStream* stream = new QuicSimpleServerStream(
-      std::move(pending), this, BIDIRECTIONAL, quic_simple_server_backend_);
+      pending, this, BIDIRECTIONAL, quic_simple_server_backend_);
   ActivateStream(QuicWrapUnique(stream));
   return stream;
 }
@@ -145,7 +149,7 @@ void QuicSimpleServerSession::HandleRstOnValidNonexistentStream(
     // Since PromisedStreamInfo are queued in sequence, the corresponding
     // index for it in promised_streams_ can be calculated.
     QuicStreamId next_stream_id = next_outgoing_unidirectional_stream_id();
-    if (connection()->transport_version() == QUIC_VERSION_99) {
+    if (VersionHasIetfQuicFrames(connection()->transport_version())) {
       DCHECK(!QuicUtils::IsBidirectionalStreamId(frame.stream_id));
     }
     DCHECK_GE(frame.stream_id, next_stream_id);
@@ -222,7 +226,10 @@ void QuicSimpleServerSession::HandlePromisedPushRequests() {
   }
 }
 
-void QuicSimpleServerSession::OnCanCreateNewOutgoingStream() {
-  HandlePromisedPushRequests();
+void QuicSimpleServerSession::OnCanCreateNewOutgoingStream(
+    bool unidirectional) {
+  if (unidirectional) {
+    HandlePromisedPushRequests();
+  }
 }
 }  // namespace quic

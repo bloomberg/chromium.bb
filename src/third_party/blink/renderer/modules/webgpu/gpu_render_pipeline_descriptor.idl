@@ -10,12 +10,15 @@ dictionary GPURenderPipelineDescriptor : GPUPipelineDescriptorBase {
     required GPUPipelineStageDescriptor fragmentStage;
 
     required GPUPrimitiveTopology primitiveTopology;
-    required GPURasterizationStateDescriptor rasterizationState;
+    GPURasterizationStateDescriptor rasterizationState;
     required sequence<GPUColorStateDescriptor> colorStates;
     GPUDepthStencilStateDescriptor depthStencilState = null;
     required GPUVertexInputDescriptor vertexInput;
 
     unsigned long sampleCount = 1;
+
+    unsigned long sampleMask = 0xFFFFFFFF;
+    boolean alphaToCoverageEnabled = false;
 };
 
 enum GPUPrimitiveTopology {

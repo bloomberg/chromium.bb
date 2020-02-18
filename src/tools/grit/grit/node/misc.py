@@ -5,6 +5,8 @@
 """Miscellaneous node types.
 """
 
+from __future__ import print_function
+
 import os.path
 import re
 import sys
@@ -17,6 +19,14 @@ import grit.format.rc_header
 from grit.node import base
 from grit.node import message
 from grit.node import node_io
+
+
+# Python 3 doesn't have long() as int() works everywhere.  But we really do need
+# the long() behavior on Python 2 as our ids are much too large for int().
+try:
+  long
+except NameError:
+  long = int
 
 
 # RTL languages
@@ -47,7 +57,7 @@ def _ReadFirstIdsFromFile(filename, defines):
                                               first_ids_dict['SRCDIR']))
 
   def ReplaceVariable(matchobj):
-    for key, value in defines.iteritems():
+    for key, value in defines.items():
       if matchobj.group(1) == key:
         return value
     return ''
@@ -93,7 +103,7 @@ def _ComputeIds(root, predetermined_tids):
   group = None
   last_id = None
   predetermined_ids = {value: key
-                       for key, value in predetermined_tids.iteritems()}
+                       for key, value in predetermined_tids.items()}
 
   for item in root:
     if isinstance(item, empty.GroupingNode):
@@ -191,8 +201,8 @@ def _ComputeIds(root, predetermined_tids):
                                        % (id, id_reasons[id], reason))
 
       if id < 101:
-        print ('WARNING: Numeric resource IDs should be greater than 100 to\n'
-               'avoid conflicts with system-defined resource IDs.')
+        print('WARNING: Numeric resource IDs should be greater than 100 to\n'
+              'avoid conflicts with system-defined resource IDs.')
 
       if tid not in predetermined_tids and id in predetermined_ids:
         raise exception.IdRangeOverlap('ID %d overlaps between %s and %s'
@@ -291,9 +301,6 @@ class ReleaseNode(base.Node):
   def DefaultAttributes(self):
     return { 'allow_pseudo' : 'true' }
 
-  def GetReleaseNumber():
-    """Returns the sequence number of this release."""
-    return self.attribs['seq']
 
 class GritNode(base.Node):
   """The <grit> root element."""
@@ -599,18 +606,18 @@ class GritNode(base.Node):
 
         try:
           id_list = first_ids[filename][node.name]
-        except KeyError, e:
-          print '-' * 78
-          print 'Resource id not set for %s (%s)!' % (filename, node.name)
-          print ('Please update %s to include an entry for %s.  See the '
-                 'comments in resource_ids for information on why you need to '
-                 'update that file.' % (first_ids_filename, filename))
-          print '-' * 78
+        except KeyError as e:
+          print('-' * 78)
+          print('Resource id not set for %s (%s)!' % (filename, node.name))
+          print('Please update %s to include an entry for %s.  See the '
+                'comments in resource_ids for information on why you need to '
+                'update that file.' % (first_ids_filename, filename))
+          print('-' * 78)
           raise e
 
         try:
           node.attrs['first_id'] = str(id_list.pop(0))
-        except IndexError, e:
+        except IndexError as e:
           raise Exception('Please update %s and add a first id for %s (%s).'
                           % (first_ids_filename, filename, node.name))
 

@@ -35,7 +35,7 @@ class ServiceWorkerData {
 
  private:
   const int64_t service_worker_version_id_;
-  ScriptContext* const context_;
+  ScriptContext* const context_ = nullptr;
 
   std::unique_ptr<V8SchemaRegistry> v8_schema_registry_;
   std::unique_ptr<NativeExtensionBindingsSystem> bindings_system_;

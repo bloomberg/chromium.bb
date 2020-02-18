@@ -154,7 +154,8 @@ static FeatureEntry kEntries[] = {
 class FlagsStateTest : public ::testing::Test {
  protected:
   FlagsStateTest() : flags_storage_(&prefs_), trial_list_(nullptr) {
-    prefs_.registry()->RegisterListPref(prefs::kEnabledLabsExperiments);
+    prefs_.registry()->RegisterListPref(prefs::kAboutFlagsEntries);
+    prefs_.registry()->RegisterDictionaryPref(prefs::kAboutFlagsOriginLists);
 
     for (size_t i = 0; i < base::size(kEntries); ++i)
       kEntries[i].supported_platforms = FlagsState::GetCurrentPlatform();
@@ -221,7 +222,7 @@ TEST_F(FlagsStateTest, AddTwoFlagsRemoveOne) {
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags2, true);
 
   const base::ListValue* entries_list =
-      prefs_.GetList(prefs::kEnabledLabsExperiments);
+      prefs_.GetList(prefs::kAboutFlagsEntries);
   ASSERT_TRUE(entries_list != nullptr);
 
   ASSERT_EQ(2u, entries_list->GetSize());
@@ -237,7 +238,7 @@ TEST_F(FlagsStateTest, AddTwoFlagsRemoveOne) {
   // Remove one entry, check the other's still around.
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags2, false);
 
-  entries_list = prefs_.GetList(prefs::kEnabledLabsExperiments);
+  entries_list = prefs_.GetList(prefs::kAboutFlagsEntries);
   ASSERT_TRUE(entries_list != nullptr);
   ASSERT_EQ(1u, entries_list->GetSize());
   ASSERT_TRUE(entries_list->GetString(0, &s0));
@@ -249,13 +250,13 @@ TEST_F(FlagsStateTest, AddTwoFlagsRemoveBoth) {
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags1, true);
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags2, true);
   const base::ListValue* entries_list =
-      prefs_.GetList(prefs::kEnabledLabsExperiments);
+      prefs_.GetList(prefs::kAboutFlagsEntries);
   ASSERT_TRUE(entries_list != nullptr);
 
   // Remove both, the pref should have been removed completely.
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags1, false);
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags2, false);
-  entries_list = prefs_.GetList(prefs::kEnabledLabsExperiments);
+  entries_list = prefs_.GetList(prefs::kAboutFlagsEntries);
   EXPECT_TRUE(entries_list == nullptr || entries_list->GetSize() == 0);
 }
 
@@ -520,10 +521,10 @@ TEST_F(FlagsStateTest, RemoveFlagSwitches) {
   // This shouldn't do anything before ConvertFlagsToSwitches() wasn't called.
   flags_state_->RemoveFlagsSwitches(&switch_list);
   ASSERT_EQ(4u, switch_list.size());
-  EXPECT_TRUE(base::ContainsKey(switch_list, kSwitch1));
-  EXPECT_TRUE(base::ContainsKey(switch_list, switches::kFlagSwitchesBegin));
-  EXPECT_TRUE(base::ContainsKey(switch_list, switches::kFlagSwitchesEnd));
-  EXPECT_TRUE(base::ContainsKey(switch_list, "foo"));
+  EXPECT_TRUE(base::Contains(switch_list, kSwitch1));
+  EXPECT_TRUE(base::Contains(switch_list, switches::kFlagSwitchesBegin));
+  EXPECT_TRUE(base::Contains(switch_list, switches::kFlagSwitchesEnd));
+  EXPECT_TRUE(base::Contains(switch_list, "foo"));
 
   // Call ConvertFlagsToSwitches(), then RemoveFlagsSwitches() again.
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
@@ -535,7 +536,7 @@ TEST_F(FlagsStateTest, RemoveFlagSwitches) {
 
   // Now the about:flags-related switch should have been removed.
   ASSERT_EQ(1u, switch_list.size());
-  EXPECT_TRUE(base::ContainsKey(switch_list, "foo"));
+  EXPECT_TRUE(base::Contains(switch_list, "foo"));
 }
 
 TEST_F(FlagsStateTest, RemoveFlagSwitches_Features) {
@@ -586,13 +587,13 @@ TEST_F(FlagsStateTest, RemoveFlagSwitches_Features) {
                                          kDisableFeatures);
     auto switch_list = command_line.GetSwitches();
     EXPECT_EQ(cases[i].expected_enable_features != nullptr,
-              base::ContainsKey(switch_list, kEnableFeatures));
+              base::Contains(switch_list, kEnableFeatures));
     if (cases[i].expected_enable_features)
       EXPECT_EQ(CreateSwitch(cases[i].expected_enable_features),
                 switch_list[kEnableFeatures]);
 
     EXPECT_EQ(cases[i].expected_disable_features != nullptr,
-              base::ContainsKey(switch_list, kDisableFeatures));
+              base::Contains(switch_list, kDisableFeatures));
     if (cases[i].expected_disable_features)
       EXPECT_EQ(CreateSwitch(cases[i].expected_disable_features),
                 switch_list[kDisableFeatures]);
@@ -602,12 +603,12 @@ TEST_F(FlagsStateTest, RemoveFlagSwitches_Features) {
     switch_list = command_line.GetSwitches();
     flags_state_->RemoveFlagsSwitches(&switch_list);
     EXPECT_EQ(cases[i].existing_enable_features != nullptr,
-              base::ContainsKey(switch_list, kEnableFeatures));
+              base::Contains(switch_list, kEnableFeatures));
     if (cases[i].existing_enable_features)
       EXPECT_EQ(CreateSwitch(cases[i].existing_enable_features),
                 switch_list[kEnableFeatures]);
     EXPECT_EQ(cases[i].existing_disable_features != nullptr,
-              base::ContainsKey(switch_list, kEnableFeatures));
+              base::Contains(switch_list, kEnableFeatures));
     if (cases[i].existing_disable_features)
       EXPECT_EQ(CreateSwitch(cases[i].existing_disable_features),
                 switch_list[kDisableFeatures]);
@@ -633,7 +634,7 @@ TEST_F(FlagsStateTest, PersistAndPrune) {
 
   // FeatureEntry 3 should show still be persisted in preferences though.
   const base::ListValue* entries_list =
-      prefs_.GetList(prefs::kEnabledLabsExperiments);
+      prefs_.GetList(prefs::kAboutFlagsEntries);
   ASSERT_TRUE(entries_list);
   EXPECT_EQ(2U, entries_list->GetSize());
   std::string s0;
@@ -688,7 +689,7 @@ TEST_F(FlagsStateTest, CheckValues) {
 
   // And it should persist.
   const base::ListValue* entries_list =
-      prefs_.GetList(prefs::kEnabledLabsExperiments);
+      prefs_.GetList(prefs::kAboutFlagsEntries);
   ASSERT_TRUE(entries_list);
   EXPECT_EQ(2U, entries_list->GetSize());
   std::string s0;

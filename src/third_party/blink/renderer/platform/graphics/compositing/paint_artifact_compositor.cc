@@ -74,6 +74,7 @@ void PaintArtifactCompositor::EnableExtraDataForTesting() {
 }
 
 void PaintArtifactCompositor::SetTracksRasterInvalidations(bool should_track) {
+  tracks_raster_invalidations_ = should_track;
   for (auto& client : content_layer_clients_)
     client->GetRasterInvalidator().SetTracksRasterInvalidations(should_track);
 }
@@ -89,6 +90,8 @@ void PaintArtifactCompositor::WillBeRemovedFromFrame() {
 
 std::unique_ptr<JSONObject> PaintArtifactCompositor::LayersAsJSON(
     LayerTreeFlags flags) const {
+  if (!tracks_raster_invalidations_)
+    flags &= ~kLayerTreeIncludesPaintInvalidations;
   ContentLayerClientImpl::LayerAsJSONContext context(flags);
   auto layers_json = std::make_unique<JSONArray>();
   for (const auto& client : content_layer_clients_) {
@@ -173,6 +176,9 @@ PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
   if (!scroll_offset_node)
     return nullptr;
 
+  // We don't decomposite scroll transform nodes.
+  DCHECK_EQ(FloatPoint(), pending_layer.offset_of_decomposited_transforms);
+
   const auto& scroll_node = *scroll_offset_node->ScrollNode();
   auto scroll_element_id = scroll_node.GetCompositorElementId();
 
@@ -232,9 +238,9 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   DCHECK(first_paint_chunk.size());
 
   // If the paint chunk is a foreign layer, just return that layer.
-  if (scoped_refptr<cc::Layer> foreign_layer =
-          ForeignLayerForPaintChunk(*paint_artifact, first_paint_chunk,
-                                    pending_layer.offset_to_transform_parent)) {
+  if (scoped_refptr<cc::Layer> foreign_layer = ForeignLayerForPaintChunk(
+          *paint_artifact, first_paint_chunk,
+          pending_layer.offset_of_decomposited_transforms)) {
     DCHECK_EQ(paint_chunks.size(), 1u);
     if (extra_data_for_testing_enabled_)
       extra_data_for_testing_->content_layers.push_back(foreign_layer);
@@ -254,7 +260,7 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   std::unique_ptr<ContentLayerClientImpl> content_layer_client =
       ClientForPaintChunk(first_paint_chunk);
 
-  gfx::Rect cc_combined_bounds(EnclosingIntRect(pending_layer.bounds));
+  IntRect cc_combined_bounds = EnclosingIntRect(pending_layer.bounds);
   auto cc_layer = content_layer_client->UpdateCcPictureLayer(
       paint_artifact, paint_chunks, cc_combined_bounds,
       pending_layer.property_tree_state);
@@ -269,7 +275,7 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   // here to avoid changing foreign layers. This includes things set by
   // GraphicsLayer on the ContentsLayer() or by video clients etc.
   cc_layer->SetContentsOpaque(pending_layer.rect_known_to_be_opaque.Contains(
-      FloatRect(EnclosingIntRect(pending_layer.bounds))));
+      FloatRect(cc_combined_bounds)));
 
   return cc_layer;
 }
@@ -282,29 +288,27 @@ void PaintArtifactCompositor::UpdateTouchActionRects(
     const gfx::Vector2dF& layer_offset,
     const PropertyTreeState& layer_state,
     const PaintChunkSubset& paint_chunks) {
-  Vector<HitTestRect> touch_action_rects_in_layer_space;
+  cc::TouchActionRegion touch_action_in_layer_space;
   for (const auto& chunk : paint_chunks) {
     const auto* hit_test_data = chunk.hit_test_data.get();
     if (!hit_test_data || hit_test_data->touch_action_rects.IsEmpty())
       continue;
 
     const auto& chunk_state = chunk.properties.GetPropertyTreeState();
-    for (auto touch_action_rect : hit_test_data->touch_action_rects) {
+    for (const auto& touch_action_rect : hit_test_data->touch_action_rects) {
       auto rect =
           FloatClipRect(FloatRect(PixelSnappedIntRect(touch_action_rect.rect)));
       if (!GeometryMapper::LocalToAncestorVisualRect(chunk_state, layer_state,
                                                      rect)) {
         continue;
       }
-      LayoutRect layout_rect = LayoutRect(rect.Rect());
-      layout_rect.MoveBy(
-          LayoutPoint(FloatPoint(-layer_offset.x(), -layer_offset.y())));
-      touch_action_rects_in_layer_space.emplace_back(
-          HitTestRect(layout_rect, touch_action_rect.allowed_touch_action));
+      FloatRect visible_rect = rect.Rect();
+      visible_rect.Move(-layer_offset.x(), -layer_offset.y());
+      touch_action_in_layer_space.Union(touch_action_rect.allowed_touch_action,
+                                        EnclosingIntRect(visible_rect));
     }
   }
-  layer->SetTouchActionRegion(
-      HitTestRect::BuildRegion(touch_action_rects_in_layer_space));
+  layer->SetTouchActionRegion(std::move(touch_action_in_layer_space));
 }
 
 bool PaintArtifactCompositor::HasComposited(
@@ -335,7 +339,6 @@ PaintArtifactCompositor::PendingLayer::PendingLayer(
           first_paint_chunk.known_to_be_opaque ? bounds : FloatRect()),
       property_tree_state(
           first_paint_chunk.properties.GetPropertyTreeState().Unalias()),
-      offset_to_transform_parent(FloatPoint()),
       requires_own_layer(chunk_requires_own_layer) {
   paint_chunk_indices.push_back(chunk_index);
 }
@@ -385,12 +388,6 @@ void PaintArtifactCompositor::PendingLayer::Upcast(
   rect_known_to_be_opaque = FloatRect();
 }
 
-void PaintArtifactCompositor::PendingLayer::DecompositeTransform() {
-  const auto& transform = property_tree_state.Transform().Unalias();
-  property_tree_state.SetTransform(*transform.Parent());
-  offset_to_transform_parent += transform.Translation2D();
-}
-
 const PaintChunk& PaintArtifactCompositor::PendingLayer::FirstPaintChunk(
     const PaintArtifact& paint_artifact) const {
   return paint_artifact.PaintChunks()[paint_chunk_indices[0]];
@@ -431,7 +428,9 @@ static bool CanUpcastTo(const PropertyTreeState& guest,
   for (const auto* current_clip = &guest.Clip().Unalias();
        current_clip != &home_clip;
        current_clip = SafeUnalias(current_clip->Parent())) {
-    if (!current_clip || current_clip->HasDirectCompositingReasons())
+    // If we had direct compositing reasons on a clip node, we would want to
+    // return false here.
+    if (!current_clip)
       return false;
     if (!IsNonCompositingAncestorOf(
             home.Transform().Unalias(),
@@ -729,15 +728,16 @@ SynthesizedClip& PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
     bool needs_layer,
     CompositorElementId& mask_isolation_id,
     CompositorElementId& mask_effect_id) {
-  auto entry =
+  auto* entry =
       std::find_if(synthesized_clip_cache_.begin(),
                    synthesized_clip_cache_.end(), [&node](const auto& entry) {
                      return entry.key == &node && !entry.in_use;
                    });
   if (entry == synthesized_clip_cache_.end()) {
     auto clip = std::make_unique<SynthesizedClip>();
-    entry = synthesized_clip_cache_.insert(
-        entry, SynthesizedClipEntry{&node, std::move(clip), false});
+    synthesized_clip_cache_.push_back(
+        SynthesizedClipEntry{&node, std::move(clip), false});
+    entry = synthesized_clip_cache_.end() - 1;
   }
 
   entry->in_use = true;
@@ -778,20 +778,19 @@ static void UpdateCompositorViewportProperties(
 //  1. It is not the root transform node.
 //  2. It is a 2d translation only.
 //  3. The transform is not used for scrolling - its ScrollNode() is nullptr.
-//  4. It has no direct compositing reasons, other than k3DTransform. Note
+//  4. The transform is not a StickyTranslation node.
+//  5. It has no direct compositing reasons, other than k3DTransform. Note
 //     that if it has a k3DTransform reason, check #2 above ensures that it
 //     isn't really 3D.
-//  5. It has FlattensInheritedTransform matching that of its direct parent.
-//  6. It has backface visibility matching its direct parent.
-//  7. No clips have local_transform_space referring to this transform node.
-//  8. No effects have local_transform_space referring to this transform node.
-//  9. All child transform nodes are also able to be de-composited.
+//  6. It has FlattensInheritedTransform matching that of its direct parent.
+//  7. It has backface visibility matching its direct parent.
+//  8. No clips have local_transform_space referring to this transform node.
+//  9. No effects have local_transform_space referring to this transform node.
+//  10. All child transform nodes are also able to be de-composited.
 // This algorithm should be O(t+c+e) where t,c,e are the number of transform,
 // clip, and effect nodes in the full tree.
-void PaintArtifactCompositor::DecompositeTransforms() {
-  // TODO(masonfreed): CAP is not yet implemented here.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
+void PaintArtifactCompositor::DecompositeTransforms(
+    const PaintArtifact& paint_artifact) {
   WTF::HashMap<const TransformPaintPropertyNode*, bool> can_be_decomposited;
   WTF::HashSet<const void*> clips_and_effects_seen;
   for (const auto& pending_layer : pending_layers_) {
@@ -806,45 +805,54 @@ void PaintArtifactCompositor::DecompositeTransforms() {
             const TransformPaintPropertyNode* transform_node) {
           DCHECK(transform_node);
           while (transform_node && !transform_node->IsRoot()) {
-            if (!can_be_decomposited.Contains(transform_node)) {
-              can_be_decomposited.insert(transform_node, false);
-            } else {
-              if (!can_be_decomposited.at(transform_node))
+            auto result = can_be_decomposited.insert(transform_node, false);
+            if (!result.is_new_entry) {
+              if (!result.stored_value->value)
                 break;
-              can_be_decomposited.Set(transform_node, false);
+              result.stored_value->value = false;
             }
-            transform_node = SafeUnalias(transform_node->Parent());
+            transform_node = &transform_node->Parent()->Unalias();
           }
         };
 
     // Add the transform and all transform parents to the map.
     for (const auto* node = &property_state.Transform().Unalias();
-         node && !can_be_decomposited.Contains(node);
-         node = SafeUnalias(node->Parent())) {
-      can_be_decomposited.insert(node, !node->IsRoot());
+         !node->IsRoot() && !can_be_decomposited.Contains(node);
+         node = &node->Parent()->Unalias()) {
       if (!node->IsIdentityOr2DTranslation() || node->ScrollNode() ||
+          node->GetStickyConstraint() ||
           node->IsAffectedByOuterViewportBoundsDelta() ||
           node->HasDirectCompositingReasonsOtherThan3dTransform() ||
           !node->FlattensInheritedTransformSameAsParent() ||
           !node->BackfaceVisibilitySameAsParent()) {
         mark_not_decompositable(node);
+        break;
       }
+      can_be_decomposited.insert(node, true);
     }
 
     // Add clips and effects, and their parents, that we haven't already seen.
     for (const auto* node = &property_state.Clip().Unalias();
-         node && !clips_and_effects_seen.Contains(node);
-         node = SafeUnalias(node->Parent())) {
+         !node->IsRoot() && !clips_and_effects_seen.Contains(node);
+         node = &node->Parent()->Unalias()) {
       clips_and_effects_seen.insert(node);
-      if (!node->IsRoot())
-        mark_not_decompositable(&node->LocalTransformSpace());
+      mark_not_decompositable(&node->LocalTransformSpace());
     }
     for (const auto* node = &property_state.Effect().Unalias();
-         node && !clips_and_effects_seen.Contains(node);
-         node = SafeUnalias(node->Parent())) {
+         !node->IsRoot() && !clips_and_effects_seen.Contains(node);
+         node = &node->Parent()->Unalias()) {
       clips_and_effects_seen.insert(node);
-      if (!node->IsRoot())
-        mark_not_decompositable(&node->LocalTransformSpace());
+      mark_not_decompositable(&node->LocalTransformSpace());
+    }
+
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      // The scroll translation node of a scroll hit test layer may not be
+      // referenced by any pending layer's property tree state. Disallow
+      // decomposition of it (and its ancestors).
+      if (const auto* scroll_translation =
+              ScrollTranslationForScrollHitTestLayer(paint_artifact,
+                                                     pending_layer))
+        mark_not_decompositable(scroll_translation);
     }
   }
 
@@ -852,12 +860,19 @@ void PaintArtifactCompositor::DecompositeTransforms() {
   // transform to point to the correct parent, and set the
   // offset_to_transform_parent.
   for (auto& pending_layer : pending_layers_) {
-    const auto* transform_node = &pending_layer.property_tree_state.Transform();
-    while (transform_node && !transform_node->IsRoot() &&
-           can_be_decomposited.at(transform_node)) {
-      pending_layer.DecompositeTransform();
-      transform_node = SafeUnalias(transform_node->Parent());
+    const auto* transform =
+        &pending_layer.property_tree_state.Transform().Unalias();
+    while (!transform->IsRoot() && can_be_decomposited.at(transform)) {
+      pending_layer.offset_of_decomposited_transforms +=
+          transform->Translation2D();
+      transform = &transform->Parent()->Unalias();
     }
+    pending_layer.property_tree_state.SetTransform(*transform);
+    // Move bounds into the new transform space.
+    pending_layer.bounds.MoveBy(
+        pending_layer.offset_of_decomposited_transforms);
+    pending_layer.rect_known_to_be_opaque.MoveBy(
+        pending_layer.offset_of_decomposited_transforms);
   }
 }
 
@@ -867,7 +882,6 @@ void PaintArtifactCompositor::Update(
     const Settings& settings) {
   DCHECK(NeedsUpdate());
   DCHECK(root_layer_);
-
   // The tree will be null after detaching and this update can be ignored.
   // See: WebViewImpl::detachPaintArtifactCompositor().
   cc::LayerTreeHost* host = root_layer_->layer_tree_host();
@@ -909,7 +923,7 @@ void PaintArtifactCompositor::Update(
     entry.in_use = false;
 
   // See if we can de-composite any transforms.
-  DecompositeTransforms();
+  DecompositeTransforms(*paint_artifact);
 
   for (auto& pending_layer : pending_layers_) {
     const auto& property_state = pending_layer.property_tree_state;
@@ -977,7 +991,8 @@ void PaintArtifactCompositor::Update(
     // Calling |PropertyTreeStateChanged| for every pending layer is
     // O(|property nodes|^2) and could be optimized by caching the lookup of
     // nodes known to be changed/unchanged.
-    if (PropertyTreeStateChanged(property_state)) {
+    if (layer->subtree_property_changed() ||
+        PropertyTreeStateChanged(property_state)) {
       layer->SetSubtreePropertyChanged();
       root_layer_->SetNeedsCommit();
     }
@@ -986,11 +1001,12 @@ void PaintArtifactCompositor::Update(
   content_layer_clients_.swap(new_content_layer_clients);
   scroll_hit_test_layers_.swap(new_scroll_hit_test_layers);
 
-  synthesized_clip_cache_.erase(
-      std::remove_if(synthesized_clip_cache_.begin(),
-                     synthesized_clip_cache_.end(),
-                     [](const auto& entry) { return !entry.in_use; }),
-      synthesized_clip_cache_.end());
+  auto pos = std::remove_if(synthesized_clip_cache_.begin(),
+                            synthesized_clip_cache_.end(),
+                            [](const auto& entry) { return !entry.in_use; }) -
+             synthesized_clip_cache_.begin();
+  synthesized_clip_cache_.EraseAt(pos, synthesized_clip_cache_.size() - pos);
+
   if (extra_data_for_testing_enabled_) {
     for (const auto& entry : synthesized_clip_cache_) {
       extra_data_for_testing_->synthesized_clip_layers.push_back(
@@ -1025,7 +1041,7 @@ void PaintArtifactCompositor::Update(
     if (new_output != s_previous_output) {
       LOG(ERROR) << "PaintArtifactCompositor::Update() done\n"
                  << "Composited layers:\n"
-                 << new_output.Utf8().data();
+                 << new_output.Utf8();
       s_previous_output = new_output;
     }
   }
@@ -1181,8 +1197,7 @@ void PaintArtifactCompositor::ShowDebugData() {
   LOG(ERROR) << LayersAsJSON(kLayerTreeIncludesDebugInfo |
                              kLayerTreeIncludesPaintInvalidations)
                     ->ToPrettyJSONString()
-                    .Utf8()
-                    .data();
+                    .Utf8();
 }
 #endif
 

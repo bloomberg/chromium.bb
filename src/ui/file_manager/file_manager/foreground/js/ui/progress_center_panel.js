@@ -211,6 +211,18 @@ class ProgressCenterPanel {
         HTMLDivElement);
 
     /**
+     * Reference to the feedback panel host.
+     * TODO(crbug.com/947388) Add closure annotation here.
+     */
+    this.feedbackHost_ = document.querySelector('#progress-panel');
+
+    /**
+     * Reference to the feedback panel host for completed operations.
+     * TODO(crbug.com/947388) Add closure annotation here.
+     */
+    this.completedHost_ = document.querySelector('#completed-panel');
+
+    /**
      * Close view that is a summarized progress item.
      * @type {ProgressCenterItemElement}
      * @private
@@ -269,6 +281,12 @@ class ProgressCenterPanel {
      */
     this.dismissErrorItemCallback = null;
 
+    /**
+     * Timeout for hiding file operations in progress.
+     * @const @type {number}
+     */
+    this.PENDING_TIME_MS_ = 2000;
+
     // Register event handlers.
     element.addEventListener('click', this.onClick_.bind(this));
     element.addEventListener(
@@ -310,6 +328,153 @@ class ProgressCenterPanel {
   }
 
   /**
+   * Generate source string for display on the feedback panel.
+   * @param {!ProgressCenterItem} item Item we're generating a message for.
+   * @param {Object} info Cached information to use for formatting.
+   * @return {string} String formatted based on the item state.
+   */
+  generateSourceString_(item, info) {
+    switch (item.state) {
+      case 'progressing':
+        if (item.itemCount === 1) {
+          if (item.type === ProgressItemType.COPY) {
+            return strf('COPY_FILE_NAME', info['source']);
+          } else if (item.type === ProgressItemType.MOVE) {
+            return strf('MOVE_FILE_NAME', info['source']);
+          } else {
+            return item.message;
+          }
+        } else {
+          if (item.type === ProgressItemType.COPY) {
+            return strf('COPY_ITEMS_REMAINING', info['source']);
+          } else if (item.type === ProgressItemType.MOVE) {
+            return strf('MOVE_ITEMS_REMAINING', info['source']);
+          } else {
+            return item.message;
+          }
+        }
+        break;
+      case 'completed':
+        if (info['count'] > 1) {
+          return strf('FILE_ITEMS', info['source']);
+        }
+        return info['source'] || item.message;
+      case 'error':
+        return item.message;
+      default:
+        assertNotReached();
+        break;
+    }
+    return '';
+  }
+
+  /**
+   * Generate destination string for display on the feedback panel.
+   * @param {!ProgressCenterItem} item Item we're generating a message for.
+   * @param {Object} info Cached information to use for formatting.
+   * @return {string} String formatted based on the item state.
+   */
+  generateDestinationString_(item, info) {
+    switch (item.state) {
+      case 'progressing':
+        return strf('TO_FOLDER_NAME', info['destination']);
+      case 'completed':
+        if (item.type === ProgressItemType.COPY) {
+          return strf('COPIED_TO', info['destination']);
+        } else if (item.type === ProgressItemType.MOVE) {
+          return strf('MOVED_TO', info['destination']);
+        }
+        break;
+      case 'error':
+        break;
+      default:
+        assertNotReached();
+        break;
+    }
+    return '';
+  }
+
+  /**
+   * Process item updates for feedback panels.
+   * @param {!ProgressCenterItem} item Item being updated.
+   * @param {?ProgressCenterItem} newItem Item updating with new content.
+   * @suppress {checkTypes}
+   * TODO(crbug.com/947388) Remove the suppress, and fix closure compile.
+   */
+  updateFeedbackPanelItem(item, newItem) {
+    let panelItem = this.feedbackHost_.findPanelItemById(item.id);
+    if (newItem) {
+      if (!panelItem) {
+        panelItem = this.feedbackHost_.addPanelItem(item.id);
+        panelItem.hidden = true;
+        // Show the panel only for long running operations.
+        setTimeout(() => {
+          panelItem.hidden = false;
+        }, this.PENDING_TIME_MS_);
+        panelItem.panelType = panelItem.panelTypeProgress;
+        panelItem.userData = {
+          'source': item.sourceMessage,
+          'destination': item.destinationMessage,
+          'count': item.itemCount,
+        };
+        panelItem.setAttribute(
+            'primary-text',
+            this.generateSourceString_(item, panelItem.userData));
+        panelItem.setAttribute('data-progress-id', item.id);
+        if (item.subMessage) {
+          panelItem.setAttribute('secondary-text', item.subMessage);
+        }
+      }
+      panelItem.signalCallback = (signal) => {
+        if (signal === 'cancel' && item.cancelCallback) {
+          item.cancelCallback();
+        }
+        if (signal === 'dismiss') {
+          this.feedbackHost_.removePanelItem(panelItem);
+        }
+      };
+      panelItem.progress = item.progressRateInPercent.toString();
+      switch (item.state) {
+        case 'completed':
+          // Create a completed panel for copies and moves.
+          // TODO(crbug.com/947388) decide if we want these for delete, etc.
+          if (panelItem.hidden === false &&
+              (item.type === 'copy' || item.type === 'move')) {
+            const donePanelItem = this.completedHost_.addPanelItem(item.id);
+            donePanelItem.panelType = donePanelItem.panelTypeDone;
+            donePanelItem.setAttribute(
+                'primary-text',
+                this.generateSourceString_(item, panelItem.userData));
+            donePanelItem.setAttribute(
+                'secondary-text',
+                this.generateDestinationString_(item, panelItem.userData));
+            donePanelItem.signalCallback = (signal) => {
+              if (signal === 'dismiss') {
+                this.completedHost_.removePanelItem(donePanelItem);
+              }
+            };
+            // Delete after 7 seconds, doesn't matter if it's manually deleted
+            // before the timer fires, as removePanelItem handles that case.
+            setTimeout(() => {
+              this.completedHost_.removePanelItem(donePanelItem);
+            }, 7000);
+          }
+          // Drop through to remove the progress panel.
+        case 'canceled':
+          // Remove the feedback panel when complete.
+          this.feedbackHost_.removePanelItem(panelItem);
+          break;
+        case 'error':
+          panelItem.panelType = panelItem.panelTypeError;
+          panelItem.setAttribute('primary-text', item.message);
+          break;
+      }
+    } else if (panelItem) {
+      this.feedbackHost_.removePanelItem(panelItem);
+    }
+  }
+
+  /**
    * Updates an item to the progress center panel.
    * @param {!ProgressCenterItem} item Item including new contents.
    */
@@ -321,30 +486,36 @@ class ProgressCenterPanel {
 
     // Update an open view item.
     const newItem = targetGroup.getItem(item.id);
-    let itemElement = this.getItemElement_(item.id);
-    if (newItem) {
-      if (!itemElement) {
-        itemElement =
-            new ProgressCenterItemElement(this.element_.ownerDocument);
-        // Find quiet node and insert the item before the quiet node.
-        this.openView_.insertBefore(
-            itemElement, this.openView_.querySelector('.quiet'));
-      }
-      itemElement.update(newItem, targetGroup.isAnimated(item.id));
+    if (util.isFeedbackPanelEnabled()) {
+      this.updateFeedbackPanelItem(item, newItem);
     } else {
-      if (itemElement) {
-        itemElement.parentNode.removeChild(itemElement);
+      let itemElement = this.getItemElement_(item.id);
+      if (newItem) {
+        if (!itemElement) {
+          itemElement =
+              new ProgressCenterItemElement(this.element_.ownerDocument);
+          // Find quiet node and insert the item before the quiet node.
+          this.openView_.insertBefore(
+              itemElement, this.openView_.querySelector('.quiet'));
+        }
+        itemElement.update(newItem, targetGroup.isAnimated(item.id));
+      } else {
+        if (itemElement) {
+          itemElement.parentNode.removeChild(itemElement);
+        }
       }
-    }
 
-    // Update the close view.
-    this.updateCloseView_();
+      // Update the close view.
+      this.updateCloseView_();
+    }
   }
 
   /**
    * Handles the item animation end.
    * @param {Event} event Item animation end event.
    * @private
+   * @suppress {checkTypes}
+   * TODO(crbug.com/947388) Remove the suppress, and fix closure compile.
    */
   onItemAnimationEnd_(event) {
     const targetGroup = event.target.classList.contains('quiet') ?
@@ -355,10 +526,17 @@ class ProgressCenterPanel {
     } else {
       const itemId = event.target.getAttribute('data-progress-id');
       targetGroup.completeItemAnimation(itemId);
-      const newItem = targetGroup.getItem(itemId);
-      const itemElement = this.getItemElement_(itemId);
-      if (!newItem && itemElement) {
-        itemElement.parentNode.removeChild(itemElement);
+      if (util.isFeedbackPanelEnabled()) {
+        const panelItem = this.feedbackHost_.findPanelItemById(itemId);
+        if (panelItem) {
+          this.feedbackHost_.removePanelItem(panelItem);
+        }
+      } else {
+        const newItem = targetGroup.getItem(itemId);
+        const itemElement = this.getItemElement_(itemId);
+        if (!newItem && itemElement) {
+          itemElement.parentNode.removeChild(itemElement);
+        }
       }
     }
     this.updateCloseView_();

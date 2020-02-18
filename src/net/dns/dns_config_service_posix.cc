@@ -239,8 +239,7 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
 
 class DnsConfigServicePosix::Watcher {
  public:
-  explicit Watcher(DnsConfigServicePosix* service)
-      : service_(service), weak_factory_(this) {}
+  explicit Watcher(DnsConfigServicePosix* service) : service_(service) {}
   ~Watcher() = default;
 
   bool Watch() {
@@ -294,7 +293,7 @@ class DnsConfigServicePosix::Watcher {
   base::FilePathWatcher hosts_watcher_;
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
-  base::WeakPtrFactory<Watcher> weak_factory_;
+  base::WeakPtrFactory<Watcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Watcher);
 };
@@ -410,6 +409,12 @@ DnsConfigServicePosix::DnsConfigServicePosix()
 DnsConfigServicePosix::~DnsConfigServicePosix() {
   config_reader_->Cancel();
   hosts_reader_->Cancel();
+}
+
+void DnsConfigServicePosix::RefreshConfig() {
+  InvalidateConfig();
+  InvalidateHosts();
+  ReadNow();
 }
 
 void DnsConfigServicePosix::ReadNow() {
@@ -571,8 +576,15 @@ ConfigParsePosixResult ConvertResStateToDnsConfig(const struct __res_state& res,
 
 // static
 std::unique_ptr<DnsConfigService> DnsConfigService::CreateSystemService() {
+  // DnsConfigService on iOS doesn't watch the config so its result can become
+  // inaccurate at any time.  Disable it to prevent promulgation of inaccurate
+  // DnsConfigs.
+#ifdef OS_IOS
+  return nullptr;
+#else   // defined(OS_IOS)
   return std::unique_ptr<DnsConfigService>(
       new internal::DnsConfigServicePosix());
+#endif  // defined(OS_IOS)
 }
 
 }  // namespace net

@@ -27,6 +27,7 @@ public:
     GrGLTextureRenderTarget(GrGLGpu* gpu,
                             SkBudgeted budgeted,
                             const GrSurfaceDesc& desc,
+                            int sampleCount,
                             const GrGLTexture::IDDesc& texIDDesc,
                             const GrGLRenderTarget::IDDesc& rtIDDesc,
                             GrMipMapsStatus);
@@ -36,7 +37,9 @@ public:
     void dumpMemoryStatistics(SkTraceMemoryDump* traceMemoryDump) const override;
 
     static sk_sp<GrGLTextureRenderTarget> MakeWrapped(GrGLGpu* gpu, const GrSurfaceDesc& desc,
+                                                      int sampleCount,
                                                       const GrGLTexture::IDDesc& texIDDesc,
+                                                      sk_sp<GrGLTextureParameters> parameters,
                                                       const GrGLRenderTarget::IDDesc& rtIDDesc,
                                                       GrWrapCacheable cacheble, GrMipMapsStatus);
 
@@ -60,7 +63,9 @@ private:
     // Constructor for instances wrapping backend objects.
     GrGLTextureRenderTarget(GrGLGpu* gpu,
                             const GrSurfaceDesc& desc,
+                            int sampleCount,
                             const GrGLTexture::IDDesc& texIDDesc,
+                            sk_sp<GrGLTextureParameters> parameters,
                             const GrGLRenderTarget::IDDesc& rtIDDesc,
                             GrWrapCacheable,
                             GrMipMapsStatus);

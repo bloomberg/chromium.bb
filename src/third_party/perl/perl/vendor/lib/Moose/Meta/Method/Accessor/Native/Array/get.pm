@@ -1,10 +1,5 @@
 package Moose::Meta::Method::Accessor::Native::Array::get;
-BEGIN {
-  $Moose::Meta::Method::Accessor::Native::Array::get::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Method::Accessor::Native::Array::get::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -13,16 +8,8 @@ use Class::MOP::MiniTrait;
 
 use Moose::Role;
 
-with 'Moose::Meta::Method::Accessor::Native::Reader' => {
-    -excludes => [
-        qw(
-            _minimum_arguments
-            _maximum_arguments
-            _inline_check_arguments
-            )
-    ],
-    },
-    'Moose::Meta::Method::Accessor::Native::Array';
+with 'Moose::Meta::Method::Accessor::Native::Reader',
+     'Moose::Meta::Method::Accessor::Native::Array';
 
 sub _minimum_arguments { 1 }
 

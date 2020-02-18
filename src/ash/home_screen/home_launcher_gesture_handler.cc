@@ -59,9 +59,7 @@ constexpr int kScrollVelocityThreshold = 6;
 constexpr float kWidthRatio = 0.8f;
 
 bool IsTabletMode() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 // Checks if |window| can be hidden or shown with a gesture.
@@ -228,7 +226,7 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
   void ComputeWindowValues(const gfx::RectF& work_area,
                            const gfx::RectF& target_work_area) {
     transient_descendants_values_.clear();
-    for (auto* window : wm::GetTransientTreeIterator(window_)) {
+    for (auto* window : GetTransientTreeIterator(window_)) {
       WindowValues values;
       values.initial_opacity = window->layer()->opacity();
       values.initial_transform = window->transform();
@@ -472,7 +470,7 @@ void HomeLauncherGestureHandler::OnWindowDestroying(aura::Window* window) {
     return;
   }
 
-  DCHECK(base::ContainsValue(hidden_windows_, window));
+  DCHECK(base::Contains(hidden_windows_, window));
   window->RemoveObserver(this);
   hidden_windows_.erase(
       std::find(hidden_windows_.begin(), hidden_windows_.end(), window));
@@ -494,16 +492,17 @@ void HomeLauncherGestureHandler::OnTabletModeEnded() {
 }
 
 void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
-  float home_launcher_opacity = 1.f;
   const bool is_final_state_show = IsFinalStateShow();
-  NotifyHomeLauncherAnimationComplete(is_final_state_show /*shown*/,
-                                      display_.id());
+  base::ScopedClosureRunner notification_runner(base::BindOnce(
+      &HomeLauncherGestureHandler::NotifyHomeLauncherAnimationComplete,
+      base::Unretained(this), is_final_state_show, display_.id()));
+  float home_launcher_opacity = 1.f;
   if (Shell::Get()->overview_controller()->InOverviewSession()) {
     if (overview_active_on_gesture_start_ && is_final_state_show) {
       // Exit overview if event is released on the top half. This will also
       // end splitview if it is active as SplitViewController observes
       // overview mode ends.
-      Shell::Get()->overview_controller()->ToggleOverview(
+      Shell::Get()->overview_controller()->EndOverview(
           OverviewSession::EnterExitOverviewType::kSwipeFromShelf);
     } else {
       home_launcher_opacity = 0.f;
@@ -545,8 +544,8 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
                                     hidden_windows_.size());
     std::copy(hidden_windows_.rbegin(), hidden_windows_.rend(),
               windows_to_hide_minimize.end() - hidden_windows_.size());
-    wm::HideAndMaybeMinimizeWithoutAnimation(windows_to_hide_minimize,
-                                             /*minimize=*/true);
+    window_util::HideAndMaybeMinimizeWithoutAnimation(windows_to_hide_minimize,
+                                                      /*minimize=*/true);
   } else {
     // Reshow all windows previously hidden.
     for (auto* window : hidden_windows_) {
@@ -784,7 +783,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
     // Do not run slide down animation for the |window| if another active
     // window in mru list exists. Windows minimized in clamshell mode may
     // have opacity of 0, so set them to 1 to ensure visibility.
-    if (wm::GetWindowState(window)->IsMinimized())
+    if (WindowState::Get(window)->IsMinimized())
       window->layer()->SetOpacity(1.f);
     active_window_.reset();
     return false;
@@ -809,7 +808,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
     return false;
   }
 
-  DCHECK(base::ContainsValue(windows, first_window));
+  DCHECK(base::Contains(windows, first_window));
   DCHECK_NE(Mode::kNone, mode);
   base::RecordAction(base::UserMetricsAction(
       mode == Mode::kSlideDownToHide
@@ -831,7 +830,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
                 SplitViewController::LEFT
             ? split_view_controller->right_window()
             : split_view_controller->left_window();
-    DCHECK(base::ContainsValue(windows, second_window));
+    DCHECK(base::Contains(windows, second_window));
     secondary_window_ = std::make_unique<ScopedWindowModifier>(second_window);
     GetSecondaryWindow()->AddObserver(this);
     base::EraseIf(windows, [this](aura::Window* elem) {
@@ -906,8 +905,8 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
         window->AddObserver(this);
       }
     }
-    wm::HideAndMaybeMinimizeWithoutAnimation(hidden_windows_,
-                                             /*minimize=*/false);
+    window_util::HideAndMaybeMinimizeWithoutAnimation(hidden_windows_,
+                                                      /*minimize=*/false);
   }
 
   return true;

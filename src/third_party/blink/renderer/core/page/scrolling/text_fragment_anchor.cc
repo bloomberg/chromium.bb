@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -22,13 +23,17 @@ namespace blink {
 
 namespace {
 
+constexpr char kFragmentDirectivePrefix[] = "##";
 constexpr char kTextFragmentIdentifierPrefix[] = "targetText=";
-constexpr size_t kTextFragmentIdentifierPrefixArrayLength =
-    base::size(kTextFragmentIdentifierPrefix);
 
-bool ParseTargetTextIdentifier(
-    const String& fragment,
-    std::vector<TextFragmentSelector>* out_selectors) {
+// Subtract 1 because base::size includes the \0 string terminator.
+constexpr size_t kFragmentDirectivePrefixStringLength =
+    base::size(kFragmentDirectivePrefix) - 1;
+constexpr size_t kTextFragmentIdentifierPrefixStringLength =
+    base::size(kTextFragmentIdentifierPrefix) - 1;
+
+bool ParseTargetTextIdentifier(const String& fragment,
+                               Vector<TextFragmentSelector>* out_selectors) {
   DCHECK(out_selectors);
 
   size_t start_pos = 0;
@@ -37,8 +42,7 @@ bool ParseTargetTextIdentifier(
     if (fragment.Find(kTextFragmentIdentifierPrefix, start_pos) != start_pos)
       return false;
 
-    // The prefix array length includes the \0 string terminator.
-    start_pos += kTextFragmentIdentifierPrefixArrayLength - 1;
+    start_pos += kTextFragmentIdentifierPrefixStringLength;
     end_pos = fragment.find('&', start_pos);
 
     String target_text;
@@ -54,20 +58,47 @@ bool ParseTargetTextIdentifier(
   return true;
 }
 
+// For fragment directive style text fragment anchors, we strip the directive
+// from the fragment string to avoid breaking pages that rely on the fragment.
+// E.g. "#id##targetText=a" --> "#id"
+String StripFragmentDirective(const String& fragment) {
+  size_t start_pos = fragment.Find(kFragmentDirectivePrefix);
+  if (start_pos == kNotFound)
+    return fragment;
+
+  return fragment.Substring(0, start_pos);
+}
+
+bool CheckSecurityRestrictions(LocalFrame& frame,
+                               bool same_document_navigation) {
+  // For security reasons, we only allow text fragments on the main frame of a
+  // main window. So no iframes, no window.open. Also only on a full
+  // navigation.
+  if (frame.Tree().Parent() || frame.DomWindow()->opener() ||
+      same_document_navigation) {
+    return false;
+  }
+
+  // For security reasons, we only allow text fragment anchors for user or
+  // browser initiated navigations, i.e. no script navigations.
+  if (!(frame.Loader().GetDocumentLoader()->HadTransientActivation() ||
+        frame.Loader().GetDocumentLoader()->IsBrowserInitiated())) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 TextFragmentAnchor* TextFragmentAnchor::TryCreate(
     const KURL& url,
     LocalFrame& frame,
     bool same_document_navigation) {
-  // For security reasons, we only allow text fragments on the main frame of a
-  // main window. So no iframes, no window.open. Also only on a full
-  // navigation.
-  if (frame.Tree().Parent() || frame.DomWindow()->opener() ||
-      same_document_navigation)
+  if (!CheckSecurityRestrictions(frame, same_document_navigation))
     return nullptr;
 
-  std::vector<TextFragmentSelector> selectors;
+  Vector<TextFragmentSelector> selectors;
 
   if (!ParseTargetTextIdentifier(url.FragmentIdentifier(), &selectors))
     return nullptr;
@@ -75,18 +106,52 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreate(
   return MakeGarbageCollected<TextFragmentAnchor>(selectors, frame);
 }
 
+TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
+    const KURL& url,
+    LocalFrame& frame,
+    bool same_document_navigation) {
+  DCHECK(RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(
+      frame.GetDocument()));
+
+  if (!CheckSecurityRestrictions(frame, same_document_navigation))
+    return nullptr;
+
+  Vector<TextFragmentSelector> selectors;
+
+  // Add the hash to the beginning of the fragment identifier as it is
+  // part of parsing the ##targetText= prefix but is not included by
+  // KURL::FragmentIdentifier().
+  String fragment = "#" + url.FragmentIdentifier();
+  size_t directive_pos = fragment.Find(kFragmentDirectivePrefix);
+  if (directive_pos == kNotFound)
+    return nullptr;
+
+  size_t start_pos = directive_pos + kFragmentDirectivePrefixStringLength;
+  if (!ParseTargetTextIdentifier(fragment.Substring(start_pos), &selectors))
+    return nullptr;
+
+  // Strip the fragment directive from the document URL so that the page cannot
+  // see the directive, to avoid breaking pages that rely on the fragment.
+  String stripped_fragment = StripFragmentDirective(fragment).Substring(1);
+  KURL stripped_url(url);
+  stripped_url.SetFragmentIdentifier(stripped_fragment);
+  frame.GetDocument()->SetURL(std::move(stripped_url));
+
+  return MakeGarbageCollected<TextFragmentAnchor>(selectors, frame);
+}
+
 TextFragmentAnchor::TextFragmentAnchor(
-    const std::vector<TextFragmentSelector>& text_fragment_selectors,
+    const Vector<TextFragmentSelector>& text_fragment_selectors,
     LocalFrame& frame)
     : frame_(&frame),
       metrics_(MakeGarbageCollected<TextFragmentAnchorMetrics>(
           frame_->GetDocument())) {
-  DCHECK(!text_fragment_selectors.empty());
+  DCHECK(!text_fragment_selectors.IsEmpty());
   DCHECK(frame_->View());
 
   metrics_->DidCreateAnchor(text_fragment_selectors.size());
 
-  text_fragment_finders_.reserve(text_fragment_selectors.size());
+  text_fragment_finders_.ReserveCapacity(text_fragment_selectors.size());
   for (TextFragmentSelector selector : text_fragment_selectors)
     text_fragment_finders_.emplace_back(*this, selector);
 }
@@ -98,7 +163,7 @@ bool TextFragmentAnchor::Invoke() {
   frame_->GetDocument()->Markers().RemoveMarkersOfTypes(
       DocumentMarker::MarkerTypes::TextMatch());
 
-  if (user_scrolled_)
+  if (user_scrolled_ && !did_scroll_into_view_)
     metrics_->ScrollCancelled();
 
   first_match_needs_scroll_ = !user_scrolled_;
@@ -106,7 +171,7 @@ bool TextFragmentAnchor::Invoke() {
   {
     // FindMatch might cause scrolling and set user_scrolled_ so reset it when
     // it's done.
-    base::AutoReset<bool>(&user_scrolled_, user_scrolled_);
+    base::AutoReset<bool> reset_user_scrolled(&user_scrolled_, user_scrolled_);
 
     metrics_->ResetMatchCount();
     for (auto& finder : text_fragment_finders_)
@@ -133,6 +198,9 @@ void TextFragmentAnchor::DidScroll(ScrollType type) {
 void TextFragmentAnchor::PerformPreRafActions() {}
 
 void TextFragmentAnchor::DidCompleteLoad() {
+  if (search_finished_)
+    return;
+
   // If there is a pending layout we'll finish the search from Invoke.
   if (!frame_->View()->NeedsLayout()) {
     metrics_->ReportMetrics();
@@ -150,12 +218,24 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
   if (search_finished_)
     return;
 
+  // TODO(nburris): Determine what we should do with overlapping text matches.
+  // This implementation drops a match if it overlaps a previous match, since
+  // overlapping ranges are likely unintentional by the URL creator and could
+  // therefore indicate that the page text has changed.
+  if (!frame_->GetDocument()
+           ->Markers()
+           .MarkersIntersectingRange(range,
+                                     DocumentMarker::MarkerTypes::TextMatch())
+           .IsEmpty()) {
+    return;
+  }
+
   metrics_->DidFindMatch();
 
   if (first_match_needs_scroll_) {
     first_match_needs_scroll_ = false;
 
-    LayoutRect bounding_box = LayoutRect(ComputeTextRect(range));
+    PhysicalRect bounding_box(ComputeTextRect(range));
 
     // Set the bounding box height to zero because we want to center the top of
     // the text range.
@@ -167,12 +247,13 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
 
     DCHECK(node.GetLayoutObject());
 
-    LayoutRect scrolled_bounding_box =
+    PhysicalRect scrolled_bounding_box =
         node.GetLayoutObject()->ScrollRectToVisible(
             bounding_box,
-            WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
-                                    ScrollAlignment::kAlignCenterIfNeeded,
+            WebScrollIntoViewParams(ScrollAlignment::kAlignCenterAlways,
+                                    ScrollAlignment::kAlignCenterAlways,
                                     kProgrammaticScroll));
+    did_scroll_into_view_ = true;
     metrics_->DidScroll();
 
     // We scrolled the text into view if the main document scrolled or the text
@@ -183,15 +264,13 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
     // actually in document coordinates and therefore does not change with a
     // main document scroll.
     if (!frame_->View()->GetScrollableArea()->GetScrollOffset().IsZero() ||
-        scrolled_bounding_box.Location() != bounding_box.Location()) {
+        scrolled_bounding_box.offset != bounding_box.offset) {
       metrics_->DidNonZeroScroll();
     }
   }
   EphemeralRange dom_range =
       EphemeralRange(ToPositionInDOMTree(range.StartPosition()),
                      ToPositionInDOMTree(range.EndPosition()));
-  // TODO(nburris): Determine what we should do with overlapping text matches.
-  // Currently, AddTextMatchMarker will crash when adding an overlapping marker.
   frame_->GetDocument()->Markers().AddTextMatchMarker(
       dom_range, TextMatchMarker::MatchStatus::kInactive);
   frame_->GetEditor().SetMarkedTextMatchesAreHighlighted(true);

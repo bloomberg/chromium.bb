@@ -32,8 +32,9 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD2(AddLoginImpl,
                PasswordStoreChangeList(const autofill::PasswordForm&,
                                        AddLoginError* error));
-  MOCK_METHOD1(UpdateLoginImpl,
-               PasswordStoreChangeList(const autofill::PasswordForm&));
+  MOCK_METHOD2(UpdateLoginImpl,
+               PasswordStoreChangeList(const autofill::PasswordForm&,
+                                       UpdateLoginError* error));
   MOCK_METHOD1(RemoveLoginImpl,
                PasswordStoreChangeList(const autofill::PasswordForm&));
   MOCK_METHOD3(RemoveLoginsByURLAndTimeImpl,
@@ -41,8 +42,6 @@ class MockPasswordStore : public PasswordStore {
                                        base::Time,
                                        base::Time));
   MOCK_METHOD2(RemoveLoginsCreatedBetweenImpl,
-               PasswordStoreChangeList(base::Time, base::Time));
-  MOCK_METHOD2(RemoveLoginsSyncedBetweenImpl,
                PasswordStoreChangeList(base::Time, base::Time));
   MOCK_METHOD3(RemoveStatisticsByOriginAndTimeImpl,
                bool(const base::Callback<bool(const GURL&)>&,

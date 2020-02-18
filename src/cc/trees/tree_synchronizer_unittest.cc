@@ -200,7 +200,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeFromEmpty) {
                                      host_->pending_tree());
 
   LayerImpl* root = host_->pending_tree()->root_layer_for_testing();
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       host_->pending_tree()->LayersThatShouldPushProperties(), root));
 
   ExpectTreesAreIdentical(layer_tree_root.get(),
@@ -226,7 +226,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndPushPropertiesFromEmpty) {
   // layers are created on pending tree and they all need to push properties to
   // active tree.
   LayerImpl* root = host_->pending_tree()->root_layer_for_testing();
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       host_->pending_tree()->LayersThatShouldPushProperties(), root));
 
   ExpectTreesAreIdentical(layer_tree_root.get(),
@@ -242,20 +242,20 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndPushPropertiesFromEmpty) {
                                      host_->active_tree());
   TreeSynchronizer::PushLayerProperties(host_->pending_tree(),
                                         host_->active_tree());
-  EXPECT_FALSE(base::ContainsKey(
+  EXPECT_FALSE(base::Contains(
       host_->pending_tree()->LayersThatShouldPushProperties(), root));
 
   // Set the main thread root layer needs push properties.
   layer_tree_root->SetNeedsPushProperties();
-  EXPECT_TRUE(base::ContainsKey(host_->LayersThatShouldPushProperties(),
-                                layer_tree_root.get()));
+  EXPECT_TRUE(base::Contains(host_->LayersThatShouldPushProperties(),
+                             layer_tree_root.get()));
 
   // When sync from main thread, the needs push properties status is carried
   // over to pending tree.
   TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),
                                      host_->pending_tree());
   TreeSynchronizer::PushLayerProperties(host_.get(), host_->pending_tree());
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       host_->pending_tree()->LayersThatShouldPushProperties(), root));
 }
 
@@ -278,8 +278,8 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeReusingLayers) {
   LayerImpl* layer_impl_tree_root =
       host_->pending_tree()->root_layer_for_testing();
   EXPECT_TRUE(
-      base::ContainsKey(host_->pending_tree()->LayersThatShouldPushProperties(),
-                        layer_impl_tree_root));
+      base::Contains(host_->pending_tree()->LayersThatShouldPushProperties(),
+                     layer_impl_tree_root));
 
   ExpectTreesAreIdentical(layer_tree_root.get(), layer_impl_tree_root,
                           host_->pending_tree());
@@ -522,12 +522,12 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeThenDestroy) {
 
   ASSERT_EQ(3u, layer_impl_destruction_list.size());
 
-  EXPECT_TRUE(base::ContainsValue(layer_impl_destruction_list,
-                                  old_tree_root_layer_id));
-  EXPECT_TRUE(base::ContainsValue(layer_impl_destruction_list,
-                                  old_tree_first_child_layer_id));
-  EXPECT_TRUE(base::ContainsValue(layer_impl_destruction_list,
-                                  old_tree_second_child_layer_id));
+  EXPECT_TRUE(
+      base::Contains(layer_impl_destruction_list, old_tree_root_layer_id));
+  EXPECT_TRUE(base::Contains(layer_impl_destruction_list,
+                             old_tree_first_child_layer_id));
+  EXPECT_TRUE(base::Contains(layer_impl_destruction_list,
+                             old_tree_second_child_layer_id));
 }
 
 // Constructs+syncs a tree with mask layer.

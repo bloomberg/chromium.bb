@@ -43,9 +43,9 @@
 namespace network {
 namespace mojom {
 enum class CorsPreflightPolicy : int32_t;
-enum class FetchCredentialsMode : int32_t;
-enum class FetchRedirectMode : int32_t;
-enum class FetchRequestMode : int32_t;
+enum class CredentialsMode : int32_t;
+enum class RedirectMode : int32_t;
+enum class RequestMode : int32_t;
 enum class RequestContextFrameType : int32_t;
 }  // namespace mojom
 }  // namespace network
@@ -85,10 +85,11 @@ class WebURLRequest {
   enum PreviewsTypes {
     kPreviewsUnspecified = 0,  // Let the browser process decide whether or
                                // not to request Preview types.
-    kServerLoFiOn = 1 << 0,    // Request a Lo-Fi version of the resource
-                               // from the server.
-    kClientLoFiOn = 1 << 1,    // Request a Lo-Fi version of the resource
-                               // from the client.
+    kServerLoFiOn_DEPRECATED =
+        1 << 0,  // Request a Lo-Fi version of the resource
+                 // from the server. Deprecated and should not be used.
+    kClientLoFiOn = 1 << 1,          // Request a Lo-Fi version of the resource
+                                     // from the client.
     kClientLoFiAutoReload = 1 << 2,  // Request the original version of the
                                      // resource after a decoding error occurred
                                      // when attempting to use Client Lo-Fi.
@@ -290,22 +291,18 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT void SetShouldResetAppCache(bool);
 
   // The request mode which will be passed to the ServiceWorker.
-  BLINK_PLATFORM_EXPORT network::mojom::FetchRequestMode GetFetchRequestMode()
-      const;
-  BLINK_PLATFORM_EXPORT void SetFetchRequestMode(
-      network::mojom::FetchRequestMode);
+  BLINK_PLATFORM_EXPORT network::mojom::RequestMode GetMode() const;
+  BLINK_PLATFORM_EXPORT void SetMode(network::mojom::RequestMode);
 
   // The credentials mode which will be passed to the ServiceWorker.
-  BLINK_PLATFORM_EXPORT network::mojom::FetchCredentialsMode
-  GetFetchCredentialsMode() const;
-  BLINK_PLATFORM_EXPORT void SetFetchCredentialsMode(
-      network::mojom::FetchCredentialsMode);
+  BLINK_PLATFORM_EXPORT network::mojom::CredentialsMode GetCredentialsMode()
+      const;
+  BLINK_PLATFORM_EXPORT void SetCredentialsMode(
+      network::mojom::CredentialsMode);
 
   // The redirect mode which is used in Fetch API.
-  BLINK_PLATFORM_EXPORT network::mojom::FetchRedirectMode GetFetchRedirectMode()
-      const;
-  BLINK_PLATFORM_EXPORT void SetFetchRedirectMode(
-      network::mojom::FetchRedirectMode);
+  BLINK_PLATFORM_EXPORT network::mojom::RedirectMode GetRedirectMode() const;
+  BLINK_PLATFORM_EXPORT void SetRedirectMode(network::mojom::RedirectMode);
 
   // The integrity which is used in Fetch API.
   BLINK_PLATFORM_EXPORT WebString GetFetchIntegrity() const;
@@ -388,6 +385,10 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT base::Optional<WebString> GetDevToolsId() const;
 
   BLINK_PLATFORM_EXPORT int GetLoadFlagsForWebUrlRequest() const;
+
+  BLINK_PLATFORM_EXPORT bool IsFromOriginDirtyStyleSheet() const;
+
+  BLINK_PLATFORM_EXPORT bool IsSignedExchangePrefetchCacheEnabled() const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();

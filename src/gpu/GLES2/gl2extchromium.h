@@ -113,6 +113,10 @@ typedef void(GL_APIENTRYP PFNGLRELEASETEXIMAGE2DCHROMIUMPROC)(GLenum target,
 #define GL_RGB_YCBCR_420V_CHROMIUM 0x78FC
 #endif
 
+#ifndef GL_RGB_YCBCR_P010_CHROMIUM
+#define GL_RGB_YCBCR_P010_CHROMIUM 0x78FD
+#endif
+
 /* GL_CHROMIUM_deschedule */
 #ifndef GL_CHROMIUM_deschedule
 #define GL_CHROMIUM_deschedule 1
@@ -775,6 +779,7 @@ GL_APICALL void GL_APIENTRY
 glScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
                                      GLboolean is_clipped,
                                      const GLfloat* clip_rect,
+                                     const GLfloat* rounded_corner_bounds,
                                      GLint sorting_context_id,
                                      const GLfloat* transform);
 GL_APICALL void GL_APIENTRY
@@ -791,6 +796,7 @@ typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERSHAREDSTATECHROMIUMPROC)(
     GLfloat opacity,
     GLboolean is_clipped,
     const GLfloat* clip_rect,
+    GLfloat clip_rect_corner_radius,
     GLint sorting_context_id,
     const GLfloat* transform);
 typedef void(GL_APIENTRYP PFNGLSCHEDULECALAYERCHROMIUMPROC)(

@@ -236,7 +236,8 @@ void ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForNavigation(
     DVLOG(1) << "There are no app candidates for this URL: " << url;
     chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
         /*selected_app_package=*/std::string(), apps::mojom::AppType::kUnknown,
-        apps::IntentPickerCloseReason::PICKER_ERROR,
+        apps::IntentPickerCloseReason::ERROR_BEFORE_PICKER,
+        apps::Source::kHttpOrHttps,
         /*should_persist=*/false);
     std::move(callback).Run(apps::AppsNavigationAction::RESUME, {});
     return;
@@ -310,7 +311,7 @@ apps::PreferredPlatform ArcIntentPickerAppFetcher::DidLaunchPreferredArcApp(
     }
 
     if (!instance) {
-      close_reason = apps::IntentPickerCloseReason::PICKER_ERROR;
+      close_reason = apps::IntentPickerCloseReason::ERROR_BEFORE_PICKER;
     } else if (ArcIntentHelperBridge::IsIntentHelperPackage(package_name)) {
       IntentPickerTabHelper::SetShouldShowIcon(web_contents(), true);
       preferred_platform = apps::PreferredPlatform::NATIVE_CHROME;
@@ -320,7 +321,8 @@ apps::PreferredPlatform ArcIntentPickerAppFetcher::DidLaunchPreferredArcApp(
       app_type = apps::mojom::AppType::kArc;
     }
     chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
-        package_name, app_type, close_reason, /*should_persist=*/false);
+        package_name, app_type, close_reason, apps::Source::kHttpOrHttps,
+        /*should_persist=*/false);
   }
 
   return preferred_platform;
@@ -339,8 +341,8 @@ void ArcIntentPickerAppFetcher::GetArcAppIcons(
     LOG(ERROR) << "Cannot get an instance of ArcIntentHelperBridge";
     chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
         /*selected_app_package=*/std::string(), apps::mojom::AppType::kUnknown,
-        apps::IntentPickerCloseReason::PICKER_ERROR,
-        /*should_persist=*/false);
+        apps::IntentPickerCloseReason::ERROR_BEFORE_PICKER,
+        apps::Source::kHttpOrHttps, /*should_persist=*/false);
     std::move(callback).Run({});
     return;
   }

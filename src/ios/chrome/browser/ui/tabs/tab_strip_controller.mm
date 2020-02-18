@@ -21,8 +21,6 @@
 #import "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
@@ -71,7 +69,7 @@ const NSTimeInterval kTabStripFadeAnimationDuration = 0.15;
 const NSTimeInterval kDragAndDropLongPressDuration = 0.4;
 
 // Tab dimensions.
-const CGFloat kTabOverlap = 26.0;
+const CGFloat kTabOverlap = 32.0;
 const CGFloat kTabOverlapForCompactLayout = 30.0;
 
 const CGFloat kNewTabOverlap = 13.0;
@@ -120,7 +118,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
 // Returns the background color.
 UIColor* BackgroundColor() {
-  return [UIColor colorWithRed:0.11 green:0.11 blue:0.11 alpha:1.0];
+  return UIColor.blackColor;
 }
 
 }  // namespace
@@ -456,21 +454,15 @@ UIColor* BackgroundColor() {
     _buttonNewTab.autoresizingMask = (UIViewAutoresizingFlexibleRightMargin |
                                       UIViewAutoresizingFlexibleBottomMargin);
     _buttonNewTab.imageView.contentMode = UIViewContentModeCenter;
-    UIImage* buttonNewTabImage = nil;
-    UIImage* buttonNewTabPressedImage = nil;
 
-    if (_style == INCOGNITO) {
-      buttonNewTabImage = [UIImage imageNamed:@"tabstrip_new_tab_incognito"];
-      buttonNewTabPressedImage =
-          [UIImage imageNamed:@"tabstrip_new_tab_incognito_pressed"];
-    } else {
-      buttonNewTabImage = [UIImage imageNamed:@"tabstrip_new_tab"];
-      buttonNewTabPressedImage =
-          [UIImage imageNamed:@"tabstrip_new_tab_pressed"];
-    }
+    UIImage* buttonNewTabImage = [UIImage imageNamed:@"tabstrip_new_tab"];
     [_buttonNewTab setImage:buttonNewTabImage forState:UIControlStateNormal];
+
+    UIImage* buttonNewTabPressedImage =
+        [UIImage imageNamed:@"tabstrip_new_tab_pressed"];
     [_buttonNewTab setImage:buttonNewTabPressedImage
                    forState:UIControlStateHighlighted];
+
     UIEdgeInsets imageInsets = UIEdgeInsetsMake(
         kNewTabButtonTopImageInset, kNewTabButtonHorizontalImageInset,
         kNewTabButtonBottomImageInset, kNewTabButtonHorizontalImageInset);
@@ -572,17 +564,7 @@ UIColor* BackgroundColor() {
     [view setTransform:CGAffineTransformMakeScale(-1, 1)];
   [view setIncognitoStyle:(_style == INCOGNITO)];
   [view setContentMode:UIViewContentModeRedraw];
-  [[view titleLabel] setText:tab_util::GetTabTitle(webState)];
-  [view setFavicon:nil];
-
-  favicon::FaviconDriver* faviconDriver =
-      favicon::WebFaviconDriver::FromWebState(webState);
-  if (faviconDriver && faviconDriver->FaviconIsValid()) {
-    gfx::Image favicon = faviconDriver->GetFavicon();
-    if (!favicon.IsEmpty())
-      [view setFavicon:favicon.ToUIImage()];
-  }
-
+  [self updateTabView:view withWebState:webState];
   // Install a long press gesture recognizer to handle drag and drop.
   UILongPressGestureRecognizer* longPress =
       [[UILongPressGestureRecognizer alloc]
@@ -764,6 +746,20 @@ UIColor* BackgroundColor() {
   }
 }
 
+// Updates the title and the favicon of the |view| with data from |webState|.
+- (void)updateTabView:(TabView*)view withWebState:(web::WebState*)webState {
+  [[view titleLabel] setText:tab_util::GetTabTitle(webState)];
+  [view setFavicon:nil];
+  favicon::FaviconDriver* faviconDriver =
+      favicon::WebFaviconDriver::FromWebState(webState);
+  if (faviconDriver && faviconDriver->FaviconIsValid()) {
+    gfx::Image favicon = faviconDriver->GetFavicon();
+    if (!favicon.IsEmpty())
+      [view setFavicon:favicon.ToUIImage()];
+  }
+  [_tabStripView setNeedsLayout];
+}
+
 #pragma mark -
 #pragma mark Tab Drag and Drop methods
 
@@ -779,10 +775,9 @@ UIColor* BackgroundColor() {
 
   // Install the dimming view, hide the new tab button, and select the tab so it
   // appears highlighted.
-  Tab* tab = [_tabModel tabAtIndex:index];
   self.highlightsSelectedTab = YES;
   _buttonNewTab.hidden = YES;
-  [_tabModel setCurrentTab:tab];
+  _tabModel.webStateList->ActivateWebStateAt(index);
 
   // Set up initial drag state.
   _lastDragLocation = [gesture locationInView:[_tabStripView superview]];
@@ -842,15 +837,14 @@ UIColor* BackgroundColor() {
     return;
   }
 
-  Tab* tab = [_tabModel tabAtIndex:fromIndex];
   NSUInteger toIndex = _placeholderGapModelIndex;
   DCHECK_NE(NSNotFound, static_cast<NSInteger>(toIndex));
   DCHECK_LT(toIndex, [_tabModel count]);
 
   // Reset drag state variables before notifying the model that the tab moved.
   [self resetDragState];
-
-  [_tabModel moveTab:tab toIndex:toIndex];
+  _tabModel.webStateList->MoveWebStateAt(static_cast<int>(fromIndex),
+                                         static_cast<int>(toIndex));
   [self setNeedsLayoutWithAnimation];
 }
 
@@ -1121,6 +1115,15 @@ UIColor* BackgroundColor() {
   [self updateContentOffsetForWebStateIndex:index isNewWebState:YES];
 
   [self updateTabCount];
+}
+
+// Observer method, WebState replaced in |webStateList|.
+- (void)webStateList:(WebStateList*)webStateList
+    didReplaceWebState:(web::WebState*)oldWebState
+          withWebState:(web::WebState*)newWebState
+               atIndex:(int)atIndex {
+  TabView* view = [self tabViewForWebState:newWebState];
+  [self updateTabView:view withWebState:newWebState];
 }
 
 #pragma mark -
@@ -1470,7 +1473,8 @@ UIColor* BackgroundColor() {
                                              : [self tabStripVisibleSpace];
 
   // The array and model indexes of the selected tab.
-  NSUInteger selectedModelIndex = [_tabModel indexOfTab:[_tabModel currentTab]];
+  NSUInteger selectedModelIndex =
+      static_cast<NSUInteger>(_tabModel.webStateList->active_index());
   NSUInteger selectedArrayIndex = [self indexForModelIndex:selectedModelIndex];
 
   // This method lays out tabs in two coordinate systems.  The first, the
@@ -1774,7 +1778,7 @@ UIColor* BackgroundColor() {
     SnapshotTabHelper::FromWebState(_tabModel.webStateList->GetActiveWebState())
         ->UpdateSnapshotWithCallback(nil);
   }
-  [_tabModel setCurrentTab:[_tabModel tabAtIndex:index]];
+  _tabModel.webStateList->ActivateWebStateAt(static_cast<int>(index));
   [self updateContentOffsetForWebStateIndex:index isNewWebState:NO];
 }
 

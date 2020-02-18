@@ -177,14 +177,14 @@ class Restrictions {
         break;
       case BulkPrintersCalculator::WHITELIST_ONLY:
         for (const auto& printer : *printers_cache_) {
-          if (base::ContainsKey(whitelist_, printer->id())) {
+          if (base::Contains(whitelist_, printer->id())) {
             task_data->printers.insert({printer->id(), *printer});
           }
         }
         break;
       case BulkPrintersCalculator::BLACKLIST_ONLY:
         for (const auto& printer : *printers_cache_) {
-          if (!base::ContainsKey(blacklist_, printer->id())) {
+          if (!base::Contains(blacklist_, printer->id())) {
             task_data->printers.insert({printer->id(), *printer});
           }
         }

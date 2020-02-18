@@ -74,6 +74,9 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
   void SetBitrateAllocationObserver(
       VideoBitrateAllocationObserver* bitrate_observer) override;
 
+  void SetFecControllerOverride(
+      FecControllerOverride* fec_controller_override) override;
+
   void ConfigureEncoder(VideoEncoderConfig config,
                         size_t max_data_payload_length) override;
 
@@ -262,6 +265,7 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
   // Set when configuration must create a new encoder object, e.g.,
   // because of a codec change.
   bool pending_encoder_creation_ RTC_GUARDED_BY(&encoder_queue_);
+
   absl::optional<VideoFrameInfo> last_frame_info_
       RTC_GUARDED_BY(&encoder_queue_);
   int crop_width_ RTC_GUARDED_BY(&encoder_queue_);
@@ -271,6 +275,13 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
   absl::optional<EncoderRateSettings> last_encoder_rate_settings_
       RTC_GUARDED_BY(&encoder_queue_);
   bool encoder_paused_and_dropped_frame_ RTC_GUARDED_BY(&encoder_queue_);
+
+  // Set to true if at least one frame was sent to encoder since last encoder
+  // initialization.
+  bool was_encode_called_since_last_initialization_
+      RTC_GUARDED_BY(&encoder_queue_);
+
+  bool encoder_failed_ RTC_GUARDED_BY(&encoder_queue_);
   Clock* const clock_;
   // Counters used for deciding if the video resolution or framerate is
   // currently restricted, and if so, why, on a per degradation preference
@@ -282,7 +293,7 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
   // Set depending on degradation preferences.
   DegradationPreference degradation_preference_ RTC_GUARDED_BY(&encoder_queue_);
 
-  BalancedDegradationSettings balanced_settings_;
+  const BalancedDegradationSettings balanced_settings_;
 
   struct AdaptationRequest {
     // The pixel count produced by the source at the time of the adaptation.
@@ -317,11 +328,15 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
 
   VideoBitrateAllocationObserver* bitrate_observer_
       RTC_GUARDED_BY(&encoder_queue_);
+  FecControllerOverride* fec_controller_override_
+      RTC_GUARDED_BY(&encoder_queue_);
   absl::optional<int64_t> last_parameters_update_ms_
       RTC_GUARDED_BY(&encoder_queue_);
   absl::optional<int64_t> last_encode_info_ms_ RTC_GUARDED_BY(&encoder_queue_);
 
   VideoEncoder::EncoderInfo encoder_info_ RTC_GUARDED_BY(&encoder_queue_);
+  absl::optional<VideoEncoder::ResolutionBitrateLimits> encoder_bitrate_limits_
+      RTC_GUARDED_BY(&encoder_queue_);
   VideoEncoderFactory::CodecInfo codec_info_ RTC_GUARDED_BY(&encoder_queue_);
   VideoCodec send_codec_ RTC_GUARDED_BY(&encoder_queue_);
 

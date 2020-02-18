@@ -11,9 +11,6 @@
 
 namespace performance_manager {
 
-FrameNodeImplObserver::FrameNodeImplObserver() = default;
-FrameNodeImplObserver::~FrameNodeImplObserver() = default;
-
 FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
                              ProcessNodeImpl* process_node,
                              PageNodeImpl* page_node,
@@ -104,6 +101,38 @@ void FrameNodeImpl::OnNonPersistentNotificationCreated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnNonPersistentNotificationCreated(this);
+  for (auto* observer : GetObservers())
+    observer->OnNonPersistentNotificationCreated(this);
+}
+
+bool FrameNodeImpl::IsMainFrame() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return !parent_frame_node_;
+}
+
+bool FrameNodeImpl::AreAllInterventionPoliciesSet() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // The convention is that policies are first set en masse, in order. So if
+  // the last policy is set then they are all considered to be set. Check this
+  // in DEBUG builds.
+#if DCHECK_IS_ON()
+  bool seen_unset_policy = false;
+  for (size_t i = 0; i < base::size(intervention_policy_); ++i) {
+    if (!seen_unset_policy) {
+      seen_unset_policy =
+          intervention_policy_[i] !=
+          resource_coordinator::mojom::InterventionPolicy::kUnknown;
+    } else {
+      // Once a first unset policy is seen, all subsequent policies must be
+      // unset.
+      DCHECK_NE(resource_coordinator::mojom::InterventionPolicy::kUnknown,
+                intervention_policy_[i]);
+    }
+  }
+#endif
+
+  return intervention_policy_[base::size(intervention_policy_) - 1] !=
+         resource_coordinator::mojom::InterventionPolicy::kUnknown;
 }
 
 FrameNodeImpl* FrameNodeImpl::parent_frame_node() const {
@@ -196,10 +225,6 @@ void FrameNodeImpl::SetIsCurrent(bool is_current) {
 #endif
 }
 
-bool FrameNodeImpl::IsMainFrame() const {
-  return !parent_frame_node_;
-}
-
 void FrameNodeImpl::OnNavigationCommitted(const GURL& url, bool same_document) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -235,31 +260,6 @@ void FrameNodeImpl::OnNavigationCommitted(const GURL& url, bool same_document) {
   document_.Reset(this, url);
 }
 
-bool FrameNodeImpl::AreAllInterventionPoliciesSet() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // The convention is that policies are first set en masse, in order. So if
-  // the last policy is set then they are all considered to be set. Check this
-  // in DEBUG builds.
-#if DCHECK_IS_ON()
-  bool seen_unset_policy = false;
-  for (size_t i = 0; i < base::size(intervention_policy_); ++i) {
-    if (!seen_unset_policy) {
-      seen_unset_policy =
-          intervention_policy_[i] !=
-          resource_coordinator::mojom::InterventionPolicy::kUnknown;
-    } else {
-      // Once a first unset policy is seen, all subsequent policies must be
-      // unset.
-      DCHECK_NE(resource_coordinator::mojom::InterventionPolicy::kUnknown,
-                intervention_policy_[i]);
-    }
-  }
-#endif
-
-  return intervention_policy_[base::size(intervention_policy_) - 1] !=
-         resource_coordinator::mojom::InterventionPolicy::kUnknown;
-}  // namespace performance_manager
-
 void FrameNodeImpl::SetAllInterventionPoliciesForTesting(
     resource_coordinator::mojom::InterventionPolicy policy) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -269,6 +269,81 @@ void FrameNodeImpl::SetAllInterventionPoliciesForTesting(
             i),
         policy);
   }
+}
+
+const FrameNode* FrameNodeImpl::GetParentFrameNode() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return parent_frame_node();
+}
+
+const PageNode* FrameNodeImpl::GetPageNode() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return page_node();
+}
+
+const ProcessNode* FrameNodeImpl::GetProcessNode() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return process_node();
+}
+
+int FrameNodeImpl::GetFrameTreeNodeId() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return frame_tree_node_id();
+}
+
+const base::UnguessableToken& FrameNodeImpl::GetDevToolsToken() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return dev_tools_token();
+}
+
+int32_t FrameNodeImpl::GetBrowsingInstanceId() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return browsing_instance_id();
+}
+
+int32_t FrameNodeImpl::GetSiteInstanceId() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return site_instance_id();
+}
+
+const base::flat_set<const FrameNode*> FrameNodeImpl::GetChildFrameNodes()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::flat_set<const FrameNode*> children;
+  for (auto* child : child_frame_nodes())
+    children.insert(static_cast<const FrameNode*>(child));
+  DCHECK_EQ(children.size(), child_frame_nodes().size());
+  return children;
+}
+
+FrameNodeImpl::LifecycleState FrameNodeImpl::GetLifecycleState() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return lifecycle_state();
+}
+
+bool FrameNodeImpl::HasNonemptyBeforeUnload() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return has_nonempty_beforeunload();
+}
+
+const GURL& FrameNodeImpl::GetURL() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return url();
+}
+
+bool FrameNodeImpl::IsCurrent() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_current();
+}
+
+bool FrameNodeImpl::GetNetworkAlmostIdle() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return network_almost_idle();
+}
+
+bool FrameNodeImpl::IsAdFrame() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_ad_frame();
 }
 
 void FrameNodeImpl::AddChildFrame(FrameNodeImpl* child_frame_node) {
@@ -362,8 +437,5 @@ void FrameNodeImpl::DocumentProperties::Reset(FrameNodeImpl* frame_node,
   // Network is busy on navigation.
   network_almost_idle.SetAndMaybeNotify(frame_node, false);
 }
-
-FrameNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
-FrameNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

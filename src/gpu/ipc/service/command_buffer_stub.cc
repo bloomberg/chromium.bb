@@ -49,10 +49,6 @@
 #include "base/win/win_util.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "gpu/ipc/service/stream_texture_android.h"
-#endif
-
 namespace gpu {
 struct WaitForCommandState {
   WaitForCommandState(int32_t start, int32_t end, IPC::Message* reply)
@@ -711,8 +707,9 @@ void CommandBufferStub::UpdateActiveUrl() {
 
 void CommandBufferStub::MarkContextLost() {
   if (!command_buffer_ ||
-      command_buffer_->GetState().error == error::kLostContext)
+      command_buffer_->GetState().error == error::kLostContext) {
     return;
+  }
 
   command_buffer_->SetContextLostReason(error::kUnknown);
   if (decoder_context_)

@@ -70,7 +70,10 @@ class Cronet_EngineImpl : public Cronet_Engine {
   // Provide |request_info| to all registered RequestFinishedListeners.
   void ReportRequestFinished(
       scoped_refptr<base::RefCountedData<Cronet_RequestFinishedInfo>>
-          request_info);
+          request_info,
+      scoped_refptr<base::RefCountedData<Cronet_UrlResponseInfo>>
+          url_response_info,
+      scoped_refptr<base::RefCountedData<Cronet_Error>> error);
 
  private:
   class StreamEngineImpl;

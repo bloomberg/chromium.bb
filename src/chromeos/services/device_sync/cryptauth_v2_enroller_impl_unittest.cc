@@ -15,7 +15,7 @@
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/services/device_sync/cryptauth_constants.h"
+#include "chromeos/services/device_sync/cryptauth_enrollment_constants.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_result.h"
 #include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_proof_computer_impl.h"
@@ -113,28 +113,6 @@ const CryptAuthKey kClientEphemeralDh(kClientDhPublicKey,
                                       kClientDhPrivateKey,
                                       CryptAuthKey::Status::kActive,
                                       KeyType::P256);
-
-class FakeCryptAuthKeyCreatorFactory : public CryptAuthKeyCreatorImpl::Factory {
- public:
-  FakeCryptAuthKeyCreatorFactory() = default;
-
-  ~FakeCryptAuthKeyCreatorFactory() override = default;
-
-  FakeCryptAuthKeyCreator* instance() { return instance_; }
-
- private:
-  // CryptAuthKeyCreatorImpl::Factory:
-  std::unique_ptr<CryptAuthKeyCreator> BuildInstance() override {
-    auto instance = std::make_unique<FakeCryptAuthKeyCreator>();
-    instance_ = instance.get();
-
-    return instance;
-  }
-
-  FakeCryptAuthKeyCreator* instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthKeyCreatorFactory);
-};
 
 class FakeCryptAuthKeyProofComputerFactory
     : public CryptAuthKeyProofComputerImpl::Factory {
@@ -433,8 +411,7 @@ class DeviceSyncCryptAuthV2EnrollerImplTest
              name_key_pair : expected_new_keys) {
       const CryptAuthKeyBundle::Name& bundle_name = name_key_pair.first;
       const CryptAuthKey& key = name_key_pair.second;
-      ASSERT_TRUE(
-          base::ContainsKey(key_creator()->keys_to_create(), bundle_name));
+      ASSERT_TRUE(base::Contains(key_creator()->keys_to_create(), bundle_name));
       const CryptAuthKeyCreator::CreateKeyData& create_key_data =
           key_creator()->keys_to_create().find(bundle_name)->second;
 
@@ -804,7 +781,7 @@ TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, Failure_MissingSessionId) {
              GetPreviousClientDirectivePolicyReferenceForTest());
 
   SyncKeysResponse sync_keys_response = BuildSyncKeysResponse();
-  sync_keys_response.release_random_session_id();
+  sync_keys_response.clear_random_session_id();
 
   SendSyncKeysResponse(sync_keys_response);
 
@@ -821,7 +798,7 @@ TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, Failure_MissingClientDirective) {
              GetPreviousClientDirectivePolicyReferenceForTest());
 
   SyncKeysResponse sync_keys_response = BuildSyncKeysResponse();
-  sync_keys_response.release_client_directive();
+  sync_keys_response.clear_client_directive();
 
   SendSyncKeysResponse(sync_keys_response);
 
@@ -980,7 +957,7 @@ TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest,
           SyncSingleKeyResponse::ACTIVE /* new_key_creation */,
           KeyType::RAW256 /* new_key_type */,
           base::nullopt /* new_key_directive */)});
-  sync_keys_response.release_server_ephemeral_dh();
+  sync_keys_response.clear_server_ephemeral_dh();
 
   SendSyncKeysResponse(sync_keys_response);
 

@@ -4,27 +4,36 @@
 
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_pointer_source_pose.h"
 
+#include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_input_location.h"
+
 namespace device {
 
-MockWMRPointerSourcePose::MockWMRPointerSourcePose() {}
+MockWMRPointerSourcePose::MockWMRPointerSourcePose(ControllerFrameData data)
+    : data_(data) {}
 
 MockWMRPointerSourcePose::~MockWMRPointerSourcePose() = default;
 
 bool MockWMRPointerSourcePose::IsValid() const {
-  return true;
+  return data_.pose_data.is_valid;
 }
 
 ABI::Windows::Foundation::Numerics::Vector3 MockWMRPointerSourcePose::Position()
     const {
-  // TODO(https://crbug.com/926048): Actually implement.
-  return {1, 1, 1};
+  // Providing the same position and orientation as the controller should be
+  // valid and make it easy to actually point at things in tests if ever
+  // necessary.
+  ABI::Windows::Foundation::Numerics::Vector3 ret;
+  MockWMRInputLocation loc(data_);
+  loc.TryGetPosition(&ret);
+  return ret;
 }
 
 ABI::Windows::Foundation::Numerics::Quaternion
 MockWMRPointerSourcePose::Orientation() const {
-  // TODO(https://crbug.com/926048): Actually implement.
-  // For whatever reason, W is first?
-  return {1, 0, 0, 0};
+  ABI::Windows::Foundation::Numerics::Quaternion ret;
+  MockWMRInputLocation loc(data_);
+  loc.TryGetOrientation(&ret);
+  return ret;
 }
 
 }  // namespace device

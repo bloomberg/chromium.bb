@@ -8,9 +8,14 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/process/process_handle.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "content/browser/tracing/background_tracing_rule.h"
+#include "net/base/network_change_notifier.h"
 
 using base::trace_event::TraceConfig;
 
@@ -25,8 +30,10 @@ const char kConfigModePreemptive[] = "PREEMPTIVE_TRACING_MODE";
 const char kConfigModeReactive[] = "REACTIVE_TRACING_MODE";
 
 const char kConfigScenarioName[] = "scenario_name";
+const char kConfigTraceBrowserProcessOnly[] = "trace_browser_process_only";
 
 const char kConfigCategoryKey[] = "category";
+const char kConfigCustomCategoriesKey[] = "custom_categories";
 const char kConfigCategoryBenchmark[] = "BENCHMARK";
 const char kConfigCategoryBenchmarkDeep[] = "BENCHMARK_DEEP";
 const char kConfigCategoryBenchmarkGPU[] = "BENCHMARK_GPU";
@@ -42,6 +49,15 @@ const char kConfigCategoryBenchmarkRenderers[] = "BENCHMARK_RENDERERS";
 const char kConfigCategoryBenchmarkServiceworker[] = "BENCHMARK_SERVICEWORKER";
 const char kConfigCategoryBenchmarkPower[] = "BENCHMARK_POWER";
 const char kConfigCategoryBlinkStyle[] = "BLINK_STYLE";
+const char kConfigCategoryCustom[] = "CUSTOM";
+
+const char kConfigLowRamBufferSizeKb[] = "low_ram_buffer_size_kb";
+const char kConfigMediumRamBufferSizeKb[] = "medium_ram_buffer_size_kb";
+const char kConfigMobileNetworkBuferSizeKb[] = "mobile_network_buffer_size_kb";
+const char kConfigMaxBufferSizeKb[] = "max_buffer_size_kb";
+const char kConfigUploadLimitKb[] = "upload_limit_kb";
+const char kConfigUploadLimitNetworkKb[] = "upload_limit_network_kb";
+const char kConfigInterningResetIntervalMs[] = "interning_reset_interval_ms";
 
 }  // namespace
 
@@ -84,6 +100,8 @@ std::string BackgroundTracingConfigImpl::CategoryPresetToString(
       return kConfigCategoryBenchmarkPower;
     case BackgroundTracingConfigImpl::BLINK_STYLE:
       return kConfigCategoryBlinkStyle;
+    case BackgroundTracingConfigImpl::CUSTOM_CATEGORY_PRESET:
+      return kConfigCategoryCustom;
     case BackgroundTracingConfigImpl::CATEGORY_PRESET_UNSET:
       NOTREACHED();
   }
@@ -169,6 +187,10 @@ bool BackgroundTracingConfigImpl::StringToCategoryPreset(
 }
 
 void BackgroundTracingConfigImpl::IntoDict(base::DictionaryValue* dict) {
+  if (category_preset_ == CUSTOM_CATEGORY_PRESET) {
+    dict->SetString(kConfigCustomCategoriesKey, custom_categories_);
+  }
+
   switch (tracing_mode()) {
     case BackgroundTracingConfigImpl::PREEMPTIVE:
       dict->SetString(kConfigModeKey, kConfigModePreemptive);
@@ -214,6 +236,52 @@ void BackgroundTracingConfigImpl::AddReactiveRule(
   }
 }
 
+TraceConfig BackgroundTracingConfigImpl::GetTraceConfig() const {
+  base::trace_event::TraceRecordMode record_mode =
+      (tracing_mode() == BackgroundTracingConfigImpl::REACTIVE)
+          ? base::trace_event::RECORD_UNTIL_FULL
+          : base::trace_event::RECORD_CONTINUOUSLY;
+
+  TraceConfig chrome_config =
+      (category_preset() == CUSTOM_CATEGORY_PRESET
+           ? TraceConfig(custom_categories_, record_mode)
+           : GetConfigForCategoryPreset(category_preset(), record_mode));
+
+  if (trace_browser_process_only_) {
+    TraceConfig::ProcessFilterConfig process_config({base::GetCurrentProcId()});
+    chrome_config.SetProcessFilterConfig(process_config);
+  }
+
+  if (requires_anonymized_data_) {
+    chrome_config.EnableArgumentFilter();
+  }
+
+  chrome_config.SetTraceBufferSizeInKb(GetMaximumTraceBufferSizeKb());
+
+#if defined(OS_ANDROID)
+  // For legacy tracing backend, set low trace buffer size on Android in order
+  // to upload small trace files.
+  if (tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE) {
+    chrome_config.SetTraceBufferSizeInEvents(20000);
+  }
+#endif
+
+  return chrome_config;
+}
+
+size_t BackgroundTracingConfigImpl::GetTraceUploadLimitKb() const {
+#if defined(OS_ANDROID)
+  auto type = net::NetworkChangeNotifier::GetConnectionType();
+  UMA_HISTOGRAM_ENUMERATION(
+      "Tracing.Background.NetworkConnectionTypeWhenUploaded", type,
+      net::NetworkChangeNotifier::CONNECTION_LAST + 1);
+  if (net::NetworkChangeNotifier::IsConnectionCellular(type)) {
+    return upload_limit_network_kb_;
+  }
+#endif
+  return upload_limit_kb_;
+}
+
 // static
 std::unique_ptr<BackgroundTracingConfigImpl>
 BackgroundTracingConfigImpl::FromDict(const base::DictionaryValue* dict) {
@@ -235,6 +303,11 @@ BackgroundTracingConfigImpl::FromDict(const base::DictionaryValue* dict) {
 
   if (config) {
     dict->GetString(kConfigScenarioName, &config->scenario_name_);
+    config->SetBufferSizeLimits(dict);
+    bool value = false;
+    if (dict->GetBoolean(kConfigTraceBrowserProcessOnly, &value)) {
+      config->trace_browser_process_only_ = value;
+    }
   }
 
   return config;
@@ -249,13 +322,19 @@ BackgroundTracingConfigImpl::PreemptiveFromDict(
   std::unique_ptr<BackgroundTracingConfigImpl> config(
       new BackgroundTracingConfigImpl(BackgroundTracingConfigImpl::PREEMPTIVE));
 
-  std::string category_preset_string;
-  if (!dict->GetString(kConfigCategoryKey, &category_preset_string))
-    return nullptr;
+  if (dict->GetString(kConfigCustomCategoriesKey,
+                      &config->custom_categories_)) {
+    config->category_preset_ = CUSTOM_CATEGORY_PRESET;
+  } else {
+    std::string category_preset_string;
+    if (!dict->GetString(kConfigCategoryKey, &category_preset_string))
+      return nullptr;
 
-  if (!StringToCategoryPreset(category_preset_string,
-                              &config->category_preset_))
-    return nullptr;
+    if (!StringToCategoryPreset(category_preset_string,
+                                &config->category_preset_)) {
+      return nullptr;
+    }
+  }
 
   const base::ListValue* configs_list = nullptr;
   if (!dict->GetList(kConfigsKey, &configs_list))
@@ -284,6 +363,20 @@ BackgroundTracingConfigImpl::ReactiveFromDict(
   std::unique_ptr<BackgroundTracingConfigImpl> config(
       new BackgroundTracingConfigImpl(BackgroundTracingConfigImpl::REACTIVE));
 
+  std::string category_preset_string;
+  bool has_global_categories = false;
+  if (dict->GetString(kConfigCustomCategoriesKey,
+                      &config->custom_categories_)) {
+    config->category_preset_ = CUSTOM_CATEGORY_PRESET;
+    has_global_categories = true;
+  } else if (dict->GetString(kConfigCategoryKey, &category_preset_string)) {
+    if (!StringToCategoryPreset(category_preset_string,
+                                &config->category_preset_)) {
+      return nullptr;
+    }
+    has_global_categories = true;
+  }
+
   const base::ListValue* configs_list = nullptr;
   if (!dict->GetList(kConfigsKey, &configs_list))
     return nullptr;
@@ -293,15 +386,17 @@ BackgroundTracingConfigImpl::ReactiveFromDict(
     if (!it.GetAsDictionary(&config_dict))
       return nullptr;
 
-    std::string category_preset_string;
-    if (!config_dict->GetString(kConfigCategoryKey, &category_preset_string))
-      return nullptr;
+    // TODO(oysteine): Remove the per-rule category preset when configs have
+    // been updated to just specify the per-config category preset.
+    if (!has_global_categories &&
+        config_dict->GetString(kConfigCategoryKey, &category_preset_string)) {
+      if (!StringToCategoryPreset(category_preset_string,
+                                  &config->category_preset_)) {
+        return nullptr;
+      }
+    }
 
-    BackgroundTracingConfigImpl::CategoryPreset new_category_preset;
-    if (!StringToCategoryPreset(category_preset_string, &new_category_preset))
-      return nullptr;
-
-    config->AddReactiveRule(config_dict, new_category_preset);
+    config->AddReactiveRule(config_dict, config->category_preset_);
   }
 
   if (config->rules().empty())
@@ -346,7 +441,7 @@ TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
           "benchmark,toplevel,ipc,base,browser,navigation,omnibox,ui,shutdown,"
           "safe_browsing,Java,EarlyJava,loading,startup,mojom,renderer_host,"
           "disabled-by-default-system_stats,disabled-by-default-cpu_profiler,"
-          "dwrite,fonts",
+          "dwrite,fonts,ServiceWorker",
           record_mode);
       // Filter only browser process events.
       base::trace_event::TraceConfig::ProcessFilterConfig process_config(
@@ -358,6 +453,7 @@ TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
       return TraceConfig(
           "benchmark,toplevel,ipc,base,ui,v8,renderer,blink,blink_gc,mojom,"
           "latency,latencyInfo,renderer_host,cc,memory,dwrite,fonts,browser,"
+          "ServiceWorker,"
           "disabled-by-default-v8.gc,"
           "disabled-by-default-blink_gc,"
           "disabled-by-default-renderer.scheduler,"
@@ -367,7 +463,7 @@ TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
       return TraceConfig(
           "benchmark,toplevel,ipc,base,ServiceWorker,CacheStorage,Blob,"
           "loading,mojom,navigation,renderer,blink,blink_gc,blink.user_timing,"
-          "disabled-by-default-network",
+          "fonts,disabled-by-default-cpu_profiler,disabled-by-default-network",
           record_mode);
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_POWER:
       return TraceConfig(
@@ -390,10 +486,59 @@ TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
       return config;
     }
     case BackgroundTracingConfigImpl::CategoryPreset::CATEGORY_PRESET_UNSET:
+    case BackgroundTracingConfigImpl::CategoryPreset::CUSTOM_CATEGORY_PRESET:
       NOTREACHED();
   }
   NOTREACHED();
   return TraceConfig();
+}
+
+void BackgroundTracingConfigImpl::SetBufferSizeLimits(
+    const base::DictionaryValue* dict) {
+  int value = 0;
+  if (dict->GetInteger(kConfigLowRamBufferSizeKb, &value)) {
+    low_ram_buffer_size_kb_ = value;
+  }
+  if (dict->GetInteger(kConfigMediumRamBufferSizeKb, &value)) {
+    medium_ram_buffer_size_kb_ = value;
+  }
+  if (dict->GetInteger(kConfigMobileNetworkBuferSizeKb, &value)) {
+    mobile_network_buffer_size_kb_ = value;
+  }
+  if (dict->GetInteger(kConfigMaxBufferSizeKb, &value)) {
+    max_buffer_size_kb_ = value;
+  }
+  if (dict->GetInteger(kConfigUploadLimitKb, &value)) {
+    upload_limit_kb_ = value;
+  }
+  if (dict->GetInteger(kConfigUploadLimitNetworkKb, &value)) {
+    upload_limit_network_kb_ = value;
+  }
+  if (dict->GetInteger(kConfigInterningResetIntervalMs, &value)) {
+    interning_reset_interval_ms_ = value;
+  }
+}
+
+int BackgroundTracingConfigImpl::GetMaximumTraceBufferSizeKb() const {
+  int64_t ram_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
+  if (ram_mb > 0 && ram_mb <= 1024) {
+    return low_ram_buffer_size_kb_;
+  }
+#if defined(OS_ANDROID)
+  auto type = net::NetworkChangeNotifier::GetConnectionType();
+  UMA_HISTOGRAM_ENUMERATION(
+      "Tracing.Background.NetworkConnectionTypeWhenStarted", type,
+      net::NetworkChangeNotifier::CONNECTION_LAST + 1);
+  if (net::NetworkChangeNotifier::IsConnectionCellular(type)) {
+    return mobile_network_buffer_size_kb_;
+  }
+#endif
+
+  if (ram_mb > 0 && ram_mb <= 2 * 1024) {
+    return medium_ram_buffer_size_kb_;
+  }
+
+  return max_buffer_size_kb_;
 }
 
 }  // namespace content

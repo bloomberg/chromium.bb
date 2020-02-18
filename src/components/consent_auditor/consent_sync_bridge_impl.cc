@@ -56,7 +56,7 @@ std::string GetStorageKeyFromSpecifics(const UserConsentSpecifics& specifics) {
 std::unique_ptr<EntityData> MoveToEntityData(
     std::unique_ptr<UserConsentSpecifics> specifics) {
   auto entity_data = std::make_unique<EntityData>();
-  entity_data->non_unique_name =
+  entity_data->name =
       base::NumberToString(specifics->client_consent_time_usec());
   entity_data->specifics.set_allocated_user_consent(specifics.release());
   return entity_data;
@@ -67,8 +67,7 @@ std::unique_ptr<EntityData> MoveToEntityData(
 ConsentSyncBridgeImpl::ConsentSyncBridgeImpl(
     OnceModelTypeStoreFactory store_factory,
     std::unique_ptr<ModelTypeChangeProcessor> change_processor)
-    : ModelTypeSyncBridge(std::move(change_processor)),
-      weak_ptr_factory_(this) {
+    : ModelTypeSyncBridge(std::move(change_processor)) {
   std::move(store_factory)
       .Run(syncer::USER_CONSENTS,
            base::BindOnce(&ConsentSyncBridgeImpl::OnStoreCreated,

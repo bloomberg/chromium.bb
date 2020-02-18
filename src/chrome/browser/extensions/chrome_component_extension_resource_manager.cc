@@ -18,16 +18,11 @@
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_string_util.h"
-#include "chrome/grit/component_extension_resources.h"
 #include "extensions/common/constants.h"
 #include "third_party/ink/grit/ink_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/file_manager/file_manager_resource_util.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
-#endif
-
-#if defined(KIOSK_NEXT) && defined(GOOGLE_CHROME_BUILD)
-#include "chrome/grit/kiosk_next_internal_resources_map.h"
 #endif
 
 namespace extensions {
@@ -41,11 +36,6 @@ ChromeComponentExtensionResourceManager() {
 #else
     {"web_store/webstore_icon_128.png", IDR_WEBSTORE_ICON},
     {"web_store/webstore_icon_16.png", IDR_WEBSTORE_ICON_16},
-#endif
-
-#if defined(KIOSK_NEXT)
-    {"chromeos/kiosk_next_home/kiosk_next_home.mojom.js",
-     IDR_KIOSK_NEXT_HOME_MOJOM_JS},
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -89,11 +79,6 @@ ChromeComponentExtensionResourceManager() {
   AddComponentResourceEntries(
       keyboard_resources,
       keyboard_resource_size);
-#endif
-
-#if defined(KIOSK_NEXT) && defined(GOOGLE_CHROME_BUILD)
-  AddComponentResourceEntries(kKioskNextInternalResources,
-                              kKioskNextInternalResourcesSize);
 #endif
 }
 
@@ -141,7 +126,7 @@ void ChromeComponentExtensionResourceManager::AddComponentResourceEntries(
         entries[i].name);
     resource_path = resource_path.NormalizePathSeparators();
 
-    DCHECK(!base::ContainsKey(path_to_resource_id_, resource_path));
+    DCHECK(!base::Contains(path_to_resource_id_, resource_path));
     path_to_resource_id_[resource_path] = entries[i].value;
   }
 }

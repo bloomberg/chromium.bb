@@ -134,7 +134,7 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
   }
 
   std::vector<StreamIdType> GetStreamChildren(
-      StreamIdType stream_id) const override {
+      StreamIdType /*stream_id*/) const override {
     return std::vector<StreamIdType>();
   }
 
@@ -258,6 +258,8 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
   // Returns the number of ready streams.
   size_t NumReadyStreams() const override { return num_ready_streams_; }
 
+  size_t NumRegisteredStreams() const override { return stream_infos_.size(); }
+
   SpdyString DebugString() const override {
     return SpdyStrCat(
         "PriorityWriteScheduler {num_streams=", stream_infos_.size(),
@@ -265,7 +267,7 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
   }
 
   // Returns true if a stream is ready.
-  bool IsStreamReady(StreamIdType stream_id) const {
+  bool IsStreamReady(StreamIdType stream_id) const override {
     auto it = stream_infos_.find(stream_id);
     if (it == stream_infos_.end()) {
       SPDY_DLOG(INFO) << "Stream " << stream_id << " not registered";

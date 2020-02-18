@@ -301,7 +301,9 @@ const extensions::Extension* AppShimInteractiveTest::InstallAppWithShim(
 
 namespace apps {
 
-// Shims require static libraries http://crbug.com/386024.
+// Shims require static libraries unless running from their original build
+// location.
+// https://crbug.com/386024, https://crrev.com/619648
 #if defined(COMPONENT_BUILD)
 #define MAYBE_Launch DISABLED_Launch
 #define MAYBE_HostedAppLaunch DISABLED_HostedAppLaunch
@@ -310,7 +312,7 @@ namespace apps {
 #else
 #define MAYBE_Launch DISABLED_Launch  // http://crbug.com/913490
 #define MAYBE_HostedAppLaunch DISABLED_HostedAppLaunch
-#define MAYBE_ShowWindow ShowWindow
+#define MAYBE_ShowWindow DISABLED_ShowWindow  // https://crbug.com/980072
 // http://crbug.com/517744 HostedAppLaunch fails with open as tab for apps
 // http://crbug.com/509774 this test is flaky so is disabled even in the
 // static build.

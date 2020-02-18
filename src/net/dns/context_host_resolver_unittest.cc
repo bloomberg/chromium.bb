@@ -71,13 +71,11 @@ TEST_F(ContextHostResolverTest, Resolve) {
   URLRequestContext context;
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("example.com", dns_protocol::kTypeA,
-                     DnsConfig::SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("example.com", dns_protocol::kTypeA, false /* secure */,
                      MockDnsClientRule::Result(BuildTestDnsResponse(
                          "example.com", kEndpoint.address())),
                      false /* delay */, &context);
-  rules.emplace_back("example.com", dns_protocol::kTypeAAAA,
-                     DnsConfig::SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("example.com", dns_protocol::kTypeAAAA, false /* secure */,
                      MockDnsClientRule::Result(MockDnsClientRule::EMPTY),
                      false /* delay */, &context);
   SetMockDnsRules(std::move(rules));
@@ -100,13 +98,11 @@ TEST_F(ContextHostResolverTest, Resolve) {
 TEST_F(ContextHostResolverTest, DestroyRequest) {
   // Setup delayed results for "example.com".
   MockDnsClientRuleList rules;
-  rules.emplace_back("example.com", dns_protocol::kTypeA,
-                     DnsConfig::SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("example.com", dns_protocol::kTypeA, false /* secure */,
                      MockDnsClientRule::Result(BuildTestDnsResponse(
                          "example.com", IPAddress(1, 2, 3, 4))),
                      true /* delay */);
-  rules.emplace_back("example.com", dns_protocol::kTypeAAAA,
-                     DnsConfig::SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("example.com", dns_protocol::kTypeAAAA, false /* secure */,
                      MockDnsClientRule::Result(MockDnsClientRule::EMPTY),
                      false /* delay */);
   SetMockDnsRules(std::move(rules));
@@ -136,22 +132,18 @@ TEST_F(ContextHostResolverTest, DestroyRequest) {
 TEST_F(ContextHostResolverTest, DestroyResolver) {
   // Setup delayed results for "example.com" and "google.com".
   MockDnsClientRuleList rules;
-  rules.emplace_back("example.com", dns_protocol::kTypeA,
-                     DnsConfig::SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("example.com", dns_protocol::kTypeA, false /* secure */,
                      MockDnsClientRule::Result(BuildTestDnsResponse(
                          "example.com", IPAddress(2, 3, 4, 5))),
                      true /* delay */);
-  rules.emplace_back("example.com", dns_protocol::kTypeAAAA,
-                     DnsConfig::SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("example.com", dns_protocol::kTypeAAAA, false /* secure */,
                      MockDnsClientRule::Result(MockDnsClientRule::EMPTY),
                      false /* delay */);
-  rules.emplace_back("google.com", dns_protocol::kTypeA,
-                     DnsConfig::SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("google.com", dns_protocol::kTypeA, false /* secure */,
                      MockDnsClientRule::Result(BuildTestDnsResponse(
                          "google.com", kEndpoint.address())),
                      true /* delay */);
-  rules.emplace_back("google.com", dns_protocol::kTypeAAAA,
-                     DnsConfig::SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("google.com", dns_protocol::kTypeAAAA, false /* secure */,
                      MockDnsClientRule::Result(MockDnsClientRule::EMPTY),
                      false /* delay */);
   SetMockDnsRules(std::move(rules));
@@ -193,13 +185,11 @@ TEST_F(ContextHostResolverTest, DestroyResolver) {
 TEST_F(ContextHostResolverTest, DestroyResolver_RemainingRequests) {
   // Setup delayed results for "example.com".
   MockDnsClientRuleList rules;
-  rules.emplace_back("example.com", dns_protocol::kTypeA,
-                     DnsConfig::SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("example.com", dns_protocol::kTypeA, false /* secure */,
                      MockDnsClientRule::Result(BuildTestDnsResponse(
                          "example.com", kEndpoint.address())),
                      true /* delay */);
-  rules.emplace_back("example.com", dns_protocol::kTypeAAAA,
-                     DnsConfig::SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("example.com", dns_protocol::kTypeAAAA, false /* secure */,
                      MockDnsClientRule::Result(MockDnsClientRule::EMPTY),
                      false /* delay */);
   SetMockDnsRules(std::move(rules));
@@ -240,13 +230,11 @@ TEST_F(ContextHostResolverTest, DestroyResolver_RemainingRequests) {
 
 TEST_F(ContextHostResolverTest, DestroyResolver_CompletedRequests) {
   MockDnsClientRuleList rules;
-  rules.emplace_back("example.com", dns_protocol::kTypeA,
-                     DnsConfig::SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("example.com", dns_protocol::kTypeA, false /* secure */,
                      MockDnsClientRule::Result(BuildTestDnsResponse(
                          "example.com", kEndpoint.address())),
                      false /* delay */);
-  rules.emplace_back("example.com", dns_protocol::kTypeAAAA,
-                     DnsConfig::SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("example.com", dns_protocol::kTypeAAAA, false /* secure */,
                      MockDnsClientRule::Result(MockDnsClientRule::EMPTY),
                      false /* delay */);
   SetMockDnsRules(std::move(rules));
@@ -300,13 +288,11 @@ TEST_F(ContextHostResolverTest, ResolveFromCache) {
 
 TEST_F(ContextHostResolverTest, ResultsAddedToCache) {
   MockDnsClientRuleList rules;
-  rules.emplace_back("example.com", dns_protocol::kTypeA,
-                     DnsConfig::DnsConfig::SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("example.com", dns_protocol::kTypeA, false /* secure */,
                      MockDnsClientRule::Result(BuildTestDnsResponse(
                          "example.com", kEndpoint.address())),
                      false /* delay */);
-  rules.emplace_back("example.com", dns_protocol::kTypeAAAA,
-                     DnsConfig::DnsConfig::SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("example.com", dns_protocol::kTypeAAAA, false /* secure */,
                      MockDnsClientRule::Result(MockDnsClientRule::EMPTY),
                      false /* delay */);
   SetMockDnsRules(std::move(rules));

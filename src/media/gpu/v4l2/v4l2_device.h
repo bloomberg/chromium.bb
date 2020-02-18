@@ -46,6 +46,7 @@ namespace media {
 class V4L2Queue;
 class V4L2BufferRefBase;
 class V4L2BuffersList;
+class V4L2DecodeSurface;
 
 // A unique reference to a buffer for clients to prepare and submit.
 //
@@ -80,7 +81,9 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // list.
   bool QueueUserPtr(const std::vector<void*>& ptrs) &&;
   // Queue a DMABUF buffer, assigning |fds| as file descriptors for each plane.
-  // The size of |fds| must be equal to the number of planes of this buffer.
+  // It is allowed the number of |fds| might be greater than the number of
+  // planes of this buffer. It happens when the v4l2 pixel format is single
+  // planar. The fd of the first plane is only used in that case.
   // If successful, true is returned and the reference to the buffer is dropped
   // so this reference becomes invalid.
   // In case of error, false is returned and the buffer is returned to the free
@@ -113,6 +116,11 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // Note: at the moment, this method is valid for MMAP buffers only. It will
   // return nullptr for any other buffer type.
   scoped_refptr<VideoFrame> GetVideoFrame() WARN_UNUSED_RESULT;
+
+  // Add the request or config store information to |surface|.
+  // TODO(acourbot): This method is a temporary hack. Implement proper config
+  // store/request API support.
+  void PrepareQueueBuffer(scoped_refptr<V4L2DecodeSurface> surface);
 
   // Return the V4L2 buffer ID of the underlying buffer.
   // TODO(acourbot) This is used for legacy clients but should be ultimately
@@ -358,6 +366,9 @@ class MEDIA_GPU_EXPORT V4L2Device
   // Returns whether |pix_fmt| is multi planar.
   static bool IsMultiPlanarV4L2PixFmt(uint32_t pix_fmt);
 
+  // Returns number of planes of |pix_fmt|.
+  static size_t GetNumPlanesOfV4L2PixFmt(uint32_t pix_fmt);
+
   enum class Type {
     kDecoder,
     kEncoder,
@@ -469,6 +480,8 @@ class MEDIA_GPU_EXPORT V4L2Device
                               gfx::Size* min_resolution,
                               gfx::Size* max_resolution);
 
+  std::vector<uint32_t> EnumerateSupportedPixelformats(v4l2_buf_type buf_type);
+
   // Return V4L2 pixelformats supported by the available image processor
   // devices for |buf_type|.
   virtual std::vector<uint32_t> GetSupportedImageProcessorPixelformats(
@@ -501,8 +514,6 @@ class MEDIA_GPU_EXPORT V4L2Device
       const uint32_t pixelformats[]);
 
   VideoEncodeAccelerator::SupportedProfiles EnumerateSupportedEncodeProfiles();
-
-  std::vector<uint32_t> EnumerateSupportedPixelformats(v4l2_buf_type buf_type);
 
  private:
   // Perform platform-specific initialization of the device instance.

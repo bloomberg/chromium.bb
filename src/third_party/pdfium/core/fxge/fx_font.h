@@ -13,6 +13,7 @@
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxge/fx_freetype.h"
+#include "third_party/base/span.h"
 
 /* Font pitch and family flags */
 #define FXFONT_FF_FIXEDPITCH (1 << 0)
@@ -54,9 +55,8 @@ class TextGlyphPos;
 
 FX_RECT GetGlyphsBBox(const std::vector<TextGlyphPos>& glyphs, int anti_alias);
 
-ByteString GetNameFromTT(const uint8_t* name_table,
-                         uint32_t name_table_size,
-                         uint32_t name);
+ByteString GetNameFromTT(pdfium::span<const uint8_t> name_table, uint32_t name);
+int GetTTCIndex(pdfium::span<const uint8_t> pFontData, uint32_t font_offset);
 
 inline bool FontStyleIsBold(uint32_t style) {
   return !!(style & FXFONT_BOLD);
@@ -92,5 +92,8 @@ inline bool FontFamilyIsRoman(uint32_t family) {
 inline bool FontFamilyIsScript(int32_t family) {
   return !!(family & FXFONT_FF_SCRIPT);
 }
+
+wchar_t PDF_UnicodeFromAdobeName(const char* name);
+ByteString PDF_AdobeNameFromUnicode(wchar_t unicode);
 
 #endif  // CORE_FXGE_FX_FONT_H_

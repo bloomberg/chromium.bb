@@ -3,15 +3,14 @@ package Compress::Raw::Zlib;
 
 require 5.006 ;
 require Exporter;
-use AutoLoader;
 use Carp ;
 
 use strict ;
 use warnings ;
 use bytes ;
-our ($VERSION, $XS_VERSION, @ISA, @EXPORT, %EXPORT_TAGS, @EXPORT_OK, $AUTOLOAD, %DEFLATE_CONSTANTS, @DEFLATE_CONSTANTS );
+our ($VERSION, $XS_VERSION, @ISA, @EXPORT, %EXPORT_TAGS, @EXPORT_OK, $AUTOLOAD, %DEFLATE_CONSTANTS, @DEFLATE_CONSTANTS);
 
-$VERSION = '2.054';
+$VERSION = '2.086';
 $XS_VERSION = $VERSION; 
 $VERSION = eval $VERSION;
 
@@ -138,10 +137,10 @@ use constant Parse_any      => 0x01;
 use constant Parse_unsigned => 0x02;
 use constant Parse_signed   => 0x04;
 use constant Parse_boolean  => 0x08;
-use constant Parse_string   => 0x10;
-use constant Parse_custom   => 0x12;
+#use constant Parse_string   => 0x10;
+#use constant Parse_custom   => 0x12;
 
-use constant Parse_store_ref => 0x100 ;
+#use constant Parse_store_ref => 0x100 ;
 
 use constant OFF_PARSED     => 0 ;
 use constant OFF_TYPE       => 1 ;
@@ -297,14 +296,14 @@ sub Compress::Raw::Zlib::Parameters::_checkType
 
     #local $Carp::CarpLevel = $level ;
     #print "PARSE $type $key $value $validate $sub\n" ;
-    if ( $type & Parse_store_ref)
-    {
-        #$value = $$value
-        #    if ref ${ $value } ;
-
-        $$output = $value ;
-        return 1;
-    }
+#    if ( $type & Parse_store_ref)
+#    {
+#        #$value = $$value
+#        #    if ref ${ $value } ;
+#
+#        $$output = $value ;
+#        return 1;
+#    }
 
     $value = $$value ;
 
@@ -340,11 +339,11 @@ sub Compress::Raw::Zlib::Parameters::_checkType
         $$output =  defined $value ? $value != 0 : 0 ;    
         return 1;
     }
-    elsif ($type & Parse_string)
-    {
-        $$output = defined $value ? $value : "" ;    
-        return 1;
-    }
+#    elsif ($type & Parse_string)
+#    {
+#        $$output = defined $value ? $value : "" ;    
+#        return 1;
+#    }
 
     $$output = $value ;
     return 1;
@@ -375,24 +374,25 @@ sub Compress::Raw::Zlib::Parameters::value
     return $self->{Got}{lc $name}[OFF_FIXED] ;
 }
 
+our $OPTIONS_deflate =   
+    {
+        'AppendOutput'  => [1, 1, Parse_boolean,  0],
+        'CRC32'         => [1, 1, Parse_boolean,  0],
+        'ADLER32'       => [1, 1, Parse_boolean,  0],
+        'Bufsize'       => [1, 1, Parse_unsigned, 4096],
+
+        'Level'         => [1, 1, Parse_signed,   Z_DEFAULT_COMPRESSION()],
+        'Method'        => [1, 1, Parse_unsigned, Z_DEFLATED()],
+        'WindowBits'    => [1, 1, Parse_signed,   MAX_WBITS()],
+        'MemLevel'      => [1, 1, Parse_unsigned, MAX_MEM_LEVEL()],
+        'Strategy'      => [1, 1, Parse_unsigned, Z_DEFAULT_STRATEGY()],
+        'Dictionary'    => [1, 1, Parse_any,      ""],
+    };
+
 sub Compress::Raw::Zlib::Deflate::new
 {
     my $pkg = shift ;
-    my ($got) = ParseParameters(0,
-            {
-                'AppendOutput'  => [1, 1, Parse_boolean,  0],
-                'CRC32'         => [1, 1, Parse_boolean,  0],
-                'ADLER32'       => [1, 1, Parse_boolean,  0],
-                'Bufsize'       => [1, 1, Parse_unsigned, 4096],
- 
-                'Level'         => [1, 1, Parse_signed,   Z_DEFAULT_COMPRESSION()],
-                'Method'        => [1, 1, Parse_unsigned, Z_DEFLATED()],
-                'WindowBits'    => [1, 1, Parse_signed,   MAX_WBITS()],
-                'MemLevel'      => [1, 1, Parse_unsigned, MAX_MEM_LEVEL()],
-                'Strategy'      => [1, 1, Parse_unsigned, Z_DEFAULT_STRATEGY()],
-                'Dictionary'    => [1, 1, Parse_any,      ""],
-            }, @_) ;
-
+    my ($got) = ParseParameters(0, $OPTIONS_deflate, @_);
 
     croak "Compress::Raw::Zlib::Deflate::new: Bufsize must be >= 1, you specified " . 
             $got->value('Bufsize')
@@ -431,22 +431,23 @@ sub Compress::Raw::Zlib::deflateStream::STORABLE_thaw
 }
 
 
+our $OPTIONS_inflate = 
+    {
+        'AppendOutput'  => [1, 1, Parse_boolean,  0],
+        'LimitOutput'   => [1, 1, Parse_boolean,  0],
+        'CRC32'         => [1, 1, Parse_boolean,  0],
+        'ADLER32'       => [1, 1, Parse_boolean,  0],
+        'ConsumeInput'  => [1, 1, Parse_boolean,  1],
+        'Bufsize'       => [1, 1, Parse_unsigned, 4096],
+ 
+        'WindowBits'    => [1, 1, Parse_signed,   MAX_WBITS()],
+        'Dictionary'    => [1, 1, Parse_any,      ""],
+    } ;
+
 sub Compress::Raw::Zlib::Inflate::new
 {
     my $pkg = shift ;
-    my ($got) = ParseParameters(0,
-                    {
-                        'AppendOutput'  => [1, 1, Parse_boolean,  0],
-                        'LimitOutput'   => [1, 1, Parse_boolean,  0],
-                        'CRC32'         => [1, 1, Parse_boolean,  0],
-                        'ADLER32'       => [1, 1, Parse_boolean,  0],
-                        'ConsumeInput'  => [1, 1, Parse_boolean,  1],
-                        'Bufsize'       => [1, 1, Parse_unsigned, 4096],
-                 
-                        'WindowBits'    => [1, 1, Parse_signed,   MAX_WBITS()],
-                        'Dictionary'    => [1, 1, Parse_any,      ""],
-            }, @_) ;
-
+    my ($got) = ParseParameters(0, $OPTIONS_inflate, @_);
 
     croak "Compress::Raw::Zlib::Inflate::new: Bufsize must be >= 1, you specified " . 
             $got->value('Bufsize')
@@ -591,8 +592,6 @@ sub Compress::Raw::Zlib::deflateStream::deflateParams
 }
 
 
-# Autoload methods go after __END__, and are processed by the autosplit program.
-
 1;
 __END__
 
@@ -636,8 +635,8 @@ Compress::Raw::Zlib - Low-Level Interface to zlib compression library
     $crc = adler32($buffer [,$crc]) ;
     $crc = crc32($buffer [,$crc]) ;
 
-    $crc = adler32_combine($crc1, $crc2, $len2)l
-    $crc = crc32_combine($adler1, $adler2, $len2)
+    $crc = crc32_combine($crc1, $crc2, $len2);
+    $adler = adler32_combine($adler1, $adler2, $len2);
 
     my $version = Compress::Raw::Zlib::zlib_version();
     my $flags = Compress::Raw::Zlib::zlibCompileFlags();
@@ -646,7 +645,7 @@ Compress::Raw::Zlib - Low-Level Interface to zlib compression library
 
 The I<Compress::Raw::Zlib> module provides a Perl interface to the I<zlib>
 compression library (see L</AUTHOR> for details about where to get
-I<zlib>). 
+I<zlib>).
 
 =head1 Compress::Raw::Zlib::Deflate
 
@@ -657,7 +656,7 @@ Here is a definition of the interface available:
 
 =head2 B<($d, $status) = new Compress::Raw::Zlib::Deflate( [OPT] ) >
 
-Initialises a deflation object. 
+Initialises a deflation object.
 
 If you are familiar with the I<zlib> library, it combines the
 features of the I<zlib> functions C<deflateInit>, C<deflateInit2>
@@ -728,7 +727,7 @@ The default is C<Z_DEFAULT_STRATEGY>.
 
 When a dictionary is specified I<Compress::Raw::Zlib> will automatically
 call C<deflateSetDictionary> directly after calling C<deflateInit>. The
-Adler32 value for the dictionary can be obtained by calling the method 
+Adler32 value for the dictionary can be obtained by calling the method
 C<$d-E<gt>dict_adler()>.
 
 The default is no dictionary.
@@ -776,7 +775,7 @@ Here is an example of using the C<Compress::Raw::Zlib::Deflate> optional
 parameter list to override the default buffer size and compression
 level. All other options will take their default values.
 
-    my $d = new Compress::Raw::Zlib::Deflate ( -Bufsize => 300, 
+    my $d = new Compress::Raw::Zlib::Deflate ( -Bufsize => 300,
                                                -Level   => Z_BEST_SPEED ) ;
 
 =head2 B<$status = $d-E<gt>deflate($input, $output)>
@@ -854,7 +853,7 @@ C<Z_DEFAULT_COMPRESSION>.
 =item B<-Strategy>
 
 Defines the strategy used to tune the compression. The valid values are
-C<Z_DEFAULT_STRATEGY>, C<Z_FILTERED> and C<Z_HUFFMAN_ONLY>. 
+C<Z_DEFAULT_STRATEGY>, C<Z_FILTERED> and C<Z_HUFFMAN_ONLY>.
 
 =item B<-BufSize>
 
@@ -879,14 +878,14 @@ Returns the adler32 value for the dictionary.
 
 =head2 B<$d-E<gt>crc32()>
 
-Returns the crc32 value for the uncompressed data to date. 
+Returns the crc32 value for the uncompressed data to date.
 
 If the C<CRC32> option is not enabled in the constructor for this object,
 this method will always return 0;
 
 =head2 B<$d-E<gt>adler32()>
 
-Returns the adler32 value for the uncompressed data to date. 
+Returns the adler32 value for the uncompressed data to date.
 
 =head2 B<$d-E<gt>msg()>
 
@@ -903,11 +902,11 @@ Returns the total number of compressed bytes output from deflate.
 =head2 B<$d-E<gt>get_Strategy()>
 
 Returns the deflation strategy currently used. Valid values are
-C<Z_DEFAULT_STRATEGY>, C<Z_FILTERED> and C<Z_HUFFMAN_ONLY>. 
+C<Z_DEFAULT_STRATEGY>, C<Z_FILTERED> and C<Z_HUFFMAN_ONLY>.
 
 =head2 B<$d-E<gt>get_Level()>
 
-Returns the compression level being used. 
+Returns the compression level being used.
 
 =head2 B<$d-E<gt>get_BufSize()>
 
@@ -955,7 +954,7 @@ Here is a definition of the interface:
 
 =head2 B< ($i, $status) = new Compress::Raw::Zlib::Inflate( [OPT] ) >
 
-Initialises an inflation object. 
+Initialises an inflation object.
 
 In a list context it returns the inflation object, C<$i>, and the
 I<zlib> status code (C<$status>). In a scalar context it returns the
@@ -1050,7 +1049,7 @@ This option defaults to true.
 
 The C<LimitOutput> option changes the behavior of the C<< $i->inflate >>
 method so that the amount of memory used by the output buffer can be
-limited. 
+limited.
 
 When C<LimitOutput> is used the size of the output buffer used will either
 be the value of the C<Bufsize> option or the amount of memory already
@@ -1083,7 +1082,7 @@ data to C<$output>. The C<$input> and C<$output> parameters can either be
 scalars or scalar references.
 
 Returns C<Z_OK> if successful and C<Z_STREAM_END> if the end of the
-compressed data has been successfully reached. 
+compressed data has been successfully reached.
 
 If not successful C<$status> will hold the I<zlib> error code.
 
@@ -1105,7 +1104,7 @@ this object, the uncompressed data will be appended to C<$output>. If
 it is false, C<$output> will be truncated before any uncompressed data
 is written to it.
 
-The C<$eof> parameter needs a bit of explanation. 
+The C<$eof> parameter needs a bit of explanation.
 
 Prior to version 1.2.0, zlib assumed that there was at least one trailing
 byte immediately after the compressed data stream when it was carrying out
@@ -1119,7 +1118,7 @@ conditions apply
 
 =over 5
 
-=item 1 
+=item 1
 
 You are either using a copy of zlib that is older than version 1.2.0 or you
 want your application code to be able to run with as many different
@@ -1138,7 +1137,7 @@ There is no data immediately after the compressed data stream.
 =back
 
 If B<all> of these are the case, then you need to set the C<$eof> parameter
-to true on the final call (and only the final call) to C<$i-E<gt>inflate>. 
+to true on the final call (and only the final call) to C<$i-E<gt>inflate>.
 
 If you have built this module with zlib >= 1.2.0, the C<$eof> parameter is
 ignored. You can still set it if you want, but it won't be used behind the
@@ -1167,7 +1166,7 @@ was created by calling C<Compress::Deflate::flush>  with C<Z_FULL_FLUSH>.
 
 This method will reset the inflation object C<$i>. It can be used when you
 are uncompressing multiple data streams and want to use the same object to
-uncompress each of them. 
+uncompress each of them.
 
 Returns C<Z_OK> if successful.
 
@@ -1291,10 +1290,11 @@ If the $crc parameters is C<undef>, the crc value will be reset.
 If you have built this module with zlib 1.2.3 or better, two more
 CRC-related functions are available.
 
-    $crc = adler32_combine($crc1, $crc2, $len2)l
-    $crc = crc32_combine($adler1, $adler2, $len2)
+    $crc = crc32_combine($crc1, $crc2, $len2);
+    $adler = adler32_combine($adler1, $adler2, $len2);
 
 These functions allow checksums to be merged.
+Refer to the I<zlib> documentation for more details.
 
 =head1 Misc
 
@@ -1304,14 +1304,14 @@ Returns the version of the zlib library.
 
 =head2  my $flags = Compress::Raw::Zlib::zlibCompileFlags();
 
-Returns the flags indicating compile-time options that were used to build 
+Returns the flags indicating compile-time options that were used to build
 the zlib library. See the zlib documentation for a description of the flags
 returned by C<zlibCompileFlags>.
 
 Note that when the zlib sources are built along with this module the
 C<sprintf> flags (bits 24, 25 and 26) should be ignored.
 
-If you are using zlib 1.2.0 or older, C<zlibCompileFlags> will return 0. 
+If you are using zlib 1.2.0 or older, C<zlibCompileFlags> will return 0.
 
 =head1 The LimitOutput option.
 
@@ -1345,7 +1345,7 @@ source and uncompressing as you go the code will look something like this
     die "inflation failed\n"
         unless $status == Z_STREAM_END ;
 
-The points to note are 
+The points to note are
 
 =over 5
 
@@ -1358,7 +1358,7 @@ from STDIN.
 
 The status code returned from C<inflate> will only trigger termination of
 the main processing loop if it isn't C<Z_OK>. When C<LimitOutput> has not
-been used the C<Z_OK> status means means that the end of the compressed
+been used the C<Z_OK> status means that the end of the compressed
 data stream has been reached or there has been an error in uncompression.
 
 =item *
@@ -1377,7 +1377,7 @@ compressed data stream contains the same pattern repeated thousands of
 times, a relatively small compressed data stream can uncompress into
 hundreds of megabytes.  Remember C<inflate> will keep allocating memory
 until I<all> the uncompressed data has been written to the output buffer -
-the size of C<$output> is unbounded. 
+the size of C<$output> is unbounded.
 
 The C<LimitOutput> option is designed to help with this use-case.
 
@@ -1452,9 +1452,10 @@ C<$input>.
 =head1 ACCESSING ZIP FILES
 
 Although it is possible (with some effort on your part) to use this module
-to access .zip files, there are other perl modules available that will
-do all the hard work for you. Check out C<Archive::Zip>,
-C<IO::Compress::Zip> and C<IO::Uncompress::Unzip>.
+to access .zip files, there are other perl modules available that will do
+all the hard work for you. Check out C<Archive::Zip>,
+C<Archive::Zip::SimpleZip>, C<IO::Compress::Zip> and
+C<IO::Uncompress::Unzip>.
 
 =head1 FAQ
 
@@ -1558,7 +1559,7 @@ of I<Compress::Raw::Zlib>.
 
 =head1 SEE ALSO
 
-L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
+L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzip>, L<IO::Uncompress::UnLzip>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Compress::Zstd>, L<IO::Uncompress::UnZstd>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
 
 L<IO::Compress::FAQ|IO::Compress::FAQ>
 
@@ -1566,22 +1567,22 @@ L<File::GlobMapper|File::GlobMapper>, L<Archive::Zip|Archive::Zip>,
 L<Archive::Tar|Archive::Tar>,
 L<IO::Zlib|IO::Zlib>
 
-For RFC 1950, 1951 and 1952 see 
-F<http://www.faqs.org/rfcs/rfc1950.html>,
-F<http://www.faqs.org/rfcs/rfc1951.html> and
-F<http://www.faqs.org/rfcs/rfc1952.html>
+For RFC 1950, 1951 and 1952 see
+L<http://www.faqs.org/rfcs/rfc1950.html>,
+L<http://www.faqs.org/rfcs/rfc1951.html> and
+L<http://www.faqs.org/rfcs/rfc1952.html>
 
 The I<zlib> compression library was written by Jean-loup Gailly
-F<gzip@prep.ai.mit.edu> and Mark Adler F<madler@alumni.caltech.edu>.
+C<gzip@prep.ai.mit.edu> and Mark Adler C<madler@alumni.caltech.edu>.
 
 The primary site for the I<zlib> compression library is
-F<http://www.zlib.org>.
+L<http://www.zlib.org>.
 
-The primary site for gzip is F<http://www.gzip.org>.
+The primary site for gzip is L<http://www.gzip.org>.
 
 =head1 AUTHOR
 
-This module was written by Paul Marquess, F<pmqs@cpan.org>. 
+This module was written by Paul Marquess, C<pmqs@cpan.org>.
 
 =head1 MODIFICATION HISTORY
 
@@ -1589,7 +1590,7 @@ See the Changes file.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2005-2012 Paul Marquess. All rights reserved.
+Copyright (c) 2005-2019 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

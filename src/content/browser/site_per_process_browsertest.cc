@@ -72,10 +72,12 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/frame.mojom-test-utils.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/actions_parser.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input_messages.h"
+#include "content/common/page_messages.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -1010,6 +1012,207 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 #endif
 
+class TextAutosizerPageInfoObserver : public WebContentsObserver {
+ public:
+  explicit TextAutosizerPageInfoObserver(WebContents* web_contents)
+      : remote_page_info_seen_(false), remote_page_info_({0, 0, 1.f}) {
+    Observe(web_contents);
+  }
+  ~TextAutosizerPageInfoObserver() override { Observe(nullptr); }
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    IPC_BEGIN_MESSAGE_MAP(TextAutosizerPageInfoObserver, message)
+      IPC_MESSAGE_HANDLER(
+          ViewHostMsg_NotifyTextAutosizerPageInfoChangedInLocalMainFrame,
+          OnUpdateRemotePageInfo)
+    IPC_END_MESSAGE_MAP()
+    return false;
+  }
+
+  void WaitForPageInfo(base::Optional<int> target_main_frame_width,
+                       base::Optional<float> target_device_scale_adjustment) {
+    target_main_frame_width_ = target_main_frame_width;
+    target_device_scale_adjustment_ = target_device_scale_adjustment;
+    remote_page_info_seen_ = false;
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
+  const blink::WebTextAutosizerPageInfo& GetTextAutosizerPageInfo() {
+    return remote_page_info_;
+  }
+
+ private:
+  void OnUpdateRemotePageInfo(
+      const blink::WebTextAutosizerPageInfo& remote_page_info) {
+    remote_page_info_ = remote_page_info;
+    if ((!target_main_frame_width_ ||
+         remote_page_info.main_frame_width != target_main_frame_width_) &&
+        (!target_device_scale_adjustment_ ||
+         remote_page_info.device_scale_adjustment !=
+             target_device_scale_adjustment_)) {
+      return;
+    }
+    remote_page_info_seen_ = true;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  bool remote_page_info_seen_;
+  blink::WebTextAutosizerPageInfo remote_page_info_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  base::Optional<int> target_main_frame_width_;
+  base::Optional<float> target_device_scale_adjustment_;
+};
+
+class OutgoingTextAutosizerPageInfoIPCWatcher {
+ public:
+  OutgoingTextAutosizerPageInfoIPCWatcher(
+      RenderProcessHostImpl* rph,
+      base::Optional<int> target_width,
+      base::Optional<float> target_device_scale_adjustment)
+      : rph_(rph),
+        outgoing_message_seen_(false),
+        target_width_(target_width),
+        target_device_scale_adjustment_(target_device_scale_adjustment) {
+    rph_->SetIpcSendWatcherForTesting(
+        base::BindRepeating(&OutgoingTextAutosizerPageInfoIPCWatcher::OnMessage,
+                            base::Unretained(this)));
+  }
+  ~OutgoingTextAutosizerPageInfoIPCWatcher() {
+    rph_->SetIpcSendWatcherForTesting(
+        base::RepeatingCallback<void(const IPC::Message& msg)>());
+  }
+
+  void WaitForIPC() {
+    if (outgoing_message_seen_)
+      return;
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
+  const blink::WebTextAutosizerPageInfo& GetTextAutosizerPageInfo() {
+    return remote_page_info_;
+  }
+
+ private:
+  void OnMessage(const IPC::Message& message) {
+    IPC_BEGIN_MESSAGE_MAP(OutgoingTextAutosizerPageInfoIPCWatcher, message)
+      IPC_MESSAGE_HANDLER(
+          PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
+          ProcessMessage)
+    IPC_END_MESSAGE_MAP()
+  }
+
+  void ProcessMessage(const blink::WebTextAutosizerPageInfo& remote_page_info) {
+    if ((target_width_ && remote_page_info.main_frame_width != target_width_) ||
+        (target_device_scale_adjustment_ &&
+         remote_page_info.device_scale_adjustment !=
+             target_device_scale_adjustment_)) {
+      return;
+    }
+    outgoing_message_seen_ = true;
+    remote_page_info_ = remote_page_info;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  RenderProcessHostImpl* rph_;
+  bool outgoing_message_seen_;
+  base::Optional<int> target_width_;
+  base::Optional<float> target_device_scale_adjustment_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  blink::WebTextAutosizerPageInfo remote_page_info_;
+};
+
+// Make sure that when a relevant feature of the main frame changes, e.g. the
+// frame width, that the browser is notified.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
+  WebPreferences prefs =
+      web_contents()->GetRenderViewHost()->GetWebkitPreferences();
+  prefs.text_autosizing_enabled = true;
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  web_contents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* b_child = root->child_at(0);
+  auto* child_rph = static_cast<RenderProcessHostImpl*>(
+      b_child->current_frame_host()->GetProcess());
+
+  blink::WebTextAutosizerPageInfo received_page_info;
+  auto observer =
+      std::make_unique<TextAutosizerPageInfoObserver>(web_contents());
+#if defined(OS_ANDROID)
+  prefs.device_scale_adjustment += 0.05f;
+  OutgoingTextAutosizerPageInfoIPCWatcher ipc_watcher(
+      child_rph, base::Optional<int>(), prefs.device_scale_adjustment);
+  // Change the device scale adjustment to trigger a RemotePageInfo update.
+  web_contents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+  // Make sure we receive a ViewHostMsg from the main frame's renderer.
+  observer->WaitForPageInfo(base::Optional<int>(),
+                            prefs.device_scale_adjustment);
+  // Make sure the correct page message is sent to the child.
+  ipc_watcher.WaitForIPC();
+  received_page_info = observer->GetTextAutosizerPageInfo();
+  EXPECT_EQ(prefs.device_scale_adjustment,
+            received_page_info.device_scale_adjustment);
+#else
+  // Resize the main frame, then wait to observe that the RemotePageInfo message
+  // arrives.
+  auto* view = web_contents()->GetRenderWidgetHostView();
+  gfx::Rect old_bounds = view->GetViewBounds();
+  gfx::Rect new_bounds(
+      old_bounds.origin(),
+      gfx::Size(old_bounds.width() - 20, old_bounds.height() - 20));
+  OutgoingTextAutosizerPageInfoIPCWatcher ipc_watcher(
+      child_rph, new_bounds.width(), base::Optional<float>());
+  view->SetBounds(new_bounds);
+  // Make sure we receive a ViewHostMsg from the main frame's renderer.
+  observer->WaitForPageInfo(new_bounds.width(), base::Optional<float>());
+  // Make sure the correct page message is sent to the child.
+  ipc_watcher.WaitForIPC();
+  received_page_info = observer->GetTextAutosizerPageInfo();
+  EXPECT_EQ(new_bounds.width(), received_page_info.main_frame_width);
+#endif  // defined(OS_ANDROID)
+
+  // Dynamically create a new, cross-process frame to test sending the cached
+  // TextAutosizerPageInfo.
+
+  GURL c_url = embedded_test_server()->GetURL("c.com", "/title1.html");
+  // The following is a hack so we can get an IPC watcher connected to the
+  // RenderProcessHost for C before the RenderView is created for it, and the
+  // TextAutosizerPageInfo IPC is sent to it.
+  scoped_refptr<SiteInstance> c_site =
+      web_contents()->GetSiteInstance()->GetRelatedSiteInstance(c_url);
+  // Force creation of a render process for c's SiteInstance, this will get
+  // used when we dynamically create the new frame.
+  auto* c_rph = static_cast<RenderProcessHostImpl*>(c_site->GetProcess());
+  ASSERT_TRUE(c_rph);
+  ASSERT_NE(c_rph, root->current_frame_host()->GetProcess());
+  ASSERT_NE(c_rph, b_child->current_frame_host()->GetProcess());
+  OutgoingTextAutosizerPageInfoIPCWatcher c_ipc_watcher(
+      c_rph, base::Optional<int>(), base::Optional<float>());
+
+  // Create the subframe now.
+  std::string create_frame_script = base::StringPrintf(
+      "var new_iframe = document.createElement('iframe');"
+      "new_iframe.src = '%s';"
+      "document.body.appendChild(new_iframe);",
+      c_url.spec().c_str());
+  EXPECT_TRUE(ExecuteScript(root, create_frame_script));
+  ASSERT_EQ(2U, root->child_count());
+
+  // Ensure IPC is sent.
+  c_ipc_watcher.WaitForIPC();
+  EXPECT_EQ(received_page_info, c_ipc_watcher.GetTextAutosizerPageInfo());
+}
+
 // Ensure that navigating subframes in --site-per-process mode works and the
 // correct documents are committed.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
@@ -1428,13 +1631,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   parent_iframe_node->current_frame_host()->GetProcess()->AddFilter(
       filter.get());
 
-  InputEventAckWaiter ack_observer(
-      parent_iframe_node->current_frame_host()->GetRenderWidgetHost(),
-      blink::WebInputEvent::kGestureScrollEnd);
-
   GURL site_url(embedded_test_server()->GetURL(
       "b.com", "/frame_tree/page_with_positioned_frame.html"));
   NavigateFrameToURL(parent_iframe_node, site_url);
+
+  InputEventAckWaiter ack_observer(
+      parent_iframe_node->current_frame_host()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kGestureScrollEnd);
 
   // Navigate the nested frame to a page large enough to have scrollbars.
   FrameTreeNode* nested_iframe_node = parent_iframe_node->child_at(0);
@@ -5395,11 +5598,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-// Test for https://crbug.com/515302.  Perform two navigations, A->B->A, and
-// drop the SwapOut ACK from the A->B navigation, so that the second B->A
-// navigation is initiated before the first page receives the SwapOut ACK.
-// Ensure that this doesn't crash and that the RVH(A) is not reused in that
-// case.
+// Test for https://crbug.com/515302. Perform two navigations, A1 -> B2 -> A3,
+// and drop the SwapOut ACK from the A1 -> B2 navigation, so that the second
+// B2 -> A3 navigation is initiated before the first page receives the SwapOut
+// ACK. Ensure that this doesn't crash and that the RVH(A1) is not reused in
+// that case.
 #if defined(OS_MACOSX)
 #define MAYBE_RenderViewHostIsNotReusedAfterDelayedSwapOutACK \
   DISABLED_RenderViewHostIsNotReusedAfterDelayedSwapOutACK
@@ -5459,7 +5662,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                            ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK));
   RenderViewHostImpl* pending_rvh =
       root->render_manager()->speculative_frame_host()->render_view_host();
-  EXPECT_EQ(site_instance, pending_rvh->GetSiteInstance());
+
+  // When ProactivelySwapBrowsingInstance A1 and A3 aren't using the same
+  // BrowsingInstance.
+  if (IsProactivelySwapBrowsingInstanceEnabled())
+    EXPECT_NE(site_instance, pending_rvh->GetSiteInstance());
+  else
+    EXPECT_EQ(site_instance, pending_rvh->GetSiteInstance());
+
   EXPECT_FALSE(rvh_routing_id == pending_rvh->GetRoutingID() &&
                rvh_process_id == pending_rvh->GetProcess()->GetID());
 
@@ -7217,10 +7427,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   FrameTreeNode* root = contents->GetFrameTree()->root();
   EXPECT_EQ(1U, root->child_count());
 
+  // The test expect the BrowsingInstance to be kept across cross-site main
+  // frame navigations. ProactivelySwapBrowsingInstance will provide a new one.
+  // To prevent this, a popup is opened.
+  if (IsProactivelySwapBrowsingInstanceEnabled()) {
+    GURL popup_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    EXPECT_TRUE(OpenPopup(root, popup_url, "foo"));
+  }
+
   // Ensure the RenderViewHost for the SiteInstance of the child is considered
   // in swapped out state.
-  RenderViewHostImpl* rvh = contents->GetFrameTree()->GetRenderViewHost(
-      root->child_at(0)->current_frame_host()->GetSiteInstance());
+  RenderViewHostImpl* rvh =
+      contents->GetFrameTree()
+          ->GetRenderViewHost(
+              root->child_at(0)->current_frame_host()->GetSiteInstance())
+          .get();
   EXPECT_TRUE(rvh->is_swapped_out_);
 
   // Have the child frame navigate its parent to its SiteInstance.
@@ -7274,8 +7495,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // termination.
   RenderProcessHost* subframe_process =
       root->child_at(0)->current_frame_host()->GetProcess();
-  subframe_process->IncrementKeepAliveRefCount(
-      RenderProcessHostImpl::KeepAliveClientType::kFetch);
+  subframe_process->IncrementKeepAliveRefCount();
 
   // Navigate the subframe away from b.com.  Since this is the last active
   // frame in the b.com process, this causes the RenderWidget and RenderView to
@@ -7286,8 +7506,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Release the process.
   RenderProcessHostWatcher process_shutdown_observer(
       subframe_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  subframe_process->DecrementKeepAliveRefCount(
-      RenderProcessHostImpl::KeepAliveClientType::kFetch);
+  subframe_process->DecrementKeepAliveRefCount();
   process_shutdown_observer.Wait();
 }
 
@@ -7434,8 +7653,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), controller.GetBrowserContext(),
+              main_url, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
   restored_entry->SetPageState(entry->GetPageState());
@@ -7542,8 +7761,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), controller.GetBrowserContext(),
+              main_url, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
   restored_entry->SetPageState(entry->GetPageState());
@@ -7606,8 +7825,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), controller.GetBrowserContext(),
+              main_url, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
   restored_entry->SetPageState(entry->GetPageState());
@@ -7636,8 +7855,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
   ASSERT_EQ(1U, new_root->child_count());
   EXPECT_EQ(main_url, new_root->current_url());
-  EXPECT_EQ(GURL(content::kAboutSrcDocURL),
-            new_root->child_at(0)->current_url());
+  EXPECT_TRUE(new_root->child_at(0)->current_url().IsAboutSrcdoc());
 
   EXPECT_EQ(new_root->current_frame_host()->GetSiteInstance(),
             new_root->child_at(0)->current_frame_host()->GetSiteInstance());
@@ -7691,8 +7909,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(orig_site_instance, child->current_frame_host()->GetSiteInstance());
 }
 
-// Helper filter class to wait for a ShowCreatedWindow or ShowWidget message,
-// record the routing ID from the message, and then drop the message.
+// Helper filter class to wait for a ShowWidget message, record the routing ID
+// from the message, and then drop the message.
 const uint32_t kMessageClasses[] = {ViewMsgStart, FrameMsgStart};
 class PendingWidgetMessageFilter : public BrowserMessageFilter {
  public:
@@ -7703,7 +7921,6 @@ class PendingWidgetMessageFilter : public BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PendingWidgetMessageFilter, message)
-      IPC_MESSAGE_HANDLER(FrameHostMsg_ShowCreatedWindow, OnShowCreatedWindow)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
@@ -7745,6 +7962,38 @@ class PendingWidgetMessageFilter : public BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(PendingWidgetMessageFilter);
 };
 
+// Intercepts calls to RenderFramHost's ShowCreatedWindow mojo method, and
+// invokes the provided callback.
+class ShowCreatedWindowInterceptor
+    : public mojom::FrameHostInterceptorForTesting {
+ public:
+  ShowCreatedWindowInterceptor(
+      RenderFrameHostImpl* render_frame_host,
+      base::RepeatingCallback<void(int32_t pending_widget_routing_id)>
+          test_callback)
+      : render_frame_host_(render_frame_host),
+        test_callback_(std::move(test_callback)) {
+    render_frame_host_->frame_host_binding_for_testing().SwapImplForTesting(
+        this);
+  }
+
+  ~ShowCreatedWindowInterceptor() override {}
+
+  FrameHost* GetForwardingInterface() override { return render_frame_host_; }
+
+  void ShowCreatedWindow(int32_t pending_widget_routing_id,
+                         WindowOpenDisposition disposition,
+                         const gfx::Rect& initial_rect,
+                         bool user_gesture) override {
+    test_callback_.Run(pending_widget_routing_id);
+  }
+
+ private:
+  RenderFrameHostImpl* render_frame_host_;
+  base::RepeatingCallback<void(int32_t pending_widget_routing_id)>
+      test_callback_;
+};
+
 // Test for https://crbug.com/612276.  Simultaneously open two new windows from
 // two subframes in different processes, where each subframe process's next
 // routing ID is the same.  Make sure that both windows are created properly.
@@ -7763,44 +8012,55 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child1 = root->child_at(0);
   FrameTreeNode* child2 = root->child_at(1);
-  RenderProcessHost* process1 = child1->current_frame_host()->GetProcess();
-  RenderProcessHost* process2 = child2->current_frame_host()->GetProcess();
+  RenderFrameHostImpl* frame1 = child1->current_frame_host();
+  RenderFrameHostImpl* frame2 = child2->current_frame_host();
+  RenderProcessHost* process1 = frame1->GetProcess();
+  RenderProcessHost* process2 = frame2->GetProcess();
 
   // Call window.open simultaneously in both subframes to create two popups.
-  // Wait for and then drop both FrameHostMsg_ShowCreatedWindow messages.  This
-  // will ensure that both CreateNewWindow calls happen before either
-  // ShowCreatedWindow call.
-  scoped_refptr<PendingWidgetMessageFilter> filter1 =
-      new PendingWidgetMessageFilter();
-  process1->AddFilter(filter1.get());
+  // Wait for and then drop both ShowCreatedWindow messages.  This will ensure
+  // that both CreateNewWindow calls happen before either ShowCreatedWindow
+  // call.
+  base::RunLoop run_loop1;
+  int32_t routing_id1;
+  ShowCreatedWindowInterceptor interceptor1(
+      frame1,
+      base::BindLambdaForTesting([&](int32_t pending_widget_routing_id) {
+        routing_id1 = pending_widget_routing_id;
+        run_loop1.Quit();
+      }));
   EXPECT_TRUE(ExecuteScript(child1, "window.open();"));
-  filter1->Wait();
+  run_loop1.Run();
 
-  scoped_refptr<PendingWidgetMessageFilter> filter2 =
-      new PendingWidgetMessageFilter();
-  process2->AddFilter(filter2.get());
+  base::RunLoop run_loop2;
+  int32_t routing_id2;
+  ShowCreatedWindowInterceptor interceptor2(
+      frame2,
+      base::BindLambdaForTesting([&](int32_t pending_widget_routing_id) {
+        routing_id2 = pending_widget_routing_id;
+        run_loop2.Quit();
+      }));
+
   EXPECT_TRUE(ExecuteScript(child2, "window.open();"));
-  filter2->Wait();
+  run_loop2.Run();
 
   // At this point, we should have two pending WebContents.
-  EXPECT_TRUE(base::ContainsKey(
-      web_contents()->pending_contents_,
-      GlobalRoutingID(process1->GetID(), filter1->routing_id())));
-  EXPECT_TRUE(base::ContainsKey(
-      web_contents()->pending_contents_,
-      GlobalRoutingID(process2->GetID(), filter2->routing_id())));
+  EXPECT_TRUE(base::Contains(web_contents()->pending_contents_,
+                             GlobalRoutingID(process1->GetID(), routing_id1)));
+  EXPECT_TRUE(base::Contains(web_contents()->pending_contents_,
+                             GlobalRoutingID(process2->GetID(), routing_id2)));
 
   // Both subframes were set up in the same way, so the next routing ID for the
   // new popup windows should match up (this led to the collision in the
   // pending contents map in the original bug).
-  EXPECT_EQ(filter1->routing_id(), filter2->routing_id());
+  EXPECT_EQ(routing_id1, routing_id2);
 
   // Now, simulate that both FrameHostMsg_ShowCreatedWindow messages arrive by
   // showing both of the pending WebContents.
-  web_contents()->ShowCreatedWindow(process1->GetID(), filter1->routing_id(),
+  web_contents()->ShowCreatedWindow(process1->GetID(), routing_id1,
                                     WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                     gfx::Rect(), true);
-  web_contents()->ShowCreatedWindow(process2->GetID(), filter2->routing_id(),
+  web_contents()->ShowCreatedWindow(process2->GetID(), routing_id2,
                                     WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                     gfx::Rect(), true);
 
@@ -7861,10 +8121,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   filter2->Wait();
 
   // At this point, we should have two pending widgets.
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       web_contents()->pending_widget_views_,
       GlobalRoutingID(process1->GetID(), filter1->routing_id())));
-  EXPECT_TRUE(base::ContainsKey(
+  EXPECT_TRUE(base::Contains(
       web_contents()->pending_widget_views_,
       GlobalRoutingID(process2->GetID(), filter2->routing_id())));
 
@@ -7878,10 +8138,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                                     false, gfx::Rect());
   web_contents()->ShowCreatedWidget(process2->GetID(), filter2->routing_id(),
                                     false, gfx::Rect());
-  EXPECT_FALSE(base::ContainsKey(
+  EXPECT_FALSE(base::Contains(
       web_contents()->pending_widget_views_,
       GlobalRoutingID(process1->GetID(), filter1->routing_id())));
-  EXPECT_FALSE(base::ContainsKey(
+  EXPECT_FALSE(base::Contains(
       web_contents()->pending_widget_views_,
       GlobalRoutingID(process2->GetID(), filter2->routing_id())));
 }
@@ -7968,7 +8228,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // The RenderViewHost for b.com in the main tab should not be active.
   SiteInstance* b_instance = popup_shell->web_contents()->GetSiteInstance();
   RenderViewHostImpl* rvh =
-      web_contents()->GetFrameTree()->GetRenderViewHost(b_instance);
+      web_contents()->GetFrameTree()->GetRenderViewHost(b_instance).get();
   EXPECT_FALSE(rvh->is_active());
 
   // Navigate main tab to a b.com URL that will not commit.
@@ -8026,7 +8286,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // The RenderViewHost for b.com in the main tab should not be active.
   SiteInstance* b_instance = popup_shell->web_contents()->GetSiteInstance();
   RenderViewHostImpl* rvh =
-      web_contents()->GetFrameTree()->GetRenderViewHost(b_instance);
+      web_contents()->GetFrameTree()->GetRenderViewHost(b_instance).get();
   EXPECT_FALSE(rvh->is_active());
 
   // Navigate main tab to a b.com URL that will not commit.
@@ -8764,7 +9024,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   GURL child_url(embedded_test_server()->GetURL(
       "b.com", "/cross_site_iframe_factory.html?b()"));
-  GURL srcdoc_url(kAboutSrcDocURL);
 
   // #1 Navigate to a page with a cross-site iframe.
   EXPECT_TRUE(NavigateToURL(shell(), parent_url));
@@ -8787,7 +9046,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   load_observer.Wait();
 
   // Ensure that the iframe reuses its parent's process.
-  EXPECT_EQ(srcdoc_url, child->current_url());
+  EXPECT_TRUE(child->current_url().IsAboutSrcdoc());
   EXPECT_EQ(root->current_frame_host()->GetSiteInstance(),
             child->current_frame_host()->GetSiteInstance());
   EXPECT_EQ(root->current_frame_host()->GetProcess(),
@@ -9830,24 +10089,30 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderFrameHostImpl* root_speculative_rfh =
       root->render_manager()->speculative_frame_host();
   EXPECT_TRUE(root_speculative_rfh);
-  scoped_refptr<SiteInstanceImpl> b_site_instance(
+  scoped_refptr<SiteInstanceImpl> b_root_site_instance(
       root_speculative_rfh->GetSiteInstance());
 
   // There should now be a live b.com proxy for the root, since it is doing a
   // cross-process navigation.
   RenderFrameProxyHost* root_proxy =
-      root->render_manager()->GetRenderFrameProxyHost(b_site_instance.get());
+      root->render_manager()->GetRenderFrameProxyHost(
+          b_root_site_instance.get());
   EXPECT_TRUE(root_proxy);
   EXPECT_TRUE(root_proxy->is_render_frame_proxy_live());
 
   // Wait for subframe request, but don't commit it yet.
   ASSERT_TRUE(manager2.WaitForRequestStart());
+  RenderFrameHostImpl* subframe_speculative_rfh =
+      child->render_manager()->speculative_frame_host();
   EXPECT_TRUE(child->render_manager()->speculative_frame_host());
+  scoped_refptr<SiteInstanceImpl> b_subframe_site_instance(
+      subframe_speculative_rfh->GetSiteInstance());
 
   // Similarly, the subframe should also have a b.com proxy (unused in this
   // test), since it is also doing a cross-process navigation.
   RenderFrameProxyHost* child_proxy =
-      child->render_manager()->GetRenderFrameProxyHost(b_site_instance.get());
+      child->render_manager()->GetRenderFrameProxyHost(
+          b_subframe_site_instance.get());
   EXPECT_TRUE(child_proxy);
   EXPECT_TRUE(child_proxy->is_render_frame_proxy_live());
 
@@ -9855,7 +10120,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   manager1.WaitForNavigationFinished();
 
   // Make sure the process is live and at the new URL.
-  EXPECT_TRUE(b_site_instance->GetProcess()->IsInitializedAndNotDead());
+  EXPECT_TRUE(b_root_site_instance->GetProcess()->IsInitializedAndNotDead());
   EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
   EXPECT_EQ(root_speculative_rfh, root->current_frame_host());
   EXPECT_EQ(new_url_1, root->current_frame_host()->GetLastCommittedURL());
@@ -9872,8 +10137,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(0, length);
 
   // The root proxy should be gone.
-  EXPECT_FALSE(
-      root->render_manager()->GetRenderFrameProxyHost(b_site_instance.get()));
+  EXPECT_FALSE(root->render_manager()->GetRenderFrameProxyHost(
+      b_subframe_site_instance.get()));
 }
 
 // Similar to TwoCrossSitePendingNavigationsAndMainFrameWins, but checks the
@@ -9932,16 +10197,30 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   scoped_refptr<SiteInstanceImpl> b_site_instance(
       child_speculative_rfh->GetSiteInstance());
 
-  // Check that all frames have proxies for b.com at this point.  The proxy for
+  // Check that all frames have proxies for b.com at this point. The proxy for
   // |child2| is important to create since |child| has to use it to communicate
   // with |child2| if |child| commits first.
-  EXPECT_EQ(
-      " Site A (B speculative) -- proxies for B\n"
-      "   |--Site A (B speculative) -- proxies for B\n"
-      "   +--Site A ------- proxies for B\n"
-      "Where A = http://a.com/\n"
-      "      B = http://b.com/",
-      DepictFrameTree(root));
+  if (IsProactivelySwapBrowsingInstanceEnabled()) {
+    // With ProactivelySwapBrowsingInstance, the new main document and the new
+    // iframe don't have the same SiteInstance, because they belong to two
+    // unrelated pages. The two page use different BrowsingInstances.
+    EXPECT_EQ(
+        " Site A (B speculative) -- proxies for B C\n"
+        "   |--Site A (C speculative) -- proxies for C\n"
+        "   +--Site A ------- proxies for C\n"
+        "Where A = http://a.com/\n"
+        "      B = http://b.com/\n"
+        "      C = http://b.com/",
+        DepictFrameTree(root));
+  } else {
+    EXPECT_EQ(
+        " Site A (B speculative) -- proxies for B\n"
+        "   |--Site A (B speculative) -- proxies for B\n"
+        "   +--Site A ------- proxies for B\n"
+        "Where A = http://a.com/\n"
+        "      B = http://b.com/",
+        DepictFrameTree(root));
+  }
 
   // Now let the subframe commit.
   manager2.WaitForNavigationFinished();
@@ -9954,13 +10233,24 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(new_url_2, child->current_frame_host()->GetLastCommittedURL());
 
   // Recheck the proxies.  Main frame should still be pending.
-  EXPECT_EQ(
-      " Site A (B speculative) -- proxies for B\n"
-      "   |--Site B ------- proxies for A\n"
-      "   +--Site A ------- proxies for B\n"
-      "Where A = http://a.com/\n"
-      "      B = http://b.com/",
-      DepictFrameTree(root));
+  if (IsProactivelySwapBrowsingInstanceEnabled()) {
+    EXPECT_EQ(
+        " Site A (B speculative) -- proxies for B C\n"
+        "   |--Site C ------- proxies for A\n"
+        "   +--Site A ------- proxies for C\n"
+        "Where A = http://a.com/\n"
+        "      B = http://b.com/\n"
+        "      C = http://b.com/",
+        DepictFrameTree(root));
+  } else {
+    EXPECT_EQ(
+        " Site A (B speculative) -- proxies for B\n"
+        "   |--Site B ------- proxies for A\n"
+        "   +--Site A ------- proxies for B\n"
+        "Where A = http://a.com/\n"
+        "      B = http://b.com/",
+        DepictFrameTree(root));
+  }
 
   // Make sure the subframe can communicate to both the root remote frame
   // (where the postMessage should go to the current RenderFrameHost rather
@@ -11555,7 +11845,7 @@ class CommitMessageOrderReverser : public DidCommitNavigationInterceptor {
 //     byte arrives quickly, and thus the navigation commits quickly.
 //  6.1) FrameTreeNode::has_committed_real_load is set to true for the child.
 //  6.2) The same-site RenderFrame in the child FrameTreeNode is swapped out,
-//       i.e. FrameMsg_SwapOut is sent.
+//       i.e. UnfreezableFrameMsg_SwapOut is sent.
 //  7) The renderer for site instance `a.com` exits from the busy loop,
 //     and starts processing messages in order:
 //  7.1) The first being processed is FrameMsg_CommitNavigation, so a
@@ -12653,17 +12943,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 }
 
-// Flaky on Android. http://crbug.com/951513
-#if defined(OS_ANDROID)
-#define MAYBE_EffectiveTouchActionPropagatesAcrossNestedFrames \
-  DISABLED_EffectiveTouchActionPropagatesAcrossNestedFrames
-#else
-#define MAYBE_EffectiveTouchActionPropagatesAcrossNestedFrames \
-  EffectiveTouchActionPropagatesAcrossNestedFrames
-#endif
-
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
-                       MAYBE_EffectiveTouchActionPropagatesAcrossNestedFrames) {
+// Flaky on all platform. http://crbug.com/9515270
+IN_PROC_BROWSER_TEST_F(
+    SitePerProcessBrowserTouchActionTest,
+    DISABLED_EffectiveTouchActionPropagatesAcrossNestedFrames) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -13787,20 +14070,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 namespace {
 
-class SitePerProcessDoubleTapZoomBrowserTest
-    : public SitePerProcessBrowserTest {
- public:
-  SitePerProcessDoubleTapZoomBrowserTest() {}
-
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
-    feature_list_.InitAndEnableFeature(features::kEnableVizHitTestDrawQuad);
-  }
-
-  base::test::ScopedFeatureList feature_list_;
-};
-
 void EnableDoubleTapZoomInRenderView(FrameTreeNode* node) {
   content::RenderViewHost* rvh =
       node->current_frame_host()->GetRenderViewHost();
@@ -13813,7 +14082,7 @@ void EnableDoubleTapZoomInRenderView(FrameTreeNode* node) {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessDoubleTapZoomBrowserTest,
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        TouchscreenAnimateDoubleTapZoomInOOPIF) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));

@@ -53,7 +53,7 @@
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -69,11 +69,11 @@ namespace {
 class HitTestLatencyRecorder {
  public:
   HitTestLatencyRecorder(bool allows_child_frame_content)
-      : start_(CurrentTimeTicks()),
+      : start_(base::TimeTicks::Now()),
         allows_child_frame_content_(allows_child_frame_content) {}
 
   ~HitTestLatencyRecorder() {
-    TimeDelta duration = CurrentTimeTicks() - start_;
+    base::TimeDelta duration = base::TimeTicks::Now() - start_;
     if (allows_child_frame_content_) {
       DEFINE_STATIC_LOCAL(CustomCountHistogram, recursive_latency_histogram,
                           ("Event.Latency.HitTestRecursive", 0, 10000000, 100));
@@ -86,7 +86,7 @@ class HitTestLatencyRecorder {
   }
 
  private:
-  TimeTicks start_;
+  base::TimeTicks start_;
   bool allows_child_frame_content_;
 };
 
@@ -96,6 +96,8 @@ LayoutView::LayoutView(Document* document)
     : LayoutBlockFlow(document),
       frame_view_(document->View()),
       layout_state_(nullptr),
+      // TODO(pdr): This should be null if CompositeAfterPaintEnabled() is true.
+      compositor_(std::make_unique<PaintLayerCompositor>(*this)),
       layout_quote_head_(nullptr),
       layout_counter_count_(0),
       hit_test_count_(0),
@@ -155,14 +157,14 @@ bool LayoutView::HitTestNoLifecycleUpdate(const HitTestLocation& location,
     result = cache_result;
   } else {
     LocalFrameView* frame_view = GetFrameView();
-    LayoutRect hit_test_area;
+    PhysicalRect hit_test_area;
     if (frame_view) {
       // Start with a rect sized to the frame, to ensure we include the
       // scrollbars.
-      hit_test_area = LayoutRect(LayoutPoint(), LayoutSize(frame_view->Size()));
+      hit_test_area.size = PhysicalSize(frame_view->Size());
       if (result.GetHitTestRequest().IgnoreClipping()) {
         hit_test_area.Unite(
-            frame_view->DocumentToFrame(LayoutRect(DocumentRect())));
+            frame_view->DocumentToFrame(PhysicalRect(DocumentRect())));
       }
     }
 
@@ -783,13 +785,15 @@ void LayoutView::UpdateAfterLayout() {
 }
 
 void LayoutView::UpdateHitTestResult(HitTestResult& result,
-                                     const LayoutPoint& point) const {
+                                     const PhysicalOffset& point) const {
   if (result.InnerNode())
     return;
 
   Node* node = GetDocument().documentElement();
   if (node) {
-    LayoutPoint adjusted_point = point;
+    PhysicalOffset adjusted_point = point;
+    if (const auto* layout_box = node->GetLayoutBox())
+      adjusted_point -= layout_box->PhysicalLocation();
     OffsetForContents(adjusted_point);
     result.SetNodeAndPosition(node, adjusted_point);
   }
@@ -800,15 +804,13 @@ bool LayoutView::UsesCompositing() const {
 }
 
 PaintLayerCompositor* LayoutView::Compositor() {
-  if (!compositor_)
-    compositor_ = std::make_unique<PaintLayerCompositor>(*this);
-
+  DCHECK(compositor_);
   return compositor_.get();
 }
 
-void LayoutView::SetIsInWindow(bool is_in_window) {
-  if (compositor_)
-    compositor_->SetIsInWindow(is_in_window);
+void LayoutView::CleanUpCompositor() {
+  DCHECK(compositor_);
+  compositor_->CleanUp();
 }
 
 IntervalArena* LayoutView::GetIntervalArena() {

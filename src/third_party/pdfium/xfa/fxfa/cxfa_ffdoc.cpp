@@ -13,11 +13,11 @@
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
+#include "core/fpdfapi/parser/cpdf_seekablemultistream.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fpdfdoc/cpdf_nametree.h"
 #include "core/fxcrt/cfx_readonlymemorystream.h"
-#include "core/fxcrt/cfx_seekablemultistream.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/xml/cfx_xmldocument.h"
 #include "core/fxcrt/xml/cfx_xmlelement.h"
@@ -32,6 +32,7 @@
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/cxfa_ffwidget.h"
 #include "xfa/fxfa/cxfa_fontmgr.h"
+#include "xfa/fxfa/layout/cxfa_layoutprocessor.h"
 #include "xfa/fxfa/parser/cxfa_acrobat.h"
 #include "xfa/fxfa/parser/cxfa_acrobat7.h"
 #include "xfa/fxfa/parser/cxfa_dataexporter.h"
@@ -88,7 +89,9 @@ CXFA_FFDoc::CXFA_FFDoc(CXFA_FFApp* pApp,
       m_pApp(pApp),
       m_pPDFDoc(pPDFDoc),
       m_pNotify(pdfium::MakeUnique<CXFA_FFNotify>(this)),
-      m_pDocument(pdfium::MakeUnique<CXFA_Document>(m_pNotify.get())) {}
+      m_pDocument(pdfium::MakeUnique<CXFA_Document>(
+          m_pNotify.get(),
+          pdfium::MakeUnique<CXFA_LayoutProcessor>())) {}
 
 CXFA_FFDoc::~CXFA_FFDoc() {
   if (m_DocView) {
@@ -120,7 +123,7 @@ bool CXFA_FFDoc::ParseDoc(const CPDF_Object* pElementXFA) {
   if (xfaStreams.empty())
     return false;
 
-  auto stream = pdfium::MakeRetain<CFX_SeekableMultiStream>(xfaStreams);
+  auto stream = pdfium::MakeRetain<CPDF_SeekableMultiStream>(xfaStreams);
 
   CXFA_DocumentParser parser(m_pDocument.get());
   bool parsed = parser.Parse(stream, XFA_PacketType::Xdp);

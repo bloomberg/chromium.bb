@@ -39,10 +39,10 @@ void LogicalRect::Unite(const LogicalRect& other) {
 
 String LogicalRect::ToString() const {
   return String::Format("%s,%s %sx%s",
-                        offset.inline_offset.ToString().Ascii().data(),
-                        offset.block_offset.ToString().Ascii().data(),
-                        size.inline_size.ToString().Ascii().data(),
-                        size.block_size.ToString().Ascii().data());
+                        offset.inline_offset.ToString().Ascii().c_str(),
+                        offset.block_offset.ToString().Ascii().c_str(),
+                        size.inline_size.ToString().Ascii().c_str(),
+                        size.block_size.ToString().Ascii().c_str());
 }
 
 std::ostream& operator<<(std::ostream& os, const LogicalRect& value) {

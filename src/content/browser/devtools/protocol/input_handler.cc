@@ -477,8 +477,7 @@ InputHandler::InputHandler()
     : DevToolsDomainHandler(Input::Metainfo::domainName),
       host_(nullptr),
       page_scale_factor_(1.0),
-      last_id_(0),
-      weak_factory_(this) {}
+      last_id_(0) {}
 
 InputHandler::~InputHandler() {
 }
@@ -765,14 +764,14 @@ void InputHandler::DispatchWebTouchEvent(
 
   if ((type == blink::WebInputEvent::kTouchStart ||
        type == blink::WebInputEvent::kTouchMove) &&
-      touch_points->length() == 0) {
+      touch_points->empty()) {
     callback->sendFailure(Response::InvalidParams(
         "TouchStart and TouchMove must have at least one touch point."));
     return;
   }
   if ((type == blink::WebInputEvent::kTouchEnd ||
        type == blink::WebInputEvent::kTouchCancel) &&
-      touch_points->length() > 0) {
+      !touch_points->empty()) {
     callback->sendFailure(Response::InvalidParams(
         "TouchEnd and TouchCancel must not have any touch points."));
     return;
@@ -790,9 +789,9 @@ void InputHandler::DispatchWebTouchEvent(
 
   base::flat_map<int, blink::WebTouchPoint> points;
   size_t with_id = 0;
-  for (size_t i = 0; i < touch_points->length(); ++i) {
-    Input::TouchPoint* point = touch_points->get(i);
-    int id = point->GetId(i);
+  for (size_t i = 0; i < touch_points->size(); ++i) {
+    Input::TouchPoint* point = (*touch_points)[i].get();
+    int id = point->GetId(i);  // index |i| is default for the id.
     if (point->HasId())
       with_id++;
     points[id].id = id;
@@ -806,7 +805,7 @@ void InputHandler::DispatchWebTouchEvent(
     points[id].SetPositionInScreen(point->GetX() * page_scale_factor_,
                                    point->GetY() * page_scale_factor_);
   }
-  if (with_id > 0 && with_id < touch_points->length()) {
+  if (with_id > 0 && with_id < touch_points->size()) {
     callback->sendFailure(Response::InvalidParams(
         "All or none of the provided TouchPoints must supply ids."));
     return;
@@ -913,7 +912,7 @@ void InputHandler::DispatchSyntheticPointerActionTouch(
            SyntheticPointerActionParams::PointerActionType::PRESS ||
        pointer_action_type ==
            SyntheticPointerActionParams::PointerActionType::MOVE) &&
-      touch_points->length() == 0) {
+      touch_points->empty()) {
     callback->sendFailure(Response::InvalidParams(
         "TouchStart and TouchMove must have at least one touch point."));
     return;
@@ -922,7 +921,7 @@ void InputHandler::DispatchSyntheticPointerActionTouch(
            SyntheticPointerActionParams::PointerActionType::RELEASE ||
        pointer_action_type ==
            SyntheticPointerActionParams::PointerActionType::CANCEL) &&
-      touch_points->length() > 0) {
+      !touch_points->empty()) {
     callback->sendFailure(Response::InvalidParams(
         "TouchEnd and TouchCancel must not have any touch points."));
     return;
@@ -963,9 +962,9 @@ void InputHandler::DispatchSyntheticPointerActionTouch(
   size_t with_id = 0;
   gfx::PointF original;
   std::set<int> current_pointer_ids;
-  for (size_t i = 0; i < touch_points->length(); ++i) {
-    Input::TouchPoint* point = touch_points->get(i);
-    int id = point->GetId(i);
+  for (size_t i = 0; i < touch_points->size(); ++i) {
+    Input::TouchPoint* point = (*touch_points)[i].get();
+    int id = point->GetId(i);  // index |i| is default for the id.
     if (point->HasId())
       with_id++;
 
@@ -984,7 +983,7 @@ void InputHandler::DispatchSyntheticPointerActionTouch(
     original = gfx::PointF(point->GetX(), point->GetY());
     current_pointer_ids.insert(id);
   }
-  if (with_id > 0 && with_id < touch_points->length()) {
+  if (with_id > 0 && with_id < touch_points->size()) {
     callback->sendFailure(Response::InvalidParams(
         "All or none of the provided TouchPoints must supply ids."));
     return;

@@ -34,7 +34,7 @@ static int my_errno;
 #define SYS_ERRNO my_errno
 #include "third_party/lss/linux_syscall_support.h"
 
-#define MAX_PHNUM               12
+#define MAX_PHNUM               16
 
 typedef uintptr_t __attribute__((may_alias)) stack_val_t;
 

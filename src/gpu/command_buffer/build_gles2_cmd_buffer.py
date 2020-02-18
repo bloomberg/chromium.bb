@@ -2202,6 +2202,12 @@ _FUNCTION_INFO = {
     'es31': True,
     'unit_test': False,
   },
+  'DispatchComputeIndirect': {
+    'cmd_args': 'GLintptrNotNegative offset',
+    'trace_level': 2,
+    'es31': True,
+    'unit_test': False,
+  },
   'DrawArrays': {
     'type': 'Custom',
     'impl_func': False,
@@ -3899,7 +3905,8 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'client_test': False,
     'cmd_args': 'GLfloat opacity, GLboolean is_clipped, '
-                'GLint sorting_context_id, GLuint shm_id, GLuint shm_offset',
+                'GLint sorting_context_id, '
+                'GLuint shm_id, GLuint shm_offset',
     'extension': 'CHROMIUM_schedule_ca_layer',
   },
   'ScheduleCALayerCHROMIUM': {
@@ -4408,6 +4415,8 @@ def main(argv):
     "gpu/command_buffer/service/context_state_autogen.h")
   gen.WriteServiceContextStateImpl(
     "gpu/command_buffer/service/context_state_impl_autogen.h")
+  gen.WriteServiceContextStateTestHelpers(
+    "gpu/command_buffer/service/context_state_test_helpers_autogen.h")
   gen.WriteClientContextStateHeader(
     "gpu/command_buffer/client/client_context_state_autogen.h")
   gen.WriteClientContextStateImpl(

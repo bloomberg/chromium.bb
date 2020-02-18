@@ -16,6 +16,8 @@
 #include "base/android/scoped_java_ref.h"
 #endif
 
+#include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
+
 namespace content {
 
 class BrowserContext;
@@ -25,32 +27,54 @@ class CONTENT_EXPORT BackgroundSyncLauncher {
  public:
   static BackgroundSyncLauncher* Get();
   static void GetSoonestWakeupDelta(
+      blink::mojom::BackgroundSyncType sync_type,
       BrowserContext* browser_context,
       base::OnceCallback<void(base::TimeDelta)> callback);
 #if defined(OS_ANDROID)
   static void FireBackgroundSyncEvents(
       BrowserContext* browser_context,
+      blink::mojom::BackgroundSyncType sync_type,
       const base::android::JavaParamRef<jobject>& j_runnable);
+  base::TimeDelta TimeSinceLastBrowserWakeUpForPeriodicSync();
 #endif
 
  private:
   friend struct base::LazyInstanceTraitsBase<BackgroundSyncLauncher>;
   friend class BackgroundSyncLauncherTest;
+  friend class BackgroundSyncManagerTest;
 
   // Constructor and destructor marked private to enforce singleton.
   BackgroundSyncLauncher();
   ~BackgroundSyncLauncher();
 
   void GetSoonestWakeupDeltaImpl(
+      blink::mojom::BackgroundSyncType sync_type,
       BrowserContext* browser_context,
       base::OnceCallback<void(base::TimeDelta)> callback);
+#if defined(OS_ANDROID)
+  void FireBackgroundSyncEventsImpl(
+      BrowserContext* browser_context,
+      blink::mojom::BackgroundSyncType sync_type,
+      const base::android::JavaParamRef<jobject>& j_runnable);
+#endif
   void GetSoonestWakeupDeltaForStoragePartition(
+      blink::mojom::BackgroundSyncType sync_type,
       base::OnceClosure done_closure,
       StoragePartition* storage_partition);
   void SendSoonestWakeupDelta(
+      blink::mojom::BackgroundSyncType sync_type,
       base::OnceCallback<void(base::TimeDelta)> callback);
 
-  base::TimeDelta soonest_wakeup_delta_ = base::TimeDelta::Max();
+  // Getter and setter for |soonest_wakeup_delta_one_shot_|
+  // or |soonest_wakeup_delta_periodic_| based on |sync_type|.
+  void SetGlobalSoonestWakeupDelta(blink::mojom::BackgroundSyncType sync_type,
+                                   base::TimeDelta set_to);
+  base::TimeDelta& GetGlobalSoonestWakeupDelta(
+      blink::mojom::BackgroundSyncType sync_type);
+
+  base::TimeDelta soonest_wakeup_delta_one_shot_ = base::TimeDelta::Max();
+  base::TimeDelta soonest_wakeup_delta_periodic_ = base::TimeDelta::Max();
+  base::Time last_browser_wakeup_for_periodic_sync_;
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncLauncher);
 };
 

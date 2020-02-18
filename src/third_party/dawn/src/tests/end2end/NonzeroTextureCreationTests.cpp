@@ -35,9 +35,9 @@ TEST_P(NonzeroTextureCreationTests, TextureCreationClearsOneBits) {
     descriptor.size.depth = 1;
     descriptor.arrayLayerCount = 1;
     descriptor.sampleCount = 1;
-    descriptor.format = dawn::TextureFormat::R8G8B8A8Unorm;
+    descriptor.format = dawn::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::TransferSrc;
+    descriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
     dawn::Texture texture = device.CreateTexture(&descriptor);
 
     RGBA8 filledWithOnes(255, 255, 255, 255);
@@ -55,9 +55,9 @@ TEST_P(NonzeroTextureCreationTests, MipMapClears) {
     descriptor.size.depth = 1;
     descriptor.arrayLayerCount = 1;
     descriptor.sampleCount = 1;
-    descriptor.format = dawn::TextureFormat::R8G8B8A8Unorm;
+    descriptor.format = dawn::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = mipLevels;
-    descriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::TransferSrc;
+    descriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
     dawn::Texture texture = device.CreateTexture(&descriptor);
 
     std::vector<RGBA8> expected;
@@ -80,9 +80,9 @@ TEST_P(NonzeroTextureCreationTests, ArrayLayerClears) {
     descriptor.size.depth = 1;
     descriptor.arrayLayerCount = arrayLayers;
     descriptor.sampleCount = 1;
-    descriptor.format = dawn::TextureFormat::R8G8B8A8Unorm;
+    descriptor.format = dawn::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::TransferSrc;
+    descriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
     dawn::Texture texture = device.CreateTexture(&descriptor);
 
     std::vector<RGBA8> expected;
@@ -96,8 +96,11 @@ TEST_P(NonzeroTextureCreationTests, ArrayLayerClears) {
 
 DAWN_INSTANTIATE_TEST(NonzeroTextureCreationTests,
                       ForceWorkarounds(D3D12Backend,
-                                       {"nonzero_clear_resources_on_creation_for_testing"}),
+                                       {"nonzero_clear_resources_on_creation_for_testing"},
+                                       {"lazy_clear_resource_on_first_use"}),
                       ForceWorkarounds(OpenGLBackend,
-                                       {"nonzero_clear_resources_on_creation_for_testing"}),
+                                       {"nonzero_clear_resources_on_creation_for_testing"},
+                                       {"lazy_clear_resource_on_first_use"}),
                       ForceWorkarounds(VulkanBackend,
-                                       {"nonzero_clear_resources_on_creation_for_testing"}));
+                                       {"nonzero_clear_resources_on_creation_for_testing"},
+                                       {"lazy_clear_resource_on_first_use"}));

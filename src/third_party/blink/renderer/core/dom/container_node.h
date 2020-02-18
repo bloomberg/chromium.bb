@@ -149,16 +149,14 @@ class CORE_EXPORT ContainerNode : public Node {
   void CloneChildNodesFrom(const ContainerNode&);
 
   void AttachLayoutTree(AttachContext&) override;
-  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
-  LayoutRect BoundingBox() const final;
+  void DetachLayoutTree(bool performing_reattach = false) override;
+  PhysicalRect BoundingBox() const final;
   void SetFocused(bool, WebFocusType) override;
   void SetHasFocusWithinUpToAncestor(bool, Node* ancestor);
   void FocusStateChanged();
   void FocusVisibleStateChanged();
   void FocusWithinStateChanged();
-  void SetActive(bool = true) override;
   void SetDragged(bool) override;
-  void SetHovered(bool = true) override;
   void RemovedFrom(ContainerNode& insertion_point) override;
 
   bool ChildrenOrSiblingsAffectedByFocus() const {
@@ -293,7 +291,6 @@ class CORE_EXPORT ContainerNode : public Node {
   void RecalcDescendantStyles(const StyleRecalcChange);
   void RebuildChildrenLayoutTrees(WhitespaceAttacher&);
   void RebuildLayoutTreeForChild(Node* child, WhitespaceAttacher&);
-  void RebuildNonDistributedChildren();
 
   // -----------------------------------------------------------------------------
   // Notification of document structure changes (see core/dom/node.h for more

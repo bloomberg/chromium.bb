@@ -27,6 +27,34 @@ class BoolAttributeSetter : public AXSparseAttributeSetter {
   }
 };
 
+class IntAttributeSetter : public AXSparseAttributeSetter {
+ public:
+  IntAttributeSetter(AXIntAttribute attribute) : attribute_(attribute) {}
+
+ private:
+  AXIntAttribute attribute_;
+
+  void Run(const AXObject& obj,
+           AXSparseAttributeClient& attribute_map,
+           const AtomicString& value) override {
+    attribute_map.AddIntAttribute(attribute_, value.ToInt());
+  }
+};
+
+class UIntAttributeSetter : public AXSparseAttributeSetter {
+ public:
+  UIntAttributeSetter(AXUIntAttribute attribute) : attribute_(attribute) {}
+
+ private:
+  AXUIntAttribute attribute_;
+
+  void Run(const AXObject& obj,
+           AXSparseAttributeClient& attribute_map,
+           const AtomicString& value) override {
+    attribute_map.AddUIntAttribute(attribute_, value.ToInt());
+  }
+};
+
 class StringAttributeSetter : public AXSparseAttributeSetter {
  public:
   StringAttributeSetter(AXStringAttribute attribute) : attribute_(attribute) {}
@@ -54,10 +82,10 @@ class ObjectAttributeSetter : public AXSparseAttributeSetter {
     if (value.IsNull() || value.IsEmpty())
       return;
 
-    Node* node = obj.GetNode();
-    if (!node || !node->IsElementNode())
+    auto* element = DynamicTo<Element>(obj.GetNode());
+    if (!element)
       return;
-    Element* target = ToElement(node)->GetTreeScope().getElementById(value);
+    Element* target = element->GetTreeScope().getElementById(value);
     if (!target)
       return;
     AXObject* ax_target = obj.AXObjectCache().GetOrCreate(target);
@@ -139,6 +167,24 @@ AXSparseAttributeSetterMap& GetSparseAttributeSetterMap() {
         new StringAttributeSetter(AXStringAttribute::kAriaRoleDescription));
     ax_sparse_attribute_setter_map.Set(
         kAriaBusyAttr, new BoolAttributeSetter(AXBoolAttribute::kAriaBusy));
+    ax_sparse_attribute_setter_map.Set(
+        kAriaColcountAttr,
+        new IntAttributeSetter(AXIntAttribute::kAriaColumnCount));
+    ax_sparse_attribute_setter_map.Set(
+        kAriaColindexAttr,
+        new UIntAttributeSetter(AXUIntAttribute::kAriaColumnIndex));
+    ax_sparse_attribute_setter_map.Set(
+        kAriaColspanAttr,
+        new UIntAttributeSetter(AXUIntAttribute::kAriaColumnSpan));
+    ax_sparse_attribute_setter_map.Set(
+        kAriaRowcountAttr,
+        new IntAttributeSetter(AXIntAttribute::kAriaRowCount));
+    ax_sparse_attribute_setter_map.Set(
+        kAriaRowindexAttr,
+        new UIntAttributeSetter(AXUIntAttribute::kAriaRowIndex));
+    ax_sparse_attribute_setter_map.Set(
+        kAriaRowspanAttr,
+        new UIntAttributeSetter(AXUIntAttribute::kAriaRowSpan));
   }
   return ax_sparse_attribute_setter_map;
 }

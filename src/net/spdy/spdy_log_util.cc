@@ -10,12 +10,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/http/http_log_util.h"
+#include "net/log/net_log_values.h"
 
 namespace net {
 
 base::Value ElideGoAwayDebugDataForNetLog(NetLogCaptureMode capture_mode,
                                           base::StringPiece debug_data) {
-  if (capture_mode.include_cookies_and_credentials())
+  if (NetLogCaptureIncludesSensitive(capture_mode))
     return NetLogStringValue(debug_data);
 
   return NetLogStringValue(base::StrCat(
@@ -37,8 +38,8 @@ base::ListValue ElideSpdyHeaderBlockForNetLog(
   return headers_list;
 }
 
-base::Value SpdyHeaderBlockNetLogCallback(const spdy::SpdyHeaderBlock* headers,
-                                          NetLogCaptureMode capture_mode) {
+base::Value SpdyHeaderBlockNetLogParams(const spdy::SpdyHeaderBlock* headers,
+                                        NetLogCaptureMode capture_mode) {
   base::DictionaryValue dict;
   dict.SetKey("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
   return std::move(dict);

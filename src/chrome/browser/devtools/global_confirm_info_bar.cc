@@ -163,8 +163,7 @@ GlobalConfirmInfoBar::GlobalConfirmInfoBar(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate)
     : delegate_(std::move(delegate)),
       browser_tab_strip_tracker_(this, nullptr, nullptr),
-      is_closing_(false),
-      weak_factory_(this) {
+      is_closing_(false) {
   browser_tab_strip_tracker_.Init();
 }
 
@@ -216,7 +215,7 @@ void GlobalConfirmInfoBar::MaybeAddInfoBar(content::WebContents* web_contents) {
       InfoBarService::FromWebContents(web_contents);
   // WebContents from the tab strip must have the infobar service.
   DCHECK(infobar_service);
-  if (ContainsKey(proxies_, infobar_service))
+  if (base::Contains(proxies_, infobar_service))
     return;
 
   std::unique_ptr<GlobalConfirmInfoBar::DelegateProxy> proxy(

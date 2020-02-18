@@ -11,10 +11,10 @@
 #include "ash/metrics/demo_session_metrics_recorder.h"
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 #include "ash/metrics/pointer_metrics_recorder.h"
+#include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/interfaces/accessibility_controller.mojom-shared.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
@@ -47,7 +47,7 @@ enum ActiveWindowStateType {
 ActiveWindowStateType GetActiveWindowState() {
   ActiveWindowStateType active_window_state_type =
       ACTIVE_WINDOW_STATE_TYPE_NO_ACTIVE_WINDOW;
-  wm::WindowState* active_window_state = ash::wm::GetActiveWindowState();
+  WindowState* active_window_state = WindowState::ForActiveWindow();
   if (active_window_state) {
     switch (active_window_state->GetStateType()) {
       case WindowStateType::kMaximized:
@@ -132,8 +132,7 @@ int GetNumVisibleWindowsInPrimaryDisplay() {
                                                        rend = children.rend();
          it != rend; ++it) {
       const aura::Window* child_window = *it;
-      const wm::WindowState* child_window_state =
-          wm::GetWindowState(child_window);
+      const WindowState* child_window_state = WindowState::Get(child_window);
 
       if (!child_window->IsVisible() || child_window_state->IsMinimized())
         continue;
@@ -164,7 +163,7 @@ void RecordShelfItemCounts() {
   for (const ShelfItem& item : ShelfModel::Get()->items()) {
     if (item.type == TYPE_PINNED_APP || item.type == TYPE_BROWSER_SHORTCUT)
       ++pinned_item_count;
-    else if (item.type != TYPE_APP_LIST && item.type != TYPE_BACK_BUTTON)
+    else
       ++unpinned_item_count;
   }
 
@@ -209,7 +208,7 @@ void UserMetricsRecorder::RecordUserClickOnShelfButton(
 
 // static
 void UserMetricsRecorder::RecordUserToggleDictation(
-    mojom::DictationToggleSource source) {
+    DictationToggleSource source) {
   UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosDictation.ToggleDictationMethod",
                             source);
 }

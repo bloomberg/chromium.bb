@@ -21,9 +21,9 @@ module.
 
     # Connecting to a MySQL database
     my $db = DBIx::Simple->connect(
-	'DBI:mysql:database=test',     # DBI source specification
-	'test', 'test',                # Username and password
-	{ RaiseError => 1 }            # Additional options
+        'DBI:mysql:database=test',     # DBI source specification
+        'test', 'test',                # Username and password
+        { RaiseError => 1 }            # Additional options
     );
 
     # Using an existing database handle
@@ -38,16 +38,16 @@ module.
     $db->query('DELETE FROM foo WHERE id = ?', $id) or die $db->error;
 
     for (1..100) {
-	$db->query(
-	    'INSERT INTO randomvalues VALUES (?, ?)',
-	    int rand(10),
-	    int rand(10)
-	) or die $db->error;
+        $db->query(
+            'INSERT INTO randomvalues VALUES (?, ?)',
+            int rand(10),
+            int rand(10)
+        ) or die $db->error;
     }
 
     $db->query(
-	'INSERT INTO sometable VALUES (??)',
-	$first, $second, $third, $fourth, $fifth, $sixth
+        'INSERT INTO sometable VALUES (??)',
+        $first, $second, $third, $fourth, $fifth, $sixth
     );
     # (??) is expanded to (?, ?, ?, ?, ?, ?) automatically
 
@@ -57,8 +57,8 @@ module.
     my ($three, $four) = $db->query('SELECT 3, 2 + 2')->list;
 
     my ($name, $email) = $db->query(
-	'SELECT name, email FROM people WHERE email = ? LIMIT 1',
-	$mail
+        'SELECT name, email FROM people WHERE email = ? LIMIT 1',
+        $mail
     )->list;
 
 Or, more efficiently:
@@ -67,8 +67,8 @@ Or, more efficiently:
     $db->query('SELECT 3, 2 + 2')->into(my ($three, $four));
 
     $db->query(
-	'SELECT name, email FROM people WHERE email = ? LIMIT 1',
-	$mail
+        'SELECT name, email FROM people WHERE email = ? LIMIT 1',
+        $mail
     )->into(my ($name, $email));
 
 =head2 Fetching all rows in one go
@@ -80,13 +80,13 @@ Or, more efficiently:
 =head3 Rows as array references
 
     for my $row ($db->query('SELECT name, email FROM people')->arrays) {
-	print "Name: $row->[0], Email: $row->[1]\n";
+        print "Name: $row->[0], Email: $row->[1]\n";
     }
 
 =head3 Rows as hash references
 
     for my $row ($db->query('SELECT name, email FROM people')->hashes) {
-	print "Name: $row->{name}, Email: $row->{email}\n";
+        print "Name: $row->{name}, Email: $row->{email}\n";
     }
 
 =head2 Fetching one row at a time
@@ -113,58 +113,89 @@ or:
 =head3 Rows as lists
 
     {
-	my $result = $db->query('SELECT name, email FROM people');
-	while (my @row = $result->list) {
-	    print "Name: $row[0], Email: $row[1]\n";
-	}
+        my $result = $db->query('SELECT name, email FROM people');
+        while (my @row = $result->list) {
+            print "Name: $row[0], Email: $row[1]\n";
+        }
     }
 
 =head3 Rows as array references
 
     {
-	my $result = $db->query('SELECT name, email FROM people');
-	while (my $row = $result->array) {
-	    print "Name: $row->[0], Email: $row->[1]\n";
-	}
+        my $result = $db->query('SELECT name, email FROM people');
+        while (my $row = $result->array) {
+            print "Name: $row->[0], Email: $row->[1]\n";
+        }
     }
 
 =head3 Rows as hash references
 
     {
-	my $result = $db->query('SELECT name, email FROM people');
-	while (my $row = $result->hash) {
-	    print "Name: $row->{name}, Email: $row->{email}\n";
-	}
+        my $result = $db->query('SELECT name, email FROM people');
+        while (my $row = $result->hash) {
+            print "Name: $row->{name}, Email: $row->{email}\n";
+        }
     }
 
 =head2 Building maps (also fetching all rows in one go)
 
-=head3 A hash of hashes
+=head3 map
+
+=head4 A hash of hashes
 
     my $customers =
-	$db
-	-> query('SELECT id, name, location FROM people')
-	-> map_hashes('id');
+        $db
+        -> query('SELECT id, name, location FROM people')
+        -> map_hashes('id');
 
-    # $customers = { $id => { name => $name, location => $location } }
+    # $customers = { $id => { name => $name, location => $location }, ... }
 
-=head3 A hash of arrays
+=head4 A hash of arrays
 
     my $customers =
-	$db
-	-> query('SELECT id, name, location FROM people')
-	-> map_arrays(0);
+        $db
+        -> query('SELECT id, name, location FROM people')
+        -> map_arrays(0);
 
-    # $customers = { $id => [ $name, $location ] }
+    # $customers = { $id => [ $name, $location ], ... }
 
-=head3 A hash of values (two-column queries)
+=head4 A hash of values (two-column queries)
 
     my $names =
-	$db
-	-> query('SELECT id, name FROM people')
-	-> map;
+        $db
+        -> query('SELECT id, name FROM people')
+        -> map;
 
-    # $names = { $id => $name }
+    # $names = { $id => $name, ... }
+
+=head3 group
+
+=head4 A hash of arrays of hashes
+
+    my $customers =
+        $db
+        -> query('SELECT id, name, location FROM people')
+        -> group_hashes('location');
+
+    # $customers = { $location => [ { id => $id, name => $name }, ... ], ... }
+
+=head4 A hash of arrays of arrays
+
+    my $customers =
+        $db
+        -> query('SELECT id, name, location FROM people')
+        -> group_arrays(2);
+
+    # $customers = { $location => [ [ $id, $name ], ... ], ... }
+
+=head4 A hash of arrays of values (two-column queries)
+
+    my $names =
+        $db
+        -> query('SELECT location, name FROM people')
+        -> group;
+
+    # $names = { $location => [ $name, $name, ... ], ... }
 
 =head1 EXAMPLES WITH SQL::Interp
 

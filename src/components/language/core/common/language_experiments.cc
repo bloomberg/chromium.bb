@@ -23,9 +23,13 @@ const base::Feature kImprovedGeoLanguageData{"ImprovedGeoLanguageData",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kUseFluentLanguageModel{"UseFluentLanguageModel",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNotifySyncOnLanguageDetermined{
+    "NotifySyncOnLanguageDetermined", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Base feature for Translate desktop UI experiment
-const base::Feature kUseButtonTranslateBubbleUI{
+const base::Feature kUseButtonTranslateBubbleUi{
     "UseButtonTranslateBubbleUI", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Params:
 const char kBackoffThresholdKey[] = "backoff_threshold";
 const char kOverrideModelKey[] = "override_model";
@@ -101,9 +105,9 @@ bool IsForceTriggerBackoffThresholdReached(int force_trigger_count) {
   return force_trigger_count >= threshold;
 }
 
-TranslateUIBubbleModel GetTranslateUIBubbleModel() {
+TranslateUIBubbleModel GetTranslateUiBubbleModel() {
   std::map<std::string, std::string> params;
-  if (base::GetFieldTrialParamsByFeature(language::kUseButtonTranslateBubbleUI,
+  if (base::GetFieldTrialParamsByFeature(language::kUseButtonTranslateBubbleUi,
                                          &params)) {
     if (params[language::kTranslateUIBubbleKey] ==
         language::kTranslateUIBubbleButtonValue) {

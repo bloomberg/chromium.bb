@@ -18,6 +18,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/thumbnail/scoped_ptr_expiring_cache.h"
@@ -73,6 +74,7 @@ class ThumbnailCache : ThumbnailDelegate {
   // Called when resident textures were evicted, which requires paging
   // in bitmaps.
   void OnUIResourcesWereEvicted();
+  void SetCaptureMinRequestTimeForTesting(int timeMs);
 
   // ThumbnailDelegate implementation
   void InvalidateCachedThumbnail(Thumbnail* thumbnail) override;
@@ -83,8 +85,8 @@ class ThumbnailCache : ThumbnailDelegate {
  private:
   class ThumbnailMetaData {
    public:
-    ThumbnailMetaData();
-    ThumbnailMetaData(const base::Time& current_time, const GURL& url);
+    ThumbnailMetaData() = default;
+    ThumbnailMetaData(const base::Time& current_time, GURL url);
     const GURL& url() const { return url_; }
     base::Time capture_time() const { return capture_time_; }
 
@@ -104,6 +106,12 @@ class ThumbnailCache : ThumbnailDelegate {
                                  const gfx::Size& content_size);
   void WriteJpegThumbnailIfNecessary(TabId tab_id,
                                      std::vector<uint8_t> compressed_data);
+  void SaveAsJpeg(TabId tab_id, const SkBitmap& bitmap);
+  void ForkToSaveAsJpeg(const base::Callback<void(bool, SkBitmap)>& callback,
+                        int tab_id,
+                        bool result,
+                        SkBitmap bitmap);
+
   void CompressThumbnailIfNecessary(TabId tab_id,
                                     const base::Time& time_stamp,
                                     const SkBitmap& bitmap,
@@ -163,6 +171,7 @@ class ThumbnailCache : ThumbnailDelegate {
   const size_t write_queue_max_size_;
   const bool use_approximation_thumbnail_;
   const bool save_jpeg_thumbnails_;
+  base::TimeDelta capture_min_request_time_ms_;
 
   size_t compression_tasks_count_;
   size_t write_tasks_count_;
@@ -177,6 +186,7 @@ class ThumbnailCache : ThumbnailDelegate {
   TabId primary_tab_id_ = -1;
 
   ui::UIResourceProvider* ui_resource_provider_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_;
   base::WeakPtrFactory<ThumbnailCache> weak_factory_;

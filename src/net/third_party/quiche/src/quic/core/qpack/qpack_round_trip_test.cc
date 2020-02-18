@@ -8,6 +8,7 @@
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder_test_utils.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder_test_utils.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_test_utils.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
@@ -19,29 +20,25 @@ namespace quic {
 namespace test {
 namespace {
 
-class QpackRoundTripTest
-    : public QuicTestWithParam<std::tuple<FragmentMode, FragmentMode>> {
+class QpackRoundTripTest : public QuicTestWithParam<FragmentMode> {
  public:
-  QpackRoundTripTest()
-      : encoding_fragment_mode_(std::get<0>(GetParam())),
-        decoding_fragment_mode_(std::get<1>(GetParam())) {}
+  QpackRoundTripTest() = default;
   ~QpackRoundTripTest() override = default;
 
   spdy::SpdyHeaderBlock EncodeThenDecode(
       const spdy::SpdyHeaderBlock& header_list) {
     NoopDecoderStreamErrorDelegate decoder_stream_error_delegate;
-    NoopEncoderStreamSenderDelegate encoder_stream_sender_delegate;
-    std::string encoded_header_block = QpackEncode(
-        &decoder_stream_error_delegate, &encoder_stream_sender_delegate,
-        FragmentModeToFragmentSizeGenerator(encoding_fragment_mode_),
-        &header_list);
+    NoopQpackStreamSenderDelegate encoder_stream_sender_delegate;
+    QpackEncoder encoder(&decoder_stream_error_delegate,
+                         &encoder_stream_sender_delegate);
+    std::string encoded_header_block =
+        encoder.EncodeHeaderList(/* stream_id = */ 1, &header_list);
 
     TestHeadersHandler handler;
     NoopEncoderStreamErrorDelegate encoder_stream_error_delegate;
-    NoopDecoderStreamSenderDelegate decoder_stream_sender_delegate;
+    NoopQpackStreamSenderDelegate decoder_stream_sender_delegate;
     QpackDecode(&encoder_stream_error_delegate, &decoder_stream_sender_delegate,
-                &handler,
-                FragmentModeToFragmentSizeGenerator(decoding_fragment_mode_),
+                &handler, FragmentModeToFragmentSizeGenerator(GetParam()),
                 encoded_header_block);
 
     EXPECT_TRUE(handler.decoding_completed());
@@ -49,17 +46,12 @@ class QpackRoundTripTest
 
     return handler.ReleaseHeaderList();
   }
-
- private:
-  const FragmentMode encoding_fragment_mode_;
-  const FragmentMode decoding_fragment_mode_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    QpackRoundTripTest,
-    Combine(Values(FragmentMode::kSingleChunk, FragmentMode::kOctetByOctet),
-            Values(FragmentMode::kSingleChunk, FragmentMode::kOctetByOctet)));
+INSTANTIATE_TEST_SUITE_P(,
+                         QpackRoundTripTest,
+                         Values(FragmentMode::kSingleChunk,
+                                FragmentMode::kOctetByOctet));
 
 TEST_P(QpackRoundTripTest, Empty) {
   spdy::SpdyHeaderBlock header_list;

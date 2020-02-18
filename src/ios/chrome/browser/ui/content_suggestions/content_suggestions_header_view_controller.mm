@@ -216,6 +216,12 @@ using base::UserMetricsAction;
   self.view = [[ContentSuggestionsHeaderView alloc] init];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
+                                  self.fakeOmnibox);
+}
+
 - (CGFloat)headerHeight {
   return content_suggestions::heightForLogoHeader(
       self.logoIsShowing, self.promoCanShow, YES, [self topInset]);
@@ -228,8 +234,6 @@ using base::UserMetricsAction;
     self.headerView =
         base::mac::ObjCCastStrict<ContentSuggestionsHeaderView>(self.view);
     [self addFakeTapView];
-    if (IsIdentityDiscFeatureEnabled())
-      [self addIdentityDisc];
     [self addFakeOmnibox];
 
     [self.headerView addSubview:self.logoVendor.view];
@@ -238,6 +242,11 @@ using base::UserMetricsAction;
     self.fakeOmnibox.translatesAutoresizingMaskIntoConstraints = NO;
 
     [self.headerView addSeparatorToSearchField:self.fakeOmnibox];
+
+    // Identity disc needs to be added after the Google logo/doodle since it
+    // needs to respond to user taps first.
+    if (IsIdentityDiscFeatureEnabled())
+      [self addIdentityDisc];
 
     // -headerForView is regularly called before self.headerView has been added
     // to the view hierarchy, so there's no simple way to get the correct
@@ -316,8 +325,7 @@ using base::UserMetricsAction;
 - (void)addFakeTapView {
   UIButton* fakeTapButton = [[UIButton alloc] init];
   fakeTapButton.translatesAutoresizingMaskIntoConstraints = NO;
-  fakeTapButton.accessibilityLabel =
-      l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
+  fakeTapButton.isAccessibilityElement = NO;
   [self.headerView addToolbarView:fakeTapButton];
   [fakeTapButton addTarget:self
                     action:@selector(fakeboxTapped)

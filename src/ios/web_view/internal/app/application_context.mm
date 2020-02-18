@@ -9,7 +9,6 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
-#include "components/net_log/chrome_net_log.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -17,10 +16,11 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/web_view_io_thread.h"
 #import "ios/web_view/internal/cwv_flags_internal.h"
+#include "net/log/net_log.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "services/network/network_change_manager.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
@@ -29,7 +29,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #endif
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -54,7 +54,7 @@ ApplicationContext* ApplicationContext::GetInstance() {
 }
 
 ApplicationContext::ApplicationContext() {
-  net_log_ = std::make_unique<net_log::ChromeNetLog>();
+  net_log_ = std::make_unique<net::NetLog>();
 
   SetApplicationLocale(l10n_util::GetLocaleOverride());
 }
@@ -103,7 +103,7 @@ PrefService* ApplicationContext::GetLocalState() {
     flags_ui::PrefServiceFlagsStorage::RegisterPrefs(pref_registry.get());
     PrefProxyConfigTrackerImpl::RegisterPrefs(pref_registry.get());
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
-    identity::IdentityManager::RegisterLocalStatePrefs(pref_registry.get());
+    signin::IdentityManager::RegisterLocalStatePrefs(pref_registry.get());
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
     base::FilePath local_state_path;
@@ -187,7 +187,7 @@ const std::string& ApplicationContext::GetApplicationLocale() {
   return application_locale_;
 }
 
-net_log::ChromeNetLog* ApplicationContext::GetNetLog() {
+net::NetLog* ApplicationContext::GetNetLog() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return net_log_.get();
 }

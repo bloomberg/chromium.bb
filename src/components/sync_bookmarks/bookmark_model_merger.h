@@ -60,13 +60,14 @@ class BookmarkModelMerger {
   // |bookmark_tracker_| accordingly.
   void ProcessRemoteCreation(const syncer::UpdateResponseData* remote_update,
                              const bookmarks::BookmarkNode* local_parent,
-                             int index);
+                             size_t index);
 
   // Creates a server counter-part for the local node at position |index|
   // under |parent|. If the local node has children, corresponding server nodes
   // are created recursively. It updates the |bookmark_tracker_| accordingly and
   // new nodes are marked to be committed.
-  void ProcessLocalCreation(const bookmarks::BookmarkNode* parent, int index);
+  void ProcessLocalCreation(const bookmarks::BookmarkNode* parent,
+                            size_t index);
 
   // Gets the bookmark node corresponding to a permanent folder.
   // |update_entity| must contain server_defined_unique_tag that is used to

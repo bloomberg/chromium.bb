@@ -21,6 +21,9 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
+#include "device/fido/authenticator_selection_criteria.h"
+#include "device/fido/ctap_get_assertion_request.h"
+#include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
@@ -32,8 +35,6 @@ class OneShotTimer;
 
 namespace device {
 
-struct PlatformAuthenticatorInfo;
-struct CtapGetAssertionRequest;
 class FidoRequestHandlerBase;
 
 enum class FidoReturnCode : uint8_t;
@@ -85,11 +86,6 @@ class CONTENT_EXPORT AuthenticatorCommon {
           IsUserVerifyingPlatformAuthenticatorAvailableCallback callback);
   void Cancel();
 
-  // Synchronous implementation of
-  // IsUserVerifyingPlatformAuthenticatorAvailable.
-  bool IsUserVerifyingPlatformAuthenticatorAvailableImpl(
-      AuthenticatorRequestClientDelegate* request_delegate);
-
   void Cleanup();
 
   base::flat_set<device::FidoTransportProtocol> enabled_transports_for_testing()
@@ -115,6 +111,14 @@ class CONTENT_EXPORT AuthenticatorCommon {
     kDontCheck,
   };
 
+  // Replaces the current |request_| with a |MakeCredentialRequestHandler|,
+  // effectively restarting the request.
+  void StartMakeCredentialRequest();
+
+  // Replaces the current |request_| with a |GetAssertionRequestHandler|,
+  // effectively restarting the request.
+  void StartGetAssertionRequest();
+
   bool IsFocused() const;
 
   // Builds the CollectedClientData[1] dictionary with the given values,
@@ -134,7 +138,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
   void OnRegisterResponse(
       device::FidoReturnCode status_code,
       base::Optional<device::AuthenticatorMakeCredentialResponse> response_data,
-      base::Optional<device::FidoTransportProtocol> transport_used);
+      const device::FidoAuthenticator* authenticator);
 
   // Callback to complete the registration process once a decision about
   // whether or not to return attestation data has been made.
@@ -148,7 +152,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
       device::FidoReturnCode status_code,
       base::Optional<std::vector<device::AuthenticatorGetAssertionResponse>>
           response_data,
-      base::Optional<device::FidoTransportProtocol> transport_used);
+      const device::FidoAuthenticator* authenticator);
 
   // Runs when timer expires and cancels all issued requests to a U2fDevice.
   void OnTimeout();
@@ -166,6 +170,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
   // acknowledgement before returning the error, and handles the error
   // appropriately.
   void SignalFailureToRequestDelegate(
+      const ::device::FidoAuthenticator* authenticator,
       AuthenticatorRequestClientDelegate::InterestingFailureReason reason);
 
   void InvokeCallbackAndCleanup(
@@ -177,12 +182,6 @@ class CONTENT_EXPORT AuthenticatorCommon {
       blink::mojom::Authenticator::GetAssertionCallback callback,
       blink::mojom::AuthenticatorStatus status,
       blink::mojom::GetAssertionAuthenticatorResponsePtr response = nullptr);
-
-  base::Optional<device::PlatformAuthenticatorInfo>
-  CreatePlatformAuthenticatorIfAvailable();
-  base::Optional<device::PlatformAuthenticatorInfo>
-  CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
-      const device::CtapGetAssertionRequest& request);
 
   BrowserContext* browser_context() const;
 
@@ -200,14 +199,19 @@ class CONTENT_EXPORT AuthenticatorCommon {
   url::Origin caller_origin_;
   std::string relying_party_id_;
   std::unique_ptr<base::OneShotTimer> timer_;
+  base::Optional<device::AuthenticatorSelectionCriteria>
+      authenticator_selection_criteria_;
   base::Optional<std::string> app_id_;
+  base::Optional<device::CtapMakeCredentialRequest>
+      ctap_make_credential_request_;
+  base::Optional<device::CtapGetAssertionRequest> ctap_get_assertion_request_;
   // awaiting_attestation_response_ is true if the embedder has been queried
   // about an attestsation decision and the response is still pending.
   bool awaiting_attestation_response_ = false;
   blink::mojom::AuthenticatorStatus error_awaiting_user_acknowledgement_ =
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
 
-  base::WeakPtrFactory<AuthenticatorCommon> weak_factory_;
+  base::WeakPtrFactory<AuthenticatorCommon> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorCommon);
 };

@@ -17,7 +17,7 @@
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "ios/web/test/fakes/crw_fake_session_controller_delegate.h"
@@ -102,9 +102,7 @@ TEST_F(CRWSessionControllerTest, Init) {
 // Tests that [session_controller_ pendingItem] returns item provided by the
 // delegate.
 TEST_F(CRWSessionControllerTest, GetPendingItemFromDelegate) {
-  feature_list_.InitWithFeatures(
-      /*enabled_features=*/{web::features::kStorePendingItemInContext},
-      /*disabled_features=*/{web::features::kSlimNavigationManager});
+  feature_list_.InitAndDisableFeature(web::features::kSlimNavigationManager);
 
   ASSERT_FALSE([session_controller_ pendingItem]);
   auto item = std::make_unique<web::NavigationItemImpl>();
@@ -508,9 +506,6 @@ TEST_F(CRWSessionControllerTest, commitPendingItemIndex) {
 // Tests that -[CRWSessionController commitPendingItem:] is no-op when called
 // with null.
 TEST_F(CRWSessionControllerTest, CommitNilPendingItem) {
-  if (!web::features::StorePendingItemInContext()) {
-    return;
-  }
   ASSERT_TRUE([session_controller_ items].empty());
   [session_controller_ commitPendingItem:nil];
   EXPECT_TRUE([session_controller_ items].empty());
@@ -518,10 +513,6 @@ TEST_F(CRWSessionControllerTest, CommitNilPendingItem) {
 
 // Tests -[CRWSessionController commitPendingItem:] with a valid pending item.
 TEST_F(CRWSessionControllerTest, CommitNonNilPendingItem) {
-  if (!web::features::StorePendingItemInContext()) {
-    return;
-  }
-
   // Create session controller with a single forward item and no back items.
   [session_controller_
                addPendingItem:GURL("http://www.example.test/0")

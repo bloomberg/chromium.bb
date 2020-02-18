@@ -21,7 +21,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shutdown_controller.h"
+#include "ash/shutdown_controller_impl.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -87,7 +87,7 @@ class LoginShelfViewTest : public LoginTestBase {
   }
 
   void NotifyShutdownPolicyChanged(bool reboot_on_shutdown) {
-    Shell::Get()->shutdown_controller()->SetRebootOnShutdownForTesting(
+    Shell::Get()->shutdown_controller()->SetRebootOnShutdown(
         reboot_on_shutdown);
   }
 
@@ -371,7 +371,8 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
 }
 
 TEST_F(LoginShelfViewTest, ShouldShowGuestButtonWhenNoUserPods) {
-  login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
+  login_shelf_view_->SetAllowLoginAsGuest(/*allow_guest=*/true);
+  login_shelf_view_->ShowGuestButtonInOobe(/*show=*/true);
   SetUserCount(0);
 
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);

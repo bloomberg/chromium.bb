@@ -31,7 +31,6 @@
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
-#include "components/autofill/core/common/button_title_type.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "third_party/blink/public/platform/url_conversion.h"
@@ -49,7 +48,6 @@
 #include "third_party/blink/public/web/web_option_element.h"
 #include "third_party/blink/public/web/web_select_element.h"
 
-using autofill::FormFieldData;
 using blink::WebAutofillState;
 using blink::WebDocument;
 using blink::WebElement;
@@ -66,6 +64,9 @@ using blink::WebString;
 using blink::WebVector;
 
 namespace autofill {
+
+using mojom::ButtonTitleType;
+
 namespace form_util {
 
 const size_t kMaxParseableFields = 200;
@@ -139,7 +140,7 @@ bool IsElementInControlElementSet(
     return false;
   const WebFormControlElement form_control_element =
       element.ToConst<WebFormControlElement>();
-  return base::ContainsValue(control_elements, form_control_element);
+  return base::Contains(control_elements, form_control_element);
 }
 
 bool IsElementInsideFormOrFieldSet(const WebElement& element,
@@ -248,7 +249,7 @@ base::string16 FindChildTextInner(const WebNode& node,
       return base::string16();
     }
 
-    if (element.HasHTMLTagName("div") && base::ContainsKey(divs_to_skip, node))
+    if (element.HasHTMLTagName("div") && base::Contains(divs_to_skip, node))
       return base::string16();
   }
 
@@ -292,11 +293,9 @@ base::string16 FindChildTextWithIgnoreList(
 bool IsLabelValid(base::StringPiece16 inferred_label,
                   const std::vector<base::char16>& stop_words) {
   // If |inferred_label| has any character other than those in |stop_words|.
-  auto* first_non_stop_word =
-      std::find_if(inferred_label.begin(), inferred_label.end(),
-                   [&stop_words](base::char16 c) {
-                     return !base::ContainsValue(stop_words, c);
-                   });
+  auto* first_non_stop_word = std::find_if(
+      inferred_label.begin(), inferred_label.end(),
+      [&stop_words](base::char16 c) { return !base::Contains(stop_words, c); });
   return first_non_stop_word != inferred_label.end();
 }
 
@@ -825,7 +824,7 @@ bool InferLabelForElement(const WebFormControlElement& element,
   FormFieldData::LabelSource ancestor_label_source =
       FormFieldData::LabelSource::kUnknown;
   for (const std::string& tag_name : tag_names) {
-    if (base::ContainsKey(seen_tag_names, tag_name))
+    if (base::Contains(seen_tag_names, tag_name))
       continue;
 
     seen_tag_names.insert(tag_name);
@@ -1680,6 +1679,7 @@ void WebFormControlElementToFormField(
   field->id_attribute = element.GetAttribute(*kId).Utf16();
   field->name_attribute = element.GetAttribute(*kName).Utf16();
   field->unique_renderer_id = element.UniqueRendererFormControlId();
+  field->form_control_ax_id = element.GetAxId();
   field->form_control_type = element.FormControlTypeForAutofill().Utf8();
   field->autocomplete_attribute = element.GetAttribute(*kAutocomplete).Utf8();
   if (field->autocomplete_attribute.size() > kMaxDataLength) {

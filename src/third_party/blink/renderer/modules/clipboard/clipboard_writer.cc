@@ -11,10 +11,10 @@
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_promise.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
@@ -28,10 +28,6 @@ class ClipboardImageWriter final : public ClipboardWriter {
   ~ClipboardImageWriter() override = default;
 
  private:
-  // Reference: third_party/blink/renderer/core/imagebitmap/.
-  // Logic modified from CropImageAndApplyColorSpaceConversion, but not using
-  // directly due to extra complexity in imagebitmap that isn't necessary for
-  // async clipboard image decoding.
   void DecodeOnBackgroundThread(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       DOMArrayBuffer* png_data) override {
@@ -42,6 +38,7 @@ class ClipboardImageWriter final : public ClipboardWriter {
         true, ImageDecoder::kAlphaPremultiplied, ImageDecoder::kDefaultBitDepth,
         ColorBehavior::Tag());
     sk_sp<SkImage> image = nullptr;
+    // |decoder| is nullptr if |png_data| doesn't begin with the PNG signature.
     if (decoder)
       image = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));
 
@@ -62,7 +59,7 @@ class ClipboardImageWriter final : public ClipboardWriter {
     SkBitmap bitmap;
     image->asLegacyBitmap(&bitmap);
     SystemClipboard::GetInstance().WriteImage(std::move(bitmap));
-    promise_->WriteNextRepresentation();
+    promise_->CompleteWriteRepresentation();
   }
 };
 
@@ -94,7 +91,7 @@ class ClipboardTextWriter final : public ClipboardWriter {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     SystemClipboard::GetInstance().WritePlainText(text);
 
-    promise_->WriteNextRepresentation();
+    promise_->CompleteWriteRepresentation();
   }
 };
 

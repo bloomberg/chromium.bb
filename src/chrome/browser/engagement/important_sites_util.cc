@@ -213,8 +213,7 @@ std::unordered_set<std::string> GetBlacklistedImportantDomains(
   std::unordered_set<std::string> ignoring_domains;
   for (const ContentSettingPatternSource& site : content_settings_list) {
     GURL origin(site.primary_pattern.ToString());
-    if (!origin.is_valid() ||
-        base::ContainsKey(ignoring_domains, origin.host())) {
+    if (!origin.is_valid() || base::Contains(ignoring_domains, origin.host())) {
       continue;
     }
 
@@ -383,6 +382,7 @@ void ImportantSitesUtil::RegisterProfilePrefs(
 std::vector<ImportantDomainInfo>
 ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
                                                     size_t max_results) {
+  SCOPED_UMA_HISTOGRAM_TIMER("Storage.ImportantSites.GenerationTime");
   std::map<std::string, ImportantDomainInfo> important_info;
   std::map<GURL, double> engagement_map;
 

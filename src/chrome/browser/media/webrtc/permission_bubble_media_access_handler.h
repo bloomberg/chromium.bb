@@ -11,6 +11,7 @@
 #include "chrome/browser/media/media_access_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 // MediaAccessHandler for permission bubble requests.
 class PermissionBubbleMediaAccessHandler
@@ -22,12 +23,12 @@ class PermissionBubbleMediaAccessHandler
 
   // MediaAccessHandler implementation.
   bool SupportsStreamType(content::WebContents* web_contents,
-                          const blink::MediaStreamType type,
+                          const blink::mojom::MediaStreamType type,
                           const extensions::Extension* extension) override;
   bool CheckMediaAccessPermission(
       content::RenderFrameHost* render_frame_host,
       const GURL& security_origin,
-      blink::MediaStreamType type,
+      blink::mojom::MediaStreamType type,
       const extensions::Extension* extension) override;
   void HandleRequest(content::WebContents* web_contents,
                      const content::MediaStreamRequest& request,
@@ -36,7 +37,7 @@ class PermissionBubbleMediaAccessHandler
   void UpdateMediaRequestState(int render_process_id,
                                int render_frame_id,
                                int page_request_id,
-                               blink::MediaStreamType stream_type,
+                               blink::mojom::MediaStreamType stream_type,
                                content::MediaRequestState state) override;
 
  private:
@@ -48,7 +49,7 @@ class PermissionBubbleMediaAccessHandler
   void OnAccessRequestResponse(content::WebContents* web_contents,
                                int request_id,
                                const blink::MediaStreamDevices& devices,
-                               blink::MediaStreamRequestResult result,
+                               blink::mojom::MediaStreamRequestResult result,
                                std::unique_ptr<content::MediaStreamUI> ui);
 
   // content::NotificationObserver implementation.
@@ -60,7 +61,7 @@ class PermissionBubbleMediaAccessHandler
   RequestsMaps pending_requests_;
   content::NotificationRegistrar notifications_registrar_;
 
-  base::WeakPtrFactory<PermissionBubbleMediaAccessHandler> weak_factory_;
+  base::WeakPtrFactory<PermissionBubbleMediaAccessHandler> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_PERMISSION_BUBBLE_MEDIA_ACCESS_HANDLER_H_

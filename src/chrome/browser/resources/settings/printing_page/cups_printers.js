@@ -12,7 +12,10 @@
 Polymer({
   is: 'settings-cups-printers',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [
+      CrNetworkListenerBehavior,
+      WebUIListenerBehavior,
+  ],
 
   properties: {
     /** @type {!Array<!CupsPrinterInfo>} */
@@ -41,127 +44,119 @@ Polymer({
 
     /**@private */
     addPrinterResultText_: String,
+
+    /**
+     * TODO(jimmyxgong): Remove this feature flag conditional once feature
+     * is launched.
+     * @private
+     */
+    enableUpdatedUi_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('updatedCupsPrintersUiEnabled');
+      },
+    },
   },
 
   listeners: {
     'edit-cups-printer-details': 'onShowCupsEditPrinterDialog_',
+    'show-cups-printer-toast': 'openResultToast_',
+    'open-manufacturer-model-dialog-for-specified-printer':
+        'openManufacturerModelDialogForSpecifiedPrinter_',
   },
 
-  /**
-   * @type {function()}
-   * @private
-   */
-  networksChangedListener_: function() {},
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
+  networkConfigProxy_: null,
 
   /** @override */
-  ready: function() {
-    this.updateCupsPrintersList_();
-    this.refreshNetworks_();
+  created: function() {
+    this.networkConfigProxy_ =
+        network_config.MojoInterfaceProviderImpl.getInstance()
+            .getMojoServiceProxy();
   },
 
   /** @override */
   attached: function() {
-    this.addWebUIListener('on-add-or-edit-cups-printer',
-                          this.onAddOrEditPrinter_.bind(this));
+    this.networkConfigProxy_
+        .getNetworkStateList({
+          filter: chromeos.networkConfig.mojom.FilterType.kActive,
+          networkType: chromeos.networkConfig.mojom.NetworkType.kAll,
+          limit: chromeos.networkConfig.mojom.kNoLimit,
+        })
+        .then((responseParams) => {
+          this.onActiveNetworksChanged(responseParams.result);
+        });
+
+    if (this.enableUpdatedUi_) {
+      return;
+    }
+
     this.addWebUIListener(
         'on-printers-changed', this.printersChanged_.bind(this));
-    this.networksChangedListener_ = this.refreshNetworks_.bind(this);
-    chrome.networkingPrivate.onNetworksChanged.addListener(
-        this.networksChangedListener_);
   },
 
   /** @override */
-  detached: function() {
-    chrome.networkingPrivate.onNetworksChanged.removeListener(
-        this.networksChangedListener_);
+  ready: function() {
+    this.updateCupsPrintersList_();
   },
 
   /**
-   * Callback function when networks change.
+   * CrosNetworkConfigObserver impl
+   * @param {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
+   *     networks
    * @private
    */
-  refreshNetworks_: function() {
-    chrome.networkingPrivate.getNetworks(
-        {
-          'networkType': chrome.networkingPrivate.NetworkType.ALL,
-          'configured': true
-        },
-        this.onNetworksReceived_.bind(this));
-  },
-
-  /**
-   * Callback function when configured networks are received.
-   * @param {!Array<!chrome.networkingPrivate.NetworkStateProperties>} states
-   *     A list of network state information for each network.
-   * @private
-   */
-  onNetworksReceived_: function(states) {
-    this.canAddPrinter_ = states.some(function(entry) {
-      return entry.hasOwnProperty('ConnectionState') &&
-          entry.ConnectionState == 'Connected';
+  onActiveNetworksChanged: function(networks) {
+    this.canAddPrinter_ = networks.some(function(network) {
+      return OncMojo.connectionStateIsConnected(network.connectionState);
     });
   },
 
   /**
-   * @param {PrinterSetupResult} result_code
-   * @param {string} printerName
+   * @param {!CustomEvent<!{
+   *      resultCode: PrinterSetupResult,
+   *      printerName: string
+   * }>} event
    * @private
    */
-  onAddOrEditPrinter_: function(result_code, printerName) {
-    switch (result_code) {
+   openResultToast_: function(event) {
+    const printerName = event.detail.printerName;
+    switch (event.detail.resultCode) {
       case PrinterSetupResult.SUCCESS:
-        this.updateCupsPrintersList_();
+        if (this.enableUpdatedUi_) {
+          this.$$('#savedPrinters').updateSavedPrintersList();
+        } else {
+          this.updateCupsPrintersList_();
+        }
         this.addPrinterResultText_ =
             loadTimeData.getStringF('printerAddedSuccessfulMessage',
                                     printerName);
         break;
       case PrinterSetupResult.EDIT_SUCCESS:
-        this.updateCupsPrintersList_();
+        if (this.enableUpdatedUi_) {
+          this.$$('#savedPrinters').updateSavedPrintersList();
+        } else {
+          this.updateCupsPrintersList_();
+        }
         this.addPrinterResultText_ =
             loadTimeData.getStringF('printerEditedSuccessfulMessage',
                                     printerName);
         break;
-      case PrinterSetupResult.FATAL_ERROR:
-        this.addPrinterResultText_ =
-            loadTimeData.getString('printerAddedFatalErrorMessage');
-        break;
-      case PrinterSetupResult.PRINTER_UNREACHABLE:
-        this.addPrinterResultText_ =
-            loadTimeData.getString('printerAddedUnreachableMessage');
-        break;
-      case PrinterSetupResult.DBUS_ERROR:
-        // Simply display a generic error message as this error should only
-        // occur when a call to Dbus fails which isn't meaningful to the user.
-        this.addPrinterResultText_ =
-            loadTimeData.getString('printerAddedFailedMessage');
-        break;
-      case PrinterSetupResult.NATIVE_PRINTERS_NOT_ALLOWED:
-        this.addPrinterResultText_ = loadTimeData.getString(
-            'printerAddedNativePrintersNotAllowedMessage');
-        break;
-      case PrinterSetupResult.INVALID_PRINTER_UPDATE:
-        this.addPrinterResultText_ =
-            loadTimeData.getString('editPrinterInvalidPrinterUpdate');
-        break;
-      case PrinterSetupResult.PPD_TOO_LARGE:
-        this.addPrinterResultText_ =
-            loadTimeData.getString('printerAddedPpdTooLargeMessage');
-        break;
-      case PrinterSetupResult.INVALID_PPD:
-        this.addPrinterResultText_ =
-            loadTimeData.getString('printerAddedInvalidPpdMessage');
-        break;
-      case PrinterSetupResult.PPD_NOT_FOUND:
-        this.addPrinterResultText_ =
-            loadTimeData.getString('printerAddedPpdNotFoundMessage');
-        break;
-      case PrinterSetupResult.PPD_UNRETRIEVABLE:
-        this.addPrinterResultText_ =
-            loadTimeData.getString('printerAddedPpdUnretrievableMessage');
-        break;
+      default:
+        assertNotReached();
       }
 
     this.$.errorToast.show();
+  },
+
+  /**
+   * @param {!CustomEvent<{item: !CupsPrinterInfo}>} e
+   * @private
+   */
+  openManufacturerModelDialogForSpecifiedPrinter_: function(e) {
+    const item = e.detail.item;
+    this.$.addPrinterDialog
+        .openManufacturerModelDialogForSpecifiedPrinter(item);
   },
 
   /** @private */

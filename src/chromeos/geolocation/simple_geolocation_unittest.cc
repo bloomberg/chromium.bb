@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
@@ -182,7 +182,7 @@ class WirelessTestMonitor : public SimpleGeolocationRequestTestMonitor {
 
 class SimpleGeolocationTest : public testing::Test {
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(SimpleGeolocationTest, ResponseOK) {

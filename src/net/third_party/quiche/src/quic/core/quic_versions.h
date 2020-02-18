@@ -104,12 +104,15 @@ enum QuicTransportVersion {
   QUIC_VERSION_46 = 46,  // Use IETF draft-17 header format with demultiplexing
                          // bit.
   QUIC_VERSION_47 = 47,  // Allow variable-length QUIC connection IDs.
+  QUIC_VERSION_48 = 48,  // Use CRYPTO frames for the handshake.
   QUIC_VERSION_99 = 99,  // Dumping ground for IETF QUIC changes which are not
                          // yet ready for production.
-  // QUIC_VERSION_RESERVED_FOR_NEGOTIATION is sent over the wire as da5a3a3a
+  // QUIC_VERSION_RESERVED_FOR_NEGOTIATION is sent over the wire as ?a?a?a?a
   // which is part of a range reserved by the IETF for version negotiation
-  // testing. It is intentionally meant to never be supported by servers to
-  // trigger version negotiation when proposed by clients.
+  // testing (see the "Versions" section of draft-ietf-quic-transport).
+  // This version is intentionally meant to never be supported to trigger
+  // version negotiation when proposed by clients and to prevent client
+  // ossification when sent by servers.
   QUIC_VERSION_RESERVED_FOR_NEGOTIATION = 999,
 };
 
@@ -163,8 +166,15 @@ struct QUIC_EXPORT_PRIVATE ParsedQuicVersion {
   // Returns whether this version supports IETF RETRY packets.
   bool SupportsRetry() const;
 
+  // Returns true if this version sends variable length packet number in long
+  // header.
+  bool SendsVariableLengthPacketNumberInLongHeader() const;
+
   // Returns whether this version supports client connection ID.
   bool SupportsClientConnectionIds() const;
+
+  // Returns whether this version does not have the Google QUIC headers stream.
+  bool DoesNotHaveHeadersStream() const;
 };
 
 QUIC_EXPORT_PRIVATE ParsedQuicVersion UnsupportedQuicVersion();
@@ -188,7 +198,7 @@ using QuicVersionLabelVector = std::vector<QuicVersionLabel>;
 //
 // See go/new-quic-version for more details on how to roll out new versions.
 static const QuicTransportVersion kSupportedTransportVersions[] = {
-    QUIC_VERSION_99, QUIC_VERSION_47, QUIC_VERSION_46,
+    QUIC_VERSION_99, QUIC_VERSION_48, QUIC_VERSION_47, QUIC_VERSION_46,
     QUIC_VERSION_44, QUIC_VERSION_43, QUIC_VERSION_39,
 };
 
@@ -336,9 +346,27 @@ QUIC_EXPORT_PRIVATE inline std::string ParsedQuicVersionVectorToString(
                                          std::numeric_limits<size_t>::max());
 }
 
+// Returns true if |transport_version| uses IETF invariant headers.
+QUIC_EXPORT_PRIVATE inline bool VersionHasIetfInvariantHeader(
+    QuicTransportVersion transport_version) {
+  return transport_version > QUIC_VERSION_43;
+}
+
+// Returns true if |transport_version| supports MESSAGE frames.
+QUIC_EXPORT_PRIVATE inline bool VersionSupportsMessageFrames(
+    QuicTransportVersion transport_version) {
+  return transport_version > QUIC_VERSION_44;
+}
+
 // Returns true if QuicSpdyStream encodes body using HTTP/3 specification and
 // sends data frame header along with body.
 QUIC_EXPORT_PRIVATE inline bool VersionHasDataFrameHeader(
+    QuicTransportVersion transport_version) {
+  return transport_version == QUIC_VERSION_99;
+}
+
+// Returns whether |transport_version| has HTTP/3 unidirectional stream type.
+QUIC_EXPORT_PRIVATE inline bool VersionHasStreamType(
     QuicTransportVersion transport_version) {
   return transport_version == QUIC_VERSION_99;
 }
@@ -365,6 +393,7 @@ QUIC_EXPORT_PRIVATE inline bool VersionUsesQpack(
   const bool uses_qpack = (transport_version == QUIC_VERSION_99);
   if (uses_qpack) {
     DCHECK(VersionHasDataFrameHeader(transport_version));
+    DCHECK(VersionHasStreamType(transport_version));
   }
   return uses_qpack;
 }
@@ -382,13 +411,19 @@ QUIC_EXPORT_PRIVATE inline bool QuicVersionHasLongHeaderLengths(
 // instead of stream 1.
 QUIC_EXPORT_PRIVATE inline bool QuicVersionUsesCryptoFrames(
     QuicTransportVersion transport_version) {
-  return transport_version == QUIC_VERSION_99;
+  return transport_version >= QUIC_VERSION_48;
 }
 
-// Returns whether |transport_version| has HTTP/3 stream type.
-QUIC_EXPORT_PRIVATE inline bool VersionHasStreamType(
+// Returns whether |transport_version| does not have the
+// Google QUIC headers stream.
+QUIC_EXPORT_PRIVATE bool VersionLacksHeadersStream(
+    QuicTransportVersion transport_version);
+
+// Returns whether |transport_version| makes use of IETF QUIC
+// frames or not.
+QUIC_EXPORT_PRIVATE inline bool VersionHasIetfQuicFrames(
     QuicTransportVersion transport_version) {
-  return transport_version == QUIC_VERSION_99;
+  return transport_version >= QUIC_VERSION_99;
 }
 
 // Returns the ALPN string to use in TLS for this version of QUIC.

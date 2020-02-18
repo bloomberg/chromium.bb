@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file should not be build on Android but is currently getting built.
-// TODO(vakh): Fix that: http://crbug.com/621647
-
 #include "components/safe_browsing/db/v4_local_database_manager.h"
 
 #include <utility>
@@ -20,6 +17,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/realtime/policy_engine.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
@@ -63,6 +61,8 @@ ListInfos GetListInfos() {
 #endif
   const bool kSyncAlways = true;
   const bool kSyncNever = false;
+  const bool kSyncRealTimeLookupList =
+      RealTimePolicyEngine::CanFetchAllowlist();
   return ListInfos({
       ListInfo(kSyncAlways, "IpMalware.store", GetIpMalwareId(),
                SB_THREAT_TYPE_UNUSED),
@@ -92,6 +92,9 @@ ListInfos GetListInfos() {
       ListInfo(kSyncOnlyOnChromeBuilds, "UrlSuspiciousSite.store",
                GetUrlSuspiciousSiteId(), SB_THREAT_TYPE_SUSPICIOUS_SITE),
       ListInfo(kSyncNever, "", GetChromeUrlApiId(), SB_THREAT_TYPE_API_ABUSE),
+      ListInfo(kSyncRealTimeLookupList, "UrlHighConfidenceAllowlist.store",
+               GetUrlHighConfidenceAllowlistId(),
+               SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST),
   });
   // NOTE(vakh): IMPORTANT: Please make sure that the server already supports
   // any list before adding it to this list otherwise the prefix updates break
@@ -122,6 +125,7 @@ ThreatSeverity GetThreatSeverity(const ListIdentifier& list_id) {
     case SUBRESOURCE_FILTER:
       return 2;
     case CSD_WHITELIST:
+    case HIGH_CONFIDENCE_ALLOWLIST:
       return 3;
     case SUSPICIOUS:
       return 4;
@@ -262,8 +266,7 @@ V4LocalDatabaseManager::V4LocalDatabaseManager(
                        ? task_runner_for_tests
                        : base::CreateSequencedTaskRunnerWithTraits(
                              {base::MayBlock(),
-                              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
-      weak_factory_(this) {
+                              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   DCHECK(!base_path_.empty());
   DCHECK(!list_infos_.empty());
 
@@ -387,6 +390,27 @@ bool V4LocalDatabaseManager::CheckResourceUrl(const GURL& url, Client* client) {
       std::vector<GURL>(1, url));
 
   return HandleCheck(std::move(check));
+}
+
+AsyncMatch V4LocalDatabaseManager::CheckUrlForHighConfidenceAllowlist(
+    const GURL& url,
+    Client* client) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  StoresToCheck stores_to_check({GetUrlHighConfidenceAllowlistId()});
+  if (!enabled_ || !CanCheckUrl(url) ||
+      !AreAllStoresAvailableNow(stores_to_check)) {
+    // NOTE(vakh): If Safe Browsing isn't enabled yet, or if the URL isn't a
+    // navigation URL, or if the allowlist isn't ready yet, return NO_MATCH.
+    // This will lead to a full URL lookup, if other conditions are met.
+    return AsyncMatch::NO_MATCH;
+  }
+
+  std::unique_ptr<PendingCheck> check = std::make_unique<PendingCheck>(
+      client, ClientCallbackType::CHECK_HIGH_CONFIDENCE_ALLOWLIST,
+      stores_to_check, std::vector<GURL>(1, url));
+
+  return HandleWhitelistCheck(std::move(check));
 }
 
 bool V4LocalDatabaseManager::CheckUrlForSubresourceFilter(const GURL& url,
@@ -908,6 +932,16 @@ void V4LocalDatabaseManager::RespondToClient(
                                               check->most_severe_threat_type);
       break;
 
+    case ClientCallbackType::CHECK_HIGH_CONFIDENCE_ALLOWLIST: {
+      DCHECK_EQ(1u, check->urls.size());
+      bool did_match_allowlist = check->most_severe_threat_type ==
+                                 SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST;
+      DCHECK(did_match_allowlist ||
+             check->most_severe_threat_type == SB_THREAT_TYPE_SAFE);
+      check->client->OnCheckUrlForHighConfidenceAllowlist(did_match_allowlist);
+      break;
+    }
+
     case ClientCallbackType::CHECK_RESOURCE_URL:
       DCHECK_EQ(1u, check->urls.size());
       check->client->OnCheckResourceUrlResult(check->urls[0],
@@ -917,11 +951,11 @@ void V4LocalDatabaseManager::RespondToClient(
 
     case ClientCallbackType::CHECK_CSD_WHITELIST: {
       DCHECK_EQ(1u, check->urls.size());
-      bool did_match_whitelist =
+      bool did_match_allowlist =
           check->most_severe_threat_type == SB_THREAT_TYPE_CSD_WHITELIST;
-      DCHECK(did_match_whitelist ||
+      DCHECK(did_match_allowlist ||
              check->most_severe_threat_type == SB_THREAT_TYPE_SAFE);
-      check->client->OnCheckWhitelistUrlResult(did_match_whitelist);
+      check->client->OnCheckWhitelistUrlResult(did_match_allowlist);
       break;
     }
 

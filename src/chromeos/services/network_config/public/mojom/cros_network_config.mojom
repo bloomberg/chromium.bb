@@ -9,6 +9,8 @@
 
 module chromeos.network_config.mojom;
 
+import "services/network/public/mojom/ip_address.mojom";
+
 // Activation state for Cellular networks.
 enum ActivationStateType {
   kUnknown,
@@ -63,11 +65,11 @@ enum NetworkType {
 };
 
 // The ONC source for policy or imported networks.
-enum ONCSource {
-  kUnknown,
+enum OncSource {
   kNone,
-  kUserImport,
+  kDevice,
   kDevicePolicy,
+  kUser,
   kUserPolicy,
 };
 
@@ -123,8 +125,6 @@ struct CaptivePortalProvider {
 
 // The SIM card lock status for Cellular networks.
 struct SIMLockStatus {
-  // True when a SIM is required and not present.
-  bool sim_absent = false;
   // The status of SIM lock. Possible values are 'sim-pin', 'sim-puk' or empty.
   string lock_type;
   // Whether SIM lock is enabled.
@@ -207,7 +207,7 @@ struct NetworkStateProperties {
   ProxyMode proxy_mode;
   // True for visible networks that are blocked / disallowed by policy.
   bool prohibited_by_policy = false;
-  ONCSource source;
+  OncSource source;
   TetherStateProperties? tether;
   NetworkType type;
   VPNStateProperties? vpn;
@@ -218,19 +218,20 @@ struct NetworkStateProperties {
 struct DeviceStateProperties {
   // IP address for the primary network corresponding to the device type. If no
   // network is in a connected state, or the address type is not available,
-  // these will be empty. When there are multiple IP addresses, only the first
+  // these will be null. When there are multiple IP addresses, only the first
   // is provided.
-  array<uint8> ipv4_address;
-  array<uint8> ipv6_address;
+  network.mojom.IPAddress? ipv4_address;
+  network.mojom.IPAddress? ipv6_address;
   // AA:BB formatted MAC address for the device. Use for display purposes only.
-  string mac_address;
+  // May be null if no MAC address is available for the device.
+  string? mac_address;
   // Set if the device is currently scanning.
   bool scanning = false;
   // The SIM lock status if Type = Cellular and a SIM is present.
   SIMLockStatus? sim_lock_status;
   // True when a SIM is required and not present.
   bool sim_absent = false;
-  DeviceStateType state;
+  DeviceStateType device_state;
   NetworkType type;
   // Whether or not any managed networks are available.
   bool managed_network_available = false;
@@ -247,11 +248,22 @@ struct NetworkFilter {
   int32 limit = kNoLimit;
 };
 
+struct CellularSimState {
+  // The current PIN or PUK. Required for unlocking the SIM, or when setting
+  // |require_pin|.
+  string current_pin_or_puk;
+  // If provided change the PIN to |new_pin|. Required if the SIM is PUK locked.
+  string? new_pin;
+  // Whether a PIN should be required. Ignored when unlocking a locked SIM.
+  bool require_pin;
+};
+
 interface CrosNetworkConfig {
   AddObserver(CrosNetworkConfigObserver observer);
 
-  // Gets the state properties of the network matching |guid|.
-  GetNetworkState(string guid) => (NetworkStateProperties result);
+  // Returns the state properties of the network matching |guid|. If the network
+  // is not available returns null.
+  GetNetworkState(string guid) => (NetworkStateProperties? result);
 
   // Returns a list of Network properties matching |filter|. Networks are
   // ordered by the system based on their priority, with active networks listed
@@ -268,6 +280,20 @@ interface CrosNetworkConfig {
   // CrosNetworkConfigObserver::OnDeviceStateListChanged() can be used to be
   // notified when the enabled state changes.
   SetNetworkTypeEnabledState(NetworkType type, bool enabled) => (bool success);
+
+  // Sets the SIM state for the primary Cellular device:
+  // * If no SIM is present, returns false.
+  // * If the SIM is PUK locked, attempts to unlock the SIM with the provided
+  //   |current_pin_or_puk| value and set a new SIM value to |new_pin| which
+  //   must be provided. |pin_required| is ignored. Returns true on success.
+  // * If the SIM is PIN locked, attempts to unlock the SIM with the provided
+  //   |current_pin_or_puk| value. |pin_required| is ignored. Returns true on
+  //   success.
+  // * If the SIM is unlocked, |current_pin_or_puk| must match the current PIN.
+  //   * If |new_pin| if provided, attempts to set the new PIN.
+  //   * Otherwise attempts to set the pin required state to |pin_required|.
+  //   * Returns true if the operation succeeded.
+  SetCellularSimState(CellularSimState state) => (bool success);
 
   // Requests a scan for new networks. If the list updates,
   // CrosNetworkConfigObserver::OnNetworkStateListChanged() will be signaled.

@@ -8,9 +8,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/viz/client/shared_bitmap_reporter.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/shared_bitmap.h"
@@ -18,12 +20,12 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
+#include "services/viz/public/interfaces/compositing/frame_timing_details.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "third_party/blink/renderer/platform/graphics/video_frame_resource_provider.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-#include "ui/gfx/mojo/presentation_feedback.mojom-blink.h"
 
 namespace blink {
 
@@ -68,14 +70,14 @@ class PLATFORM_EXPORT VideoFrameSubmitter
       const WTF::Vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(
       const viz::BeginFrameArgs&,
-      WTF::HashMap<uint32_t, ::gfx::mojom::blink::PresentationFeedbackPtr>)
+      WTF::HashMap<uint32_t, ::viz::mojom::blink::FrameTimingDetailsPtr>)
       override;
   void OnBeginFramePausedChanged(bool paused) override {}
   void ReclaimResources(
       const WTF::Vector<viz::ReturnedResource>& resources) override;
 
   // viz::SharedBitmapReporter implementation.
-  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle,
+  void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion,
                                const viz::SharedBitmapId&) override;
   void DidDeleteSharedBitmap(const viz::SharedBitmapId&) override;
 
@@ -169,12 +171,15 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   const bool enable_surface_synchronization_;
   viz::FrameTokenGenerator next_frame_token_;
 
+  // Timestamps indexed by frame token for histogram purposes.
+  using FrameTokenType = decltype(*std::declval<viz::FrameTokenGenerator>());
+  base::flat_map<FrameTokenType, base::TimeTicks> frame_token_to_timestamp_map_;
+
+  base::OneShotTimer empty_frame_timer_;
+
   THREAD_CHECKER(thread_checker_);
 
-  // Weak factory that's used to cancel empty frame callbacks.
-  base::WeakPtrFactory<VideoFrameSubmitter> empty_frame_weak_ptr_factory_;
-
-  base::WeakPtrFactory<VideoFrameSubmitter> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoFrameSubmitter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameSubmitter);
 };

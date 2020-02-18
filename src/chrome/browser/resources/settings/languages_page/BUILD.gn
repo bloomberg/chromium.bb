@@ -78,7 +78,6 @@ js_library("languages_types") {
 
 js_library("manage_input_methods_page") {
   deps = [
-    ":languages",
     ":languages_types",
     "../prefs",
   ]

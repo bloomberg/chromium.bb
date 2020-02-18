@@ -40,7 +40,7 @@ bool WebFrame::Swap(WebFrame* frame) {
   // wasn't detached before continuing with the swap.
   // FIXME: There is no unit test for this condition, so one needs to be
   // written.
-  if (!old_frame->PrepareForCommit()) {
+  if (!old_frame->DetachDocument()) {
     // If the Swap() fails, it should be because the frame has been detached
     // already. Otherwise the caller will not detach the frame when we return
     // false, and the browser and renderer will disagree about the destruction
@@ -128,7 +128,8 @@ bool WebFrame::Swap(WebFrame* frame) {
                            ToTraceValue(&local_frame));
     }
   } else {
-    ToWebRemoteFrameImpl(frame)->InitializeCoreFrame(*page, owner, name);
+    ToWebRemoteFrameImpl(frame)->InitializeCoreFrame(
+        *page, owner, name, &old_frame->window_agent_factory());
   }
 
   Frame* new_frame = ToCoreFrame(*frame);
@@ -168,7 +169,7 @@ WebInsecureRequestPolicy WebFrame::GetInsecureRequestPolicy() const {
   return ToCoreFrame(*this)->GetSecurityContext()->GetInsecureRequestPolicy();
 }
 
-std::vector<unsigned> WebFrame::GetInsecureRequestToUpgrade() const {
+WebVector<unsigned> WebFrame::GetInsecureRequestToUpgrade() const {
   const SecurityContext::InsecureNavigationsSet& set =
       ToCoreFrame(*this)->GetSecurityContext()->InsecureNavigationsToUpgrade();
   return SecurityContext::SerializeInsecureNavigationSet(set);

@@ -23,6 +23,11 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
+#endif
 
 // Holds pending request information so that we display one picker UI at a time
 // for each content::WebContents.
@@ -57,9 +62,9 @@ DisplayMediaAccessHandler::~DisplayMediaAccessHandler() = default;
 
 bool DisplayMediaAccessHandler::SupportsStreamType(
     content::WebContents* web_contents,
-    const blink::MediaStreamType stream_type,
+    const blink::mojom::MediaStreamType stream_type,
     const extensions::Extension* extension) {
-  return stream_type == blink::MEDIA_DISPLAY_VIDEO_CAPTURE;
+  return stream_type == blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE;
   // This class handles MEDIA_DISPLAY_AUDIO_CAPTURE as well, but only if it is
   // accompanied by MEDIA_DISPLAY_VIDEO_CAPTURE request as per spec.
   // https://w3c.github.io/mediacapture-screen-share/#mediadevices-additions
@@ -70,7 +75,7 @@ bool DisplayMediaAccessHandler::SupportsStreamType(
 bool DisplayMediaAccessHandler::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    blink::MediaStreamType type,
+    blink::mojom::MediaStreamType type,
     const extensions::Extension* extension) {
   return false;
 }
@@ -90,16 +95,18 @@ void DisplayMediaAccessHandler::HandleRequest(
   // TODO(emircan): Remove this once Mac UI doesn't use a window.
   if (web_contents->GetVisibility() != content::Visibility::VISIBLE) {
     LOG(ERROR) << "Do not allow getDisplayMedia() on a backgrounded page.";
-    std::move(callback).Run(blink::MediaStreamDevices(),
-                            blink::MEDIA_DEVICE_INVALID_STATE, nullptr);
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::INVALID_STATE, nullptr);
     return;
   }
 #endif  // defined(OS_MACOSX)
 
   std::unique_ptr<DesktopMediaPicker> picker = picker_factory_->CreatePicker();
   if (!picker) {
-    std::move(callback).Run(blink::MediaStreamDevices(),
-                            blink::MEDIA_DEVICE_INVALID_STATE, nullptr);
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::INVALID_STATE, nullptr);
     return;
   }
 
@@ -115,7 +122,7 @@ void DisplayMediaAccessHandler::UpdateMediaRequestState(
     int render_process_id,
     int render_frame_id,
     int page_request_id,
-    blink::MediaStreamType stream_type,
+    blink::mojom::MediaStreamType stream_type,
     content::MediaRequestState state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -163,7 +170,8 @@ void DisplayMediaAccessHandler::ProcessQueuedAccessRequest(
       url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
   picker_params.target_name = picker_params.app_name;
   picker_params.request_audio =
-      pending_request.request.audio_type == blink::MEDIA_DISPLAY_AUDIO_CAPTURE;
+      pending_request.request.audio_type ==
+      blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE;
   picker_params.approve_audio_by_default = false;
   pending_request.picker->Show(picker_params, std::move(source_lists),
                                done_callback);
@@ -187,21 +195,34 @@ void DisplayMediaAccessHandler::OnPickerDialogResults(
 
   PendingAccessRequest& pending_request = *queue.front();
   blink::MediaStreamDevices devices;
-  blink::MediaStreamRequestResult request_result =
-      blink::MEDIA_DEVICE_PERMISSION_DENIED;
+  blink::mojom::MediaStreamRequestResult request_result =
+      blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
   std::unique_ptr<content::MediaStreamUI> ui;
   if (media_id.is_null()) {
-    request_result = blink::MEDIA_DEVICE_PERMISSION_DENIED;
+    request_result = blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
   } else {
-    request_result = blink::MEDIA_DEVICE_OK;
-    const auto& visible_url = url_formatter::FormatUrlForSecurityDisplay(
-        web_contents->GetLastCommittedURL(),
-        url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
-    ui = GetDevicesForDesktopCapture(
-        web_contents, &devices, media_id, blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
-        blink::MEDIA_DISPLAY_AUDIO_CAPTURE, media_id.audio_share,
-        false /* disable_local_echo */, display_notification_, visible_url,
-        visible_url);
+    request_result = blink::mojom::MediaStreamRequestResult::OK;
+#if defined(OS_MACOSX)
+    // Check screen capture permissions on Mac if necessary.
+    if ((media_id.type == content::DesktopMediaID::TYPE_SCREEN ||
+         media_id.type == content::DesktopMediaID::TYPE_WINDOW) &&
+        system_media_permissions::CheckSystemScreenCapturePermission() !=
+            system_media_permissions::SystemPermission::kAllowed) {
+      request_result =
+          blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
+    }
+#endif
+    if (request_result == blink::mojom::MediaStreamRequestResult::OK) {
+      const auto& visible_url = url_formatter::FormatUrlForSecurityDisplay(
+          web_contents->GetLastCommittedURL(),
+          url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
+      ui = GetDevicesForDesktopCapture(
+          web_contents, &devices, media_id,
+          blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
+          blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE,
+          media_id.audio_share, false /* disable_local_echo */,
+          display_notification_, visible_url, visible_url);
+    }
   }
 
   std::move(pending_request.callback)

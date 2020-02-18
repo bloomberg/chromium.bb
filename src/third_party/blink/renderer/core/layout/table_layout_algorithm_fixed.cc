@@ -21,12 +21,12 @@
 
 #include "third_party/blink/renderer/core/layout/table_layout_algorithm_fixed.h"
 
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 /*
   The text below is from the CSS 2.1 specs.
@@ -324,7 +324,7 @@ void TableLayoutAlgorithmFixed::UpdateLayout() {
       if (width_[i].IsAuto()) {
         unsigned span = table_->SpanOfEffectiveColumn(i);
         int w = remaining_width * span / auto_span;
-        calc_width[i] = w + hspacing * (span - 1);
+        calc_width[i] = std::max<int>((w + hspacing * (span - 1)), 0);
         remaining_width -= w;
         if (!remaining_width)
           break;
@@ -334,8 +334,10 @@ void TableLayoutAlgorithmFixed::UpdateLayout() {
       }
     }
     // Last one gets the remainder.
-    if (remaining_width)
-      calc_width[last_auto] += remaining_width;
+    if (remaining_width) {
+      calc_width[last_auto] =
+          std::max(calc_width[last_auto] + remaining_width, 0);
+    }
     total_width = table_logical_width;
   }
 

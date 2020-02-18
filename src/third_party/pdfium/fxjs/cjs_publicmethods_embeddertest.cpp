@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "core/fxcrt/fx_string.h"
+#include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fxjs/cjs_event_context.h"
 #include "fxjs/cjs_publicmethods.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -190,7 +191,8 @@ TEST_F(CJS_PublicMethodsEmbedderTest, AFSimple_CalculateSum) {
   runtime.NewEventContext();
 
   WideString result;
-  runtime.GetCurrentEventContext()->GetEventHandler()->m_pValue = &result;
+  runtime.GetCurrentEventContext()->GetEventRecorder()->SetValueForTest(
+      &result);
 
   auto ary = runtime.NewArray();
   runtime.PutArrayElement(ary, 0, runtime.NewString("Calc1_A"));
@@ -203,7 +205,8 @@ TEST_F(CJS_PublicMethodsEmbedderTest, AFSimple_CalculateSum) {
   CJS_Result ret = CJS_PublicMethods::AFSimple_Calculate(&runtime, params);
   UnloadPage(page);
 
-  runtime.GetCurrentEventContext()->GetEventHandler()->m_pValue = nullptr;
+  runtime.GetCurrentEventContext()->GetEventRecorder()->SetValueForTest(
+      nullptr);
 
   ASSERT_TRUE(!ret.HasError());
   ASSERT_TRUE(!ret.HasReturn());
@@ -223,13 +226,13 @@ TEST_F(CJS_PublicMethodsEmbedderTest, AFNumber_Keystroke) {
       CPDFSDKFormFillEnvironmentFromFPDFFormHandle(form_handle()));
   runtime.NewEventContext();
 
-  auto* handler = runtime.GetCurrentEventContext()->GetEventHandler();
+  auto* handler = runtime.GetCurrentEventContext()->GetEventRecorder();
 
   bool valid = true;
   WideString result = L"-10";
   WideString change = L"";
 
-  handler->m_pValue = &result;
+  handler->SetValueForTest(&result);
   handler->SetRCForTest(&valid);
   handler->SetStrChangeForTest(&change);
 
@@ -250,7 +253,7 @@ TEST_F(CJS_PublicMethodsEmbedderTest, AFNumber_Keystroke) {
 
   // Keep the *SAN bots happy. One of these is an UnownedPtr, another seems to
   // used during destruction. Clear them all to be safe and consistent.
-  handler->m_pValue = nullptr;
+  handler->SetValueForTest(nullptr);
   handler->SetRCForTest(nullptr);
   handler->SetStrChangeForTest(nullptr);
 }

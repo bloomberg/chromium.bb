@@ -13,23 +13,21 @@
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrSurfaceContextPriv.h"
 #include "src/gpu/GrSurfacePriv.h"
 #include "src/gpu/GrTexturePriv.h"
-#include "src/gpu/GrTextureProxyPriv.h"
+#include "src/gpu/SkGr.h"
 #include "src/gpu/gl/GrGLGpu.h"
 #include "src/gpu/gl/GrGLUtil.h"
+#include "tools/gpu/ProxyUtils.h"
 #include "tools/gpu/gl/GLTestContext.h"
 
 // skbug.com/5932
 static void test_basic_draw_as_src(skiatest::Reporter* reporter, GrContext* context,
-                                   sk_sp<GrTextureProxy> rectProxy, uint32_t expectedPixelValues[]) {
-    GrBackendFormat format = rectProxy->backendFormat().makeTexture2D();
-    SkASSERT(format.isValid());
+                                   sk_sp<GrTextureProxy> rectProxy, GrColorType colorType,
+                                   uint32_t expectedPixelValues[]) {
     sk_sp<GrRenderTargetContext> rtContext(context->priv().makeDeferredRenderTargetContext(
-                                                     format,
-                                                     SkBackingFit::kExact, rectProxy->width(),
-                                                     rectProxy->height(), rectProxy->config(),
-                                                     nullptr));
+            SkBackingFit::kExact, rectProxy->width(), rectProxy->height(), colorType, nullptr));
     for (auto filter : {GrSamplerState::Filter::kNearest,
                         GrSamplerState::Filter::kBilerp,
                         GrSamplerState::Filter::kMipMap}) {
@@ -91,12 +89,38 @@ static void test_clear(skiatest::Reporter* reporter, GrSurfaceContext* rectConte
     }
 }
 
+static void test_copy_to_surface(skiatest::Reporter* reporter,
+                                 GrContext* context,
+                                 GrSurfaceContext* dstContext,
+                                 const char* testName) {
+
+    int pixelCnt = dstContext->width() * dstContext->height();
+    SkAutoTMalloc<uint32_t> pixels(pixelCnt);
+    for (int y = 0; y < dstContext->width(); ++y) {
+        for (int x = 0; x < dstContext->height(); ++x) {
+            pixels.get()[y * dstContext->width() + x] =
+                SkColorToPremulGrColor(SkColorSetARGB(2*y, y, x, x * y));
+        }
+    }
+
+    for (auto renderable : {GrRenderable::kNo, GrRenderable::kYes}) {
+        auto origin = dstContext->asSurfaceProxy()->origin();
+        auto src = sk_gpu_test::MakeTextureProxyFromData(
+                context, renderable, dstContext->width(), dstContext->height(),
+                kRGBA_8888_SkColorType, kPremul_SkAlphaType, origin, pixels.get(), 0);
+        // If this assert ever fails we can add a fallback to do copy as draw, but until then we can
+        // be more restrictive.
+        SkAssertResult(dstContext->testCopy(src.get()));
+        test_read_pixels(reporter, dstContext, pixels.get(), testName);
+    }
+}
+
 DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(RectangleTexture, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
     GrProxyProvider* proxyProvider = context->priv().proxyProvider();
     sk_gpu_test::GLTestContext* glContext = ctxInfo.glContext();
-    static const int kWidth = 13;
-    static const int kHeight = 13;
+    static const int kWidth = 16;
+    static const int kHeight = 16;
 
     GrColor pixels[kWidth * kHeight];
     for (int y = 0; y < kHeight; ++y) {
@@ -123,6 +147,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(RectangleTexture, reporter, ctxInfo) {
         GrGLTextureInfo rectangleInfo;
         rectangleInfo.fID = rectTexID;
         rectangleInfo.fTarget = GR_GL_TEXTURE_RECTANGLE;
+        rectangleInfo.fFormat = GR_GL_RGBA8;
 
         GrBackendTexture rectangleTex(kWidth, kHeight, GrMipMapped::kNo, rectangleInfo);
         rectangleTex.setPixelConfig(kRGBA_8888_GrPixelConfig);
@@ -136,7 +161,8 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(RectangleTexture, reporter, ctxInfo) {
         }
 
         sk_sp<GrTextureProxy> rectProxy = proxyProvider->wrapBackendTexture(
-                rectangleTex, origin, kBorrow_GrWrapOwnership, GrWrapCacheable::kNo, kRW_GrIOType);
+                rectangleTex, GrColorType::kRGBA_8888, origin,
+                kBorrow_GrWrapOwnership, GrWrapCacheable::kNo, kRW_GrIOType);
 
         if (!rectProxy) {
             ERRORF(reporter, "Error creating proxy for rectangle texture.");
@@ -153,14 +179,14 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(RectangleTexture, reporter, ctxInfo) {
         SkASSERT(rectProxy->hasRestrictedSampling());
         SkASSERT(rectProxy->peekTexture()->texturePriv().hasRestrictedSampling());
 
-        test_basic_draw_as_src(reporter, context, rectProxy, refPixels);
+        test_basic_draw_as_src(reporter, context, rectProxy, GrColorType::kRGBA_8888, refPixels);
 
         // Test copy to both a texture and RT
-        test_copy_from_surface(reporter, context, rectProxy.get(), refPixels,
-                               false, "RectangleTexture-copy-from");
+        test_copy_from_surface(reporter, context, rectProxy.get(), GrColorType::kRGBA_8888,
+                               refPixels, "RectangleTexture-copy-from");
 
         sk_sp<GrSurfaceContext> rectContext = context->priv().makeWrappedSurfaceContext(
-                                                                            std::move(rectProxy));
+                std::move(rectProxy), GrColorType::kRGBA_8888, kPremul_SkAlphaType);
         SkASSERT(rectContext);
 
         test_read_pixels(reporter, rectContext.get(), refPixels, "RectangleTexture-read");

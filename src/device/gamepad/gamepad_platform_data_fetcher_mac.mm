@@ -9,7 +9,9 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
+#include "device/gamepad/gamepad_blocklist.h"
 #include "device/gamepad/gamepad_id_list.h"
 #include "device/gamepad/gamepad_uma.h"
 #include "device/gamepad/nintendo_controller.h"
@@ -26,14 +28,6 @@ const uint16_t kGenericDesktopUsagePage = 0x01;
 const uint16_t kJoystickUsageNumber = 0x04;
 const uint16_t kGameUsageNumber = 0x05;
 const uint16_t kMultiAxisUsageNumber = 0x08;
-
-void CopyNSStringAsUTF16LittleEndian(NSString* src,
-                                     base::char16* dest,
-                                     size_t dest_len) {
-  NSData* as16 = [src dataUsingEncoding:NSUTF16LittleEndianStringEncoding];
-  memset(dest, 0, dest_len);
-  [as16 getBytes:dest length:dest_len - sizeof(base::char16)];
-}
 
 NSDictionary* DeviceMatching(uint32_t usage_page, uint32_t usage) {
   return [NSDictionary
@@ -192,6 +186,10 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   uint16_t product_int = [product_id intValue];
   uint16_t version_int = [version_number intValue];
 
+  // Filter out devices that have gamepad-like HID usages but aren't gamepads.
+  if (GamepadIsExcluded(vendor_int, product_int))
+    return;
+
   // Nintendo devices are handled by the Nintendo data fetcher.
   if (NintendoController::IsNintendoController(vendor_int, product_int))
     return;
@@ -221,21 +219,17 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
     return;  // No available slot for this device
 
   state->mapper = GetGamepadStandardMappingFunction(
-      vendor_int, product_int, version_int, GAMEPAD_BUS_UNKNOWN);
+      vendor_int, product_int, /*hid_specification_version=*/0, version_int,
+      GAMEPAD_BUS_UNKNOWN);
 
   NSString* ident =
       [NSString stringWithFormat:@"%@ (%sVendor: %04x Product: %04x)", product,
                                  state->mapper ? "STANDARD GAMEPAD " : "",
                                  vendor_int, product_int];
-  CopyNSStringAsUTF16LittleEndian(ident, state->data.id,
-                                  sizeof(state->data.id));
+  state->data.SetID(base::SysNSStringToUTF16(ident));
 
-  if (state->mapper) {
-    CopyNSStringAsUTF16LittleEndian(@"standard", state->data.mapping,
-                                    sizeof(state->data.mapping));
-  } else {
-    state->data.mapping[0] = 0;
-  }
+  state->data.mapping =
+      state->mapper ? GamepadMapping::kStandard : GamepadMapping::kNone;
 
   devices_[slot] = std::make_unique<GamepadDeviceMac>(location_int, device,
                                                       vendor_int, product_int);

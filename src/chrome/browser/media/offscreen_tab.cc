@@ -51,7 +51,7 @@ constexpr base::TimeDelta kPollInterval = base::TimeDelta::FromSeconds(1);
 class OffscreenTab::WindowAdoptionAgent : protected aura::WindowObserver {
  public:
   explicit WindowAdoptionAgent(aura::Window* content_window)
-      : content_window_(content_window), weak_ptr_factory_(this) {
+      : content_window_(content_window) {
     if (content_window_) {
       content_window->AddObserver(this);
       ScheduleFindNewParentIfDetached(content_window_->GetRootWindow());
@@ -115,7 +115,7 @@ class OffscreenTab::WindowAdoptionAgent : protected aura::WindowObserver {
   }
 
   aura::Window* content_window_;
-  base::WeakPtrFactory<WindowAdoptionAgent> weak_ptr_factory_;
+  base::WeakPtrFactory<WindowAdoptionAgent> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowAdoptionAgent);
 };
@@ -300,7 +300,7 @@ bool OffscreenTab::ShouldCreateWebContents(
   return false;
 }
 
-bool OffscreenTab::EmbedsFullscreenWidget() const {
+bool OffscreenTab::EmbedsFullscreenWidget() {
   // OffscreenTab will manage fullscreen widgets.
   return true;
 }
@@ -330,14 +330,13 @@ void OffscreenTab::ExitFullscreenModeForTab(WebContents* contents) {
   non_fullscreen_size_ = gfx::Size();
 }
 
-bool OffscreenTab::IsFullscreenForTabOrPending(
-    const WebContents* contents) const {
+bool OffscreenTab::IsFullscreenForTabOrPending(const WebContents* contents) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
   return in_fullscreen_mode();
 }
 
 blink::WebDisplayMode OffscreenTab::GetDisplayMode(
-    const WebContents* contents) const {
+    const WebContents* contents) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
   return in_fullscreen_mode() ? blink::kWebDisplayModeFullscreen
                               : blink::kWebDisplayModeBrowser;
@@ -354,11 +353,11 @@ void OffscreenTab::RequestMediaAccessPermission(
 bool OffscreenTab::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    blink::MediaStreamType type) {
+    blink::mojom::MediaStreamType type) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(),
             content::WebContents::FromRenderFrameHost(render_frame_host));
-  return type == blink::MEDIA_GUM_TAB_AUDIO_CAPTURE ||
-         type == blink::MEDIA_GUM_TAB_VIDEO_CAPTURE;
+  return type == blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE ||
+         type == blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE;
 }
 
 void OffscreenTab::DidShowFullscreenWidget() {

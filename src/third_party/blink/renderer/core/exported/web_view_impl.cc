@@ -45,6 +45,7 @@
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -106,7 +107,6 @@
 #include "third_party/blink/renderer/core/frame/resize_viewport_anchor.h"
 #include "third_party/blink/renderer/core/frame/rotation_viewport_anchor.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
@@ -152,9 +152,10 @@
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
-#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -203,24 +204,6 @@ namespace blink {
 const double WebView::kTextSizeMultiplierRatio = 1.2;
 const double WebView::kMinTextSizeMultiplier = 0.5;
 const double WebView::kMaxTextSizeMultiplier = 3.0;
-
-// Used to defer all page activity in cases where the embedder wishes to run
-// a nested event loop. Using a stack enables nesting of message loop
-// invocations.
-static Vector<std::unique_ptr<ScopedPagePauser>>& PagePauserStack() {
-  DEFINE_STATIC_LOCAL(Vector<std::unique_ptr<ScopedPagePauser>>, pauser_stack,
-                      ());
-  return pauser_stack;
-}
-
-void WebView::WillEnterModalLoop() {
-  PagePauserStack().push_back(std::make_unique<ScopedPagePauser>());
-}
-
-void WebView::DidExitModalLoop() {
-  DCHECK(PagePauserStack().size());
-  PagePauserStack().pop_back();
-}
 
 // static
 HashSet<WebViewImpl*>& WebViewImpl::AllInstances() {
@@ -431,7 +414,8 @@ void WebViewImpl::MouseContextMenu(const WebMouseEvent& event) {
   WebMouseEvent transformed_event =
       TransformWebMouseEvent(MainFrameImpl()->GetFrameView(), event);
   transformed_event.menu_source_type = kMenuSourceMouse;
-  LayoutPoint position_in_root_frame(transformed_event.PositionInRootFrame());
+  PhysicalOffset position_in_root_frame = PhysicalOffset::FromFloatPointRound(
+      transformed_event.PositionInRootFrame());
 
   // Find the right target frame. See issue 1186900.
   HitTestResult result = HitTestResultForRootFramePos(position_in_root_frame);
@@ -1478,9 +1462,7 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time,
   if (!MainFrameImpl())
     return;
 
-  if (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled() ||
-      RuntimeEnabledFeatures::
-          UpdateHoverFromLayoutChangeAtBeginFrameEnabled()) {
+  if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
     MainFrameImpl()
         ->GetFrame()
         ->GetEventHandler()
@@ -1518,7 +1500,7 @@ void WebViewImpl::DidBeginFrame() {
 
 void WebViewImpl::BeginRafAlignedInput() {
   if (MainFrameImpl()) {
-    raf_aligned_input_start_time_.emplace(CurrentTimeTicks());
+    raf_aligned_input_start_time_.emplace(base::TimeTicks::Now());
   }
 }
 
@@ -1527,14 +1509,14 @@ void WebViewImpl::EndRafAlignedInput() {
     DCHECK(raf_aligned_input_start_time_);
     MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kHandleInputEvents,
-        raf_aligned_input_start_time_.value(), CurrentTimeTicks());
+        raf_aligned_input_start_time_.value(), base::TimeTicks::Now());
   }
   raf_aligned_input_start_time_.reset();
 }
 
 void WebViewImpl::BeginUpdateLayers() {
   if (MainFrameImpl())
-    update_layers_start_time_.emplace(CurrentTimeTicks());
+    update_layers_start_time_.emplace(base::TimeTicks::Now());
 }
 
 void WebViewImpl::EndUpdateLayers() {
@@ -1542,14 +1524,14 @@ void WebViewImpl::EndUpdateLayers() {
     DCHECK(update_layers_start_time_);
     MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kUpdateLayers,
-        update_layers_start_time_.value(), CurrentTimeTicks());
+        update_layers_start_time_.value(), base::TimeTicks::Now());
   }
   update_layers_start_time_.reset();
 }
 
 void WebViewImpl::BeginCommitCompositorFrame() {
   if (MainFrameImpl()) {
-    commit_compositor_frame_start_time_.emplace(CurrentTimeTicks());
+    commit_compositor_frame_start_time_.emplace(base::TimeTicks::Now());
   }
 }
 
@@ -1558,7 +1540,7 @@ void WebViewImpl::EndCommitCompositorFrame() {
   if (MainFrameImpl() && commit_compositor_frame_start_time_) {
     MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kProxyCommit,
-        commit_compositor_frame_start_time_.value(), CurrentTimeTicks());
+        commit_compositor_frame_start_time_.value(), base::TimeTicks::Now());
   }
   commit_compositor_frame_start_time_.reset();
 }
@@ -1578,7 +1560,7 @@ void WebViewImpl::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
       ->GetFrame()
       ->View()
       ->EnsureUkmAggregator()
-      .RecordEndOfFrameMetrics(frame_begin_time, CurrentTimeTicks());
+      .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now());
 }
 
 void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update,
@@ -2029,7 +2011,20 @@ void WebViewImpl::DidAttachLocalMainFrame(WebWidgetClient* client) {
     AsWidget().client->SetPageScaleStateAndLimits(
         viewport.Scale(), viewport.IsPinchGestureActive(),
         MinimumPageScaleFactor(), MaximumPageScaleFactor());
+    // Prevent main frame updates while the main frame is loading until enough
+    // progress is made and BeginMainFrames are explicitly asked for.
+    scoped_defer_main_frame_update_ = AsWidget().client->DeferMainFrameUpdate();
   }
+}
+
+void WebViewImpl::DidDetachLocalMainFrame() {
+  // The WebWidgetClient that generated the |scoped_defer_main_frame_update_|
+  // for a local main frame is going away.
+  // TODO(crbug.com/419087): For now, the WebWidgetClient (aka RenderWidget)
+  // is not destroyed, so this comment is not true, but it will be in the
+  // future. All references between |this| and the WebWidgetClient should be
+  // dropped regardless.
+  scoped_defer_main_frame_update_ = nullptr;
 }
 
 void WebViewImpl::DidAttachRemoteMainFrame(WebWidgetClient* client) {
@@ -2148,7 +2143,7 @@ bool WebViewImpl::ScrollFocusedEditableElementIntoView() {
                                  kScrollBehaviorInstant);
   params.stop_at_main_frame_layout_viewport = true;
   layout_object->ScrollRectToVisible(
-      LayoutRect(layout_object->AbsoluteBoundingBoxRect()), params);
+      PhysicalRect(layout_object->AbsoluteBoundingBoxRect()), params);
 
   ZoomAndScrollToFocusedEditableElementRect(
       main_frame_view->RootFrameToDocument(
@@ -2664,10 +2659,18 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
       MainFrameImpl()->GetFrameView()->SetNeedsLayout();
   }
 
-  if (TextAutosizer* text_autosizer = document->GetTextAutosizer())
-    text_autosizer->UpdatePageInfoInAllFrames();
-
   UpdateMainFrameLayoutSize();
+}
+
+void WebViewImpl::SetTextAutosizePageInfo(
+    const WebTextAutosizerPageInfo& page_info) {
+  Frame* root_frame = GetPage()->MainFrame();
+  DCHECK(root_frame->IsRemoteFrame());
+  if (page_info == GetPage()->TextAutosizerPageInfo())
+    return;
+
+  GetPage()->SetTextAutosizePageInfo(page_info);
+  TextAutosizer::UpdatePageInfoInAllFrames(root_frame);
 }
 
 void WebViewImpl::UpdateMainFrameLayoutSize() {
@@ -2770,7 +2773,7 @@ void WebViewImpl::PerformPluginAction(const WebPluginAction& action,
                                       const gfx::Point& location) {
   // FIXME: Location is probably in viewport coordinates
   HitTestResult result =
-      HitTestResultForRootFramePos(LayoutPoint(IntPoint(location)));
+      HitTestResultForRootFramePos(PhysicalOffset(IntPoint(location)));
   Node* node = result.InnerNode();
   if (!IsHTMLObjectElement(*node) && !IsHTMLEmbedElement(*node))
     return;
@@ -2815,8 +2818,8 @@ HitTestResult WebViewImpl::CoreHitTestResultAt(
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
   LocalFrameView* view = MainFrameImpl()->GetFrameView();
-  LayoutPoint point_in_root_frame =
-      view->ViewportToFrame(LayoutPoint(IntPoint(point_in_viewport)));
+  PhysicalOffset point_in_root_frame =
+      view->ViewportToFrame(PhysicalOffset(IntPoint(point_in_viewport)));
   return HitTestResultForRootFramePos(point_in_root_frame);
 }
 
@@ -2872,7 +2875,6 @@ void WebViewImpl::SetDeviceEmulationTransform(
   if (transform == device_emulation_transform_)
     return;
   device_emulation_transform_ = transform;
-  GetPage()->GetVisualViewport().SetNeedsPaintPropertyUpdate();
   UpdateDeviceEmulationTransform();
 }
 
@@ -2882,11 +2884,14 @@ TransformationMatrix WebViewImpl::GetDeviceEmulationTransform() const {
 
 void WebViewImpl::EnableDeviceEmulation(
     const WebDeviceEmulationParams& params) {
-  dev_tools_emulator_->EnableDeviceEmulation(params);
+  TransformationMatrix device_emulation_transform =
+      dev_tools_emulator_->EnableDeviceEmulation(params);
+  SetDeviceEmulationTransform(device_emulation_transform);
 }
 
 void WebViewImpl::DisableDeviceEmulation() {
   dev_tools_emulator_->DisableDeviceEmulation();
+  SetDeviceEmulationTransform(TransformationMatrix());
 }
 
 void WebViewImpl::PerformCustomContextMenuAction(unsigned action) {
@@ -2992,7 +2997,6 @@ void WebViewImpl::UpdateBaseBackgroundColor() {
   Color color = BaseBackgroundColor();
   if (auto* local_frame = DynamicTo<LocalFrame>(AsView().page->MainFrame())) {
     LocalFrameView* view = local_frame->View();
-    view->SetBaseBackgroundColor(color);
     view->UpdateBaseBackgroundColorRecursively(color);
   }
 }
@@ -3109,11 +3113,21 @@ void WebViewImpl::PageScaleFactorChanged() {
       viewport.Scale(), viewport.IsPinchGestureActive(),
       MinimumPageScaleFactor(), MaximumPageScaleFactor());
   AsView().client->PageScaleFactorChanged(viewport.Scale());
-  dev_tools_emulator_->MainFrameScrollOrScaleChanged();
+
+  if (dev_tools_emulator_->HasViewportOverride()) {
+    TransformationMatrix device_emulation_transform =
+        dev_tools_emulator_->MainFrameScrollOrScaleChanged();
+    SetDeviceEmulationTransform(device_emulation_transform);
+  }
 }
 
 void WebViewImpl::MainFrameScrollOffsetChanged() {
-  dev_tools_emulator_->MainFrameScrollOrScaleChanged();
+  DCHECK(MainFrameImpl());
+  if (dev_tools_emulator_->HasViewportOverride()) {
+    TransformationMatrix device_emulation_transform =
+        dev_tools_emulator_->MainFrameScrollOrScaleChanged();
+    SetDeviceEmulationTransform(device_emulation_transform);
+  }
 }
 
 void WebViewImpl::SetBackgroundColorOverride(SkColor color) {
@@ -3161,7 +3175,7 @@ Element* WebViewImpl::FocusedElement() const {
 }
 
 HitTestResult WebViewImpl::HitTestResultForRootFramePos(
-    const LayoutPoint& pos_in_root_frame) {
+    const PhysicalOffset& pos_in_root_frame) {
   auto* main_frame = DynamicTo<LocalFrame>(AsView().page->MainFrame());
   if (!main_frame)
     return HitTestResult();
@@ -3180,9 +3194,9 @@ WebHitTestResult WebViewImpl::HitTestResultForTap(
   if (!main_frame)
     return HitTestResult();
 
-  WebGestureEvent tap_event(
-      WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
-      WTF::CurrentTimeTicks(), WebGestureDevice::kTouchscreen);
+  WebGestureEvent tap_event(WebInputEvent::kGestureTap,
+                            WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
+                            WebGestureDevice::kTouchscreen);
   // GestureTap is only ever from a touchscreen.
   tap_event.SetPositionInWidget(FloatPoint(IntPoint(tap_point_window_pos)));
   tap_event.data.tap.tap_count = 1;
@@ -3252,10 +3266,9 @@ void WebViewImpl::RegisterViewportLayersWithCompositor() {
 }
 
 void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
-  if (!layer_tree_view_)
-    return;
+  DCHECK(MainFrameImpl());
 
-  // In CAP, setRootLayer is used instead.
+  // In CAP, SetRootLayer() is used instead.
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
@@ -3273,29 +3286,26 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     root_graphics_layer_ = nullptr;
     visual_viewport_container_layer_ = nullptr;
     root_layer_ = nullptr;
-    // This means that we're transitioning to a new page. Suppress
-    // commits until Blink generates invalidations so we don't
-    // attempt to paint too early in the next page load.
-    scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
     AsWidget().client->SetRootLayer(nullptr);
     AsWidget().client->RegisterViewportLayers(cc::ViewportLayers());
+
+    // When the document in an already-attached main frame is being replaced by
+    // a navigation then SetRootGraphicsLayer(nullptr) will be called. Since we
+    // are navigating, defer BeginMainFrames until the new document is ready for
+    // them.
+    //
+    // TODO(crbug.com/936696): This should not be needed once we always swap
+    // frames when swapping documents.
+    scoped_defer_main_frame_update_ = AsWidget().client->DeferMainFrameUpdate();
   }
 }
 
 void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  if (!layer_tree_view_)
-    return;
+  DCHECK(MainFrameImpl());
+  DCHECK(layer);
 
   root_layer_ = std::move(layer);
   AsWidget().client->SetRootLayer(root_layer_);
-
-  if (!root_layer_) {
-    // This means that we're transitioning to a new page. Suppress
-    // commits until Blink generates invalidations so we don't
-    // attempt to paint too early in the next page load.
-    scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
-    AsWidget().client->RegisterViewportLayers(cc::ViewportLayers());
-  }
 }
 
 void WebViewImpl::InvalidateRect(const IntRect& rect) {
@@ -3328,10 +3338,6 @@ void WebViewImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
 
   AsView().page->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_,
                                           nullptr);
-  // We don't yet have a page loaded at this point of the initialization of
-  // WebViewImpl, so don't allow cc to commit any frames Blink might
-  // try to create in the meantime.
-  scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
 }
 
 void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
@@ -3361,24 +3367,33 @@ void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
   UpdateBrowserControlsConstraint(args.browser_controls_constraint);
 
   if (args.scroll_gesture_did_end &&
-      RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled()) {
+      RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
     MainFrameImpl()->GetFrame()->GetEventHandler().MarkHoverStateDirty();
   }
 }
 
-void WebViewImpl::RecordWheelAndTouchScrollingCount(
-    bool has_scrolled_by_wheel,
-    bool has_scrolled_by_touch) {
+void WebViewImpl::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
   if (!MainFrameImpl())
     return;
 
-  if (has_scrolled_by_wheel) {
+  if ((info & cc::kManipulationInfoHasScrolledByWheel) ==
+      cc::kManipulationInfoHasScrolledByWheel) {
     UseCounter::Count(MainFrameImpl()->GetDocument(),
                       WebFeature::kScrollByWheel);
   }
-  if (has_scrolled_by_touch) {
+  if ((info & cc::kManipulationInfoHasScrolledByTouch) ==
+      cc::kManipulationInfoHasScrolledByTouch) {
     UseCounter::Count(MainFrameImpl()->GetDocument(),
                       WebFeature::kScrollByTouch);
+  }
+  if ((info & cc::kManipulationInfoHasPinchZoomed) ==
+      cc::kManipulationInfoHasPinchZoomed) {
+    UseCounter::Count(MainFrameImpl()->GetDocument(), WebFeature::kPinchZoom);
+  }
+  if ((info & cc::kManipulationInfoHasScrolledByPrecisionTouchPad) ==
+      cc::kManipulationInfoHasScrolledByPrecisionTouchPad) {
+    UseCounter::Count(MainFrameImpl()->GetDocument(),
+                      WebFeature::kScrollByPrecisionTouchPad);
   }
 }
 
@@ -3433,15 +3448,27 @@ void WebViewImpl::SendScrollEndEventFromImplSide(
 }
 
 void WebViewImpl::UpdateDeviceEmulationTransform() {
-  if (!visual_viewport_container_layer_)
-    return;
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // This method may be called before a document lifecycle update runs, and
+    // attaches the |visual_viewport_container_layer_|. In that case, we will
+    // save the new transform and apply it when the container layer is attached.
+    // This is also null when CompositeAfterPaint is enabled.
+    if (visual_viewport_container_layer_) {
+      visual_viewport_container_layer_->SetTransform(
+          device_emulation_transform_);
+    }
+  }
 
-  // When the device emulation transform is updated, to avoid incorrect
-  // scales and fuzzy raster from the compositor, force all content to
-  // pick ideal raster scales.
-  visual_viewport_container_layer_->SetTransform(device_emulation_transform_);
-  if (layer_tree_view_)
-    layer_tree_view_->ForceRecalculateRasterScales();
+  GetPage()->GetVisualViewport().SetNeedsPaintPropertyUpdate();
+
+  if (MainFrameImpl()) {
+    // When the device emulation transform is updated, to avoid incorrect
+    // scales and fuzzy raster from the compositor, force all content to
+    // pick ideal raster scales.
+    // TODO(wjmaclean): This is only done on the main frame's widget currently,
+    // it should update all local frames.
+    AsWidget().client->ForceRecalculateRasterScales();
+  }
 }
 
 PageScheduler* WebViewImpl::Scheduler() const {
@@ -3512,18 +3539,9 @@ int32_t WebViewImpl::AutoplayFlagsForTest() {
   return AsView().page->AutoplayFlags();
 }
 
-void WebViewImpl::DeferMainFrameUpdateForTesting() {
-  scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
-}
-
-void WebViewImpl::StartDeferringCommits(base::TimeDelta timeout) {
-  if (layer_tree_view_)
-    layer_tree_view_->StartDeferringCommits(timeout);
-}
-
-void WebViewImpl::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
-  if (layer_tree_view_)
-    layer_tree_view_->StopDeferringCommits(trigger);
+void WebViewImpl::StopDeferringMainFrameUpdate() {
+  DCHECK(MainFrameImpl());
+  scoped_defer_main_frame_update_ = nullptr;
 }
 
 }  // namespace blink

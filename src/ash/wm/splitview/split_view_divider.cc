@@ -8,8 +8,10 @@
 
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider_handler_view.h"
@@ -250,8 +252,10 @@ SplitViewDivider::~SplitViewDivider() {
   Shell::Get()->activation_client()->RemoveObserver(this);
   divider_widget_->Close();
   split_view_window_targeter_.reset();
-  for (auto* iter : observed_windows_)
-    iter->RemoveObserver(this);
+  for (auto* window : observed_windows_) {
+    window->RemoveObserver(this);
+    ::wm::TransientWindowManager::GetOrCreate(window)->RemoveObserver(this);
+  }
   observed_windows_.clear();
 }
 
@@ -323,11 +327,10 @@ void SplitViewDivider::UpdateDividerBounds() {
 }
 
 gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
-  aura::Window* root_window =
-      divider_widget_->GetNativeWindow()->GetRootWindow();
   const gfx::Rect work_area_bounds_in_screen =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-          root_window);
+          Shell::GetPrimaryRootWindow()->GetChildById(
+              desks_util::GetActiveDeskContainerId()));
   const int divider_position = controller_->divider_position();
   const OrientationLockType screen_orientation = GetCurrentScreenOrientation();
   return GetDividerBoundsInScreen(work_area_bounds_in_screen,
@@ -336,7 +339,7 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
 }
 
 void SplitViewDivider::AddObservedWindow(aura::Window* window) {
-  if (!base::ContainsValue(observed_windows_, window)) {
+  if (!base::Contains(observed_windows_, window)) {
     window->AddObserver(this);
     ::wm::TransientWindowManager::GetOrCreate(window)->AddObserver(this);
     observed_windows_.push_back(window);
@@ -401,8 +404,7 @@ void SplitViewDivider::OnWindowActivated(ActivationReason reason,
                                          aura::Window* gained_active,
                                          aura::Window* lost_active) {
   if (!is_dragging_window_ &&
-      (!gained_active ||
-       base::ContainsValue(observed_windows_, gained_active))) {
+      (!gained_active || base::Contains(observed_windows_, gained_active))) {
     SetAlwaysOnTop(true);
   } else {
     // If |gained_active| is not one of the observed windows, or there is one
@@ -444,6 +446,8 @@ void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
   DividerView* divider_view = new DividerView(this);
   divider_widget_->set_focus_on_creation(false);
   divider_widget_->Init(params);
+  aura::Window* widget_window = divider_widget_->GetNativeWindow();
+  widget_window->SetProperty(kHideInDeskMiniViewKey, true);
   divider_widget_->SetVisibilityAnimationTransition(
       views::Widget::ANIMATE_NONE);
   divider_widget_->SetContentsView(divider_view);
@@ -453,7 +457,7 @@ void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
 
 void SplitViewDivider::SetAlwaysOnTop(bool on_top) {
   if (on_top) {
-    divider_widget_->SetAlwaysOnTop(true);
+    divider_widget_->SetZOrderLevel(ui::ZOrderLevel::kFloatingUIElement);
 
     // Special handling when put divider into always_on_top container. We want
     // to put it at the bottom so it won't block other always_on_top windows.
@@ -463,7 +467,7 @@ void SplitViewDivider::SetAlwaysOnTop(bool on_top) {
     always_on_top_container->StackChildAtBottom(
         divider_widget_->GetNativeWindow());
   } else {
-    divider_widget_->SetAlwaysOnTop(false);
+    divider_widget_->SetZOrderLevel(ui::ZOrderLevel::kNormal);
   }
 }
 

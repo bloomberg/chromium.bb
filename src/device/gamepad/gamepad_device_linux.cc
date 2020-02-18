@@ -357,6 +357,7 @@ bool GamepadDeviceLinux::ReadEvdevSpecialKeys(Gamepad* pad) {
 
 GamepadStandardMappingFunction GamepadDeviceLinux::GetMappingFunction() const {
   return GetGamepadStandardMappingFunction(vendor_id_, product_id_,
+                                           hid_specification_version_,
                                            version_number_, bus_type_);
 }
 
@@ -384,14 +385,15 @@ bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
       udev_device_get_sysattr_value(parent_device, "id/vendor");
   const base::StringPiece product_id =
       udev_device_get_sysattr_value(parent_device, "id/product");
-  const base::StringPiece version_number =
+  const base::StringPiece hid_version =
       udev_device_get_sysattr_value(parent_device, "id/version");
   const base::StringPiece name =
       udev_device_get_sysattr_value(parent_device, "name");
 
   uint16_t vendor_id_int = HexStringToUInt16WithDefault(vendor_id, 0);
   uint16_t product_id_int = HexStringToUInt16WithDefault(product_id, 0);
-  uint16_t version_number_int = HexStringToUInt16WithDefault(version_number, 0);
+  uint16_t hid_version_int = HexStringToUInt16WithDefault(hid_version, 0);
+  uint16_t version_number_int = 0;
 
   // In many cases the information the input subsystem contains isn't
   // as good as the information that the device bus has, walk up further
@@ -419,11 +421,16 @@ bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
         name_string = base::StringPrintf("%s %s", manufacturer, product);
       }
     }
+
+    const base::StringPiece version_number =
+        udev_device_get_sysattr_value(usb_device, "bcdDevice");
+    version_number_int = HexStringToUInt16WithDefault(version_number, 0);
   }
 
   joydev_index_ = pad_info.index;
   vendor_id_ = vendor_id_int;
   product_id_ = product_id_int;
+  hid_specification_version_ = hid_version_int;
   version_number_ = version_number_int;
   name_ = name_string;
   gamepad_id_ = GamepadIdList::Get().GetGamepadId(vendor_id_, product_id_);

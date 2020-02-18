@@ -25,11 +25,9 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/appcache_service.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
-#include "content/public/browser/stream_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_context.h"
@@ -60,7 +58,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/network/resource_scheduler.h"
+#include "services/network/resource_scheduler/resource_scheduler.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
@@ -129,19 +127,6 @@ class TestResourceDispatcherHostDelegate final
     ADD_FAILURE() << "DownloadStarting should not be called.";
   }
 
-  bool ShouldInterceptResourceAsStream(net::URLRequest* request,
-                                       const std::string& mime_type,
-                                       GURL* origin,
-                                       std::string* payload) override {
-    ADD_FAILURE() << "ShouldInterceptResourceAsStream should not be called.";
-    return false;
-  }
-
-  void OnStreamCreated(net::URLRequest* request,
-                       std::unique_ptr<content::StreamInfo> stream) override {
-    ADD_FAILURE() << "OnStreamCreated should not be called.";
-  }
-
   void OnResponseStarted(net::URLRequest* request,
                          ResourceContext* resource_context,
                          network::ResourceResponse* response) override {}
@@ -155,11 +140,6 @@ class TestResourceDispatcherHostDelegate final
 
   void RequestComplete(net::URLRequest* url_request) override {
     ADD_FAILURE() << "RequestComplete should not be called.";
-  }
-
-  NavigationData* GetNavigationData(net::URLRequest* request) const override {
-    ADD_FAILURE() << "GetNavigationData should not be called.";
-    return nullptr;
   }
 
  private:

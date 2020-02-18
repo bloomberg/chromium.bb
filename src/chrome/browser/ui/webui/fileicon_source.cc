@@ -108,7 +108,7 @@ void FileIconSource::FetchFileIcon(
   }
 }
 
-std::string FileIconSource::GetSource() const {
+std::string FileIconSource::GetSource() {
   return kFileIconPath;
 }
 
@@ -123,12 +123,12 @@ void FileIconSource::StartDataRequest(
   FetchFileIcon(file_path, scale_factor, icon_size, callback);
 }
 
-std::string FileIconSource::GetMimeType(const std::string&) const {
+std::string FileIconSource::GetMimeType(const std::string&) {
   // Rely on image decoder inferring the correct type.
   return std::string();
 }
 
-bool FileIconSource::AllowCaching() const {
+bool FileIconSource::AllowCaching() {
   return false;
 }
 

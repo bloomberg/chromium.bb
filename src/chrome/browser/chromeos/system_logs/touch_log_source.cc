@@ -17,11 +17,9 @@
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
-#include "ui/base/ui_base_features.h"
+#include "ui/ozone/public/input_controller.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 using content::BrowserThread;
 
@@ -160,20 +158,15 @@ void OnStatusLogCollected(
 
   // Collect touch event logs.
   const base::FilePath kBaseLogPath(kTouchEventLogDir);
-  ws::InputDeviceControllerClient* input_device_controller_client =
-      g_browser_process->platform_part()->GetInputDeviceControllerClient();
-  input_device_controller_client->GetTouchEventLog(
+  ui::InputController* input_controller =
+      ui::OzonePlatform::GetInstance()->GetInputController();
+  input_controller->GetTouchEventLog(
       kBaseLogPath, base::BindOnce(&OnEventLogCollected, std::move(response),
                                    std::move(callback)));
 }
 
 // Collect touch HUD debug logs. This needs to be done on the UI thread.
 void CollectTouchHudDebugLog(system_logs::SystemLogsResponse* response) {
-  // TODO(crbug.com/807408): Collect this data from window server over mojo.
-  if (features::IsMultiProcessMash()) {
-    NOTIMPLEMENTED();
-    return;
-  }
   std::unique_ptr<base::DictionaryValue> dictionary =
       ash::TouchHudDebug::GetAllAsDictionary();
   if (!dictionary->empty()) {
@@ -197,9 +190,9 @@ void TouchLogSource::Fetch(SysLogsSourceCallback callback) {
   CollectTouchHudDebugLog(response.get());
 
   // Collect touch device status logs.
-  ws::InputDeviceControllerClient* input_device_controller_client =
-      g_browser_process->platform_part()->GetInputDeviceControllerClient();
-  input_device_controller_client->GetTouchDeviceStatus(base::BindOnce(
+  ui::InputController* input_controller =
+      ui::OzonePlatform::GetInstance()->GetInputController();
+  input_controller->GetTouchDeviceStatus(base::BindOnce(
       &OnStatusLogCollected, std::move(response), std::move(callback)));
 }
 

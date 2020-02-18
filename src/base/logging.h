@@ -597,6 +597,16 @@ MakeCheckOpValueString(std::ostream* os, const T& v) {
   (*os) << v;
 }
 
+// Overload for types that no operator<< but do have .ToString() defined.
+template <typename T>
+inline typename std::enable_if<
+    !base::internal::SupportsOstreamOperator<const T&>::value &&
+        base::internal::SupportsToString<const T&>::value,
+    void>::type
+MakeCheckOpValueString(std::ostream* os, const T& v) {
+  (*os) << v.ToString();
+}
+
 // Provide an overload for functions and function pointers. Function pointers
 // don't implicitly convert to void* but do implicitly convert to bool, so
 // without this function pointers are always printed as 1 or 0. (MSVC isn't

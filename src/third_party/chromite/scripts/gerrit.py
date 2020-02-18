@@ -24,9 +24,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
 from chromite.lib import gob_util
-from chromite.lib import memoize
 from chromite.lib import terminal
 from chromite.lib import uri_lib
+from chromite.utils import memoize
 
 
 # Locate actions that are exposed to the user.  All functions that start
@@ -48,6 +48,14 @@ GERRIT_APPROVAL_MAP = {
 # Order is important -- matches the web ui.  This also controls the short
 # entries that we summarize in non-verbose mode.
 GERRIT_SUMMARY_CATS = ('CR', 'CQ', 'V',)
+
+# Shorter strings for CL status messages.
+GERRIT_SUMMARY_MAP = {
+    'ABANDONED': 'ABD',
+    'MERGED': 'MRG',
+    'NEW': 'NEW',
+    'WIP': 'WIP',
+}
 
 
 def red(s):
@@ -133,6 +141,12 @@ def PrettyPrintCl(opts, cl, lims=None, show_approvals=True):
     lims = {'url': 0, 'project': 0}
 
   status = ''
+
+  if opts.verbose:
+    status += '%s ' % (cl['status'],)
+  else:
+    status += '%s ' % (GERRIT_SUMMARY_MAP.get(cl['status'], cl['status']),)
+
   if show_approvals and not opts.verbose:
     approvs = GetApprovalSummary(opts, cl)
     for cat in GERRIT_SUMMARY_CATS:
@@ -262,7 +276,7 @@ def _BreadthFirstSearch(to_visit, children, visited_key=lambda x: x):
     |children| any number of times.
   """
   to_visit = list(to_visit)
-  seen = set(map(visited_key, to_visit))
+  seen = set(visited_key(x) for x in to_visit)
   for node in to_visit:
     for child in children(node):
       key = visited_key(child)

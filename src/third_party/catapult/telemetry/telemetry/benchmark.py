@@ -5,16 +5,17 @@
 import optparse
 import sys
 
-from py_utils import class_util
 from py_utils import expectations_parser
 from telemetry import decorators
 from telemetry.internal import story_runner
 from telemetry.internal.util import command_line
 from telemetry.page import legacy_page_test
 from telemetry.story import expectations as expectations_module
+from telemetry.story import typ_expectations
 from telemetry.web_perf import story_test
 from telemetry.web_perf import timeline_based_measurement
 from tracing.value.diagnostics import generic_set
+from typ import expectations_parser as typ_expectations_parser
 
 Info = decorators.Info
 
@@ -26,28 +27,6 @@ Owner = decorators.Info # pylint: disable=invalid-name
 class InvalidOptionsError(Exception):
   """Raised for invalid benchmark options."""
   pass
-
-
-class BenchmarkMetadata(object):
-
-  def __init__(self, name, description=''):
-    self._name = name
-    self._description = description
-
-  @property
-  def name(self):
-    return self._name
-
-  @property
-  def description(self):
-    return self._description
-
-  def AsDict(self):
-    return {
-        'type': 'telemetry_benchmark',
-        'name': self.name,
-        'description': self.description,
-    }
 
 
 class Benchmark(command_line.Command):
@@ -63,7 +42,6 @@ class Benchmark(command_line.Command):
   page_set = None
   test = timeline_based_measurement.TimelineBasedMeasurement
   SUPPORTED_PLATFORMS = [expectations_module.ALL]
-
   MAX_NUM_VALUES = sys.maxint
 
   def __init__(self, max_failures=None):
@@ -82,7 +60,6 @@ class Benchmark(command_line.Command):
     # * It's a legacy benchmark, with either CreatePageTest defined or
     #   Benchmark.test set.
     # See https://github.com/catapult-project/catapult/issues/3708
-
 
   def _CanRunOnPlatform(self, platform, finder_options):
     for p in self.SUPPORTED_PLATFORMS:
@@ -151,8 +128,7 @@ class Benchmark(command_line.Command):
     """Returns whether the named value should be added to PageTestResults.
 
     Override this method to customize the logic of adding values to test
-    results. SkipValues and TraceValues will be added regardless
-    of logic here.
+    results.
 
     Args:
       name: The string name of a value being added.
@@ -166,9 +142,6 @@ class Benchmark(command_line.Command):
 
   def CustomizeOptions(self, finder_options):
     """Add options that are required by this benchmark."""
-
-  def GetMetadata(self):
-    return BenchmarkMetadata(self.Name(), self.__doc__)
 
   def GetBugComponents(self):
     """Returns a GenericSet Diagnostic containing the benchmark's Monorail
@@ -202,12 +175,6 @@ class Benchmark(command_line.Command):
             decorators.GetDocumentationLink(self)]
     return generic_set.GenericSet([pair])
 
-  @decorators.Deprecated(
-      2017, 7, 29, 'Use CreateCoreTimelineBasedMeasurementOptions instead.')
-  def CreateTimelineBasedMeasurementOptions(self):
-    """See CreateCoreTimelineBasedMeasurementOptions."""
-    return self.CreateCoreTimelineBasedMeasurementOptions()
-
   def CreateCoreTimelineBasedMeasurementOptions(self):
     """Return the base TimelineBasedMeasurementOptions for this Benchmark.
 
@@ -229,27 +196,7 @@ class Benchmark(command_line.Command):
     configured options from --extra-chrome-categories and
     --extra-atrace-categories.
     """
-    # TODO(sullivan): the benchmark options should all be configured in
-    # CreateCoreTimelineBasedMeasurementOptions. Remove references to
-    # CreateCoreTimelineBasedMeasurementOptions when it is fully deprecated.
-    # In the short term, if the benchmark overrides
-    # CreateCoreTimelineBasedMeasurementOptions use the overridden version,
-    # otherwise call CreateCoreTimelineBasedMeasurementOptions.
-    # https://github.com/catapult-project/catapult/issues/3450
-    tbm_options = None
-    assert not (
-        class_util.IsMethodOverridden(Benchmark, self.__class__,
-                                      'CreateTimelineBasedMeasurementOptions')
-        and class_util.IsMethodOverridden(
-            Benchmark, self.__class__,
-            'CreateCoreTimelineBasedMeasurementOptions')
-    ), ('Benchmarks should override CreateCoreTimelineBasedMeasurementOptions '
-        'and NOT also CreateTimelineBasedMeasurementOptions.')
-    if class_util.IsMethodOverridden(
-        Benchmark, self.__class__, 'CreateCoreTimelineBasedMeasurementOptions'):
-      tbm_options = self.CreateCoreTimelineBasedMeasurementOptions()
-    else:
-      tbm_options = self.CreateTimelineBasedMeasurementOptions()
+    tbm_options = self.CreateCoreTimelineBasedMeasurementOptions()
     if options and options.extra_chrome_categories:
       # If Chrome tracing categories for this benchmark are not already
       # enabled, there is probably a good reason why. Don't change whether
@@ -276,7 +223,6 @@ class Benchmark(command_line.Command):
     if options and options.enable_systrace:
       tbm_options.config.chrome_trace_config.SetEnableSystrace()
     return tbm_options
-
 
   def CreatePageTest(self, options):  # pylint: disable=unused-argument
     """Return the PageTest for this Benchmark.
@@ -322,10 +268,26 @@ class Benchmark(command_line.Command):
       return self._expectations.GetBrokenExpectations(story_set)
     return []
 
-  def AugmentExpectationsWithParser(self, data):
-    parser = expectations_parser.TestExpectationParser(data)
-    self._expectations.GetBenchmarkExpectationsFromParser(
-        parser.expectations, self.Name())
+  def AugmentExpectationsWithFile(self, raw_data):
+    typ_parser = typ_expectations_parser.TestExpectations()
+    error, _ = typ_parser.parse_tagged_list(raw_data)
+    if not error:
+      self._expectations = typ_expectations.StoryExpectations(self.Name())
+      self._expectations.GetBenchmarkExpectationsFromParser(raw_data)
+    else:
+      # If we can't parse the file using typ's expectation parser
+      # then we fall back to using py_util's expectation parser
+      # TODO(crbug.com/973936): When all expectations files have
+      # been migrated, we will remove this if else statement and
+      # only use typ's expectations parser.
+      self._expectations.GetBenchmarkExpectationsFromParser(
+          expectations_parser.TestExpectationParser(
+              raw_data).expectations, self.Name())
+
+  def AugmentExpectationsWithParser(self, raw_data):
+    # TODO(crbug.com/973936): Remove this function after removing all
+    # invocations of this function in src/tools/perf
+    self.AugmentExpectationsWithFile(raw_data)
 
   @property
   def expectations(self):

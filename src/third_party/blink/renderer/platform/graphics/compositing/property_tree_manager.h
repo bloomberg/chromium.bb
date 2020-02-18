@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -28,7 +28,6 @@ enum class RenderSurfaceReason : uint8_t;
 namespace blink {
 
 class ClipPaintPropertyNode;
-class FloatRoundedRect;
 class LayerListBuilder;
 class EffectPaintPropertyNode;
 class ScrollPaintPropertyNode;
@@ -152,7 +151,7 @@ class PropertyTreeManager {
     kSyntheticFor2dAxisAlignment = 1 << 1
   };
 
-  static bool SupportsShaderBasedRoundedCorner(const FloatRoundedRect& rect,
+  static bool SupportsShaderBasedRoundedCorner(const ClipPaintPropertyNode&,
                                                CcEffectType type);
 
   struct EffectState {

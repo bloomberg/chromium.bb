@@ -45,7 +45,6 @@ namespace syncer {
 class BaseTransaction;
 class CancelationSignal;
 class DataTypeDebugInfoListener;
-class Encryptor;
 class EngineComponentsFactory;
 class ExtensionsActivity;
 class JsBackend;
@@ -174,8 +173,7 @@ class SyncManager {
     virtual void OnInitializationComplete(
         const WeakHandle<JsBackend>& js_backend,
         const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-        bool success,
-        ModelTypeSet restored_types) = 0;
+        bool success) = 0;
 
     virtual void OnActionableError(
         const SyncProtocolError& sync_protocol_error) = 0;
@@ -226,14 +224,13 @@ class SyncManager {
     // Unqiuely identifies this client to the invalidation notification server.
     std::string invalidator_client_id;
 
-    // Used to boostrap the cryptographer.
-    std::string restored_key_for_bootstrapping;
-    std::string restored_keystore_key_for_bootstrapping;
-
     std::unique_ptr<EngineComponentsFactory> engine_components_factory;
 
     // Must outlive SyncManager.
-    Encryptor* encryptor;
+    UserShare* user_share;
+
+    // Must outlive SyncManager.
+    SyncEncryptionHandler* encryption_handler;
 
     WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler;
     base::Closure report_unrecoverable_error_function;
@@ -340,6 +337,11 @@ class SyncManager {
 
   // May be called from any thread.
   virtual UserShare* GetUserShare() = 0;
+
+  // Returns non-owning pointer to ModelTypeConnector. In contrast with
+  // ModelTypeConnectorProxy all calls are executed synchronously, thus the
+  // pointer should be used on sync thread.
+  virtual ModelTypeConnector* GetModelTypeConnector() = 0;
 
   // Returns an instance of the main interface for registering sync types with
   // sync engine.

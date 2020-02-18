@@ -140,32 +140,11 @@ guide, the table is full working and you could try a start over.
 =head2 User comfort
 
 C<DBD::File> since C<0.39> consolidates all persistent meta data of a table
-into a single structure stored in C<< $dbh->{f_meta} >>. While DBD::File
-provides only readonly access to this structure, modifications are still
-allowed.
-
-Primarily DBD::File provides access via setters C<get_file_meta>,
-C<set_file_meta> and C<clear_file_meta>. Those methods are easily
-accessible by the users via the C<< $dbh->func () >> interface provided
-by DBI. Well, many users don't feel comfortize when calling
-
-    # don't require extension for tables cars
-    $dbh->func ("cars", "f_ext", ".csv", "set_file_meta");
-
-DBD::File will inject a method into your driver to increase the user
-comfort to allow:
-
-    # don't require extension for tables cars
-    $dbh->foo_set_meta ("cars", "f_ext", ".csv");
-
-Better, but here and there users likes to do:
-
-    # don't require extension for tables cars
-    $dbh->{foo_tables}->{cars}->{f_ext} = ".csv";
-
-This interface is provided when derived DBD's define following in
-C<init_valid_attributes> (please compare carefully with the example in
-DBI::DBD::SqlEngine::HowTo):
+into a single structure stored in C<< $dbh->{f_meta} >>. With C<DBD::File>
+version C<0.41> and C<DBI::DBD::SqlEngine> version C<0.05>, this
+consolidation moves to L<DBI::DBD::SqlEngine>. It's still the
+C<< $dbh->{$drv_prefix . "_meta"} >> attribute which cares, so what you
+learned at this place before, is still valid.
 
     sub init_valid_attributes
     {
@@ -173,73 +152,15 @@ DBI::DBD::SqlEngine::HowTo):
 
 	$dbh->SUPER::init_valid_attributes ();
 
-	$dbh->{foo_valid_attrs} = {
-	    foo_version 	=> 1,	# contains version of this driver
-	    foo_valid_attrs	=> 1,	# contains the valid attributes of foo drivers
-	    foo_readonly_attrs	=> 1,	# contains immutable attributes of foo drivers
-	    foo_bar		=> 1,	# contains the bar attribute
-	    foo_baz		=> 1,   # contains the baz attribute
-	    foo_manager		=> 1,	# contains the manager of the driver instance
-	    foo_manager_type	=> 1,	# contains the manager class of the driver instance
-	    foo_meta            => 1,   # contains the public interface to modify table meta attributes
-	};
-	$dbh->{foo_readonly_attrs} = {
-	    foo_version 	=> 1,	# ensure no-one modifies the driver version
-	    foo_valid_attrs	=> 1,	# do not permit to add more valid attributes ...
-	    foo_readonly_attrs	=> 1,	# ... or make the immutable mutable
-	    foo_manager		=> 1,	# manager is set internally only
-	    foo_meta            => 1,   # ensure public interface to modify table meta attributes are immutable
-	};
+	$dbh->{foo_valid_attrs} = { ... };
+	$dbh->{foo_readonly_attrs} = { ...  };
 
 	$dbh->{foo_meta} = "foo_tables";
 
 	return $dbh;
     }
 
-This provides a tied hash in C<< $dbh->{foo_tables} >> and a tied hash for
-each table's meta data in C<< $dbh->{foo_tables}->{$table_name} >>.
-Modifications on the table meta attributes are done using the table
-methods:
-
-    sub get_table_meta_attr { ... }
-    sub set_table_meta_attr { ... }
-
-Both methods can adjust the attribute name for compatibility reasons, e.g.
-when former versions of the DBD allowed different names to be used for the
-same flag:
-
-    my %compat_map = (
-		       abc => 'foo_abc',
-		       xyz => 'foo_xyz',
-		     );
-    __PACKAGE__->register_compat_map( \%compat_map );
-
-If any user modification on a meta attribute needs reinitialization of
-the meta structure (in case of C<DBD::File> these are the attributes
-C<f_file>, C<f_dir>, C<f_ext> and C<f_lockfile>), inform DBD::File by
-doing 
-
-    my %reset_on_modify = (
-			    foo_xyz => "foo_bar",
-			    foo_abc => "foo_bar",
-			  );
-    __PACKAGE__->register_reset_on_modify( \%reset_on_modify );
-
-The next access to the table meta data will force DBD::File to re-do the
-entire meta initialization process.
-
-Any further action which needs to be taken can handled in
-C<table_meta_attr_changed>:
-
-    sub table_meta_attr_changed
-    {
-	my ($class, $meta, $attrib, $value) = @_;
-	...
-	$class->SUPER::table_meta_attr_changed ($meta, $attrib, $value);
-    }
-
-This is done before the new value is set in C<$meta>, so the attribute
-changed handler can act depending on the old value.
+See updates at L<DBI::DBD::SqlEngine::HowTo/User comfort>.
 
 =head2 Testing
 

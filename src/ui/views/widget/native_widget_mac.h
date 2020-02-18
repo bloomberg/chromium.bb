@@ -18,10 +18,12 @@ class NativeWidgetMacNSWindow;
 
 namespace remote_cocoa {
 namespace mojom {
-class BridgedNativeWidget;
 class CreateWindowParams;
+class NativeWidgetNSWindow;
 class ValidateUserInterfaceItemResult;
 }  // namespace mojom
+class ApplicationHost;
+class NativeWidgetNSWindowBridge;
 }  // namespace remote_cocoa
 
 namespace views {
@@ -30,10 +32,7 @@ class HitTestNativeWidgetMac;
 class MockNativeWidgetMac;
 class WidgetTest;
 }
-
-class BridgeFactoryHost;
-class BridgedNativeWidgetImpl;
-class BridgedNativeWidgetHostImpl;
+class NativeWidgetMacNSWindowHost;
 
 class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
  public:
@@ -41,7 +40,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   ~NativeWidgetMac() override;
 
   // Informs |delegate_| that the native widget is about to be destroyed.
-  // BridgedNativeWidgetImpl::OnWindowWillClose() invokes this early when the
+  // NativeWidgetNSWindowBridge::OnWindowWillClose() invokes this early when the
   // NSWindowDelegate informs the bridge that the window is being closed (later,
   // invoking OnWindowDestroyed()).
   void WindowDestroying();
@@ -134,8 +133,8 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   void Activate() override;
   void Deactivate() override;
   bool IsActive() const override;
-  void SetAlwaysOnTop(bool always_on_top) override;
-  bool IsAlwaysOnTop() const override;
+  void SetZOrderLevel(ui::ZOrderLevel order) override;
+  ui::ZOrderLevel GetZOrderLevel() const override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;
   bool IsVisibleOnAllWorkspaces() const override;
   void Maximize() override;
@@ -151,7 +150,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
   void FlashFrame(bool flash_frame) override;
   void RunShellDrag(View* view,
-                    const ui::OSExchangeData& data,
+                    std::unique_ptr<ui::OSExchangeData> data,
                     const gfx::Point& location,
                     int operation,
                     ui::DragDropTypes::DragEventSource source) override;
@@ -187,7 +186,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
       const Widget::InitParams& widget_params,
       remote_cocoa::mojom::CreateWindowParams* params) {}
 
-  // Creates the NSWindow that will be passed to the BridgedNativeWidgetImpl.
+  // Creates the NSWindow that will be passed to the NativeWidgetNSWindowBridge.
   // Called by InitNativeWidget. The return value will be autoreleased.
   // Note that some tests (in particular, views_unittests that interact
   // with ScopedFakeNSWindowFullscreen, on 10.10) assume that these windows
@@ -199,7 +198,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // Return the BridgeFactoryHost that is to be used for creating this window
   // and all of its child windows. This will return nullptr if the native
   // windows are to be created in the current process.
-  virtual BridgeFactoryHost* GetBridgeFactoryHost();
+  virtual remote_cocoa::ApplicationHost* GetRemoteCocoaApplicationHost();
 
   // Called after the window has been initialized. Allows subclasses to perform
   // additional initialization.
@@ -209,10 +208,16 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   virtual void OnWindowDestroying(gfx::NativeWindow window) {}
 
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
-  remote_cocoa::mojom::BridgedNativeWidget* bridge() const;
-  BridgedNativeWidgetImpl* bridge_impl() const;
-  BridgedNativeWidgetHostImpl* bridge_host() const {
-    return bridge_host_.get();
+
+  // Return the mojo interface for the NSWindow. The interface may be
+  // implemented in-process or out-of-process.
+  remote_cocoa::mojom::NativeWidgetNSWindow* GetNSWindowMojo() const;
+
+  // Return the bridge structure only if this widget is in-process.
+  remote_cocoa::NativeWidgetNSWindowBridge* GetInProcessNSWindowBridge() const;
+
+  NativeWidgetMacNSWindowHost* GetNSWindowHost() const {
+    return ns_window_host_.get();
   }
 
  private:
@@ -221,12 +226,14 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   friend class views::test::WidgetTest;
 
   internal::NativeWidgetDelegate* delegate_;
-  std::unique_ptr<BridgedNativeWidgetHostImpl> bridge_host_;
+  std::unique_ptr<NativeWidgetMacNSWindowHost> ns_window_host_;
 
   Widget::InitParams::Ownership ownership_;
 
   // Internal name.
   std::string name_;
+
+  Widget::InitParams::Type type_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMac);
 };

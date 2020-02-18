@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 
 namespace blink {
 
@@ -85,14 +86,11 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
                                    : &pending_reparents;
 
 #if DCHECK_IS_ON()
-  base::Optional<LayerListMutationDetector> mutation_checker;
-  if (layer.StackingNode())
-    mutation_checker.emplace(layer.StackingNode());
+  PaintLayerListMutationDetector mutation_checker(layer);
 #endif
 
-  if (style.IsStackingContext()) {
-    PaintLayerStackingNodeIterator iterator(*layer.StackingNode(),
-                                            kNegativeZOrderChildren);
+  if (layer.IsStackingContextWithNegativeZOrderChildren()) {
+    PaintLayerPaintOrderIterator iterator(layer, kNegativeZOrderChildren);
     while (PaintLayer* child_layer = iterator.Next()) {
       RebuildRecursive(*child_layer, *layer_vector_for_children,
                        *pending_reparents_for_children);
@@ -107,9 +105,9 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
     }
   }
 
-  if (layer.StackingNode()) {
-    PaintLayerStackingNodeIterator iterator(
-        *layer.StackingNode(), kNormalFlowChildren | kPositiveZOrderChildren);
+  {
+    PaintLayerPaintOrderIterator iterator(layer,
+                                          kNormalFlowAndPositiveZOrderChildren);
     while (PaintLayer* child_layer = iterator.Next()) {
       RebuildRecursive(*child_layer, *layer_vector_for_children,
                        *pending_reparents_for_children);
@@ -168,9 +166,8 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
     pending_reparents.Set(&layer, child_layers.size());
 
   // Set or overwrite the entry in |pending_reparents| for this scroller.
-  // Overlay controls need to paint on top of all content under the
-  // scroller, so keep overwriting if we find a PaintLayer that is
-  // later in paint order.
+  // Overlay scrollbars need to paint on top of all content under the scroller,
+  // so keep overwriting if we find a PaintLayer that is later in paint order.
   const PaintLayer* scroll_parent = layer.ScrollParent();
   if (style.IsStacked() && scroll_parent &&
       scroll_parent->HasCompositedLayerMapping() &&

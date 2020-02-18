@@ -3,7 +3,8 @@ include_rules = [
   "+android_webview/browser",
   "+android_webview/common",
   "+android_webview/grit",
-  "+android_webview/jni",
+  "+android_webview/native_jni",
+  "+android_webview/test/android_webview_unittests_jni",
   "+cc",
   "+components/autofill/android",
   "+components/autofill/content/browser",
@@ -49,6 +50,7 @@ include_rules = [
   "-ipc/ipc_sync_message_filter.h",
 
   "+media/base/android",
+  "+media/mojo/buildflags.h",
 
   "+components/policy/policy_constants.h",
   "+components/embedder_support/android",
@@ -77,10 +79,13 @@ include_rules = [
   # AwContentBrowserClient::GetDefaultFavicon
   "!ui/resources/grit/ui_resources.h",
 
+  # For using the same legacy IPC channel for mojo.
+  "+third_party/blink/public/common/associated_interfaces/associated_interface_provider.h",
   # Required for MediaStreams.
   "+third_party/blink/public/common/mediastream",
   # QuotaStatusCode required by AwQuotaManagerBridge.
   "+third_party/blink/public/mojom/quota",
+  "+third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h",
   # Interface required for in-process input event handling.
   "+third_party/blink/public/web/WebCompositorInputHandler.h",
   # For find-in-page

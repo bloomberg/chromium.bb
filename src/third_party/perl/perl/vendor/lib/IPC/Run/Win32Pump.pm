@@ -28,27 +28,28 @@ It parses a bunch of command line parameters from IPC::Run::Win32IO.
 
 use strict;
 use vars qw{$VERSION};
+
 BEGIN {
-	$VERSION = '0.90';
+    $VERSION = '20180523.0';
 }
 
 use Win32API::File qw(
-   OsFHandleOpen
+  OsFHandleOpen
 );
 
-
 my ( $stdin_fh, $stdout_fh, $debug_fh, $binmode, $parent_pid, $parent_start_time, $debug, $child_label );
+
 BEGIN {
-   ( $stdin_fh, $stdout_fh, $debug_fh, $binmode, $parent_pid, $parent_start_time, $debug, $child_label ) = @ARGV;
-   ## Rather than letting IPC::Run::Debug export all-0 constants
-   ## when not debugging, we do it manually in order to not even
-   ## load IPC::Run::Debug.
-   if ( $debug ) {
-      eval "use IPC::Run::Debug qw( :default _debug_init ); 1;"
-	 or die $@;
-   }
-   else {
-      eval <<STUBS_END or die $@;
+    ( $stdin_fh, $stdout_fh, $debug_fh, $binmode, $parent_pid, $parent_start_time, $debug, $child_label ) = @ARGV;
+    ## Rather than letting IPC::Run::Debug export all-0 constants
+    ## when not debugging, we do it manually in order to not even
+    ## load IPC::Run::Debug.
+    if ($debug) {
+        eval "use IPC::Run::Debug qw( :default _debug_init ); 1;"
+          or die $@;
+    }
+    else {
+        eval <<STUBS_END or die $@;
 	 sub _debug {}
 	 sub _debug_init {}
 	 sub _debugging() { 0 }
@@ -57,35 +58,37 @@ BEGIN {
 	 sub _debugging_gory_details() { 0 }
 	 1;
 STUBS_END
-   }
+    }
 }
 
 ## For some reason these get created with binmode on.  AAargh, gotta       #### REMOVE
 ## do it by hand below.       #### REMOVE
-if ( $debug ) {       #### REMOVE
-close STDERR;       #### REMOVE
-OsFHandleOpen( \*STDERR, $debug_fh, "w" )       #### REMOVE
- or print "$! opening STDERR as Win32 handle $debug_fh in pumper $$";       #### REMOVE
-}       #### REMOVE
-close STDIN;       #### REMOVE
-OsFHandleOpen( \*STDIN, $stdin_fh, "r" )       #### REMOVE
-or die "$! opening STDIN as Win32 handle $stdin_fh in pumper $$";       #### REMOVE
-close STDOUT;       #### REMOVE
-OsFHandleOpen( \*STDOUT, $stdout_fh, "w" )       #### REMOVE
-or die "$! opening STDOUT as Win32 handle $stdout_fh in pumper $$";       #### REMOVE
+if ($debug) {    #### REMOVE
+    close STDERR;    #### REMOVE
+    OsFHandleOpen( \*STDERR, $debug_fh, "w" )    #### REMOVE
+      or print "$! opening STDERR as Win32 handle $debug_fh in pumper $$";    #### REMOVE
+}               #### REMOVE
+close STDIN;    #### REMOVE
+OsFHandleOpen( \*STDIN, $stdin_fh, "r" )    #### REMOVE
+  or die "$! opening STDIN as Win32 handle $stdin_fh in pumper $$";    #### REMOVE
+close STDOUT;                                                          #### REMOVE
+OsFHandleOpen( \*STDOUT, $stdout_fh, "w" )                             #### REMOVE
+  or die "$! opening STDOUT as Win32 handle $stdout_fh in pumper $$";  #### REMOVE
 
 binmode STDIN;
 binmode STDOUT;
 $| = 1;
-select STDERR; $| = 1; select STDOUT;
+select STDERR;
+$| = 1;
+select STDOUT;
 
 $child_label ||= "pump";
 _debug_init(
-$parent_pid,
-$parent_start_time,
-$debug,
-fileno STDERR,
-$child_label,
+    $parent_pid,
+    $parent_start_time,
+    $debug,
+    fileno STDERR,
+    $child_label,
 );
 
 _debug "Entered" if _debugging_details;
@@ -95,29 +98,29 @@ $| = 1;
 my $buf;
 my $total_count = 0;
 while (1) {
-my $count = sysread STDIN, $buf, 10_000;
-last unless $count;
-if ( _debugging_gory_details ) {
- my $msg = "'$buf'";
- substr( $msg, 100, -1 ) = '...' if length $msg > 100;
- $msg =~ s/\n/\\n/g;
- $msg =~ s/\r/\\r/g;
- $msg =~ s/\t/\\t/g;
- $msg =~ s/([\000-\037\177-\277])/sprintf "\0x%02x", ord $1/eg;
- _debug sprintf( "%5d chars revc: ", $count ), $msg;
-}
-$total_count += $count;
-$buf =~ s/\r//g unless $binmode;
-if ( _debugging_gory_details ) {
- my $msg = "'$buf'";
- substr( $msg, 100, -1 ) = '...' if length $msg > 100;
- $msg =~ s/\n/\\n/g;
- $msg =~ s/\r/\\r/g;
- $msg =~ s/\t/\\t/g;
- $msg =~ s/([\000-\037\177-\277])/sprintf "\0x%02x", ord $1/eg;
- _debug sprintf( "%5d chars sent: ", $count ), $msg;
-}
-print $buf;
+    my $count = sysread STDIN, $buf, 10_000;
+    last unless $count;
+    if (_debugging_gory_details) {
+        my $msg = "'$buf'";
+        substr( $msg, 100, -1 ) = '...' if length $msg > 100;
+        $msg =~ s/\n/\\n/g;
+        $msg =~ s/\r/\\r/g;
+        $msg =~ s/\t/\\t/g;
+        $msg =~ s/([\000-\037\177-\277])/sprintf "\0x%02x", ord $1/eg;
+        _debug sprintf( "%5d chars revc: ", $count ), $msg;
+    }
+    $total_count += $count;
+    $buf =~ s/\r//g unless $binmode;
+    if (_debugging_gory_details) {
+        my $msg = "'$buf'";
+        substr( $msg, 100, -1 ) = '...' if length $msg > 100;
+        $msg =~ s/\n/\\n/g;
+        $msg =~ s/\r/\\r/g;
+        $msg =~ s/\t/\\t/g;
+        $msg =~ s/([\000-\037\177-\277])/sprintf "\0x%02x", ord $1/eg;
+        _debug sprintf( "%5d chars sent: ", $count ), $msg;
+    }
+    print $buf;
 }
 
 _debug "Exiting, transferred $total_count chars" if _debugging_details;
@@ -132,21 +135,21 @@ _debug "Exiting, transferred $total_count chars" if _debugging_details;
 ##
 ## In any case, this close() is one of the main reasons we have helper
 ## processes; if the OS closed socket fds gracefully when an app exits,
-## we'd just redirect the client directly to what is now the pump end 
+## we'd just redirect the client directly to what is now the pump end
 ## of the socket.  As it is, however, we need to let the client play with
 ## pipes, which don't have the abort-on-app-exit behavior, and then
 ## adapt to the sockets in the helper processes to allow the parent to
 ## select.
 ##
 ## Possible alternatives / improvements:
-## 
+##
 ## 1) use helper threads instead of processes.  I don't trust perl's threads
 ## as of 5.005 or 5.6 enough (which may be myopic of me).
 ##
 ## 2) figure out if/how to get at WaitForMultipleObjects() with pipe
-## handles.  May be able to take the Win32 handle and pass it to 
+## handles.  May be able to take the Win32 handle and pass it to
 ## Win32::Event::wait_any, dunno.
-## 
+##
 ## 3) Use Inline::C or a hand-tooled XS module to do helper threads.
 ## This would be faster than #1, but would require a ppm distro.
 ##

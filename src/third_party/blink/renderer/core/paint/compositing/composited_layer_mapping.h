@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -214,10 +214,13 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
                      GraphicsLayerPaintingPhase,
                      const IntRect& interest_rect) const override;
   bool ShouldThrottleRendering() const override;
+  bool IsUnderSVGHiddenContainer() const override;
   bool IsTrackingRasterInvalidations() const override;
   void SetOverlayScrollbarsHidden(bool) override;
   void GraphicsLayersDidChange() override;
-  bool PaintBlockedByDisplayLock() const override;
+  bool PaintBlockedByDisplayLockIncludingAncestors(
+      DisplayLockContextLifecycleTarget) const override;
+  void NotifyDisplayLockNeedsGraphicsLayerCollection() override;
 
 #if DCHECK_IS_ON()
   void VerifyNotPainting() override;

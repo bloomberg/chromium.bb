@@ -17,9 +17,9 @@ use XML::LibXML::Literal;
 use XML::LibXML::Number;
 
 use vars qw($VERSION);
-$VERSION = "1.98"; # VERSION TEMPLATE: DO NOT CHANGE
+$VERSION = "2.0200"; # VERSION TEMPLATE: DO NOT CHANGE
 
-use overload 
+use overload
         '""' => \&to_literal,
         'bool' => \&to_boolean,
         'cmp' => sub {
@@ -83,7 +83,11 @@ sub get_node {
     $self->[$pos - 1];
 }
 
-*item = \&get_node;
+sub item
+{
+    my ($self, $pos) = @_;
+    return $self->[$pos];
+}
 
 sub get_nodelist {
     my $self = CORE::shift;
@@ -107,6 +111,23 @@ sub to_literal {
     return XML::LibXML::Literal->new(
             join('', CORE::grep {defined $_} CORE::map { $_->string_value } @$self)
             );
+}
+
+sub to_literal_delimited {
+    my $self = CORE::shift;
+    return XML::LibXML::Literal->new(
+            join(CORE::shift, CORE::grep {defined $_} CORE::map { $_->string_value } @$self)
+            );
+}
+
+sub to_literal_list {
+    my $self = CORE::shift;
+    my @nodes = CORE::map{ XML::LibXML::Literal->new($_->string_value())->value() } @{$self};
+
+    if (wantarray) {
+        return( @nodes );
+    }
+    return( \@nodes );
 }
 
 sub to_number {
@@ -168,10 +189,10 @@ sub reverse {
 sub reduce {
     my $self = CORE::shift;
     my $sub  = __is_code(CORE::shift);
-    
+
     my @list = @$self;
     CORE::unshift @list, $_[0] if @_;
-    
+
     my $a = CORE::shift(@list);
     foreach my $b (@list)
     {
@@ -182,11 +203,11 @@ sub reduce {
 
 sub __is_code {
     my ($code) = @_;
-    
+
     if (ref $code eq 'CODE') {
         return $code;
     }
-    
+
     # There are better ways of doing this, but here I've tried to
     # avoid adding any additional external dependencies.
     #
@@ -195,11 +216,11 @@ sub __is_code {
     and overload::Method($code, '&{}')) {   # overloads '&{}'
         return $code;
     }
-    
+
     # The other possibility is that $code is a coderef, but is
     # blessed into a class that doesn't overload '&{}'. In which
     # case... well, I'm stumped!
-    
+
     die "Not a subroutine reference\n";
 }
 
@@ -243,6 +264,16 @@ See the XPath specification for what "string-value" means.
 
 Returns the concatenation of all the string-values of all
 the nodes in the list.
+
+=head2 to_literal_delimited($separator)
+
+Returns the concatenation of all the string-values of all
+the nodes in the list, delimited by the specified separator.
+
+=head2 to_literal_list()
+
+Returns all the string-values of all the nodes in the list as
+a perl list.
 
 =head2 get_node($pos)
 

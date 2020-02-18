@@ -25,6 +25,11 @@ class UserInfo {
           base::string16 a11y_description,
           bool is_obfuscated,
           bool selectable);
+    Field(base::string16 display_text,
+          base::string16 a11y_description,
+          std::string id,
+          bool is_obfuscated,
+          bool selectable);
     Field(const Field& field);
     Field(Field&& field);
 
@@ -37,6 +42,8 @@ class UserInfo {
 
     const base::string16& a11y_description() const { return a11y_description_; }
 
+    const std::string& id() const { return id_; }
+
     bool is_obfuscated() const { return is_obfuscated_; }
 
     bool selectable() const { return selectable_; }
@@ -46,11 +53,13 @@ class UserInfo {
    private:
     base::string16 display_text_;
     base::string16 a11y_description_;
+    std::string id_;  // Optional, if needed to complete filling.
     bool is_obfuscated_;
     bool selectable_;
   };
 
   UserInfo();
+  explicit UserInfo(std::string origin);
   UserInfo(const UserInfo& user_info);
   UserInfo(UserInfo&& field);
 
@@ -62,10 +71,12 @@ class UserInfo {
   void add_field(Field field) { fields_.push_back(std::move(field)); }
 
   const std::vector<Field>& fields() const { return fields_; }
+  const std::string& origin() const { return origin_; }
 
   bool operator==(const UserInfo& user_info) const;
 
  private:
+  std::string origin_;
   std::vector<Field> fields_;
 };
 
@@ -167,8 +178,8 @@ class AccessorySheetData::Builder {
   ~Builder();
 
   // Adds a new UserInfo object to |accessory_sheet_data_|.
-  Builder&& AddUserInfo() &&;
-  Builder& AddUserInfo() &;
+  Builder&& AddUserInfo(std::string origin = std::string()) &&;
+  Builder& AddUserInfo(std::string origin = std::string()) &;
 
   // Appends a selectable, non-obfuscated field to the last UserInfo object.
   Builder&& AppendSimpleField(base::string16 text) &&;
@@ -181,6 +192,17 @@ class AccessorySheetData::Builder {
                         bool selectable) &&;
   Builder& AppendField(base::string16 display_text,
                        base::string16 a11y_description,
+                       bool is_obfuscated,
+                       bool selectable) &;
+
+  Builder&& AppendField(base::string16 display_text,
+                        base::string16 a11y_description,
+                        std::string id,
+                        bool is_obfuscated,
+                        bool selectable) &&;
+  Builder& AppendField(base::string16 display_text,
+                       base::string16 a11y_description,
+                       std::string id,
                        bool is_obfuscated,
                        bool selectable) &;
 

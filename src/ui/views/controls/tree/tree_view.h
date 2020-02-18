@@ -43,8 +43,7 @@ class VIEWS_EXPORT TreeView : public View,
                               public FocusChangeListener,
                               public PrefixDelegate {
  public:
-  // The tree view's class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(TreeView);
 
   TreeView();
   ~TreeView() override;
@@ -139,17 +138,16 @@ class VIEWS_EXPORT TreeView : public View,
   void ShowContextMenu(const gfx::Point& p,
                        ui::MenuSourceType source_type) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  const char* GetClassName() const override;
 
   // TreeModelObserver overrides:
   void TreeNodesAdded(ui::TreeModel* model,
                       ui::TreeModelNode* parent,
-                      int start,
-                      int count) override;
+                      size_t start,
+                      size_t count) override;
   void TreeNodesRemoved(ui::TreeModel* model,
                         ui::TreeModelNode* parent,
-                        int start,
-                        int count) override;
+                        size_t start,
+                        size_t count) override;
   void TreeNodeChanged(ui::TreeModel* model,
                        ui::TreeModelNode* model_node) override;
 

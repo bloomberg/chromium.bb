@@ -77,6 +77,28 @@ bool ValidateSubSourceAndGetData(DOMArrayBufferView* view,
   return true;
 }
 
+class PointableStringArray {
+ public:
+  PointableStringArray(const Vector<String>& strings)
+      : data_(std::make_unique<std::string[]>(strings.size())),
+        pointers_(strings.size()) {
+    DCHECK(strings.size() < std::numeric_limits<GLsizei>::max());
+    for (wtf_size_t i = 0; i < strings.size(); ++i) {
+      // Strings must never move once they are stored in data_...
+      data_[i] = strings[i].Ascii();
+      // ... so that the c_str() remains valid.
+      pointers_[i] = data_[i].c_str();
+    }
+  }
+
+  GLsizei size() const { return pointers_.size(); }
+  char const* const* data() const { return pointers_.data(); }
+
+ private:
+  std::unique_ptr<std::string[]> data_;
+  Vector<const char*> pointers_;
+};
+
 }  // namespace
 
 // These enums are from manual pages for glTexStorage2D/glTexStorage3D.
@@ -148,10 +170,10 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(
                                 using_gpu_compositing,
                                 requested_attributes,
                                 context_type) {
-  supported_internal_formats_storage_.insert(
-      kSupportedInternalFormatsStorage,
-      kSupportedInternalFormatsStorage +
-          base::size(kSupportedInternalFormatsStorage));
+  for (size_t i = 0; i < base::size(kSupportedInternalFormatsStorage); ++i) {
+    supported_internal_formats_storage_.insert(
+        kSupportedInternalFormatsStorage[i]);
+  }
 }
 
 void WebGL2RenderingContextBase::DestroyContext() {
@@ -2408,7 +2430,7 @@ GLint WebGL2RenderingContextBase::getFragDataLocation(WebGLProgram* program,
     return -1;
 
   return ContextGL()->GetFragDataLocation(ObjectOrZero(program),
-                                          name.Utf8().data());
+                                          name.Utf8().c_str());
 }
 
 void WebGL2RenderingContextBase::uniform1ui(
@@ -4444,13 +4466,7 @@ void WebGL2RenderingContextBase::transformFeedbackVaryings(
       return;
   }
 
-  Vector<CString> keep_alive;  // Must keep these instances alive while looking
-                               // at their data
-  Vector<const char*> varying_strings;
-  for (const String& varying : varyings) {
-    keep_alive.push_back(varying.Ascii());
-    varying_strings.push_back(keep_alive.back().data());
-  }
+  PointableStringArray varying_strings(varyings);
 
   program->SetRequiredTransformFeedbackBufferCount(
       buffer_mode == GL_INTERLEAVED_ATTRIBS ? 1 : varyings.size());
@@ -4671,13 +4687,7 @@ Vector<GLuint> WebGL2RenderingContextBase::getUniformIndices(
   if (!ValidateWebGLProgramOrShader("getUniformIndices", program))
     return result;
 
-  Vector<CString> keep_alive;  // Must keep these instances alive while looking
-                               // at their data
-  Vector<const char*> uniform_strings;
-  for (const String& uniform_name : uniform_names) {
-    keep_alive.push_back(uniform_name.Ascii());
-    uniform_strings.push_back(keep_alive.back().data());
-  }
+  PointableStringArray uniform_strings(uniform_names);
 
   result.resize(uniform_names.size());
   ContextGL()->GetUniformIndices(ObjectOrZero(program), uniform_strings.size(),
@@ -4773,7 +4783,7 @@ GLuint WebGL2RenderingContextBase::getUniformBlockIndex(
     return 0;
 
   return ContextGL()->GetUniformBlockIndex(ObjectOrZero(program),
-                                           uniform_block_name.Utf8().data());
+                                           uniform_block_name.Utf8().c_str());
 }
 
 bool WebGL2RenderingContextBase::ValidateUniformBlockIndex(

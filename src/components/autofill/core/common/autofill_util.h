@@ -38,6 +38,9 @@ bool IsShowAutofillSignaturesEnabled();
 // Returns true when keyboard accessory is enabled.
 bool IsKeyboardAccessoryEnabled();
 
+// Returns whether the Touch To Fill feature is enabled.
+bool IsTouchToFillEnabled();
+
 // Returns animation duration for keyboard accessory. If 0, we do not animate.
 unsigned int GetKeyboardAccessoryAnimationDuration();
 
@@ -104,6 +107,9 @@ bool ShouldAutoselectFirstSuggestionOnArrowDown();
 
 // Returns true if focused_field_type corresponds to a fillable field.
 bool IsFillable(mojom::FocusedFieldType focused_field_type);
+
+mojom::SubmissionIndicatorEvent ToSubmissionIndicatorEvent(
+    mojom::SubmissionSource source);
 
 }  // namespace autofill
 

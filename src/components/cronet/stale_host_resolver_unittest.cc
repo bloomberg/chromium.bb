@@ -94,13 +94,11 @@ std::unique_ptr<net::MockDnsClient> CreateHangingMockDnsClient() {
 
   net::MockDnsClientRuleList rules;
   rules.emplace_back(
-      kHostname, net::dns_protocol::kTypeA,
-      net::DnsConfig::SecureDnsMode::AUTOMATIC,
+      kHostname, net::dns_protocol::kTypeA, false /* secure */,
       net::MockDnsClientRule::Result(net::MockDnsClientRule::FAIL),
       true /* delay */);
   rules.emplace_back(
-      kHostname, net::dns_protocol::kTypeAAAA,
-      net::DnsConfig::SecureDnsMode::AUTOMATIC,
+      kHostname, net::dns_protocol::kTypeAAAA, false /* secure */,
       net::MockDnsClientRule::Result(net::MockDnsClientRule::FAIL),
       true /* delay */);
 
@@ -135,6 +133,8 @@ class StaleHostResolverTest : public testing::Test {
   StaleHostResolverTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        mock_network_change_notifier_(
+            net::test::MockNetworkChangeNotifier::Create()),
         mock_proc_(new MockHostResolverProc(net::OK)),
         resolver_(nullptr),
         resolve_pending_(false),
@@ -339,7 +339,8 @@ class StaleHostResolverTest : public testing::Test {
   // Needed for HostResolver to run HostResolverProc callbacks.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::SimpleTestTickClock tick_clock_;
-  net::test::MockNetworkChangeNotifier mock_network_change_notifier_;
+  std::unique_ptr<net::test::MockNetworkChangeNotifier>
+      mock_network_change_notifier_;
 
   scoped_refptr<MockHostResolverProc> mock_proc_;
 

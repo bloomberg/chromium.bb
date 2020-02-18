@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ios/chrome/browser/passwords/credential_manager.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 
 #import <EarlGrey/EarlGrey.h>
 #import <UIKit/UIKit.h>
@@ -20,6 +19,7 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -99,9 +99,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)loadSimplePageAndStoreACredential {
   // Loads simple page. It is on localhost so it is considered a secure context.
   const GURL URL = self.testServer->GetURL("/example");
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"You are here."]);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:"You are here."];
 
   // Obtain a PasswordStore.
   scoped_refptr<password_manager::PasswordStore> passwordStore =
@@ -186,7 +185,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Open new tab.
   [ChromeEarlGreyUI openNewTab];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey waitForMainTabCount:2];
 
   // Execute JavaScript from inactive tab.
   webState->ExecuteJavaScript(

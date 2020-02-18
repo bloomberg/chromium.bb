@@ -91,116 +91,131 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
 
   void OnPacket() override {}
 
-  void OnPublicResetPacket(const QuicPublicResetPacket& packet) override {}
+  void OnPublicResetPacket(const QuicPublicResetPacket& /*packet*/) override {}
 
   void OnVersionNegotiationPacket(
-      const QuicVersionNegotiationPacket& packet) override {}
+      const QuicVersionNegotiationPacket& /*packet*/) override {}
 
-  void OnRetryPacket(QuicConnectionId original_connection_id,
-                     QuicConnectionId new_connection_id,
-                     QuicStringPiece retry_token) override {}
+  void OnRetryPacket(QuicConnectionId /*original_connection_id*/,
+                     QuicConnectionId /*new_connection_id*/,
+                     QuicStringPiece /*retry_token*/) override {}
 
-  bool OnProtocolVersionMismatch(ParsedQuicVersion received_version,
-                                 PacketHeaderFormat form) override {
+  bool OnProtocolVersionMismatch(
+      ParsedQuicVersion /*received_version*/) override {
     return true;
   }
 
-  bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override {
+  bool OnUnauthenticatedPublicHeader(
+      const QuicPacketHeader& /*header*/) override {
     return true;
   }
 
-  bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override {
+  bool OnUnauthenticatedHeader(const QuicPacketHeader& /*header*/) override {
     return true;
   }
 
-  void OnDecryptedPacket(EncryptionLevel level) override {}
+  void OnDecryptedPacket(EncryptionLevel /*level*/) override {}
 
-  bool OnPacketHeader(const QuicPacketHeader& header) override { return true; }
-
-  void OnCoalescedPacket(const QuicEncryptedPacket& packet) override {}
-
-  bool OnStreamFrame(const QuicStreamFrame& frame) override { return true; }
-
-  bool OnCryptoFrame(const QuicCryptoFrame& frame) override { return true; }
-
-  bool OnAckFrameStart(QuicPacketNumber largest_acked,
-                       QuicTime::Delta ack_delay_time) override {
+  bool OnPacketHeader(const QuicPacketHeader& /*header*/) override {
     return true;
   }
 
-  bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override {
+  void OnCoalescedPacket(const QuicEncryptedPacket& /*packet*/) override {}
+
+  bool OnStreamFrame(const QuicStreamFrame& /*frame*/) override { return true; }
+
+  bool OnCryptoFrame(const QuicCryptoFrame& /*frame*/) override { return true; }
+
+  bool OnAckFrameStart(QuicPacketNumber /*largest_acked*/,
+                       QuicTime::Delta /*ack_delay_time*/) override {
     return true;
   }
 
-  bool OnAckTimestamp(QuicPacketNumber packet_number,
-                      QuicTime timestamp) override {
+  bool OnAckRange(QuicPacketNumber /*start*/,
+                  QuicPacketNumber /*end*/) override {
     return true;
   }
 
-  bool OnAckFrameEnd(QuicPacketNumber start) override { return true; }
-
-  bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {
+  bool OnAckTimestamp(QuicPacketNumber /*packet_number*/,
+                      QuicTime /*timestamp*/) override {
     return true;
   }
 
-  bool OnPaddingFrame(const QuicPaddingFrame& frame) override { return true; }
+  bool OnAckFrameEnd(QuicPacketNumber /*start*/) override { return true; }
 
-  bool OnPingFrame(const QuicPingFrame& frame) override { return true; }
+  bool OnStopWaitingFrame(const QuicStopWaitingFrame& /*frame*/) override {
+    return true;
+  }
 
-  bool OnMessageFrame(const QuicMessageFrame& frame) override { return true; }
+  bool OnPaddingFrame(const QuicPaddingFrame& /*frame*/) override {
+    return true;
+  }
+
+  bool OnPingFrame(const QuicPingFrame& /*frame*/) override { return true; }
+
+  bool OnMessageFrame(const QuicMessageFrame& /*frame*/) override {
+    return true;
+  }
 
   void OnPacketComplete() override {}
 
-  bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override {
+  bool OnRstStreamFrame(const QuicRstStreamFrame& /*frame*/) override {
     return true;
   }
 
-  bool OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) override {
+  bool OnConnectionCloseFrame(
+      const QuicConnectionCloseFrame& /*frame*/) override {
     return true;
   }
 
-  bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override {
+  bool OnStopSendingFrame(const QuicStopSendingFrame& /*frame*/) override {
     return true;
   }
 
-  bool OnPathChallengeFrame(const QuicPathChallengeFrame& frame) override {
+  bool OnPathChallengeFrame(const QuicPathChallengeFrame& /*frame*/) override {
     return true;
   }
-  bool OnPathResponseFrame(const QuicPathResponseFrame& frame) override {
-    return true;
-  }
-
-  bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override { return true; }
-
-  bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override {
+  bool OnPathResponseFrame(const QuicPathResponseFrame& /*frame*/) override {
     return true;
   }
 
-  bool OnBlockedFrame(const QuicBlockedFrame& frame) override { return true; }
+  bool OnGoAwayFrame(const QuicGoAwayFrame& /*frame*/) override { return true; }
 
-  bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override {
+  bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& /*frame*/) override {
+    return true;
+  }
+
+  bool OnBlockedFrame(const QuicBlockedFrame& /*frame*/) override {
+    return true;
+  }
+
+  bool OnNewConnectionIdFrame(
+      const QuicNewConnectionIdFrame& /*frame*/) override {
     return true;
   }
 
   bool OnRetireConnectionIdFrame(
-      const QuicRetireConnectionIdFrame& frame) override {
+      const QuicRetireConnectionIdFrame& /*frame*/) override {
     return true;
   }
 
-  bool OnNewTokenFrame(const QuicNewTokenFrame& frame) override { return true; }
+  bool OnNewTokenFrame(const QuicNewTokenFrame& /*frame*/) override {
+    return true;
+  }
 
-  bool IsValidStatelessResetToken(QuicUint128 token) const override {
+  bool IsValidStatelessResetToken(QuicUint128 /*token*/) const override {
     return true;
   }
 
   void OnAuthenticatedIetfStatelessResetPacket(
-      const QuicIetfStatelessResetPacket& packet) override {}
+      const QuicIetfStatelessResetPacket& /*packet*/) override {}
 
-  bool OnMaxStreamsFrame(const QuicMaxStreamsFrame& frame) override {
+  bool OnMaxStreamsFrame(const QuicMaxStreamsFrame& /*frame*/) override {
     return true;
   }
 
-  bool OnStreamsBlockedFrame(const QuicStreamsBlockedFrame& frame) override {
+  bool OnStreamsBlockedFrame(
+      const QuicStreamsBlockedFrame& /*frame*/) override {
     return true;
   }
 };
@@ -289,7 +304,7 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
   //   - did the things the reader read match what the writer wrote?
   // Returns true if it all worked false if not.
   bool TryAckFrame(char* packet_buffer,
-                   size_t packet_buffer_size,
+                   size_t /*packet_buffer_size*/,
                    struct ack_frame* frame) {
     QuicAckFrame transmit_frame = InitAckFrame(frame->ranges);
     if (frame->is_ack_ecn) {
@@ -442,9 +457,10 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     // Write the frame to the packet buffer.
     EXPECT_TRUE(QuicFramerPeer::AppendIetfResetStreamFrame(
         &framer_, transmit_frame, &writer));
-    // Check that the size of the serialzed frame is in the allowed range.
-    EXPECT_LT(3u, writer.length());
-    EXPECT_GT(19u, writer.length());
+    // Check that the size of the serialzed frame is in the allowed range (3 to
+    // 24 bytes, inclusive).
+    EXPECT_LT(2u, writer.length());
+    EXPECT_GT(25u, writer.length());
     // Now set up a reader to read in the thing in.
     QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
 
@@ -1365,6 +1381,7 @@ TEST_F(QuicIetfFramerTest, NewConnectionIdFrame) {
   QuicNewConnectionIdFrame transmit_frame;
   transmit_frame.connection_id = TestConnectionId(UINT64_C(0x0edcba9876543201));
   transmit_frame.sequence_number = 0x01020304;
+  transmit_frame.retire_prior_to = 0x00020304;
   // The token is defined as a uint128 -- a 16-byte integer.
   // The value is set in this manner because we want each
   // byte to have a specific value so that the binary
@@ -1386,12 +1403,12 @@ TEST_F(QuicIetfFramerTest, NewConnectionIdFrame) {
   // Add the frame.
   EXPECT_TRUE(QuicFramerPeer::AppendNewConnectionIdFrame(
       &framer_, transmit_frame, &writer));
-  // Check that buffer length is correct
-  EXPECT_EQ(29u, writer.length());
   // clang-format off
   uint8_t packet[] = {
     // sequence number, 0x80 for varint62 encoding
     0x80 + 0x01, 0x02, 0x03, 0x04,
+    // retire_prior_to, 0x80 for varint62 encoding
+    0x80 + 0x00, 0x02, 0x03, 0x04,
     // new connection id length, is not varint62 encoded.
     0x08,
     // new connection id, is not varint62 encoded.
@@ -1400,8 +1417,10 @@ TEST_F(QuicIetfFramerTest, NewConnectionIdFrame) {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
   };
-
   // clang-format on
+
+  // Check that buffer length is correct
+  EXPECT_EQ(sizeof(packet), writer.length());
   EXPECT_EQ(0, memcmp(packet_buffer, packet, sizeof(packet)));
 
   // Set up reader and empty receive QuicPaddingFrame.
@@ -1415,6 +1434,7 @@ TEST_F(QuicIetfFramerTest, NewConnectionIdFrame) {
   // Now check that received == sent
   EXPECT_EQ(transmit_frame.connection_id, receive_frame.connection_id);
   EXPECT_EQ(transmit_frame.sequence_number, receive_frame.sequence_number);
+  EXPECT_EQ(transmit_frame.retire_prior_to, receive_frame.retire_prior_to);
   EXPECT_EQ(transmit_frame.stateless_reset_token,
             receive_frame.stateless_reset_token);
 }

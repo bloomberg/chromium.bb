@@ -74,17 +74,13 @@ scoped_refptr<storage::FileSystemContext> GetFileSystemContext(
 }
 
 // Converts the given URL to a FileSystemURL.
-storage::FileSystemURL GetFileSystemURL(
-    scoped_refptr<storage::FileSystemContext> context,
-    const GURL& url,
-    storage::IsolatedContext::ScopedFSHandle* file_system) {
+file_manager::util::FileSystemURLAndHandle GetFileSystemURL(
+    const storage::FileSystemContext& context,
+    const GURL& url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  storage::FileSystemURL result;
-  std::tie(result, *file_system) =
-      file_manager::util::CreateIsolatedURLFromVirtualPath(
-          *context, /* empty origin */ GURL(),
-          chromeos::ExternalFileURLToVirtualPath(url));
-  return result;
+  return file_manager::util::CreateIsolatedURLFromVirtualPath(
+      context, /* empty origin */ GURL(),
+      chromeos::ExternalFileURLToVirtualPath(url));
 }
 
 // Retrieves the file size on the IO thread, and runs the callback on the UI
@@ -179,14 +175,17 @@ ArcFileSystemBridge::ArcFileSystemBridge(content::BrowserContext* context,
                                          ArcBridgeService* bridge_service)
     : profile_(Profile::FromBrowserContext(context)),
       bridge_service_(bridge_service),
-      select_files_handler_(std::make_unique<ArcSelectFilesHandler>(context)),
+      select_files_handlers_manager_(
+          std::make_unique<ArcSelectFilesHandlersManager>(context)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bridge_service_->file_system()->SetHost(this);
+  bridge_service_->file_system()->AddObserver(this);
 }
 
 ArcFileSystemBridge::~ArcFileSystemBridge() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  bridge_service_->file_system()->RemoveObserver(this);
   bridge_service_->file_system()->SetHost(nullptr);
 }
 
@@ -248,18 +247,17 @@ void ArcFileSystemBridge::GetFileSize(const std::string& url,
   }
   scoped_refptr<storage::FileSystemContext> context =
       GetFileSystemContext(profile_, url_decoded);
-  storage::IsolatedContext::ScopedFSHandle isolated_file_system;
+  file_manager::util::FileSystemURLAndHandle file_system_url_and_handle =
+      GetFileSystemURL(*context, url_decoded);
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(
-          &GetFileSizeOnIOThread, context,
-          GetFileSystemURL(context, url_decoded, &isolated_file_system),
-          std::move(callback)));
+      base::BindOnce(&GetFileSizeOnIOThread, std::move(context),
+                     file_system_url_and_handle.url, std::move(callback)));
   // TODO(https://crbug.com/963027): This is currently leaking the isolated
   // file system, the file system should somehow be revoked when the url
   // returned by GetFileSystemURL is no longer needed.
   storage::IsolatedContext::GetInstance()->AddReference(
-      isolated_file_system.id());
+      file_system_url_and_handle.handle.id());
 }
 
 void ArcFileSystemBridge::GetFileType(const std::string& url,
@@ -273,11 +271,10 @@ void ArcFileSystemBridge::GetFileType(const std::string& url,
   }
   scoped_refptr<storage::FileSystemContext> context =
       GetFileSystemContext(profile_, url_decoded);
-  storage::IsolatedContext::ScopedFSHandle file_system;
-  storage::FileSystemURL file_system_url =
-      GetFileSystemURL(context, url_decoded, &file_system);
+  file_manager::util::FileSystemURLAndHandle file_system_url_and_handle =
+      GetFileSystemURL(*context, url_decoded);
   extensions::app_file_handler_util::GetMimeTypeForLocalPath(
-      profile_, file_system_url.path(),
+      profile_, file_system_url_and_handle.url.path(),
       base::Bind(
           [](GetFileTypeCallback callback, const std::string& mime_type) {
             std::move(callback).Run(mime_type.empty()
@@ -331,23 +328,20 @@ void ArcFileSystemBridge::OpenFileToRead(const std::string& url,
 
 void ArcFileSystemBridge::SelectFiles(mojom::SelectFilesRequestPtr request,
                                       SelectFilesCallback callback) {
-  select_files_handler_->SelectFiles(std::move(request), std::move(callback));
+  select_files_handlers_manager_->SelectFiles(std::move(request),
+                                              std::move(callback));
 }
 
 void ArcFileSystemBridge::OnFileSelectorEvent(
     mojom::FileSelectorEventPtr event,
     ArcFileSystemBridge::OnFileSelectorEventCallback callback) {
   std::string track;
-  if (!IsTestImageBuild()) {
-    LOG(ERROR) << "OnFileSelectorEvent is only allowed under test conditions";
-    std::move(callback).Run();
-    return;
-  }
-  select_files_handler_->OnFileSelectorEvent(std::move(event),
-                                             std::move(callback));
+  select_files_handlers_manager_->OnFileSelectorEvent(std::move(event),
+                                                      std::move(callback));
 }
 
 void ArcFileSystemBridge::GetFileSelectorElements(
+    mojom::GetFileSelectorElementsRequestPtr request,
     GetFileSelectorElementsCallback callback) {
   if (!IsTestImageBuild()) {
     LOG(ERROR)
@@ -355,7 +349,8 @@ void ArcFileSystemBridge::GetFileSelectorElements(
     std::move(callback).Run(mojom::FileSelectorElements::New());
     return;
   }
-  select_files_handler_->GetFileSelectorElements(std::move(callback));
+  select_files_handlers_manager_->GetFileSelectorElements(std::move(request),
+                                                          std::move(callback));
 }
 
 void ArcFileSystemBridge::OpenFileToReadAfterGetFileSize(
@@ -417,16 +412,18 @@ bool ArcFileSystemBridge::HandleReadRequest(const std::string& id,
   const GURL& url = it_url->second;
   scoped_refptr<storage::FileSystemContext> context =
       GetFileSystemContext(profile_, url);
-  storage::IsolatedContext::ScopedFSHandle file_system;
+  file_manager::util::FileSystemURLAndHandle file_system_url_and_handle =
+      GetFileSystemURL(*context, url);
   *it_forwarder = FileStreamForwarderPtr(new FileStreamForwarder(
-      context, GetFileSystemURL(context, url, &file_system), offset, size,
+      std::move(context), file_system_url_and_handle.url, offset, size,
       std::move(pipe_write_end),
       base::BindOnce(&ArcFileSystemBridge::OnReadRequestCompleted,
                      weak_ptr_factory_.GetWeakPtr(), id, it_forwarder)));
   // TODO(https://crbug.com/963027): This is currently leaking the isolated
   // file system, the file system should somehow be revoked when the url
   // returned by GetFileSystemURL is no longer needed.
-  storage::IsolatedContext::GetInstance()->AddReference(file_system.id());
+  storage::IsolatedContext::GetInstance()->AddReference(
+      file_system_url_and_handle.handle.id());
   return true;
 }
 
@@ -441,6 +438,12 @@ void ArcFileSystemBridge::OnReadRequestCompleted(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   LOG_IF(ERROR, !result) << "Failed to read " << id;
   file_stream_forwarders_.erase(it);
+}
+
+void ArcFileSystemBridge::OnConnectionClosed() {
+  LOG(WARNING) << "FileSystem connection has been closed. "
+               << "Closing SelectFileDialogs owned by ARC apps, if any.";
+  select_files_handlers_manager_->DeleteAllHandlers();
 }
 
 }  // namespace arc

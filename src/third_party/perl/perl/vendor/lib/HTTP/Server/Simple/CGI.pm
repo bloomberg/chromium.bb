@@ -5,8 +5,7 @@ use base qw(HTTP::Server::Simple HTTP::Server::Simple::CGI::Environment);
 use strict;
 use warnings;
 
-use vars qw($VERSION $default_doc $DEFAULT_CGI_INIT $DEFAULT_CGI_CLASS);
-$VERSION = $HTTP::Server::Simple::VERSION;
+use vars qw($default_doc $DEFAULT_CGI_INIT $DEFAULT_CGI_CLASS);
 
 $DEFAULT_CGI_CLASS = "CGI";
 $DEFAULT_CGI_INIT = sub { require CGI; CGI::initialize_globals()};

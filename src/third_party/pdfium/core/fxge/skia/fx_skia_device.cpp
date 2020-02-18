@@ -30,6 +30,7 @@
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/dib/cfx_imagerenderer.h"
 #include "core/fxge/dib/cfx_imagestretcher.h"
+#include "core/fxge/text_char_pos.h"
 #include "third_party/base/logging.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -285,6 +286,29 @@ static void DebugValidate(const RetainPtr<CFX_DIBitmap>& bitmap,
 }
 #endif  // _SKIA_SUPPORT_
 
+constexpr int kAlternateOrWindingFillModeMask =
+    FXFILL_ALTERNATE | FXFILL_WINDING;
+
+int GetAlternateOrWindingFillMode(int fill_mode) {
+  return fill_mode & kAlternateOrWindingFillModeMask;
+}
+
+bool IsAlternateFillMode(int fill_mode) {
+  // TODO(thestig): This function should be able to assert
+  // GetAlternateOrWindingFillMode(fill_mode) != 0.
+  return GetAlternateOrWindingFillMode(fill_mode) == FXFILL_ALTERNATE;
+}
+
+SkPath::FillType GetAlternateOrWindingFillType(int fill_mode) {
+  return IsAlternateFillMode(fill_mode) ? SkPath::kEvenOdd_FillType
+                                        : SkPath::kWinding_FillType;
+}
+
+bool IsEvenOddFillType(SkPath::FillType fill) {
+  return fill == SkPath::kEvenOdd_FillType ||
+         fill == SkPath::kInverseEvenOdd_FillType;
+}
+
 SkPath BuildPath(const CFX_PathData* pPathData) {
   SkPath skPath;
   const CFX_PathData* pFPath = pPathData;
@@ -360,21 +384,34 @@ SkBlendMode GetSkiaBlendMode(BlendMode blend_type) {
   }
 }
 
-bool AddColors(const CPDF_ExpIntFunc* pFunc, SkTDArray<SkColor>* skColors) {
+// Add begin & end colors into |skColors| array for each gradient transition.
+//
+// |is_encode_reversed| must be set to true when the parent function of |pFunc|
+// has an Encode array, and the matching pair of encode values for |pFunc| are
+// in decreasing order.
+bool AddColors(const CPDF_ExpIntFunc* pFunc,
+               SkTDArray<SkColor>* skColors,
+               bool is_encode_reversed) {
   if (pFunc->CountInputs() != 1)
     return false;
   if (pFunc->m_Exponent != 1)
     return false;
   if (pFunc->m_nOrigOutputs != 3)
     return false;
-  skColors->push_back(
-      SkColorSetARGB(0xFF, SkUnitScalarClampToByte(pFunc->m_BeginValues[0]),
-                     SkUnitScalarClampToByte(pFunc->m_BeginValues[1]),
-                     SkUnitScalarClampToByte(pFunc->m_BeginValues[2])));
-  skColors->push_back(
-      SkColorSetARGB(0xFF, SkUnitScalarClampToByte(pFunc->m_EndValues[0]),
-                     SkUnitScalarClampToByte(pFunc->m_EndValues[1]),
-                     SkUnitScalarClampToByte(pFunc->m_EndValues[2])));
+
+  auto begin_values = pFunc->m_BeginValues.begin();
+  auto end_values = pFunc->m_EndValues.begin();
+  if (is_encode_reversed)
+    std::swap(begin_values, end_values);
+
+  skColors->push_back(SkColorSetARGB(0xFF,
+                                     SkUnitScalarClampToByte(begin_values[0]),
+                                     SkUnitScalarClampToByte(begin_values[1]),
+                                     SkUnitScalarClampToByte(begin_values[2])));
+  skColors->push_back(SkColorSetARGB(0xFF,
+                                     SkUnitScalarClampToByte(end_values[0]),
+                                     SkUnitScalarClampToByte(end_values[1]),
+                                     SkUnitScalarClampToByte(end_values[2])));
   return true;
 }
 
@@ -441,7 +478,10 @@ bool AddStitching(const CPDF_StitchFunc* pFunc,
     const CPDF_ExpIntFunc* pSubFunc = subFunctions[i]->ToExpIntFunc();
     if (!pSubFunc)
       return false;
-    if (!AddColors(pSubFunc, skColors))
+    // Check if the matching encode values are reversed
+    bool is_encode_reversed =
+        pFunc->GetEncode(2 * i) > pFunc->GetEncode(2 * i + 1);
+    if (!AddColors(pSubFunc, skColors, is_encode_reversed))
       return false;
     float boundsEnd =
         i < subFunctionCount - 1 ? pFunc->GetBound(i + 1) : pFunc->GetDomain(1);
@@ -712,10 +752,8 @@ class SkiaState {
     if (Accumulator::kPath != m_type) {
       m_skPath.reset();
       m_fillFullCover = !!(fill_mode & FXFILL_FULLCOVER);
-      m_fillPath = (fill_mode & 3) && fill_color;
-      m_skPath.setFillType((fill_mode & 3) == FXFILL_ALTERNATE
-                               ? SkPath::kEvenOdd_FillType
-                               : SkPath::kWinding_FillType);
+      m_fillPath = GetAlternateOrWindingFillMode(fill_mode) && fill_color;
+      m_skPath.setFillType(GetAlternateOrWindingFillType(fill_mode));
       if (pDrawState)
         m_drawState = *pDrawState;
       m_fillColor = fill_color;
@@ -779,12 +817,13 @@ class SkiaState {
     }
     m_drawIndex = INT_MAX;
     m_type = Accumulator::kNone;
+    m_drawMatrix = CFX_Matrix();
   }
 
   bool HasRSX(int nChars,
               const TextCharPos* pCharPos,
               float* scaleXPtr,
-              bool* oneAtATimePtr) {
+              bool* oneAtATimePtr) const {
     bool useRSXform = false;
     bool oneAtATime = false;
     float scaleX = 1;
@@ -816,7 +855,7 @@ class SkiaState {
   bool DrawText(int nChars,
                 const TextCharPos* pCharPos,
                 CFX_Font* pFont,
-                const CFX_Matrix* pMatrix,
+                const CFX_Matrix& matrix,
                 float font_size,
                 uint32_t color) {
     if (m_debugDisable)
@@ -832,18 +871,21 @@ class SkiaState {
     int drawIndex = SkTMin(m_drawIndex, m_commands.count());
     if (Accumulator::kPath == m_type || drawIndex != m_commandIndex ||
         (Accumulator::kText == m_type &&
-         (FontChanged(pFont, pMatrix, font_size, scaleX, color) ||
+         (FontChanged(pFont, matrix, font_size, scaleX, color) ||
           hasRSX == m_rsxform.isEmpty()))) {
       Flush();
     }
     if (Accumulator::kText != m_type) {
       m_positions.setCount(0);
       m_glyphs.setCount(0);
-      m_pTypeFace = pFont->GetFace() ? pFont->GetDeviceCache() : nullptr;
+      if (pFont->GetFaceRec())
+        m_pTypeFace.reset(SkSafeRef(pFont->GetDeviceCache()));
+      else
+        m_pTypeFace.reset();
       m_fontSize = font_size;
       m_scaleX = scaleX;
       m_fillColor = color;
-      m_drawMatrix = *pMatrix;
+      m_drawMatrix = matrix;
       m_drawIndex = m_commandIndex;
       m_type = Accumulator::kText;
     }
@@ -871,7 +913,7 @@ class SkiaState {
 #endif
     }
     SkPoint delta;
-    if (MatrixOffset(pMatrix, &delta)) {
+    if (MatrixOffset(&matrix, &delta)) {
       for (int index = 0; index < nChars; ++index)
         m_positions[index + count].offset(delta.fX * flip, -delta.fY * flip);
     }
@@ -903,8 +945,7 @@ class SkiaState {
 
     SkFont font;
     if (m_pTypeFace) {  // exclude placeholder test fonts
-      sk_sp<SkTypeface> typeface(SkSafeRef(m_pTypeFace.Get()));
-      font.setTypeface(typeface);
+      font.setTypeface(m_pTypeFace);
     }
     font.setHinting(SkFontHinting::kNone);
     font.setScaleX(m_scaleX);
@@ -942,9 +983,10 @@ class SkiaState {
 
     m_drawIndex = INT_MAX;
     m_type = Accumulator::kNone;
+    m_drawMatrix = CFX_Matrix();
   }
 
-  bool IsEmpty() { return !m_commands.count(); }
+  bool IsEmpty() const { return !m_commands.count(); }
 
   bool SetClipFill(const CFX_PathData* pPathData,
                    const CFX_Matrix* pMatrix,
@@ -969,9 +1011,7 @@ class SkiaState {
     }
     if (skClipPath.isEmpty()) {
       skClipPath = BuildPath(pPathData);
-      skClipPath.setFillType((fill_mode & 3) == FXFILL_ALTERNATE
-                                 ? SkPath::kEvenOdd_FillType
-                                 : SkPath::kWinding_FillType);
+      skClipPath.setFillType(GetAlternateOrWindingFillType(fill_mode));
       SkMatrix skMatrix = ToSkMatrix(*pMatrix);
       skClipPath.transform(skMatrix);
     }
@@ -1085,33 +1125,31 @@ class SkiaState {
                    int fill_mode,
                    BlendMode blend_type,
                    bool group_knockout) const {
-    return MatrixChanged(pMatrix, m_drawMatrix) ||
-           StateChanged(pState, m_drawState) || fill_color != m_fillColor ||
-           stroke_color != m_strokeColor ||
-           ((fill_mode & 3) == FXFILL_ALTERNATE) !=
-               (m_skPath.getFillType() == SkPath::kEvenOdd_FillType) ||
-           blend_type != m_blendType || group_knockout != m_groupKnockout;
+    return MatrixChanged(pMatrix) || StateChanged(pState, m_drawState) ||
+           fill_color != m_fillColor || stroke_color != m_strokeColor ||
+           IsEvenOddFillType(m_skPath.getFillType()) ||
+           IsAlternateFillMode(fill_mode) || blend_type != m_blendType ||
+           group_knockout != m_groupKnockout;
   }
 
   bool FontChanged(CFX_Font* pFont,
-                   const CFX_Matrix* pMatrix,
+                   const CFX_Matrix& matrix,
                    float font_size,
                    float scaleX,
                    uint32_t color) const {
     CFX_TypeFace* typeface =
-        pFont->GetFace() ? pFont->GetDeviceCache() : nullptr;
-    return typeface != m_pTypeFace || MatrixChanged(pMatrix, m_drawMatrix) ||
+        pFont->GetFaceRec() ? pFont->GetDeviceCache() : nullptr;
+    return typeface != m_pTypeFace.get() || MatrixChanged(&matrix) ||
            font_size != m_fontSize || scaleX != m_scaleX ||
            color != m_fillColor;
   }
 
-  bool MatrixChanged(const CFX_Matrix* pMatrix,
-                     const CFX_Matrix& refMatrix) const {
+  bool MatrixChanged(const CFX_Matrix* pMatrix) const {
     CFX_Matrix identityMatrix;
     if (!pMatrix)
       pMatrix = &identityMatrix;
-    return pMatrix->a != refMatrix.a || pMatrix->b != refMatrix.b ||
-           pMatrix->c != refMatrix.c || pMatrix->d != refMatrix.d;
+    return pMatrix->a != m_drawMatrix.a || pMatrix->b != m_drawMatrix.b ||
+           pMatrix->c != m_drawMatrix.c || pMatrix->d != m_drawMatrix.d;
   }
 
   bool StateChanged(const CFX_GraphStateData* pState,
@@ -1201,9 +1239,9 @@ class SkiaState {
     printf(
         "\n%s\nSkia Save Count %d  Agg Save Stack/Count %d/%d"
         "  Cache Save Index/Count %d/%d\n",
-        where, m_pDriver->m_pCanvas->getSaveCount(),
-        (int)m_pDriver->m_StateStack.size(), AggSaveCount(m_pDriver),
-        m_commandIndex, CacheSaveCount(m_commands, m_commandIndex));
+        where, m_pDriver->SkiaCanvas()->getSaveCount(),
+        (int)m_pDriver->stack().size(), AggSaveCount(m_pDriver), m_commandIndex,
+        CacheSaveCount(m_commands, m_commandIndex));
     printf("Cache:\n");
 #if SHOW_SKIA_PATH_SHORTHAND
     bool dumpedPath = false;
@@ -1237,7 +1275,7 @@ class SkiaState {
       printf("\n");
 #endif
     DumpEndPrefix();
-    int skCanvasSaveCount = m_pDriver->m_pCanvas->getSaveCount();
+    int skCanvasSaveCount = m_pDriver->SkiaCanvas()->getSaveCount();
     int cacheSaveCount = 1;
     SkASSERT(m_clipIndex <= m_commands.count());
     for (int index = 0; index < m_clipIndex; ++index)
@@ -1251,26 +1289,26 @@ class SkiaState {
     FX_RECT last;
     int aggSaveCount = 0;
     bool foundLast = false;
-    for (int index = 0; index < (int)driver->m_StateStack.size(); ++index) {
-      if (!driver->m_StateStack[index]) {
+    for (int index = 0; index < (int)driver->stack().size(); ++index) {
+      if (!driver->stack()[index]) {
         continue;
       }
-      if (driver->m_StateStack[index]->GetType() != CFX_ClipRgn::RectI) {
+      if (driver->stack()[index]->GetType() != CFX_ClipRgn::RectI) {
         aggSaveCount += 1;
         foundLast = false;
         continue;
       }
-      if (!foundLast || memcmp(&last, &driver->m_StateStack[index]->GetBox(),
-                               sizeof(FX_RECT))) {
+      if (!foundLast ||
+          memcmp(&last, &driver->stack()[index]->GetBox(), sizeof(FX_RECT))) {
         aggSaveCount += 1;
         foundLast = true;
-        last = driver->m_StateStack[index]->GetBox();
+        last = driver->stack()[index]->GetBox();
       }
     }
-    if (driver->m_pClipRgn) {
-      CFX_ClipRgn::ClipType clipType = driver->m_pClipRgn->GetType();
+    if (driver->clip_region()) {
+      CFX_ClipRgn::ClipType clipType = driver->clip_region()->GetType();
       if (clipType != CFX_ClipRgn::RectI || !foundLast ||
-          memcmp(&last, &driver->m_pClipRgn->GetBox(), sizeof(FX_RECT))) {
+          memcmp(&last, &driver->clip_region()->GetBox(), sizeof(FX_RECT))) {
         aggSaveCount += 1;
       }
     }
@@ -1306,13 +1344,13 @@ class SkiaState {
              cacheSaveCount);
       DumpClipStacks();
     }
-    for (int aggIndex = 0; aggIndex < (int)m_pDriver->m_StateStack.size();
+    for (int aggIndex = 0; aggIndex < (int)m_pDriver->stack().size();
          ++aggIndex) {
-      if (!m_pDriver->m_StateStack[aggIndex])
+      if (!m_pDriver->stack()[aggIndex])
         continue;
-      if (m_pDriver->m_StateStack[aggIndex]->GetType() != CFX_ClipRgn::RectI)
+      if (m_pDriver->stack()[aggIndex]->GetType() != CFX_ClipRgn::RectI)
         continue;
-      const FX_RECT& aggRect = m_pDriver->m_StateStack[aggIndex]->GetBox();
+      const FX_RECT& aggRect = m_pDriver->stack()[aggIndex]->GetBox();
       SkRect skRect = SkRect::MakeLTRB(aggRect.left, aggRect.top, aggRect.right,
                                        aggRect.bottom);
       bool foundMatch = false;
@@ -1356,23 +1394,22 @@ class SkiaState {
       }
     }
     printf("\nagg\n");
-    for (int index = 0; index < (int)m_pDriver->m_StateStack.size(); ++index) {
-      if (!m_pDriver->m_StateStack[index]) {
+    for (int index = 0; index < (int)m_pDriver->stack().size(); ++index) {
+      if (!m_pDriver->stack()[index]) {
         printf("null\n");
         continue;
       }
-      CFX_ClipRgn::ClipType clipType =
-          m_pDriver->m_StateStack[index]->GetType();
-      const FX_RECT& box = m_pDriver->m_StateStack[index]->GetBox();
+      CFX_ClipRgn::ClipType clipType = m_pDriver->stack()[index]->GetType();
+      const FX_RECT& box = m_pDriver->stack()[index]->GetBox();
       printf("stack rect: %d,%d,%d,%d mask=%s\n", box.left, box.top, box.right,
              box.bottom,
              CFX_ClipRgn::MaskF == clipType
                  ? "1"
                  : CFX_ClipRgn::RectI == clipType ? "0" : "?");
     }
-    if (m_pDriver->m_pClipRgn) {
-      const FX_RECT& box = m_pDriver->m_pClipRgn->GetBox();
-      CFX_ClipRgn::ClipType clipType = m_pDriver->m_pClipRgn->GetType();
+    if (m_pDriver->clip_region()) {
+      const FX_RECT& box = m_pDriver->clip_region()->GetBox();
+      CFX_ClipRgn::ClipType clipType = m_pDriver->clip_region()->GetType();
       printf("clip rect: %d,%d,%d,%d mask=%s\n", box.left, box.top, box.right,
              box.bottom,
              CFX_ClipRgn::MaskF == clipType
@@ -1395,7 +1432,7 @@ class SkiaState {
   CFX_GraphStateData m_drawState;
   CFX_Matrix m_clipMatrix;
   UnownedPtr<CFX_SkiaDeviceDriver> const m_pDriver;
-  UnownedPtr<CFX_TypeFace> m_pTypeFace;
+  sk_sp<CFX_TypeFace> m_pTypeFace;
   float m_fontSize = 0;
   float m_scaleX = 0;
   uint32_t m_fillColor = 0;
@@ -1549,10 +1586,10 @@ void CFX_SkiaDeviceDriver::PreMultiply() {
 bool CFX_SkiaDeviceDriver::DrawDeviceText(int nChars,
                                           const TextCharPos* pCharPos,
                                           CFX_Font* pFont,
-                                          const CFX_Matrix* pObject2Device,
+                                          const CFX_Matrix& mtObject2Device,
                                           float font_size,
                                           uint32_t color) {
-  if (m_pCache->DrawText(nChars, pCharPos, pFont, pObject2Device, font_size,
+  if (m_pCache->DrawText(nChars, pCharPos, pFont, mtObject2Device, font_size,
                          color)) {
     return true;
   }
@@ -1572,7 +1609,7 @@ bool CFX_SkiaDeviceDriver::DrawDeviceText(int nChars,
   SkScalar vFlip = flip;
   if (pFont->IsVertical())
     vFlip *= -1;
-  SkMatrix skMatrix = ToFlippedSkMatrix(*pObject2Device, flip);
+  SkMatrix skMatrix = ToFlippedSkMatrix(mtObject2Device, flip);
   m_pCanvas->concat(skMatrix);
   SkTDArray<SkPoint> positions;
   positions.setCount(nChars);
@@ -1674,10 +1711,16 @@ bool CFX_SkiaDeviceDriver::DrawDeviceText(int nChars,
   return true;
 }
 
+int CFX_SkiaDeviceDriver::GetDriverType() const {
+  return 1;
+}
+
+DeviceType CFX_SkiaDeviceDriver::GetDeviceType() const {
+  return DeviceType::kDisplay;
+}
+
 int CFX_SkiaDeviceDriver::GetDeviceCaps(int caps_id) const {
   switch (caps_id) {
-    case FXDC_DEVICE_CLASS:
-      return FXDC_DISPLAY;
 #ifdef _SKIA_SUPPORT_
     case FXDC_PIXEL_WIDTH:
       return m_pCanvas->imageInfo().width();
@@ -1722,8 +1765,11 @@ int CFX_SkiaDeviceDriver::GetDeviceCaps(int caps_id) const {
       return flags;
     }
 #endif  // _SKIA_SUPPORT_PATHS_
+
+    default:
+      NOTREACHED();
+      return 0;
   }
-  return 0;
 }
 
 void CFX_SkiaDeviceDriver::SaveState() {
@@ -1733,7 +1779,7 @@ void CFX_SkiaDeviceDriver::SaveState() {
 
 #ifdef _SKIA_SUPPORT_PATHS_
 #if SHOW_SKIA_PATH
-  printf("SaveState %zd\n", m_StateStack.size());
+  printf("SaveState %zd\n", stack().size());
 #endif
   std::unique_ptr<CFX_ClipRgn> pClip;
   if (m_pClipRgn)
@@ -1839,9 +1885,7 @@ bool CFX_SkiaDeviceDriver::SetClip_PathFill(
     }
   }
   SkPath skClipPath = BuildPath(pPathData);
-  skClipPath.setFillType((fill_mode & 3) == FXFILL_ALTERNATE
-                             ? SkPath::kEvenOdd_FillType
-                             : SkPath::kWinding_FillType);
+  skClipPath.setFillType(GetAlternateOrWindingFillType(fill_mode));
   SkMatrix skMatrix = ToSkMatrix(*deviceMatrix);
   skClipPath.transform(skMatrix);
   DebugShowSkiaPath(skClipPath);
@@ -1900,8 +1944,8 @@ bool CFX_SkiaDeviceDriver::DrawPath(
     uint32_t stroke_color,                  // stroke color
     int fill_mode,  // fill mode, WINDING or ALTERNATE. 0 for not filled
     BlendMode blend_type) {
-  if (fill_mode & FX_ZEROAREA_FILL)
-    return true;
+  ASSERT(GetAlternateOrWindingFillMode(fill_mode) !=
+         kAlternateOrWindingFillModeMask);
   if (m_pCache->DrawPath(pPathData, pObject2Device, pGraphState, fill_color,
                          stroke_color, fill_mode, blend_type)) {
     return true;
@@ -1916,18 +1960,17 @@ bool CFX_SkiaDeviceDriver::DrawPath(
   if (fill_mode & FXFILL_FULLCOVER)
     skPaint.setBlendMode(SkBlendMode::kPlus);
   int stroke_alpha = FXARGB_A(stroke_color);
-  if (pGraphState && stroke_alpha)
+  bool is_paint_stroke = pGraphState && stroke_alpha;
+  if (is_paint_stroke)
     PaintStroke(&skPaint, pGraphState, skMatrix);
   SkPath skPath = BuildPath(pPathData);
   SkAutoCanvasRestore scoped_save_restore(m_pCanvas, /*doSave=*/true);
   m_pCanvas->concat(skMatrix);
-  if ((fill_mode & 3) && fill_color) {
-    skPath.setFillType((fill_mode & 3) == FXFILL_ALTERNATE
-                           ? SkPath::kEvenOdd_FillType
-                           : SkPath::kWinding_FillType);
+  if (GetAlternateOrWindingFillMode(fill_mode) && fill_color) {
+    skPath.setFillType(GetAlternateOrWindingFillType(fill_mode));
     SkPath strokePath;
     const SkPath* fillPath = &skPath;
-    if (pGraphState && stroke_alpha) {
+    if (is_paint_stroke) {
       if (m_bGroupKnockout) {
         skPaint.getFillPath(skPath, &strokePath);
         if (Op(skPath, strokePath, SkPathOp::kDifference_SkPathOp,
@@ -1944,7 +1987,7 @@ bool CFX_SkiaDeviceDriver::DrawPath(
     DebugShowSkiaDrawPath(this, m_pCanvas, skPaint, *fillPath);
     m_pCanvas->drawPath(*fillPath, skPaint);
   }
-  if (pGraphState && stroke_alpha) {
+  if (is_paint_stroke) {
     skPaint.setStyle(SkPaint::kStroke_Style);
     skPaint.setColor(stroke_color);
 #ifdef _SKIA_SUPPORT_PATHS_
@@ -2018,7 +2061,7 @@ bool CFX_SkiaDeviceDriver::DrawShading(const CPDF_ShadingPattern* pPattern,
       if (!AddSamples(pSampledFunc, &skColors, &skPos))
         return false;
     } else if (const CPDF_ExpIntFunc* pExpIntFuc = pFuncs[j]->ToExpIntFunc()) {
-      if (!AddColors(pExpIntFuc, &skColors))
+      if (!AddColors(pExpIntFuc, &skColors, /*is_encode_reversed=*/false))
         return false;
       skPos.push_back(0);
       skPos.push_back(1);

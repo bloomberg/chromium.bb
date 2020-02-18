@@ -314,7 +314,7 @@ faster by virtue of not performing any localisation.
 You can specify dotted variables as "local" variables to an C<INCLUDE> directive.
 However, be aware that because of the localisation issues explained above (if
 you skipped the previous Technical Note above then you might want to go back
-and read it or skip this section too), the variables might not actualy be
+and read it or skip this section too), the variables might not actually be
 "local". If the first element of the variable name already references a hash
 array then the variable update will affect the original variable.
 
@@ -1157,7 +1157,7 @@ Output:
     <a href="/cgi-bin/foo.pl?mode=submit&debug=1">...
 
 The L<CGI|Template::Plugin::CGI> plugin is an example of one which delegates
-to another Perl module. In this this case, to Lincoln Stein's C<CGI> module.
+to another Perl module. In this case, to Lincoln Stein's C<CGI> module.
 All of the methods provided by the C<CGI> module are available via the plugin.
 
     [% USE CGI;
@@ -1456,7 +1456,7 @@ and C<info> fields directly.
               Info: [% error.info %]
     [% END %]
 
-output (assuming a non-existant database called 'C<foobar>'):
+output (assuming a non-existent database called 'C<foobar>'):
 
     ERROR!  Type: DBI
             Info: Unknown database "foobar"
@@ -1525,7 +1525,7 @@ C<[% CATCH file %]> block.  The output generated would be:
 
 Note that the C<DEFAULT> option (disabled by default) allows you to specify a
 default file to be used any time a template file can't be found. This will
-prevent file exceptions from ever being raised when a non-existant file is
+prevent file exceptions from ever being raised when a non-existent file is
 requested (unless, of course, the C<DEFAULT> file your specify doesn't exist).
 Errors encountered once the file has been found (i.e. read error, parse error)
 will be raised as file exceptions as per usual.
@@ -1553,7 +1553,7 @@ the L<error()|Template#error()> method.
 In this example, the inner C<TRY> block is used to ensure that the first
 C<INCLUDE> directive works as expected.  We're using a variable to
 provide the name of the template we want to include, C<user.header>, and
-it's possible this contains the name of a non-existant template, or
+it's possible this contains the name of a non-existent template, or
 perhaps one containing invalid template directives.  If the C<INCLUDE> fails
 with a C<file> error then we C<CATCH> it in the inner block and C<INCLUDE>
 the default C<header> file instead.  Any C<DBI> errors that occur within

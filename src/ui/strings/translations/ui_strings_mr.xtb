@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">शोधा</translation>
 <translation id="1398853756734560583">वाढवा</translation>
 <translation id="1409544243779336081">ॲप शिफारस</translation>
+<translation id="1498028757988366001">तुम्ही यापूर्वी याचा शोध घेतला होता. तुमच्या इतिहासामधून "<ph name="QUERY" />" हटवल्याने ती तुमच्या संपूर्ण डिव्हाइसवरील सर्व खात्यामधून कायमची काढून टाकली जाईल.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 मिनिट आणि }other{# मिनिटे आणि }}</translation>
 <translation id="1643823602425662293">सूचना</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -45,13 +46,16 @@
 <translation id="2289052229480071835">आपल्या स्क्रीनवरील लक्ष्यांना स्पर्श करा टॅप करा.</translation>
 <translation id="2295140143284145483">सर्वेक्षण</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">तुमच्या फोनवरून या नंबरवर कॉल करायचा का?</translation>
 <translation id="24452542372838207">सूचना विस्तार करा</translation>
 <translation id="2445449901874883781">उच्च घनता वापरा</translation>
+<translation id="2451871130406122810">डिव्हाइसवर पाठवले</translation>
 <translation id="2482878487686419369">सूचना</translation>
 <translation id="2497284189126895209">सर्व फाइल</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">कॅलिब्रेशन पूर्ण झाले</translation>
 <translation id="252373100621549798">अज्ञात डिस्प्ले</translation>
+<translation id="2545651323591713692">स्नूझ करा</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{१ता मध्ये}other{#ता मध्ये}}</translation>
 <translation id="2583543531130364912">तुमची टचस्क्रीन कॅलिब्रेट करा</translation>
 <translation id="2666092431469916601">शीर्ष</translation>
@@ -70,6 +74,7 @@
 <translation id="3183922693828471536">येथे स्क्रोल करा</translation>
 <translation id="3234408098842461169">Down Arrow</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 दिवस}other{# दिवस}}</translation>
+<translation id="3295886253693811851">यावरून कॉल करा</translation>
 <translation id="335581015389089642">भाषण</translation>
 <translation id="3443810440409579745">टॅब मिळाला.</translation>
 <translation id="3479552764303398839">सध्या नाही</translation>
@@ -95,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 महिन्यापूर्वी}other{# महिन्यांपूर्वी}}</translation>
 <translation id="4289300219472526559">बोलणे प्रारंभ करा</translation>
 <translation id="4316910396681052118">सर्व अ‍ॅप्स</translation>
+<translation id="4467014365953759647">नंबर पाठवू शकत नाही</translation>
 <translation id="4588090240171750605">उजवे स्क्रोल करा</translation>
 <translation id="4690510401873698237">शेल्फ तळाशी आहे</translation>
 <translation id="4724120544754982507">सूचना केंद्र, <ph name="UNREAD_NOTIFICATION_COUNT" /> न वाचलेल्या सूचना</translation>
@@ -111,6 +117,7 @@
 <translation id="5266161281976477809">प्रकटन त्रिकोण</translation>
 <translation id="5278860589123563674">पाठवता आले नाही</translation>
 <translation id="528468243742722775">बंद करा</translation>
+<translation id="5327567770033251652">सिंक सुरू करा</translation>
 <translation id="5329858601952122676">&amp;हटवा</translation>
 <translation id="5395308026110844773"><ph name="IN_PLACE_APP" /> च्या वर <ph name="DRAGGED_APP_NAME" />, फोल्डर तयार करण्यासाठी रिलीझ करा.</translation>
 <translation id="5463830097259460683">इमोजी &amp;&amp; चिन्हे</translation>
@@ -150,6 +157,7 @@
 <translation id="6620110761915583480">फाइल सेव्ह करा</translation>
 <translation id="6699343763173986273">मीडिया पुढील ट्रॅक</translation>
 <translation id="673773751041746814">हटवणे</translation>
+<translation id="6779314412797872738">येथून तुमच्या Android फोनवर नंबर पाठवण्यासाठी, सेटिंग्जमध्ये दोन्ही डिव्हाइससाठी <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="6786750046913594791">फोल्डर बंद करा</translation>
 <translation id="6808150112686056157">मीडिया थांबवा</translation>
 <translation id="6845383723252244143">फोल्डर निवडा</translation>
@@ -168,7 +176,9 @@
 <translation id="7319740667687257810">लाँचर, आंशिक दृश्य</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 मिनिटापूर्वी}other{# मिनिटांपूर्वी}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">तुमच्या फोनचे कनेक्शन तपासा आणि पुन्हा प्रयत्न करा</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 मिनिट शिल्लक}other{# मिनिटे शिल्लक}}</translation>
+<translation id="7430878839542012341">तुमच्या इतिहासातून हा शोध हटवायचा आहे का?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">इमोजी</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
@@ -186,7 +196,6 @@
 <translation id="8144660977431427332">तुमचे शोध Google असिस्टंट द्वारे प्रायोजित आहेत. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, ऑटोकंप्लीट</translation>
 <translation id="815598010540052116">खाली स्क्रोल करा</translation>
-<translation id="8170087467028567933">ही सूचना काढल्याने ती तुमच्या सर्व डिव्हाइसवर तुमच्या खात्यावरून लपवली जाईल.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">पृष्ठ खाली</translation>
 <translation id="8245914219290430011">टॅब</translation>
@@ -197,7 +206,6 @@
 <translation id="838869780401515933">तपासा</translation>
 <translation id="8393700583063109961">संदेश पाठवा</translation>
 <translation id="8394908167088220973">मीडिया प्ले करा/विराम द्या</translation>
-<translation id="8420205633584771378">ही सूचना काढून टाकायची आहे का?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1वर्ष}other{#वर्षे}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> फाइल (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">शेल्फ नेहमी दाखवले जात आहे</translation>

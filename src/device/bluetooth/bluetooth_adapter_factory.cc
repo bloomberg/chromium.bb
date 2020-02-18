@@ -118,7 +118,7 @@ bool BluetoothAdapterFactory::IsLowEnergySupported() {
   // consistent we consider Windows 8 as lacking Low Energy support.
   return base::win::GetVersion() >= base::win::Version::WIN10;
 #elif defined(OS_MACOSX)
-  return base::mac::IsAtLeastOS10_10();
+  return true;
 #elif defined(OS_LINUX)
   return true;
 #else

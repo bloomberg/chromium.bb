@@ -241,6 +241,9 @@ class MEDIA_EXPORT AudioRendererImpl
   // Cached copy of audio params that the renderer is initialized with.
   AudioParameters audio_parameters_;
 
+  // Passed in during Initialize().
+  DemuxerStream* demuxer_stream_;
+
   RendererClient* client_;
 
   // Callback provided during Initialize().
@@ -337,7 +340,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // End variables which must be accessed under |lock_|. ----------------------
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<AudioRendererImpl> weak_factory_;
+  base::WeakPtrFactory<AudioRendererImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImpl);
 };

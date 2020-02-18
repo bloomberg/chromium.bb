@@ -9,14 +9,13 @@
 #include <string>
 
 #include "base/synchronization/waitable_event.h"
-#include "content/common/service_worker/service_worker_types.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/common/service_worker/service_worker_types.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
@@ -77,9 +76,22 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           fallback_factory_info);
 
+  // Clones this fetch context for a nested worker.
+  // For non-PlzDedicatedWorker. This will be removed once PlzDedicatedWorker is
+  // enabled by default.
+  scoped_refptr<WebWorkerFetchContextImpl> CloneForNestedWorkerDeprecated(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  // For PlzDedicatedWorker. The cloned fetch context does not inherit some
+  // fields (e.g., ServiceWorkerProviderContext) from this fetch context, and
+  // instead that takes values passed from the browser process.
+  scoped_refptr<WebWorkerFetchContextImpl> CloneForNestedWorker(
+      ServiceWorkerProviderContext* service_worker_provider_context,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          fallback_factory_info,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
   // blink::WebWorkerFetchContext implementation:
-  scoped_refptr<blink::WebWorkerFetchContext> CloneForNestedWorker(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
   void InitializeOnWorkerThread(blink::AcceptLanguagesWatcher*) override;
   blink::WebURLLoaderFactory* GetURLLoaderFactory() override;
@@ -87,7 +99,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       mojo::ScopedMessagePipeHandle url_loader_factory_handle) override;
   std::unique_ptr<blink::CodeCacheLoader> CreateCodeCacheLoader() override;
   void WillSendRequest(blink::WebURLRequest&) override;
-  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+  blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
       const override;
   void SetIsOnSubframe(bool) override;
   bool IsOnSubframe() const override;
@@ -113,7 +125,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // it's copied from the ancestor frame (directly for non-nested workers, or
   // indirectly via its parent worker for nested workers). For shared workers,
   // it's copied from the shadow page.
-  void set_is_controlled_by_service_worker(
+  void set_controller_service_worker_mode(
       blink::mojom::ControllerServiceWorkerMode mode);
   void set_ancestor_frame_id(int id);
   void set_frame_request_blocker(
@@ -166,6 +178,17 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
   ~WebWorkerFetchContextImpl() override;
 
+  scoped_refptr<WebWorkerFetchContextImpl> CloneForNestedWorkerInternal(
+      blink::mojom::ServiceWorkerWorkerClientRequest
+          service_worker_client_request,
+      blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+          service_worker_worker_client_registry_ptr_info,
+      blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          fallback_factory_info,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
   bool Send(IPC::Message* message);
 
   // Resets the service worker url loader factory of a URLLoaderFactoryImpl
@@ -197,7 +220,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // Consumed on the worker thread to create |fallback_factory_|.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info_;
 
-  blink::mojom::ControllerServiceWorkerMode is_controlled_by_service_worker_ =
+  blink::mojom::ControllerServiceWorkerMode controller_service_worker_mode_ =
       blink::mojom::ControllerServiceWorkerMode::kNoController;
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.

@@ -50,7 +50,7 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
 
   def testGenericRetry(self):
     """Test basic semantics of retry and success recording."""
-    source = iter(xrange(5)).next
+    source = iter(range(5)).next
 
     def _TestMain():
       val = source()
@@ -159,7 +159,7 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
 
   def testRetryException(self):
     """Verify we retry only when certain exceptions get thrown"""
-    source = iter(xrange(6)).next
+    source = iter(range(6)).next
     def _TestMain():
       val = source()
       if val < 2:

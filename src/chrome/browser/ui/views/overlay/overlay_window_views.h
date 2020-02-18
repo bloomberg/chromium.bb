@@ -39,13 +39,13 @@ class OverlayWindowViews : public content::OverlayWindow,
   enum class WindowQuadrant { kBottomLeft, kBottomRight, kTopLeft, kTopRight };
 
   // OverlayWindow:
-  bool IsActive() const override;
+  bool IsActive() override;
   void Close() override;
   void ShowInactive() override;
   void Hide() override;
-  bool IsVisible() const override;
-  bool IsAlwaysOnTop() const override;
-  gfx::Rect GetBounds() const override;
+  bool IsVisible() override;
+  bool IsAlwaysOnTop() override;
+  gfx::Rect GetBounds() override;
   void UpdateVideoSize(const gfx::Size& natural_size) override;
   void SetPlaybackState(PlaybackState playback_state) override;
   void SetAlwaysHidePlayPauseButton(bool is_visible) override;
@@ -56,6 +56,8 @@ class OverlayWindowViews : public content::OverlayWindow,
   void SetSurfaceId(const viz::SurfaceId& surface_id) override;
 
   // views::Widget:
+  bool IsActive() const override;
+  bool IsVisible() const override;
   void OnNativeBlur() override;
   void OnNativeWidgetDestroyed() override;
   gfx::Size GetMinimumSize() const override;
@@ -101,7 +103,16 @@ class OverlayWindowViews : public content::OverlayWindow,
   ui::Layer* video_layer_for_testing() const;
   cc::Layer* GetLayerForTesting() override;
 
+  // Update the max size of the widget based on |work_area| and |window_size|.
+  // The return value is the new size of the window if it was resized and is
+  // only used for testing.
+  gfx::Size UpdateMaxSize(const gfx::Rect& work_area,
+                          const gfx::Size& window_size);
+
  private:
+  // Return the work area for the nearest display the widget is on.
+  gfx::Rect GetWorkAreaForWindow() const;
+
   // Determine the intended bounds of |this|. This should be called when there
   // is reason for the bounds to change, such as switching primary displays or
   // playing a new video (i.e. different aspect ratio). This also updates

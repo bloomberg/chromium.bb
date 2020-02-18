@@ -9,7 +9,6 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Handler;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
@@ -28,8 +27,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
@@ -85,8 +84,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
 
         @Override
         public OfflineContentProvider getOfflineContentProvider() {
-            return OfflineContentAggregatorFactory.forProfile(
-                    Profile.getLastUsedProfile().getOriginalProfile());
+            return OfflineContentAggregatorFactory.get();
         }
 
         @Override
@@ -192,10 +190,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             SnackbarManager snackbarManager) {
         TraceEvent.startAsync("DownloadManagerUi shown", hashCode());
         mActivity = activity;
-        ChromeApplication application = (ChromeApplication) activity.getApplication();
-        mBackendProvider = sProviderForTests == null
-                ? new DownloadBackendProvider(ChromeApplication.getReferencePool(), this)
-                : sProviderForTests;
+        mBackendProvider = sProviderForTests == null ? new DownloadBackendProvider(
+                                   GlobalDiscardableReferencePool.getReferencePool(), this)
+                                                     : sProviderForTests;
         mSnackbarManager = snackbarManager;
 
         mMainView = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.download_main, null);
@@ -204,9 +201,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
                 mMainView.findViewById(R.id.selectable_list);
 
         mSelectableListLayout.initializeEmptyView(
-                VectorDrawableCompat.create(
-                        mActivity.getResources(), R.drawable.downloads_big, mActivity.getTheme()),
-                R.string.download_manager_ui_empty, R.string.download_manager_no_results);
+                R.string.download_manager_no_downloads, R.string.download_manager_no_results);
 
         mHistoryAdapter = new DownloadHistoryAdapter(isOffTheRecord, parentComponent);
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(mHistoryAdapter);
@@ -388,7 +383,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             mToolbar.showSearchView();
             return true;
         } else if (item.getItemId() == R.id.settings_menu_id) {
-            PreferencesLauncher.launchSettingsPage(mActivity, DownloadPreferences.class);
+            PreferencesLauncher.launchSettingsPageCompat(mActivity, DownloadPreferences.class);
             return true;
         }
         return false;

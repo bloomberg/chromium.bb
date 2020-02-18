@@ -7,6 +7,8 @@
  *  in the file PATENTS.  All contributing project authors may
  *  be found in the AUTHORS file in the root of the source tree.
  */
+#include "call/rtp_transport_controller_send.h"
+
 #include <utility>
 #include <vector>
 
@@ -17,7 +19,6 @@
 #include "api/units/data_rate.h"
 #include "api/units/time_delta.h"
 #include "api/units/timestamp.h"
-#include "call/rtp_transport_controller_send.h"
 #include "call/rtp_video_sender.h"
 #include "logging/rtc_event_log/events/rtc_event_route_change.h"
 #include "rtc_base/checks.h"
@@ -154,6 +155,11 @@ rtc::TaskQueue* RtpTransportControllerSend::GetWorkerQueue() {
 
 PacketRouter* RtpTransportControllerSend::packet_router() {
   return &packet_router_;
+}
+
+NetworkStateEstimateObserver*
+RtpTransportControllerSend::network_state_estimate_observer() {
+  return this;
 }
 
 TransportFeedbackObserver*
@@ -327,10 +333,7 @@ void RtpTransportControllerSend::OnSentPacket(
 }
 
 void RtpTransportControllerSend::OnReceivedPacket(
-    const RtpPacketReceived& received_packet) {
-  ReceivedPacket packet_msg;
-  packet_msg.size = DataSize::bytes(received_packet.payload_size());
-  packet_msg.receive_time = Timestamp::ms(received_packet.arrival_time_ms());
+    const ReceivedPacket& packet_msg) {
   task_queue_.PostTask([this, packet_msg]() {
     RTC_DCHECK_RUN_ON(&task_queue_);
     if (controller_)
@@ -395,6 +398,11 @@ void RtpTransportControllerSend::OnTransportOverheadChanged(
   }
 }
 
+void RtpTransportControllerSend::AccountForAudioPacketsInPacedSender(
+    bool account_for_audio) {
+  pacer_.SetAccountForAudioPackets(account_for_audio);
+}
+
 void RtpTransportControllerSend::OnReceivedEstimatedBitrate(uint32_t bitrate) {
   RemoteBitrateReport msg;
   msg.receive_time = Timestamp::ms(clock_->TimeInMilliseconds());
@@ -451,6 +459,16 @@ void RtpTransportControllerSend::OnTransportFeedback(
   }
   pacer_.UpdateOutstandingData(
       transport_feedback_adapter_.GetOutstandingData().bytes());
+}
+
+void RtpTransportControllerSend::OnRemoteNetworkEstimate(
+    NetworkStateEstimate estimate) {
+  estimate.update_time = Timestamp::ms(clock_->TimeInMilliseconds());
+  task_queue_.PostTask([this, estimate] {
+    RTC_DCHECK_RUN_ON(&task_queue_);
+    if (controller_)
+      controller_->OnNetworkStateEstimate(estimate);
+  });
 }
 
 void RtpTransportControllerSend::MaybeCreateControllers() {

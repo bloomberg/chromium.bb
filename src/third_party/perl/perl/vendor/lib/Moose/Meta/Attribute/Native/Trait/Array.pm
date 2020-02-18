@@ -1,13 +1,7 @@
-
 package Moose::Meta::Attribute::Native::Trait::Array;
-BEGIN {
-  $Moose::Meta::Attribute::Native::Trait::Array::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Attribute::Native::Trait::Array::VERSION = '2.0602';
-}
-use Moose::Role;
+our $VERSION = '2.2011';
 
+use Moose::Role;
 with 'Moose::Meta::Attribute::Native::Trait';
 
 sub _helper_type { 'ArrayRef' }
@@ -18,9 +12,11 @@ no Moose::Role;
 
 # ABSTRACT: Helper trait for ArrayRef attributes
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -28,7 +24,7 @@ Moose::Meta::Attribute::Native::Trait::Array - Helper trait for ArrayRef attribu
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -92,10 +88,13 @@ This method does not accept any arguments.
 
 =item * B<elements>
 
-Returns all of the elements of the array as an array (not an array reference).
+In list context, returns all of the elements of the array as a list.
 
-  my @option = $stuff->all_options;
-  print "@options\n";    # prints "foo bar baz boo"
+In scalar context, returns the number of elements in the array.
+
+  my @options = $stuff->all_options;
+  print "@options";    # prints "foo bar baz boo"
+  print scalar $stuff->all_options; # prints 4
 
 This method does not accept any arguments.
 
@@ -151,6 +150,7 @@ This method returns the first matching item in the array, just like
 L<List::Util>'s C<first> function. The matching is done with a subroutine
 reference you pass to this method. The subroutine will be called against each
 element in the array until one matches or all elements have been checked.
+Each list element will be available to the sub in C<$_>.
 
   my $found = $stuff->find_option( sub {/^b/} );
   print "$found\n";    # prints "bar"
@@ -160,10 +160,11 @@ This method requires a single argument.
 =item * B<first_index( sub { ... } )>
 
 This method returns the index of the first matching item in the array, just
-like L<List::MoreUtils>'s C<first_index> function. The matching is done with a
+like L<List::SomeUtils/first_index>. The matching is done with a
 subroutine reference you pass to this method. The subroutine will be called
 against each element in the array until one matches or all elements have been
-checked.
+checked. Each list element will be available to the sub in C<$_>.
+If no match is made, -1 is returned.
 
 This method requires a single argument.
 
@@ -171,7 +172,7 @@ This method requires a single argument.
 
 This method returns every element matching a given criteria, just like Perl's
 core C<grep> function. This method requires a subroutine which implements the
-matching logic.
+matching logic; each list element will be available to the sub in C<$_>.
 
   my @found = $stuff->filter_options( sub {/^b/} );
   print "@found\n";    # prints "bar baz boo"
@@ -182,7 +183,8 @@ This method requires a single argument.
 
 This method transforms every element in the array and returns a new array,
 just like Perl's core C<map> function. This method requires a subroutine which
-implements the transformation.
+implements the transformation; each list element will be available to the sub
+in C<$_>.
 
   my @mod_options = $stuff->map_options( sub { $_ . "-tag" } );
   print "@mod_options\n";    # prints "foo-tag bar-tag baz-tag boo-tag"
@@ -194,7 +196,7 @@ This method requires a single argument.
 This method turns an array into a single value, by passing a function the
 value so far and the next value in the array, just like L<List::Util>'s
 C<reduce> function. The reducing is done with a subroutine reference you pass
-to this method.
+to this method; each list element will be available to the sub in C<$_>.
 
   my $found = $stuff->reduce_options( sub { $_[0] . $_[1] } );
   print "$found\n";    # prints "foobarbazboo"
@@ -205,7 +207,8 @@ This method requires a single argument.
 
 =item * B<sort( sub { ... } )>
 
-Returns the elements of the array in sorted order.
+Returns the elements of the array (not an array reference) in sorted order,
+or, like C<elements>, returns the number of elements in the array in scalar context.
 
 You can provide an optional subroutine reference to sort with (as you can with
 Perl's core C<sort> function). However, instead of using C<$a> and C<$b> in
@@ -243,8 +246,7 @@ This method does not accept any arguments.
 
 =item * B<uniq>
 
-Returns the array with all duplicate elements removed, like C<uniq> from
-L<List::MoreUtils>.
+Returns the array with all duplicate elements removed, like L<List::Util/uniq>.
 
 This method does not accept any arguments.
 
@@ -308,9 +310,11 @@ This method accepts one or two arguments.
 =item * B<natatime($n, $code)>
 
 This method returns an iterator which, on each call, returns C<$n> more items
-from the array, in order, like C<natatime> from L<List::MoreUtils>. A coderef
-can optionally be provided; it will be called on each group of C<$n> elements
-in the array.
+from the array, in order, like L<List::SomeUtils/natatime>.
+
+If you pass a coderef as the second argument, then this code ref will be
+called on each group of C<$n> elements in the array until the array is
+exhausted.
 
 This method accepts one or two arguments.
 
@@ -327,19 +331,57 @@ references in the clone.
 
 See L<Moose/BUGS> for details on reporting bugs.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

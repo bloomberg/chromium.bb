@@ -74,6 +74,7 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
       {"../../views/resources/default_200_percent/common/", "images/2x/apps/"},
       {"../../webui/resources/cr_components/", "cr_components/"},
       {"../../webui/resources/cr_elements/", "cr_elements/"},
+      {"@out_folder@/gen/ui/webui/resources/", ""},
   };
 
 #if defined(OS_CHROMEOS)
@@ -161,6 +162,18 @@ const std::map<int, std::string> CreateChromeosMojoResourceIdToAliasMap() {
       {IDR_MULTIDEVICE_MULTIDEVICE_TYPES_MOJOM_LITE_JS,
        "mojo/chromeos/components/multidevice/mojom/"
        "multidevice_types.mojom-lite.js"},
+      {IDR_NETWORK_CONFIG_MOJOM_HTML,
+       "mojo/chromeos/services/network_config/public/mojom/"
+       "cros_network_config.mojom.html"},
+      {IDR_NETWORK_CONFIG_MOJOM_LITE_JS,
+       "mojo/chromeos/services/network_config/public/mojom/"
+       "cros_network_config.mojom-lite.js"},
+      {IDR_IP_ADDRESS_MOJOM_HTML,
+       "mojo/services/network/public/mojom/"
+       "ip_address.mojom.html"},
+      {IDR_IP_ADDRESS_MOJOM_LITE_JS,
+       "mojo/services/network/public/mojom/"
+       "ip_address.mojom-lite.js"},
   };
 }
 #endif  // !defined(OS_CHROMEOS)
@@ -273,7 +286,7 @@ SharedResourcesDataSource::SharedResourcesDataSource() {
 SharedResourcesDataSource::~SharedResourcesDataSource() {
 }
 
-std::string SharedResourcesDataSource::GetSource() const {
+std::string SharedResourcesDataSource::GetSource() {
   return kChromeUIResourcesHost;
 }
 
@@ -314,14 +327,13 @@ void SharedResourcesDataSource::StartDataRequest(
   callback.Run(bytes.get());
 }
 
-bool SharedResourcesDataSource::AllowCaching() const {
+bool SharedResourcesDataSource::AllowCaching() {
   // Should not be cached to reflect dynamically-generated contents that may
   // depend on the current locale.
   return false;
 }
 
-std::string SharedResourcesDataSource::GetMimeType(
-    const std::string& path) const {
+std::string SharedResourcesDataSource::GetMimeType(const std::string& path) {
   if (path.empty())
     return "text/html";
 
@@ -361,13 +373,12 @@ std::string SharedResourcesDataSource::GetMimeType(
   return "text/plain";
 }
 
-bool SharedResourcesDataSource::ShouldServeMimeTypeAsContentTypeHeader() const {
+bool SharedResourcesDataSource::ShouldServeMimeTypeAsContentTypeHeader() {
   return true;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-SharedResourcesDataSource::TaskRunnerForRequestPath(
-    const std::string& path) const {
+SharedResourcesDataSource::TaskRunnerForRequestPath(const std::string& path) {
   // Since WebContentsGetter can only be run on the UI thread, always return
   // a task runner if we need to choose between Polymer resources based on the
   // WebContents that is requesting the resource.
@@ -388,9 +399,8 @@ SharedResourcesDataSource::TaskRunnerForRequestPath(
   return nullptr;
 }
 
-std::string
-SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
-    const std::string& origin) const {
+std::string SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
+    const std::string& origin) {
   // For now we give access only for "chrome://*" origins.
   // According to CORS spec, Access-Control-Allow-Origin header doesn't support
   // wildcards, so we need to set its value explicitly by passing the |origin|
@@ -404,7 +414,7 @@ SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
   return origin;
 }
 
-bool SharedResourcesDataSource::IsGzipped(const std::string& path) const {
+bool SharedResourcesDataSource::IsGzipped(const std::string& path) {
   return GetContentClient()->IsDataResourceGzipped(GetIdrForPath(path));
 }
 

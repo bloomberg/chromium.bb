@@ -91,25 +91,21 @@ class Table(object):
   @staticmethod
   def LoadFromCSV(csv_file, name=None):
     """Create a new Table object by loading contents of |csv_file|."""
-    if isinstance(csv_file, file):
-      file_handle = csv_file
-    else:
-      file_handle = open(csv_file, 'r')
     table = None
+    with cros_build_lib.Open(csv_file) as f:
+      for line in f:
+        if line[-1] == '\n':
+          line = line[0:-1]
 
-    for line in file_handle:
-      if line[-1] == '\n':
-        line = line[0:-1]
+        vals = Table._SplitCSVLine(line)
 
-      vals = Table._SplitCSVLine(line)
+        if not table:
+          # Read headers
+          table = Table(vals, name=name)
 
-      if not table:
-        # Read headers
-        table = Table(vals, name=name)
-
-      else:
-        # Read data row
-        table.AppendRow(vals)
+        else:
+          # Read data row
+          table.AppendRow(vals)
 
     return table
 
@@ -131,9 +127,12 @@ class Table(object):
       ix += 1
     return text
 
-  def __nonzero__(self):
+  def __bool__(self):
     """Define boolean equivalent for this table."""
     return bool(self._columns)
+
+  # Python 2 glue.
+  __nonzero__ = __bool__
 
   def __len__(self):
     """Length of table equals the number of rows."""

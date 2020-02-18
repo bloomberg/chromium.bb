@@ -95,7 +95,7 @@ class FixedInvalidationPictureLayerTilingClient
     return base_client_->CreateTile(info);
   }
 
-  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override {
+  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) override {
     return base_client_->CalculateTileSize(content_bounds);
   }
 
@@ -114,6 +114,10 @@ class FixedInvalidationPictureLayerTilingClient
 
   bool RequiresHighResToDraw() const override {
     return base_client_->RequiresHighResToDraw();
+  }
+
+  const PaintWorkletRecordMap& GetPaintWorkletRecords() const override {
+    return base_client_->GetPaintWorkletRecords();
   }
 
  private:

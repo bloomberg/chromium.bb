@@ -7,7 +7,6 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
-import("//build/config/ui.gni")
 import("//net/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
@@ -15,10 +14,7 @@ import("//third_party/icu/config.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/grit/grit_rule.gni")
 import("//url/features.gni")
-
-if (!is_proto_quic) {
-  import("//v8/gni/v8.gni")
-}
+import("//v8/gni/v8.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -34,8 +30,8 @@ if (is_android) {
 # So enable it for x86 only for now.
 posix_avoid_mmap = is_android && current_cpu != "x86"
 
-use_v8_in_net = !is_ios && !is_proto_quic
-enable_built_in_dns = !is_ios && !is_proto_quic
+use_v8_in_net = !is_ios
+enable_built_in_dns = !is_ios
 
 # Unix sockets are not supported on iOS or NaCl.
 enable_unix_sockets = is_posix && !is_ios && !is_nacl
@@ -55,6 +51,18 @@ enable_python_utils =
 # won't get either.
 use_remote_test_server = !enable_python_utils && !is_ios
 
+# Whether //net should use an external GSSAPI library for implementing HTTP
+# Negotiate authentication. All platforms for which use_kerberos is true should
+# have some external implementation since //net doesn't have intrinsic support
+# for Kerberos. This implementation is an external GSSAPI library on all
+# platforms except on:
+#
+#    Windows : Uses SSPI for Negotiate authentication.
+#
+#    Android : Uses an external authenticator. See
+#              https://www.chromium.org/developers/design-documents/http-authentication/writing-a-spnego-authenticator-for-chrome-on-android
+use_external_gssapi = use_kerberos && !is_android && !is_win
+
 config("net_test_config") {
   if (use_remote_test_server) {
     defines = [ "USE_REMOTE_TEST_SERVER" ]
@@ -72,15 +80,14 @@ buildflag_header("buildflags") {
     "ENABLE_WEBSOCKETS=$enable_websockets",
     "INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST=$include_transport_security_state_preload_list",
     "USE_KERBEROS=$use_kerberos",
+    "USE_EXTERNAL_GSSAPI=$use_external_gssapi",
     "TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED=$trial_comparison_cert_verifier_supported",
+    "BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED=$builtin_cert_verifier_feature_supported",
   ]
 }
 
 config("net_internal_config") {
-  defines = [
-    "DLOPEN_KERBEROS",
-    "NET_IMPLEMENTATION",
-  ]
+  defines = [ "NET_IMPLEMENTATION" ]
 
   if (use_kerberos && is_android) {
     include_dirs = [ "/usr/include/kerberosV" ]
@@ -202,6 +209,8 @@ component("net") {
     "cert/internal/certificate_policies.h",
     "cert/internal/common_cert_errors.cc",
     "cert/internal/common_cert_errors.h",
+    "cert/internal/crl.cc",
+    "cert/internal/crl.h",
     "cert/internal/extended_key_usage.cc",
     "cert/internal/extended_key_usage.h",
     "cert/internal/general_names.cc",
@@ -305,11 +314,12 @@ component("net") {
     "log/net_log_entry.h",
     "log/net_log_event_type.h",
     "log/net_log_event_type_list.h",
-    "log/net_log_parameters_callback.h",
     "log/net_log_source.cc",
     "log/net_log_source.h",
     "log/net_log_source_type.h",
     "log/net_log_source_type_list.h",
+    "log/net_log_values.cc",
+    "log/net_log_values.h",
     "log/net_log_with_source.cc",
     "log/net_log_with_source.h",
     "socket/client_socket_handle.cc",
@@ -352,6 +362,7 @@ component("net") {
     "ssl/ssl_config_service.cc",
     "ssl/ssl_config_service.h",
     "ssl/ssl_connection_status_flags.h",
+    "ssl/ssl_handshake_details.h",
     "ssl/ssl_info.cc",
     "ssl/ssl_info.h",
     "ssl/ssl_key_logger.h",
@@ -491,6 +502,8 @@ component("net") {
       "base/network_interfaces_win.h",
       "base/network_isolation_key.cc",
       "base/network_isolation_key.h",
+      "base/network_notification_thread_mac.cc",
+      "base/network_notification_thread_mac.h",
       "base/platform_mime_util.h",
       "base/platform_mime_util_linux.cc",
       "base/platform_mime_util_mac.mm",
@@ -559,6 +572,7 @@ component("net") {
       "cert/ev_root_ca_metadata.h",
       "cert/internal/system_trust_store.cc",
       "cert/internal/system_trust_store.h",
+      "cert/internal/system_trust_store_nss.h",
       "cert/internal/trust_store_mac.cc",
       "cert/internal/trust_store_mac.h",
       "cert/internal/trust_store_nss.cc",
@@ -863,6 +877,8 @@ component("net") {
       "nqe/effective_connection_type_observer.h",
       "nqe/event_creator.cc",
       "nqe/event_creator.h",
+      "nqe/network_congestion_analyzer.cc",
+      "nqe/network_congestion_analyzer.h",
       "nqe/network_id.cc",
       "nqe/network_id.h",
       "nqe/network_qualities_prefs_manager.cc",
@@ -883,6 +899,7 @@ component("net") {
       "nqe/network_quality_store.h",
       "nqe/observation_buffer.cc",
       "nqe/observation_buffer.h",
+      "nqe/peer_to_peer_connections_count_observer.h",
       "nqe/rtt_throughput_estimates_observer.h",
       "nqe/socket_watcher.cc",
       "nqe/socket_watcher.h",
@@ -973,6 +990,7 @@ component("net") {
       "quic/network_connection.h",
       "quic/platform/impl/quic_aligned_impl.h",
       "quic/platform/impl/quic_arraysize_impl.h",
+      "quic/platform/impl/quic_bbr2_sender_impl.h",
       "quic/platform/impl/quic_bug_tracker_impl.h",
       "quic/platform/impl/quic_cert_utils_impl.h",
       "quic/platform/impl/quic_chromium_clock.cc",
@@ -991,8 +1009,6 @@ component("net") {
       "quic/platform/impl/quic_hostname_utils_impl.cc",
       "quic/platform/impl/quic_hostname_utils_impl.h",
       "quic/platform/impl/quic_iovec_impl.h",
-      "quic/platform/impl/quic_ip_address_impl.cc",
-      "quic/platform/impl/quic_ip_address_impl.h",
       "quic/platform/impl/quic_logging_impl.h",
       "quic/platform/impl/quic_macros_impl.h",
       "quic/platform/impl/quic_map_util_impl.h",
@@ -1200,8 +1216,6 @@ component("net") {
       "ssl/ssl_platform_key_util.cc",
       "ssl/ssl_platform_key_util.h",
       "ssl/ssl_platform_key_win.cc",
-      "ssl/test_ssl_private_key.cc",
-      "ssl/test_ssl_private_key.h",
       "ssl/threaded_ssl_private_key.cc",
       "ssl/threaded_ssl_private_key.h",
       "third_party/mozilla_security_manager/nsNSSCertificateDB.cpp",
@@ -1414,6 +1428,12 @@ component("net") {
       "third_party/quiche/src/quic/core/crypto/quic_hkdf.h",
       "third_party/quiche/src/quic/core/crypto/quic_random.cc",
       "third_party/quiche/src/quic/core/crypto/quic_random.h",
+      "third_party/quiche/src/quic/core/crypto/tls_client_connection.cc",
+      "third_party/quiche/src/quic/core/crypto/tls_client_connection.h",
+      "third_party/quiche/src/quic/core/crypto/tls_connection.cc",
+      "third_party/quiche/src/quic/core/crypto/tls_connection.h",
+      "third_party/quiche/src/quic/core/crypto/tls_server_connection.cc",
+      "third_party/quiche/src/quic/core/crypto/tls_server_connection.h",
       "third_party/quiche/src/quic/core/crypto/transport_parameters.cc",
       "third_party/quiche/src/quic/core/crypto/transport_parameters.h",
       "third_party/quiche/src/quic/core/frames/quic_ack_frame.cc",
@@ -1487,6 +1507,8 @@ component("net") {
       "third_party/quiche/src/quic/core/http/quic_spdy_stream.h",
       "third_party/quiche/src/quic/core/http/quic_spdy_stream_body_buffer.cc",
       "third_party/quiche/src/quic/core/http/quic_spdy_stream_body_buffer.h",
+      "third_party/quiche/src/quic/core/http/spdy_server_push_utils.cc",
+      "third_party/quiche/src/quic/core/http/spdy_server_push_utils.h",
       "third_party/quiche/src/quic/core/http/spdy_utils.cc",
       "third_party/quiche/src/quic/core/http/spdy_utils.h",
       "third_party/quiche/src/quic/core/legacy_quic_stream_id_manager.cc",
@@ -1516,8 +1538,12 @@ component("net") {
       "third_party/quiche/src/quic/core/qpack/qpack_instruction_encoder.h",
       "third_party/quiche/src/quic/core/qpack/qpack_progressive_decoder.cc",
       "third_party/quiche/src/quic/core/qpack/qpack_progressive_decoder.h",
-      "third_party/quiche/src/quic/core/qpack/qpack_progressive_encoder.cc",
-      "third_party/quiche/src/quic/core/qpack/qpack_progressive_encoder.h",
+      "third_party/quiche/src/quic/core/qpack/qpack_receive_stream.cc",
+      "third_party/quiche/src/quic/core/qpack/qpack_receive_stream.h",
+      "third_party/quiche/src/quic/core/qpack/qpack_required_insert_count.cc",
+      "third_party/quiche/src/quic/core/qpack/qpack_required_insert_count.h",
+      "third_party/quiche/src/quic/core/qpack/qpack_send_stream.cc",
+      "third_party/quiche/src/quic/core/qpack/qpack_send_stream.h",
       "third_party/quiche/src/quic/core/qpack/qpack_static_table.cc",
       "third_party/quiche/src/quic/core/qpack/qpack_static_table.h",
       "third_party/quiche/src/quic/core/qpack/value_splitting_header_list.cc",
@@ -1637,6 +1663,7 @@ component("net") {
       "third_party/quiche/src/quic/core/uber_received_packet_manager.h",
       "third_party/quiche/src/quic/platform/api/quic_aligned.h",
       "third_party/quiche/src/quic/platform/api/quic_arraysize.h",
+      "third_party/quiche/src/quic/platform/api/quic_bbr2_sender.h",
       "third_party/quiche/src/quic/platform/api/quic_bug_tracker.h",
       "third_party/quiche/src/quic/platform/api/quic_cert_utils.h",
       "third_party/quiche/src/quic/platform/api/quic_client_stats.h",
@@ -1907,7 +1934,7 @@ component("net") {
       ]
     }
 
-    if (use_kerberos && ((is_posix && !is_android) || is_fuchsia)) {
+    if (use_external_gssapi) {
       sources += [
         "http/http_auth_gssapi_posix.cc",
         "http/http_auth_gssapi_posix.h",
@@ -1928,6 +1955,7 @@ component("net") {
 
     if (!use_nss_certs) {
       sources -= [
+        "cert/internal/system_trust_store_nss.h",
         "cert/internal/trust_store_nss.cc",
         "cert/internal/trust_store_nss.h",
         "cert/known_roots_nss.cc",
@@ -2401,29 +2429,27 @@ proto_library("net_quic_proto") {
   extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-if (!is_proto_quic) {
-  component("extras") {
-    sources = [
-      "extras/sqlite/cookie_crypto_delegate.h",
-      "extras/sqlite/sqlite_persistent_cookie_store.cc",
-      "extras/sqlite/sqlite_persistent_cookie_store.h",
-      "extras/sqlite/sqlite_persistent_store_backend_base.cc",
-      "extras/sqlite/sqlite_persistent_store_backend_base.h",
-    ]
-    defines = [ "IS_NET_EXTRAS_IMPL" ]
-    configs += [ "//build/config/compiler:wexit_time_destructors" ]
-    deps = [
-      ":net",
-      "//base",
-      "//sql:sql",
-    ]
+component("extras") {
+  sources = [
+    "extras/sqlite/cookie_crypto_delegate.h",
+    "extras/sqlite/sqlite_persistent_cookie_store.cc",
+    "extras/sqlite/sqlite_persistent_cookie_store.h",
+    "extras/sqlite/sqlite_persistent_store_backend_base.cc",
+    "extras/sqlite/sqlite_persistent_store_backend_base.h",
+  ]
+  defines = [ "IS_NET_EXTRAS_IMPL" ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  deps = [
+    ":net",
+    "//base",
+    "//sql:sql",
+  ]
 
-    if (enable_reporting) {
-      sources += [
-        "extras/sqlite/sqlite_persistent_reporting_and_nel_store.cc",
-        "extras/sqlite/sqlite_persistent_reporting_and_nel_store.h",
-      ]
-    }
+  if (enable_reporting) {
+    sources += [
+      "extras/sqlite/sqlite_persistent_reporting_and_nel_store.cc",
+      "extras/sqlite/sqlite_persistent_reporting_and_nel_store.h",
+    ]
   }
 }
 
@@ -2654,8 +2680,6 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/treadclimber.sctlist",
     "data/ssl/certificates/unescaped.pem",
     "data/ssl/certificates/unittest.key.bin",
-    "data/ssl/certificates/unittest.originbound.der",
-    "data/ssl/certificates/unittest.originbound.key.der",
     "data/ssl/certificates/unittest.selfsigned.der",
     "data/ssl/certificates/verisign_class3_g5_crosssigned-trusted.keychain",
     "data/ssl/certificates/verisign_class3_g5_crosssigned.pem",
@@ -2729,8 +2753,6 @@ static_library("test_support") {
     "http/transport_security_state_test_util.h",
     "log/test_net_log.cc",
     "log/test_net_log.h",
-    "log/test_net_log_entry.cc",
-    "log/test_net_log_entry.h",
     "log/test_net_log_util.cc",
     "log/test_net_log_util.h",
     "nqe/network_quality_estimator_test_util.cc",
@@ -2743,6 +2765,8 @@ static_library("test_support") {
     "proxy_resolution/mock_proxy_resolver.h",
     "proxy_resolution/proxy_config_service_common_unittest.cc",
     "proxy_resolution/proxy_config_service_common_unittest.h",
+    "quic/quic_test_packet_printer.cc",
+    "quic/quic_test_packet_printer.h",
     "socket/socket_test_util.cc",
     "socket/socket_test_util.h",
     "spdy/spdy_test_util_common.cc",
@@ -2751,6 +2775,8 @@ static_library("test_support") {
     "ssl/client_cert_identity_test_util.h",
     "ssl/ssl_private_key_test_util.cc",
     "ssl/ssl_private_key_test_util.h",
+    "ssl/test_ssl_private_key.cc",
+    "ssl/test_ssl_private_key.h",
     "test/cert_test_util.cc",
     "test/cert_test_util.h",
     "test/cert_test_util_nss.cc",
@@ -2925,8 +2951,6 @@ if (use_v8_in_net) {
       "proxy_resolution/proxy_resolver_v8.h",
       "proxy_resolution/proxy_resolver_v8_tracing.cc",
       "proxy_resolution/proxy_resolver_v8_tracing.h",
-      "proxy_resolution/proxy_resolver_v8_tracing_wrapper.cc",
-      "proxy_resolution/proxy_resolver_v8_tracing_wrapper.h",
     ]
 
     defines = [ "NET_IMPLEMENTATION" ]
@@ -3068,6 +3092,31 @@ if (!is_ios && !is_android) {
       "//base:i18n",
       "//build/win:default_exe_manifest",
       "//net/tools/tld_cleanup",
+    ]
+  }
+}
+
+if (use_external_gssapi) {
+  # In order for the tests to be reliable, these two targets cannot depend on a
+  # valid GSSAPI library. This is easy to achieve on most platforms. But on
+  # macOS care must be taken to not depend directly or indirectly on
+  # GSS.framework. This is suprisingly easy to get wrong since
+  # Security.framework is such a common dependency and it indirectly depends on
+  # GSS.
+  shared_library("test_gssapi") {
+    testonly = true
+    sources = [
+      "tools/gssapi/gss_import_name.cc",
+      "tools/gssapi/gss_methods.cc",
+      "tools/gssapi/gss_types.h",
+    ]
+  }
+
+  shared_library("test_badgssapi") {
+    testonly = true
+    sources = [
+      "tools/gssapi/gss_methods.cc",
+      "tools/gssapi/gss_types.h",
     ]
   }
 }
@@ -3217,7 +3266,6 @@ if (is_android) {
       "android/java/src/org/chromium/net/ProxyChangeListener.java",
       "android/java/src/org/chromium/net/X509Util.java",
     ]
-    jni_package = "net"
   }
   generate_jni("net_test_jni_headers") {
     sources = [
@@ -3227,7 +3275,6 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticator.java",
       "test/android/javatests/src/org/chromium/net/test/EmbeddedTestServerImpl.java",
     ]
-    jni_package = "net/test"
   }
 }
 
@@ -3268,10 +3315,14 @@ source_set("spdy_test_tools") {
   sources = [
     "spdy/fuzzing/hpack_fuzz_util.cc",
     "spdy/fuzzing/hpack_fuzz_util.h",
+    "spdy/platform/impl/spdy_test_impl.h",
+    "third_party/quiche/src/spdy/platform/api/spdy_test.h",
   ]
   deps = [
     ":net",
     "//base",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 
@@ -3683,6 +3734,72 @@ bundle_data("net_unittests_bundle_data") {
     "data/certificate_policies_unittest/policy_1_2_3_and_1_2_4_with_qualifiers.pem",
     "data/certificate_policies_unittest/policy_1_2_3_with_custom_qualifier.pem",
     "data/certificate_policies_unittest/policy_1_2_3_with_qualifier.pem",
+    "data/crl_unittest/bad_crldp_has_crlissuer.pem",
+    "data/crl_unittest/bad_fake_critical_crlentryextension.pem",
+    "data/crl_unittest/bad_fake_critical_extension.pem",
+    "data/crl_unittest/bad_idp_contains_wrong_uri.pem",
+    "data/crl_unittest/bad_idp_indirectcrl.pem",
+    "data/crl_unittest/bad_idp_onlycontainscacerts.pem",
+    "data/crl_unittest/bad_idp_onlycontainscacerts_no_basic_constraints.pem",
+    "data/crl_unittest/bad_idp_onlycontainsusercerts.pem",
+    "data/crl_unittest/bad_idp_uri_and_onlycontainscacerts.pem",
+    "data/crl_unittest/bad_idp_uri_and_onlycontainsusercerts.pem",
+    "data/crl_unittest/bad_key_rollover_signature.pem",
+    "data/crl_unittest/bad_nextupdate_too_old.pem",
+    "data/crl_unittest/bad_signature.pem",
+    "data/crl_unittest/bad_thisupdate_in_future.pem",
+    "data/crl_unittest/bad_thisupdate_too_old.pem",
+    "data/crl_unittest/bad_wrong_issuer.pem",
+    "data/crl_unittest/good.pem",
+    "data/crl_unittest/good_fake_extension.pem",
+    "data/crl_unittest/good_fake_extension_no_nextupdate.pem",
+    "data/crl_unittest/good_generalizedtime.pem",
+    "data/crl_unittest/good_idp_contains_uri.pem",
+    "data/crl_unittest/good_idp_onlycontainscacerts.pem",
+    "data/crl_unittest/good_idp_onlycontainsusercerts.pem",
+    "data/crl_unittest/good_idp_onlycontainsusercerts_no_basic_constraints.pem",
+    "data/crl_unittest/good_idp_uri_and_onlycontainscacerts.pem",
+    "data/crl_unittest/good_idp_uri_and_onlycontainsusercerts.pem",
+    "data/crl_unittest/good_issuer_name_normalization.pem",
+    "data/crl_unittest/good_issuer_no_keyusage.pem",
+    "data/crl_unittest/good_key_rollover.pem",
+    "data/crl_unittest/good_no_crldp.pem",
+    "data/crl_unittest/good_no_nextupdate.pem",
+    "data/crl_unittest/good_no_version.pem",
+    "data/crl_unittest/invalid_garbage_after_crlentryextensions.pem",
+    "data/crl_unittest/invalid_garbage_after_extensions.pem",
+    "data/crl_unittest/invalid_garbage_after_nextupdate.pem",
+    "data/crl_unittest/invalid_garbage_after_revocationdate.pem",
+    "data/crl_unittest/invalid_garbage_after_revokedcerts.pem",
+    "data/crl_unittest/invalid_garbage_after_signaturevalue.pem",
+    "data/crl_unittest/invalid_garbage_after_thisupdate.pem",
+    "data/crl_unittest/invalid_garbage_crlentry.pem",
+    "data/crl_unittest/invalid_garbage_issuer_name.pem",
+    "data/crl_unittest/invalid_garbage_revocationdate.pem",
+    "data/crl_unittest/invalid_garbage_revoked_serial_number.pem",
+    "data/crl_unittest/invalid_garbage_signaturealgorithm.pem",
+    "data/crl_unittest/invalid_garbage_signaturevalue.pem",
+    "data/crl_unittest/invalid_garbage_tbs_signature_algorithm.pem",
+    "data/crl_unittest/invalid_garbage_tbscertlist.pem",
+    "data/crl_unittest/invalid_garbage_thisupdate.pem",
+    "data/crl_unittest/invalid_garbage_version.pem",
+    "data/crl_unittest/invalid_idp_dpname_choice_extra_data.pem",
+    "data/crl_unittest/invalid_idp_empty_sequence.pem",
+    "data/crl_unittest/invalid_idp_onlycontains_user_and_ca_certs.pem",
+    "data/crl_unittest/invalid_idp_onlycontainsusercerts_v1_leaf.pem",
+    "data/crl_unittest/invalid_issuer_keyusage_no_crlsign.pem",
+    "data/crl_unittest/invalid_key_rollover_issuer_keyusage_no_crlsign.pem",
+    "data/crl_unittest/invalid_mismatched_signature_algorithm.pem",
+    "data/crl_unittest/invalid_revoked_empty_sequence.pem",
+    "data/crl_unittest/invalid_v1_explicit.pem",
+    "data/crl_unittest/invalid_v1_with_crlentryextension.pem",
+    "data/crl_unittest/invalid_v1_with_extension.pem",
+    "data/crl_unittest/invalid_v3.pem",
+    "data/crl_unittest/revoked.pem",
+    "data/crl_unittest/revoked_fake_crlentryextension.pem",
+    "data/crl_unittest/revoked_generalized_revocationdate.pem",
+    "data/crl_unittest/revoked_key_rollover.pem",
+    "data/crl_unittest/revoked_no_nextupdate.pem",
     "data/embedded_test_server/mock-headers-without-crlf.html",
     "data/embedded_test_server/mock-headers-without-crlf.html.mock-http-headers",
     "data/filter_unittests/google.br",
@@ -4963,6 +5080,7 @@ test("net_unittests") {
     "cert/internal/cert_issuer_source_static_unittest.cc",
     "cert/internal/cert_issuer_source_sync_unittest.h",
     "cert/internal/certificate_policies_unittest.cc",
+    "cert/internal/crl_unittest.cc",
     "cert/internal/extended_key_usage_unittest.cc",
     "cert/internal/general_names_unittest.cc",
     "cert/internal/name_constraints_unittest.cc",
@@ -4979,6 +5097,7 @@ test("net_unittests") {
     "cert/internal/revocation_util_unittest.cc",
     "cert/internal/signature_algorithm_unittest.cc",
     "cert/internal/simple_path_builder_delegate_unittest.cc",
+    "cert/internal/system_trust_store_nss_unittest.cc",
     "cert/internal/test_helpers.cc",
     "cert/internal/test_helpers.h",
     "cert/internal/trust_store_collection_unittest.cc",
@@ -5106,9 +5225,11 @@ test("net_unittests") {
     "log/net_log_capture_mode_unittest.cc",
     "log/net_log_unittest.cc",
     "log/net_log_util_unittest.cc",
+    "log/net_log_values_unittest.cc",
     "log/trace_net_log_observer_unittest.cc",
     "nqe/effective_connection_type_unittest.cc",
     "nqe/event_creator_unittest.cc",
+    "nqe/network_congestion_analyzer_unittest.cc",
     "nqe/network_id_unittest.cc",
     "nqe/network_qualities_prefs_manager_unittest.cc",
     "nqe/network_quality_estimator_params_unittest.cc",
@@ -5140,7 +5261,6 @@ test("net_unittests") {
     "proxy_resolution/proxy_list_unittest.cc",
     "proxy_resolution/proxy_resolution_service_unittest.cc",
     "proxy_resolution/proxy_resolver_v8_tracing_unittest.cc",
-    "proxy_resolution/proxy_resolver_v8_tracing_wrapper_unittest.cc",
     "proxy_resolution/proxy_resolver_v8_unittest.cc",
     "proxy_resolution/proxy_server_unittest.cc",
     "quic/bidirectional_stream_quic_impl_unittest.cc",
@@ -5373,6 +5493,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/http/quic_spdy_session_test.cc",
     "third_party/quiche/src/quic/core/http/quic_spdy_stream_body_buffer_test.cc",
     "third_party/quiche/src/quic/core/http/quic_spdy_stream_test.cc",
+    "third_party/quiche/src/quic/core/http/spdy_server_push_utils_test.cc",
     "third_party/quiche/src/quic/core/http/spdy_utils_test.cc",
     "third_party/quiche/src/quic/core/legacy_quic_stream_id_manager_test.cc",
     "third_party/quiche/src/quic/core/packet_number_indexed_queue_test.cc",
@@ -5386,8 +5507,10 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/qpack/qpack_header_table_test.cc",
     "third_party/quiche/src/quic/core/qpack/qpack_instruction_decoder_test.cc",
     "third_party/quiche/src/quic/core/qpack/qpack_instruction_encoder_test.cc",
-    "third_party/quiche/src/quic/core/qpack/qpack_progressive_decoder_test.cc",
+    "third_party/quiche/src/quic/core/qpack/qpack_receive_stream_test.cc",
+    "third_party/quiche/src/quic/core/qpack/qpack_required_insert_count_test.cc",
     "third_party/quiche/src/quic/core/qpack/qpack_round_trip_test.cc",
+    "third_party/quiche/src/quic/core/qpack/qpack_send_stream_test.cc",
     "third_party/quiche/src/quic/core/qpack/qpack_static_table_test.cc",
     "third_party/quiche/src/quic/core/qpack/value_splitting_header_list_test.cc",
     "third_party/quiche/src/quic/core/quic_alarm_test.cc",
@@ -5511,6 +5634,7 @@ test("net_unittests") {
     "url_request/url_request_file_dir_job_unittest.cc",
     "url_request/url_request_file_job_unittest.cc",
     "url_request/url_request_filter_unittest.cc",
+    "url_request/url_request_ftp_job_unittest.cc",
     "url_request/url_request_http_job_unittest.cc",
     "url_request/url_request_job_factory_impl_unittest.cc",
     "url_request/url_request_job_unittest.cc",
@@ -5578,13 +5702,16 @@ test("net_unittests") {
   defines = []
 
   deps = [
+    ":extras",
     ":net",
+    ":preload_decoder",
     ":quic_test_tools",
     ":quiche_test_tools",
     ":simple_quic_tools",
     ":spdy_test_tools",
     ":test_support",
     "//base",
+    "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//crypto",
     "//crypto:platform",
@@ -5594,6 +5721,8 @@ test("net_unittests") {
     "//net/dns/public:tests",
     "//net/http:transport_security_state_unittest_data",
     "//net/http:transport_security_state_unittest_data_default",
+    "//net/tools/huffman_trie:huffman_trie_generator_sources",
+    "//sql",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
@@ -5631,20 +5760,10 @@ test("net_unittests") {
     ]
   }
 
-  if (!is_proto_quic) {
-    deps += [
-      ":extras",
-      "//base:i18n",
-      "//sql",
+  if (enable_reporting) {
+    sources += [
+      "extras/sqlite/sqlite_persistent_reporting_and_nel_store_unittest.cc",
     ]
-
-    if (enable_reporting) {
-      sources += [
-        "extras/sqlite/sqlite_persistent_reporting_and_nel_store_unittest.cc",
-      ]
-    }
-  } else {
-    sources -= [ "extras/sqlite/sqlite_persistent_cookie_store_unittest.cc" ]
   }
 
   data = []
@@ -5714,7 +5833,7 @@ test("net_unittests") {
     sources -= [ "proxy_resolution/proxy_config_service_linux_unittest.cc" ]
   }
 
-  if (!is_proto_quic && v8_use_external_startup_data) {
+  if (v8_use_external_startup_data) {
     deps += [ "//gin" ]
   }
 
@@ -5744,6 +5863,7 @@ test("net_unittests") {
 
   if (!use_nss_certs) {
     sources -= [
+      "cert/internal/system_trust_store_nss_unittest.cc",
       "cert/internal/trust_store_nss_unittest.cc",
       "cert/nss_cert_database_unittest.cc",
       "cert/x509_util_nss_unittest.cc",
@@ -5758,15 +5878,18 @@ test("net_unittests") {
     }
   }
 
-  # These are excluded on Android, because the actual Kerberos support, which
-  # these test, is in a separate app on Android.
-  if (use_kerberos && ((is_posix && !is_android) || is_fuchsia)) {
+  if (use_external_gssapi) {
     sources += [
       "http/http_auth_gssapi_posix_unittest.cc",
       "http/mock_gssapi_library_posix.cc",
       "http/mock_gssapi_library_posix.h",
     ]
+    data_deps += [
+      ":test_gssapi",
+      ":test_badgssapi",
+    ]
   }
+
   if (!use_kerberos) {
     sources -= [ "http/http_auth_handler_negotiate_unittest.cc" ]
   }
@@ -5824,6 +5947,7 @@ test("net_unittests") {
       "ftp/ftp_directory_listing_parser_windows_unittest.cc",
       "ftp/ftp_network_transaction_unittest.cc",
       "ftp/ftp_util_unittest.cc",
+      "url_request/url_request_ftp_job_unittest.cc",
     ]
   }
 
@@ -5836,7 +5960,6 @@ test("net_unittests") {
   } else {
     sources -= [
       "proxy_resolution/proxy_resolver_v8_tracing_unittest.cc",
-      "proxy_resolution/proxy_resolver_v8_tracing_wrapper_unittest.cc",
       "proxy_resolution/proxy_resolver_v8_unittest.cc",
     ]
   }
@@ -5981,7 +6104,7 @@ test("net_unittests") {
 }
 
 # !is_android && !is_win && !is_mac
-if (!is_ios && !is_proto_quic) {
+if (!is_ios) {
   # TODO(crbug.com/594965): this should be converted to "app" template and
   # enabled on iOS too.
   test("net_perftests") {
@@ -6222,6 +6345,50 @@ fuzzer_test("net_cert_verify_name_in_subtree_fuzzer") {
   ]
 }
 
+fuzzer_test("net_cert_crl_parse_crl_certificatelist_fuzzer") {
+  sources = [
+    "cert/internal/crl_parse_crl_certificatelist_fuzzer.cc",
+  ]
+  seed_corpus = "data/fuzzer_data/crl_parse_crl_certificatelist_fuzzer"
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("net_cert_crl_parse_crl_tbscertlist_fuzzer") {
+  sources = [
+    "cert/internal/crl_parse_crl_tbscertlist_fuzzer.cc",
+  ]
+  seed_corpus = "data/fuzzer_data/crl_parse_crl_tbscertlist_fuzzer"
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("net_cert_crl_parse_issuing_distribution_point_fuzzer") {
+  sources = [
+    "cert/internal/crl_parse_issuing_distribution_point_fuzzer.cc",
+  ]
+  seed_corpus = "data/fuzzer_data/crl_parse_issuing_distribution_point_fuzzer"
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("net_cert_crl_getcrlstatusforcert_fuzzer") {
+  sources = [
+    "cert/internal/crl_getcrlstatusforcert_fuzzer.cc",
+  ]
+  seed_corpus = "data/fuzzer_data/crl_getcrlstatusforcert_fuzzer"
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
 fuzzer_test("net_cert_ocsp_parse_ocsp_cert_id_fuzzer") {
   sources = [
     "cert/internal/ocsp_parse_ocsp_cert_id_fuzzer.cc",
@@ -6274,6 +6441,17 @@ fuzzer_test("net_cert_parse_certificate_fuzzer") {
     "//base",
     "//net",
   ]
+}
+
+fuzzer_test("net_canonical_cookie_fuzzer") {
+  sources = [
+    "cookies/canonical_cookie_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//net",
+  ]
+  seed_corpus = "data/fuzzer_data/net_canonical_cookie_fuzzer/"
 }
 
 fuzzer_test("net_parse_cookie_line_fuzzer") {
@@ -6340,6 +6518,19 @@ fuzzer_test("net_gzip_source_stream_fuzzer") {
     "//base",
     "//net",
   ]
+}
+
+fuzzer_test("net_crl_set_fuzzer") {
+  sources = [
+    "cert/crl_set_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+  seed_corpus = "data/fuzzer_data/net_crl_set_fuzzer/"
 }
 
 if (!disable_ftp_support) {

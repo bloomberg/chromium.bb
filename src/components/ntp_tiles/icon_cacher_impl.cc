@@ -35,12 +35,10 @@ constexpr int kDesiredFrameSize = 128;
 // arguments from the UI so that we desire for the right size on a given device.
 // See crbug.com/696563.
 constexpr int kDefaultTileIconMinSizePx = 1;
-constexpr int kDefaultTileIconDesiredSizePx = 96;
 
 const char kImageFetcherUmaClient[] = "IconCacher";
 
 constexpr char kTileIconMinSizePxFieldParam[] = "min_size";
-constexpr char kTileIconDesiredSizePxFieldParam[] = "desired_size";
 
 favicon_base::IconType IconType(const PopularSites::Site& site) {
   return site.large_icon_url.is_valid() ? favicon_base::IconType::kTouchIcon
@@ -66,12 +64,6 @@ int GetMinimumFetchingSizeForChromeSuggestionsFaviconsFromServer() {
       kDefaultTileIconMinSizePx);
 }
 
-int GetDesiredFetchingSizeForChromeSuggestionsFaviconsFromServer() {
-  return base::GetFieldTrialParamByFeatureAsInt(
-      kNtpMostLikelyFaviconsFromServerFeature, kTileIconDesiredSizePxFieldParam,
-      kDefaultTileIconDesiredSizePx);
-}
-
 }  // namespace
 
 IconCacherImpl::IconCacherImpl(
@@ -80,9 +72,7 @@ IconCacherImpl::IconCacherImpl(
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher)
     : favicon_service_(favicon_service),
       large_icon_service_(large_icon_service),
-      image_fetcher_(std::move(image_fetcher)),
-      weak_ptr_factory_(this) {
-}
+      image_fetcher_(std::move(image_fetcher)) {}
 
 IconCacherImpl::~IconCacherImpl() = default;
 
@@ -154,7 +144,6 @@ void IconCacherImpl::OnPopularSitesFaviconDownloaded(
     const image_fetcher::RequestMetadata& metadata) {
   if (fetched_image.IsEmpty()) {
     FinishRequestAndNotifyIconAvailable(site.url, /*newly_available=*/false);
-    UMA_HISTOGRAM_BOOLEAN("NewTabPage.TileFaviconFetchSuccess.Popular", false);
     return;
   }
 
@@ -165,7 +154,6 @@ void IconCacherImpl::OnPopularSitesFaviconDownloaded(
   }
   SaveIconForSite(site, fetched_image);
   FinishRequestAndNotifyIconAvailable(site.url, /*newly_available=*/true);
-  UMA_HISTOGRAM_BOOLEAN("NewTabPage.TileFaviconFetchSuccess.Popular", true);
 }
 
 void IconCacherImpl::SaveAndNotifyDefaultIconForSite(
@@ -266,10 +254,7 @@ void IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished(
         })");
   large_icon_service_
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-          favicon::FaviconServerFetcherParams::CreateForMobile(
-              page_url,
-              GetMinimumFetchingSizeForChromeSuggestionsFaviconsFromServer(),
-              GetDesiredFetchingSizeForChromeSuggestionsFaviconsFromServer()),
+          favicon::FaviconServerFetcherParams::CreateForMobile(page_url),
           /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
           traffic_annotation,
           base::Bind(&IconCacherImpl::OnMostLikelyFaviconDownloaded,
@@ -279,9 +264,6 @@ void IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished(
 void IconCacherImpl::OnMostLikelyFaviconDownloaded(
     const GURL& request_url,
     favicon_base::GoogleFaviconServerRequestStatus status) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "NewTabPage.TileFaviconFetchStatus.Server", status,
-      favicon_base::GoogleFaviconServerRequestStatus::COUNT);
   FinishRequestAndNotifyIconAvailable(
       request_url,
       status == favicon_base::GoogleFaviconServerRequestStatus::SUCCESS);

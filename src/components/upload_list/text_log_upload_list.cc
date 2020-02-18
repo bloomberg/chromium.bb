@@ -34,11 +34,6 @@ TextLogUploadList::TextLogUploadList(const base::FilePath& upload_log_path)
 
 TextLogUploadList::~TextLogUploadList() = default;
 
-base::TaskTraits TextLogUploadList::LoadingTaskTraits() {
-  return {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
-}
-
 std::vector<UploadList::UploadInfo> TextLogUploadList::LoadUploadList() {
   std::vector<UploadInfo> uploads;
 

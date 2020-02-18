@@ -9,6 +9,7 @@
 
 #include <stddef.h>
 
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "components/offline_pages/buildflags/buildflags.h"
@@ -59,6 +60,7 @@ extern const char kSupervisedUserSecondCustodianProfileURL[];
 extern const char kSupervisedUserSharedSettings[];
 extern const char kSupervisedUserWhitelists[];
 extern const char kURLsToRestoreOnStartup[];
+extern const char kUserFeedbackAllowed[];
 
 #if BUILDFLAG(ENABLE_RLZ)
 extern const char kRlzPingDelaySeconds[];
@@ -171,6 +173,13 @@ extern const char kContextualSearchEnabledValue[];
 extern const char kShowInternalAccessibilityTree[];
 extern const char kAccessibilityImageLabelsEnabled[];
 extern const char kAccessibilityImageLabelsOptInAccepted[];
+extern const char kAccessibilityCaptionsTextSize[];
+extern const char kAccessibilityCaptionsTextFont[];
+extern const char kAccessibilityCaptionsTextColor[];
+extern const char kAccessibilityCaptionsTextOpacity[];
+extern const char kAccessibilityCaptionsBackgroundColor[];
+extern const char kAccessibilityCaptionsTextShadow[];
+extern const char kAccessibilityCaptionsBackgroundOpacity[];
 #if defined(OS_MACOSX)
 extern const char kConfirmToQuitEnabled[];
 extern const char kShowFullscreenToolbar[];
@@ -289,6 +298,7 @@ extern const char kNetBiosShareDiscoveryEnabled[];
 extern const char kChildScreenTimeMilliseconds[];
 extern const char kLastChildScreenTimeSaved[];
 extern const char kLastChildScreenTimeReset[];
+extern const char kReleaseNotesLastShownMilestone[];
 extern const char kNTLMShareAuthenticationEnabled[];
 extern const char kNetworkFileSharesPreconfiguredShares[];
 extern const char kMostRecentlyUsedNetworkFileShareURL[];
@@ -297,8 +307,11 @@ extern const char kDeviceWallpaperImageFilePath[];
 extern const char kKerberosRememberPasswordEnabled[];
 extern const char kKerberosAddAccountsAllowed[];
 extern const char kKerberosAccounts[];
+extern const char kKerberosActivePrincipalName[];
 extern const char kAppReinstallRecommendationEnabled[];
 extern const char kStartupBrowserWindowLaunchSuppressed[];
+extern const char kDeviceWebUsbAllowDevicesForUrls[];
+extern const char kLoginExtensionApiDataForNextLoginAttempt[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];
@@ -396,6 +409,7 @@ extern const char kPrintPreviewUseSystemDefaultPrinter[];
 #endif
 
 #if defined(OS_CHROMEOS)
+extern const char kExternalPrintServers[];
 extern const char kRecommendedNativePrinters[];
 extern const char kRecommendedNativePrintersAccessMode[];
 extern const char kRecommendedNativePrintersBlacklist[];
@@ -453,12 +467,9 @@ extern const char kHasSeenWelcomePage[];
 extern const char kShowFirstRunDefaultSearchShortcut[];
 #endif
 
-#if defined(OS_WIN)
-extern const char kHasSeenWin10PromoPage[];
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 extern const char kNaviOnboardGroup[];
-#endif  // defined(GOOGLE_CHROME_BUILD)
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 // Deprecated preference for metric / crash reporting on Android. Use
 // kMetricsReportingEnabled instead.
@@ -540,13 +551,13 @@ extern const char kNtpCollapsedRecentlyClosedTabs[];
 extern const char kNtpCollapsedSnapshotDocument[];
 extern const char kNtpCollapsedSyncPromo[];
 #else
-extern const char kNtpActivateHideShortcutsFieldTrial[];
 extern const char kNtpCustomBackgroundDict[];
 extern const char kNtpCustomBackgroundLocalToDevice[];
-extern const char kNtpUseMostVisitedTiles[];
 extern const char kNtpSearchSuggestionsBlocklist[];
 extern const char kNtpSearchSuggestionsImpressions[];
 extern const char kNtpSearchSuggestionsOptOut[];
+extern const char kNtpShortcutsVisible[];
+extern const char kNtpUseMostVisitedTiles[];
 #endif  // defined(OS_ANDROID)
 extern const char kNtpShownPage[];
 
@@ -660,6 +671,7 @@ extern const char kCameraMediaConsolidated[];
 extern const char kAutoScreenBrightnessMetricsDailySample[];
 extern const char kAutoScreenBrightnessMetricsAtlasUserAdjustmentCount[];
 extern const char kAutoScreenBrightnessMetricsEveUserAdjustmentCount[];
+extern const char kAutoScreenBrightnessMetricsNocturneUserAdjustmentCount[];
 extern const char kAutoScreenBrightnessMetricsNoAlsUserAdjustmentCount[];
 extern const char kAutoScreenBrightnessMetricsSupportedAlsUserAdjustmentCount[];
 extern const char
@@ -667,13 +679,13 @@ extern const char
 extern const char kKnownUserParentAccessCodeConfig[];
 extern const char kSamlInSessionPasswordChangeEnabled[];
 extern const char kSamlPasswordExpirationAdvanceWarningDays[];
+extern const char kLastRsuDeviceIdUploaded[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kClearPluginLSODataEnabled[];
 extern const char kPepperFlashSettingsEnabled[];
 extern const char kDiskCacheDir[];
 extern const char kDiskCacheSize[];
-extern const char kMediaCacheSize[];
 
 extern const char kChromeOsReleaseChannel[];
 
@@ -682,10 +694,6 @@ extern const char kPerformanceTracingEnabled[];
 extern const char kTabStripStackedLayout[];
 
 extern const char kRegisteredBackgroundContents[];
-
-#if defined(OS_WIN)
-extern const char kWelcomePageOnOSUpgradeEnabled[];
-#endif
 
 extern const char kAuthSchemes[];
 extern const char kDisableAuthNegotiateCnameLookup[];
@@ -802,6 +810,7 @@ extern const char kPartnerBookmarkMappings[];
 
 extern const char kQuickCheckEnabled[];
 extern const char kBrowserGuestModeEnabled[];
+extern const char kBrowserGuestModeEnforced[];
 extern const char kBrowserAddPersonEnabled[];
 extern const char kForceBrowserSignin[];
 extern const char kSigninAllowedOnNextStartup[];
@@ -870,11 +879,11 @@ extern const char kDSEWasDisabledByPolicy[];
 extern const char kWebShareVisitedTargets[];
 
 #if defined(OS_WIN)
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 extern const char kIncompatibleApplications[];
 extern const char kModuleBlacklistCacheMD5Digest[];
 extern const char kThirdPartyBlockingEnabled[];
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_WIN)
 
 extern const char kSettingsResetPromptPromptWave[];
@@ -942,8 +951,17 @@ extern const char kUsageStatsEnabled[];
 #endif
 
 #if defined(OS_CHROMEOS)
-extern const char kCertificateManagementAllowed[];
+extern const char kClientCertificateManagementAllowed[];
+extern const char kBuiltinCertificateVerifierEnabled[];
 #endif
+
+extern const char kSharingVapidKey[];
+extern const char kSharingSyncedDevices[];
+extern const char kSharingFCMRegistration[];
+
+#if !defined(OS_ANDROID)
+extern const char kHatsSurveyMetadata[];
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace prefs
 

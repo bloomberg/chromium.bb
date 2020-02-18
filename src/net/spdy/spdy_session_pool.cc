@@ -103,8 +103,7 @@ SpdySessionPool::SpdySessionPool(
       greased_http2_frame_(greased_http2_frame),
       time_func_(time_func),
       push_delegate_(nullptr),
-      network_quality_estimator_(network_quality_estimator),
-      weak_ptr_factory_(this) {
+      network_quality_estimator_(network_quality_estimator) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
   if (ssl_config_service_)
     ssl_config_service_->AddObserver(this);
@@ -185,18 +184,18 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
   if (key == it->second->spdy_session_key()) {
     UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet", FOUND_EXISTING,
                               SPDY_SESSION_GET_MAX);
-    net_log.AddEvent(
+    net_log.AddEventReferencingSource(
         NetLogEventType::HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION,
-        it->second->net_log().source().ToEventParametersCallback());
+        it->second->net_log().source());
     return it->second;
   }
 
   if (enable_ip_based_pooling) {
     UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet", FOUND_EXISTING_FROM_IP_POOL,
                               SPDY_SESSION_GET_MAX);
-    net_log.AddEvent(
+    net_log.AddEventReferencingSource(
         NetLogEventType::HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL,
-        it->second->net_log().source().ToEventParametersCallback());
+        it->second->net_log().source());
     return it->second;
   }
 
@@ -496,7 +495,7 @@ void SpdySessionPool::RemoveRequestForSpdySession(SpdySessionRequest* request) {
                        weak_ptr_factory_.GetWeakPtr(), request->key()));
   }
 
-  DCHECK(base::ContainsKey(iter->second.request_set, request));
+  DCHECK(base::Contains(iter->second.request_set, request));
   RemoveRequestInternal(iter, iter->second.request_set.find(request));
 }
 
@@ -563,7 +562,7 @@ bool SpdySessionPool::IsSessionAvailable(
 void SpdySessionPool::MapKeyToAvailableSession(
     const SpdySessionKey& key,
     const base::WeakPtr<SpdySession>& session) {
-  DCHECK(base::ContainsKey(sessions_, session.get()));
+  DCHECK(base::Contains(sessions_, session.get()));
   std::pair<AvailableSessionMap::iterator, bool> result =
       available_sessions_.insert(std::make_pair(key, session));
   CHECK(result.second);
@@ -666,9 +665,9 @@ base::WeakPtr<SpdySession> SpdySessionPool::InsertSession(
       FROM_HERE, base::BindOnce(&SpdySessionPool::UpdatePendingRequests,
                                 weak_ptr_factory_.GetWeakPtr(), key));
 
-  source_net_log.AddEvent(
+  source_net_log.AddEventReferencingSource(
       NetLogEventType::HTTP2_SESSION_POOL_IMPORTED_SESSION_FROM_SOCKET,
-      available_session->net_log().source().ToEventParametersCallback());
+      available_session->net_log().source());
 
   // Look up the IP address for this session so that we can match
   // future sessions (potentially to different domains) which can

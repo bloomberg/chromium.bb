@@ -1354,14 +1354,14 @@ void InlineFlowBox::SetLayoutOverflowFromLogicalRect(
 }
 
 bool InlineFlowBox::NodeAtPoint(HitTestResult& result,
-                                const HitTestLocation& location_in_container,
-                                const LayoutPoint& accumulated_offset,
+                                const HitTestLocation& hit_test_location,
+                                const PhysicalOffset& accumulated_offset,
                                 LayoutUnit line_top,
                                 LayoutUnit line_bottom) {
-  LayoutRect overflow_rect(VisualOverflowRect(line_top, line_bottom));
-  FlipForWritingMode(overflow_rect);
-  overflow_rect.MoveBy(accumulated_offset);
-  if (!location_in_container.Intersects(overflow_rect))
+  PhysicalRect overflow_rect =
+      PhysicalVisualOverflowRect(line_top, line_bottom);
+  overflow_rect.Move(accumulated_offset);
+  if (!hit_test_location.Intersects(overflow_rect))
     return false;
 
   // We need to hit test both our inline children (Inline Boxes) and culled
@@ -1377,11 +1377,10 @@ bool InlineFlowBox::NodeAtPoint(HitTestResult& result,
     // Layers will handle hit testing themselves.
     if (!curr->BoxModelObject() ||
         !curr->BoxModelObject().HasSelfPaintingLayer()) {
-      if (curr->NodeAtPoint(result, location_in_container, accumulated_offset,
+      if (curr->NodeAtPoint(result, hit_test_location, accumulated_offset,
                             line_top, line_bottom)) {
         GetLineLayoutItem().UpdateHitTestResult(
-            result,
-            location_in_container.Point() - ToLayoutSize(accumulated_offset));
+            result, hit_test_location.Point() - accumulated_offset);
         return true;
       }
     }
@@ -1412,7 +1411,7 @@ bool InlineFlowBox::NodeAtPoint(HitTestResult& result,
 
       if (culled_parent.IsLayoutInline() &&
           LineLayoutInline(culled_parent)
-              .HitTestCulledInline(result, location_in_container,
+              .HitTestCulledInline(result, hit_test_location,
                                    accumulated_offset))
         return true;
 
@@ -1422,38 +1421,37 @@ bool InlineFlowBox::NodeAtPoint(HitTestResult& result,
 
   if (GetLineLayoutItem().IsBox() &&
       ToLayoutBox(LineLayoutAPIShim::LayoutObjectFrom(GetLineLayoutItem()))
-          ->HitTestClippedOutByBorder(location_in_container,
-                                      overflow_rect.Location()))
+          ->HitTestClippedOutByBorder(hit_test_location, overflow_rect.offset))
     return false;
 
   if (GetLineLayoutItem().StyleRef().HasBorderRadius()) {
+    // TODO(layout-dev): LogicalFrameRect() seems incorrect.
     LayoutRect border_rect = LogicalFrameRect();
-    border_rect.MoveBy(accumulated_offset);
+    border_rect.MoveBy(accumulated_offset.ToLayoutPoint());
     FloatRoundedRect border =
         GetLineLayoutItem().StyleRef().GetRoundedBorderFor(
             border_rect, IncludeLogicalLeftEdge(), IncludeLogicalRightEdge());
-    if (!location_in_container.Intersects(border))
+    if (!hit_test_location.Intersects(border))
       return false;
   }
 
   // Now check ourselves.
-  LayoutRect rect =
+  LayoutRect layout_rect =
       InlineFlowBoxPainter(*this).FrameRectClampedToLineTopAndBottomIfNeeded();
-
-  FlipForWritingMode(rect);
-  rect.MoveBy(accumulated_offset);
+  FlipForWritingMode(layout_rect);
+  PhysicalRect rect(layout_rect);
+  rect.Move(accumulated_offset);
 
   // Pixel snap hit testing.
-  rect = LayoutRect(PixelSnappedIntRect(rect));
+  rect = PhysicalRect(PixelSnappedIntRect(rect));
   if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
-      location_in_container.Intersects(rect)) {
+      hit_test_location.Intersects(rect)) {
     // Don't add in m_topLeft here, we want coords in the containing block's
     // coordinate space.
     GetLineLayoutItem().UpdateHitTestResult(
-        result, FlipForWritingMode(location_in_container.Point() -
-                                   ToLayoutSize(accumulated_offset)));
+        result, hit_test_location.Point() - accumulated_offset);
     if (result.AddNodeToListBasedTestResult(GetLineLayoutItem().GetNode(),
-                                            location_in_container,
+                                            hit_test_location,
                                             rect) == kStopHitTesting)
       return true;
   }

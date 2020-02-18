@@ -48,7 +48,7 @@ def CreateValidationFailureMessage(pre_cq_trybot, change, suspects, messages,
     # long comment, as Gerrit will reject it. See https://crbug.com/236831
     max_error_len = 20000 / max(1, len(messages))
     msg.append('The following build(s) failed:')
-    for message in map(str, messages):
+    for message in [str(x) for x in messages]:
       if len(message) > max_error_len:
         message = message[:max_error_len] + '... (truncated)'
       msg.append(message)

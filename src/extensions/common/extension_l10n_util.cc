@@ -472,7 +472,7 @@ bool ShouldSkipValidation(const base::FilePath& locales_path,
   if (subdir.empty())
     return true;  // Non-ASCII.
 
-  if (base::ContainsValue(subdir, '.'))
+  if (base::Contains(subdir, '.'))
     return true;
 
   if (all_locales.find(subdir) == all_locales.end())
@@ -498,6 +498,10 @@ ScopedLocaleForTest::ScopedLocaleForTest(base::StringPiece process_locale,
 ScopedLocaleForTest::~ScopedLocaleForTest() {
   SetProcessLocale(process_locale_.as_string());
   SetPreferredLocale(preferred_locale_.as_string());
+}
+
+const std::string& GetPreferredLocaleForTest() {
+  return GetPreferredLocale();
 }
 
 }  // namespace extension_l10n_util

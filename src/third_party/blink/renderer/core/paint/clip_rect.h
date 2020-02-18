@@ -28,7 +28,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -84,6 +84,8 @@ class CORE_EXPORT ClipRect {
   String ToString() const;
 
  private:
+  void SetRectInternal(const FloatClipRect&);
+
   PhysicalRect rect_;
   bool has_radius_ : 1;
   bool is_infinite_ : 1;

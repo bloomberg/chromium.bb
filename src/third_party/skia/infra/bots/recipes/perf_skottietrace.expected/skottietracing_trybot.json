@@ -103,7 +103,11 @@
       "[START_DIR]/tmp/LOTTIE_VERSION"
     ],
     "infra_step": true,
-    "name": "write LOTTIE_VERSION"
+    "name": "write LOTTIE_VERSION",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@LOTTIE_VERSION@42@@@",
+      "@@@STEP_LOG_END@LOTTIE_VERSION@@@"
+    ]
   },
   {
     "cmd": [
@@ -349,7 +353,11 @@
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
-    "name": "write dm.sh"
+    "name": "write dm.sh",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@dm.sh@set -x; /data/local/tmp/dm --resourcePath /sdcard/revenge_of_the_skiabot/resources --lotties /sdcard/revenge_of_the_skiabot/lotties --src lottie --nonativeFonts --verbose --traceMatch skottie --trace /sdcard/revenge_of_the_skiabot/dm_out/2.json --match \"^lottie 3!.json$\" --config gles --nocpu; echo $? >/data/local/tmp/rc@@@",
+      "@@@STEP_LOG_END@dm.sh@@@"
+    ]
   },
   {
     "cmd": [
@@ -536,7 +544,11 @@
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
-    "name": "write dm.sh (2)"
+    "name": "write dm.sh (2)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@dm.sh@set -x; /data/local/tmp/dm --resourcePath /sdcard/revenge_of_the_skiabot/resources --lotties /sdcard/revenge_of_the_skiabot/lotties --src lottie --nonativeFonts --verbose --traceMatch skottie --trace /sdcard/revenge_of_the_skiabot/dm_out/3.json --match \\^lottie\\(test\\)\\'\\!2\\.json\\$ --config gles --nocpu; echo $? >/data/local/tmp/rc@@@",
+      "@@@STEP_LOG_END@dm.sh@@@"
+    ]
   },
   {
     "cmd": [
@@ -723,7 +735,11 @@
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
-    "name": "write dm.sh (3)"
+    "name": "write dm.sh (3)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@dm.sh@set -x; /data/local/tmp/dm --resourcePath /sdcard/revenge_of_the_skiabot/resources --lotties /sdcard/revenge_of_the_skiabot/lotties --src lottie --nonativeFonts --verbose --traceMatch skottie --trace /sdcard/revenge_of_the_skiabot/dm_out/4.json --match \\^lottie1\\.json\\$ --config gles --nocpu; echo $? >/data/local/tmp/rc@@@",
+      "@@@STEP_LOG_END@dm.sh@@@"
+    ]
   },
   {
     "cmd": [
@@ -939,7 +955,7 @@
     "cmd": [
       "python",
       "-u",
-      "import json\nwith open('[START_DIR]/[SWARM_OUT_DIR]/perf_abc123_1337000001.json', 'w') as outfile:\n  json.dump(obj={'gitHash': 'abc123', 'results': {'gles': {\"lottie(test)'!2.json\": {'frame_avg_us': 179.71, 'frame_max_us': 218.25, 'frame_min_us': 141.17}, 'lottie1.json': {'frame_avg_us': 179.71, 'frame_max_us': 218.25, 'frame_min_us': 141.17}, 'lottie 3!.json': {'frame_avg_us': 179.71, 'frame_max_us': 218.25, 'frame_min_us': 141.17}}}, 'patch_storage': 'gerrit', 'swarming_task_id': '', 'key': {'extra_config': 'Android_SkottieTracing', 'bench_type': 'tracing', 'cpu_or_gpu_value': 'Mali400MP2', 'arch': 'arm', 'source_type': 'skottie', 'cpu_or_gpu': 'GPU', 'model': 'AndroidOne', 'configuration': 'Release', 'os': 'Android', 'compiler': 'Clang'}, 'swarming_bot_id': '', 'patchset': 7, 'issue': 1234}, fp=outfile, indent=4)\n"
+      "import json\nwith open('[START_DIR]/[SWARM_OUT_DIR]/perf_abc123_1337000001.json', 'w') as outfile:\n  json.dump(obj={'gitHash': 'abc123', 'results': {\"lottie(test)'!2.json\": {'gles': {'frame_avg_us': 179.71, 'frame_max_us': 218.25, 'frame_min_us': 141.17}}, 'lottie1.json': {'gles': {'frame_avg_us': 179.71, 'frame_max_us': 218.25, 'frame_min_us': 141.17}}, 'lottie 3!.json': {'gles': {'frame_avg_us': 179.71, 'frame_max_us': 218.25, 'frame_min_us': 141.17}}}, 'patch_storage': 'gerrit', 'swarming_task_id': '', 'renderer': 'skottie', 'key': {'extra_config': 'Android_SkottieTracing', 'bench_type': 'tracing', 'cpu_or_gpu_value': 'Mali400MP2', 'arch': 'arm', 'source_type': 'skottie', 'cpu_or_gpu': 'GPU', 'model': 'AndroidOne', 'configuration': 'Release', 'os': 'Android', 'compiler': 'Clang'}, 'swarming_bot_id': '', 'patchset': 7, 'issue': 1234}, fp=outfile, indent=4)\n"
     ],
     "env": {
       "CHROME_HEADLESS": "1",
@@ -949,7 +965,7 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@python.inline@import json@@@",
       "@@@STEP_LOG_LINE@python.inline@with open('[START_DIR]/[SWARM_OUT_DIR]/perf_abc123_1337000001.json', 'w') as outfile:@@@",
-      "@@@STEP_LOG_LINE@python.inline@  json.dump(obj={'gitHash': 'abc123', 'results': {'gles': {\"lottie(test)'!2.json\": {'frame_avg_us': 179.71, 'frame_max_us': 218.25, 'frame_min_us': 141.17}, 'lottie1.json': {'frame_avg_us': 179.71, 'frame_max_us': 218.25, 'frame_min_us': 141.17}, 'lottie 3!.json': {'frame_avg_us': 179.71, 'frame_max_us': 218.25, 'frame_min_us': 141.17}}}, 'patch_storage': 'gerrit', 'swarming_task_id': '', 'key': {'extra_config': 'Android_SkottieTracing', 'bench_type': 'tracing', 'cpu_or_gpu_value': 'Mali400MP2', 'arch': 'arm', 'source_type': 'skottie', 'cpu_or_gpu': 'GPU', 'model': 'AndroidOne', 'configuration': 'Release', 'os': 'Android', 'compiler': 'Clang'}, 'swarming_bot_id': '', 'patchset': 7, 'issue': 1234}, fp=outfile, indent=4)@@@",
+      "@@@STEP_LOG_LINE@python.inline@  json.dump(obj={'gitHash': 'abc123', 'results': {\"lottie(test)'!2.json\": {'gles': {'frame_avg_us': 179.71, 'frame_max_us': 218.25, 'frame_min_us': 141.17}}, 'lottie1.json': {'gles': {'frame_avg_us': 179.71, 'frame_max_us': 218.25, 'frame_min_us': 141.17}}, 'lottie 3!.json': {'gles': {'frame_avg_us': 179.71, 'frame_max_us': 218.25, 'frame_min_us': 141.17}}}, 'patch_storage': 'gerrit', 'swarming_task_id': '', 'renderer': 'skottie', 'key': {'extra_config': 'Android_SkottieTracing', 'bench_type': 'tracing', 'cpu_or_gpu_value': 'Mali400MP2', 'arch': 'arm', 'source_type': 'skottie', 'cpu_or_gpu': 'GPU', 'model': 'AndroidOne', 'configuration': 'Release', 'os': 'Android', 'compiler': 'Clang'}, 'swarming_bot_id': '', 'patchset': 7, 'issue': 1234}, fp=outfile, indent=4)@@@",
       "@@@STEP_LOG_END@python.inline@@@"
     ]
   },
@@ -1001,7 +1017,6 @@
     "name": "kill adb server"
   },
   {
-    "jsonResult": null,
     "name": "$result"
   }
 ]

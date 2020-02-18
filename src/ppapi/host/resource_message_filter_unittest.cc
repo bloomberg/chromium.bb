@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc_message.h"
@@ -211,11 +212,11 @@ TEST_F(ResourceMessageFilterTest, TestHandleMessage) {
   // ResourceMessageFilter instances need to be created on a thread with message
   // loop. Therefore, we create a message loop and run the testing logic as a
   // task on it.
-  base::MessageLoop main_message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
 
   // It should be safe to use base::Unretained() because the object won't be
   // destroyed before the task is run.
-  main_message_loop.task_runner()->PostTask(
+  scoped_task_environment.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ResourceMessageFilterTest::TestHandleMessageImpl,
                      base::Unretained(this)));

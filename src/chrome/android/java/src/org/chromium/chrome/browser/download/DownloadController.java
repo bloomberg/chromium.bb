@@ -67,9 +67,11 @@ public class DownloadController {
     private static DownloadNotificationService sDownloadNotificationService;
 
     public static void setDownloadNotificationService(DownloadNotificationService service) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
-            sDownloadNotificationService = service;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
+            return;
         }
+
+        sDownloadNotificationService = service;
     }
 
     /**
@@ -249,7 +251,7 @@ public class DownloadController {
     @CalledByNative
     private static void onDownloadStarted() {
         if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
+                        .isFullBrowserStarted()) {
             return;
         }
         if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) return;

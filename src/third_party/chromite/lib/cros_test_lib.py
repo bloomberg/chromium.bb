@@ -27,6 +27,9 @@ import time
 import unittest
 import urllib
 
+import six
+
+from chromite.lib import cache
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cidb
@@ -230,12 +233,12 @@ class StackedSetup(type):
        for any test classes that were partially or completely set up.
     3) All test cases time out after TEST_CASE_TIMEOUT seconds.
 
-  To use this class, set the following in your class:
-    __metaclass__ = StackedSetup
+  Use by adding this line before a class:
+    @six.add_metaclass(StackedSetup)
 
   Since cros_test_lib.TestCase uses this metaclass, all derivatives of TestCase
-  also inherit the above behavior (unless they override the __metaclass__
-  attribute manually.)
+  also inherit the above behavior (unless they override the metaclass attribute
+  manually).
   """
 
   TEST_CASE_TIMEOUT = 10 * 60
@@ -253,7 +256,7 @@ class StackedSetup(type):
     # Modify all test* methods to time out after TEST_CASE_TIMEOUT seconds.
     timeout = scope.get('TEST_CASE_TIMEOUT', StackedSetup.TEST_CASE_TIMEOUT)
     if timeout is not None:
-      for name, func in scope.iteritems():
+      for name, func in scope.items():
         if name.startswith('test') and hasattr(func, '__call__'):
           wrapper = timeout_util.TimeoutDecorator(timeout)
           scope[name] = wrapper(func)
@@ -266,11 +269,11 @@ class StackedSetup(type):
     iterator = iter if reverse else reversed
     methods = (getattr(x, attr, None) for x in iterator(obj.__class__.__mro__))
     seen = set()
-    for x in filter(None, methods):
-      x = getattr(x, 'im_func', x)
-      if x not in seen:
-        seen.add(x)
-        yield x
+    for method in (x for x in methods if x):
+      method = getattr(method, 'im_func', method)
+      if method not in seen:
+        seen.add(method)
+        yield method
 
   @staticmethod
   def _stacked_setUp(obj):
@@ -415,7 +418,7 @@ class TruthTable(object):
       # produce a valid truth table, but going backward through
       # columns will produce the traditional truth table ordering.
       # For 2-dimensional example: F,F then F,T then T,F then T,T.
-      for col in xrange(self.dimension - 1, -1, -1):
+      for col in range(self.dimension - 1, -1, -1):
         line_values.append(bool(inputs_index / pow(2, col) % 2))
 
       return tuple(line_values)
@@ -529,6 +532,7 @@ class LoggingCapturer(object):
     return self.LogsMatch(re.escape(msg))
 
 
+@six.add_metaclass(StackedSetup)
 class TestCase(unittest.TestCase):
   """Basic chromite test case.
 
@@ -539,8 +543,6 @@ class TestCase(unittest.TestCase):
 
   Also includes additional assert helpers beyond python stdlib.
   """
-
-  __metaclass__ = StackedSetup
 
   # List of vars chromite is globally sensitive to and that should
   # be suppressed for tests.
@@ -613,7 +615,7 @@ class TestCase(unittest.TestCase):
       if exact_kls:
         self.assertEqual(e.__class__, exception)
       bad = []
-      for attr, required in check_attrs.iteritems():
+      for attr, required in check_attrs.items():
         self.assertTrue(hasattr(e, attr),
                         msg='%s lacks attr %s' % (e, attr))
         value = getattr(e, attr)
@@ -1140,6 +1142,44 @@ class LocalSqlServerTestCase(TempDirTestCase):
       self._mysqld_runner = None
 
 
+class FakeSDKCache(object):
+  """Creates a fake SDK Cache."""
+
+  def __init__(self, cache_dir, sdk_version='12225.0.0'):
+    """Creates a fake SDK Cache.
+
+    Args:
+      cache_dir: The top level cache directory to use.
+      sdk_version: The SDK Version.
+    """
+    self.cache_dir = cache_dir
+    # Sets the SDK Version.
+    self.sdk_version = sdk_version
+    os.environ['%SDK_VERSION'] = sdk_version
+    # Defines the path for the fake SDK Cache.
+    self.tarball_cache_path = os.path.join(self.cache_dir, 'chrome-sdk',
+                                           'tarballs')
+    # Creates an SDK TarballCache instance.
+    self.tarball_cache = cache.TarballCache(self.tarball_cache_path)
+
+  def CreateCacheReference(self, board, key):
+    """Creates the Cache Reference.
+
+    Args:
+      board: The board to use.
+      key: The key of the item in the tarball cache.
+
+    Returns:
+      Path to the cache directory.
+    """
+    # Creates the cache key required for accessing the fake SDK cache.
+    cache_key = (board, self.sdk_version, key)
+    # Adds the cache path at the key.
+    cache.CacheReference(self.tarball_cache,
+                         cache_key).Assign(self.tarball_cache_path)
+    return self.tarball_cache.Lookup(cache_key).path
+
+
 class MockTestCase(TestCase):
   """Python-mock based test case; compatible with StackedSetup"""
 
@@ -1251,7 +1291,7 @@ class GerritTestCase(MockTempDirTestCase):
     needed = [self.gerrit_instance.git_host, self.gerrit_instance.gerrit_host]
     candidates = collections.defaultdict(list)
     src_netrc = netrc.netrc(src)
-    for host, v in src_netrc.hosts.iteritems():
+    for host, v in src_netrc.hosts.items():
       dot = host.find('.')
       if dot < 0:
         continue
@@ -1339,7 +1379,7 @@ class GerritTestCase(MockTempDirTestCase):
         }
     }
 
-    for k in self.patched_params.iterkeys():
+    for k in self.patched_params.keys():
       self.saved_params[k] = site_params.get(k)
 
     site_params.update(self.patched_params)
@@ -1543,7 +1583,7 @@ class ProgressBarTestCase(MockOutputTestCase):
   def AssertProgressBarAllEvents(self, num_events):
     """Check that the progress bar generates expected events."""
     skipped = 0
-    for i in xrange(num_events):
+    for i in range(num_events):
       try:
         self.AssertOutputContainsLine('%d%%' % (i * 100 / num_events))
       except AssertionError:

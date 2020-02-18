@@ -65,6 +65,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetAutoZoomFocusedNodeToLegibleScale(bool) override;
   void SetClobberUserAgentInitialScaleQuirk(bool) override;
   void SetCookieEnabled(bool) override;
+  void SetCaretBrowsingEnabled(bool) override;
   void SetNavigateOnDragDrop(bool) override;
   void SetCursiveFontFamily(const WebString&,
                             UScriptCode = USCRIPT_COMMON) override;
@@ -175,6 +176,9 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetTextTrackTextColor(const WebString&) override;
   void SetTextTrackTextShadow(const WebString&) override;
   void SetTextTrackTextSize(const WebString&) override;
+  void SetTextTrackWindowColor(const WebString&) override;
+  void SetTextTrackWindowPadding(const WebString&) override;
+  void SetTextTrackWindowRadius(const WebString&) override;
   void SetThreadedScrollingEnabled(bool) override;
   void SetTouchDragDropEnabled(bool) override;
   void SetBarrelButtonForDragEnabled(bool) override;
@@ -216,6 +220,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
 
   void SetForceDarkModeEnabled(bool) override;
   void SetPreferredColorScheme(PreferredColorScheme) override;
+  void SetForcedColors(ForcedColors) override;
 
   bool RenderVSyncNotificationEnabled() const {
     return render_v_sync_notification_enabled_;

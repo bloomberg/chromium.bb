@@ -369,6 +369,7 @@ bool ValidateES3TexImageParametersBase(Context *context,
     switch (texType)
     {
         case TextureType::_2D:
+        case TextureType::External:
             if (static_cast<GLuint>(width) > (caps.max2DTextureSize >> level) ||
                 static_cast<GLuint>(height) > (caps.max2DTextureSize >> level))
             {
@@ -467,8 +468,9 @@ bool ValidateES3TexImageParametersBase(Context *context,
         if (isSubImage)
         {
             if (!ValidCompressedSubImageSize(
-                    context, actualFormatInfo.internalFormat, xoffset, yoffset, width, height,
-                    texture->getWidth(target, level), texture->getHeight(target, level)))
+                    context, actualFormatInfo.internalFormat, xoffset, yoffset, zoffset, width,
+                    height, depth, texture->getWidth(target, level),
+                    texture->getHeight(target, level), texture->getDepth(target, level)))
             {
                 context->validationError(GL_INVALID_OPERATION, kInvalidCompressedImageSize);
                 return false;
@@ -488,7 +490,8 @@ bool ValidateES3TexImageParametersBase(Context *context,
         }
         else
         {
-            if (!ValidCompressedImageSize(context, actualInternalFormat, level, width, height))
+            if (!ValidCompressedImageSize(context, actualInternalFormat, level, width, height,
+                                          depth))
             {
                 context->validationError(GL_INVALID_OPERATION, kInvalidCompressedImageSize);
                 return false;
@@ -502,6 +505,13 @@ bool ValidateES3TexImageParametersBase(Context *context,
         }
 
         if (texType == TextureType::_3D)
+        {
+            context->validationError(GL_INVALID_OPERATION, kInvalidTextureTarget);
+            return false;
+        }
+
+        // Disallow 3D-only compressed formats from being set on 2D textures
+        if (actualFormatInfo.compressedBlockDepth > 1 && texType != TextureType::_2DArray)
         {
             context->validationError(GL_INVALID_OPERATION, kInvalidTextureTarget);
             return false;
@@ -800,11 +810,26 @@ static bool IsValidES3CopyTexImageCombination(const InternalFormat &textureForma
     }
 
     if ((textureFormatInfo.componentType == GL_UNSIGNED_NORMALIZED ||
-         textureFormatInfo.componentType == GL_SIGNED_NORMALIZED ||
-         textureFormatInfo.componentType == GL_FLOAT) &&
+         textureFormatInfo.componentType == GL_SIGNED_NORMALIZED) &&
         !(framebufferFormatInfo.componentType == GL_UNSIGNED_NORMALIZED ||
-          framebufferFormatInfo.componentType == GL_SIGNED_NORMALIZED ||
-          framebufferFormatInfo.componentType == GL_FLOAT))
+          framebufferFormatInfo.componentType == GL_SIGNED_NORMALIZED))
+    {
+        return false;
+    }
+
+    // SNORM is not supported (e.g. is not in the tables of "effective internal format" that
+    // correspond to internal formats.
+    if (textureFormatInfo.componentType == GL_SIGNED_NORMALIZED)
+    {
+        return false;
+    }
+
+    // Section 3.8.5 of the GLES 3.0.3 (and section 8.6 of the GLES 3.2) spec has a caveat, that
+    // the KHR dEQP tests enforce:
+    //
+    // Note that the above rules disallow matches where some components sizes are smaller and
+    // others are larger (such as RGB10_A2).
+    if (!textureFormatInfo.sized && (framebufferFormatInfo.internalFormat == GL_RGB10_A2))
     {
         return false;
     }
@@ -936,7 +961,7 @@ bool ValidateES3CopyTexImageParametersBase(Context *context,
         return false;
     }
 
-    const FramebufferAttachment *source = framebuffer->getReadColorbuffer();
+    const FramebufferAttachment *source = framebuffer->getReadColorAttachment();
 
     // According to ES 3.x spec, if the internalformat of the texture
     // is RGB9_E5 and copy to such a texture, generate INVALID_OPERATION.
@@ -1153,6 +1178,12 @@ bool ValidateES3TexStorageParametersBase(Context *context,
     if (formatInfo.compressed && target == TextureType::Rectangle)
     {
         context->validationError(GL_INVALID_ENUM, kRectangleTextureCompressed);
+        return false;
+    }
+
+    if (formatInfo.compressed && target == TextureType::_3D)
+    {
+        context->validationError(GL_INVALID_OPERATION, kInvalidTextureTarget);
         return false;
     }
 
@@ -1517,7 +1548,7 @@ bool ValidateCompressedTexImage3D(Context *context,
                                   GLsizei imageSize,
                                   const void *data)
 {
-    if (context->getClientMajorVersion() < 3)
+    if ((context->getClientMajorVersion() < 3) && !context->getExtensions().texture3DOES)
     {
         context->validationError(GL_INVALID_OPERATION, kES3Required);
         return false;
@@ -1661,9 +1692,7 @@ static bool ValidateBindBufferCommon(Context *context,
                 return false;
             }
 
-            TransformFeedback *curTransformFeedback =
-                context->getState().getCurrentTransformFeedback();
-            if (curTransformFeedback && curTransformFeedback->isActive())
+            if (context->getState().isTransformFeedbackActive())
             {
                 context->validationError(GL_INVALID_OPERATION, kTransformFeedbackTargetActive);
                 return false;
@@ -2005,7 +2034,7 @@ bool ValidateCopyTexSubImage3D(Context *context,
                                GLsizei width,
                                GLsizei height)
 {
-    if (context->getClientMajorVersion() < 3)
+    if ((context->getClientMajorVersion() < 3) && !context->getExtensions().texture3DOES)
     {
         context->validationError(GL_INVALID_OPERATION, kES3Required);
         return false;
@@ -2178,9 +2207,9 @@ bool ValidateTexImage3D(Context *context,
                         GLenum type,
                         const void *pixels)
 {
-    if (context->getClientMajorVersion() < 3)
+    if ((context->getClientMajorVersion() < 3) && !context->getExtensions().texture3DOES)
     {
-        context->validationError(GL_INVALID_OPERATION, kES3Required);
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
@@ -2231,7 +2260,7 @@ bool ValidateTexSubImage3D(Context *context,
                            GLenum type,
                            const void *pixels)
 {
-    if (context->getClientMajorVersion() < 3)
+    if ((context->getClientMajorVersion() < 3) && !context->getExtensions().texture3DOES)
     {
         context->validationError(GL_INVALID_OPERATION, kES3Required);
         return false;
@@ -2285,7 +2314,7 @@ bool ValidateCompressedTexSubImage3D(Context *context,
                                      GLsizei imageSize,
                                      const void *data)
 {
-    if (context->getClientMajorVersion() < 3)
+    if ((context->getClientMajorVersion() < 3) && !context->getExtensions().texture3DOES)
     {
         context->validationError(GL_INVALID_OPERATION, kES3Required);
         return false;
@@ -2942,7 +2971,7 @@ bool ValidateRenderbufferStorageMultisample(Context *context,
     // format if samples is greater than zero. In ES3.1(section 9.2.5), it can support integer
     // multisample renderbuffer, but the samples should not be greater than MAX_INTEGER_SAMPLES.
     const gl::InternalFormat &formatInfo = gl::GetSizedInternalFormatInfo(internalformat);
-    if ((formatInfo.componentType == GL_UNSIGNED_INT || formatInfo.componentType == GL_INT))
+    if (formatInfo.isInt())
     {
         if ((samples > 0 && context->getClientVersion() == ES_3_0) ||
             static_cast<GLuint>(samples) > context->getCaps().maxIntegerSamples)
@@ -3461,10 +3490,7 @@ bool ValidateBindTransformFeedback(Context *context, GLenum target, GLuint id)
         {
             // Cannot bind a transform feedback object if the current one is started and not
             // paused (3.0.2 pg 85 section 2.14.1)
-            TransformFeedback *curTransformFeedback =
-                context->getState().getCurrentTransformFeedback();
-            if (curTransformFeedback && curTransformFeedback->isActive() &&
-                !curTransformFeedback->isPaused())
+            if (context->getState().isTransformFeedbackActiveUnpaused())
             {
                 context->validationError(GL_INVALID_OPERATION, kTransformFeedbackNotPaused);
                 return false;

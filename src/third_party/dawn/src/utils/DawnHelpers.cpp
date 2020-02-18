@@ -28,13 +28,13 @@ namespace utils {
 
     namespace {
 
-        shaderc_shader_kind ShadercShaderKind(dawn::ShaderStage stage) {
+        shaderc_shader_kind ShadercShaderKind(ShaderStage stage) {
             switch (stage) {
-                case dawn::ShaderStage::Vertex:
+                case ShaderStage::Vertex:
                     return shaderc_glsl_vertex_shader;
-                case dawn::ShaderStage::Fragment:
+                case ShaderStage::Fragment:
                     return shaderc_glsl_fragment_shader;
-                case dawn::ShaderStage::Compute:
+                case ShaderStage::Compute:
                     return shaderc_glsl_compute_shader;
                 default:
                     UNREACHABLE();
@@ -60,7 +60,7 @@ namespace utils {
     }  // anonymous namespace
 
     dawn::ShaderModule CreateShaderModule(const dawn::Device& device,
-                                          dawn::ShaderStage stage,
+                                          ShaderStage stage,
                                           const char* source) {
         shaderc_shader_kind kind = ShadercShaderKind(stage);
 
@@ -119,10 +119,10 @@ namespace utils {
                                       dawn::BufferUsageBit usage) {
         dawn::BufferDescriptor descriptor;
         descriptor.size = size;
-        descriptor.usage = usage | dawn::BufferUsageBit::TransferDst;
+        descriptor.usage = usage | dawn::BufferUsageBit::CopyDst;
 
         dawn::Buffer buffer = device.CreateBuffer(&descriptor);
-        buffer.SetSubData(0, size, reinterpret_cast<const uint8_t*>(data));
+        buffer.SetSubData(0, size, data);
         return buffer;
     }
 
@@ -195,7 +195,7 @@ namespace utils {
         : width(0),
           height(0),
           color(nullptr),
-          colorFormat(dawn::TextureFormat::R8G8B8A8Unorm),
+          colorFormat(dawn::TextureFormat::RGBA8Unorm),
           renderPassInfo({}) {
     }
 
@@ -215,8 +215,6 @@ namespace utils {
                                           uint32_t height) {
         DAWN_ASSERT(width > 0 && height > 0);
 
-        dawn::TextureFormat kColorFormat = dawn::TextureFormat::R8G8B8A8Unorm;
-
         dawn::TextureDescriptor descriptor;
         descriptor.dimension = dawn::TextureDimension::e2D;
         descriptor.size.width = width;
@@ -224,13 +222,12 @@ namespace utils {
         descriptor.size.depth = 1;
         descriptor.arrayLayerCount = 1;
         descriptor.sampleCount = 1;
-        descriptor.format = kColorFormat;
+        descriptor.format = BasicRenderPass::kDefaultColorFormat;
         descriptor.mipLevelCount = 1;
-        descriptor.usage =
-            dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::TransferSrc;
+        descriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
         dawn::Texture color = device.CreateTexture(&descriptor);
 
-        return BasicRenderPass(width, height, color, kColorFormat);
+        return BasicRenderPass(width, height, color);
     }
 
     dawn::BufferCopyView CreateBufferCopyView(dawn::Buffer buffer,
@@ -247,13 +244,13 @@ namespace utils {
     }
 
     dawn::TextureCopyView CreateTextureCopyView(dawn::Texture texture,
-                                                uint32_t level,
-                                                uint32_t slice,
+                                                uint32_t mipLevel,
+                                                uint32_t arrayLayer,
                                                 dawn::Origin3D origin) {
         dawn::TextureCopyView textureCopyView;
         textureCopyView.texture = texture;
-        textureCopyView.level = level;
-        textureCopyView.slice = slice;
+        textureCopyView.mipLevel = mipLevel;
+        textureCopyView.arrayLayer = arrayLayer;
         textureCopyView.origin = origin;
 
         return textureCopyView;
@@ -270,7 +267,7 @@ namespace utils {
         desc.addressModeW = dawn::AddressMode::Repeat;
         desc.lodMinClamp = kLodMin;
         desc.lodMaxClamp = kLodMax;
-        desc.compareFunction = dawn::CompareFunction::Never;
+        desc.compare = dawn::CompareFunction::Never;
 
         return desc;
     }

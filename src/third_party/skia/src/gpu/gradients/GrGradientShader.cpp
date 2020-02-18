@@ -21,9 +21,9 @@
 #include "src/gpu/gradients/generated/GrTextureGradientColorizer.h"
 #include "src/gpu/gradients/generated/GrUnrolledBinaryGradientColorizer.h"
 
-#include "include/private/GrColor.h"
 #include "include/private/GrRecordingContext.h"
 #include "src/gpu/GrCaps.h"
+#include "src/gpu/GrColor.h"
 #include "src/gpu/GrColorSpaceInfo.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/SkGr.h"
@@ -45,7 +45,7 @@ static std::unique_ptr<GrFragmentProcessor> make_textured_colorizer(const SkPMCo
     // Use 8888 or F16, depending on the destination config.
     // TODO: Use 1010102 for opaque gradients, at least if destination is 1010102?
     SkColorType colorType = kRGBA_8888_SkColorType;
-    if (kLow_GrSLPrecision != GrSLSamplerPrecision(args.fDstColorSpaceInfo->config()) &&
+    if (GrColorTypeIsWiderThan(args.fDstColorSpaceInfo->colorType(), 8) &&
         args.fContext->priv().caps()->isConfigTexturable(kRGBA_half_GrPixelConfig)) {
         colorType = kRGBA_F16_SkColorType;
     }

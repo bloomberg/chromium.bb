@@ -13,8 +13,7 @@ namespace syncer {
 DebugInfoEventListener::DebugInfoEventListener()
     : events_dropped_(false),
       cryptographer_has_pending_keys_(false),
-      cryptographer_ready_(false),
-      weak_ptr_factory_(this) {}
+      cryptographer_ready_(false) {}
 
 DebugInfoEventListener::~DebugInfoEventListener() {}
 
@@ -52,8 +51,7 @@ void DebugInfoEventListener::OnSyncCycleCompleted(
 void DebugInfoEventListener::OnInitializationComplete(
     const WeakHandle<JsBackend>& js_backend,
     const WeakHandle<DataTypeDebugInfoListener>& debug_listener,
-    bool success,
-    ModelTypeSet restored_types) {
+    bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CreateAndAddEvent(sync_pb::SyncEnums::INITIALIZATION_COMPLETE);
 }

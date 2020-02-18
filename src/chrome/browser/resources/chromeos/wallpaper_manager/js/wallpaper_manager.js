@@ -467,6 +467,10 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
             !this.dailyRefreshInfo_.enabled;
         if (!$('refresh').hidden) {
           this.addEventToButton_($('refresh'), () => {
+            if (this.pendingDailyRefreshInfo_) {
+              // There's already a refresh in progress, ignore this request.
+              return;
+            }
             this.pendingDailyRefreshInfo_ = this.dailyRefreshInfo_;
             this.setDailyRefreshWallpaper_();
           });
@@ -568,6 +572,11 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
                 // returns, do nothing.
                 if (currentWallpaper != this.currentWallpaper_)
                   return;
+
+                // If the current wallpaper is third_party, remove checkmark.
+                if (this.currentWallpaper_.includes('third_party'))
+                  this.wallpaperGrid_.activeItem = null;
+
                 WallpaperUtil.displayImage(
                     imageElement, thumbnail, null /*opt_callback=*/);
                 // Show a placeholder as the image title.
@@ -1348,6 +1357,11 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
             Constants.AccessLastUsedImageInfoKey, lastUsedImageInfo => {
               lastUsedImageInfo =
                   lastUsedImageInfo[Constants.AccessLastUsedImageInfoKey];
+              // If the last used image is third party, the Wallpaper app is
+              // used for the first time, or the Wallpaper app local storage is
+              // cleared, lastUsedImageInfo will be falsy.
+              if (!lastUsedImageInfo)
+                return;
               findAndUpdateActiveItem(lastUsedImageInfo);
             });
       }
@@ -1523,7 +1537,7 @@ WallpaperManager.prototype.decorateDailyRefreshItem = function(
     var toggleRippleAnimation = enabled => {
       dailyRefreshItem.classList.toggle('ripple-animation', enabled);
     };
-    toggleRippleAnimation(navigator.online);
+    toggleRippleAnimation(navigator.onLine);
     window.setTimeout(() => {
       toggleRippleAnimation(false);
     }, 360);

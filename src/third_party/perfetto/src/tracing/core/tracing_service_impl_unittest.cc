@@ -18,18 +18,18 @@
 
 #include <string.h>
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-#include "perfetto/base/file_utils.h"
-#include "perfetto/base/temp_file.h"
-#include "perfetto/base/utils.h"
-#include "perfetto/tracing/core/consumer.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include "perfetto/ext/base/file_utils.h"
+#include "perfetto/ext/base/temp_file.h"
+#include "perfetto/ext/base/utils.h"
+#include "perfetto/ext/tracing/core/consumer.h"
+#include "perfetto/ext/tracing/core/producer.h"
+#include "perfetto/ext/tracing/core/shared_memory.h"
+#include "perfetto/ext/tracing/core/trace_packet.h"
+#include "perfetto/ext/tracing/core/trace_writer.h"
 #include "perfetto/tracing/core/data_source_config.h"
 #include "perfetto/tracing/core/data_source_descriptor.h"
-#include "perfetto/tracing/core/producer.h"
-#include "perfetto/tracing/core/shared_memory.h"
-#include "perfetto/tracing/core/trace_packet.h"
-#include "perfetto/tracing/core/trace_writer.h"
 #include "src/base/test/test_task_runner.h"
 #include "src/tracing/core/shared_memory_arbiter_impl.h"
 #include "src/tracing/core/trace_writer_impl.h"
@@ -58,6 +58,8 @@ namespace perfetto {
 
 namespace {
 constexpr size_t kDefaultShmSizeKb = TracingServiceImpl::kDefaultShmSize / 1024;
+constexpr size_t kDefaultShmPageSizeKb =
+    TracingServiceImpl::kDefaultShmPageSize / 1024;
 constexpr size_t kMaxShmSizeKb = TracingServiceImpl::kMaxShmSize / 1024;
 
 ::testing::AssertionResult HasTriggerModeInternal(
@@ -1347,8 +1349,7 @@ TEST_F(TracingServiceImplTest, WriteIntoFileAndStopOnMaxSize) {
   // SystemInfo
   // Trace read clocksnapshot
   // Trace synchronisation
-  // Trace stats
-  static const int kNumPreamblePackets = 6;
+  static const int kNumPreamblePackets = 5;
   static const int kNumTestPackets = 9;
   static const char kPayload[] = "1234567890abcdef-";
 
@@ -1397,8 +1398,20 @@ TEST_F(TracingServiceImplTest, WriteIntoFileAndStopOnMaxSize) {
 TEST_F(TracingServiceImplTest, ProducerShmAndPageSizeOverriddenByTraceConfig) {
   std::unique_ptr<MockConsumer> consumer = CreateMockConsumer();
   consumer->Connect(svc.get());
-  const size_t kConfigPageSizesKb[] = /****/ {16, 16, 4, 0, 16, 8, 3, 4096, 4};
-  const size_t kExpectedPageSizesKb[] = /**/ {16, 16, 4, 4, 16, 8, 4, 64, 4};
+  const size_t kMaxPageSizeKb = SharedMemoryABI::kMaxPageSize / 1024;
+  const size_t kConfigPageSizesKb[] = /**/ {16, 0, 3, 2, 16, 8, 0, 4096, 0};
+  const size_t kPageHintSizesKb[] = /****/ {0, 4, 0, 0, 8, 0, 4096, 0, 0};
+  const size_t kExpectedPageSizesKb[] = {
+      16,                     // Use config value.
+      4,                      // Config is 0, use hint.
+      kDefaultShmPageSizeKb,  // Config % 4 != 0, take default.
+      kDefaultShmPageSizeKb,  // Less than page size, take default.
+      16,                     // Ignore the hint.
+      8,                      // Use config value.
+      kMaxPageSizeKb,         // Hint too big, take max value.
+      kMaxPageSizeKb,         // Config too high, take max value.
+      4                       // Fallback to default.
+  };
 
   const size_t kConfigSizesKb[] = /**/ {0, 16, 0, 20, 32, 7, 0, 96, 4096000};
   const size_t kHintSizesKb[] = /****/ {0, 0, 16, 32, 16, 0, 7, 96, 4096000};
@@ -1419,7 +1432,8 @@ TEST_F(TracingServiceImplTest, ProducerShmAndPageSizeOverriddenByTraceConfig) {
   for (size_t i = 0; i < kNumProducers; i++) {
     auto name = "mock_producer_" + std::to_string(i);
     producer[i] = CreateMockProducer();
-    producer[i]->Connect(svc.get(), name, geteuid(), kHintSizesKb[i] * 1024);
+    producer[i]->Connect(svc.get(), name, geteuid(), kHintSizesKb[i] * 1024,
+                         kPageHintSizesKb[i] * 1024);
     producer[i]->RegisterDataSource("data_source");
   }
 
@@ -1843,7 +1857,6 @@ TEST_F(TracingServiceImplTest, OnDataSourceAddedWhilePendingDisableAcks) {
 // skips the ack and checks that the service invokes the OnTracingDisabled()
 // after the timeout.
 TEST_F(TracingServiceImplTest, OnTracingDisabledCalledAnywaysInCaseOfTimeout) {
-  svc->override_data_source_test_timeout_ms_for_testing = 1;
   std::unique_ptr<MockConsumer> consumer = CreateMockConsumer();
   consumer->Connect(svc.get());
 
@@ -1855,6 +1868,7 @@ TEST_F(TracingServiceImplTest, OnTracingDisabledCalledAnywaysInCaseOfTimeout) {
   trace_config.add_buffers()->set_size_kb(128);
   trace_config.add_data_sources()->mutable_config()->set_name("data_source");
   trace_config.set_duration_ms(1);
+  trace_config.set_data_source_stop_timeout_ms(1);
 
   consumer->EnableTracing(trace_config);
   producer->WaitForTracingSetup();
@@ -2756,6 +2770,57 @@ TEST_F(TracingServiceImplTest, ObserveEventsDataSourceInstances) {
   consumer->DisableTracing();
   producer->WaitForDataSourceStop("data_source");
   consumer->WaitForTracingDisabled();
+}
+
+TEST_F(TracingServiceImplTest, QueryServiceState) {
+  std::unique_ptr<MockConsumer> consumer = CreateMockConsumer();
+  consumer->Connect(svc.get());
+
+  std::unique_ptr<MockProducer> producer1 = CreateMockProducer();
+  producer1->Connect(svc.get(), "producer1");
+
+  std::unique_ptr<MockProducer> producer2 = CreateMockProducer();
+  producer2->Connect(svc.get(), "producer2");
+
+  producer1->RegisterDataSource("common_ds");
+  producer2->RegisterDataSource("common_ds");
+
+  producer1->RegisterDataSource("p1_ds");
+  producer2->RegisterDataSource("p2_ds");
+
+  TracingServiceState svc_state = consumer->QueryServiceState();
+
+  EXPECT_EQ(svc_state.producers_size(), 2);
+  EXPECT_EQ(svc_state.producers().at(0).id(), 1);
+  EXPECT_EQ(svc_state.producers().at(0).name(), "producer1");
+  EXPECT_EQ(svc_state.producers().at(1).id(), 2);
+  EXPECT_EQ(svc_state.producers().at(1).name(), "producer2");
+
+  EXPECT_EQ(svc_state.data_sources_size(), 4);
+
+  EXPECT_EQ(svc_state.data_sources().at(0).producer_id(), 1);
+  EXPECT_EQ(svc_state.data_sources().at(0).ds_descriptor().name(), "common_ds");
+
+  EXPECT_EQ(svc_state.data_sources().at(1).producer_id(), 2);
+  EXPECT_EQ(svc_state.data_sources().at(1).ds_descriptor().name(), "common_ds");
+
+  EXPECT_EQ(svc_state.data_sources().at(2).producer_id(), 1);
+  EXPECT_EQ(svc_state.data_sources().at(2).ds_descriptor().name(), "p1_ds");
+
+  EXPECT_EQ(svc_state.data_sources().at(3).producer_id(), 2);
+  EXPECT_EQ(svc_state.data_sources().at(3).ds_descriptor().name(), "p2_ds");
+
+  // Test that descriptors are cleared when a producer disconnects.
+  producer1.reset();
+  svc_state = consumer->QueryServiceState();
+
+  EXPECT_EQ(svc_state.producers_size(), 1);
+  EXPECT_EQ(svc_state.data_sources_size(), 2);
+
+  EXPECT_EQ(svc_state.data_sources().at(0).producer_id(), 2);
+  EXPECT_EQ(svc_state.data_sources().at(0).ds_descriptor().name(), "common_ds");
+  EXPECT_EQ(svc_state.data_sources().at(1).producer_id(), 2);
+  EXPECT_EQ(svc_state.data_sources().at(1).ds_descriptor().name(), "p2_ds");
 }
 
 }  // namespace perfetto

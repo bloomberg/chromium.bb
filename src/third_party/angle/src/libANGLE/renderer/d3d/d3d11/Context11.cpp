@@ -141,7 +141,7 @@ CompilerImpl *Context11::createCompiler()
 
 ShaderImpl *Context11::createShader(const gl::ShaderState &data)
 {
-    return new ShaderD3D(data, mRenderer->getWorkarounds(), mRenderer->getNativeExtensions());
+    return new ShaderD3D(data, mRenderer->getFeatures(), mRenderer->getNativeExtensions());
 }
 
 ProgramImpl *Context11::createProgram(const gl::ProgramState &data)
@@ -251,30 +251,6 @@ angle::Result Context11::flush(const gl::Context *context)
 angle::Result Context11::finish(const gl::Context *context)
 {
     return mRenderer->finish(this);
-}
-
-angle::Result Context11::waitSemaphore(const gl::Context *context,
-                                       const gl::Semaphore *semaphore,
-                                       GLuint numBufferBarriers,
-                                       const GLuint *buffers,
-                                       GLuint numTextureBarriers,
-                                       const GLuint *textures,
-                                       const GLenum *srcLayouts)
-{
-    ANGLE_GL_UNREACHABLE(this);
-    return angle::Result::Stop;
-}
-
-angle::Result Context11::signalSemaphore(const gl::Context *context,
-                                         const gl::Semaphore *semaphore,
-                                         GLuint numBufferBarriers,
-                                         const GLuint *buffers,
-                                         GLuint numTextureBarriers,
-                                         const GLuint *textures,
-                                         const GLenum *dstLayouts)
-{
-    ANGLE_GL_UNREACHABLE(this);
-    return angle::Result::Stop;
 }
 
 angle::Result Context11::drawArrays(const gl::Context *context,

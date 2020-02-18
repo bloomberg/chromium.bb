@@ -14,8 +14,10 @@
 #include <windowsx.h>
 
 #include "src/core/SkUtils.h"
+#include "tools/ModifierKey.h"
 #include "tools/sk_app/WindowContext.h"
 #include "tools/sk_app/win/WindowContextFactory_win.h"
+
 #ifdef SK_VULKAN
 #include "tools/sk_app/VulkanWindowContext.h"
 #endif
@@ -158,34 +160,34 @@ static Window::Key get_key(WPARAM vk) {
     return Window::Key::kNONE;
 }
 
-static uint32_t get_modifiers(UINT message, WPARAM wParam, LPARAM lParam) {
-    uint32_t modifiers = 0;
+static ModifierKey get_modifiers(UINT message, WPARAM wParam, LPARAM lParam) {
+    ModifierKey modifiers = ModifierKey::kNone;
 
     switch (message) {
         case WM_UNICHAR:
         case WM_CHAR:
             if (0 == (lParam & (1 << 30))) {
-                modifiers |= Window::kFirstPress_ModifierKey;
+                modifiers |= ModifierKey::kFirstPress;
             }
             if (lParam & (1 << 29)) {
-                modifiers |= Window::kOption_ModifierKey;
+                modifiers |= ModifierKey::kOption;
             }
             break;
 
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
             if (0 == (lParam & (1 << 30))) {
-                modifiers |= Window::kFirstPress_ModifierKey;
+                modifiers |= ModifierKey::kFirstPress;
             }
             if (lParam & (1 << 29)) {
-                modifiers |= Window::kOption_ModifierKey;
+                modifiers |= ModifierKey::kOption;
             }
             break;
 
         case WM_KEYUP:
         case WM_SYSKEYUP:
             if (lParam & (1 << 29)) {
-                modifiers |= Window::kOption_ModifierKey;
+                modifiers |= ModifierKey::kOption;
             }
             break;
 
@@ -194,10 +196,10 @@ static uint32_t get_modifiers(UINT message, WPARAM wParam, LPARAM lParam) {
         case WM_MOUSEMOVE:
         case WM_MOUSEWHEEL:
             if (wParam & MK_CONTROL) {
-                modifiers |= Window::kControl_ModifierKey;
+                modifiers |= ModifierKey::kControl;
             }
             if (wParam & MK_SHIFT) {
-                modifiers |= Window::kShift_ModifierKey;
+                modifiers |= ModifierKey::kShift;
             }
             break;
     }
@@ -249,13 +251,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
-            eventHandled = window->onKey(get_key(wParam), Window::kDown_InputState,
+            eventHandled = window->onKey(get_key(wParam), InputState::kDown,
                                          get_modifiers(message, wParam, lParam));
             break;
 
         case WM_KEYUP:
         case WM_SYSKEYUP:
-            eventHandled = window->onKey(get_key(wParam), Window::kUp_InputState,
+            eventHandled = window->onKey(get_key(wParam), InputState::kUp,
                                          get_modifiers(message, wParam, lParam));
             break;
 
@@ -272,8 +274,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             //    yPos -= rc.top;
             //}
 
-            Window::InputState istate = ((wParam & MK_LBUTTON) != 0) ? Window::kDown_InputState
-                                                                     : Window::kUp_InputState;
+            InputState istate = ((wParam & MK_LBUTTON) != 0) ? InputState::kDown
+                                                                     : InputState::kUp;
 
             eventHandled = window->onMouse(xPos, yPos, istate,
                                             get_modifiers(message, wParam, lParam));
@@ -291,7 +293,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             //    yPos -= rc.top;
             //}
 
-            eventHandled = window->onMouse(xPos, yPos, Window::kMove_InputState,
+            eventHandled = window->onMouse(xPos, yPos, InputState::kMove,
                                            get_modifiers(message, wParam, lParam));
         } break;
 
@@ -309,13 +311,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 ClientToScreen(hWnd, &topLeft);
                 for (uint16_t i = 0; i < numInputs; ++i) {
                     TOUCHINPUT ti = inputs[i];
-                    Window::InputState state;
+                    InputState state;
                     if (ti.dwFlags & TOUCHEVENTF_DOWN) {
-                        state = Window::kDown_InputState;
+                        state = InputState::kDown;
                     } else if (ti.dwFlags & TOUCHEVENTF_MOVE) {
-                        state = Window::kMove_InputState;
+                        state = InputState::kMove;
                     } else if (ti.dwFlags & TOUCHEVENTF_UP) {
-                        state = Window::kUp_InputState;
+                        state = InputState::kUp;
                     } else {
                         continue;
                     }

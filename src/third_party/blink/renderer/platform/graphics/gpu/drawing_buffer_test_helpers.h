@@ -67,6 +67,9 @@ class WebGraphicsContext3DProviderForTests
   viz::TestSharedImageInterface* SharedImageInterface() override {
     return &test_shared_image_interface_;
   }
+  void CopyVideoFrame(media::PaintCanvasVideoRenderer* video_render,
+                      media::VideoFrame* video_frame,
+                      cc::PaintCanvas* canvas) override {}
 
  private:
   cc::StubDecodeCache image_decode_cache_;
@@ -446,6 +449,7 @@ class DrawingBufferForTests : public DrawingBuffer {
       : DrawingBuffer(
             std::move(context_provider),
             using_gpu_compositing,
+            false /* usingSwapChain */,
             std::move(extensions_util),
             client,
             false /* discardFramebufferSupported */,

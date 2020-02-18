@@ -31,31 +31,30 @@ class IndexFormatTest : public DawnTest {
         utils::BasicRenderPass renderPass;
 
         dawn::RenderPipeline MakeTestPipeline(dawn::IndexFormat format) {
-
-            dawn::ShaderModule vsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
+            dawn::ShaderModule vsModule =
+                utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
                 #version 450
                 layout(location = 0) in vec4 pos;
                 void main() {
                     gl_Position = pos;
-                })"
-            );
+                })");
 
-            dawn::ShaderModule fsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+            dawn::ShaderModule fsModule =
+                utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) out vec4 fragColor;
                 void main() {
                     fragColor = vec4(0.0, 1.0, 0.0, 1.0);
-                })"
-            );
+                })");
 
             utils::ComboRenderPipelineDescriptor descriptor(device);
             descriptor.cVertexStage.module = vsModule;
             descriptor.cFragmentStage.module = fsModule;
             descriptor.primitiveTopology = dawn::PrimitiveTopology::TriangleStrip;
             descriptor.cVertexInput.indexFormat = format;
-            descriptor.cVertexInput.numBuffers = 1;
+            descriptor.cVertexInput.bufferCount = 1;
             descriptor.cVertexInput.cBuffers[0].stride = 4 * sizeof(float);
-            descriptor.cVertexInput.numAttributes = 1;
+            descriptor.cVertexInput.cBuffers[0].attributeCount = 1;
             descriptor.cVertexInput.cAttributes[0].format = dawn::VertexFormat::Float4;
             descriptor.cColorStates[0]->format = renderPass.colorFormat;
 

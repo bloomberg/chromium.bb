@@ -10,12 +10,12 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
@@ -226,7 +226,7 @@ class SystemTPMTokenInfoGetterTest : public testing::Test {
   std::vector<int64_t> delays_;
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTPMTokenInfoGetterTest);
 };
@@ -252,7 +252,7 @@ class UserTPMTokenInfoGetterTest : public testing::Test {
   std::vector<int64_t> delays_;
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(UserTPMTokenInfoGetterTest);
 };

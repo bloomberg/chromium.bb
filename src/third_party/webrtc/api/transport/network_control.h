@@ -11,6 +11,7 @@
 #ifndef API_TRANSPORT_NETWORK_CONTROL_H_
 #define API_TRANSPORT_NETWORK_CONTROL_H_
 #include <stdint.h>
+
 #include <memory>
 
 #include "api/transport/network_types.h"
@@ -84,6 +85,8 @@ class NetworkControllerInterface {
   // Called with per packet feedback regarding receive time.
   virtual NetworkControlUpdate OnTransportPacketsFeedback(
       TransportPacketsFeedback) = 0;
+  // Called with network state estimate updates.
+  virtual NetworkControlUpdate OnNetworkStateEstimate(NetworkStateEstimate) = 0;
 };
 
 // NetworkControllerFactoryInterface is an interface for creating a network

@@ -20,6 +20,13 @@ class ServiceWorkerContextObserver {
   // to disk.
   virtual void OnRegistrationCompleted(const GURL& scope) {}
 
+  // Called after a service worker registration is persisted to storage with
+  // registration ID |registration_id| and scope |scope|.
+  //
+  // This happens after OnRegistrationCompleted().
+  virtual void OnRegistrationStored(int64_t registration_id,
+                                    const GURL& scope) {}
+
   // Called when the service worker with id |version_id| changes status to
   // activated.
   virtual void OnVersionActivated(int64_t version_id, const GURL& scope) {}

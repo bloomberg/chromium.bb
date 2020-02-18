@@ -43,10 +43,10 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/timing/largest_contentful_paint.h"
 #include "third_party/blink/renderer/core/timing/layout_shift.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/timing/profiler_group.h"
 #include "third_party/blink/renderer/core/timing/profiler_init_options.h"
 #include "third_party/blink/renderer/core/timing/time_clamper.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -78,82 +79,15 @@ const SecurityOrigin* GetSecurityOrigin(ExecutionContext* context) {
   return nullptr;
 }
 
-Performance::MeasureParameterType StringToNavigationTimingParameterType(
-    const String& s) {
-  // The following names come from performance_user_timing.cc.
-  if (s == "unloadEventStart")
-    return Performance::MeasureParameterType::kUnloadEventStart;
-  if (s == "unloadEventEnd")
-    return Performance::MeasureParameterType::kUnloadEventEnd;
-  if (s == "domInteractive")
-    return Performance::MeasureParameterType::kDomInteractive;
-  if (s == "domContentLoadedEventStart")
-    return Performance::MeasureParameterType::kDomContentLoadedEventStart;
-  if (s == "domContentLoadedEventEnd")
-    return Performance::MeasureParameterType::kDomContentLoadedEventEnd;
-  if (s == "domComplete")
-    return Performance::MeasureParameterType::kDomComplete;
-  if (s == "loadEventStart")
-    return Performance::MeasureParameterType::kLoadEventStart;
-  if (s == "loadEventEnd")
-    return Performance::MeasureParameterType::kLoadEventEnd;
-  if (s == "navigationStart")
-    return Performance::MeasureParameterType::kNavigationStart;
-  if (s == "redirectStart")
-    return Performance::MeasureParameterType::kRedirectStart;
-  if (s == "redirectEnd")
-    return Performance::MeasureParameterType::kRedirectEnd;
-  if (s == "fetchStart")
-    return Performance::MeasureParameterType::kFetchStart;
-  if (s == "domainLookupStart")
-    return Performance::MeasureParameterType::kDomainLookupStart;
-  if (s == "domainLookupEnd")
-    return Performance::MeasureParameterType::kDomainLookupEnd;
-  if (s == "connectStart")
-    return Performance::MeasureParameterType::kConnectStart;
-  if (s == "connectEnd")
-    return Performance::MeasureParameterType::kConnectEnd;
-  if (s == "secureConnectionStart")
-    return Performance::MeasureParameterType::kSecureConnectionStart;
-  if (s == "requestStart")
-    return Performance::MeasureParameterType::kRequestStart;
-  if (s == "responseStart")
-    return Performance::MeasureParameterType::kResponseStart;
-  if (s == "responseEnd")
-    return Performance::MeasureParameterType::kResponseEnd;
-  if (s == "domLoading")
-    return Performance::MeasureParameterType::kDomLoading;
-  return Performance::MeasureParameterType::kOther;
-}
-
-Performance::MeasureParameterType StartOrOptionsToParameterType(
-    const StringOrPerformanceMeasureOptions& start_or_options) {
-  if (start_or_options.IsString()) {
-    return StringToNavigationTimingParameterType(
-        start_or_options.GetAsString());
-  }
-  // Since start_or_options cannot be number any more, we don't record number
-  // type  as MeasureParameterType in UMA any more.
-  if (start_or_options.IsPerformanceMeasureOptions())
-    return Performance::MeasureParameterType::kObjectObject;
-  // null and undefined are undistinguishable in
-  // StringOrPerformanceMeasureOptions.
-  return Performance::MeasureParameterType::kUndefinedOrNull;
-}
-
-void LogMeasureStartToUma(Performance::MeasureParameterType type) {
-  UMA_HISTOGRAM_ENUMERATION("Performance.MeasureParameter.StartMark", type);
-}
-
-void LogMeasureEndToUma(Performance::MeasureParameterType type) {
-  UMA_HISTOGRAM_ENUMERATION("Performance.MeasureParameter.EndMark", type);
-}
-
 const Performance::UnifiedClock* DefaultUnifiedClock() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Performance::UnifiedClock, unified_clock,
                                   (base::DefaultClock::GetInstance(),
                                    base::DefaultTickClock::GetInstance()));
   return &unified_clock;
+}
+
+bool IsMeasureOptionsEmpty(const PerformanceMeasureOptions& options) {
+  return !options.hasDetail() && !options.hasEnd() && !options.hasStart();
 }
 
 }  // namespace
@@ -164,9 +98,10 @@ constexpr size_t kDefaultResourceTimingBufferSize = 250;
 constexpr size_t kDefaultEventTimingBufferSize = 150;
 constexpr size_t kDefaultElementTimingBufferSize = 150;
 constexpr size_t kDefaultLayoutJankBufferSize = 150;
+constexpr size_t kDefaultLargestContenfulPaintSize = 150;
 
 Performance::Performance(
-    TimeTicks time_origin,
+    base::TimeTicks time_origin,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : resource_timing_buffer_size_limit_(kDefaultResourceTimingBufferSize),
       event_timing_buffer_max_size_(kDefaultEventTimingBufferSize),
@@ -212,9 +147,6 @@ PerformanceEntryVector Performance::getEntries() {
   PerformanceEntryVector entries;
 
   entries.AppendVector(resource_timing_buffer_);
-  entries.AppendVector(event_timing_buffer_);
-  entries.AppendVector(element_timing_buffer_);
-  entries.AppendVector(layout_jank_buffer_);
   if (first_input_timing_)
     entries.push_back(first_input_timing_);
   if (!navigation_timing_)
@@ -270,8 +202,6 @@ PerformanceEntryVector Performance::getEntriesByTypeInternal(
         entries.push_back(resource);
       break;
     case PerformanceEntry::kElement:
-      UseCounter::Count(GetExecutionContext(),
-                        WebFeature::kElementTimingExplicitlyRequested);
       for (const auto& element : element_timing_buffer_)
         entries.push_back(element);
       break;
@@ -316,11 +246,12 @@ PerformanceEntryVector Performance::getEntriesByTypeInternal(
       break;
     case PerformanceEntry::kTaskAttribution:
       break;
-    case PerformanceEntry::kLayoutJank:
-      UseCounter::Count(GetExecutionContext(),
-                        WebFeature::kLayoutJankExplicitlyRequested);
+    case PerformanceEntry::kLayoutShift:
       for (const auto& layout_jank : layout_jank_buffer_)
         entries.push_back(layout_jank);
+      break;
+    case PerformanceEntry::kLargestContentfulPaint:
+      entries.AppendVector(largest_contentful_paint_buffer_);
       break;
     case PerformanceEntry::kInvalid:
       break;
@@ -338,46 +269,20 @@ PerformanceEntryVector Performance::getEntriesByName(
   PerformanceEntry::EntryType type =
       PerformanceEntry::ToEntryTypeEnum(entry_type);
 
-  if (!entry_type.IsNull() && type == PerformanceEntry::kInvalid)
+  if (!entry_type.IsNull() &&
+      !PerformanceEntry::IsValidTimelineEntryType(type)) {
+    String message = "Deprecated API for given entry type.";
+    GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning, message));
     return entries;
+  }
 
   if (entry_type.IsNull() || type == PerformanceEntry::kResource) {
     for (const auto& resource : resource_timing_buffer_) {
       if (resource->name() == name)
         entries.push_back(resource);
     }
-  }
-
-  if (entry_type.IsNull() || type == PerformanceEntry::kLayoutJank) {
-    for (const auto& layout_jank : layout_jank_buffer_) {
-      if (layout_jank->name() == name)
-        entries.push_back(layout_jank);
-    }
-  }
-  if (type == PerformanceEntry::kLayoutJank) {
-    UseCounter::Count(GetExecutionContext(),
-                      WebFeature::kLayoutJankExplicitlyRequested);
-  }
-  if (entry_type.IsNull() || type == PerformanceEntry::kElement) {
-    for (const auto& element : element_timing_buffer_) {
-      if (element->name() == name)
-        entries.push_back(element);
-    }
-  }
-  if (type == PerformanceEntry::kElement) {
-    UseCounter::Count(GetExecutionContext(),
-                      WebFeature::kElementTimingExplicitlyRequested);
-  }
-
-  if (entry_type.IsNull() || type == PerformanceEntry::kEvent) {
-    for (const auto& event : event_timing_buffer_) {
-      if (event->name() == name)
-        entries.push_back(event);
-    }
-  }
-  if (type == PerformanceEntry::kEvent) {
-    UseCounter::Count(GetExecutionContext(),
-                      WebFeature::kEventTimingExplicitlyRequested);
   }
 
   if (entry_type.IsNull() || type == PerformanceEntry::kFirstInput) {
@@ -527,7 +432,7 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
       result.last_redirect_end_time = last_chained_timing->ReceiveHeadersEnd();
     } else {
       result.allow_redirect_details = false;
-      result.last_redirect_end_time = TimeTicks();
+      result.last_redirect_end_time = base::TimeTicks();
     }
     if (!result.allow_redirect_details) {
       // TODO(https://crbug.com/817691): There was previously a DCHECK that
@@ -541,7 +446,7 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
     }
   } else {
     result.allow_redirect_details = false;
-    result.last_redirect_end_time = TimeTicks();
+    result.last_redirect_end_time = base::TimeTicks();
   }
 
   result.transfer_size = info.TransferSize();
@@ -576,7 +481,8 @@ void Performance::AddResourceTiming(const WebResourceTimingInfo& info,
   }
   if (!resource_timing_buffer_full_event_pending_) {
     resource_timing_buffer_full_event_pending_ = true;
-    resource_timing_buffer_full_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    resource_timing_buffer_full_timer_.StartOneShot(base::TimeDelta(),
+                                                    FROM_HERE);
   }
   resource_timing_secondary_buffer_.push_back(entry);
 }
@@ -627,18 +533,16 @@ void Performance::FireResourceTimingBufferFull(TimerBase*) {
 }
 
 void Performance::AddElementTimingBuffer(PerformanceElementTiming& entry) {
-  element_timing_buffer_.push_back(&entry);
-
-  if (IsElementTimingBufferFull())
-    DispatchEvent(*Event::Create(event_type_names::kElementtimingbufferfull));
+  if (!IsElementTimingBufferFull()) {
+    element_timing_buffer_.push_back(&entry);
+  }
 }
 
 void Performance::AddEventTimingBuffer(PerformanceEventTiming& entry) {
   DCHECK(RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext()));
-  event_timing_buffer_.push_back(&entry);
-
-  if (IsEventTimingBufferFull())
-    DispatchEvent(*Event::Create(event_type_names::kEventtimingbufferfull));
+  if (!IsEventTimingBufferFull()) {
+    event_timing_buffer_.push_back(&entry);
+  }
 }
 
 void Performance::AddLayoutJankBuffer(LayoutShift& entry) {
@@ -646,48 +550,24 @@ void Performance::AddLayoutJankBuffer(LayoutShift& entry) {
     layout_jank_buffer_.push_back(&entry);
 }
 
-unsigned Performance::ElementTimingBufferSize() const {
-  return element_timing_buffer_.size();
+void Performance::AddLargestContentfulPaint(LargestContentfulPaint* entry) {
+  if (largest_contentful_paint_buffer_.size() <
+      kDefaultLargestContenfulPaintSize) {
+    largest_contentful_paint_buffer_.push_back(entry);
+  }
 }
 
-unsigned Performance::EventTimingBufferSize() const {
-  return event_timing_buffer_.size();
-}
-
-void Performance::clearElementTimings() {
-  element_timing_buffer_.clear();
-}
-
-void Performance::clearEventTimings() {
-  event_timing_buffer_.clear();
-}
-
-// TODO(crbug.com/72556): remove Element Timing buffering when shipping the
-// 'buffered' flag.
-void Performance::setElementTimingBufferMaxSize(unsigned size) {
-  element_timing_buffer_max_size_ = size;
-  if (IsElementTimingBufferFull())
-    DispatchEvent(*Event::Create(event_type_names::kElementtimingbufferfull));
-}
-
-// TODO(yoav): EventTiming should follow a simpler buffering model.
-void Performance::setEventTimingBufferMaxSize(unsigned size) {
-  event_timing_buffer_max_size_ = size;
-  if (IsEventTimingBufferFull())
-    DispatchEvent(*Event::Create(event_type_names::kEventtimingbufferfull));
-}
-
-void Performance::AddFirstPaintTiming(TimeTicks start_time) {
+void Performance::AddFirstPaintTiming(base::TimeTicks start_time) {
   AddPaintTiming(PerformancePaintTiming::PaintType::kFirstPaint, start_time);
 }
 
-void Performance::AddFirstContentfulPaintTiming(TimeTicks start_time) {
+void Performance::AddFirstContentfulPaintTiming(base::TimeTicks start_time) {
   AddPaintTiming(PerformancePaintTiming::PaintType::kFirstContentfulPaint,
                  start_time);
 }
 
 void Performance::AddPaintTiming(PerformancePaintTiming::PaintType type,
-                                 TimeTicks start_time) {
+                                 base::TimeTicks start_time) {
   PerformanceEntry* entry = MakeGarbageCollected<PerformancePaintTiming>(
       type, MonotonicTimeToDOMHighResTimeStamp(start_time));
   // Always buffer First Paint & First Contentful Paint.
@@ -704,8 +584,8 @@ bool Performance::CanAddResourceTimingEntry() {
 }
 
 void Performance::AddLongTaskTiming(
-    TimeTicks start_time,
-    TimeTicks end_time,
+    base::TimeTicks start_time,
+    base::TimeTicks end_time,
     const AtomicString& name,
     const String& frame_src,
     const String& frame_id,
@@ -761,11 +641,12 @@ void Performance::clearMarks(const AtomicString& mark_name) {
 PerformanceMeasure* Performance::measure(ScriptState* script_state,
                                          const AtomicString& measure_name,
                                          ExceptionState& exception_state) {
-  LogMeasureStartToUma(MeasureParameterType::kUnprovided);
-  LogMeasureEndToUma(MeasureParameterType::kUnprovided);
+  // When |startOrOptions| is not provided, it's assumed to be an empty
+  // dictionary.
   return MeasureInternal(
       script_state, measure_name,
-      NativeValueTraits<StringOrPerformanceMeasureOptions>::NullValue(),
+      StringOrPerformanceMeasureOptions::FromPerformanceMeasureOptions(
+          PerformanceMeasureOptions::Create()),
       base::nullopt, exception_state);
 }
 
@@ -774,8 +655,6 @@ PerformanceMeasure* Performance::measure(
     const AtomicString& measure_name,
     const StringOrPerformanceMeasureOptions& start_or_options,
     ExceptionState& exception_state) {
-  LogMeasureStartToUma(StartOrOptionsToParameterType(start_or_options));
-  LogMeasureEndToUma(MeasureParameterType::kUnprovided);
   return MeasureInternal(script_state, measure_name, start_or_options,
                          base::nullopt, exception_state);
 }
@@ -786,8 +665,6 @@ PerformanceMeasure* Performance::measure(
     const StringOrPerformanceMeasureOptions& start_or_options,
     const String& end,
     ExceptionState& exception_state) {
-  LogMeasureStartToUma(StartOrOptionsToParameterType(start_or_options));
-  LogMeasureEndToUma(StringToNavigationTimingParameterType(end));
   return MeasureInternal(script_state, measure_name, start_or_options,
                          base::Optional<String>(end), exception_state);
 }
@@ -815,12 +692,15 @@ PerformanceMeasure* Performance::MeasureInternal(
     const StringOrPerformanceMeasureOptions& start_or_options,
     base::Optional<String> end,
     ExceptionState& exception_state) {
+  DCHECK(!start_or_options.IsNull());
   if (RuntimeEnabledFeatures::CustomUserTimingEnabled()) {
-    if (start_or_options.IsPerformanceMeasureOptions()) {
-      // measure("name", {}, *)
+    // An empty option is treated with no difference as null, undefined.
+    if (start_or_options.IsPerformanceMeasureOptions() &&
+        !IsMeasureOptionsEmpty(
+            *start_or_options.GetAsPerformanceMeasureOptions())) {
+      // measure("name", { start, end }, *)
       if (end) {
-        exception_state.ThrowDOMException(
-            DOMExceptionCode::kSyntaxError,
+        exception_state.ThrowTypeError(
             "If a PerformanceMeasureOptions object was passed, |end| must be "
             "null.");
         return nullptr;
@@ -830,46 +710,38 @@ PerformanceMeasure* Performance::MeasureInternal(
       return MeasureWithDetail(script_state, measure_name, options->start(),
                                options->end(), options->detail(),
                                exception_state);
-    } else {
-      // measure("name", "mark1", *)
-      StringOrDouble converted_start;
-      if (start_or_options.IsString()) {
-        converted_start =
-            StringOrDouble::FromString(start_or_options.GetAsString());
-      } else {
-        DCHECK(start_or_options.IsNull());
-        converted_start = NativeValueTraits<StringOrDouble>::NullValue();
-      }
-      // We let |end| behave the same whether it's empty, undefined or null in
-      // JS, as long as |end| is null in C++.
-      return MeasureWithDetail(
-          script_state, measure_name, converted_start,
-          end ? StringOrDouble::FromString(*end)
-              : NativeValueTraits<StringOrDouble>::NullValue(),
-          ScriptValue::CreateNull(script_state), exception_state);
     }
-  } else {
-    // For consistency with UserTimingL2: the L2 API took |start| as a string,
-    // so any object passed in became a string '[object, object]', null became
-    // string 'null'.
+    // measure("name", "mark1", *)
     StringOrDouble converted_start;
-    if (start_or_options.IsPerformanceMeasureOptions()) {
-      converted_start = StringOrDouble::FromString("[object Object]");
-    } else if (start_or_options.IsString()) {
+    if (start_or_options.IsString()) {
       converted_start =
           StringOrDouble::FromString(start_or_options.GetAsString());
-    } else {
-      DCHECK(start_or_options.IsNull());
-      DCHECK(converted_start.IsNull());
     }
-
-    MeasureWithDetail(script_state, measure_name, converted_start,
-                      end ? StringOrDouble::FromString(*end)
-                          : NativeValueTraits<StringOrDouble>::NullValue(),
-                      ScriptValue::CreateNull(script_state), exception_state);
-    // Return nullptr to distinguish from L3.
-    return nullptr;
+    // We let |end| behave the same whether it's empty, undefined or null in
+    // JS, as long as |end| is null in C++.
+    return MeasureWithDetail(
+        script_state, measure_name, converted_start,
+        end ? StringOrDouble::FromString(*end)
+            : NativeValueTraits<StringOrDouble>::NullValue(),
+        ScriptValue::CreateNull(script_state), exception_state);
   }
+  // For consistency with UserTimingL2: the L2 API took |start| as a string,
+  // so any object passed in became a string '[object, object]', null became
+  // string 'null'.
+  StringOrDouble converted_start;
+  if (!start_or_options.IsPerformanceMeasureOptions()) {
+    // |start_or_options| is not nullable.
+    DCHECK(start_or_options.IsString());
+    converted_start =
+        StringOrDouble::FromString(start_or_options.GetAsString());
+  }
+
+  MeasureWithDetail(script_state, measure_name, converted_start,
+                    end ? StringOrDouble::FromString(*end)
+                        : NativeValueTraits<StringOrDouble>::NullValue(),
+                    ScriptValue::CreateNull(script_state), exception_state);
+  // Return nullptr to distinguish from L3.
+  return nullptr;
 }
 
 PerformanceMeasure* Performance::MeasureWithDetail(
@@ -906,7 +778,7 @@ ScriptPromise Performance::profile(ScriptState* script_state,
   auto* profiler = profiler_group->CreateProfiler(
       script_state, *options, time_origin_, exception_state);
   if (exception_state.HadException())
-    return ScriptPromise::Reject(script_state, exception_state);
+    return ScriptPromise();
 
   return ScriptPromise::Cast(script_state, ToV8(profiler, script_state));
 }
@@ -959,7 +831,7 @@ bool Performance::HasObserverFor(
 
 void Performance::ActivateObserver(PerformanceObserver& observer) {
   if (active_observers_.IsEmpty())
-    deliver_observations_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    deliver_observations_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   active_observers_.insert(&observer);
 }
@@ -997,8 +869,8 @@ double Performance::ClampTimeResolution(double time_seconds) {
 
 // static
 DOMHighResTimeStamp Performance::MonotonicTimeToDOMHighResTimeStamp(
-    TimeTicks time_origin,
-    TimeTicks monotonic_time,
+    base::TimeTicks time_origin,
+    base::TimeTicks monotonic_time,
     bool allow_negative_value) {
   // Avoid exposing raw platform timestamps.
   if (monotonic_time.is_null() || time_origin.is_null())
@@ -1013,7 +885,7 @@ DOMHighResTimeStamp Performance::MonotonicTimeToDOMHighResTimeStamp(
 }
 
 DOMHighResTimeStamp Performance::MonotonicTimeToDOMHighResTimeStamp(
-    TimeTicks monotonic_time) const {
+    base::TimeTicks monotonic_time) const {
   return MonotonicTimeToDOMHighResTimeStamp(time_origin_, monotonic_time,
                                             false /* allow_negative_value */);
 }
@@ -1039,6 +911,7 @@ void Performance::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_timing_buffer_);
   visitor->Trace(event_timing_buffer_);
   visitor->Trace(layout_jank_buffer_);
+  visitor->Trace(largest_contentful_paint_buffer_);
   visitor->Trace(navigation_timing_);
   visitor->Trace(user_timing_);
   visitor->Trace(first_paint_timing_);
@@ -1063,7 +936,7 @@ DOMHighResTimeStamp Performance::UnifiedClock::GetUnixAtZeroMonotonic() const {
   return unix_at_zero_monotonic_.value();
 }
 
-TimeTicks Performance::UnifiedClock::NowTicks() const {
+base::TimeTicks Performance::UnifiedClock::NowTicks() const {
   return tick_clock_->NowTicks();
 }
 

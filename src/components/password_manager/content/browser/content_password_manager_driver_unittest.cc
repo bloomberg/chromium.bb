@@ -11,16 +11,16 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/content/common/autofill_agent.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
+#include "components/autofill/core/browser/logging/stub_log_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
-#include "components/password_manager/core/browser/stub_log_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +36,7 @@ namespace password_manager {
 
 namespace {
 
-class MockLogManager : public StubLogManager {
+class MockLogManager : public autofill::StubLogManager {
  public:
   MOCK_CONST_METHOD0(IsLoggingActive, bool(void));
 };
@@ -46,7 +46,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MockPasswordManagerClient() = default;
   ~MockPasswordManagerClient() override = default;
 
-  MOCK_CONST_METHOD0(GetLogManager, const LogManager*());
+  MOCK_CONST_METHOD0(GetLogManager, const autofill::LogManager*());
 #if defined(SAFE_BROWSING_DB_LOCAL)
   MOCK_METHOD2(CheckSafeBrowsingReputation, void(const GURL&, const GURL&));
 #endif
@@ -61,13 +61,14 @@ class FakePasswordAutofillAgent
   FakePasswordAutofillAgent()
       : called_set_logging_state_(false),
         logging_state_active_(false),
-        binding_(this) {}
+        receiver_(this) {}
 
   ~FakePasswordAutofillAgent() override {}
 
-  void BindRequest(mojo::ScopedInterfaceEndpointHandle handle) {
-    binding_.Bind(autofill::mojom::PasswordAutofillAgentAssociatedRequest(
-        std::move(handle)));
+  void BindPendingReceiver(mojo::ScopedInterfaceEndpointHandle handle) {
+    receiver_.Bind(
+        mojo::PendingAssociatedReceiver<autofill::mojom::PasswordAutofillAgent>(
+            std::move(handle)));
   }
 
   bool called_set_logging_state() { return called_set_logging_state_; }
@@ -81,8 +82,7 @@ class FakePasswordAutofillAgent
 
   // autofill::mojom::PasswordAutofillAgent:
   MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
-  MOCK_METHOD3(FillIntoFocusedField,
-               void(bool, const base::string16&, FillIntoFocusedFieldCallback));
+  MOCK_METHOD2(FillIntoFocusedField, void(bool, const base::string16&));
 
   MOCK_METHOD0(BlacklistedFormFound, void());
 
@@ -100,7 +100,7 @@ class FakePasswordAutofillAgent
   // Records data received via SetLoggingState() call.
   bool logging_state_active_;
 
-  mojo::AssociatedBinding<autofill::mojom::PasswordAutofillAgent> binding_;
+  mojo::AssociatedReceiver<autofill::mojom::PasswordAutofillAgent> receiver_;
 };
 
 PasswordFormFillData GetTestPasswordFormFillData() {
@@ -154,7 +154,7 @@ class ContentPasswordManagerDriverTest
         web_contents()->GetMainFrame()->GetRemoteAssociatedInterfaces();
     remote_interfaces->OverrideBinderForTesting(
         autofill::mojom::PasswordAutofillAgent::Name_,
-        base::Bind(&FakePasswordAutofillAgent::BindRequest,
+        base::Bind(&FakePasswordAutofillAgent::BindPendingReceiver,
                    base::Unretained(&fake_agent_)));
   }
 

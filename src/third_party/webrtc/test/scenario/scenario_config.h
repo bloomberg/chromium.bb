@@ -11,6 +11,7 @@
 #define TEST_SCENARIO_SCENARIO_CONFIG_H_
 
 #include <stddef.h>
+
 #include <string>
 
 #include "absl/types/optional.h"
@@ -47,7 +48,6 @@ struct TransportControllerConfig {
     DataRate min_rate = DataRate::kbps(30);
     DataRate max_rate = DataRate::kbps(3000);
     DataRate start_rate = DataRate::kbps(300);
-    DataRate max_padding_rate = DataRate::Zero();
   } rates;
   NetworkControllerFactoryInterface* cc_factory = nullptr;
   TimeDelta state_log_interval = TimeDelta::ms(100);
@@ -55,13 +55,6 @@ struct TransportControllerConfig {
 
 struct CallClientConfig {
   TransportControllerConfig transport;
-};
-
-struct SimulatedTimeClientConfig {
-  TransportControllerConfig transport;
-  struct Feedback {
-    TimeDelta interval = TimeDelta::ms(100);
-  } feedback;
 };
 
 struct PacketStreamConfig {
@@ -156,7 +149,6 @@ struct VideoStreamConfig {
       } prediction = Prediction::kFull;
     } layers;
 
-    using DegradationPreference = DegradationPreference;
     DegradationPreference degradation_preference =
         DegradationPreference::MAINTAIN_FRAMERATE;
   } encoder;
@@ -164,6 +156,7 @@ struct VideoStreamConfig {
     Stream();
     Stream(const Stream&);
     ~Stream();
+    bool abs_send_time = false;
     bool packet_feedback = true;
     bool use_rtx = true;
     DataRate pad_to_rate = DataRate::Zero();
@@ -209,13 +202,13 @@ struct AudioStreamConfig {
     absl::optional<DataRate> fixed_rate;
     absl::optional<DataRate> min_rate;
     absl::optional<DataRate> max_rate;
-    absl::optional<DataRate> priority_rate;
     TimeDelta initial_frame_length = TimeDelta::ms(20);
   } encoder;
   struct Stream {
     Stream();
     Stream(const Stream&);
     ~Stream();
+    bool abs_send_time = false;
     bool in_bandwidth_estimation = false;
   } stream;
   struct Rendering {

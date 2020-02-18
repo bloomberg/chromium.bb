@@ -23,6 +23,8 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -35,8 +37,9 @@
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "components/account_id/account_id.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -134,6 +137,13 @@ void SigninErrorNotifier::OnErrorChanged() {
 }
 
 void SigninErrorNotifier::HandleDeviceAccountError() {
+  // If this error has occurred because a user's account has just been converted
+  // to a Family Link Supervised account, then suppress the notificaiton.
+  SupervisedUserService* service =
+      SupervisedUserServiceFactory::GetForProfile(profile_);
+  if (service->signout_required_after_supervision_enabled())
+    return;
+
   // Add an accept button to sign the user out.
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(
@@ -211,7 +221,7 @@ void SigninErrorNotifier::OnGetAccounts(
                   &SigninErrorNotifier::
                       HandleSecondaryAccountReauthNotificationClick,
                   weak_factory_.GetWeakPtr())),
-          ash::kNotificationSettingsIcon,
+          vector_icons::kSettingsIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
 
@@ -247,8 +257,6 @@ base::string16 SigninErrorNotifier::GetMessageBody(
     // User credentials are invalid (bad acct, etc).
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::SERVICE_ERROR:
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
       return l10n_util::GetStringUTF16(
           IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE);
       break;

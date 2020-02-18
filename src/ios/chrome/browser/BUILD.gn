@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ios/rules.gni")
 import("//rlz/buildflags/buildflags.gni")
@@ -25,10 +24,6 @@ source_set("chrome_paths") {
 source_set("browser") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "about_flags.h",
-    "about_flags.mm",
-    "app_startup_parameters.h",
-    "app_startup_parameters.mm",
     "application_context.cc",
     "application_context.h",
     "arch_util.cc",
@@ -57,8 +52,6 @@ source_set("browser") {
     "installation_notifier.mm",
     "ios_chrome_field_trials.cc",
     "ios_chrome_field_trials.h",
-    "ios_chrome_flag_descriptions.cc",
-    "ios_chrome_flag_descriptions.h",
     "ios_chrome_io_thread.h",
     "ios_chrome_io_thread.mm",
     "ios_first_run_field_trials.cc",
@@ -70,15 +63,12 @@ source_set("browser") {
     "procedural_block_types.h",
     "system_flags.h",
     "system_flags.mm",
-    "tab_parenting_global_observer.cc",
-    "tab_parenting_global_observer.h",
-    "web_data_service_factory.cc",
-    "web_data_service_factory.h",
   ]
 
   deps = [
     ":settings_resources",
     "//base",
+    "//build:branding_buildflags",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
@@ -106,7 +96,6 @@ source_set("browser") {
     "//components/search_provider_logos",
     "//components/security_state/core",
     "//components/send_tab_to_self",
-    "//components/signin/core/browser",
     "//components/strings",
     "//components/sync",
     "//components/translate/core/browser",
@@ -123,6 +112,7 @@ source_set("browser") {
     "//ios/chrome/browser/app_launcher:feature_flags",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browsing_data:feature_flags",
+    "//ios/chrome/browser/complex_tasks",
     "//ios/chrome/browser/crash_report:flags",
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/drag_and_drop",
@@ -150,6 +140,7 @@ source_set("browser") {
     "//ios/public/provider/chrome/browser/voice",
     "//ios/web",
     "//ios/web/common",
+    "//ios/web/common:web_view_creation_util",
     "//ios/web/public",
     "//net",
     "//rlz/buildflags",
@@ -205,6 +196,7 @@ source_set("browser_impl") {
     "//ios/chrome/browser/browser_state:browser_state_impl",
     "//ios/chrome/browser/component_updater",
     "//ios/chrome/browser/first_run",
+    "//ios/chrome/browser/flags",
     "//ios/chrome/browser/gcm",
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/metrics",
@@ -247,7 +239,6 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "app_startup_parameters_unittest.mm",
     "browser_about_rewriter_unittest.cc",
     "chrome_browser_provider_observer_bridge_unittest.mm",
     "chrome_url_util_unittest.mm",

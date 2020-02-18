@@ -57,7 +57,7 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
       row_insets));
 
   views::GridLayout* layout =
-      row->SetLayoutManager(std::make_unique<views::GridLayout>(row.get()));
+      row->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   // The first column has resize_percent = 1 so that it stretches all the way
@@ -94,8 +94,8 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
   amount_text->SetAllowCharacterBreak(true);
 
   std::unique_ptr<views::View> amount_wrapper = std::make_unique<views::View>();
-  views::GridLayout* wrapper_layout = amount_wrapper->SetLayoutManager(
-      std::make_unique<views::GridLayout>(amount_wrapper.get()));
+  views::GridLayout* wrapper_layout =
+      amount_wrapper->SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* wrapper_columns = wrapper_layout->AddColumnSet(0);
   wrapper_columns->AddColumn(
       views::GridLayout::LEADING, views::GridLayout::CENTER,
@@ -106,11 +106,11 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
 
   wrapper_layout->StartRow(views::GridLayout::kFixedSize, 0);
   currency_text->SetID(static_cast<int>(currency_label_id));
-  wrapper_layout->AddView(currency_text.release());
-  wrapper_layout->AddView(amount_text.release());
+  wrapper_layout->AddView(std::move(currency_text));
+  wrapper_layout->AddView(std::move(amount_text));
 
-  layout->AddView(label_text.release());
-  layout->AddView(amount_wrapper.release());
+  layout->AddView(std::move(label_text));
+  layout->AddView(std::move(amount_wrapper));
 
   return row;
 }
@@ -160,7 +160,8 @@ base::string16 OrderSummaryViewController::GetSheetTitle() {
 }
 
 void OrderSummaryViewController::FillContentView(views::View* content_view) {
-  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);

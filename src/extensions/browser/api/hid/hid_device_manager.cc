@@ -18,7 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
@@ -99,7 +99,7 @@ struct HidDeviceManager::GetApiDevicesParams {
 };
 
 HidDeviceManager::HidDeviceManager(content::BrowserContext* context)
-    : browser_context_(context), binding_(this), weak_factory_(this) {
+    : browser_context_(context), binding_(this) {
   event_router_ = EventRouter::Get(context);
   if (event_router_) {
     event_router_->RegisterObserver(this, hid::OnDeviceAdded::kEventName);
@@ -227,7 +227,7 @@ void HidDeviceManager::DeviceAdded(device::mojom::HidDeviceInfoPtr device) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_LT(next_resource_id_, std::numeric_limits<int>::max());
   int new_id = next_resource_id_++;
-  DCHECK(!base::ContainsKey(resource_ids_, device->guid));
+  DCHECK(!base::Contains(resource_ids_, device->guid));
   resource_ids_[device->guid] = new_id;
   devices_[new_id] = std::move(device);
 
@@ -286,9 +286,8 @@ void HidDeviceManager::LazyInitialize() {
     device::mojom::HidManagerRequest request = mojo::MakeRequest(&hid_manager_);
 
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    DCHECK(content::ServiceManagerConnection::GetForProcess());
-    auto* connector =
-        content::ServiceManagerConnection::GetForProcess()->GetConnector();
+    auto* connector = content::GetSystemConnector();
+    DCHECK(connector);
     connector->BindInterface(device::mojom::kServiceName, std::move(request));
   }
   // Enumerate HID devices and set client.

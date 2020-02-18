@@ -22,6 +22,7 @@
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/service/main/viz_main_impl.h"
 #include "content/child/child_thread_impl.h"
+#include "gpu/config/gpu_extra_info.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_preferences.h"
@@ -31,7 +32,7 @@
 #include "gpu/ipc/service/gpu_config.h"
 #include "gpu/ipc/service/x_util.h"
 #include "media/base/android_overlay_mojo_factory.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
@@ -63,7 +64,8 @@ class GpuChildThread : public ChildThreadImpl,
                  const ChildThreadImpl::Options& options,
                  std::unique_ptr<gpu::GpuInit> gpu_init);
 
-  void CreateVizMainService(viz::mojom::VizMainAssociatedRequest request);
+  void CreateVizMainService(
+      mojo::PendingAssociatedReceiver<viz::mojom::VizMain> pending_receiver);
 
   bool in_process_gpu() const;
 
@@ -130,7 +132,7 @@ class GpuChildThread : public ChildThreadImpl,
   };
   std::vector<PendingServiceRequest> pending_service_requests_;
 
-  base::WeakPtrFactory<GpuChildThread> weak_factory_;
+  base::WeakPtrFactory<GpuChildThread> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };

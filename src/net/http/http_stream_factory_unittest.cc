@@ -18,8 +18,10 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/features.h"
 #include "net/base/port_util.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
@@ -48,6 +50,7 @@
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_stream_factory_peer.h"
 #include "net/quic/quic_test_packet_maker.h"
+#include "net/quic/quic_test_packet_printer.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/connect_job.h"
@@ -110,8 +113,7 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
     kStreamTypeSpdy,
   };
 
-  explicit MockWebSocketHandshakeStream(StreamType type)
-      : type_(type), weak_ptr_factory_(this) {}
+  explicit MockWebSocketHandshakeStream(StreamType type) : type_(type) {}
 
   ~MockWebSocketHandshakeStream() override = default;
 
@@ -170,7 +172,7 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 
  private:
   const StreamType type_;
-  base::WeakPtrFactory<MockWebSocketHandshakeStream> weak_ptr_factory_;
+  base::WeakPtrFactory<MockWebSocketHandshakeStream> weak_ptr_factory_{this};
 };
 
 // HttpStreamFactory subclass that can wait until a preconnect is complete.
@@ -360,6 +362,7 @@ TestCase kTests[] = {
 
 void PreconnectHelperForURL(int num_streams,
                             const GURL& url,
+                            NetworkIsolationKey network_isolation_key,
                             HttpNetworkSession* session) {
   HttpNetworkSessionPeer peer(session);
   MockHttpStreamFactoryForPreconnect* mock_factory =
@@ -370,6 +373,7 @@ void PreconnectHelperForURL(int num_streams,
   request.method = "GET";
   request.url = url;
   request.load_flags = 0;
+  request.network_isolation_key = network_isolation_key;
   request.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -380,7 +384,7 @@ void PreconnectHelperForURL(int num_streams,
 void PreconnectHelper(const TestCase& test, HttpNetworkSession* session) {
   GURL url =
       test.ssl ? GURL("https://www.google.com") : GURL("http://www.google.com");
-  PreconnectHelperForURL(test.num_streams, url, session);
+  PreconnectHelperForURL(test.num_streams, url, NetworkIsolationKey(), session);
 }
 
 ClientSocketPool::GroupId GetGroupId(const TestCase& test) {
@@ -478,6 +482,9 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
 };
 
 using HttpStreamFactoryTest = TestWithScopedTaskEnvironment;
+
+// TODO(950069): Add testing for frame_origin in NetworkIsolationKey using
+// kAppendInitiatingFrameOriginToNetworkIsolationKey.
 
 TEST_F(HttpStreamFactoryTest, PreconnectDirect) {
   for (size_t i = 0; i < base::size(kTests); ++i) {
@@ -609,8 +616,48 @@ TEST_F(HttpStreamFactoryTest, PreconnectUnsafePort) {
                                    std::move(owned_transport_conn_pool));
   peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
-  PreconnectHelperForURL(1, GURL("http://www.google.com:7"), session.get());
+  PreconnectHelperForURL(1, GURL("http://www.google.com:7"),
+                         NetworkIsolationKey(), session.get());
   EXPECT_EQ(-1, transport_conn_pool->last_num_streams());
+}
+
+// Verify that preconnects use the specified NetworkIsolationKey.
+TEST_F(HttpStreamFactoryTest, PreconnectNetworkIsolationKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
+
+  SpdySessionDependencies session_deps(ProxyResolutionService::CreateDirect());
+  std::unique_ptr<HttpNetworkSession> session(
+      SpdySessionDependencies::SpdyCreateSession(&session_deps));
+  HttpNetworkSessionPeer peer(session.get());
+  CommonConnectJobParams common_connect_job_params =
+      session->CreateCommonConnectJobParams();
+  std::unique_ptr<CapturePreconnectsTransportSocketPool>
+      owned_transport_conn_pool =
+          std::make_unique<CapturePreconnectsTransportSocketPool>(
+              &common_connect_job_params);
+  CapturePreconnectsTransportSocketPool* transport_conn_pool =
+      owned_transport_conn_pool.get();
+  auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
+  mock_pool_manager->SetSocketPool(ProxyServer::Direct(),
+                                   std::move(owned_transport_conn_pool));
+  peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
+
+  const GURL kURL("http://foo.test/");
+  const auto kOriginFoo = url::Origin::Create(GURL("http://foo.test"));
+  const auto kOriginBar = url::Origin::Create(GURL("http://bar.test"));
+  const NetworkIsolationKey kKey1(kOriginFoo, kOriginFoo);
+  const NetworkIsolationKey kKey2(kOriginBar, kOriginBar);
+  PreconnectHelperForURL(1, kURL, kKey1, session.get());
+  EXPECT_EQ(1, transport_conn_pool->last_num_streams());
+  EXPECT_EQ(kKey1,
+            transport_conn_pool->last_group_id().network_isolation_key());
+
+  PreconnectHelperForURL(2, kURL, kKey2, session.get());
+  EXPECT_EQ(2, transport_conn_pool->last_num_streams());
+  EXPECT_EQ(kKey2,
+            transport_conn_pool->last_group_id().network_isolation_key());
 }
 
 TEST_F(HttpStreamFactoryTest, JobNotifiesProxy) {
@@ -835,7 +882,8 @@ class TestBidirectionalDelegate : public BidirectionalStreamImpl::Delegate {
 // Simplify ownership issues and the interaction with the MockSocketFactory.
 class MockQuicData {
  public:
-  MockQuicData() : packet_number_(0) {}
+  explicit MockQuicData(quic::ParsedQuicVersion version)
+      : packet_number_(0), printer_(version) {}
 
   ~MockQuicData() = default;
 
@@ -857,6 +905,7 @@ class MockQuicData {
 
   void AddSocketDataToFactory(MockClientSocketFactory* factory) {
     socket_data_ = std::make_unique<SequencedSocketData>(reads_, writes_);
+    socket_data_->set_printer(&printer_);
     factory->AddSocketDataProvider(socket_data_.get());
   }
 
@@ -865,6 +914,7 @@ class MockQuicData {
   std::vector<MockWrite> writes_;
   std::vector<MockRead> reads_;
   size_t packet_number_;
+  QuicPacketPrinter printer_;
   std::unique_ptr<SequencedSocketData> socket_data_;
 };
 
@@ -1141,7 +1191,7 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
                                host_port_pair.port());
     http_server_properties.SetQuicAlternativeService(
         server, alternative_service, expiration,
-        session_params.quic_supported_versions);
+        session_params.quic_params.supported_versions);
 
     HttpNetworkSession::Context session_context =
         SpdySessionDependencies::CreateSessionContext(&session_deps);
@@ -1160,7 +1210,8 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     mock_pool_manager->SetSocketPool(proxy_server,
                                      base::WrapUnique(http_proxy_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
-    PreconnectHelperForURL(num_streams, url, session.get());
+    PreconnectHelperForURL(num_streams, url, NetworkIsolationKey(),
+                           session.get());
     EXPECT_EQ(num_streams, http_proxy_pool->last_num_streams());
   }
 }
@@ -2197,6 +2248,9 @@ class HttpStreamFactoryBidirectionalQuicTest
         proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults) {
     clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(20));
+    if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+      SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
+    }
   }
 
   void TearDown() override { session_.reset(); }
@@ -2204,13 +2258,14 @@ class HttpStreamFactoryBidirectionalQuicTest
   // Disable bidirectional stream over QUIC. This should be invoked before
   // Initialize().
   void DisableQuicBidirectionalStream() {
-    params_.quic_disable_bidirectional_streams = true;
+    params_.quic_params.disable_bidirectional_streams = true;
   }
 
   void Initialize() {
     params_.enable_quic = true;
-    params_.quic_supported_versions = quic::test::SupportedVersions(version_);
-    params_.quic_headers_include_h2_stream_dependency =
+    params_.quic_params.supported_versions =
+        quic::test::SupportedVersions(version_);
+    params_.quic_params.headers_include_h2_stream_dependency =
         client_headers_include_h2_stream_dependency_;
 
     HttpNetworkSession::Context session_context;
@@ -2247,7 +2302,7 @@ class HttpStreamFactoryBidirectionalQuicTest
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     http_server_properties_.SetQuicAlternativeService(
         url::SchemeHostPort(default_url_), alternative_service, expiration,
-        session_->params().quic_supported_versions);
+        session_->params().quic_params.supported_versions);
   }
 
   test::QuicTestPacketMaker& client_packet_maker() {
@@ -2268,7 +2323,10 @@ class HttpStreamFactoryBidirectionalQuicTest
         version_.transport_version, n);
   }
 
+  quic::ParsedQuicVersion version() const { return version_; }
+
  private:
+  QuicFlagSaver saver_;
   const quic::ParsedQuicVersion version_;
   const bool client_headers_include_h2_stream_dependency_;
   quic::MockClock clock_;
@@ -2298,20 +2356,17 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplQuicAlternative) {
-  MockQuicData mock_quic_data;
+  MockQuicData mock_quic_data(version());
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  quic::QuicStreamOffset header_stream_offset = 0;
-  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
-      1, &header_stream_offset));
+  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
       2, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
-      /*parent_stream_id=*/0, &spdy_headers_frame_length,
-      &header_stream_offset));
+      /*parent_stream_id=*/0, &spdy_headers_frame_length));
   size_t spdy_response_headers_frame_length;
   mock_quic_data.AddRead(server_packet_maker().MakeResponseHeadersPacket(
       1, GetNthClientInitiatedBidirectionalStreamId(0),
@@ -2426,20 +2481,17 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplHttpJobFailsQuicJobSucceeds) {
   // Set up Quic data.
-  MockQuicData mock_quic_data;
+  MockQuicData mock_quic_data(version());
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  quic::QuicStreamOffset header_stream_offset = 0;
-  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
-      1, &header_stream_offset));
+  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
       2, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
-      /*parent_stream_id=*/0, &spdy_headers_frame_length,
-      &header_stream_offset));
+      /*parent_stream_id=*/0, &spdy_headers_frame_length));
   size_t spdy_response_headers_frame_length;
   mock_quic_data.AddRead(server_packet_maker().MakeResponseHeadersPacket(
       1, GetNthClientInitiatedBidirectionalStreamId(0),
@@ -2680,20 +2732,17 @@ TEST_F(HttpStreamFactoryTest, Tag) {
 // should not be shared amongst streams with different socket tags).
 TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   // Prepare mock QUIC data for a first session establishment.
-  MockQuicData mock_quic_data;
+  MockQuicData mock_quic_data(version());
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  quic::QuicStreamOffset header_stream_offset = 0;
-  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
-      1, &header_stream_offset));
+  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
       2, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
-      /*parent_stream_id=*/0, &spdy_headers_frame_length,
-      &header_stream_offset));
+      /*parent_stream_id=*/0, &spdy_headers_frame_length));
   size_t spdy_response_headers_frame_length;
   mock_quic_data.AddRead(server_packet_maker().MakeResponseHeadersPacket(
       1, GetNthClientInitiatedBidirectionalStreamId(0),
@@ -2704,17 +2753,15 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   mock_quic_data.AddSocketDataToFactory(&socket_factory());
 
   // Prepare mock QUIC data for a second session establishment.
-  MockQuicData mock_quic_data2;
-  quic::QuicStreamOffset header_stream_offset2 = 0;
-  mock_quic_data2.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
-      1, &header_stream_offset2));
+  client_packet_maker().Reset();
+  MockQuicData mock_quic_data2(version());
+  mock_quic_data2.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
   mock_quic_data2.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
       2, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
-      /*parent_stream_id=*/0, &spdy_headers_frame_length,
-      &header_stream_offset));
+      /*parent_stream_id=*/0, &spdy_headers_frame_length));
   mock_quic_data2.AddRead(server_packet_maker().MakeResponseHeadersPacket(
       1, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/false,

@@ -48,24 +48,24 @@ static const int kInfiniteRatio = 99999;
       name, (height) ? ((width)*100) / (height) : kInfiniteRatio);
 
 void LogVideoFrameDrop(media::VideoCaptureFrameDropReason reason,
-                       blink::MediaStreamType stream_type) {
+                       blink::mojom::MediaStreamType stream_type) {
   const int kEnumCount =
       static_cast<int>(media::VideoCaptureFrameDropReason::kMaxValue) + 1;
   UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.FrameDrop", reason, kEnumCount);
   switch (stream_type) {
-    case blink::MEDIA_DEVICE_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.FrameDrop.DeviceCapture",
                                 reason, kEnumCount);
       break;
-    case blink::MEDIA_GUM_TAB_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.FrameDrop.GumTabCapture",
                                 reason, kEnumCount);
       break;
-    case blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION(
           "Media.VideoCapture.FrameDrop.GumDesktopCapture", reason, kEnumCount);
       break;
-    case blink::MEDIA_DISPLAY_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.FrameDrop.DisplayCapture",
                                 reason, kEnumCount);
       break;
@@ -77,28 +77,28 @@ void LogVideoFrameDrop(media::VideoCaptureFrameDropReason reason,
 
 void LogMaxConsecutiveVideoFrameDropCountExceeded(
     media::VideoCaptureFrameDropReason reason,
-    blink::MediaStreamType stream_type) {
+    blink::mojom::MediaStreamType stream_type) {
   const int kEnumCount =
       static_cast<int>(media::VideoCaptureFrameDropReason::kMaxValue) + 1;
   UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.MaxFrameDropExceeded", reason,
                             kEnumCount);
   switch (stream_type) {
-    case blink::MEDIA_DEVICE_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION(
           "Media.VideoCapture.MaxFrameDropExceeded.DeviceCapture", reason,
           kEnumCount);
       break;
-    case blink::MEDIA_GUM_TAB_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION(
           "Media.VideoCapture.MaxFrameDropExceeded.GumTabCapture", reason,
           kEnumCount);
       break;
-    case blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION(
           "Media.VideoCapture.MaxFrameDropExceeded.GumDesktopCapture", reason,
           kEnumCount);
       break;
-    case blink::MEDIA_DISPLAY_VIDEO_CAPTURE:
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
       UMA_HISTOGRAM_ENUMERATION(
           "Media.VideoCapture.MaxFrameDropExceeded.DisplayCapture", reason,
           kEnumCount);
@@ -255,7 +255,7 @@ VideoCaptureController::FrameDropLogState::FrameDropLogState(
 
 VideoCaptureController::VideoCaptureController(
     const std::string& device_id,
-    blink::MediaStreamType stream_type,
+    blink::mojom::MediaStreamType stream_type,
     const media::VideoCaptureParams& params,
     std::unique_ptr<VideoCaptureDeviceLauncher> device_launcher,
     base::RepeatingCallback<void(const std::string&)> emit_log_message_cb)
@@ -267,8 +267,7 @@ VideoCaptureController::VideoCaptureController(
       emit_log_message_cb_(std::move(emit_log_message_cb)),
       device_launch_observer_(nullptr),
       state_(blink::VIDEO_CAPTURE_STATE_STARTING),
-      has_received_frames_(false),
-      weak_ptr_factory_(this) {
+      has_received_frames_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
@@ -510,15 +509,15 @@ void VideoCaptureController::OnFrameReadyInBuffer(
 
       // On the first use of a BufferContext for a particular client, call
       // OnBufferCreated().
-      if (!base::ContainsValue(client->known_buffer_context_ids,
-                               buffer_context_id)) {
+      if (!base::Contains(client->known_buffer_context_ids,
+                          buffer_context_id)) {
         client->known_buffer_context_ids.push_back(buffer_context_id);
         client->event_handler->OnNewBuffer(
             client->controller_id, buffer_context_iter->CloneBufferHandle(),
             buffer_context_id);
       }
 
-      if (!base::ContainsValue(client->buffers_in_use, buffer_context_id))
+      if (!base::Contains(client->buffers_in_use, buffer_context_id))
         client->buffers_in_use.push_back(buffer_context_id);
       else
         NOTREACHED() << "Unexpected duplicate buffer: " << buffer_context_id;

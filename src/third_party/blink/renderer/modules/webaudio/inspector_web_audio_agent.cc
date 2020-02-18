@@ -8,6 +8,8 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 
 namespace blink {
 
@@ -48,16 +50,16 @@ void InspectorWebAudioAgent::Restore() {
   if (!enabled_.Get())
     return;
 
-  BaseAudioContextTracker* tracker = BaseAudioContextTracker::FromPage(page_);
-  tracker->SetInspectorAgent(this);
+  AudioGraphTracer* graph_tracer = AudioGraphTracer::FromPage(page_);
+  graph_tracer->SetInspectorAgent(this);
 }
 
 Response InspectorWebAudioAgent::enable() {
   if (enabled_.Get())
     return Response::OK();
   enabled_.Set(true);
-  BaseAudioContextTracker* tracker = BaseAudioContextTracker::FromPage(page_);
-  tracker->SetInspectorAgent(this);
+  AudioGraphTracer* graph_tracer = AudioGraphTracer::FromPage(page_);
+  graph_tracer->SetInspectorAgent(this);
   return Response::OK();
 }
 
@@ -65,27 +67,36 @@ Response InspectorWebAudioAgent::disable() {
   if (!enabled_.Get())
     return Response::OK();
   enabled_.Clear();
-  BaseAudioContextTracker* tracker = BaseAudioContextTracker::FromPage(page_);
-  tracker->SetInspectorAgent(nullptr);
+  AudioGraphTracer* graph_tracer = AudioGraphTracer::FromPage(page_);
+  graph_tracer->SetInspectorAgent(nullptr);
   return Response::OK();
 }
 
 Response InspectorWebAudioAgent::getRealtimeData(
     const protocol::WebAudio::ContextId& contextId,
     std::unique_ptr<ContextRealtimeData>* out_data) {
-  auto* const tracker = BaseAudioContextTracker::FromPage(page_);
+  auto* const graph_tracer = AudioGraphTracer::FromPage(page_);
   if (!enabled_.Get())
     return Response::Error("Enable agent first.");
 
-  BaseAudioContext* context = tracker->GetContextById(contextId);
+  BaseAudioContext* context = graph_tracer->GetContextById(contextId);
   if (!context)
     return Response::Error("Cannot find BaseAudioContext with such id.");
-  *out_data = context
-      ? ContextRealtimeData::create()
+
+  if (!context->HasRealtimeConstraint()) {
+    return Response::Error(
+        "ContextRealtimeData is only avaliable for an AudioContext.");
+  }
+
+  // The realtime metric collection is only for AudioContext.
+  AudioCallbackMetric metric =
+      static_cast<AudioContext*>(context)->GetCallbackMetric();
+  *out_data = ContextRealtimeData::create()
           .setCurrentTime(context->currentTime())
-          .setRenderCapacity(context->RenderCapacity())
-          .build()
-      : ContextRealtimeData::create().build();
+          .setRenderCapacity(metric.render_capacity)
+          .setCallbackIntervalMean(metric.mean_callback_interval)
+          .setCallbackIntervalVariance(metric.variance_callback_interval)
+          .build();
   return Response::OK();
 }
 

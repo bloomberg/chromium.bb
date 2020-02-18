@@ -172,6 +172,7 @@ error::Error DoDisableVertexAttribArray(GLuint index);
 error::Error DoDispatchCompute(GLuint num_groups_x,
                                GLuint num_groups_y,
                                GLuint num_groups_z);
+error::Error DoDispatchComputeIndirect(GLintptr offset);
 error::Error DoDrawArrays(GLenum mode, GLint first, GLsizei count);
 error::Error DoDrawElements(GLenum mode,
                             GLsizei count,
@@ -893,16 +894,20 @@ error::Error DoScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
                                             GLfloat uv_y,
                                             GLfloat uv_width,
                                             GLfloat uv_height,
+                                            bool enable_blend,
                                             GLuint gpu_fence_id);
-error::Error DoScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
-                                                  GLboolean is_clipped,
-                                                  const GLfloat* clip_rect,
-                                                  GLint sorting_context_id,
-                                                  const GLfloat* transform);
+error::Error DoScheduleCALayerSharedStateCHROMIUM(
+    GLfloat opacity,
+    GLboolean is_clipped,
+    const GLfloat* clip_rect,
+    const GLfloat* rounded_corner_bounds,
+    GLint sorting_context_id,
+    const GLfloat* transform);
 error::Error DoScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                        const GLfloat* contents_rect,
                                        GLuint background_color,
                                        GLuint edge_aa_mask,
+                                       GLenum filter,
                                        const GLfloat* bounds_rect);
 error::Error DoScheduleCALayerInUseQueryCHROMIUM(
     GLuint n,

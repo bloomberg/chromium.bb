@@ -284,8 +284,8 @@ TEST_F(NonClientFrameViewAshTest, ToggleTabletModeOnMinimizedWindow) {
   widget->Minimize();
 
   // Enter and exit tablet mode while the window is minimized.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
 
   // When unminimizing in non-tablet mode, size button should match with
   // maximized window state, which is restore icon.
@@ -303,7 +303,7 @@ TEST_F(NonClientFrameViewAshTest, FrameHiddenInTabletModeForMaximizedWindows) {
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
   widget->Maximize();
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(0, delegate->GetNonClientFrameViewTopBorderHeight());
 }
 
@@ -314,7 +314,7 @@ TEST_F(NonClientFrameViewAshTest,
   auto* delegate = new NonClientFrameViewAshTestWidgetDelegate();
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(views::GetCaptionButtonLayoutSize(
                 views::CaptionButtonLayoutSize::kNonBrowserCaption)
                 .height(),
@@ -331,9 +331,9 @@ TEST_F(NonClientFrameViewAshTest,
 
   widget->SetFullscreen(true);
   EXPECT_EQ(0, delegate->GetNonClientFrameViewTopBorderHeight());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(0, delegate->GetNonClientFrameViewTopBorderHeight());
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_EQ(0, delegate->GetNonClientFrameViewTopBorderHeight());
 }
 
@@ -342,7 +342,7 @@ TEST_F(NonClientFrameViewAshTest, OpeningAppsInTabletMode) {
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
   widget->Maximize();
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(0, delegate->GetNonClientFrameViewTopBorderHeight());
 
   // Verify that after minimizing and showing the widget, the height of the
@@ -355,11 +355,11 @@ TEST_F(NonClientFrameViewAshTest, OpeningAppsInTabletMode) {
   // Verify that when we toggle maximize, the header is shown. For example,
   // maximized can be toggled in tablet mode by using the accessibility
   // keyboard.
-  wm::WMEvent event(wm::WM_EVENT_TOGGLE_MAXIMIZE);
-  wm::GetWindowState(widget->GetNativeWindow())->OnWMEvent(&event);
+  WMEvent event(WM_EVENT_TOGGLE_MAXIMIZE);
+  WindowState::Get(widget->GetNativeWindow())->OnWMEvent(&event);
   EXPECT_EQ(0, delegate->GetNonClientFrameViewTopBorderHeight());
 
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_EQ(views::GetCaptionButtonLayoutSize(
                 views::CaptionButtonLayoutSize::kNonBrowserCaption)
                 .height(),
@@ -369,11 +369,11 @@ TEST_F(NonClientFrameViewAshTest, OpeningAppsInTabletMode) {
 // Test if creating a new window in tablet mode uses maximzied state
 // and immersive mode.
 TEST_F(NonClientFrameViewAshTest, GetPreferredOnScreenHeightInTabletMaximzied) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   auto* delegate = new TestWidgetConstraintsDelegate;
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
-  auto* frame_view = static_cast<ash::NonClientFrameViewAsh*>(
+  auto* frame_view = static_cast<NonClientFrameViewAsh*>(
       widget->non_client_view()->frame_view());
   auto* header_view = frame_view->GetHeaderView();
   ASSERT_TRUE(widget->IsMaximized());
@@ -397,74 +397,11 @@ TEST_F(NonClientFrameViewAshTest, MinimizedWindowsInTabletMode) {
       aura::client::kResizeBehaviorCanMaximize);
   widget->Maximize();
   widget->Minimize();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   widget->Show();
   EXPECT_EQ(widget->non_client_view()->bounds(),
             widget->client_view()->bounds());
-}
-
-TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInOverviewMode) {
-  auto* delegate = new NonClientFrameViewAshTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget =
-      CreateTestWidget(delegate, desks_util::GetActiveDeskContainerId(),
-                       gfx::Rect(0, 0, 400, 500));
-
-  // Verify the header is not painted in overview mode and painted when not in
-  // overview mode.
-  Shell::Get()->overview_controller()->ToggleOverview();
-  EXPECT_FALSE(delegate->header_view()->should_paint());
-
-  Shell::Get()->overview_controller()->ToggleOverview();
-  EXPECT_TRUE(delegate->header_view()->should_paint());
-}
-
-TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInSplitview) {
-  auto create_widget = [](NonClientFrameViewAshTestWidgetDelegate* delegate) {
-    std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
-    // Windows need to be resizable and maximizable to be used in splitview.
-    widget->GetNativeWindow()->SetProperty(
-        aura::client::kResizeBehaviorKey,
-        aura::client::kResizeBehaviorCanMaximize |
-            aura::client::kResizeBehaviorCanResize);
-    return widget;
-  };
-
-  auto* delegate1 = new NonClientFrameViewAshTestWidgetDelegate();
-  auto widget1 = create_widget(delegate1);
-  auto* delegate2 = new NonClientFrameViewAshTestWidgetDelegate();
-  auto widget2 = create_widget(delegate2);
-
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-
-  // Verify that when one window is snapped, the header is drawn for the snapped
-  // window, but not drawn for the window still in overview.
-  Shell::Get()->overview_controller()->ToggleOverview();
-  Shell::Get()->split_view_controller()->SnapWindow(widget1->GetNativeWindow(),
-                                                    SplitViewController::LEFT);
-  EXPECT_TRUE(delegate1->header_view()->should_paint());
-  EXPECT_EQ(0, delegate1->GetNonClientFrameViewTopBorderHeight());
-  EXPECT_FALSE(delegate2->header_view()->should_paint());
-
-  // Verify that when both windows are snapped, the header is drawn for both.
-  Shell::Get()->split_view_controller()->SnapWindow(widget2->GetNativeWindow(),
-                                                    SplitViewController::RIGHT);
-  EXPECT_TRUE(delegate1->header_view()->should_paint());
-  EXPECT_TRUE(delegate2->header_view()->should_paint());
-  EXPECT_EQ(0, delegate1->GetNonClientFrameViewTopBorderHeight());
-  EXPECT_EQ(0, delegate2->GetNonClientFrameViewTopBorderHeight());
-
-  // Toggle overview mode so we return back to left snapped mode. Verify that
-  // the header is again drawn for the snapped window, but not for the unsnapped
-  // window.
-  Shell::Get()->overview_controller()->ToggleOverview();
-  ASSERT_EQ(SplitViewState::kLeftSnapped,
-            Shell::Get()->split_view_controller()->state());
-  EXPECT_TRUE(delegate1->header_view()->should_paint());
-  EXPECT_EQ(0, delegate1->GetNonClientFrameViewTopBorderHeight());
-  EXPECT_FALSE(delegate2->header_view()->should_paint());
-
-  Shell::Get()->split_view_controller()->EndSplitView();
 }
 
 TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInFullscreen) {
@@ -485,7 +422,7 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInFullscreen) {
   // Turn immersive off, and make sure that header view is invisible
   // in fullscreen.
   widget->SetFullscreen(true);
-  ash::ImmersiveFullscreenController::EnableForWidget(widget.get(), false);
+  ImmersiveFullscreenController::EnableForWidget(widget.get(), false);
   EXPECT_FALSE(header_view->in_immersive_mode());
   EXPECT_FALSE(header_view->GetVisible());
   widget->SetFullscreen(false);
@@ -536,8 +473,8 @@ class TestButtonModel : public CaptionButtonModel {
 }  // namespace
 
 TEST_F(NonClientFrameViewAshTest, BackButton) {
-  ash::AcceleratorControllerImpl* controller =
-      ash::Shell::Get()->accelerator_controller();
+  AcceleratorControllerImpl* controller =
+      Shell::Get()->accelerator_controller();
   std::unique_ptr<TestButtonModel> model = std::make_unique<TestButtonModel>();
   TestButtonModel* model_ptr = model.get();
 
@@ -731,11 +668,6 @@ TEST_F(NonClientFrameViewAshTest, WideFrame) {
   EXPECT_FALSE(header_view->should_paint());
   EXPECT_TRUE(wide_header_view->should_paint());
 
-  Shell::Get()->overview_controller()->ToggleOverview();
-  EXPECT_FALSE(wide_header_view->should_paint());
-  Shell::Get()->overview_controller()->ToggleOverview();
-  EXPECT_TRUE(wide_header_view->should_paint());
-
   // Test immersive.
   ImmersiveFullscreenController controller;
   wide_frame_view->Init(&controller);
@@ -847,9 +779,8 @@ class TestWidgetDelegate : public TestWidgetConstraintsDelegate {
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     if (custom_) {
-      ash::wm::WindowState* window_state =
-          ash::wm::GetWindowState(widget->GetNativeWindow());
-      window_state->SetDelegate(std::make_unique<wm::WindowStateDelegate>());
+      WindowState* window_state = WindowState::Get(widget->GetNativeWindow());
+      window_state->SetDelegate(std::make_unique<WindowStateDelegate>());
     }
     return TestWidgetConstraintsDelegate::CreateNonClientFrameView(widget);
   }
@@ -863,19 +794,18 @@ class TestWidgetDelegate : public TestWidgetConstraintsDelegate {
 }  // namespace
 
 // Verify that NonClientFrameViewAsh updates the active color based on the
-// ash::kFrameActiveColorKey window property.
+// kFrameActiveColorKey window property.
 TEST_P(NonClientFrameViewAshFrameColorTest, kFrameActiveColorKey) {
   TestWidgetDelegate* delegate = new TestWidgetDelegate(GetParam());
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   SkColor active_color =
-      widget->GetNativeWindow()->GetProperty(ash::kFrameActiveColorKey);
+      widget->GetNativeWindow()->GetProperty(kFrameActiveColorKey);
   constexpr SkColor new_color = SK_ColorWHITE;
   EXPECT_NE(active_color, new_color);
 
-  widget->GetNativeWindow()->SetProperty(ash::kFrameActiveColorKey, new_color);
-  active_color =
-      widget->GetNativeWindow()->GetProperty(ash::kFrameActiveColorKey);
+  widget->GetNativeWindow()->SetProperty(kFrameActiveColorKey, new_color);
+  active_color = widget->GetNativeWindow()->GetProperty(kFrameActiveColorKey);
   EXPECT_EQ(active_color, new_color);
   EXPECT_EQ(new_color,
             delegate->non_client_frame_view()->GetActiveFrameColorForTest());
@@ -887,47 +817,44 @@ TEST_P(NonClientFrameViewAshFrameColorTest, kFrameActiveColorKey) {
           ->caption_button_container());
   ui::DrawWaiterForTest::WaitForCommit(widget->GetLayer()->GetCompositor());
   gfx::ImageSkia original_icon_image = test_api.size_button()->icon_image();
-  widget->GetNativeWindow()->SetProperty(ash::kFrameActiveColorKey,
-                                         SK_ColorBLACK);
+  widget->GetNativeWindow()->SetProperty(kFrameActiveColorKey, SK_ColorBLACK);
   ui::DrawWaiterForTest::WaitForCommit(widget->GetLayer()->GetCompositor());
   EXPECT_FALSE(original_icon_image.BackedBySameObjectAs(
       test_api.size_button()->icon_image()));
 }
 
 // Verify that NonClientFrameViewAsh updates the inactive color based on the
-// ash::kFrameInactiveColorKey window property.
+// kFrameInactiveColorKey window property.
 TEST_P(NonClientFrameViewAshFrameColorTest, KFrameInactiveColor) {
   TestWidgetDelegate* delegate = new TestWidgetDelegate(GetParam());
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   SkColor active_color =
-      widget->GetNativeWindow()->GetProperty(ash::kFrameInactiveColorKey);
+      widget->GetNativeWindow()->GetProperty(kFrameInactiveColorKey);
   constexpr SkColor new_color = SK_ColorWHITE;
   EXPECT_NE(active_color, new_color);
 
-  widget->GetNativeWindow()->SetProperty(ash::kFrameInactiveColorKey,
-                                         new_color);
-  active_color =
-      widget->GetNativeWindow()->GetProperty(ash::kFrameInactiveColorKey);
+  widget->GetNativeWindow()->SetProperty(kFrameInactiveColorKey, new_color);
+  active_color = widget->GetNativeWindow()->GetProperty(kFrameInactiveColorKey);
   EXPECT_EQ(active_color, new_color);
   EXPECT_EQ(new_color,
             delegate->non_client_frame_view()->GetInactiveFrameColorForTest());
 }
 
 // Verify that NonClientFrameViewAsh updates the active color based on the
-// ash::kFrameActiveColorKey window property.
+// kFrameActiveColorKey window property.
 TEST_P(NonClientFrameViewAshFrameColorTest, WideFrameInitialColor) {
   TestWidgetDelegate* delegate = new TestWidgetDelegate(GetParam());
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
   aura::Window* window = widget->GetNativeWindow();
-  SkColor active_color = window->GetProperty(ash::kFrameActiveColorKey);
-  SkColor inactive_color = window->GetProperty(ash::kFrameInactiveColorKey);
+  SkColor active_color = window->GetProperty(kFrameActiveColorKey);
+  SkColor inactive_color = window->GetProperty(kFrameInactiveColorKey);
   constexpr SkColor new_active_color = SK_ColorWHITE;
   constexpr SkColor new_inactive_color = SK_ColorBLACK;
   EXPECT_NE(active_color, new_active_color);
   EXPECT_NE(inactive_color, new_inactive_color);
-  window->SetProperty(ash::kFrameActiveColorKey, new_active_color);
-  window->SetProperty(ash::kFrameInactiveColorKey, new_inactive_color);
+  window->SetProperty(kFrameActiveColorKey, new_active_color);
+  window->SetProperty(kFrameInactiveColorKey, new_inactive_color);
 
   std::unique_ptr<WideFrameView> wide_frame_view =
       std::make_unique<WideFrameView>(widget.get());
@@ -937,7 +864,7 @@ TEST_P(NonClientFrameViewAshFrameColorTest, WideFrameInitialColor) {
   EXPECT_EQ(new_inactive_color, header->inactive_frame_color_for_testing());
 }
 
-// Run frame color tests with and without custom wm::WindowStateDelegate.
+// Run frame color tests with and without custom WindowStateDelegate.
 INSTANTIATE_TEST_SUITE_P(,
                          NonClientFrameViewAshFrameColorTest,
                          testing::Bool());

@@ -10,8 +10,14 @@
 
 namespace blink {
 
-LayoutShift::LayoutShift(double start_time, double value)
-    : PerformanceEntry(g_empty_atom, start_time, start_time), value_(value) {}
+LayoutShift::LayoutShift(double start_time,
+                         double value,
+                         bool input_detected,
+                         double input_timestamp)
+    : PerformanceEntry(g_empty_atom, start_time, start_time),
+      value_(value),
+      had_recent_input_(input_detected),
+      most_recent_input_timestamp_(input_timestamp) {}
 
 LayoutShift::~LayoutShift() = default;
 
@@ -20,12 +26,14 @@ AtomicString LayoutShift::entryType() const {
 }
 
 PerformanceEntryType LayoutShift::EntryTypeEnum() const {
-  return PerformanceEntry::EntryType::kLayoutJank;
+  return PerformanceEntry::EntryType::kLayoutShift;
 }
 
 void LayoutShift::BuildJSONValue(V8ObjectBuilder& builder) const {
   PerformanceEntry::BuildJSONValue(builder);
   builder.Add("value", value_);
+  builder.Add("hadRecentInput", had_recent_input_);
+  builder.Add("lastInputTime", most_recent_input_timestamp_);
 }
 
 void LayoutShift::Trace(blink::Visitor* visitor) {

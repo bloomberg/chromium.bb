@@ -2,9 +2,70 @@ package HTML::Parse;
 
 use 5.008;
 
+#ABSTRACT: Deprecated, a wrapper around HTML::TreeBuilder
+
+
+use warnings;
+use strict;
+
+our $VERSION = '5.07'; # VERSION from OurPkgVersion
+
+use vars qw(@ISA @EXPORT
+    $IMPLICIT_TAGS $IGNORE_UNKNOWN $IGNORE_TEXT $WARN
+);
+
+require Exporter;
+@ISA    = qw(Exporter);
+@EXPORT = qw(parse_html parse_htmlfile);
+
+# Backwards compatability
+$IMPLICIT_TAGS  = 1;
+$IGNORE_UNKNOWN = 1;
+$IGNORE_TEXT    = 0;
+$WARN           = 0;
+
+require HTML::TreeBuilder;
+
+sub parse_html {
+    my $p = $_[1];
+    $p = _new_tree_maker() unless $p;
+    $p->parse( $_[0] );
+}
+
+sub parse_htmlfile {
+    my ( $file, $p ) = @_;
+    my ($HTML);
+    open( $HTML, "<", $file ) or return;
+    $p = _new_tree_maker() unless $p;
+    $p->parse_file($HTML);
+}
+
+sub _new_tree_maker {
+    my $p = HTML::TreeBuilder->new(
+        implicit_tags  => $IMPLICIT_TAGS,
+        ignore_unknown => $IGNORE_UNKNOWN,
+        ignore_text    => $IGNORE_TEXT,
+        'warn'         => $WARN,
+    );
+    $p->strict_comment(1);
+    $p;
+}
+
+1;
+
+__END__
+
+=pod
+
 =head1 NAME
 
 HTML::Parse - Deprecated, a wrapper around HTML::TreeBuilder
+
+=head1 VERSION
+
+This document describes version 5.07 of
+HTML::Parse, released August 31, 2017
+as part of L<HTML-Tree|HTML::Tree>.
 
 =head1 SYNOPSIS
 
@@ -70,7 +131,7 @@ false.
 
 =item $HTML::Parse::WARN
 
-Call warn() with an apropriate message for syntax errors.  Default is
+Call warn() with an appropriate message for syntax errors.  Default is
 false.
 
 =back
@@ -84,76 +145,52 @@ finished with them.  See L<HTML::TreeBuilder>.
 
 L<HTML::Parser>, L<HTML::TreeBuilder>, L<HTML::Element>
 
-=head1 COPYRIGHT
+=head1 AUTHOR
 
-Copyright 1995-1998 Gisle Aas, 1999-2004 Sean M. Burke, 2005 Andy Lester,
-2006 Pete Krawczyk.
+Current maintainers:
+
+=over
+
+=item * Christopher J. Madsen S<C<< <perl AT cjmweb.net> >>>
+
+=item * Jeff Fearn S<C<< <jfearn AT cpan.org> >>>
+
+=back
+
+Original HTML-Tree author:
+
+=over
+
+=item * Gisle Aas
+
+=back
+
+Former maintainers:
+
+=over
+
+=item * Sean M. Burke
+
+=item * Andy Lester
+
+=item * Pete Krawczyk S<C<< <petek AT cpan.org> >>>
+
+=back
+
+You can follow or contribute to HTML-Tree's development at
+L<< https://github.com/kentfredric/HTML-Tree >>.
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 1995-1998 Gisle Aas, 1999-2004 Sean M. Burke,
+2005 Andy Lester, 2006 Pete Krawczyk, 2010 Jeff Fearn,
+2012 Christopher J. Madsen.
 
 This library is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
-This program is distributed in the hope that it will be useful, but
-without any warranty; without even the implied warranty of
-merchantability or fitness for a particular purpose.
-
-=head1 AUTHOR
-Current Author:
-	Jeff Fearn C<< <jfearn@cpan.org> >>.
-
-Original HTML-Tree author:
-	Gisle Aas.
-
-Former Authors:
-	Sean M. Burke.
-	Andy Lester.
-	Pete Krawczyk C<< <petek@cpan.org> >>.
+The programs in this library are distributed in the hope that they
+will be useful, but without any warranty; without even the implied
+warranty of merchantability or fitness for a particular purpose.
 
 =cut
-
-use warnings;
-use strict;
-
-use vars qw(@ISA $VERSION @EXPORT
-    $IMPLICIT_TAGS $IGNORE_UNKNOWN $IGNORE_TEXT $WARN
-);
-
-require Exporter;
-@ISA    = qw(Exporter);
-@EXPORT = qw(parse_html parse_htmlfile);
-
-# Backwards compatability
-$IMPLICIT_TAGS  = 1;
-$IGNORE_UNKNOWN = 1;
-$IGNORE_TEXT    = 0;
-$WARN           = 0;
-
-require HTML::TreeBuilder;
-
-$VERSION = 4.2;
-
-sub parse_html {
-    my $p = $_[1];
-    $p = _new_tree_maker() unless $p;
-    $p->parse( $_[0] );
-}
-
-sub parse_htmlfile {
-    my ( $file, $p ) = @_;
-    my ($HTML);
-    open( $HTML, "<", $file ) or return;
-    $p = _new_tree_maker() unless $p;
-    $p->parse_file($HTML);
-}
-
-sub _new_tree_maker {
-    my $p = HTML::TreeBuilder->new(
-        implicit_tags  => $IMPLICIT_TAGS,
-        ignore_unknown => $IGNORE_UNKNOWN,
-        ignore_text    => $IGNORE_TEXT,
-        'warn'         => $WARN,
-    );
-    $p->strict_comment(1);
-    $p;
-}
-
-1;

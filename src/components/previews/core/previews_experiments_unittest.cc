@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_features.h"
 #include "components/variations/variations_associated_data.h"
 
@@ -84,44 +85,6 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
   EXPECT_EQ(10, params::OfflinePreviewsVersion());
 
   variations::testing::ClearAllVariationParams();
-}
-
-TEST(PreviewsExperimentsTest, TestClientLoFiDisabledByDefault) {
-  EXPECT_FALSE(params::IsClientLoFiEnabled());
-}
-
-TEST(PreviewsExperimentsTest, TestClientLoFiExplicitlyDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kClientLoFi);
-  EXPECT_FALSE(params::IsClientLoFiEnabled());
-}
-
-TEST(PreviewsExperimentsTest, TestClientLoFiExplicitlyEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kClientLoFi);
-  EXPECT_TRUE(params::IsClientLoFiEnabled());
-}
-
-TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithDefaultParams) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kClientLoFi);
-
-  EXPECT_TRUE(params::IsClientLoFiEnabled());
-  EXPECT_EQ(0, params::ClientLoFiVersion());
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params::GetECTThresholdForPreview(PreviewsType::LOFI));
-}
-
-TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithCustomParams) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kClientLoFi,
-      {{"version", "10"}, {"max_allowed_effective_connection_type", "3G"}});
-
-  EXPECT_TRUE(params::IsClientLoFiEnabled());
-  EXPECT_EQ(10, params::ClientLoFiVersion());
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G,
-            params::GetECTThresholdForPreview(PreviewsType::LOFI));
 }
 
 TEST(PreviewsExperimentsTest, TestDefaultShouldExcludeMediaSuffix) {

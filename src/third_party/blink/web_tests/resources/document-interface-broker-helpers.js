@@ -11,19 +11,20 @@
  *   const testFooImpl = new FooInterfaceCallbackRouter;
  *   ... override FooInterface methods ...
  *   setDocumentInterfaceBrokerOverrides({getFooInterface: request => {
- *     testFooImpl.bindHandle(request.handle);
+ *     testFooImpl.$.bindHandle(request.handle);
  *   }});
  */
 function setDocumentInterfaceBrokerOverrides(overrides) {
   const {handle0, handle1} = Mojo.createMessagePipe();
-  const realBrokerProxy = new blink.mojom.DocumentInterfaceBrokerProxy(
+  const realBrokerRemote = new blink.mojom.DocumentInterfaceBrokerRemote(
       Mojo.replaceDocumentInterfaceBrokerForTesting(handle0));
 
   for (const method of Object.keys(overrides)) {
-    realBrokerProxy[method] = overrides[method];
+    realBrokerRemote[method] = overrides[method];
   }
 
   // Use the real broker (with overrides) as the implementation of the JS-side broker
-  const testBrokerBinding = new blink.mojom.DocumentInterfaceBroker(realBrokerProxy);
-  testBrokerBinding.bindHandle(handle1);
+  const testBrokerReceiver =
+    new blink.mojom.DocumentInterfaceBrokerReceiver(realBrokerRemote);
+  testBrokerReceiver.$.bindHandle(handle1);
 }

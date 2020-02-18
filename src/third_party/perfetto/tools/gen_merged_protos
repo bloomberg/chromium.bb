@@ -37,6 +37,8 @@ CONFIG_PROTOS = (
   'protos/perfetto/config/test_config.proto',
   'protos/perfetto/config/trace_config.proto',
   'protos/perfetto/config/profiling/heapprofd_config.proto',
+  'protos/perfetto/config/gpu/gpu_counter_config.proto',
+  'protos/perfetto/config/android/packages_list_config.proto',
 )
 
 MERGED_CONFIG_PROTO = 'protos/perfetto/config/perfetto_config.proto'
@@ -46,6 +48,7 @@ TRACE_PROTOS = (
   'protos/perfetto/trace/android/android_log.proto',
   'protos/perfetto/trace/android/packages_list.proto',
   'protos/perfetto/trace/chrome/chrome_benchmark_metadata.proto',
+  "protos/perfetto/trace/chrome/chrome_metadata.proto",
   'protos/perfetto/trace/clock_snapshot.proto',
   'protos/perfetto/trace/filesystem/inode_file_map.proto',
   'protos/perfetto/trace/ftrace/binder.proto',
@@ -66,11 +69,14 @@ TRACE_PROTOS = (
   'protos/perfetto/trace/ftrace/raw_syscalls.proto',
   'protos/perfetto/trace/ftrace/sched.proto',
   'protos/perfetto/trace/ftrace/signal.proto',
+  'protos/perfetto/trace/ftrace/systrace.proto',
   'protos/perfetto/trace/ftrace/task.proto',
   'protos/perfetto/trace/ftrace/vmscan.proto',
   'protos/perfetto/trace/interned_data/interned_data.proto',
+  'protos/perfetto/trace/perfetto/perfetto_metatrace.proto',
   'protos/perfetto/trace/power/battery_counters.proto',
   'protos/perfetto/trace/power/power_rails.proto',
+  'protos/perfetto/trace/profiling/profile_common.proto',
   'protos/perfetto/trace/profiling/profile_packet.proto',
   'protos/perfetto/trace/ps/process_stats.proto',
   'protos/perfetto/trace/ps/process_tree.proto',
@@ -79,11 +85,16 @@ TRACE_PROTOS = (
   'protos/perfetto/trace/trace.proto',
   'protos/perfetto/trace/trace_packet.proto',
   'protos/perfetto/trace/track_event/debug_annotation.proto',
+  'protos/perfetto/trace/track_event/log_message.proto',
   'protos/perfetto/trace/track_event/process_descriptor.proto',
+  'protos/perfetto/trace/track_event/source_location.proto',
   'protos/perfetto/trace/track_event/task_execution.proto',
   'protos/perfetto/trace/track_event/thread_descriptor.proto',
   'protos/perfetto/trace/track_event/track_event.proto',
   'protos/perfetto/trace/trigger.proto',
+  'protos/perfetto/trace/gpu/gpu_counter_event.proto',
+  'protos/perfetto/trace/gpu/gpu_render_stage_event.proto',
+  'protos/perfetto/common/gpu_counter_descriptor.proto',
 )
 
 MERGED_TRACE_PROTO = 'protos/perfetto/trace/perfetto_trace.proto'

@@ -122,7 +122,7 @@ bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
   return true;
 }
 
-View* DialogDelegate::CreateExtraView() {
+std::unique_ptr<View> DialogDelegate::CreateExtraView() {
   return nullptr;
 }
 
@@ -130,7 +130,7 @@ bool DialogDelegate::GetExtraViewPadding(int* padding) {
   return false;
 }
 
-View* DialogDelegate::CreateFootnoteView() {
+std::unique_ptr<View> DialogDelegate::CreateFootnoteView() {
   return nullptr;
 }
 

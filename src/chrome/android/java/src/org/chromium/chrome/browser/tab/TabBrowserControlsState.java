@@ -5,31 +5,34 @@
 package org.chromium.chrome.browser.tab;
 
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
-import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 
 /**
- * Manages the state of tab browser controls. Instantiation is done by
- * {@link TabDelegateFactory#createBrowserControlsState()}.
+ * Manages the state of tab browser controls.
  */
 public class TabBrowserControlsState extends TabWebContentsUserData implements ImeEventObserver {
     private static final Class<TabBrowserControlsState> USER_DATA_KEY =
             TabBrowserControlsState.class;
 
     private final Tab mTab;
-    private final BrowserControlsVisibilityDelegate mVisibilityDelegate;
-    private final long mNativeTabBrowserControlsState;
+    private long mNativeTabBrowserControlsState; // Lazily initialized in |update|
+    private BrowserControlsVisibilityDelegate mVisibilityDelegate;
 
     /** The current browser controls constraints. -1 if not set. */
     private @BrowserControlsState int mConstraints = -1;
 
-    public static void create(Tab tab, BrowserControlsVisibilityDelegate delegate) {
-        tab.getUserDataHost().setUserData(
-                USER_DATA_KEY, new TabBrowserControlsState(tab, delegate));
+    private int mTopControlsOffset;
+    private int mBottomControlsOffset;
+    private int mContentOffset;
+
+    /** {@code true} if offset was changed by compositor. */
+    private boolean mOffsetInitialized;
+
+    public static void createForTab(Tab tab) {
+        tab.getUserDataHost().setUserData(USER_DATA_KEY, new TabBrowserControlsState(tab));
     }
 
     public static TabBrowserControlsState get(Tab tab) {
@@ -74,11 +77,9 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
     }
 
     /** Constructor */
-    private TabBrowserControlsState(Tab tab, BrowserControlsVisibilityDelegate delegate) {
+    private TabBrowserControlsState(Tab tab) {
         super(tab);
         mTab = tab;
-        mVisibilityDelegate = delegate;
-        mNativeTabBrowserControlsState = nativeInit();
         mTab.addObserver(new EmptyTabObserver() {
             @Override
             public void onSSLStateUpdated(Tab tab) {
@@ -86,8 +87,22 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
             }
 
             @Override
+            public void onInitialized(Tab tab, TabState tabState) {
+                mVisibilityDelegate =
+                        tab.getDelegateFactory().createBrowserControlsVisibilityDelegate(tab);
+            }
+
+            @Override
+            public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
+                if (isAttached) {
+                    mVisibilityDelegate =
+                            tab.getDelegateFactory().createBrowserControlsVisibilityDelegate(tab);
+                }
+            }
+
+            @Override
             public void onRendererResponsiveStateChanged(Tab tab, boolean isResponsive) {
-                if (FullscreenManager.from(mTab) == null) return;
+                if (mTab.isHidden()) return;
                 if (isResponsive) {
                     updateEnabledState();
                 } else {
@@ -101,15 +116,52 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
             }
 
             @Override
+            public void onCrash(Tab tab) {
+                mTopControlsOffset = 0;
+                mBottomControlsOffset = 0;
+                mContentOffset = 0;
+                mOffsetInitialized = false;
+            }
+
+            @Override
             public void onDestroyed(Tab tab) {
                 tab.removeObserver(this);
             }
         });
     }
 
+    /**
+     * Sets new top control and content offset from renderer.
+     * @param topControlsOffset Top control offset.
+     * @param contentOffset Content offset.
+     */
+    void setTopOffset(int topControlsOffset, int contentOffset) {
+        mTopControlsOffset = topControlsOffset;
+        mContentOffset = contentOffset;
+        notifyControlsOffsetChanged();
+    }
+
+    /**
+     * Sets new bottom control offset from renderer.
+     * @param bottomControlsOffset Bottom control offset.
+     */
+    void setBottomOffset(int bottomControlsOffset) {
+        mBottomControlsOffset = bottomControlsOffset;
+        notifyControlsOffsetChanged();
+    }
+
+    private void notifyControlsOffsetChanged() {
+        mOffsetInitialized = true;
+        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
+        while (observers.hasNext()) {
+            observers.next().onBrowserControlsOffsetChanged(
+                    mTab, mTopControlsOffset, mBottomControlsOffset, mContentOffset);
+        }
+    }
+
     @Override
     public void destroyInternal() {
-        nativeOnDestroyed(mNativeTabBrowserControlsState);
+        if (mNativeTabBrowserControlsState != 0) nativeOnDestroyed(mNativeTabBrowserControlsState);
     }
 
     @Override
@@ -122,19 +174,7 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
 
     private void updateEnabledState() {
         if (mTab.isFrozen()) return;
-
         update(BrowserControlsState.BOTH, getConstraints() != BrowserControlsState.HIDDEN);
-
-        WebContents webContents = mTab.getWebContents();
-        if (webContents != null) {
-            GestureListenerManager gestureManager =
-                    GestureListenerManager.fromWebContents(webContents);
-            FullscreenManager fullscreenManager = FullscreenManager.from(mTab);
-            if (gestureManager != null && fullscreenManager != null) {
-                gestureManager.updateMultiTouchZoomSupport(
-                        !fullscreenManager.getPersistentFullscreenMode());
-            }
-        }
     }
 
     /**
@@ -156,10 +196,9 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
                         && current == BrowserControlsState.HIDDEN)) {
             return;
         }
-        if (mNativeTabBrowserControlsState != 0) {
-            nativeUpdateState(mNativeTabBrowserControlsState, mTab.getWebContents(), constraints,
-                    current, animate);
-        }
+        if (mNativeTabBrowserControlsState == 0) mNativeTabBrowserControlsState = nativeInit();
+        nativeUpdateState(mNativeTabBrowserControlsState, mTab.getWebContents(), constraints,
+                current, animate);
         if (constraints == mConstraints) return;
 
         mConstraints = constraints;
@@ -173,14 +212,15 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
      * @return Whether hiding browser controls is enabled or not.
      */
     private boolean canAutoHide() {
-        return mVisibilityDelegate.canAutoHideBrowserControls();
+        return mVisibilityDelegate != null ? mVisibilityDelegate.canAutoHideBrowserControls()
+                                           : false;
     }
 
     /**
      * @return Whether showing browser controls is enabled or not.
      */
     public boolean canShow() {
-        return mVisibilityDelegate.canShowBrowserControls();
+        return mVisibilityDelegate != null ? mVisibilityDelegate.canShowBrowserControls() : false;
     }
 
     @BrowserControlsState
@@ -194,11 +234,31 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
         return constraints;
     }
 
+    /** @return Top control offset */
+    public int topControlsOffset() {
+        return mTopControlsOffset;
+    }
+
+    /** @return Bottom control offset */
+    public int bottomControlsOffset() {
+        return mBottomControlsOffset;
+    }
+
+    /** @return content offset */
+    public int contentOffset() {
+        return mContentOffset;
+    }
+
+    /** @return Whether the control offset is initialized by compositor. */
+    public boolean offsetInitialized() {
+        return mOffsetInitialized;
+    }
+
     // ImeEventObserver
 
     @Override
     public void onNodeAttributeUpdated(boolean editable, boolean password) {
-        if (FullscreenManager.from(mTab) == null) return;
+        if (mTab.isHidden()) return;
         updateEnabledState();
     }
 

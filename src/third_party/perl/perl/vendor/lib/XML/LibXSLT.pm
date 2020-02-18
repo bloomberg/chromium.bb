@@ -9,6 +9,10 @@
 package XML::LibXSLT;
 
 use strict;
+use warnings;
+
+use 5.008;
+
 use vars qw($VERSION @ISA $USE_LIBXML_DATA_TYPES $MatchCB $ReadCB $OpenCB $CloseCB);
 
 sub REQUIRE_XML_LIBXML_ABI_VERSION { 2 }
@@ -25,7 +29,7 @@ use Carp;
 
 require Exporter;
 
-$VERSION = "1.77";
+$VERSION = '1.96';
 
 require DynaLoader;
 
@@ -57,11 +61,11 @@ sub perl_dispatcher {
 	my $owner_doc = shift;
     my @params = @_;
     my @perlParams;
-    
+
     my $i = 0;
     while (@params) {
         my $type = shift(@params);
-        if ($type eq 'XML::LibXML::Literal' or 
+        if ($type eq 'XML::LibXML::Literal' or
             $type eq 'XML::LibXML::Number' or
             $type eq 'XML::LibXML::Boolean')
         {
@@ -75,7 +79,7 @@ sub perl_dispatcher {
             unshift(@perlParams, $type->new(@nodes));
         }
     }
-    
+
     $func = "main::$func" unless ref($func) || $func =~ /(.+)::/;
     no strict 'refs';
     my $res = $func->(@perlParams);
@@ -228,7 +232,6 @@ sub _init_callbacks{
         $icb->register_callbacks( [$mcb, $ocb, $rcb, $ccb] );
     }
 
-    $self->lib_init_callbacks();
     $icb->init_callbacks();
 }
 
@@ -436,7 +439,6 @@ sub _init_callbacks {
     if ( defined $mcb and defined $ocb and defined $rcb and defined $ccb ) {
         $icb->register_callbacks( [$mcb, $ocb, $rcb, $ccb] );
     }
-    $self->XML::LibXSLT::lib_init_callbacks();
     $icb->init_callbacks();
 
     my $scb = $self->{XML_LIBXSLT_SECPREFS};
@@ -511,6 +513,7 @@ sub output_as_chars { shift->{XML_LIBXSLT_STYLESHEET}->_output_string($_[0],2) }
 sub output_fh { shift->{XML_LIBXSLT_STYLESHEET}->output_fh(@_) }
 sub output_file { shift->{XML_LIBXSLT_STYLESHEET}->output_file(@_) }
 sub media_type { shift->{XML_LIBXSLT_STYLESHEET}->media_type(@_) }
+sub output_method { shift->{XML_LIBXSLT_STYLESHEET}->output_method(@_) }
 sub output_encoding { shift->{XML_LIBXSLT_STYLESHEET}->output_encoding(@_) }
 
 1;
@@ -628,16 +631,16 @@ XML::LibXSLT - Interface to the GNOME libxslt library
 
   use XML::LibXSLT;
   use XML::LibXML;
-  
+
   my $xslt = XML::LibXSLT->new();
-  
+
   my $source = XML::LibXML->load_xml(location => 'foo.xml');
   my $style_doc = XML::LibXML->load_xml(location=>'bar.xsl', no_cdata=>1);
-  
+
   my $stylesheet = $xslt->parse_stylesheet($style_doc);
-  
+
   my $results = $stylesheet->transform($source);
-  
+
   print $stylesheet->output_as_bytes($results);
 
 =head1 DESCRIPTION
@@ -667,6 +670,14 @@ very end of section 5.4 of the XSLT specification for more details on
 recursion and detecting it. If your stylesheet or XML file requires
 seriously deep recursion, this is the way to set it. Default value is
 250.
+
+=item max_vars
+
+  XML::LibXSLT->max_vars(100_000);
+
+This option sets the maximum number of variables for a stylesheet. If your
+stylesheet or XML file requires many variables, this is the way to increase
+their limit. Default value is system-specific and may vary.
 
 =item debug_callback
 
@@ -742,9 +753,9 @@ The following methods are available on the new XML::LibXSLT object:
 =item parse_stylesheet($stylesheet_doc)
 
 C<$stylesheet_doc> here is an XML::LibXML::Document object (see L<XML::LibXML>)
-representing an XSLT file. This method will return a 
+representing an XSLT file. This method will return a
 XML::LibXSLT::Stylesheet object, or undef on failure. If the XSLT is
-invalid, an exception will be thrown, so wrap the call to 
+invalid, an exception will be thrown, so wrap the call to
 parse_stylesheet in an eval{} block to trap this.
 
 IMPORTANT: C<$stylesheet_doc> should not contain CDATA sections,
@@ -764,6 +775,17 @@ Exactly the same as the above, but parses the given filename directly.
 To define XML::LibXSLT or XML::LibXSLT::Stylesheet specific input
 callbacks, reuse the XML::LibXML input callback API as described in
 L<XML::LibXML::InputCallback(3)>.
+
+=over 4
+
+=item input_callbacks($icb)
+
+Enable the callbacks in C<$icb> only for this XML::LibXSLT object.
+C<$icb> should be a C<XML::LibXML::InputCallback> object. This will
+call C<init_callbacks> and C<cleanup_callbacks> automatically during
+parsing or transformation.
+
+=back
 
 =head1 Security Callbacks
 
@@ -838,11 +860,33 @@ Outputs the result to the file named in C<$filename>.
 
 Returns the output encoding of the results. Defaults to "UTF-8".
 
+=item output_method()
+
+Returns the value of the C<method> attribute from C<xsl:output>
+(usually C<xml>, C<html> or C<text>). If this attribute is
+unspecified, the default value is initially C<xml>. If the
+L<transform> method is used to produce an HTML document, as per the
+L<XSLT spec|http://www.w3.org/TR/xslt#output>, the default value will
+change to C<html>. To override this behavior completely, supply an
+C<xsl:output> element in the stylesheet source document.
+
 =item media_type()
 
-Returns the output media_type of the results. Defaults to "text/html".
+Returns the value of the C<media-type> attribute from
+C<xsl:output>. If this attribute is unspecified, the default media
+type is initially C<text/xml>. This default changes to C<text/html>
+under the same conditions as L<output_method>.
+
+=item input_callbacks($icb)
+
+Enable the callbacks in C<$icb> only for this stylesheet. C<$icb>
+should be a C<XML::LibXML::InputCallback> object. This will call
+C<init_callbacks> and C<cleanup_callbacks> automatically during
+transformation.
 
 =back
+
+=cut
 
 =head1 Parameters
 
@@ -1001,7 +1045,7 @@ number of XML::LibXSLT module itself, i.e. with
 C<$XML::LibXSLT::VERSION>). XML::LibXSLT issues a warning if the
 runtime version of the library is less then the compile-time version.
 
-=over 
+=over
 
 =item XML::LibXSLT::LIBXSLT_VERSION()
 
@@ -1022,7 +1066,7 @@ example, for libxslt.so.1.1.18, it will return 10118.
 
 =item XML::LibXSLT::HAVE_EXLT()
 
-Returns 1 if the module was compiled with libexslt, 0 otherwised.
+Returns 1 if the module was compiled with libexslt, 0 otherwise.
 
 =back
 

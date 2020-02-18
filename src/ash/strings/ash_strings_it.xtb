@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">I tuoi dispositivi funzionano ancora meglio insieme</translation>
 <translation id="112308213915226829">Nascondi automaticamente shelf</translation>
 <translation id="1153356358378277386">Dispositivi accoppiati</translation>
+<translation id="1175572348579024023">Scorri</translation>
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Cancella tutto</translation>
-<translation id="123828989343052515">Nuova scrivania</translation>
 <translation id="1247372569136754018">Microfono (interno)</translation>
 <translation id="1252999807265626933">In carica da: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Che tempo fa?</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">I metodi di immissione vengono configurati dall'amministratore.</translation>
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
 <translation id="1761222317188459878">Attiva/disattiva connessione di rete. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Scorri a destra</translation>
 <translation id="1812997170047690955">Cosa c'è sul mio schermo?</translation>
+<translation id="1820355135508821526">La funzionalità <ph name="FEATURE_NAME" /> è stata disattivata da un criterio applicato a questo dispositivo. Contatta l'amministratore per richiedere modifiche.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (caricamento…)</translation>
 <translation id="1850504506766569011">Wi-Fi non attivo.</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Imposta la lingua</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">Inserimento testo</translation>
 <translation id="1993072747612765854">Leggi ulteriori informazioni sull'ultimo aggiornamento di <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Spegni</translation>
 <translation id="2012624427112548395">CTRL + tasto per la ricerca + H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">Verticale</translation>
 <translation id="2067602449040652523">Luminosità della tastiera</translation>
 <translation id="209965399369889474">Nessuna connessione alla rete</translation>
+<translation id="2126242104232412123">Nuovo desktop</translation>
 <translation id="2127372758936585790">Caricabatterie a basso consumo</translation>
 <translation id="2135456203358955318">Lente d'ingrandimento ancorata</translation>
 <translation id="2144487987174258011">Riavvia per aggiornare Adobe Flash Player</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">L'Assistente Google non è disponibile in una sessione pubblica.</translation>
 <translation id="2575685495496069081">L'accesso simultaneo è stato disattivato</translation>
 <translation id="2582112259361606227">Riavvia per aggiornare</translation>
-<translation id="2597972630681408282">Luminosità notturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La scheda SIM è bloccata</translation>
+<translation id="2651765386227849097">L'Assistente Google è disattivato su questo dispositivo.</translation>
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2658778018866295321">Fai clic e trascina</translation>
 <translation id="2700493154570097719">Imposta la tastiera</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connesso a un dispositivo}other{Connesso a # dispositivi}}</translation>
 <translation id="3226991577105957773">+ altre <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Nessuna rete mobile disponibile</translation>
+<translation id="3249513730522716925">La finestra <ph name="WINDOW_TITLE" /> è stata spostata dal desktop <ph name="ACTIVE_DESK" /> al desktop <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Cosa sai fare?</translation>
 <translation id="3294437725009624529">Ospite</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> può ancora accedere in seguito.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">Torna a "<ph name="FROM_LOCALE" />" (è necessario riavviare)</translation>
 <translation id="3576141592585647168">Cambia fuso orario</translation>
 <translation id="3595596368722241419">Batteria carica</translation>
+<translation id="3604801046548457007">Desktop <ph name="DESK_TITILE" /> creato</translation>
 <translation id="3606978283550408104">Display Braille collegato.</translation>
 <translation id="3621202678540785336">Ingresso</translation>
 <translation id="3626281679859535460">Luminosità</translation>
@@ -204,6 +210,7 @@
 <translation id="3977512764614765090">Percentuale di carica della batteria: <ph name="PERCENTAGE" />%. La batteria è in carica.</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="4017989525502048489">Puntatore laser</translation>
+<translation id="4021716437419160885">Scorri verso il basso</translation>
 <translation id="4042660782729322247">Stai condividendo lo schermo</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Disattivata per un'app}other{Disattivate per # app}}</translation>
 <translation id="4072264167173457037">Segnale medio</translation>
@@ -259,9 +266,11 @@
 <translation id="4895488851634969361">La batteria è carica.</translation>
 <translation id="490375751687810070">Verticale</translation>
 <translation id="4905614135390995787">La scorciatoia per attivare/disattivare la modalità ad alto contrasto è cambiata. Usa <ph name="NEW_SHORTCUT" /> anziché <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Livello batteria: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4918086044614829423">Accetto</translation>
 <translation id="4924411785043111640">Riavvia e reimposta</translation>
+<translation id="495046168593986294">Scorri verso l'alto</translation>
 <translation id="4961318399572185831">Trasmetti schermo</translation>
 <translation id="5030687792513154421">Tempo scaduto</translation>
 <translation id="5035236842988137213">Il dispositivo <ph name="DEVICE_NAME" /> si è connesso a un nuovo telefono</translation>
@@ -295,6 +304,7 @@
 <translation id="5648021990716966815">Jack per microfono</translation>
 <translation id="5669267381087807207">In fase di attivazione</translation>
 <translation id="5673434351075758678">Da "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" dopo la sincronizzazione delle impostazioni.</translation>
+<translation id="5682642926269496722">L'Assistente Google non è disponibile per l'attuale account utente.</translation>
 <translation id="5691772641933328258">Impronta digitale non riconosciuta</translation>
 <translation id="5710450975648804523">Funzione Non disturbare attiva</translation>
 <translation id="574392208103952083">Medio</translation>
@@ -319,6 +329,8 @@
 <translation id="598882571027504733">Per scaricare l'aggiornamento, riavvia il Chromebook con la tastiera collegata.</translation>
 <translation id="5992218262414051481">Modalità ad alto contrasto attivata. Premi di nuovo CTRL + tasto per la ricerca + H per disattivarla.</translation>
 <translation id="6018164090099858612">Uscita dalla modalità di mirroring</translation>
+<translation id="602001110135236999">Scorri a sinistra</translation>
+<translation id="6040143037577758943">Chiudi</translation>
 <translation id="6043212731627905357">Questo monitor non è compatibile con il tuo dispositivo <ph name="DEVICE_TYPE" /> (il monitor non è supportato).</translation>
 <translation id="6043994281159824495">Esci ora</translation>
 <translation id="6047696787498798094">La condivisione dello schermo verrà interrotta se cambi utente. Vuoi continuare?</translation>
@@ -326,6 +338,7 @@
 <translation id="6064337552080329342">Impossibile verificare la password. Riprova.</translation>
 <translation id="607652042414456612">Il tuo computer è rilevabile per i dispositivi Bluetooth nelle vicinanze e verrà visualizzato come "<ph name="NAME" />" con l'indirizzo <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">In carica: <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">L'Assistente Google non è disponibile in una sessione Ospite.</translation>
 <translation id="615957422585914272">Mostra tastiera sullo schermo</translation>
 <translation id="6164005077879661055">Tutti i file e i dati locali associati all'utente controllato verranno eliminati definitivamente in seguito alla rimozione dell'utente. Le impostazioni e i siti web visitati relativi all'utente controllato potrebbero essere ancora visibili al gestore all'indirizzo <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
@@ -367,7 +380,9 @@
 <translation id="6713285437468012787">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" è stato accoppiato ed è ora disponibile per tutti gli utenti. Puoi rimuovere tale accoppiamento utilizzando il menu Impostazioni.</translation>
 <translation id="6715542151869432661">Nessun dispositivo mobile trovato.</translation>
 <translation id="6723839937902243910">Alimentazione</translation>
+<translation id="6727969043791803658">Dispositivo connesso. Livello batteria: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">La traccia delle prestazioni è attiva</translation>
+<translation id="6752912906630585008">Desktop <ph name="REMOVED_DESK" /> rimosso e unito al desktop <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="6803622936009808957">Impossibile duplicare i display perché non sono state trovate risoluzioni supportate. È stato attivato il desktop esteso.</translation>
 <translation id="6820676911989879663">Fai una pausa!</translation>
@@ -425,6 +440,7 @@
 <translation id="7692480393933218409">Dispositivi USB-C collegati in carica</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notifica}other{# notifiche}}</translation>
+<translation id="7749443890790263709">Numero massimo di desktop raggiunto.</translation>
 <translation id="776344839111254542">Fai clic per visualizzare i dettagli dell'aggiornamento</translation>
 <translation id="7780159184141939021">Ruota lo schermo</translation>
 <translation id="7796353162336583443">Tocca il pulsante dello stilo nella shelf per creare note, acquisire screenshot, usare l'Assistente Google, il puntatore laser o la lente d'ingrandimento.</translation>
@@ -468,6 +484,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Crea nota</translation>
 <translation id="8375916635258623388">Questo dispositivo <ph name="DEVICE_NAME" /> e il telefono si connetteranno automaticamente</translation>
+<translation id="8388750414311082622">Impossibile rimuovere l'ultimo desktop.</translation>
 <translation id="8392451568018454956">Menu Opzioni per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Uno dei tuoi genitori ha bloccato questo dispositivo</translation>
 <translation id="8406981827175133772">Lente d'ingrandimento a schermo intero</translation>
@@ -476,6 +493,7 @@
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8433186206711564395">Impostazioni di rete</translation>
 <translation id="8433977262951327081">La scorciatoia per mostrare il fumetto del menu di opzioni di immissione nella shelf è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Desktop <ph name="DESK_TITILE" /> attivato</translation>
 <translation id="8452135315243592079">Scheda SIM mancante</translation>
 <translation id="8454013096329229812">Wi-Fi attivo.</translation>
 <translation id="847056008324733326">Impostazioni scala di visualizzazione</translation>

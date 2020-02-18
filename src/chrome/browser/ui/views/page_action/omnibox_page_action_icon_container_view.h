@@ -16,11 +16,14 @@
 #include "ui/views/view.h"
 
 class Browser;
+class ClickToCallIconView;
 class CommandUpdater;
 class FindBarIcon;
 class IntentPickerView;
 class ManagePasswordsIconViews;
+class NativeFileSystemAccessIconView;
 class PwaInstallView;
+class ReaderModeIconView;
 class TranslateIconView;
 class ZoomView;
 
@@ -88,6 +91,9 @@ class OmniboxPageActionIconContainerView
   send_tab_to_self::SendTabToSelfIconView* send_tab_to_self_icon_view_ =
       nullptr;
   TranslateIconView* translate_icon_ = nullptr;
+  NativeFileSystemAccessIconView* native_file_system_icon_ = nullptr;
+  ReaderModeIconView* reader_mode_icon_ = nullptr;
+  ClickToCallIconView* click_to_call_icon_view_ = nullptr;
   std::vector<PageActionIconView*> page_action_icons_;
 
   ScopedObserver<zoom::ZoomEventManager, zoom::ZoomEventManagerObserver>

@@ -253,10 +253,10 @@ IN_PROC_BROWSER_TEST_F(TabStatsTrackerBrowserTest,
       data_store->GetTabIDForTesting(web_contents).value();
   browser()->tab_strip_model()->DetachWebContentsAt(
       browser()->tab_strip_model()->GetIndexOfWebContents(web_contents));
-  EXPECT_TRUE(base::ContainsKey(*interval_map, tab_id));
+  EXPECT_TRUE(base::Contains(*interval_map, tab_id));
   tab_stats_tracker_->OnInterval(kValidLongInterval, interval_map);
   EXPECT_EQ(1U, interval_map->size());
-  EXPECT_FALSE(base::ContainsKey(*interval_map, tab_id));
+  EXPECT_FALSE(base::Contains(*interval_map, tab_id));
 
   web_contents = data_store->existing_tabs_for_testing()->begin()->first;
 
@@ -265,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(TabStatsTrackerBrowserTest,
   tab_id = data_store->GetTabIDForTesting(web_contents).value();
   browser()->tab_strip_model()->DetachWebContentsAt(
       browser()->tab_strip_model()->GetIndexOfWebContents(web_contents));
-  EXPECT_TRUE(base::ContainsKey(*interval_map, tab_id));
+  EXPECT_TRUE(base::Contains(*interval_map, tab_id));
   tab_stats_tracker_->OnInterval(kValidLongInterval, interval_map);
   EXPECT_EQ(0U, interval_map->size());
 }

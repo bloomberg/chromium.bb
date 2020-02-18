@@ -60,7 +60,14 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   virtual ~PerUserTopicRegistrationManager();
 
+  // RegisterProfilePrefs and RegisterPrefs register the same prefs, because on
+  // device level (sign in screen, device local account) we spin up separate
+  // InvalidationService and on profile level (when user signed in) we have
+  // another InvalidationService, and we want to keep profile data in an
+  // encrypted area of disk. While device data which is public can be kept in an
+  // unencrypted area.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   virtual void UpdateRegisteredTopics(const Topics& ids,
                                       const std::string& token);

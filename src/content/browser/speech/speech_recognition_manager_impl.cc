@@ -234,8 +234,7 @@ SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl(
       delegate_(GetContentClient()
                     ->browser()
                     ->CreateSpeechRecognitionManagerDelegate()),
-      requester_id_(next_requester_id_++),
-      weak_factory_(this) {
+      requester_id_(next_requester_id_++) {
   DCHECK(!g_speech_recognition_manager_impl);
   g_speech_recognition_manager_impl = this;
 
@@ -474,7 +473,8 @@ void SpeechRecognitionManagerImpl::OnRecognitionStart(int session_id) {
   auto iter = sessions_.find(session_id);
   if (iter->second->ui) {
     // Notify the UI that the devices are being used.
-    iter->second->ui->OnStarted(base::OnceClosure(), base::RepeatingClosure(),
+    iter->second->ui->OnStarted(base::OnceClosure(),
+                                MediaStreamUI::SourceCallback(),
                                 MediaStreamUIProxy::WindowIdCallback());
   }
 
@@ -601,8 +601,8 @@ void SpeechRecognitionManagerImpl::OnRecognitionEnd(int session_id) {
                                 EVENT_RECOGNITION_ENDED));
 }
 
-SpeechRecognitionSessionContext
-SpeechRecognitionManagerImpl::GetSessionContext(int session_id) const {
+SpeechRecognitionSessionContext SpeechRecognitionManagerImpl::GetSessionContext(
+    int session_id) {
   return GetSession(session_id)->context;
 }
 
@@ -730,7 +730,8 @@ void SpeechRecognitionManagerImpl::SessionStart(const Session& session) {
   } else {
     // From the ask_user=true path, use the selected device.
     DCHECK_EQ(1u, devices.size());
-    DCHECK_EQ(blink::MEDIA_DEVICE_AUDIO_CAPTURE, devices.front().type);
+    DCHECK_EQ(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+              devices.front().type);
     device_id = devices.front().id;
   }
 
@@ -807,7 +808,7 @@ SpeechRecognitionManagerImpl::GetDelegateListener() const {
 }
 
 const SpeechRecognitionSessionConfig&
-SpeechRecognitionManagerImpl::GetSessionConfig(int session_id) const {
+SpeechRecognitionManagerImpl::GetSessionConfig(int session_id) {
   return GetSession(session_id)->config;
 }
 

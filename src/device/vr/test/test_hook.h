@@ -6,6 +6,7 @@
 #define DEVICE_VR_TEST_TEST_HOOK_H_
 
 #include "base/logging.h"
+#include "ui/gfx/transform.h"
 
 #include <cstdint>
 
@@ -119,6 +120,18 @@ struct ControllerFrameData {
   ControllerRole role = kControllerRoleInvalid;
   bool is_valid = false;
 };
+
+inline gfx::Transform PoseFrameDataToTransform(PoseFrameData data) {
+  // The gfx::Transform constructor takes arguments in row-major order, but
+  // we're given data in column-major order. Construct in column-major order and
+  // transpose since it looks cleaner than manually transposing the arguments
+  // passed to the constructor.
+  float* t = data.device_to_origin;
+  gfx::Transform transform(t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8],
+                           t[9], t[10], t[11], t[12], t[13], t[14], t[15]);
+  transform.Transpose();
+  return transform;
+}
 
 // Tests may implement this, and register it to control behavior of VR runtime.
 class VRTestHook {

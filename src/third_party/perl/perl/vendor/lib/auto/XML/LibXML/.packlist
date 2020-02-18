@@ -41,5 +41,4 @@ C:\strawberry\perl\vendor\lib\XML\LibXML\Text.pod
 C:\strawberry\perl\vendor\lib\XML\LibXML\XPathContext.pm
 C:\strawberry\perl\vendor\lib\XML\LibXML\XPathContext.pod
 C:\strawberry\perl\vendor\lib\XML\LibXML\XPathExpression.pod
-C:\strawberry\perl\vendor\lib\auto\XML\LibXML\LibXML.bs
-C:\strawberry\perl\vendor\lib\auto\XML\LibXML\LibXML.dll
+C:\strawberry\perl\vendor\lib\auto\XML\LibXML\LibXML.xs.dll

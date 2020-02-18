@@ -13,7 +13,12 @@
 
 namespace blink {
 
-using LayoutSVGRootTest = RenderingTest;
+class LayoutSVGRootTest : public RenderingTest {
+  void SetUp() override {
+    EnableCompositing();
+    RenderingTest::SetUp();
+  }
+};
 
 TEST_F(LayoutSVGRootTest, VisualRectMappingWithoutViewportClipWithBorder) {
   SetBodyInnerHTML(R"HTML(
@@ -43,7 +48,6 @@ TEST_F(LayoutSVGRootTest, VisualRectMappingWithoutViewportClipWithBorder) {
 }
 
 TEST_F(LayoutSVGRootTest, VisualOverflowExpandsLayer) {
-  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <svg id='root' style='width: 100px; will-change: transform; height:
     100px; overflow: visible; position: absolute;'>
@@ -143,7 +147,7 @@ TEST_F(LayoutSVGRootTest, RectBasedHitTestPartialOverlap) {
 
   // The center of this rect does not overlap the SVG element, but the
   // rect itself does.
-  auto results = RectBasedHitTest(LayoutRect(0, 0, 300, 300));
+  auto results = RectBasedHitTest(PhysicalRect(0, 0, 300, 300));
   int count = 0;
   EXPECT_EQ(2u, results.size());
   for (auto result : results) {

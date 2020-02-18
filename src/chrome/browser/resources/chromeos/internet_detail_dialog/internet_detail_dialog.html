@@ -18,6 +18,8 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_siminfo.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_page_host_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
@@ -25,7 +27,6 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
 
 <script src="chrome://internet-detail-dialog/strings.js"></script>
@@ -36,11 +37,8 @@
 
 <dom-module id="internet-detail-dialog">
   <template>
-    <style include="cr-shared-style network-shared iron-flex">
-      :host {
-        @apply --cr-page-host;
-      }
-
+    <style include="cr-page-host-style cr-shared-style network-shared
+        iron-flex">
       cr-policy-network-indicator {
         margin-inline-end: 10px;
       }
@@ -81,7 +79,7 @@
       <div class="start layout horizontal center">
         <cr-network-icon
             show-technology-badge="[[showTechnologyBadge_]]"
-            network-state="[[networkProperties]]">
+            network-state="[[getNetworkState_(networkProperties)]]">
         </cr-network-icon>
         <div id="networkName" class="title">
           [[getNameText_(networkProperties)]]
@@ -91,21 +89,18 @@
           [[getStateText_(networkProperties)]]
         </div>
       </div>
-      <paper-button class="primary-button" on-tap="onConnectDisconnectTap_"
+      <cr-button class="action-button" on-click="onConnectDisconnectClick_"
           hidden$="[[!showConnectDisconnect_(networkProperties)]]"
           disabled="[[!enableConnectDisconnect_(networkProperties)]]">
         [[getConnectDisconnectText_(networkProperties)]]
-      </paper-button>
+      </cr-button>
     </div>
 
     <!-- SIM Info (Cellular only). -->
     <template is="dom-if" if="[[showCellularSim_(networkProperties)]]"
         restamp>
       <div class="section single-column">
-        <network-siminfo
-            editable on-siminfo-change="onNetworkPropertyChange_"
-            network-properties="[[networkProperties]]"
-            networking-private="[[networkingPrivate]]">
+        <network-siminfo on-siminfo-change="onNetworkPropertyChange_">
         </network-siminfo>
       </div>
     </template>

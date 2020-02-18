@@ -169,6 +169,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
   const static uint32_t kReadBufferSize;
 
  private:
+  class WrappedIOBuffer;
+
   // This is for constructing network-only script loaders.
   // |loader_factory| is used to load the script, see class comments.
   ServiceWorkerNewScriptLoader(
@@ -310,7 +312,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
   base::OnceCallback<void(net::Error)> write_observer_complete_callback_;
   // ---------- End of Type::kResume loader members ----------
 
-  base::WeakPtrFactory<ServiceWorkerNewScriptLoader> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerNewScriptLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNewScriptLoader);
 };

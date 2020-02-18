@@ -172,13 +172,6 @@ class WebController {
       const Selector& selector,
       base::OnceCallback<void(bool, const RectF&)> callback);
 
-  // Functions to set, get and expire the Autofill Assistant cookie used to
-  // detect when Autofill Assistant has been used on a domain before.
-  virtual void SetCookie(const std::string& domain,
-                         base::OnceCallback<void(bool)> callback);
-  virtual void HasCookie(base::OnceCallback<void(bool)> callback);
-  virtual void ClearCookie();
-
   // Checks whether an element matches the given selector.
   //
   // If strict, there must be exactly one matching element for the check to
@@ -192,6 +185,21 @@ class WebController {
   // Calls the callback once the main document window has been resized.
   virtual void WaitForWindowHeightChange(
       base::OnceCallback<void(const ClientStatus&)> callback);
+
+  // Gets the value of document.readyState for |optional_frame| or, if it is
+  // empty, in the main document.
+  virtual void GetDocumentReadyState(
+      const Selector& optional_frame,
+      base::OnceCallback<void(const ClientStatus&,
+                              DocumentReadyState end_state)> callback);
+
+  // Waits for the value of Document.readyState to satisfy |min_ready_state| in
+  // |optional_frame| or, if it is empty, in the main document.
+  virtual void WaitForDocumentReadyState(
+      const Selector& optional_frame,
+      DocumentReadyState min_ready_state,
+      base::OnceCallback<void(const ClientStatus&,
+                              DocumentReadyState end_state)> callback);
 
  private:
   friend class WebControllerBrowserTest;
@@ -432,11 +440,6 @@ class WebController {
       autofill_assistant::input::DispatchKeyEventType type,
       const UChar32 codepoint);
 
-  void OnSetCookie(base::OnceCallback<void(bool)> callback,
-                   std::unique_ptr<network::SetCookieResult> result);
-  void OnHasCookie(base::OnceCallback<void(bool)> callback,
-                   std::unique_ptr<network::GetCookiesResult> result);
-
   // Waits for the document.readyState to be 'interactive' or 'complete'.
   void WaitForDocumentToBecomeInteractive(
       int remaining_rounds,
@@ -447,6 +450,17 @@ class WebController {
       std::string object_id,
       base::OnceCallback<void(bool)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnFindElementForDocumentReadyState(
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback,
+      const ClientStatus& status,
+      std::unique_ptr<FindElementResult> element);
+  void OnFindElementForWaitForDocumentReadyState(
+      DocumentReadyState min_ready_state,
+      base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+          callback,
+      const ClientStatus& status,
+      std::unique_ptr<FindElementResult> element);
 
   // Weak pointer is fine here since it must outlive this web controller, which
   // is guaranteed by the owner of this object.
@@ -460,6 +474,5 @@ class WebController {
   base::WeakPtrFactory<WebController> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(WebController);
 };
-
 }  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_CONTROLLER_H_

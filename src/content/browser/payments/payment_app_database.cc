@@ -122,7 +122,7 @@ std::unique_ptr<StoredPaymentApp> ToStoredPaymentApp(const std::string& input) {
 
 PaymentAppDatabase::PaymentAppDatabase(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
-    : service_worker_context_(service_worker_context), weak_ptr_factory_(this) {
+    : service_worker_context_(service_worker_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
@@ -570,7 +570,7 @@ void PaymentAppDatabase::DidReadAllPaymentInstruments(
       continue;
 
     int64_t id = instrument_proto.registration_id();
-    if (!base::ContainsKey(apps, id))
+    if (!base::Contains(apps, id))
       continue;
 
     apps[id]->enabled_methods.emplace_back(instrument_proto.method());

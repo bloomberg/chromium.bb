@@ -4,8 +4,6 @@
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
-# $Id: Transport.pod 386 2011-08-18 19:48:31Z kutterma $
-#
 # ======================================================================
 
 =pod
@@ -128,7 +126,7 @@ and C<HTTP_proxy_pass> for proxy authorization, C<SOAP::Lite> will handle it pro
 
 =head3 HTTP BASIC AUTHENTICATION
 
-HTTP Basic authentication is accomplished by overriding the get_basic_credentials suboutine in C<LWP::UserAgent> (which C<SOAP::Transport::HTTP::Client> is a subclass):
+HTTP Basic authentication is accomplished by overriding the get_basic_credentials subroutine in C<LWP::UserAgent> (which C<SOAP::Transport::HTTP::Client> is a subclass):
 
   BEGIN {
     sub SOAP::Transport::HTTP::Client::get_basic_credentials {
@@ -153,12 +151,34 @@ Cookies will be taken from the response and provided to the request. You may acc
 
 =head3 SSL CERTIFICATE AUTHENTICATION
 
+The default SSL implementation for the HTTP client library L<LWP::UserAgent> used by SOAP::Lite is L<IO::Socket::SSL>.
+
+To enable certificate based authentication, you'll have to pass your certificate and key as additional options to the
+proxy() method like this:
+
+    $soap->proxy( $url, ssl_opts => {
+        SSL_cert_file => 'client-cert.pem',
+        SSL_key_file  => 'client-key.pem'
+    });
+
+Or you can set them later like this:
+
+    $soap->transport->ssl_opts(
+        SSL_cert_file => 'client-cert.pem',
+        SSL_key_file  => 'client-key.pem'
+    );
+
+
+If you're using L<Crypt::SSLeay>, the following applies:
+
 To get certificate authentication working you need to set three environment variables: C<HTTPS_CERT_FILE>, C<HTTPS_KEY_FILE>, and optionally C<HTTPS_CERT_PASS>. This can be done either through the command line, or directly within your Perl script using the C<$ENV> variable:
 
   $ENV{HTTPS_CERT_FILE} = 'client-cert.pem';
   $ENV{HTTPS_KEY_FILE}  = 'client-key.pem';
 
-These settings are referrenced by C<Crypt::SSLeay>, the module SOAP::Lite used for HTTPS support. Other options (e.g. CA peer verification) can be specified in a similar way. See L<Crypt::SSLeay> documentation for more information.
+These settings are referenced by C<Crypt::SSLeay>. Other options (e.g. CA peer verification) can be specified in a similar way. See L<Crypt::SSLeay> documentation for more information.
+
+Please note that you probably should not be using L<Crypt::SSLeay> because it does not perform hostname verification; LWP::UserAgent uses IO::Socket::SSL by default. See also L<https://metacpan.org/pod/Crypt::SSLeay#DO-YOU-NEED-Crypt::SSLeay>.
 
 Those who would like to use encrypted keys may find the following thread in the SOAP::Lite newsgroup helpful:
 
@@ -166,7 +186,7 @@ http://groups.yahoo.com/group/soaplite/message/729
 
 =head3 COMPRESSION
 
-SOAP::Lite provides you with the option for enabling compression over the wire using HTTP I<only> in both the server and client contexts, provided that you have L<Compress::Zlib> installed. Compression and decompression is done transparantly to your application.
+SOAP::Lite provides you with the option for enabling compression over the wire using HTTP I<only> in both the server and client contexts, provided that you have L<Compress::Zlib> installed. Compression and decompression is done transparently to your application.
 
 A server will respond with an encoded/compressed message only if the client has asserted that it can accept it (indicated by client sending an C<Accept-Encoding> HTTP header with a 'deflate' or '*' value).
 
@@ -314,7 +334,7 @@ This class is a direct subclass of SOAP::Transport::HTTP::Server and defines no 
 
 =head4 EXAMPLE CGI
 
-The following code sample is a CGI based Web Service that converts celcius to fahrenheit:
+The following code sample is a CGI based Web Service that converts celsius to fahrenheit:
 
     #!/usr/bin/perl
     use SOAP::Transport::HTTP;

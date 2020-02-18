@@ -69,6 +69,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1385214448885562192">Naciśnij enter, by zaakceptować, escape, by anulować, strzałkę w dół, by przejść dalej, lub strzałkę w górę, by się cofnąć.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Informuj głosowo o atrybutach tekstu sformatowanego</translation>
 <translation id="1405567553485452995">Jasnozielony</translation>
 <translation id="1417889266572670458">Granatowy</translation>
 <translation id="1431911867058218151">Śliwkowy</translation>
@@ -319,11 +320,11 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="3232388865800379423">Przycisk wyskakującego okienka</translation>
 <translation id="3241052487511142956">Poprzedni kliknięty link</translation>
 <translation id="3241638166094654466">Komórki w każdym wierszu:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">orientacja pionowa</translation>
 <translation id="3286390186030710347">Suwak</translation>
 <translation id="3299925995433437805">Brak następnego klikniętego linku.</translation>
 <translation id="3300348286427369683">Obsługa tekstu sformatowanego. ChromeVox obsługuje teraz pola tekstu sformatowanego, w tym między innymi polecenia nawigacyjne, kierowanie kursorem brajlowskim oraz wybór.</translation>
-<translation id="3304756947457041303">Dostosuj wskazywanie tekstu sformatowanego</translation>
 <translation id="3307886118343381874">Przejdź na koniec tabeli.</translation>
 <translation id="3311969765485641742">Naciśnij Alt+Shift+A, by zobaczyć alerty</translation>
 <translation id="3312997241656799641">Następny kliknięty link</translation>

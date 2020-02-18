@@ -5,15 +5,17 @@
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 
 #include <windows.h>
+#include <winternl.h>
+#include <lm.h>  // Needed for PNTSTATUS
 
 #define _NTDEF_  // Prevent redefition errors, must come after <winternl.h>
 #include <MDMRegistration.h>  // For RegisterDeviceWithManagement()
+#include <ntsecapi.h>         // For LsaQueryInformationPolicy()
 
 #include <atlconv.h>
 
 #include "base/base64.h"
 #include "base/files/file_path.h"
-#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/scoped_native_library.h"
 #include "base/stl_util.h"
@@ -28,8 +30,15 @@
 namespace credential_provider {
 
 constexpr wchar_t kRegMdmUrl[] = L"mdm";
+constexpr wchar_t kRegMdmEscrowServiceServerUrl[] = L"mdm_ess_url";
 constexpr wchar_t kRegMdmSupportsMultiUser[] = L"mdm_mu";
 constexpr wchar_t kRegMdmAllowConsumerAccounts[] = L"mdm_aca";
+constexpr wchar_t kUserPasswordLsaStoreKeyPrefix[] =
+#if defined(GOOGLE_CHROME_BUILD)
+    L"Chrome-GCPW-";
+#else
+    L"Chromium-GCPW-";
+#endif
 
 // Overridden in tests to force the MDM enrollment to either succeed or fail.
 enum class EnrollmentStatus {
@@ -48,7 +57,22 @@ enum class EnrolledStatus {
 };
 EnrolledStatus g_enrolled_status = EnrolledStatus::kDontForce;
 
+#if !defined(GOOGLE_CHROME_BUILD)
+enum class EscrowServiceStatus {
+  kDisabled,
+  kEnabled,
+};
+
+EscrowServiceStatus g_escrow_service_enabled = EscrowServiceStatus::kDisabled;
+#endif
+
 namespace {
+
+constexpr wchar_t kDefaultMdmUrl[] =
+    L"https://deviceenrollmentforwindows.googleapis.com/v1/discovery";
+
+constexpr wchar_t kDefaultEscrowServiceServerUrl[] =
+    L"https://devicepasswordescrowforwindows-pa.googleapis.com";
 
 template <typename T>
 T GetMdmFunctionPointer(const base::ScopedNativeLibrary& library,
@@ -63,13 +87,7 @@ T GetMdmFunctionPointer(const base::ScopedNativeLibrary& library,
   GetMdmFunctionPointer<decltype(&::name)>(library, #name)
 
 base::string16 GetMdmUrl() {
-  wchar_t mdm_url[256];
-  ULONG length = base::size(mdm_url);
-  HRESULT hr = GetGlobalFlag(kRegMdmUrl, mdm_url, &length);
-  if (FAILED(hr))
-    return L"https://deviceenrollmentforwindows.googleapis.com/v1/discovery";
-
-  return mdm_url;
+  return GetGlobalFlagOrDefault(kRegMdmUrl, kDefaultMdmUrl);
 }
 
 bool IsEnrolledWithGoogleMdm(const base::string16& mdm_url) {
@@ -176,6 +194,39 @@ HRESULT ExtractRegistrationData(const base::Value& registration_data,
   return S_OK;
 }
 
+// Gets localalized name for builtin administrator account. Extracting
+// localized name for builtin administrator account requires DomainSid
+// to be passed onto the CreateWellKnownSid function unlike any other
+// WellKnownSid as per microsoft documentation. Thats why we need to first
+// extract the DomainSid (even for local accounts) and pass it as a
+// parameter to the CreateWellKnownSid function call.
+HRESULT GetLocalizedNameBuiltinAdministratorAccount(
+    base::string16* builtin_localized_admin_name) {
+  LSA_HANDLE PolicyHandle;
+  static LSA_OBJECT_ATTRIBUTES oa = {sizeof(oa)};
+  NTSTATUS status =
+      LsaOpenPolicy(0, &oa, POLICY_VIEW_LOCAL_INFORMATION, &PolicyHandle);
+  if (status >= 0) {
+    PPOLICY_ACCOUNT_DOMAIN_INFO ppadi;
+    status = LsaQueryInformationPolicy(
+        PolicyHandle, PolicyAccountDomainInformation, (void**)&ppadi);
+    if (status >= 0) {
+      BYTE well_known_sid[SECURITY_MAX_SID_SIZE];
+      DWORD size_local_users_group_sid = base::size(well_known_sid);
+      if (CreateWellKnownSid(::WinAccountAdministratorSid, ppadi->DomainSid,
+                             well_known_sid, &size_local_users_group_sid)) {
+        return LookupLocalizedNameBySid(well_known_sid,
+                                        builtin_localized_admin_name);
+      } else {
+        status = GetLastError();
+      }
+      LsaFreeMemory(ppadi);
+    }
+    LsaClose(PolicyHandle);
+  }
+  return status >= 0 ? S_OK : E_FAIL;
+}
+
 HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
                                            const base::Value& properties) {
   // Make sure all the needed data is present in the dictionary.
@@ -215,6 +266,21 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
     return E_FAIL;
   }
 
+  // Need localized local user group name for Administrators group
+  // for supporting account elevation scenarios.
+  base::string16 local_administrators_group_name = L"";
+  hr = LookupLocalizedNameForWellKnownSid(WinBuiltinAdministratorsSid,
+                                          &local_administrators_group_name);
+  if (FAILED(hr)) {
+    LOGFN(INFO) << "Failed to fetch name for administrators group";
+  }
+
+  base::string16 builtin_administrator_name = L"";
+  hr = GetLocalizedNameBuiltinAdministratorAccount(&builtin_administrator_name);
+  if (FAILED(hr)) {
+    LOGFN(INFO) << "Failed to fetch name for builtin administrator account";
+  }
+
   // Build the json data needed by the server.
   base::Value registration_data(base::Value::Type::DICTIONARY);
   registration_data.SetStringKey("id_token", id_token);
@@ -223,6 +289,11 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
   registration_data.SetStringKey("username", username);
   registration_data.SetStringKey("domain", domain);
   registration_data.SetStringKey("serial_number", serial_number);
+  registration_data.SetStringKey("admin_local_user_group_name",
+                                 local_administrators_group_name);
+  registration_data.SetStringKey("builtin_administrator_name",
+                                 builtin_administrator_name);
+
   std::string registration_data_str;
   if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {
     LOGFN(ERROR) << "JSONWriter::Write(registration_data)";
@@ -259,6 +330,32 @@ bool MdmEnrollmentEnabled() {
   return !mdm_url.empty();
 }
 
+GURL MdmEscrowServiceUrl() {
+  base::string16 escrow_service_url = GetGlobalFlagOrDefault(
+      kRegMdmEscrowServiceServerUrl, kDefaultEscrowServiceServerUrl);
+
+  if (escrow_service_url.empty())
+    return GURL();
+
+  return GURL(base::UTF16ToUTF8(escrow_service_url));
+}
+
+bool MdmPasswordRecoveryEnabled() {
+#if !defined(GOOGLE_CHROME_BUILD)
+  if (g_escrow_service_enabled == EscrowServiceStatus::kDisabled)
+    return false;
+#endif
+
+  // Password recovery is enabled only if MDM is enabled.
+  if (!MdmEnrollmentEnabled())
+    return false;
+
+  if (MdmEscrowServiceUrl().is_empty())
+    return false;
+
+  return true;
+}
+
 HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {
   LOGFN(INFO);
 
@@ -279,6 +376,12 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {
     LOGFN(ERROR) << "RegisterWithGoogleDeviceManagement hr=" << putHR(hr);
 
   return hr;
+}
+
+base::string16 GetUserPasswordLsaStoreKey(const base::string16& sid) {
+  DCHECK(sid.size());
+
+  return kUserPasswordLsaStoreKeyPrefix + sid;
 }
 
 // GoogleMdmEnrollmentStatusForTesting ////////////////////////////////////////
@@ -304,5 +407,20 @@ GoogleMdmEnrolledStatusForTesting::GoogleMdmEnrolledStatusForTesting(
 GoogleMdmEnrolledStatusForTesting::~GoogleMdmEnrolledStatusForTesting() {
   g_enrolled_status = EnrolledStatus::kDontForce;
 }
+
+// GoogleMdmEnrolledStatusForTesting //////////////////////////////////////////
+
+#if !defined(GOOGLE_CHROME_BUILD)
+GoogleMdmEscrowServiceEnablerForTesting::
+    GoogleMdmEscrowServiceEnablerForTesting(bool enable) {
+  g_escrow_service_enabled =
+      enable ? EscrowServiceStatus::kEnabled : EscrowServiceStatus::kDisabled;
+}
+
+GoogleMdmEscrowServiceEnablerForTesting::
+    ~GoogleMdmEscrowServiceEnablerForTesting() {
+  g_escrow_service_enabled = EscrowServiceStatus::kDisabled;
+}
+#endif
 
 }  // namespace credential_provider

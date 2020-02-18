@@ -21,7 +21,6 @@
 #include "net/http/http_network_session.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/transport_client_socket_pool.h"
@@ -710,8 +709,7 @@ TEST_F(SpdySessionPoolTest, IPPoolingNetLog) {
 
   // FindAvailableSession() should have logged a netlog event indicating IP
   // pooling.
-  TestNetLogEntry::List entry_list;
-  net_log.GetEntries(&entry_list);
+  auto entry_list = net_log.GetEntries();
   EXPECT_EQ(
       NetLogEventType::HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL,
       entry_list[0].type);
@@ -892,7 +890,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
   base::WeakPtr<SpdySession> sessionC =
       CreateSpdySession(http_session_.get(), keyC, NetLogWithSource());
 
-  sessionC->CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, "Error!");
+  sessionC->CloseSessionOnError(ERR_HTTP2_PROTOCOL_ERROR, "Error!");
   EXPECT_TRUE(sessionC->IsDraining());
 
   spdy_session_pool_->OnIPAddressChanged();

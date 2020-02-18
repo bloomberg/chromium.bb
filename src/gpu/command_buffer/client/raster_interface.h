@@ -57,7 +57,9 @@ class RasterInterface : public InterfaceBase {
                                    const gfx::ColorSpace& color_space,
                                    const GLbyte* mailbox) = 0;
 
-  static constexpr size_t kDefaultMaxOpSizeHint = 512 * 1024;
+  // Heuristic decided on UMA data. This covers 85% of the cases where we need
+  // to serialize ops > 512k.
+  static constexpr size_t kDefaultMaxOpSizeHint = 600 * 1024;
   virtual void RasterCHROMIUM(const cc::DisplayItemList* list,
                               cc::ImageProvider* provider,
                               const gfx::Size& content_size,

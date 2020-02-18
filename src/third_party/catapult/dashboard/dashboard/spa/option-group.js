@@ -4,15 +4,14 @@
 */
 'use strict';
 
-import './cp-checkbox.js';
+import './cp-flex.js';
 import './expand-button.js';
-import '@polymer/polymer/lib/elements/dom-if.js';
-import '@polymer/polymer/lib/elements/dom-repeat.js';
+import '@chopsui/chops-checkbox';
 import {ElementBase, STORE} from './element-base.js';
-import {get} from '@polymer/polymer/lib/utils/path.js';
-import {html} from '@polymer/polymer/polymer-element.js';
+import {get} from 'dot-prop-immutable';
+import {html, css} from 'lit-element';
 
-export default class OptionGroup extends ElementBase {
+export class OptionGroup extends ElementBase {
   static get is() { return 'option-group'; }
 
   static get properties() {
@@ -29,6 +28,8 @@ export default class OptionGroup extends ElementBase {
       // Array of string values.
       selectedOptions: Array,
 
+      cursor: String,
+
       // Set this to filter options. An option matches the query if its
       // valueLowerCase contains all of the space-separated parts of the query.
       query: String,
@@ -40,97 +41,108 @@ export default class OptionGroup extends ElementBase {
       options: OptionGroup.groupValues(options.options || []),
       optionValues: options.options || new Set(),
       selectedOptions: options.selectedOptions || [],
-      query: '',
+      query: options.query || '',
+      cursor: options.cursor || undefined,
     };
   }
 
-  static get template() {
-    return html`
-      <style>
-        :host {
-          display: flex;
-          flex-direction: column;
-        }
+  static get styles() {
+    return css`
+      :host {
+        display: flex;
+        flex-direction: column;
+      }
+      :host([hidden]) {
+        display: none;
+      }
 
-        .row {
-          align-items: center;
-          display: flex;
-          margin: 1px 0 1px 8px;
-        }
+      .row[cursor] {
+        background-color: var(--focus-color, yellow);
+      }
 
-        .row[indent] {
-          margin-left: 60px;
-        }
+      .row {
+        align-items: center;
+        margin: 1px 0 1px 8px;
+      }
 
-        option-group {
-          margin-left: 28px;
-        }
+      .row[indent] {
+        padding-left: 52px;
+      }
 
-        expand-button {
-          align-items: center;
-          border-radius: 0;
-          height: 100%;
-          justify-content: space-between;
-          margin: 0;
-          min-width: 0;
-          padding: 0 8px 0 0;
-          width: 44px;
-          flex-shrink: 0;
-        }
+      option-group {
+        margin-left: 28px;
+      }
 
-        cp-checkbox {
-          flex-shrink: 0;
-        }
-      </style>
+      expand-button {
+        align-items: center;
+        border-radius: 0;
+        height: 100%;
+        justify-content: space-between;
+        margin: 0;
+        min-width: 0;
+        padding: 0 8px 0 0;
+        width: 44px;
+        flex-shrink: 0;
+      }
 
-      <dom-repeat items="[[options]]" as="option"
-                                index-as="optionIndex">
-        <template>
-          <dom-if if="[[matches_(option, query)]]">
-            <template>
-              <div class="row" indent$="[[indentRow_(option)]]">
-                <dom-if if="[[option.options]]">
-                  <template>
-                    <expand-button
-                        state-path="[[statePath]].options.[[optionIndex]]"
-                        tabindex="0">
-                      [[countDescendents_(option.options)]]
-                    </expand-button>
-                  </template>
-                </dom-if>
-
-                <cp-checkbox
-                    checked="[[isSelected_(option, selectedOptions)]]"
-                    disabled="[[option.disabled]]"
-                    tabindex="0"
-                    on-change="onSelect_">
-                  [[label_(option)]]
-                </cp-checkbox>
-              </div>
-
-              <dom-if if="[[shouldStampSubOptions_(option, query)]]">
-                <template>
-                  <iron-collapse opened="[[isExpanded_(option, query)]]">
-                    <option-group
-                        state-path="[[statePath]].options.[[optionIndex]]"
-                        root-state-path="[[rootStatePath]]">
-                    </option-group>
-                  </iron-collapse>
-                </template>
-              </dom-if>
-            </template>
-          </dom-if>
-        </template>
-      </dom-repeat>
+      chops-checkbox {
+        flex-grow: 1;
+        flex-shrink: 0;
+        width: unset;
+      }
     `;
+  }
+
+  renderOption(option, optionIndex) {
+    if (!this.matches_(option, this.query)) return '';
+    const statePath = `${this.statePath}.options.${optionIndex}`;
+    return html`
+      <cp-flex class="row"
+          ?cursor="${this.cursor === statePath}"
+          ?indent="${this.indentRow_(option)}">
+        ${!option.options ? '' : html`
+          <expand-button
+              .statePath="${statePath}"
+              tabindex="0">
+            ${this.countDescendents_(option.options)}
+          </expand-button>
+        `}
+
+        <chops-checkbox
+            ?checked="${this.isSelected_(option, this.selectedOptions)}"
+            ?disabled="${option.disabled}"
+            tabindex="0"
+            @change="${event => this.onSelect_(option)}">
+          ${this.label_(option)}
+        </chops-checkbox>
+      </cp-flex>
+
+      ${!this.shouldStampSubOptions_(option, this.query) ? '' : html`
+        <option-group
+            ?hidden="${!this.isExpanded_(option, this.query)}"
+            .statePath="${this.statePath}.options.${optionIndex}"
+            .rootStatePath="${this.rootStatePath}">
+        </option-group>
+      `}
+    `;
+  }
+
+  render() {
+    return html`${(this.options || []).map((option, optionIndex) =>
+      this.renderOption(option, optionIndex))}`;
   }
 
   stateChanged(rootState) {
     if (!this.statePath || !this.rootStatePath) return;
-    this.setProperties({
-      ...get(rootState, this.rootStatePath),
-      ...get(rootState, this.statePath),
-    });
+    Object.assign(this, get(rootState, this.rootStatePath));
+    Object.assign(this, get(rootState, this.statePath));
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has('cursor') || changedProperties.has('query')) {
+      const cursor = this.shadowRoot.querySelector('[cursor]');
+      if (cursor) cursor.scrollIntoView({block: 'center', inline: 'center'});
+    }
   }
 
   // There may be thousands of options in an option-group. It could cost a lot
@@ -184,93 +196,106 @@ export default class OptionGroup extends ElementBase {
     return this.statePath === this.rootStatePath;
   }
 
-  async onSelect_(event) {
+  async onSelect_(option) {
     await STORE.dispatch({
       type: OptionGroup.reducers.select.name,
       statePath: this.rootStatePath,
-      option: event.model.option,
+      option,
     });
     this.dispatchEvent(new CustomEvent('option-select', {
       bubbles: true,
       composed: true,
     }));
   }
-}
 
-// Groups with fewer options than this will always be stamped to the DOM so
-// that they display quickly. Groups with more options than this will only be
-// stamped to the DOM when the user expands the group in order to save memory.
-OptionGroup.TOO_MANY_OPTIONS = 20;
-
-OptionGroup.getAnyGroups = options =>
-  (options || []).filter(o => o.options).length > 0;
-
-OptionGroup.matches = (option, queryParts) => {
-  if (option.options) {
-    for (const suboption of option.options) {
-      if (OptionGroup.matches(suboption, queryParts)) return true;
-    }
-    return false;
+  static getAnyGroups(options) {
+    return (options || []).filter(o => o.options).length > 0;
   }
-  if (option.valueLowerCase) {
-    option = option.valueLowerCase;
-  } else if (option.value) {
-    option = option.value;
-  } else {
-    option = option.toLocaleLowerCase();
-  }
-  for (const part of queryParts) {
-    if (!option.includes(part)) return false;
-  }
-  return true;
-};
 
-OptionGroup.getValuesFromOption = option => {
-  if (option === undefined) return [];
-  if (typeof(option) === 'string') return [option];
-  if (option.options) {
-    const values = [];
-    if (option.value) {
-      values.push(option.value);
-    }
-    for (const child of option.options) {
-      values.push(...OptionGroup.getValuesFromOption(child));
-    }
-    return values;
-  }
-  if (option.value) return [option.value];
-  return [];
-};
-
-OptionGroup.countDescendents = options => {
-  let count = 0;
-  for (const option of options) {
+  static matches(option, queryParts) {
+    if (!option) return false;
     if (option.options) {
-      count += OptionGroup.countDescendents(option.options);
+      for (const suboption of option.options) {
+        if (OptionGroup.matches(suboption, queryParts)) return true;
+      }
+      return false;
+    }
+    if (option.valueLowerCase) {
+      option = option.valueLowerCase;
+    } else if (option.value) {
+      option = option.value;
+    } else {
+      option = option.toLocaleLowerCase();
+    }
+    for (const part of queryParts) {
+      if (!option.includes(part)) return false;
+    }
+    return true;
+  }
+
+  static getValuesFromOption(option) {
+    if (option === undefined) return [];
+    if (typeof(option) === 'string') return [option];
+    if (option.options) {
+      const values = [];
       if (option.value) {
+        values.push(option.value);
+      }
+      for (const child of option.options) {
+        values.push(...OptionGroup.getValuesFromOption(child));
+      }
+      return values;
+    }
+    if (option.value) return [option.value];
+    return [];
+  }
+
+  static countDescendents(options) {
+    let count = 0;
+    for (const option of options) {
+      if (option.options) {
+        count += OptionGroup.countDescendents(option.options);
+        if (option.value) {
+          count += 1;
+        }
+      } else {
         count += 1;
       }
-    } else {
-      count += 1;
     }
+    return count;
   }
-  return count;
-};
 
-OptionGroup.groupValues = (names, isExpanded) => {
-  isExpanded = isExpanded || false;
-  const options = [];
-  for (const name of names) {
-    const parts = name.split(':');
-    let parent = options;
-    for (let i = 0; i < parts.length; ++i) {
-      const part = parts[i];
+  static groupValues(names, isExpanded) {
+    isExpanded = isExpanded || false;
+    const options = [];
+    for (const name of names) {
+      const parts = name.split(':');
+      let parent = options;
+      for (let i = 0; i < parts.length; ++i) {
+        const part = parts[i];
 
-      let found = false;
-      for (const option of parent) {
-        if (option.label === part) {
+        let found = false;
+        for (const option of parent) {
+          if (option.label === part) {
+            if (i === parts.length - 1) {
+              option.options.push({
+                isExpanded,
+                label: part,
+                options: [],
+                value: name,
+                valueLowerCase: name.toLocaleLowerCase(),
+              });
+            } else {
+              parent = option.options;
+            }
+            found = true;
+            break;
+          }
+        }
+
+        if (!found) {
           if (i === parts.length - 1) {
-            option.options.push({
+            parent.push({
               isExpanded,
               label: part,
               options: [],
@@ -278,72 +303,61 @@ OptionGroup.groupValues = (names, isExpanded) => {
               valueLowerCase: name.toLocaleLowerCase(),
             });
           } else {
+            const option = {
+              isExpanded,
+              label: part,
+              options: [],
+            };
+            parent.push(option);
             parent = option.options;
           }
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        if (i === parts.length - 1) {
-          parent.push({
-            isExpanded,
-            label: part,
-            options: [],
-            value: name,
-            valueLowerCase: name.toLocaleLowerCase(),
-          });
-        } else {
-          const option = {
-            isExpanded,
-            label: part,
-            options: [],
-          };
-          parent.push(option);
-          parent = option.options;
         }
       }
     }
+    return options.map(OptionGroup.simplifyOption);
   }
-  return options.map(OptionGroup.simplifyOption);
-};
 
-OptionGroup.simplifyOption = option => {
-  if (!option.options) {
-    return option;
+  static simplifyOption(option) {
+    if (!option.options) {
+      return option;
+    }
+    if (option.options.length === 0) {
+      return {
+        label: option.label,
+        value: option.value,
+        valueLowerCase: option.valueLowerCase,
+      };
+    }
+    if (option.options.length > 1 ||
+        option.value) {
+      return {
+        ...option,
+        options: option.options.map(OptionGroup.simplifyOption),
+      };
+    }
+    if (option.options[0].options) {
+      return OptionGroup.simplifyOption({
+        isExpanded: false,
+        options: option.options[0].options,
+        label: option.label + ':' + option.options[0].label,
+        value: option.options[0].value,
+        valueLowerCase: option.options[0].valueLowerCase,
+      });
+    }
+    if (option.options[0].label) {
+      return {
+        ...option.options[0],
+        label: option.label + ':' + option.options[0].label,
+      };
+    }
+    return option.options[0];
   }
-  if (option.options.length === 0) {
-    return {
-      label: option.label,
-      value: option.value,
-      valueLowerCase: option.valueLowerCase,
-    };
-  }
-  if (option.options.length > 1 ||
-      option.value) {
-    return {
-      ...option,
-      options: option.options.map(OptionGroup.simplifyOption),
-    };
-  }
-  if (option.options[0].options) {
-    return OptionGroup.simplifyOption({
-      isExpanded: false,
-      options: option.options[0].options,
-      label: option.label + ':' + option.options[0].label,
-      value: option.options[0].value,
-      valueLowerCase: option.options[0].valueLowerCase,
-    });
-  }
-  if (option.options[0].label) {
-    return {
-      ...option.options[0],
-      label: option.label + ':' + option.options[0].label,
-    };
-  }
-  return option.options[0];
-};
+}
+
+// Groups with fewer options than this will always be stamped to the DOM so
+// that they display quickly. Groups with more options than this will only be
+// stamped to the DOM when the user expands the group in order to save memory.
+OptionGroup.TOO_MANY_OPTIONS = 20;
 
 OptionGroup.reducers = {
   select: (state, action, rootState) => {

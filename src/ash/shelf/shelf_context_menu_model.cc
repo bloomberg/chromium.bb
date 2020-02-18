@@ -59,8 +59,8 @@ gfx::ImageSkia GetIcon(const gfx::VectorIcon& icon) {
 ShelfContextMenuModel::ShelfContextMenuModel(ShelfItemDelegate* delegate,
                                              int64_t display_id)
     : ui::SimpleMenuModel(this), delegate_(delegate), display_id_(display_id) {
-  // Add shelf and wallpaper items if ShelfView or AppListButton are selected.
-  if (!delegate || delegate_->app_id() == kAppListId)
+  // Add shelf and wallpaper items if ShelfView or HomeButton are selected.
+  if (!delegate)
     AddShelfAndWallpaperItems();
 }
 
@@ -96,8 +96,7 @@ void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
   UserMetricsRecorder* metrics = shell->metrics();
   // Clamshell mode only options should not activate in tablet mode.
-  const bool is_tablet_mode =
-      shell->tablet_mode_controller()->IsTabletModeWindowManagerEnabled();
+  const bool is_tablet_mode = shell->tablet_mode_controller()->InTabletMode();
   switch (command_id) {
     case MENU_AUTO_HIDE:
       SetShelfAutoHideBehaviorPref(
@@ -163,10 +162,8 @@ void ShelfContextMenuModel::AddShelfAndWallpaperItems() {
   // Only allow shelf alignment modifications by the owner or user. In tablet
   // mode, the shelf alignment option is not shown.
   LoginStatus status = Shell::Get()->session_controller()->login_status();
-  if ((status == LoginStatus::USER || status == LoginStatus::OWNER) &&
-      !Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled()) {
+  if (status == LoginStatus::USER &&
+      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     alignment_submenu_ = std::make_unique<ui::SimpleMenuModel>(this);
 
     constexpr int group = 0;

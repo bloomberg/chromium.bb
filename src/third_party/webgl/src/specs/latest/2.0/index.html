@@ -580,8 +580,6 @@ interface mixin <dfn id="WebGL2RenderingContextBase">WebGL2RenderingContextBase<
   const GLenum FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE             = 0x8216;
   const GLenum FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE           = 0x8217;
   const GLenum FRAMEBUFFER_DEFAULT                           = 0x8218;
-  const GLenum DEPTH_STENCIL_ATTACHMENT                      = 0x821A;
-  const GLenum DEPTH_STENCIL                                 = 0x84F9;
   const GLenum UNSIGNED_INT_24_8                             = 0x84FA;
   const GLenum DEPTH24_STENCIL8                              = 0x88F0;
   const GLenum UNSIGNED_NORMALIZED                           = 0x8C17;
@@ -976,7 +974,7 @@ interface mixin <dfn id="WebGL2RenderingContextOverloads">WebGL2RenderingContext
                   GLintptr offset);
   void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
                   [AllowShared] ArrayBufferView dstData, GLuint dstOffset);
-}
+};
 
 [Exposed=(Window,Worker)]
 interface <dfn id="WebGL2RenderingContext">WebGL2RenderingContext</dfn>
@@ -1665,6 +1663,7 @@ WebGL2RenderingContext includes WebGL2RenderingContextOverloads;
           <tr><th>type of <em>srcData</em></th><th><em>type</em></th></tr>
           <tr><td>Int8Array</td><td>BYTE</td></tr>
           <tr><td>Uint8Array</td><td>UNSIGNED_BYTE</td></tr>
+          <tr><td>Uint8ClampedArray</td><td>UNSIGNED_BYTE</td></tr>
           <tr><td>Int16Array</td><td>SHORT</td></tr>
           <tr><td>Uint16Array</td><td>UNSIGNED_SHORT</td></tr>
           <tr><td>Uint16Array</td><td>UNSIGNED_SHORT_5_6_5</td></tr>
@@ -3573,7 +3572,7 @@ WebGL2RenderingContext includes WebGL2RenderingContextOverloads;
 
     <p>
         If any draw buffer with an attachment does not have a defined fragment shader output, draws
-        generate <code>INVALID_OPERATION</code>.
+        generate <code>INVALID_OPERATION</code>, unless all 4 channels of <code>colorMask</code> are set to false.
     </p>
 
     <h3>No Program Binaries</h3>

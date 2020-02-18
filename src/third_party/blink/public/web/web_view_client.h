@@ -50,6 +50,7 @@ class WebView;
 enum class WebSandboxFlags;
 struct WebRect;
 struct WebSize;
+struct WebTextAutosizerPageInfo;
 struct WebWindowFeatures;
 
 class WebViewClient {
@@ -184,6 +185,13 @@ class WebViewClient {
   // Informs the browser that the page scale has changed and/or a pinch gesture
   // has started or ended.
   virtual void PageScaleFactorChanged(float page_scale_factor) {}
+
+  // Informs the browser that page metrics relevant to Blink's TextAutosizer
+  // have changed, so that they can be shared with other renderers. Only called
+  // in the renderer hosting the local main frame. The browser will share this
+  // information with other renderers that have frames in the page.
+  virtual void DidUpdateTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) {
+  }
 
   // Gestures -------------------------------------------------------------
 

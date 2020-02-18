@@ -36,17 +36,24 @@ import gn_utils
 # Default targets to translate to the blueprint file.
 default_targets = [
     '//:libperfetto',
+    '//:libperfetto_client_experimental',
     '//:libperfetto_android_internal',
     '//:perfetto_integrationtests',
     '//:perfetto_trace_protos',
     '//:perfetto_unittests',
     '//:perfetto',
+    '//:trace_processor_shell',
     '//:traced',
     '//:traced_probes',
     '//:trace_to_text',
     '//:heapprofd_client',
     '//:heapprofd',
     '//:trigger_perfetto',
+]
+
+# Targets which are testonly but should still be a cc_binary.
+non_test_binaries = [
+    '//:trace_processor_shell',
 ]
 
 # Defines a custom init_rc argument to be applied to the corresponding output
@@ -81,6 +88,7 @@ library_whitelist = [
     'hidlbase',
     'hidltransport',
     'hwbinder',
+    'incident',
     'log',
     'services',
     'utils',
@@ -97,7 +105,7 @@ tree_path = 'external/perfetto'
 cflag_whitelist = r'^-DPERFETTO.*$'
 
 # Compiler defines which are passed through to the blueprint.
-define_whitelist = r'^(GOOGLE_PROTO.*)|(PERFETTO_BUILD_WITH_ANDROID)$'
+define_whitelist = r'^(GOOGLE_PROTO.*)|(PERFETTO_BUILD_WITH_ANDROID)|(ZLIB_.*)|(USE_MMAP)|(HAVE_HIDDEN)$'
 
 # Shared libraries which are not in PDK.
 library_not_in_pdk = {
@@ -153,7 +161,15 @@ def enable_libunwind(module):
     pass
 
 def enable_sqlite(module):
-    module.static_libs.append('libsqlite')
+    if module.type == 'cc_binary_host':
+        module.static_libs.append('libsqlite')
+    else:
+        # Copy what the sqlite3 command line tool does.
+        module.android.shared_libs.append('libsqlite')
+        module.android.shared_libs.append('libandroidicu')
+        module.android.shared_libs.append('liblog')
+        module.android.shared_libs.append('libutils')
+        module.host.static_libs.append('libsqlite')
 
 def enable_zlib(module):
     module.shared_libs.append('libz')
@@ -163,7 +179,6 @@ def enable_zlib(module):
 builtin_deps = {
     '//buildtools:gmock': enable_gmock,
     '//buildtools:gtest': enable_gtest,
-    '//gn:gtest_prod_config': enable_gtest_prod,
     '//buildtools:gtest_main': enable_gtest,
     '//buildtools:libunwind': enable_libunwind,
     '//buildtools:protobuf_full': enable_protobuf_full,
@@ -192,6 +207,52 @@ class ThrowingArgumentParser(argparse.ArgumentParser):
         raise Error('%s: %s' % (self.context, message))
 
 
+def write_blueprint_key_value(output, name, value, sort=True):
+    """Writes an Blueprint key-value pair to the output"""
+
+    if not value:
+        return
+    if isinstance(value, set):
+        value = sorted(value)
+    if isinstance(value, list):
+        output.append('  %s: [' % name)
+        for item in sorted(value) if sort else value:
+            output.append('    "%s",' % item)
+        output.append('  ],')
+        return
+    if isinstance(value, bool):
+        output.append('  %s: true,' % name)
+        return
+    if isinstance(value, Target):
+        value.to_string(output)
+        return
+    output.append('  %s: "%s",' % (name, value))
+
+class Target(object):
+    """A target-scoped part of a module"""
+
+    def __init__(self, name):
+        self.name = name
+        self.shared_libs = []
+        self.static_libs = []
+        self.cflags = set()
+
+    def to_string(self, output):
+        nested_out = []
+        self._output_field(nested_out, 'shared_libs')
+        self._output_field(nested_out, 'static_libs')
+        self._output_field(nested_out, 'cflags')
+
+        if nested_out:
+            output.append('  %s: {' % self.name)
+            for line in nested_out:
+              output.append('  %s' % line)
+            output.append('  },')
+
+    def _output_field(self, output, name, sort=True):
+        value = getattr(self, name)
+        return write_blueprint_key_value(output, name, value, sort)
+
 class Module(object):
     """A single module (e.g., cc_binary, cc_test) in a blueprint."""
 
@@ -217,6 +278,9 @@ class Module(object):
         self.required = []
         self.user_debug_flag = False
         self.tool_files = None
+        self.android = Target('android')
+        self.host = Target('host')
+        self.lto = None
 
     def to_string(self, output):
         if self.comment:
@@ -241,6 +305,15 @@ class Module(object):
         self._output_field(output, 'required')
         self._output_field(output, 'tool_files')
 
+        target_out = []
+        self._output_field(target_out, 'android')
+        self._output_field(target_out, 'host')
+        if target_out:
+            output.append('  target: {')
+            for line in target_out:
+              output.append('  %s' % line)
+            output.append('  },')
+
         disable_pdk = any(name in library_not_in_pdk for name in self.shared_libs)
         if self.user_debug_flag or disable_pdk:
             output.append('  product_variables: {')
@@ -253,28 +326,20 @@ class Module(object):
                 output.append('      cflags: ["-DPERFETTO_BUILD_WITH_ANDROID_USERDEBUG"],')
                 output.append('    },')
             output.append('  },')
+        if self.lto is not None:
+          output.append('  target: {')
+          output.append('    android: {')
+          output.append('      lto: {')
+          output.append('        thin: %s,' % 'true' if self.lto else 'false')
+          output.append('      },')
+          output.append('    },')
+          output.append('  },')
         output.append('}')
         output.append('')
 
     def _output_field(self, output, name, sort=True):
         value = getattr(self, name)
-        return self._write_value(output, name, value, sort)
-
-    def _write_value(self, output, name, value, sort=True):
-        if not value:
-            return
-        if isinstance(value, set):
-            value = sorted(value)
-        if isinstance(value, list):
-            output.append('  %s: [' % name)
-            for item in sorted(value) if sort else value:
-                output.append('    "%s",' % item)
-            output.append('  ],')
-            return
-        if isinstance(value, bool):
-           output.append('  %s: true,' % name)
-           return
-        output.append('  %s: "%s",' % (name, value))
+        return write_blueprint_key_value(output, name, value, sort)
 
 
 class Blueprint(object):
@@ -404,7 +469,7 @@ def make_genrules_for_action(blueprint, desc, target_name):
     # We only support genrules which call protoc (with or without a plugin) to
     # turn .proto files into header and source files.
     args = target['args']
-    if not args[0].endswith('/protoc'):
+    if '/protoc' not in args[0]:
         raise Error('Unsupported action in target %s: %s' % (target_name,
                                                              target['args']))
     parser = ThrowingArgumentParser('Action in target %s (%s)' %
@@ -416,7 +481,7 @@ def make_genrules_for_action(blueprint, desc, target_name):
     parser.add_argument('--descriptor_set_out')
     parser.add_argument('--include_imports', action='store_true')
     parser.add_argument('protos', nargs=argparse.REMAINDER)
-    args = parser.parse_args(args[1:])
+    args = parser.parse_args(args[2:])
 
     # Depending on whether we are using the default protoc C++ generator or the
     # protozero plugin, the output dir is passed as:
@@ -463,7 +528,7 @@ def make_genrules_for_action(blueprint, desc, target_name):
         # TODO(skyostil): Can we detect this some other way?
         if plugin == 'ipc_plugin':
             namespaces.append('ipc')
-        elif plugin == 'protoc_plugin':
+        elif plugin == 'protozero_plugin':
             namespaces = ['pbzero']
         for dep in target['deps']:
             if desc[dep]['type'] != 'executable':
@@ -551,7 +616,7 @@ def create_modules_from_target(blueprint, desc, target_name):
     if target['type'] == 'executable':
         if 'host' in target['toolchain'] or target_name in target_host_only:
             module_type = 'cc_binary_host'
-        elif target.get('testonly'):
+        elif target.get('testonly') and target_name not in non_test_binaries:
             module_type = 'cc_test'
         else:
             module_type = 'cc_binary'
@@ -644,6 +709,7 @@ def create_blueprint_for_targets(desc, targets):
         '-Oz',
     ]
     defaults.user_debug_flag = True
+    defaults.lto = True
 
     blueprint.add_module(defaults)
     for target in targets:

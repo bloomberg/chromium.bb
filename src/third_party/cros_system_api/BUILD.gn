@@ -30,6 +30,7 @@ group("all") {
     ":system_api-smbprovider-protos",
     ":system_api-tpm_manager-protos",
     ":system_api-u2f-protos",
+    ":system_api-update_engine-protos",
     ":system_api-vm_applications-protos",
     ":system_api-vm_cicerone-goprotos",
     ":system_api-vm_cicerone-protos",
@@ -316,6 +317,15 @@ proto_library("system_api-dlcservice-protos") {
   proto_out_dir = "include/dlcservice/proto_bindings"
   sources = [
     "${proto_in_dir}/dlcservice.proto",
+  ]
+  standalone = true
+}
+
+proto_library("system_api-update_engine-protos") {
+  proto_in_dir = "dbus/update_engine"
+  proto_out_dir = "include/update_engine/proto_bindings"
+  sources = [
+    "${proto_in_dir}/update_engine.proto",
   ]
   standalone = true
 }

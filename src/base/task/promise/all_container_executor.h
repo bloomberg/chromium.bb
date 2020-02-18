@@ -20,45 +20,37 @@ class AllContainerPromiseExecutor {
  public:
   bool IsCancelled() const { return false; }
 
-  AbstractPromise::Executor::PrerequisitePolicy GetPrerequisitePolicy() const {
-    return AbstractPromise::Executor::PrerequisitePolicy::kAll;
+  PromiseExecutor::PrerequisitePolicy GetPrerequisitePolicy() const {
+    return PromiseExecutor::PrerequisitePolicy::kAll;
   }
+
+  struct VoidResolveType {};
+  struct NonVoidResolveType {};
+
+  using ResolveTypeTag = std::conditional_t<std::is_void<ResolveType>::value,
+                                            VoidResolveType,
+                                            NonVoidResolveType>;
 
   void Execute(AbstractPromise* promise) {
     // All is rejected if any prerequisites are rejected.
-    if (AbstractPromise* rejected = promise->GetFirstRejectedPrerequisite()) {
-      AllPromiseRejectHelper<Rejected<RejectType>>::Reject(promise, rejected);
+    AbstractPromise* first_settled = promise->GetFirstSettledPrerequisite();
+    if (first_settled && first_settled->IsRejected()) {
+      AllPromiseRejectHelper<Rejected<RejectType>>::Reject(promise,
+                                                           first_settled);
       promise->OnRejected();
       return;
     }
 
-    const std::vector<AbstractPromise::AdjacencyListNode>* prerequisite_list =
-        promise->prerequisite_list();
-    DCHECK(prerequisite_list);
-    using NonVoidResolveType = ToNonVoidT<ResolveType>;
-    Resolved<std::vector<NonVoidResolveType>> result;
-    result.value.reserve(prerequisite_list->size());
-
-    for (const auto& node : *prerequisite_list) {
-      DCHECK(node.prerequisite->IsResolved());
-      result.value.push_back(
-          ArgMoveSemanticsHelper<
-              NonVoidResolveType,
-              Resolved<NonVoidResolveType>>::Get(node.prerequisite.get()));
-    }
-
-    promise->emplace(std::move(result));
+    ResolveInternal(promise, ResolveTypeTag());
     promise->OnResolved();
   }
 
 #if DCHECK_IS_ON()
-  AbstractPromise::Executor::ArgumentPassingType ResolveArgumentPassingType()
-      const {
+  PromiseExecutor::ArgumentPassingType ResolveArgumentPassingType() const {
     return UseMoveSemantics<ResolveType>::argument_passing_type;
   }
 
-  AbstractPromise::Executor::ArgumentPassingType RejectArgumentPassingType()
-      const {
+  PromiseExecutor::ArgumentPassingType RejectArgumentPassingType() const {
     return UseMoveSemantics<RejectType>::argument_passing_type;
   }
 
@@ -68,6 +60,33 @@ class AllContainerPromiseExecutor {
 
   bool CanReject() const { return !std::is_same<RejectType, NoReject>::value; }
 #endif
+
+ private:
+  // For containers of Promise<void> there is no point resolving with
+  // std::vector<Void>.
+  void ResolveInternal(AbstractPromise* promise, VoidResolveType) {
+    promise->emplace(Resolved<void>());
+  }
+
+  void ResolveInternal(AbstractPromise* promise, NonVoidResolveType) {
+    using NonVoidResolveType = ToNonVoidT<ResolveType>;
+    Resolved<std::vector<NonVoidResolveType>> result;
+
+    const std::vector<DependentList::Node>* prerequisite_list =
+        promise->prerequisite_list();
+    DCHECK(prerequisite_list);
+    result.value.reserve(prerequisite_list->size());
+
+    for (const auto& node : *prerequisite_list) {
+      DCHECK(node.prerequisite()->IsResolved());
+      result.value.push_back(
+          ArgMoveSemanticsHelper<
+              NonVoidResolveType,
+              Resolved<NonVoidResolveType>>::Get(node.prerequisite()));
+    }
+
+    promise->emplace(std::move(result));
+  }
 };
 
 template <typename Container, typename ContainerT>
@@ -76,23 +95,32 @@ struct AllContainerHelper;
 template <typename Container, typename ResolveType, typename RejectType>
 struct AllContainerHelper<Container, Promise<ResolveType, RejectType>> {
   using PromiseResolve = std::vector<ToNonVoidT<ResolveType>>;
-  using PromiseType = Promise<PromiseResolve, RejectType>;
+
+  // As an optimization we don't return std::vector<ResolveType> for void
+  // ResolveType.
+  using PromiseType = std::conditional_t<std::is_void<ResolveType>::value,
+                                         Promise<void, RejectType>,
+                                         Promise<PromiseResolve, RejectType>>;
 
   static PromiseType All(const Location& from_here, const Container& promises) {
     size_t i = 0;
-    std::vector<AbstractPromise::AdjacencyListNode> prerequisite_list(
-        promises.size());
+    std::vector<DependentList::Node> prerequisite_list(promises.size());
+    // TODO(alexclarke): Move construction of this list and AbstractPromise out
+    // of line to reduce template bloat.
     for (auto& promise : promises) {
-      prerequisite_list[i++].prerequisite = promise.abstract_promise_;
+      prerequisite_list[i++].SetPrerequisite(promise.abstract_promise_.get());
     }
+
+    internal::PromiseExecutor::Data executor_data(
+        (in_place_type_t<
+            AllContainerPromiseExecutor<ResolveType, RejectType>>()));
+
     return PromiseType(AbstractPromise::Create(
         nullptr, from_here,
         std::make_unique<AbstractPromise::AdjacencyList>(
             std::move(prerequisite_list)),
-        RejectPolicy::kMustCatchRejection,
-        AbstractPromise::ConstructWith<
-            DependentList::ConstructUnresolved,
-            AllContainerPromiseExecutor<ResolveType, RejectType>>()));
+        RejectPolicy::kMustCatchRejection, DependentList::ConstructUnresolved(),
+        std::move(executor_data)));
   }
 };
 

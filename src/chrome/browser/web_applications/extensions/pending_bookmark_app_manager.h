@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
@@ -30,7 +30,7 @@ class WebContents;
 namespace web_app {
 class AppRegistrar;
 class InstallFinalizer;
-class WebAppUiDelegate;
+class WebAppUiManager;
 }  // namespace web_app
 
 namespace extensions {
@@ -49,28 +49,20 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
           Profile*,
           web_app::AppRegistrar*,
           web_app::InstallFinalizer*,
-          web_app::InstallOptions)>;
+          web_app::ExternalInstallOptions)>;
 
-  explicit PendingBookmarkAppManager(
-      Profile* profile,
-      web_app::AppRegistrar* registrar,
-      web_app::InstallFinalizer* install_finalizer);
+  explicit PendingBookmarkAppManager(Profile* profile);
   ~PendingBookmarkAppManager() override;
 
   // web_app::PendingAppManager
   void Shutdown() override;
-  void Install(web_app::InstallOptions install_options,
+  void Install(web_app::ExternalInstallOptions install_options,
                OnceInstallCallback callback) override;
-  void InstallApps(std::vector<web_app::InstallOptions> install_options_list,
-                   const RepeatingInstallCallback& callback) override;
+  void InstallApps(
+      std::vector<web_app::ExternalInstallOptions> install_options_list,
+      const RepeatingInstallCallback& callback) override;
   void UninstallApps(std::vector<GURL> uninstall_urls,
                      const UninstallCallback& callback) override;
-  std::vector<GURL> GetInstalledAppUrls(
-      web_app::InstallSource install_source) const override;
-  base::Optional<web_app::AppId> LookupAppId(const GURL& url) const override;
-  bool HasAppIdWithInstallSource(
-      const web_app::AppId& app_id,
-      web_app::InstallSource install_source) const override;
 
   void SetTaskFactoryForTesting(TaskFactory task_factory);
   void SetUrlLoaderForTesting(
@@ -79,7 +71,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
  private:
   struct TaskAndCallback;
 
-  web_app::WebAppUiDelegate& GetUiDelegate();
+  web_app::WebAppUiManager& GetUiManager();
 
   void MaybeStartNextInstallation();
 
@@ -95,11 +87,10 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
 
   void OnInstalled(BookmarkAppInstallationTask::Result result);
 
-  void CurrentInstallationFinished(const base::Optional<std::string>& app_id);
+  void CurrentInstallationFinished(const base::Optional<std::string>& app_id,
+                                   web_app::InstallResultCode code);
 
   Profile* profile_;
-  web_app::AppRegistrar* registrar_;
-  web_app::InstallFinalizer* install_finalizer_;
   web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
   // unique_ptr so that it can be replaced in tests.

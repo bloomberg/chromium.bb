@@ -18,7 +18,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
@@ -46,13 +45,6 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
                     grey_sufficientlyVisible(), nil);
 }
 
-// Returns a matcher for "ADD ACCOUNT" in IdentityChooserViewController.
-id<GREYMatcher> addIdentityButtonInIdentityChooser() {
-  return chrome_test_util::ButtonWithAccessibilityLabel(
-      l10n_util::GetNSStringWithFixup(
-          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_ADD_ACCOUNT));
-}
-
 // Opens Accounts Settings and tap the sign out button. Assumes that the main
 // settings page is visible.
 void SignOutFromSettings() {
@@ -69,7 +61,7 @@ void SignOutFromSettings() {
       onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
       performAction:grey_tap()];
   TapButtonWithLabelId(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
-  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  [SigninEarlGreyUtils checkSignedOut];
 }
 
 }  // namespace
@@ -93,13 +85,13 @@ void SignOutFromSettings() {
   [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   // Tap on "ADD ACCOUNT".
-  [[EarlGrey selectElementWithMatcher:addIdentityButtonInIdentityChooser()]
-      performAction:grey_tap()];
+  [SigninEarlGreyUI tapAddAccountButton];
   // Check for the fake SSO screen.
   WaitForMatcher(grey_accessibilityID(kFakeAddAccountViewIdentifier));
   // Close the SSO view controller.
   id<GREYMatcher> matcher =
-      chrome_test_util::ButtonWithAccessibilityLabel(@"Cancel");
+      grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(@"Cancel"),
+                 grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
   // Make sure the SSO view controller is fully removed before ending the test.
   // The tear down needs to remove other view controllers, and it cannot be done
@@ -132,10 +124,7 @@ void SignOutFromSettings() {
 
 // Tests signing in with one account, switching sync account to a second and
 // choosing to keep the browsing data separate during the switch.
-//
-// TODO(crbug.com/962843): This test is crashing due to a recent change in
-// |page_placeholder_tab_helper.mm|.
-- (void)DISABLED_testSignInSwitchAccountsAndKeepDataSeparate {
+- (void)testSignInSwitchAccountsAndKeepDataSeparate {
   // The ChromeSigninView's activity indicator must be hidden as the import
   // data UI is presented on top of the activity indicator and Earl Grey cannot
   // interact with any UI while an animation is active.
@@ -171,8 +160,7 @@ void SignOutFromSettings() {
       performAction:grey_tap()];
 
   // Check the signed-in user did change.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity2]);
+  [SigninEarlGreyUtils checkSignedInWithIdentity:identity2];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -216,8 +204,7 @@ void SignOutFromSettings() {
       performAction:grey_tap()];
 
   // Check the signed-in user did change.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity2]);
+  [SigninEarlGreyUtils checkSignedInWithIdentity:identity2];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];

@@ -176,6 +176,25 @@ public class WebappRegistry {
     }
 
     /**
+     * Returns true if a WebAPK is found whose scope matches the provided URL.
+     * @param url The URL to search a WebAPK for.
+     */
+    public boolean hasWebApkForUrl(String url) {
+        for (HashMap.Entry<String, WebappDataStorage> entry : mStorages.entrySet()) {
+            WebappDataStorage storage = entry.getValue();
+            if (!storage.getId().startsWith(WebApkConstants.WEBAPK_ID_PREFIX)) continue;
+
+            String scope = storage.getScope();
+
+            // Scope shouldn't be empty.
+            assert (!scope.isEmpty());
+
+            if (url.startsWith(scope)) return true;
+        }
+        return false;
+    }
+
+    /**
      * Returns the list of WebAPK IDs with pending updates. Filters out WebAPKs which have been
      * uninstalled.
      * */
@@ -311,7 +330,7 @@ public class WebappRegistry {
         // TODO(peconn): Don't open general WebappRegistry preferences when we just need the
         // TrustedWebActivityPermissionStore.
         // This is required to fix https://crbug.com/952841.
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return ContextUtils.getApplicationContext().getSharedPreferences(
                     REGISTRY_FILE_NAME, Context.MODE_PRIVATE);
         }

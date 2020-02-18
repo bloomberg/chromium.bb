@@ -70,6 +70,9 @@ class FileGrid extends cr.ui.Grid {
     /** @private {?ObjectPropertyDescriptor|undefined} */
     this.dataModelDescriptor_ = null;
 
+    /** @public {?A11yAnnounce} */
+    this.a11y = null;
+
     throw new Error('Use FileGrid.decorate');
   }
 
@@ -102,14 +105,22 @@ class FileGrid extends cr.ui.Grid {
    * @param {!MetadataModel} metadataModel File system metadata.
    * @param {!VolumeManager} volumeManager Volume manager instance.
    * @param {!importer.HistoryLoader} historyLoader
+   * @param {!A11yAnnounce} a11y
    */
-  static decorate(element, metadataModel, volumeManager, historyLoader) {
+  static decorate(element, metadataModel, volumeManager, historyLoader, a11y) {
     cr.ui.Grid.decorate(element);
     const self = /** @type {!FileGrid} */ (element);
     self.__proto__ = FileGrid.prototype;
     self.metadataModel_ = metadataModel;
     self.volumeManager_ = volumeManager;
     self.historyLoader_ = historyLoader;
+    self.a11y = a11y;
+
+    // Force the list's ending spacer to be tall enough to allow overscroll.
+    let endSpacer = self.querySelector('.spacer:last-child');
+    if (endSpacer) {
+      endSpacer.classList.add('signals-overscroll');
+    }
 
     self.listThumbnailLoader_ = null;
     self.beginIndex_ = 0;
@@ -132,6 +143,25 @@ class FileGrid extends cr.ui.Grid {
     self.paddingStart_ =
         parseFloat(isRTL() ? style.paddingRight : style.paddingLeft);
     self.paddingTop_ = parseFloat(style.paddingTop);
+  }
+
+  /**
+   * @param {number} index Index of the list item.
+   * @return {string}
+   */
+  getItemLabel(index) {
+    if (index === -1) {
+      return '';
+    }
+
+    /** @type {Entry|FilesAppEntry} */
+    const entry = this.dataModel.item(index);
+    if (!entry) {
+      return '';
+    }
+
+    const locationInfo = this.volumeManager_.getLocationInfo(entry);
+    return util.getEntryLabel(locationInfo, entry);
   }
 
   /**
@@ -207,7 +237,7 @@ class FileGrid extends cr.ui.Grid {
    * @override
    */
   mergeItems(beginIndex, endIndex) {
-    super.mergeItems(beginIndex, endIndex);
+    cr.ui.List.prototype.mergeItems.call(this, beginIndex, endIndex);
 
     const afterFiller = this.afterFiller_;
     const columns = this.columns;
@@ -621,6 +651,7 @@ class FileGrid extends cr.ui.Grid {
     bottom.appendChild(
         filelist.renderFileNameLabel(li.ownerDocument, entry, locationInfo));
     frame.appendChild(bottom);
+    li.setAttribute('file-name', util.getEntryLabel(locationInfo, entry));
 
     this.updateSharedStatus_(li, entry);
   }
@@ -1009,6 +1040,11 @@ class FileGridSelectionController extends cr.ui.GridSelectionController {
   /** @override */
   handleKeyDown(e) {
     filelist.handleKeyDown.call(this, e);
+  }
+
+  /** @return {!FileGrid} */
+  get filesView() {
+    return /** @type {!FileGrid} */ (this.grid_);
   }
 
   /** @override */

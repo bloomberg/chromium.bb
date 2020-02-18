@@ -20,6 +20,7 @@ from telemetry.internal.platform import system_info
 from telemetry.page import shared_page_state
 from telemetry.util import image_util
 from telemetry.util import wpr_modes
+from telemetry.testing import test_utils
 from telemetry.testing.internal import fake_gpu_info
 
 
@@ -135,6 +136,10 @@ class FakePlatform(object):
 
   def GetOSVersionDetailString(self):
     return self._get_os_version_detail_string
+
+  def GetTypExpectationsTags(self):
+    return test_utils.sanitizeTypExpectationsTags(
+        [self.GetOSName(), self.GetOSVersionName()])
 
 
 class FakeLinuxPlatform(FakePlatform):
@@ -252,6 +257,10 @@ class FakePossibleBrowser(object):
     del options
     return self.returned_browser
 
+  def GetTypExpectationsTags(self):
+    tags = self.platform.GetTypExpectationsTags()
+    return tags + test_utils.sanitizeTypExpectationsTags([self.browser_type])
+
 
 class FakeSharedPageState(shared_page_state.SharedPageState):
   def __init__(self, test, finder_options, story_set, possible_browser):
@@ -333,6 +342,10 @@ class FakeApp(object):
   def GetMostRecentMinidumpPath(self):
     return self.recent_minidump_path
 
+  def GetRecentMinidumpPathWithTimeout(self, timeout_s=15, oldest_ts=None):
+    del timeout_s, oldest_ts
+    return self.recent_minidump_path
+
 # Internal classes. Note that end users may still need to both call
 # and mock out methods of these classes, but they should not be
 # subclassed.
@@ -394,6 +407,10 @@ class FakeBrowser(FakeApp):
 
   def LogSymbolizedUnsymbolizedMinidumps(self, log_level):
     del log_level  # unused
+
+  def GetTypExpectationsTags(self):
+    tags = self.platform.GetTypExpectationsTags()
+    return tags + test_utils.sanitizeTypExpectationsTags([self.browser_type])
 
   def __enter__(self):
     return self

@@ -66,43 +66,43 @@ as C<Not in [].>
  \1                Absolute backreference.  Not in [].
  \a                Alarm or bell.
  \A                Beginning of string.  Not in [].
- \b                Word/non-word boundary. (Backspace in []).
- \B                Not a word/non-word boundary.  Not in [].
- \cX               Control-X
- \C                Single octet, even under UTF-8.  Not in [].
- \d                Character class for digits.
- \D                Character class for non-digits.
+ \b{}, \b          Boundary. (\b is a backspace in []).
+ \B{}, \B          Not a boundary.  Not in [].
+ \cX               Control-X.
+ \d                Match any digit character.
+ \D                Match any character that isn't a digit.
  \e                Escape character.
  \E                Turn off \Q, \L and \U processing.  Not in [].
  \f                Form feed.
  \F                Foldcase till \E.  Not in [].
- \g{}, \g1         Named, absolute or relative backreference.  Not in []
+ \g{}, \g1         Named, absolute or relative backreference.
+                   Not in [].
  \G                Pos assertion.  Not in [].
- \h                Character class for horizontal whitespace.
- \H                Character class for non horizontal whitespace.
+ \h                Match any horizontal whitespace character.
+ \H                Match any character that isn't horizontal whitespace.
  \k{}, \k<>, \k''  Named backreference.  Not in [].
  \K                Keep the stuff left of \K.  Not in [].
  \l                Lowercase next character.  Not in [].
  \L                Lowercase till \E.  Not in [].
  \n                (Logical) newline character.
- \N                Any character but newline.  Experimental.  Not in [].
+ \N                Match any character but newline.  Not in [].
  \N{}              Named or numbered (Unicode) character or sequence.
  \o{}              Octal escape sequence.
- \p{}, \pP         Character with the given Unicode property.
- \P{}, \PP         Character without the given Unicode property.
+ \p{}, \pP         Match any character with the given Unicode property.
+ \P{}, \PP         Match any character without the given property.
  \Q                Quote (disable) pattern metacharacters till \E.  Not
                    in [].
  \r                Return character.
  \R                Generic new line.  Not in [].
- \s                Character class for whitespace.
- \S                Character class for non whitespace.
+ \s                Match any whitespace character.
+ \S                Match any character that isn't a whitespace.
  \t                Tab character.
  \u                Titlecase next character.  Not in [].
  \U                Uppercase till \E.  Not in [].
- \v                Character class for vertical whitespace.
- \V                Character class for non vertical whitespace.
- \w                Character class for word characters.
- \W                Character class for non-word characters.
+ \v                Match any vertical whitespace character.
+ \V                Match any character that isn't vertical whitespace
+ \w                Match any word character.
+ \W                Match any character that isn't a word character.
  \x{}, \x00        Hexadecimal escape sequence.
  \X                Unicode "extended grapheme cluster".  Not in [].
  \z                End of string.  Not in [].
@@ -132,7 +132,8 @@ description.  (For EBCDIC platforms, see L<perlebcdic/OPERATOR DIFFERENCES>.)
 =item [1]
 
 C<\b> is the backspace character only inside a character class. Outside a
-character class, C<\b> is a word/non-word boundary.
+character class, C<\b> alone is a word-character/non-word-character
+boundary, and C<\b{}> is some other type of boundary.
 
 =item [2]
 
@@ -186,7 +187,14 @@ rarely see it written without the two leading zeros.  C<\N{U+0041}> means
 "A" even on EBCDIC machines (where the ordinal value of "A" is not 0x41).
 
 It is even possible to give your own names to characters and character
-sequences.  For details, see L<charnames>.
+sequences by using the L<charnames> module.  These custom names are
+lexically scoped, and so a given code point may have different names
+in different scopes.  The name used is what is in effect at the time the
+C<\N{}> is expanded.  For patterns in double-quotish context, that means
+at the time the pattern is parsed.  But for patterns that are delimitted
+by single quotes, the expansion is deferred until pattern compilation
+time, which may very well have a different C<charnames> translator in
+effect.
 
 (There is an expanded internal form that you may see in debug output:
 C<\N{U+I<code point>.I<code point>...}>.
@@ -246,16 +254,17 @@ Mnemonic: I<0>ctal or I<o>ctal.
  $str = "Perl";
  $str =~ /\o{120}/;  # Match, "\120" is "P".
  $str =~ /\120/;     # Same.
- $str =~ /\o{120}+/; # Match, "\120" is "P", it's repeated at least once
+ $str =~ /\o{120}+/; # Match, "\120" is "P",
+                     # it's repeated at least once.
  $str =~ /\120+/;    # Same.
  $str =~ /P\053/;    # No match, "\053" is "+" and taken literally.
  /\o{23073}/         # Black foreground, white background smiling face.
- /\o{4801234567}/    # Raises a warning, and yields chr(4)
+ /\o{4801234567}/    # Raises a warning, and yields chr(4).
 
 =head4 Disambiguation rules between old-style octal escapes and backreferences
 
 Octal escapes of the C<\000> form outside of bracketed character classes
-potentially clash with old-style backreferences.  (see L</Absolute referencing>
+potentially clash with old-style backreferences (see L</Absolute referencing>
 below).  They both consist of a backslash followed by numbers.  So Perl has to
 use heuristics to determine whether it is a backreference or an octal escape.
 Perl uses the following rules to disambiguate:
@@ -282,7 +291,7 @@ takes only the first three for the octal escape; the rest are matched as is.
     $pat .= ")" x 999;
  /^($pat)\1000$/;   #  Matches 'aa'; there are 1000 capture groups.
  /^$pat\1000$/;     #  Matches 'a@0'; there are 999 capture groups
-                    #    and \1000 is seen as \100 (a '@') and a '0'
+                    #  and \1000 is seen as \100 (a '@') and a '0'.
 
 =back
 
@@ -294,7 +303,7 @@ beginning with a "0".
 =head3 Hexadecimal escapes
 
 Like octal escapes, there are two forms of hexadecimal escapes, but both start
-with the same thing, C<\x>.  This is followed by either exactly two hexadecimal
+with the sequence C<\x>.  This is followed by either exactly two hexadecimal
 digits forming a number, or a hexadecimal number of arbitrary length surrounded
 by curly braces. The hexadecimal number is the code point of the character you
 want to express.
@@ -430,7 +439,7 @@ Mnemonic: I<g>roup.
 =head4 Examples
 
  /(\w+) \g1/;    # Finds a duplicated word, (e.g. "cat cat").
- /(\w+) \1/;     # Same thing; written old-style
+ /(\w+) \1/;     # Same thing; written old-style.
  /(.)(.)\g2\g1/;  # Match a four letter palindrome (e.g. "ABBA").
 
 
@@ -522,10 +531,22 @@ or the beginning of that string if there was no previous match.
 
 Mnemonic: I<G>lobal.
 
-=item \b, \B
+=item \b{}, \b, \B{}, \B
 
-C<\b> matches at any place between a word and a non-word character; C<\B>
-matches at any place between characters where C<\b> doesn't match. C<\b>
+C<\b{...}>, available starting in v5.22, matches a boundary (between two
+characters, or before the first character of the string, or after the
+final character of the string) based on the Unicode rules for the
+boundary type specified inside the braces.  The boundary
+types are given a few paragraphs below.  C<\B{...}> matches at any place
+between characters where C<\b{...}> of the same type doesn't match.
+
+C<\b> when not immediately followed by a C<"{"> matches at any place
+between a word (something matched by C<\w>) and a non-word character
+(C<\W>); C<\B> when not immediately followed by a C<"{"> matches at any
+place between characters where C<\b> doesn't match.  To get better
+word matching of natural language text, see L</\b{wb}> below.
+
+C<\b>
 and C<\B> assume there's a non-word character before the beginning and after
 the end of the source string; so C<\b> will match at the beginning (or end)
 of the source string if the source string begins (or ends) with a word
@@ -534,12 +555,110 @@ character. Otherwise, C<\B> will match.
 Do not use something like C<\b=head\d\b> and expect it to match the
 beginning of a line.  It can't, because for there to be a boundary before
 the non-word "=", there must be a word character immediately previous.  
-All boundary determinations look for word characters alone, not for
-non-words characters nor for string ends.  It may help to understand how
-<\b> and <\B> work by equating them as follows:
+All plain C<\b> and C<\B> boundary determinations look for word
+characters alone, not for
+non-word characters nor for string ends.  It may help to understand how
+C<\b> and C<\B> work by equating them as follows:
 
     \b	really means	(?:(?<=\w)(?!\w)|(?<!\w)(?=\w))
     \B	really means	(?:(?<=\w)(?=\w)|(?<!\w)(?!\w))
+
+In contrast, C<\b{...}> and C<\B{...}> may or may not match at the
+beginning and end of the line, depending on the boundary type.  These
+implement the Unicode default boundaries, specified in
+L<http://www.unicode.org/reports/tr14/> and
+L<http://www.unicode.org/reports/tr29/>.
+The boundary types are:
+
+=over
+
+=item C<\b{gcb}> or C<\b{g}>
+
+This matches a Unicode "Grapheme Cluster Boundary".  (Actually Perl
+always uses the improved "extended" grapheme cluster").  These are
+explained below under L</C<\X>>.  In fact, C<\X> is another way to get
+the same functionality.  It is equivalent to C</.+?\b{gcb}/>.  Use
+whichever is most convenient for your situation.
+
+=item C<\b{lb}>
+
+This matches according to the default Unicode Line Breaking Algorithm
+(L<http://www.unicode.org/reports/tr14/>), as customized in that
+document
+(L<Example 7 of revision 35|http://www.unicode.org/reports/tr14/tr14-35.html#Example7>)
+for better handling of numeric expressions.
+
+This is suitable for many purposes, but the L<Unicode::LineBreak> module
+is available on CPAN that provides many more features, including
+customization.
+
+=item C<\b{sb}>
+
+This matches a Unicode "Sentence Boundary".  This is an aid to parsing
+natural language sentences.  It gives good, but imperfect results.  For
+example, it thinks that "Mr. Smith" is two sentences.  More details are
+at L<http://www.unicode.org/reports/tr29/>.  Note also that it thinks
+that anything matching L</\R> (except form feed and vertical tab) is a
+sentence boundary.  C<\b{sb}> works with text designed for
+word-processors which wrap lines
+automatically for display, but hard-coded line boundaries are considered
+to be essentially the ends of text blocks (paragraphs really), and hence
+the ends of sentences.  C<\b{sb}> doesn't do well with text containing
+embedded newlines, like the source text of the document you are reading.
+Such text needs to be preprocessed to get rid of the line separators
+before looking for sentence boundaries.  Some people view this as a bug
+in the Unicode standard, and this behavior is quite subject to change in
+future Perl versions.
+
+=item C<\b{wb}>
+
+This matches a Unicode "Word Boundary", but tailored to Perl
+expectations.  This gives better (though not
+perfect) results for natural language processing than plain C<\b>
+(without braces) does.  For example, it understands that apostrophes can
+be in the middle of words and that parentheses aren't (see the examples
+below).  More details are at L<http://www.unicode.org/reports/tr29/>.
+
+The current Unicode definition of a Word Boundary matches between every
+white space character.  Perl tailors this, starting in version 5.24, to
+generally not break up spans of white space, just as plain C<\b> has
+always functioned.  This allows C<\b{wb}> to be a drop-in replacement for
+C<\b>, but with generally better results for natural language
+processing.  (The exception to this tailoring is when a span of white
+space is immediately followed by something like U+0303, COMBINING TILDE.
+If the final space character in the span is a horizontal white space, it
+is broken out so that it attaches instead to the combining character.
+To be precise, if a span of white space that ends in a horizontal space
+has the character immediately following it have any of the Word
+Boundary property values "Extend", "Format" or "ZWJ", the boundary between the
+final horizontal space character and the rest of the span matches
+C<\b{wb}>.  In all other cases the boundary between two white space
+characters matches C<\B{wb}>.)
+
+=back
+
+It is important to realize when you use these Unicode boundaries,
+that you are taking a risk that a future version of Perl which contains
+a later version of the Unicode Standard will not work precisely the same
+way as it did when your code was written.  These rules are not
+considered stable and have been somewhat more subject to change than the
+rest of the Standard.  Unicode reserves the right to change them at
+will, and Perl reserves the right to update its implementation to
+Unicode's new rules.  In the past, some changes have been because new
+characters have been added to the Standard which have different
+characteristics than all previous characters, so new rules are
+formulated for handling them.  These should not cause any backward
+compatibility issues.  But some changes have changed the treatment of
+existing characters because the Unicode Technical Committee has decided
+that the change is warranted for whatever reason.  This could be to fix
+a bug, or because they think better results are obtained with the new
+rule.
+
+It is also important to realize that these are default boundary
+definitions, and that implementations may wish to tailor the results for
+particular purposes and locales.  For example, some languages, such as
+Japanese and Thai, require dictionary lookup to accurately determine
+word boundaries.
 
 Mnemonic: I<b>oundary.
 
@@ -564,21 +683,19 @@ Mnemonic: I<b>oundary.
       print $1;           # Prints 'cat'
   }
 
+  my $s = "He said, \"Is pi 3.14? (I'm not sure).\"";
+  print join("|", $s =~ m/ ( .+? \b     ) /xg), "\n";
+  print join("|", $s =~ m/ ( .+? \b{wb} ) /xg), "\n";
+ prints
+  He| |said|, "|Is| |pi| |3|.|14|? (|I|'|m| |not| |sure
+  He| |said|,| |"|Is| |pi| |3.14|?| |(|I'm| |not| |sure|)|.|"
+
 =head2 Misc
 
 Here we document the backslash sequences that don't fall in one of the
 categories above. These are:
 
 =over 4
-
-=item \C
-
-C<\C> always matches a single octet, even if the source string is encoded
-in UTF-8 format, and the character to be matched is a multi-octet character.
-C<\C> was introduced in perl 5.6.  This is very dangerous, because it violates
-the logical character abstraction and can cause UTF-8 sequences to become malformed.
-
-Mnemonic: oI<C>tet.
 
 =item \K
 
@@ -591,7 +708,7 @@ Mnemonic: I<K>eep.
 
 =item \N
 
-This is an experimental feature new to perl 5.12.0.  It matches any character
+This feature, available starting in v5.12,  matches any character
 that is B<not> a newline.  It is a short-hand for writing C<[^\n]>, and is
 identical to the C<.> metasymbol, except under the C</s> flag, which changes
 the meaning of C<.>, but not C<\N>.
@@ -641,13 +758,16 @@ Unicode, but one can be composed by using a G followed by a Unicode "COMBINING
 UPWARDS ARROW BELOW", and would be displayed by Unicode-aware software as if it
 were a single character.
 
+The match is greedy and non-backtracking, so that the cluster is never
+broken up into smaller components.
+
+See also L<C<\b{gcb}>|/\b{}, \b, \B{}, \B>.
+
 Mnemonic: eI<X>tended Unicode character.
 
 =back
 
 =head4 Examples
-
- "\x{256}" =~ /^\C\C$/;    # Match as chr (0x256) takes 2 octets in UTF-8.
 
  $str =~ s/foo\Kbar/baz/g; # Change any 'bar' following a 'foo' to 'baz'
  $str =~ s/(.)\K\g1//g;    # Delete duplicated characters.

@@ -510,10 +510,15 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
       mojo::MakeRequest(&document_interface_broker).PassMessagePipe(), nullptr);
   web_frame_client.Bind(frame);
 
-  // We inform the WebView when it has a local main frame attached once the
-  // WebFrame it fully set up and the WebWidgetClient is initialized (which is
-  // the case by this point).
-  web_view->DidAttachLocalMainFrame(&web_widget_client);
+  {
+    // Copy the steps done from WebViewHelper::InitializeWithOpener() to set up
+    // the appropriate pointers!
+    web_view->MainFrameWidget()->SetLayerTreeView(
+        web_widget_client.layer_tree_view(),
+        web_widget_client.animation_host());
+    blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
+    web_view->DidAttachLocalMainFrame(&web_widget_client);
+  }
 
   // The color should be passed to the compositor.
   cc::LayerTreeHost* host = web_widget_client.layer_tree_host();
@@ -589,6 +594,12 @@ TEST_F(WebViewTest, SetBaseBackgroundColorWithColorScheme) {
   web_view->SettingsImpl()->SetPreferredColorScheme(
       PreferredColorScheme::kDark);
   UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color::kBlack, frame_view->BaseBackgroundColor());
+
+  // Don't let dark color-scheme override a transparent background.
+  web_view->SetBaseBackgroundColor(SK_ColorTRANSPARENT);
+  EXPECT_EQ(Color::kTransparent, frame_view->BaseBackgroundColor());
+  web_view->SetBaseBackgroundColor(SK_ColorBLUE);
   EXPECT_EQ(Color::kBlack, frame_view->BaseBackgroundColor());
 
   web_view->SettingsImpl()->SetPreferredColorScheme(
@@ -1162,7 +1173,7 @@ TEST_F(WebViewTest, FinishComposingTextCursorPositionChange) {
       WebRange(), 3, 3);
 
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello", info.value.Utf8());
   EXPECT_EQ(3, info.selection_start);
   EXPECT_EQ(3, info.selection_end);
   EXPECT_EQ(0, info.composition_start);
@@ -1180,7 +1191,7 @@ TEST_F(WebViewTest, FinishComposingTextCursorPositionChange) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 3, 3);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helhellolo", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helhellolo", info.value.Utf8());
   EXPECT_EQ(6, info.selection_start);
   EXPECT_EQ(6, info.selection_end);
   EXPECT_EQ(3, info.composition_start);
@@ -1213,7 +1224,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
                                              WebRange(), -5);
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
 
-  EXPECT_EQ("helloworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloworld", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1227,7 +1238,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 0, 0);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1238,7 +1249,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 3, 3);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(8, info.selection_start);
   EXPECT_EQ(8, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1249,7 +1260,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), -2, -2);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(3, info.selection_start);
   EXPECT_EQ(3, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1260,7 +1271,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 5, 5);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(10, info.selection_start);
   EXPECT_EQ(10, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1271,7 +1282,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), -5, -5);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1282,7 +1293,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 8, 8);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(13, info.selection_start);
   EXPECT_EQ(13, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1293,7 +1304,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), -100, -100);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1304,7 +1315,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 100, 100);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloABCworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloABCworld", info.value.Utf8());
   EXPECT_EQ(13, info.selection_start);
   EXPECT_EQ(13, info.selection_end);
   EXPECT_EQ(5, info.composition_start);
@@ -1327,7 +1338,7 @@ TEST_F(WebViewTest, SetCompositionWithEmptyText) {
                                              WebRange(), 0);
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
 
-  EXPECT_EQ("hello", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1336,7 +1347,7 @@ TEST_F(WebViewTest, SetCompositionWithEmptyText) {
   active_input_method_controller->SetComposition(
       WebString::FromUTF8(""), empty_ime_text_spans, WebRange(), 0, 0);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1345,7 +1356,7 @@ TEST_F(WebViewTest, SetCompositionWithEmptyText) {
   active_input_method_controller->SetComposition(
       WebString::FromUTF8(""), empty_ime_text_spans, WebRange(), -2, -2);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello", info.value.Utf8());
   EXPECT_EQ(3, info.selection_start);
   EXPECT_EQ(3, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1368,7 +1379,7 @@ TEST_F(WebViewTest, CommitTextForNewCaretPositions) {
   active_input_method_controller->CommitText("ab", empty_ime_text_spans,
                                              WebRange(), -2);
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("ab", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("ab", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1378,7 +1389,7 @@ TEST_F(WebViewTest, CommitTextForNewCaretPositions) {
   active_input_method_controller->CommitText("c", empty_ime_text_spans,
                                              WebRange(), 1);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("cab", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("cab", info.value.Utf8());
   EXPECT_EQ(2, info.selection_start);
   EXPECT_EQ(2, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1388,7 +1399,7 @@ TEST_F(WebViewTest, CommitTextForNewCaretPositions) {
   active_input_method_controller->CommitText("def", empty_ime_text_spans,
                                              WebRange(), -5);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("cadefb", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("cadefb", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1398,7 +1409,7 @@ TEST_F(WebViewTest, CommitTextForNewCaretPositions) {
   active_input_method_controller->CommitText("g", empty_ime_text_spans,
                                              WebRange(), 6);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("gcadefb", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("gcadefb", info.value.Utf8());
   EXPECT_EQ(7, info.selection_start);
   EXPECT_EQ(7, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1408,7 +1419,7 @@ TEST_F(WebViewTest, CommitTextForNewCaretPositions) {
   active_input_method_controller->CommitText("hi", empty_ime_text_spans,
                                              WebRange(), -100);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("gcadefbhi", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("gcadefbhi", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1418,7 +1429,7 @@ TEST_F(WebViewTest, CommitTextForNewCaretPositions) {
   active_input_method_controller->CommitText("jk", empty_ime_text_spans,
                                              WebRange(), 100);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("jkgcadefbhi", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("jkgcadefbhi", info.value.Utf8());
   EXPECT_EQ(11, info.selection_start);
   EXPECT_EQ(11, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1439,7 +1450,7 @@ TEST_F(WebViewTest, CommitTextWhileComposing) {
   active_input_method_controller->SetComposition(
       WebString::FromUTF8("abc"), empty_ime_text_spans, WebRange(), 0, 0);
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("abc", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("abc", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
   EXPECT_EQ(0, info.composition_start);
@@ -1450,7 +1461,7 @@ TEST_F(WebViewTest, CommitTextWhileComposing) {
   active_input_method_controller->CommitText("hello", empty_ime_text_spans,
                                              WebRange(), -2);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello", info.value.Utf8());
   EXPECT_EQ(3, info.selection_start);
   EXPECT_EQ(3, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1459,7 +1470,7 @@ TEST_F(WebViewTest, CommitTextWhileComposing) {
   active_input_method_controller->SetComposition(
       WebString::FromUTF8("abc"), empty_ime_text_spans, WebRange(), 0, 0);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helabclo", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helabclo", info.value.Utf8());
   EXPECT_EQ(3, info.selection_start);
   EXPECT_EQ(3, info.selection_end);
   EXPECT_EQ(3, info.composition_start);
@@ -1469,7 +1480,7 @@ TEST_F(WebViewTest, CommitTextWhileComposing) {
   active_input_method_controller->CommitText("", empty_ime_text_spans,
                                              WebRange(), 2);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1479,7 +1490,7 @@ TEST_F(WebViewTest, CommitTextWhileComposing) {
   active_input_method_controller->CommitText("world", empty_ime_text_spans,
                                              WebRange(), -5);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloworld", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1489,7 +1500,7 @@ TEST_F(WebViewTest, CommitTextWhileComposing) {
   active_input_method_controller->CommitText("", empty_ime_text_spans,
                                              WebRange(), 5);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("helloworld", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("helloworld", info.value.Utf8());
   EXPECT_EQ(10, info.selection_start);
   EXPECT_EQ(10, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1520,7 +1531,7 @@ TEST_F(WebViewTest, FinishCompositionDoesNotRevealSelection) {
   EXPECT_LT(0, offset_height);
 
   WebTextInputInfo info = frame->GetInputMethodController()->TextInputInfo();
-  EXPECT_EQ("hello", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello", info.value.Utf8());
 
   // Verify that the input field is not scrolled back into the viewport.
   frame->FrameWidget()
@@ -1545,8 +1556,7 @@ TEST_F(WebViewTest, InsertNewLinePlacementAfterFinishComposingText) {
   frame->SetCompositionFromExistingText(8, 12, empty_ime_text_spans);
 
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("0123456789abcdefghijklmnopqrstuvwxyz",
-            std::string(info.value.Utf8().data()));
+  EXPECT_EQ("0123456789abcdefghijklmnopqrstuvwxyz", info.value.Utf8());
   EXPECT_EQ(4, info.selection_start);
   EXPECT_EQ(4, info.selection_end);
   EXPECT_EQ(8, info.composition_start);
@@ -1569,8 +1579,7 @@ TEST_F(WebViewTest, InsertNewLinePlacementAfterFinishComposingText) {
   EXPECT_EQ(5, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
   EXPECT_EQ(-1, info.composition_end);
-  EXPECT_EQ("0123\n456789abcdefghijklmnopqrstuvwxyz",
-            std::string(info.value.Utf8().data()));
+  EXPECT_EQ("0123\n456789abcdefghijklmnopqrstuvwxyz", info.value.Utf8());
 }
 
 TEST_F(WebViewTest, ExtendSelectionAndDelete) {
@@ -1584,12 +1593,12 @@ TEST_F(WebViewTest, ExtendSelectionAndDelete) {
   WebInputMethodController* active_input_method_controller =
       frame->GetInputMethodController();
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("01234ijklmnopqrstuvwxyz", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("01234ijklmnopqrstuvwxyz", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
   frame->ExtendSelectionAndDelete(10, 0);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("ijklmnopqrstuvwxyz", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("ijklmnopqrstuvwxyz", info.value.Utf8());
 }
 
 TEST_F(WebViewTest, DeleteSurroundingText) {
@@ -1604,33 +1613,33 @@ TEST_F(WebViewTest, DeleteSurroundingText) {
   frame->SetEditableSelectionOffsets(10, 10);
   frame->DeleteSurroundingText(5, 8);
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("01234ijklmnopqrstuvwxyz", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("01234ijklmnopqrstuvwxyz", info.value.Utf8());
   EXPECT_EQ(5, info.selection_start);
   EXPECT_EQ(5, info.selection_end);
 
   frame->SetEditableSelectionOffsets(5, 10);
   frame->DeleteSurroundingText(3, 5);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("01ijklmstuvwxyz", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("01ijklmstuvwxyz", info.value.Utf8());
   EXPECT_EQ(2, info.selection_start);
   EXPECT_EQ(7, info.selection_end);
 
   frame->SetEditableSelectionOffsets(5, 5);
   frame->DeleteSurroundingText(10, 0);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("lmstuvwxyz", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("lmstuvwxyz", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
 
   frame->DeleteSurroundingText(0, 20);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
 
   frame->DeleteSurroundingText(10, 10);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("", info.value.Utf8());
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
 }
@@ -1680,14 +1689,12 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea) {
       WebString::FromUTF8(new_line_text.c_str()), empty_ime_text_spans,
       WebRange(), 0);
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("0123456789abcdefghijklmnopq\nrstuvwxyz",
-            std::string(info.value.Utf8().data()));
+  EXPECT_EQ("0123456789abcdefghijklmnopq\nrstuvwxyz", info.value.Utf8());
 
   frame->SetEditableSelectionOffsets(31, 31);
   frame->SetCompositionFromExistingText(30, 34, ime_text_spans);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("0123456789abcdefghijklmnopq\nrstuvwxyz",
-            std::string(info.value.Utf8().data()));
+  EXPECT_EQ("0123456789abcdefghijklmnopq\nrstuvwxyz", info.value.Utf8());
   EXPECT_EQ(31, info.selection_start);
   EXPECT_EQ(31, info.selection_end);
   EXPECT_EQ(30, info.composition_start);
@@ -1698,8 +1705,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea) {
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 0);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("0123456789abcdefghijklmnopq\nrsyoloxyz",
-            std::string(info.value.Utf8().data()));
+  EXPECT_EQ("0123456789abcdefghijklmnopq\nrsyoloxyz", info.value.Utf8());
   EXPECT_EQ(34, info.selection_start);
   EXPECT_EQ(34, info.selection_end);
   EXPECT_EQ(-1, info.composition_start);
@@ -1743,7 +1749,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
       empty_ime_text_spans, WebRange(), 5, 5);
 
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello world", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello world", info.value.Utf8());
   EXPECT_EQ(11, info.selection_start);
   EXPECT_EQ(11, info.selection_end);
   EXPECT_EQ(6, info.composition_start);
@@ -1752,7 +1758,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetEditableSelectionOffsets(6, 6);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello world", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello world", info.value.Utf8());
   EXPECT_EQ(6, info.selection_start);
   EXPECT_EQ(6, info.selection_end);
   EXPECT_EQ(6, info.composition_start);
@@ -1760,7 +1766,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
 
   frame->SetEditableSelectionOffsets(8, 8);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello world", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello world", info.value.Utf8());
   EXPECT_EQ(8, info.selection_start);
   EXPECT_EQ(8, info.selection_end);
   EXPECT_EQ(6, info.composition_start);
@@ -1768,7 +1774,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
 
   frame->SetEditableSelectionOffsets(11, 11);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello world", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello world", info.value.Utf8());
   EXPECT_EQ(11, info.selection_start);
   EXPECT_EQ(11, info.selection_end);
   EXPECT_EQ(6, info.composition_start);
@@ -1776,7 +1782,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
 
   frame->SetEditableSelectionOffsets(6, 11);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello world", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello world", info.value.Utf8());
   EXPECT_EQ(6, info.selection_start);
   EXPECT_EQ(11, info.selection_end);
   EXPECT_EQ(6, info.composition_start);
@@ -1784,7 +1790,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
 
   frame->SetEditableSelectionOffsets(2, 2);
   info = active_input_method_controller->TextInputInfo();
-  EXPECT_EQ("hello world", std::string(info.value.Utf8().data()));
+  EXPECT_EQ("hello world", info.value.Utf8());
   EXPECT_EQ(2, info.selection_start);
   EXPECT_EQ(2, info.selection_end);
   // Composition range should be reset by browser process or keyboard apps.
@@ -2938,9 +2944,9 @@ TEST_F(WebViewTest, LongPressSelection) {
 
   EXPECT_TRUE(
       TapElementById(WebInputEvent::kGestureLongPress, onselectstartfalse));
-  EXPECT_EQ("", std::string(frame->SelectionAsText().Utf8().data()));
+  EXPECT_EQ("", frame->SelectionAsText().Utf8());
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, target));
-  EXPECT_EQ("testword", std::string(frame->SelectionAsText().Utf8().data()));
+  EXPECT_EQ("testword", frame->SelectionAsText().Utf8());
 }
 
 TEST_F(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
@@ -2962,13 +2968,12 @@ TEST_F(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
   EXPECT_TRUE(active_input_method_controller->SetComposition(
       "12345", empty_ime_text_spans, WebRange(), 8, 13));
   EXPECT_TRUE(frame->GetFrame()->GetInputMethodController().HasComposition());
-  EXPECT_EQ("", std::string(frame->SelectionAsText().Utf8().data()));
+  EXPECT_EQ("", frame->SelectionAsText().Utf8());
   EXPECT_FALSE(frame->GetFrame()->Selection().IsHandleVisible());
   EXPECT_TRUE(frame->GetFrame()->GetInputMethodController().HasComposition());
 
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, target));
-  EXPECT_EQ("testword12345",
-            std::string(frame->SelectionAsText().Utf8().data()));
+  EXPECT_EQ("testword12345", frame->SelectionAsText().Utf8());
   EXPECT_TRUE(frame->GetFrame()->Selection().IsHandleVisible());
   EXPECT_TRUE(frame->GetFrame()->GetInputMethodController().HasComposition());
 
@@ -3105,7 +3110,7 @@ TEST_F(WebViewTest, SelectionOnReadOnlyInput) {
   std::string test_word = "This text should be selected.";
 
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
-  EXPECT_EQ(test_word, std::string(frame->SelectionAsText().Utf8().data()));
+  EXPECT_EQ(test_word, frame->SelectionAsText().Utf8());
 
   WebRange range = web_view->MainFrameImpl()
                        ->GetInputMethodController()
@@ -3235,10 +3240,10 @@ class MiddleClickAutoscrollWebWidgetClient
     last_cursor_type_ = cursor.type;
   }
 
-  int GetLastCursorType() const { return last_cursor_type_; }
+  ui::CursorType GetLastCursorType() const { return last_cursor_type_; }
 
  private:
-  int last_cursor_type_ = 0;
+  ui::CursorType last_cursor_type_ = ui::CursorType::kPointer;
 };
 
 TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
@@ -3246,48 +3251,68 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
   ScopedMiddleClickAutoscrollForTest middle_click_autoscroll(true);
   RegisterMockedHttpURLLoad("content-width-1000.html");
 
-  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
-      base_url_ + "content-width-1000.html", nullptr, nullptr, &client);
-  web_view->MainFrameWidget()->Resize(WebSize(100, 100));
-  UpdateAllLifecyclePhases();
-  RunPendingTasks();
+  // We will be changing the size of the page to test each of the panning
+  // cursor variations. For reference, content-width-1000.html is 1000px wide
+  // and 2000px tall.
+  // 1. 100 x 100 - The page will be scrollable in both x and y directions, so
+  //      we expect to see the cursor with arrows in all four directions.
+  // 2. 1010 x 100 - The page will be scrollable in the y direction, but not x,
+  //      so we expect to see the cursor with only the vertical arrows.
+  // 3. 100 x 2010 - The page will be scrollable in the x direction, but not y,
+  //      so we expect to see the cursor with only the horizontal arrows.
+  struct CursorTests {
+    int resize_width;
+    int resize_height;
+    ui::CursorType expected_cursor;
+  } cursor_tests[] = {{100, 100, MiddlePanningCursor().GetType()},
+                      {1010, 100, MiddlePanningVerticalCursor().GetType()},
+                      {100, 2010, MiddlePanningHorizontalCursor().GetType()}};
 
-  WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
-                            WebInputEvent::kNoModifiers,
-                            WebInputEvent::GetStaticTimeStampForTests());
-  mouse_event.button = WebMouseEvent::Button::kMiddle;
-  mouse_event.SetPositionInWidget(1, 1);
-  mouse_event.click_count = 1;
+  for (const CursorTests current_test : cursor_tests) {
+    WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
+        base_url_ + "content-width-1000.html", nullptr, nullptr, &client);
+    web_view->MainFrameWidget()->Resize(
+        WebSize(current_test.resize_width, current_test.resize_height));
+    UpdateAllLifecyclePhases();
+    RunPendingTasks();
 
-  // Start middle-click autoscroll.
-  web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_event));
-  mouse_event.SetType(WebInputEvent::kMouseUp);
-  web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_event));
+    WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+                              WebInputEvent::kNoModifiers,
+                              WebInputEvent::GetStaticTimeStampForTests());
+    mouse_event.button = WebMouseEvent::Button::kMiddle;
+    mouse_event.SetPositionInWidget(1, 1);
+    mouse_event.click_count = 1;
 
-  EXPECT_EQ(MiddlePanningCursor().GetType(), client.GetLastCursorType());
+    // Start middle-click autoscroll.
+    web_view->MainFrameWidget()->HandleInputEvent(
+        WebCoalescedInputEvent(mouse_event));
+    mouse_event.SetType(WebInputEvent::kMouseUp);
+    web_view->MainFrameWidget()->HandleInputEvent(
+        WebCoalescedInputEvent(mouse_event));
 
-  LocalFrame* local_frame =
-      To<WebLocalFrameImpl>(web_view->MainFrame())->GetFrame();
+    EXPECT_EQ(current_test.expected_cursor, client.GetLastCursorType());
 
-  // Even if a plugin tries to change the cursor type, that should be ignored
-  // during middle-click autoscroll.
-  web_view->GetChromeClient().SetCursorForPlugin(WebCursorInfo(PointerCursor()),
-                                                 local_frame);
-  EXPECT_EQ(MiddlePanningCursor().GetType(), client.GetLastCursorType());
+    LocalFrame* local_frame =
+        To<WebLocalFrameImpl>(web_view->MainFrame())->GetFrame();
 
-  // End middle-click autoscroll.
-  mouse_event.SetType(WebInputEvent::kMouseDown);
-  web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_event));
-  mouse_event.SetType(WebInputEvent::kMouseUp);
-  web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_event));
+    // Even if a plugin tries to change the cursor type, that should be ignored
+    // during middle-click autoscroll.
+    web_view->GetChromeClient().SetCursorForPlugin(
+        WebCursorInfo(PointerCursor()), local_frame);
+    EXPECT_EQ(current_test.expected_cursor, client.GetLastCursorType());
 
-  web_view->GetChromeClient().SetCursorForPlugin(WebCursorInfo(IBeamCursor()),
-                                                 local_frame);
-  EXPECT_EQ(IBeamCursor().GetType(), client.GetLastCursorType());
+    // End middle-click autoscroll.
+    mouse_event.SetType(WebInputEvent::kMouseDown);
+    web_view->MainFrameWidget()->HandleInputEvent(
+        WebCoalescedInputEvent(mouse_event));
+    mouse_event.SetType(WebInputEvent::kMouseUp);
+    web_view->MainFrameWidget()->HandleInputEvent(
+        WebCoalescedInputEvent(mouse_event));
+
+    web_view->GetChromeClient().SetCursorForPlugin(WebCursorInfo(IBeamCursor()),
+                                                   local_frame);
+    EXPECT_EQ(IBeamCursor().GetType(), client.GetLastCursorType());
+  }
 
   // Explicitly reset to break dependency on locally scoped client.
   web_view_helper_.Reset();
@@ -3339,11 +3364,13 @@ class MockAutofillClient : public WebAutofillClient {
   }
   void UserGestureObserved() override { ++user_gesture_notifications_count_; }
 
-  bool HasFillData(const WebFormControlElement&) const override {
-    return has_fill_data_;
+  bool TryToShowTouchToFill(const WebFormControlElement&) override {
+    return can_show_touch_to_fill_;
   }
 
-  void SetFillData(bool has_fill_data) { has_fill_data_ = has_fill_data; }
+  void SetCanShowTouchToFill(bool can_show_touch_to_fill) {
+    can_show_touch_to_fill_ = can_show_touch_to_fill;
+  }
 
   void ClearChangeCounts() { text_changes_ = 0; }
 
@@ -3357,7 +3384,7 @@ class MockAutofillClient : public WebAutofillClient {
   int text_changes_ = 0;
   int text_changes_from_user_gesture_ = 0;
   int user_gesture_notifications_count_ = 0;
-  bool has_fill_data_ = false;
+  bool can_show_touch_to_fill_ = false;
 };
 
 TEST_F(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange) {
@@ -3460,8 +3487,8 @@ TEST_F(WebViewTest, FinishComposingTextDoesntTriggerAutofillTextChange) {
   web_view->SetInitialFocus(false);
 
   WebDocument document = web_view->MainFrameImpl()->GetDocument();
-  HTMLFormControlElement* form =
-      ToHTMLFormControlElement(document.GetElementById("sample"));
+  auto* form = To<HTMLFormControlElement>(
+      static_cast<Element*>(document.GetElementById("sample")));
 
   WebInputMethodController* active_input_method_controller =
       frame->FrameWidget()->GetActiveWebInputMethodController();
@@ -3507,8 +3534,7 @@ TEST_F(WebViewTest,
   frame->SetCompositionFromExistingText(8, 12, empty_ime_text_spans);
 
   WebTextInputInfo info = frame->GetInputMethodController()->TextInputInfo();
-  EXPECT_EQ("0123456789abcdefghijklmnopqrstuvwxyz",
-            std::string(info.value.Utf8().data()));
+  EXPECT_EQ("0123456789abcdefghijklmnopqrstuvwxyz", info.value.Utf8());
   EXPECT_EQ(8, info.composition_start);
   EXPECT_EQ(12, info.composition_end);
 
@@ -3866,7 +3892,7 @@ class TouchEventHandlerWebWidgetClient
     : public frame_test_helpers::TestWebWidgetClient {
  public:
   // WebWidgetClient methods
-  void HasTouchEventHandlers(bool state) override {
+  void SetHasTouchEventHandlers(bool state) override {
     // Only count the times the state changes.
     if (state != has_touch_event_handler_)
       has_touch_event_handler_count_[state]++;
@@ -3888,11 +3914,11 @@ class TouchEventHandlerWebWidgetClient
   bool has_touch_event_handler_;
 };
 
-// This test verifies that WebWidgetClient::hasTouchEventHandlers is called
+// This test verifies that WebWidgetClient::SetHasTouchEventHandlers is called
 // accordingly for various calls to EventHandlerRegistry::did{Add|Remove|
 // RemoveAll}EventHandler(..., TouchEvent). Verifying that those calls are made
 // correctly is the job of web_tests/fast/events/event-handler-count.html.
-TEST_F(WebViewTest, HasTouchEventHandlers) {
+TEST_F(WebViewTest, SetHasTouchEventHandlers) {
   TouchEventHandlerWebWidgetClient client;
   std::string url = RegisterMockedHttpURLLoad("has_touch_event_handlers.html");
   WebViewImpl* web_view_impl =
@@ -4127,7 +4153,7 @@ TEST_F(WebViewTest, FirstUserGestureObservedKeyEvent) {
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
-  EXPECT_EQ(2, client.GetUserGestureNotificationsCount());
+  EXPECT_EQ(1, client.GetUserGestureNotificationsCount());
   frame->SetAutofillClient(nullptr);
 }
 
@@ -4335,8 +4361,8 @@ class MojoTestHelper {
   MojoTestHelper(const String& test_file,
                  frame_test_helpers::WebViewHelper& web_view_helper)
       : web_view_helper_(web_view_helper) {
-    web_view_ = web_view_helper.InitializeAndLoad(WebString(test_file).Utf8(),
-                                                  &web_frame_client_);
+    web_view_ =
+        web_view_helper.InitializeAndLoad(test_file.Utf8(), &web_frame_client_);
   }
 
   ~MojoTestHelper() {
@@ -4351,7 +4377,7 @@ class MojoTestHelper {
     // Set up our Mock Mojo API.
     test_api_.reset(new service_manager::InterfaceProvider::TestApi(
         web_frame_client_.GetInterfaceProvider()));
-    test_api_->SetBinderForName(WebString(name).Utf8(), callback);
+    test_api_->SetBinderForName(name.Utf8(), callback);
   }
   WebViewImpl* WebView() const { return web_view_; }
 
@@ -4660,21 +4686,21 @@ TEST_F(WebViewTest, PasswordFieldCanBeAutofilled) {
   RegisterMockedHttpURLLoad("input_field_password.html");
   // Pretend client has fill data for all fields it's queried.
   MockAutofillClient client;
-  client.SetFillData(true);
+  client.SetCanShowTouchToFill(true);
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_password.html");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
   // No field is focused.
-  EXPECT_FALSE(frame->CanFocusedFieldBeAutofilled());
+  EXPECT_FALSE(frame->TryToShowTouchToFillForFocusedElement());
 
   // Focusing a field should result in treating it autofillable.
   web_view->SetInitialFocus(false);
-  EXPECT_TRUE(frame->CanFocusedFieldBeAutofilled());
+  EXPECT_TRUE(frame->TryToShowTouchToFillForFocusedElement());
 
   // Pretend that |client| no longer has autofill data available.
-  client.SetFillData(false);
-  EXPECT_FALSE(frame->CanFocusedFieldBeAutofilled());
+  client.SetCanShowTouchToFill(false);
+  EXPECT_FALSE(frame->TryToShowTouchToFillForFocusedElement());
   frame->SetAutofillClient(nullptr);
 }
 
@@ -4828,9 +4854,10 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
 
   // Override applies transform, sets visible rect, and disables
   // visual viewport clipping.
-  dev_tools_emulator->ForceViewport(WebFloatPoint(50, 55), 2.f);
+  TransformationMatrix matrix =
+      dev_tools_emulator->ForceViewportForTesting(WebFloatPoint(50, 55), 2.f);
   expected_matrix.MakeIdentity().Scale(2.f).Translate(-50, -55);
-  EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
+  EXPECT_EQ(expected_matrix, matrix);
   {
     IntRect visible_rect(1, 2, 3, 4);
     dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
@@ -4839,9 +4866,10 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
   EXPECT_FALSE(visual_viewport->ContainerLayer()->MasksToBounds());
 
   // Setting new override discards previous one.
-  dev_tools_emulator->ForceViewport(WebFloatPoint(5.4f, 10.5f), 1.5f);
+  matrix = dev_tools_emulator->ForceViewportForTesting(
+      WebFloatPoint(5.4f, 10.5f), 1.5f);
   expected_matrix.MakeIdentity().Scale(1.5f).Translate(-5.4f, -10.5f);
-  EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
+  EXPECT_EQ(expected_matrix, matrix);
   {
     IntRect visible_rect(1, 2, 3, 4);
     dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
@@ -4851,9 +4879,9 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
 
   // Clearing override restores original transform, visible rect and
   // visual viewport clipping.
-  dev_tools_emulator->ResetViewport();
+  matrix = dev_tools_emulator->ResetViewportForTesting();
   expected_matrix.MakeIdentity();
-  EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
+  EXPECT_EQ(expected_matrix, matrix);
   {
     IntRect visible_rect(1, 2, 3, 4);
     dev_tools_emulator->OverrideVisibleRect(IntSize(), &visible_rect);
@@ -4879,8 +4907,9 @@ TEST_F(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
 
   // Device metrics offset and scale are applied before viewport override.
-  web_view_impl->GetDevToolsEmulator()->ForceViewport(WebFloatPoint(5, 10),
-                                                      1.5f);
+  emulation_params.viewport_offset = WebFloatPoint(5, 10);
+  emulation_params.viewport_scale = 1.5f;
+  web_view_impl->EnableDeviceEmulation(emulation_params);
   expected_matrix.MakeIdentity()
       .Scale(1.5f)
       .Translate(-5, -10)
@@ -4907,7 +4936,11 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
   web_view_impl->SetPageScaleFactor(1.5f);
   frame_view->LayoutViewport()->SetScrollOffset(
       ScrollOffset(100, 150), kProgrammaticScroll, kScrollBehaviorInstant);
-  dev_tools_emulator->ForceViewport(WebFloatPoint(50, 55), 2.f);
+
+  WebDeviceEmulationParams emulation_params;
+  emulation_params.viewport_offset = WebFloatPoint(50, 55);
+  emulation_params.viewport_scale = 2.f;
+  web_view_impl->EnableDeviceEmulation(emulation_params);
   expected_matrix.MakeIdentity()
       .Scale(2.f)
       .Translate(-50, -55)
@@ -5219,7 +5252,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
   ASSERT_NE(nullptr, document);
 
   base::TimeTicks start_time = test_task_runner_->NowTicks();
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5232,7 +5265,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
@@ -5247,7 +5280,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(60));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(60));
   key_event2.SetTimeStamp(test_task_runner_->NowTicks());
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
@@ -5271,7 +5304,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5284,11 +5317,11 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
-  TimeTicks longest_input_timestamp = test_task_runner_->NowTicks();
+  base::TimeTicks longest_input_timestamp = test_task_runner_->NowTicks();
 
   WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
@@ -5296,7 +5329,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(longest_input_timestamp);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
 
@@ -5306,7 +5339,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   key_event3.dom_key = ui::DomKey::FromCharacter(' ');
   key_event3.windows_key_code = VKEY_SPACE;
   key_event3.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event3));
 
@@ -5318,7 +5351,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
 }
 
 TEST_F(WebViewTest, InputDelayReported) {
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
 
   WebViewImpl* web_view = web_view_helper_.Initialize();
 
@@ -5333,7 +5366,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   ASSERT_NE(nullptr, document);
   GetTestInteractiveDetector(*document);
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   HistogramTester histogram_tester;
   WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
@@ -5342,7 +5375,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
@@ -5352,7 +5385,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
 
@@ -5362,7 +5395,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   key_event3.dom_key = ui::DomKey::FromCharacter(' ');
   key_event3.windows_key_code = VKEY_SPACE;
   key_event3.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event3));
 
@@ -5397,7 +5430,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5409,9 +5442,9 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
-  TimeTicks key_event1_time = test_task_runner_->NowTicks();
+  base::TimeTicks key_event1_time = test_task_runner_->NowTicks();
   key_event1.SetTimeStamp(key_event1_time);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
@@ -5421,11 +5454,11 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
   web_view->SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
   web_view->SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
   // Total input delay is >300ms.
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
@@ -5451,7 +5484,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5462,7 +5495,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
   key_event.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
   web_view->SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
@@ -5484,7 +5517,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5492,18 +5525,18 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
   EXPECT_TRUE(interactive_detector->GetLongestInputDelay().is_zero());
 
   web_view->SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
   web_view->SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
 
   WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
-  TimeTicks key_event_time = test_task_runner_->NowTicks();
+  base::TimeTicks key_event_time = test_task_runner_->NowTicks();
   key_event.SetTimeStamp(key_event_time);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
@@ -5533,7 +5566,7 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
   ASSERT_NE(nullptr, document);
 
   base::TimeTicks start_time = test_task_runner_->NowTicks();
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5545,7 +5578,7 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
   // Set this to the left button, needed for testing to behave properly.
   pointer_down.SetModifiers(WebInputEvent::kLeftButtonDown);
   pointer_down.button = WebPointerProperties::Button::kLeft;
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(pointer_down));
 
@@ -5557,7 +5590,7 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
   WebPointerEvent pointer_up(
       WebInputEvent::kPointerUp,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(60));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(60));
   pointer_up.SetTimeStamp(test_task_runner_->NowTicks());
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(pointer_up));
@@ -5575,7 +5608,7 @@ class MockClockAdvancingWebFrameClient
  public:
   MockClockAdvancingWebFrameClient(
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner,
-      TimeDelta event_handling_delay)
+      base::TimeDelta event_handling_delay)
       : task_runner_(std::move(task_runner)),
         event_handling_delay_(event_handling_delay) {}
   // WebLocalFrameClient overrides:
@@ -5588,15 +5621,15 @@ class MockClockAdvancingWebFrameClient
 
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  TimeDelta event_handling_delay_;
+  base::TimeDelta event_handling_delay_;
 };
 
 // Check that the input delay is correctly reported to the document.
 TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
   // Page load timing logic depends on the time not being zero.
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
   MockClockAdvancingWebFrameClient frame_client(
-      test_task_runner_, TimeDelta::FromMilliseconds(6000));
+      test_task_runner_, base::TimeDelta::FromMilliseconds(6000));
   WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
@@ -5625,12 +5658,13 @@ TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
   key_event.windows_key_code = VKEY_SPACE;
   key_event.SetTimeStamp(test_task_runner_->NowTicks());
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(5000));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(5000));
 
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
-  TimeDelta first_input_delay = interactive_detector->GetFirstInputDelay();
+  base::TimeDelta first_input_delay =
+      interactive_detector->GetFirstInputDelay();
   EXPECT_EQ(5000, first_input_delay.InMillisecondsF());
 
   web_view_helper_.Reset();  // Remove dependency on locally scoped client.
@@ -5639,9 +5673,9 @@ TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
 // Check that the longest input delay is correctly reported to the document.
 TEST_F(WebViewTest, LongestInputDelayExcludesProcessingTime) {
   // Page load timing logic depends on the time not being zero.
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
   MockClockAdvancingWebFrameClient frame_client(
-      test_task_runner_, TimeDelta::FromMilliseconds(6000));
+      test_task_runner_, base::TimeDelta::FromMilliseconds(6000));
   WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
@@ -5669,12 +5703,13 @@ TEST_F(WebViewTest, LongestInputDelayExcludesProcessingTime) {
   key_event.windows_key_code = VKEY_SPACE;
   key_event.SetTimeStamp(test_task_runner_->NowTicks());
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(5000));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(5000));
 
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
-  TimeDelta longest_input_delay = interactive_detector->GetLongestInputDelay();
+  base::TimeDelta longest_input_delay =
+      interactive_detector->GetLongestInputDelay();
   EXPECT_EQ(5000, longest_input_delay.InMillisecondsF());
 
   web_view_helper_.Reset();  // Remove dependency on locally scoped client.

@@ -31,20 +31,12 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
     return settings_enabled_;
   }
 
-  const base::Optional<mojom::ConsentStatus>& consent_status() const {
-    return consent_status_;
-  }
-
   const base::Optional<bool>& context_enabled() const {
     return context_enabled_;
   }
 
   const base::Optional<bool>& hotword_enabled() const {
     return hotword_enabled_;
-  }
-
-  const base::Optional<bool>& hotword_always_on() const {
-    return hotword_always_on_;
   }
 
   const base::Optional<mojom::AssistantAllowedState>& allowed_state() const {
@@ -61,6 +53,8 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
     return locked_full_screen_enabled_;
   }
 
+  std::string ToString() const;
+
  protected:
   base::Optional<mojom::VoiceInteractionState> voice_interaction_state_;
 
@@ -68,19 +62,12 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
   // data is not available yet.
   base::Optional<bool> settings_enabled_;
 
-  // The status of the user's consent. nullopt if the data is not available yet.
-  base::Optional<mojom::ConsentStatus> consent_status_;
-
   // Whether screen context is enabled. nullopt if the data is not available
   // yet.
   base::Optional<bool> context_enabled_;
 
   // Whether hotword listening is enabled.
   base::Optional<bool> hotword_enabled_;
-
-  // Whether hotword listening is always on/only with power source. nullopt
-  // if the data is not available yet.
-  base::Optional<bool> hotword_always_on_;
 
   // Whether voice interaction feature is allowed or disallowed for what reason.
   // nullopt if the data is not available yet.

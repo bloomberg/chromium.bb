@@ -11,11 +11,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -52,7 +52,7 @@ AppIconSource::AppIconSource(Profile* profile) : profile_(profile) {}
 
 AppIconSource::~AppIconSource() = default;
 
-std::string AppIconSource::GetSource() const {
+std::string AppIconSource::GetSource() {
   return chrome::kChromeUIAppIconHost;
 }
 
@@ -95,18 +95,18 @@ void AppIconSource::StartDataRequest(
       allow_placeholder_icon, base::BindOnce(&RunCallback, callback));
 }
 
-std::string AppIconSource::GetMimeType(const std::string&) const {
+std::string AppIconSource::GetMimeType(const std::string&) {
   // We need to explicitly return a mime type, otherwise if the user tries to
   // drag the image they get no extension.
   return "image/png";
 }
 
-bool AppIconSource::AllowCaching() const {
+bool AppIconSource::AllowCaching() {
   // Should not be cached as caching is performed by proxy.
   return false;
 }
 
-bool AppIconSource::ShouldReplaceExistingSource() const {
+bool AppIconSource::ShouldReplaceExistingSource() {
   // The source doesn't maintain its own state so there's no need to replace it.
   return false;
 }

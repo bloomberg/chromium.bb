@@ -13,8 +13,8 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/sequence_checker.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage.h"
@@ -88,10 +88,6 @@ class CONTENT_EXPORT LegacyCacheStorageManager : public CacheStorageManager {
   void NotifyCacheContentChanged(const url::Origin& origin,
                                  const std::string& name);
 
-  base::WeakPtr<CacheStorageManager> AsWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
   base::FilePath root_path() const { return root_path_; }
 
   // This method is called when the last CacheStorageHandle for a particular
@@ -161,7 +157,8 @@ class CONTENT_EXPORT LegacyCacheStorageManager : public CacheStorageManager {
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
-  base::WeakPtrFactory<LegacyCacheStorageManager> weak_ptr_factory_;
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(LegacyCacheStorageManager);
 };
 

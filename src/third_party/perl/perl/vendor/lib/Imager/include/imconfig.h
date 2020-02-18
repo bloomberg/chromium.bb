@@ -28,7 +28,7 @@ Compiler supports the GCC __attribute__((format...)) syntax.
 
  This is intended for formatting i_img_dim values.
 */
-typedef long i_dim_format_t;
-#define i_DF "ld"
+typedef long long i_dim_format_t;
+#define i_DF "I64d"
 
 #endif

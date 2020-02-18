@@ -10,12 +10,12 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/time/time.h"
+#include "chrome/android/chrome_jni_headers/FeedLoggingBridge_jni.h"
 #include "chrome/browser/android/feed/feed_host_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/feed/content/feed_host_service.h"
 #include "components/feed/core/feed_logging_metrics.h"
-#include "jni/FeedLoggingBridge_jni.h"
 
 namespace feed {
 
@@ -174,6 +174,28 @@ void FeedLoggingBridge::OnPietFrameRenderingEvent(
   base::android::JavaIntArrayToIntVector(j_env, j_piet_error_codes,
                                          &piet_error_codes);
   feed_logging_metrics_->OnPietFrameRenderingEvent(std::move(piet_error_codes));
+}
+
+void FeedLoggingBridge::OnVisualElementClicked(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jint j_element_type,
+    const jint j_position,
+    const jlong j_timeContentBecameAvailableMs) {
+  feed_logging_metrics_->OnVisualElementClicked(
+      j_element_type, j_position,
+      base::Time::FromJavaTime(j_timeContentBecameAvailableMs));
+}
+
+void FeedLoggingBridge::OnVisualElementViewed(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jint j_element_type,
+    const jint j_position,
+    const jlong j_timeContentBecameAvailableMs) {
+  feed_logging_metrics_->OnVisualElementViewed(
+      j_element_type, j_position,
+      base::Time::FromJavaTime(j_timeContentBecameAvailableMs));
 }
 
 void FeedLoggingBridge::OnInternalError(JNIEnv* j_env,

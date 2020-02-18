@@ -66,8 +66,8 @@ bool D3D11PictureBuffer::Init(GetCommandBufferHelperCB get_helper_cb,
   return true;
 }
 
-const MailboxHolderArray& D3D11PictureBuffer::ProcessTexture() const {
-  return texture_wrapper_->ProcessTexture(this);
+bool D3D11PictureBuffer::ProcessTexture(MailboxHolderArray* mailbox_dest) {
+  return texture_wrapper_->ProcessTexture(this, mailbox_dest);
 }
 
 ComD3D11Texture2D D3D11PictureBuffer::Texture() const {

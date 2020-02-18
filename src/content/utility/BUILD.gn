@@ -17,6 +17,8 @@ jumbo_source_set("utility") {
   sources = [
     "in_process_utility_thread.cc",
     "in_process_utility_thread.h",
+    "services.cc",
+    "services.h",
     "utility_blink_platform_with_sandbox_support_impl.cc",
     "utility_blink_platform_with_sandbox_support_impl.h",
     "utility_main.cc",
@@ -52,7 +54,6 @@ jumbo_source_set("utility") {
     "//services/tracing/public/mojom",
     "//services/video_capture:lib",
     "//services/video_capture/public/mojom:constants",
-    "//services/viz:lib",
     "//third_party/blink/public:blink_headers",
     "//url",
   ]

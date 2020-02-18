@@ -1,4 +1,7 @@
-#!/usr/bin/perl -sw
+package Crypt::RSA;
+use strict;
+use warnings;
+
 ##
 ## Crypt::RSA - Pure-perl implementation of RSA encryption/signing
 ##              algorithms.
@@ -6,13 +9,7 @@
 ## Copyright (c) 2000-2001, Vipul Ved Prakash.  All rights reserved.
 ## This code is free software; you can redistribute it and/or modify
 ## it under the same terms as Perl itself.
-##
-## $Id: RSA.pm,v 1.48 2001/09/25 12:44:55 vipul Exp $
 
-package Crypt::RSA;
-use FindBin qw($Bin);
-use lib "$Bin/../../lib";
-use strict;
 use base 'Class::Loader';
 use base 'Crypt::RSA::Errorhandler';
 use Crypt::RSA::Key;
@@ -205,6 +202,9 @@ sub blocksize {
 
 1; 
 
+=pod
+
+=encoding utf8
 
 =head1 NAME
 
@@ -262,9 +262,7 @@ to the sci.crypt FAQ[15]. A formal treatment of RSA can be found in [1].
 =head1 DESCRIPTION
 
 Crypt::RSA is a pure-perl, cleanroom implementation of the RSA public-key
-cryptosystem. It uses Math::Pari(3), a perl interface to the blazingly
-fast PARI library, for big integer arithmetic and number theoretic
-computations.
+cryptosystem.
 
 Crypt::RSA provides arbitrary size key-pair generation, plaintext-aware
 encryption (OAEP) and digital signatures with appendix (PSS). For
@@ -282,7 +280,7 @@ padding. (See the note on Security of Padding Schemes.)
 The key generation engine and other functions that work on both components
 of the key-pair are encapsulated in Crypt::RSA::Key(3).
 Crypt::RSA::Key::Public(3) & Crypt::RSA::Key::Private(3) provide
-mechanisms for storage & retrival of keys from disk, decoding & encoding
+mechanisms for storage & retrieval of keys from disk, decoding & encoding
 of keys in certain formats, and secure representation of keys in memory.
 Finally, the Crypt::RSA module provides a convenient, DWIM wrapper around
 the rest of the modules in the bundle.
@@ -352,7 +350,7 @@ compatible object.
 =item B<Armour>
 
 A boolean parameter that forces cyphertext through a post processor after
-encrpytion. The default post processor is Convert::ASCII::Armour(3) that
+encryption. The default post processor is Convert::ASCII::Armour(3) that
 encodes binary octets in 6-bit clean ASCII messages. The cyphertext is
 returned as-is, when the Armour key is not present.
 
@@ -530,7 +528,7 @@ Vipul Ved Prakash, E<lt>mail@vipul.netE<gt>
 =head1 ACKNOWLEDGEMENTS
 
 Thanks to Ilya Zakharevich for help with Math::Pari, Benjamin Trott for
-several patches including SSH key support, Genèche Ramanoudjame for
+several patches including SSH key support, GenÃ¨che Ramanoudjame for
 extensive testing and numerous bug reports, Shizukesa on #perl for
 suggesting the error handling method used in this module, and Dave Paris
 for good advice.
@@ -550,12 +548,16 @@ Artistic of GPL suit you fine.
 
 =head1 SEE ALSO
 
-Crypt::RSA::Primitives(3), Crypt::RSA::DataFormat(3),
-Crypt::RSA::Errorhandler(3), Crypt::RSA::Debug(3), Crypt::Primes(3),
-Crypt::Random(3), Crypt::CBC(3), Crypt::Blowfish(3),
-Tie::EncryptedHash(3), Convert::ASCII::Armour(3), Math::Pari(3),
-Class::Loader(3), crypt-rsa-interoperability(3),
-crypt-rsa-interoperability-table(3).
+L<Crypt::RSA::Primitives>,
+L<Crypt::RSA::DataFormat>,
+L<Crypt::RSA::Errorhandler>,
+L<Crypt::RSA::Debug>,
+L<Crypt::CBC>,
+L<Crypt::Blowfish>,
+L<Tie::EncryptedHash>,
+L<Convert::ASCII::Armour>,
+L<Class::Loader>,
+L<Math::Prime::Util>.
 
 =head1 REPORTING BUGS
 
@@ -567,13 +569,6 @@ problem, it's likely of your own making. Please check your code
 and consult the documentation before posting a bug report. A
 google search with the error message might also shed light if it
 is a common mistake that you've made.
-
-If the module installation fails with a "Segmentation Fault" or
-"Bus Error", it is likely a Math::Pari issue. Please consult
-Math::Pari bugs on rt.cpan.org or open a bug there. There have
-been known issues on HP-UX and SunOS systems (with Math::Pari), 
-so if you are on those OSes, please consult Math::Pari 
-resources before opening a Crypt::RSA bug.
 
 =head1 BIBLIOGRAPHY
 
@@ -613,5 +608,7 @@ Chronologically sorted (for the most part).
 http://www.faqs.org/faqs/cryptography-faq/part01/index.html
 
 =item 16 B<Victor Shoup.> A Proposal for an ISO Standard for Public Key Encryption (2001).
+
+=back
 
 =cut

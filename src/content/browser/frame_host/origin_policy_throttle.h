@@ -5,15 +5,13 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_ORIGIN_POLICY_THROTTLE_H_
 #define CONTENT_BROWSER_FRAME_HOST_ORIGIN_POLICY_THROTTLE_H_
 
-#include <map>
 #include <memory>
-#include <string>
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
+#include "content/common/content_export.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "services/network/public/mojom/origin_policy_manager.mojom.h"
+#include "services/network/public/cpp/origin_policy.h"
 
 class GURL;
 
@@ -23,7 +21,6 @@ class Origin;
 
 namespace content {
 class NavigationHandle;
-enum class OriginPolicyErrorReason;
 
 // Constant derived from the spec, https://github.com/WICG/origin-policy
 static constexpr const char* kDefaultOriginPolicyVersion = "0";
@@ -40,11 +37,6 @@ static constexpr const char* kDefaultOriginPolicyVersion = "0";
 //   throttle or not.
 class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
  public:
-  struct PolicyVersionAndReportTo {
-    std::string policy_version;
-    std::string report_to;
-  };
-
   // Determine whether to request a policy (or advertise origin policy
   // support). Returns whether the policy header should be sent.
   static bool ShouldRequestOriginPolicy(const GURL& url);
@@ -59,7 +51,7 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   // otherwise invalid) policy. This is meant to be called by the security
   // interstitial.
   // This will exempt the entire origin, rather than only the given URL.
-  static void AddExceptionFor(const GURL& url);
+  static void AddExceptionFor(BrowserContext* browser_context, const GURL& url);
 
   ~OriginPolicyThrottle() override;
 
@@ -67,35 +59,18 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   ThrottleCheckResult WillProcessResponse() override;
   const char* GetNameForLogging() override;
 
-  using KnownVersionMap = std::map<url::Origin, std::string>;
-  static KnownVersionMap& GetKnownVersionsForTesting();
-
-  // TODO(andypaicu): Remove this when we move the store to the network
-  // service layer.
-  static PolicyVersionAndReportTo
-  GetRequestedPolicyAndReportGroupFromHeaderStringForTesting(
-      const std::string& header);
-
-  static bool IsExemptedForTesting(const url::Origin& origin);
-
  private:
   explicit OriginPolicyThrottle(NavigationHandle* handle);
 
-  static KnownVersionMap& GetKnownVersions();
-
-  // Get the policy name and the reporting group from the header string.
-  PolicyVersionAndReportTo GetRequestedPolicyAndReportGroupFromHeader() const;
-  static PolicyVersionAndReportTo
-  GetRequestedPolicyAndReportGroupFromHeaderString(const std::string& header);
-
   const url::Origin GetRequestOrigin() const;
 
-  void CancelNavigation(OriginPolicyErrorReason reason, const GURL& policy_url);
-
-  void Report(OriginPolicyErrorReason reason, const GURL& policy_url);
+  void CancelNavigation(network::OriginPolicyState state,
+                        const GURL& policy_url);
 
   void OnOriginPolicyManagerRetrieveDone(
-      const network::mojom::OriginPolicyPtr origin_policy);
+      const network::OriginPolicy& origin_policy);
+
+  base::WeakPtrFactory<OriginPolicyThrottle> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyThrottle);
 };

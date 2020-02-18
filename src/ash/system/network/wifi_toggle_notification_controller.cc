@@ -65,7 +65,7 @@ void WifiToggleNotificationController::RequestToggleWifi() {
   // so just return to handle the edge case.
   if (!wifi)
     return;
-  bool enabled = wifi->state == DeviceStateType::kEnabled;
+  bool enabled = wifi->device_state == DeviceStateType::kEnabled;
   Shell::Get()->metrics()->RecordUserMetricsAction(
       enabled ? UMA_STATUS_AREA_DISABLE_WIFI : UMA_STATUS_AREA_ENABLE_WIFI);
   model->SetNetworkTypeEnabledState(NetworkType::kWiFi, !enabled);

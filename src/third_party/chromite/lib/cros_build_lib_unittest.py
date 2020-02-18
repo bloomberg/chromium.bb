@@ -21,6 +21,8 @@ import StringIO
 import sys
 import __builtin__
 
+import six
+
 from chromite.lib import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
@@ -74,7 +76,7 @@ class CmdToStrTest(cros_test_lib.TestCase):
 
   def _testData(self, functor, tests, check_type=True):
     """Process a dict of test data."""
-    for test_output, test_input in tests.iteritems():
+    for test_output, test_input in tests.items():
       result = functor(test_input)
       self._assertEqual(functor.__name__, test_input, test_output, result)
 
@@ -974,7 +976,7 @@ class TestInput(cros_test_lib.MockOutputTestCase):
     m = self.PatchObject(cros_build_lib, 'GetInput')
 
     m.return_value = '2'
-    ret = cros_build_lib.GetChoice('title', xrange(3))
+    ret = cros_build_lib.GetChoice('title', list(range(3)))
     self.assertEqual(ret, 2)
 
   def testGetChoiceWindow(self):
@@ -1030,7 +1032,7 @@ class TestContextManagerStack(cros_test_lib.TestCase):
       stack.Add(_mk_kls(IndexError))
       stack.Add(_mk_kls(exception_kls=IndexError))
       stack.Add(_mk_kls())
-    self.assertEqual(invoked, list(reversed(range(6))))
+    self.assertEqual(invoked, list(range(5, -1, -1)))
 
 
 class TestManifestCheckout(cros_test_lib.TempDirTestCase):
@@ -1346,15 +1348,15 @@ class FrozenAttributesTest(cros_test_lib.TestCase):
 
   def testFrozenByMetaclass(self):
     """Test attribute freezing with FrozenAttributesClass."""
+    @six.add_metaclass(cros_build_lib.FrozenAttributesClass)
     class DummyByMeta(self.DummyClass):
       """Class that freezes DummyClass using metaclass construct."""
-      __metaclass__ = cros_build_lib.FrozenAttributesClass
 
     self._TestBasics(DummyByMeta)
 
+    @six.add_metaclass(cros_build_lib.FrozenAttributesClass)
     class SetattrByMeta(self.SetattrClass):
       """Class that freezes SetattrClass using metaclass construct."""
-      __metaclass__ = cros_build_lib.FrozenAttributesClass
 
     self._TestBasics(SetattrByMeta)
 
@@ -1619,7 +1621,7 @@ class CreateTarballTests(cros_test_lib.TempDirTestCase):
   def testSuccessWithTooManyFiles(self):
     """Test a tarfile creation with -T /dev/stdin."""
     num_inputs = cros_build_lib._THRESHOLD_TO_USE_T_FOR_TAR + 1
-    inputs = ['input%s' % x for x in xrange(num_inputs)]
+    inputs = ['input%s' % x for x in range(num_inputs)]
     largeInputDir = os.path.join(self.tempdir, 'largeinputs')
     for i in inputs:
       osutils.WriteFile(os.path.join(largeInputDir, i), i, makedirs=True)

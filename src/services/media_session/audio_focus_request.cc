@@ -9,7 +9,7 @@
 namespace media_session {
 
 AudioFocusRequest::AudioFocusRequest(
-    AudioFocusManager* owner,
+    base::WeakPtr<AudioFocusManager> owner,
     mojom::AudioFocusRequestClientRequest request,
     mojom::MediaSessionPtr session,
     mojom::MediaSessionInfoPtr session_info,
@@ -25,7 +25,7 @@ AudioFocusRequest::AudioFocusRequest(
       id_(id),
       source_name_(source_name),
       group_id_(group_id),
-      owner_(owner) {
+      owner_(std::move(owner)) {
   // Listen for mojo errors.
   binding_.set_connection_error_handler(base::BindOnce(
       &AudioFocusRequest::OnConnectionError, base::Unretained(this)));
@@ -104,13 +104,13 @@ mojom::AudioFocusRequestStatePtr AudioFocusRequest::ToAudioFocusRequestState()
 }
 
 void AudioFocusRequest::BindToMediaController(
-    mojom::MediaControllerRequest request) {
+    mojo::PendingReceiver<mojom::MediaController> receiver) {
   if (!controller_) {
     controller_ = std::make_unique<MediaController>();
     controller_->SetMediaSession(this);
   }
 
-  controller_->BindToInterface(std::move(request));
+  controller_->BindToInterface(std::move(receiver));
 }
 
 void AudioFocusRequest::Suspend(const EnforcementState& state) {
@@ -128,7 +128,7 @@ void AudioFocusRequest::Suspend(const EnforcementState& state) {
   }
 }
 
-void AudioFocusRequest::MaybeResume() {
+void AudioFocusRequest::ReleaseTransientHold() {
   DCHECK(!session_info_->force_duck);
 
   if (!was_suspended_)
@@ -136,6 +136,47 @@ void AudioFocusRequest::MaybeResume() {
 
   was_suspended_ = false;
   session_->Resume(mojom::MediaSession::SuspendType::kSystem);
+
+  if (!delayed_action_)
+    return;
+
+  PerformUIAction(*delayed_action_);
+  delayed_action_.reset();
+}
+
+void AudioFocusRequest::PerformUIAction(mojom::MediaSessionAction action) {
+  // If the session was temporarily suspended by the service then we should
+  // delay the action until the session is resumed.
+  if (was_suspended_) {
+    delayed_action_ = action;
+    return;
+  }
+
+  switch (action) {
+    case mojom::MediaSessionAction::kPause:
+      session_->Suspend(mojom::MediaSession::SuspendType::kUI);
+      break;
+    case mojom::MediaSessionAction::kPlay:
+      session_->Resume(mojom::MediaSession::SuspendType::kUI);
+      break;
+    case mojom::MediaSessionAction::kStop:
+      session_->Stop(mojom::MediaSession::SuspendType::kUI);
+      break;
+    default:
+      // Only UI transport actions are supported.
+      NOTREACHED();
+  }
+}
+
+void AudioFocusRequest::GetMediaImageBitmap(
+    const MediaImage& image,
+    int minimum_size_px,
+    int desired_size_px,
+    GetMediaImageBitmapCallback callback) {
+  session_->GetMediaImageBitmap(
+      image, minimum_size_px, desired_size_px,
+      base::BindOnce(&AudioFocusRequest::OnImageDownloaded,
+                     base::Unretained(this), std::move(callback)));
 }
 
 void AudioFocusRequest::SetSessionInfo(
@@ -164,7 +205,12 @@ void AudioFocusRequest::OnConnectionError() {
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&AudioFocusManager::AbandonAudioFocusInternal,
-                                base::Unretained(owner_), id_));
+                                owner_, id_));
+}
+
+void AudioFocusRequest::OnImageDownloaded(GetMediaImageBitmapCallback callback,
+                                          const SkBitmap& bitmap) {
+  std::move(callback).Run(bitmap);
 }
 
 }  // namespace media_session

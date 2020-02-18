@@ -47,8 +47,7 @@ class CorsOriginAccessListBrowserTest : public InProcessBrowserTest {
   CorsOriginAccessListBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
         // Enabled features
-        {network::features::kOutOfBlinkCors,
-         network::features::kNetworkService},
+        {network::features::kOutOfBlinkCors},
         // Disabled features
         {});
   }

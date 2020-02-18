@@ -5,16 +5,13 @@
 import("//chrome/common/features.gni")
 import("//tools/grit/grit_rule.gni")
 
-if (is_chromeos) {
-  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
-}
-
 assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
 if (closure_compile) {
   group("closure_compile") {
     deps = [
       "engagement:closure_compile",
+      "interventions_internals:closure_compile",
     ]
     if (is_linux || is_win || is_mac) {
       deps += [
@@ -26,17 +23,15 @@ if (closure_compile) {
         "local_ntp:closure_compile",
         "local_state:closure_compile",
         "management:closure_compile",
-        "media_router:closure_compile",
         "ntp4:closure_compile",
         "omnibox:closure_compile",
         "pdf:closure_compile",
         "print_preview:closure_compile",
         "quota_internals:closure_compile",
         "settings:closure_compile",
-        "signin/dice_sync_confirmation:closure_compile",
+        "signin/sync_confirmation:closure_compile",
         "user_manager:closure_compile",
-        "welcome/dice_welcome:closure_compile",
-        "welcome/onboarding_welcome:closure_compile",
+        "welcome:closure_compile",
       ]
     }
     if (is_chromeos) {
@@ -109,24 +104,6 @@ if (!is_android) {
     defines = chrome_grit_defines
     if (enable_hangout_services_extension) {
       defines += [ "enable_hangout_services_extension" ]
-    }
-
-    if (is_chromeos) {
-      if (enable_kiosk_next) {
-        defines += [ "_kiosk_next" ]
-      }
-
-      # The .grd contains references to generated files.
-      source_is_generated = true
-
-      deps = [
-        "//chrome/browser/resources/chromeos/kiosk_next_home:mojom_bin",
-      ]
-
-      grit_flags = [
-        "-E",
-        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-      ]
     }
 
     outputs = [
@@ -239,25 +216,11 @@ if (is_chromeos) {
     ]
     output_dir = "$root_gen_dir/chrome"
   }
-
-  if (enable_kiosk_next && is_chrome_branded) {
-    grit("kiosk_next_internal_resources") {
-      source = "kiosk_next_internal_resources.grd"
-      defines = chrome_grit_defines
-      outputs = [
-        "grit/kiosk_next_internal_resources.h",
-        "grit/kiosk_next_internal_resources_map.cc",
-        "grit/kiosk_next_internal_resources_map.h",
-        "kiosk_next_internal_resources.pak",
-      ]
-      output_dir = "$root_gen_dir/chrome"
-    }
-  }
 }
 
 if (!is_android && !is_chromeos) {
   grit("onboarding_welcome_resources") {
-    source = "welcome/onboarding_welcome/onboarding_welcome_resources.grd"
+    source = "welcome/onboarding_welcome_resources.grd"
 
     defines = chrome_grit_defines
     outputs = [

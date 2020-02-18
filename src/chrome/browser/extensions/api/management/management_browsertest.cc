@@ -403,8 +403,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   ASSERT_EQ("2.0", extension->VersionString());
   ASSERT_TRUE(notification_listener.started());
   ASSERT_TRUE(notification_listener.finished());
-  ASSERT_TRUE(base::ContainsKey(notification_listener.updates(),
-                                "ogjcoiohnmldgjemafoockdghcjciccf"));
+  ASSERT_TRUE(base::Contains(notification_listener.updates(),
+                             "ogjcoiohnmldgjemafoockdghcjciccf"));
   notification_listener.Reset();
 
   // Now try doing an update to version 3, which has been incorrectly
@@ -417,8 +417,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   ASSERT_TRUE(WaitForExtensionInstallError());
   ASSERT_TRUE(notification_listener.started());
   ASSERT_TRUE(notification_listener.finished());
-  ASSERT_TRUE(base::ContainsKey(notification_listener.updates(),
-                                "ogjcoiohnmldgjemafoockdghcjciccf"));
+  ASSERT_TRUE(base::Contains(notification_listener.updates(),
+                             "ogjcoiohnmldgjemafoockdghcjciccf"));
 
   // Make sure the extension state is the same as before.
   ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
@@ -514,8 +514,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   EXPECT_TRUE(listener2.WaitUntilSatisfied());
   ASSERT_TRUE(notification_listener.started());
   ASSERT_TRUE(notification_listener.finished());
-  ASSERT_TRUE(base::ContainsKey(notification_listener.updates(),
-                                "ogjcoiohnmldgjemafoockdghcjciccf"));
+  ASSERT_TRUE(base::Contains(notification_listener.updates(),
+                             "ogjcoiohnmldgjemafoockdghcjciccf"));
   notification_listener.Reset();
 }
 

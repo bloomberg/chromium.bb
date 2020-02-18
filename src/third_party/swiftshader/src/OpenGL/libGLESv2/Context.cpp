@@ -694,6 +694,20 @@ void Context::setScissorParams(GLint x, GLint y, GLsizei width, GLsizei height)
 {
 	mState.scissorX = x;
 	mState.scissorY = y;
+
+	// An overflow happens when (infinite precision) X + Width > INT32_MAX. We
+	// can change that formula to "X > INT32_MAX - Width". And when we bring it
+	// down to 32-bit precision, we know it's safe because width is non-negative.
+	if (x > INT32_MAX - width)
+	{
+		width = INT32_MAX - x;
+	}
+
+	if (y > INT32_MAX - height)
+	{
+		height = INT32_MAX - y;
+	}
+
 	mState.scissorWidth = width;
 	mState.scissorHeight = height;
 }
@@ -2783,6 +2797,23 @@ bool Context::applyRenderTarget()
 	viewport.minZ = zNear;
 	viewport.maxZ = zFar;
 
+	if (viewport.x0 > es2::IMPLEMENTATION_MAX_RENDERBUFFER_SIZE ||
+		viewport.y0 > es2::IMPLEMENTATION_MAX_RENDERBUFFER_SIZE)
+	{
+		TransformFeedback* transformFeedback = getTransformFeedback();
+		if (!transformFeedback->isActive() || transformFeedback->isPaused())
+		{
+			return false;
+		}
+		else
+		{
+			viewport.x0 = 0;
+			viewport.y0 = 0;
+			viewport.width = 0;
+			viewport.height = 0;
+		}
+	}
+
 	device->setViewport(viewport);
 
 	applyScissor(width, height);
@@ -4149,8 +4180,8 @@ void Context::blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1
 	{
 		GLenum readColorbufferType = readFramebuffer->getReadBufferType();
 		GLenum drawColorbufferType = drawFramebuffer->getColorbufferType(0);
-		const bool validReadType = readColorbufferType == GL_TEXTURE_2D || readColorbufferType == GL_TEXTURE_RECTANGLE_ARB || Framebuffer::IsRenderbuffer(readColorbufferType);
-		const bool validDrawType = drawColorbufferType == GL_TEXTURE_2D || drawColorbufferType == GL_TEXTURE_RECTANGLE_ARB || Framebuffer::IsRenderbuffer(drawColorbufferType);
+		const bool validReadType = readColorbufferType == GL_TEXTURE_2D || readColorbufferType == GL_TEXTURE_RECTANGLE_ARB || readColorbufferType == GL_TEXTURE_2D_ARRAY || readColorbufferType == GL_TEXTURE_3D || Framebuffer::IsRenderbuffer(readColorbufferType);
+		const bool validDrawType = drawColorbufferType == GL_TEXTURE_2D || drawColorbufferType == GL_TEXTURE_RECTANGLE_ARB || readColorbufferType == GL_TEXTURE_2D_ARRAY || readColorbufferType == GL_TEXTURE_3D || Framebuffer::IsRenderbuffer(drawColorbufferType);
 		if(!validReadType || !validDrawType)
 		{
 			return error(GL_INVALID_OPERATION);
@@ -4509,6 +4540,7 @@ const GLubyte *Context::getExtensions(GLuint index, GLuint *numExt) const
 		"GL_EXT_color_buffer_float",   // OpenGL ES 3.0 specific.
 		"GL_EXT_color_buffer_half_float",
 		"GL_EXT_draw_buffers",
+		"GL_EXT_float_blend",
 		"GL_EXT_instanced_arrays",
 		"GL_EXT_occlusion_query_boolean",
 		"GL_EXT_read_format_bgra",

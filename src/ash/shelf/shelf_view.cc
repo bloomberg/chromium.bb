@@ -11,17 +11,16 @@
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/keyboard_util.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/back_button.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
@@ -30,6 +29,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_context_menu_model.h"
 #include "ash/shelf/shelf_controller.h"
+#include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_menu_model_adapter.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -38,10 +38,9 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/status_area_widget_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/root_window_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/containers/adapters.h"
@@ -79,39 +78,20 @@ using views::View;
 
 namespace ash {
 
-namespace {
-
-// The margin between app icons and the overflow button. This is bigger than
-// between app icons because the overflow button is a little smaller.
-constexpr int kMarginBetweenAppsAndOverflow = 16;
-
-// Returns the size occupied by |count| app icons. If |with_overflow| is
-// true, returns the size of |count| app icons followed by an overflow
-// button.
-int GetSizeOfAppIcons(int count, bool with_overflow) {
-  if (count == 0)
-    return with_overflow ? kShelfControlSize : 0;
-
-  const int app_size = count * kShelfButtonSize;
-  int overflow_size = 0;
-  int total_padding = ShelfConstants::button_spacing() * (count - 1);
-  if (with_overflow) {
-    overflow_size += kShelfControlSize;
-    total_padding += kMarginBetweenAppsAndOverflow;
-  }
-  return app_size + total_padding + overflow_size;
-}
-
-}  // namespace
-
-// Indices of the start-aligned system buttons (the "back" button in tablet
-// mode, and the "app list" button).
-constexpr int kBackButtonIndex = 0;
-constexpr int kAppListButtonIndex = 1;
-
 // The distance of the cursor from the outer rim of the shelf before it
 // separates.
 constexpr int kRipOffDistance = 48;
+
+// The rip off drag and drop proxy image should get scaled by this factor.
+constexpr float kDragAndDropProxyScale = 1.2f;
+
+// The opacity represents that this partially disappeared item will get removed.
+constexpr float kDraggedImageOpacity = 0.5f;
+
+namespace {
+
+// White with ~20% opacity.
+constexpr SkColor kSeparatorColor = SkColorSetARGB(0x32, 0xFF, 0xFF, 0xFF);
 
 // The dimensions, in pixels, of the separator between pinned and unpinned
 // items.
@@ -121,17 +101,6 @@ constexpr int kSeparatorThickness = 1;
 // The margin on either side of the group of app icons (including the overflow
 // button).
 constexpr int kAppIconGroupMargin = 16;
-
-// White with ~20% opacity.
-constexpr SkColor kSeparatorColor = SkColorSetARGB(0x32, 0xFF, 0xFF, 0xFF);
-
-// The rip off drag and drop proxy image should get scaled by this factor.
-constexpr float kDragAndDropProxyScale = 1.2f;
-
-// The opacity represents that this partially disappeared item will get removed.
-constexpr float kDraggedImageOpacity = 0.5f;
-
-namespace {
 
 // Inset from the bubble bounds to the bounds beyond which dragging triggers
 // scrolling.
@@ -152,9 +121,28 @@ constexpr int kDragFastScrollDeltaDips = 6;
 // Helper to check if tablet mode is enabled.
 bool IsTabletModeEnabled() {
   return Shell::Get()->tablet_mode_controller() &&
-         Shell::Get()
-             ->tablet_mode_controller()
-             ->IsTabletModeWindowManagerEnabled();
+         Shell::Get()->tablet_mode_controller()->InTabletMode();
+}
+
+// Returns the size occupied by |count| app icons. If |with_overflow| is
+// true, returns the size of |count| app icons followed by an overflow
+// button.
+int GetSizeOfAppIcons(int count, bool with_overflow) {
+  const int control_size = ShelfConstants::control_size();
+  const int button_spacing = ShelfConstants::button_spacing();
+  const int overflow_button_margin = ShelfConstants::overflow_button_margin();
+
+  if (count == 0)
+    return with_overflow ? control_size + 2 * overflow_button_margin : 0;
+
+  const int app_size = count * ShelfConstants::button_size();
+  int overflow_size = 0;
+  int total_padding = button_spacing * (count - 1);
+  if (with_overflow) {
+    overflow_size += control_size;
+    total_padding += button_spacing + 2 * overflow_button_margin;
+  }
+  return app_size + total_padding + overflow_size;
 }
 
 // A class to temporarily disable a given bounds animator.
@@ -202,11 +190,13 @@ class ShelfFocusSearch : public views::FocusSearch {
     ShelfView* main_shelf = shelf_view_->main_shelf();
     ShelfView* overflow_shelf = shelf_view_->overflow_shelf();
 
+    if (IsTabletModeEnabled())
+      focusable_views.push_back(main_shelf->GetBackButton());
+
+    focusable_views.push_back(main_shelf->GetHomeButton());
     for (int i = main_shelf->first_visible_index();
          i <= main_shelf->last_visible_index(); ++i) {
-      views::View* view = main_shelf->view_model()->view_at(i);
-      if (view != main_shelf->GetBackButton() || IsTabletModeEnabled())
-        focusable_views.push_back(view);
+      focusable_views.push_back(main_shelf->view_model()->view_at(i));
     }
     if (main_shelf->GetOverflowButton()->GetVisible())
       focusable_views.push_back(main_shelf->GetOverflowButton());
@@ -236,7 +226,7 @@ class ShelfFocusSearch : public views::FocusSearch {
       new_index = 0;
 
     if (new_index >= overflow_cutoff)
-      shelf_view_->shelf_widget()->set_activated_from_other_widget(true);
+      shelf_view_->shelf_widget()->set_activated_from_overflow_bubble(true);
     return focusable_views[new_index];
   }
 
@@ -274,7 +264,7 @@ class FadeInAnimationDelegate : public gfx::AnimationDelegate {
 };
 
 // Returns the id of the display on which |view| is shown.
-int64_t GetDisplayIdForView(View* view) {
+int64_t GetDisplayIdForView(const View* view) {
   aura::Window* window = view->GetWidget()->GetNativeWindow();
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
 }
@@ -289,8 +279,6 @@ bool ShelfButtonIsInDrag(const ShelfItemType item_type,
       return static_cast<const ShelfAppButton*>(item_view)->state() &
              ShelfAppButton::STATE_DRAGGING;
     case TYPE_DIALOG:
-    case TYPE_BACK_BUTTON:
-    case TYPE_APP_LIST:
     case TYPE_UNDEFINED:
       return false;
   }
@@ -350,10 +338,9 @@ class ShelfView::StartFadeAnimationDelegate : public gfx::AnimationDelegate {
 // static
 const int ShelfView::kMinimumDragDistance = 8;
 
-ShelfView::ShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget)
+ShelfView::ShelfView(ShelfModel* model, Shelf* shelf)
     : model_(model),
       shelf_(shelf),
-      shelf_widget_(shelf_widget),
       view_model_(std::make_unique<views::ViewModel>()),
       bounds_animator_(std::make_unique<views::BoundsAnimator>(this)),
       tooltip_(this),
@@ -361,7 +348,6 @@ ShelfView::ShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget)
       weak_factory_(this) {
   DCHECK(model_);
   DCHECK(shelf_);
-  DCHECK(shelf_widget_);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->system_tray_model()->virtual_keyboard()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
@@ -383,19 +369,16 @@ ShelfView::~ShelfView() {
 }
 
 void ShelfView::Init() {
-  model_->AddObserver(this);
-
-  const ShelfItems& items(model_->items());
-  for (ShelfItems::const_iterator i = items.begin(); i != items.end(); ++i) {
-    views::View* child = CreateViewForItem(*i);
-    child->SetPaintToLayer();
-    view_model_->Add(child, static_cast<int>(i - items.begin()));
-    AddChildView(child);
-  }
-  overflow_button_ = new OverflowButton(this, shelf_);
-  ConfigureChildView(overflow_button_);
-  AddChildView(overflow_button_);
-  UpdateBackButton();
+  // Add the background view behind the app list and back buttons first, so
+  // that other views will appear above it.
+  back_and_app_list_background_ = new views::View();
+  back_and_app_list_background_->set_can_process_events_within_subtree(false);
+  back_and_app_list_background_->SetBackground(
+      CreateBackgroundFromPainter(views::Painter::CreateSolidRoundRectPainter(
+          kShelfControlPermanentHighlightBackground,
+          ShelfConstants::control_border_radius())));
+  ConfigureChildView(back_and_app_list_background_);
+  AddChildView(back_and_app_list_background_);
 
   separator_ = new views::Separator();
   separator_->SetColor(kSeparatorColor);
@@ -403,6 +386,36 @@ void ShelfView::Init() {
   separator_->SetVisible(false);
   ConfigureChildView(separator_);
   AddChildView(separator_);
+
+  model()->AddObserver(this);
+
+  const ShelfItems& items(model_->items());
+
+  std::unique_ptr<BackButton> back_button_ptr =
+      std::make_unique<BackButton>(shelf_);
+  ConfigureChildView(back_button_ptr.get());
+  back_button_ = AddChildView(std::move(back_button_ptr));
+
+  std::unique_ptr<HomeButton> home_button_ptr =
+      std::make_unique<HomeButton>(shelf_);
+  ConfigureChildView(home_button_ptr.get());
+  home_button_ = AddChildView(std::move(home_button_ptr));
+  home_button_->set_context_menu_controller(this);
+
+  for (ShelfItems::const_iterator i = items.begin(); i != items.end(); ++i) {
+    views::View* child = CreateViewForItem(*i);
+    // TODO(manucornet): Remove this if statement once home and back are not
+    // allowed shelf item types in the model any longer.
+    if (!child)
+      continue;
+    child->SetPaintToLayer();
+    view_model_->Add(child, static_cast<int>(i - items.begin()));
+    AddChildView(child);
+  }
+  overflow_button_ = new OverflowButton(this);
+  ConfigureChildView(overflow_button_);
+  AddChildView(overflow_button_);
+  UpdateBackButton();
 
   // We'll layout when our bounds change.
 }
@@ -418,9 +431,6 @@ gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
 
   const gfx::Rect& ideal_bounds(view_model_->ideal_bounds(index));
   views::View* view = view_model_->view_at(index);
-  // The app list and back button are not ShelfAppButton subclass instances.
-  if (view == GetAppListButton() || view == GetBackButton())
-    return GetMirroredRect(ideal_bounds);
 
   CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
   ShelfAppButton* button = static_cast<ShelfAppButton*>(view);
@@ -436,39 +446,16 @@ bool ShelfView::IsShowingMenu() const {
          shelf_menu_model_adapter_->IsShowingMenu();
 }
 
-bool ShelfView::IsShowingMenuForView(const views::View* view) const {
-  return IsShowingMenu() &&
-         shelf_menu_model_adapter_->IsShowingMenuForView(*view);
-}
-
 bool ShelfView::IsShowingOverflowBubble() const {
   return overflow_bubble_.get() && overflow_bubble_->IsShowing();
 }
 
-AppListButton* ShelfView::GetAppListButton() const {
-  for (int i = 0; i < model_->item_count(); ++i) {
-    if (model_->items()[i].type == TYPE_APP_LIST) {
-      views::View* view = view_model_->view_at(i);
-      CHECK_EQ(AppListButton::kViewClassName, view->GetClassName());
-      return static_cast<AppListButton*>(view);
-    }
-  }
-
-  NOTREACHED() << "Applist button not found";
-  return nullptr;
+HomeButton* ShelfView::GetHomeButton() const {
+  return home_button_;
 }
 
 BackButton* ShelfView::GetBackButton() const {
-  for (int i = 0; i < model_->item_count(); ++i) {
-    if (model_->items()[i].type == TYPE_BACK_BUTTON) {
-      views::View* view = view_model_->view_at(i);
-      CHECK_EQ(BackButton::kViewClassName, view->GetClassName());
-      return static_cast<BackButton*>(view);
-    }
-  }
-
-  NOTREACHED() << "Back button not found";
-  return nullptr;
+  return back_button_;
 }
 
 OverflowButton* ShelfView::GetOverflowButton() const {
@@ -477,15 +464,9 @@ OverflowButton* ShelfView::GetOverflowButton() const {
 
 void ShelfView::UpdateVisibleShelfItemBoundsUnion() {
   visible_shelf_item_bounds_union_.SetRect(0, 0, 0, 0);
-  for (int i = first_visible_index_; i <= last_visible_index_; ++i) {
+  for (int i = std::max(0, first_visible_index_); i <= last_visible_index_;
+       ++i) {
     const views::View* child = view_model_->view_at(i);
-    // Since shelf items are centered, we don't want to include the app list
-    // button, otherwise tooltips will show when hovering a potentially large
-    // amount of white space between the app list button and the first item.
-    if (child == GetAppListButton())
-      continue;
-    if (!IsTabletModeEnabled() && child == GetBackButton())
-      continue;
     if (ShouldShowTooltipForView(child))
       visible_shelf_item_bounds_union_.Union(child->GetMirroredBounds());
   }
@@ -497,21 +478,21 @@ void ShelfView::UpdateVisibleShelfItemBoundsUnion() {
 }
 
 bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
-  // If this is the app list button, only show the tooltip if the app list is
+  // If this is the home button, only show the tooltip if the app list is
   // not already showing.
-  const AppListButton* app_list_button = GetAppListButton();
-  if (app_list_button &&
-      app_list_button->GetMirroredBounds().Contains(cursor_location)) {
-    return app_list_button->IsShowingAppList();
+  const HomeButton* home_button = GetHomeButton();
+  if (home_button &&
+      home_button->GetMirroredBounds().Contains(cursor_location)) {
+    return home_button->IsShowingAppList();
   }
   return !visible_shelf_item_bounds_union_.Contains(cursor_location);
 }
 
 bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
-  // If this is the app list button, only show the tooltip if the app list is
+  // If this is the home button, only show the tooltip if the app list is
   // not already showing.
-  if (view == GetAppListButton())
-    return !GetAppListButton()->IsShowingAppList();
+  if (view == GetHomeButton())
+    return !GetHomeButton()->IsShowingAppList();
   if (view == overflow_button_)
     return true;
   // Don't show a tooltip for a view that's currently being dragged.
@@ -522,11 +503,38 @@ bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
 }
 
 base::string16 ShelfView::GetTitleForView(const views::View* view) const {
+  if (view == back_button_)
+    return back_button_->GetAccessibleName();
+  if (view == home_button_)
+    return home_button_->GetAccessibleName();
   if (view == overflow_button_)
     return overflow_button_->GetAccessibleName();
 
   const ShelfItem* item = ShelfItemForView(view);
   return item ? item->title : base::string16();
+}
+
+void ShelfView::ToggleOverflowBubble() {
+  if (IsShowingOverflowBubble()) {
+    overflow_bubble_->Hide();
+    return;
+  }
+
+  if (!overflow_bubble_)
+    overflow_bubble_.reset(new OverflowBubble(shelf_));
+
+  ShelfView* overflow_view = new ShelfView(model_, shelf_);
+  overflow_view->overflow_mode_ = true;
+  overflow_view->Init();
+  overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
+  overflow_view->OnShelfAlignmentChanged(
+      GetWidget()->GetNativeWindow()->GetRootWindow());
+  overflow_view->main_shelf_ = this;
+  UpdateOverflowRange(overflow_view);
+
+  overflow_bubble_->Show(overflow_button_, overflow_view);
+
+  shelf_->UpdateVisibilityState();
 }
 
 gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
@@ -537,9 +545,14 @@ gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
 }
 
 gfx::Size ShelfView::CalculatePreferredSize() const {
-  // Use |last_visible_index_| != -1 as sentinel to ensure
-  // CalculateIdealBounds() is called before getting here.
-  DCHECK_NE(last_visible_index_, -1);
+  if (model_->item_count() == 0) {
+    // There are no apps.
+    return shelf_->IsHorizontalAlignment()
+               ? gfx::Size(GetHomeButton()->bounds().right(),
+                           ShelfConstants::shelf_size())
+               : gfx::Size(ShelfConstants::shelf_size(),
+                           GetHomeButton()->bounds().bottom());
+  }
 
   int last_button_index = last_visible_index_;
   if (!is_overflow_mode() && overflow_button_ && overflow_button_->GetVisible())
@@ -596,7 +609,7 @@ bool ShelfView::OnKeyPressed(const ui::KeyEvent& event) {
       ash::keyboard_util::IsArrowKeyCode(event.key_code())) {
     bool swap_with_next = (event.key_code() == ui::VKEY_DOWN ||
                            event.key_code() == ui::VKEY_RIGHT);
-    SwapButtons(focused_button_, swap_with_next);
+    SwapButtons(GetFocusManager()->GetFocusedView(), swap_with_next);
     return true;
   }
   return views::View::OnKeyPressed(event);
@@ -634,15 +647,22 @@ View* ShelfView::GetTooltipHandlerForPoint(const gfx::Point& point) {
   return this;
 }
 
+void ShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
+    ShelfButton* button,
+    bool reverse) {
+  if (is_overflow_mode()) {
+    main_shelf()->OnShelfButtonAboutToRequestFocusFromTabTraversal(button,
+                                                                   reverse);
+    return;
+  }
+
+  if (ShouldFocusOut(reverse, button))
+    shelf_->shelf_focus_cycler()->FocusOut(reverse, SourceView::kShelfView);
+}
+
 void ShelfView::ButtonPressed(views::Button* sender,
                               const ui::Event& event,
                               views::InkDrop* ink_drop) {
-  // Press the shelf item in the auto-hide shelf should not open the
-  // corresponding app window. The event can still be received by auto-hide
-  // shelf since we reserved portion of the auto-hide shelf within the screen
-  // bounds.
-  if (!shelf_->IsVisible())
-    return;
 
   if (sender == overflow_button_) {
     ToggleOverflowBubble();
@@ -667,8 +687,8 @@ void ShelfView::ButtonPressed(views::Button* sender,
   }
 
   // Ensure the keyboard is hidden and stays hidden (as long as it isn't locked)
-  if (keyboard::KeyboardController::Get()->IsEnabled())
-    keyboard::KeyboardController::Get()->HideKeyboardExplicitlyBySystem();
+  if (keyboard::KeyboardUIController::Get()->IsEnabled())
+    keyboard::KeyboardUIController::Get()->HideKeyboardExplicitlyBySystem();
 
   // Close the overflow bubble if an item on either shelf is clicked. Press
   // events elsewhere will close the overflow shelf via OverflowBubble's
@@ -702,12 +722,6 @@ void ShelfView::ButtonPressed(views::Button* sender,
           UMA_LAUNCHER_CLICK_ON_APP);
       break;
 
-    case TYPE_APP_LIST:
-      Shell::Get()->metrics()->RecordUserMetricsAction(
-          UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
-      break;
-
-    case TYPE_BACK_BUTTON:
     case TYPE_DIALOG:
       break;
 
@@ -741,6 +755,11 @@ void ShelfView::ButtonPressed(views::Button* sender,
       base::BindOnce(&ShelfView::AfterItemSelected, weak_factory_.GetWeakPtr(),
                      item, sender, base::Passed(ui::Event::Clone(event)),
                      ink_drop));
+}
+
+bool ShelfView::IsShowingMenuForView(const views::View* view) const {
+  return IsShowingMenu() &&
+         shelf_menu_model_adapter_->IsShowingMenuForView(*view);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -799,6 +818,33 @@ void ShelfView::OnVirtualKeyboardVisibilityChanged() {
   LayoutToIdealBounds();
 }
 
+bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
+  // This only applies to app buttons.
+  DCHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
+  if (dragging())
+    return false;
+
+  // Ignore if we are already in a pointer event sequence started with a repost
+  // event on the same shelf item. See crbug.com/343005 for more detail.
+  if (is_repost_event_on_same_item_)
+    return false;
+
+  // Don't activate the item twice on double-click. Otherwise the window starts
+  // animating open due to the first click, then immediately minimizes due to
+  // the second click. The user most likely intended to open or minimize the
+  // item once, not do both.
+  if (event.flags() & ui::EF_IS_DOUBLE_CLICK)
+    return false;
+
+  const bool repost = IsRepostEvent(event);
+
+  // Ignore if this is a repost event on the last pressed shelf item.
+  int index = view_model_->GetIndexOfView(view);
+  if (index == -1)
+    return false;
+  return !repost || last_pressed_index_ != index;
+}
+
 void ShelfView::CreateDragIconProxyByLocationWithNoAnimation(
     const gfx::Point& origin_in_screen_coordinates,
     const gfx::ImageSkia& icon,
@@ -841,7 +887,7 @@ void ShelfView::UpdateDragIconProxyByLocation(
     drag_image_->SetScreenPosition(origin_in_screen_coordinates);
 }
 
-bool ShelfView::IsDraggedView(const ShelfAppButton* view) const {
+bool ShelfView::IsDraggedView(const views::View* view) const {
   return drag_view_ == view;
 }
 
@@ -872,12 +918,15 @@ const std::vector<aura::Window*> ShelfView::GetOpenWindowsForShelfView(
 views::View* ShelfView::FindFirstFocusableChild() {
   if (is_overflow_mode())
     return main_shelf()->FindFirstFocusableChild();
-  return view_model_->view_at(first_visible_index());
+  return IsTabletModeEnabled() ? static_cast<views::View*>(GetBackButton())
+                               : static_cast<views::View*>(GetHomeButton());
 }
 
 views::View* ShelfView::FindLastFocusableChild() {
   if (IsShowingOverflowBubble())
     return overflow_shelf()->FindLastFocusableChild();
+  if (view_model_->view_size() == 0)
+    return static_cast<views::View*>(GetHomeButton());
   return overflow_button_->GetVisible()
              ? overflow_button_
              : view_model_->view_at(last_visible_index());
@@ -887,29 +936,6 @@ views::View* ShelfView::FindFirstOrLastFocusableChild(bool last) {
   return last ? FindLastFocusableChild() : FindFirstFocusableChild();
 }
 
-void ShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
-    ShelfButton* button,
-    bool reverse) {
-  if (is_overflow_mode()) {
-    main_shelf()->OnShelfButtonAboutToRequestFocusFromTabTraversal(button,
-                                                                   reverse);
-    return;
-  }
-
-  // The logic here seems backwards, but is actually correct. For instance if
-  // the ShelfView's internal focus cycling logic attemmpts to focus the first
-  // child (e.g. app list button) after hitting Tab, we intercept that and
-  // instead, advance through to the status area.
-  if ((reverse && button == FindLastFocusableChild()) ||
-      (!reverse && button == FindFirstFocusableChild())) {
-    StatusAreaWidget* status_area_widget =
-        Shelf::ForWindow(GetWidget()->GetNativeWindow())->GetStatusAreaWidget();
-    status_area_widget->status_area_widget_delegate()
-        ->set_default_last_focusable_child(reverse);
-    Shell::Get()->focus_cycler()->FocusWidget(status_area_widget);
-  }
-}
-
 // static
 void ShelfView::ConfigureChildView(views::View* view) {
   view->SetPaintToLayer();
@@ -917,10 +943,10 @@ void ShelfView::ConfigureChildView(views::View* view) {
 }
 
 void ShelfView::CalculateIdealBounds() {
-  DCHECK(model_->item_count() == view_model_->view_size());
+  DCHECK(model()->item_count() == view_model()->view_size());
 
   const int button_spacing = ShelfConstants::button_spacing();
-  const int available_size = shelf_->PrimaryAxisValue(width(), height());
+  const int available_size = shelf()->PrimaryAxisValue(width(), height());
 
   const int separator_index = GetSeparatorIndex();
   const AppCenteringStrategy app_centering_strategy =
@@ -932,81 +958,71 @@ void ShelfView::CalculateIdealBounds() {
   // Don't show the separator if it isn't needed, or would appear after all
   // visible items.
   separator_->SetVisible(separator_index != -1 &&
-                         separator_index < last_visible_index_ &&
+                         separator_index < last_visible_index() &&
                          !virtual_keyboard_visible);
-  int app_list_button_position;
 
-  int x = shelf_->PrimaryAxisValue(button_spacing, 0);
-  int y = shelf_->PrimaryAxisValue(0, button_spacing);
+  int x = 0;
+  int y = 0;
+  if (!is_overflow_mode()) {
+    // Calculate the bounds for the back and home buttons separately.
+    CalculateBackAndHomeButtonsIdealBounds();
 
-  for (int i = 0; i < view_model_->view_size(); ++i) {
-    // "Primary" as in "same direction as the shelf's direction". The
-    // "secondary" (orthogonal) size is always the full shelf to maximize click
-    // targets even for control buttons.
-    const int size_primary =
-        (i <= kAppListButtonIndex) ? kShelfControlSize : kShelfButtonSize;
-    const int size_secondary = kShelfButtonSize;
+    int home_button_position =
+        shelf()->PrimaryAxisValue(GetHomeButton()->ideal_bounds().right(),
+                                  GetHomeButton()->ideal_bounds().bottom());
 
-    if (is_overflow_mode() && i < first_visible_index_) {
-      view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
+    x = shelf()->PrimaryAxisValue(home_button_position, 0);
+    y = shelf()->PrimaryAxisValue(0, home_button_position);
+
+    // Add the minimum padding required after the home button.
+    x += shelf()->PrimaryAxisValue(kAppIconGroupMargin, 0);
+    y += shelf()->PrimaryAxisValue(0, kAppIconGroupMargin);
+
+    // Now add the necessary padding to center app icons.
+    StatusAreaWidget* status_widget = shelf_widget()->status_area_widget();
+    const int status_widget_size =
+        status_widget ? shelf()->PrimaryAxisValue(
+                            status_widget->GetWindowBoundsInScreen().width(),
+                            status_widget->GetWindowBoundsInScreen().height())
+                      : 0;
+    const int screen_size = available_size + status_widget_size;
+
+    const int available_size_for_app_icons = GetAvailableSpaceForAppIcons();
+    const int icons_size = GetSizeOfAppIcons(number_of_visible_apps(),
+                                             app_centering_strategy.overflow);
+    int padding_for_centering = 0;
+
+    if (app_centering_strategy.center_on_screen) {
+      padding_for_centering = (screen_size - icons_size) / 2;
+    } else {
+      padding_for_centering =
+          ShelfConstants::home_button_edge_spacing() +
+          (IsTabletModeEnabled() ? 2 : 1) * ShelfConstants::control_size() +
+          (IsTabletModeEnabled() ? button_spacing : 0) + kAppIconGroupMargin +
+          (available_size_for_app_icons - icons_size) / 2;
+    }
+
+    if (padding_for_centering > home_button_position + kAppIconGroupMargin) {
+      // Only shift buttons to the right, never let them interfere with the
+      // left-aligned system buttons.
+      x = shelf()->PrimaryAxisValue(padding_for_centering, 0);
+      y = shelf()->PrimaryAxisValue(0, padding_for_centering);
+    }
+  }
+
+  for (int i = 0; i < view_model()->view_size(); ++i) {
+    if (is_overflow_mode() && i < first_visible_index()) {
+      view_model()->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
       continue;
     }
-    if (i == kAppListButtonIndex + 1) {
-      // Start centering after we've laid out the app list button.
 
-      StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
-      const int status_widget_size =
-          status_widget ? shelf_->PrimaryAxisValue(
-                              status_widget->GetWindowBoundsInScreen().width(),
-                              status_widget->GetWindowBoundsInScreen().height())
-                        : 0;
-      const int screen_size = available_size + status_widget_size;
+    const int button_size = ShelfConstants::button_size();
 
-      const int available_size_for_app_icons = GetAvailableSpaceForAppIcons();
-      const int icons_size = GetSizeOfAppIcons(number_of_visible_apps(),
-                                               app_centering_strategy.overflow);
-      int padding_for_centering = 0;
+    view_model()->set_ideal_bounds(i,
+                                   gfx::Rect(x, y, button_size, button_size));
 
-      if (app_centering_strategy.center_on_screen) {
-        padding_for_centering = (screen_size - icons_size) / 2;
-      } else {
-        padding_for_centering =
-            kShelfButtonSpacing +
-            (IsTabletModeEnabled() ? 2 : 1) * kShelfControlSize +
-            kAppIconGroupMargin +
-            (available_size_for_app_icons - icons_size) / 2;
-      }
-
-      if (padding_for_centering >
-          app_list_button_position + kAppIconGroupMargin) {
-        // Only shift buttons to the right, never let them interfere with the
-        // left-aligned system buttons.
-        x = shelf_->PrimaryAxisValue(padding_for_centering, 0);
-        y = shelf_->PrimaryAxisValue(0, padding_for_centering);
-      }
-    }
-
-    view_model_->set_ideal_bounds(
-        i,
-        gfx::Rect(x, y, shelf_->PrimaryAxisValue(size_primary, size_secondary),
-                  shelf_->PrimaryAxisValue(size_secondary, size_primary)));
-
-    // If not in tablet mode do not increase |x| or |y|. Instead just let the
-    // next item (app list button) cover the back button, which will have
-    // opacity 0 anyways.
-    if (i == kBackButtonIndex && !IsTabletModeEnabled())
-      continue;
-
-    x = shelf_->PrimaryAxisValue(x + size_primary + button_spacing, x);
-    y = shelf_->PrimaryAxisValue(y, y + size_primary + button_spacing);
-
-    if (i == kAppListButtonIndex) {
-      app_list_button_position = shelf_->PrimaryAxisValue(x, y);
-      // A larger minimum padding after the app list button is required:
-      // increment with the necessary extra amount.
-      x += shelf_->PrimaryAxisValue(kAppIconGroupMargin - button_spacing, 0);
-      y += shelf_->PrimaryAxisValue(0, kAppIconGroupMargin - button_spacing);
-    }
+    x = shelf()->PrimaryAxisValue(x + button_size + button_spacing, x);
+    y = shelf()->PrimaryAxisValue(y, y + button_size + button_spacing);
 
     if (i == separator_index) {
       // Place the separator halfway between the two icons it separates,
@@ -1014,53 +1030,45 @@ void ShelfView::CalculateIdealBounds() {
       int half_space = button_spacing / 2;
       int secondary_offset =
           (ShelfConstants::shelf_size() - kSeparatorSize) / 2;
-      x -= shelf_->PrimaryAxisValue(half_space, 0);
-      y -= shelf_->PrimaryAxisValue(0, half_space);
+      x -= shelf()->PrimaryAxisValue(half_space, 0);
+      y -= shelf()->PrimaryAxisValue(0, half_space);
       separator_->SetBounds(
-          x + shelf_->PrimaryAxisValue(0, secondary_offset),
-          y + shelf_->PrimaryAxisValue(secondary_offset, 0),
-          shelf_->PrimaryAxisValue(kSeparatorThickness, kSeparatorSize),
-          shelf_->PrimaryAxisValue(kSeparatorSize, kSeparatorThickness));
-      x += shelf_->PrimaryAxisValue(half_space, 0);
-      y += shelf_->PrimaryAxisValue(0, half_space);
+          x + shelf()->PrimaryAxisValue(0, secondary_offset),
+          y + shelf()->PrimaryAxisValue(secondary_offset, 0),
+          shelf()->PrimaryAxisValue(kSeparatorThickness, kSeparatorSize),
+          shelf()->PrimaryAxisValue(kSeparatorSize, kSeparatorThickness));
+      x += shelf()->PrimaryAxisValue(half_space, 0);
+      y += shelf()->PrimaryAxisValue(0, half_space);
     }
   }
 
   if (is_overflow_mode()) {
-    const_cast<ShelfView*>(this)->UpdateAllButtonsVisibilityInOverflowMode();
+    UpdateAllButtonsVisibilityInOverflowMode();
     return;
   }
+  // In the main shelf, the first visible index is either the first app, or -1
+  // if there are no apps.
+  first_visible_index_ = view_model()->view_size() == 0 ? -1 : 0;
 
-  // In the main shelf, the first visible index is either the back button (in
-  // tablet mode) or the launcher button (otherwise).
-  if (!is_overflow_mode()) {
-    first_visible_index_ =
-        IsTabletModeEnabled() ? kBackButtonIndex : kAppListButtonIndex;
-  }
-
-  for (int i = 0; i < view_model_->view_size(); ++i) {
+  for (int i = 0; i < view_model()->view_size(); ++i) {
     // To receive drag event continuously from |drag_view_| during the dragging
     // off from the shelf, don't make |drag_view_| invisible. It will be
     // eventually invisible and removed from the |view_model_| by
     // FinalizeRipOffDrag().
-    if (dragged_off_shelf_ && view_model_->view_at(i) == drag_view_)
+    if (dragged_off_shelf_ && view_model()->view_at(i) == drag_view())
       continue;
-    // If the virtual keyboard is visible, only the back button and the app
-    // list button are shown.
-    const bool is_visible_item = !virtual_keyboard_visible ||
-                                 i == kBackButtonIndex ||
-                                 i == kAppListButtonIndex;
-    view_model_->view_at(i)->SetVisible(i <= last_visible_index_ &&
-                                        is_visible_item);
+    // If the virtual keyboard is visible, do not show any apps.
+    view_model()->view_at(i)->SetVisible(i <= last_visible_index() &&
+                                         !virtual_keyboard_visible);
   }
 
   overflow_button_->SetVisible(app_centering_strategy.overflow);
   if (app_centering_strategy.overflow) {
-    if (overflow_bubble_.get() && overflow_bubble_->IsShowing())
-      UpdateOverflowRange(overflow_bubble_->bubble_view()->shelf_view());
+    if (overflow_bubble() && overflow_bubble()->IsShowing())
+      UpdateOverflowRange(overflow_bubble()->bubble_view()->shelf_view());
   } else {
-    if (overflow_bubble_)
-      overflow_bubble_->Hide();
+    if (overflow_bubble())
+      overflow_bubble()->Hide();
   }
 }
 
@@ -1078,25 +1086,165 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
       break;
     }
 
-    case TYPE_APP_LIST: {
-      view = new AppListButton(this, shelf_);
-      break;
-    }
-
-    case TYPE_BACK_BUTTON: {
-      view = new BackButton(this);
-      break;
-    }
-
     case TYPE_UNDEFINED:
       return nullptr;
   }
 
-  if (item.type != TYPE_BACK_BUTTON)
-    view->set_context_menu_controller(this);
+  view->set_context_menu_controller(this);
 
   ConfigureChildView(view);
   return view;
+}
+
+void ShelfView::LayoutAppListAndBackButtonHighlight() {
+  // Don't show anything if this is the overflow menu.
+  if (is_overflow_mode()) {
+    back_and_app_list_background_->SetVisible(false);
+    return;
+  }
+  const int edge_spacing = ShelfConstants::home_button_edge_spacing();
+  // "Secondary" as in "orthogonal to the shelf primary axis".
+  const int control_secondary_padding =
+      (ShelfConstants::shelf_size() - ShelfConstants::control_size()) / 2;
+  const int back_and_app_list_background_size =
+      ShelfConstants::control_size() +
+      (IsTabletModeEnabled()
+           ? ShelfConstants::control_size() + ShelfConstants::button_spacing()
+           : 0);
+  back_and_app_list_background_->SetBounds(
+      shelf()->PrimaryAxisValue(edge_spacing, control_secondary_padding),
+      shelf()->PrimaryAxisValue(control_secondary_padding, edge_spacing),
+      shelf()->PrimaryAxisValue(back_and_app_list_background_size,
+                                ShelfConstants::control_size()),
+      shelf()->PrimaryAxisValue(ShelfConstants::control_size(),
+                                back_and_app_list_background_size));
+}
+
+void ShelfView::UpdateOverflowRange(ShelfView* overflow_view) const {
+  const int first_overflow_index = last_visible_index_ + 1;
+  DCHECK_LE(first_overflow_index, model_->item_count() - 1);
+  DCHECK_LT(model_->item_count() - 1, view_model_->view_size());
+
+  overflow_view->first_visible_index_ = first_overflow_index;
+  overflow_view->last_visible_index_ = model_->item_count() - 1;
+}
+
+int ShelfView::GetAvailableSpaceForAppIcons() const {
+  // Subtract space already allocated to the home button, and the back
+  // button if applicable.
+  return shelf()->PrimaryAxisValue(width(), height()) -
+         ShelfConstants::home_button_edge_spacing() -
+         (IsTabletModeEnabled() ? 2 : 1) * ShelfConstants::control_size() -
+         (IsTabletModeEnabled() ? ShelfConstants::button_spacing() : 0) -
+         2 * kAppIconGroupMargin;
+}
+
+int ShelfView::GetSeparatorIndex() const {
+  for (int i = 0; i < model()->item_count() - 1; ++i) {
+    if (IsItemPinned(model()->items()[i]) &&
+        model()->items()[i + 1].type == TYPE_APP) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+void ShelfView::CalculateBackAndHomeButtonsIdealBounds() {
+  if (is_overflow_mode())
+    return;
+
+  const int control_size = ShelfConstants::control_size();
+  const int button_size = ShelfConstants::button_size();
+  const int button_spacing = ShelfConstants::button_spacing();
+  const int edge_spacing = ShelfConstants::home_button_edge_spacing();
+
+  int x = shelf()->PrimaryAxisValue(edge_spacing, 0);
+  int y = shelf()->PrimaryAxisValue(0, edge_spacing);
+
+  GetBackButton()->set_ideal_bounds(
+      gfx::Rect(x, y, shelf()->PrimaryAxisValue(control_size, button_size),
+                shelf()->PrimaryAxisValue(button_size, control_size)));
+
+  // If we are not in tablet mode, the home button will get placed on top of
+  // the (invisible) back button.
+  if (IsTabletModeEnabled()) {
+    x = shelf()->PrimaryAxisValue(x + control_size + button_spacing, x);
+    y = shelf()->PrimaryAxisValue(y, y + control_size + button_spacing);
+  }
+
+  GetHomeButton()->set_ideal_bounds(
+      gfx::Rect(x, y, shelf()->PrimaryAxisValue(control_size, button_size),
+                shelf()->PrimaryAxisValue(button_size, control_size)));
+}
+
+ShelfView::AppCenteringStrategy ShelfView::CalculateAppCenteringStrategy() {
+  // There are two possibilities. Either all the apps fit when centered
+  // on the whole screen width, in which case we do that. Or, when space
+  // becomes a little tight (which happens especially when the status area
+  // is wider because of extra panels), we center apps on the available space.
+
+  AppCenteringStrategy strategy;
+  // This is only relevant for the main shelf.
+  if (is_overflow_mode())
+    return strategy;
+
+  const int total_available_size = shelf()->PrimaryAxisValue(width(), height());
+  StatusAreaWidget* status_widget = shelf_widget()->status_area_widget();
+  const int status_widget_size =
+      status_widget ? shelf()->PrimaryAxisValue(
+                          status_widget->GetWindowBoundsInScreen().width(),
+                          status_widget->GetWindowBoundsInScreen().height())
+                    : 0;
+  const int screen_size = total_available_size + status_widget_size;
+
+  // An easy way to check whether the apps fit at the exact center of the
+  // screen is to imagine that we have another status widget on the other
+  // side (the status widget is always bigger than the home button plus
+  // the back button if applicable) and see if the apps can fit in the middle.
+  int available_space_for_screen_centering =
+      screen_size - 2 * (status_widget_size + kAppIconGroupMargin);
+
+  if (GetSizeOfAppIcons(view_model()->view_size(), false) <
+      available_space_for_screen_centering) {
+    // Everything fits in the center of the screen.
+    last_visible_index_ = view_model()->view_size() - 1;
+    strategy.center_on_screen = true;
+    return strategy;
+  }
+
+  const int available_size_for_app_icons = GetAvailableSpaceForAppIcons();
+  last_visible_index_ = -1;
+  // We know that replacing the last app that fits with the overflow button
+  // will not change the outcome, so we ignore that case for now.
+  while (last_visible_index() < view_model()->view_size() - 1) {
+    if (GetSizeOfAppIcons(last_visible_index() + 2, false) <=
+        available_size_for_app_icons) {
+      last_visible_index_++;
+    } else {
+      strategy.overflow = true;
+      // Make space for the overflow button by showing one fewer app icon. If
+      // we already don't have enough space, don't decrement the last visible
+      // index further than -1.
+      last_visible_index_ = std::max(-1, last_visible_index_ - 1);
+      break;
+    }
+  }
+  return strategy;
+}
+
+void ShelfView::UpdateAllButtonsVisibilityInOverflowMode() {
+  // The overflow button is not shown in overflow mode.
+  overflow_button_->SetVisible(false);
+  DCHECK_LT(last_visible_index(), view_model()->view_size());
+  for (int i = 0; i < view_model()->view_size(); ++i) {
+    bool visible = i >= first_visible_index() && i <= last_visible_index();
+    // To track the dragging of |drag_view_| continuously, its visibility
+    // should be always true regardless of its position.
+    if (dragged_to_another_shelf_ && view_model()->view_at(i) == drag_view())
+      view_model()->view_at(i)->SetVisible(true);
+    else
+      view_model()->view_at(i)->SetVisible(visible);
+  }
 }
 
 void ShelfView::DestroyDragIconProxy() {
@@ -1140,8 +1288,9 @@ bool ShelfView::StartDrag(const std::string& app_id,
   gfx::Point pt = drag_and_drop_view->GetBoundsInScreen().CenterPoint();
   views::View::ConvertPointFromScreen(drag_and_drop_view, &pt);
   gfx::Point point_in_root = location_in_screen_coordinates;
-  ::wm::ConvertPointFromScreen(
-      wm::GetRootWindowAt(location_in_screen_coordinates), &point_in_root);
+  wm::ConvertPointFromScreen(
+      window_util::GetRootWindowAt(location_in_screen_coordinates),
+      &point_in_root);
   ui::MouseEvent event(ui::ET_MOUSE_PRESSED, pt, point_in_root,
                        ui::EventTimeForNow(), 0, 0);
   PointerPressedOnButton(drag_and_drop_view, DRAG_AND_DROP, event);
@@ -1161,8 +1310,9 @@ bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
       view_model_->view_at(model_->ItemIndexByID(drag_and_drop_shelf_id_));
   ConvertPointFromScreen(drag_and_drop_view, &pt);
   gfx::Point point_in_root = location_in_screen_coordinates;
-  ::wm::ConvertPointFromScreen(
-      wm::GetRootWindowAt(location_in_screen_coordinates), &point_in_root);
+  wm::ConvertPointFromScreen(
+      window_util::GetRootWindowAt(location_in_screen_coordinates),
+      &point_in_root);
   ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, point_in_root,
                        ui::EventTimeForNow(), 0, 0);
   PointerDraggedOnButton(drag_and_drop_view, DRAG_AND_DROP, event);
@@ -1198,30 +1348,7 @@ void ShelfView::EndDrag(bool cancel) {
   drag_and_drop_shelf_id_ = ShelfID();
 }
 
-bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
-  if (dragging())
-    return false;
-
-  // Ignore if we are already in a pointer event sequence started with a repost
-  // event on the same shelf item. See crbug.com/343005 for more detail.
-  if (is_repost_event_on_same_item_)
-    return false;
-
-  // Don't activate the item twice on double-click. Otherwise the window starts
-  // animating open due to the first click, then immediately minimizes due to
-  // the second click. The user most likely intended to open or minimize the
-  // item once, not do both.
-  if (event.flags() & ui::EF_IS_DOUBLE_CLICK)
-    return false;
-
-  // Ignore if this is a repost event on the last pressed shelf item.
-  int index = view_model_->GetIndexOfView(view);
-  if (index == -1)
-    return false;
-  return !IsRepostEvent(event) || last_pressed_index_ != index;
-}
-
-void ShelfView::SwapButtons(ShelfButton* button_to_swap, bool with_next) {
+void ShelfView::SwapButtons(views::View* button_to_swap, bool with_next) {
   if (!button_to_swap)
     return;
   // We don't allow reordering of buttons that aren't app buttons.
@@ -1239,8 +1366,7 @@ void ShelfView::SwapButtons(ShelfButton* button_to_swap, bool with_next) {
   }
 
   const int target_index = with_next ? src_index + 1 : src_index - 1;
-  const int first_swappable_index =
-      std::max(first_visible_index_, kAppListButtonIndex + 1);
+  const int first_swappable_index = std::max(first_visible_index_, 0);
   const int last_swappable_index = last_visible_index_;
   if (src_index == -1 || (target_index > last_swappable_index) ||
       (target_index < first_swappable_index)) {
@@ -1270,11 +1396,11 @@ void ShelfView::PointerPressedOnButton(views::View* view,
     shelf_menu_model_adapter_->Cancel();
 
   int index = view_model_->GetIndexOfView(view);
-  if (index == -1 || view_model_->view_size() <= 1)
+  if (index == -1 || view_model_->view_size() < 1)
     return;  // View is being deleted, ignore request.
 
-  if (view == GetAppListButton() || view == GetBackButton())
-    return;  // Views are not draggable, ignore request.
+  // The home and back buttons should be handled separately.
+  DCHECK(view != GetHomeButton() || view != GetBackButton());
 
   // Only when the repost event occurs on the same shelf item, we should ignore
   // the call in ShelfView::ButtonPressed(...).
@@ -1335,6 +1461,7 @@ void ShelfView::LayoutToIdealBounds() {
   views::ViewModelUtils::SetViewBoundsToIdealBounds(*view_model_);
   UpdateBackButton();
   LayoutAppListAndBackButtonHighlight();
+  LayoutBackAndHomeButtons();
   LayoutOverflowButton();
   UpdateVisibleShelfItemBoundsUnion();
 }
@@ -1343,132 +1470,54 @@ bool ShelfView::IsItemPinned(const ShelfItem& item) const {
   return item.type == TYPE_PINNED_APP || item.type == TYPE_BROWSER_SHORTCUT;
 }
 
-int ShelfView::GetSeparatorIndex() const {
-  for (int i = 0; i < model_->item_count() - 1; ++i) {
-    if (IsItemPinned(model_->items()[i]) &&
-        model_->items()[i + 1].type == TYPE_APP) {
-      return i;
-    }
-  }
-  return -1;
-}
-
 void ShelfView::OnTabletModeChanged() {
   OnBoundsChanged(GetBoundsInScreen());
 }
 
-void ShelfView::UpdateAllButtonsVisibilityInOverflowMode() {
-  // The overflow button is not shown in overflow mode.
-  overflow_button_->SetVisible(false);
-  DCHECK_LT(last_visible_index_, view_model_->view_size());
-  for (int i = 0; i < view_model_->view_size(); ++i) {
-    bool visible = i >= first_visible_index_ && i <= last_visible_index_;
-    // To track the dragging of |drag_view_| continuously, its visibility
-    // should be always true regardless of its position.
-    if (dragged_to_another_shelf_ && view_model_->view_at(i) == drag_view_)
-      view_model_->view_at(i)->SetVisible(true);
-    else
-      view_model_->view_at(i)->SetVisible(visible);
-  }
-}
-
-int ShelfView::GetAvailableSpaceForAppIcons() const {
-  // Subtract space already allocated to the app list button, and the back
-  // button if applicable.
-  return shelf_->PrimaryAxisValue(width(), height()) - kShelfButtonSpacing -
-         (IsTabletModeEnabled() ? 2 : 1) * kShelfControlSize -
-         2 * kAppIconGroupMargin;
-}
-
-ShelfView::AppCenteringStrategy ShelfView::CalculateAppCenteringStrategy() {
-  // There are two possibilities. Either all the apps fit when centered
-  // on the whole screen width, in which case we do that. Or, when space
-  // becomes a little tight (which happens especially when the status area
-  // is wider because of extra panels), we center apps on the available space.
-
-  AppCenteringStrategy strategy;
-  // This is only relevant for the main shelf.
-  if (is_overflow_mode())
-    return strategy;
-
-  const int total_available_size = shelf_->PrimaryAxisValue(width(), height());
-  StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
-  const int status_widget_size =
-      status_widget ? shelf_->PrimaryAxisValue(
-                          status_widget->GetWindowBoundsInScreen().width(),
-                          status_widget->GetWindowBoundsInScreen().height())
-                    : 0;
-  const int screen_size = total_available_size + status_widget_size;
-
-  // An easy way to check whether the apps fit at the exact center of the
-  // screen is to imagine that we have another status widget on the other
-  // side (the status widget is always bigger than the app list button plus
-  // the back button if applicable) and see if the apps can fit in the middle.
-  int available_space_for_screen_centering =
-      screen_size - 2 * (status_widget_size + kAppIconGroupMargin);
-
-  // Views at index 0 and 1 are the back button and app list button.
-  if (GetSizeOfAppIcons(view_model_->view_size() - 2, false) <
-      available_space_for_screen_centering) {
-    // Everything fits in the center of the screen.
-    last_visible_index_ = view_model_->view_size() - 1;
-    strategy.center_on_screen = true;
-    return strategy;
-  }
-
-  const int available_size_for_app_icons = GetAvailableSpaceForAppIcons();
-  last_visible_index_ = 1;
-  // We know that replacing the last app that fits with the overflow button
-  // will not change the outcome, so we ignore that case for now.
-  while (last_visible_index_ < view_model_->view_size() - 1) {
-    if (GetSizeOfAppIcons(last_visible_index_, false) <=
-        available_size_for_app_icons) {
-      ++last_visible_index_;
-    } else {
-      strategy.overflow = true;
-      // Make space for the overflow button by showing one fewer app icon.
-      --last_visible_index_;
-      break;
-    }
-  }
-  return strategy;
+void ShelfView::LayoutBackAndHomeButtons() {
+  back_button_->SetBoundsRect(back_button_->ideal_bounds());
+  home_button_->SetBoundsRect(home_button_->ideal_bounds());
 }
 
 void ShelfView::LayoutOverflowButton() const {
-  DCHECK_NE(0, view_model_->view_size());
   int x = 0;
   int y = 0;
   if (last_visible_index_ != -1) {
-    const int offset = (kShelfButtonSize - kShelfControlSize) / 2;
+    const int offset = ShelfConstants::overflow_button_margin();
     x = shelf_->PrimaryAxisValue(
         offset + view_model_->ideal_bounds(last_visible_index_).right(),
         offset + view_model_->ideal_bounds(last_visible_index_).x());
     y = shelf_->PrimaryAxisValue(
         offset + view_model_->ideal_bounds(last_visible_index_).y(),
         offset + view_model_->ideal_bounds(last_visible_index_).bottom());
+
+    // Add button spacing to correctly position overflow button next to app
+    // buttons.
+    x = shelf_->PrimaryAxisValue(x + ShelfConstants::button_spacing(), x);
+    y = shelf_->PrimaryAxisValue(y, y + ShelfConstants::button_spacing());
   }
 
-  const int extra_space_before_overflow =
-      kMarginBetweenAppsAndOverflow - ShelfConstants::button_spacing();
-  if (last_visible_index_ >= 0) {
-    // Add more space between last visible item and overflow button.
-    // Without this, two buttons look too close compared with other items.
-    x = shelf_->PrimaryAxisValue(x + extra_space_before_overflow, x);
-    y = shelf_->PrimaryAxisValue(y, y + extra_space_before_overflow);
-  }
-
-  overflow_button_->SetBoundsRect(
-      gfx::Rect(x, y, kShelfControlSize, kShelfControlSize));
+  overflow_button_->SetBoundsRect(gfx::Rect(
+      x, y, ShelfConstants::control_size(), ShelfConstants::control_size()));
 }
 
 void ShelfView::AnimateToIdealBounds() {
   CalculateIdealBounds();
+
+  // Handle back and home separately.
+  ShelfControlButton* back = GetBackButton();
+  bounds_animator_->AnimateViewTo(back, back->ideal_bounds());
+  ShelfControlButton* home = GetHomeButton();
+  bounds_animator_->AnimateViewTo(home, home->ideal_bounds());
+  if (home->border())
+    home->SetBorder(views::NullBorder());
+
   for (int i = 0; i < view_model_->view_size(); ++i) {
     View* view = view_model_->view_at(i);
     bounds_animator_->AnimateViewTo(view, view_model_->ideal_bounds(i));
     // Now that the item animation starts, we have to make sure that the
     // padding of the first gets properly transferred to the new first item.
-    if (i && view->border())
+    if (view->border())
       view->SetBorder(views::NullBorder());
   }
   LayoutAppListAndBackButtonHighlight();
@@ -1576,9 +1625,13 @@ void ShelfView::ScrollForUserDrag(int offset) {
   const int new_primary_coordinate =
       shelf_->IsHorizontalAlignment()
           ? position.x() +
-                owner_overflow_bubble_->bubble_view()->ScrollByXOffset(offset)
+                owner_overflow_bubble_->bubble_view()->ScrollByXOffset(
+                    offset,
+                    /*animate=*/false)
           : position.y() +
-                owner_overflow_bubble_->bubble_view()->ScrollByYOffset(offset);
+                owner_overflow_bubble_->bubble_view()->ScrollByYOffset(
+                    offset,
+                    /*animate=*/false);
   bounds_animator_->StopAnimatingView(drag_view_);
   MoveDragViewTo(new_primary_coordinate);
 }
@@ -1845,7 +1898,7 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
 ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) const {
   DCHECK(index >= 0 && index < model_->item_count());
   ShelfItemType type = model_->items()[index].type;
-  if (type == TYPE_APP_LIST || type == TYPE_DIALOG || type == TYPE_BACK_BUTTON)
+  if (type == TYPE_DIALOG)
     return NOT_REMOVABLE;
 
   if (model_->items()[index].pinned_by_policy)
@@ -1862,9 +1915,7 @@ bool ShelfView::SameDragType(ShelfItemType typea, ShelfItemType typeb) const {
     case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
       return (typeb == TYPE_PINNED_APP || typeb == TYPE_BROWSER_SHORTCUT);
-    case TYPE_APP_LIST:
     case TYPE_APP:
-    case TYPE_BACK_BUTTON:
     case TYPE_DIALOG:
       return typeb == typea;
     case TYPE_UNDEFINED:
@@ -1873,6 +1924,15 @@ bool ShelfView::SameDragType(ShelfItemType typea, ShelfItemType typeb) const {
   }
   NOTREACHED();
   return false;
+}
+
+bool ShelfView::ShouldFocusOut(bool reverse, views::View* button) {
+  // The logic here seems backwards, but is actually correct. For instance if
+  // the ShelfView's internal focus cycling logic attemmpts to focus the first
+  // child (e.g. home button) after hitting Tab, we intercept that and
+  // instead, advance through to the status area.
+  return (reverse && button == FindLastFocusableChild()) ||
+         (!reverse && button == FindFirstFocusableChild());
 }
 
 std::pair<int, int> ShelfView::GetDragRange(int index) {
@@ -1886,37 +1946,10 @@ std::pair<int, int> ShelfView::GetDragRange(int index) {
       max_index = i;
     }
   }
-  DCHECK_EQ(1, model_->GetItemIndexForType(TYPE_APP_LIST));
   min_index =
-      std::max(min_index, is_overflow_mode()
-                              ? first_visible_index_
-                              : model_->GetItemIndexForType(TYPE_APP_LIST) + 1);
+      std::max(min_index, is_overflow_mode() ? first_visible_index_ : 0);
   max_index = std::min(max_index, last_visible_index_);
   return std::pair<int, int>(min_index, max_index);
-}
-
-void ShelfView::ToggleOverflowBubble() {
-  if (IsShowingOverflowBubble()) {
-    overflow_bubble_->Hide();
-    return;
-  }
-
-  if (!overflow_bubble_)
-    overflow_bubble_.reset(new OverflowBubble(shelf_));
-
-  // TODO(agawronska): Move this to DefaultShelfView.
-  ShelfView* overflow_view = new ShelfView(model_, shelf_, shelf_widget_);
-  overflow_view->overflow_mode_ = true;
-  overflow_view->Init();
-  overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
-  overflow_view->OnShelfAlignmentChanged(
-      GetWidget()->GetNativeWindow()->GetRootWindow());
-  overflow_view->main_shelf_ = this;
-  UpdateOverflowRange(overflow_view);
-
-  overflow_bubble_->Show(overflow_button_, overflow_view);
-
-  shelf_->UpdateVisibilityState();
 }
 
 void ShelfView::OnFadeOutAnimationEnded() {
@@ -1935,15 +1968,6 @@ void ShelfView::StartFadeInLastVisibleItem() {
         std::unique_ptr<gfx::AnimationDelegate>(
             new StartFadeAnimationDelegate(this, last_visible_view)));
   }
-}
-
-void ShelfView::UpdateOverflowRange(ShelfView* overflow_view) const {
-  const int first_overflow_index = last_visible_index_ + 1;
-  DCHECK_LE(first_overflow_index, model_->item_count() - 1);
-  DCHECK_LT(model_->item_count() - 1, view_model_->view_size());
-
-  overflow_view->first_visible_index_ = first_overflow_index;
-  overflow_view->last_visible_index_ = model_->item_count() - 1;
 }
 
 gfx::Rect ShelfView::GetMenuAnchorRect(const views::View& source,
@@ -2100,9 +2124,40 @@ void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-bool ShelfView::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  shelf_->ProcessMouseWheelEvent(event);
-  return true;
+void ShelfView::OnMouseEvent(ui::MouseEvent* event) {
+  gfx::Point location_in_screen(event->location());
+  View::ConvertPointToScreen(this, &location_in_screen);
+
+  switch (event->type()) {
+    case ui::ET_MOUSEWHEEL:
+      event->SetHandled();
+      shelf_->ProcessMouseWheelEvent(*event->AsMouseWheelEvent());
+      break;
+    case ui::ET_MOUSE_PRESSED:
+      if (!event->IsOnlyLeftMouseButton()) {
+        if (event->IsOnlyRightMouseButton()) {
+          ShowContextMenuForViewImpl(this, location_in_screen,
+                                     ui::MENU_SOURCE_MOUSE);
+          event->SetHandled();
+        }
+        return;
+      }
+
+      FALLTHROUGH;
+    case ui::ET_MOUSE_DRAGGED:
+    case ui::ET_MOUSE_RELEASED:
+      // Convert the event location from current view to screen, since dragging
+      // the shelf by mouse can open the fullscreen app list. Updating the
+      // bounds of the app list during dragging is based on screen coordinate
+      // space.
+      event->set_location(location_in_screen);
+
+      event->SetHandled();
+      shelf_->ProcessMouseEvent(*event->AsMouseEvent());
+      break;
+    default:
+      break;
+  }
 }
 
 void ShelfView::ShelfItemAdded(int model_index) {
@@ -2113,6 +2168,11 @@ void ShelfView::ShelfItemAdded(int model_index) {
   }
   const ShelfItem& item(model_->items()[model_index]);
   views::View* view = CreateViewForItem(item);
+  // Some item types are ignored and yield a null view. Ignore those.
+  // TODO(manucornet): Remove this if statement once home and back are no
+  // longer acceptable shelf item types in the model.
+  if (!view)
+    return;
   AddChildView(view);
   // Hide the view, it'll be made visible when the animation is done. Using
   // opacity 0 here to avoid messing with CalculateIdealBounds which touches
@@ -2276,10 +2336,10 @@ void ShelfView::OnShelfAlignmentChanged(aura::Window* root_window) {
   tooltip_.Close();
   if (overflow_bubble_)
     overflow_bubble_->Hide();
-  // For crbug.com/587931, because AppListButton layout logic is in OnPaint.
-  AppListButton* app_list_button = GetAppListButton();
-  if (app_list_button)
-    app_list_button->SchedulePaint();
+  // For crbug.com/587931, because HomeButton layout logic is in OnPaint.
+  HomeButton* home_button = GetHomeButton();
+  if (home_button)
+    home_button->SchedulePaint();
 
   AnnounceShelfAlignment();
 }
@@ -2417,7 +2477,7 @@ void ShelfView::OnMenuClosed(views::View* source) {
   closing_event_time_ = shelf_menu_model_adapter_->GetClosingEventTime();
 
   const ShelfItem* item = ShelfItemForView(source);
-  if (item && (item->type != TYPE_APP_LIST))
+  if (item)
     static_cast<ShelfAppButton*>(source)->OnMenuClosed();
 
   shelf_menu_model_adapter_.reset();
@@ -2527,17 +2587,9 @@ void ShelfView::UpdateBackButton() {
 void ShelfView::SetDragImageBlur(const gfx::Size& size, int blur_radius) {
   drag_image_->SetPaintToLayer();
   drag_image_->layer()->SetFillsBoundsOpaquely(false);
-  if (ash::features::ShouldUseShaderRoundedCorner()) {
-    const uint32_t radius = std::round(size.width() / 2.f);
-    drag_image_->layer()->SetRoundedCornerRadius(
-        {radius, radius, radius, radius});
-  } else {
-    drag_image_mask_ = views::Painter::CreatePaintedLayer(
-        views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
-                                                    size.width() / 2.0f));
-    drag_image_mask_->layer()->SetBounds(gfx::Rect(size));
-    drag_image_->layer()->SetMaskLayer(drag_image_mask_->layer());
-  }
+  const uint32_t radius = std::round(size.width() / 2.f);
+  drag_image_->layer()->SetRoundedCornerRadius(
+      {radius, radius, radius, radius});
   drag_image_->layer()->SetBackgroundBlur(blur_radius);
 }
 

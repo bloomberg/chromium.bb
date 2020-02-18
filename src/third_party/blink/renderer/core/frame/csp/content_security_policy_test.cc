@@ -69,9 +69,10 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
                           kContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.expected_policy, csp->GetInsecureRequestPolicy());
 
-    auto* document = MakeGarbageCollected<Document>();
-    document->SetSecurityOrigin(secure_origin);
-    document->SetURL(secure_url);
+    DocumentInit init = DocumentInit::Create()
+                            .WithOriginToCommit(secure_origin)
+                            .WithURL(secure_url);
+    auto* document = MakeGarbageCollected<Document>(init);
     csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     EXPECT_EQ(test.expected_policy, document->GetInsecureRequestPolicy());
     bool expect_upgrade = test.expected_policy & kUpgradeInsecureRequests;
@@ -238,12 +239,14 @@ TEST_F(ContentSecurityPolicyTest, FrameAncestorsInMeta) {
 // delivered in <meta> elements.
 TEST_F(ContentSecurityPolicyTest, SandboxInMeta) {
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+  EXPECT_EQ(WebSandboxFlags::kNone, csp->GetSandboxMask());
   csp->DidReceiveHeader("sandbox;", kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceMeta);
-  EXPECT_FALSE(execution_context->GetSecurityOrigin()->IsOpaque());
+  EXPECT_EQ(WebSandboxFlags::kNone, csp->GetSandboxMask());
+  execution_context->SetSandboxFlags(WebSandboxFlags::kAll);
   csp->DidReceiveHeader("sandbox;", kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
-  EXPECT_TRUE(execution_context->GetSecurityOrigin()->IsOpaque());
+  EXPECT_EQ(WebSandboxFlags::kAll, csp->GetSandboxMask());
 }
 
 // Tests that report-uri directives are discarded from policies
@@ -720,8 +723,8 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
   WTF::OrdinalNumber context_line;
 
   // We need document for HTMLScriptElement tests.
-  auto* document = MakeGarbageCollected<Document>();
-  document->SetSecurityOrigin(secure_origin);
+  DocumentInit init = DocumentInit::Create().WithOriginToCommit(secure_origin);
+  auto* document = MakeGarbageCollected<Document>(init);
 
   for (const auto& test : cases) {
     SCOPED_TRACE(testing::Message() << "Policy: `" << test.policy
@@ -1596,6 +1599,25 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   EXPECT_EQ(WebSandboxFlags::kNone, csp->GetSandboxMask());
   EXPECT_FALSE(
       csp->HasPolicyFromSource(kContentSecurityPolicyHeaderSourceHTTP));
+}
+
+TEST_F(ContentSecurityPolicyTest, OpaqueOriginBeforeBind) {
+  const KURL url("https://example.test");
+
+  // Security Origin of execution context might change when sandbox flags
+  // are applied. This shouldn't change the application of the 'self'
+  // determination.
+  secure_origin = secure_origin->DeriveNewOpaqueOrigin();
+  execution_context = CreateExecutionContext();
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+  csp->DidReceiveHeader("default-src 'self';",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceMeta);
+  EXPECT_TRUE(
+      csp->AllowRequest(mojom::RequestContextType::SUBRESOURCE, url, String(),
+                        IntegrityMetadataSet(), kParserInserted,
+                        ResourceRequest::RedirectStatus::kNoRedirect,
+                        SecurityViolationReportingPolicy::kSuppressReporting));
 }
 
 }  // namespace blink

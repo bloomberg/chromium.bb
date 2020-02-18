@@ -45,13 +45,13 @@
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
-#include "ios/web/public/url_scheme_util.h"
-#import "ios/web/public/web_state/navigation_context.h"
+#import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ui/gfx/geometry/rect.h"
@@ -229,8 +229,8 @@ autofillManagerFromWebState:(web::WebState*)webState
   // Exactly one form should be extracted.
   DCHECK_EQ(1U, forms.size());
   autofill::FormData form = forms[0];
-  autofillManager->OnFormSubmitted(form, false,
-                                   autofill::SubmissionSource::FORM_SUBMISSION);
+  autofillManager->OnFormSubmitted(
+      form, false, autofill::mojom::SubmissionSource::FORM_SUBMISSION);
   autofill::KeyboardAccessoryMetricsLogger::OnFormSubmitted();
 }
 
@@ -400,6 +400,7 @@ autofillManagerFromWebState:(web::WebState*)webState
   if (suggestion.identifier > 0) {
     pendingAutocompleteField_ = base::SysNSStringToUTF16(fieldIdentifier);
     if (popupDelegate_) {
+      // TODO(966411): Replace 0 with the index of the selected suggestion.
       popupDelegate_->DidAcceptSuggestion(
           base::SysNSStringToUTF16(suggestion.value), suggestion.identifier, 0);
     }
@@ -588,11 +589,11 @@ autofillManagerFromWebState:(web::WebState*)webState
     return;
   }
   // Check that the main frame has already been processed.
-  if (!web::GetMainWebFrame(webState)) {
+  if (!webState->GetWebFramesManager()->GetMainWebFrame()) {
     return;
   }
   if (!autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
-           webState, web::GetMainWebFrame(webState))
+           webState, webState->GetWebFramesManager()->GetMainWebFrame())
            ->is_processed()) {
     return;
   }
@@ -623,9 +624,7 @@ autofillManagerFromWebState:(web::WebState*)webState
 #pragma mark - Private methods
 
 - (void)processPage:(web::WebState*)webState {
-  web::WebFramesManager* framesManager =
-      web::WebFramesManager::FromWebState(webState);
-  DCHECK(framesManager);
+  web::WebFramesManager* framesManager = webState->GetWebFramesManager();
   if (!framesManager->GetMainWebFrame()) {
     return;
   }

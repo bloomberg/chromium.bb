@@ -364,6 +364,11 @@
           If this policy is disabled or not set, the Kerberos accounts settings are disabled. No Kerberos accounts can be added and Kerberos authentication cannot be used. All existing Kerberos accounts are deleted, and all stored passwords are deleted.</translation>
 <translation id="1561424797596341174">Policy overrides for Debug builds of the remote access host</translation>
 <translation id="1561967320164410511">U2F plus extensions for individual attestation</translation>
+<translation id="1566329065312331399">
+      This policy, when set to False, does not allow the device to trigger powerwash.
+      When set to True, it allows the device to trigger powerwash.
+      If left unset, it defaults to False, meaning it doesn't allow the device to powerwash.
+      </translation>
 <translation id="1574554504290354326">This setting is deprecated – use SafeBrowsingExtendedReportingEnabled instead. Enabling or disabling SafeBrowsingExtendedReportingEnabled is equivalent to setting SafeBrowsingExtendedReportingOptInAllowed to False.
 
       Setting this policy to false stops users from choosing to send some system information and page content to Google servers. If this setting is true or not configured, then users will be allowed to send some system information and page content to Safe Browsing to help detect dangerous apps and sites.
@@ -405,6 +410,7 @@
 
       Warning: It is not recommended to delegate control of the <ph name="PRODUCT_OS_NAME" /> version to a kiosk app as it may prevent the device from receiving software updates and critical security fixes. Delegating control of the <ph name="PRODUCT_OS_NAME" /> version might leave users at risk.</translation>
 <translation id="1675002386741412210">Supported on:</translation>
+<translation id="1700811900332333712">Allow the device to request powerwash</translation>
 <translation id="1704516734140344991">Configures availability and behaviour of <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update functionality.
 
       Individual settings can be specified in JSON properties:
@@ -952,6 +958,7 @@
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="268577405881275241">Enable the data compression proxy feature</translation>
 <translation id="2693108589792503178">Configure the change password URL.</translation>
+<translation id="2694143893026486692">Docked magnifier enabled</translation>
 <translation id="2706708761587205154">Allow printing only with PIN</translation>
 <translation id="2710534340210290498">If this policy is set to false, users will not be able to lock the screen (only signing out from the user session will be possible). If this setting is set to true or not set, users who authenticated with a password can lock the screen.</translation>
 <translation id="2731627323327011390">Disable usage of <ph name="PRODUCT_OS_NAME" /> certificates to ARC-apps</translation>
@@ -1132,6 +1139,15 @@
           When this policy is unset, behaviour of the more specific policies remains unaffected.</translation>
 <translation id="2987155890997901449">Enable ARC</translation>
 <translation id="2987227569419001736">Control use of the Web Bluetooth API</translation>
+<translation id="2990018289267778247">If this policy is set to true, Accessibility options always appear in system tray menu.
+
+          If this policy is set to false, Accessibility options never appear in system tray menu.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, Accessibility options will not appear in the system tray menu, but the user can cause the Accessibility options to appear via the Settings page.
+
+          When accessibility features are enabled (by other means, e.g. by a key combination), Accessibility options will always appear in system tray menu.</translation>
 <translation id="3011301228198307065">Configures the default homepage URL in <ph name="PRODUCT_NAME" /> and prevents users from changing it.
 
           The homepage is the page opened by the Home button. The pages that open on start-up are controlled by the RestoreOnStartup policies.
@@ -1179,6 +1195,7 @@
           This policy is optional. If not set, no search term replacement will be performed.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">This policy allows users of the WebDriver feature to override
       policies which can interfere with its operation.
 
@@ -1193,24 +1210,6 @@
       If this policy is set to false, WPAD optimisation is disabled causing <ph name="PRODUCT_NAME" /> to wait longer for DNS-based WPAD servers. If the policy is not set or is enabled, WPAD optimisation is enabled.
 
       Independent of whether or how this policy is set, the WPAD optimisation setting cannot be changed by users.</translation>
-<translation id="3071839057966069710">Configures a list of printers.
-
-      This policy allows administrators to provide printer configurations for their users.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> and <ph name="PRINTER_DESCRIPTION" /> are free-form strings that can be customised for ease of printer selection. <ph name="PRINTER_MANUFACTURER" /> and <ph name="PRINTER_MODEL" /> serve to ease printer identification by end users. They represent the manufacturer and model of the printer. <ph name="PRINTER_URI" /> should be an address reachable from a client computer including the <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> and <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> is optional. If provided, it is used to help de-duplicate <ph name="ZEROCONF_DISCOVERY" /> printers.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> must match one of the strings which represent a <ph name="PRODUCT_NAME" /> supported printer. The string will be used to identify and install the appropriate PPD for the printer. More information can be found at https://support.google.com/chrome?p=noncloudprint.
-
-      <ph name="PRINTER_AUTOCONF" /> is a boolean flag indicating whether IPP Everywhere should be used to set up the printer. This flag is supported on <ph name="PRODUCT_OS_NAME" /> version 76 and higher.
-
-      Either <ph name="PRINTER_EFFECTIVE_MODEL" /> should contain the name of the printer or <ph name="PRINTER_AUTOCONF" /> should be set to true. The printers with both or without any properties will be ignored.
-
-      Printer setup is completed upon the first use of a printer.  PPDs are not downloaded until the printer is used.  After that time, frequently used PPDs are cached.
-
-      This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
-
-      For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE" /> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE" />, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> would be replaced by the 4 characters starting after the sixth position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Note that the position is zero-based.
-      </translation>
 <translation id="3072045631333522102">Screen saver to be used on the sign-in screen in retail mode</translation>
 <translation id="3072847235228302527">Set the Terms of Service for a device-local account</translation>
 <translation id="3077183141551274418">Enables or disables tab lifecycles</translation>
@@ -1470,6 +1469,7 @@
         This policy is used by machine scope cloud policy enrolment on desktop and can be set by Registry or GPO on Windows, plist on Mac and JSON policy file on Linux.</translation>
 <translation id="3660562134618097814">Transfer SAML IdP cookies during login</translation>
 <translation id="3701121231485832347">Controls settings specific to <ph name="MS_AD_NAME" />-managed <ph name="PRODUCT_OS_NAME" /> devices.</translation>
+<translation id="3702518095257671450">Remote attestation</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (The single-line field is deprecated and will be removed in the future. Please start using the multi-line text box below.)</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="3711895659073496551">Suspend</translation>
@@ -1852,6 +1852,15 @@
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="4285674129118156176">Allow unaffiliated users to use ARC</translation>
+<translation id="4289903996435140853">Allows you to set a list of URLs that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs. Each item in the list must contain both devices and URLs in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid and will be ignored.
+
+        The USB permission model uses the URL of the requesting site ('requesting URL') and the URL of the top-level frame site ('embedding URL') to grant permission to the requesting URL to access the USB device. The requesting URL may be different from the embedding URL when the requesting site is loaded in an iframe. Therefore, the 'URLs' field can contain up to two URL strings delimited by a comma to specify the requesting and embedding URL respectively. If only one URL is specified, then access to the corresponding USB devices will be granted when the requesting site's URL matches this URL regardless of embedding status. The URLs in 'URLs' must be valid URLs, otherwise the policy will be ignored.
+
+        If this policy is left not set, the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
+
+        URL patterns in this policy should not clash with the ones configured via WebUsbBlockedForUrls. If there is a clash, this policy will take precedence over WebUsbBlockedForUrls and WebUsbAskForUrls.
+
+        Values for this policy and the WebUsbAllowDevicesForUrls policy are merged together.</translation>
 <translation id="4298509794364745131">Specifies list of apps that can be enabled as a note-taking app on the <ph name="PRODUCT_OS_NAME" /> lock screen.
 
       If the preferred note-taking app is enabled on the lock screen, the lock screen will contain UI element for launching the preferred note taking app.
@@ -2003,6 +2012,7 @@
 <translation id="4639407427807680016">Names of the native messaging hosts to be exempt from the blacklist</translation>
 <translation id="4650759511838826572">Disable URL protocol schemes</translation>
 <translation id="465099050592230505">Enterprise web store URL (deprecated)</translation>
+<translation id="4661889655253181651">Content settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) are handled.</translation>
 <translation id="4665897631924472251">Extension management settings</translation>
 <translation id="4668325077104657568">Default images setting</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -2052,6 +2062,15 @@
       Over this time period, the user will be repeatedly informed of the need for an update. For <ph name="PRODUCT_OS_NAME" /> devices, a restart notification appears in the system tray according to the <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> policy. For <ph name="PRODUCT_NAME" /> browsers, the app menu changes to indicate that a relaunch is needed once one third of the notification period passes. This notification changes colour once two thirds of the notification period passes, and again once the full notification period has passed. The additional notifications enabled by the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> policy follow this same schedule.
 
       If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME" /> devices and 604800000 milliseconds (one week) for <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      This setting, SitePerProcess, may be used to disallow users from opting out of the default behaviour of isolating all sites. Note that the IsolateOrigins policy may also be useful for isolating additional, finer-grained origins.
+      If the policy is enabled, users will be unable to opt out of the default behaviour where each site runs in its own process.
+      If the policy is not configured or disabled, the user will be able to opt out of site isolation
+      (e.g. using 'Disable site isolation' entry in chrome://flags).  Setting the policy to disabled and/or not configuring the policy does not turn off Site Isolation.
+      On <ph name="PRODUCT_OS_NAME" /> version 76 and earlier, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+
+      NOTE: This policy does not apply on Android. To enable SitePerProcess on Android, use the SitePerProcessAndroid policy setting.
+      </translation>
 <translation id="4788252609789586009">Enables <ph name="PRODUCT_NAME" />'s Auto-Fill feature and allows users to auto-complete credit card information in web forms using previously stored information.
 
       If this setting is disabled, Auto-fill will never suggest or fill in credit card information, nor will it save additional credit card information that the user might submit while browsing the web.
@@ -2197,6 +2216,7 @@
 <translation id="5148753489738115745">Allows you to specify additional parameters that are used when <ph name="PRODUCT_FRAME_NAME" /> launches <ph name="PRODUCT_NAME" />.
 
           If this policy is not set the default command line will be used.</translation>
+<translation id="5152787786897382519">Both Chromium and Google Chrome have some groups of policies that depend on each other to provide control over a feature. These sets are represented by the following policy groups. Given that policies can have multiple sources, only values coming from the highest priority source will be applied. Values coming from a lower priority source in the same group will be ignored. The order of priority is defined in <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">How frequently monitoring network packets are sent, in milliseconds.
 
       If this policy is unset, the default interval is 3 minutes. The minimum
@@ -2261,6 +2281,15 @@
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="5213038356678567351">Websites that should never trigger a browser switch.</translation>
 <translation id="5219844027738217407">For Android apps, this policy affects the microphone only. When this policy is set to true, the microphone is muted for all Android apps, with no exceptions.</translation>
+<translation id="5221394278852982313">Allows you to set a list of URLs that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs. Each item in the list must contain both devices and URLs in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid and will be ignored.
+
+        The USB permission model uses the URL of the requesting site ('requesting URL') and the URL of the top-level frame site ('embedding URL') to grant permission to the requesting URL to access the USB device. The requesting URL may be different from the embedding URL when the requesting site is loaded in an iframe. Therefore, the 'URLs' field can contain up to two URL strings delimited by a comma to specify the requesting and embedding URL respectively. If only one URL is specified, then access to the corresponding USB devices will be granted when the requesting site's URL matches this URL regardless of embedding status. The URLs in 'URLs' must be valid URLs, otherwise the policy will be ignored.
+
+        If this policy is left not set, the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
+
+        URL patterns in this policy should not clash with the ones configured via WebUsbBlockedForUrls. If there is a clash, this policy will take precedence over WebUsbBlockedForUrls and WebUsbAskForUrls.
+
+        Values for this policy and the DeviceWebUsbAllowDevicesForUrls policy are merged together.</translation>
 <translation id="5228316810085661003">The device-local account auto-login delay.
 
       If the |DeviceLocalAccountAutoLoginId| policy is unset, this policy has no effect. Otherwise:
@@ -2512,6 +2541,10 @@
       Note that this is not recommended, as this may allow bypassing the nameConstraints extension that restricts the hostnames that a given certificate can be authorised for.
 
       If this policy is not set, or is set to false, server certificates that lack a subjectAlternativeName extension containing either a DNS name or IP address will not be trusted.</translation>
+<translation id="5578571772998293651">Allow user feedback.
+        If the policy is set to false, users cannot send feedback to Google.
+
+        If the policy is unset or set to true, users can send feedback to Google via Menu-&gt;Help-&gt;Report an Issue or key combination.</translation>
 <translation id="5581292529942108810">Configure Chrome Reporting Extension related policies.
 
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -2727,6 +2760,7 @@
 <translation id="5983708779415553259">Default behaviour for sites not in any content pack</translation>
 <translation id="5997543603646547632">Use 24 hour clock by default</translation>
 <translation id="5997846976342452720">Specify whether the plug-in finder should be disabled (deprecated)</translation>
+<translation id="5998198091336830580">This policy is part of the following atomic group (only policies from the highest priority source present in the group are applied) :</translation>
 <translation id="6017568866726630990">Show the system print dialogue instead of print preview.
 
       When this setting is enabled, <ph name="PRODUCT_NAME" /> will open the system print dialogue instead of the built-in print preview when a user requests a page to be printed.
@@ -2994,6 +3028,20 @@
 
       If this policy is set to 'Disallow users to manage certificates', users will not be able to manage certificates, they can only view certificates.</translation>
 <translation id="6573305661369899995">Set an external source of URL restrictions</translation>
+<translation id="6583851521569686409">Configures a list of printers.
+
+      This policy allows administrators to provide printer configurations for their users.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> and <ph name="PRINTER_DESCRIPTION" /> are free-form strings that can be customised for ease of printer selection. <ph name="PRINTER_MANUFACTURER" /> and <ph name="PRINTER_MODEL" /> serve to ease printer identification by end users. They represent the manufacturer and model of the printer. <ph name="PRINTER_URI" /> should be an address reachable from a client computer including the <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> and <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> is optional. If provided, it is used to help de-duplicate <ph name="ZEROCONF_DISCOVERY" /> printers.
+
+      Either <ph name="PRINTER_EFFECTIVE_MODEL" /> should contain the name of the printer or <ph name="PRINTER_AUTOCONF" /> should be set to true. The printers with both or without any properties will be ignored.
+
+      Printer setup is completed upon the first use of a printer.  PPDs are not downloaded until the printer is used.  After that time, frequently used PPDs are cached.
+
+      This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
+
+      For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE" /> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE" />, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> would be replaced by the four characters starting after the sixth position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Note that the position is zero-based.
+      </translation>
 <translation id="6598235178374410284">User avatar image</translation>
 <translation id="6603004149426829878">Always send any available location signals to the server while resolving time zone</translation>
 <translation id="6628120204569232711">Report storage status</translation>
@@ -3194,7 +3242,6 @@
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> preferences</translation>
-<translation id="7006788746334555276">Content Settings</translation>
 <translation id="7007671350884342624">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing user data.
 
       If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided directory regardless of whether the user has specified the '--user-data-dir' flag or not. To avoid data loss or other unexpected errors this policy should not be set to a volume's root directory or to a directory used for other purposes, because <ph name="PRODUCT_NAME" /> manages its contents.
@@ -3279,19 +3326,8 @@
 <translation id="7123160381479171745">Defines the list of users that are allowed to log in to the device. Entries are of the form <ph name="USER_WHITELIST_ENTRY_FORMAT" />, such as <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. To allow arbitrary users on a domain, use entries of the form <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       If this policy is not configured, there are no restrictions on which users are allowed to sign in. Note that creating new users still requires the <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> policy to be configured appropriately.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> provides for the secure update and installation of extensions. However, the content of some extensions hosted outside of the Chrome Web Store may only be protected by insecure signing or hashing algorithms such as SHA1. When this policy is disabled, fresh installation of and updates to such extensions will not be permitted by Chrome (until the extension developers rebuild the extension with stronger algorithms). When this policy is enabled, installation and updates for such extensions will be permitted.
-
-          This will default to the enabled behaviour when unset.
-          Starting in <ph name="PRODUCT_NAME" /> 75, this will default to the disabled behaviour when unset.
-
-          Starting in <ph name="PRODUCT_NAME" /> 77, this policy will be ignored and treated as disabled.</translation>
 <translation id="7126716959063786004">Enable ending processes in Task Manager</translation>
 <translation id="7127892035367404455">Roll back to target version</translation>
-<translation id="7128918109610518786">Lists the application identifiers <ph name="PRODUCT_OS_NAME" /> shows as pinned apps in the launcher bar.
-
-      If this policy is configured, the set of applications is fixed and can't be changed by the user.
-
-      If this policy is left unset, the user may change the list of pinned apps in the launcher.</translation>
 <translation id="713121532817834879">This policy is a URL that points to an XML file in the same format as Internet Explorer's<ph name="IEEM_SITELIST_POLICY" /> policy. This loads rules from an XML file, without sharing those rules with Internet Explorer.
 
       The rules in this XML file apply in the same way as <ph name="GREYLIST_POLICY_NAME" />. That is, these rules prevent <ph name="PRODUCT_NAME" /> from opening the alternative browser, and also prevent the alternative browser from opening <ph name="PRODUCT_NAME" />.
@@ -3461,6 +3497,9 @@
       When this policy is set to False, information that can be used to identify machines is not gathered.
 
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      </translation>
 <translation id="737655323154569539">Restricts printing page size. Unset policy and empty set are treated as no restriction.</translation>
 <translation id="7389872682701720082">If you enable this setting, plugins that are not outdated always run.
 
@@ -3798,6 +3837,7 @@
 
           Also see policies 'CookiesAllowedForUrls' and 'CookiesSessionOnlyForUrls'. Note: There must be no conflicting URL patterns between these three policies – it is not specified as to which policy takes precedence.</translation>
 <translation id="8099880303030573137">Idle delay when running on battery power</translation>
+<translation id="8101381354936029836">Policy atomic group:</translation>
 <translation id="8102913158860568230">Default mediastream setting</translation>
 <translation id="8104186956182795918">Allows you to set whether websites are allowed to display images. Displaying images can be either allowed for all websites or denied for all websites.
 
@@ -3873,6 +3913,7 @@
       If this policy is not set there will be no exceptions to the blacklist from the 'URLBlacklist' policy.</translation>
 <translation id="8176035528522326671">Allow enterprise user to be primary multi-profile user only (Default behaviour for enterprise-managed users)</translation>
 <translation id="8183108371184777472">Suppress launching of browser window</translation>
+<translation id="8186911565834244165">Allow user feedback</translation>
 <translation id="8214600119442850823">Configures the password manager.</translation>
 <translation id="8217516105848565518">This policy is deprecated. Please use RemoteAccessHostDomainList instead.</translation>
 <translation id="8244171102276095471">Enable RC4 cipher suites in TLS</translation>
@@ -4005,6 +4046,15 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Disable saving browser history</translation>
 <translation id="8499172469244085141">Default Settings (users can override)</translation>
+<translation id="849962487677588458">This policy is deprecated, and slated for removal in Chrome 78, with no replacement.
+
+      This policy enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
+
+      This policy is disabled by default, and if enabled, leaves users open to the security issue https://crbug.com/600352.
+
+      This policy is intended to give enterprises a chance to migrate existing servers away from HTTP/0.9, and will be removed in the future.
+
+      If this policy is not set, HTTP/0.9 will be disabled on non-default ports.</translation>
 <translation id="8507835864888987300">Sets a target version for Auto Updates.
 
       Specifies the prefix of a target version <ph name="PRODUCT_OS_NAME" /> should update to. If the device is running a version that's before the specified prefix, it will update to the latest version with the given prefix. If the device is already on a later version, effects depend on the value of <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. The prefix format works component-wise as is demonstrated in the following example:
@@ -4104,7 +4154,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
           This policy is optional. If not set, no keyword will activate the search provider.
 
           This policy is only considered if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
-<translation id="8731693562790917685">Content Settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) is handled.</translation>
 <translation id="8733448613597049197">Enables <ph name="PRODUCT_NAME" />'s Safe Browsing Extended Reporting and prevents users from changing this setting.
 
       Extended Reporting sends some system information and page content to Google servers to help detect dangerous apps and sites.
@@ -4135,12 +4184,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
           If you disable this setting or leave it unset, the canonical name of the server will be determined via CNAME lookup.</translation>
 <translation id="8764477907716150749">This policy is for internal use by <ph name="PRODUCT_NAME" /> itself.</translation>
-<translation id="8765776988041674792">Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their password after seeing a warning in the browser.
-      In order for <ph name="PRODUCT_NAME" /> to correctly capture the new password fingerprint on this change password page, please make sure that your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      If this setting is enabled, then password protection service will send users to this URL to change their password after seeing a warning in the browser.
-      If this setting is disabled or not set, then password protection service will send users to https://myaccounts.google.com to change their password.
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="8798099450830957504">Default</translation>
 <translation id="8800453707696044281">Set battery charge custom stop charging in per cent</translation>
 <translation id="8801680448782904838">Notify a user that a browser relaunch or device restart is recommended or required</translation>
@@ -4185,6 +4228,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
 
       If this setting is left not set the user can decide to use this function or not.</translation>
+<translation id="8871974300055371298">Content Settings ...</translation>
 <translation id="8876188741456358123">Overrides default printing duplex mode. If the mode is unavailable, this policy is ignored.</translation>
 <translation id="8882006618241293596">Block the <ph name="FLASH_PLUGIN_NAME" /> plug-in on these sites</translation>
 <translation id="8906768759089290519">Enable guest mode</translation>
@@ -4292,6 +4336,15 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If policy value is set to a token that maps to a Quick Fix Build, the device will be updated to the corresponding Quick Fix Build if the update is not blocked by another policy.
 
       If this policy is not set, or if its value does not map to a Quick Fix Build, then the device won't be updated to a Quick Fix Build. If the device is already running a Quick Fix Build and the policy is not set anymore or its value does not map to a Quick Fix Build anymore, then the device will be updated to a regular build if the update is not blocked by another policy.</translation>
+<translation id="9054012305936267950">This policy controls the sign-in behaviour of the browser. It allows you to specify if the user can sign in to <ph name="PRODUCT_NAME" /> with their account and use account-related services like Chrome sync.
+
+      If the policy is set to 'Disable browser sign-in' then the user cannot sign in to the browser and use account-based services. In this case, browser level features like Chrome sync cannot be used and will be unavailable. If the user was signed in and the policy is set to 'Disabled' they will be signed out the next time that they run Chrome, but their local profile data like bookmarks, passwords, etc. will be preserved. The user will still be able to sign in to and use Google web services like Gmail.
+
+      If the policy is set to 'Enable browser sign-in', then the user is allowed to sign in to the browser and is automatically signed in to the browser when signed in to Google web services like Gmail. Being signed in to the browser means that the user's account information will be kept by the browser. However, it does not mean that Chrome sync will be turned on by default; the user must separately opt in to use this feature. Enabling this policy will prevent the user from turning off the setting that allows browser sign-in. To control the availability of Chrome sync, use the 'SyncDisabled' policy.
+
+      If the policy is set to 'Force browser sign-in' the user is presented with an account selection dialogue and has to choose and sign in to an account to use the browser. This ensures that for managed accounts the policies associated with the account are applied and enforced. By default this turns on Chrome sync for the account, except for the case when sync was disabled by the domain admin or via the 'SyncDisabled' policy. The default value of BrowserGuestModeEnabled will be set to false. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help centre article: https://support.google.com/chrome/a/answer/7572556. This option does not support Linux and will fall back to 'Enable browser sign-in' if used.
+
+      If this policy is not set then the user can decide if they want to enable the browser sign-in option and use it as they see fit.</translation>
 <translation id="9072600218500597787">Configures the required host domain names that will be imposed on remote access hosts and prevents users from changing it.
 
           If this setting is enabled, then hosts can be shared only using accounts registered on one of the specified domain names.
@@ -4312,6 +4365,12 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="9112897538922695510">Allows you to register a list of protocol handlers. This can only be a recommended policy. The property |protocol| should be set to the scheme such as 'mailto' and the property |url| should be set to the URL pattern of the application that handles the scheme. The pattern can include a '%s', which if present will be replaced by the handled URL.
 
           The protocol handlers registered by policy are merged with the ones registered by the user and both are available for use. The user can override the protocol handlers installed by policy by installing a new default handler, but cannot remove a protocol handler registered by policy.</translation>
+<translation id="91196902572559194">This policy gives Google Assistant permission to listen for the voice activation phrase.
+
+      If the policy is enabled, Google Assistant would listen for the voice activation phrase.
+      If the policy is disabled, Google Assistant would not listen for the voice activation phrase.
+      If the policy is not set, users can decide whether to allow Google Assistant to listen for the voice activation phrase.
+      </translation>
 <translation id="9123211093995421438">Specifies the minimum number of <ph name="PRODUCT_OS_NAME" /> milestones roll back should be allowed starting from the stable version at any time.
 
       Default is zero for consumer, four (approx. half a year) for enterprise-enrolled devices.

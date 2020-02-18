@@ -38,7 +38,8 @@ class FetchHandler : public DevToolsDomainHandler, public Fetch::Backend {
       const base::UnguessableToken& frame_token,
       bool is_navigation,
       bool is_download,
-      network::mojom::URLLoaderFactoryRequest* target_factory_request);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+          target_factory_receiver);
 
  private:
   // DevToolsDomainHandler
@@ -91,7 +92,7 @@ class FetchHandler : public DevToolsDomainHandler, public Fetch::Backend {
   std::unique_ptr<Fetch::Frontend> frontend_;
   std::unique_ptr<DevToolsURLLoaderInterceptor> interceptor_;
   UpdateLoaderFactoriesCallback update_loader_factories_callback_;
-  base::WeakPtrFactory<FetchHandler> weak_factory_;
+  base::WeakPtrFactory<FetchHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FetchHandler);
 };

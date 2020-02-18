@@ -26,7 +26,7 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/chromeos/events/modifier_key.h"
 #include "ui/chromeos/events/pref_names.h"
-#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -265,7 +265,7 @@ ui::DomCode RelocateModifier(ui::DomCode code, ui::DomKeyLocation location) {
 // Returns true if |mouse_event| was generated from a touchpad device.
 bool IsFromTouchpadDevice(const ui::MouseEvent& mouse_event) {
   for (const ui::InputDevice& touchpad :
-       ui::InputDeviceManager::GetInstance()->GetTouchpadDevices()) {
+       ui::DeviceDataManager::GetInstance()->GetTouchpadDevices()) {
     if (touchpad.id == mouse_event.source_device_id())
       return true;
   }
@@ -1118,6 +1118,38 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const ui::KeyEvent& key_event,
   CHECK(key_event.type() == ui::ET_KEY_PRESSED ||
         key_event.type() == ui::ET_KEY_RELEASED);
 
+  // Some action key codes are mapped to standard VKEY and DomCode values
+  // during event to KeyEvent translation. However, in Chrome, different VKEY
+  // combinations trigger those actions. This table maps event VKEYs to the
+  // right action VKEYs.
+  // TODO(dtor): Either add proper accelerators for VKEY_ZOOM or move
+  // from VKEY_MEDIA_LAUNCH_APP2 to VKEY_ZOOM.
+  static const KeyboardRemapping kActionToActionKeys[] = {
+      // Zoom toggle is actually through VKEY_MEDIA_LAUNCH_APP2.
+      {{ui::EF_NONE, ui::VKEY_ZOOM},
+       {ui::EF_NONE, ui::DomCode::ZOOM_TOGGLE, ui::DomKey::ZOOM_TOGGLE,
+        ui::VKEY_MEDIA_LAUNCH_APP2}},
+  };
+
+  // Map certain action keys to the right VKey and modifier.
+  RewriteWithKeyboardRemappings(kActionToActionKeys,
+                                base::size(kActionToActionKeys), *state, state);
+
+  // Some key codes have a Dom code but no VKEY value assigned. They're mapped
+  // to VKEY values here.
+  if (state->key_code == ui::VKEY_UNKNOWN) {
+    if (state->code == ui::DomCode::SHOW_ALL_WINDOWS) {
+      // Show all windows is through VKEY_MEDIA_LAUNCH_APP1.
+      state->key_code = ui::VKEY_MEDIA_LAUNCH_APP1;
+      state->key = ui::DomKey::F4;
+    } else if (state->code == ui::DomCode::DISPLAY_TOGGLE_INT_EXT) {
+      // Display toggle is through control + VKEY_MEDIA_LAUNCH_APP2.
+      state->flags |= ui::EF_CONTROL_DOWN;
+      state->key_code = ui::VKEY_MEDIA_LAUNCH_APP2;
+      state->key = ui::DomKey::F12;
+    }
+  }
+
   const auto iter = device_id_to_info_.find(key_event.source_device_id());
   KeyboardTopRowLayout layout = kKbdTopRowLayoutDefault;
   if (iter != device_id_to_info_.end()) {
@@ -1526,37 +1558,6 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
        {ui::EF_NONE, ui::DomCode::F3, ui::DomKey::F3, ui::VKEY_F3}},
   };
 
-  // Some action key codes are mapped to standard VKEY and DomCode values
-  // during event to KeyEvent translation. However, in Chrome, different VKEY
-  // combinations trigger those actions. This table maps event VKEYs to the
-  // right action VKEYs.
-  static const KeyboardRemapping kActionToActionKeys[] = {
-      // Zoom toggle is actually through VKEY_MEDIA_LAUNCH_APP2.
-      {{ui::EF_NONE, ui::VKEY_ZOOM},
-       {ui::EF_NONE, ui::DomCode::ZOOM_TOGGLE, ui::DomKey::ZOOM_TOGGLE,
-        ui::VKEY_MEDIA_LAUNCH_APP2}},
-  };
-
-  // Some key codes have a Dom code but no VKEY value assigned. They're mapped
-  // to VKEY values here.
-  if (state->key_code == ui::VKEY_UNKNOWN) {
-    if (state->code == ui::DomCode::SHOW_ALL_WINDOWS) {
-      // Show all windows is through VKEY_MEDIA_LAUNCH_APP1.
-      state->key_code = ui::VKEY_MEDIA_LAUNCH_APP1;
-      state->key = ui::DomKey::F4;
-    } else if (state->code == ui::DomCode::DISPLAY_TOGGLE_INT_EXT) {
-      // Display toggle is through control + VKEY_MEDIA_LAUNCH_APP2.
-      state->flags |= ui::EF_CONTROL_DOWN;
-      state->key_code = ui::VKEY_MEDIA_LAUNCH_APP2;
-      state->key = ui::DomKey::F12;
-    }
-  }
-
-  // Map certain action keys to the right VKey and modifier.
-  RewriteWithKeyboardRemappings(kActionToActionKeys,
-                                base::size(kActionToActionKeys),
-                                *state, state);
-
   ui::EventRewriterChromeOS::MutableKeyState incoming_without_command = *state;
   incoming_without_command.flags &= ~ui::EF_COMMAND_DOWN;
 
@@ -1605,10 +1606,10 @@ bool EventRewriterChromeOS::ForceTopRowAsFunctionKeys() const {
 
 EventRewriterChromeOS::DeviceType EventRewriterChromeOS::KeyboardDeviceAdded(
     int device_id) {
-  if (!ui::InputDeviceManager::HasInstance())
+  if (!ui::DeviceDataManager::HasInstance())
     return kDeviceUnknown;
   const std::vector<ui::InputDevice>& keyboard_devices =
-      ui::InputDeviceManager::GetInstance()->GetKeyboardDevices();
+      ui::DeviceDataManager::GetInstance()->GetKeyboardDevices();
   for (const auto& keyboard : keyboard_devices) {
     if (keyboard.id == device_id) {
       const DeviceType type = GetDeviceType(keyboard);

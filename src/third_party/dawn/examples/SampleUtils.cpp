@@ -31,7 +31,7 @@
 #include <cstring>
 #include <iostream>
 
-void PrintDeviceError(const char* message, dawn::CallbackUserdata) {
+void PrintDeviceError(const char* message, void*) {
     std::cout << "Device error: " << message << std::endl;
 }
 
@@ -121,10 +121,18 @@ dawn::Device CreateCppDawnDevice() {
                 c2sBuf = new utils::TerribleCommandBuffer();
                 s2cBuf = new utils::TerribleCommandBuffer();
 
-                wireServer = new dawn_wire::WireServer(backendDevice, backendProcs, s2cBuf);
+                dawn_wire::WireServerDescriptor serverDesc = {};
+                serverDesc.device = backendDevice;
+                serverDesc.procs = &backendProcs;
+                serverDesc.serializer = s2cBuf;
+
+                wireServer = new dawn_wire::WireServer(serverDesc);
                 c2sBuf->SetHandler(wireServer);
 
-                wireClient = new dawn_wire::WireClient(c2sBuf);
+                dawn_wire::WireClientDescriptor clientDesc = {};
+                clientDesc.serializer = c2sBuf;
+
+                wireClient = new dawn_wire::WireClient(clientDesc);
                 DawnDevice clientDevice = wireClient->GetDevice();
                 DawnProcTable clientProcs = wireClient->GetProcs();
                 s2cBuf->SetHandler(wireClient);
@@ -136,7 +144,7 @@ dawn::Device CreateCppDawnDevice() {
     }
 
     dawnSetProcs(&procs);
-    procs.deviceSetErrorCallback(cDevice, PrintDeviceError, 0);
+    procs.deviceSetErrorCallback(cDevice, PrintDeviceError, nullptr);
     return dawn::Device::Acquire(cDevice);
 }
 
@@ -163,7 +171,7 @@ dawn::TextureView CreateDefaultDepthStencilView(const dawn::Device& device) {
     descriptor.size.depth = 1;
     descriptor.arrayLayerCount = 1;
     descriptor.sampleCount = 1;
-    descriptor.format = dawn::TextureFormat::D32FloatS8Uint;
+    descriptor.format = dawn::TextureFormat::Depth24PlusStencil8;
     descriptor.mipLevelCount = 1;
     descriptor.usage = dawn::TextureUsageBit::OutputAttachment;
     auto depthStencilTexture = device.CreateTexture(&descriptor);

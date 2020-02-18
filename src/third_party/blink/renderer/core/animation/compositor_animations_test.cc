@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/animation/compositor_color_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_float_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_float_keyframe.h"
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
@@ -74,6 +75,7 @@
 #include "third_party/blink/renderer/platform/transforms/transform_operations.h"
 #include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
 
@@ -99,8 +101,8 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
   Persistent<DocumentTimeline> timeline_;
 
   void SetUp() override {
-    RenderingTest::SetUp();
     EnableCompositing();
+    RenderingTest::SetUp();
     linear_timing_function_ = LinearTimingFunction::Shared();
     cubic_ease_timing_function_ = CubicBezierTimingFunction::Preset(
         CubicBezierTimingFunction::EaseType::EASE);
@@ -125,7 +127,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
 
     GetAnimationClock().ResetTimeForTesting();
 
-    timeline_ = DocumentTimeline::Create(&GetDocument());
+    timeline_ = GetDocument().Timeline();
     timeline_->ResetForTesting();
 
     // Using will-change ensures that this object will need paint properties.
@@ -174,12 +176,6 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
     return CompositorAnimations::CheckCanStartElementOnCompositor(element);
   }
 
-  void GetAnimationOnCompositor(
-      Timing& timing,
-      StringKeyframeEffectModel& effect,
-      Vector<std::unique_ptr<CompositorKeyframeModel>>& keyframe_models) {
-    GetAnimationOnCompositor(timing, effect, keyframe_models, 1);
-  }
   void GetAnimationOnCompositor(
       Timing& timing,
       StringKeyframeEffectModel& effect,
@@ -232,8 +228,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
                                           const String& value,
                                           double offset = 0) {
     auto* keyframe = MakeGarbageCollected<StringKeyframe>();
-    keyframe->SetCSSPropertyValue(AtomicString(property_name),
-                                  GetDocument().GetPropertyRegistry(), value,
+    keyframe->SetCSSPropertyValue(AtomicString(property_name), value,
                                   GetDocument().GetSecureContextMode(),
                                   GetDocument().ElementSheet().Contents());
     keyframe->SetComposite(EffectModel::kCompositeReplace);
@@ -467,7 +462,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
 
   void BeginFrame() {
     helper_.GetWebView()->MainFrameWidget()->BeginFrame(
-        WTF::CurrentTimeTicks(), false /* record_main_frame_metrics */);
+        base::TimeTicks::Now(), false /* record_main_frame_metrics */);
   }
 
   void ForceFullCompositingUpdate() {
@@ -592,8 +587,10 @@ TEST_P(AnimationCompositorAnimationsTest,
   ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
   RegisterProperty(GetDocument(), "--foo", "<number>", "0", false);
   RegisterProperty(GetDocument(), "--bar", "<length>", "10px", false);
+  RegisterProperty(GetDocument(), "--loo", "<color>", "rgb(0, 0, 0)", false);
   SetCustomProperty("--foo", "10");
   SetCustomProperty("--bar", "10px");
+  SetCustomProperty("--loo", "rgb(0, 255, 0)");
 
   auto style = GetDocument().EnsureStyleResolver().StyleForElement(element_);
   EXPECT_TRUE(style->NonInheritedVariables());
@@ -603,9 +600,18 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_TRUE(style->NonInheritedVariables()
                   ->GetData(AtomicString("--bar"))
                   .value_or(nullptr));
+  EXPECT_TRUE(style->NonInheritedVariables()
+                  ->GetData(AtomicString("--loo"))
+                  .value_or(nullptr));
 
   StringKeyframe* keyframe = CreateReplaceOpKeyframe("--foo", "10");
   EXPECT_EQ(DuplicateSingleKeyframeAndTestIsCandidateOnResult(keyframe),
+            CompositorAnimations::kNoFailure);
+
+  // Color-valued properties are supported
+  StringKeyframe* color_keyframe =
+      CreateReplaceOpKeyframe("--loo", "rgb(0, 255, 0)");
+  EXPECT_EQ(DuplicateSingleKeyframeAndTestIsCandidateOnResult(color_keyframe),
             CompositorAnimations::kNoFailure);
 
   // Length-valued properties are not compositable.
@@ -867,10 +873,10 @@ TEST_P(AnimationCompositorAnimationsTest,
   effect1->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(), *style,
                                                      nullptr);
 
-  EXPECT_EQ(2u,
-            effect1->GetPropertySpecificKeyframes(target_property1h).size());
-  EXPECT_FALSE(effect1->GetPropertySpecificKeyframes(target_property1h)[0]
-                   ->GetCompositorKeyframeValue());
+  const auto& keyframes1 =
+      *effect1->GetPropertySpecificKeyframes(target_property1h);
+  EXPECT_EQ(2u, keyframes1.size());
+  EXPECT_FALSE(keyframes1[0]->GetCompositorKeyframeValue());
   EXPECT_EQ(1u, effect1->Properties().size());
   EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element_.Get(),
                                               animation1, *effect1) &
@@ -890,10 +896,10 @@ TEST_P(AnimationCompositorAnimationsTest,
   effect2->SnapshotAllCompositorKeyframesIfNecessary(*inline_.Get(), *style,
                                                      nullptr);
 
-  EXPECT_EQ(2u,
-            effect2->GetPropertySpecificKeyframes(target_property2h).size());
-  EXPECT_TRUE(effect2->GetPropertySpecificKeyframes(target_property2h)[0]
-                  ->GetCompositorKeyframeValue());
+  const auto& keyframes2 =
+      *effect2->GetPropertySpecificKeyframes(target_property2h);
+  EXPECT_EQ(2u, keyframes2.size());
+  EXPECT_TRUE(keyframes2[0]->GetCompositorKeyframeValue());
   EXPECT_EQ(1u, effect2->Properties().size());
   EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *inline_.Get(),
                                               animation2, *effect2) &
@@ -916,10 +922,10 @@ TEST_P(AnimationCompositorAnimationsTest,
   effect3->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(), *style,
                                                      nullptr);
 
-  EXPECT_EQ(2u,
-            effect3->GetPropertySpecificKeyframes(target_property3h).size());
-  EXPECT_TRUE(effect3->GetPropertySpecificKeyframes(target_property3h)[0]
-                  ->GetCompositorKeyframeValue());
+  const auto& keyframes3 =
+      *effect3->GetPropertySpecificKeyframes(target_property3h);
+  EXPECT_EQ(2u, keyframes3.size());
+  EXPECT_TRUE(keyframes3[0]->GetCompositorKeyframeValue());
   EXPECT_EQ(1u, effect3->Properties().size());
   EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element_.Get(),
                                               animation3, *effect3) &
@@ -1525,6 +1531,26 @@ TEST_P(AnimationCompositorAnimationsTest,
 }
 
 TEST_P(AnimationCompositorAnimationsTest,
+       CreateCustomFloatPropertyAnimationWithNonAsciiName) {
+  ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
+
+  String property_name = "--東京都";
+  RegisterProperty(GetDocument(), property_name, "<number>", "0", false);
+  SetCustomProperty(property_name, "10");
+
+  StringKeyframeEffectModel* effect = CreateKeyframeEffectModel(
+      CreateReplaceOpKeyframe(property_name, "10", 0),
+      CreateReplaceOpKeyframe(property_name, "20", 1.0));
+
+  std::unique_ptr<CompositorKeyframeModel> keyframe_model =
+      ConvertToCompositorAnimation(*effect);
+  EXPECT_EQ(compositor_target_property::CSS_CUSTOM_PROPERTY,
+            keyframe_model->TargetProperty());
+  EXPECT_EQ(keyframe_model->GetCustomPropertyNameForTesting(),
+            property_name.Utf8().data());
+}
+
+TEST_P(AnimationCompositorAnimationsTest,
        CreateSimpleCustomFloatPropertyAnimation) {
   ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
 
@@ -1556,6 +1582,54 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_EQ(20, keyframes[1]->Value());
   EXPECT_EQ(TimingFunction::Type::LINEAR,
             keyframes[1]->GetTimingFunctionForTesting()->GetType());
+}
+
+TEST_P(AnimationCompositorAnimationsTest,
+       CreateSimpleCustomColorPropertyAnimation) {
+  ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
+
+  RegisterProperty(GetDocument(), "--foo", "<color>", "rgb(0, 0, 0)", false);
+  SetCustomProperty("--foo", "rgb(0, 0, 0)");
+
+  StringKeyframeEffectModel* effect = CreateKeyframeEffectModel(
+      CreateReplaceOpKeyframe("--foo", "rgb(0, 0, 0)", 0),
+      CreateReplaceOpKeyframe("--foo", "rgb(0, 255, 0)", 1.0));
+
+  std::unique_ptr<CompositorKeyframeModel> keyframe_model =
+      ConvertToCompositorAnimation(*effect);
+  EXPECT_EQ(compositor_target_property::CSS_CUSTOM_PROPERTY,
+            keyframe_model->TargetProperty());
+
+  std::unique_ptr<CompositorColorAnimationCurve> keyframed_color_curve =
+      keyframe_model->ColorCurveForTesting();
+
+  CompositorColorAnimationCurve::Keyframes keyframes =
+      keyframed_color_curve->KeyframesForTesting();
+  ASSERT_EQ(2UL, keyframes.size());
+
+  EXPECT_EQ(0, keyframes[0]->Time());
+  EXPECT_EQ(SkColorSetRGB(0, 0, 0), keyframes[0]->Value());
+  EXPECT_EQ(TimingFunction::Type::LINEAR,
+            keyframes[0]->GetTimingFunctionForTesting()->GetType());
+
+  EXPECT_EQ(1.0, keyframes[1]->Time());
+  EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0), keyframes[1]->Value());
+  EXPECT_EQ(TimingFunction::Type::LINEAR,
+            keyframes[1]->GetTimingFunctionForTesting()->GetType());
+}
+
+TEST_P(AnimationCompositorAnimationsTest, MixedCustomPropertyAnimation) {
+  ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
+
+  RegisterProperty(GetDocument(), "--foo", "<number> | <color>", "0", false);
+  SetCustomProperty("--foo", "0");
+
+  StringKeyframeEffectModel* effect = CreateKeyframeEffectModel(
+      CreateReplaceOpKeyframe("--foo", "20", 0),
+      CreateReplaceOpKeyframe("--foo", "rgb(0, 255, 0)", 1.0));
+
+  EXPECT_TRUE(CanStartEffectOnCompositor(timing_, *effect) &
+              CompositorAnimations::kMixedKeyframeValueTypes);
 }
 
 TEST_P(AnimationCompositorAnimationsTest,
@@ -1631,11 +1705,9 @@ void UpdateDummyEffectNode(ObjectPaintProperties& properties,
 }
 
 }  // namespace
+
 TEST_P(AnimationCompositorAnimationsTest,
        CanStartElementOnCompositorTransformBasedOnPaintProperties) {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   Persistent<Element> element = GetDocument().CreateElementForBinding("shared");
   LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
   layout_object->EnsureIdForTestingProxy();
@@ -1668,9 +1740,6 @@ TEST_P(AnimationCompositorAnimationsTest,
 
 TEST_P(AnimationCompositorAnimationsTest,
        CanStartElementOnCompositorEffectBasedOnPaintProperties) {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   Persistent<Element> element = GetDocument().CreateElementForBinding("shared");
   LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
   layout_object->EnsureIdForTestingProxy();
@@ -1766,8 +1835,9 @@ TEST_P(AnimationCompositorAnimationsTest, TrackRafAnimationNoneRegistered) {
 }
 
 TEST_P(AnimationCompositorAnimationsTest, CompositedTransformAnimation) {
-  // TODO(wangxianzhu): Fix this test for CompositeAfterPaint.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      // TODO(wangxianzhu): Fix this test for CompositeAfterPaint.
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   LoadTestData("transform-animation.html");
@@ -1778,22 +1848,20 @@ TEST_P(AnimationCompositorAnimationsTest, CompositedTransformAnimation) {
   ASSERT_NE(nullptr, properties);
   const auto* transform = properties->Transform();
   ASSERT_NE(nullptr, transform);
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_TRUE(transform->HasDirectCompositingReasons());
-    EXPECT_TRUE(transform->HasActiveTransformAnimation());
-    // Make sure the animation state is initialized in paint properties.
-    auto* property_trees =
-        document->View()->RootCcLayer()->layer_tree_host()->property_trees();
-    auto* cc_transform = property_trees->transform_tree.Node(
-        property_trees->element_id_to_transform_node_index
-            [transform->GetCompositorElementId()]);
-    ASSERT_NE(nullptr, cc_transform);
-    EXPECT_TRUE(cc_transform->has_potential_animation);
-    EXPECT_TRUE(cc_transform->is_currently_animating);
-    EXPECT_EQ(cc::kNotScaled, cc_transform->starting_animation_scale);
-    EXPECT_EQ(cc::kNotScaled, cc_transform->maximum_animation_scale);
-  }
+  EXPECT_TRUE(transform->HasDirectCompositingReasons());
+  EXPECT_TRUE(transform->HasActiveTransformAnimation());
+
+  // Make sure the animation state is initialized in paint properties.
+  auto* property_trees =
+      document->View()->RootCcLayer()->layer_tree_host()->property_trees();
+  auto* cc_transform = property_trees->transform_tree.Node(
+      property_trees->element_id_to_transform_node_index
+          [transform->GetCompositorElementId()]);
+  ASSERT_NE(nullptr, cc_transform);
+  EXPECT_TRUE(cc_transform->has_potential_animation);
+  EXPECT_TRUE(cc_transform->is_currently_animating);
+  EXPECT_EQ(cc::kNotScaled, cc_transform->starting_animation_scale);
+  EXPECT_EQ(cc::kNotScaled, cc_transform->maximum_animation_scale);
 
   // Make sure the animation is started on the compositor.
   EXPECT_EQ(CheckCanStartElementOnCompositor(*target),
@@ -1805,8 +1873,9 @@ TEST_P(AnimationCompositorAnimationsTest, CompositedTransformAnimation) {
 }
 
 TEST_P(AnimationCompositorAnimationsTest, CompositedScaleAnimation) {
-  // TODO(wangxianzhu): Fix this test for CompositeAfterPaint.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      // TODO(wangxianzhu): Fix this test for CompositeAfterPaint.
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   LoadTestData("scale-animation.html");
@@ -1817,22 +1886,20 @@ TEST_P(AnimationCompositorAnimationsTest, CompositedScaleAnimation) {
   ASSERT_NE(nullptr, properties);
   const auto* transform = properties->Transform();
   ASSERT_NE(nullptr, transform);
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_TRUE(transform->HasDirectCompositingReasons());
-    EXPECT_TRUE(transform->HasActiveTransformAnimation());
-    // Make sure the animation state is initialized in paint properties.
-    auto* property_trees =
-        document->View()->RootCcLayer()->layer_tree_host()->property_trees();
-    auto* cc_transform = property_trees->transform_tree.Node(
-        property_trees->element_id_to_transform_node_index
-            [transform->GetCompositorElementId()]);
-    ASSERT_NE(nullptr, cc_transform);
-    EXPECT_TRUE(cc_transform->has_potential_animation);
-    EXPECT_TRUE(cc_transform->is_currently_animating);
-    EXPECT_EQ(2.f, cc_transform->starting_animation_scale);
-    EXPECT_EQ(5.f, cc_transform->maximum_animation_scale);
-  }
+  EXPECT_TRUE(transform->HasDirectCompositingReasons());
+  EXPECT_TRUE(transform->HasActiveTransformAnimation());
+
+  // Make sure the animation state is initialized in paint properties.
+  auto* property_trees =
+      document->View()->RootCcLayer()->layer_tree_host()->property_trees();
+  auto* cc_transform = property_trees->transform_tree.Node(
+      property_trees->element_id_to_transform_node_index
+          [transform->GetCompositorElementId()]);
+  ASSERT_NE(nullptr, cc_transform);
+  EXPECT_TRUE(cc_transform->has_potential_animation);
+  EXPECT_TRUE(cc_transform->is_currently_animating);
+  EXPECT_EQ(2.f, cc_transform->starting_animation_scale);
+  EXPECT_EQ(5.f, cc_transform->maximum_animation_scale);
 
   // Make sure the animation is started on the compositor.
   EXPECT_EQ(CheckCanStartElementOnCompositor(*target),
@@ -1929,6 +1996,27 @@ TEST_P(AnimationCompositorAnimationsTest,
   cc::AnimationHost* host = document->View()->GetCompositorAnimationHost();
   EXPECT_EQ(host->MainThreadAnimationsCount(), 4u);
   EXPECT_EQ(host->CompositedAnimationsCount(), 0u);
+}
+
+// Regression test for https://crbug.com/999333. We were relying on the Document
+// always having Settings, which will not be the case if it is not attached to a
+// Frame.
+TEST_P(AnimationCompositorAnimationsTest,
+       DocumentWithoutSettingShouldNotCauseCrash) {
+  SetBodyInnerHTML("<div id='target'></div>");
+  Element* target = GetElementById("target");
+  ASSERT_TRUE(target);
+
+  // Move the target element to another Document, that does not have a frame
+  // (and thus no Settings).
+  Document* another_document = MakeGarbageCollected<Document>();
+  ASSERT_FALSE(another_document->GetSettings());
+
+  another_document->adoptNode(target, ASSERT_NO_EXCEPTION);
+
+  // This should not crash.
+  EXPECT_NE(CheckCanStartElementOnCompositor(*target),
+            CompositorAnimations::kNoFailure);
 }
 
 }  // namespace blink

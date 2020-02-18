@@ -152,7 +152,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   virtual void StyleDidChange(const ComputedStyle* old_style,
                               const ComputedStyle& new_style) {}
   virtual HitTestCanvasResult* GetControlAndIdIfHitRegionExists(
-      const LayoutPoint& location) {
+      const PhysicalOffset& location) {
     NOTREACHED();
     return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
   }

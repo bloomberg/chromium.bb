@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -46,8 +47,7 @@ CookieStoreManager::CookieStoreManager(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : service_worker_context_(std::move(service_worker_context)),
       cookie_change_listener_binding_(this),
-      registration_user_data_key_(kSubscriptionsUserKey),
-      weak_factory_(this) {
+      registration_user_data_key_(kSubscriptionsUserKey) {
   service_worker_context_->AddObserver(this);
 }
 
@@ -205,6 +205,15 @@ void CookieStoreManager::AppendSubscriptions(
     // the service worker's install event is handled.
     std::move(callback).Run(false);
     return;
+  }
+
+  for (const auto& subscription : mojo_subscriptions) {
+    if (!ServiceWorkerUtils::ScopeMatches(service_worker_registration->scope(),
+                                          subscription->url)) {
+      // Another spot where BadMessage would be appropriate.
+      std::move(callback).Run(false);
+      return;
+    }
   }
 
   if (mojo_subscriptions.empty()) {

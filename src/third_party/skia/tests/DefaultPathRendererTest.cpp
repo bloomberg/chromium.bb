@@ -46,7 +46,7 @@ static SkBitmap read_back(GrRenderTargetContext* rtc, int width, int height) {
     SkBitmap bm;
     bm.allocPixels(dstII);
 
-    rtc->readPixels(dstII, bm.getAddr(0, 0), bm.rowBytes(), 0, 0, 0);
+    rtc->readPixels(dstII, bm.getAddr(0, 0), bm.rowBytes(), {0, 0});
 
     return bm;
 }
@@ -82,14 +82,10 @@ static void run_test(GrContext* ctx, skiatest::Reporter* reporter) {
 
     GrStyle style(SkStrokeRec::kFill_InitStyle);
 
-    GrBackendFormat format =
-            ctx->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
     {
-        auto rtc =  ctx->priv().makeDeferredRenderTargetContext(
-                                                         format,
-                                                         SkBackingFit::kApprox,
-                                                         kBigSize/2+1, kBigSize/2+1,
-                                                         kRGBA_8888_GrPixelConfig, nullptr);
+        auto rtc = ctx->priv().makeDeferredRenderTargetContext(
+                SkBackingFit::kApprox, kBigSize/2 + 1, kBigSize/2 + 1,
+                GrColorType::kRGBA_8888, nullptr);
 
         rtc->clear(nullptr, { 0, 0, 0, 1 }, GrRenderTargetContext::CanClearFullscreen::kYes);
 
@@ -107,9 +103,7 @@ static void run_test(GrContext* ctx, skiatest::Reporter* reporter) {
 
     {
         auto rtc = ctx->priv().makeDeferredRenderTargetContext(
-                                                        format, SkBackingFit::kExact, kBigSize,
-                                                        kBigSize, kRGBA_8888_GrPixelConfig,
-                                                        nullptr);
+                SkBackingFit::kExact, kBigSize, kBigSize, GrColorType::kRGBA_8888, nullptr);
 
         rtc->clear(nullptr, { 0, 0, 0, 1 }, GrRenderTargetContext::CanClearFullscreen::kYes);
 

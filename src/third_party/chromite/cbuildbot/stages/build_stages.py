@@ -449,7 +449,6 @@ class InitSDKStage(generic_stages.BuilderStage):
           buildroot=self._build_root,
           replace=replace,
           use_sdk=use_sdk,
-          self_bootstrap = self._run.config.self_bootstrap,
           chrome_root=self._run.options.chrome_root,
           extra_env=self._portage_extra_env,
           use_image=self._run.config.chroot_use_image,
@@ -561,6 +560,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                afdo_generate_min=False,
                afdo_use=False,
                update_metadata=False,
+               record_packages_under_test=True,
                **kwargs):
     if afdo_use:
       suffix = self.UpdateSuffix(constants.USE_AFDO_USE, suffix)
@@ -568,6 +568,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
         builder_run, buildstore, board, suffix=suffix, **kwargs)
     self._afdo_generate_min = afdo_generate_min
     self._update_metadata = update_metadata
+    self._record_packages_under_test = record_packages_under_test
     assert not afdo_generate_min or not afdo_use
 
     useflags = self._portage_extra_env.get('USE', '').split()
@@ -592,24 +593,15 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
   def RecordPackagesUnderTest(self):
     """Records all packages that may affect the board to BuilderRun."""
     packages = set()
-    try:
-      deps = commands.ExtractBuildDepsGraph(
-          self._build_root, self._current_board)
-      for package_dep in deps['packageDeps']:
-        info = package_dep['packageInfo']
-        packages.add('%s/%s-%s' % (
-            info['category'], info['packageName'], info['version']))
+    deps = commands.ExtractBuildDepsGraph(self._build_root,
+                                          self._current_board)
+    for package_dep in deps['packageDeps']:
+      info = package_dep['packageInfo']
+      packages.add('%s/%s-%s' % (info['category'], info['packageName'],
+                                 info['version']))
 
-    except Exception:
-      # Dependency extraction may fail due to bad ebuild changes. Let
-      # the build continues because we have logic to triage build
-      # packages failures separately. Note that we only categorize CLs
-      # on the package-level if dependencies are extracted
-      # successfully, so it is safe to ignore the exception.
-      logging.exception('Unable to gather packages under test')
-    else:
-      logging.info('Recording packages under test')
-      self.board_runattrs.SetParallel('packages_under_test', packages)
+    logging.info('Sucessfully extract packages under test')
+    self.board_runattrs.SetParallel('packages_under_test', packages)
 
   def _ShouldEnableGoma(self):
     # Enable goma if 1) chrome actually needs to be built, or we want to use
@@ -640,8 +632,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
         self._run.options.goma_client_json,
         stage_name=self.StageNamePrefix() if use_goma_deps_cache else None)
 
-    goma.ForceUpdate()
-
     # Set USE_GOMA env var so that chrome is built with goma.
     self._portage_extra_env['USE_GOMA'] = 'true'
     self._portage_extra_env.update(goma.GetChrootExtraEnv())
@@ -659,7 +649,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     packages = self.GetListOfPackagesToBuild()
     self.VerifyChromeBinpkg(packages)
-    self.RecordPackagesUnderTest()
+    if self._record_packages_under_test:
+      self.RecordPackagesUnderTest()
 
     try:
       event_filename = 'build-events.json'
@@ -682,8 +673,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
 
     # Set property to specify bisection builder job to run for Findit.
     logging.PrintKitchenSetBuildProperty(
-        'BISECT_BUILDER',
-        self._current_board + '-postsubmit-tryjob')
+        'BISECT_BUILDER', self._current_board + '-postsubmit-tryjob')
     try:
       commands.Build(
           self._build_root,
@@ -704,10 +694,10 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       failures_filename = os.path.join(self.archive_path,
                                        'BuildCompileFailureOutput.json')
       osutils.WriteFile(failures_filename, failure_json)
-      self.UploadArtifact(os.path.basename(failures_filename),
-                          archive=False)
-      self.PrintDownloadLink(os.path.basename(failures_filename),
-                             text_to_display='BuildCompileFailureOutput')
+      self.UploadArtifact(os.path.basename(failures_filename), archive=False)
+      self.PrintDownloadLink(
+          os.path.basename(failures_filename),
+          text_to_display='BuildCompileFailureOutput')
       gs_url = os.path.join(self.upload_url, 'BuildCompileFailureOutput.json')
       logging.PrintKitchenSetBuildProperty('BuildCompileFailureOutput', gs_url)
       raise
@@ -837,8 +827,8 @@ class BuildImageStage(BuildPackagesStage):
     parallel.RunParallelSteps([self._BuildVMImage, self._BuildGceTarballs])
 
   def _BuildVMImage(self):
-    if ((self._run.config.vm_tests or self._run.config.tast_vm_tests)
-        and not self._afdo_generate_min):
+    if ((self._run.config.vm_tests or self._run.config.tast_vm_tests) and
+        not self._afdo_generate_min):
       commands.BuildVMImageForTesting(
           self._build_root,
           self._current_board,

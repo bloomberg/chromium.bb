@@ -60,9 +60,9 @@ class DownloadManagerCoordinatorImpl
         mDeleteCoordinator = new DeleteUndoCoordinator(snackbarManager);
         mSelectionDelegate = new SelectionDelegate<ListItem>();
         mListCoordinator = new DateOrderedListCoordinator(mActivity, config,
-                OfflineContentAggregatorFactory.forProfile(profile),
-                mDeleteCoordinator::showSnackbar, mSelectionDelegate, this::notifyFilterChanged,
-                createDateOrderedListObserver(), modalDialogManager);
+                OfflineContentAggregatorFactory.get(), mDeleteCoordinator::showSnackbar,
+                mSelectionDelegate, this::notifyFilterChanged, createDateOrderedListObserver(),
+                modalDialogManager);
         mToolbarCoordinator = new ToolbarCoordinator(mActivity, this, mListCoordinator,
                 mSelectionDelegate, config.isSeparateActivity, profile);
 
@@ -169,7 +169,7 @@ class DownloadManagerCoordinatorImpl
     @Override
     public void openSettings() {
         RecordUserAction.record("Android.DownloadManager.Settings");
-        PreferencesLauncher.launchSettingsPage(mActivity, DownloadPreferences.class);
+        PreferencesLauncher.launchSettingsPageCompat(mActivity, DownloadPreferences.class);
     }
 
     private void notifyFilterChanged(@FilterType int filter) {

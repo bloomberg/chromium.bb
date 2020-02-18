@@ -76,13 +76,15 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // LoaderCallback is invoked.
   void MaybeCreateLoader(
       const network::ResourceRequest& tentative_resource_request,
+      BrowserContext* browser_context,
       ResourceContext* resource_context,
       LoaderCallback callback,
       FallbackCallback fallback_callback) override;
   // MaybeCreateLoaderForResponse always returns synchronously.
   bool MaybeCreateLoaderForResponse(
       const network::ResourceRequest& request,
-      const network::ResourceResponseHead& response,
+      const network::ResourceResponseHead& response_head,
+      mojo::ScopedDataPipeConsumerHandle* response_body,
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
       ThrottlingURLLoader* url_loader,
@@ -261,7 +263,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // AppCacheSubresourceURLFactory instance on creation.
   base::WeakPtr<AppCacheHost> appcache_host_;
 
-  base::WeakPtrFactory<AppCacheRequestHandler> weak_factory_;
+  base::WeakPtrFactory<AppCacheRequestHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheRequestHandler);
 };

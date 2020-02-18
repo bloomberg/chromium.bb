@@ -12,11 +12,11 @@
 #include <utility>
 #include <vector>
 
-#include "core/fpdfapi/cpdf_modulemgr.h"
-#include "core/fxcodec/codec/ccodec_progressivedecoder.h"
 #include "core/fxcodec/fx_codec.h"
+#include "core/fxcodec/progressivedecoder.h"
 #include "core/fxcrt/maybe_owned.h"
 #include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "xfa/fwl/fwl_widgethit.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
@@ -28,6 +28,7 @@
 #include "xfa/fxfa/layout/cxfa_layoutprocessor.h"
 #include "xfa/fxfa/parser/cxfa_border.h"
 #include "xfa/fxfa/parser/cxfa_box.h"
+#include "xfa/fxfa/parser/cxfa_edge.h"
 #include "xfa/fxfa/parser/cxfa_image.h"
 #include "xfa/fxfa/parser/cxfa_margin.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
@@ -154,8 +155,8 @@ RetainPtr<CFX_DIBitmap> XFA_LoadImageFromBuffer(
     FXCODEC_IMAGE_TYPE type,
     int32_t& iImageXDpi,
     int32_t& iImageYDpi) {
-  CCodec_ModuleMgr* pCodecMgr = CPDF_ModuleMgr::Get()->GetCodecModule();
-  std::unique_ptr<CCodec_ProgressiveDecoder> pProgressiveDecoder =
+  auto* pCodecMgr = fxcodec::ModuleMgr::GetInstance();
+  std::unique_ptr<ProgressiveDecoder> pProgressiveDecoder =
       pCodecMgr->CreateProgressiveDecoder();
 
   CFX_DIBAttribute dibAttr;
@@ -229,9 +230,9 @@ CXFA_FFWidget* XFA_GetWidgetFromLayoutItem(CXFA_LayoutItem* pLayoutItem) {
   return GetFFWidget(ToContentLayoutItem(pLayoutItem));
 }
 
-CXFA_CalcData::CXFA_CalcData() : m_iRefCount(0) {}
+CXFA_CalcData::CXFA_CalcData() = default;
 
-CXFA_CalcData::~CXFA_CalcData() {}
+CXFA_CalcData::~CXFA_CalcData() = default;
 
 CXFA_FFWidget::CXFA_FFWidget(CXFA_Node* node) : m_pNode(node) {}
 
@@ -393,9 +394,15 @@ bool CXFA_FFWidget::OnRButtonDblClk(uint32_t dwFlags, const CFX_PointF& point) {
 }
 
 bool CXFA_FFWidget::OnSetFocus(CXFA_FFWidget* pOldWidget) {
+  // OnSetFocus event may remove this widget.
+  ObservedPtr<CXFA_FFWidget> pWatched(this);
   CXFA_FFWidget* pParent = GetFFWidget(ToContentLayoutItem(GetParent()));
-  if (pParent && !pParent->IsAncestorOf(pOldWidget))
-    pParent->OnSetFocus(pOldWidget);
+  if (pParent && !pParent->IsAncestorOf(pOldWidget)) {
+    if (!pParent->OnSetFocus(pOldWidget))
+      return false;
+  }
+  if (!pWatched)
+    return false;
 
   GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_Focused);
 
@@ -403,18 +410,30 @@ bool CXFA_FFWidget::OnSetFocus(CXFA_FFWidget* pOldWidget) {
   eParam.m_eType = XFA_EVENT_Enter;
   eParam.m_pTarget = m_pNode.Get();
   m_pNode->ProcessEvent(GetDocView(), XFA_AttributeValue::Enter, &eParam);
+  if (!pWatched)
+    return false;
+
   return true;
 }
 
 bool CXFA_FFWidget::OnKillFocus(CXFA_FFWidget* pNewWidget) {
+  // OnKillFocus event may remove this widget.
+  ObservedPtr<CXFA_FFWidget> pWatched(this);
   GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus_Focused);
   EventKillFocus();
+  if (!pWatched)
+    return false;
+
   if (!pNewWidget)
     return true;
 
   CXFA_FFWidget* pParent = GetFFWidget(ToContentLayoutItem(GetParent()));
-  if (pParent && !pParent->IsAncestorOf(pNewWidget))
-    pParent->OnKillFocus(pNewWidget);
+  if (pParent && !pParent->IsAncestorOf(pNewWidget)) {
+    if (!pParent->OnKillFocus(pNewWidget))
+      return false;
+  }
+  if (!pWatched)
+    return false;
 
   return true;
 }
@@ -555,6 +574,20 @@ void CXFA_FFWidget::DisplayCaret(bool bVisible, const CFX_RectF* pRtAnchor) {
     return;
 
   pDocEnvironment->DisplayCaret(this, bVisible, pRtAnchor);
+}
+
+void CXFA_FFWidget::GetBorderColorAndThickness(FX_ARGB* cr, float* fWidth) {
+  ASSERT(GetNode()->IsWidgetReady());
+  CXFA_Border* borderUI = GetNode()->GetUIBorder();
+  if (!borderUI)
+    return;
+
+  CXFA_Edge* edge = borderUI->GetEdgeIfExists(0);
+  if (!edge)
+    return;
+
+  *cr = edge->GetColor();
+  *fWidth = edge->GetThickness();
 }
 
 bool CXFA_FFWidget::IsLayoutRectEmpty() {

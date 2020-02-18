@@ -24,10 +24,6 @@
 #include "ui/events/keycodes/dom/dom_keyboard_layout_map.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
-#if defined(OS_ANDROID)
-#include "ui/platform_window/android/platform_window_android.h"
-#endif
-
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #endif
@@ -76,8 +72,6 @@ void WindowTreeHostPlatform::CreateAndSetPlatformWindow(
       this, std::move(properties));
 #elif defined(OS_WIN)
   platform_window_.reset(new ui::WinWindow(this, properties.bounds));
-#elif defined(OS_ANDROID)
-  platform_window_.reset(new ui::PlatformWindowAndroid(this));
 #elif defined(USE_X11)
   platform_window_.reset(new ui::X11Window(this, properties.bounds));
 #else

@@ -16,6 +16,15 @@
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
+// TODO(crbug.com/960984): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_PausableTasks DISABLED_PausableTasks
+#define MAYBE_NestedPauseHandlesTasks DISABLED_NestedPauseHandlesTasks
+#else
+#define MAYBE_PausableTasks PausableTasks
+#define MAYBE_NestedPauseHandlesTasks NestedPauseHandlesTasks
+#endif
+
 using testing::ElementsAre;
 using testing::ElementsAreArray;
 
@@ -24,8 +33,7 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace worker_scheduler_unittest {
 
-void AppendToVectorTestTask(std::vector<std::string>* vector,
-                            std::string value) {
+void AppendToVectorTestTask(Vector<String>* vector, String value) {
   vector->push_back(value);
 }
 
@@ -33,7 +41,7 @@ void RunChainedTask(scoped_refptr<base::sequence_manager::TaskQueue> task_queue,
                     int count,
                     base::TimeDelta duration,
                     scoped_refptr<base::TestMockTimeTaskRunner> environment,
-                    std::vector<base::TimeTicks>* tasks) {
+                    Vector<base::TimeTicks>* tasks) {
   tasks->push_back(environment->GetMockTickClock()->NowTicks());
 
   environment->AdvanceMockTickClock(duration);
@@ -59,7 +67,7 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
                                WorkerSchedulerProxy* proxy)
       : WorkerThreadScheduler(thread_type, manager, proxy) {}
 
-  const std::unordered_set<WorkerScheduler*>& worker_schedulers() {
+  const HashSet<WorkerScheduler*>& worker_schedulers() {
     return GetWorkerSchedulersForTesting();
   }
 
@@ -115,8 +123,8 @@ class WorkerSchedulerTest : public testing::Test {
   void RunUntilIdle() { mock_task_runner_->FastForwardUntilNoTasksRemain(); }
 
   // Helper for posting a task.
-  void PostTestTask(std::vector<std::string>* run_order,
-                    const std::string& task_descriptor,
+  void PostTestTask(Vector<String>* run_order,
+                    const String& task_descriptor,
                     TaskType task_type) {
     worker_scheduler_->GetTaskRunner(task_type)->PostTask(
         FROM_HERE, WTF::Bind(&AppendToVectorTestTask,
@@ -134,7 +142,7 @@ class WorkerSchedulerTest : public testing::Test {
 };
 
 TEST_F(WorkerSchedulerTest, TestPostTasks) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTask(&run_order, "T1", TaskType::kInternalTest);
   PostTestTask(&run_order, "T2", TaskType::kInternalTest);
   RunUntilIdle();
@@ -148,7 +156,7 @@ TEST_F(WorkerSchedulerTest, TestPostTasks) {
   PostTestTask(&run_order, "T4", TaskType::kInternalTest);
   PostTestTask(&run_order, "T5", TaskType::kInternalTest);
   RunUntilIdle();
-  EXPECT_TRUE(run_order.empty());
+  EXPECT_TRUE(run_order.IsEmpty());
 
   worker_scheduler_.reset();
 }
@@ -222,7 +230,7 @@ TEST_F(WorkerSchedulerTest, ThrottleWorkerScheduler_RunThrottledTasks) {
 
   scheduler_->OnLifecycleStateChanged(SchedulingLifecycleState::kThrottled);
 
-  std::vector<base::TimeTicks> tasks;
+  Vector<base::TimeTicks> tasks;
 
   worker_scheduler_->ThrottleableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&RunChainedTask,
@@ -254,7 +262,7 @@ TEST_F(WorkerSchedulerTest,
 
   scheduler_->OnLifecycleStateChanged(SchedulingLifecycleState::kThrottled);
 
-  std::vector<base::TimeTicks> tasks;
+  Vector<base::TimeTicks> tasks;
 
   worker_scheduler_->ThrottleableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&RunChainedTask,
@@ -272,8 +280,8 @@ TEST_F(WorkerSchedulerTest,
                          base::TimeTicks() + base::TimeDelta::FromSeconds(41)));
 }
 
-TEST_F(WorkerSchedulerTest, PausableTasks) {
-  std::vector<std::string> run_order;
+TEST_F(WorkerSchedulerTest, MAYBE_PausableTasks) {
+  Vector<String> run_order;
   auto pause_handle = worker_scheduler_->Pause();
   // Tests interlacing pausable, throttable and unpausable tasks and
   // ensures that the pausable & throttable tasks don't run when paused.
@@ -291,8 +299,8 @@ TEST_F(WorkerSchedulerTest, PausableTasks) {
   EXPECT_THAT(run_order, testing::ElementsAre("T3", "T1", "T2"));
 }
 
-TEST_F(WorkerSchedulerTest, NestedPauseHandlesTasks) {
-  std::vector<std::string> run_order;
+TEST_F(WorkerSchedulerTest, MAYBE_NestedPauseHandlesTasks) {
+  Vector<String> run_order;
   auto pause_handle = worker_scheduler_->Pause();
   {
     auto pause_handle2 = worker_scheduler_->Pause();

@@ -35,7 +35,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
@@ -100,7 +100,8 @@ class CORE_EXPORT FrameLoader final {
   // See WebNavigationParams for details.
   void CommitNavigation(
       std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data);
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+      bool is_javascript_url = false);
 
   // Called before the browser process is asked to navigate this frame, to mark
   // the frame as loading and save some navigation information for later use.
@@ -117,9 +118,6 @@ class CORE_EXPORT FrameLoader final {
   // FrameLoader belongs. Callers need to be careful about checking the
   // existence of the frame after StopAllLoaders() returns.
   void StopAllLoaders();
-
-  void ReplaceDocumentWhileExecutingJavaScriptURL(const String& source,
-                                                  Document* owner_document);
 
   // Notifies the client that the initial empty document has been accessed, and
   // thus it is no longer safe to show a provisional URL above the document
@@ -175,12 +173,10 @@ class CORE_EXPORT FrameLoader final {
                                        WebFrameLoadType,
                                        HistoryItem*);
 
-  // This prepares the FrameLoader for the next commit. It will dispatch unload
-  // events, abort XHR requests and detach the document. Returns true if the
-  // frame is ready to receive the next commit, or false otherwise.
-  bool PrepareForCommit();
-
-  void CommitProvisionalLoad();
+  // This will attempt to detach the current document. It will dispatch unload
+  // events and abort XHR requests. Returns true if the frame is ready to
+  // receive the next document commit, or false otherwise.
+  bool DetachDocument();
 
   FrameLoaderStateMachine* StateMachine() const { return &state_machine_; }
 
@@ -194,7 +190,7 @@ class CORE_EXPORT FrameLoader final {
   void RestoreScrollPositionAndViewState();
 
   bool HasProvisionalNavigation() const {
-    return client_navigation_.get() || provisional_document_loader_.Get();
+    return committing_navigation_ || client_navigation_.get();
   }
 
   bool MaybeRenderFallbackContent();
@@ -248,6 +244,11 @@ class CORE_EXPORT FrameLoader final {
   std::unique_ptr<TracedValue> ToTracedValue() const;
   void TakeObjectSnapshot() const;
 
+  void WillCommitNavigation();
+
+  // Commits the given |document_loader|.
+  void CommitDocumentLoader(DocumentLoader* document_loader);
+
   LocalFrameClient* Client() const;
 
   Member<LocalFrame> frame_;
@@ -284,6 +285,7 @@ class CORE_EXPORT FrameLoader final {
 
   bool dispatching_did_clear_window_object_in_main_world_;
   bool detached_;
+  bool committing_navigation_ = false;
 
   WebScopedVirtualTimePauser virtual_time_pauser_;
 

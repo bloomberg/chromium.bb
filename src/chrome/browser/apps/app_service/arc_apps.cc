@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
@@ -19,13 +20,12 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/grit/component_extension_resources.h"
-#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "components/arc/app_permissions/arc_app_permissions_bridge.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/common/app_permissions.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
@@ -83,8 +83,8 @@ void LoadIcon1(apps::mojom::IconCompression icon_compression,
 
     case apps::mojom::IconCompression::kUncompressed:
       data_decoder::DecodeImage(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-          icon_png_data, data_decoder::mojom::ImageCodec::DEFAULT, false,
+          content::GetSystemConnector(), icon_png_data,
+          data_decoder::mojom::ImageCodec::DEFAULT, false,
           data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
           base::BindOnce(&LoadIcon2, std::move(callback)));
       break;
@@ -138,13 +138,15 @@ void LoadIcon0(apps::mojom::IconCompression icon_compression,
 }
 
 void UpdateAppPermissions(
-    const base::flat_map<arc::mojom::AppPermission, bool>& new_permissions,
+    const base::flat_map<arc::mojom::AppPermission,
+                         arc::mojom::PermissionStatePtr>& new_permissions,
     std::vector<apps::mojom::PermissionPtr>* permissions) {
   for (const auto& new_permission : new_permissions) {
     auto permission = apps::mojom::Permission::New();
     permission->permission_id = static_cast<uint32_t>(new_permission.first);
     permission->value_type = apps::mojom::PermissionValueType::kBool;
-    permission->value = static_cast<uint32_t>(new_permission.second);
+    permission->value = static_cast<uint32_t>(new_permission.second->granted);
+    permission->is_managed = new_permission.second->managed;
 
     permissions->push_back(std::move(permission));
   }
@@ -159,15 +161,25 @@ ArcApps* ArcApps::Get(Profile* profile) {
   return ArcAppsFactory::GetForProfile(profile);
 }
 
-ArcApps::ArcApps(Profile* profile)
+// static
+ArcApps* ArcApps::CreateForTesting(Profile* profile,
+                                   apps::AppServiceProxy* proxy) {
+  return new ArcApps(profile, proxy);
+}
+
+ArcApps::ArcApps(Profile* profile) : ArcApps(profile, nullptr) {}
+
+ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
     : binding_(this), profile_(profile), prefs_(nullptr) {
   if (!arc::IsArcAllowedForProfile(profile_) ||
       (arc::ArcServiceManager::Get() == nullptr)) {
     return;
   }
 
-  apps::mojom::AppServicePtr& app_service =
-      apps::AppServiceProxyFactory::GetForProfile(profile)->AppService();
+  if (!proxy) {
+    proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
+  }
+  apps::mojom::AppServicePtr& app_service = proxy->AppService();
   if (!app_service.is_bound()) {
     return;
   }

@@ -88,9 +88,11 @@ class CC_EXPORT CompositorTimingHistory {
                size_t main_thread_animations_count,
                bool current_frame_had_raf,
                bool next_frame_has_pending_raf);
-  void DidSubmitCompositorFrame();
+  void DidSubmitCompositorFrame(uint32_t frame_token);
   void DidNotProduceFrame();
   void DidReceiveCompositorFrameAck();
+  void DidPresentCompositorFrame(uint32_t frame_token,
+                                 base::TimeTicks presentation_time);
   void WillInvalidateOnImplSide();
   void SetTreePriority(TreePriority priority);
 
@@ -158,9 +160,6 @@ class CC_EXPORT CompositorTimingHistory {
   base::TimeTicks submit_start_time_;
 
   bool pending_tree_is_impl_side_;
-
-  // Watchdog timers.
-  bool submit_ack_watchdog_enabled_;
 
   std::unique_ptr<UMAReporter> uma_reporter_;
 

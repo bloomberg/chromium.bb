@@ -1103,6 +1103,16 @@ int GetIndicatorsTimeout() {
   return kToastTimeoutSeconds;
 }
 
+NOINLINE void CrashIntentionally() {
+  LOG(ERROR) << "Crashing VR browser";
+
+  static int static_variable_to_make_this_function_unique = 0;
+  base::debug::Alias(&static_variable_to_make_this_function_unique);
+
+  volatile int* zero = nullptr;
+  *zero = 0;
+}
+
 }  // namespace
 
 UiSceneCreator::UiSceneCreator(UiBrowserInterface* browser,
@@ -2449,12 +2459,8 @@ void UiSceneCreator::CreateOverflowMenu() {
     button_region->AddChild(std::move(button));
   }
 
-  int new_incognito_tab_res_id = IDS_VR_MENU_NEW_PRIVATE_TAB;
-  int close_incognito_tabs_res_id = IDS_VR_MENU_CLOSE_PRIVATE_TABS;
-  if (!model_->use_new_incognito_strings) {
-    new_incognito_tab_res_id = IDS_VR_MENU_NEW_INCOGNITO_TAB;
-    close_incognito_tabs_res_id = IDS_VR_MENU_CLOSE_INCOGNITO_TABS;
-  }
+  int new_incognito_tab_res_id = IDS_VR_MENU_NEW_INCOGNITO_TAB;
+  int close_incognito_tabs_res_id = IDS_VR_MENU_CLOSE_INCOGNITO_TABS;
 
   struct MenuItem {
     UiElementName name;
@@ -2637,6 +2643,8 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_text_field->set_input_committed_callback(base::BindRepeating(
       [](Model* model, UiBrowserInterface* browser, Ui* ui,
          const EditedText& text) {
+        if (text.current.text == base::UTF8ToUTF16(kCrashVrBrowserUrl))
+          CrashIntentionally();
         if (!model->omnibox_suggestions.empty()) {
           browser->Navigate(model->omnibox_suggestions.front().destination,
                             NavigationMethod::kOmniboxUrlEntry);

@@ -23,7 +23,8 @@ LocalFrame* SingleChildLocalFrameClient::CreateFrame(
   auto* child_client =
       MakeGarbageCollected<LocalFrameClientWithParent>(parent_frame);
   child_ = MakeGarbageCollected<LocalFrame>(
-      child_client, *parent_frame->GetPage(), owner_element);
+      child_client, *parent_frame->GetPage(), owner_element,
+      &parent_frame->window_agent_factory(), nullptr);
   child_->CreateView(IntSize(500, 500), Color::kTransparent);
   child_->Init();
 
@@ -45,7 +46,7 @@ RenderingTest::RenderingTest(LocalFrameClient* local_frame_client)
     : UseMockScrollbarSettings(), local_frame_client_(local_frame_client) {}
 
 const Node* RenderingTest::HitTest(int x, int y) {
-  HitTestLocation location(LayoutPoint(x, y));
+  HitTestLocation location(PhysicalOffset(x, y));
   HitTestResult result(
       HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive |
                      HitTestRequest::kAllowChildFrameContent),
@@ -54,7 +55,8 @@ const Node* RenderingTest::HitTest(int x, int y) {
   return result.InnerNode();
 }
 
-HitTestResult::NodeSet RenderingTest::RectBasedHitTest(LayoutRect rect) {
+HitTestResult::NodeSet RenderingTest::RectBasedHitTest(
+    const PhysicalRect& rect) {
   HitTestLocation location(rect);
   HitTestResult result(
       HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive |
@@ -76,6 +78,8 @@ void RenderingTest::SetUp() {
 
   // This ensures that the minimal DOM tree gets attached
   // correctly for tests that don't call setBodyInnerHTML.
+  GetDocument().View()->SetParentVisible(true);
+  GetDocument().View()->SetSelfVisible(true);
   UpdateAllLifecyclePhasesForTest();
 
   // Allow ASSERT_DEATH and EXPECT_DEATH for multiple threads.

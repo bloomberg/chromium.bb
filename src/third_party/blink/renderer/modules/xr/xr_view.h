@@ -65,10 +65,10 @@ class MODULES_EXPORT XRViewData {
   const FloatPoint3D& offset() const { return offset_; }
   void UpdateOffset(float x, float y, float z);
 
-  std::unique_ptr<TransformationMatrix> UnprojectPointer(double x,
-                                                         double y,
-                                                         double canvas_width,
-                                                         double canvas_height);
+  TransformationMatrix UnprojectPointer(double x,
+                                        double y,
+                                        double canvas_width,
+                                        double canvas_height);
 
   XRView::XREye Eye() const { return eye_; }
   const TransformationMatrix& Transform() const { return transform_; }

@@ -27,6 +27,7 @@
 
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "cc/input/scrollbar.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_point.h"
@@ -252,14 +253,14 @@ void ScrollbarTheme::PaintTickmarks(GraphicsContext& context,
 #endif
 }
 
-TimeDelta ScrollbarTheme::OverlayScrollbarFadeOutDelay() const {
+base::TimeDelta ScrollbarTheme::OverlayScrollbarFadeOutDelay() const {
   // On Mac, fading is controlled by the painting code in ScrollAnimatorMac.
-  return TimeDelta();
+  return base::TimeDelta();
 }
 
-TimeDelta ScrollbarTheme::OverlayScrollbarFadeOutDuration() const {
+base::TimeDelta ScrollbarTheme::OverlayScrollbarFadeOutDuration() const {
   // On Mac, fading is controlled by the painting code in ScrollAnimatorMac.
-  return TimeDelta();
+  return base::TimeDelta();
 }
 
 int ScrollbarTheme::ThumbPosition(const Scrollbar& scrollbar,
@@ -362,12 +363,12 @@ void ScrollbarTheme::SplitTrack(const Scrollbar& scrollbar,
   }
 }
 
-TimeDelta ScrollbarTheme::InitialAutoscrollTimerDelay() {
-  return TimeDelta::FromMilliseconds(250);
+base::TimeDelta ScrollbarTheme::InitialAutoscrollTimerDelay() {
+  return kInitialAutoscrollTimerDelay;
 }
 
-TimeDelta ScrollbarTheme::AutoscrollTimerDelay() {
-  return TimeDelta::FromMilliseconds(50);
+base::TimeDelta ScrollbarTheme::AutoscrollTimerDelay() {
+  return base::TimeDelta::FromSecondsD(1.f / kAutoscrollMultiplier);
 }
 
 ScrollbarTheme& ScrollbarTheme::DeprecatedStaticGetTheme() {

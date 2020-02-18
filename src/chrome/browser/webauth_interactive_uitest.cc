@@ -12,6 +12,7 @@
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/authenticator_environment.h"
 #include "content/public/test/browser_test_utils.h"
@@ -133,8 +134,12 @@ IN_PROC_BROWSER_TEST_F(WebAuthFocusTest, Focus) {
   // tab/window, and have the user believe that they are interacting with that
   // trusted site.
   virtual_device_factory->mutable_state()->simulate_press_callback =
-      base::BindRepeating([](Browser* browser) { chrome::NewTab(browser); },
-                          browser());
+      base::BindRepeating(
+          [](Browser* browser, device::VirtualFidoDevice* device) {
+            chrome::NewTab(browser);
+            return true;
+          },
+          browser());
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(initial_web_contents,
                                                      register_script, &result));
   EXPECT_THAT(result, ::testing::HasSubstr(kFocusErrorSubstring));
@@ -176,12 +181,13 @@ IN_PROC_BROWSER_TEST_F(WebAuthFocusTest, Focus) {
 
   // Requesting "direct" attestation will trigger a permissions prompt.
   virtual_device_factory->mutable_state()->simulate_press_callback =
-      base::BindLambdaForTesting([&]() {
+      base::BindLambdaForTesting([&](device::VirtualFidoDevice* device) {
         dialog_model_ =
             AuthenticatorRequestScheduler::GetRequestDelegateForTest(
                 initial_web_contents)
                 ->WeakDialogModelForTesting();
         dialog_model_->AddObserver(this);
+        return true;
       });
 
   const std::string get_assertion_with_attestation_script =

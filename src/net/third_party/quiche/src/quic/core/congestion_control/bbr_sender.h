@@ -110,7 +110,6 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   void AdjustNetworkParameters(QuicBandwidth bandwidth,
                                QuicTime::Delta rtt,
                                bool allow_cwnd_to_decrease) override;
-  void SetNumEmulatedConnections(int num_connections) override {}
   void SetInitialCongestionWindowInPackets(
       QuicPacketCount congestion_window) override;
   void OnCongestionEvent(bool rtt_updated,
@@ -123,7 +122,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
                     QuicPacketNumber packet_number,
                     QuicByteCount bytes,
                     HasRetransmittableData is_retransmittable) override;
-  void OnRetransmissionTimeout(bool packets_retransmitted) override {}
+  void OnRetransmissionTimeout(bool /*packets_retransmitted*/) override {}
   void OnConnectionMigration() override {}
   bool CanSend(QuicByteCount bytes_in_flight) override;
   QuicBandwidth PacingRate(QuicByteCount bytes_in_flight) const override;
@@ -402,9 +401,6 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   bool probe_rtt_disabled_if_app_limited_;
   bool app_limited_since_last_probe_rtt_;
   QuicTime::Delta min_rtt_since_last_probe_rtt_;
-
-  // Latched value of --quic_always_get_bw_sample_when_acked.
-  const bool always_get_bw_sample_when_acked_;
 };
 
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,

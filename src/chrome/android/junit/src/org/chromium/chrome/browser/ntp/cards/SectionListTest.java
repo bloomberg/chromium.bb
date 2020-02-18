@@ -29,6 +29,7 @@ import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestio
 import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.registerCategory;
 
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,11 +51,13 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
@@ -92,11 +95,16 @@ public class SectionListTest {
     private SuggestionsEventReporter mEventReporter;
     @Mock
     private PrefServiceBridge mPrefServiceBridge;
+    @Mock
+    private SigninManager mSigninManager;
 
     private FakeSuggestionsSource mSuggestionSource;
 
     @Before
     public void setUp() {
+        // These tests fail on touchless builds, see https://crbug.com/981870.
+        Assume.assumeFalse(FeatureUtilities.isNoTouchModeEnabled());
+
         // Ensure that NetworkChangeNotifier is initialized.
         if (!NetworkChangeNotifier.isInitialized()) {
             NetworkChangeNotifier.init();
@@ -146,7 +154,7 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, CATEGORY1 + CATEGORY2, 0);
         List<SnippetArticle> suggestions2 = registerCategory(mSuggestionSource, CATEGORY2, 4);
 
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager);
         sectionList.refreshSuggestions();
 
         bindViewHolders(sectionList);
@@ -181,7 +189,7 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, CATEGORY1 + CATEGORY2, 0);
         List<SnippetArticle> suggestions2 = registerCategory(mSuggestionSource, CATEGORY2, 4);
 
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager);
         sectionList.refreshSuggestions();
 
         bindViewHolders(sectionList, 0, 5); // Bind until after the third item from |suggestions1|.
@@ -283,7 +291,7 @@ public class SectionListTest {
                         .build(),
                 3);
 
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager);
         sectionList.refreshSuggestions();
         bindViewHolders(sectionList);
 
@@ -303,7 +311,7 @@ public class SectionListTest {
                         .build(),
                 3);
 
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager);
         sectionList.refreshSuggestions();
         bindViewHolders(sectionList);
 
@@ -329,7 +337,7 @@ public class SectionListTest {
     public void testRandomSectionHeaderShownWhenAlone() {
         registerCategory(mSuggestionSource, CATEGORY1, 1);
 
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager);
         sectionList.refreshSuggestions();
         SuggestionsSection section = sectionList.getSection(CATEGORY1);
         assertTrue(section.getHeaderItemForTesting().isVisible());
@@ -341,7 +349,7 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, KnownCategories.ARTICLES, 1);
         registerCategory(mSuggestionSource, CATEGORY1, 1);
 
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager);
         sectionList.refreshSuggestions();
         SuggestionsSection articles = sectionList.getSection(KnownCategories.ARTICLES);
         assertTrue(articles.getHeaderItemForTesting().isVisible());
@@ -355,7 +363,7 @@ public class SectionListTest {
         mSuggestionSource.setStatusForCategory(
                 KnownCategories.ARTICLES, CategoryStatus.CATEGORY_EXPLICITLY_DISABLED);
 
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager);
         sectionList.refreshSuggestions();
         SuggestionsSection section = sectionList.getSection(KnownCategories.ARTICLES);
         assertEquals(1, section.getItemCount());
@@ -371,7 +379,7 @@ public class SectionListTest {
         mSuggestionSource.setStatusForCategory(
                 KnownCategories.ARTICLES, CategoryStatus.CATEGORY_EXPLICITLY_DISABLED);
 
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager);
         sectionList.refreshSuggestions();
         SuggestionsSection section = sectionList.getSection(KnownCategories.ARTICLES);
         assertNull(section);
@@ -383,7 +391,7 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, KnownCategories.ARTICLES, 1);
         registerCategory(mSuggestionSource, CATEGORY1, 1);
 
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager);
         sectionList.refreshSuggestions();
 
         // Check article header is expandable.
@@ -404,7 +412,7 @@ public class SectionListTest {
         when(mPrefServiceBridge.getBoolean(EXPANDABLE_HEADER_PREF)).thenReturn(true);
         registerCategory(mSuggestionSource, KnownCategories.ARTICLES, 3);
 
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager);
         sectionList.refreshSuggestions();
 
         // The suggestions should be visible initially.
@@ -434,7 +442,7 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, CATEGORY1, 1);
         registerCategory(mSuggestionSource, CATEGORY2, 2);
         when(mUiDelegate.isVisible()).thenReturn(true); // Prevent updates on new suggestions.
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager);
         sectionList.refreshSuggestions();
 
         // No changes since initialisation
@@ -456,7 +464,7 @@ public class SectionListTest {
         List<SnippetArticle> suggestions =
                 registerCategory(mSuggestionSource, CATEGORY2, initialSectionSize);
         when(mUiDelegate.isVisible()).thenReturn(true); // Prevent updates on new suggestions.
-        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager);
         sectionList.refreshSuggestions();
 
         assertThat(sectionList.getSection(CATEGORY2).getSuggestionsCount(), is(initialSectionSize));
@@ -486,7 +494,8 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, CATEGORY1, 1);
 
         when(mUiDelegate.isVisible()).thenReturn(true); // Prevent updates on new suggestions.
-        SectionList sectionList = spy(new SectionList(mUiDelegate, mOfflinePageBridge));
+        SectionList sectionList =
+                spy(new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager));
         sectionList.refreshSuggestions();
 
         registerCategory(mSuggestionSource, CATEGORY2, 2);
@@ -506,7 +515,8 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, CATEGORY1, 1);
         registerCategory(mSuggestionSource, CATEGORY2, 1);
 
-        SectionList sectionList = spy(new SectionList(mUiDelegate, mOfflinePageBridge));
+        SectionList sectionList =
+                spy(new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager));
         sectionList.refreshSuggestions();
 
         assertFalse(sectionList.categoriesChanged(mSuggestionSource.getCategories()));
@@ -517,7 +527,8 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, CATEGORY1, 1);
         registerCategory(mSuggestionSource, CATEGORY2, 1);
 
-        SectionList sectionList = spy(new SectionList(mUiDelegate, mOfflinePageBridge));
+        SectionList sectionList =
+                spy(new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager));
         sectionList.refreshSuggestions();
 
         // Not using the same categories as present in the source here, change should be detected.
@@ -531,7 +542,8 @@ public class SectionListTest {
         registerCategory(mSuggestionSource, CATEGORY1, 1);
         registerCategory(mSuggestionSource, new CategoryInfoBuilder(CATEGORY2).build(), 0);
 
-        SectionList sectionList = spy(new SectionList(mUiDelegate, mOfflinePageBridge));
+        SectionList sectionList =
+                spy(new SectionList(mUiDelegate, mOfflinePageBridge, mSigninManager));
         sectionList.refreshSuggestions();
 
         // The check here ignores |CATEGORY2| which is present during the construction but not shown

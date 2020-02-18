@@ -15,13 +15,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chrome/browser/ui/views/chrome_web_dialog_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
@@ -118,6 +119,12 @@ void AssistantOptInUI::Initialize() {
 void AssistantOptInDialog::Show(
     ash::FlowType type,
     ash::AssistantSetup::StartAssistantOptInFlowCallback callback) {
+  // Check session state here to prevent timing issue -- session state might
+  // have changed during the mojom calls to launch the opt-in dalog.
+  if (session_manager::SessionManager::Get()->session_state() !=
+      session_manager::SessionState::ACTIVE) {
+    return;
+  }
   if (g_dialog) {
     g_dialog->Focus();
     std::move(callback).Run(false);
@@ -141,7 +148,7 @@ AssistantOptInDialog::~AssistantOptInDialog() {
 
 void AssistantOptInDialog::AdjustWidgetInitParams(
     views::Widget::InitParams* params) {
-  params->keep_on_top = false;
+  params->z_order = ui::ZOrderLevel::kNormal;
 }
 
 void AssistantOptInDialog::GetDialogSize(gfx::Size* size) const {
@@ -166,8 +173,8 @@ void AssistantOptInDialog::OnDialogClosed(const std::string& json_retval) {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   const bool completed =
       prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled) &&
-      (::assistant::prefs::GetConsentStatus(prefs) ==
-       ash::mojom::ConsentStatus::kActivityControlAccepted);
+      (prefs->GetInteger(assistant::prefs::kAssistantConsentStatus) ==
+       assistant::prefs::ConsentStatus::kActivityControlAccepted);
   std::move(callback_).Run(completed);
   SystemWebDialogDelegate::OnDialogClosed(json_retval);
 }

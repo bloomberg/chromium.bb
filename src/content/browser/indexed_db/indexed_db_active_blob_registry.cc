@@ -15,7 +15,7 @@ namespace content {
 
 IndexedDBActiveBlobRegistry::IndexedDBActiveBlobRegistry(
     IndexedDBBackingStore* backing_store)
-    : backing_store_(backing_store), weak_factory_(this) {}
+    : backing_store_(backing_store) {}
 
 IndexedDBActiveBlobRegistry::~IndexedDBActiveBlobRegistry() {
 }
@@ -26,7 +26,7 @@ void IndexedDBActiveBlobRegistry::AddBlobRef(int64_t database_id,
   DCHECK(backing_store_->task_runner()->RunsTasksInCurrentSequence());
   DCHECK(KeyPrefix::IsValidDatabaseId(database_id));
   DCHECK(DatabaseMetaDataKey::IsValidBlobKey(blob_key));
-  DCHECK(!base::ContainsKey(deleted_dbs_, database_id));
+  DCHECK(!base::Contains(deleted_dbs_, database_id));
   bool need_ref = use_tracker_.empty();
   SingleDBMap& single_db_map = use_tracker_[database_id];
   auto iter = single_db_map.find(blob_key);

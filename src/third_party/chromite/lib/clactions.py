@@ -568,7 +568,7 @@ def GetPreCQCategories(progress_map):
                             constants.CL_PRECQ_CONFIG_STATUS_VERIFIED,
                             constants.CL_PRECQ_CONFIG_STATUS_FAILED)
 
-  for change, config_status_dict in progress_map.iteritems():
+  for change, config_status_dict in progress_map.items():
     statuses = [x.status for x in config_status_dict.values()]
     if all(x == constants.CL_PRECQ_CONFIG_STATUS_VERIFIED for x in statuses):
       verified.add(change)
@@ -606,7 +606,7 @@ def GetPreCQConfigsToTest(changes, progress_map):
   to_test_states = (constants.CL_PRECQ_CONFIG_STATUS_PENDING,
                     constants.CL_PRECQ_CONFIG_STATUS_FAILED)
   for change in changes:
-    for config, pre_cq_progress_tuple in progress_map[change].iteritems():
+    for config, pre_cq_progress_tuple in progress_map[change].items():
       if pre_cq_progress_tuple.status in to_test_states:
         configs_to_test.add(config)
   return configs_to_test

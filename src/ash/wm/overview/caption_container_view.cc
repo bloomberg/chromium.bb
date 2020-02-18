@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/window_preview_view.h"
 #include "ui/aura/client/aura_constants.h"
@@ -19,6 +18,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
@@ -112,7 +112,7 @@ CaptionContainerView::CaptionContainerView(EventDelegate* event_delegate,
   header_view_ = new views::View();
   views::BoxLayout* layout =
       header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(),
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           kHorizontalLabelPaddingDp));
   AddChildWithLayer(this, header_view_);
 
@@ -227,14 +227,14 @@ void CaptionContainerView::SetShowPreview(bool show) {
     return;
   }
 
-  preview_view_ = new wm::WindowPreviewView(window_, false);
+  preview_view_ = new WindowPreviewView(window_, false);
   AddChildWithLayer(this, preview_view_);
   Layout();
 }
 
 void CaptionContainerView::UpdatePreviewRoundedCorners(bool show,
                                                        float rounding) {
-  if (!preview_view_ || !ash::features::ShouldUseShaderRoundedCorner())
+  if (!preview_view_)
     return;
 
   const float scale = preview_view_->layer()->transform().Scale2d().x();
@@ -251,6 +251,32 @@ void CaptionContainerView::UpdatePreviewView() {
   Layout();
 }
 
+views::View* CaptionContainerView::GetView() {
+  return this;
+}
+
+gfx::Rect CaptionContainerView::GetHighlightBoundsInScreen() {
+  // Use the target bounds instead of |GetBoundsInScreen()| because |this| may
+  // be animating. However, the origin will be incorrect because the windows are
+  // always positioned above and left of the parents origin, then translated. To
+  // get the proper origin we use |GetBoundsInScreen()| which takes into account
+  // the transform (but returns the wrong height and width).
+  auto* window = GetWidget()->GetNativeWindow();
+  gfx::Rect target_bounds = window->GetTargetBounds();
+  target_bounds.set_origin(window->GetBoundsInScreen().origin());
+  return target_bounds;
+}
+
+void CaptionContainerView::MaybeActivateHighlightedView() {
+  if (event_delegate_)
+    event_delegate_->OnHighlightedViewActivated();
+}
+
+void CaptionContainerView::MaybeCloseHighlightedView() {
+  if (event_delegate_)
+    event_delegate_->OnHighlightedViewClosed();
+}
+
 void CaptionContainerView::Layout() {
   gfx::Rect bounds(GetLocalBounds());
   bounds.Inset(kMarginDp, kMarginDp);
@@ -264,6 +290,7 @@ void CaptionContainerView::Layout() {
   if (preview_view_) {
     gfx::Rect preview_bounds = bounds;
     preview_bounds.Inset(0, kHeaderPreferredHeightDp, 0, 0);
+    preview_bounds.ClampToCenteredSize(preview_view_->CalculatePreferredSize());
     preview_view_->SetBoundsRect(preview_bounds);
   }
 
@@ -281,7 +308,8 @@ const char* CaptionContainerView::GetClassName() const {
 bool CaptionContainerView::OnMousePressed(const ui::MouseEvent& event) {
   if (!event_delegate_)
     return Button::OnMousePressed(event);
-  event_delegate_->HandlePressEvent(ConvertToScreen(this, event.location()));
+  event_delegate_->HandlePressEvent(ConvertToScreen(this, event.location()),
+                                    /*from_touch_gesture=*/false);
   return true;
 }
 
@@ -312,7 +340,7 @@ void CaptionContainerView::OnGestureEvent(ui::GestureEvent* event) {
   const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
-      event_delegate_->HandlePressEvent(location);
+      event_delegate_->HandlePressEvent(location, /*from_touch_gesture=*/true);
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       event_delegate_->HandleDragEvent(location);
@@ -345,8 +373,7 @@ bool CaptionContainerView::CanAcceptEvent(const ui::Event& event) {
   // Do not process or accept press down events that are on the border.
   static ui::EventType press_types[] = {ui::ET_GESTURE_TAP_DOWN,
                                         ui::ET_MOUSE_PRESSED};
-  if (event.IsLocatedEvent() &&
-      base::ContainsValue(press_types, event.type())) {
+  if (event.IsLocatedEvent() && base::Contains(press_types, event.type())) {
     gfx::Rect inset_bounds = GetLocalBounds();
     inset_bounds.Inset(gfx::Insets(kMarginDp));
     if (!inset_bounds.Contains(event.AsLocatedEvent()->location()))

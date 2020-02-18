@@ -7,12 +7,11 @@
  *  in the file PATENTS.  All contributing project authors may
  *  be found in the AUTHORS file in the root of the source tree.
  */
-#include "modules/rtp_rtcp/source/rtp_packet_received.h"
-#include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
-
 #include "common_video/test/utilities.h"
 #include "modules/rtp_rtcp/include/rtp_header_extension_map.h"
 #include "modules/rtp_rtcp/source/rtp_header_extensions.h"
+#include "modules/rtp_rtcp/source/rtp_packet_received.h"
+#include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
 #include "rtc_base/random.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
@@ -827,6 +826,65 @@ TEST(RtpPacketTest, CreateAndParseColorSpaceExtensionWithoutHdrMetadata) {
   TestCreateAndParseColorSpaceExtension(/*with_hdr_metadata=*/false);
 }
 
+TEST(RtpPacketTest, CreateAndParseAbsoluteCaptureTime) {
+  // Create a packet with absolute capture time extension populated.
+  RtpPacketToSend::ExtensionManager extensions;
+  constexpr int kExtensionId = 1;
+  extensions.Register<AbsoluteCaptureTimeExtension>(kExtensionId);
+  RtpPacketToSend send_packet(&extensions);
+  send_packet.SetPayloadType(kPayloadType);
+  send_packet.SetSequenceNumber(kSeqNum);
+  send_packet.SetTimestamp(kTimestamp);
+  send_packet.SetSsrc(kSsrc);
+
+  constexpr AbsoluteCaptureTime kAbsoluteCaptureTime{
+      /*absolute_capture_timestamp=*/9876543210123456789ULL,
+      /*estimated_capture_clock_offset=*/-1234567890987654321LL};
+  send_packet.SetExtension<AbsoluteCaptureTimeExtension>(kAbsoluteCaptureTime);
+
+  // Serialize the packet and then parse it again.
+  RtpPacketReceived receive_packet(&extensions);
+  EXPECT_TRUE(receive_packet.Parse(send_packet.Buffer()));
+
+  AbsoluteCaptureTime received_absolute_capture_time;
+  EXPECT_TRUE(receive_packet.GetExtension<AbsoluteCaptureTimeExtension>(
+      &received_absolute_capture_time));
+  EXPECT_EQ(kAbsoluteCaptureTime.absolute_capture_timestamp,
+            received_absolute_capture_time.absolute_capture_timestamp);
+  EXPECT_EQ(kAbsoluteCaptureTime.estimated_capture_clock_offset,
+            received_absolute_capture_time.estimated_capture_clock_offset);
+}
+
+TEST(RtpPacketTest,
+     CreateAndParseAbsoluteCaptureTimeWithoutEstimatedCaptureClockOffset) {
+  // Create a packet with absolute capture time extension populated.
+  RtpPacketToSend::ExtensionManager extensions;
+  constexpr int kExtensionId = 1;
+  extensions.Register<AbsoluteCaptureTimeExtension>(kExtensionId);
+  RtpPacketToSend send_packet(&extensions);
+  send_packet.SetPayloadType(kPayloadType);
+  send_packet.SetSequenceNumber(kSeqNum);
+  send_packet.SetTimestamp(kTimestamp);
+  send_packet.SetSsrc(kSsrc);
+
+  constexpr AbsoluteCaptureTime kAbsoluteCaptureTime{
+      /*absolute_capture_timestamp=*/9876543210123456789ULL,
+      /*estimated_capture_clock_offset=*/absl::nullopt};
+  send_packet.SetExtension<AbsoluteCaptureTimeExtension>(kAbsoluteCaptureTime);
+
+  // Serialize the packet and then parse it again.
+  RtpPacketReceived receive_packet(&extensions);
+  EXPECT_TRUE(receive_packet.Parse(send_packet.Buffer()));
+
+  AbsoluteCaptureTime received_absolute_capture_time;
+  EXPECT_TRUE(receive_packet.GetExtension<AbsoluteCaptureTimeExtension>(
+      &received_absolute_capture_time));
+  EXPECT_EQ(kAbsoluteCaptureTime.absolute_capture_timestamp,
+            received_absolute_capture_time.absolute_capture_timestamp);
+  EXPECT_EQ(kAbsoluteCaptureTime.estimated_capture_clock_offset,
+            received_absolute_capture_time.estimated_capture_clock_offset);
+}
+
 TEST(RtpPacketTest, CreateAndParseTransportSequenceNumber) {
   // Create a packet with transport sequence number extension populated.
   RtpPacketToSend::ExtensionManager extensions;
@@ -950,6 +1008,114 @@ TEST(RtpPacketTest,
             kFeedbackRequest->include_timestamps);
   EXPECT_EQ(received_feedback_request->sequence_count,
             kFeedbackRequest->sequence_count);
+}
+
+TEST(RtpPacketTest, IsExtensionReserved) {
+  // Register two extensions.
+  RtpPacketToSend::ExtensionManager extensions;
+  extensions.Register(kRtpExtensionTransmissionTimeOffset,
+                      kTransmissionOffsetExtensionId);
+  extensions.Register(kRtpExtensionAudioLevel, kAudioLevelExtensionId);
+
+  RtpPacketReceived packet(&extensions);
+
+  // Reserve slot for only one of them.
+  EXPECT_TRUE(packet.ReserveExtension<TransmissionOffset>());
+  // Non-registered extension cannot be reserved.
+  EXPECT_FALSE(packet.ReserveExtension<VideoContentTypeExtension>());
+
+  // Only the extension that is both registered and reserved matches
+  // IsExtensionReserved().
+  EXPECT_FALSE(packet.IsExtensionReserved<VideoContentTypeExtension>());
+  EXPECT_FALSE(packet.IsExtensionReserved<AudioLevel>());
+  EXPECT_TRUE(packet.IsExtensionReserved<TransmissionOffset>());
+}
+
+// Tests that RtpPacket::RemoveExtension can successfully remove extensions.
+TEST(RtpPacketTest, RemoveMultipleExtensions) {
+  RtpPacketToSend::ExtensionManager extensions;
+  extensions.Register(kRtpExtensionTransmissionTimeOffset,
+                      kTransmissionOffsetExtensionId);
+  extensions.Register(kRtpExtensionAudioLevel, kAudioLevelExtensionId);
+  RtpPacketToSend packet(&extensions);
+  packet.SetPayloadType(kPayloadType);
+  packet.SetSequenceNumber(kSeqNum);
+  packet.SetTimestamp(kTimestamp);
+  packet.SetSsrc(kSsrc);
+  packet.SetExtension<TransmissionOffset>(kTimeOffset);
+  packet.SetExtension<AudioLevel>(kVoiceActive, kAudioLevel);
+
+  EXPECT_THAT(kPacketWithTOAndAL,
+              ElementsAreArray(packet.data(), packet.size()));
+
+  // Remove one of two extensions.
+  EXPECT_TRUE(packet.RemoveExtension(kRtpExtensionAudioLevel));
+
+  EXPECT_THAT(kPacketWithTO, ElementsAreArray(packet.data(), packet.size()));
+
+  // Remove remaining extension.
+  EXPECT_TRUE(packet.RemoveExtension(kRtpExtensionTransmissionTimeOffset));
+
+  EXPECT_THAT(kMinimumPacket, ElementsAreArray(packet.data(), packet.size()));
+}
+
+// Tests that RtpPacket::RemoveExtension can successfully remove extension when
+// other extensions are present but not registered.
+TEST(RtpPacketTest, RemoveExtensionPreservesOtherUnregisteredExtensions) {
+  RtpPacketToSend::ExtensionManager extensions;
+  extensions.Register(kRtpExtensionTransmissionTimeOffset,
+                      kTransmissionOffsetExtensionId);
+  extensions.Register(kRtpExtensionAudioLevel, kAudioLevelExtensionId);
+  RtpPacketToSend packet(&extensions);
+  packet.SetPayloadType(kPayloadType);
+  packet.SetSequenceNumber(kSeqNum);
+  packet.SetTimestamp(kTimestamp);
+  packet.SetSsrc(kSsrc);
+  packet.SetExtension<TransmissionOffset>(kTimeOffset);
+  packet.SetExtension<AudioLevel>(kVoiceActive, kAudioLevel);
+
+  EXPECT_THAT(kPacketWithTOAndAL,
+              ElementsAreArray(packet.data(), packet.size()));
+
+  // "Unregister" kRtpExtensionTransmissionTimeOffset.
+  RtpPacketToSend::ExtensionManager extensions1;
+  extensions1.Register(kRtpExtensionAudioLevel, kAudioLevelExtensionId);
+  packet.IdentifyExtensions(extensions1);
+
+  // Make sure we can not delete extension which is set but not registered.
+  EXPECT_FALSE(packet.RemoveExtension(kRtpExtensionTransmissionTimeOffset));
+
+  // Remove registered extension.
+  EXPECT_TRUE(packet.RemoveExtension(kRtpExtensionAudioLevel));
+
+  EXPECT_THAT(kPacketWithTO, ElementsAreArray(packet.data(), packet.size()));
+}
+
+// Tests that RtpPacket::RemoveExtension fails if extension is not present or
+// not registered and does not modify packet.
+TEST(RtpPacketTest, RemoveExtensionFailure) {
+  RtpPacketToSend::ExtensionManager extensions;
+  extensions.Register(kRtpExtensionTransmissionTimeOffset,
+                      kTransmissionOffsetExtensionId);
+  extensions.Register(kRtpExtensionAudioLevel, kAudioLevelExtensionId);
+  RtpPacketToSend packet(&extensions);
+  packet.SetPayloadType(kPayloadType);
+  packet.SetSequenceNumber(kSeqNum);
+  packet.SetTimestamp(kTimestamp);
+  packet.SetSsrc(kSsrc);
+  packet.SetExtension<TransmissionOffset>(kTimeOffset);
+
+  EXPECT_THAT(kPacketWithTO, ElementsAreArray(packet.data(), packet.size()));
+
+  // Try to remove extension, which was registered, but not set.
+  EXPECT_FALSE(packet.RemoveExtension(kRtpExtensionAudioLevel));
+
+  EXPECT_THAT(kPacketWithTO, ElementsAreArray(packet.data(), packet.size()));
+
+  // Try to remove extension, which was not registered.
+  EXPECT_FALSE(packet.RemoveExtension(kRtpExtensionPlayoutDelay));
+
+  EXPECT_THAT(kPacketWithTO, ElementsAreArray(packet.data(), packet.size()));
 }
 
 }  // namespace webrtc

@@ -7,7 +7,6 @@
 #ifndef CORE_FPDFAPI_PAGE_CPDF_PAGEMODULE_H_
 #define CORE_FPDFAPI_PAGE_CPDF_PAGEMODULE_H_
 
-#include "core/fpdfapi/font/cpdf_fontglobals.h"
 #include "core/fxcrt/retain_ptr.h"
 
 class CPDF_Document;
@@ -17,15 +16,18 @@ class CPDF_PatternCS;
 
 class CPDF_PageModule {
  public:
-  CPDF_PageModule();
-  ~CPDF_PageModule();
+  // Per-process singleton managed by callers.
+  static void Create();
+  static void Destroy();
+  static CPDF_PageModule* GetInstance();
 
-  CPDF_FontGlobals* GetFontGlobals();
   RetainPtr<CPDF_ColorSpace> GetStockCS(int family);
   void ClearStockFont(CPDF_Document* pDoc);
 
  private:
-  CPDF_FontGlobals m_FontGlobals;
+  CPDF_PageModule();
+  ~CPDF_PageModule();
+
   RetainPtr<CPDF_DeviceCS> m_StockGrayCS;
   RetainPtr<CPDF_DeviceCS> m_StockRGBCS;
   RetainPtr<CPDF_DeviceCS> m_StockCMYKCS;

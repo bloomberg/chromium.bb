@@ -23,7 +23,6 @@
 #include "net/http/http_request_info.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
@@ -449,17 +448,15 @@ TEST_F(SpdyStreamTest, StreamError) {
   EXPECT_TRUE(data.AllWriteDataConsumed());
 
   // Check that the NetLog was filled reasonably.
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged SPDY_STREAM_ERROR correctly.
   int pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP2_STREAM_ERROR, NetLogEventPhase::NONE);
 
-  int stream_id2;
-  ASSERT_TRUE(entries[pos].GetIntegerValue("stream_id", &stream_id2));
-  EXPECT_EQ(static_cast<int>(stream_id), stream_id2);
+  EXPECT_EQ(static_cast<int>(stream_id),
+            GetIntegerValueFromParams(entries[pos], "stream_id"));
 }
 
 // Make sure that large blocks of data are properly split up into frame-sized
@@ -605,7 +602,7 @@ TEST_F(SpdyStreamTest, UpperCaseHeaders) {
       stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND),
       IsError(ERR_IO_PENDING));
 
-  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_HTTP2_PROTOCOL_ERROR));
 
   // Finish async network reads and writes.
   base::RunLoop().RunUntilIdle();
@@ -720,7 +717,7 @@ TEST_F(SpdyStreamTest, HeadersMustHaveStatus) {
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
 
-  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_HTTP2_PROTOCOL_ERROR));
 
   // Finish async network reads and writes.
   base::RunLoop().RunUntilIdle();
@@ -839,7 +836,7 @@ TEST_F(SpdyStreamTest, HeadersMustPreceedData) {
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
 
-  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_HTTP2_PROTOCOL_ERROR));
 }
 
 TEST_F(SpdyStreamTest, HeadersMustPreceedDataOnPushedStream) {
@@ -962,7 +959,7 @@ TEST_F(SpdyStreamTest, TrailersMustNotFollowTrailers) {
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
 
-  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_HTTP2_PROTOCOL_ERROR));
 
   // Finish async network reads and writes.
   base::RunLoop().RunUntilIdle();
@@ -1021,7 +1018,7 @@ TEST_F(SpdyStreamTest, DataMustNotFollowTrailers) {
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
 
-  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_HTTP2_PROTOCOL_ERROR));
 
   // Finish async network reads and writes.
   base::RunLoop().RunUntilIdle();
@@ -1125,7 +1122,7 @@ TEST_F(SpdyStreamTest, StatusMustBeNumber) {
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
 
-  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_HTTP2_PROTOCOL_ERROR));
 
   // Finish async network reads and writes.
   base::RunLoop().RunUntilIdle();
@@ -1178,7 +1175,7 @@ TEST_F(SpdyStreamTest, StatusCannotHaveExtraText) {
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
 
-  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_HTTP2_PROTOCOL_ERROR));
 
   // Finish async network reads and writes.
   base::RunLoop().RunUntilIdle();
@@ -1229,7 +1226,7 @@ TEST_F(SpdyStreamTest, StatusMustBePresent) {
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
                                                        NO_MORE_DATA_TO_SEND));
 
-  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_HTTP2_PROTOCOL_ERROR));
 
   // Finish async network reads and writes.
   base::RunLoop().RunUntilIdle();
@@ -1291,7 +1288,7 @@ TEST_F(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
   data.Resume();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_FLOW_CONTROL_ERROR));
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_HTTP2_FLOW_CONTROL_ERROR));
 }
 
 // Functions used with
@@ -1590,7 +1587,7 @@ TEST_F(SpdyStreamTest, DataOnHalfClosedRemoveStream) {
   EXPECT_THAT(stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND),
               IsError(ERR_IO_PENDING));
 
-  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_STREAM_CLOSED));
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_HTTP2_STREAM_CLOSED));
 
   base::RunLoop().RunUntilIdle();
 

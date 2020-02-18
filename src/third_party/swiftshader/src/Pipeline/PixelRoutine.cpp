@@ -24,10 +24,6 @@
 
 namespace sw
 {
-	extern bool postBlendSRGB;
-	extern bool exactColorRounding;
-	extern bool forceClearRegisters;
-
 	PixelRoutine::PixelRoutine(
 			const PixelProcessor::State &state,
 			vk::PipelineLayout const *pipelineLayout,
@@ -40,12 +36,12 @@ namespace sw
 		if (spirvShader)
 		{
 			spirvShader->emitProlog(&routine);
-			if (forceClearRegisters)
+
+			// Clearing inputs to 0 is not demanded by the spec,
+			// but it makes the undefined behavior deterministic.
+			for(int i = 0; i < MAX_INTERFACE_COMPONENTS; i++)
 			{
-				for (int i = 0; i < MAX_INTERFACE_COMPONENTS; i++)
-				{
-					routine.inputs[i] = Float4(0.0f);
-				}
+				routine.inputs[i] = Float4(0.0f);
 			}
 		}
 	}
@@ -56,10 +52,6 @@ namespace sw
 
 	void PixelRoutine::quad(Pointer<Byte> cBuffer[RENDERTARGETS], Pointer<Byte> &zBuffer, Pointer<Byte> &sBuffer, Int cMask[4], Int &x, Int &y)
 	{
-		#if PERF_PROFILE
-			Long pipeTime = Ticks();
-		#endif
-
 		// TODO: consider shader which modifies sample mask in general
 		const bool earlyDepthTest = !spirvShader || (!spirvShader->getModes().DepthReplacing && !state.alphaToCoverage);
 
@@ -109,10 +101,6 @@ namespace sw
 
 		If(depthPass || Bool(!earlyDepthTest))
 		{
-			#if PERF_PROFILE
-				Long interpTime = Ticks();
-			#endif
-
 			Float4 yyyy = Float4(Float(y)) + *Pointer<Float4>(primitive + OFFSET(Primitive,yQuad), 16);
 
 			// Centroid locations
@@ -176,24 +164,12 @@ namespace sw
 				setBuiltins(x, y, z, w);
 			}
 
-			#if PERF_PROFILE
-				cycles[PERF_INTERP] += Ticks() - interpTime;
-			#endif
-
 			Bool alphaPass = true;
-
-			#if PERF_PROFILE
-				Long shaderTime = Ticks();
-			#endif
 
 			if (spirvShader)
 			{
 				applyShader(cMask);
 			}
-
-			#if PERF_PROFILE
-				cycles[PERF_SHADER] += Ticks() - shaderTime;
-			#endif
 
 			alphaPass = alphaTest(cMask);
 
@@ -216,10 +192,6 @@ namespace sw
 					}
 				}
 
-				#if PERF_PROFILE
-					Long ropTime = Ticks();
-				#endif
-
 				If(depthPass || Bool(earlyDepthTest))
 				{
 					for(unsigned int q = 0; q < state.multiSample; q++)
@@ -235,16 +207,8 @@ namespace sw
 						}
 					}
 
-					#if PERF_PROFILE
-						AddAtomic(Pointer<Long>(&profiler.ropOperations), 4);
-					#endif
-
 					rasterOperation(cBuffer, x, sMask, zMask, cMask);
 				}
-
-				#if PERF_PROFILE
-					cycles[PERF_ROP] += Ticks() - ropTime;
-				#endif
 			}
 		}
 
@@ -255,10 +219,6 @@ namespace sw
 				writeStencil(sBuffer, q, x, sMask[q], zMask[q], cMask[q]);
 			}
 		}
-
-		#if PERF_PROFILE
-			cycles[PERF_PIPE] += Ticks() - pipeTime;
-		#endif
 	}
 
 	Float4 PixelRoutine::interpolateCentroid(Float4 &x, Float4 &y, Float4 &rhw, Pointer<Byte> planeEquation, bool flat, bool perspective)
@@ -305,19 +265,16 @@ namespace sw
 
 		stencilTest(value, state.frontStencil.compareOp, false);
 
-		if(state.twoSidedStencil)
+		if(state.backStencil.compareMask != 0xff)
 		{
-			if(state.backStencil.compareMask != 0xff)
-			{
-				valueBack &= *Pointer<Byte8>(data + OFFSET(DrawData,stencil[1].testMaskQ));
-			}
-
-			stencilTest(valueBack, state.backStencil.compareOp, true);
-
-			value &= *Pointer<Byte8>(primitive + OFFSET(Primitive,clockwiseMask));
-			valueBack &= *Pointer<Byte8>(primitive + OFFSET(Primitive,invClockwiseMask));
-			value |= valueBack;
+			valueBack &= *Pointer<Byte8>(data + OFFSET(DrawData,stencil[1].testMaskQ));
 		}
+
+		stencilTest(valueBack, state.backStencil.compareOp, true);
+
+		value &= *Pointer<Byte8>(primitive + OFFSET(Primitive,clockwiseMask));
+		valueBack &= *Pointer<Byte8>(primitive + OFFSET(Primitive,invClockwiseMask));
+		value |= valueBack;
 
 		sMask = SignMask(value) & cMask;
 	}
@@ -737,13 +694,13 @@ namespace sw
 
 		if(state.frontStencil.passOp == VK_STENCIL_OP_KEEP && state.frontStencil.depthFailOp == VK_STENCIL_OP_KEEP && state.frontStencil.failOp == VK_STENCIL_OP_KEEP)
 		{
-			if(!state.twoSidedStencil || (state.backStencil.passOp == VK_STENCIL_OP_KEEP && state.backStencil.depthFailOp == VK_STENCIL_OP_KEEP && state.backStencil.failOp == VK_STENCIL_OP_KEEP))
+			if(state.backStencil.passOp == VK_STENCIL_OP_KEEP && state.backStencil.depthFailOp == VK_STENCIL_OP_KEEP && state.backStencil.failOp == VK_STENCIL_OP_KEEP)
 			{
 				return;
 			}
 		}
 
-		if((state.frontStencil.writeMask == 0) && (!state.twoSidedStencil || (state.backStencil.writeMask == 0)))
+		if((state.frontStencil.writeMask == 0) && (state.backStencil.writeMask == 0))
 		{
 			return;
 		}
@@ -768,24 +725,21 @@ namespace sw
 			newValue |= maskedValue;
 		}
 
-		if(state.twoSidedStencil)
+		Byte8 newValueBack;
+
+		stencilOperation(newValueBack, bufferValue, state.backStencil, true, zMask, sMask);
+
+		if(state.backStencil.writeMask != 0)
 		{
-			Byte8 newValueBack;
-
-			stencilOperation(newValueBack, bufferValue, state.backStencil, true, zMask, sMask);
-
-			if(state.backStencil.writeMask != 0)
-			{
-				Byte8 maskedValue = bufferValue;
-				newValueBack &= *Pointer<Byte8>(data + OFFSET(DrawData,stencil[1].writeMaskQ));
-				maskedValue &= *Pointer<Byte8>(data + OFFSET(DrawData,stencil[1].invWriteMaskQ));
-				newValueBack |= maskedValue;
-			}
-
-			newValue &= *Pointer<Byte8>(primitive + OFFSET(Primitive,clockwiseMask));
-			newValueBack &= *Pointer<Byte8>(primitive + OFFSET(Primitive,invClockwiseMask));
-			newValue |= newValueBack;
+			Byte8 maskedValue = bufferValue;
+			newValueBack &= *Pointer<Byte8>(data + OFFSET(DrawData,stencil[1].writeMaskQ));
+			maskedValue &= *Pointer<Byte8>(data + OFFSET(DrawData,stencil[1].invWriteMaskQ));
+			newValueBack |= maskedValue;
 		}
+
+		newValue &= *Pointer<Byte8>(primitive + OFFSET(Primitive,clockwiseMask));
+		newValueBack &= *Pointer<Byte8>(primitive + OFFSET(Primitive,invClockwiseMask));
+		newValue |= newValueBack;
 
 		newValue &= *Pointer<Byte8>(constants + OFFSET(Constants,maskB4Q) + 8 * cMask);
 		bufferValue &= *Pointer<Byte8>(constants + OFFSET(Constants,invMaskB4Q) + 8 * cMask);
@@ -1102,7 +1056,7 @@ namespace sw
 			UNIMPLEMENTED("VkFormat %d", state.targetFormat[index]);
 		}
 
-		if(postBlendSRGB || isSRGB(index))
+		if(isSRGB(index))
 		{
 			sRGBtoLinear16_12_16(pixel);
 		}
@@ -1229,36 +1183,33 @@ namespace sw
 
 	void PixelRoutine::writeColor(int index, Pointer<Byte> &cBuffer, Int &x, Vector4s &current, Int &sMask, Int &zMask, Int &cMask)
 	{
-		if(postBlendSRGB || isSRGB(index))
+		if(isSRGB(index))
 		{
 			linearToSRGB16_12_16(current);
 		}
 
-		if(exactColorRounding)
+		switch(state.targetFormat[index])
 		{
-			switch(state.targetFormat[index])
-			{
-			case VK_FORMAT_R5G6B5_UNORM_PACK16:
-				current.x = AddSat(As<UShort4>(current.x), UShort4(0x0400));
-				current.y = AddSat(As<UShort4>(current.y), UShort4(0x0200));
-				current.z = AddSat(As<UShort4>(current.z), UShort4(0x0400));
-				break;
-			case VK_FORMAT_B8G8R8A8_UNORM:
-			case VK_FORMAT_B8G8R8A8_SRGB:
-			case VK_FORMAT_R8G8B8A8_UNORM:
-			case VK_FORMAT_R8G8B8A8_SRGB:
-			case VK_FORMAT_R8G8_UNORM:
-			case VK_FORMAT_R8_UNORM:
-			case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
-			case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
-				current.x = current.x - As<Short4>(As<UShort4>(current.x) >> 8) + Short4(0x0080);
-				current.y = current.y - As<Short4>(As<UShort4>(current.y) >> 8) + Short4(0x0080);
-				current.z = current.z - As<Short4>(As<UShort4>(current.z) >> 8) + Short4(0x0080);
-				current.w = current.w - As<Short4>(As<UShort4>(current.w) >> 8) + Short4(0x0080);
-				break;
-			default:
-				break;
-			}
+		case VK_FORMAT_R5G6B5_UNORM_PACK16:
+			current.x = AddSat(As<UShort4>(current.x), UShort4(0x0400));
+			current.y = AddSat(As<UShort4>(current.y), UShort4(0x0200));
+			current.z = AddSat(As<UShort4>(current.z), UShort4(0x0400));
+			break;
+		case VK_FORMAT_B8G8R8A8_UNORM:
+		case VK_FORMAT_B8G8R8A8_SRGB:
+		case VK_FORMAT_R8G8B8A8_UNORM:
+		case VK_FORMAT_R8G8B8A8_SRGB:
+		case VK_FORMAT_R8G8_UNORM:
+		case VK_FORMAT_R8_UNORM:
+		case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
+		case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
+			current.x = current.x - As<Short4>(As<UShort4>(current.x) >> 8) + Short4(0x0080);
+			current.y = current.y - As<Short4>(As<UShort4>(current.y) >> 8) + Short4(0x0080);
+			current.z = current.z - As<Short4>(As<UShort4>(current.z) >> 8) + Short4(0x0080);
+			current.w = current.w - As<Short4>(As<UShort4>(current.w) >> 8) + Short4(0x0080);
+			break;
+		default:
+			break;
 		}
 
 		int rgbaWriteMask = state.colorWriteActive(index);
@@ -1371,10 +1322,10 @@ namespace sw
 			break;
 		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
 		{
-			auto r = Int4(current.x) & Int4(0x3ff);
-			auto g = Int4(current.y) & Int4(0x3ff);
-			auto b = Int4(current.z) & Int4(0x3ff);
-			auto a = Int4(current.w) & Int4(0x3);
+			auto r = (Int4(current.x) >> 6) & Int4(0x3ff);
+			auto g = (Int4(current.y) >> 6) & Int4(0x3ff);
+			auto b = (Int4(current.z) >> 6) & Int4(0x3ff);
+			auto a = (Int4(current.w) >> 14) & Int4(0x3);
 			Int4 packed = (a << 30) | (b << 20) | (g << 10) | r;
 			auto c02 = As<Int2>(Int4(packed.xzzz)); // TODO: auto c02 = packed.xz;
 			auto c13 = As<Int2>(Int4(packed.ywww)); // TODO: auto c13 = packed.yw;
@@ -1954,13 +1905,6 @@ namespace sw
 			break;
 		default:
 			UNIMPLEMENTED("VkFormat: %d", int(state.targetFormat[index]));
-		}
-
-		if(postBlendSRGB || isSRGB(index))
-		{
-			sRGBtoLinear(pixel.x);
-			sRGBtoLinear(pixel.y);
-			sRGBtoLinear(pixel.z);
 		}
 
 		// Final Color = ObjectColor * SourceBlendFactor + PixelColor * DestinationBlendFactor

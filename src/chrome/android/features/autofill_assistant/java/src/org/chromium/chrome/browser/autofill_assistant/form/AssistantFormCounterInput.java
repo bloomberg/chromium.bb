@@ -199,10 +199,10 @@ class AssistantFormCounterInput extends AssistantFormInput {
             updateLabelAndValue(counter, view);
 
             int index = i; // required for lambda.
-            view.mDecreaseButtonView.setOnClickListener(
-                    unusedView -> updateCounter(counters, views, index, -1));
+            view.mDecreaseButtonView.setOnClickListener(unusedView
+                    -> updateCounter(counters, views, index, /* increaseValue= */ false));
             view.mIncreaseButtonView.setOnClickListener(
-                    unusedView -> updateCounter(counters, views, index, +1));
+                    unusedView -> updateCounter(counters, views, index, /* increaseValue= */ true));
         }
 
         updateButtonsState(counters, views);
@@ -213,9 +213,6 @@ class AssistantFormCounterInput extends AssistantFormInput {
     private void updateLabelAndValue(AssistantFormCounter counter, CounterViewHolder view) {
         // Update the label.
         String label = counter.getLabel();
-        if (counter.getLabelChoiceFormat().getLimits().length > 0) {
-            label = counter.getLabelChoiceFormat().format(counter.getValue());
-        }
         label = label.replaceAll(QUOTED_VALUE, Integer.toString(counter.getValue()));
         view.mLabelView.setText(label);
 
@@ -236,21 +233,21 @@ class AssistantFormCounterInput extends AssistantFormInput {
         for (int i = 0; i < counters.size(); i++) {
             AssistantFormCounter counter = counters.get(i);
             CounterViewHolder view = views.get(i);
-            view.mDecreaseButtonView.setEnabled(
-                    canDecreaseSum && counter.getValue() > counter.getMinValue());
-            view.mIncreaseButtonView.setEnabled(
-                    canIncreaseSum && counter.getValue() < counter.getMaxValue());
+            view.mDecreaseButtonView.setEnabled(canDecreaseSum && counter.canDecreaseValue());
+            view.mIncreaseButtonView.setEnabled(canIncreaseSum && counter.canIncreaseValue());
         }
     }
 
     private void updateCounter(List<AssistantFormCounter> counters, List<CounterViewHolder> views,
-            int counterIndex, int delta) {
+            int counterIndex, boolean increaseValue) {
         AssistantFormCounter counter = counters.get(counterIndex);
 
         // Change the value.
-        counter.setValue(counter.getValue() + delta);
-        counter.setValue(Math.max(counter.getMinValue(), counter.getValue()));
-        counter.setValue(Math.min(counter.getMaxValue(), counter.getValue()));
+        if (increaseValue) {
+            counter.increaseValue();
+        } else {
+            counter.decreaseValue();
+        }
 
         updateLabelAndValue(counter, views.get(counterIndex));
         updateButtonsState(counters, views);

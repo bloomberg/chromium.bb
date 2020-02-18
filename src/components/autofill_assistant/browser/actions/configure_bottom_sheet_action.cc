@@ -8,16 +8,17 @@
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_status.h"
+#include "components/autofill_assistant/browser/viewport_mode.h"
 
 namespace autofill_assistant {
 
-ConfigureBottomSheetAction::ConfigureBottomSheetAction(const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {}
+ConfigureBottomSheetAction::ConfigureBottomSheetAction(ActionDelegate* delegate,
+                                                       const ActionProto& proto)
+    : Action(delegate, proto), weak_ptr_factory_(this) {}
 
 ConfigureBottomSheetAction::~ConfigureBottomSheetAction() {}
 
 void ConfigureBottomSheetAction::InternalProcessAction(
-    ActionDelegate* delegate,
     ProcessActionCallback callback) {
   const ConfigureBottomSheetProto& proto = proto_.configure_bottom_sheet();
 
@@ -26,15 +27,18 @@ void ConfigureBottomSheetAction::InternalProcessAction(
     // be visible to Javascript before moving on to another action. To do that,
     // this action registers a callback *before* making any change and waits for
     // a 'resize' event in the Javascript side.
-    bool resize = delegate->GetResizeViewport();
+    ViewportMode mode = delegate_->GetViewportMode();
     bool expect_resize =
-        (!resize &&
-         proto.viewport_resizing() == ConfigureBottomSheetProto::RESIZE) ||
-        (resize &&
+        (mode != ViewportMode::RESIZE_LAYOUT_VIEWPORT &&
+         proto.viewport_resizing() ==
+             ConfigureBottomSheetProto::RESIZE_LAYOUT_VIEWPORT) ||
+        (mode == ViewportMode::RESIZE_LAYOUT_VIEWPORT &&
          (proto.viewport_resizing() == ConfigureBottomSheetProto::NO_RESIZE ||
+          proto.viewport_resizing() ==
+              ConfigureBottomSheetProto::RESIZE_VISUAL_VIEWPORT ||
           (proto.peek_mode() !=
                ConfigureBottomSheetProto::UNDEFINED_PEEK_MODE &&
-           proto.peek_mode() != delegate->GetPeekMode())));
+           proto.peek_mode() != delegate_->GetPeekMode())));
     if (expect_resize) {
       callback_ = std::move(callback);
 
@@ -43,21 +47,28 @@ void ConfigureBottomSheetAction::InternalProcessAction(
                    base::BindOnce(&ConfigureBottomSheetAction::OnTimeout,
                                   weak_ptr_factory_.GetWeakPtr()));
 
-      delegate->WaitForWindowHeightChange(
+      delegate_->WaitForWindowHeightChange(
           base::BindOnce(&ConfigureBottomSheetAction::OnWindowHeightChange,
                          weak_ptr_factory_.GetWeakPtr()));
     }
   }
 
-  if (proto.viewport_resizing() == ConfigureBottomSheetProto::RESIZE) {
-    delegate->SetResizeViewport(true);
-  } else if (proto.viewport_resizing() ==
-             ConfigureBottomSheetProto::NO_RESIZE) {
-    delegate->SetResizeViewport(false);
+  switch (proto.viewport_resizing()) {
+    case ConfigureBottomSheetProto::NO_CHANGE:
+      break;
+    case ConfigureBottomSheetProto::NO_RESIZE:
+      delegate_->SetViewportMode(ViewportMode::NO_RESIZE);
+      break;
+    case ConfigureBottomSheetProto::RESIZE_LAYOUT_VIEWPORT:
+      delegate_->SetViewportMode(ViewportMode::RESIZE_LAYOUT_VIEWPORT);
+      break;
+    case ConfigureBottomSheetProto::RESIZE_VISUAL_VIEWPORT:
+      delegate_->SetViewportMode(ViewportMode::RESIZE_VISUAL_VIEWPORT);
+      break;
   }
 
   if (proto.peek_mode() != ConfigureBottomSheetProto::UNDEFINED_PEEK_MODE) {
-    delegate->SetPeekMode(proto.peek_mode());
+    delegate_->SetPeekMode(proto.peek_mode());
   }
 
   if (callback) {

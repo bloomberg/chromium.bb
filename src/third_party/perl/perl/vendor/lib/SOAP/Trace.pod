@@ -4,8 +4,6 @@
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
-# $Id: Trace.pod 381 2011-08-15 19:28:43Z kutterma $
-#
 # ======================================================================
 
 =pod
@@ -94,10 +92,6 @@ The following code snippet will enable tracing for all signals:
 
   use SOAP::Lite +trace => 'all';
 
-Or, the following will also do the trick:
-
-  use SOAP::Lite +trace;
-
 You can disable tracing for a set of signals by prefixing the signal name with a hyphen. Therefore, if you wish to enable tracing for every signal EXCEPT transport signals, then you would use the code below:
 
   use SOAP::Lite +trace => [ qw(all -transport) ];
@@ -122,7 +116,7 @@ You can also use a single callback for multiple signals using the code below:
 
 The transport signal is unique in the that the signal is not a text string, but the actually HTTP::Request being sent (just prior to be sent), or HTTP::Response object (immediately after it was received). The following code sample shows how to make use of this:
 
-  use SOAP::Lite +trace => [ transport => &log_message ];
+  use SOAP::Lite +trace => [ transport => \&log_message ];
 
   sub log_message {
     my ($in) = @_;

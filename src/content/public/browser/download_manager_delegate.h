@@ -10,13 +10,14 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/save_page_type.h"
-
+#include "url/origin.h"
 
 namespace content {
 
@@ -182,7 +183,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // performed manually without passing the download to the system AV function.
   //
   // This GUID is only used on Windows.
-  virtual std::string ApplicationClientIdForFileScanning() const;
+  virtual std::string ApplicationClientIdForFileScanning();
 
   // Checks whether download is allowed to continue. |check_download_allowed_cb|
   // is called with the decision on completion.
@@ -190,6 +191,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
       const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
       const GURL& url,
       const std::string& request_method,
+      base::Optional<url::Origin> request_initiator,
       CheckDownloadAllowedCallback check_download_allowed_cb);
 
  protected:

@@ -18,21 +18,6 @@ BUILD=$1
 DIR1=$2
 DIR2=$3
 
-unset RMLIST
-if [ -f ${ICUROOT}/${BUILD}/${BUILD}-removed-resources.txt ]
-then
-  for res in $(egrep -v '(^$|^#)' "${ICUROOT}/${BUILD}/${BUILD}-removed-resources.txt")
-  do
-    res=${res//[.]/\[.\]}
-    OP=${RMLIST:+|}
-    RMLIST=${RMLIST}${OP}${res}
-  done
-  RMLIST="^(${RMLIST})"
-else
-  RMLIST="^$"
-fi
-
-
 echo "======================================================="
 echo "                ${BUILD} BUILD REPORT"
 echo "======================================================="
@@ -57,7 +42,7 @@ SIZEFILE=/tmp/${BUILD}size.txt
 SIZESORTEDFILE=/tmp/${BUILD}sizesorted.txt
 count=0
 rm -rf $SIZEFILE
-for res in $(egrep -v "${RMLIST}" "${SORTED_ICUDATA_LST2}")
+for res in $(cat "${SORTED_ICUDATA_LST2}")
 do
   # diff the txt file
   STAT1=`stat --printf="%s" ${RESDIR1}/$res`

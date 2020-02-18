@@ -213,6 +213,13 @@ class JsepTransportController : public sigslot::has_slots<> {
   absl::optional<cricket::SessionDescription::MediaTransportSetting>
   GenerateOrGetLastMediaTransportOffer();
 
+  // Gets the transport parameters for the transport identified by |mid|.
+  // If |mid| is bundled, returns the parameters for the bundled transport.
+  // If the transport for |mid| has not been created yet, it may be allocated in
+  // order to generate transport parameters.
+  absl::optional<cricket::OpaqueTransportParameters> GetTransportParameters(
+      const std::string& mid);
+
   // All of these signals are fired on the signaling thread.
 
   // If any transport failed => failed,
@@ -234,6 +241,9 @@ class JsepTransportController : public sigslot::has_slots<> {
   // (mid, candidates)
   sigslot::signal2<const std::string&, const std::vector<cricket::Candidate>&>
       SignalIceCandidatesGathered;
+
+  sigslot::signal1<const cricket::IceCandidateErrorEvent&>
+      SignalIceCandidateError;
 
   sigslot::signal1<const std::vector<cricket::Candidate>&>
       SignalIceCandidatesRemoved;
@@ -261,8 +271,8 @@ class JsepTransportController : public sigslot::has_slots<> {
   void RemoveTransportForMid(const std::string& mid);
 
   cricket::JsepTransportDescription CreateJsepTransportDescription(
-      cricket::ContentInfo content_info,
-      cricket::TransportInfo transport_info,
+      const cricket::ContentInfo& content_info,
+      const cricket::TransportInfo& transport_info,
       const std::vector<int>& encrypted_extension_ids,
       int rtp_abs_sendtime_extn_id);
 
@@ -345,8 +355,9 @@ class JsepTransportController : public sigslot::has_slots<> {
       bool local);
 
   std::unique_ptr<cricket::DtlsTransportInternal> CreateDtlsTransport(
+      const cricket::ContentInfo& content_info,
       cricket::IceTransportInternal* ice,
-      std::unique_ptr<DatagramTransportInterface> datagram_transport);
+      DatagramTransportInterface* datagram_transport);
   std::unique_ptr<cricket::IceTransportInternal> CreateIceTransport(
       const std::string transport_name,
       bool rtcp);
@@ -375,6 +386,9 @@ class JsepTransportController : public sigslot::has_slots<> {
   void OnTransportGatheringState_n(cricket::IceTransportInternal* transport);
   void OnTransportCandidateGathered_n(cricket::IceTransportInternal* transport,
                                       const cricket::Candidate& candidate);
+  void OnTransportCandidateError_n(
+      cricket::IceTransportInternal* transport,
+      const cricket::IceCandidateErrorEvent& event);
   void OnTransportCandidatesRemoved_n(cricket::IceTransportInternal* transport,
                                       const cricket::Candidates& candidates);
   void OnTransportRoleConflict_n(cricket::IceTransportInternal* transport);
@@ -453,7 +467,6 @@ class JsepTransportController : public sigslot::has_slots<> {
   // recreate the Offer (e.g. after adding streams in Plan B), and so we want to
   // prevent recreation of the media transport when that happens.
   bool media_transport_created_once_ = false;
-  bool datagram_transport_created_once_ = false;
 
   const cricket::SessionDescription* local_desc_ = nullptr;
   const cricket::SessionDescription* remote_desc_ = nullptr;

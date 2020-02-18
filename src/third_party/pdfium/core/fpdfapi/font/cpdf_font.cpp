@@ -12,14 +12,13 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "core/fpdfapi/cpdf_modulemgr.h"
+#include "core/fpdfapi/font/cpdf_cidfont.h"
 #include "core/fpdfapi/font/cpdf_fontencoding.h"
+#include "core/fpdfapi/font/cpdf_fontglobals.h"
 #include "core/fpdfapi/font/cpdf_tounicodemap.h"
 #include "core/fpdfapi/font/cpdf_truetypefont.h"
 #include "core/fpdfapi/font/cpdf_type1font.h"
 #include "core/fpdfapi/font/cpdf_type3font.h"
-#include "core/fpdfapi/page/cpdf_docpagedata.h"
-#include "core/fpdfapi/page/cpdf_pagemodule.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
@@ -209,13 +208,13 @@ void CPDF_Font::LoadFontDescriptor(const CPDF_Dictionary* pFontDesc) {
   if (!pFontFile)
     return;
 
-  m_pFontFile = m_pDocument->LoadFontFile(pFontFile);
+  auto* pData = m_pDocument->GetPageData();
+  m_pFontFile = pData->GetFontFileStreamAcc(pFontFile);
   if (!m_pFontFile)
     return;
 
   if (!m_Font.LoadEmbedded(m_pFontFile->GetSpan())) {
-    m_pDocument->GetPageData()->MaybePurgeFontFileStreamAcc(
-        m_pFontFile->GetStream()->AsStream());
+    pData->MaybePurgeFontFileStreamAcc(m_pFontFile->GetStream()->AsStream());
     m_pFontFile = nullptr;
   }
 }
@@ -223,7 +222,7 @@ void CPDF_Font::LoadFontDescriptor(const CPDF_Dictionary* pFontDesc) {
 void CPDF_Font::CheckFontMetrics() {
   if (m_FontBBox.top == 0 && m_FontBBox.bottom == 0 && m_FontBBox.left == 0 &&
       m_FontBBox.right == 0) {
-    FXFT_Face face = m_Font.GetFace();
+    FXFT_FaceRec* face = m_Font.GetFaceRec();
     if (face) {
       m_FontBBox.left = TT2PDF(FXFT_Get_Face_xMin(face), face);
       m_FontBBox.bottom = TT2PDF(FXFT_Get_Face_yMin(face), face);
@@ -287,13 +286,13 @@ uint32_t CPDF_Font::GetStringWidth(ByteStringView pString) {
 // static
 CPDF_Font* CPDF_Font::GetStockFont(CPDF_Document* pDoc, ByteStringView name) {
   ByteString fontname(name);
-  int font_id = CFX_FontMapper::GetStandardFontName(&fontname);
-  if (font_id < 0)
+  Optional<CFX_FontMapper::StandardFont> font_id =
+      CFX_FontMapper::GetStandardFontName(&fontname);
+  if (!font_id.has_value())
     return nullptr;
 
-  CPDF_FontGlobals* pFontGlobals =
-      CPDF_ModuleMgr::Get()->GetPageModule()->GetFontGlobals();
-  CPDF_Font* pFont = pFontGlobals->Find(pDoc, font_id);
+  auto* pFontGlobals = CPDF_FontGlobals::GetInstance();
+  CPDF_Font* pFont = pFontGlobals->Find(pDoc, font_id.value());
   if (pFont)
     return pFont;
 
@@ -302,13 +301,14 @@ CPDF_Font* CPDF_Font::GetStockFont(CPDF_Document* pDoc, ByteStringView name) {
   pDict->SetNewFor<CPDF_Name>("Subtype", "Type1");
   pDict->SetNewFor<CPDF_Name>("BaseFont", fontname);
   pDict->SetNewFor<CPDF_Name>("Encoding", "WinAnsiEncoding");
-  return pFontGlobals->Set(pDoc, font_id,
-                           CPDF_Font::Create(nullptr, pDict.Get()));
+  return pFontGlobals->Set(pDoc, font_id.value(),
+                           CPDF_Font::Create(nullptr, pDict.Get(), nullptr));
 }
 
 // static
 std::unique_ptr<CPDF_Font> CPDF_Font::Create(CPDF_Document* pDoc,
-                                             CPDF_Dictionary* pFontDict) {
+                                             CPDF_Dictionary* pFontDict,
+                                             FormFactoryIface* pFactory) {
   ByteString type = pFontDict->GetStringFor("Subtype");
   std::unique_ptr<CPDF_Font> pFont;
   if (type == "TrueType") {
@@ -325,7 +325,7 @@ std::unique_ptr<CPDF_Font> CPDF_Font::Create(CPDF_Document* pDoc,
     if (!pFont)
       pFont = pdfium::MakeUnique<CPDF_TrueTypeFont>(pDoc, pFontDict);
   } else if (type == "Type3") {
-    pFont = pdfium::MakeUnique<CPDF_Type3Font>(pDoc, pFontDict);
+    pFont = pdfium::MakeUnique<CPDF_Type3Font>(pDoc, pFontDict, pFactory);
   } else if (type == "Type0") {
     pFont = pdfium::MakeUnique<CPDF_CIDFont>(pDoc, pFontDict);
   } else {
@@ -391,7 +391,7 @@ int CPDF_Font::FallbackGlyphFromCharcode(int fallbackFont, uint32_t charcode) {
   WideString str = UnicodeFromCharCode(charcode);
   uint32_t unicode = !str.IsEmpty() ? str[0] : charcode;
   int glyph =
-      FXFT_Get_Char_Index(m_FontFallbacks[fallbackFont]->GetFace(), unicode);
+      FT_Get_Char_Index(m_FontFallbacks[fallbackFont]->GetFaceRec(), unicode);
   if (glyph == 0)
     return -1;
 
@@ -405,7 +405,7 @@ CFX_Font* CPDF_Font::GetFontFallback(int position) {
 }
 
 // static
-int CPDF_Font::TT2PDF(int m, FXFT_Face face) {
+int CPDF_Font::TT2PDF(int m, FXFT_FaceRec* face) {
   int upm = FXFT_Get_Face_UnitsPerEM(face);
   if (upm == 0)
     return m;
@@ -417,14 +417,14 @@ int CPDF_Font::TT2PDF(int m, FXFT_Face face) {
 }
 
 // static
-bool CPDF_Font::FT_UseTTCharmap(FXFT_Face face,
+bool CPDF_Font::FT_UseTTCharmap(FXFT_FaceRec* face,
                                 int platform_id,
                                 int encoding_id) {
   auto** pCharMap = FXFT_Get_Face_Charmaps(face);
   for (int i = 0; i < FXFT_Get_Face_CharmapCount(face); i++) {
     if (FXFT_Get_Charmap_PlatformID(pCharMap[i]) == platform_id &&
         FXFT_Get_Charmap_EncodingID(pCharMap[i]) == encoding_id) {
-      FXFT_Set_Charmap(face, pCharMap[i]);
+      FT_Set_Charmap(face, pCharMap[i]);
       return true;
     }
   }

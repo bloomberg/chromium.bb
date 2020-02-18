@@ -202,7 +202,7 @@ class HelperPool(object):
     return helper
 
   def __iter__(self):
-    for helper in self.pool.itervalues():
+    for helper in self.pool.values():
       if helper:
         yield helper
 
@@ -746,7 +746,7 @@ class PatchSeries(object):
       errors, a dict of patches to exceptions encountered while applying them.
     """
     self.ResetCheckouts(constants.PATCH_BRANCH, fetch=True)
-    local_changes = reduce(set.union, by_repo.values(), set())
+    local_changes = functools.reduce(set.union, by_repo.values(), set())
     applied_changes, failed_tot, failed_inflight = self.Apply(local_changes)
     errors = {}
     for exception in failed_tot + failed_inflight:
@@ -857,7 +857,7 @@ class PatchSeries(object):
       else:
         resolved.append((change, plan))
         logging.info("Transaction for %s is %s.",
-                     change, ', '.join(map(str, resolved[-1][-1])))
+                     change, ', '.join(str(x) for x in resolved[-1][-1]))
         planned.update(plan)
 
     if not resolved:
@@ -881,7 +881,7 @@ class PatchSeries(object):
         with self._Transaction(transaction_changes):
           logging.debug("Attempting transaction for %s: changes: %s",
                         inducing_change,
-                        ', '.join(map(str, transaction_changes)))
+                        ', '.join(str(x) for x in transaction_changes))
           self._ApplyChanges(inducing_change, transaction_changes)
       except cros_patch.PatchException as e:
         logging.info("Failed applying transaction for %s: %s",
@@ -926,7 +926,7 @@ class PatchSeries(object):
     # the sha1 of the branch; that information is enough to rewind us back
     # to the original repo state.
     project_state = set(
-        map(functools.partial(self.GetGitRepoForChange, strict=True), commits))
+        self.GetGitRepoForChange(x, strict=True) for x in commits)
     resets = []
     for project_dir in project_state:
       current_sha1 = git.RunGit(
@@ -940,7 +940,7 @@ class PatchSeries(object):
       yield
     except Exception:
       logging.info("Rewinding transaction: failed changes: %s .",
-                   ', '.join(map(str, commits)), exc_info=True)
+                   ', '.join(str(x) for x in commits), exc_info=True)
 
       for project_dir, sha1 in resets:
         git.RunGit(project_dir, ['reset', '--hard', sha1])

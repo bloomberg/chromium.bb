@@ -8,12 +8,12 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/gmock_callback_support.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "media/base/fake_demuxer_stream.h"
-#include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/test_helpers.h"
@@ -26,6 +26,7 @@
 #include "media/filters/decrypting_video_decoder.h"
 #endif
 
+using ::base::test::RunCallback;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Assign;
@@ -84,7 +85,7 @@ class VideoDecoderStreamTest
         has_no_key_(false) {
     video_decoder_stream_.reset(new VideoDecoderStream(
         std::make_unique<VideoDecoderStream::StreamTraits>(&media_log_),
-        message_loop_.task_runner(),
+        scoped_task_environment_.GetMainThreadTaskRunner(),
         base::BindRepeating(&VideoDecoderStreamTest::CreateVideoDecodersForTest,
                             base::Unretained(this)),
         &media_log_));
@@ -138,7 +139,7 @@ class VideoDecoderStreamTest
   void PrepareFrame(scoped_refptr<VideoFrame> frame,
                     VideoDecoderStream::OutputReadyCB output_ready_cb) {
     // Simulate some delay in return of the output.
-    message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(output_ready_cb), std::move(frame)));
   }
@@ -166,7 +167,7 @@ class VideoDecoderStreamTest
     // Note this is _not_ inserted into |decoders_| below, so we don't need to
     // adjust the indices used below to compensate.
     decoders.push_back(std::make_unique<DecryptingVideoDecoder>(
-        message_loop_.task_runner(), &media_log_));
+        scoped_task_environment_.GetMainThreadTaskRunner(), &media_log_));
 #endif
 
     for (int i = 0; i < 3; ++i) {
@@ -462,7 +463,7 @@ class VideoDecoderStreamTest
     SatisfyPendingCallback(DECODER_REINIT);
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   StrictMock<MockMediaLog> media_log_;
   std::unique_ptr<VideoDecoderStream> video_decoder_stream_;

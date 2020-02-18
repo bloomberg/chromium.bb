@@ -136,7 +136,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
                 LayoutObject* before_child = nullptr) override;
 
   Element* GetNode() const {
-    return ToElement(LayoutBoxModelObject::GetNode());
+    return To<Element>(LayoutBoxModelObject::GetNode());
   }
 
   LayoutUnit MarginLeft() const final;
@@ -233,8 +233,8 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   // rects to be from descendant fragments of |parent_fragment|.
   // In legacy, |parent_fragment| is always null, and all rects are regenerated.
   bool HitTestCulledInline(HitTestResult&,
-                           const HitTestLocation& location_in_container,
-                           const LayoutPoint& accumulated_offset,
+                           const HitTestLocation&,
+                           const PhysicalOffset& accumulated_offset,
                            const NGPaintFragment* parent_fragment = nullptr);
 
   PhysicalOffset FirstLineBoxTopLeft() const {
@@ -332,8 +332,8 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   void Paint(const PaintInfo&) const final;
 
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
+                   const HitTestLocation&,
+                   const PhysicalOffset& accumulated_offset,
                    HitTestAction) final;
 
   PaintLayerType LayerTypeRequired() const override;
@@ -358,7 +358,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
       TransformState&,
       VisualRectFlags = kDefaultVisualRectFlags) const final;
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
   IntRect BorderBoundingBox() const final {
     IntRect bounding_box = EnclosingIntRect(PhysicalLinesBoundingBox());
@@ -383,7 +383,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   void ChildBecameNonInline(LayoutObject* child) final;
 
-  void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) const final;
+  void UpdateHitTestResult(HitTestResult&, const PhysicalOffset&) const final;
 
   void ImageChanged(WrappedImagePtr, CanDeferInvalidation) final;
 

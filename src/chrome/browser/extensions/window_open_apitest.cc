@@ -7,7 +7,6 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,8 +39,8 @@
 #include "ui/base/base_window.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
@@ -316,7 +315,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
 // URL on a new tab cannot access non-web-accessible resources.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
                        WindowOpenInaccessibleResourceFromDataURL) {
-  base::HistogramTester uma;
   const extensions::Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open"));
   ASSERT_TRUE(extension);
@@ -341,15 +339,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
   EXPECT_NE(extension_url, newtab->GetMainFrame()->GetLastCommittedURL());
   EXPECT_FALSE(newtab->GetMainFrame()->GetSiteInstance()->GetSiteURL().SchemeIs(
       extensions::kExtensionScheme));
-
-  // Verify that the blocking was recorded correctly in UMA. ShouldAllowOpenURL
-  // is called twice by the content layer, once when creating the window, and
-  // again when attempting to navigate the newly-created window.
-  uma.ExpectUniqueSample("Extensions.ShouldAllowOpenURL.Failure",
-                         2, /* FAILURE_SCHEME_NOT_HTTP_OR_HTTPS_OR_EXTENSION */
-                         2);
-  uma.ExpectUniqueSample("Extensions.ShouldAllowOpenURL.Failure.Scheme",
-                         6 /* SCHEME_DATA */, 2);
 }
 
 // Test that navigating to an extension URL is allowed on chrome:// and
@@ -406,13 +395,13 @@ aura::Window* GetCurrentWindow() {
   return controller->window()->GetNativeWindow();
 }
 
-ash::mojom::WindowPinType GetCurrentWindowPinType() {
-  ash::mojom::WindowPinType type =
+ash::WindowPinType GetCurrentWindowPinType() {
+  ash::WindowPinType type =
       GetCurrentWindow()->GetProperty(ash::kWindowPinTypeKey);
   return type;
 }
 
-void SetCurrentWindowPinType(ash::mojom::WindowPinType type) {
+void SetCurrentWindowPinType(ash::WindowPinType type) {
   GetCurrentWindow()->SetProperty(ash::kWindowPinTypeKey, type);
 }
 
@@ -425,8 +414,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, OpenLockedFullscreenWindow) {
 
   // Make sure the newly created window is "trusted pinned" (which means that
   // it's in locked fullscreen mode).
-  EXPECT_EQ(ash::mojom::WindowPinType::TRUSTED_PINNED,
-            GetCurrentWindowPinType());
+  EXPECT_EQ(ash::WindowPinType::kTrustedPinned, GetCurrentWindowPinType());
 }
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, UpdateWindowToLockedFullscreen) {
@@ -435,14 +423,13 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, UpdateWindowToLockedFullscreen) {
       << message_;
 
   // Make sure the current window is put into the "trusted pinned" state.
-  EXPECT_EQ(ash::mojom::WindowPinType::TRUSTED_PINNED,
-            GetCurrentWindowPinType());
+  EXPECT_EQ(ash::WindowPinType::kTrustedPinned, GetCurrentWindowPinType());
 }
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, RemoveLockedFullscreenFromWindow) {
   // After locking the window, do a LockedFullscreenStateChanged so the
   // command_controller state catches up as well.
-  SetCurrentWindowPinType(ash::mojom::WindowPinType::TRUSTED_PINNED);
+  SetCurrentWindowPinType(ash::WindowPinType::kTrustedPinned);
   browser()->command_controller()->LockedFullscreenStateChanged();
 
   ASSERT_TRUE(RunExtensionTestWithArg("locked_fullscreen/with_permission",
@@ -450,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, RemoveLockedFullscreenFromWindow) {
       << message_;
 
   // Make sure the current window is removed from locked-fullscreen state.
-  EXPECT_EQ(ash::mojom::WindowPinType::NONE, GetCurrentWindowPinType());
+  EXPECT_EQ(ash::WindowPinType::kNone, GetCurrentWindowPinType());
 }
 
 // Make sure that commands disabling code works in locked fullscreen mode.
@@ -496,12 +483,12 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
 
   // chrome.windows.update call fails since this extension doesn't have the
   // correct permission and hence the current window has NONE as WindowPinType.
-  EXPECT_EQ(ash::mojom::WindowPinType::NONE, GetCurrentWindowPinType());
+  EXPECT_EQ(ash::WindowPinType::kNone, GetCurrentWindowPinType());
 }
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
                        RemoveLockedFullscreenFromWindowWithoutPermission) {
-  SetCurrentWindowPinType(ash::mojom::WindowPinType::TRUSTED_PINNED);
+  SetCurrentWindowPinType(ash::WindowPinType::kTrustedPinned);
   browser()->command_controller()->LockedFullscreenStateChanged();
 
   ASSERT_TRUE(RunExtensionTestWithArg("locked_fullscreen/without_permission",
@@ -509,8 +496,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
       << message_;
 
   // The current window is still locked-fullscreen.
-  EXPECT_EQ(ash::mojom::WindowPinType::TRUSTED_PINNED,
-            GetCurrentWindowPinType());
+  EXPECT_EQ(ash::WindowPinType::kTrustedPinned, GetCurrentWindowPinType());
 }
 #endif  // defined(OS_CHROMEOS)
 

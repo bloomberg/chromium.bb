@@ -47,7 +47,7 @@ class MEDIA_GPU_EXPORT SharedImageVideo
   // SharedImageBacking implementation.
   bool IsCleared() const override;
   void SetCleared() override;
-  void Update() override;
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(gpu::MailboxManager* mailbox_manager) override;
   void Destroy() override;
   size_t EstimatedSizeForMemTracking() const override;
@@ -64,6 +64,10 @@ class MEDIA_GPU_EXPORT SharedImageVideo
       gpu::SharedImageManager* manager,
       gpu::MemoryTypeTracker* tracker) override;
 
+  std::unique_ptr<gpu::SharedImageRepresentationGLTexturePassthrough>
+  ProduceGLTexturePassthrough(gpu::SharedImageManager* manager,
+                              gpu::MemoryTypeTracker* tracker) override;
+
   std::unique_ptr<gpu::SharedImageRepresentationSkia> ProduceSkia(
       gpu::SharedImageManager* manager,
       gpu::MemoryTypeTracker* tracker,
@@ -74,8 +78,11 @@ class MEDIA_GPU_EXPORT SharedImageVideo
 
  private:
   friend class SharedImageRepresentationGLTextureVideo;
+  friend class SharedImageRepresentationGLTexturePassthroughVideo;
   friend class SharedImageRepresentationVideoSkiaGL;
   friend class SharedImageRepresentationVideoSkiaVk;
+
+  void BeginGLReadAccess();
 
   scoped_refptr<CodecImage> codec_image_;
 

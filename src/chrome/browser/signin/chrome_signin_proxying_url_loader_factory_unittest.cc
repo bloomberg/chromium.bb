@@ -30,7 +30,7 @@ namespace {
 
 class MockDelegate : public HeaderModificationDelegate {
  public:
-  MockDelegate() : weak_factory_(this) {}
+  MockDelegate() {}
   ~MockDelegate() override {}
 
   MOCK_METHOD1(ShouldInterceptNavigation,
@@ -47,7 +47,7 @@ class MockDelegate : public HeaderModificationDelegate {
   }
 
  private:
-  base::WeakPtrFactory<MockDelegate> weak_factory_;
+  base::WeakPtrFactory<MockDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
@@ -159,7 +159,6 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
       .WillOnce(
           Invoke([&](ChromeRequestAdapter* adapter, const GURL& redirect_url) {
             EXPECT_EQ(kTestURL, adapter->GetUrl());
-            EXPECT_TRUE(adapter->IsMainRequestContext(nullptr /* io_data */));
             EXPECT_EQ(content::ResourceType::kMainFrame,
                       adapter->GetResourceType());
             EXPECT_EQ(GURL("https://chrome.com"), adapter->GetReferrerOrigin());
@@ -177,7 +176,6 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
           }))
       .WillOnce(
           Invoke([&](ChromeRequestAdapter* adapter, const GURL& redirect_url) {
-            EXPECT_TRUE(adapter->IsMainRequestContext(nullptr));
             EXPECT_EQ(content::ResourceType::kMainFrame,
                       adapter->GetResourceType());
 

@@ -10,7 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -146,6 +146,12 @@ class PaintPropertyNode : public RefCounted<NodeType> {
     cc_node_id_ = id;
   }
 
+  PaintPropertyChangeType NodeChanged() const { return changed_; }
+  bool NodeChangeAffectsRaster() const {
+    return changed_ != PaintPropertyChangeType::kUnchanged &&
+           changed_ != PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
+  }
+
 #if DCHECK_IS_ON()
   String ToTreeString() const;
 
@@ -155,10 +161,10 @@ class PaintPropertyNode : public RefCounted<NodeType> {
 
  protected:
   PaintPropertyNode(const NodeType* parent, bool is_parent_alias = false)
-      : parent_(parent),
-        is_parent_alias_(is_parent_alias),
+      : is_parent_alias_(is_parent_alias),
         changed_(parent ? PaintPropertyChangeType::kNodeAddedOrRemoved
-                        : PaintPropertyChangeType::kUnchanged) {}
+                        : PaintPropertyChangeType::kUnchanged),
+        parent_(parent) {}
 
   PaintPropertyChangeType SetParent(const NodeType* parent) {
     DCHECK(!IsRoot());
@@ -176,19 +182,11 @@ class PaintPropertyNode : public RefCounted<NodeType> {
     DCHECK(!IsRoot());
     changed_ = std::max(changed_, changed);
   }
-  PaintPropertyChangeType NodeChanged() const { return changed_; }
 
  private:
   friend class PaintPropertyNodeTest;
   // Object paint properties can set the parent directly for an alias update.
   friend class ObjectPaintProperties;
-
-  scoped_refptr<const NodeType> parent_;
-
-  // Caches the id of the associated cc property node. It's valid only when
-  // cc_sequence_number_ matches the sequence number of the cc property tree.
-  mutable int cc_node_id_ = -1;
-  mutable int cc_sequence_number_ = 0;
 
   // Indicates whether this node is an alias for its parent. Parent aliases are
   // nodes that do not affect rendering and are ignored for the purposes of
@@ -202,6 +200,13 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   // LocalFrameView::RunPaintLifecyclePhase), otherwise this is cleared through
   // PaintController::FinishCycle.
   mutable PaintPropertyChangeType changed_;
+
+  scoped_refptr<const NodeType> parent_;
+
+  // Caches the id of the associated cc property node. It's valid only when
+  // cc_sequence_number_ matches the sequence number of the cc property tree.
+  mutable int cc_node_id_ = -1;
+  mutable int cc_sequence_number_ = 0;
 
 #if DCHECK_IS_ON()
   String debug_name_;
@@ -271,7 +276,7 @@ String PaintPropertyNode<NodeType>::ToTreeString() const {
 template <typename NodeType>
 std::ostream& operator<<(std::ostream& os,
                          const PaintPropertyNode<NodeType>& node) {
-  return os << static_cast<const NodeType&>(node).ToString().Utf8().data();
+  return os << static_cast<const NodeType&>(node).ToString().Utf8();
 }
 
 PLATFORM_EXPORT const char* PaintPropertyChangeTypeToString(

@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_COMUTIL
@@ -13,7 +13,15 @@
 #endif
 
 #define _COM_MEMCPY_S(dest,destsize,src,count) memcpy(dest,src,count)
+
+/* Use of wsprintf might be impossible, if strsafe.h is included. */
+#ifndef __STDC_SECURE_LIB__
 #define _COM_PRINTF_S_1(dest,destsize,format,arg1) wsprintf(dest,format,arg1)
+#elif defined(UNICODE)
+#define _COM_PRINTF_S_1(dest,destsize,format,arg1) swprintf_s(dest,destsize,format,arg1)
+#else
+#define _COM_PRINTF_S_1(dest,destsize,format,arg1) sprintf_s(dest,destsize,format,arg1)
+#endif
 
 #ifdef __cplusplus
 
@@ -21,7 +29,11 @@
 #undef new
 
 #ifndef WINAPI
+#if defined(_ARM_)
+#define WINAPI
+#else
 #define WINAPI __stdcall
+#endif
 #endif
 
 class _com_error;
@@ -84,9 +96,9 @@ private:
     Data_t(const wchar_t *s);
     Data_t(BSTR bstr,bool fCopy);
     Data_t(const _bstr_t &s1,const _bstr_t &s2);
-    unsigned long AddRef() throw();
-    unsigned long Release() throw();
-    unsigned long RefCount() const throw();
+    unsigned __LONG32 AddRef() throw();
+    unsigned __LONG32 Release() throw();
+    unsigned __LONG32 RefCount() const throw();
     operator const wchar_t *() const throw();
     operator const char *() const;
     const wchar_t *GetWString() const throw();
@@ -101,7 +113,7 @@ private:
   private:
     BSTR m_wstr;
     mutable char *m_str;
-    unsigned long m_RefCount;
+    unsigned __LONG32 m_RefCount;
     Data_t() throw();
     Data_t(const Data_t &s) throw();
     ~Data_t() throw();
@@ -231,7 +243,7 @@ inline void _bstr_t::Attach(BSTR s) {
   if(!m_Data) { _com_issue_error(E_OUTOFMEMORY); }
 }
 
-inline BSTR _bstr_t::Detach() {
+inline BSTR _bstr_t::Detach() throw () {
   _COM_ASSERT(m_Data!=NULL && m_Data->RefCount()==1);
   if(m_Data!=NULL && m_Data->RefCount()==1) {
     BSTR b = m_Data->GetWString();
@@ -296,18 +308,18 @@ inline _bstr_t::Data_t::Data_t(const _bstr_t &s1,const _bstr_t &s2) : m_str(NULL
   }
 }
 
-inline unsigned long _bstr_t::Data_t::AddRef() throw() {
-  InterlockedIncrement(reinterpret_cast<long*>(&m_RefCount));
+inline unsigned __LONG32 _bstr_t::Data_t::AddRef() throw() {
+  InterlockedIncrement(reinterpret_cast<LONG*>(&m_RefCount));
   return m_RefCount;
 }
 
-inline unsigned long _bstr_t::Data_t::Release() throw() {
-  unsigned long cRef = InterlockedDecrement(reinterpret_cast<long*>(&m_RefCount));
+inline unsigned __LONG32 _bstr_t::Data_t::Release() throw() {
+  unsigned __LONG32 cRef = InterlockedDecrement(reinterpret_cast<LONG*>(&m_RefCount));
   if(cRef==0) delete this;
   return cRef;
 }
 
-inline unsigned long _bstr_t::Data_t::RefCount() const throw() { return m_RefCount; }
+inline unsigned __LONG32 _bstr_t::Data_t::RefCount() const throw() { return m_RefCount; }
 inline _bstr_t::Data_t::operator const wchar_t *() const throw() { return m_wstr; }
 inline _bstr_t::Data_t::operator const char *() const { return GetString(); }
 inline const wchar_t *_bstr_t::Data_t::GetWString() const throw() { return m_wstr; }
@@ -381,7 +393,7 @@ public:
   _variant_t(const _variant_t &varSrc);
   _variant_t(VARIANT &varSrc,bool fCopy);
   _variant_t(short sSrc,VARTYPE vtSrc = VT_I2);
-  _variant_t(long lSrc,VARTYPE vtSrc = VT_I4);
+  _variant_t(__LONG32 lSrc,VARTYPE vtSrc = VT_I4);
   _variant_t(float fltSrc) throw();
   _variant_t(double dblSrc,VARTYPE vtSrc = VT_R8);
   _variant_t(const CY &cySrc) throw();
@@ -395,14 +407,14 @@ public:
   _variant_t(BYTE bSrc) throw();
   _variant_t(char cSrc) throw();
   _variant_t(unsigned short usSrc) throw();
-  _variant_t(unsigned long ulSrc) throw();
+  _variant_t(unsigned __LONG32 ulSrc) throw();
   _variant_t(int iSrc) throw();
   _variant_t(unsigned int uiSrc) throw();
   __MINGW_EXTENSION _variant_t(__int64 i8Src) throw();
   __MINGW_EXTENSION _variant_t(unsigned __int64 ui8Src) throw();
   ~_variant_t() throw();
   operator short() const;
-  operator long() const;
+  operator __LONG32() const;
   operator float() const;
   operator double() const;
   operator CY() const;
@@ -415,7 +427,7 @@ public:
   operator VARIANT() const throw();
   operator char() const;
   operator unsigned short() const;
-  operator unsigned long() const;
+  operator unsigned __LONG32() const;
   operator int() const;
   operator unsigned int() const;
   __MINGW_EXTENSION operator __int64() const;
@@ -424,7 +436,7 @@ public:
   _variant_t &operator=(const VARIANT *pSrc);
   _variant_t &operator=(const _variant_t &varSrc);
   _variant_t &operator=(short sSrc);
-  _variant_t &operator=(long lSrc);
+  _variant_t &operator=(__LONG32 lSrc);
   _variant_t &operator=(float fltSrc);
   _variant_t &operator=(double dblSrc);
   _variant_t &operator=(const CY &cySrc);
@@ -438,7 +450,7 @@ public:
   _variant_t &operator=(BYTE bSrc);
   _variant_t &operator=(char cSrc);
   _variant_t &operator=(unsigned short usSrc);
-  _variant_t &operator=(unsigned long ulSrc);
+  _variant_t &operator=(unsigned __LONG32 ulSrc);
   _variant_t &operator=(int iSrc);
   _variant_t &operator=(unsigned int uiSrc);
   __MINGW_EXTENSION _variant_t &operator=(__int64 i8Src);
@@ -494,7 +506,7 @@ inline _variant_t::_variant_t(short sSrc,VARTYPE vtSrc) {
     V_I2(this) = sSrc;
   }
 }
-inline _variant_t::_variant_t(long lSrc,VARTYPE vtSrc) {
+inline _variant_t::_variant_t(__LONG32 lSrc,VARTYPE vtSrc) {
   if((vtSrc!=VT_I4) && (vtSrc!=VT_ERROR) && (vtSrc!=VT_BOOL)) {
     _com_issue_error(E_INVALIDARG);
     return;
@@ -580,7 +592,7 @@ inline _variant_t::_variant_t(unsigned short usSrc) throw() {
   V_VT(this) = VT_UI2;
   V_UI2(this) = usSrc;
 }
-inline _variant_t::_variant_t(unsigned long ulSrc) throw() {
+inline _variant_t::_variant_t(unsigned __LONG32 ulSrc) throw() {
   V_VT(this) = VT_UI4;
   V_UI4(this) = ulSrc;
 }
@@ -606,7 +618,7 @@ inline _variant_t::operator short() const {
   varDest.ChangeType(VT_I2,this);
   return V_I2(&varDest);
 }
-inline _variant_t::operator long() const {
+inline _variant_t::operator __LONG32() const {
   if(V_VT(this)==VT_I4) return V_I4(this);
   _variant_t varDest;
   varDest.ChangeType(VT_I4,this);
@@ -695,7 +707,7 @@ inline _variant_t::operator unsigned short() const {
   return V_UI2(&varDest);
 }
 
-inline _variant_t::operator unsigned long() const {
+inline _variant_t::operator unsigned __LONG32() const {
   if(V_VT(this)==VT_UI4) return V_UI4(this);
   _variant_t varDest;
   varDest.ChangeType(VT_UI4,this);
@@ -748,7 +760,7 @@ inline _variant_t &_variant_t::operator=(short sSrc) {
   }
   return *this;
 }
-inline _variant_t &_variant_t::operator=(long lSrc) {
+inline _variant_t &_variant_t::operator=(__LONG32 lSrc) {
   if(V_VT(this)==VT_I4) V_I4(this) = lSrc;
   else if(V_VT(this)==VT_ERROR) V_ERROR(this) = lSrc;
   else if(V_VT(this)==VT_BOOL) V_BOOL(this) = (lSrc ? VARIANT_TRUE : VARIANT_FALSE);
@@ -961,7 +973,7 @@ inline _variant_t &_variant_t::operator=(unsigned short usSrc)
   return *this;
 }
 
-inline _variant_t &_variant_t::operator=(unsigned long ulSrc)
+inline _variant_t &_variant_t::operator=(unsigned __LONG32 ulSrc)
 {
   if(V_VT(this)!=VT_UI4) {
 
@@ -1198,6 +1210,10 @@ extern _variant_t vtMissing;
 #endif
 
 #pragma pop_macro("new")
+
+/* We use _com_issue_error here, but we only provide its inline version in comdef.h,
+ * so we need to make sure that it's included as well. */
+#include <comdef.h>
 
 #endif /* __cplusplus */
 

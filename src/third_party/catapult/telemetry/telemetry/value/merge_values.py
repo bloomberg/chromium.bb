@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.value import skip
-
 
 # TODO(eakuefner): Get rid of this as part of crbug.com/525688
 def DefaultKeyFunc(value):
@@ -20,11 +18,11 @@ def DefaultKeyFunc(value):
   Returns:
     A comparable object used to group values.
   """
-  # We use the name and tir_label because even in the TBMv2 case, right now
-  # metrics are responsible for mangling grouping keys into the name, and
-  # PageTestResults is responsible for mangling story grouping keys into the
-  # tir_label.
-  return value.name, value.tir_label
+  # We use the name and grouping_label because even in the TBMv2 case, right
+  # now metrics are responsible for mangling grouping keys into the name, and
+  # Value's are responsible for mangling story grouping keys into the
+  # grouping_label.
+  return value.name, value.grouping_label
 
 
 def MergeLikeValuesFromSamePage(all_values, key_func=DefaultKeyFunc):
@@ -64,7 +62,8 @@ def MergeLikeValuesFromDifferentPages(all_values, key_func=DefaultKeyFunc):
        ScalarValue(page2, 'x', 2, 'foo')
        ScalarValue(page2, 'y', 40, 'baz')
 
-  This function will group values with the same name and tir_label together:
+  This function will group values with the same name and grouping_label
+  together:
        ListOfScalarValues(None, 'x', [1, 2], 'foo')
        ListOfScalarValues(None, 'y', [30], 'bar')
        ListOfScalarValues(None, 'y', [40], 'baz')
@@ -126,9 +125,6 @@ def GroupStably(all_values, key_func):
   merge_groups = {}
   merge_groups_in_creation_order = []
   for value in all_values:
-    if isinstance(value, skip.SkipValue):
-      continue
-
     key = key_func(value)
     if key not in merge_groups:
       merge_groups[key] = []

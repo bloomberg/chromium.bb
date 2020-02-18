@@ -105,8 +105,8 @@ void MediaGalleriesDialogViews::InitChildViews() {
 
   const int dialog_content_width = views::Widget::GetLocalizedContentsWidth(
       IDS_MEDIA_GALLERIES_DIALOG_CONTENT_WIDTH_CHARS);
-  views::GridLayout* layout = contents_->SetLayoutManager(
-      std::make_unique<views::GridLayout>(contents_));
+  views::GridLayout* layout =
+      contents_->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   int column_set_id = 0;
   views::ColumnSet* columns = layout->AddColumnSet(column_set_id);
@@ -123,7 +123,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
   // parameters may differ between platforms.
   const int subtext_height = subtext->GetHeightForWidth(dialog_content_width);
   layout->StartRow(views::GridLayout::kFixedSize, column_set_id);
-  layout->AddView(subtext.release(), 1, 1, views::GridLayout::FILL,
+  layout->AddView(std::move(subtext), 1, 1, views::GridLayout::FILL,
                   views::GridLayout::LEADING, dialog_content_width,
                   subtext_height);
   layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_padding);
@@ -133,7 +133,8 @@ void MediaGalleriesDialogViews::InitChildViews() {
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
   auto scroll_container = std::make_unique<ScrollableView>();
   scroll_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), small_vertical_padding));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      small_vertical_padding));
   scroll_container->SetBorder(
       views::CreateEmptyBorder(vertical_padding, 0, vertical_padding, 0));
 
@@ -173,7 +174,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
   scroll_view->SetContents(std::move(scroll_container));
   layout->StartRowWithPadding(1.0, column_set_id, views::GridLayout::kFixedSize,
                               vertical_padding);
-  layout->AddView(scroll_view.release(), 1.0, 1.0, views::GridLayout::FILL,
+  layout->AddView(std::move(scroll_view), 1.0, 1.0, views::GridLayout::FILL,
                   views::GridLayout::FILL, dialog_content_width,
                   kScrollAreaHeight);
 }
@@ -251,15 +252,16 @@ ui::ModalType MediaGalleriesDialogViews::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-views::View* MediaGalleriesDialogViews::CreateExtraView() {
+std::unique_ptr<views::View> MediaGalleriesDialogViews::CreateExtraView() {
   DCHECK(!auxiliary_button_);
   base::string16 button_label = controller_->GetAuxiliaryButtonText();
+  std::unique_ptr<views::LabelButton> auxiliary_button;
   if (!button_label.empty()) {
-    auto auxiliary_button =
+    auxiliary_button =
         views::MdTextButton::CreateSecondaryUiButton(this, button_label);
-    auxiliary_button_ = auxiliary_button.release();
+    auxiliary_button_ = auxiliary_button.get();
   }
-  return auxiliary_button_;
+  return auxiliary_button;
 }
 
 bool MediaGalleriesDialogViews::Cancel() {

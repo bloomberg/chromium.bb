@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/events/blink/prediction/kalman_predictor.h"
+#include "ui/events/blink/prediction/predictor_factory.h"
 
 namespace {
 
@@ -18,18 +19,22 @@ namespace ui {
 constexpr base::TimeDelta InputPredictor::kMaxTimeDelta;
 constexpr base::TimeDelta InputPredictor::kMaxResampleTime;
 
-KalmanPredictor::KalmanPredictor() = default;
+KalmanPredictor::KalmanPredictor(const bool enable_time_filtering)
+    : enable_time_filtering_(enable_time_filtering) {}
 
 KalmanPredictor::~KalmanPredictor() = default;
 
 const char* KalmanPredictor::GetName() const {
-  return "Kalman";
+  return enable_time_filtering_
+             ? input_prediction::kScrollPredictorNameKalmanTimeFiltered
+             : input_prediction::kScrollPredictorNameKalman;
 }
 
 void KalmanPredictor::Reset() {
   x_predictor_.Reset();
   y_predictor_.Reset();
   last_point_.time_stamp = base::TimeTicks();
+  time_filter_.Reset();
 }
 
 void KalmanPredictor::Update(const InputData& cur_input) {
@@ -39,9 +44,12 @@ void KalmanPredictor::Update(const InputData& cur_input) {
     dt = cur_input.time_stamp - last_point_.time_stamp;
     if (dt > kMaxTimeDelta)
       Reset();
+    else if (enable_time_filtering_)
+      time_filter_.Update(dt.InMillisecondsF(), 0);
   }
 
-  double dt_ms = dt.InMillisecondsF();
+  double dt_ms = enable_time_filtering_ ? time_filter_.GetPosition()
+                                        : dt.InMillisecondsF();
   last_point_ = cur_input;
   x_predictor_.Update(cur_input.pos.x(), dt_ms);
   y_predictor_.Update(cur_input.pos.y(), dt_ms);
@@ -52,32 +60,21 @@ bool KalmanPredictor::HasPrediction() const {
 }
 
 bool KalmanPredictor::GeneratePrediction(base::TimeTicks predict_time,
-                                         bool is_resampling,
                                          InputData* result) const {
+  if (!HasPrediction())
+    return false;
+
+  float pred_dt = (predict_time - last_point_.time_stamp).InMillisecondsF();
+
   std::vector<InputData> pred_points;
-
-  base::TimeDelta dt = predict_time - last_point_.time_stamp;
-  // Kalman filter is not very good when predicting backwards. Besides,
-  // predicting backwards means increasing latency. Thus disable prediction when
-  // dt < 0.
-  if (!HasPrediction() || dt < base::TimeDelta())
-    return false;
-
-  // For resampling, we don't want to predict too far away because the result
-  // will likely be inaccurate in that case. But it may be useful for predicted
-  // points.
-  if (is_resampling && dt > kMaxResampleTime)
-    return false;
-
   gfx::Vector2dF position(last_point_.pos.x(), last_point_.pos.y());
   // gfx::Vector2dF position = PredictPosition();
   gfx::Vector2dF velocity = PredictVelocity();
   gfx::Vector2dF acceleration = PredictAcceleration();
 
-  float dt_ms = dt.InMillisecondsF();
   position +=
-      ScaleVector2d(velocity, kVelocityInfluence * dt_ms) +
-      ScaleVector2d(acceleration, kAccelerationInfluence * dt_ms * dt_ms);
+      ScaleVector2d(velocity, kVelocityInfluence * pred_dt) +
+      ScaleVector2d(acceleration, kAccelerationInfluence * pred_dt * pred_dt);
 
   result->pos.set_x(position.x());
   result->pos.set_y(position.y());

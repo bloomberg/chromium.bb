@@ -26,20 +26,11 @@ public:
     }
 
 protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "MegaStroke");
-            return true;
-        }
+    SkString name() override { return SkString("MegaStroke"); }
 
-        SkUnichar uni;
-        if (Sample::CharQ(*evt, &uni)) {
-           fClip.set(0, 0, 950, 600);
-        }
-        if (evt->isType("SampleCode_Key_Event")) {
-           fClip.set(0, 0, 950, 600);
-        }
-        return this->INHERITED::onQuery(evt);
+    bool onChar(SkUnichar uni) override {
+        fClip.set(0, 0, 950, 600);
+        return true;
     }
 
     void onDrawBackground(SkCanvas* canvas) override {
@@ -78,7 +69,7 @@ protected:
         fClip.set(0, 0, 950, 600);
     }
 
-    bool onAnimate(const AnimTimer&) override { return true; }
+    bool onAnimate(double /*nanos*/) override { return true; }
 
 private:
     SkPath      fMegaPath;

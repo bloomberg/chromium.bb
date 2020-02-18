@@ -1,6 +1,6 @@
 package DBI::Gofer::Transport::pipeone;
 
-#   $Id: pipeone.pm 12536 2009-02-24 22:37:09Z timbo $
+#   $Id: pipeone.pm 12536 2009-02-24 22:37:09Z Tim $
 #
 #   Copyright (c) 2007, Tim Bunce, Ireland
 #
@@ -14,13 +14,16 @@ use DBI::Gofer::Execute;
 
 use base qw(DBI::Gofer::Transport::Base Exporter);
 
-our $VERSION = sprintf("0.%06d", q$Revision: 12536 $ =~ /(\d+)/o);
+our $VERSION = "0.012537";
 
 our @EXPORT = qw(run_one_stdio);
 
 my $executor = DBI::Gofer::Execute->new();
 
 sub run_one_stdio {
+
+    binmode STDIN;
+    binmode STDOUT;
 
     my $transport = DBI::Gofer::Transport::pipeone->new();
 

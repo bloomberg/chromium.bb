@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/ui/ash/assistant/assistant_client.h"
 #include "chrome/browser/ui/ash/test_session_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -39,7 +40,6 @@
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "services/network/cert_verifier_with_trust_anchors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chromeos::FakeChromeUserManager;
@@ -50,16 +50,10 @@ namespace {
 constexpr char kUser[] = "user@test.com";
 constexpr char kUserGaiaId[] = "0123456789";
 
-// Weak ptr to network::CertVerifierWithTrustAnchors - object is freed in test
-// destructor once we've ensured the profile has been shut down.
-network::CertVerifierWithTrustAnchors* g_policy_cert_verifier_for_factory =
-    nullptr;
-
 std::unique_ptr<KeyedService> CreateTestPolicyCertService(
     content::BrowserContext* context) {
   return policy::PolicyCertService::CreateForTesting(
-      kUser, g_policy_cert_verifier_for_factory,
-      user_manager::UserManager::Get());
+      kUser, user_manager::UserManager::Get());
 }
 
 // A user manager that does not set profiles as loaded and notifies observers
@@ -119,6 +113,8 @@ class SessionControllerClientImplTest : public testing::Test {
     user_manager_ = new TestChromeUserManager;
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         base::WrapUnique(user_manager_));
+    // Initialize AssistantClient singleton.
+    assistant_client_ = std::make_unique<AssistantClient>();
 
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
@@ -129,10 +125,9 @@ class SessionControllerClientImplTest : public testing::Test {
   }
 
   void TearDown() override {
+    assistant_client_.reset();
     user_manager_enabler_.reset();
     user_manager_ = nullptr;
-    // Clear our cached pointer to the network::CertVerifierWithTrustAnchors.
-    g_policy_cert_verifier_for_factory = nullptr;
     profile_manager_.reset();
 
     // We must ensure that the network::CertVerifierWithTrustAnchors outlives
@@ -192,8 +187,8 @@ class SessionControllerClientImplTest : public testing::Test {
 
   content::TestBrowserThreadBundle threads_;
   content::TestServiceManagerContext context_;
-  std::unique_ptr<network::CertVerifierWithTrustAnchors> cert_verifier_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<AssistantClient> assistant_client_;
   session_manager::SessionManager session_manager_;
   chromeos::SessionTerminationManager session_termination_manager_;
 
@@ -316,9 +311,6 @@ TEST_F(SessionControllerClientImplTest,
   user_manager()->LoginUser(account_id);
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClientImpl::GetAddUserSessionPolicy());
-  cert_verifier_.reset(
-      new network::CertVerifierWithTrustAnchors(base::Closure()));
-  g_policy_cert_verifier_for_factory = cert_verifier_.get();
   ASSERT_TRUE(
       policy::PolicyCertServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           user_profile, base::BindRepeating(&CreateTestPolicyCertService)));
@@ -506,44 +498,6 @@ TEST_F(SessionControllerClientImplTest, SupervisedUser) {
   // The updated custodian was sent over the mojo interface.
   EXPECT_EQ("parent3@test.com",
             session_controller.last_user_session()->custodian_email);
-}
-
-TEST_F(SessionControllerClientImplTest, DeviceOwner) {
-  // Create an object to test and connect it to our test interface.
-  SessionControllerClientImpl client;
-  TestSessionController session_controller;
-  client.Init();
-
-  const AccountId owner =
-      AccountId::FromUserEmailGaiaId("owner@test.com", "1111111111");
-  const AccountId normal_user =
-      AccountId::FromUserEmailGaiaId("user@test.com", "2222222222");
-  user_manager()->SetOwnerId(owner);
-  UserAddedToSession(owner);
-  EXPECT_TRUE(
-      session_controller.last_user_session()->user_info.is_device_owner);
-
-  UserAddedToSession(normal_user);
-  EXPECT_FALSE(
-      session_controller.last_user_session()->user_info.is_device_owner);
-}
-
-TEST_F(SessionControllerClientImplTest, UserBecomesDeviceOwner) {
-  // Create an object to test and connect it to our test interface.
-  SessionControllerClientImpl client;
-  TestSessionController session_controller;
-  client.Init();
-
-  const AccountId owner =
-      AccountId::FromUserEmailGaiaId("owner@test.com", "1111111111");
-  UserAddedToSession(owner);
-  // The device owner is empty, the current session shouldn't be the owner.
-  EXPECT_FALSE(
-      session_controller.last_user_session()->user_info.is_device_owner);
-
-  user_manager()->SetOwnerId(owner);
-  EXPECT_TRUE(
-      session_controller.last_user_session()->user_info.is_device_owner);
 }
 
 TEST_F(SessionControllerClientImplTest, UserPrefsChange) {

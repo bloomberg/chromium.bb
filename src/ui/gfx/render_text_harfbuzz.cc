@@ -79,7 +79,7 @@ bool IsBracket(UChar32 character) {
   // 0x300c and 0x300d are「foo」 style brackets.
   constexpr UChar32 kBrackets[] = {'(', ')', '{',       '}',
                                    '<', '>', L'\u300c', L'\u300d'};
-  return base::ContainsValue(kBrackets, character);
+  return base::Contains(kBrackets, character);
 }
 
 // If the given scripts match, returns the one that isn't USCRIPT_INHERITED,
@@ -1913,6 +1913,33 @@ void RenderTextHarfBuzz::ShapeRuns(
     std::vector<internal::TextRunHarfBuzz*> runs) {
   TRACE_EVENT1("ui", "RenderTextHarfBuzz::ShapeRuns", "run_count", runs.size());
 
+  // Runs with a single newline character should be skipped since they can't be
+  // rendered (see http://crbug/680430). The following code sets the runs
+  // shaping output to report report the missing glyph and removes the runs from
+  // the vector of runs to shape. The newline character doesn't have a
+  // glyph, which otherwise forces this function to go through the expensive
+  // font fallbacks before reporting a missing glyph (see http://crbug/972090).
+  std::vector<internal::TextRunHarfBuzz*> need_shaping_runs;
+  for (internal::TextRunHarfBuzz*& run : runs) {
+    if (run->range.length() == 1 && text[run->range.start()] == '\n') {
+      // Newline runs can't be shaped. Shape this run as if the glyph is
+      // missing.
+      run->font_params = font_params;
+      run->shape.missing_glyph_count = 1;
+      run->shape.glyph_count = 1;
+      run->shape.glyphs.resize(run->shape.glyph_count);
+      run->shape.glyph_to_char.resize(run->shape.glyph_count);
+      run->shape.positions.resize(run->shape.glyph_count);
+      run->shape.width = glyph_width_for_test_;
+    } else {
+      // This run needs shaping.
+      need_shaping_runs.push_back(run);
+    }
+  }
+  runs.swap(need_shaping_runs);
+  if (runs.empty())
+    return;
+
   const Font& primary_font = font_list().GetPrimaryFont();
 
   for (const Font& font : font_list().GetFonts()) {
@@ -1927,8 +1954,6 @@ void RenderTextHarfBuzz::ShapeRuns(
 
   std::string preferred_fallback_family;
 
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX) || \
-    defined(OS_FUCHSIA)
   Font fallback_font(primary_font);
   bool fallback_found;
   {
@@ -1950,7 +1975,6 @@ void RenderTextHarfBuzz::ShapeRuns(
     if (runs.empty())
       return;
   }
-#endif  // OS_ANDROID || OS_WIN || OS_MACOSX || OS_FUCHSIA
 
   std::vector<Font> fallback_font_list;
   {

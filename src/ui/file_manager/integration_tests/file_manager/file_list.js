@@ -142,4 +142,158 @@
     chrome.test.assertEq(1, selectedRows.length);
     chrome.test.assertEq(2, fileRows.indexOf(selectedRows[0]));
   };
+
+  /**
+   * Verifies the total number of a11y messages and asserts the latest message
+   * is the expected one.
+   *
+   * @param {string} appId
+   * @param {number} expectedCount
+   * @param {string} expectedMessage
+   * @return {string} Latest a11y message.
+   */
+  async function countAndCheckLatestA11yMessage(
+      appId, expectedCount, expectedMessage) {
+    const a11yMessages =
+        await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
+    chrome.test.assertEq(
+        expectedCount, a11yMessages.length, 'Wrong number of a11y messages');
+    const latestMessage = a11yMessages[a11yMessages.length - 1];
+    chrome.test.assertEq(expectedMessage, latestMessage);
+    return latestMessage;
+  }
+
+  /**
+   * Tests that selecting/de-selecting files with keyboard produces a11y
+   * messages.
+   *
+   * NOTE: Test shared with grid_view.js.
+   * @param {boolean=} isGridView if the test is testing the grid view.
+   */
+  testcase.fileListKeyboardSelectionA11y = async (isGridView) => {
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+    let a11yMsgCount = 0;
+    const viewSelector = isGridView ? 'grid#file-list' : '#file-list';
+    if (isGridView) {
+      // Click view-button again to switch to detail view.
+      await remoteCall.waitAndClickElement(appId, '#view-button');
+
+      // Clicking #view-button adds 1 a11y message.
+      ++a11yMsgCount;
+    }
+
+    // Keys used for keyboard navigation in the file list.
+    const homeKey = [viewSelector, 'Home', false, false, false];
+    const ctrlDownKey = [viewSelector, 'ArrowDown', true, false, false];
+    const ctrlSpaceKey = [viewSelector, ' ', true, false, false];
+    const shiftEndKey = [viewSelector, 'End', false, true, false];
+    const ctrlAKey = [viewSelector + ' li', 'a', true, false, false];
+    const escKey = [viewSelector, 'Escape', false, false, false];
+
+    // Select first item with Home key.
+    await remoteCall.fakeKeyDown(appId, ...homeKey);
+
+    // Check: Announced "photos" directory selection.
+    await countAndCheckLatestA11yMessage(
+        appId, ++a11yMsgCount, 'Selected photos.');
+
+    // Ctrl+Down & Ctrl+Space to select second item: Beautiful Song.ogg
+    await remoteCall.fakeKeyDown(appId, ...ctrlDownKey);
+    await remoteCall.fakeKeyDown(appId, ...ctrlSpaceKey);
+
+    // Check: Announced "Beautiful Song.add" added to selection.
+    await countAndCheckLatestA11yMessage(
+        appId, ++a11yMsgCount, 'Added Beautiful Song.ogg to selection.');
+
+    // Shift+End to select from 2nd item to the last item.
+    await remoteCall.fakeKeyDown(appId, ...shiftEndKey);
+
+    // Check: Announced range selection from "Beautiful Song.add" to hello.txt.
+    await countAndCheckLatestA11yMessage(
+        appId, ++a11yMsgCount,
+        'Selected a range of 4 entries from Beautiful Song.ogg to hello.txt.');
+
+    // Ctrl+Space to de-select currently focused item (last item).
+    await remoteCall.fakeKeyDown(appId, ...ctrlSpaceKey);
+
+    // Check: Announced de-selecting hello.txt
+    await countAndCheckLatestA11yMessage(
+        appId, ++a11yMsgCount, 'Removed hello.txt from selection.');
+
+    // Ctrl+A to select all items.
+    await remoteCall.fakeKeyDown(appId, ...ctrlAKey);
+
+    // Check: Announced selecting all entries.
+    await countAndCheckLatestA11yMessage(
+        appId, ++a11yMsgCount, 'Selected all entries.');
+
+    // Esc key to deselect all.
+    await remoteCall.fakeKeyDown(appId, ...escKey);
+
+    // Check: Announced deselecting all entries.
+    await countAndCheckLatestA11yMessage(
+        appId, ++a11yMsgCount, 'Removed all entries from selection.');
+  };
+
+  /**
+   * Tests that selecting/de-selecting files with mouse produces a11y messages.
+   *
+   * NOTE: Test shared with grid_view.js.
+   * @param {boolean=} isGridView if the test is testing the grid view.
+   */
+  testcase.fileListMouseSelectionA11y = async (isGridView) => {
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+    let a11yMsgCount = 0;
+    if (isGridView) {
+      // Click view-button again to switch to detail view.
+      await remoteCall.waitAndClickElement(appId, '#view-button');
+
+      // Clicking #view-button adds 1 a11y message.
+      ++a11yMsgCount;
+    }
+
+    // Click first item.
+    await remoteCall.waitAndClickElement(
+        appId, '#file-list [file-name="photos"]');
+
+    // Check: Announced "photos" directory selection.
+    await countAndCheckLatestA11yMessage(
+        appId, ++a11yMsgCount, 'Selected photos.');
+
+    // Ctrl+Click second item.
+    await remoteCall.waitAndClickElement(
+        appId, '#file-list [file-name="Beautiful Song.ogg"]', {ctrl: true});
+
+    // Check: Announced "Beautiful Song.add" added to selection.
+    await countAndCheckLatestA11yMessage(
+        appId, ++a11yMsgCount, 'Added Beautiful Song.ogg to selection.');
+
+    // Shift+Click last item.
+    await remoteCall.waitAndClickElement(
+        appId, '#file-list [file-name="hello.txt"]', {shift: true});
+
+    // Check: Announced range selection from "Beautiful Song.add" to hello.txt.
+    await countAndCheckLatestA11yMessage(
+        appId, ++a11yMsgCount,
+        'Selected a range of 4 entries from Beautiful Song.ogg to hello.txt.');
+
+    // Ctrl+Click to de-select the last item.
+    await remoteCall.waitAndClickElement(
+        appId, '#file-list [file-name="hello.txt"]', {ctrl: true});
+
+    // Check: Announced de-selecting hello.txt
+    await countAndCheckLatestA11yMessage(
+        appId, ++a11yMsgCount, 'Removed hello.txt from selection.');
+
+    // Click on "Cancel selection" button.
+    await remoteCall.waitAndClickElement(appId, '#cancel-selection-button');
+
+    // Check: Announced deselecting all entries.
+    await countAndCheckLatestA11yMessage(
+        appId, ++a11yMsgCount, 'Removed all entries from selection.');
+  };
 })();

@@ -35,9 +35,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/web_ui_browser_test.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 
@@ -390,7 +390,7 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     test_url_loader_factory_.AddResponse(kURLRegisterComplete,
                                          kResponseRegisterComplete);
 
-    identity::MakePrimaryAccountAvailable(
+    signin::MakePrimaryAccountAvailable(
         IdentityManagerFactory::GetForProfile(browser()->profile()),
         kSampleUser);
 
@@ -501,9 +501,9 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
         }));
     EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("registerBegin"));
     run_loop.Run();
-    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLInfo)));
-    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLRegisterStart)));
-    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLRegisterClaimToken)));
+    EXPECT_TRUE(base::Contains(served_urls, GURL(kURLInfo)));
+    EXPECT_TRUE(base::Contains(served_urls, GURL(kURLRegisterStart)));
+    EXPECT_TRUE(base::Contains(served_urls, GURL(kURLRegisterClaimToken)));
     test_url_loader_factory()->SetInterceptor(base::NullCallback());
   }
 
@@ -523,10 +523,10 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
             run_loop.Quit();
         }));
     run_loop.Run();
-    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLRegisterClaimToken)));
-    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLCloudPrintConfirm)));
-    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLRegisterComplete)));
-    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLInfo)));
+    EXPECT_TRUE(base::Contains(served_urls, GURL(kURLRegisterClaimToken)));
+    EXPECT_TRUE(base::Contains(served_urls, GURL(kURLCloudPrintConfirm)));
+    EXPECT_TRUE(base::Contains(served_urls, GURL(kURLRegisterComplete)));
+    EXPECT_TRUE(base::Contains(served_urls, GURL(kURLInfo)));
     test_url_loader_factory()->SetInterceptor(base::NullCallback());
   }
 

@@ -24,9 +24,11 @@ DefaultTexture2DWrapper::DefaultTexture2DWrapper(ComD3D11Texture2D texture)
     : Texture2DWrapper(texture) {}
 DefaultTexture2DWrapper::~DefaultTexture2DWrapper() {}
 
-const MailboxHolderArray& DefaultTexture2DWrapper::ProcessTexture(
-    const D3D11PictureBuffer* owner_pb) {
-  return mailbox_holders_;
+bool DefaultTexture2DWrapper::ProcessTexture(const D3D11PictureBuffer* owner_pb,
+                                             MailboxHolderArray* mailbox_dest) {
+  for (size_t i = 0; i < VideoFrame::kMaxPlanes; i++)
+    (*mailbox_dest)[i] = mailbox_holders_[i];
+  return true;
 }
 
 bool DefaultTexture2DWrapper::Init(GetCommandBufferHelperCB get_helper_cb,

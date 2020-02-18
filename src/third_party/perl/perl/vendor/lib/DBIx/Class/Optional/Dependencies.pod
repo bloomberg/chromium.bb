@@ -1,0 +1,460 @@
+#########################################################################
+#####################  A U T O G E N E R A T E D ########################
+#########################################################################
+#
+# The contents of this POD file are auto-generated.  Any changes you make
+# will be lost. If you need to change the generated text edit _gen_pod()
+# at the end of DBIx/Class/Optional/Dependencies.pm
+#
+
+
+=head1 NAME
+
+DBIx::Class::Optional::Dependencies - Optional module dependency specifications (for module authors)
+
+=head1 SYNOPSIS
+
+Somewhere in your build-file (e.g. L<Module::Install>'s Makefile.PL):
+
+  ...
+
+  configure_requires 'DBIx::Class' => '0.082841';
+
+  require DBIx::Class::Optional::Dependencies;
+
+  my $deploy_deps = DBIx::Class::Optional::Dependencies->req_list_for('deploy');
+
+  for (keys %$deploy_deps) {
+    requires $_ => $deploy_deps->{$_};
+  }
+
+  ...
+
+Note that there are some caveats regarding C<configure_requires()>, more info
+can be found at L<Module::Install/configure_requires>
+
+
+=head1 DESCRIPTION
+
+Some of the less-frequently used features of L<DBIx::Class> have external
+module dependencies on their own. In order not to burden the average user
+with modules he will never use, these optional dependencies are not included
+in the base Makefile.PL. Instead an exception with a descriptive message is
+thrown when a specific feature is missing one or several modules required for
+its operation. This module is the central holding place for  the current list
+of such dependencies, for DBIx::Class core authors, and DBIx::Class extension
+authors alike.
+
+
+=head1 CURRENT REQUIREMENT GROUPS
+
+Dependencies are organized in C<groups> and each group can list one or more
+required modules, with an optional minimum version (or 0 for any version).
+The group name can be used in the
+
+
+=head2 DBIx::Class::Admin
+
+Modules required for the DBIx::Class administrative library
+
+=over
+
+=item * JSON::Any >= 1.23
+
+=item * Moose >= 0.98
+
+=item * MooseX::Types >= 0.21
+
+=item * MooseX::Types::JSON >= 0.02
+
+=item * MooseX::Types::LoadableClass >= 0.011
+
+=item * MooseX::Types::Path::Class >= 0.05
+
+=back
+
+Requirement group: B<admin>
+
+=head2 dbicadmin
+
+Modules required for the CLI DBIx::Class interface dbicadmin
+
+=over
+
+=item * Getopt::Long::Descriptive >= 0.081
+
+=item * JSON::Any >= 1.23
+
+=item * Moose >= 0.98
+
+=item * MooseX::Types >= 0.21
+
+=item * MooseX::Types::JSON >= 0.02
+
+=item * MooseX::Types::LoadableClass >= 0.011
+
+=item * MooseX::Types::Path::Class >= 0.05
+
+=item * Text::CSV >= 1.16
+
+=back
+
+Requirement group: B<admin_script>
+
+=head2 Storage::DBI::deploy()
+
+Modules required for L<DBIx::Class::Storage::DBI/deployment_statements> and L<DBIx::Class::Schema/deploy>
+
+=over
+
+=item * SQL::Translator >= 0.11018
+
+=back
+
+Requirement group: B<deploy>
+
+=head2 Sybase ASE support
+
+Modules required to connect to Sybase ASE
+
+=over
+
+=item * DBD::Sybase
+
+=back
+
+Requirement group: B<rdbms_ase>
+
+=head2 DB2 support
+
+Modules required to connect to DB2
+
+=over
+
+=item * DBD::DB2
+
+=back
+
+Requirement group: B<rdbms_db2>
+
+=head2 DB2 on AS/400 support
+
+Modules required to connect to DB2 on AS/400
+
+=over
+
+=item * DBD::ODBC
+
+=back
+
+Requirement group: B<rdbms_db2_400>
+
+=head2 Firebird support
+
+Modules required to connect to Firebird
+
+=over
+
+=item * DBD::Firebird
+
+=back
+
+Requirement group: B<rdbms_firebird>
+
+=head2 Firebird support via DBD::InterBase
+
+Modules required to connect to Firebird via DBD::InterBase
+
+=over
+
+=item * DBD::InterBase
+
+=back
+
+Requirement group: B<rdbms_firebird_interbase>
+
+=head2 Firebird support via DBD::ODBC
+
+Modules required to connect to Firebird via DBD::ODBC
+
+=over
+
+=item * DBD::ODBC
+
+=back
+
+Requirement group: B<rdbms_firebird_odbc>
+
+=head2 Informix support
+
+Modules required to connect to Informix
+
+=over
+
+=item * DBD::Informix
+
+=back
+
+Requirement group: B<rdbms_informix>
+
+=head2 MS Access support via DBD::ADO (Windows only)
+
+Modules required to connect to MS Access via DBD::ADO. This particular DBD is available on Windows only
+
+=over
+
+=item * DBD::ADO
+
+=back
+
+Requirement group: B<rdbms_msaccess_ado>
+
+=head2 MS Access support via DBD::ODBC
+
+Modules required to connect to MS Access via DBD::ODBC
+
+=over
+
+=item * DBD::ODBC
+
+=back
+
+Requirement group: B<rdbms_msaccess_odbc>
+
+=head2 MSSQL support via DBD::ADO (Windows only)
+
+Modules required to connect to MSSQL via DBD::ADO. This particular DBD is available on Windows only
+
+=over
+
+=item * DBD::ADO
+
+=back
+
+Requirement group: B<rdbms_mssql_ado>
+
+=head2 MSSQL support via DBD::ODBC
+
+Modules required to connect to MSSQL via DBD::ODBC
+
+=over
+
+=item * DBD::ODBC
+
+=back
+
+Requirement group: B<rdbms_mssql_odbc>
+
+=head2 MSSQL support via DBD::Sybase
+
+Modules required to connect to MSSQL via DBD::Sybase
+
+=over
+
+=item * DBD::Sybase
+
+=back
+
+Requirement group: B<rdbms_mssql_sybase>
+
+=head2 MySQL support
+
+Modules required to connect to MySQL
+
+=over
+
+=item * DBD::mysql
+
+=back
+
+Requirement group: B<rdbms_mysql>
+
+=head2 Oracle support
+
+Modules required to connect to Oracle
+
+=over
+
+=item * DBD::Oracle
+
+=item * Math::Base36 >= 0.07
+
+=item * Math::BigInt >= 1.80
+
+=back
+
+Requirement group: B<rdbms_oracle>
+
+=head2 PostgreSQL support
+
+Modules required to connect to PostgreSQL
+
+=over
+
+=item * DBD::Pg
+
+=back
+
+Requirement group: B<rdbms_pg>
+
+=head2 SQLAnywhere support
+
+Modules required to connect to SQLAnywhere
+
+=over
+
+=item * DBD::SQLAnywhere
+
+=back
+
+Requirement group: B<rdbms_sqlanywhere>
+
+=head2 SQLAnywhere support via DBD::ODBC
+
+Modules required to connect to SQLAnywhere via DBD::ODBC
+
+=over
+
+=item * DBD::ODBC
+
+=back
+
+Requirement group: B<rdbms_sqlanywhere_odbc>
+
+=head2 SQLite support
+
+Modules required to connect to SQLite
+
+=over
+
+=item * DBD::SQLite
+
+=back
+
+Requirement group: B<rdbms_sqlite>
+
+=head2 Storage::Replicated
+
+Modules required for L<DBIx::Class::Storage::DBI::Replicated>
+
+=over
+
+=item * Moose >= 0.98
+
+=item * MooseX::Types >= 0.21
+
+=item * MooseX::Types::LoadableClass >= 0.011
+
+=back
+
+Requirement group: B<replicated>
+
+=head1 METHODS
+
+=head2 req_group_list
+
+=over
+
+=item Arguments: none
+
+=item Return Value: \%list_of_requirement_groups
+
+=back
+
+This method should be used by DBIx::Class packagers, to get a hashref of all
+dependencies keyed by dependency group. Each key (group name) can be supplied
+to one of the group-specific methods below.
+
+
+=head2 req_list_for
+
+=over
+
+=item Arguments: $group_name
+
+=item Return Value: \%list_of_module_version_pairs
+
+=back
+
+This method should be used by DBIx::Class extension authors, to determine the
+version of modules a specific feature requires in the B<current> version of
+DBIx::Class. See the L</SYNOPSIS> for a real-world
+example.
+
+
+=head2 req_ok_for
+
+=over
+
+=item Arguments: $group_name
+
+=item Return Value: 1|0
+
+=back
+
+Returns true or false depending on whether all modules required by
+C<$group_name> are present on the system and loadable.
+
+
+=head2 req_missing_for
+
+=over
+
+=item Arguments: $group_name
+
+=item Return Value: $error_message_string
+
+=back
+
+Returns a single line string suitable for inclusion in larger error messages.
+This method would normally be used by DBIx::Class core-module author, to
+indicate to the user that he needs to install specific modules before he will
+be able to use a specific feature.
+
+For example if some of the requirements for C<deploy> are not available,
+the returned string could look like:
+
+ SQL::Translator >= 0.11018 (see DBIx::Class::Optional::Dependencies for details)
+
+The author is expected to prepend the necessary text to this message before
+returning the actual error seen by the user.
+
+
+=head2 die_unless_req_ok_for
+
+=over
+
+=item Arguments: $group_name
+
+=back
+
+Checks if L</req_ok_for> passes for the supplied C<$group_name>, and
+in case of failure throws an exception including the information
+from L</req_missing_for>.
+
+
+=head2 req_errorlist_for
+
+=over
+
+=item Arguments: $group_name
+
+=item Return Value: \%list_of_loaderrors_per_module
+
+=back
+
+Returns a hashref containing the actual errors that occurred while attempting
+to load each module in the requirement group.
+
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.
+

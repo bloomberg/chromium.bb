@@ -190,6 +190,8 @@ const char kChromeFeaturesServiceIsPluginVmEnabledMethod[] =
     "IsPluginVmEnabled";
 const char kChromeFeaturesServiceIsUsbguardEnabledMethod[] =
     "IsUsbguardEnabled";
+const char kChromeFeaturesServiceIsVmManagementCliAllowedMethod[] =
+    "IsVmManagementCliAllowed";
 const char kChromeFeaturesServiceIsShillSandboxingEnabledMethod[] =
     "IsShillSandboxingEnabled";
 const char kChromeFeaturesServiceIsFsNosymfollowEnabledMethod[] =
@@ -304,6 +306,7 @@ const char kCreateServiceRecord[] = "CreateServiceRecord";
 const char kRemoveServiceRecord[] = "RemoveServiceRecord";
 const char kHandleSuspendImminent[] = "HandleSuspendImminent";
 const char kHandleSuspendDone[] = "HandleSuspendDone";
+const char kGetSupportedCapabilities[] = "GetSupportedCapabilities";
 
 // Bluetooth Adapter properties.
 const char kAddressProperty[] = "Address";
@@ -955,6 +958,13 @@ constexpr char kRemoveHostnameIpMappingMethod[] = "RemoveHostnameIpMapping";
 
 namespace arc {
 
+constexpr char kArcServiceName[] = "org.chromium.Arc";
+constexpr char kArcServicePath[] = "/org/chromium/Arc";
+constexpr char kArcInterfaceName[] = "org.chromium.Arc";
+
+// Signal
+constexpr char kArcStopped[] = "ArcStopped";
+
 namespace keymaster {
 constexpr char kArcKeymasterServiceName[] = "org.chromium.ArcKeymaster";
 constexpr char kArcKeymasterServicePath[] = "/org/chromium/ArcKeymaster";
@@ -1030,5 +1040,24 @@ constexpr char kArcCameraServiceInterface[] = "org.chromium.ArcCamera";
 // Method names.
 constexpr char kStartServiceMethod[] = "StartService";
 }  // namespace arc_camera
+
+namespace machine_learning {
+constexpr char kMlDecisionServiceName[] = "org.chromium.MlDecisionService";
+constexpr char kMlDecisionServicePath[] = "/org/chromium/MlDecisionService";
+constexpr char kMlDecisionServiceInterface[] = "org.chromium.MlDecisionService";
+
+// Method names.
+constexpr char kShouldDeferScreenDimMethod[] = "ShouldDeferScreenDim";
+}  // namespace machine_learning
+
+namespace modemfwd {
+const char kModemfwdInterface[] = "org.chromium.Modemfwd";
+const char kModemfwdServicePath[] = "/org/chromium/Modemfwd";
+const char kModemfwdServiceName[] = "org.chromium.Modemfwd";
+
+// Methods.
+const char kSetDebugMode[] = "SetDebugMode";
+
+}  // namespace modemfwd
 
 #endif  // SYSTEM_API_DBUS_SERVICE_CONSTANTS_H_

@@ -26,6 +26,8 @@ Polymer({
     /** @type {!print_preview.Error} */
     error: Number,
 
+    firstLoad: Boolean,
+
     /** @type {!print_preview.State} */
     state: Number,
 
@@ -63,9 +65,6 @@ Polymer({
         'settings.pages.value, state, destination.id)',
     'updatePrintButtonLabel_(destination.id)'
   ],
-
-  /** @private {!print_preview.State} */
-  lastState_: print_preview.State.NOT_READY,
 
   /** @private */
   onPrintClick_: function() {
@@ -144,10 +143,9 @@ Polymer({
         const labelInfo = this.computeLabelInfo_();
         this.summary_ = this.getSummary_(labelInfo);
         this.summaryLabel_ = this.getSummaryLabel_(labelInfo);
-        if (this.lastState_ != this.state &&
-            (document.activeElement == null ||
-             document.activeElement == document.body)) {
-          this.$$('paper-button.action-button').focus();
+        if (this.firstLoad) {
+          this.$$('cr-button.action-button').focus();
+          this.fire('print-button-focused');
         }
         break;
       case (print_preview.State.FATAL_ERROR):
@@ -161,7 +159,6 @@ Polymer({
         this.printButtonEnabled_ = false;
         break;
     }
-    this.lastState_ = this.state;
   },
 
   /**
@@ -185,6 +182,10 @@ Polymer({
    * @private
    */
   getSummary_: function(labelInfo) {
+    if (labelInfo.numSheets === 0) {
+      return '';
+    }
+
     let html = loadTimeData.getStringF(
         'printPreviewSummaryFormatShort',
         '<b>' + labelInfo.numSheets.toLocaleString() + '</b>',

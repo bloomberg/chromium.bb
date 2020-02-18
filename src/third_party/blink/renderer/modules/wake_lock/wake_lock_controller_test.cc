@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_test_utils.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -16,10 +17,111 @@
 
 namespace blink {
 
+TEST(WakeLockControllerTest, RequestWakeLockGranted) {
+  MockWakeLockService wake_lock_service;
+  WakeLockTestingContext context(&wake_lock_service);
+  auto& controller = WakeLockController::From(context.GetDocument());
+
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
+
+  auto* screen_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
+  ScriptPromise screen_promise = screen_resolver->Promise();
+
+  controller.RequestWakeLock(WakeLockType::kScreen, screen_resolver, nullptr);
+
+  MockWakeLock& screen_lock =
+      wake_lock_service.get_wake_lock(WakeLockType::kScreen);
+  MockPermissionService& permission_service = context.GetPermissionService();
+
+  permission_service.WaitForPermissionRequest(WakeLockType::kScreen);
+  screen_lock.WaitForRequest();
+
+  EXPECT_EQ(v8::Promise::kPending,
+            ScriptPromiseUtils::GetPromiseState(screen_promise));
+  EXPECT_TRUE(screen_lock.is_acquired());
+}
+
+TEST(WakeLockControllerTest, RequestWakeLockDenied) {
+  MockWakeLockService wake_lock_service;
+  WakeLockTestingContext context(&wake_lock_service);
+  auto& controller = WakeLockController::From(context.GetDocument());
+
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kSystem, mojom::blink::PermissionStatus::DENIED);
+
+  auto* system_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
+  ScriptPromise system_promise = system_resolver->Promise();
+
+  controller.RequestWakeLock(WakeLockType::kSystem, system_resolver, nullptr);
+
+  MockWakeLock& system_lock =
+      wake_lock_service.get_wake_lock(WakeLockType::kSystem);
+  MockPermissionService& permission_service = context.GetPermissionService();
+
+  permission_service.WaitForPermissionRequest(WakeLockType::kSystem);
+  context.WaitForPromiseRejection(system_promise);
+
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(system_promise));
+  EXPECT_FALSE(system_lock.is_acquired());
+
+  // System locks are not allowed by default, so the promise should have been
+  // rejected with a NotAllowedError DOMException.
+  DOMException* dom_exception =
+      ScriptPromiseUtils::GetPromiseResolutionAsDOMException(system_promise);
+  ASSERT_NE(dom_exception, nullptr);
+  EXPECT_EQ("NotAllowedError", dom_exception->name());
+}
+
+// Abort early in DidReceivePermissionResponse().
+TEST(WakeLockControllerTest, RequestWakeLockAbortEarly) {
+  MockWakeLockService wake_lock_service;
+  WakeLockTestingContext context(&wake_lock_service);
+  auto& controller = WakeLockController::From(context.GetDocument());
+
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
+
+  MockWakeLock& screen_lock =
+      wake_lock_service.get_wake_lock(WakeLockType::kScreen);
+  auto* screen_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
+  ScriptPromise screen_promise = screen_resolver->Promise();
+
+  auto* abort_signal = MakeGarbageCollected<AbortSignal>(context.GetDocument());
+  abort_signal->AddAlgorithm(WTF::Bind(
+      &WakeLockController::ReleaseWakeLock, WrapWeakPersistent(&controller),
+      WakeLockType::kScreen, WrapPersistent(screen_resolver)));
+
+  controller.RequestWakeLock(
+      WakeLockType::kScreen,
+      MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState()),
+      abort_signal);
+
+  MockPermissionService& permission_service = context.GetPermissionService();
+
+  permission_service.WaitForPermissionRequest(WakeLockType::kScreen);
+  abort_signal->SignalAbort();
+
+  context.WaitForPromiseRejection(screen_promise);
+
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(screen_promise));
+  EXPECT_FALSE(screen_lock.is_acquired());
+
+  DOMException* dom_exception =
+      ScriptPromiseUtils::GetPromiseResolutionAsDOMException(screen_promise);
+  ASSERT_NE(dom_exception, nullptr);
+  EXPECT_EQ("AbortError", dom_exception->name());
+}
+
 TEST(WakeLockControllerTest, AcquireScreenWakeLock) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   controller.AcquireWakeLock(
       WakeLockType::kScreen,
@@ -31,10 +133,10 @@ TEST(WakeLockControllerTest, AcquireScreenWakeLock) {
   EXPECT_TRUE(screen_lock.is_acquired());
 }
 
-TEST(WakeLockController, AcquireSystemWakeLock) {
+TEST(WakeLockControllerTest, AcquireSystemWakeLock) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   controller.AcquireWakeLock(
       WakeLockType::kSystem,
@@ -49,7 +151,7 @@ TEST(WakeLockController, AcquireSystemWakeLock) {
 TEST(WakeLockControllerTest, AcquireMultipleLocks) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   controller.AcquireWakeLock(
       WakeLockType::kScreen,
@@ -72,35 +174,36 @@ TEST(WakeLockControllerTest, AcquireMultipleLocks) {
   EXPECT_TRUE(system_lock.is_acquired());
 }
 
-TEST(WakeLockControllerTest, ReleaseWakeLockWithWrongType) {
+TEST(WakeLockControllerTest, ReleaseUnaquiredWakeLockRejectsPromise) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   MockWakeLock& screen_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kScreen);
-  MockWakeLock& system_lock =
-      wake_lock_service.get_wake_lock(WakeLockType::kSystem);
 
   auto* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise promise = resolver->Promise();
 
-  controller.AcquireWakeLock(WakeLockType::kScreen, resolver);
-  screen_lock.WaitForRequest();
-  controller.ReleaseWakeLock(WakeLockType::kSystem, resolver);
+  EXPECT_EQ(v8::Promise::kPending,
+            ScriptPromiseUtils::GetPromiseState(promise));
+  controller.ReleaseWakeLock(WakeLockType::kScreen, resolver);
+  context.WaitForPromiseRejection(promise);
 
-  test::RunPendingTasks();
-
-  EXPECT_EQ(v8::Promise::kPending, GetScriptPromiseState(promise));
-  EXPECT_TRUE(screen_lock.is_acquired());
-  EXPECT_FALSE(system_lock.is_acquired());
+  // The promise is always rejected, even if it is not in [[ActiveLocks]].
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(promise));
+  EXPECT_FALSE(screen_lock.is_acquired());
 }
 
 TEST(WakeLockControllerTest, ReleaseWakeLock) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
+
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
 
   MockWakeLock& screen_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kScreen);
@@ -109,13 +212,15 @@ TEST(WakeLockControllerTest, ReleaseWakeLock) {
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise promise = resolver->Promise();
 
-  controller.AcquireWakeLock(WakeLockType::kScreen, resolver);
+  controller.RequestWakeLock(WakeLockType::kScreen, resolver,
+                             /*signal=*/nullptr);
   screen_lock.WaitForRequest();
   controller.ReleaseWakeLock(WakeLockType::kScreen, resolver);
   context.WaitForPromiseRejection(promise);
   screen_lock.WaitForCancelation();
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(promise));
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(promise));
   EXPECT_FALSE(screen_lock.is_acquired());
 }
 
@@ -124,7 +229,10 @@ TEST(WakeLockControllerTest, ReleaseWakeLock) {
 TEST(WakeLockControllerTest, AbortSignal) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
+
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
 
   MockWakeLock& screen_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kScreen);
@@ -137,14 +245,16 @@ TEST(WakeLockControllerTest, AbortSignal) {
       &WakeLockController::ReleaseWakeLock, WrapWeakPersistent(&controller),
       WakeLockType::kScreen, WrapPersistent(screen_resolver)));
 
-  controller.AcquireWakeLock(WakeLockType::kScreen, screen_resolver);
+  controller.RequestWakeLock(WakeLockType::kScreen, screen_resolver,
+                             /*signal=*/nullptr);
   screen_lock.WaitForRequest();
 
   abort_signal->SignalAbort();
   context.WaitForPromiseRejection(screen_promise);
   screen_lock.WaitForCancelation();
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(screen_promise));
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(screen_promise));
   EXPECT_FALSE(screen_lock.is_acquired());
 }
 
@@ -152,12 +262,16 @@ TEST(WakeLockControllerTest, AbortSignal) {
 TEST(WakeLockControllerTest, LossOfDocumentActivity) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   MockWakeLock& screen_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kScreen);
   MockWakeLock& system_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kSystem);
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kSystem, mojom::blink::PermissionStatus::GRANTED);
 
   // First, acquire a handful of locks of different types.
   auto* screen_resolver1 =
@@ -169,10 +283,13 @@ TEST(WakeLockControllerTest, LossOfDocumentActivity) {
   auto* system_resolver1 =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise system_promise1 = system_resolver1->Promise();
-  controller.AcquireWakeLock(WakeLockType::kScreen, screen_resolver1);
-  controller.AcquireWakeLock(WakeLockType::kScreen, screen_resolver2);
+  controller.RequestWakeLock(WakeLockType::kScreen, screen_resolver1,
+                             /*signal=*/nullptr);
+  controller.RequestWakeLock(WakeLockType::kScreen, screen_resolver2,
+                             /*signal=*/nullptr);
   screen_lock.WaitForRequest();
-  controller.AcquireWakeLock(WakeLockType::kSystem, system_resolver1);
+  controller.RequestWakeLock(WakeLockType::kSystem, system_resolver1,
+                             /*signal=*/nullptr);
   system_lock.WaitForRequest();
 
   // Now shut down our Document and make sure all [[ActiveLocks]] slots have
@@ -191,7 +308,12 @@ TEST(WakeLockControllerTest, LossOfDocumentActivity) {
 TEST(WakeLockControllerTest, PageVisibilityHidden) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
+
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kSystem, mojom::blink::PermissionStatus::GRANTED);
 
   MockWakeLock& screen_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kScreen);
@@ -205,18 +327,80 @@ TEST(WakeLockControllerTest, PageVisibilityHidden) {
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise system_promise = system_resolver->Promise();
 
-  controller.AcquireWakeLock(WakeLockType::kScreen, screen_resolver);
+  controller.RequestWakeLock(WakeLockType::kScreen, screen_resolver,
+                             /*signal=*/nullptr);
+  controller.RequestWakeLock(WakeLockType::kSystem, system_resolver,
+                             /*signal=*/nullptr);
+
   screen_lock.WaitForRequest();
-  controller.AcquireWakeLock(WakeLockType::kSystem, system_resolver);
   system_lock.WaitForRequest();
 
   context.GetDocument()->GetPage()->SetIsHidden(true, false);
+
   context.WaitForPromiseRejection(screen_promise);
   screen_lock.WaitForCancelation();
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(screen_promise));
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(screen_promise));
+  DOMException* dom_exception =
+      ScriptPromiseUtils::GetPromiseResolutionAsDOMException(screen_promise);
+  ASSERT_NE(dom_exception, nullptr);
+  EXPECT_EQ("AbortError", dom_exception->name());
   EXPECT_FALSE(screen_lock.is_acquired());
-  EXPECT_EQ(v8::Promise::kPending, GetScriptPromiseState(system_promise));
+  EXPECT_EQ(v8::Promise::kPending,
+            ScriptPromiseUtils::GetPromiseState(system_promise));
+  EXPECT_TRUE(system_lock.is_acquired());
+
+  context.GetDocument()->GetPage()->SetIsHidden(false, false);
+
+  auto* other_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
+  ScriptPromise other_promise = system_resolver->Promise();
+  controller.RequestWakeLock(WakeLockType::kScreen, other_resolver,
+                             /*signal=*/nullptr);
+  screen_lock.WaitForRequest();
+  EXPECT_EQ(v8::Promise::kPending,
+            ScriptPromiseUtils::GetPromiseState(other_promise));
+  EXPECT_TRUE(screen_lock.is_acquired());
+}
+
+// https://w3c.github.io/wake-lock/#handling-document-loss-of-visibility
+TEST(WakeLockControllerTest, PageVisibilityHiddenBeforeLockAcquisition) {
+  MockWakeLockService wake_lock_service;
+  WakeLockTestingContext context(&wake_lock_service);
+  auto& controller = WakeLockController::From(context.GetDocument());
+
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kSystem, mojom::blink::PermissionStatus::GRANTED);
+
+  MockWakeLock& screen_lock =
+      wake_lock_service.get_wake_lock(WakeLockType::kScreen);
+  auto* screen_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
+  ScriptPromise screen_promise = screen_resolver->Promise();
+
+  MockWakeLock& system_lock =
+      wake_lock_service.get_wake_lock(WakeLockType::kSystem);
+  auto* system_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
+  ScriptPromise system_promise = system_resolver->Promise();
+
+  controller.RequestWakeLock(WakeLockType::kScreen, screen_resolver,
+                             /*signal=*/nullptr);
+  controller.RequestWakeLock(WakeLockType::kSystem, system_resolver,
+                             /*signal=*/nullptr);
+  context.GetDocument()->GetPage()->SetIsHidden(true, false);
+
+  context.WaitForPromiseRejection(screen_promise);
+  system_lock.WaitForRequest();
+
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(screen_promise));
+  EXPECT_FALSE(screen_lock.is_acquired());
+  EXPECT_EQ(v8::Promise::kPending,
+            ScriptPromiseUtils::GetPromiseState(system_promise));
   EXPECT_TRUE(system_lock.is_acquired());
 }
 
@@ -225,7 +409,10 @@ TEST(WakeLockControllerTest, PageVisibilityHidden) {
 TEST(WakeLockControllerTest, PageVisibilityAndAbortSignal) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
+
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
 
   MockWakeLock& screen_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kScreen);
@@ -238,20 +425,64 @@ TEST(WakeLockControllerTest, PageVisibilityAndAbortSignal) {
       &WakeLockController::ReleaseWakeLock, WrapWeakPersistent(&controller),
       WakeLockType::kScreen, WrapPersistent(screen_resolver)));
 
-  controller.AcquireWakeLock(WakeLockType::kScreen, screen_resolver);
+  controller.RequestWakeLock(WakeLockType::kScreen, screen_resolver,
+                             /*signal=*/nullptr);
   screen_lock.WaitForRequest();
 
   context.GetDocument()->GetPage()->SetIsHidden(true, false);
   context.WaitForPromiseRejection(screen_promise);
   screen_lock.WaitForCancelation();
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(screen_promise));
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(screen_promise));
   EXPECT_FALSE(screen_lock.is_acquired());
 
   abort_signal->SignalAbort();
   test::RunPendingTasks();
 
   EXPECT_FALSE(screen_lock.is_acquired());
+}
+
+TEST(WakeLockControllerTest, RequestPermissionGranted) {
+  MockWakeLockService wake_lock_service;
+  WakeLockTestingContext context(&wake_lock_service);
+  auto& controller = WakeLockController::From(context.GetDocument());
+
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kSystem, mojom::blink::PermissionStatus::GRANTED);
+
+  auto* system_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
+  ScriptPromise system_promise = system_resolver->Promise();
+
+  controller.RequestPermission(WakeLockType::kSystem, system_resolver);
+  context.WaitForPromiseFulfillment(system_promise);
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            ScriptPromiseUtils::GetPromiseState(system_promise));
+  EXPECT_EQ("granted",
+            ScriptPromiseUtils::GetPromiseResolutionAsString(system_promise));
+}
+
+TEST(WakeLockControllerTest, RequestPermissionDenied) {
+  MockWakeLockService wake_lock_service;
+  WakeLockTestingContext context(&wake_lock_service);
+  auto& controller = WakeLockController::From(context.GetDocument());
+
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kSystem, mojom::blink::PermissionStatus::DENIED);
+
+  auto* system_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
+  ScriptPromise system_promise = system_resolver->Promise();
+
+  controller.RequestPermission(WakeLockType::kSystem, system_resolver);
+  context.WaitForPromiseFulfillment(system_promise);
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            ScriptPromiseUtils::GetPromiseState(system_promise));
+  EXPECT_EQ("denied",
+            ScriptPromiseUtils::GetPromiseResolutionAsString(system_promise));
 }
 
 }  // namespace blink

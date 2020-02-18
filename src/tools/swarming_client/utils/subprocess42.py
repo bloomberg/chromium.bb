@@ -71,7 +71,8 @@ if subprocess.mswindows:
   # Constants passed to CreateProcess creationflags argument.
   # https://docs.microsoft.com/windows/desktop/api/processthreadsapi/nf-processthreadsapi-createprocessw
   CREATE_SUSPENDED = 0x4
-
+  CREATE_NEW_CONSOLE = subprocess.CREATE_NEW_CONSOLE
+  CREATE_NEW_PROCESS_GROUP = subprocess.CREATE_NEW_PROCESS_GROUP
 
   # Job Objects constants and structs.
   JobObjectBasicLimitInformation = 2
@@ -497,8 +498,8 @@ class Popen(subprocess.Popen):
     self.detached = kwargs.pop('detached', False)
     if self.detached:
       if subprocess.mswindows:
-        prev = kwargs.get('creationflags') or 0
-        kwargs['creationflags'] = prev | subprocess.CREATE_NEW_PROCESS_GROUP
+        prev = kwargs.get('creationflags', 0)
+        kwargs['creationflags'] = prev | CREATE_NEW_PROCESS_GROUP
       else:
         old_preexec_fn_1 = kwargs.get('preexec_fn')
         def new_preexec_fn_1():
@@ -511,7 +512,7 @@ class Popen(subprocess.Popen):
       if subprocess.mswindows:
         # TODO(maruel): If already in this class, it should use
         # IDLE_PRIORITY_CLASS.
-        prev = kwargs.get('creationflags') or 0
+        prev = kwargs.get('creationflags', 0)
         kwargs['creationflags'] = prev | BELOW_NORMAL_PRIORITY_CLASS
       else:
         old_preexec_fn_2 = kwargs.get('preexec_fn')
@@ -533,7 +534,7 @@ class Popen(subprocess.Popen):
         self._job = _JobObject(self.containment)
         # In this case, start the process suspended, so we can assign the job
         # object, then resume it.
-        prev = kwargs.get('creationflags') or 0
+        prev = kwargs.get('creationflags', 0)
         kwargs['creationflags'] = prev | CREATE_SUSPENDED
 
     self.end = None
@@ -656,7 +657,9 @@ class Popen(subprocess.Popen):
     self.wait()
     return stdout, stderr
 
-  def wait(self, timeout=None):  # pylint: disable=arguments-differ
+  def wait(self, timeout=None,
+           poll_initial_interval=0.001,
+           poll_max_interval=0.05):  # pylint: disable=arguments-differ
     """Implements python3's timeout support.
 
     Raises:
@@ -679,7 +682,7 @@ class Popen(subprocess.Popen):
         # If you think the following code is horrible, it's because it is
         # inspired by python3's stdlib.
         end = time.time() + timeout
-        delay = 0.001
+        delay = poll_initial_interval
         while True:
           try:
             pid, sts = subprocess._eintr_retry_call(
@@ -696,7 +699,7 @@ class Popen(subprocess.Popen):
           remaining = end - time.time()
           if remaining <= 0:
             raise TimeoutExpired(self.args, timeout)
-          delay = min(delay * 2, remaining, .05)
+          delay = min(delay * 2, remaining, poll_max_interval)
           time.sleep(delay)
 
     if not self.end:

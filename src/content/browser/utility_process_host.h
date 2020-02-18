@@ -16,9 +16,11 @@
 #include "base/optional.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
+#include "content/common/child_process.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/identity.h"
@@ -27,14 +29,12 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace base {
-class SequencedTaskRunner;
 class Thread;
 }  // namespace base
 
 namespace content {
 class BrowserChildProcessHostImpl;
 class InProcessChildThreadParams;
-class UtilityProcessHostClient;
 struct ChildProcessData;
 
 typedef base::Thread* (*UtilityMainThreadFactoryFunction)(
@@ -60,13 +60,19 @@ class CONTENT_EXPORT UtilityProcessHost
   static void RegisterUtilityMainThreadFactory(
       UtilityMainThreadFactoryFunction create);
 
-  // |client| is optional. If supplied it will be notified of incoming messages
-  // from the utility process.
-  // |client_task_runner| is required if |client| is supplied and is the task
-  // runner upon which |client| will be invoked.
-  UtilityProcessHost(
-      const scoped_refptr<UtilityProcessHostClient>& client,
-      const scoped_refptr<base::SequencedTaskRunner>& client_task_runner);
+  // Interface which may be passed to a UtilityProcessHost on construction. All
+  // methods are called from the IO thread.
+  class Client {
+   public:
+    virtual ~Client() {}
+
+    virtual void OnProcessLaunched(const base::Process& process) {}
+    virtual void OnProcessTerminatedNormally() {}
+    virtual void OnProcessCrashed() {}
+  };
+
+  UtilityProcessHost();
+  explicit UtilityProcessHost(std::unique_ptr<Client> client);
   ~UtilityProcessHost() override;
 
   base::WeakPtr<UtilityProcessHost> AsWeakPtr();
@@ -111,6 +117,9 @@ class CONTENT_EXPORT UtilityProcessHost
   // the identity of the service being launched.
   void SetServiceIdentity(const service_manager::Identity& identity);
 
+  // Returns a control interface for the running child process.
+  mojom::ChildProcess* GetChildProcess();
+
  private:
   // Starts the child process if needed, returns true on success.
   bool StartProcess();
@@ -123,12 +132,6 @@ class CONTENT_EXPORT UtilityProcessHost
   void OnProcessLaunched() override;
   void OnProcessLaunchFailed(int error_code) override;
   void OnProcessCrashed(int exit_code) override;
-
-  // Pointer to our client interface used for progress notifications.
-  scoped_refptr<UtilityProcessHostClient> client_;
-
-  // Task runner used for posting progess notifications to |client_|.
-  scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
 
   // Launch the child process with switches that will setup this sandbox type.
   service_manager::SandboxType sandbox_type_;
@@ -173,8 +176,10 @@ class CONTENT_EXPORT UtilityProcessHost
   std::vector<service_manager::Service::CreatePackagedServiceInstanceCallback>
       pending_run_service_callbacks_;
 
+  std::unique_ptr<Client> client_;
+
   // Used to vend weak pointers, and should always be declared last.
-  base::WeakPtrFactory<UtilityProcessHost> weak_ptr_factory_;
+  base::WeakPtrFactory<UtilityProcessHost> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessHost);
 };

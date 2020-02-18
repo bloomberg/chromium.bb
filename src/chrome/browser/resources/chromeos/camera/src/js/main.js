@@ -21,6 +21,33 @@ cca.App = function() {
   this.model_ = new cca.models.Gallery();
 
   /**
+   * @type {cca.ResolutionEventBroker}
+   * @private
+   */
+  this.resolBroker_ = new cca.ResolutionEventBroker();
+
+  /**
+   * @type {cca.device.PhotoResolPreferrer}
+   * @private
+   */
+  this.photoPreferrer_ = new cca.device.PhotoResolPreferrer(
+      this.resolBroker_, () => this.cameraView_.restart());
+
+  /**
+   * @type {cca.device.VideoConstraintsPreferrer}
+   * @private
+   */
+  this.videoPreferrer_ = new cca.device.VideoConstraintsPreferrer(
+      this.resolBroker_, () => this.cameraView_.restart());
+
+  /**
+   * @type {cca.device.DeviceInfoUpdater}
+   * @private
+   */
+  this.infoUpdater_ = new cca.device.DeviceInfoUpdater(
+      this.photoPreferrer_, this.videoPreferrer_);
+
+  /**
    * @type {cca.GalleryButton}
    * @private
    */
@@ -33,16 +60,12 @@ cca.App = function() {
   this.browserView_ = new cca.views.Browser(this.model_);
 
   /**
-   * @type {cca.ResolutionEventBroker}
+   * @type {cca.views.Camera}
    * @private
    */
-  this.resolBroker_ = new cca.ResolutionEventBroker();
-
-  /**
-   * @type {cca.views.ResolutionSettings}
-   * @private
-   */
-  this.resolSettingsView_ = new cca.views.ResolutionSettings(this.resolBroker_);
+  this.cameraView_ = new cca.views.Camera(
+      this.model_, this.infoUpdater_, this.photoPreferrer_,
+      this.videoPreferrer_);
 
   // End of properties. Seal the object.
   Object.seal(this);
@@ -55,11 +78,13 @@ cca.App = function() {
 
   // Set up views navigation by their DOM z-order.
   cca.nav.setup([
-    new cca.views.Camera(this.model_, this.resolBroker_),
+    this.cameraView_,
     new cca.views.MasterSettings(),
     new cca.views.BaseSettings('#gridsettings'),
     new cca.views.BaseSettings('#timersettings'),
-    this.resolSettingsView_,
+    new cca.views.ResolutionSettings(
+        this.infoUpdater_, this.photoPreferrer_, this.videoPreferrer_,
+        this.resolBroker_),
     new cca.views.BaseSettings('#photoresolutionsettings'),
     new cca.views.BaseSettings('#videoresolutionsettings'),
     this.browserView_,
@@ -111,12 +136,12 @@ cca.App.prototype.setupToggles_ = function() {
       element.dispatchEvent(new Event('change')); // Trigger toggling css.
     };
     element.save = () => {
-      return key && chrome.storage.local.set(payload());
+      return key && cca.proxy.browserProxy.localStorageSet(payload());
     };
     if (key) {
       // Restore the previously saved state on startup.
-      chrome.storage.local.get(payload(),
-          (values) => element.toggleChecked(values[key]));
+      cca.proxy.browserProxy.localStorageGet(
+          payload(), (values) => element.toggleChecked(values[key]));
     }
   });
 };

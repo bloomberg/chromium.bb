@@ -135,8 +135,6 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->button.checked = extra_params->button.checked;
       break;
     case WebThemeEngine::kPartButton:
-      native_theme_extra_params->button.is_default =
-          extra_params->button.is_default;
       native_theme_extra_params->button.has_border =
           extra_params->button.has_border;
       // Native buttons have a different focus style.
@@ -169,6 +167,11 @@ static void GetNativeThemeExtraParams(
           extra_params->menu_list.background_color;
       break;
     case WebThemeEngine::kPartSliderTrack:
+      native_theme_extra_params->slider.thumb_x = extra_params->slider.thumb_x;
+      native_theme_extra_params->slider.thumb_y = extra_params->slider.thumb_y;
+      FALLTHROUGH;
+      // vertical and in_drag properties are used by both slider track and
+      // slider thumb.
     case WebThemeEngine::kPartSliderThumb:
       native_theme_extra_params->slider.vertical =
           extra_params->slider.vertical;

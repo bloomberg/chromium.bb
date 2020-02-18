@@ -35,8 +35,8 @@ void CommandSet::attach(Window* window) {
     fWindow = window;
 }
 
-bool CommandSet::onKey(Window::Key key, Window::InputState state, uint32_t modifiers) {
-    if (Window::kDown_InputState == state) {
+bool CommandSet::onKey(Window::Key key, InputState state, ModifierKey modifiers) {
+    if (InputState::kDown == state) {
         for (Command& cmd : fCommands) {
             if (Command::kKey_CommandType == cmd.fType && key == cmd.fKey) {
                 cmd.fFunction();
@@ -48,7 +48,7 @@ bool CommandSet::onKey(Window::Key key, Window::InputState state, uint32_t modif
     return false;
 }
 
-bool CommandSet::onChar(SkUnichar c, uint32_t modifiers) {
+bool CommandSet::onChar(SkUnichar c, ModifierKey modifiers) {
     for (Command& cmd : fCommands) {
         if (Command::kChar_CommandType == cmd.fType && c == cmd.fChar) {
             cmd.fFunction();

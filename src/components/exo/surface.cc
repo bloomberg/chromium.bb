@@ -50,6 +50,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/display/output_protection_delegate.h"
 #include "ash/wm/desks/desks_util.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -570,6 +571,12 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
         pending_state_.buffer_scale != state_.buffer_scale ||
         pending_state_.buffer_transform != state_.buffer_transform;
 
+#if defined(OS_CHROMEOS)
+    bool needs_output_protection =
+        pending_state_.only_visible_on_secure_output !=
+        state_.only_visible_on_secure_output;
+#endif  // defined(OS_CHROMEOS)
+
     bool pending_invert_y = false;
 
     // If the current state is fully transparent, the last submitted frame will
@@ -585,6 +592,21 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
         (state_.input_region.has_value() && state_.input_region->IsEmpty())
             ? aura::EventTargetingPolicy::kDescendantsOnly
             : aura::EventTargetingPolicy::kTargetAndDescendants);
+
+#if defined(OS_CHROMEOS)
+    if (needs_output_protection) {
+      if (!output_protection_) {
+        output_protection_ =
+            std::make_unique<ash::OutputProtectionDelegate>(window_.get());
+      }
+
+      uint32_t protection_mask = state_.only_visible_on_secure_output
+                                     ? display::CONTENT_PROTECTION_METHOD_HDCP
+                                     : display::CONTENT_PROTECTION_METHOD_NONE;
+
+      output_protection_->SetProtection(protection_mask, base::DoNothing());
+    }
+#endif  // defined(OS_CHROMEOS)
 
     // We update contents if Attach() has been called since last commit.
     if (has_pending_contents_) {
@@ -716,13 +738,6 @@ void Surface::AppendSurfaceHierarchyContentsToFrame(
   if (needs_update_resource_)
     UpdateResource(resource_manager);
 
-  // TODO(afrantzis): Propagate fence to the consumer of the buffer instead of
-  // waiting here.
-  if (acquire_fence_) {
-    acquire_fence_->Wait();
-    acquire_fence_ = nullptr;
-  }
-
   AppendContentsToFrame(origin, device_scale_factor, frame);
 
   DCHECK(!current_resource_.id ||
@@ -807,6 +822,11 @@ void Surface::SetOcclusionTracking(bool tracking) {
     window()->TrackOcclusionState();
 }
 
+void Surface::SetSurfaceHierarchyContentBoundsForTest(
+    const gfx::Rect& content_bounds) {
+  surface_hierarchy_content_bounds_ = content_bounds;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Buffer, private:
 
@@ -870,8 +890,8 @@ void Surface::UpdateResource(FrameSinkResourceManager* resource_manager) {
   needs_update_resource_ = false;
   if (current_buffer_.buffer()) {
     if (current_buffer_.buffer()->ProduceTransferableResource(
-            resource_manager, state_.only_visible_on_secure_output,
-            &current_resource_)) {
+            resource_manager, std::move(acquire_fence_),
+            state_.only_visible_on_secure_output, &current_resource_)) {
       current_resource_has_alpha_ =
           FormatHasAlpha(current_buffer_.buffer()->GetFormat());
     } else {
@@ -990,7 +1010,8 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
           /* premultiplied_alpha=*/true, uv_crop.origin(),
           uv_crop.bottom_right(), background_color, vertex_opacity,
           /* y_flipped=*/false, /* nearest_neighbor=*/false,
-          state_.only_visible_on_secure_output, ui::ProtectedVideoType::kClear);
+          state_.only_visible_on_secure_output,
+          gfx::ProtectedVideoType::kClear);
       if (current_resource_.is_overlay_candidate)
         texture_quad->set_resource_size_in_pixels(current_resource_.size);
       frame->resource_list.push_back(current_resource_);

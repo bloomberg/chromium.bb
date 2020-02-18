@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 const doodles = {};
 
 doodles.numDdllogResponsesReceived = 0;
@@ -11,7 +10,6 @@ doodles.lastDdllogResponse = '';
 doodles.onDdllogResponse = null;
 
 doodles.ei = null;
-
 
 /**
  * Enum for classnames.
@@ -22,7 +20,6 @@ doodles.CLASSES = {
   FADE: 'fade',            // Enables opacity transition on logo and doodle.
   SHOW_LOGO: 'show-logo',  // Marks logo/doodle that should be shown.
 };
-
 
 /**
  * Enum for HTML element ids.
@@ -47,8 +44,8 @@ doodles.IDS = {
   LOGO_DOODLE_CONTAINER: 'logo-doodle-container',
   LOGO_DOODLE_BUTTON: 'logo-doodle-button',
   LOGO_DOODLE_NOTIFIER: 'logo-doodle-notifier',
+  LOGO_DOODLE_WRAPPER: 'logo-doodle-wrapper',
 };
-
 
 /**
  * Counterpart of search_provider_logos::LogoType.
@@ -60,7 +57,6 @@ doodles.LOGO_TYPE = {
   ANIMATED: 'ANIMATED',
   INTERACTIVE: 'INTERACTIVE',
 };
-
 
 /**
  * Subset of gws.plugins.doodle.SharingLightbox.LogType in
@@ -75,13 +71,11 @@ doodles.SHARE_TYPE = {
   LINK_COPY: 6,
 };
 
-
 /**
  * The ID of the doodle app for Facebook. Used to share doodles to Facebook.
  * @type {number}
  */
 doodles.FACEBOOK_APP_ID = 738026486351791;
-
 
 /**
  * The different types of events that are logged from the NTP. This enum is
@@ -109,7 +103,6 @@ doodles.LOG_TYPE = {
   NTP_ANIMATED_LOGO_CLICKED: 36,
 };
 
-
 /**
  * Handle the resizeDoodle command sent from the fpdoodle page
  * when an interactive doodle is clicked.
@@ -133,8 +126,7 @@ doodles.resizeDoodleHandler = function(args) {
   document.body.style.setProperty('--logo-iframe-width', width);
 };
 
-
-/*
+/**
  * Fetch doodle data and display it if one is present.
  */
 doodles.init = function() {
@@ -148,8 +140,12 @@ doodles.init = function() {
       return;
     }
 
+    const darkMode = window.matchMedia('(prefers-color-scheme: dark)');
+    darkMode.addListener(doodles.fadeToLogoOrDoodle);
+
     // Got a (possibly empty) ddl object. Show logo or doodle.
     doodles.targetDoodle.image = ddl.image || null;
+    doodles.targetDoodle.dark_image = ddl.dark_image || null;
     doodles.targetDoodle.metadata = ddl.metadata || null;
     doodles.showLogoOrDoodle(/*fromCache=*/ true);
     // Never hide an interactive doodle if it was already shown.
@@ -161,6 +157,7 @@ doodles.init = function() {
       doodles.loadDoodle(ddl.v, function(ddl2) {
         if (ddl2.usable) {
           doodles.targetDoodle.image = ddl2.image || null;
+          doodles.targetDoodle.dark_image = ddl2.dark_image || null;
           doodles.targetDoodle.metadata = ddl2.metadata || null;
           doodles.fadeToLogoOrDoodle();
         }
@@ -184,6 +181,18 @@ doodles.init = function() {
   });
 };
 
+/**
+ * Get the doodle image for the current color scheme, either light or dark.
+ */
+doodles.getImageForColorScheme = function() {
+  // Only use a dark image if the browser is in dark mode and a dark image
+  // actually exists.
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches &&
+      doodles.targetDoodle.dark_image) {
+    return doodles.targetDoodle.dark_image;
+  }
+  return doodles.targetDoodle.image;
+};
 
 /**
  * Loads the Doodle. On success, the loaded script declares a global variable
@@ -208,7 +217,6 @@ doodles.loadDoodle = function(v, onload) {
   };
   document.body.appendChild(ddlScript);
 };
-
 
 /**
  * Handles the response of a doodle impression ping, i.e. stores the
@@ -247,7 +255,6 @@ doodles.handleDdllogResponse = function(ddllog, isAnimated) {
     console.log('Missing ddllog response.');
   }
 };
-
 
 /**
  * Logs a doodle impression at the given logUrl, and handles the response via
@@ -290,7 +297,6 @@ doodles.logDoodleImpression = function(logUrl, isAnimated) {
       });
 };
 
-
 /**
  * Logs a doodle sharing event.
  * Uses the ct param provided in metadata.onClickUrl to track the doodle.
@@ -315,7 +321,6 @@ doodles.logDoodleShare = function(platform) {
   }
 };
 
-
 /**
  * Returns true if the target doodle is currently visible. If |image| is null,
  * returns true when the default logo is visible; if non-null, checks that it
@@ -328,7 +333,7 @@ doodles.isDoodleCurrentlyVisible = function() {
   const haveDoodle = ($(doodles.IDS.LOGO_DOODLE)
                           .classList.contains(doodles.CLASSES.SHOW_LOGO));
   const wantDoodle = (doodles.targetDoodle.metadata !== null) &&
-      (doodles.targetDoodle.image !== null ||
+      (doodles.getImageForColorScheme() !== null ||
        doodles.targetDoodle.metadata.type === doodles.LOGO_TYPE.INTERACTIVE);
   if (!haveDoodle || !wantDoodle) {
     return haveDoodle === wantDoodle;
@@ -343,11 +348,10 @@ doodles.isDoodleCurrentlyVisible = function() {
     const logoDoodleImage = $(doodles.IDS.LOGO_DOODLE_IMAGE);
     const logoDoodleContainer = $(doodles.IDS.LOGO_DOODLE_CONTAINER);
     return logoDoodleContainer.classList.contains(doodles.CLASSES.SHOW_LOGO) &&
-        ((logoDoodleImage.src === doodles.targetDoodle.image) ||
+        ((logoDoodleImage.src === doodles.getImageForColorScheme()) ||
          (logoDoodleImage.src === doodles.targetDoodle.metadata.animatedUrl));
   }
 };
-
 
 /**
  * The image and metadata that should be shown, according to the latest fetch.
@@ -364,7 +368,6 @@ doodles.targetDoodle = {
   onClickUrlExtraParams: null,
 };
 
-
 doodles.getDoodleTargetUrl = function() {
   const url = new URL(doodles.targetDoodle.metadata.onClickUrl);
   if (doodles.targetDoodle.onClickUrlExtraParams) {
@@ -374,7 +377,6 @@ doodles.getDoodleTargetUrl = function() {
   }
   return url;
 };
-
 
 doodles.showLogoOrDoodle = function(fromCache) {
   const cachedInteractiveOffline = fromCache &&
@@ -389,7 +391,13 @@ doodles.showLogoOrDoodle = function(fromCache) {
       $(doodles.IDS.LOGO_DOODLE_IFRAME)
           .classList.add(doodles.CLASSES.SHOW_LOGO);
     } else {
-      $(doodles.IDS.LOGO_DOODLE_IMAGE).src = doodles.targetDoodle.image;
+      const isDarkModeEnabled =
+          window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (isDarkModeEnabled) {
+        $(doodles.IDS.LOGO_DOODLE_WRAPPER).style.backgroundColor =
+            doodles.targetDoodle.metadata.darkBackgroundColor;
+      }
+      $(doodles.IDS.LOGO_DOODLE_IMAGE).src = doodles.getImageForColorScheme();
       $(doodles.IDS.LOGO_DOODLE_CONTAINER)
           .classList.add(doodles.CLASSES.SHOW_LOGO);
       $(doodles.IDS.LOGO_DOODLE_IFRAME)
@@ -418,11 +426,9 @@ doodles.showLogoOrDoodle = function(fromCache) {
   }
 };
 
-
 /**
  * Starts fading out the given element, which should be either the default logo
  * or the doodle.
- *
  * @param {?Element} element
  */
 doodles.startFadeOut = function(element) {
@@ -439,7 +445,6 @@ doodles.startFadeOut = function(element) {
   element.classList.remove(doodles.CLASSES.SHOW_LOGO);
   element.addEventListener('transitionend', doodles.onDoodleFadeOutComplete);
 };
-
 
 /**
  * Integrates a fresh doodle into the page as appropriate. If the correct logo
@@ -469,7 +474,6 @@ doodles.fadeToLogoOrDoodle = function() {
   doodles.startFadeOut($(doodles.IDS.LOGO_DOODLE));
 };
 
-
 doodles.onDoodleFadeOutComplete = function(e) {
   // Fade-out finished. Start fading in the appropriate logo.
   $(doodles.IDS.LOGO_DOODLE).classList.add(doodles.CLASSES.FADE);
@@ -479,7 +483,6 @@ doodles.onDoodleFadeOutComplete = function(e) {
   e.target.removeEventListener(
       'transitionend', doodles.onDoodleFadeOutComplete);
 };
-
 
 doodles.applyDoodleMetadata = function() {
   const logoDoodleImage = $(doodles.IDS.LOGO_DOODLE_IMAGE);
@@ -579,12 +582,23 @@ doodles.applyDoodleMetadata = function() {
  * dialog upon click.
  */
 doodles.insertShareButton = function() {
-  // Terminates early if share button data are missing or incomplete.
-  if (!doodles.targetDoodle.metadata ||
-      !doodles.targetDoodle.metadata.shareButtonX ||
-      !doodles.targetDoodle.metadata.shareButtonY ||
-      !doodles.targetDoodle.metadata.shareButtonBg ||
-      !doodles.targetDoodle.metadata.shareButtonIcon) {
+  // Terminates early if share button data for the current color scheme is
+  // missing or incomplete.
+  const isDarkModeEnabled =
+      window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const lightShareButtonMissing = !isDarkModeEnabled &&
+      (!doodles.targetDoodle.metadata ||
+       !doodles.targetDoodle.metadata.shareButtonX ||
+       !doodles.targetDoodle.metadata.shareButtonY ||
+       !doodles.targetDoodle.metadata.shareButtonBg ||
+       !doodles.targetDoodle.metadata.shareButtonIcon);
+  const darkShareButtonMissing = isDarkModeEnabled &&
+      (!doodles.targetDoodle.metadata ||
+       !doodles.targetDoodle.metadata.darkShareButtonX ||
+       !doodles.targetDoodle.metadata.darkShareButtonY ||
+       !doodles.targetDoodle.metadata.darkShareButtonBg ||
+       !doodles.targetDoodle.metadata.darkShareButtonIcon);
+  if (lightShareButtonMissing || darkShareButtonMissing) {
     return;
   }
   const shareDialog = $(doodles.IDS.DOODLE_SHARE_DIALOG);
@@ -596,27 +610,36 @@ doodles.insertShareButton = function() {
   shareButtonWrapper.appendChild(shareButtonImg);
   shareButtonWrapper.title = configData.translatedStrings.shareDoodle;
 
-  shareButtonWrapper.style.left =
-      doodles.targetDoodle.metadata.shareButtonX + 'px';
-  shareButtonWrapper.style.top =
-      doodles.targetDoodle.metadata.shareButtonY + 'px';
+  const shareButtonX = isDarkModeEnabled ?
+      doodles.targetDoodle.metadata.darkShareButtonX :
+      doodles.targetDoodle.metadata.shareButtonX;
+  shareButtonWrapper.style.left = shareButtonX + 'px';
+  const shareButtonY = isDarkModeEnabled ?
+      doodles.targetDoodle.metadata.darkShareButtonY :
+      doodles.targetDoodle.metadata.shareButtonY;
+  shareButtonWrapper.style.top = shareButtonY + 'px';
 
   // Alpha-less background color represented as an RGB HEX string.
   // Share button opacity represented as a double between 0 to 1.
   // Final background color is an RGBA HEX string created by combining
   // both.
-  let backgroundColor = doodles.targetDoodle.metadata.shareButtonBg;
-  if (!!doodles.targetDoodle.metadata.shareButtonOpacity ||
-      doodles.targetDoodle.metadata.shareButtonOpacity == 0) {
+  let backgroundColor = isDarkModeEnabled ?
+      doodles.targetDoodle.metadata.darkShareButtonBg :
+      doodles.targetDoodle.metadata.shareButtonBg;
+  const shareButtonOpacity = isDarkModeEnabled ?
+      doodles.targetDoodle.metadata.darkShareButtonOpacity :
+      doodles.targetDoodle.metadata.shareButtonOpacity;
+  if (!!shareButtonOpacity || shareButtonOpacity == 0) {
     const backgroundOpacityHex =
-        parseInt(doodles.targetDoodle.metadata.shareButtonOpacity * 255, 10)
-            .toString(16);
+        parseInt(shareButtonOpacity * 255, 10).toString(16);
     backgroundColor += backgroundOpacityHex;
   }
 
   shareButtonWrapper.style.backgroundColor = backgroundColor;
-  shareButtonImg.src =
-      'data:image/png;base64,' + doodles.targetDoodle.metadata.shareButtonIcon;
+  const shareButtonIcon = isDarkModeEnabled ?
+      doodles.targetDoodle.metadata.darkShareButtonIcon :
+      doodles.targetDoodle.metadata.shareButtonIcon;
+  shareButtonImg.src = 'data:image/png;base64,' + shareButtonIcon;
   shareButtonWrapper.onclick = function() {
     shareDialog.showModal();
   };

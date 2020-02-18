@@ -1,8 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
@@ -11,7 +13,6 @@
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="profile_info_browser_proxy.html">
 <link rel="import" href="sync_browser_proxy.html">
@@ -34,6 +35,7 @@
 <link rel="import" href="lock_screen.html">
 <link rel="import" href="lock_state_behavior.html">
 <link rel="import" href="users_page.html">
+<link rel="import" href="../parental_controls_page/parental_controls_page.html">
 </if>
 <if expr="not chromeos">
 <link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
@@ -62,8 +64,10 @@
         --iron-icon-fill-color: var(--google-green-refresh-700);
       }
 
-      :host-context([dark]) iron-icon[icon='cr:sync'] {
-        --iron-icon-fill-color: var(--google-green-refresh-300);
+      @media (prefers-color-scheme: dark) {
+        iron-icon[icon='cr:sync'] {
+          --iron-icon-fill-color: var(--google-green-refresh-300);
+        }
       }
 
       #sync-status[actionable] iron-icon[icon='settings:sync-problem'] {
@@ -75,9 +79,11 @@
         --iron-icon-fill-color: var(--google-blue-500);
       }
 
-      :host-context([dark]) #sync-status[actionable].auth-error
-          iron-icon[icon='settings:sync-disabled'] {
-        --iron-icon-fill-color: var(--google-blue-refresh-300);
+      @media (prefers-color-scheme: dark) {
+        #sync-status[actionable].auth-error
+            iron-icon[icon='settings:sync-disabled'] {
+          --iron-icon-fill-color: var(--google-blue-refresh-300);
+        }
       }
 
       #sync-status:not([actionable]) .subpage-arrow {
@@ -111,22 +117,16 @@
         right: 0;
       }
 
-      settings-sync-account-control[showing-promo] {
-        --promo-banner: {
-          /* Make the banner image stay within setting-section's card border
-             radius. */
-          border-top-left-radius: var(--cr-card-border-radius);
-          border-top-right-radius: var(--cr-card-border-radius);
-        }
-        /* When showing promo in this page, text should be larger. */
-        --promo-description: {
-          font-size: 0.9rem;
-          line-height: 1.625rem;
-        }
-        --promo-title: {
-          font-size: 1.1rem;
-          line-height: 1.625rem;
-        }
+      settings-sync-account-control[showing-promo]::part(banner) {
+        /* Make the banner image stay within setting-section's card border
+           radius. */
+        border-top-left-radius: var(--cr-card-border-radius);
+        border-top-right-radius: var(--cr-card-border-radius);
+      }
+
+      settings-sync-account-control[showing-promo]::part(title) {
+        font-size: 1.1rem;
+        line-height: 1.625rem;
       }
 </if>
     </style>
@@ -177,18 +177,17 @@
 <if expr="not chromeos">
               <template is="dom-if" if="[[showSignin_(syncStatus)]]">
                 <div class="separator"></div>
-                <paper-button class="action-button" on-click="onSigninTap_"
+                <cr-button class="action-button" on-click="onSigninTap_"
                     disabled="[[syncStatus.firstSetupInProgress]]">
                   $i18n{syncSignin}
-                </paper-button>
+                </cr-button>
               </template>
               <template is="dom-if" if="[[syncStatus.signedIn]]">
                 <div class="separator"></div>
-                <paper-button id="disconnectButton" class="secondary-button"
-                    on-click="onDisconnectTap_"
+                <cr-button id="disconnectButton" on-click="onDisconnectTap_"
                     disabled="[[syncStatus.firstSetupInProgress]]">
                   $i18n{syncDisconnect}
-                </paper-button>
+                </cr-button>
               </template>
 </if>
             </template>
@@ -275,18 +274,24 @@
               on-click="onAccountManagerTap_"
               label="$i18n{accountManagerSubMenuLabel}"></cr-link-row>
         </template>
+        <template is="dom-if" if="[[showParentalControls_]]">
+          <settings-parental-controls-page>
+          </settings-parental-controls-page>
+        </template>
+        <cr-link-row id="manage-other-people-subpage-trigger"
+            label="$i18n{manageOtherPeople}" on-click="onManageOtherPeople_"
+            hidden="[[!pageVisibility.people.manageUsers]]">
+        </cr-link-row>
 
         <template is="dom-if" if="[[shouldShowKerberos_(
             isKerberosEnabled_, pageVisibility.people.kerberosAccounts)]]">
           <cr-link-row id="kerberos-accounts-subpage-trigger" class="hr"
               on-click="onKerberosAccountsTap_"
-              label="$i18n{kerberosAccountsSubMenuLabel}"></cr-link-row>
+              label="$i18n{kerberosAccountsSubMenuLabel}">
+            <cr-policy-indicator indicator-type="userPolicy">
+            </cr-policy-indicator>
+          </cr-link-row>
         </template>
-
-        <cr-link-row id="manage-other-people-subpage-trigger"
-            label="$i18n{manageOtherPeople}" on-click="onManageOtherPeople_"
-            hidden="[[!pageVisibility.people.manageUsers]]">
-        </cr-link-row>
 </if>
 
 <if expr="not chromeos">
@@ -329,26 +334,26 @@
       </template>
 
 <if expr="chromeos">
-      <template is="dom-if" if="[[!pageVisibility.people.lockScreen]]"
-          route-path="/lockScreen">
-        <settings-subpage
-            page-title="[[selectLockScreenTitleString(hasPinLogin)]]"
-            associated-control="[[$$('#lock-screen-subpage-trigger')]]">
-          <settings-lock-screen
-              prefs="{{prefs}}" auth-token="{{authToken_}}">
-          </settings-lock-screen>
-        </settings-subpage>
-      </template>
-      <template is="dom-if" if="[[fingerprintUnlockEnabled_
-          && !pageVisibility.people.lockScreen]]">
-        <template is="dom-if" route-path="/lockScreen/fingerprint" no-search>
-          <settings-subpage page-title="$i18n{lockScreenFingerprintTitle}">
-            <settings-fingerprint-list auth-token="[[authToken_]]">
-            </settings-fingerprint-list>
+      <template is="dom-if" if="[[pageVisibility.people.lockScreen]]">
+        <template is="dom-if" route-path="/lockScreen">
+          <settings-subpage
+              page-title="[[selectLockScreenTitleString(hasPinLogin)]]"
+              associated-control="[[$$('#lock-screen-subpage-trigger')]]">
+            <settings-lock-screen
+                prefs="{{prefs}}" auth-token="{{authToken_}}">
+            </settings-lock-screen>
           </settings-subpage>
         </template>
+        <template is="dom-if" if="[[fingerprintUnlockEnabled_]]">
+          <template is="dom-if" route-path="/lockScreen/fingerprint" no-search>
+            <settings-subpage page-title="$i18n{lockScreenFingerprintTitle}">
+              <settings-fingerprint-list auth-token="[[authToken_]]">
+              </settings-fingerprint-list>
+            </settings-subpage>
+          </template>
+        </template>
       </template>
-      <template is="dom-if" if="[!pageVisibility.people.manageUsers]]">
+      <template is="dom-if" if="[[pageVisibility.people.manageUsers]]">
         <template is="dom-if" route-path="/accounts">
           <settings-subpage
               associated-control=

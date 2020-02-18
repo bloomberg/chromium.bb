@@ -5,15 +5,19 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_MOCK_CHROME_CLEANER_PROCESS_WIN_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_MOCK_CHROME_CLEANER_PROCESS_WIN_H_
 
-#include <set>
-#include <string>
+#include <ostream>
+#include <vector>
 
-#include "base/callback.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/profiles/profile.h"
-#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_actions_win.h"
+
+class Profile;
+
+namespace base {
+class CommandLine;
+}  // namespace base
 
 namespace safe_browsing {
 
@@ -22,16 +26,12 @@ namespace safe_browsing {
 //
 // MULTIPROCESS_TEST_MAIN(MockChromeCleanerProcessMain) {
 //   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-//   MockChromeCleanerProcess::Options options;
-//   EXPECT_TRUE(MockChromeCleanerProcess::Options::FromCommandLine(
-//       *command_line, &options));
-//   std::string chrome_mojo_pipe_token = ...
-//   EXPECT_FALSE(chrome_mojo_pipe_token.empty())
 //
+//   MockChromeCleanerProcess mock_cleaner_process;
+//   EXPECT_TRUE(mock_cleaner_process.InitWithCommandLine(*command_line));
 //   if (::testing::Test::HasFailure())
 //     return MockChromeCleanerProcess::kInternalTestFailureExitCode;
-//   MockChromeCleanerProcess mock_cleaner_process(options,
-//                                                 chrome_mojo_pipe_token);
+//
 //   return mock_cleaner_process.Run();
 // }
 class MockChromeCleanerProcess {
@@ -66,6 +66,11 @@ class MockChromeCleanerProcess {
   };
 
   enum class ExtensionCleaningFeatureStatus {
+    kEnabled,
+    kDisabled,
+  };
+
+  enum class ProtobufIPCFeatureStatus {
     kEnabled,
     kDisabled,
   };
@@ -125,11 +130,11 @@ class MockChromeCleanerProcess {
     CrashPoint crash_point() const { return crash_point_; }
 
     void set_expected_user_response(
-        chrome_cleaner::mojom::PromptAcceptance expected_user_response) {
+        ChromePromptActions::PromptAcceptance expected_user_response) {
       expected_user_response_ = expected_user_response;
     }
 
-    chrome_cleaner::mojom::PromptAcceptance expected_user_response() const {
+    ChromePromptActions::PromptAcceptance expected_user_response() const {
       return expected_user_response_;
     }
 
@@ -141,8 +146,8 @@ class MockChromeCleanerProcess {
       return extensions_reporting_;
     }
 
-    int ExpectedExitCode(chrome_cleaner::mojom::PromptAcceptance
-                             received_prompt_acceptance) const;
+    int ExpectedExitCode(
+        ChromePromptActions::PromptAcceptance received_prompt_acceptance) const;
 
    private:
     std::vector<base::FilePath> files_to_delete_;
@@ -153,12 +158,14 @@ class MockChromeCleanerProcess {
     CrashPoint crash_point_ = CrashPoint::kNone;
     ItemsReporting registry_keys_reporting_ = ItemsReporting::kUnsupported;
     ItemsReporting extensions_reporting_ = ItemsReporting::kUnsupported;
-    chrome_cleaner::mojom::PromptAcceptance expected_user_response_ =
-        chrome_cleaner::mojom::PromptAcceptance::UNSPECIFIED;
+    ChromePromptActions::PromptAcceptance expected_user_response_ =
+        ChromePromptActions::PromptAcceptance::UNSPECIFIED;
   };
 
-  MockChromeCleanerProcess(const Options& options,
-                           const std::string& chrome_mojo_pipe_token);
+  MockChromeCleanerProcess();
+  ~MockChromeCleanerProcess();
+
+  bool InitWithCommandLine(const base::CommandLine& command_line);
 
   // Call this in the main function of the mock Chrome Cleaner process. Returns
   // the exit code that should be used when the process exits.
@@ -169,20 +176,10 @@ class MockChromeCleanerProcess {
   int Run();
 
  private:
-  // Function that receives the Mojo response to the PromptUser message.
-  void SendScanResults(
-      chrome_cleaner::mojom::ChromePromptPtrInfo prompt_ptr_info,
-      base::OnceClosure quit_closure);
-  void PromptUserCallback(
-      base::OnceClosure quit_closure,
-      chrome_cleaner::mojom::PromptAcceptance prompt_acceptance);
-
   Options options_;
-  std::string chrome_mojo_pipe_token_;
-  // The PromptAcceptance received in PromptUserCallback().
-  chrome_cleaner::mojom::PromptAcceptance received_prompt_acceptance_ =
-      chrome_cleaner::mojom::PromptAcceptance::UNSPECIFIED;
-  chrome_cleaner::mojom::ChromePromptPtr* chrome_prompt_ptr_ = nullptr;
+
+  // Saved copy of command line for IPC setup.
+  std::unique_ptr<base::CommandLine> command_line_;
 };
 
 // Making test parameter types printable.
@@ -196,6 +193,10 @@ std::ostream& operator<<(std::ostream& out,
 std::ostream& operator<<(
     std::ostream& out,
     MockChromeCleanerProcess::ExtensionCleaningFeatureStatus status);
+
+std::ostream& operator<<(
+    std::ostream& out,
+    MockChromeCleanerProcess::ProtobufIPCFeatureStatus status);
 
 std::ostream& operator<<(
     std::ostream& out,

@@ -12,6 +12,7 @@
 #define P2P_BASE_ICE_TRANSPORT_INTERNAL_H_
 
 #include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -90,6 +91,13 @@ struct IceConfig {
   // If set to true, this means the ICE transport should presume TURN-to-TURN
   // candidate pairs will succeed, even before a binding response is received.
   bool presume_writable_when_fully_relayed = false;
+
+  // If true, after the ICE transport type (as the candidate filter used by the
+  // port allocator) is changed such that new types of ICE candidates are
+  // allowed by the new filter, e.g. from CF_RELAY to CF_ALL, candidates that
+  // have been gathered by the ICE transport but filtered out and not signaled
+  // to the upper layers, will be surfaced.
+  bool surface_ice_candidates_on_ice_transport_type_changed = false;
 
   // Interval to check on all networks and to perform ICE regathering on any
   // active network having no connection on it.
@@ -255,13 +263,22 @@ class RTC_EXPORT IceTransportInternal : public rtc::PacketTransportInternal {
   // absl::optional if there is none.
   virtual absl::optional<int> GetRttEstimate() = 0;
 
+  // TODO(qingsi): Remove this method once Chrome does not depend on it anymore.
   virtual const Connection* selected_connection() const = 0;
+
+  // Returns the selected candidate pair, or an empty absl::optional if there is
+  // none.
+  virtual absl::optional<const CandidatePair> GetSelectedCandidatePair()
+      const = 0;
 
   sigslot::signal1<IceTransportInternal*> SignalGatheringState;
 
   // Handles sending and receiving of candidates.
   sigslot::signal2<IceTransportInternal*, const Candidate&>
       SignalCandidateGathered;
+
+  sigslot::signal2<IceTransportInternal*, const IceCandidateErrorEvent&>
+      SignalCandidateError;
 
   sigslot::signal2<IceTransportInternal*, const Candidates&>
       SignalCandidatesRemoved;

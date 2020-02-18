@@ -1,8 +1,8 @@
 <link rel="import" href="../../html/polymer.html">
 
+<link rel="import" href="../cr_button/cr_button.html">
 <link rel="import" href="../shared_vars_css.html">
 <link rel="import" href="../../html/icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="cr_profile_avatar_selector_grid.html">
 
@@ -13,8 +13,6 @@
         --avatar-size: 96px;
         --avatar-spacing: 24px;
         display: inline-flex;
-
-        @apply --avatar-selector;
       }
 
       #avatar-grid .avatar {
@@ -37,14 +35,14 @@
         padding: 0;
         transition: none !important;  /* Polymer's :host([animated]) rule. */
         width: var(--avatar-size);
-
-        @apply --avatar-selector-avatar;
       }
 
-      :host-context([dark]) #avatar-grid .avatar {
-        --avatar-focus-color: var(--google-grey-refresh-500);
-        --avatar-gap-color: var(--google-grey-800);
-        --avatar-selected-color: var(--google-blue-refresh-300);
+      @media (prefers-color-scheme: dark) {
+        #avatar-grid .avatar {
+          --avatar-focus-color: var(--google-grey-refresh-500);
+          --avatar-gap-color: var(--google-grey-800);
+          --avatar-selected-color: var(--google-blue-refresh-300);
+        }
       }
 
       #avatar-grid .avatar.iron-selected {
@@ -53,23 +51,24 @@
         border-color: var(--avatar-selected-color);
       }
 
-      #avatar-grid .avatar.keyboard-focus {
+      :host-context(.focus-outline-visible) #avatar-grid
+          .avatar:not(.iron-selected):focus {
         --avatar-outline-color: var(--avatar-focus-color);
         --avatar-outline-width: 1px;
       }
 
-      paper-button {
+      cr-button {
         background-size: var(--avatar-size);
       }
     </style>
     <cr-profile-avatar-selector-grid id="avatar-grid"
         ignore-modified-key-events="[[ignoreModifiedKeyEvents]]">
       <template is="dom-repeat" items="[[avatars]]">
-        <paper-button class$="avatar [[getSelectedClass_(item.selected)]]"
+        <cr-button class$="avatar [[getSelectedClass_(item.selected)]]"
             title="[[item.label]]"
             style$="background-image: [[getIconImageSet_(item.url)]]"
-            on-tap="onAvatarTap_">
-        </paper-button>
+            on-click="onAvatarTap_">
+        </cr-button>
       </template>
     </cr-profile-avatar-selector-grid>
   </template>

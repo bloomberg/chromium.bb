@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -35,6 +36,7 @@
 
 namespace cc {
 class Layer;
+class MirrorLayer;
 class NinePatchLayer;
 class SolidColorLayer;
 class SurfaceLayer;
@@ -70,8 +72,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
                                 public cc::LayerClient {
  public:
   using ShapeRects = std::vector<gfx::Rect>;
-  Layer();
-  explicit Layer(LayerType type);
+  explicit Layer(LayerType type = LAYER_TEXTURED);
   ~Layer() override;
 
   // Note that only solid color and surface content is copied.
@@ -80,6 +81,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Returns a new layer that mirrors this layer and is optionally synchronized
   // with the bounds thereof. Note that children are not mirrored, and that the
   // content is only mirrored if painted by a delegate or backed by a surface.
+  // As the mirror layer rasterizes its contents separately, this might have
+  // some negative impact on performance.
   std::unique_ptr<Layer> Mirror();
 
   // This method is relevant only if this layer is a mirror destination layer.
@@ -88,6 +91,21 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void set_sync_bounds_with_source(bool sync_bounds) {
     sync_bounds_with_source_ = sync_bounds;
   }
+
+  // This method is relevant only if this layer is a mirror destination layer.
+  // Sets whether this mirror layer's visibility is synchronized with the source
+  // layer's visibility.
+  void set_sync_visibility_with_source(bool sync_visibility) {
+    sync_visibility_with_source_ = sync_visibility;
+  }
+
+  // Sets up this layer to mirror output of |subtree_reflected_layer|, including
+  // its entire hierarchy. |this| should be of type LAYER_SOLID_COLOR and should
+  // not be a descendant of |subtree_reflected_layer|. This is achieved by using
+  // cc::MirrorLayer which forces a render surface for |subtree_reflected_layer|
+  // to be able to embed it. This might cause extra GPU memory bandwidth and/or
+  // read/writes which can impact performance negatively.
+  void SetShowReflectedLayerSubtree(Layer* subtree_reflected_layer);
 
   // Retrieves the Layer's compositor. The Layer will walk up its parent chain
   // to locate it. Returns NULL if the Layer is not attached to a compositor.
@@ -169,11 +187,11 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   const gfx::Size& size() const { return bounds_.size(); }
 
   // The offset from our parent (stored in bounds.origin()) is an integer but we
-  // may need to be at a fractional pixel offset to align properly on screen.
+  // may need to be at a fractional pixel offset to align properly on screen. If
+  // this is not set, the layer will auto compute its sub pixel offset
+  // information with respect to its parent layer.
   void SetSubpixelPositionOffset(const gfx::Vector2dF& offset);
-  const gfx::Vector2dF& subpixel_position_offset() const {
-    return subpixel_position_offset_;
-  }
+  const gfx::Vector2dF GetSubpixelOffset() const;
 
   // Return the target bounds if animator is running, or the current bounds
   // otherwise.
@@ -183,6 +201,12 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // this layer, should be clipped to the bounds of this layer.
   void SetMasksToBounds(bool masks_to_bounds);
   bool GetMasksToBounds() const;
+
+  // Sets/gets the clip rect for the layer. |clip_rect| is in layer space and
+  // relative to |this| layer. Prefer SetMasksToBounds() to set the clip to the
+  // bounds of |this| layer. This clips the subtree rooted at |this| layer.
+  void SetClipRect(const gfx::Rect& clip_rect);
+  const gfx::Rect& clip_rect() const { return cc_layer_->clip_rect(); }
 
   // The opacity of the layer. The opacity is applied to each pixel of the
   // texture (resulting alpha = opacity * alpha).
@@ -255,6 +279,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Furthermore: A mask layer can only be set to one layer.
   void SetMaskLayer(Layer* layer_mask);
   Layer* layer_mask_layer() { return layer_mask_; }
+  const Layer* layer_mask_layer() const { return layer_mask_; }
 
   // Sets the visibility of the Layer. A Layer may be visible but not drawn.
   // This happens if any ancestor of a Layer is not visible.
@@ -430,7 +455,9 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   bool FillsBoundsCompletely() const override;
   size_t GetApproximateUnsharedMemoryUsage() const override;
 
+  cc::MirrorLayer* mirror_layer_for_testing() { return mirror_layer_.get(); }
   cc::Layer* cc_layer_for_testing() { return cc_layer_; }
+  const cc::Layer* cc_layer_for_testing() const { return cc_layer_; }
 
   // TextureLayerClient implementation.
   bool PrepareTransferableResource(
@@ -500,6 +527,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
  private:
   friend class LayerOwner;
   class LayerMirror;
+  class SubpixelPositionOffsetCache;
 
   void CollectAnimators(std::vector<scoped_refptr<LayerAnimator> >* animators);
 
@@ -526,6 +554,11 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
                                  PropertyChangeReason reason) override;
   void SetColorFromAnimation(SkColor color,
                              PropertyChangeReason reason) override;
+  void SetClipRectFromAnimation(const gfx::Rect& clip_rect,
+                                PropertyChangeReason reason) override;
+  void SetRoundedCornersFromAnimation(
+      const gfx::RoundedCornersF& rounded_corners,
+      PropertyChangeReason reason) override;
   void ScheduleDrawForAnimation() override;
   const gfx::Rect& GetBoundsForAnimation() const override;
   gfx::Transform GetTransformForAnimation() const override;
@@ -534,6 +567,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   float GetBrightnessForAnimation() const override;
   float GetGrayscaleForAnimation() const override;
   SkColor GetColorForAnimation() const override;
+  gfx::Rect GetClipRectForAnimation() const override;
+  gfx::RoundedCornersF GetRoundedCornersForAnimation() const override;
   float GetDeviceScaleFactor() const override;
   ui::Layer* GetLayer() override;
   cc::Layer* GetCcLayer() const override;
@@ -565,6 +600,13 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   void CreateSurfaceLayerIfNecessary();
 
+  // Changes the size of |this| to match that of |layer|.
+  void MatchLayerSize(const Layer* layer);
+
+  // Resets |subtree_reflected_layer_| and updates the reflected layer's
+  // |subtree_reflecting_layers_| list accordingly.
+  void ResetSubtreeReflectedLayer();
+
   const LayerType type_;
 
   Compositor* compositor_;
@@ -576,12 +618,23 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   std::vector<std::unique_ptr<LayerMirror>> mirrors_;
 
+  // The layer being reflected with its subtree by this one, if any.
+  Layer* subtree_reflected_layer_ = nullptr;
+
+  // List of layers reflecting this layer and its subtree, if any.
+  base::flat_set<Layer*> subtree_reflecting_layers_;
+
   // If true, and this is a destination mirror layer, changes to the bounds of
   // the source layer are propagated to this mirror layer.
   bool sync_bounds_with_source_ = false;
 
+  // If true, and this is a destination mirror layer, changes in the source
+  // layer's visibility are propagated to this mirror layer.
+  bool sync_visibility_with_source_ = true;
+
   gfx::Rect bounds_;
-  gfx::Vector2dF subpixel_position_offset_;
+
+  std::unique_ptr<SubpixelPositionOffsetCache> subpixel_position_offset_;
 
   // Visibility of this layer. See SetVisible/IsDrawn for more details.
   bool visible_;
@@ -644,6 +697,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Ownership of the layer is held through one of the strongly typed layer
   // pointers, depending on which sort of layer this is.
   scoped_refptr<cc::PictureLayer> content_layer_;
+  scoped_refptr<cc::MirrorLayer> mirror_layer_;
   scoped_refptr<cc::NinePatchLayer> nine_patch_layer_;
   scoped_refptr<cc::TextureLayer> texture_layer_;
   scoped_refptr<cc::SolidColorLayer> solid_color_layer_;
@@ -687,7 +741,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // layer.
   unsigned trilinear_filtering_request_;
 
-  base::WeakPtrFactory<Layer> weak_ptr_factory_;
+  base::WeakPtrFactory<Layer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

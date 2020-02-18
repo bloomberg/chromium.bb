@@ -51,13 +51,14 @@ BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {}
 void BrowserWithTestWindowTest::SetUp() {
   testing::Test::SetUp();
 #if defined(OS_CHROMEOS)
-  ash_test_helper_.SetUp(true);
+  ash::AshTestHelper::InitParams init_params;
+  ash_test_helper_.SetUp(init_params);
 #elif defined(TOOLKIT_VIEWS)
   views_test_helper_.reset(new views::ScopedViewsTestHelper());
 #endif
 
   // This must be created after ash_test_helper_ is set up so that it doesn't
-  // create an InputDeviceManager.
+  // create an DeviceDataManager.
   rvh_test_enabler_ = std::make_unique<content::RenderViewHostTestEnabler>();
 
 #if defined(TOOLKIT_VIEWS)

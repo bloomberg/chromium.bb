@@ -25,7 +25,7 @@ namespace rr
 	class StreamBase
 	{
 	protected:
-		StreamBase(std::shared_ptr<Routine> &routine, Nucleus::CoroutineHandle handle)
+		StreamBase(const std::shared_ptr<Routine> &routine, Nucleus::CoroutineHandle handle)
 			: routine(routine), handle(handle) {}
 
 		~StreamBase()
@@ -52,7 +52,7 @@ private:
 	class Stream : public StreamBase
 	{
 	public:
-		inline Stream(std::shared_ptr<Routine> &routine, Nucleus::CoroutineHandle handle)
+		inline Stream(const std::shared_ptr<Routine> &routine, Nucleus::CoroutineHandle handle)
 			: StreamBase(routine, handle) {}
 
 		// await() retrieves the next yielded value from the coroutine.
@@ -133,7 +133,7 @@ private:
 		// called without building a new rr::Function or rr::Coroutine.
 		// While automatically called by operator(), finalize() should be called
 		// as early as possible to release the global Reactor mutex lock.
-		inline void finalize();
+		inline void finalize(const Config::Edit &cfg = Config::Edit::None);
 
 		// Starts execution of the coroutine and returns a unique_ptr to a
 		// Stream<> that exposes the await() function for obtaining yielded
@@ -147,7 +147,7 @@ private:
 	};
 
 	template<typename Return, typename... Arguments>
-	Coroutine<Return(Arguments...)>::Coroutine() : routine{}
+	Coroutine<Return(Arguments...)>::Coroutine()
 	{
 		core.reset(new Nucleus());
 
@@ -164,11 +164,11 @@ private:
 	}
 
 	template<typename Return, typename... Arguments>
-	void Coroutine<Return(Arguments...)>::finalize()
+	void Coroutine<Return(Arguments...)>::finalize(const Config::Edit &cfg /* = Config::Edit::None */)
 	{
 		if(core != nullptr)
 		{
-			routine.reset(core->acquireCoroutine("coroutine", true));
+			routine.reset(core->acquireCoroutine("coroutine", cfg));
 			core.reset(nullptr);
 		}
 	}

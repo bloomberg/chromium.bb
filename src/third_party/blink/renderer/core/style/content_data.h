@@ -57,7 +57,7 @@ class ContentData : public GarbageCollectedFinalized<ContentData> {
   virtual bool IsAltText() const { return false; }
 
   virtual LayoutObject* CreateLayoutObject(PseudoElement&,
-                                           ComputedStyle&,
+                                           const ComputedStyle&,
                                            LegacyLayout) const = 0;
 
   virtual ContentData* Clone() const;
@@ -90,7 +90,7 @@ class ImageContentData final : public ContentData {
 
   bool IsImage() const override { return true; }
   LayoutObject* CreateLayoutObject(PseudoElement&,
-                                   ComputedStyle&,
+                                   const ComputedStyle&,
                                    LegacyLayout) const override;
 
   bool Equals(const ContentData& data) const override {
@@ -129,7 +129,7 @@ class TextContentData final : public ContentData {
 
   bool IsText() const override { return true; }
   LayoutObject* CreateLayoutObject(PseudoElement&,
-                                   ComputedStyle&,
+                                   const ComputedStyle&,
                                    LegacyLayout) const override;
 
   bool Equals(const ContentData& data) const override {
@@ -160,7 +160,7 @@ class AltTextContentData final : public ContentData {
 
   bool IsAltText() const override { return true; }
   LayoutObject* CreateLayoutObject(PseudoElement&,
-                                   ComputedStyle&,
+                                   const ComputedStyle&,
                                    LegacyLayout) const override;
 
   bool Equals(const ContentData& data) const override {
@@ -195,7 +195,7 @@ class CounterContentData final : public ContentData {
 
   bool IsCounter() const override { return true; }
   LayoutObject* CreateLayoutObject(PseudoElement&,
-                                   ComputedStyle&,
+                                   const ComputedStyle&,
                                    LegacyLayout) const override;
 
  private:
@@ -233,7 +233,7 @@ class QuoteContentData final : public ContentData {
 
   bool IsQuote() const override { return true; }
   LayoutObject* CreateLayoutObject(PseudoElement&,
-                                   ComputedStyle&,
+                                   const ComputedStyle&,
                                    LegacyLayout) const override;
 
   bool Equals(const ContentData& data) const override {

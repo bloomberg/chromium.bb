@@ -18,6 +18,7 @@
 
 using testing::_;
 using testing::ContainerEq;
+using testing::Eq;
 using testing::Return;
 
 namespace offline_items_collection {
@@ -73,9 +74,7 @@ class OpenItemRemovalOfflineContentProvider
 class OfflineContentAggregatorTest : public testing::Test {
  public:
   OfflineContentAggregatorTest()
-      : task_runner_(new base::TestMockTimeTaskRunner),
-        handle_(task_runner_),
-        weak_ptr_factory_(this) {}
+      : task_runner_(new base::TestMockTimeTaskRunner), handle_(task_runner_) {}
   ~OfflineContentAggregatorTest() override {}
 
  protected:
@@ -93,7 +92,7 @@ class OfflineContentAggregatorTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle handle_;
   OfflineContentAggregator aggregator_;
-  base::WeakPtrFactory<OfflineContentAggregatorTest> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflineContentAggregatorTest> weak_ptr_factory_{this};
 };
 
 void OfflineContentAggregatorTest::GetAllItemsAndVerify(
@@ -289,12 +288,12 @@ TEST_F(OfflineContentAggregatorTest, OnItemUpdatedPropagatedToObservers) {
   OfflineItem item1(ContentId("1", "A"));
   OfflineItem item2(ContentId("2", "B"));
 
-  EXPECT_CALL(observer1, OnItemUpdated(item1)).Times(1);
-  EXPECT_CALL(observer1, OnItemUpdated(item2)).Times(1);
-  EXPECT_CALL(observer2, OnItemUpdated(item1)).Times(1);
-  EXPECT_CALL(observer2, OnItemUpdated(item2)).Times(1);
-  provider1.NotifyOnItemUpdated(item1);
-  provider2.NotifyOnItemUpdated(item2);
+  EXPECT_CALL(observer1, OnItemUpdated(item1, Eq(base::nullopt))).Times(1);
+  EXPECT_CALL(observer1, OnItemUpdated(item2, Eq(base::nullopt))).Times(1);
+  EXPECT_CALL(observer2, OnItemUpdated(item1, Eq(base::nullopt))).Times(1);
+  EXPECT_CALL(observer2, OnItemUpdated(item2, Eq(base::nullopt))).Times(1);
+  provider1.NotifyOnItemUpdated(item1, base::nullopt);
+  provider2.NotifyOnItemUpdated(item2, base::nullopt);
 }
 
 TEST_F(OfflineContentAggregatorTest, ProviderRemovedDuringCallbackFlush) {

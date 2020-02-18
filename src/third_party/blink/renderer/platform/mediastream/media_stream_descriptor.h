@@ -35,7 +35,7 @@
 #include <memory>
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -87,10 +87,16 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
   MediaStreamComponent* AudioComponent(unsigned index) const {
     return audio_components_[index].Get();
   }
+  const HeapVector<Member<MediaStreamComponent>>& AudioComponents() const {
+    return audio_components_;
+  }
 
   unsigned NumberOfVideoComponents() const { return video_components_.size(); }
   MediaStreamComponent* VideoComponent(unsigned index) const {
     return video_components_[index].Get();
+  }
+  const HeapVector<Member<MediaStreamComponent>>& VideoComponents() const {
+    return video_components_;
   }
 
   void AddComponent(MediaStreamComponent*);
@@ -105,10 +111,6 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
   void AddObserver(WebMediaStreamObserver*);
   void RemoveObserver(WebMediaStreamObserver*);
 
-  // |m_extraData| may hold pointers to GC objects, and it may touch them in
-  // destruction.  So this class is eagerly finalized to finalize |m_extraData|
-  // promptly.
-  EAGERLY_FINALIZE();
   void Trace(blink::Visitor*);
 
  private:

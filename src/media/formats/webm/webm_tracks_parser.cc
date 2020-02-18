@@ -229,8 +229,9 @@ bool WebMTracksParser::OnListEnd(int id) {
         }
         media_tracks_->AddAudioTrack(
             audio_decoder_config_,
-            static_cast<StreamParser::TrackId>(track_num_), "main", track_name_,
-            track_language_);
+            static_cast<StreamParser::TrackId>(track_num_),
+            MediaTrack::Kind("main"), MediaTrack::Label(track_name_),
+            MediaTrack::Language(track_language_));
       } else {
         MEDIA_LOG(DEBUG, media_log_) << "Ignoring audio track " << track_num_;
         ignored_tracks_.insert(track_num_);
@@ -256,8 +257,9 @@ bool WebMTracksParser::OnListEnd(int id) {
         }
         media_tracks_->AddVideoTrack(
             video_decoder_config_,
-            static_cast<StreamParser::TrackId>(track_num_), "main", track_name_,
-            track_language_);
+            static_cast<StreamParser::TrackId>(track_num_),
+            MediaTrack::Kind("main"), MediaTrack::Label(track_name_),
+            MediaTrack::Language(track_language_));
       } else {
         MEDIA_LOG(DEBUG, media_log_) << "Ignoring video track " << track_num_;
         ignored_tracks_.insert(track_num_);

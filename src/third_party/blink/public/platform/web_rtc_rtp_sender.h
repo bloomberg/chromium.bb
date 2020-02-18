@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_SENDER_H_
 
 #include <memory>
-#include <vector>
 
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
@@ -51,7 +50,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSender {
                              webrtc::DegradationPreference,
                              WebRTCVoidRequest) = 0;
   virtual void GetStats(blink::WebRTCStatsReportCallback,
-                        const std::vector<webrtc::NonStandardGroupId>&) = 0;
+                        const WebVector<webrtc::NonStandardGroupId>&) = 0;
   virtual void SetStreams(const WebVector<WebString>& stream_ids) = 0;
 };
 

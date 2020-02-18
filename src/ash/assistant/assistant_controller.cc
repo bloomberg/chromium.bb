@@ -7,16 +7,18 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/cpp/android_intent_helper.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/new_window_delegate.h"
+#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/utility/screenshot_controller.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -36,12 +38,13 @@ AssistantController::AssistantController()
       assistant_cache_controller_(this),
       assistant_interaction_controller_(this),
       assistant_notification_controller_(this),
+      assistant_prefs_controller_(),
       assistant_screen_context_controller_(this),
       assistant_setup_controller_(this),
       assistant_ui_controller_(this),
       view_delegate_(this),
       weak_factory_(this) {
-  Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
+  VoiceInteractionController::Get()->AddLocalObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
   AddObserver(this);
 
@@ -53,7 +56,7 @@ AssistantController::~AssistantController() {
 
   chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
-  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
+  VoiceInteractionController::Get()->RemoveLocalObserver(this);
   RemoveObserver(this);
 }
 
@@ -102,11 +105,6 @@ void AssistantController::SetAssistant(
     observer.OnAssistantReady();
 }
 
-void AssistantController::OpenAssistantSettings() {
-  // Launch Assistant settings via deeplink.
-  OpenUrl(assistant::util::CreateAssistantSettingsDeepLink());
-}
-
 void AssistantController::SendAssistantFeedback(
     bool assistant_debug_info_allowed,
     const std::string& feedback_description,
@@ -120,16 +118,10 @@ void AssistantController::SendAssistantFeedback(
   assistant_->SendAssistantFeedback(std::move(assistant_feedback));
 }
 
-void AssistantController::SetDeviceActions(
-    chromeos::assistant::mojom::DeviceActionsPtr device_actions) {
-  device_actions_ = std::move(device_actions);
-}
-
 void AssistantController::StartSpeakerIdEnrollmentFlow() {
-  mojom::ConsentStatus consent_status =
-      Shell::Get()->voice_interaction_controller()->consent_status().value_or(
-          mojom::ConsentStatus::kUnknown);
-  if (consent_status == mojom::ConsentStatus::kActivityControlAccepted) {
+  if (prefs_controller()->prefs()->GetInteger(
+          chromeos::assistant::prefs::kAssistantConsentStatus) ==
+      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted) {
     // If activity control has been accepted, launch the enrollment flow.
     setup_controller()->StartOnboarding(false /* relaunch */,
                                         FlowType::kSpeakerIdEnrollment);
@@ -177,7 +169,7 @@ void AssistantController::OnDeepLinkReceived(
     case DeepLinkType::kScreenshot:
       // We close the UI before taking the screenshot as it's probably not the
       // user's intention to include the Assistant in the picture.
-      assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
+      assistant_ui_controller_.CloseUi(AssistantExitPoint::kScreenshot);
       Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
       break;
     case DeepLinkType::kTaskManager:
@@ -238,9 +230,12 @@ void AssistantController::OnAccessibilityStatusChanged() {
       Shell::Get()->accessibility_controller()->spoken_feedback_enabled());
 }
 
-void AssistantController::OpenUrl(const GURL& url, bool from_server) {
-  if (url.SchemeIs(kAndroidIntentScheme) && device_actions_) {
-    device_actions_->LaunchAndroidIntent(url.spec());
+void AssistantController::OpenUrl(const GURL& url,
+                                  bool in_background,
+                                  bool from_server) {
+  auto* android_helper = AndroidIntentHelper::GetInstance();
+  if (url.SchemeIs(kAndroidIntentScheme) && android_helper) {
+    android_helper->LaunchAndroidIntent(url.spec());
     return;
   }
 
@@ -251,10 +246,14 @@ void AssistantController::OpenUrl(const GURL& url, bool from_server) {
 
   // Give observers an opportunity to perform any necessary handling before we
   // open the specified |url| in a new browser tab.
-  NotifyOpeningUrl(url, from_server);
+  NotifyOpeningUrl(url, in_background, from_server);
 
   // The new tab should be opened with a user activation since the user
-  // interacted with the Assistant to open the url.
+  // interacted with the Assistant to open the url. |in_background| describes
+  // the relationship between |url| and Assistant UI, not the browser. As such,
+  // the browser will always be instructed to open |url| in a new browser tab
+  // and Assistant UI state will be updated downstream to respect
+  // |in_background|.
   NewWindowDelegate::GetInstance()->NewTabWithUrl(
       url, /*from_user_interaction=*/true);
   NotifyUrlOpened(url, from_server);
@@ -312,9 +311,11 @@ void AssistantController::NotifyDeepLinkReceived(const GURL& deep_link) {
   view_delegate_.NotifyDeepLinkReceived(type, params);
 }
 
-void AssistantController::NotifyOpeningUrl(const GURL& url, bool from_server) {
+void AssistantController::NotifyOpeningUrl(const GURL& url,
+                                           bool in_background,
+                                           bool from_server) {
   for (AssistantControllerObserver& observer : observers_)
-    observer.OnOpeningUrl(url, from_server);
+    observer.OnOpeningUrl(url, in_background, from_server);
 }
 
 void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {

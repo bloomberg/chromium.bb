@@ -60,7 +60,7 @@ class InstanceID {
       base::OnceCallback<void(const std::string& token, Result result)>;
   using ValidateTokenCallback = base::Callback<void(bool is_valid)>;
   using GetEncryptionInfoCallback =
-      base::Callback<void(const std::string&, const std::string&)>;
+      base::OnceCallback<void(std::string p256dh, std::string auth_secret)>;
   using DeleteTokenCallback = base::OnceCallback<void(Result result)>;
   using DeleteIDCallback = base::OnceCallback<void(Result result)>;
 
@@ -116,16 +116,16 @@ class InstanceID {
   // created.
   // |authorized_entity|: the authorized entity passed when obtaining the token.
   // |callback|: to be called once the asynchronous operation is done.
-  void GetEncryptionInfo(const std::string& authorized_entity,
-                         const GetEncryptionInfoCallback& callback);
+  virtual void GetEncryptionInfo(const std::string& authorized_entity,
+                                 GetEncryptionInfoCallback callback);
 
   // Revokes a granted token.
   // |authorized_entity|: the authorized entity passed when obtaining the token.
   // |scope|: the scope that was passed when obtaining the token.
   // |callback|: to be called once the asynchronous operation is done.
-  void DeleteToken(const std::string& authorized_entity,
-                   const std::string& scope,
-                   DeleteTokenCallback callback);
+  virtual void DeleteToken(const std::string& authorized_entity,
+                           const std::string& scope,
+                           DeleteTokenCallback callback);
 
   // Resets the app instance identifier and revokes all tokens associated with
   // it.
@@ -159,7 +159,7 @@ class InstanceID {
   std::string app_id_;
   TokenRefreshCallback token_refresh_callback_;
 
-  base::WeakPtrFactory<InstanceID> weak_ptr_factory_;
+  base::WeakPtrFactory<InstanceID> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InstanceID);
 };

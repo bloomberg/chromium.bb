@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/net/aw_proxy_config_monitor.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
+#include "android_webview/native_jni/AwProxyController_jni.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -13,7 +15,6 @@
 #include "base/feature_list.h"
 #include "base/message_loop/message_loop_current.h"
 #include "content/public/browser/browser_thread.h"
-#include "jni/AwProxyController_jni.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "services/network/public/cpp/features.h"
 
@@ -81,7 +82,7 @@ ScopedJavaLocalRef<jstring> JNI_AwProxyController_SetProxyOverride(
                        ScopedJavaGlobalRef<jobject>(env, executor)));
   } else {
     result =
-        AwBrowserContext::GetDefault()
+        AwBrowserProcess::GetInstance()
             ->GetAwURLRequestContext()
             ->SetProxyOverride(
                 proxy_rules, bypass_rules,
@@ -104,7 +105,7 @@ void JNI_AwProxyController_ClearProxyOverride(
         ScopedJavaGlobalRef<jobject>(env, listener),
         ScopedJavaGlobalRef<jobject>(env, executor)));
   } else {
-    AwBrowserContext::GetDefault()
+    AwBrowserProcess::GetInstance()
         ->GetAwURLRequestContext()
         ->ClearProxyOverride(base::BindOnce(
             &ProxyOverrideChanged, ScopedJavaGlobalRef<jobject>(env, obj),

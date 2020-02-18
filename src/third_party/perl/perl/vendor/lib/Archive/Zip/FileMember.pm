@@ -4,7 +4,7 @@ use strict;
 use vars qw( $VERSION @ISA );
 
 BEGIN {
-    $VERSION = '1.30';
+    $VERSION = '1.64';
     @ISA     = qw ( Archive::Zip::Member );
 }
 
@@ -28,16 +28,16 @@ sub _usesFileNamed {
 sub fh {
     my $self = shift;
     $self->_openFile()
-      if !defined( $self->{'fh'} ) || !$self->{'fh'}->opened();
+      if !defined($self->{'fh'}) || !$self->{'fh'}->opened();
     return $self->{'fh'};
 }
 
 # opens my file handle from my file name
 sub _openFile {
     my $self = shift;
-    my ( $status, $fh ) = _newFileHandle( $self->externalFileName(), 'r' );
-    if ( !$status ) {
-        _ioError( "Can't open", $self->externalFileName() );
+    my ($status, $fh) = _newFileHandle($self->externalFileName(), 'r');
+    if (!$status) {
+        _ioError("Can't open", $self->externalFileName());
         return undef;
     }
     $self->{'fh'} = $fh;
@@ -56,8 +56,8 @@ sub _become {
     my $self     = shift;
     my $newClass = shift;
     return $self if ref($self) eq $newClass;
-    delete( $self->{'externalFileName'} );
-    delete( $self->{'fh'} );
+    delete($self->{'externalFileName'});
+    delete($self->{'fh'});
     return $self->SUPER::_become($newClass);
 }
 

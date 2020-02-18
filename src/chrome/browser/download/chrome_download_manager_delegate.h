@@ -118,12 +118,13 @@ class ChromeDownloadManagerDelegate
   void CheckForFileExistence(
       download::DownloadItem* download,
       content::CheckForFileExistenceCallback callback) override;
-  std::string ApplicationClientIdForFileScanning() const override;
+  std::string ApplicationClientIdForFileScanning() override;
   void CheckDownloadAllowed(
       const content::ResourceRequestInfo::WebContentsGetter&
           web_contents_getter,
       const GURL& url,
       const std::string& request_method,
+      base::Optional<url::Origin> request_initiator,
       content::CheckDownloadAllowedCallback check_download_allowed_cb) override;
 
   // Opens a download using the platform handler. DownloadItem::OpenDownload,
@@ -295,7 +296,7 @@ class ChromeDownloadManagerDelegate
 
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<ChromeDownloadManagerDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<ChromeDownloadManagerDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDownloadManagerDelegate);
 };

@@ -46,7 +46,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -69,13 +69,12 @@ class FragmentAnchor;
 class Frame;
 class FrameViewAutoSizeInfo;
 class JSONObject;
-class JankTracker;
 class KURL;
 class LayoutAnalyzer;
 class LayoutBox;
 class LayoutEmbeddedObject;
 class LayoutObject;
-class LayoutRect;
+class LayoutShiftTracker;
 class LayoutSVGRoot;
 class LayoutView;
 class LocalFrame;
@@ -103,6 +102,16 @@ struct WebScrollIntoViewParams;
 typedef uint64_t DOMTimeStamp;
 using LayerTreeFlags = unsigned;
 using MainThreadScrollingReasons = uint32_t;
+
+struct LifecycleData {
+  LifecycleData() {}
+  LifecycleData(base::TimeTicks start_time_arg, int count_arg)
+      : start_time(start_time_arg), count(count_arg) {}
+  base::TimeTicks start_time;
+  // The number of lifecycles that have occcurred since the first one,
+  // inclusive, on a given LocalFrameRoot.
+  unsigned count = 0;
+};
 
 class CORE_EXPORT LocalFrameView final
     : public GarbageCollectedFinalized<LocalFrameView>,
@@ -359,6 +368,14 @@ class CORE_EXPORT LocalFrameView final
   // desired state.
   bool UpdateLifecycleToLayoutClean();
 
+  bool InLifecycleUpdate() { return in_lifecycle_update_; }
+  void SetInLifecycleUpdateForTest(bool val) { in_lifecycle_update_ = val; }
+  void SetLifecycleDataForTesting(const LifecycleData& lifecycle_data) {
+    lifecycle_data_ = lifecycle_data;
+  }
+
+  const LifecycleData& CurrentLifecycleData() const { return lifecycle_data_; }
+
   // This for doing work that needs to run synchronously at the end of lifecyle
   // updates, but needs to happen outside of the lifecycle code. It's OK to
   // schedule another animation frame here, but the layout tree should not be
@@ -399,12 +416,8 @@ class CORE_EXPORT LocalFrameView final
   IntRect ConvertToLayoutObject(const LayoutObject&, const IntRect&) const;
   IntPoint ConvertFromLayoutObject(const LayoutObject&, const IntPoint&) const;
   IntPoint ConvertToLayoutObject(const LayoutObject&, const IntPoint&) const;
-  LayoutPoint ConvertFromLayoutObject(const LayoutObject&,
-                                      const LayoutPoint&) const;
   PhysicalOffset ConvertFromLayoutObject(const LayoutObject&,
                                          const PhysicalOffset&) const;
-  LayoutPoint ConvertToLayoutObject(const LayoutObject&,
-                                    const LayoutPoint&) const;
   PhysicalOffset ConvertToLayoutObject(const LayoutObject&,
                                        const PhysicalOffset&) const;
   FloatPoint ConvertToLayoutObject(const LayoutObject&,
@@ -496,7 +509,7 @@ class CORE_EXPORT LocalFrameView final
   IntPoint FrameToViewport(const IntPoint&) const;
   IntPoint ViewportToFrame(const IntPoint&) const;
   FloatPoint ViewportToFrame(const FloatPoint&) const;
-  LayoutPoint ViewportToFrame(const LayoutPoint&) const;
+  PhysicalOffset ViewportToFrame(const PhysicalOffset&) const;
 
   // FIXME: Some external callers expect to get back a rect that's positioned
   // in viewport space, but sized in CSS pixels. This is an artifact of the
@@ -508,19 +521,14 @@ class CORE_EXPORT LocalFrameView final
   IntRect FrameToScreen(const IntRect&) const;
 
   // Converts from/to local frame coordinates to the root frame coordinates.
-  // TODO(wangxianzhu): Remove LayoutPoint/LayoutRect version after all clients
-  // switch to use PhysicalPoint/PhysicalRect.
   IntRect ConvertToRootFrame(const IntRect&) const;
   IntPoint ConvertToRootFrame(const IntPoint&) const;
-  LayoutPoint ConvertToRootFrame(const LayoutPoint&) const;
   PhysicalOffset ConvertToRootFrame(const PhysicalOffset&) const;
   FloatPoint ConvertToRootFrame(const FloatPoint&) const;
-  LayoutRect ConvertToRootFrame(const LayoutRect&) const;
   PhysicalRect ConvertToRootFrame(const PhysicalRect&) const;
   IntRect ConvertFromRootFrame(const IntRect&) const;
   IntPoint ConvertFromRootFrame(const IntPoint&) const;
   FloatPoint ConvertFromRootFrame(const FloatPoint&) const;
-  LayoutPoint ConvertFromRootFrame(const LayoutPoint&) const;
   PhysicalOffset ConvertFromRootFrame(const PhysicalOffset&) const;
   IntPoint ConvertSelfToChild(const EmbeddedContentView&,
                               const IntPoint&) const;
@@ -531,16 +539,12 @@ class CORE_EXPORT LocalFrameView final
   IntPoint DocumentToFrame(const IntPoint&) const;
   FloatPoint DocumentToFrame(const FloatPoint&) const;
   DoublePoint DocumentToFrame(const DoublePoint&) const;
-  LayoutPoint DocumentToFrame(const LayoutPoint&) const;
   PhysicalOffset DocumentToFrame(const PhysicalOffset&) const;
   IntRect DocumentToFrame(const IntRect&) const;
-  LayoutRect DocumentToFrame(const LayoutRect&) const;
   PhysicalRect DocumentToFrame(const PhysicalRect&) const;
   IntPoint FrameToDocument(const IntPoint&) const;
-  LayoutPoint FrameToDocument(const LayoutPoint&) const;
   PhysicalOffset FrameToDocument(const PhysicalOffset&) const;
   IntRect FrameToDocument(const IntRect&) const;
-  LayoutRect FrameToDocument(const LayoutRect&) const;
   PhysicalRect FrameToDocument(const PhysicalRect&) const;
 
   // Normally a LocalFrameView synchronously paints during full lifecycle
@@ -658,7 +662,7 @@ class CORE_EXPORT LocalFrameView final
 
   // When the frame is a local root and not a main frame, any recursive
   // scrolling should continue in the parent process.
-  void ScrollRectToVisibleInRemoteParent(const LayoutRect&,
+  void ScrollRectToVisibleInRemoteParent(const PhysicalRect&,
                                          const WebScrollIntoViewParams&);
 
   PaintArtifactCompositor* GetPaintArtifactCompositorForTesting() {
@@ -685,7 +689,7 @@ class CORE_EXPORT LocalFrameView final
   cc::AnimationHost* GetCompositorAnimationHost() const;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const;
 
-  JankTracker& GetJankTracker() { return *jank_tracker_; }
+  LayoutShiftTracker& GetLayoutShiftTracker() { return *layout_shift_tracker_; }
   PaintTimingDetector& GetPaintTimingDetector() const {
     return *paint_timing_detector_;
   }
@@ -750,8 +754,6 @@ class CORE_EXPORT LocalFrameView final
   void SetupPrintContext();
   void ClearPrintContext();
 
-  void StopDeferringCommits(cc::PaintHoldingCommitTrigger);
-
   // Returns whether the lifecycle was succesfully updated to the
   // target state.
   bool UpdateLifecyclePhases(DocumentLifecycle::LifecycleState target_state,
@@ -772,7 +774,6 @@ class CORE_EXPORT LocalFrameView final
       DocumentLifecycle::LifecycleState target_state);
   void RunPaintLifecyclePhase();
 
-  void PrePaint();
   void PaintTree();
   void UpdateStyleAndLayoutIfNeededRecursive();
 
@@ -792,14 +793,11 @@ class CORE_EXPORT LocalFrameView final
   // transforms into account.
   IntRect ConvertToContainingEmbeddedContentView(const IntRect&) const;
   IntPoint ConvertToContainingEmbeddedContentView(const IntPoint&) const;
-  LayoutPoint ConvertToContainingEmbeddedContentView(const LayoutPoint&) const;
   PhysicalOffset ConvertToContainingEmbeddedContentView(
       const PhysicalOffset&) const;
   FloatPoint ConvertToContainingEmbeddedContentView(const FloatPoint&) const;
   IntRect ConvertFromContainingEmbeddedContentView(const IntRect&) const;
   IntPoint ConvertFromContainingEmbeddedContentView(const IntPoint&) const;
-  LayoutPoint ConvertFromContainingEmbeddedContentView(
-      const LayoutPoint&) const;
   PhysicalOffset ConvertFromContainingEmbeddedContentView(
       const PhysicalOffset&) const;
   FloatPoint ConvertFromContainingEmbeddedContentView(const FloatPoint&) const;
@@ -954,6 +952,13 @@ class CORE_EXPORT LocalFrameView final
   bool needs_forced_compositing_update_;
 
   bool needs_focus_on_fragment_;
+  bool in_lifecycle_update_;
+
+  // True if the frame has deferred commits at least once per document load.
+  // We won't defer again for the same document.
+  bool have_deferred_commits_ = false;
+
+  LifecycleData lifecycle_data_;
 
   IntRect remote_viewport_intersection_;
 
@@ -979,7 +984,7 @@ class CORE_EXPORT LocalFrameView final
 
   scoped_refptr<LocalFrameUkmAggregator> ukm_aggregator_;
   unsigned forced_layout_stack_depth_;
-  TimeTicks forced_layout_start_time_;
+  base::TimeTicks forced_layout_start_time_;
 
   Member<PrintContext> print_context_;
 
@@ -987,10 +992,17 @@ class CORE_EXPORT LocalFrameView final
   size_t paint_frame_count_;
 
   UniqueObjectId unique_id_;
-  std::unique_ptr<JankTracker> jank_tracker_;
+  std::unique_ptr<LayoutShiftTracker> layout_shift_tracker_;
   Member<PaintTimingDetector> paint_timing_detector_;
 
   HeapHashSet<WeakMember<LifecycleNotificationObserver>> lifecycle_observers_;
+
+  // If set, this indicates that the rendering throttling status for the local
+  // root frame has changed. In this scenario, if we have become unthrottled,
+  // this is a no-op since we run paint anyway. However, if we have become
+  // throttled, this will force the lifecycle to reach the paint phase so that
+  // it can clear the painted output.
+  bool need_paint_phase_after_throttling_ = false;
 
 #if DCHECK_IS_ON()
   bool is_updating_descendant_dependent_flags_;

@@ -181,6 +181,19 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
   }
 }
 
+void DrmThread::CreateBufferAsync(gfx::AcceleratedWidget widget,
+                                  const gfx::Size& size,
+                                  gfx::BufferFormat format,
+                                  gfx::BufferUsage usage,
+                                  uint32_t client_flags,
+                                  CreateBufferAsyncCallback callback) {
+  std::unique_ptr<GbmBuffer> buffer;
+  scoped_refptr<DrmFramebuffer> framebuffer;
+  CreateBuffer(widget, size, format, usage, client_flags, &buffer,
+               &framebuffer);
+  std::move(callback).Run(std::move(buffer), std::move(framebuffer));
+}
+
 void DrmThread::CreateBufferFromHandle(
     gfx::AcceleratedWidget widget,
     const gfx::Size& size,
@@ -293,6 +306,11 @@ void DrmThread::CheckOverlayCapabilities(
           screen_manager_->GetWindow(widget)->TestPageFlip(params)));
 }
 
+void DrmThread::GetDeviceCursor(
+    ozone::mojom::DeviceCursorAssociatedRequest request) {
+  cursor_bindings_.AddBinding(this, std::move(request));
+}
+
 void DrmThread::RefreshNativeDisplays(
     base::OnceCallback<void(MovableDisplaySnapshots)> callback) {
   std::move(callback).Run(display_manager_->GetDisplays());
@@ -356,21 +374,6 @@ void DrmThread::SetGammaCorrection(
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
     const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
   display_manager_->SetGammaCorrection(display_id, degamma_lut, gamma_lut);
-}
-
-void DrmThread::StartDrmDevice(StartDrmDeviceCallback callback) {
-  // We currently assume that |Init| always succeeds so return true to indicate
-  // when the DRM thread has completed launching.  In particular, the invocation
-  // of the callback in the client triggers the invocation of DRM thread
-  // readiness observers.
-  std::move(callback).Run(true);
-}
-
-// DrmThread requires a BindingSet instead of a simple Binding because it will
-// be used from multiple threads in multiple processes.
-void DrmThread::AddBindingCursorDevice(
-    ozone::mojom::DeviceCursorRequest request) {
-  cursor_bindings_.AddBinding(this, std::move(request));
 }
 
 void DrmThread::AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request) {

@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1398853756734560583">Maximera</translation>
 <translation id="1409544243779336081">Apprekommendation</translation>
+<translation id="1498028757988366001">Du har sökt efter detta tidigare. Om du raderar <ph name="QUERY" /> från historiken tas förslaget bort från ditt konto på alla enheter.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut och }other{# minuter och }}</translation>
 <translation id="1643823602425662293">Avisering</translation>
 <translation id="169515659049020177">Skift</translation>
@@ -45,13 +46,16 @@
 <translation id="2289052229480071835">Tryck på tryckområdena på skärmen.</translation>
 <translation id="2295140143284145483">Enkät</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/sek</translation>
+<translation id="2388990488038464401">Vill du ringa det här numret från telefonen?</translation>
 <translation id="24452542372838207">Utöka avisering</translation>
 <translation id="2445449901874883781">Använd hög densitet</translation>
+<translation id="2451871130406122810">Skickat till enheten</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
 <translation id="2497284189126895209">Alla filer</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Kalibreringen är slutförd</translation>
 <translation id="252373100621549798">Okänd visning</translation>
+<translation id="2545651323591713692">Snooza</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{om 1 tim}other{om # tim}}</translation>
 <translation id="2583543531130364912">Kalibrera pekskärmen</translation>
 <translation id="2666092431469916601">Överst</translation>
@@ -70,6 +74,7 @@
 <translation id="3183922693828471536">Rulla hit</translation>
 <translation id="3234408098842461169">Nedpil</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dag}other{# dagar}}</translation>
+<translation id="3295886253693811851">Ring från</translation>
 <translation id="335581015389089642">Tal</translation>
 <translation id="3443810440409579745">En flik har tagits emot.</translation>
 <translation id="3479552764303398839">Inte nu</translation>
@@ -95,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 månad sedan}other{# månader sedan}}</translation>
 <translation id="4289300219472526559">Börja tala</translation>
 <translation id="4316910396681052118">ALLA APPAR</translation>
+<translation id="4467014365953759647">Det gick inte att skicka numret</translation>
 <translation id="4588090240171750605">Rulla åt höger</translation>
 <translation id="4690510401873698237">Hyllan längst ned</translation>
 <translation id="4724120544754982507"><ph name="UNREAD_NOTIFICATION_COUNT" /> olästa aviseringar i meddelandecentret</translation>
@@ -111,6 +117,7 @@
 <translation id="5266161281976477809">Utökningstriangel</translation>
 <translation id="5278860589123563674">Det gick inte att skicka</translation>
 <translation id="528468243742722775">Avsluta</translation>
+<translation id="5327567770033251652">aktivera synkronisering</translation>
 <translation id="5329858601952122676">&amp;Ta bort</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> ovanpå <ph name="IN_PLACE_APP" />, om du släpper skapas en mapp.</translation>
 <translation id="5463830097259460683">Emoji och symboler</translation>
@@ -150,6 +157,7 @@
 <translation id="6620110761915583480">Spara fil</translation>
 <translation id="6699343763173986273">Nästa spår</translation>
 <translation id="673773751041746814">Borttagning</translation>
+<translation id="6779314412797872738"><ph name="TROUBLESHOOT_LINK" /> i inställningarna för båda enheterna om du vill skicka ett nummer till Android-telefonen härifrån.</translation>
 <translation id="6786750046913594791">Stäng mappen</translation>
 <translation id="6808150112686056157">Stoppa</translation>
 <translation id="6845383723252244143">Välj mapp</translation>
@@ -168,7 +176,9 @@
 <translation id="7319740667687257810">Översikt, delvy</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{för 1 min sedan}other{för # min sedan}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Kontrollera telefonens anslutning och försök igen</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut kvar}other{# minuter kvar}}</translation>
+<translation id="7430878839542012341">Vill du radera den här sökningen från historiken?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7658239707568436148">Avbryt</translation>
@@ -186,7 +196,6 @@
 <translation id="8144660977431427332">Sökningarna görs med Google Assistent. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autoslutför</translation>
 <translation id="815598010540052116">Rulla nedåt</translation>
-<translation id="8170087467028567933">Om du tar bort förslaget döljs det i ditt konto på alla enheter.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Page Down</translation>
 <translation id="8245914219290430011">Flik</translation>
@@ -197,7 +206,6 @@
 <translation id="838869780401515933">kryssa för</translation>
 <translation id="8393700583063109961">Skicka meddelande</translation>
 <translation id="8394908167088220973">Spela upp/Pausa</translation>
-<translation id="8420205633584771378">Ska förslaget tas bort?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 år}other{# år}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" />-fil (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Hyllan visas alltid</translation>

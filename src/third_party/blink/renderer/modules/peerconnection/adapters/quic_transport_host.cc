@@ -13,8 +13,8 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_transport_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -77,8 +77,7 @@ void QuicTransportHost::CreateStream(
 
   P2PQuicStream* p2p_stream = quic_transport_->CreateStream();
   stream_host->Initialize(this, p2p_stream);
-  stream_hosts_.insert(
-      std::make_pair(stream_host.get(), std::move(stream_host)));
+  stream_hosts_.insert(stream_host.get(), std::move(stream_host));
 }
 
 void QuicTransportHost::SendDatagram(Vector<uint8_t> datagram) {
@@ -140,8 +139,7 @@ void QuicTransportHost::OnStream(P2PQuicStream* p2p_stream) {
 
   stream_host->Initialize(this, p2p_stream);
 
-  stream_hosts_.insert(
-      std::make_pair(stream_host.get(), std::move(stream_host)));
+  stream_hosts_.insert(stream_host.get(), std::move(stream_host));
 
   PostCrossThreadTask(
       *proxy_thread(), FROM_HERE,

@@ -113,6 +113,7 @@
 <translation id="2500374554657206846">Opțiuni pentru Salvarea parolei</translation>
 <translation id="2523363575747517183">Acest site încearcă în mod repetat să deschidă altă aplicație.</translation>
 <translation id="2529021024822217800">Deschide-le pe toate</translation>
+<translation id="2562041823070056534">Se trimite la <ph name="DEVICE_NAME" />...</translation>
 <translation id="2570206273416014374">Trimite anumite cookie-uri și căutări din bara de adrese și din caseta de căutare în motorul de căutare prestabilit.</translation>
 <translation id="2572712655377361602">O politică a dispozitivului a blocat accesul la fotografii</translation>
 <translation id="2578571896248130439">Trimite pagina web</translation>
@@ -150,6 +151,7 @@
 <translation id="2933759065870693102">Lanterna</translation>
 <translation id="2958718410589002129">Parole</translation>
 <translation id="2969979262385602596">Nu te-ai conectat. Încearcă din nou mai târziu.</translation>
+<translation id="298306318844797842">Adaugă o metodă de plată...</translation>
 <translation id="2989805286512600854">Deschideți într-o filă nouă</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="3112556859945124369">Marchează…</translation>
@@ -313,6 +315,7 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 <translation id="5556459405103347317">Reîncarcă</translation>
 <translation id="5614553682702429503">Salvezi parola?</translation>
 <translation id="5626245204502895507">Momentan, fișierul nu a putut fi descărcat.</translation>
+<translation id="5631164295104953411">Adaugă o metodă de plată</translation>
 <translation id="5659593005791499971">Adresă de e-mail</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versiunea <ph name="PRODUCT_VERSION" /></translation>
@@ -464,6 +467,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7772032839648071052">Confirmă expresia de acces</translation>
 <translation id="7781829728241885113">Ieri</translation>
 <translation id="778855399387580014">Începe o căutare într-o filă Chrome nouă.</translation>
+<translation id="7791543448312431591">Adaugă</translation>
 <translation id="780301667611848630">Nu, mulțumesc</translation>
 <translation id="7840771868269352570">Elementele selectate vor fi eliminate.</translation>
 <translation id="7856733331829174190">Nu s-a putut descărca</translation>
@@ -477,6 +481,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7961015016161918242">Niciodată</translation>
 <translation id="7971521879845308059">Blochează pop-upurile</translation>
 <translation id="7982789257301363584">Rețea</translation>
+<translation id="8007420562015504427">Căutare incognito</translation>
 <translation id="8019783059653722575">Astfel, poți să salvezi și să încarci fotografiile.</translation>
 <translation id="802154636333426148">Descărcarea nu a reușit</translation>
 <translation id="8023878949384262191">Extinde secțiunea.</translation>
@@ -491,6 +496,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="8225985093977202398">Imaginile și fișierele memorate în cache</translation>
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8281781826761538115">Prestabilit – <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8319076807703933069">Căutare nouă</translation>
 <translation id="8328777765163860529">Închideți toate</translation>
 <translation id="8381750437846184350">Stabilește cum poate folosi Google istoricul de navigare pentru a personaliza Căutarea, anunțurile și alte servicii Google</translation>
 <translation id="8407669440184693619">Nu s-au găsit parole pentru acest site</translation>
@@ -507,7 +513,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="8532105204136943229">An expirare</translation>
 <translation id="8534481786647257214">S-a postat pe Google+.</translation>
 <translation id="8548878600947630424">Găsește în pagină...</translation>
-<translation id="8583866649835978847">Trimite <ph name="TITLE" /> la unul dintre dispozitivele tale.</translation>
 <translation id="8605219856220328675">Închide fila.</translation>
 <translation id="8620640915598389714">Editează</translation>
 <translation id="8636825310635137004">Pentru a accesa filele de pe alte dispozitive, activează sincronizarea.</translation>
@@ -530,7 +535,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="8976382372951310360">Ajutor</translation>
 <translation id="8981454092730389528">Opțiuni privind activitatea Google</translation>
 <translation id="8985320356172329008">Conectat(ă) la Google ca</translation>
-<translation id="9016406938567631235">Se trimite...</translation>
 <translation id="902659348151742535">Google poate folosi istoricul de navigare pentru a personaliza Căutarea, anunțurile și alte servicii Google.</translation>
 <translation id="9034759925968272072">Nu vei fi deconectat(ă) de la Contul Google. Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Lățime de bandă</translation>

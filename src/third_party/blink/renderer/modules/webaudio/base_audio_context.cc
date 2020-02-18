@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 
 #include "build/build_config.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
@@ -40,13 +40,13 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_listener.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_messaging_proxy.h"
-#include "third_party/blink/renderer/modules/webaudio/base_audio_context_tracker.h"
 #include "third_party/blink/renderer/modules/webaudio/biquad_filter_node.h"
 #include "third_party/blink/renderer/modules/webaudio/channel_merger_node.h"
 #include "third_party/blink/renderer/modules/webaudio/channel_splitter_node.h"
@@ -72,11 +72,11 @@
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/uuid.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 #include <algorithm>
 
@@ -96,7 +96,7 @@ BaseAudioContext::BaseAudioContext(Document* document,
       destination_node_(nullptr),
       is_resolving_resume_promises_(false),
       task_runner_(document->GetTaskRunner(TaskType::kInternalMedia)),
-      uuid_(CreateCanonicalUUIDString()),
+      uuid_(WTF::CreateCanonicalUUIDString()),
       is_cleared_(false),
       has_posted_cleanup_task_(false),
       deferred_task_handler_(DeferredTaskHandler::Create(
@@ -138,8 +138,8 @@ void BaseAudioContext::Initialize() {
     // only create the listener if the destination node exists.
     listener_ = MakeGarbageCollected<AudioListener>(*this);
 
-    if (Tracker())
-      Tracker()->DidCreateBaseAudioContext(this);
+    if (GraphTracer())
+      GraphTracer()->DidCreateBaseAudioContext(this);
 
     FFTFrame::Initialize(sampleRate());
   }
@@ -162,8 +162,8 @@ void BaseAudioContext::Uninitialize() {
   // BaseAudioContextTracker needs a valid AudioDestinationNode because it
   // may use destination-related data (e.g. sample rate and channel count)
   // to populate the devtool protocol object.
-  if (Tracker())
-    Tracker()->DidDestroyBaseAudioContext(this);
+  if (GraphTracer())
+    GraphTracer()->DidDestroyBaseAudioContext(this);
 
   // This stops the audio thread and all audio rendering.
   if (destination_node_)
@@ -337,9 +337,8 @@ ScriptPromise BaseAudioContext::decodeAudioData(
 
     decode_audio_resolvers_.insert(resolver);
 
-    audio_decoder_.DecodeAsync(
-        audio, sampleRate(), ToV8PersistentCallbackFunction(success_callback),
-        ToV8PersistentCallbackFunction(error_callback), resolver, this);
+    audio_decoder_.DecodeAsync(audio, sampleRate(), success_callback,
+                               error_callback, resolver, this);
   } else {
     // If audioData is already detached (neutered) we need to reject the
     // promise with an error.
@@ -358,9 +357,14 @@ ScriptPromise BaseAudioContext::decodeAudioData(
 void BaseAudioContext::HandleDecodeAudioData(
     AudioBuffer* audio_buffer,
     ScriptPromiseResolver* resolver,
-    V8PersistentCallbackFunction<V8DecodeSuccessCallback>* success_callback,
-    V8PersistentCallbackFunction<V8DecodeErrorCallback>* error_callback) {
+    V8DecodeSuccessCallback* success_callback,
+    V8DecodeErrorCallback* error_callback) {
   DCHECK(IsMainThread());
+
+  if (!GetExecutionContext()) {
+    // Nothing to do if the execution context is gone.
+    return;
+  }
 
   if (audio_buffer) {
     // Resolve promise successfully and run the success callback
@@ -651,8 +655,8 @@ void BaseAudioContext::SetContextState(AudioContextState new_state) {
         ->PostTask(FROM_HERE, WTF::Bind(&BaseAudioContext::NotifyStateChange,
                                         WrapPersistent(this)));
 
-    if (Tracker())
-      Tracker()->DidChangeBaseAudioContext(this);
+    if (GraphTracer())
+      GraphTracer()->DidChangeBaseAudioContext(this);
   }
 }
 
@@ -887,8 +891,8 @@ int32_t BaseAudioContext::CallbackBufferSize() {
   return destination_handler.GetCallbackBufferSize();
 }
 
-BaseAudioContextTracker* BaseAudioContext::Tracker() {
-  return BaseAudioContextTracker::FromDocument(*GetDocument());
+AudioGraphTracer* BaseAudioContext::GraphTracer() {
+  return AudioGraphTracer::FromDocument(*GetDocument());
 }
 
 }  // namespace blink

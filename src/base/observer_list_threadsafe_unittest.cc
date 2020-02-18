@@ -75,13 +75,12 @@ class AddRemoveThread : public Foo {
  public:
   AddRemoveThread(ObserverListThreadSafe<Foo>* list, bool notify)
       : list_(list),
-        task_runner_(CreateSingleThreadTaskRunnerWithTraits(
-            TaskTraits(),
+        task_runner_(CreateSingleThreadTaskRunner(
+            TaskTraits(ThreadPool()),
             SingleThreadTaskRunnerThreadMode::DEDICATED)),
         in_list_(false),
         start_(Time::Now()),
-        do_notifies_(notify),
-        weak_factory_(this) {
+        do_notifies_(notify) {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&AddRemoveThread::AddTask, weak_factory_.GetWeakPtr()));
@@ -132,7 +131,7 @@ class AddRemoveThread : public Foo {
 
   bool do_notifies_;    // Whether these threads should do notifications.
 
-  base::WeakPtrFactory<AddRemoveThread> weak_factory_;
+  base::WeakPtrFactory<AddRemoveThread> weak_factory_{this};
 };
 
 }  // namespace
@@ -375,8 +374,8 @@ class SequenceVerificationObserver : public Foo {
 TEST(ObserverListThreadSafeTest, NotificationOnValidSequence) {
   test::ScopedTaskEnvironment scoped_task_environment;
 
-  auto task_runner_1 = CreateSequencedTaskRunnerWithTraits(TaskTraits());
-  auto task_runner_2 = CreateSequencedTaskRunnerWithTraits(TaskTraits());
+  auto task_runner_1 = CreateSequencedTaskRunner(TaskTraits(ThreadPool()));
+  auto task_runner_2 = CreateSequencedTaskRunner(TaskTraits(ThreadPool()));
 
   auto observer_list = MakeRefCounted<ObserverListThreadSafe<Foo>>();
 
@@ -463,7 +462,7 @@ TEST(ObserverListThreadSafeTest, RemoveWhileNotificationIsRunning) {
   // ThreadPool can safely use |barrier|.
   test::ScopedTaskEnvironment scoped_task_environment;
 
-  CreateSequencedTaskRunnerWithTraits({MayBlock()})
+  CreateSequencedTaskRunner({ThreadPool(), MayBlock()})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&ObserverListThreadSafe<Foo>::AddObserver,
                                 observer_list, Unretained(&observer)));

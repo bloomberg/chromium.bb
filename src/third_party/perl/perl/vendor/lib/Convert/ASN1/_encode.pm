@@ -4,8 +4,11 @@
 
 package Convert::ASN1;
 {
-  $Convert::ASN1::VERSION = '0.23';
+  $Convert::ASN1::VERSION = '0.27';
 }
+
+use strict;
+use warnings;
 
 BEGIN {
   unless (CHECK_UTF8) {
@@ -29,6 +32,7 @@ my @encode = (
   \&_enc_object_id,
   \&_enc_real,
   \&_enc_sequence,
+  \&_enc_sequence, # EXPLICIT is the same encoding as sequence
   \&_enc_sequence, # SET is the same encoding as sequence
   \&_enc_time,
   \&_enc_time,
@@ -88,7 +92,7 @@ sub _enc_integer {
     my $os = i2osp($_[3], ref($_[3]) || $_[0]->{encode_bigint} || 'Math::BigInt');
     my $len = length $os;
     my $msb = (vec($os, 0, 8) & 0x80) ? 0 : 255;
-    $len++, $os = chr($msb) . $os if $msb xor $_[3] > 0;
+    $len++, $os = pack("C",$msb) . $os if $msb xor $_[3] > 0;
     $_[4] .= asn_encode_length($len);
     $_[4] .= $os;
   }
@@ -120,15 +124,15 @@ sub _enc_bitstring {
     my $less = (8 - ($_[3]->[1] & 7)) & 7;
     my $len = ($_[3]->[1] + 7) >> 3;
     $_[4] .= asn_encode_length(1+$len);
-    $_[4] .= chr($less);
+    $_[4] .= pack("C",$less);
     $_[4] .= substr($$vref, 0, $len);
     if ($less && $len) {
-      substr($_[4],-1) &= chr((0xff << $less) & 0xff);
+      substr($_[4],-1) &= pack("C",(0xff << $less) & 0xff);
     }
   }
   else {
     $_[4] .= asn_encode_length(1+length $$vref);
-    $_[4] .= chr(0);
+    $_[4] .= pack("C",0);
     $_[4] .= $$vref;
   }
 }
@@ -154,7 +158,7 @@ sub _enc_null {
 # 0      1    2       3     4     5      6
 # $optn, $op, $stash, $var, $buf, $loop, $path
 
-  $_[4] .= chr(0);
+  $_[4] .= pack("C",0);
 }
 
 
@@ -186,7 +190,7 @@ sub _enc_real {
 
   # Zero
   unless ($_[3]) {
-    $_[4] .= chr(0);
+    $_[4] .= pack("C",0);
     return;
   }
 
@@ -207,7 +211,7 @@ sub _enc_real {
   if (exists $_[0]->{'encode_real'} && $_[0]->{'encode_real'} ne 'binary') {
     my $tmp = sprintf("%g",$_[3]);
     $_[4] .= asn_encode_length(1+length $tmp);
-    $_[4] .= chr(1); # NR1?
+    $_[4] .= pack("C",1); # NR1?
     $_[4] .= $tmp;
     return;
   }
@@ -224,7 +228,7 @@ sub _enc_real {
 
   while($mantissa > 0.0) {
     ($mantissa, my $int) = POSIX::modf($mantissa * (1<<8));
-    $eMant .= chr($int);
+    $eMant .= pack("C",$int);
   }
   $exponent -= 8 * length $eMant;
 
@@ -241,7 +245,7 @@ sub _enc_real {
   }
 
   $_[4] .= asn_encode_length(1 + length($eMant) + length($eExp));
-  $_[4] .= chr($first);
+  $_[4] .= pack("C",$first);
   $_[4] .= $eExp;
   $_[4] .= $eMant;
 }
@@ -304,6 +308,7 @@ sub _enc_time {
     return;
   }
 
+  my $time;
   my @time;
   my $offset;
   my $isgen = $_[1]->[cTYPE] == opGTIME;
@@ -384,6 +389,7 @@ sub _enc_choice {
 
   my $stash = defined($_[3]) ? $_[3] : $_[2];
   for my $op (@{$_[1]->[cCHILD]}) {
+    next if $op->[cTYPE] == opEXTENSIONS;
     my $var = defined $op->[cVAR] ? $op->[cVAR] : $op->[cCHILD]->[0]->[cVAR];
 
     if (exists $stash->{$var}) {

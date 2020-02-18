@@ -11,10 +11,10 @@
 #include "base/values.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/signatures_util.h"
-#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -88,7 +88,7 @@ std::string FormSignatureToDebugString(autofill::FormSignature form_signature) {
 }  // namespace
 
 BrowserSavePasswordProgressLogger::BrowserSavePasswordProgressLogger(
-    const LogManager* log_manager)
+    const autofill::LogManager* log_manager)
     : log_manager_(log_manager) {
   DCHECK(log_manager_);
 }
@@ -213,7 +213,7 @@ void BrowserSavePasswordProgressLogger::LogString(StringID label,
 }
 
 void BrowserSavePasswordProgressLogger::LogSuccessfulSubmissionIndicatorEvent(
-    autofill::SubmissionIndicatorEvent event) {
+    autofill::mojom::SubmissionIndicatorEvent event) {
   std::ostringstream submission_event_string_stream;
   submission_event_string_stream << event;
   std::string message =
@@ -268,7 +268,7 @@ void BrowserSavePasswordProgressLogger::LogFormData(
 }
 
 void BrowserSavePasswordProgressLogger::SendLog(const std::string& log) {
-  log_manager_->LogSavePasswordProgress(log);
+  log_manager_->LogTextMessage(log);
 }
 
 }  // namespace password_manager

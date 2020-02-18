@@ -36,20 +36,6 @@ const int kMaxChildEntryBits = 12;
 // Sparse entry children have maximum size of 4KB.
 const int kMaxChildEntrySize = 1 << kMaxChildEntryBits;
 
-// This enum is used for histograms, so only append to the end.
-enum MemEntryWriteResult {
-  MEM_ENTRY_WRITE_RESULT_SUCCESS = 0,
-  MEM_ENTRY_WRITE_RESULT_INVALID_ARGUMENT = 1,
-  MEM_ENTRY_WRITE_RESULT_OVER_MAX_ENTRY_SIZE = 2,
-  MEM_ENTRY_WRITE_RESULT_EXCEEDED_CACHE_STORAGE_SIZE = 3,
-  MEM_ENTRY_WRITE_RESULT_MAX = 4,
-};
-
-void RecordWriteResult(MemEntryWriteResult result) {
-  UMA_HISTOGRAM_ENUMERATION("MemCache.WriteResult", result,
-                            MEM_ENTRY_WRITE_RESULT_MAX);
-}
-
 // Convert global offset to child index.
 int64_t ToChildIndex(int64_t offset) {
   return offset >> kMaxChildEntryBits;
@@ -70,9 +56,7 @@ std::string GenerateChildName(const std::string& base_name, int64_t child_id) {
 
 // Returns NetLog parameters for the creation of a MemEntryImpl. A separate
 // function is needed because child entries don't store their key().
-base::Value NetLogEntryCreationCallback(
-    const MemEntryImpl* entry,
-    net::NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogEntryCreationParams(const MemEntryImpl* entry) {
   base::Value dict(base::Value::Type::DICTIONARY);
   std::string key;
   switch (entry->type()) {
@@ -203,16 +187,16 @@ int MemEntryImpl::ReadData(int index,
                            int buf_len,
                            CompletionOnceCallback callback) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(
-        net::NetLogEventType::ENTRY_READ_DATA,
-        CreateNetLogReadWriteDataCallback(index, offset, buf_len, false));
+    NetLogReadWriteData(net_log_, net::NetLogEventType::ENTRY_READ_DATA,
+                        net::NetLogEventPhase::BEGIN, index, offset, buf_len,
+                        false);
   }
 
   int result = InternalReadData(index, offset, buf, buf_len);
 
   if (net_log_.IsCapturing()) {
-    net_log_.EndEvent(net::NetLogEventType::ENTRY_READ_DATA,
-                      CreateNetLogReadWriteCompleteCallback(result));
+    NetLogReadWriteComplete(net_log_, net::NetLogEventType::ENTRY_READ_DATA,
+                            net::NetLogEventPhase::END, result);
   }
   return result;
 }
@@ -224,17 +208,18 @@ int MemEntryImpl::WriteData(int index,
                             CompletionOnceCallback callback,
                             bool truncate) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(
-        net::NetLogEventType::ENTRY_WRITE_DATA,
-        CreateNetLogReadWriteDataCallback(index, offset, buf_len, truncate));
+    NetLogReadWriteData(net_log_, net::NetLogEventType::ENTRY_WRITE_DATA,
+                        net::NetLogEventPhase::BEGIN, index, offset, buf_len,
+                        truncate);
   }
 
   int result = InternalWriteData(index, offset, buf, buf_len, truncate);
 
   if (net_log_.IsCapturing()) {
-    net_log_.EndEvent(net::NetLogEventType::ENTRY_WRITE_DATA,
-                      CreateNetLogReadWriteCompleteCallback(result));
+    NetLogReadWriteComplete(net_log_, net::NetLogEventType::ENTRY_WRITE_DATA,
+                            net::NetLogEventPhase::END, result);
   }
+
   return result;
 }
 
@@ -243,8 +228,8 @@ int MemEntryImpl::ReadSparseData(int64_t offset,
                                  int buf_len,
                                  CompletionOnceCallback callback) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(net::NetLogEventType::SPARSE_READ,
-                        CreateNetLogSparseOperationCallback(offset, buf_len));
+    NetLogSparseOperation(net_log_, net::NetLogEventType::SPARSE_READ,
+                          net::NetLogEventPhase::BEGIN, offset, buf_len);
   }
   int result = InternalReadSparseData(offset, buf, buf_len);
   if (net_log_.IsCapturing())
@@ -257,8 +242,8 @@ int MemEntryImpl::WriteSparseData(int64_t offset,
                                   int buf_len,
                                   CompletionOnceCallback callback) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(net::NetLogEventType::SPARSE_WRITE,
-                        CreateNetLogSparseOperationCallback(offset, buf_len));
+    NetLogSparseOperation(net_log_, net::NetLogEventType::SPARSE_WRITE,
+                          net::NetLogEventPhase::BEGIN, offset, buf_len);
   }
   int result = InternalWriteSparseData(offset, buf, buf_len);
   if (net_log_.IsCapturing())
@@ -271,14 +256,14 @@ int MemEntryImpl::GetAvailableRange(int64_t offset,
                                     int64_t* start,
                                     CompletionOnceCallback callback) {
   if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(net::NetLogEventType::SPARSE_GET_RANGE,
-                        CreateNetLogSparseOperationCallback(offset, len));
+    NetLogSparseOperation(net_log_, net::NetLogEventType::SPARSE_GET_RANGE,
+                          net::NetLogEventPhase::BEGIN, offset, len);
   }
   int result = InternalGetAvailableRange(offset, len, start);
   if (net_log_.IsCapturing()) {
-    net_log_.EndEvent(
-        net::NetLogEventType::SPARSE_GET_RANGE,
-        CreateNetLogGetAvailableRangeResultCallback(*start, result));
+    net_log_.EndEvent(net::NetLogEventType::SPARSE_GET_RANGE, [&] {
+      return CreateNetLogGetAvailableRangeResultParams(*start, result);
+    });
   }
   return result;
 }
@@ -324,7 +309,7 @@ MemEntryImpl::MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
   net_log_ = net::NetLogWithSource::Make(
       net_log, net::NetLogSourceType::MEMORY_CACHE_ENTRY);
   net_log_.BeginEvent(net::NetLogEventType::DISK_CACHE_MEM_ENTRY_IMPL,
-                      base::Bind(&NetLogEntryCreationCallback, this));
+                      [&] { return NetLogEntryCreationParams(this); });
 }
 
 MemEntryImpl::~MemEntryImpl() {
@@ -374,22 +359,14 @@ int MemEntryImpl::InternalReadData(int index, int offset, IOBuffer* buf,
 int MemEntryImpl::InternalWriteData(int index, int offset, IOBuffer* buf,
                                     int buf_len, bool truncate) {
   DCHECK(type() == PARENT_ENTRY || index == kSparseData);
-  if (!backend_) {
-    // We have to fail writes after the backend is destroyed since we can't
-    // ensure we wouldn't use too much memory if it's gone.
-    RecordWriteResult(MEM_ENTRY_WRITE_RESULT_EXCEEDED_CACHE_STORAGE_SIZE);
+  if (!backend_)
     return net::ERR_INSUFFICIENT_RESOURCES;
-  }
 
-  if (index < 0 || index >= kNumStreams) {
-    RecordWriteResult(MEM_ENTRY_WRITE_RESULT_INVALID_ARGUMENT);
+  if (index < 0 || index >= kNumStreams)
     return net::ERR_INVALID_ARGUMENT;
-  }
 
-  if (offset < 0 || buf_len < 0) {
-    RecordWriteResult(MEM_ENTRY_WRITE_RESULT_INVALID_ARGUMENT);
+  if (offset < 0 || buf_len < 0)
     return net::ERR_INVALID_ARGUMENT;
-  }
 
   int max_file_size = backend_->MaxFileSize();
 
@@ -397,7 +374,6 @@ int MemEntryImpl::InternalWriteData(int index, int offset, IOBuffer* buf,
   if (offset > max_file_size || buf_len > max_file_size ||
       !base::CheckAdd(offset, buf_len).AssignIfValid(&end_offset) ||
       end_offset > max_file_size) {
-    RecordWriteResult(MEM_ENTRY_WRITE_RESULT_OVER_MAX_ENTRY_SIZE);
     return net::ERR_FAILED;
   }
 
@@ -407,7 +383,6 @@ int MemEntryImpl::InternalWriteData(int index, int offset, IOBuffer* buf,
     backend_->ModifyStorageSize(delta);
     if (backend_->HasExceededStorageSize()) {
       backend_->ModifyStorageSize(-delta);
-      RecordWriteResult(MEM_ENTRY_WRITE_RESULT_EXCEEDED_CACHE_STORAGE_SIZE);
       return net::ERR_INSUFFICIENT_RESOURCES;
     }
 
@@ -421,7 +396,6 @@ int MemEntryImpl::InternalWriteData(int index, int offset, IOBuffer* buf,
   }
 
   UpdateStateOnUse(ENTRY_WAS_MODIFIED);
-  RecordWriteResult(MEM_ENTRY_WRITE_RESULT_SUCCESS);
 
   if (!buf_len)
     return 0;
@@ -438,10 +412,14 @@ int MemEntryImpl::InternalReadSparseData(int64_t offset,
   if (!InitSparseInfo())
     return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;
 
-  // Check that offset + buf_len does not overflow. This ensures that
-  // offset + io_buf->BytesConsumed() never overflows below.
-  if (offset < 0 || buf_len < 0 || !base::CheckAdd(offset, buf_len).IsValid())
+  if (offset < 0 || buf_len < 0)
     return net::ERR_INVALID_ARGUMENT;
+
+  // Ensure that offset + buf_len does not overflow. This ensures that
+  // offset + io_buf->BytesConsumed() never overflows below.
+  // The result of std::min is guaranteed to fit into int since buf_len did.
+  buf_len = std::min(static_cast<int64_t>(buf_len),
+                     std::numeric_limits<int64_t>::max() - offset);
 
   // We will keep using this buffer and adjust the offset in this buffer.
   scoped_refptr<net::DrainableIOBuffer> io_buf =
@@ -463,10 +441,10 @@ int MemEntryImpl::InternalReadSparseData(int64_t offset,
     if (child_offset < child->child_first_pos_)
       break;
     if (net_log_.IsCapturing()) {
-      net_log_.BeginEvent(
-          net::NetLogEventType::SPARSE_READ_CHILD_DATA,
-          CreateNetLogSparseReadWriteCallback(child->net_log_.source(),
-                                              io_buf->BytesRemaining()));
+      NetLogSparseReadWrite(net_log_,
+                            net::NetLogEventType::SPARSE_READ_CHILD_DATA,
+                            net::NetLogEventPhase::BEGIN,
+                            child->net_log_.source(), io_buf->BytesRemaining());
     }
     int ret =
         child->ReadData(kSparseData, child_offset, io_buf.get(),
@@ -528,9 +506,9 @@ int MemEntryImpl::InternalWriteSparseData(int64_t offset,
     int data_size = child->GetDataSize(kSparseData);
 
     if (net_log_.IsCapturing()) {
-      net_log_.BeginEvent(net::NetLogEventType::SPARSE_WRITE_CHILD_DATA,
-                          CreateNetLogSparseReadWriteCallback(
-                              child->net_log_.source(), write_len));
+      NetLogSparseReadWrite(
+          net_log_, net::NetLogEventType::SPARSE_WRITE_CHILD_DATA,
+          net::NetLogEventPhase::BEGIN, child->net_log_.source(), write_len);
     }
 
     // Always writes to the child entry. This operation may overwrite data
@@ -574,7 +552,12 @@ int MemEntryImpl::InternalGetAvailableRange(int64_t offset,
   if (offset < 0 || len < 0 || !start)
     return net::ERR_INVALID_ARGUMENT;
 
-  // If offset + len overflows, this will just be the empty interval.
+  // Truncate |len| to make sure that |offset + len| does not overflow.
+  // This is OK since one can't write that far anyway.
+  // The result of std::min is guaranteed to fit into int since |len| did.
+  len = std::min(static_cast<int64_t>(len),
+                 std::numeric_limits<int64_t>::max() - offset);
+
   net::Interval<int64_t> requested(offset, offset + len);
 
   // Find the first relevant child, if any --- may have to skip over

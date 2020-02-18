@@ -28,10 +28,10 @@ QuicSpdyClientStream::QuicSpdyClientStream(QuicStreamId id,
       session_(session),
       has_preliminary_headers_(false) {}
 
-QuicSpdyClientStream::QuicSpdyClientStream(PendingStream pending,
+QuicSpdyClientStream::QuicSpdyClientStream(PendingStream* pending,
                                            QuicSpdyClientSession* session,
                                            StreamType type)
-    : QuicSpdyStream(std::move(pending), session, type),
+    : QuicSpdyStream(pending, session, type),
       content_length_(-1),
       response_code_(0),
       header_bytes_read_(0),
@@ -142,8 +142,7 @@ void QuicSpdyClientStream::OnBodyAvailable() {
 size_t QuicSpdyClientStream::SendRequest(SpdyHeaderBlock headers,
                                          QuicStringPiece body,
                                          bool fin) {
-  QuicConnection::ScopedPacketFlusher flusher(
-      session_->connection(), QuicConnection::SEND_ACK_IF_QUEUED);
+  QuicConnection::ScopedPacketFlusher flusher(session_->connection());
   bool send_fin_with_headers = fin && body.empty();
   size_t bytes_sent = body.size();
   header_bytes_written_ =

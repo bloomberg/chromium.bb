@@ -54,13 +54,13 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/version_info/version_info.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -306,7 +306,7 @@ class PersonalDataManagerTestBase {
       base::test::ScopedTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<PrefService> prefs_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   syncer::TestSyncService sync_service_;
   scoped_refptr<AutofillWebDataService> profile_database_service_;
   scoped_refptr<AutofillWebDataService> account_database_service_;
@@ -923,8 +923,7 @@ TEST_F(PersonalDataManagerTest, AddProfile_CrazyCharacters) {
 
   ASSERT_EQ(profiles.size(), personal_data_->GetProfiles().size());
   for (size_t i = 0; i < profiles.size(); ++i) {
-    EXPECT_TRUE(
-        base::ContainsValue(profiles, *personal_data_->GetProfiles()[i]));
+    EXPECT_TRUE(base::Contains(profiles, *personal_data_->GetProfiles()[i]));
   }
 }
 
@@ -1179,8 +1178,7 @@ TEST_F(PersonalDataManagerTest, AddCreditCard_CrazyCharacters) {
 
   ASSERT_EQ(cards.size(), personal_data_->GetCreditCards().size());
   for (size_t i = 0; i < cards.size(); ++i) {
-    EXPECT_TRUE(
-        base::ContainsValue(cards, *personal_data_->GetCreditCards()[i]));
+    EXPECT_TRUE(base::Contains(cards, *personal_data_->GetCreditCards()[i]));
   }
 }
 
@@ -2031,7 +2029,12 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions) {
             suggestions[0].value);
 }
 
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_PhoneSubstring) {
+TEST_F(PersonalDataManagerTest,
+       GetProfileSuggestions_PhoneSubstring_NoImprovedDisambiguation) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndDisableFeature(
+      features::kAutofillUseImprovedLabelDisambiguation);
+
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
@@ -2046,6 +2049,29 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_PhoneSubstring) {
   ASSERT_FALSE(suggestions.empty());
   EXPECT_EQ(base::ASCIIToUTF16("12345678910"), suggestions[0].value);
 }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+TEST_F(PersonalDataManagerTest,
+       GetProfileSuggestions_PhoneSubstring_ImprovedDisambiguation) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(
+      features::kAutofillUseImprovedLabelDisambiguation);
+
+  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  AddProfileToPersonalDataManager(profile);
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+      AutofillType(PHONE_HOME_WHOLE_NUMBER), base::ASCIIToUTF16("234"), false,
+      std::vector<ServerFieldType>());
+  ASSERT_FALSE(suggestions.empty());
+  EXPECT_EQ(base::ASCIIToUTF16("(234) 567-8910"), suggestions[0].value);
+}
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_HideSubsets) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -2902,13 +2928,13 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowAll) {
       ElementsAre(
           AllOf(testing::Field(&Suggestion::label,
                                ConstructMobileLabelLine(
-                                   {base::ASCIIToUTF16("Hoa Pham"),
+                                   {base::ASCIIToUTF16("Hoa"),
                                     base::ASCIIToUTF16("401 Merrimack St"),
                                     base::ASCIIToUTF16("(978) 674-4120")})),
                 testing::Field(&Suggestion::icon, "")),
           AllOf(testing::Field(&Suggestion::label,
                                ConstructMobileLabelLine(
-                                   {base::UTF8ToUTF16("María Lòpez"),
+                                   {base::UTF8ToUTF16("María"),
                                     base::ASCIIToUTF16("11 Elkins St"),
                                     base::ASCIIToUTF16("(617) 268-6862")})),
                 testing::Field(&Suggestion::icon, ""))));
@@ -6634,12 +6660,6 @@ TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NoSyncService) {
   EXPECT_EQ(2U, server_cards.size());
   for (CreditCard* card : server_cards)
     EXPECT_TRUE(card->record_type() == CreditCard::MASKED_SERVER_CARD);
-
-  // Check that the metrics are logged correctly.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ResetFullServerCards.SyncServiceNullOnInitialized", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ResetFullServerCards.NumberOfCardsReset", 1, 1);
 }
 
 // Test that calling OnSyncServiceInitialized with a sync service in auth error
@@ -6666,13 +6686,6 @@ TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NotActiveSyncService) {
   EXPECT_EQ(2U, server_cards.size());
   for (CreditCard* card : server_cards)
     EXPECT_TRUE(card->record_type() == CreditCard::MASKED_SERVER_CARD);
-
-  // Check that the metrics are logged correctly.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ResetFullServerCards.SyncServiceNotActiveOnInitialized", true,
-      1);
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ResetFullServerCards.NumberOfCardsReset", 1, 1);
 
   // Call OnSyncShutdown to ensure removing observer added by
   // OnSyncServiceInitialized.

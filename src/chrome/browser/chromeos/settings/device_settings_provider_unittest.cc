@@ -36,10 +36,10 @@ namespace em = enterprise_management;
 
 namespace chromeos {
 
-using ::testing::AtLeast;
-using ::testing::AnyNumber;
-using ::testing::Mock;
 using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::AtLeast;
+using ::testing::Mock;
 
 namespace {
 
@@ -252,6 +252,14 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     BuildAndInstallDevicePolicy();
   }
 
+  // Helper routine that sets the device DeviceScheduledUpdateCheck policy
+  void SetDeviceScheduledUpdateCheck(const std::string& json_string) {
+    em::DeviceScheduledUpdateCheckProto* proto =
+        device_policy_->payload().mutable_device_scheduled_update_check();
+    proto->set_device_scheduled_update_check_settings(json_string);
+    BuildAndInstallDevicePolicy();
+  }
+
   void SetPluginVmAllowedSetting(bool plugin_vm_allowed) {
     em::PluginVmAllowedProto* proto =
         device_policy_->payload().mutable_plugin_vm_allowed();
@@ -300,6 +308,13 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     em::DeviceSecondFactorAuthenticationProto* proto =
         device_policy_->payload().mutable_device_second_factor_authentication();
     proto->set_mode(mode);
+    BuildAndInstallDevicePolicy();
+  }
+
+  void SetDevicePowerwashAllowed(bool device_powerwash_allowed) {
+    em::DevicePowerwashAllowedProto* proto =
+        device_policy_->payload().mutable_device_powerwash_allowed();
+    proto->set_device_powerwash_allowed(device_powerwash_allowed);
     BuildAndInstallDevicePolicy();
   }
 
@@ -711,6 +726,22 @@ TEST_F(DeviceSettingsProviderTest, DeviceAutoUpdateTimeRestrictionsExtra) {
   VerifyPolicyValue(kDeviceAutoUpdateTimeRestrictions, &test_list);
 }
 
+// Check valid JSON for DeviceScheduledUpdateCheck.
+TEST_F(DeviceSettingsProviderTest, DeviceScheduledUpdateCheckTests) {
+  const std::string json_string =
+      "{\"update_check_time\": {\"hour\": 23, \"minute\": 35}, "
+      "\"frequency\": \"DAILY\", \"day_of_week\": \"MONDAY\",  "
+      "\"day_of_month\": 15}";
+  base::DictionaryValue expected_val;
+  expected_val.SetPath({"update_check_time", "hour"}, base::Value(23));
+  expected_val.SetPath({"update_check_time", "minute"}, base::Value(35));
+  expected_val.Set("frequency", std::make_unique<base::Value>("DAILY"));
+  expected_val.Set("day_of_week", std::make_unique<base::Value>("MONDAY"));
+  expected_val.Set("day_of_month", std::make_unique<base::Value>(15));
+  SetDeviceScheduledUpdateCheck(json_string);
+  VerifyPolicyValue(kDeviceScheduledUpdateCheck, &expected_val);
+}
+
 TEST_F(DeviceSettingsProviderTest, DecodePluginVmAllowedSetting) {
   SetPluginVmAllowedSetting(true);
   EXPECT_EQ(base::Value(true), *provider_->Get(kPluginVmAllowed));
@@ -799,6 +830,17 @@ TEST_F(DeviceSettingsProviderTest,
       em::DeviceSecondFactorAuthenticationProto::U2F_EXTENDED);
   EXPECT_EQ(base::Value(3),
             *provider_->Get(kDeviceSecondFactorAuthenticationMode));
+}
+
+TEST_F(DeviceSettingsProviderTest, DevicePowerwashAllowed) {
+  // Policy should not be set by default
+  VerifyPolicyValue(kDevicePowerwashAllowed, nullptr);
+
+  SetDevicePowerwashAllowed(true);
+  EXPECT_EQ(base::Value(true), *provider_->Get(kDevicePowerwashAllowed));
+
+  SetDevicePowerwashAllowed(false);
+  EXPECT_EQ(base::Value(false), *provider_->Get(kDevicePowerwashAllowed));
 }
 
 }  // namespace chromeos

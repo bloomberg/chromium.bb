@@ -81,6 +81,7 @@ class TryserverApi(recipe_api.RecipeApi):
         o_params=['ALL_REVISIONS', 'DOWNLOAD_COMMANDS'],
         limit=1,
         name='fetch current CL info',
+        timeout=600,
         step_test_data=lambda: self.m.json.test_api.output(mock_res))[0]
 
     self._gerrit_change_target_ref = res['branch']
@@ -216,6 +217,22 @@ class TryserverApi(recipe_api.RecipeApi):
     tests failing, etc).
     """
     self._set_failure_type('INVALID_TEST_RESULTS')
+
+  def set_test_timeout_tryjob_result(self):
+    """Mark the tryjob result as a test timeout.
+
+    This means tests were scheduled but didn't finish executing within the
+    timeout.
+    """
+    self._set_failure_type('TEST_TIMEOUT')
+
+  def set_test_expired_tryjob_result(self):
+    """Mark the tryjob result as a test expiration.
+
+    This means a test task expired and was never scheduled, most likely due to
+    lack of capacity.
+    """
+    self._set_failure_type('TEST_EXPIRED')
 
   def add_failure_reason(self, reason):
     """

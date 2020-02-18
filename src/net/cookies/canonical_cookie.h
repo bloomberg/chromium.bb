@@ -83,9 +83,10 @@ class NET_EXPORT CanonicalCookie {
   };
 
   // Creates a new |CanonicalCookie| from the |cookie_line| and the
-  // |creation_time|.  Canonicalizes and validates inputs. May return NULL if
-  // an attribute value is invalid.  |creation_time| may not be null. Sets
-  // optional |status| to the relevent CookieInclusionStatus if provided
+  // |creation_time|.  Canonicalizes and validates inputs.  May return NULL if
+  // an attribute value is invalid.  |url| must be valid.  |creation_time| may
+  // not be null. Sets optional |status| to the relevant CookieInclusionStatus
+  // if provided
   static std::unique_ptr<CanonicalCookie> Create(
       const GURL& url,
       const std::string& cookie_line,
@@ -221,13 +222,6 @@ class NET_EXPORT CanonicalCookie {
   // are identical for PartialCompare().
   bool PartialCompare(const CanonicalCookie& other) const;
 
-  // TODO(chlily): Remove this. There should not be multiple cookies for which
-  // PartialCompare disagrees. This is only used in tests.
-  // Returns true if the cookie is less than |other|, considering all fields.
-  // FullCompare() is consistent with PartialCompare(): cookies sorted using
-  // FullCompare() are also sorted with respect to PartialCompare().
-  bool FullCompare(const CanonicalCookie& other) const;
-
   // Return whether this object is a valid CanonicalCookie().  Invalid
   // cookies may be constructed by the detailed constructor.
   // A cookie is considered canonical if-and-only-if:
@@ -274,6 +268,11 @@ class NET_EXPORT CanonicalCookie {
   static bool IsCookiePrefixValid(CookiePrefix prefix,
                                   const GURL& url,
                                   const ParsedCookie& parsed_cookie);
+  static bool IsCookiePrefixValid(CookiePrefix prefix,
+                                  const GURL& url,
+                                  bool secure,
+                                  const std::string& domain,
+                                  const std::string& path);
 
   // Returns the cookie's domain, with the leading dot removed, if present.
   std::string DomainWithoutDot() const;

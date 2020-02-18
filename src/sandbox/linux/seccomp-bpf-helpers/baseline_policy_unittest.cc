@@ -24,6 +24,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "base/clang_coverage_buildflags.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
@@ -342,6 +343,7 @@ BPF_TEST_C(BaselinePolicy, PrctlDumpable, BaselinePolicy) {
 #define PR_CAPBSET_READ 23
 #endif
 
+#if !BUILDFLAG(CLANG_COVERAGE)
 BPF_DEATH_TEST_C(BaselinePolicy,
                  PrctlSigsys,
                  DEATH_SEGV_MESSAGE(GetPrctlErrorMessageContentForTests()),
@@ -349,6 +351,7 @@ BPF_DEATH_TEST_C(BaselinePolicy,
   prctl(PR_CAPBSET_READ, 0, 0, 0, 0);
   _exit(1);
 }
+#endif
 
 BPF_TEST_C(BaselinePolicy, GetOrSetPriority, BaselinePolicy) {
   errno = 0;

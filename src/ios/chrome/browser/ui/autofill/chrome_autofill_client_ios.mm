@@ -36,7 +36,7 @@
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #include "ios/chrome/browser/ui/autofill/save_card_infobar_controller.h"
-#include "ios/chrome/browser/web_data_service_factory.h"
+#include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -124,7 +124,7 @@ syncer::SyncService* ChromeAutofillClientIOS::GetSyncService() {
   return sync_service_;
 }
 
-identity::IdentityManager* ChromeAutofillClientIOS::GetIdentityManager() {
+signin::IdentityManager* ChromeAutofillClientIOS::GetIdentityManager() {
   return identity_manager_;
 }
 
@@ -262,6 +262,10 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
         std::move(save_card_info_bar_delegate_mobile)));
   }
+}
+
+void ChromeAutofillClientIOS::CreditCardUploadCompleted(bool card_saved) {
+  NOTIMPLEMENTED();
 }
 
 void ChromeAutofillClientIOS::ConfirmCreditCardFillAssist(

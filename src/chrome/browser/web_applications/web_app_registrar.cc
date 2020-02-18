@@ -90,14 +90,41 @@ bool WebAppRegistrar::WasExternalAppUninstalledByUser(
   return false;
 }
 
-bool WebAppRegistrar::HasScopeUrl(const AppId& app_id) const {
+base::Optional<AppId> WebAppRegistrar::FindAppWithUrlInScope(
+    const GURL& url) const {
   NOTIMPLEMENTED();
-  return false;
+  return base::nullopt;
 }
 
-GURL WebAppRegistrar::GetScopeUrlForApp(const AppId& app_id) const {
+int WebAppRegistrar::CountUserInstalledApps() const {
   NOTIMPLEMENTED();
-  return GURL();
+  return 0;
+}
+
+std::string WebAppRegistrar::GetAppShortName(const AppId& app_id) const {
+  WebApp* web_app = GetAppById(app_id);
+  return web_app ? web_app->name() : std::string();
+}
+
+std::string WebAppRegistrar::GetAppDescription(const AppId& app_id) const {
+  WebApp* web_app = GetAppById(app_id);
+  return web_app ? web_app->description() : std::string();
+}
+
+base::Optional<SkColor> WebAppRegistrar::GetAppThemeColor(
+    const AppId& app_id) const {
+  WebApp* web_app = GetAppById(app_id);
+  return web_app ? web_app->theme_color() : base::nullopt;
+}
+
+const GURL& WebAppRegistrar::GetAppLaunchURL(const AppId& app_id) const {
+  WebApp* web_app = GetAppById(app_id);
+  return web_app ? web_app->launch_url() : GURL::EmptyGURL();
+}
+
+base::Optional<GURL> WebAppRegistrar::GetAppScope(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return base::nullopt;
 }
 
 }  // namespace web_app

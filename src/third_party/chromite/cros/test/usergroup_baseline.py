@@ -108,6 +108,8 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='users', gid=100),
     GroupEntry(group='portage', gid=250, users={'portage'}),
     GroupEntry(group='utmp', gid=406),
+    GroupEntry(group='crash-access', gid=419,
+               users={'crash'}),
     GroupEntry(group='nogroup', gid=65533),
     GroupEntry(group='nobody', gid=65534),
     GroupEntry(group='chronos', gid=1000),
@@ -168,11 +170,14 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='cros_ec-access', gid=416, users={'runtime_probe'}),
     GroupEntry(group='shill', gid=20104, users={'shill', 'ipsec'}),
     GroupEntry(group='fuse-drivefs', gid=304, users={'chronos'}),
-    GroupEntry(group='password-viewers', gid=611, users={'shill'}),
+    GroupEntry(group='password-viewers', gid=611, users={'kerberosd', 'shill'}),
     GroupEntry(group='apex-access', gid=405, users={'rtanalytics'}),
     GroupEntry(group='modem', gid=241, users={'shill'}),
     GroupEntry(group='pluginvm', gid=20128, users={'crosvm', 'pluginvm'}),
     GroupEntry(group='virtaccess', gid=418, users={'crosvm', 'wilco_dtc'}),
+    GroupEntry(group='kerberosd', gid=20131, users={'kerberosd',
+                                                    'kerberosd-exec'}),
+    GroupEntry(group='hidraw', gid=403, users={'fwupdate-hidraw'}),
 ))
 
 GROUP_BASELINE_LAKITU = dict((e.group, e) for e in (

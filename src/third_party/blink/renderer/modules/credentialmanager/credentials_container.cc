@@ -16,8 +16,8 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/modules/credentialmanager/scoped_promise_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -237,6 +238,9 @@ DOMException* CredentialManagerErrorToDOMException(
     case CredentialManagerError::INVALID_DOMAIN:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kSecurityError, "This is an invalid domain.");
+    case CredentialManagerError::INVALID_ICON_URL:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError, "The icon should be a secure URL");
     case CredentialManagerError::CREDENTIAL_EXCLUDED:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError,
@@ -265,7 +269,7 @@ DOMException* CredentialManagerErrorToDOMException(
     case CredentialManagerError::PROTECTION_POLICY_INCONSISTENT:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
-          "Requested protection policy is inconsistent or incongurent with "
+          "Requested protection policy is inconsistent or incongruent with "
           "other requested parameters.");
     case CredentialManagerError::ANDROID_ALGORITHM_UNSUPPORTED:
       return MakeGarbageCollected<DOMException>(
@@ -292,7 +296,8 @@ DOMException* CredentialManagerErrorToDOMException(
           "this device unless the device is secured "
           "with a screen lock.");
     case CredentialManagerError::ABORT:
-      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError);
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
+                                                "Request has been aborted.");
     case CredentialManagerError::UNKNOWN:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotReadableError,
@@ -404,6 +409,8 @@ void OnMakePublicKeyCredentialComplete(
     if (credential->echo_user_verification_methods) {
       extension_outputs->setUvm(
           UvmEntryToArray(std::move(*credential->user_verification_methods)));
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kCredentialManagerCreateSuccessWithUVM);
     }
 #endif
     resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
@@ -457,6 +464,8 @@ void OnGetAssertionComplete(
     if (credential->echo_user_verification_methods) {
       extension_outputs->setUvm(
           UvmEntryToArray(std::move(*credential->user_verification_methods)));
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kCredentialManagerGetSuccessWithUVM);
     }
 #endif
     resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
@@ -493,6 +502,13 @@ ScriptPromise CredentialsContainer::get(
       UseCounter::Count(resolver->GetExecutionContext(),
                         WebFeature::kCredentialManagerGetPublicKeyCredential);
     }
+#if defined(OS_ANDROID)
+    if (options->publicKey()->hasExtensions() &&
+        options->publicKey()->extensions()->hasUvm()) {
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kCredentialManagerGetWithUVM);
+    }
+#endif
 
     const String& relying_party_id = options->publicKey()->rpId();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
@@ -521,10 +537,22 @@ ScriptPromise CredentialsContainer::get(
       }
     }
 
+    if (!options->publicKey()->hasUserVerification()) {
+      resolver->GetFrame()->Console().AddMessage(ConsoleMessage::Create(
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning,
+          "publicKey.userVerification was not set to any value in Web "
+          "Authentication navigator.credentials.get() call. This defaults to "
+          "'preferred', which is probably not what you want. If in doubt, set "
+          "to 'discouraged'. See "
+          "https://chromium.googlesource.com/chromium/src/+/master/content/"
+          "browser/webauth/uv_preferred.md for details."));
+    }
+
     if (options->hasSignal()) {
       if (options->signal()->aborted()) {
-        resolver->Reject(
-            MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
+        resolver->Reject(MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kAbortError, "Request has been aborted."));
         return promise;
       }
       options->signal()->AddAlgorithm(
@@ -680,6 +708,13 @@ ScriptPromise CredentialsContainer::create(
           resolver->GetExecutionContext(),
           WebFeature::kCredentialManagerCreatePublicKeyCredential);
     }
+#if defined(OS_ANDROID)
+    if (options->publicKey()->hasExtensions() &&
+        options->publicKey()->extensions()->hasUvm()) {
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kCredentialManagerCreateWithUVM);
+    }
+#endif
 
     const String& relying_party_id = options->publicKey()->rp()->id();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
@@ -705,12 +740,27 @@ ScriptPromise CredentialsContainer::create(
 
     if (options->hasSignal()) {
       if (options->signal()->aborted()) {
-        resolver->Reject(
-            MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
+        resolver->Reject(MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kAbortError, "Request has been aborted."));
         return promise;
       }
       options->signal()->AddAlgorithm(
           WTF::Bind(&Abort, WTF::Passed(WrapPersistent(script_state))));
+    }
+
+    if (options->publicKey()->hasAuthenticatorSelection() &&
+        !options->publicKey()
+             ->authenticatorSelection()
+             ->hasUserVerification()) {
+      resolver->GetFrame()->Console().AddMessage(ConsoleMessage::Create(
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning,
+          "publicKey.authenticatorSelection.userVerification was not set to "
+          "any value in Web Authentication navigator.credentials.create() "
+          "call. This defaults to 'preferred', which is probably not what you "
+          "want. If in doubt, set to 'discouraged'. See "
+          "https://chromium.googlesource.com/chromium/src/+/master/content/"
+          "browser/webauth/uv_preferred.md for details"));
     }
 
     auto mojo_options =

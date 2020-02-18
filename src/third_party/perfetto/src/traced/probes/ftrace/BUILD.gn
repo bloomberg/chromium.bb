@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("../../../../gn/fuzzer.gni")
 import("../../../../gn/perfetto.gni")
 import("../../../../gn/proto_library.gni")
-import("../../../../gn/fuzzer.gni")
 import("../../../../gn/protozero_library.gni")
 
 # For use_libfuzzer.
@@ -50,7 +50,7 @@ source_set("unittests") {
     ":test_messages_zero",
     ":test_support",
     "../../../../gn:default_deps",
-    "../../../../gn:gtest_deps",
+    "../../../../gn:gtest_and_gmock",
     "../../../../protos/perfetto/trace/ftrace:lite",
     "../../../base:test_support",
     "../../../tracing:test_support",
@@ -64,7 +64,6 @@ source_set("unittests") {
     "ftrace_config_unittest.cc",
     "ftrace_controller_unittest.cc",
     "ftrace_procfs_unittest.cc",
-    "page_pool_unittest.cc",
     "proto_translation_table_unittest.cc",
   ]
 }
@@ -93,7 +92,7 @@ source_set("integrationtests") {
     ":ftrace",
     ":test_support",
     "../../../../gn:default_deps",
-    "../../../../gn:gtest_deps",
+    "../../../../gn:gtest_and_gmock",
     "../../../../protos/perfetto/trace/ftrace:lite",
     "../../../base",
     "../../../tracing",
@@ -108,14 +107,13 @@ source_set("ftrace") {
     "../../../../protos/perfetto/trace/ftrace:zero",
     "../../../tracing",
   ]
-  libs = [ "dl" ]  # for dlopen()
   deps = [
     ":format_parser",
     "..:data_source",
     "../../../../gn:default_deps",
-    "../../../../include/perfetto/traced",
+    "../../../../include/perfetto/ext/traced",
     "../../../../protos/perfetto/config:lite",
-    "../../../android_internal:headers",
+    "../../../android_internal:lazy_library_loader",
     "../../../base",
     "../../../protozero",
   ]
@@ -148,8 +146,6 @@ source_set("ftrace") {
     "ftrace_procfs.h",
     "ftrace_stats.cc",
     "ftrace_stats.h",
-    "page_pool.cc",
-    "page_pool.h",
     "proto_translation_table.cc",
     "proto_translation_table.h",
   ]
@@ -172,8 +168,8 @@ if (perfetto_build_standalone) {
     deps = [
       ":ftrace",
       ":test_support",
+      "../../../../gn:benchmark",
       "../../../../gn:default_deps",
-      "//buildtools:benchmark",
     ]
     sources = [
       "cpu_reader_benchmark.cc",

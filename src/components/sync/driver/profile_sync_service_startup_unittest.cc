@@ -8,6 +8,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/data_type_manager_mock.h"
 #include "components/sync/driver/fake_data_type_controller.h"
@@ -17,7 +18,6 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/fake_sync_engine.h"
 #include "components/sync/engine/mock_sync_engine.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,7 +60,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
  public:
   ProfileSyncServiceStartupTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         sync_prefs_(profile_sync_service_bundle_.pref_service()) {
     profile_sync_service_bundle_.identity_test_env()
         ->SetAutomaticIssueOfAccessTokens(true);
@@ -165,7 +165,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // Should not actually start, rather just clean things up and wait
   // to be enabled.
   sync_service()->Initialize();
-  EXPECT_EQ(SyncService::DISABLE_REASON_NOT_SIGNED_IN,
+  EXPECT_EQ(SyncService::DISABLE_REASON_NOT_SIGNED_IN |
+                SyncService::DISABLE_REASON_USER_CHOICE,
             sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
@@ -603,7 +604,8 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
 
   // There is no signed-in user, so also nobody has decided that Sync should be
   // started.
-  EXPECT_EQ(SyncService::DISABLE_REASON_NOT_SIGNED_IN,
+  EXPECT_EQ(SyncService::DISABLE_REASON_NOT_SIGNED_IN |
+                SyncService::DISABLE_REASON_USER_CHOICE,
             sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
@@ -611,7 +613,7 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
   // Sign in. Now Sync-the-transport could start, but gets deferred by default.
   // Sync-the-feature still doesn't start until the user says they want it.
   SimulateTestUserSignin();
-  EXPECT_EQ(SyncService::DISABLE_REASON_NONE,
+  EXPECT_EQ(SyncService::DISABLE_REASON_USER_CHOICE,
             sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::START_DEFERRED,
             sync_service()->GetTransportState());

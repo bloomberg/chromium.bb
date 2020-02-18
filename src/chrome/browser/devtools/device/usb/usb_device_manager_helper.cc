@@ -13,7 +13,7 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
@@ -64,7 +64,7 @@ void GetAndroidDeviceInfoList(
     std::vector<device::mojom::UsbDeviceInfoPtr> usb_devices) {
   std::vector<AndroidDeviceInfo> result;
   for (auto& device_info : usb_devices) {
-    if (device_info->serial_number->empty())
+    if (!device_info->serial_number || device_info->serial_number->empty())
       continue;
 
     auto interface_info = FindAndroidInterface(*device_info);
@@ -107,9 +107,8 @@ void BindDeviceServiceOnUIThread(
     device::mojom::UsbDeviceManagerRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Bind to the DeviceService for USB device manager.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName, std::move(request));
+  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
+                                               std::move(request));
 }
 
 }  // namespace
@@ -152,7 +151,7 @@ void UsbDeviceManagerHelper::SetUsbManagerForTesting(
   GetInstance()->SetUsbManagerForTestingInternal(std::move(fake_usb_manager));
 }
 
-UsbDeviceManagerHelper::UsbDeviceManagerHelper() : weak_factory_(this) {}
+UsbDeviceManagerHelper::UsbDeviceManagerHelper() {}
 
 UsbDeviceManagerHelper::~UsbDeviceManagerHelper() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

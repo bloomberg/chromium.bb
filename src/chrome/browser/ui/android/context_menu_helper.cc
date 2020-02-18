@@ -13,6 +13,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "chrome/android/chrome_jni_headers/ContextMenuHelper_jni.h"
+#include "chrome/android/chrome_jni_headers/ContextMenuParams_jni.h"
 #include "chrome/browser/android/download/download_controller_base.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -22,8 +24,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/context_menu_params.h"
-#include "jni/ContextMenuHelper_jni.h"
-#include "jni/ContextMenuParams_jni.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 #include "ui/android/view_android.h"
@@ -140,14 +140,11 @@ ContextMenuHelper::CreateJavaContextMenuParams(
   GURL sanitizedReferrer = (params.frame_url.is_empty() ?
       params.page_url : params.frame_url).GetAsReferrer();
 
-  std::map<std::string, std::string>::const_iterator it =
-      params.properties.find(
-          data_reduction_proxy::chrome_proxy_content_transform_header());
-  bool image_was_fetched_lo_fi =
-      it != params.properties.end() &&
-      it->second == data_reduction_proxy::empty_image_directive();
   bool can_save = params.media_flags & blink::WebContextMenuData::kMediaCanSave;
   JNIEnv* env = base::android::AttachCurrentThread();
+  base::string16 title_text =
+      (params.title_text.empty() ? params.alt_text : params.title_text);
+
   base::android::ScopedJavaLocalRef<jobject> jmenu_info =
       ContextMenuParamsAndroid::Java_ContextMenuParams_create(
           env, params.media_type,
@@ -156,8 +153,7 @@ ContextMenuHelper::CreateJavaContextMenuParams(
           ConvertUTF16ToJavaString(env, params.link_text),
           ConvertUTF8ToJavaString(env, params.unfiltered_link_url.spec()),
           ConvertUTF8ToJavaString(env, params.src_url.spec()),
-          ConvertUTF16ToJavaString(env, params.title_text),
-          image_was_fetched_lo_fi,
+          ConvertUTF16ToJavaString(env, title_text),
           ConvertUTF8ToJavaString(env, sanitizedReferrer.spec()),
           static_cast<int>(params.referrer_policy), can_save, params.x,
           params.y, params.source_type);

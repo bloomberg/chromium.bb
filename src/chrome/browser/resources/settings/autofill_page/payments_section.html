@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
@@ -61,12 +62,11 @@
 
     <div class="settings-box continuation">
       <h2 class="start">$i18n{creditCards}</h2>
-      <paper-button id="addCreditCard"
-          class="secondary-button header-aligned-button"
+      <cr-button id="addCreditCard" class="header-aligned-button"
           on-click="onAddCreditCardTap_"
           hidden$="[[!prefs.autofill.credit_card_enabled.value]]">
         $i18n{add}
-      </paper-button>
+      </cr-button>
     </div>
     <cr-link-row id="migrateCreditCards"
         hidden$="[[!checkIfMigratable_(creditCards,

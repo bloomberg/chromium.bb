@@ -214,12 +214,6 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    system_request_context_getter_ =
-        base::MakeRefCounted<net::TestURLRequestContextGetter>(
-            base::CreateSingleThreadTaskRunnerWithTraits(
-                {content::BrowserThread::IO}));
-    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
-        system_request_context_getter_.get());
     in_process_utility_thread_helper_ =
         std::make_unique<content::InProcessUtilityThreadHelper>();
     // Start real threads for the IO and File threads so that the DCHECKs
@@ -278,9 +272,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
     // tasks currently running.
     FlushThreadMessageLoops();
     sb_service_ = NULL;
-    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(nullptr);
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
-    system_request_context_getter_ = nullptr;
     in_process_utility_thread_helper_ = nullptr;
 
     ChromeRenderViewHostTestHarness::TearDown();
@@ -439,6 +431,10 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
     update.Get()->AppendString(domain);
   }
 
+  void SetPasswordProtectedAllowedPref(bool value) {
+    profile()->GetPrefs()->SetBoolean(prefs::kPasswordProtectedAllowed, value);
+  }
+
   // Helper function to simulate a user gesture, then a link click.
   // The usual NavigateAndCommit is unsuitable because it creates
   // browser-initiated navigations, causing us to drop the referrer.
@@ -533,7 +529,6 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   FileTypePoliciesTestOverlay policies_;
 
   scoped_refptr<FakeSafeBrowsingService> sb_service_;
-  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
   scoped_refptr<MockBinaryFeatureExtractor> binary_feature_extractor_;
   DownloadProtectionService* download_service_;
   DownloadCheckResult result_;
@@ -2730,6 +2725,50 @@ TEST_F(DownloadProtectionServiceTest, DoesNotSendPingForCancelledDownloads) {
 
   EXPECT_TRUE(has_result_);
   EXPECT_FALSE(HasClientDownloadRequest());
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       PasswordProtectedArchivesBlockedByPreference) {
+  base::FilePath test_zip;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_zip));
+  test_zip = test_zip.AppendASCII("safe_browsing")
+                 .AppendASCII("download_protection")
+                 .AppendASCII("encrypted.zip");
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItemWithFullPaths(
+      &item, {"http://www.evil.com/encrypted.zip"},  // url_chain
+      "http://www.google.com/",                      // referrer
+      test_zip,                                      // tmp_path
+      temp_dir_.GetPath().Append(
+          FILE_PATH_LITERAL("encrypted.zip")));  // final_path
+  content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+
+  {
+    SetPasswordProtectedAllowedPref(false);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED));
+    EXPECT_FALSE(HasClientDownloadRequest());
+  }
+
+  {
+    SetPasswordProtectedAllowedPref(true);
+    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    ClearClientDownloadRequest();
+  }
 }
 
 }  // namespace safe_browsing

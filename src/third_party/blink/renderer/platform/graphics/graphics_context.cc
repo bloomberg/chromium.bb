@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_filter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/interpolation_space.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
@@ -68,8 +69,10 @@ class GraphicsContext::DarkModeFlags final {
 
  public:
   // This helper's lifetime should never exceed |flags|'.
-  DarkModeFlags(GraphicsContext* gc, const PaintFlags& flags) {
-    dark_mode_flags_ = gc->dark_mode_filter_.ApplyToFlagsIfNeeded(flags);
+  DarkModeFlags(GraphicsContext* gc,
+                const PaintFlags& flags,
+                DarkModeFilter::ElementRole role) {
+    dark_mode_flags_ = gc->dark_mode_filter_.ApplyToFlagsIfNeeded(flags, role);
     if (dark_mode_flags_) {
       flags_ = &dark_mode_flags_.value();
       return;
@@ -315,7 +318,7 @@ sk_sp<PaintRecord> GraphicsContext::EndRecording() {
   if (ContextDisabled()) {
     // Clients expect endRecording() to always return a non-null paint record.
     // Cache an empty one to minimize overhead when disabled.
-    DEFINE_STATIC_LOCAL(sk_sp<PaintRecord>, empty_paint_record,
+    DEFINE_STATIC_LOCAL(const sk_sp<PaintRecord>, empty_paint_record,
                         (CreateEmptyPaintRecord()));
     return empty_paint_record;
   }
@@ -384,15 +387,23 @@ int GraphicsContext::FocusRingOutsetExtent(int offset,
 void GraphicsContext::DrawFocusRingPath(const SkPath& path,
                                         const Color& color,
                                         float width) {
-  DrawPlatformFocusRing(path, canvas_,
-                        dark_mode_filter_.ApplyIfNeeded(color).Rgb(), width);
+  DrawPlatformFocusRing(
+      path, canvas_,
+      dark_mode_filter_
+          .InvertColorIfNeeded(color, DarkModeFilter::ElementRole::kBackground)
+          .Rgb(),
+      width);
 }
 
 void GraphicsContext::DrawFocusRingRect(const SkRect& rect,
                                         const Color& color,
                                         float width) {
-  DrawPlatformFocusRing(rect, canvas_,
-                        dark_mode_filter_.ApplyIfNeeded(color).Rgb(), width);
+  DrawPlatformFocusRing(
+      rect, canvas_,
+      dark_mode_filter_
+          .InvertColorIfNeeded(color, DarkModeFilter::ElementRole::kBackground)
+          .Rgb(),
+      width);
 }
 
 void GraphicsContext::DrawFocusRing(const Path& focus_ring_path,
@@ -506,7 +517,8 @@ void GraphicsContext::DrawInnerShadow(const FloatRoundedRect& rect,
   if (ContextDisabled())
     return;
 
-  Color shadow_color = dark_mode_filter_.ApplyIfNeeded(orig_shadow_color);
+  Color shadow_color = dark_mode_filter_.InvertColorIfNeeded(
+      orig_shadow_color, DarkModeFilter::ElementRole::kBackground);
 
   FloatRect hole_rect(rect.Rect());
   hole_rect.Inflate(-shadow_spread);
@@ -676,7 +688,8 @@ void GraphicsContext::DrawLine(const IntPoint& point1, const IntPoint& point2) {
   // probably worth the speed up of no square root, which also won't be exact.
   FloatSize disp = p2 - p1;
   int length = SkScalarRoundToInt(disp.Width() + disp.Height());
-  const DarkModeFlags flags(this, ImmutableState()->StrokeFlags(length));
+  const DarkModeFlags flags(this, ImmutableState()->StrokeFlags(length),
+                            DarkModeFilter::ElementRole::kBackground);
 
   if (pen_style == kDottedStroke) {
     if (StrokeData::StrokeIsDashed(width, pen_style)) {
@@ -775,12 +788,12 @@ void GraphicsContext::DrawText(const Font& font,
                                const TextRunPaintInfo& text_info,
                                const FloatPoint& point,
                                const PaintFlags& flags,
-                               const cc::NodeHolder& node_holder) {
+                               DOMNodeId node_id) {
   if (ContextDisabled())
     return;
 
-  font.DrawText(canvas_, text_info, point, device_scale_factor_, node_holder,
-                DarkModeFlags(this, flags));
+  font.DrawText(canvas_, text_info, point, device_scale_factor_, node_id,
+                DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kText));
 }
 
 template <typename DrawTextFunc>
@@ -806,33 +819,29 @@ template <typename TextPaintInfo>
 void GraphicsContext::DrawTextInternal(const Font& font,
                                        const TextPaintInfo& text_info,
                                        const FloatPoint& point,
-                                       const cc::NodeHolder& node_holder) {
+                                       DOMNodeId node_id) {
   if (ContextDisabled())
     return;
 
   DrawTextPasses([&](const PaintFlags& flags) {
-    if (dark_mode_filter_.ShouldInvertTextColor(flags.getColor())) {
-      font.DrawText(canvas_, text_info, point, device_scale_factor_,
-                    node_holder, DarkModeFlags(this, flags));
-    } else {
-      font.DrawText(canvas_, text_info, point, device_scale_factor_,
-                    node_holder, flags);
-    }
+    font.DrawText(
+        canvas_, text_info, point, device_scale_factor_, node_id,
+        DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kText));
   });
 }
 
 void GraphicsContext::DrawText(const Font& font,
                                const TextRunPaintInfo& text_info,
                                const FloatPoint& point,
-                               const cc::NodeHolder& node_holder) {
-  DrawTextInternal(font, text_info, point, node_holder);
+                               DOMNodeId node_id) {
+  DrawTextInternal(font, text_info, point, node_id);
 }
 
 void GraphicsContext::DrawText(const Font& font,
                                const NGTextFragmentPaintInfo& text_info,
                                const FloatPoint& point,
-                               const cc::NodeHolder& node_holder) {
-  DrawTextInternal(font, text_info, point, node_holder);
+                               DOMNodeId node_id) {
+  DrawTextInternal(font, text_info, point, node_id);
 }
 
 template <typename TextPaintInfo>
@@ -843,11 +852,12 @@ void GraphicsContext::DrawEmphasisMarksInternal(const Font& font,
   if (ContextDisabled())
     return;
 
-  DrawTextPasses([&font, &text_info, &mark, &point,
-                  this](const PaintFlags& flags) {
-    font.DrawEmphasisMarks(canvas_, text_info, mark, point,
-                           device_scale_factor_, DarkModeFlags(this, flags));
-  });
+  DrawTextPasses(
+      [&font, &text_info, &mark, &point, this](const PaintFlags& flags) {
+        font.DrawEmphasisMarks(
+            canvas_, text_info, mark, point, device_scale_factor_,
+            DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kText));
+      });
 }
 
 void GraphicsContext::DrawEmphasisMarks(const Font& font,
@@ -875,10 +885,12 @@ void GraphicsContext::DrawBidiText(
 
   DrawTextPasses([&font, &run_info, &point, custom_font_not_ready_action,
                   this](const PaintFlags& flags) {
-    if (font.DrawBidiText(canvas_, run_info, point,
-                          custom_font_not_ready_action, device_scale_factor_,
-                          DarkModeFlags(this, flags)))
+    if (font.DrawBidiText(
+            canvas_, run_info, point, custom_font_not_ready_action,
+            device_scale_factor_,
+            DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kText))) {
       paint_controller_.SetTextPainted();
+    }
   });
 }
 
@@ -1019,7 +1031,9 @@ void GraphicsContext::DrawOval(const SkRect& oval, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawOval(oval, DarkModeFlags(this, flags));
+  canvas_->drawOval(
+      oval,
+      DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kBackground));
 }
 
 void GraphicsContext::DrawPath(const SkPath& path, const PaintFlags& flags) {
@@ -1027,7 +1041,9 @@ void GraphicsContext::DrawPath(const SkPath& path, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawPath(path, DarkModeFlags(this, flags));
+  canvas_->drawPath(
+      path,
+      DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kBackground));
 }
 
 void GraphicsContext::DrawRect(const SkRect& rect, const PaintFlags& flags) {
@@ -1035,7 +1051,9 @@ void GraphicsContext::DrawRect(const SkRect& rect, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawRect(rect, DarkModeFlags(this, flags));
+  canvas_->drawRect(
+      rect,
+      DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kBackground));
 }
 
 void GraphicsContext::DrawRRect(const SkRRect& rrect, const PaintFlags& flags) {
@@ -1043,7 +1061,9 @@ void GraphicsContext::DrawRRect(const SkRRect& rrect, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawRRect(rrect, DarkModeFlags(this, flags));
+  canvas_->drawRRect(
+      rrect,
+      DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kBackground));
 }
 
 void GraphicsContext::FillPath(const Path& path_to_fill) {
@@ -1159,7 +1179,10 @@ void GraphicsContext::FillDRRect(const FloatRoundedRect& outer,
       canvas_->drawDRRect(outer, inner, ImmutableState()->FillFlags());
     } else {
       PaintFlags flags(ImmutableState()->FillFlags());
-      flags.setColor(dark_mode_filter_.ApplyIfNeeded(color).Rgb());
+      flags.setColor(dark_mode_filter_
+                         .InvertColorIfNeeded(
+                             color, DarkModeFilter::ElementRole::kBackground)
+                         .Rgb());
       canvas_->drawDRRect(outer, inner, flags);
     }
 
@@ -1172,7 +1195,10 @@ void GraphicsContext::FillDRRect(const FloatRoundedRect& outer,
   stroke_r_rect.inset(stroke_width / 2, stroke_width / 2);
 
   PaintFlags stroke_flags(ImmutableState()->FillFlags());
-  stroke_flags.setColor(dark_mode_filter_.ApplyIfNeeded(color).Rgb());
+  stroke_flags.setColor(
+      dark_mode_filter_
+          .InvertColorIfNeeded(color, DarkModeFilter::ElementRole::kBackground)
+          .Rgb());
   stroke_flags.setStyle(PaintFlags::kStroke_Style);
   stroke_flags.setStrokeWidth(stroke_width);
 
@@ -1327,7 +1353,7 @@ void GraphicsContext::SetURLForRect(const KURL& link,
     return;
   DCHECK(canvas_);
 
-  sk_sp<SkData> url(SkData::MakeWithCString(link.GetString().Utf8().data()));
+  sk_sp<SkData> url(SkData::MakeWithCString(link.GetString().Utf8().c_str()));
   canvas_->Annotate(cc::PaintCanvas::AnnotationType::URL, dest_rect,
                     std::move(url));
 }
@@ -1338,7 +1364,7 @@ void GraphicsContext::SetURLFragmentForRect(const String& dest_name,
     return;
   DCHECK(canvas_);
 
-  sk_sp<SkData> sk_dest_name(SkData::MakeWithCString(dest_name.Utf8().data()));
+  sk_sp<SkData> sk_dest_name(SkData::MakeWithCString(dest_name.Utf8().c_str()));
   canvas_->Annotate(cc::PaintCanvas::AnnotationType::LINK_TO_DESTINATION, rect,
                     std::move(sk_dest_name));
 }
@@ -1350,7 +1376,7 @@ void GraphicsContext::SetURLDestinationLocation(const String& name,
   DCHECK(canvas_);
 
   SkRect rect = SkRect::MakeXYWH(location.X(), location.Y(), 0, 0);
-  sk_sp<SkData> sk_name(SkData::MakeWithCString(name.Utf8().data()));
+  sk_sp<SkData> sk_name(SkData::MakeWithCString(name.Utf8().c_str()));
   canvas_->Annotate(cc::PaintCanvas::AnnotationType::NAMED_DESTINATION, rect,
                     std::move(sk_name));
 }
@@ -1367,7 +1393,10 @@ void GraphicsContext::FillRectWithRoundedHole(
     return;
 
   PaintFlags flags(ImmutableState()->FillFlags());
-  flags.setColor(dark_mode_filter_.ApplyIfNeeded(color).Rgb());
+  flags.setColor(
+      dark_mode_filter_
+          .InvertColorIfNeeded(color, DarkModeFilter::ElementRole::kBackground)
+          .Rgb());
   canvas_->drawDRRect(SkRRect::MakeRect(rect), rounded_hole_rect, flags);
 }
 

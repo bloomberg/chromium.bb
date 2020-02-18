@@ -70,10 +70,10 @@ ScrollableArea& RootFrameViewport::LayoutViewport() const {
   return *layout_viewport_;
 }
 
-LayoutRect RootFrameViewport::RootContentsToLayoutViewportContents(
+PhysicalRect RootFrameViewport::RootContentsToLayoutViewportContents(
     LocalFrameView& root_frame_view,
-    const LayoutRect& rect) const {
-  LayoutRect ret(rect);
+    const PhysicalRect& rect) const {
+  PhysicalRect ret = rect;
 
   // If the root LocalFrameView is the layout viewport then coordinates in the
   // root LocalFrameView's content space are already in the layout viewport's
@@ -85,7 +85,8 @@ LayoutRect RootFrameViewport::RootContentsToLayoutViewportContents(
   // by adding the scroll position.
   // TODO(bokan): This will have to be revisited if we ever remove the
   // restriction that a root scroller must be exactly screen filling.
-  ret.Move(LayoutSize(LayoutViewport().GetScrollOffset()));
+  ret.Move(
+      PhysicalOffset::FromFloatSizeRound(LayoutViewport().GetScrollOffset()));
 
   return ret;
 }
@@ -163,8 +164,7 @@ int RootFrameViewport::VerticalScrollbarWidth(
 }
 
 void RootFrameViewport::UpdateScrollAnimator() {
-  GetScrollAnimator().SetCurrentOffset(
-      ToFloatSize(ScrollOffsetFromScrollAnimators()));
+  GetScrollAnimator().SetCurrentOffset(ScrollOffsetFromScrollAnimators());
 }
 
 ScrollOffset RootFrameViewport::ScrollOffsetFromScrollAnimators() const {
@@ -179,21 +179,22 @@ IntRect RootFrameViewport::VisibleContentRect(
       VisualViewport().VisibleContentRect(scrollbar_inclusion).Size());
 }
 
-LayoutRect RootFrameViewport::VisibleScrollSnapportRect(
+PhysicalRect RootFrameViewport::VisibleScrollSnapportRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   // The effective viewport is the intersection of the visual viewport with the
   // layout viewport.
-  LayoutRect frame_rect_in_content = LayoutRect(
-      FloatPoint(LayoutViewport().GetScrollOffset()),
-      FloatSize(
+  PhysicalRect frame_rect_in_content(
+      PhysicalOffset::FromFloatSizeRound(LayoutViewport().GetScrollOffset()),
+      PhysicalSize(
           LayoutViewport().VisibleContentRect(scrollbar_inclusion).Size()));
-  LayoutRect visual_rect_in_content = LayoutRect(
-      FloatPoint(LayoutViewport().GetScrollOffset() +
-                 VisualViewport().GetScrollAnimator().CurrentOffset()),
-      FloatSize(
+  PhysicalRect visual_rect_in_content(
+      PhysicalOffset::FromFloatSizeRound(
+          LayoutViewport().GetScrollOffset() +
+          VisualViewport().GetScrollAnimator().CurrentOffset()),
+      PhysicalSize(
           VisualViewport().VisibleContentRect(scrollbar_inclusion).Size()));
 
-  LayoutRect visible_scroll_snapport =
+  PhysicalRect visible_scroll_snapport =
       Intersection(visual_rect_in_content, frame_rect_in_content);
   if (!LayoutViewport().GetLayoutBox())
     return visible_scroll_snapport;
@@ -282,13 +283,14 @@ ScrollOffset RootFrameViewport::ClampToUserScrollableOffset(
   return scroll_offset;
 }
 
-LayoutRect RootFrameViewport::ScrollIntoView(
-    const LayoutRect& rect_in_absolute,
+PhysicalRect RootFrameViewport::ScrollIntoView(
+    const PhysicalRect& rect_in_absolute,
     const WebScrollIntoViewParams& params) {
-  LayoutRect scroll_snapport_rect(VisibleScrollSnapportRect());
+  PhysicalRect scroll_snapport_rect = VisibleScrollSnapportRect();
 
-  LayoutRect rect_in_document = rect_in_absolute;
-  rect_in_document.Move(LayoutSize(LayoutViewport().GetScrollOffset()));
+  PhysicalRect rect_in_document = rect_in_absolute;
+  rect_in_document.Move(
+      PhysicalOffset::FromFloatSizeFloor(LayoutViewport().GetScrollOffset()));
 
   ScrollOffset new_scroll_offset =
       ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(
@@ -328,7 +330,8 @@ LayoutRect RootFrameViewport::ScrollIntoView(
   // Return the newly moved rect to absolute coordinates.
   // TODO(szager): PaintLayerScrollableArea::ScrollIntoView clips the return
   // value to the visible content rect, but this does not.
-  rect_in_document.Move(-LayoutSize(LayoutViewport().GetScrollOffset()));
+  rect_in_document.Move(
+      -PhysicalOffset::FromFloatSizeRound(LayoutViewport().GetScrollOffset()));
   return rect_in_document;
 }
 
@@ -476,8 +479,12 @@ GraphicsLayer* RootFrameViewport::LayerForScrollCorner() const {
   return LayoutViewport().LayerForScrollCorner();
 }
 
-ScrollResult RootFrameViewport::UserScroll(ScrollGranularity granularity,
-                                           const FloatSize& delta) {
+ScrollResult RootFrameViewport::UserScroll(
+    ScrollGranularity granularity,
+    const FloatSize& delta,
+    ScrollableArea::ScrollCallback on_finish) {
+  base::ScopedClosureRunner run_on_return(std::move(on_finish));
+
   // TODO(bokan/ymalik): Once smooth scrolling is permanently enabled we
   // should be able to remove this method override and use the base class
   // version: ScrollableArea::userScroll.
@@ -525,14 +532,21 @@ ScrollResult RootFrameViewport::UserScroll(ScrollGranularity granularity,
 
   // TODO(bokan): Why do we call userScroll on the animators directly and
   // not through the ScrollableAreas?
-  ScrollResult visual_result = VisualViewport().GetScrollAnimator().UserScroll(
-      granularity, visual_consumed_delta);
-
-  if (visual_consumed_delta == pixel_delta)
+  if (visual_consumed_delta == pixel_delta) {
+    ScrollResult visual_result =
+        VisualViewport().GetScrollAnimator().UserScroll(
+            granularity, visual_consumed_delta, run_on_return.Release());
     return visual_result;
+  }
+
+  ScrollableArea::ScrollCallback callback = run_on_return.Release();
+  auto all_done = callback ? base::BarrierClosure(2, std::move(callback))
+                           : base::RepeatingClosure();
+  ScrollResult visual_result = VisualViewport().GetScrollAnimator().UserScroll(
+      granularity, visual_consumed_delta, all_done);
 
   ScrollResult layout_result = LayoutViewport().GetScrollAnimator().UserScroll(
-      granularity, scrollable_axis_delta);
+      granularity, scrollable_axis_delta, all_done);
 
   // Remember to add any delta not used because of !userInputScrollable to the
   // unusedScrollDelta in the result.

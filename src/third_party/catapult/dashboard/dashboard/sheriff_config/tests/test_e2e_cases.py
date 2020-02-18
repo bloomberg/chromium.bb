@@ -50,7 +50,8 @@ class LuciPollingTest(unittest.TestCase):
 
   def testPollAndMatch(self):
     client = self.app.test_client()
-    response = client.get('/configs/update')
+    response = client.get(
+        '/configs/update', headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 200)
     response = client.post(
         '/subscriptions/match',
@@ -64,7 +65,8 @@ class LuciPollingTest(unittest.TestCase):
                 'benchmark': 'Test',
                 'metric_parts': ['Metric', 'Something'],
             }
-        })
+        },
+        headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 200)
     response_proto = response.get_json()
     self.assertDictEqual(
@@ -86,7 +88,8 @@ class LuciPollingTest(unittest.TestCase):
 
   def testPollAndMatchMultiple(self):
     client = self.app.test_client()
-    response = client.get('/configs/update')
+    response = client.get(
+        '/configs/update', headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 200)
     response = client.post(
         '/subscriptions/match',
@@ -100,7 +103,8 @@ class LuciPollingTest(unittest.TestCase):
                 'benchmark': 'Test',
                 'metric_parts': ['Metric', 'Something'],
             }
-        })
+        },
+        headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 200)
     response_proto = response.get_json()
     self.assertDictEqual(
@@ -134,7 +138,8 @@ class LuciPollingTest(unittest.TestCase):
 
   def testPollAndMatchNone(self):
     client = self.app.test_client()
-    response = client.get('/configs/update')
+    response = client.get(
+        '/configs/update', headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 200)
     response = client.post(
         '/subscriptions/match',
@@ -148,7 +153,8 @@ class LuciPollingTest(unittest.TestCase):
                 'benchmark': 'Test',
                 'metric_parts': ['Metric', 'Something'],
             }
-        })
+        },
+        headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 404)
 
 
@@ -174,7 +180,8 @@ class LuciContentChangesTest(unittest.TestCase):
                 'benchmark': 'Test',
                 'metric_parts': ['Metric', 'Something'],
             }
-        })
+        },
+        headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, expected_code)
     if expected_code != 200:
       return
@@ -209,7 +216,8 @@ class LuciContentChangesTest(unittest.TestCase):
                 'benchmark': 'Test',
                 'metric_parts': ['Metric', 'Something'],
             }
-        })
+        },
+        headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, expected_code)
     if expected_code != 200:
       return
@@ -243,6 +251,28 @@ class LuciContentChangesTest(unittest.TestCase):
             }]
         })
 
+  def testPollAndEmptyConfigs(self):
+    app = service.CreateApp({
+        'environ': {
+            'GOOGLE_CLOUD_PROJECT': 'chromeperf',
+            'GAE_SERVICE': 'sheriff-config',
+        },
+        'datastore_client':
+            datastore.Client(
+                credentials=credentials.AnonymousCredentials(),
+                project='chromeperf'),
+        'http':
+            HttpMockSequence([({
+                'status': '200'
+            }, self.discovery_file), ({
+                'status': '200'
+            }, '{}')])
+    })
+    client = app.test_client()
+    response = client.get(
+        '/configs/update', headers={'X-Forwarded-Proto': 'https'})
+    self.assertEqual(response.status_code, 200)
+
   def testPollConfigAddsAndRemoves(self):
     with open('tests/sample-configs-get_project_configs_reduced.json'
              ) as sample_config_file:
@@ -268,14 +298,16 @@ class LuciContentChangesTest(unittest.TestCase):
 
     # Step 1: Get one configuration with two config sets.
     client = app.test_client()
-    response = client.get('/configs/update')
+    response = client.get(
+        '/configs/update', headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 200)
 
     self.AssertProjectConfigSet1Holds(client, 200)
     self.AssertProjectConfigSet2Holds(client, 200)
 
     # Step 2: Get another configuration, this time with just one config set.
-    response = client.get('/configs/update')
+    response = client.get(
+        '/configs/update', headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 200)
 
     self.AssertProjectConfigSet1Holds(client, 404)
@@ -325,11 +357,13 @@ class LuciContentChangesTest(unittest.TestCase):
     client = app.test_client()
 
     # Step 1: Get an invalid config.
-    response = client.get('/configs/update')
+    response = client.get(
+        '/configs/update', headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 500)
 
     # Step 2: Get a config that's valid.
-    response = client.get('/configs/update')
+    response = client.get(
+        '/configs/update', headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 200)
 
     self.AssertProjectConfigSet1Holds(client, 200)
@@ -337,7 +371,8 @@ class LuciContentChangesTest(unittest.TestCase):
 
     # Step 3: Get a config that's invalid, but ensure that the valid config
     # holds.
-    response = client.get('/configs/update')
+    response = client.get(
+        '/configs/update', headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 500)
     self.AssertProjectConfigSet1Holds(client, 200)
     self.AssertProjectConfigSet2Holds(client, 200)

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/cssom/css_math_product.h"
 
-#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_invert.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -81,18 +81,19 @@ base::Optional<CSSNumericSumValue> CSSMathProduct::SumValue() const {
   return sum;
 }
 
-CSSCalcExpressionNode* CSSMathProduct::ToCalcExpressionNode() const {
+CSSMathExpressionNode* CSSMathProduct::ToCalcExpressionNode() const {
   // TODO(crbug.com/782103): Handle the single value case correctly.
   if (NumericValues().size() == 1)
     return NumericValues()[0]->ToCalcExpressionNode();
 
-  CSSCalcExpressionNode* node = CSSCalcValue::CreateExpressionNode(
+  CSSMathExpressionNode* node = CSSMathExpressionBinaryOperation::Create(
       NumericValues()[0]->ToCalcExpressionNode(),
-      NumericValues()[1]->ToCalcExpressionNode(), kCalcMultiply);
+      NumericValues()[1]->ToCalcExpressionNode(), CSSMathOperator::kMultiply);
 
   for (wtf_size_t i = 2; i < NumericValues().size(); i++) {
-    node = CSSCalcValue::CreateExpressionNode(
-        node, NumericValues()[i]->ToCalcExpressionNode(), kCalcMultiply);
+    node = CSSMathExpressionBinaryOperation::Create(
+        node, NumericValues()[i]->ToCalcExpressionNode(),
+        CSSMathOperator::kMultiply);
   }
 
   return node;

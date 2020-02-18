@@ -19,12 +19,17 @@
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
-#include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
+#include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
 #include "components/viz/host/viz_host_export.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/config/gpu_domain_guilt.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "gpu/config/gpu_extra_info.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
@@ -44,33 +49,6 @@ class ShaderDiskCache;
 
 namespace viz {
 
-// Contains either an interface or an associated interface pointer to a
-// mojom::VizMain implementation and routes the requests appropriately.
-class VIZ_HOST_EXPORT VizMainWrapper {
- public:
-  explicit VizMainWrapper(mojom::VizMainPtr viz_main_ptr);
-  explicit VizMainWrapper(mojom::VizMainAssociatedPtr viz_main_associated_ptr);
-  ~VizMainWrapper();
-
-  void CreateGpuService(
-      mojom::GpuServiceRequest request,
-      mojom::GpuHostPtr gpu_host,
-      discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
-          discardable_memory_manager,
-      mojo::ScopedSharedBufferHandle activity_flags,
-      gfx::FontRenderParams::SubpixelRendering subpixel_rendering);
-  void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params);
-#if defined(USE_VIZ_DEVTOOLS)
-  void CreateVizDevTools(mojom::VizDevToolsParamsPtr params);
-#endif
-
- private:
-  mojom::VizMainPtr viz_main_ptr_;
-  mojom::VizMainAssociatedPtr viz_main_associated_ptr_;
-
-  DISALLOW_COPY_AND_ASSIGN(VizMainWrapper);
-};
-
 class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
  public:
   class VIZ_HOST_EXPORT Delegate {
@@ -82,7 +60,8 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
         const gpu::GpuFeatureInfo& gpu_feature_info,
         const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
         const base::Optional<gpu::GpuFeatureInfo>&
-            gpu_feature_info_for_hardware_gpu) = 0;
+            gpu_feature_info_for_hardware_gpu,
+        const gpu::GpuExtraInfo& gpu_extra_info) = 0;
     virtual void DidFailInitialize() = 0;
     virtual void DidCreateContextSuccessfully() = 0;
     virtual void BlockDomainFrom3DAPIs(const GURL& url,
@@ -154,7 +133,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
                               EstablishChannelStatus)>;
 
   GpuHostImpl(Delegate* delegate,
-              std::unique_ptr<VizMainWrapper> viz_main_ptr,
+              mojo::PendingAssociatedRemote<mojom::VizMain> viz_main,
               InitParams params);
   ~GpuHostImpl() override;
 
@@ -225,7 +204,8 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
       const gpu::GpuFeatureInfo& gpu_feature_info,
       const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
       const base::Optional<gpu::GpuFeatureInfo>&
-          gpu_feature_info_for_hardware_gpu) override;
+          gpu_feature_info_for_hardware_gpu,
+      const gpu::GpuExtraInfo& gpu_extra_info) override;
   void DidFailInitialize() override;
   void DidCreateContextSuccessfully() override;
   void DidCreateOffscreenContext(const GURL& url) override;
@@ -247,14 +227,14 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
                         const std::string& message) override;
 
   Delegate* const delegate_;
-  std::unique_ptr<VizMainWrapper> viz_main_ptr_;
+  mojo::AssociatedRemote<mojom::VizMain> viz_main_;
   const InitParams params_;
 
   // Task runner corresponding to the thread |this| is created on.
   scoped_refptr<base::SingleThreadTaskRunner> host_thread_task_runner_;
 
-  mojom::GpuServicePtr gpu_service_ptr_;
-  mojo::Binding<mojom::GpuHost> gpu_host_binding_;
+  mojo::Remote<mojom::GpuService> gpu_service_remote_;
+  mojo::Receiver<mojom::GpuHost> gpu_host_receiver_{this};
   gpu::GpuProcessHostActivityFlags activity_flags_;
 
   base::ProcessId pid_ = base::kNullProcessId;
@@ -284,7 +264,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<GpuHostImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<GpuHostImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuHostImpl);
 };

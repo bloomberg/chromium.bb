@@ -1,0 +1,119 @@
+=encoding utf8
+
+=head1 NAME
+
+Mail::Util - mail utility functions
+
+=head1 INHERITANCE
+
+ Mail::Util
+   is a Exporter
+
+=head1 SYNOPSIS
+
+  use Mail::Util qw( ... );
+
+=head1 DESCRIPTION
+
+This package provides several mail related utility functions. Any function
+required must by explicitly listed on the use line to be exported into
+the calling package.
+
+=head1 FUNCTIONS
+
+=over 4
+
+=item B<mailaddress>( [$address] )
+
+Return a guess at the current users mail address. The user can force
+the return value by setting the MAILADDRESS environment variable.
+[2.10] You may set the $address via the parameter.
+
+WARNING:
+When not supplied via the environment variable, <mailaddress> looks at
+various configuration files and other environmental data. Although this
+seems to be smart behavior, this is not predictable enough (IMHO) to
+be used.  Please set the MAILADDRESS explicitly, and do not trust on
+the "automatic detection", even when that produces a correct address
+(on the moment)
+
+example: 
+
+ # in your main script
+ $ENV{MAILADDRESS} = 'me@example.com';
+
+ # everywhere else
+ use Mail::Util 'mailaddress';
+ print mailaddress;
+
+ # since v2.10
+ mailaddress "me@example.com";
+
+=item B<maildomain>()
+
+Attempt to determine the current user mail domain string via the following
+methods
+
+=over 4
+
+=item * Look for the MAILDOMAIN environment variable, which can be set from outside the program.  This is by far the best way to configure the domain.
+
+=item * Look for a sendmail.cf file and extract DH parameter
+
+=item * Look for a smail config file and usr the first host defined in hostname(s)
+
+=item * Try an SMTP connect (if Net::SMTP exists) first to mailhost then localhost
+
+=item * Use value from Net::Domain::domainname (if Net::Domain exists)
+
+=back
+
+WARNING:
+On modern machines, there is only one good way to provide information to
+this method: the first; always explicitly configure the MAILDOMAIN.
+
+example: 
+
+ # in your main script
+ $ENV{MAILDOMAIN} = 'example.com';
+
+ # everywhere else
+ use Mail::Util 'maildomain';
+ print maildomain;
+
+=item B<read_mbox>($file)
+
+Read $file, a binmail mailbox file, and return a list of  references.
+Each reference is a reference to an array containing one message.
+
+WARNING:
+This method does not quote lines which accidentally also start with the
+message separator C<From>, so this implementation can be considered
+broken.  See Mail::Box::Mbox
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of the MailTools distribution,
+F<http://perl.overmeer.net/mailtools/>.
+
+=head1 AUTHORS
+
+The MailTools bundle was developed by Graham Barr.  Later, Mark
+Overmeer took over maintenance without commitment to further development.
+
+Mail::Cap by Gisle Aas E<lt>aas@oslonett.noE<gt>.
+Mail::Field::AddrList by Peter Orbaek E<lt>poe@cit.dkE<gt>.
+Mail::Mailer and Mail::Send by Tim Bunce E<lt>Tim.Bunce@ig.co.ukE<gt>.
+For other contributors see ChangeLog.
+
+=head1 LICENSE
+
+Copyrights 1995-2000 Graham Barr E<lt>gbarr@pobox.comE<gt> and
+2001-2017 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
+

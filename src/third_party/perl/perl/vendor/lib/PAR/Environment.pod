@@ -50,26 +50,10 @@ This works the same for executable binaries (F<.exe>, ...).
 If you are looking for the name and path of the pp-ed binary file,
 please refer to the C<PAR_PROGNAME> variable.
 
-=head2 PAR_ARGC, PAR_ARGV_0, PAR_ARGV_...
-
-You should not rely on these variables outside of the PAR binary loader
-code.
-
-These variables are set when a non-dependent pp-ed binary executable
-runs. The initially executed process extracts another binary and runs
-it as a child process. In order to pass its command line arguments to
-the child, the parent process sets C<PAR_ARG*> as they would be
-used in C programs: C<PAR_ARGC> has the number of arguments, C<PAR_ARGV_0>
-has the name of the executable, C<PAR_ARGV_*> are the command line arguments.
-
-If you would like to access the name of the running program (script or binary),
-please refer to C<PAR_0> and C<PAR_PROGNAME> instead!
-
-Related: C<PAR_SPAWNED>, C<PAR_0>, C<PAR_PROGNAME>
-
 =head2 PAR_CLEAN
 
 Users should set C<PAR_GLOBAL_CLEAN> instead.
+
 Recreated from C<PAR_GLOBAL_CLEAN> and the value of C<-C> from the YAML file
 by the PAR loader, and used within loader to control the initial behavior
 of extraction, and the final behavior of cleanup.  The user can reference
@@ -158,7 +142,7 @@ the child process that it's the child.
 You should not rely on this variable outside of the PAR binary loader
 code. For a slightly more detailed discussion, please refer to the
 F<who_am_i.txt> documentation file in the PAR source distribution
-which was contributed by Alan Stewart. Related: C<PAR_ARGC>, C<PAR_ARGV_*>
+which was contributed by Alan Stewart.
 
 Documented only to avoid surprises if spawned applications expect
 to see a value initialized by the user.
@@ -216,10 +200,7 @@ Please refer to C<PAR_TMPDIR>.
 
 =head1 SEE ALSO
 
-The PAR homepage at L<http://par.perl.org>.
-
-L<PAR>, L<PAR::Tutorial>, L<PAR::FAQ> (For a more current FAQ,
-refer to the homepage.)
+L<PAR>, L<PAR::Tutorial>, L<PAR::FAQ>
 
 L<par.pl>, L<parl>, L<pp>
 
@@ -229,7 +210,7 @@ L<PAR::Dist> for details on PAR distributions.
 
 Steffen Mueller E<lt>smueller@cpan.orgE<gt>
 
-L<http://par.perl.org/> is the official PAR website.  You can write
+You can write
 to the mailing list at E<lt>par@perl.orgE<gt>, or send an empty mail to
 E<lt>par-subscribe@perl.orgE<gt> to participate in the discussion.
 
@@ -251,6 +232,6 @@ F<contrib/> folder of the PAR distribution.
 This program or documentation is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See F<LICENSE>.
 
 =cut

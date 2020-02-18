@@ -50,7 +50,6 @@ public class OAuth2TokenServiceIntegrationTest {
 
     private OAuth2TokenService mOAuth2TokenService;
     private FakeAccountManagerDelegate mAccountManager;
-    private TestObserver mObserver;
     private ChromeSigninController mChromeSigninController;
 
     @Before
@@ -75,10 +74,6 @@ public class OAuth2TokenServiceIntegrationTest {
 
             // Get a reference to the service.
             mOAuth2TokenService = IdentityServicesProvider.getOAuth2TokenService();
-
-            // Set up observer.
-            mObserver = new TestObserver();
-            mOAuth2TokenService.addObserver(mObserver);
         });
     }
 
@@ -137,10 +132,6 @@ public class OAuth2TokenServiceIntegrationTest {
             // Run test.
             mOAuth2TokenService.updateAccountList();
 
-            // Ensure no calls have been made to the observer.
-            Assert.assertEquals(0, mObserver.getAvailableCallCount());
-            Assert.assertEquals(0, mObserver.getRevokedCallCount());
-            Assert.assertEquals(0, mObserver.getLoadedCallCount());
             Assert.assertArrayEquals("No account: getAccounts must be empty", new String[] {},
                     OAuth2TokenService.getAccounts());
         });
@@ -155,10 +146,6 @@ public class OAuth2TokenServiceIntegrationTest {
             // Run test.
             mOAuth2TokenService.updateAccountList();
 
-            // Ensure no calls have been made to the observer.
-            Assert.assertEquals(0, mObserver.getAvailableCallCount());
-            Assert.assertEquals(0, mObserver.getRevokedCallCount());
-            Assert.assertEquals(0, mObserver.getLoadedCallCount());
             Assert.assertArrayEquals("No signed in account: getAccounts must be empty",
                     new String[] {}, OAuth2TokenService.getAccounts());
         });
@@ -176,23 +163,10 @@ public class OAuth2TokenServiceIntegrationTest {
             // Run test.
             mOAuth2TokenService.updateAccountList();
 
-            // Ensure one call for the signed in account.
-            Assert.assertEquals(1, mObserver.getAvailableCallCount());
-            Assert.assertEquals(0, mObserver.getRevokedCallCount());
-            Assert.assertEquals(0, mObserver.getLoadedCallCount());
             Assert.assertArrayEquals("Signed in: one account should be available",
                     new String[] {AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT1.name)},
                     OAuth2TokenService.getAccounts());
 
-            // Validate again and make sure one new call is made.
-            mOAuth2TokenService.updateAccountList();
-            Assert.assertEquals(2, mObserver.getAvailableCallCount());
-            Assert.assertEquals(0, mObserver.getRevokedCallCount());
-            Assert.assertEquals(0, mObserver.getLoadedCallCount());
-
-            Assert.assertArrayEquals("Signed in: one account should be available",
-                    new String[] {AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT1.name)},
-                    OAuth2TokenService.getAccounts());
         });
     }
 
@@ -225,9 +199,6 @@ public class OAuth2TokenServiceIntegrationTest {
 
             // Run one validation.
             mOAuth2TokenService.updateAccountList();
-            Assert.assertEquals(1, mObserver.getAvailableCallCount());
-            Assert.assertEquals(0, mObserver.getRevokedCallCount());
-            Assert.assertEquals(0, mObserver.getLoadedCallCount());
 
             Assert.assertArrayEquals("Signed in and one account available",
                     new String[] {AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT1.name)},
@@ -240,9 +211,6 @@ public class OAuth2TokenServiceIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Re-run validation.
             mOAuth2TokenService.updateAccountList();
-            Assert.assertEquals(3, mObserver.getAvailableCallCount());
-            Assert.assertEquals(0, mObserver.getRevokedCallCount());
-            Assert.assertEquals(0, mObserver.getLoadedCallCount());
 
             Assert.assertEquals("Signed in and two accounts available",
                     new HashSet<String>(Arrays.asList(
@@ -265,9 +233,6 @@ public class OAuth2TokenServiceIntegrationTest {
 
             // Run one validation.
             mOAuth2TokenService.updateAccountList();
-            Assert.assertEquals(2, mObserver.getAvailableCallCount());
-            Assert.assertEquals(0, mObserver.getRevokedCallCount());
-            Assert.assertEquals(0, mObserver.getLoadedCallCount());
 
             Assert.assertEquals("Signed in and two accounts available",
                     new HashSet<String>(Arrays.asList(
@@ -281,9 +246,6 @@ public class OAuth2TokenServiceIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mOAuth2TokenService.updateAccountList();
 
-            Assert.assertEquals(3, mObserver.getAvailableCallCount());
-            Assert.assertEquals(1, mObserver.getRevokedCallCount());
-            Assert.assertEquals(0, mObserver.getLoadedCallCount());
             Assert.assertArrayEquals(
                     "Only one account available, account2 should not be returned anymore",
                     new String[] {AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT1.name)},
@@ -303,9 +265,6 @@ public class OAuth2TokenServiceIntegrationTest {
             mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
 
             mOAuth2TokenService.updateAccountList();
-            Assert.assertEquals(2, mObserver.getAvailableCallCount());
-            Assert.assertEquals(0, mObserver.getRevokedCallCount());
-            Assert.assertEquals(0, mObserver.getLoadedCallCount());
 
             Assert.assertEquals("Signed in and two accounts available",
                     new HashSet<String>(Arrays.asList(
@@ -321,9 +280,6 @@ public class OAuth2TokenServiceIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Re-validate and run checks.
             mOAuth2TokenService.updateAccountList();
-            Assert.assertEquals(2, mObserver.getAvailableCallCount());
-            Assert.assertEquals(2, mObserver.getRevokedCallCount());
-            Assert.assertEquals(0, mObserver.getLoadedCallCount());
 
             Assert.assertArrayEquals(
                     "No account available", new String[] {}, OAuth2TokenService.getAccounts());
@@ -343,9 +299,6 @@ public class OAuth2TokenServiceIntegrationTest {
             mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
 
             mOAuth2TokenService.updateAccountList();
-            Assert.assertEquals(2, mObserver.getAvailableCallCount());
-            Assert.assertEquals(0, mObserver.getRevokedCallCount());
-            Assert.assertEquals(0, mObserver.getLoadedCallCount());
 
             Assert.assertEquals("Signed in and two accounts available",
                     new HashSet<String>(Arrays.asList(
@@ -363,9 +316,6 @@ public class OAuth2TokenServiceIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Re-validate and run checks.
             mOAuth2TokenService.updateAccountList();
-            Assert.assertEquals(2, mObserver.getAvailableCallCount());
-            Assert.assertEquals(2, mObserver.getRevokedCallCount());
-            Assert.assertEquals(0, mObserver.getLoadedCallCount());
 
             Assert.assertEquals("Not signed in and no accounts available", new String[] {},
                     OAuth2TokenService.getAccounts());
@@ -386,11 +336,6 @@ public class OAuth2TokenServiceIntegrationTest {
             // Run test.
             mOAuth2TokenService.updateAccountList();
 
-            // All accounts will be notified. It is up to the observer
-            // to design if any action is needed.
-            Assert.assertEquals(2, mObserver.getAvailableCallCount());
-            Assert.assertEquals(0, mObserver.getRevokedCallCount());
-            Assert.assertEquals(0, mObserver.getLoadedCallCount());
             Assert.assertEquals("Signed in and two accounts available",
                     new HashSet<String>(Arrays.asList(
                             AccountIdProvider.getInstance().getAccountId(TEST_ACCOUNT1.name),
@@ -409,71 +354,8 @@ public class OAuth2TokenServiceIntegrationTest {
             // Run test.
             mOAuth2TokenService.updateAccountList();
 
-            // Ensure no calls have been made to the observer.
-            Assert.assertEquals(0, mObserver.getAvailableCallCount());
-            Assert.assertEquals(0, mObserver.getRevokedCallCount());
-            Assert.assertEquals(0, mObserver.getLoadedCallCount());
             Assert.assertEquals(
                     "No accounts available", new String[] {}, OAuth2TokenService.getAccounts());
         });
-    }
-
-    @Test
-    @MediumTest
-    public void testUpdateAccountListFiresEventAtTheEnd() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Mark user as signed in without setting up the account.
-            mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
-            TestObserver ob = new TestObserver() {
-                @Override
-                public void onRefreshTokenAvailable(Account account) {
-                    super.onRefreshTokenAvailable(account);
-                    Assert.assertEquals(1, OAuth2TokenService.getAccounts().length);
-                }
-            };
-
-            mOAuth2TokenService.addObserver(ob);
-            mOAuth2TokenService.updateAccountList();
-        });
-    }
-
-    private static class TestObserver implements OAuth2TokenService.OAuth2TokenServiceObserver {
-        private int mAvailableCallCount;
-        private int mRevokedCallCount;
-        private int mLoadedCallCount;
-        private Account mLastAccount;
-
-        @Override
-        public void onRefreshTokenAvailable(Account account) {
-            mAvailableCallCount++;
-            mLastAccount = account;
-        }
-
-        @Override
-        public void onRefreshTokenRevoked(Account account) {
-            mRevokedCallCount++;
-            mLastAccount = account;
-        }
-
-        @Override
-        public void onRefreshTokensLoaded() {
-            mLoadedCallCount++;
-        }
-
-        public int getAvailableCallCount() {
-            return mAvailableCallCount;
-        }
-
-        public int getRevokedCallCount() {
-            return mRevokedCallCount;
-        }
-
-        public int getLoadedCallCount() {
-            return mLoadedCallCount;
-        }
-
-        public Account getLastAccount() {
-            return mLastAccount;
-        }
     }
 }

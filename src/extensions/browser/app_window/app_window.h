@@ -412,17 +412,16 @@ class AppWindow : public content::WebContentsDelegate,
       const GURL& origin,
       const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents* source) override;
-  bool IsFullscreenForTabOrPending(
-      const content::WebContents* source) const override;
+  bool IsFullscreenForTabOrPending(const content::WebContents* source) override;
   blink::WebDisplayMode GetDisplayMode(
-      const content::WebContents* source) const override;
+      const content::WebContents* source) override;
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       content::MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  blink::MediaStreamType type) override;
+                                  blink::mojom::MediaStreamType type) override;
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
@@ -447,9 +446,10 @@ class AppWindow : public content::WebContentsDelegate,
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;
   bool TakeFocus(content::WebContents* source, bool reverse) override;
-  gfx::Size EnterPictureInPicture(content::WebContents* web_contents,
-                                  const viz::SurfaceId& surface_id,
-                                  const gfx::Size& natural_size) override;
+  content::PictureInPictureResult EnterPictureInPicture(
+      content::WebContents* web_contents,
+      const viz::SurfaceId& surface_id,
+      const gfx::Size& natural_size) override;
   void ExitPictureInPicture() override;
 
   // content::WebContentsObserver implementation.
@@ -595,7 +595,7 @@ class AppWindow : public content::WebContentsDelegate,
   // processes.
   bool did_finish_first_navigation_ = false;
 
-  base::WeakPtrFactory<AppWindow> image_loader_ptr_factory_;
+  base::WeakPtrFactory<AppWindow> image_loader_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppWindow);
 };

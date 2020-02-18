@@ -172,7 +172,7 @@ void SerialConnectFunction::FinishConnect(
     // If a SerialConnection encountered a mojo connection error, it just
     // becomes useless, we won't try to re-connect it but just remove it
     // completely.
-    GetSerialConnection(id)->set_connection_error_handler(base::BindOnce(
+    GetSerialConnection(id)->SetConnectionErrorHandler(base::BindOnce(
         [](scoped_refptr<ApiResourceManager<SerialConnection>::ApiResourceData>
                connections,
            std::string extension_id, int api_resource_id) {
@@ -227,14 +227,22 @@ bool SerialDisconnectFunction::Prepare() {
   return true;
 }
 
-void SerialDisconnectFunction::Work() {
+void SerialDisconnectFunction::AsyncWorkStart() {
   SerialConnection* connection = GetSerialConnection(params_->connection_id);
   if (!connection) {
     error_ = kErrorSerialConnectionNotFound;
+    AsyncWorkCompleted();
     return;
   }
-  RemoveSerialConnection(params_->connection_id);
+
+  connection->Close(
+      base::BindOnce(&SerialDisconnectFunction::OnCloseComplete, this));
+}
+
+void SerialDisconnectFunction::OnCloseComplete() {
   results_ = serial::Disconnect::Results::Create(true);
+  RemoveSerialConnection(params_->connection_id);
+  AsyncWorkCompleted();
 }
 
 SerialSendFunction::SerialSendFunction() {}
@@ -320,7 +328,7 @@ void SerialSetPausedFunction::Work() {
   }
 
   if (params_->paused != connection->paused()) {
-    connection->set_paused(params_->paused);
+    connection->SetPaused(params_->paused);
   }
 
   results_ = serial::SetPaused::Results::Create();

@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MODULATOR_H_
 
 #include "base/single_thread_task_runner.h"
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
@@ -44,7 +44,7 @@ class CORE_EXPORT SingleModuleClient
       public NameClient {
  public:
   virtual ~SingleModuleClient() = default;
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
   const char* NameInHeapSnapshot() const override {
     return "SingleModuleClient";
   }
@@ -59,7 +59,7 @@ class CORE_EXPORT ModuleTreeClient
       public NameClient {
  public:
   virtual ~ModuleTreeClient() = default;
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
   const char* NameInHeapSnapshot() const override { return "ModuleTreeClient"; }
 
   virtual void NotifyModuleTreeLoadFinished(ModuleScript*) = 0;
@@ -107,7 +107,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   static void SetModulator(ScriptState*, Modulator*);
   static void ClearModulator(ScriptState*);
 
-  void Trace(blink::Visitor* visitor) override {}
+  void Trace(Visitor* visitor) override {}
   const char* NameInHeapSnapshot() const override { return "Modulator"; }
 
   virtual ModuleRecordResolver* GetModuleRecordResolver() = 0;
@@ -122,8 +122,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual bool IsScriptingDisabled() const = 0;
 
   virtual bool BuiltInModuleInfraEnabled() const = 0;
-  virtual bool BuiltInModuleEnabled(blink::layered_api::Module) const = 0;
-  virtual void BuiltInModuleUseCount(blink::layered_api::Module) const = 0;
+  virtual bool BuiltInModuleEnabled(layered_api::Module) const = 0;
+  virtual void BuiltInModuleUseCount(layered_api::Module) const = 0;
 
   // https://html.spec.whatwg.org/C/#fetch-a-module-script-tree
   // https://html.spec.whatwg.org/C/#fetch-a-module-worker-script-tree

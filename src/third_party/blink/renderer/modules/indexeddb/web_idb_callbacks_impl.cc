@@ -118,9 +118,10 @@ void WebIDBCallbacksImpl::Error(int32_t code, const String& message) {
   }
 
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "error");
-  request_->HandleResponse(MakeGarbageCollected<DOMException>(
-      static_cast<DOMExceptionCode>(code), message));
+  IDBRequest* request = request_.Get();
   Detach();
+  request->HandleResponse(MakeGarbageCollected<DOMException>(
+      static_cast<DOMExceptionCode>(code), message));
 }
 
 void WebIDBCallbacksImpl::SuccessNamesAndVersionsList(
@@ -137,8 +138,9 @@ void WebIDBCallbacksImpl::SuccessStringList(const Vector<String>& string_list) {
 #if DCHECK_IS_ON()
   DCHECK(!request_->TransactionHasQueuedResults());
 #endif  // DCHECK_IS_ON()
-  request_->EnqueueResponse(std::move(string_list));
+  IDBRequest* request = request_.Get();
   Detach();
+  request->EnqueueResponse(std::move(string_list));
 }
 
 void WebIDBCallbacksImpl::SuccessCursor(
@@ -162,9 +164,10 @@ void WebIDBCallbacksImpl::SuccessCursor(
 
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
   value->SetIsolate(request_->GetIsolate());
-  request_->HandleResponse(std::move(cursor), std::move(key),
-                           std::move(primary_key), std::move(value));
+  IDBRequest* request = request_.Get();
   Detach();
+  request->HandleResponse(std::move(cursor), std::move(key),
+                          std::move(primary_key), std::move(value));
 }
 
 void WebIDBCallbacksImpl::SuccessCursorPrefetch(
@@ -193,8 +196,9 @@ void WebIDBCallbacksImpl::SuccessDatabase(
 #if DCHECK_IS_ON()
     DCHECK(!request_->TransactionHasQueuedResults());
 #endif  // DCHECK_IS_ON()
-    request_->EnqueueResponse(std::move(db), IDBDatabaseMetadata(metadata));
+    IDBRequest* request = request_.Get();
     Detach();
+    request->EnqueueResponse(std::move(db), IDBDatabaseMetadata(metadata));
   } else if (db) {
     db->Close();
   }
@@ -205,8 +209,9 @@ void WebIDBCallbacksImpl::SuccessKey(std::unique_ptr<IDBKey> key) {
     return;
 
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
-  request_->HandleResponse(std::move(key));
+  IDBRequest* request = request_.Get();
   Detach();
+  request->HandleResponse(std::move(key));
 }
 
 void WebIDBCallbacksImpl::SuccessValue(
@@ -217,8 +222,9 @@ void WebIDBCallbacksImpl::SuccessValue(
   std::unique_ptr<IDBValue> value = ConvertReturnValue(return_value);
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
   value->SetIsolate(request_->GetIsolate());
-  request_->HandleResponse(std::move(value));
+  IDBRequest* request = request_.Get();
   Detach();
+  request->HandleResponse(std::move(value));
 }
 
 void WebIDBCallbacksImpl::SuccessArray(
@@ -234,8 +240,9 @@ void WebIDBCallbacksImpl::SuccessArray(
     idb_value->SetIsolate(request_->GetIsolate());
     idb_values.emplace_back(std::move(idb_value));
   }
-  request_->HandleResponse(std::move(idb_values));
+  IDBRequest* request = request_.Get();
   Detach();
+  request->HandleResponse(std::move(idb_values));
 }
 
 void WebIDBCallbacksImpl::SuccessInteger(int64_t value) {
@@ -243,8 +250,9 @@ void WebIDBCallbacksImpl::SuccessInteger(int64_t value) {
     return;
 
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
-  request_->HandleResponse(value);
+  IDBRequest* request = request_.Get();
   Detach();
+  request->HandleResponse(value);
 }
 
 void WebIDBCallbacksImpl::Success() {
@@ -252,8 +260,9 @@ void WebIDBCallbacksImpl::Success() {
     return;
 
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
-  request_->HandleResponse();
+  IDBRequest* request = request_.Get();
   Detach();
+  request->HandleResponse();
 }
 
 void WebIDBCallbacksImpl::SuccessCursorContinue(
@@ -273,9 +282,10 @@ void WebIDBCallbacksImpl::SuccessCursorContinue(
   }
   DCHECK(value);
   value->SetIsolate(request_->GetIsolate());
-  request_->HandleResponse(std::move(key), std::move(primary_key),
-                           std::move(value));
+  IDBRequest* request = request_.Get();
   Detach();
+  request->HandleResponse(std::move(key), std::move(primary_key),
+                          std::move(value));
 }
 
 void WebIDBCallbacksImpl::Blocked(int64_t old_version) {

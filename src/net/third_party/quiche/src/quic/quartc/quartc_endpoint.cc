@@ -100,11 +100,11 @@ void QuartcClientEndpoint::OnCongestionControlChange(
                                        latest_rtt);
 }
 
-void QuartcClientEndpoint::OnConnectionClosed(QuicErrorCode error_code,
-                                              const std::string& error_details,
-                                              ConnectionCloseSource source) {
+void QuartcClientEndpoint::OnConnectionClosed(
+    const QuicConnectionCloseFrame& frame,
+    ConnectionCloseSource source) {
   // First, see if we can restart the session with a mutually-supported version.
-  if (error_code == QUIC_INVALID_VERSION && session_ &&
+  if (frame.quic_error_code == QUIC_INVALID_VERSION && session_ &&
       session_->connection() &&
       !session_->connection()->server_supported_versions().empty()) {
     for (const auto& client_version :
@@ -122,7 +122,7 @@ void QuartcClientEndpoint::OnConnectionClosed(QuicErrorCode error_code,
 
   // Permanent version negotiation errors are forwarded to the |delegate_|,
   // along with all other errors.
-  delegate_->OnConnectionClosed(error_code, error_details, source);
+  delegate_->OnConnectionClosed(frame, source);
 }
 
 void QuartcClientEndpoint::OnMessageReceived(QuicStringPiece message) {
@@ -131,6 +131,15 @@ void QuartcClientEndpoint::OnMessageReceived(QuicStringPiece message) {
 
 void QuartcClientEndpoint::OnMessageSent(int64_t datagram_id) {
   delegate_->OnMessageSent(datagram_id);
+}
+
+void QuartcClientEndpoint::OnMessageAcked(int64_t datagram_id,
+                                          QuicTime receive_timestamp) {
+  delegate_->OnMessageAcked(datagram_id, receive_timestamp);
+}
+
+void QuartcClientEndpoint::OnMessageLost(int64_t datagram_id) {
+  delegate_->OnMessageLost(datagram_id);
 }
 
 QuartcServerEndpoint::QuartcServerEndpoint(
@@ -157,8 +166,8 @@ void QuartcServerEndpoint::Connect(QuartcPacketTransport* packet_transport) {
   DCHECK(pre_connection_helper_ != nullptr);
   dispatcher_ = QuicMakeUnique<QuartcDispatcher>(
       QuicMakeUnique<QuicConfig>(CreateQuicConfig(config_)),
-      std::move(crypto_config_.config), crypto_config_.serialized_crypto_config,
-      version_manager_.get(), std::move(pre_connection_helper_),
+      std::move(crypto_config_.config), version_manager_.get(),
+      std::move(pre_connection_helper_),
       QuicMakeUnique<QuartcCryptoServerStreamHelper>(),
       QuicMakeUnique<QuartcAlarmFactoryWrapper>(alarm_factory_),
       QuicMakeUnique<QuartcPacketWriter>(packet_transport,

@@ -99,6 +99,39 @@ sub _ensure_bigint {
     return $num;
 }
 
+sub get_random_bytes {
+	my $length = shift;
+	if (eval 'require Crypt::Random; 1;') {
+		return Crypt::Random::makerandom_octet( Length => $length);
+	}
+	elsif (eval 'require Bytes::Random::Secure; 1;') {
+		return Bytes::Random::Secure::random_bytes($length);
+	}
+	else {
+		die "No random source available!";
+	}
+}
+
+sub get_random_bigint {
+	my $bits = shift;
+	if (eval 'require Crypt::Random; 1;') {
+		my $pari = Crypt::Random::makerandom( Size => $bits, Strength => 0 );
+		return Math::BigInt->new($pari);
+	}
+	elsif (eval 'require Bytes::Random::Secure; 1;') {
+		my $hex = Bytes::Random::Secure::random_bytes_hex(int(($bits + 7) / 8));
+		my $val = Math::BigInt->new("0x$hex");
+		# Get exactly the correct number of bits.
+		$val->brsft(8 - ($bits & 7)) if ($bits & 7);
+		# Make sure the top bit is set.
+		$val->bior(Math::BigInt->bone->blsft($bits-1));
+		return $val;
+	}
+	else {
+		die "No random source available!";
+	}
+}
+
 1;
 __END__
 

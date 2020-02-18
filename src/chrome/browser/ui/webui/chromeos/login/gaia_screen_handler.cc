@@ -16,6 +16,7 @@
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -54,9 +55,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/util/version_loader.h"
+#include "chromeos/login/auth/challenge_response/cert_utils.h"
+#include "chromeos/login/auth/cryptohome_key_constants.h"
 #include "chromeos/login/auth/saml_password_attributes.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -73,6 +77,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "net/cert/x509_certificate.h"
 #include "services/network/nss_temp_certs_cache_chromeos.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -184,7 +189,7 @@ void PushFrontIMIfNotExists(const std::string& input_method,
   if (input_method.empty())
     return;
 
-  if (!base::ContainsValue(*input_methods, input_method))
+  if (!base::Contains(*input_methods, input_method))
     input_methods->insert(input_methods->begin(), input_method);
 }
 
@@ -201,7 +206,7 @@ user_manager::UserType GetUsertypeFromServicesString(
     const ::login::StringList& services) {
   bool is_child = false;
   const bool support_usm =
-      base::FeatureList::IsEnabled(features::kCrOSEnableUSMUserService);
+      base::FeatureList::IsEnabled(::features::kCrOSEnableUSMUserService);
   using KnownFlags = base::flat_set<std::string>;
   const KnownFlags known_flags =
       support_usm ? KnownFlags({"uca", "usm"}) : KnownFlags({"uca"});
@@ -241,8 +246,11 @@ std::string GetAdErrorMessage(authpolicy::ErrorType error) {
 }
 
 bool ExtractSamlPasswordAttributesEnabled() {
-  return ProfileHelper::Get()->GetSigninProfile()->GetPrefs()->GetBoolean(
-      prefs::kSamlInSessionPasswordChangeEnabled);
+  return base::FeatureList::IsEnabled(::features::kInSessionPasswordChange);
+}
+
+bool GaiaActionButtonsEnabled() {
+  return base::FeatureList::IsEnabled(chromeos::features::kGaiaActionButtons);
 }
 
 }  // namespace
@@ -475,6 +483,7 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
 
   params.SetBoolean("extractSamlPasswordAttributes",
                     ExtractSamlPasswordAttributesEnabled());
+  params.SetBoolean("enableGaiaActionButtons", GaiaActionButtonsEnabled());
 
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("login.GaiaSigninScreen.loadAuthExtension", params);
@@ -542,8 +551,7 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_OFFLINE_LOGIN_FORGOT_PASSWORD_DIALOG_TEXT);
   builder->Add("offlineLoginCloseBtn", IDS_OFFLINE_LOGIN_CLOSE_BUTTON_TEXT);
   builder->Add("enterpriseInfoMessage", IDS_LOGIN_DEVICE_MANAGED_BY_NOTICE);
-  builder->Add("samlInterstitialMessage",
-                IDS_LOGIN_SAML_INTERSTITIAL_MESSAGE);
+  builder->Add("samlInterstitialMessage", IDS_LOGIN_SAML_INTERSTITIAL_MESSAGE);
   builder->Add("samlInterstitialChangeAccountLink",
                IDS_LOGIN_SAML_INTERSTITIAL_CHANGE_ACCOUNT_LINK_TEXT);
   builder->Add("samlInterstitialNextBtn",
@@ -639,6 +647,10 @@ void GaiaScreenHandler::HandleIdentifierEntered(const std::string& user_email) {
 void GaiaScreenHandler::HandleAuthExtensionLoaded() {
   VLOG(1) << "Auth extension finished loading";
   auth_extension_being_loaded_ = false;
+  // Recreate the client cert usage observer, in order to track only the certs
+  // used during the current sign-in attempt.
+  extension_provided_client_cert_usage_observer_ =
+      std::make_unique<LoginClientCertUsageObserver>();
 }
 
 void GaiaScreenHandler::HandleWebviewLoadAborted(
@@ -748,10 +760,12 @@ void GaiaScreenHandler::HandleCompleteAdAuthentication(
 
   set_populated_email(username);
   DCHECK(authpolicy_login_helper_);
+  Key key(password);
+  key.SetLabel(kCryptohomeGaiaKeyLabel);
   authpolicy_login_helper_->AuthenticateUser(
       username, std::string() /* object_guid */, password,
       base::BindOnce(&GaiaScreenHandler::DoAdAuth, weak_factory_.GetWeakPtr(),
-                     username, Key(password)));
+                     username, key));
 }
 
 void GaiaScreenHandler::HandleCancelActiveDirectoryAuth() {
@@ -818,23 +832,18 @@ void GaiaScreenHandler::OnGetCookiesForCompleteAuthentication(
   const std::string sanitized_email = gaia::SanitizeEmail(email);
   LoginDisplayHost::default_host()->SetDisplayEmail(sanitized_email);
 
-  const user_manager::UserType user_type =
-      GetUsertypeFromServicesString(services);
-
-  UserContext user_context(user_type,
-                           GetAccountId(email, gaia_id, AccountType::GOOGLE));
-  user_context.SetKey(Key(password));
-  // Save the user's plaintext password for possible authentication to a
-  // network. See https://crbug.com/386606 for details.
-  user_context.SetPasswordKey(Key(password));
-  user_context.SetAuthCode(auth_code);
-  user_context.SetAuthFlow(using_saml
-                               ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
-                               : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
-  user_context.SetGAPSCookie(gaps_cookie);
-  if (using_saml && ExtractSamlPasswordAttributesEnabled()) {
-    user_context.SetSamlPasswordAttributes(password_attributes);
+  UserContext user_context;
+  std::string error_message;
+  if (!BuildUserContextForGaiaSignIn(
+          GetUsertypeFromServicesString(services),
+          GetAccountId(email, gaia_id, AccountType::GOOGLE), using_saml,
+          password, auth_code, gaps_cookie, password_attributes, &user_context,
+          &error_message)) {
+    core_oobe_view_->ShowSignInError(0, error_message, std::string(),
+                                     HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+    return;
   }
+
   LoginDisplayHost::default_host()->CompleteLogin(user_context);
 }
 
@@ -855,8 +864,8 @@ void GaiaScreenHandler::HandleScrapedPasswordCount(int password_count) {
   SetSAMLPrincipalsAPIUsed(false);
   // Use a histogram that has 11 buckets, one for each of the values in [0, 9]
   // and an overflow bucket at the end.
-  UMA_HISTOGRAM_ENUMERATION(
-      "ChromeOS.SAML.Scraping.PasswordCount", std::min(password_count, 10), 11);
+  UMA_HISTOGRAM_ENUMERATION("ChromeOS.SAML.Scraping.PasswordCount",
+                            std::min(password_count, 10), 11);
   if (password_count == 0)
     HandleScrapedPasswordVerificationFailed();
 }
@@ -921,11 +930,11 @@ void GaiaScreenHandler::HandleGetIsSamlUserPasswordless(
     const std::string& typed_email,
     const std::string& gaia_id) {
   AllowJavascript();
-  // TODO(emaxx,https://crbug.com/826417): Determine the result value based on
-  // known_user properties if the user already existed, or the
-  // DeviceSamlLoginAuthenticationType policy if that's a new user.
+  const bool is_saml_user_passwordless =
+      extension_provided_client_cert_usage_observer_ &&
+      extension_provided_client_cert_usage_observer_->ClientCertsWereUsed();
   ResolveJavascriptCallback(base::Value(callback_id),
-                            base::Value(false) /* isSamlUserPasswordless */);
+                            base::Value(is_saml_user_passwordless));
 }
 
 void GaiaScreenHandler::HandleUpdateSigninUIState(int state) {
@@ -963,29 +972,17 @@ void GaiaScreenHandler::DoCompleteLogin(
   const user_manager::User* const user =
       user_manager::UserManager::Get()->FindUser(account_id);
 
-  UserContext user_context =
-      user ? UserContext(*user)
-           : UserContext(CalculateUserType(account_id), account_id);
-  user_context.SetKey(Key(password));
-  // Save the user's plaintext password for possible authentication to a
-  // network. If the user's OpenNetworkConfiguration policy contains a
-  // ${PASSWORD} variable, then the user's password will be used to authenticate
-  // to the specified network.
-  //
-  // The user's password needs to be saved in memory until the policy can be
-  // examined. When the policy comes in, if it does not contain the ${PASSWORD}
-  // variable, the user's password will be discarded. If it contains the
-  // password, it will be sent to the session manager, which will then save it
-  // in a keyring so it can be retrieved for authenticating to the network.
-  //
-  // More details can be found in https://crbug.com/386606
-  user_context.SetPasswordKey(Key(password));
-  user_context.SetAuthFlow(using_saml
-                               ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
-                               : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
-
-  if (using_saml && ExtractSamlPasswordAttributesEnabled()) {
-    user_context.SetSamlPasswordAttributes(password_attributes);
+  UserContext user_context;
+  std::string error_message;
+  if (!BuildUserContextForGaiaSignIn(
+          user ? user->GetType() : CalculateUserType(account_id),
+          GetAccountId(typed_email, gaia_id, AccountType::GOOGLE), using_saml,
+          password, std::string() /* auth_code */,
+          std::string() /* gaps_cookie */, password_attributes, &user_context,
+          &error_message)) {
+    core_oobe_view_->ShowSignInError(0, error_message, std::string(),
+                                     HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+    return;
   }
 
   LoginDisplayHost::default_host()->CompleteLogin(user_context);
@@ -1052,9 +1049,12 @@ void GaiaScreenHandler::SubmitLoginFormForTest() {
   content::RenderFrameHost* frame =
       signin::GetAuthFrame(web_ui()->GetWebContents(), kAuthIframeParentName);
 
+  // clang-format off
   std::string code =
       "document.getElementById('identifier').value = '" + test_user_ + "';"
       "document.getElementById('nextButton').click();";
+  // clang-format on
+
   frame->ExecuteJavaScriptForTests(base::ASCIIToUTF16(code),
                                    base::NullCallback());
 
@@ -1241,10 +1241,8 @@ void GaiaScreenHandler::ShowWhitelistCheckFailedError() {
   CallJS("login.GaiaSigninScreen.showWhitelistCheckFailedError", true, params);
 }
 
-void GaiaScreenHandler::LoadAuthExtension(bool force,
-                                          bool offline) {
-  VLOG(1) << "LoadAuthExtension, force: " << force
-          << ", offline: " << offline;
+void GaiaScreenHandler::LoadAuthExtension(bool force, bool offline) {
+  VLOG(1) << "LoadAuthExtension, force: " << force << ", offline: " << offline;
 
   if (auth_extension_being_loaded_) {
     VLOG(1) << "Skip loading the Auth extension as it's already being loaded";
@@ -1286,6 +1284,56 @@ void GaiaScreenHandler::UpdateState(NetworkError::ErrorReason reason) {
 bool GaiaScreenHandler::IsRestrictiveProxy() const {
   return !disable_restrictive_proxy_check_for_test_ &&
          !IsOnline(captive_portal_status_);
+}
+
+bool GaiaScreenHandler::BuildUserContextForGaiaSignIn(
+    user_manager::UserType user_type,
+    const AccountId& account_id,
+    bool using_saml,
+    const std::string& password,
+    const std::string& auth_code,
+    const std::string& gaps_cookie,
+    const SamlPasswordAttributes& password_attributes,
+    UserContext* user_context,
+    std::string* error_message) {
+  // TODO(emaxx,https://crbug.com/826417): Localize the error messages.
+  *user_context = UserContext(user_type, account_id);
+  if (using_saml && extension_provided_client_cert_usage_observer_ &&
+      extension_provided_client_cert_usage_observer_->ClientCertsWereUsed()) {
+    scoped_refptr<net::X509Certificate> saml_client_cert;
+    std::vector<ChallengeResponseKey::SignatureAlgorithm> signature_algorithms;
+    if (!extension_provided_client_cert_usage_observer_->GetOnlyUsedClientCert(
+            &saml_client_cert, &signature_algorithms)) {
+      *error_message = "Multiple client certificates are not supported";
+      return false;
+    }
+    ChallengeResponseKey challenge_response_key;
+    if (!ExtractChallengeResponseKeyFromCert(
+            *saml_client_cert, signature_algorithms, &challenge_response_key)) {
+      *error_message = "Internal error";
+      return false;
+    }
+    user_context->GetMutableChallengeResponseKeys()->push_back(
+        challenge_response_key);
+  } else {
+    Key key(password);
+    key.SetLabel(kCryptohomeGaiaKeyLabel);
+    user_context->SetKey(key);
+    user_context->SetPasswordKey(Key(password));
+  }
+  if (!auth_code.empty())
+    user_context->SetAuthCode(auth_code);
+  user_context->SetAuthFlow(using_saml
+                                ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
+                                : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
+  if (using_saml)
+    user_context->SetIsUsingSamlPrincipalsApi(using_saml_api_);
+  if (!gaps_cookie.empty())
+    user_context->SetGAPSCookie(gaps_cookie);
+  if (using_saml && ExtractSamlPasswordAttributesEnabled()) {
+    user_context->SetSamlPasswordAttributes(password_attributes);
+  }
+  return true;
 }
 
 }  // namespace chromeos

@@ -1,10 +1,11 @@
-package Moose::Manual::Construction;
-
+# PODNAME: Moose::Manual::Construction
 # ABSTRACT: Object construction (and destruction) with Moose
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Manual::Construction - Object construction (and destruction) with Moose
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 WHERE'S THE CONSTRUCTOR?
 
@@ -123,7 +124,10 @@ do something with parameters that do not represent object attributes.
 The interaction between multiple C<BUILD> methods in an inheritance hierarchy
 is different from normal Perl methods. B<You should never call C<<
 $self->SUPER::BUILD >>>, nor should you ever apply a method modifier to
-C<BUILD>.
+C<BUILD>. Roles are an exception to this rule, though: it's completely
+acceptable to apply a method modifier to C<BUILD> in a role; you can
+even provide an empty C<BUILD> subroutine in a role so the role is applicable
+even to classes without their own C<BUILD>.
 
 Moose arranges to have all of the C<BUILD> methods in a hierarchy
 called when an object is constructed, I<from parents to
@@ -143,7 +147,9 @@ $self->SUPER::DEMOLISH >>. Moose will arrange for all of the
 C<DEMOLISH> methods in your hierarchy to be called, from most to least
 specific.
 
-Each C<DEMOLISH> method is called with a single argument.
+Each C<DEMOLISH> method is called with a single argument. This is a boolean
+value indicating whether or not this method was called as part of the global
+destruction process (when the Perl interpreter exits).
 
 In most cases, Perl's built-in garbage collection is sufficient, and
 you won't need to provide a C<DEMOLISH> method.
@@ -166,19 +172,57 @@ method and use that instead of the one provided by L<Moose::Object>. You can
 do this to preserve C<$@> I<and> capture any errors from object destruction by
 creating an error stack.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

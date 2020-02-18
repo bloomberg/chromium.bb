@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/browser/bad_message.h"
@@ -81,7 +82,17 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       BluetoothDeviceScanningPromptController* prompt_controller);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest, PermissionAllowed);
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
+                           PermissionPromptCanceled);
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
+                           BluetoothScanningPermissionRevokedWhenTabHidden);
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
+                           BluetoothScanningPermissionRevokedWhenTabOccluded);
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
+                           BluetoothScanningPermissionRevokedWhenBlocked);
   friend class FrameConnectedBluetoothDevicesTest;
+  friend class WebBluetoothServiceImplTest;
   using PrimaryServicesRequestCallback =
       base::OnceCallback<void(device::BluetoothDevice*)>;
   using ScanFilters = std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>;
@@ -133,6 +144,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   // These functions should always check that the affected RenderFrameHost
   // is this->render_frame_host_ and not some other frame in the same tab.
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+  void OnVisibilityChanged(Visibility visibility) override;
 
   // BluetoothAdapter::Observer:
   void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
@@ -170,12 +182,13 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   void RequestDevice(blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
                      RequestDeviceCallback callback) override;
   void RemoteServerConnect(
-      const WebBluetoothDeviceId& device_id,
+      const blink::WebBluetoothDeviceId& device_id,
       blink::mojom::WebBluetoothServerClientAssociatedPtrInfo client,
       RemoteServerConnectCallback callback) override;
-  void RemoteServerDisconnect(const WebBluetoothDeviceId& device_id) override;
+  void RemoteServerDisconnect(
+      const blink::WebBluetoothDeviceId& device_id) override;
   void RemoteServerGetPrimaryServices(
-      const WebBluetoothDeviceId& device_id,
+      const blink::WebBluetoothDeviceId& device_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
       const base::Optional<device::BluetoothUUID>& services_uuid,
       RemoteServerGetPrimaryServicesCallback callback) override;
@@ -236,7 +249,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   // Should only be run after the services have been discovered for
   // |device_address|.
   void RemoteServerGetPrimaryServicesImpl(
-      const WebBluetoothDeviceId& device_id,
+      const blink::WebBluetoothDeviceId& device_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
       const base::Optional<device::BluetoothUUID>& services_uuid,
       RemoteServerGetPrimaryServicesCallback callback,
@@ -252,7 +265,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
   // Callbacks for BluetoothDevice::CreateGattConnection.
   void OnCreateGATTConnectionSuccess(
-      const WebBluetoothDeviceId& device_id,
+      const blink::WebBluetoothDeviceId& device_id,
       base::TimeTicks start_time,
       blink::mojom::WebBluetoothServerClientAssociatedPtr client,
       RemoteServerConnectCallback callback,
@@ -315,7 +328,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
   // Queries the platform cache for a Device with |device_id| for |origin|.
   // Fills in the |outcome| field and the |device| field if successful.
-  CacheQueryResult QueryCacheForDevice(const WebBluetoothDeviceId& device_id);
+  CacheQueryResult QueryCacheForDevice(
+      const blink::WebBluetoothDeviceId& device_id);
 
   // Queries the platform cache for a Service with |service_instance_id|. Fills
   // in the |outcome| field, and |device| and |service| fields if successful.
@@ -398,7 +412,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   // the service on pipe connection errors.
   mojo::Binding<blink::mojom::WebBluetoothService> binding_;
 
-  base::WeakPtrFactory<WebBluetoothServiceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<WebBluetoothServiceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebBluetoothServiceImpl);
 };

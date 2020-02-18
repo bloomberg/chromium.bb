@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -343,9 +343,8 @@ void ConversionContext::SwitchToClip(
 #if DCHECK_IS_ON()
       DLOG(ERROR) << "Error: Chunk has a clip that escaped its layer's or "
                   << "effect's clip.\ntarget_clip:\n"
-                  << target_clip.ToTreeString().Utf8().data()
-                  << "current_clip_:\n"
-                  << current_clip_->ToTreeString().Utf8().data();
+                  << target_clip.ToTreeString().Utf8() << "current_clip_:\n"
+                  << current_clip_->ToTreeString().Utf8();
 #endif
       if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
         NOTREACHED();
@@ -463,9 +462,8 @@ void ConversionContext::SwitchToEffect(
 #if DCHECK_IS_ON()
       DLOG(ERROR) << "Error: Chunk has an effect that escapes layer's effect.\n"
                   << "target_effect:\n"
-                  << target_effect.ToTreeString().Utf8().data()
-                  << "current_effect_:\n"
-                  << current_effect_->ToTreeString().Utf8().data();
+                  << target_effect.ToTreeString().Utf8() << "current_effect_:\n"
+                  << current_effect_->ToTreeString().Utf8();
       has_pre_cap_effect_hierarchy_issue = true;
 #endif
       if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())

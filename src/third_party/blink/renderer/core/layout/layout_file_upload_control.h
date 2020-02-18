@@ -70,7 +70,7 @@ class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
 
   int MaxFilenameWidth() const;
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
   bool can_receive_dropped_files_;
 };

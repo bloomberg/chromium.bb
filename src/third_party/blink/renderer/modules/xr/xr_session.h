@@ -5,7 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SESSION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SESSION_H_
 
+#include "base/containers/span.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -32,7 +34,6 @@ class V8XRFrameRequestCallback;
 class XR;
 class XRCanvasInputProvider;
 class XRSpace;
-class XRInputSourceEvent;
 class XRRay;
 class XRReferenceSpace;
 class XRRenderState;
@@ -42,9 +43,11 @@ class XRWorldInformation;
 class XRWorldTrackingState;
 class XRWorldTrackingStateInit;
 
-class XRSession final : public EventTargetWithInlineData,
-                        public device::mojom::blink::XRSessionClient,
-                        public ActiveScriptWrappable<XRSession> {
+class XRSession final
+    : public EventTargetWithInlineData,
+      public device::mojom::blink::XRSessionClient,
+      public device::mojom::blink::XRInputSourceButtonListener,
+      public ActiveScriptWrappable<XRSession> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(XRSession);
 
@@ -57,10 +60,11 @@ class XRSession final : public EventTargetWithInlineData,
     kBlendModeAlphaBlend
   };
 
-  XRSession(XR*,
+  XRSession(XR* xr,
             device::mojom::blink::XRSessionClientRequest client_request,
             SessionMode mode,
             EnvironmentBlendMode environment_blend_mode,
+            bool uses_input_eventing,
             bool sensorless_session);
   ~XRSession() override = default;
 
@@ -80,13 +84,15 @@ class XRSession final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart, kSelectstart)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectend, kSelectend)
 
-  void updateRenderState(XRRenderStateInit*, ExceptionState&);
+  void updateRenderState(XRRenderStateInit* render_state_init,
+                         ExceptionState& exception_state);
   void updateWorldTrackingState(
-      XRWorldTrackingStateInit* worldTrackingStateInit,
+      XRWorldTrackingStateInit* world_tracking_state_init,
       ExceptionState& exception_state);
-  ScriptPromise requestReferenceSpace(ScriptState*, const String&);
+  ScriptPromise requestReferenceSpace(ScriptState* script_state,
+                                      const String& type);
 
-  int requestAnimationFrame(V8XRFrameRequestCallback*);
+  int requestAnimationFrame(V8XRFrameRequestCallback* callback);
   void cancelAnimationFrame(int id);
 
   XRInputSourceArray* inputSources() const;
@@ -96,9 +102,9 @@ class XRSession final : public EventTargetWithInlineData,
                                XRSpace* space);
 
   // Called by JavaScript to manually end the session.
-  ScriptPromise end(ScriptState*);
+  ScriptPromise end(ScriptState* script_state);
 
-  bool ended() { return ended_; }
+  bool ended() const { return ended_; }
 
   // Called when the session is ended, either via calling the "end" function or
   // when the presentation service connection is closed.
@@ -124,24 +130,25 @@ class XRSession final : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
 
   void OnFocusChanged();
-  void OnFrame(
-      double timestamp,
-      std::unique_ptr<TransformationMatrix>,
-      const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
-      const base::Optional<WTF::Vector<device::mojom::blink::XRPlaneDataPtr>>&
-          detected_planes);
+  void OnFrame(double timestamp,
+               std::unique_ptr<TransformationMatrix> base_pose_matrix,
+               const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
+               const device::mojom::blink::XRPlaneDetectionDataPtr&
+                   detected_planes_data);
+
   void OnInputStateChange(
       int16_t frame_id,
-      const WTF::Vector<device::mojom::blink::XRInputSourceStatePtr>&);
+      base::span<const device::mojom::blink::XRInputSourceStatePtr>
+          input_states);
+
+  // XRInputSourceButtonListener
+  void OnButtonEvent(
+      device::mojom::blink::XRInputSourceStatePtr input_source) override;
 
   WTF::Vector<XRViewData>& views();
 
-  void AddTransientInputSource(XRInputSource*);
-  void RemoveTransientInputSource(XRInputSource*);
-
-  void OnSelectStart(XRInputSource*);
-  void OnSelectEnd(XRInputSource*);
-  void OnSelect(XRInputSource*);
+  void AddTransientInputSource(XRInputSource* input_source);
+  void RemoveTransientInputSource(XRInputSource* input_source);
 
   void OnPoseReset();
 
@@ -149,10 +156,13 @@ class XRSession final : public EventTargetWithInlineData,
     return display_info_;
   }
 
-  // TODO(jacde): Update the mojom to deliver this per-frame.
+  device::mojom::blink::XRInputSourceButtonListenerAssociatedPtrInfo
+  GetInputClickListener();
+
+  // TODO(crbug.com/969131): Update the mojom to deliver this per-frame.
   bool EmulatedPosition() const {
     if (display_info_) {
-      return !display_info_->capabilities->hasPosition;
+      return !display_info_->capabilities->has_position;
     }
 
     // If we don't have display info then we should be using the identity
@@ -163,7 +173,7 @@ class XRSession final : public EventTargetWithInlineData,
   // Immersive sessions currently use two views for VR, and only a single view
   // for smartphone immersive AR mode. Convention is that we use the left eye
   // if there's only a single view.
-  bool StereoscopicViews() { return display_info_ && display_info_->rightEye; }
+  bool StereoscopicViews() { return display_info_ && display_info_->right_eye; }
 
   void UpdateEyeParameters(
       const device::mojom::blink::VREyeParametersPtr& left_eye,
@@ -178,26 +188,29 @@ class XRSession final : public EventTargetWithInlineData,
 
   void SetXRDisplayInfo(device::mojom::blink::VRDisplayInfoPtr display_info);
 
-  void Trace(blink::Visitor*) override;
+  bool UsesInputEventing() { return uses_input_eventing_; }
+
+  void Trace(blink::Visitor* visitor) override;
 
   // ScriptWrappable
   bool HasPendingActivity() const override;
 
+  XRFrame* CreatePresentationFrame();
+
  private:
   class XRSessionResizeObserverDelegate;
 
-  XRFrame* CreatePresentationFrame();
   void UpdateCanvasDimensions(Element*);
   void ApplyPendingRenderState();
 
-  void UpdateSelectState(XRInputSource*,
-                         const device::mojom::blink::XRInputSourceStatePtr&);
-  void UpdateSelectStateOnRemoval(XRInputSource*);
-  XRInputSourceEvent* CreateInputSourceEvent(const AtomicString&,
-                                             XRInputSource*);
+  void OnInputStateChangeInternal(
+      int16_t frame_id,
+      base::span<const device::mojom::blink::XRInputSourceStatePtr>
+          input_states,
+      bool from_eventing);
 
   // XRSessionClient
-  void OnChanged(device::mojom::blink::VRDisplayInfoPtr) override;
+  void OnChanged(device::mojom::blink::VRDisplayInfoPtr display_info) override;
   void OnExitPresent() override;
   void OnFocus() override;
   void OnBlur() override;
@@ -237,6 +250,8 @@ class XRSession final : public EventTargetWithInlineData,
   device::mojom::blink::VRDisplayInfoPtr display_info_;
 
   mojo::Binding<device::mojom::blink::XRSessionClient> client_binding_;
+  mojo::AssociatedBinding<device::mojom::blink::XRInputSourceButtonListener>
+      input_binding_;
 
   Member<XRFrameRequestCallbackCollection> callback_collection_;
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
@@ -257,9 +272,13 @@ class XRSession final : public EventTargetWithInlineData,
   int output_width_ = 1;
   int output_height_ = 1;
 
+  bool uses_input_eventing_ = false;
+
   // Indicates that this is a sensorless session which should only support the
   // identity reference space.
   bool sensorless_session_ = false;
+
+  int16_t last_frame_id_ = -1;
 };
 
 }  // namespace blink

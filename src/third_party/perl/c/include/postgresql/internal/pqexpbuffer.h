@@ -15,7 +15,7 @@
  * a usable vsnprintf(), then a copy of our own implementation of it will
  * be linked into libpq.
  *
- * Portions Copyright (c) 1996-2011, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/interfaces/libpq/pqexpbuffer.h
@@ -37,7 +37,7 @@
  *				more space.  We must always have maxlen > len.
  *
  * An exception occurs if we failed to allocate enough memory for the string
- * buffer.	In that case data points to a statically allocated empty string,
+ * buffer.  In that case data points to a statically allocated empty string,
  * and len = maxlen = 0.
  *-------------------------
  */
@@ -58,6 +58,14 @@ typedef PQExpBufferData *PQExpBuffer;
  */
 #define PQExpBufferBroken(str)	\
 	((str) == NULL || (str)->maxlen == 0)
+
+/*------------------------
+ * Same, but for use when using a static or local PQExpBufferData struct.
+ * For that, a null-pointer test is useless and may draw compiler warnings.
+ *------------------------
+ */
+#define PQExpBufferDataBroken(buf)	\
+	((buf).maxlen == 0)
 
 /*------------------------
  * Initial size of the data buffer in a PQExpBuffer.
@@ -107,7 +115,7 @@ extern void initPQExpBuffer(PQExpBuffer str);
  *
  * NOTE: some routines build up a string using PQExpBuffer, and then
  * release the PQExpBufferData but return the data string itself to their
- * caller.	At that point the data string looks like a plain malloc'd
+ * caller.  At that point the data string looks like a plain malloc'd
  * string.
  */
 extern void destroyPQExpBuffer(PQExpBuffer str);
@@ -126,7 +134,7 @@ extern void resetPQExpBuffer(PQExpBuffer str);
  * Make sure there is enough space for 'needed' more bytes in the buffer
  * ('needed' does not include the terminating null).
  *
- * Returns 1 if OK, 0 if failed to enlarge buffer.	(In the latter case
+ * Returns 1 if OK, 0 if failed to enlarge buffer.  (In the latter case
  * the buffer is left in "broken" state.)
  */
 extern int	enlargePQExpBuffer(PQExpBuffer str, size_t needed);
@@ -134,14 +142,11 @@ extern int	enlargePQExpBuffer(PQExpBuffer str, size_t needed);
 /*------------------------
  * printfPQExpBuffer
  * Format text data under the control of fmt (an sprintf-like format string)
- * and insert it into str.	More space is allocated to str if necessary.
+ * and insert it into str.  More space is allocated to str if necessary.
  * This is a convenience routine that does the same thing as
  * resetPQExpBuffer() followed by appendPQExpBuffer().
  */
-extern void
-printfPQExpBuffer(PQExpBuffer str, const char *fmt,...)
-/* This extension allows gcc to check the format string */
-__attribute__((format(PG_PRINTF_ATTRIBUTE, 2, 3)));
+extern void printfPQExpBuffer(PQExpBuffer str, const char *fmt,...) pg_attribute_printf(2, 3);
 
 /*------------------------
  * appendPQExpBuffer
@@ -150,10 +155,7 @@ __attribute__((format(PG_PRINTF_ATTRIBUTE, 2, 3)));
  * to str if necessary.  This is sort of like a combination of sprintf and
  * strcat.
  */
-extern void
-appendPQExpBuffer(PQExpBuffer str, const char *fmt,...)
-/* This extension allows gcc to check the format string */
-__attribute__((format(PG_PRINTF_ATTRIBUTE, 2, 3)));
+extern void appendPQExpBuffer(PQExpBuffer str, const char *fmt,...) pg_attribute_printf(2, 3);
 
 /*------------------------
  * appendPQExpBufferStr
@@ -177,4 +179,4 @@ extern void appendPQExpBufferChar(PQExpBuffer str, char ch);
 extern void appendBinaryPQExpBuffer(PQExpBuffer str,
 						const char *data, size_t datalen);
 
-#endif   /* PQEXPBUFFER_H */
+#endif							/* PQEXPBUFFER_H */

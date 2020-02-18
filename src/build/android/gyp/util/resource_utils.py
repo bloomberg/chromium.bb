@@ -21,11 +21,6 @@ _SOURCE_ROOT = os.path.abspath(
 sys.path.insert(1, os.path.join(_SOURCE_ROOT, 'third_party'))
 from jinja2 import Template # pylint: disable=F0401
 
-EMPTY_ANDROID_MANIFEST_PATH = os.path.join(
-    _SOURCE_ROOT, 'build', 'android', 'AndroidManifest.xml')
-
-ANDROID_NAMESPACE = 'http://schemas.android.com/apk/res/android'
-TOOLS_NAMESPACE = 'http://schemas.android.com/tools'
 
 # A variation of these maps also exists in:
 # //base/android/java/src/org/chromium/base/LocaleUtils.java
@@ -45,8 +40,12 @@ _ANDROID_TO_CHROMIUM_LANGUAGE_MAP = {
     'no': 'nb',  # 'no' is not a real language. http://crbug.com/920960
 }
 
-
-_xml_namespace_initialized = False
+_ALL_RESOURCE_TYPES = {
+    'anim', 'animator', 'array', 'attr', 'bool', 'color', 'dimen', 'drawable',
+    'font', 'fraction', 'id', 'integer', 'interpolator', 'layout', 'menu',
+    'mipmap', 'plurals', 'raw', 'string', 'style', 'styleable', 'transition',
+    'xml'
+}
 
 
 def ToAndroidLocaleName(chromium_locale):
@@ -328,13 +327,22 @@ class RJavaBuildOptions:
       return entry.name not in self.resources_whitelist
 
 
-def CreateRJavaFiles(srcjar_dir, package, main_r_txt_file, extra_res_packages,
-                     extra_r_txt_files, rjava_build_options, srcjar_out):
+def CreateRJavaFiles(srcjar_dir,
+                     package,
+                     main_r_txt_file,
+                     extra_res_packages,
+                     extra_r_txt_files,
+                     rjava_build_options,
+                     srcjar_out,
+                     custom_root_package_name=None,
+                     grandparent_custom_package_name=None,
+                     extra_main_r_text_files=None):
   """Create all R.java files for a set of packages and R.txt files.
 
   Args:
     srcjar_dir: The top-level output directory for the generated files.
-    package: Top-level package name.
+    package: Package name for R java source files which will inherit
+      from the root R java file.
     main_r_txt_file: The main R.txt file containing the valid values
       of _all_ resource IDs.
     extra_res_packages: A list of extra package names.
@@ -344,6 +352,14 @@ def CreateRJavaFiles(srcjar_dir, package, main_r_txt_file, extra_res_packages,
     rjava_build_options: An RJavaBuildOptions instance that controls how
       exactly the R.java file is generated.
     srcjar_out: Path of desired output srcjar.
+    custom_root_package_name: Custom package name for module root R.java file,
+      (eg. vr for gen.vr package).
+    grandparent_custom_package_name: Custom root package name for the root
+      R.java file to inherit from. DFM root R.java files will have "base"
+      as the grandparent_custom_package_name. The format of this package name
+      is identical to custom_root_package_name.
+      (eg. for vr grandparent_custom_package_name would be "base")
+    extra_main_r_text_files: R.txt files to be added to the root R.java file.
   Raises:
     Exception if a package name appears several times in |extra_res_packages|
   """
@@ -363,22 +379,39 @@ def CreateRJavaFiles(srcjar_dir, package, main_r_txt_file, extra_res_packages,
   # Contains the correct values for resources.
   all_resources = {}
   all_resources_by_type = collections.defaultdict(list)
-  for entry in _ParseTextSymbolsFile(main_r_txt_file, fix_package_ids=True):
-    all_resources[(entry.resource_type, entry.name)] = entry
-    all_resources_by_type[entry.resource_type].append(entry)
 
-  # Creating the root R.java file. We use srcjar_out to provide unique package
-  # names, since when one java target depends on 2 different targets (each with
-  # resources), those 2 root resource packages have to be different from one
-  # another. We add an underscore before each subdirectory so that if a reserved
-  # keyword (for example, "public") is used as a directory name, it will not
-  # cause Java to complain.
-  root_r_java_package = re.sub('[^\w\.]', '', srcjar_out.replace('/', '._'))
+  main_r_text_files = [main_r_txt_file]
+  if extra_main_r_text_files:
+    main_r_text_files.extend(extra_main_r_text_files)
+  for r_txt_file in main_r_text_files:
+    for entry in _ParseTextSymbolsFile(r_txt_file, fix_package_ids=True):
+      entry_key = (entry.resource_type, entry.name)
+      if entry_key in all_resources:
+        assert entry == all_resources[entry_key], (
+            'Input R.txt %s provided a duplicate resource with a different '
+            'entry value. Got %s, expected %s.' % (r_txt_file, entry,
+                                                   all_resources[entry_key]))
+      else:
+        all_resources[entry_key] = entry
+        all_resources_by_type[entry.resource_type].append(entry)
+        assert entry.resource_type in _ALL_RESOURCE_TYPES, (
+            'Unknown resource type: %s, add to _ALL_RESOURCE_TYPES!' %
+            entry.resource_type)
+
+  if custom_root_package_name:
+    # Custom package name is available, thus use it for root_r_java_package.
+    root_r_java_package = GetCustomPackagePath(custom_root_package_name)
+  else:
+    # Create a unique name using srcjar_out. Underscores are added to ensure
+    # no reserved keywords are used for directory names.
+    root_r_java_package = re.sub('[^\w\.]', '', srcjar_out.replace('/', '._'))
+
   root_r_java_dir = os.path.join(srcjar_dir, *root_r_java_package.split('.'))
   build_utils.MakeDirectory(root_r_java_dir)
   root_r_java_path = os.path.join(root_r_java_dir, 'R.java')
   root_java_file_contents = _RenderRootRJavaSource(
-      root_r_java_package, all_resources_by_type, rjava_build_options)
+      root_r_java_package, all_resources_by_type, rjava_build_options,
+      grandparent_custom_package_name)
   with open(root_r_java_path, 'w') as f:
     f.write(root_java_file_contents)
 
@@ -474,12 +507,17 @@ public final class R {
   return template.render(
       package=package,
       resources=resources_by_type,
-      resource_types=sorted(resources_by_type),
+      resource_types=sorted(_ALL_RESOURCE_TYPES),
       root_package=root_r_java_package,
       has_on_resources_loaded=rjava_build_options.has_on_resources_loaded)
 
 
-def _RenderRootRJavaSource(package, all_resources_by_type, rjava_build_options):
+def GetCustomPackagePath(package_name):
+  return 'gen.' + package_name + '_module'
+
+
+def _RenderRootRJavaSource(package, all_resources_by_type, rjava_build_options,
+                           grandparent_custom_package_name):
   """Render an R.java source file. See _CreateRJaveSourceFile for args info."""
   final_resources_by_type = collections.defaultdict(list)
   non_final_resources_by_type = collections.defaultdict(list)
@@ -497,13 +535,19 @@ def _RenderRootRJavaSource(package, all_resources_by_type, rjava_build_options):
   create_id = ('{{ e.resource_type }}.{{ e.name }} ^= packageIdTransform;')
   create_id_arr = ('{{ e.resource_type }}.{{ e.name }}[i] ^='
                    ' packageIdTransform;')
-  for_loop_condition  = ('int i = {{ startIndex(e) }}; i < '
-                         '{{ e.resource_type }}.{{ e.name }}.length; ++i')
+  for_loop_condition = ('int i = {{ startIndex(e) }}; i < '
+                        '{{ e.resource_type }}.{{ e.name }}.length; ++i')
 
   # Here we diverge from what aapt does. Because we have so many
   # resources, the onResourcesLoaded method was exceeding the 64KB limit that
   # Java imposes. For this reason we split onResourcesLoaded into different
   # methods for each resource type.
+  extends_string = ''
+  dep_path = ''
+  if grandparent_custom_package_name:
+    extends_string = 'extends {{ parent_path }}.R.{{ resource_type }} '
+    dep_path = GetCustomPackagePath(grandparent_custom_package_name)
+
   template = Template(
       """/* AUTO-GENERATED FILE.  DO NOT MODIFY. */
 
@@ -511,7 +555,7 @@ package {{ package }};
 
 public final class R {
     {% for resource_type in resource_types %}
-    public static class {{ resource_type }} {
+    public static class {{ resource_type }} """ + extends_string + """ {
         {% for e in final_resources[resource_type] %}
         public static final {{ e.java_type }} {{ e.name }} = {{ e.value }};
         {% endfor %}
@@ -558,19 +602,14 @@ public final class R {
 """,
       trim_blocks=True,
       lstrip_blocks=True)
-
   return template.render(
       package=package,
-      resource_types=sorted(all_resources_by_type),
+      resource_types=sorted(_ALL_RESOURCE_TYPES),
       has_on_resources_loaded=rjava_build_options.has_on_resources_loaded,
       final_resources=final_resources_by_type,
       non_final_resources=non_final_resources_by_type,
-      startIndex=_GetNonSystemIndex)
-
-
-def ExtractPackageFromManifest(manifest_path):
-  """Extract package name from Android manifest file."""
-  return ParseAndroidManifest(manifest_path)[1].get('package')
+      startIndex=_GetNonSystemIndex,
+      parent_path=dep_path)
 
 
 def ExtractBinaryManifestValues(aapt2_path, apk_path):
@@ -862,36 +901,3 @@ def FilterAndroidResourceStringsXml(xml_file_path, string_predicate):
     new_xml_data = GenerateAndroidResourceStringsXml(strings_map, namespaces)
     with open(xml_file_path, 'wb') as f:
       f.write(new_xml_data)
-
-
-def _RegisterElementTreeNamespaces():
-  global _xml_namespace_initialized
-  if not _xml_namespace_initialized:
-    _xml_namespace_initialized = True
-    ElementTree.register_namespace('android', ANDROID_NAMESPACE)
-    ElementTree.register_namespace('tools', TOOLS_NAMESPACE)
-
-
-def ParseAndroidManifest(path):
-  """Parses an AndroidManifest.xml using ElementTree.
-
-  Registers required namespaces & creates application node if missing.
-
-  Returns tuple of:
-    doc: Root xml document.
-    manifest_node: the <manifest> node.
-    app_node: the <application> node.
-  """
-  _RegisterElementTreeNamespaces()
-  doc = ElementTree.parse(path)
-  # ElementTree.find does not work if the required tag is the root.
-  if doc.getroot().tag == 'manifest':
-    manifest_node = doc.getroot()
-  else:
-    manifest_node = doc.find('manifest')
-
-  app_node = doc.find('application')
-  if app_node is None:
-    app_node = ElementTree.SubElement(manifest_node, 'application')
-
-  return doc, manifest_node, app_node

@@ -19,7 +19,7 @@
 
 #include "chrome/browser/media/router/providers/openscreen/network_service_async_packet_sender.h"
 
-namespace openscreen {
+namespace media_router {
 
 // Chrome-specific packet writer. Intended for use outside of the Network
 // service, this class uses the network service's UdpSocket for sending and
@@ -113,10 +113,10 @@ class NetworkServiceQuicPacketWriter : quic::QuicPacketWriter {
   size_t packets_in_flight_ = 0;
   bool writable_ = true;
 
-  base::WeakPtrFactory<NetworkServiceQuicPacketWriter> weak_factory_;
+  base::WeakPtrFactory<NetworkServiceQuicPacketWriter> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceQuicPacketWriter);
 };
 
-}  // namespace openscreen
+}  // namespace media_router
 
 #endif  // CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_NETWORK_SERVICE_QUIC_PACKET_WRITER_H_

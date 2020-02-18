@@ -1,10 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/mojo_interface_provider.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/chromeos/onc_mojo.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -34,8 +35,7 @@
         focus-config="[[focusConfig_]]">
       <div route-path="default">
         <network-summary default-network="{{defaultNetwork}}"
-            device-states="{{deviceStates}}"
-            networking-private="[[networkingPrivate]]">
+            device-states="{{deviceStates}}">
         </network-summary>
         <template is="dom-if" if="[[allowAddConnection_(globalPolicy_,
             managedNetworkAvailable)]]">
@@ -49,7 +49,7 @@
           <template is="dom-if" if="[[addConnectionExpanded_]]">
             <div class="list-frame vertical-list">
               <template is="dom-if"
-                  if="[[deviceIsEnabled_(deviceStates.WiFi)]]">
+                  if="[[deviceIsEnabled_(deviceStates, 'WiFi')]]">
                 <div actionable class="list-item" on-click="onAddWiFiTap_">
                   <div class="start settings-box-text">
                     $i18n{internetAddWiFi}
@@ -122,15 +122,15 @@
 
       <template is="dom-if" route-path="/networks" no-search restamp>
         <settings-subpage page-title="[[getNetworksPageTitle_(subpageType_)]]"
-            show-spinner="[[showSpinner_]]">
+            show-spinner="[[showSpinner_]]"
+            spinner-title="$i18n{networkScanningLabel}">
           <settings-internet-subpage
               default-network="[[defaultNetwork]]"
               device-state="[[getDeviceState_(subpageType_, deviceStates)]]"
-              tether-device-state="[[get('Tether', deviceStates)]]"
+              tether-device-state="[[getTetherDeviceState_(deviceStates)]]"
               global-policy="[[globalPolicy_]]"
               third-party-vpn-providers="[[thirdPartyVpnProviders_]]"
               arc-vpn-providers="[[arcVpnProviders_]]"
-              networking-private="[[networkingPrivate]]"
               show-spinner="{{showSpinner_}}">
           </settings-internet-subpage>
         </settings-subpage>

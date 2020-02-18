@@ -12,7 +12,6 @@
 #include "ash/ash_export.h"
 #include "ash/bluetooth_devices_observer.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
@@ -24,7 +23,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "ui/aura/window_observer.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/devices/input_device_event_observer.h"
@@ -50,6 +48,10 @@ namespace views {
 class Widget;
 }
 
+namespace viz {
+class CopyOutputResult;
+}
+
 namespace ash {
 
 class InternalInputDevicesEventBlocker;
@@ -68,10 +70,12 @@ class ASH_EXPORT TabletModeController
       public WindowTreeHostManager::Observer,
       public SessionObserver,
       public ui::InputDeviceEventObserver,
-      public KioskNextShellObserver,
-      public ui::LayerAnimationObserver,
-      public aura::WindowObserver {
+      public ui::LayerAnimationObserver {
  public:
+  // Enable or disable using a screenshot for testing as it makes the
+  // initialization flow async, which makes most tests harder to write.
+  static void SetUseScreenshotForTest(bool use_screenshot);
+
   // Used for keeping track if the user wants the machine to behave as a
   // clamshell/tablet regardless of hardware orientation.
   // TODO(oshima): Move this to common place.
@@ -87,26 +91,13 @@ class ASH_EXPORT TabletModeController
   TabletModeController();
   ~TabletModeController() override;
 
-  // TODO(jonross): Merge this with AttemptEnterTabletMode. Currently these are
-  // separate for several reasons: there is no internal display when running
-  // unittests; the event blocker prevents keyboard input when running ChromeOS
-  // on linux. http://crbug.com/362881
-  // Turn the always tablet mode window manager on or off.
-  // TODO(xdai): Make it a private function. This function is not supposed to be
-  // called by an external caller except for tests.
-  void EnableTabletModeWindowManager(bool should_enable);
-
-  // Test if the TabletModeWindowManager is enabled or not.
-  bool IsTabletModeWindowManagerEnabled() const;
+  void Shutdown();
 
   // Add a special window to the TabletModeWindowManager for tracking. This is
   // only required for special windows which are handled by other window
   // managers like the |MultiUserWindowManagerImpl|.
   // If the tablet mode is not enabled no action will be performed.
   void AddWindow(aura::Window* window);
-
-  void AddObserver(TabletModeObserver* observer);
-  void RemoveObserver(TabletModeObserver* observer);
 
   // Checks if we should auto hide title bars for the |widget| in tablet mode.
   bool ShouldAutoHideTitlebars(views::Widget* widget);
@@ -121,14 +112,15 @@ class ASH_EXPORT TabletModeController
   // Starts observing |window| for animation changes.
   void MaybeObserveBoundsAnimation(aura::Window* window);
 
-  // TabletMode:
-  void SetTabletModeToggleObserver(TabletModeToggleObserver* observer) override;
-  bool IsEnabled() const override;
-  void SetEnabledForTest(bool enabled) override;
-
   // Stops observing the window which is being animated from tablet <->
   // clamshell.
-  void StopObservingAnimation(bool record_stats);
+  void StopObservingAnimation(bool record_stats, bool delete_screenshot);
+
+  // TabletMode:
+  void AddObserver(TabletModeObserver* observer) override;
+  void RemoveObserver(TabletModeObserver* observer) override;
+  bool InTabletMode() const override;
+  void SetEnabledForTest(bool enabled) override;
 
   // ShellObserver:
   void OnShellInitialized() override;
@@ -155,17 +147,11 @@ class ASH_EXPORT TabletModeController
   void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
   void OnDeviceListsComplete() override;
 
-  // KioskNextShellObserver:
-  void OnKioskNextEnabled() override;
-
   // ui::LayerAnimationObserver:
   void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override;
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
   void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
   void OnLayerAnimationScheduled(ui::LayerAnimationSequence* sequence) override;
-
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
 
   void increment_app_window_drag_count() { ++app_window_drag_count_; }
   void increment_app_window_drag_in_splitview_count() {
@@ -176,7 +162,26 @@ class ASH_EXPORT TabletModeController
     ++tab_drag_in_splitview_count_;
   }
 
+  // Enable/disable the tablet mode for development. Please see cc file
+  // for more details.
+  void SetEnabledForDev(bool enabled);
+
+  // Returns true if the system tray should have a overview button.
+  bool ShouldShowOverviewButton() const;
+
+  // Defines how the tablet mode controller controls the
+  // tablet mode and its transition between clamshell mode.
+  // This is defined as a public to define constexpr in cc.
+  struct TabletModeBehavior {
+    bool use_sensor = true;
+    bool observe_display_events = true;
+    bool observe_external_pointer_device_events = true;
+    bool block_internal_input_device = false;
+    bool always_show_overview_button = false;
+  };
+
  private:
+  class DestroyObserver;
   class TabletModeTransitionFpsCounter;
   friend class TabletModeControllerTestApi;
 
@@ -195,6 +200,13 @@ class ASH_EXPORT TabletModeController
     kInTabletMode,
     kExitingTabletMode,
   };
+
+  // TODO(jonross): Merge this with AttemptEnterTabletMode. Currently these are
+  // separate for several reasons: there is no internal display when running
+  // unittests; the event blocker prevents keyboard input when running ChromeOS
+  // on linux. http://crbug.com/362881
+  // Turn the always tablet mode window manager on or off.
+  void SetTabletModeEnabledInternal(bool should_enable);
 
   // If EC cannot handle lid angle calc, browser detects hinge rotation from
   // base and lid accelerometers and automatically start / stop tablet mode.
@@ -239,11 +251,6 @@ class ASH_EXPORT TabletModeController
   // otherwise returns TABLET_MODE_INTERNAL_INACTIVE.
   TabletModeIntervalType CurrentTabletModeIntervalType();
 
-  // Checks whether we want to allow change the current ui mode to tablet mode
-  // or clamshell mode. This returns false if the user set a flag for the
-  // software to behave in a certain way regardless of configuration.
-  bool AllowUiModeChange() const;
-
   // Called when a pointing device config is changed, or when a device list is
   // sent from device manager. This will exit tablet mode if needed.
   void HandlePointingDeviceAddedOrRemoved();
@@ -262,7 +269,7 @@ class ASH_EXPORT TabletModeController
   // Returns true if the current lid angle can be detected and is in tablet mode
   // angle range. If EC can handle lid angle calc, lid angle is unavailable to
   // browser.
-  bool LidAngleIsInTabletModeRange();
+  bool LidAngleInTabletModeRange();
 
   // Suspends |occlusion_tracker_pauser_| for the duration of
   // kOcclusionTrackTimeout.
@@ -270,6 +277,24 @@ class ASH_EXPORT TabletModeController
 
   // Resets |occlusion_tracker_pauser_|.
   void ResetPauser();
+
+  // Deletes the enter tablet mode screenshot and associated callbacks.
+  void DeleteScreenshot();
+
+  void ResetDestroyObserver();
+
+  // Finishes initializing for tablet mode. May be called async if a screenshot
+  // was requested while starting initializing.
+  void FinishInitTabletMode();
+
+  // Takes a screenshot of everything in the rotation container, except for
+  // |top_window|.
+  void TakeScreenshot(aura::Window* top_window);
+
+  // Called when a screenshot is taken. Creates |screenshot_widget_| which holds
+  // the screenshot results and stacks it under top window.
+  void OnScreenshotTaken(base::OnceClosure on_screenshot_taken,
+                         std::unique_ptr<viz::CopyOutputResult> copy_result);
 
   // The maximized window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
@@ -333,21 +358,11 @@ class ASH_EXPORT TabletModeController
   // Counts of the tab drag from top when splitview is active.
   int tab_drag_in_splitview_count_ = 0;
 
-  // Tracks KioskNext state separately to simplify testing.
-  bool kiosk_next_enabled_ = false;
-
   // Tracks smoothed accelerometer data over time. This is done when the hinge
   // is approaching vertical to remove abrupt acceleration that can lead to
   // incorrect calculations of hinge angles.
   gfx::Vector3dF base_smoothed_;
   gfx::Vector3dF lid_smoothed_;
-
-  // A simplified observer that only gets notified of entering or exiting tablet
-  // mode.
-  TabletModeToggleObserver* toggle_observer_ = nullptr;
-
-  // Tracks whether a flag is used to force ui mode.
-  UiMode force_ui_mode_ = UiMode::kNone;
 
   State state_ = State::kInClamshellMode;
 
@@ -366,14 +381,29 @@ class ASH_EXPORT TabletModeController
   // Observer to observe the bluetooth devices.
   std::unique_ptr<BluetoothDevicesObserver> bluetooth_devices_observer_;
 
-  // The window and layer we are observing when animating from clamshell to
-  // tablet mode or vice versa.
-  aura::Window* observed_window_ = nullptr;
-  ui::Layer* observed_layer_ = nullptr;
+  // Observers top windows or animating window during state transition.
+  std::unique_ptr<DestroyObserver> destroy_observer_;
+
+  // The layer that animates duraing tablet mode <-> clamshell
+  // transition. It's observed to take an action after its animation ends.
+  ui::Layer* animating_layer_ = nullptr;
 
   std::unique_ptr<TabletModeTransitionFpsCounter> fps_counter_;
 
+  base::CancelableOnceCallback<void(std::unique_ptr<viz::CopyOutputResult>)>
+      screenshot_taken_callback_;
+  base::CancelableOnceClosure screenshot_set_callback_;
+
+  // A layer that is created before an enter tablet mode animations is started,
+  // and destroyed when the animation is ended. It contains a screenshot of
+  // everything in the screen rotation container except the top window. It helps
+  // with animation performance because it fully occludes all windows except the
+  // animating window for the duration of the animation.
+  std::unique_ptr<ui::Layer> screenshot_layer_;
+
   base::ObserverList<TabletModeObserver>::Unchecked tablet_mode_observers_;
+
+  TabletModeBehavior tablet_mode_behavior_;
 
   base::WeakPtrFactory<TabletModeController> weak_factory_{this};
 

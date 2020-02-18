@@ -13,8 +13,8 @@ from __future__ import print_function
 import os
 
 from chromite.api import controller
+from chromite.api import validate
 from chromite.api.gen.chromiumos import common_pb2
-from chromite.api.controller import controller_util
 from chromite.lib import cros_build_lib
 from chromite.lib import constants
 from chromite.lib import image_lib
@@ -43,6 +43,7 @@ _VM_IMAGE_MAPPING = {
 }
 
 
+@validate.require('build_target.name')
 def Create(input_proto, output_proto):
   """Build an image.
 
@@ -51,8 +52,6 @@ def Create(input_proto, output_proto):
     output_proto (image_pb2.CreateImageResult): The output message.
   """
   board = input_proto.build_target.name
-  if not board:
-    cros_build_lib.Die('build_target.name is required.')
 
   # Build the base image if no images provided.
   to_build = input_proto.image_types or [_BASE_ID]
@@ -69,7 +68,10 @@ def Create(input_proto, output_proto):
     # Success -- we need to list out the images we built in the output.
     _PopulateBuiltImages(board, image_types, output_proto)
   else:
-    # Failure -- include all of the failed packages in the output.
+    # Failure, include all of the failed packages in the output when available.
+    if not result.failed_packages:
+      return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
+
     for package in result.failed_packages:
       current = output_proto.failed_packages.add()
       current.category = package.category
@@ -159,35 +161,8 @@ def _PopulateBuiltImages(board, image_types, output_proto):
     new_image.build_target.name = board
 
 
-def CreateVm(input_proto, output_proto):
-  """Create a VM from an Image.
-
-  Args:
-    input_proto (image_pb2.CreateVmRequest): The input message.
-    output_proto (image_pb2.CreateVmResponse): The output message.
-  """
-  # TODO(saklein) This currently relies on the build target, but using the image
-  #   path directly would be better. Change this to do that when create image
-  #   returns an absolute image path rather than chroot relative path.
-  build_target_name = input_proto.image.build_target.name
-  proto_image_type = input_proto.image.type
-
-  if not build_target_name:
-    cros_build_lib.Die('image.build_target.name is required.')
-  if proto_image_type not in _IMAGE_MAPPING:
-    cros_build_lib.Die('Unknown image.type value: %s', proto_image_type)
-
-  chroot = controller_util.ParseChroot(input_proto.chroot)
-  is_test_image = proto_image_type == _TEST_ID
-
-  try:
-    output_proto.vm_image.path = image.CreateVm(build_target_name,
-                                                chroot=chroot,
-                                                is_test=is_test_image)
-  except image.Error as e:
-    cros_build_lib.Die(e.message)
-
-
+@validate.require('build_target.name', 'result.directory')
+@validate.exists('image.path')
 def Test(input_proto, output_proto):
   """Run image tests.
 
@@ -198,13 +173,6 @@ def Test(input_proto, output_proto):
   image_path = input_proto.image.path
   board = input_proto.build_target.name
   result_directory = input_proto.result.directory
-
-  if not board:
-    cros_build_lib.Die('The build_target.name is required.')
-  if not result_directory:
-    cros_build_lib.Die('The result.directory is required.')
-  if not image_path:
-    cros_build_lib.Die('The image.path is required.')
 
   if not os.path.isfile(image_path) or not image_path.endswith('.bin'):
     cros_build_lib.Die(

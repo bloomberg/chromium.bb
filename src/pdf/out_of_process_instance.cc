@@ -132,8 +132,6 @@ constexpr char kJSPositionX[] = "x";
 constexpr char kJSPositionY[] = "y";
 // Scroll by (Plugin -> Page)
 constexpr char kJSScrollByType[] = "scrollBy";
-// Cancel the stream URL request (Plugin -> Page)
-constexpr char kJSCancelStreamUrlType[] = "cancelStreamUrl";
 // Navigate to the given URL (Plugin -> Page)
 constexpr char kJSNavigateType[] = "navigate";
 constexpr char kJSNavigateUrl[] = "url";
@@ -428,7 +426,6 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       preview_document_load_state_(LOAD_STATE_COMPLETE),
       uma_(this),
       told_browser_about_unsupported_feature_(false),
-      font_substitution_reported_(false),
       print_preview_page_count_(-1),
       print_preview_loaded_page_count_(-1),
       last_progress_sent_(0),
@@ -447,9 +444,6 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_TOUCH);
-
-  for (size_t i = 0; i < PDFACTION_BUCKET_BOUNDARY; i++)
-    preview_action_recorded_[i] = false;
 }
 
 OutOfProcessInstance::~OutOfProcessInstance() {
@@ -653,8 +647,6 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     // Bound the input parameters.
     zoom = std::max(kMinZoom, zoom);
     DCHECK(dict.Get(pp::Var(kJSUserInitiated)).is_bool());
-    if (dict.Get(pp::Var(kJSUserInitiated)).AsBool())
-      PrintPreviewHistogramEnumeration(UPDATE_ZOOM);
 
     SetZoom(zoom);
     scroll_offset = BoundScrollOffsetToDocument(scroll_offset);
@@ -756,7 +748,6 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     engine_->New(url_.c_str(), nullptr /* empty header */);
 
     paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
-    PrintPreviewHistogramEnumeration(PRINT_PREVIEW_SHOWN);
   } else if (type == kJSLoadPreviewPageType) {
     if (!(dict.Get(pp::Var(kJSPreviewPageUrl)).is_string() &&
           dict.Get(pp::Var(kJSPreviewPageIndex)).is_int())) {
@@ -1634,8 +1625,7 @@ OutOfProcessInstance::SearchString(const base::char16* string,
 }
 
 void OutOfProcessInstance::DocumentLoadComplete(
-    const PDFEngine::DocumentFeatures& document_features,
-    uint32_t file_size) {
+    const PDFEngine::DocumentFeatures& document_features) {
   // Clear focus state for OSK.
   FormTextFieldFocusChange(false);
 
@@ -1643,8 +1633,6 @@ void OutOfProcessInstance::DocumentLoadComplete(
   document_load_state_ = LOAD_STATE_COMPLETE;
   UserMetricsRecordAction("PDF.LoadSuccess");
   HistogramEnumeration("PDF.DocumentFeature", LOADED_DOCUMENT, FEATURES_COUNT);
-  if (!font_substitution_reported_)
-    HistogramEnumeration("PDF.IsFontSubstituted", 0, 2);
 
   // Note: If we are in print preview mode the scroll location is retained
   // across document loads so we don't want to scroll again and override it.
@@ -1703,15 +1691,10 @@ void OutOfProcessInstance::DocumentLoadComplete(
   }
 
   pp::PDF::SetContentRestriction(this, content_restrictions);
-  static constexpr int32_t kMaxFileSizeInKB = 12 * 1024 * 1024;
-  HistogramCustomCounts("PDF.FileSizeInKB", file_size / 1024, 0,
-                        kMaxFileSizeInKB, 50);
   HistogramCustomCounts("PDF.PageCount", document_features.page_count, 1,
                         1000000, 50);
   HistogramEnumeration("PDF.HasAttachment",
                        document_features.has_attachments ? 1 : 0, 2);
-  HistogramEnumeration("PDF.IsLinearized",
-                       document_features.is_linearized ? 1 : 0, 2);
   HistogramEnumeration("PDF.IsTagged", document_features.is_tagged ? 1 : 0, 2);
   HistogramEnumeration("PDF.FormType",
                        static_cast<int32_t>(document_features.form_type),
@@ -1719,12 +1702,10 @@ void OutOfProcessInstance::DocumentLoadComplete(
 }
 
 void OutOfProcessInstance::RotateClockwise() {
-  PrintPreviewHistogramEnumeration(ROTATE);
   engine_->RotateClockwise();
 }
 
 void OutOfProcessInstance::RotateCounterclockwise() {
-  PrintPreviewHistogramEnumeration(ROTATE);
   engine_->RotateCounterclockwise();
 }
 
@@ -1773,13 +1754,6 @@ void OutOfProcessInstance::DocumentLoadFailed() {
   message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
   message.Set(pp::Var(kJSProgressPercentage), pp::Var(-1));
   PostMessage(message);
-}
-
-void OutOfProcessInstance::FontSubstituted() {
-  if (font_substitution_reported_)
-    return;
-  font_substitution_reported_ = true;
-  uma_.HistogramEnumeration("PDF.IsFontSubstituted", 1, 2);
 }
 
 void OutOfProcessInstance::PreviewDocumentLoadFailed() {
@@ -1943,19 +1917,11 @@ uint32_t OutOfProcessInstance::GetBackgroundColor() {
   return background_color_;
 }
 
-void OutOfProcessInstance::CancelBrowserDownload() {
-  pp::VarDictionary message;
-  message.Set(kType, kJSCancelStreamUrlType);
-  PostMessage(message);
-}
-
 void OutOfProcessInstance::IsSelectingChanged(bool is_selecting) {
   pp::VarDictionary message;
   message.Set(kType, kJSSetIsSelectingType);
   message.Set(kJSIsSelecting, pp::Var(is_selecting));
   PostMessage(message);
-  if (is_selecting)
-    PrintPreviewHistogramEnumeration(SELECT_TEXT);
 }
 
 void OutOfProcessInstance::IsEditModeChanged(bool is_edit_mode) {
@@ -2054,16 +2020,6 @@ void OutOfProcessInstance::HistogramEnumeration(const std::string& name,
   if (IsPrintPreview())
     return;
   uma_.HistogramEnumeration(name, sample, boundary_value);
-}
-
-void OutOfProcessInstance::PrintPreviewHistogramEnumeration(int32_t sample) {
-  if (!IsPrintPreview())
-    return;
-  if (preview_action_recorded_[sample])
-    return;
-  uma_.HistogramEnumeration("PrintPreview.PdfAction", sample,
-                            PDFACTION_BUCKET_BOUNDARY);
-  preview_action_recorded_[sample] = true;
 }
 
 void OutOfProcessInstance::PrintSettings::Clear() {

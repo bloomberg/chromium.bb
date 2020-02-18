@@ -84,8 +84,8 @@ PaintPropertyTreeBuilderTest::PaintPropertiesForElement(const char* name) {
 }
 
 void PaintPropertyTreeBuilderTest::SetUp() {
-  RenderingTest::SetUp();
   EnableCompositing();
+  RenderingTest::SetUp();
 }
 
 #define CHECK_VISUAL_RECT(expected, source_object, ancestor, slop_factor)      \
@@ -108,9 +108,9 @@ void PaintPropertyTreeBuilderTest::SetUp() {
       inflated_expected.Inflate(LayoutUnit(slop_factor));                      \
       SCOPED_TRACE(String::Format(                                             \
           "Slow path rect: %s, Expected: %s, Inflated expected: %s",           \
-          slow_path_rect.ToString().Ascii().data(),                            \
-          expected.ToString().Ascii().data(),                                  \
-          inflated_expected.ToString().Ascii().data()));                       \
+          slow_path_rect.ToString().Ascii().c_str(),                           \
+          expected.ToString().Ascii().c_str(),                                 \
+          inflated_expected.ToString().Ascii().c_str()));                      \
       EXPECT_TRUE(                                                             \
           PhysicalRect(EnclosingIntRect(slow_path_rect)).Contains(expected));  \
       EXPECT_TRUE(inflated_expected.Contains(slow_path_rect));                 \
@@ -308,7 +308,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbars) {
                   ->VerticalScrollbar()
                   ->IsOverlayScrollbar());
 
-  EXPECT_EQ(FloatRoundedRect(10, 10, 93, 93),
+  EXPECT_EQ(FloatClipRect(FloatRect(10, 10, 93, 93)),
             overflow_clip->ClipRectExcludingOverlayScrollbars());
 }
 
@@ -336,8 +336,28 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbarsSubpixel) {
                   ->VerticalScrollbar()
                   ->IsOverlayScrollbar());
 
-  EXPECT_EQ(FloatRoundedRect(10, 10, 94, 93),
+  EXPECT_EQ(FloatClipRect(FloatRect(10, 10, 94, 93)),
             overflow_clip->ClipRectExcludingOverlayScrollbars());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeCssOverlayScrollbar) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    ::-webkit-scrollbar { background-color: transparent; }
+    ::-webkit-scrollbar:vertical { width: 200px; }
+    ::-webkit-scrollbar-thumb { background: transparent; }
+    body {
+      margin: 0 30px 0 0;
+      background: lightgreen;
+      overflow-y: overlay;
+      overflow-x: hidden;
+    }
+    </style>
+    <div style="height: 5000px; width: 100%; background: lightblue;"></div>
+  )HTML");
+  // The document content should not be clipped by the overlay scrollbar because
+  // the scrollbar can be transparent and the content needs to paint below.
+  EXPECT_EQ(DocContentClip()->ClipRect(), FloatRoundedRect(0, 0, 800, 600));
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
@@ -3459,6 +3479,24 @@ TEST_P(PaintPropertyTreeBuilderTest, ReplacedSvgContentWithIsolation) {
             svg_properties->ReplacedContentTransform());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, ReplacedContentTransformFlattening) {
+  SetBodyInnerHTML(R"HTML(
+    <svg id="svg"
+        style="transform: perspective(100px) rotateY(0deg);"
+        width="100px"
+        height="200px"
+        viewBox="50 50 100 100">
+    </svg>
+  )HTML");
+
+  const auto* svg = ToLayoutBoxModelObject(GetLayoutObjectByElementId("svg"));
+  const auto* svg_properties = svg->FirstFragment().PaintProperties();
+
+  const auto* replaced_transform = svg_properties->ReplacedContentTransform();
+  EXPECT_TRUE(replaced_transform->FlattensInheritedTransform());
+  EXPECT_TRUE(replaced_transform->Parent()->FlattensInheritedTransform());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, ContainPaintOrStyleLayoutTreeState) {
   for (const char* containment : {"paint", "style layout"}) {
     SCOPED_TRACE(containment);
@@ -3999,14 +4037,9 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   auto* fixed_scroll_translation =
       fixed_overflow_scroll_properties->ScrollTranslation();
   auto* fixed_overflow_scroll_node = fixed_scroll_translation->ScrollNode();
-  // The fixed position overflow scroll node is parented under the root, not the
-  // dom-order parent or frame's scroll.
-  EXPECT_EQ(GetDocument()
-                .GetPage()
-                ->GetVisualViewport()
-                .GetScrollTranslationNode()
-                ->ScrollNode(),
-            fixed_overflow_scroll_node->Parent());
+  // The fixed position overflow scroll node is parented under the frame, not
+  // the dom-order parent.
+  EXPECT_EQ(DocScroll(), fixed_overflow_scroll_node->Parent());
   EXPECT_EQ(FloatSize(0, -43), fixed_scroll_translation->Translation2D());
   EXPECT_EQ(IntRect(0, 0, 13, 11), fixed_overflow_scroll_node->ContainerRect());
   EXPECT_EQ(IntSize(13, 4000), fixed_overflow_scroll_node->ContentsSize());
@@ -4263,19 +4296,10 @@ TEST_P(PaintPropertyTreeBuilderTest,
   ASSERT_TRUE(multicol_container->FirstFragment().NextFragment());
   ASSERT_FALSE(
       multicol_container->FirstFragment().NextFragment()->NextFragment());
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(PhysicalOffset(8, 8),
-              multicol_container->FirstFragment().PaintOffset());
-    EXPECT_EQ(
-        PhysicalOffset(59, -12),
-        multicol_container->FirstFragment().NextFragment()->PaintOffset());
-  } else {
-    EXPECT_EQ(PhysicalOffset(),
-              multicol_container->FirstFragment().PaintOffset());
-    EXPECT_EQ(
-        PhysicalOffset(51, -20),
-        multicol_container->FirstFragment().NextFragment()->PaintOffset());
-  }
+  EXPECT_EQ(PhysicalOffset(),
+            multicol_container->FirstFragment().PaintOffset());
+  EXPECT_EQ(PhysicalOffset(51, -20),
+            multicol_container->FirstFragment().NextFragment()->PaintOffset());
 
   GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 25),
                                                    kUserScroll);
@@ -4284,15 +4308,10 @@ TEST_P(PaintPropertyTreeBuilderTest,
   ASSERT_TRUE(multicol_container->FirstFragment().NextFragment());
   ASSERT_FALSE(
       multicol_container->FirstFragment().NextFragment()->NextFragment());
-
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(PhysicalOffset(8, 8),
-              multicol_container->FirstFragment().PaintOffset());
-    EXPECT_EQ(
-        PhysicalOffset(59, -12),
-        multicol_container->FirstFragment().NextFragment()->PaintOffset());
-  } else {
-  }
+  EXPECT_EQ(PhysicalOffset(),
+            multicol_container->FirstFragment().PaintOffset());
+  EXPECT_EQ(PhysicalOffset(51, -20),
+            multicol_container->FirstFragment().NextFragment()->PaintOffset());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
@@ -4842,7 +4861,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ChangePositionUpdateDescendantProperties) {
   EXPECT_EQ(ancestor->FirstFragment().PaintProperties()->OverflowClip(),
             &descendant->FirstFragment().LocalBorderBoxProperties().Clip());
 
-  ToElement(ancestor->GetNode())
+  To<Element>(ancestor->GetNode())
       ->setAttribute(html_names::kStyleAttr, "position: static");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_NE(ancestor->FirstFragment().PaintProperties()->OverflowClip(),
@@ -5360,7 +5379,7 @@ TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
     EXPECT_EQ(nullptr, transform);
   }
 
-  ToElement(target->GetNode())->setAttribute(html_names::kStyleAttr, "");
+  To<Element>(target->GetNode())->setAttribute(html_names::kStyleAttr, "");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(PhysicalOffset(60, 50), target->FirstFragment().PaintOffset());
   EXPECT_EQ(nullptr, target->FirstFragment().PaintProperties());
@@ -6272,6 +6291,26 @@ TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
                 ->nearest_element_shifting_containing_block);
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, RoundedStickyConstraints) {
+  // This test verifies that sticky constraint rects are rounded to the nearest
+  // integer.
+  SetBodyInnerHTML(R"HTML(
+    <div id="scroller" style="overflow:scroll; width:300px; height:199.5px;">
+      <div id="outer" style="position:sticky; top:10px; height:300px">
+      </div>
+      <div style="height:1000px;"></div>
+    </div>
+  )HTML");
+  GetDocument().getElementById("scroller")->setScrollTop(50);
+  UpdateAllLifecyclePhasesForTest();
+
+  const auto* outer_properties = PaintPropertiesForElement("outer");
+  ASSERT_TRUE(outer_properties && outer_properties->StickyTranslation());
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 200), outer_properties->StickyTranslation()
+                                           ->GetStickyConstraint()
+                                           ->constraint_box_rect);
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, NonScrollableSticky) {
   // This test verifies the property tree builder applies sticky offset
   // correctly when the clipping container cannot be scrolled, and
@@ -6527,7 +6566,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleOpacityChangeDoesNotCausePacUpdate) {
               properties->Effect()->GetCompositorElementId());
   ASSERT_TRUE(cc_effect);
   EXPECT_FLOAT_EQ(cc_effect->opacity, 0.5f);
-  EXPECT_FALSE(cc_effect->effect_changed);
+  EXPECT_TRUE(cc_effect->effect_changed);
   EXPECT_FALSE(GetChromeClient()
                    .layer_tree_host()
                    ->property_trees()
@@ -6834,6 +6873,51 @@ TEST_P(PaintPropertyTreeBuilderTest, IsAffectedByOuterViewportBoundsDelta) {
                    ->FirstFragment()
                    .PaintProperties(),
                false);
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, TransformAnimationAxisAlignment) {
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        @keyframes transform_translation {
+          0% { transform: translate(10px, 11px); }
+          100% { transform: translate(20px, 21px); }
+        }
+        #translation_animation {
+          animation-name: transform_translation;
+          animation-duration: 1s;
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+        }
+        @keyframes transform_rotation {
+          0% { transform: rotateZ(10deg); }
+          100% { transform: rotateZ(20deg); }
+        }
+        #rotation_animation {
+          animation-name: transform_rotation;
+          animation-duration: 1s;
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+        }
+      </style>
+      <div id="translation_animation"></div>
+      <div id="rotation_animation"></div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  const auto* translation =
+      PaintPropertiesForElement("translation_animation")->Transform();
+  EXPECT_TRUE(translation->HasActiveTransformAnimation());
+  EXPECT_TRUE(translation->TransformAnimationIsAxisAligned());
+
+  const auto* rotation =
+      PaintPropertiesForElement("rotation_animation")->Transform();
+  EXPECT_TRUE(rotation->HasActiveTransformAnimation());
+  EXPECT_FALSE(rotation->TransformAnimationIsAxisAligned());
 }
 
 }  // namespace blink

@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -133,13 +134,11 @@ const int kMaxBookmarksSearchResults = 50;
     return;
   }
   // Add all bookmarks and folders of the current root node to the table.
-  int childCount = self.sharedState.tableViewDisplayedRootNode->child_count();
-  for (int i = 0; i < childCount; ++i) {
-    const BookmarkNode* node =
-        self.sharedState.tableViewDisplayedRootNode->GetChild(i);
+  for (const auto& child :
+       self.sharedState.tableViewDisplayedRootNode->children()) {
     BookmarkHomeNodeItem* nodeItem =
         [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
-                                      bookmarkNode:node];
+                                      bookmarkNode:child.get()];
     [self.sharedState.tableViewModel
                         addItem:nodeItem
         toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
@@ -212,7 +211,7 @@ const int kMaxBookmarksSearchResults = 50;
     TableViewTextItem* item =
         [[TableViewTextItem alloc] initWithType:BookmarkHomeItemTypeMessage];
     item.textAlignment = NSTextAlignmentLeft;
-    item.textColor = [UIColor darkGrayColor];
+    item.textColor = UIColor.cr_labelColor;
     item.text = noResults;
     [self.sharedState.tableViewModel
                         addItem:item

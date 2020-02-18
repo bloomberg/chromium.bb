@@ -5,10 +5,16 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_DELEGATE_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_DELEGATE_H_
 
+#include <stdint.h>
+
+#include <memory>
+#include <new>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
+#include "base/optional.h"
 #include "ui/accessibility/ax_clipping_behavior.h"
 #include "ui/accessibility/ax_coordinate_system.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -32,6 +38,7 @@ namespace ui {
 struct AXActionData;
 struct AXNodeData;
 struct AXTreeData;
+class AXTree;
 class AXPlatformNode;
 
 // An object that wants to be accessible should derive from this class.
@@ -59,6 +66,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get the accessibility tree data for this node.
   virtual const AXTreeData& GetTreeData() const = 0;
 
+  // Get the unignored selection from the tree
+  virtual const AXTree::Selection GetUnignoredSelection() const = 0;
+
   // Creates a text position rooted at this object.
   virtual AXNodePosition::AXPositionInstance CreateTextPositionAt(
       int offset,
@@ -74,13 +84,43 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual gfx::NativeViewAccessible GetParent() = 0;
 
   // Get the index in parent. Typically this is the AXNode's index_in_parent_.
-  virtual int GetIndexInParent() const = 0;
+  virtual int GetIndexInParent() = 0;
 
   // Get the number of children of this node.
   virtual int GetChildCount() = 0;
 
   // Get the child of a node given a 0-based index.
   virtual gfx::NativeViewAccessible ChildAtIndex(int index) = 0;
+
+  // Gets the first child of a node, or nullptr if no children exist.
+  virtual gfx::NativeViewAccessible GetFirstChild() = 0;
+
+  // Gets the last child of a node, or nullptr if no children exist.
+  virtual gfx::NativeViewAccessible GetLastChild() = 0;
+
+  // Gets the next sibling of a given node, or nullptr if no such node exists.
+  virtual gfx::NativeViewAccessible GetNextSibling() = 0;
+
+  // Gets the previous sibling of a given node, or nullptr if no such node
+  // exists.
+  virtual gfx::NativeViewAccessible GetPreviousSibling() = 0;
+
+  class ChildIterator {
+   public:
+    virtual ~ChildIterator() {}
+    virtual bool operator==(const ChildIterator& rhs) const = 0;
+    virtual bool operator!=(const ChildIterator& rhs) const = 0;
+    virtual void operator++() = 0;
+    virtual void operator++(int) = 0;
+    virtual void operator--() = 0;
+    virtual void operator--(int) = 0;
+    virtual gfx::NativeViewAccessible GetNativeViewAccessible() const = 0;
+    virtual int GetIndexInParent() const = 0;
+  };
+  virtual std::unique_ptr<AXPlatformNodeDelegate::ChildIterator>
+  ChildrenBegin() = 0;
+  virtual std::unique_ptr<AXPlatformNodeDelegate::ChildIterator>
+  ChildrenEnd() = 0;
 
   // Returns the text of this node and represent the text of descendant nodes
   // with a special character in place of every embedded object. This represents
@@ -149,6 +189,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get whether this node is offscreen.
   virtual bool IsOffscreen() const = 0;
 
+  // Get whether this node is a minimized window.
+  virtual bool IsMinimized() const = 0;
+
   // Get whether this node is in web content.
   virtual bool IsWebContent() const = 0;
 
@@ -203,39 +246,49 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual const std::vector<gfx::NativeViewAccessible> GetDescendants()
       const = 0;
 
+  // Return a string representing the language code.
+  //
+  // For web content, this will consider the language declared in the DOM, and
+  // may eventually attempt to automatically detect the language from the text.
+  //
+  // This language code will be BCP 47.
+  //
+  // Returns empty string if no appropriate language was found or if this node
+  // uses the default interface language.
+  virtual std::string GetLanguage() const = 0;
+
   //
   // Tables. All of these should be called on a node that's a table-like
-  // role.
+  // role, otherwise they return nullopt.
   //
   virtual bool IsTable() const = 0;
-  virtual int32_t GetTableColCount() const = 0;
-  virtual int32_t GetTableRowCount() const = 0;
-  virtual base::Optional<int32_t> GetTableAriaColCount() const = 0;
-  virtual base::Optional<int32_t> GetTableAriaRowCount() const = 0;
-  virtual int32_t GetTableCellCount() const = 0;
-  virtual const std::vector<int32_t> GetColHeaderNodeIds() const = 0;
-  virtual const std::vector<int32_t> GetColHeaderNodeIds(
-      int32_t col_index) const = 0;
-  virtual const std::vector<int32_t> GetRowHeaderNodeIds() const = 0;
-  virtual const std::vector<int32_t> GetRowHeaderNodeIds(
-      int32_t row_index) const = 0;
-  virtual AXPlatformNode* GetTableCaption() = 0;
+  virtual base::Optional<int> GetTableColCount() const = 0;
+  virtual base::Optional<int> GetTableRowCount() const = 0;
+  virtual base::Optional<int> GetTableAriaColCount() const = 0;
+  virtual base::Optional<int> GetTableAriaRowCount() const = 0;
+  virtual base::Optional<int> GetTableCellCount() const = 0;
+  virtual std::vector<int32_t> GetColHeaderNodeIds() const = 0;
+  virtual std::vector<int32_t> GetColHeaderNodeIds(int col_index) const = 0;
+  virtual std::vector<int32_t> GetRowHeaderNodeIds() const = 0;
+  virtual std::vector<int32_t> GetRowHeaderNodeIds(int row_index) const = 0;
+  virtual AXPlatformNode* GetTableCaption() const = 0;
 
   // Table row-like nodes.
   virtual bool IsTableRow() const = 0;
-  virtual int32_t GetTableRowRowIndex() const = 0;
+  virtual base::Optional<int> GetTableRowRowIndex() const = 0;
 
   // Table cell-like nodes.
   virtual bool IsTableCellOrHeader() const = 0;
-  virtual int32_t GetTableCellIndex() const = 0;
-  virtual int32_t GetTableCellColIndex() const = 0;
-  virtual int32_t GetTableCellRowIndex() const = 0;
-  virtual int32_t GetTableCellColSpan() const = 0;
-  virtual int32_t GetTableCellRowSpan() const = 0;
-  virtual int32_t GetTableCellAriaColIndex() const = 0;
-  virtual int32_t GetTableCellAriaRowIndex() const = 0;
-  virtual int32_t GetCellId(int32_t row_index, int32_t col_index) const = 0;
-  virtual int32_t CellIndexToId(int32_t cell_index) const = 0;
+  virtual base::Optional<int> GetTableCellIndex() const = 0;
+  virtual base::Optional<int> GetTableCellColIndex() const = 0;
+  virtual base::Optional<int> GetTableCellRowIndex() const = 0;
+  virtual base::Optional<int> GetTableCellColSpan() const = 0;
+  virtual base::Optional<int> GetTableCellRowSpan() const = 0;
+  virtual base::Optional<int> GetTableCellAriaColIndex() const = 0;
+  virtual base::Optional<int> GetTableCellAriaRowIndex() const = 0;
+  virtual base::Optional<int32_t> GetCellId(int row_index,
+                                            int col_index) const = 0;
+  virtual base::Optional<int32_t> CellIndexToId(int cell_index) const = 0;
 
   // Helper methods to check if a cell is an ARIA-1.1+ 'cell' or 'gridcell'
   virtual bool IsCellOrHeaderOfARIATable() const = 0;
@@ -244,8 +297,8 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Ordered-set-like and item-like nodes.
   virtual bool IsOrderedSetItem() const = 0;
   virtual bool IsOrderedSet() const = 0;
-  virtual int32_t GetPosInSet() const = 0;
-  virtual int32_t GetSetSize() const = 0;
+  virtual base::Optional<int> GetPosInSet() const = 0;
+  virtual base::Optional<int> GetSetSize() const = 0;
 
   //
   // Events.
@@ -281,7 +334,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Accessibility objects can have the "hot tracked" state set when
   // the mouse is hovering over them, but this makes tests flaky because
   // the test behaves differently when the mouse happens to be over an
-  // element. The default value should be falses if not in testing mode.
+  // element. The default value should be false if not in testing mode.
   virtual bool ShouldIgnoreHoveredStateForTesting() = 0;
 
  protected:

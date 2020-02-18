@@ -899,7 +899,7 @@ use constant IGNORE => 'ignore' ;
 	DB_VERIFY_PARTITION        => DEFINE,
 
 	#########
-	# 5.0.6
+	# 5.0.21
 	#########
 
 	DBC_FAMILY                 => IGNORE,
@@ -914,8 +914,10 @@ use constant IGNORE => 'ignore' ;
 	DB_LOG_VERIFY_ERR          => DEFINE,
 	DB_LOG_VERIFY_FORWARD      => DEFINE,
 	DB_LOG_VERIFY_INTERR       => DEFINE,
+	DB_LOG_VERIFY_PARTIAL      => DEFINE,
 	DB_LOG_VERIFY_VERBOSE      => DEFINE,
 	DB_LOG_VERIFY_WARNING      => DEFINE,
+	DB_NOERROR                 => DEFINE,
 	DB_REPMGR_CONF_ELECTIONS   => DEFINE,
 	DB_REPMGR_ISPEER           => DEFINE,
 	DB_REP_CONF_AUTOINIT       => DEFINE,
@@ -931,34 +933,32 @@ use constant IGNORE => 'ignore' ;
 	TXN_READONLY               => IGNORE,
 
 	# enum log_rec_type_t
-	LOGREC_Done                => '5.0.6',
-	LOGREC_ARG                 => '5.0.6',
-	LOGREC_HDR                 => '5.0.6',
-	LOGREC_DATA                => '5.0.6',
-	LOGREC_DB                  => '5.0.6',
-	LOGREC_DBOP                => '5.0.6',
-	LOGREC_DBT                 => '5.0.6',
-	LOGREC_LOCKS               => '5.0.6',
-	LOGREC_OP                  => '5.0.6',
-	LOGREC_PGDBT               => '5.0.6',
-	LOGREC_PGDDBT              => '5.0.6',
-	LOGREC_PGLIST              => '5.0.6',
-	LOGREC_POINTER             => '5.0.6',
-	LOGREC_TIME                => '5.0.6',
+	LOGREC_Done                => '5.0.21',
+	LOGREC_ARG                 => '5.0.21',
+	LOGREC_HDR                 => '5.0.21',
+	LOGREC_DATA                => '5.0.21',
+	LOGREC_DB                  => '5.0.21',
+	LOGREC_DBOP                => '5.0.21',
+	LOGREC_DBT                 => '5.0.21',
+	LOGREC_LOCKS               => '5.0.21',
+	LOGREC_OP                  => '5.0.21',
+	LOGREC_PGDBT               => '5.0.21',
+	LOGREC_PGDDBT              => '5.0.21',
+	LOGREC_PGLIST              => '5.0.21',
+	LOGREC_POINTER             => '5.0.21',
+	LOGREC_TIME                => '5.0.21',
 
 	# enum db_recops
-	DB_TXN_LOG_VERIFY          => '5.0.6',
+	DB_TXN_LOG_VERIFY          => '5.0.21',
 
 	#########
 	# 5.0.32
 	#########
 
 	DBC_ERROR                  => IGNORE,
-	DB_LOG_VERIFY_PARTIAL      => DEFINE,
-	DB_NOERROR                 => DEFINE,
 
 	#########
-	# 5.1.3
+	# 5.1.25
 	#########
 
 	DB_ASSOC_CREATE            => DEFINE,
@@ -966,23 +966,18 @@ use constant IGNORE => 'ignore' ;
 	DB_DATABASE_LOCKING        => DEFINE,
 	DB_ENV_DATABASE_LOCKING    => DEFINE,
 	DB_ENV_HOTBACKUP           => DEFINE,
+	DB_ENV_NOFLUSH             => DEFINE,
 	DB_HOTBACKUP_IN_PROGRESS   => DEFINE,
 	DB_LOCK_CHECK              => DEFINE,
 	DB_LOG_NO_DATA             => DEFINE,
+	DB_NOFLUSH                 => DEFINE,
+	DB_NO_CHECKPOINT           => DEFINE,
 	DB_REPMGR_ACKS_ALL_AVAILABLE => DEFINE,
 	DB_TXN_BULK                => DEFINE,
 	TXN_BULK                   => IGNORE,
 
 	#########
-	# 5.1.18
-	#########
-
-	DB_ENV_NOFLUSH             => DEFINE,
-	DB_NOFLUSH                 => DEFINE,
-	DB_NO_CHECKPOINT           => DEFINE,
-
-	#########
-	# 5.2.14
+	# 5.2.10
 	#########
 
 	DB_ALIGN8                  => IGNORE,
@@ -996,7 +991,6 @@ use constant IGNORE => 'ignore' ;
 	DB_EVENT_REP_LOCAL_SITE_REMOVED => DEFINE,
 	DB_EVENT_REP_SITE_ADDED    => DEFINE,
 	DB_EVENT_REP_SITE_REMOVED  => DEFINE,
-	DB_EVENT_REP_WOULD_ROLLBACK => DEFINE,
 	DB_FAILCHK_ISALIVE         => DEFINE,
 	DB_GROUP_CREATOR           => DEFINE,
 	DB_HEAPMAGIC               => DEFINE,
@@ -1010,8 +1004,6 @@ use constant IGNORE => 'ignore' ;
 	DB_LOCAL_SITE              => DEFINE,
 	DB_OK_HEAP                 => DEFINE,
 	DB_REPMGR_NEED_RESPONSE    => DEFINE,
-	DB_REP_CONF_AUTOROLLBACK   => DEFINE,
-	DB_REP_WOULDROLLBACK       => DEFINE,
 	DB_STAT_ALLOC              => DEFINE,
 	DB_STAT_SUMMARY            => DEFINE,
 	TXN_NEED_ABORT             => IGNORE,
@@ -1024,18 +1016,26 @@ use constant IGNORE => 'ignore' ;
 	TXN_XA_THREAD_UNASSOCIATED => IGNORE,
 
 	# enum DBTYPE
-	DB_HEAP                    => '5.2.14',
+	DB_HEAP                    => '5.2.10',
 
 	# enum DB_MEM_CONFIG
-	DB_MEM_LOCK                => '5.2.14',
-	DB_MEM_LOCKOBJECT          => '5.2.14',
-	DB_MEM_LOCKER              => '5.2.14',
-	DB_MEM_LOGID               => '5.2.14',
-	DB_MEM_TRANSACTION         => '5.2.14',
-	DB_MEM_THREAD              => '5.2.14',
+	DB_MEM_LOCK                => '5.2.10',
+	DB_MEM_LOCKOBJECT          => '5.2.10',
+	DB_MEM_LOCKER              => '5.2.10',
+	DB_MEM_LOGID               => '5.2.10',
+	DB_MEM_TRANSACTION         => '5.2.10',
+	DB_MEM_THREAD              => '5.2.10',
 
 	#########
-	# 5.3.5
+	# 5.2.28
+	#########
+
+	DB_EVENT_REP_WOULD_ROLLBACK => DEFINE,
+	DB_REP_CONF_AUTOROLLBACK   => DEFINE,
+	DB_REP_WOULDROLLBACK       => DEFINE,
+
+	#########
+	# 5.3.15
 	#########
 
 	DB2_AM_EXCL                => DEFINE,
@@ -1047,16 +1047,129 @@ use constant IGNORE => 'ignore' ;
 	DB_BACKUP_NO_LOGS          => DEFINE,
 	DB_BACKUP_SINGLE_DIR       => DEFINE,
 	DB_BACKUP_UPDATE           => DEFINE,
+	DB_CHKSUM_FAIL             => DEFINE,
 	DB_INTERNAL_PERSISTENT_DB  => DEFINE,
 	DB_INTERNAL_TEMPORARY_DB   => DEFINE,
 	DB_LOCK_IGNORE_REC         => DEFINE,
 	DB_VERB_BACKUP             => DEFINE,
+	MP_FOR_FLUSH               => IGNORE,
 
 	# enum DB_BACKUP_CONFIG
-	DB_BACKUP_READ_COUNT       => '5.3.5',
-	DB_BACKUP_READ_SLEEP       => '5.3.5',
-	DB_BACKUP_SIZE             => '5.3.5',
-	DB_BACKUP_WRITE_DIRECT     => '5.3.5',
+	DB_BACKUP_READ_COUNT       => '5.3.15',
+	DB_BACKUP_READ_SLEEP       => '5.3.15',
+	DB_BACKUP_SIZE             => '5.3.15',
+	DB_BACKUP_WRITE_DIRECT     => '5.3.15',
+
+	#########
+	# 6.0.19
+	#########
+
+	DB_DBT_BLOB                => IGNORE,
+	DB_DBT_BLOB_REC            => IGNORE,
+	DB_EVENT_REP_AUTOTAKEOVER_FAILED => DEFINE,
+	DB_INTERNAL_BLOB_DB        => DEFINE,
+	DB_LOG_BLOB                => DEFINE,
+	DB_REPMGR_ISVIEW           => DEFINE,
+	DB_STREAM_READ             => DEFINE,
+	DB_STREAM_SYNC_WRITE       => DEFINE,
+	DB_STREAM_WRITE            => DEFINE,
+	DB_VERB_MVCC               => DEFINE,
+
+	#########
+	# 6.0.30
+	#########
+
+
+	# enum log_rec_type_t
+	LOGREC_LONGARG             => '6.0.30',
+
+	#########
+	# 6.0.35
+	#########
+
+	DB_NOINTMP                 => DEFINE,
+
+	#########
+	# 6.1.10
+	#########
+
+	DB_EVENT_FAILCHK_PANIC     => DEFINE,
+	DB_EVENT_MUTEX_DIED        => DEFINE,
+	DB_EVENT_REP_INQUEUE_FULL  => DEFINE,
+	DB_EXIT_FAILCHK            => DEFINE,
+	DB_EXIT_FILE_EXISTS        => DEFINE,
+	DB_FAILURE_SYMPTOM_SIZE    => DEFINE,
+	DB_LOG_NOSYNC              => DEFINE,
+	DB_MUTEX_DESCRIBE_STRLEN   => DEFINE,
+	DB_MUTEX_OWNER_DEAD        => DEFINE,
+	DB_REPMGR_CONF_PREFMAS_CLIENT => DEFINE,
+	DB_REPMGR_CONF_PREFMAS_MASTER => DEFINE,
+	DB_REP_CONF_ELECT_LOGLENGTH => DEFINE,
+	DB_SET_MUTEX_FAILCHK_TIMEOUT => DEFINE,
+
+	#########
+	# 6.1.19
+	#########
+
+	DB_FORCESYNCENV            => DEFINE,
+	DB_META_CHKSUM_FAIL        => DEFINE,
+
+	#########
+	# 6.1.29
+	#########
+
+	DB2_AM_MPOOL_OPENED        => DEFINE,
+
+	#########
+	# 6.1.36
+	#########
+
+	DB_REGION_MAGIC_RECOVER    => DEFINE,
+
+	#########
+	# 6.2.23
+	#########
+
+	DB_DBT_EXT_FILE            => IGNORE,
+	DB_LOG_EXT_FILE            => DEFINE,
+	DB_OFF_T_MAX               => DEFINE,
+	DB_REPMGR_CONF_FORWARD_WRITES => DEFINE,
+	DB_REP_WRITE_FORWARD_TIMEOUT => DEFINE,
+	DB_SLICED                  => DEFINE,
+	DB_SLICE_CORRUPT           => DEFINE,
+	DB_VERB_SLICE              => DEFINE,
+
+	#########
+	# 6.2.32
+	#########
+
+	DB_CONVERT                 => DEFINE,
+
+	#########
+	# 6.3.10
+	#########
+
+	DB_EVENT_REP_AUTOTAKEOVER  => DEFINE,
+	DB_REPMGR_CONF_DISABLE_POLL => DEFINE,
+	DB_REPMGR_CONF_ENABLE_EPOLL => DEFINE,
+	DB_REPMGR_ISELECTABLE      => DEFINE,
+	DB_REP_INELECT             => DEFINE,
+	DB_SYSTEM_MEM_MISSING      => DEFINE,
+	DB_TXN_DISPATCH            => DEFINE,
+	HAVE_EPOLL                 => DEFINE,
+	TXN_DISPATCH               => IGNORE,
+
+	# enum poll_method_t
+	SELECT                     => '6.3.10',
+	POLL                       => '6.3.10',
+	EPOLL                      => '6.3.10',
+
+	# enum DB_MEM_CONFIG
+	DB_MEM_DATABASE            => '6.3.10',
+	DB_MEM_DATABASE_LENGTH     => '6.3.10',
+	DB_MEM_EXTFILE_DATABASE    => '6.3.10',
+	DB_MEM_REP_SITE            => '6.3.10',
+
 	) ;
 
 sub enum_Macro

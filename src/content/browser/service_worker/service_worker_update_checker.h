@@ -15,8 +15,18 @@ class SharedURLLoaderFactory;
 
 namespace content {
 
+class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
 
+// Used only when ServiceWorkerImportedScriptUpdateCheck is enabled.
+//
+// This is responsible for byte-for-byte update checking. Mostly corresponding
+// to step 1-9 in [[Update]] in the spec, but this stops to fetch scripts after
+// any changes found.
+// https://w3c.github.io/ServiceWorker/#update-algorithm
+//
+// This is owned and used by ServiceWorkerRegisterJob as a part of the update
+// logic.
 class CONTENT_EXPORT ServiceWorkerUpdateChecker {
  public:
   // Data of each compared script needed in remaining update process
@@ -44,7 +54,18 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
         paused_state;
   };
 
-  using UpdateStatusCallback = base::OnceCallback<void(bool)>;
+  // This is to notify the update check result. Value of |result| can be:
+  // 1. ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical
+  //    All the scripts are identical with existing version, no need to update.
+  //    |failure_info| is nullptr.
+  // 2. ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent
+  //    Some script changed, update is needed. |failure_info| is nullptr.
+  // 3. ServiceWorkerSingleScriptUpdateChecker::Result::kFailed
+  //    The update check failed, detailed error info is in |failure_info|.
+  using UpdateStatusCallback = base::OnceCallback<void(
+      ServiceWorkerSingleScriptUpdateChecker::Result result,
+      std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+          failure_info)>;
 
   ServiceWorkerUpdateChecker(
       std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare,
@@ -54,12 +75,11 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       bool force_bypass_cache,
       blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
-      base::TimeDelta time_since_last_check);
+      base::TimeDelta time_since_last_check,
+      ServiceWorkerContextCore* context);
   ~ServiceWorkerUpdateChecker();
 
-  // |callback| is always triggered when Start() finishes. If the scripts are
-  // found to have any changes, the argument of |callback| is true and otherwise
-  // false.
+  // |callback| is always triggered when the update check finishes.
   void Start(UpdateStatusCallback callback);
 
   // This transfers the ownership of the check result to the caller. It only
@@ -70,6 +90,8 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
       int64_t old_resource_id,
       const GURL& script_url,
       ServiceWorkerSingleScriptUpdateChecker::Result result,
+      std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+          failure_info,
       std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
           paused_state);
 
@@ -77,6 +99,7 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
 
  private:
   void CheckOneScript(const GURL& url, const int64_t resource_id);
+  void OnGetDefaultHeaders(base::Optional<net::HttpRequestHeaders> header);
 
   std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare_;
   size_t next_script_index_to_compare_ = 0;
@@ -97,10 +120,17 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
   const blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
   const base::TimeDelta time_since_last_check_;
 
+  // Headers that need to be added to network requests for update checking.
+  net::HttpRequestHeaders default_headers_;
+
   // True if any at least one of the scripts is fetched by network.
   bool network_accessed_ = false;
 
-  base::WeakPtrFactory<ServiceWorkerUpdateChecker> weak_factory_;
+  // |context_| outlives |this| because it owns |this| through
+  // ServiceWorkerJobCoordinator and ServiceWorkerRegisterJob.
+  ServiceWorkerContextCore* const context_;
+
+  base::WeakPtrFactory<ServiceWorkerUpdateChecker> weak_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerUpdateChecker);
 };

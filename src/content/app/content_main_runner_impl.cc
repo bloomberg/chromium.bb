@@ -43,9 +43,12 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/app/mojo/mojo_init.h"
+#include "content/app/service_manager_environment.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/scheduler/browser_task_executor.h"
@@ -86,7 +89,6 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/display/win/dpi.h"
 #elif defined(OS_MACOSX)
-#include "base/mac/mach_port_broker.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "sandbox/mac/seatbelt.h"
 #include "sandbox/mac/seatbelt_exec.h"
@@ -721,10 +723,6 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
         delegate_->ProcessRegistersWithSystemProcess(process_type)) {
       base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
     }
-
-    if (!process_type.empty() && delegate_->ShouldSendMachPort(process_type)) {
-      base::MachPortBroker::ChildSendTaskPortToParent(kMachBootstrapName);
-    }
 #endif
 
     // If we are on a platform where the default allocator is overridden (shim
@@ -752,7 +750,7 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
 #endif
 
     RegisterPathProvider();
-    RegisterContentSchemes(true);
+    RegisterContentSchemes(delegate_->ShouldLockSchemeRegistry());
 
 #if defined(OS_ANDROID) && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
     int icudata_fd = g_fds->MaybeGet(kAndroidICUDataDescriptor);
@@ -880,10 +878,14 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     return -1;
 
   bool should_start_service_manager_only = start_service_manager_only;
-  if (!service_manager_context_) {
+  if (!service_manager_environment_) {
     if (delegate_->ShouldCreateFeatureList()) {
-      DCHECK(!field_trial_list_);
-      field_trial_list_ = SetUpFieldTrialsAndFeatureList();
+      // This is intentionally leaked since it needs to live for the duration
+      // of the process and there's no benefit in cleaning it up at exit.
+      base::FieldTrialList* leaked_field_trial_list =
+          SetUpFieldTrialsAndFeatureList().release();
+      ANNOTATE_LEAKING_OBJECT_PTR(leaked_field_trial_list);
+      ignore_result(leaked_field_trial_list);
       delegate_->PostFieldTrialInitialization();
     }
 
@@ -916,14 +918,11 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
       StartBrowserThreadPool();
     }
 
+    tracing::InitTracingPostThreadPoolStart();
+
     BrowserTaskExecutor::PostFeatureListSetup();
 
     delegate_->PostTaskSchedulerStart();
-
-    if (!base::FeatureList::IsEnabled(
-            features::kAllowStartingServiceManagerOnly)) {
-      should_start_service_manager_only = false;
-    }
 
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       bool force_in_process = false;
@@ -951,17 +950,18 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
       }
     }
 
-    // PowerMonitor is needed in reduced mode but is eventually passed on to
-    // BrowserMainLoop.
-    power_monitor_ = std::make_unique<base::PowerMonitor>(
+    discardable_shared_memory_manager_ =
+        std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
+
+    // PowerMonitor is needed in reduced mode. BrowserMainLoop will safely skip
+    // initializing it again if it has already been initialized.
+    base::PowerMonitor::Initialize(
         std::make_unique<base::PowerMonitorDeviceSource>());
 
-    // The thread used to start the ServiceManager is handed-off to
-    // BrowserMain() which may elect to promote it (e.g. to BrowserThread::IO).
-    service_manager_thread_ = BrowserTaskExecutor::CreateIOThread();
-    service_manager_context_.reset(
-        new ServiceManagerContext(service_manager_thread_->task_runner()));
-    download::SetIOTaskRunner(service_manager_thread_->task_runner());
+    service_manager_environment_ = std::make_unique<ServiceManagerEnvironment>(
+        BrowserTaskExecutor::CreateIOThread());
+    download::SetIOTaskRunner(
+        service_manager_environment_->ipc_thread()->task_runner());
 #if defined(OS_ANDROID)
     if (start_service_manager_only) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -970,14 +970,14 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 #endif
   }
 
-  if (should_start_service_manager_only)
+  if (should_start_service_manager_only) {
+    DVLOG(0) << "Chrome is running in ServiceManager only mode.";
     return -1;
+  }
 
+  DVLOG(0) << "Chrome is running in full browser mode.";
   is_browser_main_loop_started_ = true;
-  startup_data_ = std::make_unique<StartupDataImpl>();
-  startup_data_->thread = std::move(service_manager_thread_);
-  startup_data_->service_manager_context = service_manager_context_.get();
-  startup_data_->power_monitor = std::move(power_monitor_);
+  startup_data_ = service_manager_environment_->CreateBrowserStartupData();
   main_params.startup_data = startup_data_.get();
   return RunBrowserProcessMain(main_params, delegate_);
 }
@@ -986,6 +986,10 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 void ContentMainRunnerImpl::Shutdown() {
   DCHECK(is_initialized_);
   DCHECK(!is_shutdown_);
+
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+  service_manager_environment_.reset();
+#endif
 
   if (completed_basic_startup_) {
     const base::CommandLine& command_line =
@@ -997,6 +1001,7 @@ void ContentMainRunnerImpl::Shutdown() {
   }
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
+  service_manager_environment_.reset();
   // The BrowserTaskExecutor needs to be destroyed before |exit_manager_|.
   BrowserTaskExecutor::Shutdown();
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)

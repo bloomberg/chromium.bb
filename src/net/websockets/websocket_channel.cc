@@ -321,13 +321,6 @@ void WebSocketChannel::SendAddChannelRequest(
 void WebSocketChannel::SetState(State new_state) {
   DCHECK_NE(state_, new_state);
 
-  if (new_state == CONNECTED)
-    established_on_ = base::TimeTicks::Now();
-  if (state_ == CONNECTED && !established_on_.is_null()) {
-    UMA_HISTOGRAM_LONG_TIMES(
-        "Net.WebSocket.Duration", base::TimeTicks::Now() - established_on_);
-  }
-
   state_ = new_state;
 }
 
@@ -391,6 +384,12 @@ WebSocketChannel::ChannelState WebSocketChannel::SendFrame(
   return SendFrameInternal(fin, op_code, std::move(buffer), buffer_size);
   // |this| may have been deleted.
 }
+
+// Overrides default quota resend threshold size for WebSocket. This flag will
+// be used to investigate the performance issue of crbug.com/865001 and be
+// deleted later on.
+const char kWebSocketReceiveQuotaThreshold[] =
+    "websocket-renderer-receive-quota-max";
 
 ChannelState WebSocketChannel::AddReceiveFlowControlQuota(int64_t quota) {
   DCHECK(state_ == CONNECTING || state_ == CONNECTED || state_ == SEND_CLOSED ||
@@ -571,7 +570,7 @@ void WebSocketChannel::OnConnectSuccess(
   // TODO(ricea): Get flow control information from the WebSocketStream once we
   // have a multiplexing WebSocketStream.
   current_send_quota_ = send_quota_high_water_mark_;
-  event_interface_->OnFlowControl(send_quota_high_water_mark_);
+  event_interface_->OnSendFlowControlQuotaAdded(send_quota_high_water_mark_);
 
   // |stream_request_| is not used once the connection has succeeded.
   stream_request_.reset();
@@ -669,7 +668,7 @@ ChannelState WebSocketChannel::OnWriteDone(bool synchronous, int result) {
           // server, if the protocol in use supports quota.
           int fresh_quota = send_quota_high_water_mark_ - current_send_quota_;
           current_send_quota_ += fresh_quota;
-          event_interface_->OnFlowControl(fresh_quota);
+          event_interface_->OnSendFlowControlQuotaAdded(fresh_quota);
           return CHANNEL_ALIVE;
         }
       }

@@ -27,7 +27,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -51,10 +50,10 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/location.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -158,6 +157,10 @@ ContentSecurityPolicy::ContentSecurityPolicy()
       require_trusted_types_(false),
       insecure_request_policy_(kLeaveInsecureRequestsAlone) {}
 
+bool ContentSecurityPolicy::IsBound() {
+  return delegate_;
+}
+
 void ContentSecurityPolicy::BindToDelegate(
     ContentSecurityPolicyDelegate& delegate) {
   // TODO(crbug.com/915954): Add DCHECK(!delegate_). It seems some call sites
@@ -185,10 +188,11 @@ void ContentSecurityPolicy::SetupSelf(const ContentSecurityPolicy& other) {
 void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
   DCHECK(delegate_);
 
-  const SecurityOrigin* security_origin = delegate_->GetSecurityOrigin();
-  DCHECK(security_origin);
+  const SecurityOrigin* self_origin =
+      delegate_->GetSecurityOrigin()->GetOriginOrPrecursorOriginIfOpaque();
+  DCHECK(self_origin);
 
-  SetupSelf(*security_origin);
+  SetupSelf(*self_origin);
 
   // Set mixed content checking and sandbox flags, then dump all the parsing
   // error messages, then poke at histograms.
@@ -345,10 +349,7 @@ void ContentSecurityPolicy::AddPolicyFromHeaderValue(
     Member<CSPDirectiveList> policy =
         CSPDirectiveList::Create(this, begin, position, type, source);
 
-    if (!policy->AllowEval(nullptr,
-                           SecurityViolationReportingPolicy::kSuppressReporting,
-                           kWillNotThrowException, g_empty_string) &&
-        disable_eval_error_message_.IsNull()) {
+    if (policy->ShouldDisableEval() && disable_eval_error_message_.IsNull()) {
       disable_eval_error_message_ = policy->EvalDisabledErrorMessage();
     }
 
@@ -557,9 +558,7 @@ bool ContentSecurityPolicy::AllowWasmEval(
 
 String ContentSecurityPolicy::EvalDisabledErrorMessage() const {
   for (const auto& policy : policies_) {
-    if (!policy->AllowEval(nullptr,
-                           SecurityViolationReportingPolicy::kSuppressReporting,
-                           kWillNotThrowException, g_empty_string)) {
+    if (policy->ShouldDisableEval()) {
       return policy->EvalDisabledErrorMessage();
     }
   }
@@ -844,10 +843,11 @@ bool ContentSecurityPolicy::IsFrameAncestorsEnforced() const {
 }
 
 bool ContentSecurityPolicy::AllowTrustedTypeAssignmentFailure(
-    const String& message) const {
+    const String& message,
+    const String& sample) const {
   bool allow = true;
   for (const auto& policy : policies_) {
-    allow &= policy->AllowTrustedTypeAssignmentFailure(message);
+    allow &= policy->AllowTrustedTypeAssignmentFailure(message, sample);
   }
   return allow;
 }
@@ -1615,13 +1615,10 @@ bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr,
 
 WebContentSecurityPolicyList
 ContentSecurityPolicy::ExposeForNavigationalChecks() const {
-  std::vector<WebContentSecurityPolicy> policies;
-  for (const auto& policy : policies_) {
-    policies.push_back(policy->ExposeForNavigationalChecks());
-  }
-
   WebContentSecurityPolicyList list;
-  list.policies = policies;
+  for (const auto& policy : policies_) {
+    list.policies.emplace_back(policy->ExposeForNavigationalChecks());
+  }
 
   if (self_source_)
     list.self_source = self_source_->ExposeForNavigationalChecks();

@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/serial/buffer.h"
 #include "services/device/serial/serial_io_handler.h"
@@ -36,8 +36,8 @@ SerialPortImpl::SerialPortImpl(
       io_handler_(device::SerialIoHandler::Create(path, ui_task_runner)),
       watcher_(std::move(watcher)),
       in_stream_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
-      out_stream_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
-      weak_factory_(this) {
+      out_stream_watcher_(FROM_HERE,
+                          mojo::SimpleWatcher::ArmingPolicy::MANUAL) {
   binding_.set_connection_error_handler(base::BindOnce(
       [](SerialPortImpl* self) { delete self; }, base::Unretained(this)));
   if (watcher_.is_bound()) {
@@ -48,21 +48,20 @@ SerialPortImpl::SerialPortImpl(
 
 SerialPortImpl::~SerialPortImpl() {
   // Cancel I/O operations so that |io_handler_| drops its self-reference.
-  io_handler_->CancelRead(mojom::SerialReceiveError::DISCONNECTED);
-  io_handler_->CancelWrite(mojom::SerialSendError::DISCONNECTED);
+  io_handler_->Close(base::DoNothing());
 }
 
 void SerialPortImpl::Open(mojom::SerialConnectionOptionsPtr options,
                           mojo::ScopedDataPipeConsumerHandle in_stream,
                           mojo::ScopedDataPipeProducerHandle out_stream,
-                          mojom::SerialPortClientAssociatedPtrInfo client,
+                          mojom::SerialPortClientPtr client,
                           OpenCallback callback) {
   DCHECK(in_stream);
   DCHECK(out_stream);
   in_stream_ = std::move(in_stream);
   out_stream_ = std::move(out_stream);
   if (client) {
-    client_.Bind(std::move(client));
+    client_ = std::move(client);
   }
   io_handler_->Open(*options, base::BindOnce(&SerialPortImpl::OnOpenCompleted,
                                              weak_factory_.GetWeakPtr(),
@@ -136,6 +135,10 @@ void SerialPortImpl::SetBreak(SetBreakCallback callback) {
 
 void SerialPortImpl::ClearBreak(ClearBreakCallback callback) {
   std::move(callback).Run(io_handler_->ClearBreak());
+}
+
+void SerialPortImpl::Close(CloseCallback callback) {
+  io_handler_->Close(std::move(callback));
 }
 
 void SerialPortImpl::OnOpenCompleted(OpenCallback callback, bool success) {

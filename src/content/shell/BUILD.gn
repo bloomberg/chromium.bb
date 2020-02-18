@@ -7,6 +7,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/config/win/console_app.gni")
 import("//build/config/win/manifest.gni")
+import("//gpu/vulkan/features.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")
@@ -136,8 +137,6 @@ jumbo_static_library("content_shell_lib") {
     "browser/shell_javascript_dialog_manager.h",
     "browser/shell_javascript_dialog_win.cc",
     "browser/shell_mac.mm",
-    "browser/shell_net_log.cc",
-    "browser/shell_net_log.h",
     "browser/shell_network_delegate.cc",
     "browser/shell_network_delegate.h",
     "browser/shell_permission_manager.cc",
@@ -190,6 +189,8 @@ jumbo_static_library("content_shell_lib") {
     "browser/web_test/web_test_browser_main_parts.h",
     "browser/web_test/web_test_content_browser_client.cc",
     "browser/web_test/web_test_content_browser_client.h",
+    "browser/web_test/web_test_content_index_provider.cc",
+    "browser/web_test/web_test_content_index_provider.h",
     "browser/web_test/web_test_devtools_bindings.cc",
     "browser/web_test/web_test_devtools_bindings.h",
     "browser/web_test/web_test_download_manager_delegate.cc",
@@ -305,6 +306,7 @@ jumbo_static_library("content_shell_lib") {
     "//content/shell/test_runner:test_runner",
     "//content/test:content_test_mojo_bindings",
     "//content/test:mojo_web_test_bindings",
+    "//content/test:mojo_web_test_old_names_bindings",
     "//content/test:test_support",
     "//content/test:web_test_support",
     "//device/bluetooth",
@@ -327,7 +329,6 @@ jumbo_static_library("content_shell_lib") {
     "//services/service_manager/embedder:embedder_result_codes",
     "//services/service_manager/public/cpp",
     "//services/test/echo:lib",
-    "//services/test/echo/public/cpp:manifest",
     "//services/test/echo/public/mojom",
     "//skia",
     "//skia:test_fonts",
@@ -377,6 +378,12 @@ jumbo_static_library("content_shell_lib") {
       "//ppapi/shared_impl",
     ]
   }
+  if (enable_vulkan) {
+    deps += [
+      "//gpu/vulkan:test_support",
+      "//gpu/vulkan/init",
+    ]
+  }
   if (mojo_media_host == "browser") {
     deps += [
       "//media/mojo/interfaces:constants",
@@ -409,6 +416,7 @@ jumbo_static_library("content_shell_lib") {
       "//base/test:test_support",
       "//components/embedder_support/android:view",
       "//content/shell/android:content_shell_jni_headers",
+      "//content/test:android_test_message_pump_support",
       "//mojo/public/java/system:test_support",
       "//ui/android",
     ]

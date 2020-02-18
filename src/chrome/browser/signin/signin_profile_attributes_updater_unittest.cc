@@ -14,11 +14,11 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -61,7 +61,7 @@ class SigninProfileAttributesUpdaterTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager profile_manager_;
   base::FilePath profile_path_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   SigninErrorController signin_error_controller_;
   std::unique_ptr<SigninProfileAttributesUpdater>
       signin_profile_attributes_updater_;
@@ -80,7 +80,7 @@ TEST_F(SigninProfileAttributesUpdaterTest, SigninSignout) {
   // Signin.
   identity_test_env_.MakePrimaryAccountAvailable(kEmail);
   EXPECT_TRUE(entry->IsAuthenticated());
-  EXPECT_EQ(identity::GetTestGaiaIdForEmail(kEmail), entry->GetGAIAId());
+  EXPECT_EQ(signin::GetTestGaiaIdForEmail(kEmail), entry->GetGAIAId());
   EXPECT_EQ(kEmail, base::UTF16ToUTF8(entry->GetUserName()));
 
   // Signout.
@@ -145,7 +145,7 @@ TEST_F(SigninProfileAttributesUpdaterWithForceSigninTest, IsSigninRequired) {
       identity_test_env_.MakePrimaryAccountAvailable(kEmail);
 
   EXPECT_TRUE(entry->IsAuthenticated());
-  EXPECT_EQ(identity::GetTestGaiaIdForEmail(kEmail), entry->GetGAIAId());
+  EXPECT_EQ(signin::GetTestGaiaIdForEmail(kEmail), entry->GetGAIAId());
   EXPECT_EQ(kEmail, base::UTF16ToUTF8(entry->GetUserName()));
 
   identity_test_env_.ClearPrimaryAccount();

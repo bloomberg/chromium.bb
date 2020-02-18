@@ -148,7 +148,7 @@ bool FileSystemUsageCache::Exists(const base::FilePath& usage_file_path) {
   TRACE_EVENT0("FileSystem", "UsageCache::Exists");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_incognito_)
-    return base::ContainsKey(incognito_usages_, usage_file_path);
+    return base::Contains(incognito_usages_, usage_file_path);
   return base::PathExists(usage_file_path);
 }
 
@@ -157,7 +157,7 @@ bool FileSystemUsageCache::Delete(const base::FilePath& usage_file_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CloseCacheFiles();
   if (is_incognito_) {
-    if (!base::ContainsKey(incognito_usages_, usage_file_path))
+    if (!base::Contains(incognito_usages_, usage_file_path))
       return false;
     incognito_usages_.erase(incognito_usages_.find(usage_file_path));
     return true;
@@ -262,7 +262,7 @@ bool FileSystemUsageCache::ReadBytes(const base::FilePath& file_path,
                                      int64_t buffer_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_incognito_) {
-    if (!base::ContainsKey(incognito_usages_, file_path))
+    if (!base::Contains(incognito_usages_, file_path))
       return false;
     memcpy(buffer, incognito_usages_[file_path].data(), buffer_size);
     return true;
@@ -278,7 +278,7 @@ bool FileSystemUsageCache::WriteBytes(const base::FilePath& file_path,
                                       int64_t buffer_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_incognito_) {
-    if (!base::ContainsKey(incognito_usages_, file_path))
+    if (!base::Contains(incognito_usages_, file_path))
       incognito_usages_[file_path] = std::vector<uint8_t>(buffer_size);
     memcpy(incognito_usages_[file_path].data(), buffer, buffer_size);
     return true;
@@ -293,7 +293,7 @@ bool FileSystemUsageCache::FlushFile(const base::FilePath& file_path) {
   TRACE_EVENT0("FileSystem", "UsageCache::FlushFile");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_incognito_)
-    return base::ContainsKey(incognito_usages_, file_path);
+    return base::Contains(incognito_usages_, file_path);
   base::File* file = GetFile(file_path);
   if (!file)
     return false;
@@ -316,7 +316,7 @@ void FileSystemUsageCache::ScheduleCloseTimer() {
 bool FileSystemUsageCache::HasCacheFileHandle(const base::FilePath& file_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_LE(cache_files_.size(), kMaxHandleCacheSize);
-  return base::ContainsKey(cache_files_, file_path);
+  return base::Contains(cache_files_, file_path);
 }
 
 }  // namespace storage

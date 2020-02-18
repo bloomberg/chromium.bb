@@ -4,6 +4,7 @@
 
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -24,10 +26,10 @@ TEST(GraphImplTest, SafeCasting) {
 TEST(GraphImplTest, FindOrCreateSystemNode) {
   GraphImpl graph;
 
-  SystemNodeImpl* system_node = graph.FindOrCreateSystemNode();
+  SystemNodeImpl* system_node = graph.FindOrCreateSystemNodeImpl();
 
   // A second request should return the same instance.
-  EXPECT_EQ(system_node, graph.FindOrCreateSystemNode());
+  EXPECT_EQ(system_node, graph.FindOrCreateSystemNodeImpl());
 }
 
 TEST(GraphImplTest, GetProcessNodeByPid) {
@@ -91,16 +93,16 @@ TEST(GraphImplTest, GetAllCUsByType) {
   GraphImpl graph;
   MockMultiplePagesInSingleProcessGraph mock_graph(&graph);
 
-  std::vector<ProcessNodeImpl*> processes = graph.GetAllProcessNodes();
+  std::vector<ProcessNodeImpl*> processes = graph.GetAllProcessNodeImpls();
   ASSERT_EQ(1u, processes.size());
   EXPECT_NE(nullptr, processes[0]);
 
-  std::vector<FrameNodeImpl*> frames = graph.GetAllFrameNodes();
+  std::vector<FrameNodeImpl*> frames = graph.GetAllFrameNodeImpls();
   ASSERT_EQ(2u, frames.size());
   EXPECT_NE(nullptr, frames[0]);
   EXPECT_NE(nullptr, frames[1]);
 
-  std::vector<PageNodeImpl*> pages = graph.GetAllPageNodes();
+  std::vector<PageNodeImpl*> pages = graph.GetAllPageNodeImpls();
   ASSERT_EQ(2u, pages.size());
   EXPECT_NE(nullptr, pages[0]);
   EXPECT_NE(nullptr, pages[1]);
@@ -120,13 +122,107 @@ TEST(GraphImplTest, SerializationId) {
   EXPECT_NE(0u, id);
   EXPECT_EQ(id, NodeBase::GetSerializationId(process.get()));
 
-  SystemNodeImpl* system = graph.FindOrCreateSystemNode();
+  SystemNodeImpl* system = graph.FindOrCreateSystemNodeImpl();
 
   // Different nodes should be assigned different IDs.
   EXPECT_NE(id, NodeBase::GetSerializationId(system));
   EXPECT_NE(0, NodeBase::GetSerializationId(system));
   EXPECT_EQ(NodeBase::GetSerializationId(system),
             NodeBase::GetSerializationId(system));
+}
+
+namespace {
+
+class LenientMockObserver : public GraphObserver {
+ public:
+  LenientMockObserver() {}
+  ~LenientMockObserver() override {}
+
+  MOCK_METHOD1(OnBeforeGraphDestroyed, void(Graph*));
+};
+
+using MockObserver = ::testing::StrictMock<LenientMockObserver>;
+
+using testing::_;
+using testing::Invoke;
+
+}  // namespace
+
+TEST(GraphImplTest, ObserverWorks) {
+  std::unique_ptr<GraphImpl> graph = base::WrapUnique(new GraphImpl());
+  Graph* raw_graph = graph.get();
+
+  MockObserver obs;
+  graph->AddGraphObserver(&obs);
+  graph->RemoveGraphObserver(&obs);
+  graph->AddGraphObserver(&obs);
+
+  // Expect the graph teardown callback to be invoked. We have to unregister our
+  // observer in order to maintain graph invariants.
+  EXPECT_CALL(obs, OnBeforeGraphDestroyed(raw_graph))
+      .WillOnce(testing::Invoke(
+          [&obs](Graph* graph) { graph->RemoveGraphObserver(&obs); }));
+  graph.reset();
+}
+
+namespace {
+
+class Foo : public GraphOwned {
+ public:
+  explicit Foo(int* destructor_count) : destructor_count_(destructor_count) {}
+
+  ~Foo() override { (*destructor_count_)++; }
+
+  // GraphOwned implementation:
+  void OnPassedToGraph(Graph* graph) override { passed_to_called_ = true; }
+  void OnTakenFromGraph(Graph* graph) override { taken_from_called_ = true; }
+
+  bool passed_to_called() const { return passed_to_called_; }
+  bool taken_from_called() const { return taken_from_called_; }
+
+ private:
+  bool passed_to_called_ = false;
+  bool taken_from_called_ = false;
+  int* destructor_count_ = nullptr;
+};
+
+}  // namespace
+
+TEST(GraphImplTest, GraphOwned) {
+  int destructor_count = 0;
+
+  std::unique_ptr<Foo> foo1 = base::WrapUnique(new Foo(&destructor_count));
+  std::unique_ptr<Foo> foo2 = base::WrapUnique(new Foo(&destructor_count));
+  auto* raw1 = foo1.get();
+  auto* raw2 = foo2.get();
+
+  // Pass both objects to the graph.
+  std::unique_ptr<GraphImpl> graph = base::WrapUnique(new GraphImpl());
+  EXPECT_EQ(0u, graph->GraphOwnedCountForTesting());
+  EXPECT_FALSE(raw1->passed_to_called());
+  graph->PassToGraph(std::move(foo1));
+  EXPECT_TRUE(raw1->passed_to_called());
+  EXPECT_EQ(1u, graph->GraphOwnedCountForTesting());
+  EXPECT_FALSE(raw2->passed_to_called());
+  graph->PassToGraph(std::move(foo2));
+  EXPECT_TRUE(raw2->passed_to_called());
+  EXPECT_EQ(2u, graph->GraphOwnedCountForTesting());
+
+  // Take one back.
+  EXPECT_FALSE(raw1->taken_from_called());
+  foo1 = graph->TakeFromGraphAs<Foo>(raw1);
+  EXPECT_TRUE(raw1->taken_from_called());
+  EXPECT_EQ(1u, graph->GraphOwnedCountForTesting());
+
+  // Destroy that object and expect its destructor to have been invoked.
+  EXPECT_EQ(0, destructor_count);
+  foo1.reset();
+  EXPECT_EQ(1, destructor_count);
+
+  // Now destroy the graph and expect the other object to have been torn down
+  // too.
+  graph.reset();
+  EXPECT_EQ(2, destructor_count);
 }
 
 }  // namespace performance_manager

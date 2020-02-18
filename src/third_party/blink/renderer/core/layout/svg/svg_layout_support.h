@@ -28,7 +28,7 @@
 #include "third_party/blink/renderer/core/style/svg_computed_style_defs.h"
 #include "third_party/blink/renderer/platform/graphics/dash_array.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -83,7 +83,7 @@ class CORE_EXPORT SVGLayoutSupport {
   static bool HitTestChildren(LayoutObject* last_child,
                               HitTestResult&,
                               const HitTestLocation&,
-                              const LayoutPoint& accumulated_offset,
+                              const PhysicalOffset& accumulated_offset,
                               HitTestAction);
 
   static void ComputeContainerBoundingBoxes(const LayoutObject* container,

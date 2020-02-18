@@ -21,4 +21,6 @@ package metrics;
 message TraceLog {
   // Client uploads the trace data as a byte buffer.
   optional bytes raw_data = 1;
+
+  reserved 3;
 }

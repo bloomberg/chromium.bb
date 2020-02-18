@@ -10,7 +10,6 @@
 #include "include/core/SkString.h"
 #include "include/effects/SkGradientShader.h"
 #include "samplecode/Sample.h"
-#include "tools/timer/AnimTimer.h"
 
 static void draw_gradient2(SkCanvas* canvas, const SkRect& rect, SkScalar delta) {
     SkColor colors[] = { SK_ColorRED, SK_ColorGREEN, SK_ColorBLUE, SK_ColorMAGENTA };
@@ -43,13 +42,7 @@ public:
     }
 
 protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "DegenerateTwoPtRadials");
-            return true;
-        }
-        return this->INHERITED::onQuery(evt);
-    }
+    SkString name() override { return SkString("DegenerateTwoPtRadials"); }
 
     void onDrawContent(SkCanvas* canvas) override {
         SkScalar delta = fTime / 15.f;
@@ -73,8 +66,8 @@ protected:
                            SkFont(), SkPaint());
     }
 
-    bool onAnimate(const AnimTimer& timer) override {
-        fTime = SkDoubleToScalar(timer.secs() / 15);
+    bool onAnimate(double nanos) override {
+        fTime = SkDoubleToScalar(1e-9 * nanos / 15);
         return true;
     }
 

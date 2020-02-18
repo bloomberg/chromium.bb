@@ -175,7 +175,7 @@ void DeviceOrientationController::LogToConsolePolicyFeaturesDisabled(
       "See "
       "https://github.com/WICG/feature-policy/blob/master/"
       "features.md#sensor-features",
-      event_name.Ascii().data());
+      event_name.Ascii().c_str());
   ConsoleMessage* console_message = ConsoleMessage::Create(
       mojom::ConsoleMessageSource::kJavaScript,
       mojom::ConsoleMessageLevel::kWarning, std::move(message));

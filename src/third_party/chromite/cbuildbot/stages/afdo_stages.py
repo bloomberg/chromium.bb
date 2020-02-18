@@ -7,13 +7,18 @@
 
 from __future__ import print_function
 
+import json
+import os
 import time
 
 from chromite.cbuildbot import afdo
+from chromite.cbuildbot import commands
 from chromite.lib import constants
 from chromite.lib import alerts
 from chromite.lib import cros_logging as logging
+from chromite.lib import failures_lib
 from chromite.lib import gs
+from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.cbuildbot.stages import generic_stages
@@ -147,7 +152,7 @@ class AFDOUpdateChromeEbuildStage(generic_stages.BuilderStage):
     board = self._boards[0] if self._boards else None
     profiles = {}
 
-    for source, getter in afdo.PROFILE_SOURCES.iteritems():
+    for source, getter in afdo.PROFILE_SOURCES.items():
       profile = getter(cpv, source, buildroot, gs_context)
       if not profile:
         raise afdo.MissingAFDOData(
@@ -176,7 +181,7 @@ class AFDOUpdateKernelEbuildStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     version_info = self._run.GetVersionInfo()
-    build_version = map(int, version_info.VersionString().split('.'))
+    build_version = [int(x) for x in version_info.VersionString().split('.')]
     chrome_version = int(version_info.chrome_branch)
     target_version = [chrome_version] + build_version
     profile_versions = afdo.GetAvailableKernelProfiles()
@@ -226,7 +231,7 @@ class AFDOReleaseProfileMergerStage(generic_stages.BuilderStage):
     # Generate these for the last few Chrome versions. the number was
     # arbitrarily selected, but we probably don't care after that point (and if
     # we do, we can just run a tryjob with a locally patched value of N).
-    milestones = range(chrome_major_version - 2, chrome_major_version)
+    milestones = list(range(chrome_major_version - 2, chrome_major_version))
     gs_context = gs.GSContext()
 
     skipped, merge_plan = afdo.GenerateReleaseProfileMergePlan(
@@ -244,3 +249,59 @@ class AFDOReleaseProfileMergerStage(generic_stages.BuilderStage):
     assert len(merge_results) == len(merge_plan), 'Missing results?'
     run_id = str(int(time.time()))
     afdo.UploadReleaseProfiles(gs_context, run_id, merge_plan, merge_results)
+
+class OrderfileUpdateChromeEbuildStage(
+    generic_stages.BoardSpecificBuilderStage):
+  """Updates the Chrome ebuild with the most recent unvetted orderfile."""
+
+  def PerformStage(self):
+    cmd = ['build_api',
+           'chromite.api.ToolchainService/UpdateChromeEbuildWithOrderfile']
+    chroot_tmp = os.path.join(self._build_root, 'chroot', 'tmp')
+    with osutils.TempDir(base_dir=chroot_tmp) as tmpdir:
+      input_proto_file = os.path.join(tmpdir, 'input.json')
+      output_proto_file = os.path.join(tmpdir, 'output.json')
+      with open(input_proto_file, 'w') as f:
+        input_proto = {
+            'build_target': {
+                'name': self._current_board,
+            }
+        }
+        json.dump(input_proto, f)
+
+      cmd += ['--input-json', input_proto_file]
+      cmd += ['--output-json', output_proto_file]
+      commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True,
+                              redirect_stdout=True)
+
+class UploadVettedOrderfileStage(generic_stages.BoardSpecificBuilderStage):
+  """Upload a vetted orderfile to GS bucket.
+
+  Note that this stage does not generate any new artifacts.It's just copying
+  an orderfile from the unvetted GS bucket location to the vetted location.
+  """
+
+  def __init__(self, *args, **kwargs):
+    super(UploadVettedOrderfileStage, self).__init__(*args, **kwargs)
+
+  def PerformStage(self):
+    cmd = ['build_api',
+           'chromite.api.ToolchainService/UploadVettedOrderfile']
+    chroot_tmp = os.path.join(self._build_root, 'chroot', 'tmp')
+    with osutils.TempDir(base_dir=chroot_tmp) as tmpdir:
+      input_proto_file = os.path.join(tmpdir, 'input.json')
+      output_proto_file = os.path.join(tmpdir, 'output.json')
+      # Create an empty dict in input JSON
+      with open(input_proto_file, 'w') as f:
+        input_proto = {}
+        json.dump(input_proto, f)
+      cmd += ['--input-json', input_proto_file]
+      cmd += ['--output-json', output_proto_file]
+
+      commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True,
+                              redirect_stdout=True)
+
+      output = json.loads(osutils.ReadFile(output_proto_file))
+      if not output['status']:
+        raise failures_lib.StepFailure(
+            'Failed to upload vetted orderfile')

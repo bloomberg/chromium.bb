@@ -1,24 +1,128 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_CONIO
 #define _INC_CONIO
 
-#include <_mingw.h>
+#include <crtdefs.h>
+
+#if !defined(_UCRTBASE_STDIO_DEFINED) && __MSVCRT_VERSION__ >= 0x1400
+#define _UCRTBASE_STDIO_DEFINED
+
+#define UCRTBASE_PRINTF_LEGACY_VSPRINTF_NULL_TERMINATION (0x0001)
+#define UCRTBASE_PRINTF_STANDARD_SNPRINTF_BEHAVIOUR      (0x0002)
+#define UCRTBASE_PRINTF_LEGACY_WIDE_SPECIFIERS           (0x0004)
+#define UCRTBASE_PRINTF_LEGACY_MSVCRT_COMPATIBILITY      (0x0008)
+#define UCRTBASE_PRINTF_LEGACY_THREE_DIGIT_EXPONENTS     (0x0010)
+
+#define UCRTBASE_SCANF_SECURECRT                         (0x0001)
+#define UCRTBASE_SCANF_LEGACY_WIDE_SPECIFIERS            (0x0002)
+#define UCRTBASE_SCANF_LEGACY_MSVCRT_COMPATIBILITY       (0x0004)
+
+// Default wide printfs and scanfs to the standard mode
+#ifndef UCRTBASE_PRINTF_DEFAULT_WIDE
+#define UCRTBASE_PRINTF_DEFAULT_WIDE 0
+#endif
+#ifndef UCRTBASE_SCANF_DEFAULT_WIDE
+#define UCRTBASE_SCANF_DEFAULT_WIDE 0
+#endif
+#endif
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
   _CRTIMP char *_cgets(char *_Buffer) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-  _CRTIMP int __cdecl _cprintf(const char * __restrict__ _Format,...);
   _CRTIMP int __cdecl _cputs(const char *_Str);
-  _CRTIMP int __cdecl _cscanf(const char * __restrict__ _Format,...) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-  _CRTIMP int __cdecl _cscanf_l(const char * __restrict__ _Format,_locale_t _Locale,...) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
   _CRTIMP int __cdecl _getch(void);
   _CRTIMP int __cdecl _getche(void);
+  _CRTIMP int __cdecl _kbhit(void);
+
+#if __MSVCRT_VERSION__ >= 0x1400
+  int __cdecl __conio_common_vcprintf(unsigned __int64 _Options, const char *_Format, _locale_t _Locale, va_list _ArgList);
+  int __cdecl __conio_common_vcprintf_p(unsigned __int64 _Options, const char *_Format, _locale_t _Locale, va_list _ArgList);
+  int __cdecl __conio_common_vcprintf_s(unsigned __int64 _Options, const char *_Format, _locale_t _Locale, va_list _ArgList);
+  int __cdecl __conio_common_vcscanf(unsigned __int64 _Options, const char *_Format, _locale_t _Locale, va_list _ArgList);
+
+  __mingw_ovr int __cdecl _vcprintf(const char * __restrict__ _Format,va_list _ArgList)
+  {
+    return __conio_common_vcprintf(0, _Format, NULL, _ArgList);
+  }
+  __mingw_ovr int __cdecl _cprintf(const char * __restrict__ _Format,...)
+  {
+    __builtin_va_list _ArgList;
+    int _Ret;
+    __builtin_va_start(_ArgList, _Format);
+    _Ret = _vcprintf(_Format, _ArgList);
+    __builtin_va_end(_ArgList);
+    return _Ret;
+  }
+  __mingw_ovr int __cdecl _cscanf(const char * __restrict__ _Format,...) __MINGW_ATTRIB_DEPRECATED_SEC_WARN
+  {
+    __builtin_va_list _ArgList;
+    int _Ret;
+    __builtin_va_start(_ArgList, _Format);
+    _Ret = __conio_common_vcscanf(0, _Format, NULL, _ArgList);
+    __builtin_va_end(_ArgList);
+    return _Ret;
+  }
+  __mingw_ovr int __cdecl _cscanf_l(const char * __restrict__ _Format,_locale_t _Locale,...) __MINGW_ATTRIB_DEPRECATED_SEC_WARN
+  {
+    __builtin_va_list _ArgList;
+    int _Ret;
+    __builtin_va_start(_ArgList, _Locale);
+    _Ret = __conio_common_vcscanf(0, _Format, _Locale, _ArgList);
+    __builtin_va_end(_ArgList);
+    return _Ret;
+  }
+
+  __mingw_ovr int __cdecl _vcprintf_p(const char * __restrict__ _Format,va_list _ArgList)
+  {
+    return __conio_common_vcprintf_p(0, _Format, NULL, _ArgList);
+  }
+  __mingw_ovr int __cdecl _cprintf_p(const char * __restrict__ _Format,...)
+  {
+    __builtin_va_list _ArgList;
+    int _Ret;
+    __builtin_va_start(_ArgList, _Format);
+    _Ret = _vcprintf_p(_Format, _ArgList);
+    __builtin_va_end(_ArgList);
+    return _Ret;
+  }
+  __mingw_ovr int __cdecl _vcprintf_l(const char * __restrict__ _Format,_locale_t _Locale,va_list _ArgList)
+  {
+    return __conio_common_vcprintf(0, _Format, _Locale, _ArgList);
+  }
+  __mingw_ovr int __cdecl _cprintf_l(const char * __restrict__ _Format,_locale_t _Locale,...)
+  {
+    __builtin_va_list _ArgList;
+    int _Ret;
+    __builtin_va_start(_ArgList, _Locale);
+    _Ret = _vcprintf_l(_Format, _Locale, _ArgList);
+    __builtin_va_end(_ArgList);
+    return _Ret;
+  }
+  __mingw_ovr int __cdecl _vcprintf_p_l(const char * __restrict__ _Format,_locale_t _Locale,va_list _ArgList)
+  {
+    return __conio_common_vcprintf_p(0, _Format, _Locale, _ArgList);
+  }
+  __mingw_ovr int __cdecl _cprintf_p_l(const char * __restrict__ _Format,_locale_t _Locale,...)
+  {
+    __builtin_va_list _ArgList;
+    int _Ret;
+    __builtin_va_start(_ArgList, _Locale);
+    _Ret = _vcprintf_p_l(_Format, _Locale, _ArgList);
+    __builtin_va_end(_ArgList);
+    return _Ret;
+  }
+#else
+  _CRTIMP int __cdecl _cprintf(const char * __restrict__ _Format,...);
+  _CRTIMP int __cdecl _cscanf(const char * __restrict__ _Format,...) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+  _CRTIMP int __cdecl _cscanf_l(const char * __restrict__ _Format,_locale_t _Locale,...) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+
   _CRTIMP int __cdecl _vcprintf(const char * __restrict__ _Format,va_list _ArgList);
   _CRTIMP int __cdecl _cprintf_p(const char * __restrict__ _Format,...);
   _CRTIMP int __cdecl _vcprintf_p(const char * __restrict__ _Format,va_list _ArgList);
@@ -26,7 +130,7 @@ extern "C" {
   _CRTIMP int __cdecl _vcprintf_l(const char * __restrict__ _Format,_locale_t _Locale,va_list _ArgList);
   _CRTIMP int __cdecl _cprintf_p_l(const char * __restrict__ _Format,_locale_t _Locale,...);
   _CRTIMP int __cdecl _vcprintf_p_l(const char * __restrict__ _Format,_locale_t _Locale,va_list _ArgList);
-  _CRTIMP int __cdecl _kbhit(void);
+#endif
 
 #if defined(_X86_) && !defined(__x86_64)
   int __cdecl _inp(unsigned short);
@@ -57,6 +161,83 @@ extern "C" {
   _CRTIMP wint_t __cdecl _putwch(wchar_t _WCh);
   _CRTIMP wint_t __cdecl _ungetwch(wint_t _WCh);
   _CRTIMP int __cdecl _cputws(const wchar_t *_String);
+#if __MSVCRT_VERSION__ >= 0x1400
+  int __cdecl __conio_common_vcwprintf(unsigned __int64 _Options, const wchar_t *_Format, _locale_t _Locale, va_list _ArgList);
+  int __cdecl __conio_common_vcwprintf_p(unsigned __int64 _Options, const wchar_t *_Format, _locale_t _Locale, va_list _ArgList);
+  int __cdecl __conio_common_vcwprintf_s(unsigned __int64 _Options, const wchar_t *_Format, _locale_t _Locale, va_list _ArgList);
+  int __cdecl __conio_common_vcwscanf(unsigned __int64 _Options, const wchar_t *_Format, _locale_t _Locale, va_list _ArgList);
+
+  __mingw_ovr int __cdecl _vcwprintf(const wchar_t * __restrict__ _Format,va_list _ArgList)
+  {
+    return __conio_common_vcwprintf(UCRTBASE_PRINTF_DEFAULT_WIDE, _Format, NULL, _ArgList);
+  }
+  __mingw_ovr int __cdecl _cwprintf(const wchar_t * __restrict__ _Format,...)
+  {
+    __builtin_va_list _ArgList;
+    int _Ret;
+    __builtin_va_start(_ArgList, _Format);
+    _Ret = _vcwprintf(_Format, _ArgList);
+    __builtin_va_end(_ArgList);
+    return _Ret;
+  }
+  __mingw_ovr int __cdecl _cwscanf(const wchar_t * __restrict__ _Format,...) __MINGW_ATTRIB_DEPRECATED_SEC_WARN
+  {
+    __builtin_va_list _ArgList;
+    int _Ret;
+    __builtin_va_start(_ArgList, _Format);
+    _Ret = __conio_common_vcwscanf(UCRTBASE_SCANF_DEFAULT_WIDE, _Format, NULL, _ArgList);
+    __builtin_va_end(_ArgList);
+    return _Ret;
+  }
+  __mingw_ovr int __cdecl _cwscanf_l(const wchar_t * __restrict__ _Format,_locale_t _Locale,...) __MINGW_ATTRIB_DEPRECATED_SEC_WARN
+  {
+    __builtin_va_list _ArgList;
+    int _Ret;
+    __builtin_va_start(_ArgList, _Locale);
+    _Ret = __conio_common_vcwscanf(UCRTBASE_SCANF_DEFAULT_WIDE, _Format, _Locale, _ArgList);
+    __builtin_va_end(_ArgList);
+    return _Ret;
+  }
+  __mingw_ovr int __cdecl _vcwprintf_p(const wchar_t * __restrict__ _Format,va_list _ArgList)
+  {
+    return __conio_common_vcwprintf_p(UCRTBASE_PRINTF_DEFAULT_WIDE, _Format, NULL, _ArgList);
+  }
+  __mingw_ovr int __cdecl _cwprintf_p(const wchar_t * __restrict__ _Format,...)
+  {
+    __builtin_va_list _ArgList;
+    int _Ret;
+    __builtin_va_start(_ArgList, _Format);
+    _Ret = _vcwprintf_p(_Format, _ArgList);
+    __builtin_va_end(_ArgList);
+    return _Ret;
+  }
+  __mingw_ovr int __cdecl _vcwprintf_l(const wchar_t * __restrict__ _Format,_locale_t _Locale,va_list _ArgList)
+  {
+    return __conio_common_vcwprintf(UCRTBASE_PRINTF_DEFAULT_WIDE, _Format, _Locale, _ArgList);
+  }
+  __mingw_ovr int __cdecl _cwprintf_l(const wchar_t * __restrict__ _Format,_locale_t _Locale,...)
+  {
+    __builtin_va_list _ArgList;
+    int _Ret;
+    __builtin_va_start(_ArgList, _Locale);
+    _Ret = _vcwprintf_l(_Format, _Locale, _ArgList);
+    __builtin_va_end(_ArgList);
+    return _Ret;
+  }
+  __mingw_ovr int __cdecl _vcwprintf_p_l(const wchar_t * __restrict__ _Format,_locale_t _Locale,va_list _ArgList)
+  {
+    return __conio_common_vcwprintf_p(UCRTBASE_PRINTF_DEFAULT_WIDE, _Format, _Locale, _ArgList);
+  }
+  __mingw_ovr int __cdecl _cwprintf_p_l(const wchar_t * __restrict__ _Format,_locale_t _Locale,...)
+  {
+    __builtin_va_list _ArgList;
+    int _Ret;
+    __builtin_va_start(_ArgList, _Locale);
+    _Ret = _vcwprintf_p_l(_Format, _Locale, _ArgList);
+    __builtin_va_end(_ArgList);
+    return _Ret;
+  }
+#else
   _CRTIMP int __cdecl _cwprintf(const wchar_t * __restrict__ _Format,...);
   _CRTIMP int __cdecl _cwscanf(const wchar_t * __restrict__ _Format,...) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
   _CRTIMP int __cdecl _cwscanf_l(const wchar_t * __restrict__ _Format,_locale_t _Locale,...) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
@@ -67,6 +248,7 @@ extern "C" {
   _CRTIMP int __cdecl _vcwprintf_l(const wchar_t * __restrict__ _Format,_locale_t _Locale,va_list _ArgList);
   _CRTIMP int __cdecl _cwprintf_p_l(const wchar_t * __restrict__ _Format,_locale_t _Locale,...);
   _CRTIMP int __cdecl _vcwprintf_p_l(const wchar_t * __restrict__ _Format,_locale_t _Locale,va_list _ArgList);
+#endif
   _CRTIMP wint_t __cdecl _putwch_nolock(wchar_t _WCh);
   _CRTIMP wint_t __cdecl _getwch_nolock(void);
   _CRTIMP wint_t __cdecl _getwche_nolock(void);
@@ -75,9 +257,31 @@ extern "C" {
 
 #ifndef	NO_OLDNAMES
   char *__cdecl cgets(char *_Buffer) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
+
+#if __MSVCRT_VERSION__ >= 0x1400
+  __mingw_ovr int __cdecl cprintf(const char * __restrict__ _Format,...) __MINGW_ATTRIB_DEPRECATED_MSVC2005
+  {
+    __builtin_va_list _ArgList;
+    int _Ret;
+    __builtin_va_start(_ArgList, _Format);
+    _Ret = _vcprintf(_Format, _ArgList);
+    __builtin_va_end(_ArgList);
+    return _Ret;
+  }
+  __mingw_ovr int __cdecl cscanf(const char * __restrict__ _Format,...) __MINGW_ATTRIB_DEPRECATED_MSVC2005
+  {
+    __builtin_va_list _ArgList;
+    int _Ret;
+    __builtin_va_start(_ArgList, _Format);
+    _Ret = __conio_common_vcscanf(0, _Format, NULL, _ArgList);
+    __builtin_va_end(_ArgList);
+    return _Ret;
+  }
+#else
   int __cdecl cprintf(const char * __restrict__ _Format,...) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
-  int __cdecl cputs(const char *_Str) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
   int __cdecl cscanf(const char * __restrict__ _Format,...) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
+#endif
+  int __cdecl cputs(const char *_Str) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
   int __cdecl getch(void) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
   int __cdecl getche(void) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
   int __cdecl kbhit(void) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
@@ -91,314 +295,31 @@ extern "C" {
   unsigned short __cdecl outpw(unsigned short,unsigned short) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
 #endif
 
-#ifndef __CRT__NO_INLINE
-  /* I/O intrin functions.  */
-  __CRT_INLINE unsigned char __inbyte(unsigned short Port)
-  {
-      unsigned char value;
-      __asm__ __volatile__ ("inb %w1,%b0"
-          : "=a" (value)
-          : "Nd" (Port));
-      return value;
-  }
-  __CRT_INLINE unsigned short __inword(unsigned short Port)
-  {
-      unsigned short value;
-      __asm__ __volatile__ ("inw %w1,%w0"
-          : "=a" (value)
-          : "Nd" (Port));
-      return value;
-  }
-  __CRT_INLINE unsigned long __indword(unsigned short Port)
-  {
-      unsigned long value;
-      __asm__ __volatile__ ("inl %w1,%0"
-          : "=a" (value)
-          : "Nd" (Port));
-      return value;
-  }
-  __CRT_INLINE void __outbyte(unsigned short Port,unsigned char Data)
-  {
-      __asm__ __volatile__ ("outb %b0,%w1"
-          :
-          : "a" (Data), "Nd" (Port));
-  }
-  __CRT_INLINE void __outword(unsigned short Port,unsigned short Data)
-  {
-      __asm__ __volatile__ ("outw %w0,%w1"
-          :
-          : "a" (Data), "Nd" (Port));
-  }
-  __CRT_INLINE void __outdword(unsigned short Port,unsigned long Data)
-  {
-      __asm__ __volatile__ ("outl %0,%w1"
-          :
-          : "a" (Data), "Nd" (Port));
-  }
-  __CRT_INLINE void __inbytestring(unsigned short Port,unsigned char *Buffer,unsigned long Count)
-  {
-	__asm__ __volatile__ (
-		"cld ; rep ; insb " 
-		: "=D" (Buffer), "=c" (Count)
-		: "d"(Port), "0"(Buffer), "1" (Count)
-		);
-  }
-  __CRT_INLINE void __inwordstring(unsigned short Port,unsigned short *Buffer,unsigned long Count)
-  {
-	__asm__ __volatile__ (
-		"cld ; rep ; insw " 
-		: "=D" (Buffer), "=c" (Count)
-		: "d"(Port), "0"(Buffer), "1" (Count)
-		);
-  }
-  __CRT_INLINE void __indwordstring(unsigned short Port,unsigned long *Buffer,unsigned long Count)
-  {
-	__asm__ __volatile__ (
-		"cld ; rep ; insl " 
-		: "=D" (Buffer), "=c" (Count)
-		: "d"(Port), "0"(Buffer), "1" (Count)
-		);
-  }
-
-  __CRT_INLINE void __outbytestring(unsigned short Port,unsigned char *Buffer,unsigned long Count)
-  {
-      __asm__ __volatile__ (
-          "cld ; rep ; outsb " 
-          : "=S" (Buffer), "=c" (Count)
-          : "d"(Port), "0"(Buffer), "1" (Count)
-          );
-  }
-  __CRT_INLINE void __outwordstring(unsigned short Port,unsigned short *Buffer,unsigned long Count)
-  {
-      __asm__ __volatile__ (
-          "cld ; rep ; outsw " 
-          : "=S" (Buffer), "=c" (Count)
-          : "d"(Port), "0"(Buffer), "1" (Count)
-          );
-  }
-  __CRT_INLINE void __outdwordstring(unsigned short Port,unsigned long *Buffer,unsigned long Count)
-  {
-      __asm__ __volatile__ (
-          "cld ; rep ; outsl " 
-          : "=S" (Buffer), "=c" (Count)
-          : "d"(Port), "0"(Buffer), "1" (Count)
-          );
-  }
-
-  /* Register sizes are different between 32/64 bit mode. So we have to do this for _WIN64 and _WIN32
-     seperatly.  */
- 
-#ifdef _WIN64
-  __MINGW_EXTENSION __CRT_INLINE unsigned __int64 __readcr0(void)
-  {
-      __MINGW_EXTENSION unsigned __int64 value;
-      __asm__ __volatile__ (
-          "mov %%cr0, %[value]" 
-          : [value] "=q" (value));
-      return value;
-  }
- 
-  __MINGW_EXTENSION __CRT_INLINE void __writecr0(unsigned __int64 Data)
-  {
-   __asm__ __volatile__ (
-       "mov %[Data], %%cr0"
-       :
-       : [Data] "q" (Data)
-       : "memory");
-  }
- 
-  __MINGW_EXTENSION __CRT_INLINE unsigned __int64 __readcr2(void)
-  {
-      __MINGW_EXTENSION unsigned __int64 value;
-      __asm__ __volatile__ (
-          "mov %%cr2, %[value]" 
-          : [value] "=q" (value));
-      return value;
-  }
-
- __MINGW_EXTENSION __CRT_INLINE void __writecr2(unsigned __int64 Data)
- {
-   __asm__ __volatile__ (
-       "mov %[Data], %%cr2"
-       :
-       : [Data] "q" (Data)
-       : "memory");
- }
- 
-  __MINGW_EXTENSION __CRT_INLINE unsigned __int64 __readcr3(void)
-  {
-      __MINGW_EXTENSION unsigned __int64 value;
-      __asm__ __volatile__ (
-          "mov %%cr3, %[value]" 
-          : [value] "=q" (value));
-      return value;
-  }
-
- __MINGW_EXTENSION __CRT_INLINE void __writecr3(unsigned __int64 Data)
- {
-   __asm__ __volatile__ (
-       "mov %[Data], %%cr3"
-       :
-       : [Data] "q" (Data)
-       : "memory");
- }
- 
-  __MINGW_EXTENSION __CRT_INLINE unsigned __int64 __readcr4(void)
-  {
-      __MINGW_EXTENSION unsigned __int64 value;
-      __asm__ __volatile__ (
-          "mov %%cr4, %[value]" 
-          : [value] "=q" (value));
-      return value;
-  }
-
- __MINGW_EXTENSION __CRT_INLINE void __writecr4(unsigned __int64 Data)
- {
-     __asm__ __volatile__ (
-         "mov %[Data], %%cr4"
-         :
-         : [Data] "q" (Data)
-         : "memory");
- }
- 
-  __MINGW_EXTENSION __CRT_INLINE unsigned __int64 __readcr8(void)
-  {
-      __MINGW_EXTENSION unsigned __int64 value;
-      __asm__ __volatile__ (
-          "mov %%cr8, %[value]" 
-          : [value] "=q" (value));
-      return value;
-  }
-
- __MINGW_EXTENSION __CRT_INLINE void __writecr8(unsigned __int64 Data)
- {
-   __asm__ __volatile__ (
-       "mov %[Data], %%cr8"
-       :
-       : [Data] "q" (Data)
-       : "memory");
- }
- 
-#elif defined(_WIN32)
-
-  __CRT_INLINE unsigned long __readcr0(void)
-  {
-      unsigned long value;
-      __asm__ __volatile__ (
-          "mov %%cr0, %[value]" 
-          : [value] "=q" (value));
-      return value;
-  }
- 
-  __CRT_INLINE void __writecr0(unsigned Data)
-  {
-    __asm__ __volatile__ (
-       "mov %[Data], %%cr0"
-       :
-       : [Data] "q" (Data)
-       : "memory");
-  }
- 
-  __CRT_INLINE unsigned long __readcr2(void)
-  {
-      unsigned long value;
-      __asm__ __volatile__ (
-          "mov %%cr2, %[value]" 
-          : [value] "=q" (value));
-      return value;
-  }
-
- __CRT_INLINE void __writecr2(unsigned Data)
- {
-   __asm__ __volatile__ (
-       "mov %[Data], %%cr2"
-       :
-       : [Data] "q" (Data)
-       : "memory");
- }
- 
-  __CRT_INLINE unsigned long __readcr3(void)
-  {
-      unsigned long value;
-      __asm__ __volatile__ (
-          "mov %%cr3, %[value]" 
-          : [value] "=q" (value));
-      return value;
-  }
-
- __CRT_INLINE void __writecr3(unsigned Data)
- {
-   __asm__ __volatile__ (
-       "mov %[Data], %%cr3"
-       :
-       : [Data] "q" (Data)
-       : "memory");
- }
- 
-  __CRT_INLINE unsigned long __readcr4(void)
-  {
-      unsigned long value;
-      __asm__ __volatile__ (
-          "mov %%cr4, %[value]" 
-          : [value] "=q" (value));
-      return value;
-  }
-
- __CRT_INLINE void __writecr4(unsigned Data)
- {
-     __asm__ __volatile__ (
-         "mov %[Data], %%cr4"
-         :
-         : [Data] "q" (Data)
-         : "memory");
- }
- 
- __CRT_INLINE unsigned long __readcr8(void)
- {
-   unsigned long value;      __asm__ __volatile__ (
-          "mov %%cr8, %[value]" 
-          : [value] "=q" (value));
-     return value;
- }
-
- __CRT_INLINE void __writecr8(unsigned Data)
- {
-   __asm__ __volatile__ (
-       "mov %[Data], %%cr8"
-       :
-       : [Data] "q" (Data)
-       : "memory");
- }
- 
-#endif
-
-  __MINGW_EXTENSION __CRT_INLINE unsigned __int64 __readmsr(unsigned long msr)
-  {
-      __MINGW_EXTENSION unsigned __int64 val1, val2;
-       __asm__ __volatile__(
-           "rdmsr"
-           : "=a" (val1), "=d" (val2)
-           : "c" (msr));
-      return val1 | (val2 << 32);
-  }
-
- __MINGW_EXTENSION __CRT_INLINE void __writemsr (unsigned long msr, unsigned __int64 Value)
- {
-    unsigned long val1 = Value, val2 = Value >> 32;
-   __asm__ __volatile__ (
-       "wrmsr"
-       :
-       : "c" (msr), "a" (val1), "d" (val2));
- }
- 
-  __CRT_INLINE void __cpuid(int CPUInfo[4], int InfoType)
-  {
-      __asm__ __volatile__ (
-          "cpuid"
-          : "=a" (CPUInfo [0]), "=b" (CPUInfo [1]), "=c" (CPUInfo [2]), "=d" (CPUInfo [3])
-          : "a" (InfoType));
-  }
-#endif /* !__CRT__NO_INLINE */
+    /* __cpuid moved to intrin.h per msdn */
+    /* __inbyte moved to intrin.h per msdn */
+    /* __inbytestring moved to intrin.h per msdn */
+    /* __indword moved to intrin.h per msdn */
+    /* __indwordstring moved to intrin.h per msdn */
+    /* __inword moved to intrin.h per msdn */
+    /* __inwordstring moved to intrin.h per msdn */
+    /* __outbyte moved to intrin.h per msdn */
+    /* __outbytestring moved to intrin.h per msdn */
+    /* __outdword moved to intrin.h per msdn */
+    /* __outdwordstring moved to intrin.h per msdn */
+    /* __outword moved to intrin.h per msdn */
+    /* __outwordstring moved to intrin.h per msdn */
+    /* __readcr0 moved to intrin.h per msdn */
+    /* __readcr2 moved to intrin.h per msdn */
+    /* __readcr3 moved to intrin.h per msdn */
+    /* __readcr4 moved to intrin.h per msdn */
+    /* __readcr8 moved to intrin.h per msdn */
+    /* __readmsr moved to intrin.h per msdn */
+    /* __writecr0 moved to intrin.h per msdn */
+    /* __writecr2 moved to intrin.h per msdn */
+    /* __writecr3 moved to intrin.h per msdn */
+    /* __writecr4 moved to intrin.h per msdn */
+    /* __writecr8 moved to intrin.h per msdn */
+    /* __writemsr moved to intrin.h per msdn */
 #endif
 
 #ifdef __cplusplus

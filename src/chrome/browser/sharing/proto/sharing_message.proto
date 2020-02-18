@@ -4,6 +4,8 @@
 
 syntax = "proto3";
 
+import "click_to_call_message.proto";
+
 package chrome_browser_sharing;
 
 // Required in Chrome.
@@ -11,19 +13,14 @@ option optimize_for = LITE_RUNTIME;
 
 // Message for sending between devices in Sharing.
 message SharingMessage {
-  // Unique message identifier. required.
-  string message_id = 1;
-
   // Identifier of sender. required.
-  string sender_guid = 2;
-
-  // Timestamp at which message was sent. required.
-  int64 send_timestamp = 3;
+  string sender_guid = 1;
 
   // Payload of the message, contains one of the messages below. required.
   oneof payload {
-    PingMessage ping_message = 4;
-    AckMessage ack_message = 5;
+    PingMessage ping_message = 2;
+    AckMessage ack_message = 3;
+    ClickToCallMessage click_to_call_message = 4;
   }
 }
 

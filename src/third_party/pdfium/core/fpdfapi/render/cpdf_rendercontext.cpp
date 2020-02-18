@@ -24,7 +24,8 @@
 CPDF_RenderContext::CPDF_RenderContext(CPDF_Page* pPage)
     : m_pDocument(pPage->GetDocument()),
       m_pPageResources(pPage->m_pPageResources.Get()),
-      m_pPageCache(pPage->GetRenderCache()) {}
+      m_pPageCache(
+          static_cast<CPDF_PageRenderCache*>(pPage->GetRenderCache())) {}
 
 CPDF_RenderContext::CPDF_RenderContext(CPDF_Document* pDoc,
                                        CPDF_PageRenderCache* pPageCache)
@@ -35,13 +36,13 @@ CPDF_RenderContext::~CPDF_RenderContext() {}
 void CPDF_RenderContext::GetBackground(const RetainPtr<CFX_DIBitmap>& pBuffer,
                                        const CPDF_PageObject* pObj,
                                        const CPDF_RenderOptions* pOptions,
-                                       CFX_Matrix* pFinalMatrix) {
+                                       const CFX_Matrix& mtFinal) {
   CFX_DefaultRenderDevice device;
   device.Attach(pBuffer, false, nullptr, false);
 
   device.FillRect(FX_RECT(0, 0, device.GetWidth(), device.GetHeight()),
                   0xffffffff);
-  Render(&device, pObj, pOptions, pFinalMatrix);
+  Render(&device, pObj, pOptions, &mtFinal);
 }
 
 void CPDF_RenderContext::AppendLayer(CPDF_PageObjectHolder* pObjectHolder,

@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/core/html/forms/date_time_field_elements.h"
 
 #include "third_party/blink/renderer/core/html/forms/date_time_fields_state.h"
-#include "third_party/blink/renderer/platform/date_components.h"
+#include "third_party/blink/renderer/platform/text/date_components.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -664,7 +664,8 @@ DateTimeYearFieldElement::DateTimeYearFieldElement(
 
 static int CurrentFullYear() {
   DateComponents date;
-  date.SetMillisecondsSinceEpochForMonth(ConvertToLocalTime(CurrentTimeMS()));
+  date.SetMillisecondsSinceEpochForMonth(
+      ConvertToLocalTime(base::Time::Now().ToDoubleT() * 1000.0));
   return date.FullYear();
 }
 

@@ -16,6 +16,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -27,13 +29,12 @@ namespace scheduler {
 namespace scheduler_helper_unittest {
 
 namespace {
-void AppendToVectorTestTask(std::vector<std::string>* vector,
-                            std::string value) {
+void AppendToVectorTestTask(Vector<String>* vector, String value) {
   vector->push_back(value);
 }
 
 void AppendToVectorReentrantTask(base::SingleThreadTaskRunner* task_runner,
-                                 std::vector<int>* vector,
+                                 Vector<int>* vector,
                                  int* reentrant_count,
                                  int max_reentrant_count) {
   vector->push_back((*reentrant_count)++);
@@ -51,11 +52,9 @@ class SchedulerHelperTest : public testing::Test {
  public:
   SchedulerHelperTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
                 QUEUED) {
-    // Null clock triggers some assertions.
-    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
     sequence_manager_ = base::sequence_manager::SequenceManagerForTest::Create(
         nullptr, task_environment_.GetMainThreadTaskRunner(),
         task_environment_.GetMockTickClock());
@@ -93,7 +92,7 @@ class SchedulerHelperTest : public testing::Test {
 };
 
 TEST_F(SchedulerHelperTest, TestPostDefaultTask) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   default_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D1"));
   default_task_runner_->PostTask(
@@ -104,14 +103,12 @@ TEST_F(SchedulerHelperTest, TestPostDefaultTask) {
       FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D4"));
 
   task_environment_.RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("D2"),
-                                   std::string("D3"), std::string("D4")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "D2", "D3", "D4"));
 }
 
 TEST_F(SchedulerHelperTest, TestRentrantTask) {
   int count = 0;
-  std::vector<int> run_order;
+  Vector<int> run_order;
   default_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(AppendToVectorReentrantTask,
                                 base::RetainedRef(default_task_runner_),
@@ -129,7 +126,7 @@ TEST_F(SchedulerHelperTest, IsShutdown) {
 }
 
 TEST_F(SchedulerHelperTest, GetNumberOfPendingTasks) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   scheduler_helper_->DefaultTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&AppendToVectorTestTask, &run_order, "D1"));
   scheduler_helper_->DefaultTaskRunner()->PostTask(

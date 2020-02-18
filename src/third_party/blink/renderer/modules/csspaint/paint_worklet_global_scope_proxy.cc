@@ -29,7 +29,6 @@ PaintWorkletGlobalScopeProxy* PaintWorkletGlobalScopeProxy::From(
 PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
     LocalFrame* frame,
     WorkletModuleResponsesMap* module_responses_map,
-    PaintWorkletPendingGeneratorRegistry* pending_generator_registry,
     size_t global_scope_number) {
   DCHECK(IsMainThread());
   Document* document = frame->GetDocument();
@@ -54,13 +53,12 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       kV8CacheOptionsDefault, module_responses_map);
   global_scope_ = PaintWorkletGlobalScope::Create(
-      frame, std::move(creation_params), *reporting_proxy_,
-      pending_generator_registry);
+      frame, std::move(creation_params), *reporting_proxy_);
 }
 
 void PaintWorkletGlobalScopeProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
-    network::mojom::FetchCredentialsMode credentials_mode,
+    network::mojom::CredentialsMode credentials_mode,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "content/public/browser/content_browser_client.h"
-#include "headless/lib/browser/headless_resource_dispatcher_host_delegate.h"
 #include "headless/public/headless_browser.h"
 
 namespace headless {
@@ -55,12 +54,11 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
       bool expired_previous_decision,
       const base::Callback<void(content::CertificateRequestResultType)>&
           callback) override;
-  void SelectClientCertificate(
+  base::OnceClosure SelectClientCertificate(
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       net::ClientCertIdentityList client_certs,
       std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
-  void ResourceDispatcherHostCreated() override;
   bool ShouldEnableStrictSiteIsolation() override;
 
   ::network::mojom::NetworkContextPtr CreateNetworkContext(
@@ -68,8 +66,8 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
 
-  std::string GetProduct() const override;
-  std::string GetUserAgent() const override;
+  std::string GetProduct() override;
+  std::string GetUserAgent() override;
 
  private:
   std::unique_ptr<base::Value> GetBrowserServiceManifestOverlay();
@@ -81,9 +79,6 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
   // We store the callback here because we may call it from the I/O thread.
   HeadlessBrowser::Options::AppendCommandLineFlagsCallback
       append_command_line_flags_callback_;
-
-  std::unique_ptr<HeadlessResourceDispatcherHostDelegate>
-      resource_dispatcher_host_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessContentBrowserClient);
 };

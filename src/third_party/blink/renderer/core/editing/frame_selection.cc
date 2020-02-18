@@ -84,7 +84,6 @@
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/text/unicode_utilities.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 #define EDIT_DEBUG 0
 
@@ -522,7 +521,8 @@ bool FrameSelection::ShouldPaintCaret(const LayoutBlock& block) const {
   bool result = frame_caret_->ShouldPaintCaret(block);
   DCHECK(!result ||
          (ComputeVisibleSelectionInDOMTree().IsCaret() &&
-          IsEditablePosition(ComputeVisibleSelectionInDOMTree().Start())));
+          (IsEditablePosition(ComputeVisibleSelectionInDOMTree().Start()) ||
+           frame_->GetSettings()->GetCaretBrowsingEnabled())));
   return result;
 }
 
@@ -568,7 +568,7 @@ void FrameSelection::PaintCaret(GraphicsContext& context,
   frame_caret_->PaintCaret(context, paint_offset);
 }
 
-bool FrameSelection::Contains(const LayoutPoint& point) {
+bool FrameSelection::Contains(const PhysicalOffset& point) {
   if (!GetDocument().GetLayoutView())
     return false;
 
@@ -969,15 +969,15 @@ String FrameSelection::SelectedTextForClipboard() const {
                  .Build());
 }
 
-LayoutRect FrameSelection::AbsoluteUnclippedBounds() const {
+PhysicalRect FrameSelection::AbsoluteUnclippedBounds() const {
   LocalFrameView* view = frame_->View();
   LayoutView* layout_view = frame_->ContentLayoutObject();
 
   if (!view || !layout_view)
-    return LayoutRect();
+    return PhysicalRect();
 
   view->UpdateLifecycleToLayoutClean();
-  return LayoutRect(layout_selection_->AbsoluteSelectionBounds());
+  return PhysicalRect(layout_selection_->AbsoluteSelectionBounds());
 }
 
 IntRect FrameSelection::ComputeRectToScroll(
@@ -1018,9 +1018,8 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
   // This function is needed to make sure that ComputeRectToScroll below has the
   // sticky offset info available before the computation.
   GetDocument().EnsurePaintLocationDataValidForNode(start.AnchorNode());
-  LayoutRect selection_rect =
-      LayoutRect(ComputeRectToScroll(reveal_extent_option));
-  if (selection_rect == LayoutRect() ||
+  PhysicalRect selection_rect(ComputeRectToScroll(reveal_extent_option));
+  if (selection_rect == PhysicalRect() ||
       !start.AnchorNode()->GetLayoutObject()->EnclosingBox())
     return;
 

@@ -365,9 +365,10 @@ void CompositeEditCommand::AppendNode(Node* node,
   // TODO(yosin): We should get rid of |canHaveChildrenForEditing()|, since
   // |cloneParagraphUnderNewElement()| attempt to clone non-well-formed HTML,
   // produced by JavaScript.
-  ABORT_EDITING_COMMAND_IF(!CanHaveChildrenForEditing(parent) &&
-                           !(parent->IsElementNode() &&
-                             ToElement(parent)->TagQName() == kObjectTag));
+  auto* parent_element = DynamicTo<Element>(parent);
+  ABORT_EDITING_COMMAND_IF(
+      !CanHaveChildrenForEditing(parent) &&
+      !(parent_element && parent_element->TagQName() == kObjectTag));
   ABORT_EDITING_COMMAND_IF(!HasEditableStyle(*parent) &&
                            parent->InActiveDocument());
   ApplyCommandToComposite(MakeGarbageCollected<AppendNodeCommand>(parent, node),
@@ -1192,7 +1193,7 @@ void CompositeEditCommand::CloneParagraphUnderNewElement(
     for (wtf_size_t i = ancestors.size(); i != 0; --i) {
       Node* item = ancestors[i - 1].Get();
       Node* child = item->cloneNode(IsDisplayInsideTable(item));
-      AppendNode(child, ToElement(last_node), editing_state);
+      AppendNode(child, To<Element>(last_node), editing_state);
       if (editing_state->IsAborted())
         return;
       last_node = child;
@@ -1686,7 +1687,7 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
         // should become
         //   <ul><li> <div><br></div> hello</li></ul>
         // at the end
-        SplitElement(ToElement(block_enclosing_list), list_node);
+        SplitElement(To<Element>(block_enclosing_list), list_node);
         RemoveNodePreservingChildren(list_node->parentNode(), editing_state);
         if (editing_state->IsAborted())
           return false;
@@ -1713,7 +1714,7 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
     // If emptyListItem follows another list item or nested list, split the list
     // node.
     if (IsListItem(previous_list_node) || IsHTMLListElement(previous_list_node))
-      SplitElement(ToElement(list_node), empty_list_item);
+      SplitElement(To<Element>(list_node), empty_list_item);
 
     // If emptyListItem is followed by other list item or nested list, then
     // insert newBlock before the list node. Because we have splitted the

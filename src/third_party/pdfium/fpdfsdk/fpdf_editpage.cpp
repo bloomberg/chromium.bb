@@ -14,6 +14,7 @@
 #include "constants/page_object.h"
 #include "core/fpdfapi/edit/cpdf_pagecontentgenerator.h"
 #include "core/fpdfapi/page/cpdf_colorspace.h"
+#include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/page/cpdf_form.h"
 #include "core/fpdfapi/page/cpdf_formobject.h"
 #include "core/fpdfapi/page/cpdf_imageobject.h"
@@ -26,6 +27,8 @@
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
+#include "core/fpdfapi/render/cpdf_docrenderdata.h"
+#include "core/fpdfapi/render/cpdf_pagerendercache.h"
 #include "core/fpdfdoc/cpdf_annot.h"
 #include "core/fpdfdoc/cpdf_annotlist.h"
 #include "core/fxcrt/fx_extension.h"
@@ -151,7 +154,9 @@ const CPDF_PageObjectHolder* CPDFPageObjHolderFromFPDFFormObject(
 }  // namespace
 
 FPDF_EXPORT FPDF_DOCUMENT FPDF_CALLCONV FPDF_CreateNewDocument() {
-  auto pDoc = pdfium::MakeUnique<CPDF_Document>();
+  auto pDoc = pdfium::MakeUnique<CPDF_Document>(
+      pdfium::MakeUnique<CPDF_DocRenderData>(),
+      pdfium::MakeUnique<CPDF_DocPageData>());
   pDoc->CreateNewDoc();
 
   time_t currentTime;
@@ -224,8 +229,10 @@ FPDF_EXPORT FPDF_PAGE FPDF_CALLCONV FPDFPage_New(FPDF_DOCUMENT document,
   }
 #endif  // PDF_ENABLE_XFA
 
-  auto pPage = pdfium::MakeRetain<CPDF_Page>(pDoc, pPageDict, true);
+  auto pPage = pdfium::MakeRetain<CPDF_Page>(pDoc, pPageDict);
+  pPage->SetRenderCache(pdfium::MakeUnique<CPDF_PageRenderCache>(pPage.Get()));
   pPage->ParseContent();
+
   return FPDFPageFromIPDFPage(pPage.Leak());  // Caller takes ownership.
 }
 
@@ -474,8 +481,8 @@ FPDFPageObjMark_GetParamBlobValue(FPDF_PAGEOBJECTMARK mark,
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
-FPDFPageObj_HasTransparency(FPDF_PAGEOBJECT pageObject) {
-  CPDF_PageObject* pPageObj = CPDFPageObjectFromFPDFPageObject(pageObject);
+FPDFPageObj_HasTransparency(FPDF_PAGEOBJECT page_object) {
+  CPDF_PageObject* pPageObj = CPDFPageObjectFromFPDFPageObject(page_object);
   if (!pPageObj)
     return false;
 
@@ -586,8 +593,8 @@ FPDFPageObjMark_RemoveParam(FPDF_PAGEOBJECT page_object,
   return true;
 }
 
-FPDF_EXPORT int FPDF_CALLCONV FPDFPageObj_GetType(FPDF_PAGEOBJECT pageObject) {
-  CPDF_PageObject* pPageObj = CPDFPageObjectFromFPDFPageObject(pageObject);
+FPDF_EXPORT int FPDF_CALLCONV FPDFPageObj_GetType(FPDF_PAGEOBJECT page_object) {
+  CPDF_PageObject* pPageObj = CPDFPageObjectFromFPDFPageObject(page_object);
   return pPageObj ? pPageObj->GetType() : FPDF_PAGEOBJ_UNKNOWN;
 }
 
@@ -710,12 +717,12 @@ FPDFPageObj_GetFillColor(FPDF_PAGEOBJECT page_object,
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
-FPDFPageObj_GetBounds(FPDF_PAGEOBJECT pageObject,
+FPDFPageObj_GetBounds(FPDF_PAGEOBJECT page_object,
                       float* left,
                       float* bottom,
                       float* right,
                       float* top) {
-  CPDF_PageObject* pPageObj = CPDFPageObjectFromFPDFPageObject(pageObject);
+  CPDF_PageObject* pPageObj = CPDFPageObjectFromFPDFPageObject(page_object);
   if (!pPageObj)
     return false;
 
@@ -835,8 +842,8 @@ FPDFPageObj_SetLineCap(FPDF_PAGEOBJECT page_object, int line_cap) {
 }
 
 FPDF_EXPORT int FPDF_CALLCONV
-FPDFFormObj_CountObjects(FPDF_PAGEOBJECT page_object) {
-  const auto* pObjectList = CPDFPageObjHolderFromFPDFFormObject(page_object);
+FPDFFormObj_CountObjects(FPDF_PAGEOBJECT form_object) {
+  const auto* pObjectList = CPDFPageObjHolderFromFPDFFormObject(form_object);
   return pObjectList ? pObjectList->GetPageObjectCount() : -1;
 }
 

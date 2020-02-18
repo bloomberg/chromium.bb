@@ -63,29 +63,37 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   void UpdateLongTaskInstrumentation() override;
 
-  bool ShouldBufferEntries();
-
   bool FirstInputDetected() const { return !!first_input_timing_; }
 
   // This method creates a PerformanceEventTiming and if needed creates a swap
   // promise to calculate the |duration| attribute when such promise is
   // resolved.
   void RegisterEventTiming(const AtomicString& event_type,
-                           TimeTicks start_time,
-                           TimeTicks processing_start,
-                           TimeTicks processing_end,
+                           base::TimeTicks start_time,
+                           base::TimeTicks processing_start,
+                           base::TimeTicks processing_end,
                            bool cancelable);
 
   void AddElementTiming(const AtomicString& name,
+                        const String& url,
                         const FloatRect& rect,
-                        TimeTicks start_time,
-                        TimeTicks response_end,
+                        base::TimeTicks start_time,
+                        base::TimeTicks load_time,
                         const AtomicString& identifier,
                         const IntSize& intrinsic_size,
                         const AtomicString& id,
                         Element*);
 
-  void AddLayoutJankFraction(double jank_fraction);
+  void AddLayoutJankFraction(double jank_fraction,
+                             bool input_detected,
+                             base::TimeTicks input_timestamp);
+
+  void OnLargestContentfulPaintUpdated(base::TimeTicks paint_time,
+                                       uint64_t paint_size,
+                                       base::TimeTicks load_time,
+                                       const AtomicString& id,
+                                       const String& url,
+                                       Element*);
 
   void Trace(blink::Visitor*) override;
 
@@ -110,7 +118,7 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   // Method called once swap promise is resolved. It will add all event timings
   // that have not been added since the last swap promise.
   void ReportEventTimings(WebWidgetClient::SwapResult result,
-                          TimeTicks timestamp);
+                          base::TimeTicks timestamp);
 
   void DispatchFirstInputTiming(PerformanceEventTiming* entry);
 

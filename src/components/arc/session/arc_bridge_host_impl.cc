@@ -7,8 +7,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/cpp/arc_notifications_host_initializer.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "components/arc/common/accessibility_helper.mojom.h"
@@ -31,12 +30,14 @@
 #include "components/arc/common/ime.mojom.h"
 #include "components/arc/common/input_method_manager.mojom.h"
 #include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/common/keymaster.mojom.h"
 #include "components/arc/common/kiosk.mojom.h"
 #include "components/arc/common/lock_screen.mojom.h"
 #include "components/arc/common/media_session.mojom.h"
 #include "components/arc/common/metrics.mojom.h"
 #include "components/arc/common/midis.mojom.h"
 #include "components/arc/common/net.mojom.h"
+#include "components/arc/common/notifications.mojom.h"
 #include "components/arc/common/obb_mounter.mojom.h"
 #include "components/arc/common/oemcrypto.mojom.h"
 #include "components/arc/common/pip.mojom.h"
@@ -61,7 +62,7 @@
 #include "components/arc/common/wallpaper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/mojo_channel.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace arc {
@@ -191,6 +192,11 @@ void ArcBridgeHostImpl::OnIntentHelperInstanceReady(
                   std::move(intent_helper_ptr));
 }
 
+void ArcBridgeHostImpl::OnKeymasterInstanceReady(
+    mojom::KeymasterInstancePtr keymaster_ptr) {
+  OnInstanceReady(arc_bridge_service_->keymaster(), std::move(keymaster_ptr));
+}
+
 void ArcBridgeHostImpl::OnKioskInstanceReady(
     mojom::KioskInstancePtr kiosk_ptr) {
   OnInstanceReady(arc_bridge_service_->kiosk(), std::move(kiosk_ptr));
@@ -225,11 +231,7 @@ void ArcBridgeHostImpl::OnNetInstanceReady(mojom::NetInstancePtr net_ptr) {
 void ArcBridgeHostImpl::OnNotificationsInstanceReady(
     mojom::NotificationsInstancePtr notifications_ptr) {
   // Forward notification instance to ash.
-  ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &ash_message_center_controller);
-  ash_message_center_controller->SetArcNotificationsInstance(
+  ash::ArcNotificationsHostInitializer::Get()->SetArcNotificationsInstance(
       std::move(notifications_ptr));
 }
 

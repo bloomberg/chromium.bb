@@ -246,8 +246,7 @@ ResourceLoader::ResourceLoader(
       started_request_(false),
       times_cancelled_after_request_start_(0),
       resource_context_(resource_context),
-      throttling_token_(std::move(throttling_token)),
-      weak_ptr_factory_(this) {
+      throttling_token_(std::move(throttling_token)) {
   request_->set_delegate(this);
   handler_->SetDelegate(this);
 }
@@ -643,7 +642,7 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
   // WebKit will send us a cancel for downloads since it no longer handles
   // them.  In this case, ignore the cancel since we handle downloads in the
   // browser.
-  if (from_renderer && (info->IsDownload() || info->is_stream()))
+  if (from_renderer && info->IsDownload())
     return;
 
   if (from_renderer && info->detachable_handler()) {

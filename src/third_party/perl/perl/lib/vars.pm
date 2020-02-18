@@ -2,7 +2,7 @@ package vars;
 
 use 5.006;
 
-our $VERSION = '1.02';
+our $VERSION = '1.05';
 
 use warnings::register;
 use strict qw(vars subs);
@@ -20,7 +20,7 @@ sub import {
 		    Carp::croak("Can't declare individual elements of hash or array");
 		} elsif (warnings::enabled() and length($sym) == 1 and $sym !~ tr/a-zA-Z//) {
 		    warnings::warn("No need to declare built-in vars");
-		} elsif  (($^H &= strict::bits('vars'))) {
+		} elsif  (($^H & strict::bits('vars'))) {
 		    require Carp;
 		    Carp::croak("'$_' is not a valid variable name under strict vars");
 		}
@@ -48,7 +48,7 @@ __END__
 
 =head1 NAME
 
-vars - Perl pragma to predeclare global variable names (obsolete)
+vars - Perl pragma to predeclare global variable names
 
 =head1 SYNOPSIS
 
@@ -56,17 +56,19 @@ vars - Perl pragma to predeclare global variable names (obsolete)
 
 =head1 DESCRIPTION
 
-NOTE: For variables in the current package, the functionality provided
-by this pragma has been superseded by C<our> declarations, available
-in Perl v5.6.0 or later.  See L<perlfunc/our>.
+NOTE: For use with variables in the current package for a single scope, the
+functionality provided by this pragma has been superseded by C<our>
+declarations, available in Perl v5.6.0 or later, and use of this pragma is
+discouraged.  See L<perlfunc/our>.
 
-This will predeclare all the variables whose names are 
-in the list, allowing you to use them under "use strict", and
-disabling any typo warnings.
+This pragma will predeclare all the variables whose names are
+in the list, allowing you to use them under C<use strict>, and
+disabling any typo warnings for them.
 
 Unlike pragmas that affect the C<$^H> hints variable, the C<use vars> and
-C<use subs> declarations are not BLOCK-scoped.  They are thus effective
-for the entire file in which they appear.  You may not rescind such
+C<use subs> declarations are not lexically scoped to the block they appear
+in: they affect
+the entire package in which they appear.  It is not possible to rescind these
 declarations with C<no vars> or C<no subs>.
 
 Packages such as the B<AutoLoader> and B<SelfLoader> that delay

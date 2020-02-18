@@ -67,6 +67,7 @@
       <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
       <TreatSpecificWarningsAsErrors>4018;5038;4838</TreatSpecificWarningsAsErrors>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -93,6 +94,7 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
       <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
       <TreatSpecificWarningsAsErrors>4018;5038;4838</TreatSpecificWarningsAsErrors>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DisableSpecificWarnings>4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>libvk_swiftshader.def</ModuleDefinitionFile>
@@ -149,7 +151,6 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
     <ClCompile Include="..\Device\QuadRasterizer.cpp" />
     <ClCompile Include="..\Device\Renderer.cpp" />
     <ClCompile Include="..\Device\SetupProcessor.cpp" />
-    <ClCompile Include="..\Device\SwiftConfig.cpp" />
     <ClCompile Include="..\Device\Vector.cpp" />
     <ClCompile Include="..\Device\VertexProcessor.cpp" />
     <ClCompile Include="..\Pipeline\ComputeProgram.cpp" />
@@ -178,7 +179,6 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
     <ClCompile Include="..\System\Half.cpp" />
     <ClCompile Include="..\System\Math.cpp" />
     <ClCompile Include="..\System\Memory.cpp" />
-    <ClCompile Include="..\System\Resource.cpp" />
     <ClCompile Include="..\System\Socket.cpp" />
     <ClCompile Include="..\System\Timer.cpp" />
     <ClCompile Include="..\WSI\VkSurfaceKHR.cpp" />
@@ -244,7 +244,6 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
     <ClInclude Include="..\Device\Sampler.hpp" />
     <ClInclude Include="..\Device\SetupProcessor.hpp" />
     <ClInclude Include="..\Device\Stream.hpp" />
-    <ClInclude Include="..\Device\SwiftConfig.hpp" />
     <ClInclude Include="..\Device\Triangle.hpp" />
     <ClInclude Include="..\Device\Vector.hpp" />
     <ClInclude Include="..\Device\Vertex.hpp" />
@@ -274,11 +273,9 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\" (copy 
     <ClInclude Include="..\System\Half.hpp" />
     <ClInclude Include="..\System\Math.hpp" />
     <ClInclude Include="..\System\Memory.hpp" />
-    <ClInclude Include="..\System\Resource.hpp" />
     <ClInclude Include="..\System\SharedLibrary.hpp" />
     <ClInclude Include="..\System\Socket.hpp" />
     <ClInclude Include="..\System\Synchronization.hpp" />
-    <ClInclude Include="..\System\Thread.hpp" />
     <ClInclude Include="..\System\Timer.hpp" />
     <ClInclude Include="..\System\Types.hpp" />
     <ClInclude Include="..\WSI\VkSurfaceKHR.hpp" />

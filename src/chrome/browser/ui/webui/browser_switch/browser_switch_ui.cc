@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_switcher/alternative_browser_driver.h"
 #include "chrome/browser/browser_switcher/browser_switcher_service.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
@@ -153,6 +153,8 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
   return source;
 }
 
+}  // namespace
+
 class BrowserSwitchHandler : public content::WebUIMessageHandler {
  public:
   BrowserSwitchHandler();
@@ -160,8 +162,19 @@ class BrowserSwitchHandler : public content::WebUIMessageHandler {
 
   // WebUIMessageHandler
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
  private:
+  void OnAllRulesetsParsed(browser_switcher::BrowserSwitcherService* service);
+
+  void OnBrowserSwitcherPrefsChanged(
+      browser_switcher::BrowserSwitcherPrefs* prefs,
+      const std::vector<std::string>& changed_prefs);
+
+  // For the internals page: tell JS to update all the page contents.
+  void UpdateEverything();
+
   // Launches the given URL in the configured alternative browser. Acts as a
   // bridge for |AlternativeBrowserDriver::TryLaunch()|. Then, if that succeeds,
   // closes the current tab.
@@ -196,10 +209,42 @@ class BrowserSwitchHandler : public content::WebUIMessageHandler {
   // }
   void HandleGetDecision(const base::ListValue* args);
 
+  // Resolves a promise with the time of the last policy fetch and next policy
+  // fetch, as JS timestamps.
+  //
+  // {
+  //   "last_fetch": 123456789,
+  //   "next_fetch": 234567890
+  // }
+  void HandleGetTimestamps(const base::ListValue* args);
+
+  // Resolves a promise with the configured sitelist XML download URLs. The keys
+  // are the name of the pref associated with the sitelist.
+  //
+  // {
+  //   "browser_switcher": {
+  //     "use_ie_sitelist": "http://example.com/sitelist.xml",
+  //     "external_sitelist_url": "http://example.com/other_sitelist.xml",
+  //     "external_greylist_url": null
+  //   }
+  // }
+  void HandleGetRulesetSources(const base::ListValue* args);
+
+  // Immediately re-download and apply XML rules.
+  void HandleRefreshXml(const base::ListValue* args);
+
+  std::unique_ptr<browser_switcher::BrowserSwitcherPrefs::CallbackSubscription>
+      prefs_subscription_;
+
+  std::unique_ptr<
+      browser_switcher::BrowserSwitcherService::CallbackSubscription>
+      service_subscription_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserSwitchHandler);
 };
 
-BrowserSwitchHandler::BrowserSwitchHandler() = default;
+BrowserSwitchHandler::BrowserSwitchHandler() {}
+
 BrowserSwitchHandler::~BrowserSwitchHandler() = default;
 
 void BrowserSwitchHandler::RegisterMessages() {
@@ -220,6 +265,47 @@ void BrowserSwitchHandler::RegisterMessages() {
       "getDecision",
       base::BindRepeating(&BrowserSwitchHandler::HandleGetDecision,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getTimestamps",
+      base::BindRepeating(&BrowserSwitchHandler::HandleGetTimestamps,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getRulesetSources",
+      base::BindRepeating(&BrowserSwitchHandler::HandleGetRulesetSources,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "refreshXml", base::BindRepeating(&BrowserSwitchHandler::HandleRefreshXml,
+                                        base::Unretained(this)));
+}
+
+void BrowserSwitchHandler::OnJavascriptAllowed() {
+  auto* service = GetBrowserSwitcherService(web_ui());
+  prefs_subscription_ = service->prefs().RegisterPrefsChangedCallback(
+      base::BindRepeating(&BrowserSwitchHandler::OnBrowserSwitcherPrefsChanged,
+                          base::Unretained(this)));
+  service_subscription_ =
+      service->RegisterAllRulesetsParsedCallback(base::BindRepeating(
+          &BrowserSwitchHandler::OnAllRulesetsParsed, base::Unretained(this)));
+}
+
+void BrowserSwitchHandler::OnJavascriptDisallowed() {
+  prefs_subscription_.reset();
+  service_subscription_.reset();
+}
+
+void BrowserSwitchHandler::OnAllRulesetsParsed(
+    browser_switcher::BrowserSwitcherService* service) {
+  UpdateEverything();
+}
+
+void BrowserSwitchHandler::OnBrowserSwitcherPrefsChanged(
+    browser_switcher::BrowserSwitcherPrefs* prefs,
+    const std::vector<std::string>& changed_prefs) {
+  UpdateEverything();
+}
+
+void BrowserSwitchHandler::UpdateEverything() {
+  CallJavascriptFunction("updateEverything", base::Value());
 }
 
 void BrowserSwitchHandler::HandleLaunchAlternativeBrowserAndCloseTab(
@@ -335,16 +421,62 @@ void BrowserSwitchHandler::HandleGetDecision(const base::ListValue* args) {
   ResolveJavascriptCallback(args->GetList()[0], retval);
 }
 
-}  // namespace
+void BrowserSwitchHandler::HandleGetTimestamps(const base::ListValue* args) {
+  DCHECK(args);
+  AllowJavascript();
+
+  auto* service = GetBrowserSwitcherService(web_ui());
+  auto* downloader = service->sitelist_downloader();
+
+  if (!downloader) {
+    ResolveJavascriptCallback(args->GetList()[0], base::Value());
+    return;
+  }
+
+  base::DictionaryValue retval;
+  retval.Set("last_fetch", std::make_unique<base::Value>(
+                               downloader->last_refresh_time().ToJsTime()));
+  retval.Set("next_fetch", std::make_unique<base::Value>(
+                               downloader->next_refresh_time().ToJsTime()));
+
+  ResolveJavascriptCallback(args->GetList()[0], retval);
+}
+
+void BrowserSwitchHandler::HandleGetRulesetSources(
+    const base::ListValue* args) {
+  DCHECK(args);
+  AllowJavascript();
+
+  auto* service = GetBrowserSwitcherService(web_ui());
+  std::vector<browser_switcher::RulesetSource> sources =
+      service->GetRulesetSources();
+
+  base::DictionaryValue retval;
+  for (const auto& source : sources) {
+    std::unique_ptr<base::Value> val;
+    if (source.url.is_valid())
+      val = std::make_unique<base::Value>(source.url.spec());
+    else
+      val = std::make_unique<base::Value>();
+    // |pref_name| is something like "browser_switcher.blah", so this will be in
+    // a nested object.
+    retval.Set(source.pref_name, std::move(val));
+  }
+  ResolveJavascriptCallback(args->GetList()[0], retval);
+}
+
+void BrowserSwitchHandler::HandleRefreshXml(const base::ListValue* args) {
+  DCHECK(args);
+  auto* service = GetBrowserSwitcherService(web_ui());
+  service->StartDownload(base::TimeDelta());
+}
 
 BrowserSwitchUI::BrowserSwitchUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  content::WebUIDataSource* data_source =
-      CreateBrowserSwitchUIHTMLSource(web_ui);
-  DarkModeHandler::Initialize(web_ui, data_source);
   web_ui->AddMessageHandler(std::make_unique<BrowserSwitchHandler>());
 
   // Set up the chrome://browser-switch source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, data_source);
+  content::WebUIDataSource::Add(profile,
+                                CreateBrowserSwitchUIHTMLSource(web_ui));
 }

@@ -110,8 +110,8 @@ bool IsVarSane(const std::string& var) {
       sizeof(kAllowedChars) == 26 + 26 + 10 + 1 + 1, "some mess with chars");
   // We must not allow kItemSeparator in anything used as an input to construct
   // message to sign.
-  DCHECK(!base::ContainsValue(kAllowedChars, kItemSeparator));
-  DCHECK(!base::ContainsValue(kAllowedChars, kVarValueSeparator));
+  DCHECK(!base::Contains(kAllowedChars, kItemSeparator));
+  DCHECK(!base::Contains(kAllowedChars, kVarValueSeparator));
   return !var.empty() &&
       var.size() <= kStringLengthLimit &&
       base::IsStringASCII(var) &&
@@ -381,7 +381,7 @@ class InternalAuthGenerationService : public base::ThreadChecker {
       int idx = static_cast<int>(used_ticks_.size()) -
           static_cast<int>(current_tick - tick + 1);
       if (idx < 0 || used_ticks_[idx] != tick) {
-        DCHECK(!base::ContainsValue(used_ticks_, tick));
+        DCHECK(!base::Contains(used_ticks_, tick));
         return tick;
       }
     }

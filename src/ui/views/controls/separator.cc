@@ -11,23 +11,36 @@
 namespace views {
 
 // static
-const char Separator::kViewClassName[] = "Separator";
-
-// static
 const int Separator::kThickness = 1;
 
 Separator::Separator() = default;
 
 Separator::~Separator() = default;
 
+SkColor Separator::GetColor() const {
+  if (overridden_color_ == true)
+    return overridden_color_.value();
+  return 0;
+}
+
 void Separator::SetColor(SkColor color) {
+  if (overridden_color_ == color)
+    return;
+
   overridden_color_ = color;
-  SchedulePaint();
+  OnPropertyChanged(&overridden_color_, kPropertyEffectsPaint);
+}
+
+int Separator::GetPreferredHeight() const {
+  return preferred_height_;
 }
 
 void Separator::SetPreferredHeight(int height) {
+  if (preferred_height_ == height)
+    return;
+
   preferred_height_ = height;
-  PreferredSizeChanged();
+  OnPropertyChanged(&preferred_height_, kPropertyEffectsPreferredSizeChanged);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -63,8 +76,10 @@ void Separator::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 }
 
-const char* Separator::GetClassName() const {
-  return kViewClassName;
-}
+BEGIN_METADATA(Separator)
+METADATA_PARENT_CLASS(View)
+ADD_PROPERTY_METADATA(Separator, SkColor, Color)
+ADD_PROPERTY_METADATA(Separator, int, PreferredHeight)
+END_METADATA()
 
 }  // namespace views

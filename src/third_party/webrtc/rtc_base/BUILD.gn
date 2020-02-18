@@ -75,13 +75,10 @@ rtc_source_set("rtc_base_approved") {
     ":checks",
     ":rtc_task_queue",
     ":safe_compare",
-    ":safe_minmax",
     ":type_traits",
     "../api:array_view",
     "../api:function_view",
     "../api:scoped_refptr",
-    "../system_wrappers:field_trial",
-    "experiments:field_trial_parser",
     "system:arch",
     "system:unused",
     "third_party/base64",
@@ -94,8 +91,6 @@ rtc_source_set("rtc_base_approved") {
     "bind.h",
     "bit_buffer.cc",
     "bit_buffer.h",
-    "bitrate_allocation_strategy.cc",
-    "bitrate_allocation_strategy.h",
     "buffer.h",
     "buffer_queue.cc",
     "buffer_queue.h",
@@ -106,8 +101,6 @@ rtc_source_set("rtc_base_approved") {
     "copy_on_write_buffer.h",
     "event_tracer.cc",
     "event_tracer.h",
-    "flags.cc",
-    "flags.h",
     "function_view.h",
     "ignore_wundef.h",
     "location.cc",
@@ -303,7 +296,7 @@ rtc_source_set("logging") {
     deps += [ "system:inline" ]
 
     if (is_mac) {
-      deps += [ ":logging_mac" ]
+      libs += [ "Foundation.framework" ]
     }
 
     # logging.h needs the deprecation header while downstream projects are
@@ -463,17 +456,6 @@ rtc_source_set("deprecation") {
   ]
 }
 
-if (is_mac && !build_with_chromium) {
-  rtc_source_set("logging_mac") {
-    visibility = [ ":logging" ]
-    libs = [ "Foundation.framework" ]
-    sources = [
-      "logging_mac.h",
-      "logging_mac.mm",
-    ]
-  }
-}
-
 rtc_source_set("rtc_task_queue") {
   visibility = [ "*" ]
   sources = [
@@ -611,7 +593,22 @@ rtc_static_library("rtc_numerics") {
   ]
 }
 
+config("rtc_json_suppressions") {
+  if (!is_win || is_clang) {
+    cflags_cc = [
+      # TODO(bugs.webrtc.org/10770): Update jsoncpp API usage and remove
+      # -Wno-deprecated-declarations.
+      "-Wno-deprecated-declarations",
+
+      # TODO(bugs.webrtc.org/10814): Remove -Wno-undef as soon as it get
+      # removed upstream.
+      "-Wno-undef",
+    ]
+  }
+}
+
 rtc_source_set("rtc_json") {
+  public_configs = [ ":rtc_json_suppressions" ]
   defines = []
   sources = [
     "strings/json.cc",
@@ -950,17 +947,6 @@ rtc_static_library("rtc_base") {
     deps += [ "system:cocoa_threading" ]
   }
 
-  if (rtc_use_x11) {
-    libs += [
-      "dl",
-      "rt",
-      "Xext",
-      "X11",
-      "Xcomposite",
-      "Xrender",
-    ]
-  }
-
   if (is_linux) {
     libs += [
       "dl",
@@ -1167,7 +1153,6 @@ if (rtc_include_tests) {
       "base64_unittest.cc",
       "bind_unittest.cc",
       "bit_buffer_unittest.cc",
-      "bitrate_allocation_strategy_unittest.cc",
       "buffer_queue_unittest.cc",
       "buffer_unittest.cc",
       "byte_buffer_unittest.cc",
@@ -1384,6 +1369,7 @@ if (rtc_include_tests) {
 
 if (is_android) {
   rtc_android_library("base_java") {
+    visibility = [ "*" ]
     java_files = [
       "java/src/org/webrtc/ContextUtils.java",
       "java/src/org/webrtc/Loggable.java",

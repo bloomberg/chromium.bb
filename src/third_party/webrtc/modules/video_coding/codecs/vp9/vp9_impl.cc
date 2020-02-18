@@ -17,11 +17,6 @@
 #include <limits>
 #include <vector>
 
-#include "vpx/vp8cx.h"
-#include "vpx/vp8dx.h"
-#include "vpx/vpx_decoder.h"
-#include "vpx/vpx_encoder.h"
-
 #include "absl/memory/memory.h"
 #include "api/video/color_space.h"
 #include "api/video/i010_buffer.h"
@@ -36,6 +31,10 @@
 #include "rtc_base/time_utils.h"
 #include "rtc_base/trace_event.h"
 #include "system_wrappers/include/field_trial.h"
+#include "vpx/vp8cx.h"
+#include "vpx/vp8dx.h"
+#include "vpx/vpx_decoder.h"
+#include "vpx/vpx_encoder.h"
 
 namespace webrtc {
 
@@ -251,6 +250,11 @@ VP9EncoderImpl::~VP9EncoderImpl() {
   Release();
 }
 
+void VP9EncoderImpl::SetFecControllerOverride(
+    FecControllerOverride* fec_controller_override) {
+  // Ignored.
+}
+
 int VP9EncoderImpl::Release() {
   int ret_val = WEBRTC_VIDEO_CODEC_OK;
 
@@ -386,24 +390,14 @@ void VP9EncoderImpl::SetRates(const RateControlParameters& parameters) {
                         << parameters.framerate_fps;
     return;
   }
-  // Update bit rate
-  if (codec_.maxBitrate > 0 &&
-      parameters.bitrate.get_sum_kbps() > codec_.maxBitrate) {
-    RTC_LOG(LS_WARNING) << "Target bitrate exceeds maximum: "
-                        << parameters.bitrate.get_sum_kbps() << " vs "
-                        << codec_.maxBitrate;
-    return;
-  }
 
   codec_.maxFramerate = static_cast<uint32_t>(parameters.framerate_fps + 0.5);
   requested_rate_settings_ = parameters;
-
-  return;
 }
 
+// TODO(eladalon): s/inst/codec_settings/g.
 int VP9EncoderImpl::InitEncode(const VideoCodec* inst,
-                               int number_of_cores,
-                               size_t /*max_payload_size*/) {
+                               const Settings& settings) {
   if (inst == nullptr) {
     return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
   }
@@ -417,7 +411,7 @@ int VP9EncoderImpl::InitEncode(const VideoCodec* inst,
   if (inst->width < 1 || inst->height < 1) {
     return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
   }
-  if (number_of_cores < 1) {
+  if (settings.number_of_cores < 1) {
     return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
   }
   if (inst->VP9().numberOfTemporalLayers > 3) {
@@ -458,10 +452,6 @@ int VP9EncoderImpl::InitEncode(const VideoCodec* inst,
 
   is_svc_ = (num_spatial_layers_ > 1 || num_temporal_layers_ > 1);
 
-  // Allocate memory for encoded image
-  size_t frame_capacity =
-      CalcBufferSize(VideoType::kI420, codec_.width, codec_.height);
-  encoded_image_.Allocate(frame_capacity);
   encoded_image_._completeFrame = true;
   // Populate encoder configuration with default values.
   if (vpx_codec_enc_config_default(vpx_codec_vp9_cx(), config_, 0)) {
@@ -526,7 +516,7 @@ int VP9EncoderImpl::InitEncode(const VideoCodec* inst,
   config_->rc_resize_allowed = inst->VP9().automaticResizeOn ? 1 : 0;
   // Determine number of threads based on the image size and #cores.
   config_->g_threads =
-      NumberOfThreads(config_->g_w, config_->g_h, number_of_cores);
+      NumberOfThreads(config_->g_w, config_->g_h, settings.number_of_cores);
 
   cpu_speed_ = GetCpuSpeed(config_->g_w, config_->g_h);
 
@@ -1417,11 +1407,10 @@ int VP9EncoderImpl::GetEncodedLayerFrame(const vpx_codec_cx_pkt* pkt) {
     DeliverBufferedFrame(end_of_picture);
   }
 
-  if (pkt->data.frame.sz > encoded_image_.capacity()) {
-    encoded_image_.Allocate(pkt->data.frame.sz);
-  }
-  memcpy(encoded_image_.data(), pkt->data.frame.buf, pkt->data.frame.sz);
-  encoded_image_.set_size(pkt->data.frame.sz);
+  // TODO(nisse): Introduce some buffer cache or buffer pool, to reduce
+  // allocations and/or copy operations.
+  encoded_image_.SetEncodedData(EncodedImageBuffer::Create(
+      static_cast<const uint8_t*>(pkt->data.frame.buf), pkt->data.frame.sz));
 
   const bool is_key_frame =
       (pkt->data.frame.flags & VPX_FRAME_IS_KEY) ? true : false;
@@ -1446,20 +1435,13 @@ int VP9EncoderImpl::GetEncodedLayerFrame(const vpx_codec_cx_pkt* pkt) {
 
   TRACE_COUNTER1("webrtc", "EncodedFrameSize", encoded_image_.size());
   encoded_image_.SetTimestamp(input_image_->timestamp());
-  encoded_image_.capture_time_ms_ = input_image_->render_time_ms();
-  encoded_image_.rotation_ = input_image_->rotation();
-  encoded_image_.content_type_ = (codec_.mode == VideoCodecMode::kScreensharing)
-                                     ? VideoContentType::SCREENSHARE
-                                     : VideoContentType::UNSPECIFIED;
   encoded_image_._encodedHeight =
       pkt->data.frame.height[layer_id.spatial_layer_id];
   encoded_image_._encodedWidth =
       pkt->data.frame.width[layer_id.spatial_layer_id];
-  encoded_image_.timing_.flags = VideoSendTiming::kInvalid;
   int qp = -1;
   vpx_codec_control(encoder_, VP8E_GET_LAST_QUANTIZER, &qp);
   encoded_image_.qp_ = qp;
-  encoded_image_.SetColorSpace(input_image_->color_space());
 
   if (full_superframe_drop_) {
     const bool end_of_picture = encoded_image_.SpatialIndex().value_or(0) + 1 ==
@@ -1682,8 +1664,8 @@ int VP9DecoderImpl::Decode(const EncodedImage& input_image,
   vpx_codec_err_t vpx_ret =
       vpx_codec_control(decoder_, VPXD_GET_LAST_QUANTIZER, &qp);
   RTC_DCHECK_EQ(vpx_ret, VPX_CODEC_OK);
-  int ret = ReturnFrame(img, input_image.Timestamp(), input_image.ntp_time_ms_,
-                        qp, input_image.ColorSpace());
+  int ret =
+      ReturnFrame(img, input_image.Timestamp(), qp, input_image.ColorSpace());
   if (ret != 0) {
     return ret;
   }
@@ -1693,7 +1675,6 @@ int VP9DecoderImpl::Decode(const EncodedImage& input_image,
 int VP9DecoderImpl::ReturnFrame(
     const vpx_image_t* img,
     uint32_t timestamp,
-    int64_t ntp_time_ms,
     int qp,
     const webrtc::ColorSpace* explicit_color_space) {
   if (img == nullptr) {
@@ -1739,17 +1720,13 @@ int VP9DecoderImpl::ReturnFrame(
 
   auto builder = VideoFrame::Builder()
                      .set_video_frame_buffer(img_wrapped_buffer)
-                     .set_timestamp_ms(0)
-                     .set_timestamp_rtp(timestamp)
-                     .set_ntp_time_ms(ntp_time_ms)
-                     .set_rotation(webrtc::kVideoRotation_0);
+                     .set_timestamp_rtp(timestamp);
   if (explicit_color_space) {
     builder.set_color_space(*explicit_color_space);
   } else {
     builder.set_color_space(
         ExtractVP9ColorSpace(img->cs, img->range, img->bit_depth));
   }
-
   VideoFrame decoded_image = builder.build();
 
   decode_complete_callback_->Decoded(decoded_image, absl::nullopt, qp);

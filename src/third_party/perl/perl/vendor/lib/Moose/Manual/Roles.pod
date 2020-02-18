@@ -1,10 +1,11 @@
-package Moose::Manual::Roles;
-
+# PODNAME: Moose::Manual::Roles
 # ABSTRACT: Roles, an alternative to deep hierarchies and base classes
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Manual::Roles - Roles, an alternative to deep hierarchies and base classe
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 WHAT IS A ROLE?
 
@@ -29,7 +30,9 @@ consumes the role. These attributes and methods then appear as if they
 were defined in the class itself. A subclass of the consuming class
 will inherit all of these methods and attributes.
 
-Moose roles are similar to mixins or interfaces in other languages.
+Moose roles are similar to mixins or interfaces in other languages and are
+based on the L<original concept of Traits|http://scg.unibe.ch/research/traits/>
+for the Smalltalk-80 dialect Squeak.
 
 Besides defining their own methods and attributes, roles can also
 require that the consuming class define certain methods of its
@@ -112,6 +115,16 @@ We could use this same role in a C<Bone> class:
 
 See also L<Moose::Cookbook::Roles::Comparable_CodeReuse> for an example.
 
+It's possible to compose existing roles into new roles. For example, we can
+have a C<HandleWithCare> class which applies both the C<Breakable> and
+C<Package> roles to any class which consumes it:
+
+  package HandleWithCare;
+
+  use Moose::Role;
+
+  with 'Breakable', 'Package';
+
 =head1 REQUIRED METHODS
 
 As mentioned previously, a role can require that consuming classes
@@ -181,12 +194,25 @@ class to the mix would not achieve anything. We recommend that you
 simply consume the interface role in each class which implements that
 interface.
 
-=head2 Required Attributes
+=head1 CONSUMING ROLES
+
+Roles are consumed using the C<with> function.
+
+Most of the time, you should only use one C<with>, even if you are consuming
+multiple roles. If you consume roles using multiple C<with> statements Moose
+cannot detect method conflicts between those roles.
+
+Roles can be consumed by classes or by other roles. When a class consumes a
+role which in turn consumes other roles, the class gets all of the roles
+applied at once.
+
+=head2 Required Methods Provided by Attributes
 
 As mentioned before, a role's required method may also be satisfied by an
 attribute accessor. However, the call to C<has> which defines an attribute
 happens at runtime. This means that you must define the attribute I<before>
 consuming the role, or else the role will not see the generated accessor.
+These attributes are L<Moose Attributes|Moose::Manual::Attributes>.
 
   package Breakable;
 
@@ -194,16 +220,95 @@ consuming the role, or else the role will not see the generated accessor.
 
   requires 'stress';
 
+  ########
+
   package Car;
 
   use Moose;
 
   has 'stress' => (
-      is  => 'rw',
+      is  => 'ro',
       isa => 'Int',
   );
 
   with 'Breakable';
+
+In general, we recommend that you always consume roles I<after> declaring all
+your attributes.
+
+It may also be the case that a class wants to consume two roles where one role
+has an attribute providing a required method for another. For example:
+
+  package Breakable;
+
+  use Moose::Role;
+
+  requires 'stress';
+
+  ########
+
+  package Stressable;
+
+  use Moose::Role;
+
+  has 'stress' => (
+      is  => 'ro',
+      isa => 'Int',
+  );
+
+  ########
+
+  package Car;
+
+  use Moose;
+
+  # XXX - this will not work
+  with 'Breakable', 'Stressable';
+
+However, this won't work. The problem is that the accessor methods created for
+the C<stress> attribute won't be present in the class when the required method
+checks are done.
+
+There are two possible workarounds. The recommended one is to use "stub"
+subroutine(s) in the role providing the accessor(s):
+
+  package Stressable;
+
+  use Moose::Role;
+
+  sub stress;
+  has 'stress' => (
+      is  => 'ro',
+      isa => 'Int',
+  );
+
+The C<sub stress;> line is called a "forward" declaration in the Perl
+documentation. It creates what is called a "stub" subroutine, a declaration
+without a body. This is good enough to satisfy the required method checks done
+by Moose. The stub will not interfere with the creation of a real subroutine
+later.
+
+The other alternative is to use two separate calls to C<with> in the consuming
+class:
+
+  package Car;
+
+  use Moose;
+
+  # Not recommended
+  with 'Stressable';
+  with 'Breakable';
+
+Each C<with> is run as it is seen. The first call will consume just the
+C<Stressable> role, which will add the C<stress> attribute to the C<Car>
+package, which in turn will create an accessor method named C<stress>. Then
+when the C<Breakable> role is consumed, the method it requires already exists.
+
+However, as mentioned earlier, multiple C<with> declarations are not
+recommended, because method conflicts between the roles cannot be seen. In the
+example above, if both C<Stressable> and C<Breakable> contained methods of the
+same name, what would happen is that the version in C<Stressable> would
+I<silently> override the one in C<Breakable>.
 
 =head1 USING METHOD MODIFIERS
 
@@ -237,7 +342,7 @@ class is required to provide its I<own> method of the same name.
 
   package Breakdancer;
 
-  use Moose::Role
+  use Moose::Role;
 
   sub break {
 
@@ -261,6 +366,9 @@ A role can be a collection of other roles:
   use Moose::Role;
 
   with ('Breakable', 'Breakdancer');
+
+When a role consumes another a role, the I<consuming> role's methods silently
+win in any conflict, and the consumed role's methods are simply ignored.
 
 =head1 METHOD EXCLUSION AND ALIASING
 
@@ -302,6 +410,24 @@ then provide a method of the same name in the class itself.
 
 Also see L<Moose::Cookbook::Roles::Restartable_AdvancedComposition> for an example.
 
+=head1 OVERLOADING
+
+When a Moose role uses overloading, that overloading is composed into any
+classes that consume the role. This includes the setting of the C<fallback>
+value for that role's overloading. Just as with methods and attributes, when a
+role consumes another role, that other role's overloading settings are applied
+to the role.
+
+Just as with methods, there can be conflicts with overloading implementations
+between multiple roles when they are all consumed by a class. If two roles
+both provide different overloading implementations for a given operator, that
+is a conflict. If two roles both implement overloading and have different
+C<fallback> values, that is also considered a conflict. These conflicts are
+detected when multiple roles are being composed into a class together.
+
+When a role consumes another role, the consuming role's overloading fallback
+and operator implementations silently "win" the conflict.
+
 =head1 ROLE EXCLUSION
 
 A role can say that it cannot be combined with some other role. This
@@ -334,19 +460,98 @@ normal Moose role combination system. We recommend using this function to
 apply roles to an object. This is what Moose uses internally when you call
 C<with>.
 
-=head1 AUTHOR
+=head2 Handling required attributes for roles.
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+Application of some roles will require additional parameters being specified to
+satisfy them, for example:
+
+    {
+        package Car;
+        use Moose;
+    }
+    {
+        package Breakable;
+        use Moose::Role;
+
+        has 'breakable_parts' => ( is => 'ro', required => 1 );
+    }
+
+    my $car = Car->new;
+
+    # next line dies with: Attribute (breakable_parts) is required
+    apply_all_roles( $car, 'Breakable' );
+
+This will require passing the additional parameters at application time as
+follows:
+
+    apply_all_roles( $car, 'Breakable' => {
+            rebless_params => {
+                # Parameters to 'Breakable'
+                breakable_parts => [qw( tires wheels windscreen )],
+            }
+    });
+
+Obviously, this interface is better simplified as a method on C<Car>:
+
+    sub make_breakable {
+        my ( $self, %params ) = @_;
+        apply_all_roles($self, 'Breakable', { rebless_params => \%params });
+    }
+
+    my $car = Car->new();
+    $car->make_breakable( breakable_parts => [qw( tires wheels windscreen )] );
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

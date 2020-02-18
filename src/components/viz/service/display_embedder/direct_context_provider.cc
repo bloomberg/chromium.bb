@@ -134,10 +134,11 @@ void DirectContextProvider::Destroy() {
   gl_context_.reset();
   transfer_buffer_.reset();
   gles2_cmd_helper_.reset();
-  command_buffer_.reset();
 
   decoder_->Destroy(have_context);
   decoder_.reset();
+
+  command_buffer_.reset();
 }
 
 void DirectContextProvider::SetGLRendererCopierRequiredState(

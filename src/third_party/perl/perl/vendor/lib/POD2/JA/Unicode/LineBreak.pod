@@ -1,0 +1,917 @@
+=encoding utf-8
+
+=head1 NAME
+
+Unicode::LineBreak~[ja] - UAX #14 Unicode 行分割アルゴリズム
+
+=head1 SYNOPSIS
+
+    use Unicode::LineBreak;
+    $lb = Unicode::LineBreak->new();
+    $broken = $lb->break($string);
+
+=head1 DESCRIPTION
+
+Unicode::LineBreak は、Unicode 標準の附属書14 [UAX #14] で述べる Unicode 行分割アルゴリズムを実行する。
+分割位置を決定する際に、附属書11 [UAX #11] で定義される East_Asian_Width 参考特性も考慮する。
+
+=head2 用語
+
+便宜的に以下の用語を使う。
+
+B<強制分割>〔mandatory break〕は、基本規則で定められており、周囲の文字に関係なく義務的に実行される行分割動作。
+B<任意分割>は、基本規則で認められており、ユーザが実行すると決めた場合に行われる行分割動作。
+[UAX #14] で定義される任意分割にはB<直接分割>〔direct break〕とB<間接分割>〔indirect break〕とがある。
+
+B<音素文字的な文字>〔alphabetic characters〕は、通常、他の文字が分割の機会を与えないかぎり、文字同士の間で行分割できない文字。
+B<表語文字的な文字>〔ideographic characters〕は、通常、その前後で行分割できる文字。
+[UAX #14] では音素文字的な文字のほとんどを AL に、表語文字的な文字のほとんどを ID に分類している
+(これらの用語は文字学の観点からすれば不正確である)。
+若干の用字系では、個々の文字からは分割位置が明確にならないため、辞書による発見的方法を用いる。
+
+文字列のB<桁数>は、文字列に含まれる文字の数と等しいとはかぎらない。
+個々の文字はB<広い>〔wide〕か、B<狭い>〔narrow〕か、前進を伴わない〔nonspacing〕かのいずれかであり、各々 2 桁、1 桁、0 桁を占める。
+若干の文字は、使われる文脈によって広くも狭くもなり得る。
+カスタマイズによって、文字はより多様な幅を持ちうる。
+
+=head1 PUBLIC INTERFACE
+
+=head2 行の分割
+
+=over 4
+
+=item new ([KEY => VALUE, ...])
+
+I<コンストラクタ>。
+KEY => VALUE の対については L</オプション> を参照。
+
+=item break (STRING)
+
+I<インスタンスメソッド>。
+Unicode 文字列 STRING を分割し、それを返す。
+配列コンテクストでは、結果の各行の配列を返す。
+
+=item break_partial (STRING)
+
+I<インスタンスメソッド>。
+break() と同じだが、文字列を少しずつ追加して入力する場合。
+入力が完了したことを示すには、STRING 引数に C<undef> を与える。
+
+=item config (KEY)
+
+=item config (KEY => VALUE, ...)
+
+I<インスタンスメソッド>。
+設定を取得または変更する。
+KEY => VALUE の対については L</オプション> を参照。
+
+=item copy
+
+I<コピーコンストラクタ>。
+オブジェクトインスタンスの複製をつくる。
+
+=begin comment
+
+=item reset
+
+I<Undocumented>.
+
+=end comment
+
+=back
+
+=head2 情報の取得
+
+=over 4
+
+=item breakingRule (BEFORESTR, AFTERSTR)
+
+I<インスタンスメソッド>。
+文字列 BEFORESTR と AFTERSTR の間での行分割動作を得る。
+返値については L</定数> を参照。
+
+B<注>:
+このメソッドは、行分割のおおまかな動作を表す値を返すにすぎない。
+実際のテキストを行折りするには、break() 等のメソッドを使ってほしい。
+
+=item context ([Charset => CHARSET], [Language => LANGUAGE])
+
+I<関数>。
+キャラクタセット CHARSET および言語コード LANGUAGE から、それを使う言語/地域の文脈を得る。
+
+=back
+
+=begin comment
+
+=head3 廃止予定のメソッド
+
+=over 4
+
+=item lbrule (BEFORE, AFTER)
+
+I<インスタンスメソッド>。
+分類 BEFORE と分類 AFTER の間での行分割動作を得る。
+返値については L</定数> を参照。
+
+B<注>:
+このメソッドは、行分割のおおまかな動作を表す値を返すにすぎない。
+
+B<注>:
+breakingRule() を使ってほしい。
+
+=item strsize (LEN, PRE, SPC, STR)
+
+I<インスタンスメソッド>。
+[UAX #11] で定義された文字幅に基づいて、Unicode 文字列 PRE.SPC.STR のI<桁数>を算出する。
+
+B<注>:
+L<Unicode::GCString/columns> を使ってほしい。
+
+=back
+
+=end comment
+
+=head2 オプション
+
+L</new>、L</config> の両メソッドには以下の対を指定できる。
+桁数の算出 ([B<E>])、書記素クラスタ分節 ([B<G>])
+(L<Unicode::GCString~[ja]> も参照)、行分割動作 ([B<L>])
+に影響するものがある。
+
+=over 4
+
+=item BreakIndent => C<"YES"> | C<"NO">
+
+[B<L>]
+行頭の SPACE の並び (インデント) の後では常に分割を許す。
+[UAX #14] は SPACE のこのような用法を考慮していない。
+初期値は C<"YES">。
+
+B<注>:
+このオプションはリリース 1.011 で導入された。
+
+=item CharMax => NUMBER
+
+[B<L>]
+行に含みうる最大の文字数。行末の空白文字と改行の文字列を除く。
+文字数は一般に行の長さを表さないことに注意。
+初期値は C<998>。
+C<0> にはできない。
+
+=item ColMin => NUMBER
+
+[B<L>]
+任意分割された行の、改行の文字列と行末の空白文字を含めない最小桁数。
+初期値は C<0>。
+
+=item ColMax => NUMBER
+
+[B<L>]
+行の、改行の文字列と行末の空白文字を含めない最大桁数。つまり、行の最大長。
+初期値は C<76>。
+
+=back
+
+L</Urgent> オプションおよび L</ユーザ定義の行分割動作> も参照。
+
+=over 4
+
+
+=item ComplexBreaking => C<"YES"> | C<"NO">
+
+[B<L>]
+東南アジアの複雑な文脈で、発見的な行折りを行う。
+初期値は、東南アジアの表記体系での単語分節が有効なら C<"YES">。
+
+=item Context => CONTEXT
+
+[B<E>][B<L>]
+言語/地域の文脈を指定する。
+現在使える文脈は C<"EASTASIAN"> か C<"NONEASTASIAN">。
+初期の文脈は C<"NONEASTASIAN">。
+
+C<"EASTASIAN"> 文脈では、East_Asian_Width 特性が曖昧 (A)
+であれば「広い」文字とみなし、行分割特性が AI であれば表語文字的 (ID)
+とみなす。
+
+C<"NONEASTASIAN"> 文脈では、East_Asian_Width 特性が曖昧 (A)
+であれば「狭い」文字とみなし、行分割特性が AI であれば音素文字的 (AL)
+とみなす。
+
+=item EAWidth => C<[> ORD C<=E<gt>> PROPERTY C<]>
+
+=item EAWidth => C<undef>
+
+[B<E>]
+個々の文字の East_Asian_Width 特性を手直しする。
+ORD は文字の UCS インデクス値か、それらの配列への参照。
+PROPERTY は East_Asian_Width 特性値か拡張値のいずれか (L</定数> を参照)。
+このオプションは複数回指定できる。
+C<undef> を指定すると、それまでの手直しをすべて取り消す。
+
+初期値では、East_Asian_width 特性の手直しはしない。
+L</文字の特性の手直し> も参照。
+
+=item Format => METHOD
+
+[B<L>]
+分割した行を整形する方法を指定する。
+
+=over 4
+
+=item C<"SIMPLE">
+
+初期の方法。
+任意分割の位置に改行を挿入するだけ。
+
+=item C<"NEWLINE">
+
+L</Newline> オプションで指定したもので改行を置き換える。
+改行の前とテキスト終端の空白文字を除去する。
+テキスト終端に改行がなければ追加する。
+
+=item C<"TRIM">
+
+任意分割の位置に改行を挿入する。
+改行の前の空白文字を除去する。
+
+=item C<undef>
+
+なにもしない (改行の挿入も)。
+
+=item サブルーチンへの参照
+
+L</行の整形> を参照。
+
+=back
+
+=item HangulAsAL => C<"YES"> | C<"NO">
+
+[B<L>]
+ハングル音節とハングル連結チャモ〔conjoining jamo〕を音素文字的な文字 (AL) と扱う。
+初期値は C<"NO">。
+
+=item LBClass => C<[> ORD C<=E<gt>> CLASS C<]>
+
+=item LBClass => C<undef>
+
+[B<G>][B<L>]
+個々の文字の行分割特性 (分類) を手直しする。
+ORD は文字の UCS インデクス値か、それらの配列への参照。
+CLASS は行分割特性値のいずれか (L</定数> を参照)。
+このオプションは複数回指定できる。
+C<undef> を指定すると、それまでの手直しをすべて取り消す。
+
+初期値では、行分割特性の手直しはしない。
+L</文字の特性の手直し> も参照。
+
+=item LegacyCM => C<"YES"> | C<"NO">
+
+[B<G>][B<L>]
+前に空白文字がついた結合文字を単独の結合文字 (ID) と扱う。
+Unicode 5.0 版からは、空白文字のこのような使いかたは推奨されない。
+初期値は C<"YES">。
+
+=item Newline => STRING
+
+[B<L>]
+改行の文字列とする Unicode 文字列。
+初期値は C<"\n">。
+
+=item Prep => METHOD
+
+[B<L>]
+ユーザ定義の行分割動作を追加する。
+このオプションは複数回指定できる。
+METHOD には以下のものを指定できる。
+
+=over 4
+
+=item C<"NONBREAKURI">
+
+URI を分割しない。
+
+=item C<"BREAKURI">
+
+URI を、印刷物に適した規則で分割する。
+詳しくは [CMOS] の 6.17 節と 17.11 節を参照。
+
+=item C<[> REGEX, SUBREF C<]>
+
+正規表現 REGEX にマッチする文字列を、SUBREF で参照されるサブルーチンで分割する。
+詳細は L</ユーザ定義の行分割動作> を参照。
+
+=item C<undef>
+
+それまでに追加した動作をすべて取り消す。
+
+=back
+
+=item Sizing => METHOD
+
+[B<L>]
+文字列の長さを算出する方法を指定する。
+以下のオプションが使える。
+
+=over 4
+
+=item C<"UAX11">
+
+初期の方法。
+組み込みの文字データベースによって文字の桁数を算出する。
+
+=item C<undef>
+
+文字列に含まれる書記素クラスタ (L<Unicode::GCString> 参照) の数を返す。
+
+=item サブルーチンへの参照
+
+L</文字列長の算出> を参照。
+
+=back
+
+L</ColMax>、L</ColMin>、L</EAWidth> オプションも参照。
+
+=item Urgent => METHOD
+
+[B<L>]
+長すぎる行の扱いかたを指定する。
+以下のオプションが使える。
+
+=over 4
+
+=item C<"CROAK">
+
+エラーメッセージを出力して死ぬ。
+
+=item C<"FORCE">
+
+長すぎる文字列を無理やり分割する。
+
+=item C<undef>
+
+初期の方法。
+長すぎる文字列も分割しない。
+
+=item サブルーチンへの参照
+
+L</ユーザ定義の行分割動作> を参照。
+
+=back
+
+=item ViramaAsJoiner => C<"YES"> | C<"NO">
+
+[B<G>]
+ヴィラーマ記号 (ヒンディ語では「ハラント」、クメール文字での「脚」)
+とそれに続く字とを分離しない。
+初期値は C<"YES">。
+B<注>:
+このオプションはリリース 2011.001_29 で導入された。
+以前のリリースでは C<"NO"> に固定であった。
+これは、[UAX #29] で定義する「初期の」書記素クラスタには含まれない仕様である。
+
+=back
+
+=begin comment
+
+=head3 旧式なオプション
+
+=over 4
+
+=item TailorEA => C<[> ORD C<=E<gt>> PROPERTY, ... C<]>
+
+L</EAWidth> の旧式な形式。
+
+=item TailorLB => C<[> ORD C<=E<gt>> CLASS, ... C<]>
+
+L</LBClass> の旧式な形式。
+
+=item UserBreaking => C<[>METHOD, ...C<]>
+
+L</Prep> の旧式な形式。
+
+=back
+
+=end comment
+
+=head2 定数
+
+=over 4
+
+=item C<EA_Na>, C<EA_N>, C<EA_A>, C<EA_W>, C<EA_H>, C<EA_F>
+
+[UAX #11] で定義される 6 つの East_Asian_Width 特性値。
+狭 (Na)、中立 (N)、曖昧 (A)、広 (W)、半角 (H)、全角 (F)。
+
+=item C<EA_Z>
+
+前進を伴わない文字の East_Asian_Width 特性の値。
+
+B<注>:
+この「前進を伴わない」値は当モジュールによる拡張であり、
+[UAX #11] の一部ではない。
+
+=begin comment
+
+C<EA_ZA> and C<EA_ZW>: Undocumented.
+
+以前のリリースには C<EA_Z> しかなく、C<EA_ZA> と C<EA_ZW> は
+リリース 2012.10 で追加された。
+
+=end comment
+
+=item C<LB_BK>, C<LB_CR>, C<LB_LF>, C<LB_NL>, C<LB_SP>, C<LB_OP>, C<LB_CL>, C<LB_CP>, C<LB_QU>, C<LB_GL>, C<LB_NS>, C<LB_EX>, C<LB_SY>, C<LB_IS>, C<LB_PR>, C<LB_PO>, C<LB_NU>, C<LB_AL>, C<LB_HL>, C<LB_ID>, C<LB_IN>, C<LB_HY>, C<LB_BA>, C<LB_BB>, C<LB_B2>, C<LB_CB>, C<LB_ZW>, C<LB_CM>, C<LB_WJ>, C<LB_H2>, C<LB_H3>, C<LB_JL>, C<LB_JV>, C<LB_JT>, C<LB_SG>, C<LB_AI>, C<LB_CJ>, C<LB_SA>, C<LB_XX>, C<LB_RI>
+
+[UAX #14] で定義される 40 の行分割特性値 (分類)。
+
+B<注>:
+特性値 CP はUnicode 5.2.0版で導入された。
+特性値 HL と CJ はUnicode 6.1.0版で導入された。
+特性値 RI は Unicode 6.2.0版で導入された。
+
+=item C<MANDATORY>, C<DIRECT>, C<INDIRECT>, C<PROHIBITED>
+
+行分割動作を表す 4 つの値。
+強制分割。直接分割も間接分割も認める。間接分割を認めるが直接分割は禁ずる。分割を禁ずる。
+
+=item C<Unicode::LineBreak::SouthEastAsian::supported>
+
+東南アジアの表記体系のための単語分節機能が有効かどうかを示すフラグ。
+この機能が有効になっていれば、空でない文字列。
+そうでなければ C<undef>。
+
+B<注>: 現リリースでは現代タイ語のタイ文字にのみ対応している。
+
+=item C<UNICODE_VERSION>
+
+このモジュールが参照する Unicode 標準の版を示す文字列。
+
+=back
+
+=head1 CUSTOMIZATION
+
+=head2 行の整形
+
+L</Format> オプションにサブルーチンへの参照を指定する場合、そのサブルーチンは 3 つの引数を取らなければならない。
+
+    $修正後 = &サブルーチン(SELF, EVENT, STR);
+
+SELF は Unicode::LineBreak オブジェクト、EVENT はサブルーチンが呼ばれた文脈を表す文字列、STR は分割位置の前または後の Unicode 文字列の断片。
+
+    EVENT |駆動の契機           |STR
+    -----------------------------------------------------------------
+    "sot" |テキスト先頭         |最初の行の断片
+    "sop" |強制分割の後         |次の行の断片
+    "sol" |任意分割の後         |続きの行の断片
+    ""    |分割の直前           |行全体 (終端の空白文字を除く)
+    "eol" |任意分割             |分割位置の前の空白文字
+    "eop" |強制分割             |改行とその前の空白文字
+    "eot" |テキスト終端         |テキスト終端の空白文字 (と改行)
+    -----------------------------------------------------------------
+
+サブルーチンは、テキストの断片を修正して返さなければならない。なにも修正しなかったことを示すには、C<undef> を返せばよい。
+なお、C<"sot">、C<"sop">、C<"sol"> の文脈での修正はその後の分割位置の決定に影響するが、ほかの文脈での修正は影響しない。
+
+B<注意>:
+文字列の引数は実際には書記素クラスタ列である。
+L<Unicode::GCString~[ja]> 参照。
+
+たとえば次のコードは、行末の空白を取り除いて行折りをする。
+
+    sub fmt {
+        if ($_[1] =~ /^eo/) {
+            return "\n";
+      	}
+        return undef;
+    }
+    my $lb = Unicode::LineBreak->new(Format => \&fmt);
+    $output = $lb->break($text);
+
+=head2 ユーザ定義の行分割動作
+
+任意分割によって生じる行が CharMax、ColMax、ColMin のいずれかの制限を超えると見込まれるときは、引き続く文字列に対してB<緊急分割>を実行できる。
+L</Urgent> オプションにサブルーチンへの参照を指定する場合、そのサブルーチンは 2 つの引数を取らなければならない。
+
+    @分割後 = &サブルーチン(SELF, STR);
+
+SELF は Unicode::LineBreak オブジェクト、STR は分割すべき Unicode 文字列。
+
+サブルーチンは、文字列 STR を分割した結果の配列を返さなければならない。
+
+B<注意>:
+文字列の引数は実際には書記素クラスタ列である。
+L<Unicode::GCString~[ja]> 参照。
+
+たとえば次のコードは、若干の化学物質 (チチンのような) の名称にハイフンを挿入し、行折りできるようにする。
+
+    sub hyphenize {
+	return map {$_ =~ s/yl$/yl-/; $_} split /(\w+?yl(?=\w))/, $_[1];
+    }
+    my $lb = Unicode::LineBreak->new(Urgent => \&hyphenize);
+    $output = $lb->break("Methionylthreonylthreonylglutaminylarginyl...");
+
+L</Prep> オプションに [REGEX, SUBREF] の配列参照を指定する場合、サブルーチンは 2 つの引数を取らなければならない。
+
+    @分割後 = &サブルーチン(SELF, STR);
+
+SELF は Unicode::LineBreak オブジェクト、STR は REGEX にマッチする分割すべき Unicode 文字列。
+
+サブルーチンは、文字列 STR を分割した結果の配列を返さなければならない。
+
+たとえば次のコードは、HTTP URL を [CMOS] の規則を用いて分割する。
+
+    my $url = qr{http://[\x21-\x7E]+}i;
+    sub breakurl {
+        my $self = shift;
+        my $str = shift;
+        return split m{(?<=[/]) (?=[^/]) |
+                       (?<=[^-.]) (?=[-~.,_?\#%=&]) |
+        	       (?<=[=&]) (?=.)}x, $str;
+    }
+    my $lb = Unicode::LineBreak->new(Prep => [$url, \&breakurl]);
+    $output = $lb->break($string);
+
+=head3 状態の保存
+
+Unicode::LineBreak オブジェクトはハッシュ参照としてふるまう。
+任意の要素を、オブジェクトの存在期間中保存できる。
+
+たとえば次のコードは、段落を空行で分ける。
+
+    sub paraformat {
+        my $self = shift;
+        my $action = shift;
+        my $str = shift;
+        
+        if ($action eq 'sot' or $action eq 'sop') {
+            $self->{'line'} = '';
+        } elsif ($action eq '') {
+            $self->{'line'} = $str;
+        } elsif ($action eq 'eol') {
+            return "\n";
+        } elsif ($action eq 'eop') {
+            if (length $self->{'line'}) {
+                return "\n\n";
+            } else {
+                return "\n";
+            }
+        } elsif ($action eq 'eot') {
+            return "\n";
+        }
+        return undef;
+    }
+    my $lb = Unicode::LineBreak->new(Format => \&paraformat);
+    $output = $lb->break($string);
+
+=head2 文字列長の算出
+
+L</Sizing> オプションにサブルーチンへの参照を指定する場合、そのサブルーチンは 5 つの引数を取らなければならない。
+
+    $桁数 = &サブルーチン(SELF, LEN, PRE, SPC, STR);
+
+SELF は Unicode::LineBreak オブジェクト、LEN は先行する文字列の長さ、PRE は先行する Unicode 文字列、SPC は追加される空白文字、STR は処理する Unicode 文字列。
+
+サブルーチンは C<PRE.SPC.STR> の桁数を算出して返さなければならない。
+桁数は整数でなくてもよい。桁数の単位は随意に選べるが、L</ColMin> オプションおよび L</ColMax> オプションのそれと一致させなければならない。
+
+B<注意>:
+文字列の引数は実際には書記素クラスタ列である。
+L<Unicode::GCString~[ja]> 参照。
+
+たとえば次のコードは、行に 8 桁ごとのタブストップがあるものとして処理する。
+
+    sub tabbedsizing {
+        my ($self, $cols, $pre, $spc, $str) = @_;
+     
+        my $spcstr = $spc.$str;
+        while ($spcstr->lbc == LB_SP) {
+            my $c = $spcstr->item(0);
+            if ($c eq "\t") {
+                $cols += 8 - $cols % 8;
+            } else {
+                $cols += $c->columns;
+            }
+            $spcstr = $spcstr->substr(1);
+        }
+        $cols += $spcstr->columns;
+        return $cols;
+    };
+    my $lb = Unicode::LineBreak->new(LBClass => [ord("\t") => LB_SP],
+                                     Sizing => \&tabbedsizing);
+    $output = $lb->break($string);
+
+=head2 文字の特性の手直し
+
+L</LBClass> オプションおよび L</EAWidth> オプションで個々の文字の行分割特性 (分類) や East_Asian_Width 特性を手直しできる。その際に便利な定数をいくつか定義してある。
+
+=head3 行分割特性
+
+=head4 仮名などの行頭禁則文字
+
+初期値では、若干の仮名や仮名に準ずるものを行頭禁則文字 (NS または CJ) と扱う。
+以下の対を L<LBClass> オプションに指定すれば、これらの文字を通常の表語文字的な文字 (ID) と扱える。
+
+=over 4
+
+=item C<KANA_NONSTARTERS() =E<gt> LB_ID>
+
+下記の文字すべて。
+
+=item C<IDEOGRAPHIC_ITERATION_MARKS() =E<gt> LB_ID>
+
+表語文字的な繰り返し記号。
+U+3005 繰返し記号、U+303B ゆすり点、U+309D 平仮名繰返し記号、U+309E 平仮名繰返し記号 (濁点)、U+30FD 片仮名繰返し記号、U+30FE 片仮名繰返し記号 (濁点)。
+
+注。仮名ではないものもある。
+
+=item C<KANA_SMALL_LETTERS() =E<gt> LB_ID>
+
+=item C<KANA_PROLONGED_SOUND_MARKS() =E<gt> LB_ID>
+
+小書き仮名。
+小書き平仮名 U+3041 ぁ, U+3043 ぃ, U+3045 ぅ, U+3047 ぇ, U+3049 ぉ, U+3063 っ, U+3083 ゃ, U+3085 ゅ, U+3087 ょ, U+308E ゎ, U+3095 E<0x3095>, U+3096 E<0x3096>。
+小書き片仮名 U+30A1 ァ, U+30A3 ィ, U+30A5 ゥ, U+30A7 ェ, U+30A9 ォ, U+30C3 ッ, U+30E3 ャ, U+30E5 ュ, U+30E7 ョ, U+30EE ヮ, U+30F5 ヵ, U+30F6 ヶ。
+片仮名表音拡張 U+31F0 E<0x31F0> - U+31FF E<0x31FF>。
+小書き片仮名 (代替名称) U+FF67 E<0xFF67> - U+FF6F E<0xFF6F>。
+
+長音記号。
+U+30FC 長音記号、U+FF70 長音記号 (代替名称)。
+
+注。これらの文字は行頭禁則文字と扱われることも、通常の表語文字的な文字と扱われることもある。[JIS X 4051] 6.1.1、[JLREQ] 3.1.7 や [UAX14] を参照。
+
+注。U+3095 E<0x3095>, U+3096 E<0x3096>, U+30F5 ヵ, U+30F6 ヶ は仮名ではないとされる。
+
+=item C<MASU_MARK() =E<gt> LB_ID>
+
+U+303C ます記号。
+
+注。この文字は仮名ではないが、通常 C<"ます"> や C<"マス"> の略記として用いられる。
+
+注。この文字は [UAX #14] では行頭禁則文字 (NS) に分類されるが、[JIS X 4051] や [JLREQ] では文字クラス (13) や cl-19 (ID に相当) に分類される。
+
+=back
+
+=head4 曖昧な引用符
+
+初期値では、若干の記号を曖昧な引用符 (QU) と扱う。
+
+=over 4
+
+=item C<BACKWARD_QUOTES() =E<gt> LB_OP, FORWARD_QUOTES() =E<gt> LB_CL>
+
+ある言語 (オランダ語、英語、イタリア語、ポルトガル語、スペイン語、トルコ語、
+および東アジアの多くの言語) では、開き記号に 9 が回転した形状の引用符
+(E<0x2018> E<0x201C>) を、閉じ記号に 9 の形状の引用符
+(E<0x2019> E<0x201D>) を用いる。
+
+=item C<FORWARD_QUOTES() =E<gt> LB_OP, BACKWARD_QUOTES() =E<gt> LB_CL>
+
+ほかの言語 (チェコ語、ドイツ語、スロヴァク語) では、9 の形状の引用符
+(E<0x2019> E<0x201D>) を開き記号に、9 が回転した形状の引用符
+(E<0x2018> E<0x201C>) を閉じ記号に用いる。
+
+=item C<BACKWARD_GUILLEMETS() =E<gt> LB_OP, FORWARD_GUILLEMETS() =E<gt> LB_CL>
+
+フランス語、ギリシャ語、ロシア語などでは、左向きのギュメ
+(E<0x00AB> E<0x2039>) を開き記号に、右向きのギュメ
+(E<0x00BB> E<0x203A>) を閉じ記号に用いる。
+
+=item C<FORWARD_GUILLEMETS() =E<gt> LB_OP, BACKWARD_GUILLEMETS() =E<gt> LB_CL>
+
+ドイツ語やスロヴァク語では、右向きのギュメ (E<0x00BB> E<0x203A>)
+を開き記号に、左向きのギュメ (E<0x00AB> E<0x2039>) を閉じ記号に用いる。
+
+=back
+
+デーン語、フィン語、ノルウェー語、スウェーデン語では、9 の形状の引用符や
+右向きのギュメ (E<0x2019> E<0x201D> E<0x00BB> E<0x203A>)
+を開き記号にも閉じ記号にも用いる。
+
+=head4 和字間隔
+
+=over 4
+
+=item C<IDEOGRAPHIC_SPACE() =E<gt> LB_BA>
+
+U+3000 和字間隔が行頭に来ないようにする。
+これが初期の挙動である。
+
+=item C<IDEOGRAPHIC_SPACE() =E<gt> LB_ID>
+
+和字間隔が行頭に来ることがある。
+Unicode 6.2以前はこれが初期の挙動であった。
+
+=item C<IDEOGRAPHIC_SPACE() =E<gt> LB_SP>
+
+和字間隔が行頭に来ず、行末でははみ出すようにする。
+
+=back
+
+=head3 East_Asian_Width 特性
+
+ラテン、ギリシア、キリルの各用字系では、特定の文字が曖昧 (A) の East_Asian_Width 特性を持っている。このため、こういった文字は C<"EASTASIAN"> 文脈で広い文字と扱われる。
+C<EAWidth =E<gt> [ AMBIGUOUS_>*C<() =E<gt> EA_N ]> と指定することで、そのような文字を常に狭い文字と扱う。
+
+=over 4
+
+=item C<AMBIGUOUS_ALPHABETICS() =E<gt> EA_N>
+
+下記の文字すべてを East_Asian_Width 特性 N (中立) の文字と扱う。
+
+=item C<AMBIGUOUS_CYRILLIC() =E<gt> EA_N>
+
+=item C<AMBIGUOUS_GREEK() =E<gt> EA_N>
+
+=item C<AMBIGUOUS_LATIN() =E<gt> EA_N>
+
+曖昧 (A) の幅を持つキリル、ギリシア、ラテン用字系の文字を中立 (N) の文字と扱う。
+
+=back
+
+いっぽう、東アジアの符号化文字集合に対する多くの実装でたびたび広い文字に描画されてきたにもかかわらず、Unicode 標準では全角 (F) の互換文字を持つがゆえに狭い (Na) 文字とされている文字が若干ある。L<EAWidth> オプションに以下のように指定することで、これらの文字を C<"EASTASIAN"> 文脈で広い文字と扱える。
+
+=over 4
+
+=item C<QUESTIONABLE_NARROW_SIGNS() =E<gt> EA_A>
+
+U+00A2 セント記号、U+00A3 ポンド記号、U+00A5 円記号 (または元記号)、U+00A6 破断線、U+00AC 否定、U+00AF マクロン。
+
+=back
+
+=head2 設定ファイル
+
+L</new> メソッドおよび L</config> メソッドのオプション引数の組み込み初期値は、 設定ファイルで上書きできる。
+F<Unicode/LineBreak/Defaults.pm>。
+詳細は F<Unicode/LineBreak/Defaults.pm.sample> を読んでほしい。
+
+=head1 BUGS
+
+バグやバグのような動作は、開発者に教えてください。
+
+CPAN Request Tracker:
+L<http://rt.cpan.org/Public/Dist/Display.html?Name=Unicode-LineBreak>.
+
+=head1 VERSION
+
+$VERSION 変数を参照してほしい。
+
+=head2 非互換な変更
+
+=over 4
+
+=item 2012.06
+
+=over 4
+
+=item *
+
+eawidth() メソッドを廃止した。
+代わりに L<Unicode::GCString/columns> が使えるかもしれない。
+
+=item *
+
+lbclass() メソッドを廃止した。
+L<Unicode::GCString/lbc> や L<Unicode::GCString/lbcext>
+を使ってほしい。
+
+=back
+
+=back
+
+=head2 標準への適合性
+
+このモジュールで用いている文字の特性値は、Unicode 標準 8.0.0版による。
+
+このモジュールでは、実装水準 UAX14-C2 を実装しているつもり。
+
+=head1 IMPLEMENTATION NOTES
+
+=over 4
+
+=item *
+
+一部の表語文字的な文字を NS として扱うか ID として扱うかを選べる。
+
+=item *
+
+ハングル音節およびハングル連結チャモを ID として扱うか AL として扱うかを選べる。
+
+=item *
+
+AI に分類される文字を AL と ID のどちらに解決するかを選べる。
+
+=item *
+
+CB に分類される文字は解決しない。
+
+=item *
+
+CJ に分類される文字は常に NS に解決する。より柔軟な手直しの機構が提供される。
+
+=item *
+
+東南アジアの表記体系の単語分節に対応しない場合は、
+SA に分類される文字は AL に解決する。
+ただし、Grapheme_Cluster_Break 特性の値が Extend か SpacingMark である文字は CM に解決する。
+
+=item *
+
+SG や XX に分類される文字は AL に解決する。
+
+=item *
+
+以下の UCS の範囲にあるコードポイントは、文字が割り当てられていなくても決まった特性値を持つ。
+
+    範囲               | UAX #14    | UAX #11    | 説明
+    -------------------------------------------------------------
+    U+20A0..U+20CF     | PR [*1]    | N [*2]     | 通貨記号
+    U+3400..U+4DBF     | ID         | W          | CJK漢字
+    U+4E00..U+9FFF     | ID         | W          | CJK漢字
+    U+D800..U+DFFF     | AL (SG)    | N          | サロゲート
+    U+E000..U+F8FF     | AL (XX)    | F か N (A) | 私用領域
+    U+F900..U+FAFF     | ID         | W          | CJK漢字
+    U+20000..U+2FFFD   | ID         | W          | CJK漢字
+    U+30000..U+3FFFD   | ID         | W          | 古漢字
+    U+F0000..U+FFFFD   | AL (XX)    | F か N (A) | 私用領域
+    U+100000..U+10FFFD | AL (XX)    | F か N (A) | 私用領域
+    その他未割り当て   | AL (XX)    | N          | 未割り当て、
+                       |            |            | 予約、非文字
+    -------------------------------------------------------------
+    [*1] U+20A7 ペセタ記号 (PO)、U+20B6 トゥール・リーヴル記号 
+      (PO)、U+20BB スカンディナヴィア・マルク記号 (PO)、U+20BE
+      ラリ記号 (PO) を除く。
+    [*2] U+20A9 ウォン記号 (H)、U+20AC ユーロ記号 (F か N (A)) を
+      除く。
+
+=item *
+
+一般カテゴリ特性が Mn、Me、Cc、Cf、Zl、Zp のいずれかである文字は、前進を伴わない文字とみなす。
+
+=back
+
+=head1 REFERENCES
+
+=over 4
+
+=item [CMOS]
+
+I<The Chicago Manual of Style>, 15th edition.
+University of Chicago Press, 2003.
+
+=item [JIS X 4051]
+
+JIS X 4051:2004
+I<日本語文書の組版方法>.
+日本規格協会, 2004.
+
+=item [JLREQ]
+
+阿南康宏他.
+I<日本語組版処理の要件>, 
+W3C 技術ノート 2012年4月3日.
+L<http://www.w3.org/TR/2012/NOTE-jlreq-20120403/ja/>.
+
+=begin comment
+
+=item [Kubota]
+
+久保田智広 (2001-2002).
+文字幅問題, I<Unicode (ユニコード) と中日韓 (CJK) エンコーディングとの相互運用の問題>.
+L<http://web.archive.org/web/people.debian.org/~kubota/unicode-symbols-width2.html.ja>.
+
+=end comment
+
+=item [UAX #11]
+
+A. Freytag (ed.) (2008-2009).
+I<Unicode Standard Annex #11: East Asian Width>, Revisions 17-19.
+L<http://unicode.org/reports/tr11/>.
+
+=item [UAX #14]
+
+A. Freytag and A. Heninger (eds.) (2008-2015).
+I<Unicode Standard Annex #14: Unicode Line Breaking Algorithm>, Revisions 22-35.
+L<http://unicode.org/reports/tr14/>.
+
+=item [UAX #29]
+
+Mark Davis (ed.) (2009-2013).
+I<Unicode Standard Annex #29: Unicode Text Segmentation>, Revisions 15-23.
+L<http://www.unicode.org/reports/tr29/>.
+
+=back
+
+=head1 SEE ALSO
+
+L<Text::LineFold~[ja]>,
+L<Text::Wrap>,
+L<Unicode::GCString~[ja]>.
+
+=head1 AUTHOR
+
+Copyright (C) 2009-2018 Hatuka*nezumi - IKEDA Soji <hatuka(at)nezumi.nu>.
+
+This program is free software; you can redistribute it and/or modify it 
+under the same terms as Perl itself.
+
+=cut

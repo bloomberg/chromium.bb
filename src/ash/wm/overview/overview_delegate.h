@@ -12,11 +12,9 @@
 namespace ash {
 class DelayedAnimationObserver;
 
-// Implement this class to handle the selection event from OverviewSession.
+// Implement this class to handle adding and removing animation observers.
 class ASH_EXPORT OverviewDelegate {
  public:
-  virtual void EndOverview() = 0;
-
   // Passes ownership of |animation_observer| to |this| delegate.
   virtual void AddExitAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) = 0;

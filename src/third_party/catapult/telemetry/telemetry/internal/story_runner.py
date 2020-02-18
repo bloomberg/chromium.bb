@@ -7,6 +7,7 @@ import itertools
 import logging
 import optparse
 import os
+import shutil
 import sys
 import time
 
@@ -20,6 +21,7 @@ from telemetry.internal.actions import page_action
 from telemetry.internal.browser import browser_finder
 from telemetry.internal.browser import browser_finder_exceptions
 from telemetry.internal.results import results_options
+from telemetry.internal.results import results_processor
 from telemetry.internal.util import exception_formatter
 from telemetry import page
 from telemetry.page import legacy_page_test
@@ -49,8 +51,7 @@ def AddCommandLineArgs(parser):
   story_module.StoryFilter.AddCommandLineArgs(parser)
   results_options.AddResultsOptions(parser)
 
-  # Page set options
-  group = optparse.OptionGroup(parser, 'Page set repeat options')
+  group = optparse.OptionGroup(parser, 'Story runner options')
   # Note that the default for pageset-repeat is 1 unless the benchmark
   # specifies a different default by adding
   # `options = {'pageset_repeat': X}` in their benchmark. Defaults are always
@@ -70,9 +71,11 @@ def AddCommandLineArgs(parser):
                    choices=_PAUSE_STAGES,
                    help='Pause for interaction at the specified stage. '
                    'Valid stages are %s.' % ', '.join(_PAUSE_STAGES))
+  group.add_option('--suppress-gtest-report', action='store_true',
+                   help='Suppress gtest style report of progress as stories '
+                   'are being run.')
   parser.add_option_group(group)
 
-  # WPR options
   group = optparse.OptionGroup(parser, 'Web Page Replay options')
   group.add_option(
       '--use-live-sites',
@@ -93,6 +96,11 @@ def AddCommandLineArgs(parser):
                     'until the device CPU has cooled down. If '
                     'not specified, this wait is disabled. '
                     'Device must be supported. ')
+  parser.add_option('--run-full-story-set', action='store_true', default=False,
+                    help='Whether to run the complete set of stories instead '
+                    'of an abridged version. Note that if the story set '
+                    'does not provide the information required to abridge it, '
+                    'then this argument will have no impact.')
 
 
 def ProcessCommandLineArgs(parser, args):
@@ -104,8 +112,8 @@ def ProcessCommandLineArgs(parser, args):
 
 
 @contextlib.contextmanager
-def CaptureLogsAsArtifacts(results, test_name):
-  with results.CreateArtifact(test_name, 'logs') as log_file:
+def CaptureLogsAsArtifacts(results):
+  with results.CreateArtifact('logs') as log_file:
     with logging_util.CaptureLogs(log_file):
       yield
 
@@ -113,20 +121,21 @@ def CaptureLogsAsArtifacts(results, test_name):
 def _RunStoryAndProcessErrorIfNeeded(story, results, state, test):
   def ProcessError(exc, log_message):
     logging.exception(log_message)
-    state.DumpStateUponFailure(story, results)
+    state.DumpStateUponStoryRunFailure(results)
 
     # Dump app crash, if present
     if exc:
       if isinstance(exc, exceptions.AppCrashException):
         minidump_path = exc.minidump_path
         if minidump_path:
-          results.AddArtifact(story.name, 'minidump', minidump_path)
+          with results.CaptureArtifact('minidump') as path:
+            shutil.move(minidump_path, path)
 
     # Note: calling Fail on the results object also normally causes the
     # progress_reporter to log it in the output.
     results.Fail('Exception raised running %s' % story.name)
 
-  with CaptureLogsAsArtifacts(results, story.name):
+  with CaptureLogsAsArtifacts(results):
     try:
       if isinstance(test, story_test.StoryTest):
         test.WillRunStory(state.platform)
@@ -172,7 +181,7 @@ def _RunStoryAndProcessErrorIfNeeded(story, results, state, test):
         state.DidRunStory(results)
       except Exception:  # pylint: disable=broad-except
         if not has_existing_exception:
-          state.DumpStateUponFailure(story, results)
+          state.DumpStateUponStoryRunFailure(results)
           raise
         # Print current exception and propagate existing exception.
         exception_formatter.PrintFormattedException(
@@ -202,11 +211,12 @@ def Run(test, story_set, finder_options, results, max_failures=None,
   We "white list" certain exceptions for which the story runner
   can continue running the remaining stories.
   """
-  for s in story_set:
+  stories = story_set.stories
+  for s in stories:
     ValidateStory(s)
 
   # Filter page set based on options.
-  stories = story_module.StoryFilter.FilterStorySet(story_set)
+  stories = story_module.StoryFilter.FilterStories(stories)
   wpr_archive_info = story_set.wpr_archive_info
   # Sort the stories based on the archive name, to minimize how often the
   # network replay-server needs to be restarted.
@@ -254,6 +264,14 @@ def Run(test, story_set, finder_options, results, max_failures=None,
 
   possible_browser = _GetPossibleBrowser(finder_options)
 
+  if not finder_options.run_full_story_set:
+    tag_filter = story_set.GetAbridgedStorySetTagFilter()
+    if tag_filter:
+      logging.warn('Running an abridged set of stories (tagged {%s}), '
+                   'use --run-full-story-set if you need to run all stories' %
+                   tag_filter)
+      stories = [story for story in stories if tag_filter in story.tags]
+
   state = None
   device_info_diags = {}
   # TODO(crbug.com/866458): unwind the nested blocks
@@ -262,7 +280,6 @@ def Run(test, story_set, finder_options, results, max_failures=None,
     pageset_repeat = finder_options.pageset_repeat
     for storyset_repeat_counter in xrange(pageset_repeat):
       for story in stories:
-        start_timestamp = time.time()
         if not state:
           # Construct shared state by using a copy of finder_options. Shared
           # state may update the finder_options. If we tear down the shared
@@ -272,7 +289,6 @@ def Run(test, story_set, finder_options, results, max_failures=None,
               test, finder_options.Copy(), story_set, possible_browser)
 
         results.WillRunPage(story, storyset_repeat_counter)
-        story_run = results.current_page_run
 
         if expectations:
           disabled = expectations.IsStoryDisabled(
@@ -286,6 +302,11 @@ def Run(test, story_set, finder_options, results, max_failures=None,
               results.DidRunPage(story)
               continue
 
+        if results.benchmark_interrupted:
+          results.Skip(results.benchmark_interruption, is_expected=False)
+          results.DidRunPage(story)
+          continue
+
         try:
           if state.platform:
             state.platform.WaitForBatteryTemperature(35)
@@ -294,7 +315,7 @@ def Run(test, story_set, finder_options, results, max_failures=None,
             _WaitForThermalThrottlingIfNeeded(state.platform)
           _RunStoryAndProcessErrorIfNeeded(story, results, state, test)
 
-          num_values = len(results.all_page_specific_values)
+          num_values = sum(1 for _ in results.IterAllLegacyValues())
           # TODO(#4259): Convert this to an exception-based failure
           if num_values > max_num_values:
             msg = 'Too many values: %d > %d' % (num_values, max_num_values)
@@ -302,10 +323,14 @@ def Run(test, story_set, finder_options, results, max_failures=None,
             results.Fail(msg)
 
           device_info_diags = _MakeDeviceInfoDiagnostics(state)
-        except _UNHANDLEABLE_ERRORS:
-          # Nothing else we should do for these. Re-raise the error.
-          raise
+        except _UNHANDLEABLE_ERRORS as exc:
+          interruption = (
+              'Benchmark execution interrupted by a fatal exception: %r' % exc)
+          results.InterruptBenchmark(interruption)
+          exception_formatter.PrintFormattedException()
         except Exception:  # pylint: disable=broad-except
+          logging.exception('Exception raised during story run.')
+          results.Fail(sys.exc_info())
           # For all other errors, try to give the rest of stories a chance
           # to run by tearing down the state and creating a new state instance
           # in the next iteration.
@@ -313,28 +338,26 @@ def Run(test, story_set, finder_options, results, max_failures=None,
             # If TearDownState raises, do not catch the exception.
             # (The Error was saved as a failure value.)
             state.TearDownState()
+          except Exception as exc:  # pylint: disable=broad-except
+            interruption = (
+                'Benchmark execution interrupted by a fatal exception: %r' %
+                exc)
+            results.InterruptBenchmark(interruption)
+            exception_formatter.PrintFormattedException()
           finally:
             # Later finally-blocks use state, so ensure it is cleared.
             state = None
         finally:
-          has_existing_exception = sys.exc_info() != (None, None, None)
-          try:
-            if state and state.platform:
-              _CheckThermalThrottling(state.platform)
-            results.DidRunPage(story)
-            story_run.SetDuration(time.time() - start_timestamp)
-          except Exception:  # pylint: disable=broad-except
-            if not has_existing_exception:
-              raise
-            # Print current exception and propagate existing exception.
-            exception_formatter.PrintFormattedException(
-                msg='Exception from result processing:')
+          if state and state.platform:
+            _CheckThermalThrottling(state.platform)
+          results.DidRunPage(story)
         if (effective_max_failures is not None and
             results.num_failed > effective_max_failures):
-          logging.error('Too many failures. Aborting.')
-          return
+          interruption = (
+              'Too many stories failed. Aborting the rest of the stories.')
+          results.InterruptBenchmark(interruption)
   finally:
-    results.ComputeTimelineBasedMetrics()
+    results_processor.ComputeTimelineBasedMetrics(results)
     results.PopulateHistogramSet()
 
     for name, diag in device_info_diags.iteritems():
@@ -365,6 +388,9 @@ def _ShouldRunBenchmark(benchmark, possible_browser, finder_options):
         finder_options.browser_options.browser_type, benchmark.Name()))
     return False
 
+  benchmark.expectations.SetTags(
+      possible_browser.GetTypExpectationsTags())
+
   # In other cases, if there is a browser, we exit early if we determine
   # that the benchmark should be run.
 
@@ -391,9 +417,11 @@ def _ShouldRunBenchmark(benchmark, possible_browser, finder_options):
   # If we reach this point the benchmark should not be run; but we still need
   # to report the disabled state of the benchmark with an empty set of results.
   with results_options.CreateResults(
-      benchmark.GetMetadata(), finder_options,
-      should_add_value=benchmark.ShouldAddValue,
-      benchmark_enabled=False) as results:
+      finder_options,
+      benchmark_name=benchmark.Name(),
+      benchmark_description=benchmark.Description(),
+      report_progress=not finder_options.suppress_gtest_report,
+      should_add_value=benchmark.ShouldAddValue) as results:
     results.PrintSummary()
   return False
 
@@ -415,40 +443,38 @@ def RunBenchmark(benchmark, finder_options):
   pt = benchmark.CreatePageTest(finder_options)
   pt.__name__ = benchmark.__class__.__name__
 
-  stories = benchmark.CreateStorySet(finder_options)
+  story_set = benchmark.CreateStorySet(finder_options)
 
   if isinstance(pt, legacy_page_test.LegacyPageTest):
-    if any(not isinstance(p, page.Page) for p in stories.stories):
+    if any(not isinstance(p, page.Page) for p in story_set.stories):
       raise Exception(
           'PageTest must be used with StorySet containing only '
           'telemetry.page.Page stories.')
 
   with results_options.CreateResults(
-      benchmark.GetMetadata(), finder_options,
-      should_add_value=benchmark.ShouldAddValue,
-      benchmark_enabled=True) as results:
+      finder_options,
+      benchmark_name=benchmark.Name(),
+      benchmark_description=benchmark.Description(),
+      report_progress=not finder_options.suppress_gtest_report,
+      should_add_value=benchmark.ShouldAddValue) as results:
     try:
-      Run(pt, stories, finder_options, results, benchmark.max_failures,
+      Run(pt, story_set, finder_options, results, benchmark.max_failures,
           expectations=benchmark.expectations,
           max_num_values=benchmark.MAX_NUM_VALUES)
-      if results.had_failures:
+      if results.benchmark_interrupted:
+        return_code = 2
+      elif results.had_failures:
         return_code = 1
-      elif results.had_successes_not_skipped:
+      elif results.had_successes:
         return_code = 0
       else:
         return_code = -1  # All stories were skipped.
       # We want to make sure that all expectations are linked to real stories,
       # this will log error messages if names do not match what is in the set.
-      benchmark.GetBrokenExpectations(stories)
-    except Exception as e: # pylint: disable=broad-except
-
-      logging.fatal(
-          'Benchmark execution interrupted by a fatal exception: %s(%s)' %
-          (type(e), e))
-
-      filtered_stories = story_module.StoryFilter.FilterStorySet(stories)
-      results.InterruptBenchmark(
-          filtered_stories, finder_options.pageset_repeat)
+      benchmark.GetBrokenExpectations(story_set)
+    except Exception as exc: # pylint: disable=broad-except
+      interruption = 'Benchmark execution interrupted: %r' % exc
+      results.InterruptBenchmark(interruption)
       exception_formatter.PrintFormattedException()
       return_code = 2
 
@@ -470,8 +496,7 @@ def RunBenchmark(benchmark, finder_options):
 
     try:
       if finder_options.upload_results:
-        results.UploadTraceFilesToCloud()
-        results.UploadArtifactsToCloud()
+        results_processor.UploadArtifactsToCloud(results)
     finally:
       memory_debug.LogHostMemoryUsage()
       results.PrintSummary()

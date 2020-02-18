@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
-<translation id="100812568230599391">Skift visningsformat for at sammenflette.</translation>
+<translation id="100812568230599391">Skift til visning med sammenfletning.</translation>
 <translation id="1011903154582639569">Find en tast, og løft fingeren for at skrive</translation>
 <translation id="1012173283529841972">Punkt på listen</translation>
 <translation id="1013742170491673792">srched</translation>
@@ -69,6 +69,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1385214448885562192">Tryk på enter for at acceptere eller escape for at annullere. Tryk på ned for næste og op for forrige.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Annoncér attributter med formateret tekst</translation>
 <translation id="1405567553485452995">Lysegrøn</translation>
 <translation id="1417889266572670458">Marineblå</translation>
 <translation id="1431911867058218151">Blommefarvet</translation>
@@ -319,11 +320,11 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3232388865800379423">En pop op-knap</translation>
 <translation id="3241052487511142956">Tidligere besøgt link</translation>
 <translation id="3241638166094654466">Celler i hver linje:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">stående</translation>
 <translation id="3286390186030710347">Skyder</translation>
 <translation id="3299925995433437805">Intet næste besøgte link.</translation>
 <translation id="3300348286427369683">Understøttelse af RTF. ChromeVox understøtter nu RTF-felter, bl.a. hoppekommandoer, markørstyring til brailletekst, valg og meget mere.</translation>
-<translation id="3304756947457041303">Tilpas angivelse af formateret tekst</translation>
 <translation id="3307886118343381874">Gå til slutningen af ​​tabellen</translation>
 <translation id="3311969765485641742">Tryk på Alt+Shift+A for at gennemse underretninger</translation>
 <translation id="3312997241656799641">Næste besøgte link</translation>

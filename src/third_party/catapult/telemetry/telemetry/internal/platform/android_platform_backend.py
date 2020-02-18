@@ -16,14 +16,9 @@ from telemetry import decorators
 from telemetry.internal.forwarders import android_forwarder
 from telemetry.internal.platform import android_device
 from telemetry.internal.platform import linux_based_platform_backend
-from telemetry.internal.platform.power_monitor import android_dumpsys_power_monitor
-from telemetry.internal.platform.power_monitor import android_fuelgauge_power_monitor
-from telemetry.internal.platform.power_monitor import android_temperature_monitor
-from telemetry.internal.platform.power_monitor import (
-    android_power_monitor_controller)
-from telemetry.internal.platform.power_monitor import sysfs_power_monitor
 from telemetry.internal.util import binary_manager
 from telemetry.internal.util import external_modules
+from telemetry.testing import test_utils
 
 from devil.android import app_ui
 from devil.android import battery_utils
@@ -35,6 +30,7 @@ from devil.android.perf import perf_control
 from devil.android.perf import thermal_throttle
 from devil.android.sdk import shared_prefs
 from devil.android.tools import provision_devices
+from devil.android.tools import system_app
 
 try:
   # devil.android.forwarder uses fcntl, which doesn't exist on Windows.
@@ -89,15 +85,6 @@ class AndroidPlatformBackend(
     self._thermal_throttle = thermal_throttle.ThermalThrottle(self._device)
     self._raw_display_frame_rate_measurements = []
     self._device_copy_script = None
-    self._power_monitor = (
-        android_power_monitor_controller.AndroidPowerMonitorController([
-            android_temperature_monitor.AndroidTemperatureMonitor(self._device),
-            android_dumpsys_power_monitor.DumpsysPowerMonitor(
-                self._battery, self),
-            sysfs_power_monitor.SysfsPowerMonitor(self, standalone=True),
-            android_fuelgauge_power_monitor.FuelGaugePowerMonitor(
-                self._battery),
-        ], self._battery))
     self._system_ui = None
 
     _FixPossibleAdbInstability()
@@ -239,18 +226,6 @@ class AndroidPlatformBackend(
   def HasBeenThermallyThrottled(self):
     return self._thermal_throttle.HasBeenThrottled()
 
-  def GetCpuStats(self, pid):
-    if not self._can_elevate_privilege:
-      logging.warning('CPU stats cannot be retrieved on non-rooted device.')
-      return {}
-    return super(AndroidPlatformBackend, self).GetCpuStats(pid)
-
-  def GetCpuTimestamp(self):
-    if not self._can_elevate_privilege:
-      logging.warning('CPU timestamp cannot be retrieved on non-rooted device.')
-      return {}
-    return super(AndroidPlatformBackend, self).GetCpuTimestamp()
-
   def SetGraphicsMemoryTrackingEnabled(self, enabled):
     if not enabled:
       self.KillApplication('memtrack_helper')
@@ -271,16 +246,6 @@ class AndroidPlatformBackend(
       raise Exception('Error installing PushAppsToBackground.apk.')
     self.InstallApplication(host_path)
 
-  def GetChildPids(self, pid):
-    return [p.pid for p in self._device.ListProcesses() if p.ppid == pid]
-
-  @decorators.Cache
-  def GetCommandLine(self, pid):
-    try:
-      return next(p.name for p in self._device.ListProcesses() if p.pid == pid)
-    except StopIteration:
-      raise exceptions.ProcessGoneException()
-
   @decorators.Cache
   def GetArchName(self):
     return self._device.GetABI()
@@ -293,6 +258,16 @@ class AndroidPlatformBackend(
 
   def GetDeviceTypeName(self):
     return self._device.product_model
+
+  def GetTypExpectationsTags(self):
+    # telemetry benchmark's expectations need to know the model name
+    # and if it is a svelte (low memory) build
+    tags = super(AndroidPlatformBackend, self).GetTypExpectationsTags()
+    tags += test_utils.sanitizeTypExpectationsTags(
+        ['android-' + self.GetDeviceTypeName()])
+    if self.IsSvelte():
+      tags.append('android-svelte')
+    return tags
 
   @decorators.Cache
   def GetOSVersionName(self):
@@ -368,11 +343,6 @@ class AndroidPlatformBackend(
     """Starts an activity for the given intent on the device."""
     self._device.StartActivity(intent, blocking=blocking)
 
-  def IsApplicationRunning(self, application):
-    # For Android apps |application| is usually the package name of the app.
-    # Note that the string provided must match the process name exactly.
-    return bool(self._device.GetApplicationPids(application))
-
   def CanLaunchApplication(self, application):
     return bool(self._device.GetApplicationPaths(application))
 
@@ -380,14 +350,8 @@ class AndroidPlatformBackend(
   def InstallApplication(self, application, modules=None):
     self._device.Install(application, modules=modules)
 
-  def CanMonitorPower(self):
-    return self._power_monitor.CanMonitorPower()
-
-  def StartMonitoringPower(self, browser):
-    self._power_monitor.StartMonitoringPower(browser)
-
-  def StopMonitoringPower(self):
-    return self._power_monitor.StopMonitoringPower()
+  def RemoveSystemPackages(self, packages):
+    system_app.RemoveSystemApps(self._device, packages)
 
   def PathExists(self, device_path, **kwargs):
     """ Return whether the given path exists on the device.
@@ -402,54 +366,9 @@ class AndroidPlatformBackend(
       return ''
     return self._device.ReadFile(fname, as_root=True)
 
-  def GetPsOutput(self, columns, pid=None):
-    """Get information about processes provided via the ps command.
-
-    Args:
-      columns: a list of strings with the ps columns to return; supports those
-        defined in device_utils.PS_COLUMNS, currently: 'name', 'pid', 'ppid'.
-      pid: if given only return rows for processes matching the given pid.
-
-    Returns:
-      A list of rows, one for each process found. Each row is in turn a list
-      with the values corresponding to each of the requested columns.
-    """
-    unknown = [c for c in columns if c not in device_utils.PS_COLUMNS]
-    assert not unknown, 'Requested unknown columns: %s. Supported: %s.' % (
-        ', '.join(unknown), ', '.join(device_utils.PS_COLUMNS))
-
-    processes = self._device.ListProcesses()
-    if pid is not None:
-      processes = [p for p in processes if p.pid == pid]
-
-    return [[getattr(p, c) for c in columns] for p in processes]
-
   def RunCommand(self, command):
     return '\n'.join(self._device.RunShellCommand(
         command, shell=isinstance(command, basestring), check_return=True))
-
-  @staticmethod
-  def ParseCStateSample(sample):
-    sample_stats = {}
-    for cpu in sample:
-      values = sample[cpu].splitlines()
-      # Each state has three values after excluding the time value.
-      num_states = (len(values) - 1) / 3
-      names = values[:num_states]
-      times = values[num_states:2 * num_states]
-      cstates = {'C0': int(values[-1]) * 10 ** 6}
-      for i, state in enumerate(names):
-        if state == 'C0':
-          # The Exynos cpuidle driver for the Nexus 10 uses the name 'C0' for
-          # its WFI state.
-          # TODO(tmandel): We should verify that no other Android device
-          # actually reports time in C0 causing this to report active time as
-          # idle time.
-          state = 'WFI'
-        cstates[state] = int(times[i])
-        cstates['C0'] -= int(times[i])
-      sample_stats[cpu] = cstates
-    return sample_stats
 
   def SetRelaxSslCheck(self, value):
     old_flag = self._device.GetProp('socket.relaxsslcheck')

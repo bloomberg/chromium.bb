@@ -4,7 +4,7 @@ use vars qw($VERSION);
 use Scalar::Util qw(reftype looks_like_number);
 use Carp qw(croak);
 
-$VERSION = "1.010";
+$VERSION = "1.012";
 
 =head1 NAME
 
@@ -31,7 +31,7 @@ $VERSION = "1.010";
 =head1 DESCRIPTION
 
 This class provides a simple wrapper around a reference to an array of
-9 co-efficients, treated as a matrix:
+9 coefficients, treated as a matrix:
 
  [ 0, 1, 2,
    3, 4, 5,
@@ -103,9 +103,9 @@ sub rotate {
   if ($opts{'x'} || $opts{'y'}) {
     $opts{'x'} ||= 0;
     $opts{'y'} ||= 0;
-    return $class->translate('x'=>-$opts{'x'}, 'y'=>-$opts{'y'})
+    return $class->translate('x'=>$opts{'x'}, 'y'=>$opts{'y'})
       * $class->rotate(radians=>$angle)
-        * $class->translate('x'=>$opts{'x'}, 'y'=>$opts{'y'});
+        * $class->translate('x'=>-$opts{'x'}, 'y'=>-$opts{'y'});
   }
   else {
     my $sin = sin($angle);
@@ -243,7 +243,7 @@ sub scale {
 
 =item matrix($v11, $v12, $v13, $v21, $v22, $v23, $v31, $v32, $v33)
 
-Create a matrix with custom co-efficients.
+Create a matrix with custom coefficients.
 
 =cut
 
@@ -254,9 +254,63 @@ sub matrix {
     return bless \@self, $class;
   }
   else {
-    $Imager::ERRSTR = "9 co-efficients required";
+    $Imager::ERRSTR = "9 coefficients required";
     return;
   }
+}
+
+=item transform($x, $y)
+
+Transform a point the same way matrix_transform does.
+
+=cut
+
+sub transform {
+  my ($self, $x, $y) = @_;
+
+  my $sz = $x * $self->[6] + $y * $self->[7] + $self->[8];
+  my ($sx, $sy);
+  if (abs($sz) > 0.000001) {
+    $sx = ($x * $self->[0] + $y * $self->[1] + $self->[2]) / $sz;
+    $sy = ($x * $self->[3] + $y * $self->[4] + $self->[5]) / $sz;
+  }
+  else {
+    $sx = $sy = 0;
+  }
+
+  return ($sx, $sy);
+}
+
+=item compose(matrix...)
+
+Compose several matrices together for use in transformation.
+
+For example, for three matrices:
+
+  my $out = Imager::Matrix2d->compose($m1, $m2, $m3);
+
+is equivalent to:
+
+  my $out = $m3 * $m2 * $m1;
+
+Returns the identity matrix if no parameters are supplied.
+
+May return the supplied matrix if only one matrix is supplied.
+
+=cut
+
+sub compose {
+  my ($class, @in) = @_;
+
+  @in
+    or return $class->identity;
+
+  my $out = pop @in;
+  for my $m (reverse @in) {
+    $out = $out * $m;
+  }
+
+  return $out;
 }
 
 =item _mult()
@@ -265,6 +319,17 @@ Implements the overloaded '*' operator.  Internal use.
 
 Currently both the left and right-hand sides of the operator must be
 an Imager::Matrix2d.
+
+When composing a matrix for transformation you should multiply the
+matrices in the reverse order of the transformations:
+
+  my $shear = Imager::Matrix2d->shear(x => 0.1);
+  my $rotate = Imager::Matrix2d->rotate(degrees => 45);
+  my $shear_then_rotate = $rotate * $shear;
+
+or use the compose method:
+
+  my $shear_then_rotate = Imager::Matrix2d->compose($shear, $rotate);
 
 =cut
 

@@ -204,8 +204,8 @@ void SVGUseElement::UpdateTargetReference() {
   ResourceLoaderOptions options;
   options.initiator_info.name = localName();
   FetchParameters params(ResourceRequest(element_url_), options);
-  params.MutableResourceRequest().SetFetchRequestMode(
-      network::mojom::FetchRequestMode::kSameOrigin);
+  params.MutableResourceRequest().SetMode(
+      network::mojom::RequestMode::kSameOrigin);
   DocumentResource::FetchSVGDocument(params, GetDocument().Fetcher(), this);
 }
 
@@ -499,23 +499,21 @@ Path SVGUseElement::ToClipPath() const {
 
 SVGGraphicsElement* SVGUseElement::VisibleTargetGraphicsElementForClipping()
     const {
-  auto* element = DynamicTo<SVGElement>(UseShadowRoot().firstChild());
-  if (!element)
-    return nullptr;
-
-  if (!element->IsSVGGraphicsElement())
+  auto* svg_graphics_element =
+      DynamicTo<SVGGraphicsElement>(UseShadowRoot().firstChild());
+  if (!svg_graphics_element)
     return nullptr;
 
   // Spec: "If a <use> element is a child of a clipPath element, it must
   // directly reference <path>, <text> or basic shapes elements. Indirect
   // references are an error and the clipPath element must be ignored."
   // https://drafts.fxtf.org/css-masking/#the-clip-path
-  if (!IsDirectReference(*element)) {
+  if (!IsDirectReference(*svg_graphics_element)) {
     // Spec: Indirect references are an error (14.3.5)
     return nullptr;
   }
 
-  return &ToSVGGraphicsElement(*element);
+  return svg_graphics_element;
 }
 
 void SVGUseElement::AddReferencesToFirstDegreeNestedUseElements(

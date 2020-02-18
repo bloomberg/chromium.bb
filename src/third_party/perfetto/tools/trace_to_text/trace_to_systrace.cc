@@ -27,8 +27,9 @@
 
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/logging.h"
-#include "perfetto/base/paged_memory.h"
-#include "perfetto/base/string_writer.h"
+#include "perfetto/ext/base/paged_memory.h"
+#include "perfetto/ext/base/string_writer.h"
+#include "perfetto/ext/base/utils.h"
 #include "perfetto/trace_processor/trace_processor.h"
 
 // When running in Web Assembly, fflush() is a no-op and the stdio buffering
@@ -173,6 +174,7 @@ class QueryWriter {
 
 int TraceToSystrace(std::istream* input,
                     std::ostream* output,
+                    uint64_t file_size_limit,
                     bool wrap_in_json) {
   trace_processor::Config config;
   std::unique_ptr<trace_processor::TraceProcessor> tp =
@@ -189,7 +191,8 @@ int TraceToSystrace(std::istream* input,
   constexpr int kStderrRate = 128;
 #endif
   uint64_t file_size = 0;
-  for (int i = 0;; i++) {
+
+  for (int i = 0; file_size < file_size_limit; i++) {
     if (i % kStderrRate == 0) {
       fprintf(stderr, "Loading trace %.2f MB" PROGRESS_CHAR, file_size / 1.0e6);
       fflush(stderr);
@@ -228,8 +231,11 @@ int TraceToSystrace(std::istream* input,
     auto p_callback = [](Iterator* it, base::StringWriter* writer) {
       uint32_t pid = static_cast<uint32_t>(it->Get(0 /* col */).long_value);
       uint32_t ppid = static_cast<uint32_t>(it->Get(1 /* col */).long_value);
-      const char* name = it->Get(2 /* col */).string_value;
-      FormatProcess(pid, ppid, name, writer);
+      const auto& name_col = it->Get(2 /* col */);
+      auto name_view = name_col.type == trace_processor::SqlValue::kString
+                           ? base::StringView(name_col.string_value)
+                           : base::StringView();
+      FormatProcess(pid, ppid, name_view, writer);
     };
     if (!q_writer.RunQuery(kPSql, p_callback))
       return 1;
@@ -239,12 +245,15 @@ int TraceToSystrace(std::istream* input,
     // Write out all the threads in the trace.
     static const char kTSql[] =
         "select tid, COALESCE(upid, 0), thread.name "
-        "from thread inner join process using (upid)";
+        "from thread left join process using (upid)";
     auto t_callback = [](Iterator* it, base::StringWriter* writer) {
       uint32_t tid = static_cast<uint32_t>(it->Get(0 /* col */).long_value);
       uint32_t tgid = static_cast<uint32_t>(it->Get(1 /* col */).long_value);
-      const char* name = it->Get(2 /* col */).string_value;
-      FormatThread(tid, tgid, name, writer);
+      const auto& name_col = it->Get(2 /* col */);
+      auto name_view = name_col.type == trace_processor::SqlValue::kString
+                           ? base::StringView(name_col.string_value)
+                           : base::StringView();
+      FormatThread(tid, tgid, name_view, writer);
     };
     if (!q_writer.RunQuery(kTSql, t_callback))
       return 1;
@@ -266,14 +275,32 @@ int TraceToSystrace(std::istream* input,
     if (wrap_in_json) {
       for (uint32_t i = 0; line[i] != '\0'; i++) {
         char c = line[i];
-        if (c == '\n') {
-          writer->AppendLiteral("\\n");
-          continue;
+        switch (c) {
+          case '\n':
+            writer->AppendLiteral("\\n");
+            break;
+          case '\f':
+            writer->AppendLiteral("\\f");
+            break;
+          case '\b':
+            writer->AppendLiteral("\\b");
+            break;
+          case '\r':
+            writer->AppendLiteral("\\r");
+            break;
+          case '\t':
+            writer->AppendLiteral("\\t");
+            break;
+          case '\\':
+            writer->AppendLiteral("\\\\");
+            break;
+          case '"':
+            writer->AppendLiteral("\\\"");
+            break;
+          default:
+            writer->AppendChar(c);
+            break;
         }
-
-        if (c == '\\' || c == '"')
-          writer->AppendChar('\\');
-        writer->AppendChar(c);
       }
       writer->AppendChar('\\');
       writer->AppendChar('n');

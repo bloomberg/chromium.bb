@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/cable/fido_cable_discovery.h"
@@ -23,6 +24,10 @@
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/get_assertion_task.h"
 #include "device/fido/pin.h"
+
+#if defined(OS_MACOSX)
+#include "device/fido/mac/authenticator.h"
+#endif  // defined(OS_MACOSX)
 
 namespace device {
 
@@ -90,8 +95,8 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
                         return credential.id() ==
                                    response.raw_credential_id() &&
                                (!opt_transport_used ||
-                                base::ContainsKey(credential.transports(),
-                                                  *opt_transport_used));
+                                base::Contains(credential.transports(),
+                                               *opt_transport_used));
                       }))) {
       return false;
     }
@@ -209,10 +214,11 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
       weak_factory_(this) {
   transport_availability_info().request_type =
       FidoRequestHandlerBase::RequestType::kGetAssertion;
+  transport_availability_info().has_empty_allow_list =
+      request_.allow_list.empty();
 
-  if (base::ContainsKey(
-          transport_availability_info().available_transports,
-          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
+  if (base::Contains(transport_availability_info().available_transports,
+                     FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
     DCHECK(request_.cable_extension);
     auto discovery =
         fido_discovery_factory_->CreateCable(*request_.cable_extension);
@@ -303,6 +309,23 @@ void GetAssertionRequestHandler::DispatchRequest(
                      weak_factory_.GetWeakPtr(), authenticator));
 }
 
+void GetAssertionRequestHandler::AuthenticatorAdded(
+    FidoDiscoveryBase* discovery,
+    FidoAuthenticator* authenticator) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+
+#if defined(OS_MACOSX)
+  if (authenticator->AuthenticatorTransport() ==
+      FidoTransportProtocol::kInternal) {
+    transport_availability_info().has_recognized_mac_touch_id_credential =
+        static_cast<fido::mac::TouchIdAuthenticator*>(authenticator)
+            ->HasCredentialForGetAssertionRequest(request_);
+  }
+#endif  // defined(OS_MACOSX)
+
+  FidoRequestHandlerBase::AuthenticatorAdded(discovery, authenticator);
+}
+
 void GetAssertionRequestHandler::AuthenticatorRemoved(
     FidoDiscoveryBase* discovery,
     FidoAuthenticator* authenticator) {
@@ -317,7 +340,7 @@ void GetAssertionRequestHandler::AuthenticatorRemoved(
       state_ = State::kFinished;
       std::move(completion_callback_)
           .Run(FidoReturnCode::kAuthenticatorRemovedDuringPINEntry,
-               base::nullopt, base::nullopt);
+               base::nullopt, nullptr);
     }
   }
 }
@@ -474,7 +497,7 @@ void GetAssertionRequestHandler::HandleInapplicableAuthenticator(
   CancelActiveAuthenticators(authenticator->GetId());
   std::move(completion_callback_)
       .Run(FidoReturnCode::kUserConsentButCredentialNotRecognized,
-           base::nullopt, base::nullopt);
+           base::nullopt, nullptr);
 }
 
 void GetAssertionRequestHandler::OnRetriesResponse(
@@ -486,13 +509,13 @@ void GetAssertionRequestHandler::OnRetriesResponse(
     state_ = State::kFinished;
     std::move(completion_callback_)
         .Run(FidoReturnCode::kAuthenticatorResponseInvalid, base::nullopt,
-             base::nullopt);
+             nullptr);
     return;
   }
   if (response->retries == 0) {
     state_ = State::kFinished;
     std::move(completion_callback_)
-        .Run(FidoReturnCode::kHardPINBlock, base::nullopt, base::nullopt);
+        .Run(FidoReturnCode::kHardPINBlock, base::nullopt, nullptr);
     return;
   }
   state_ = State::kWaitingForPIN;
@@ -530,7 +553,7 @@ void GetAssertionRequestHandler::OnHaveEphemeralKey(
     state_ = State::kFinished;
     std::move(completion_callback_)
         .Run(FidoReturnCode::kAuthenticatorResponseInvalid, base::nullopt,
-             base::nullopt);
+             nullptr);
     return;
   }
 
@@ -569,7 +592,7 @@ void GetAssertionRequestHandler::OnHavePINToken(
         ret = FidoReturnCode::kAuthenticatorResponseInvalid;
         break;
     }
-    std::move(completion_callback_).Run(ret, base::nullopt, base::nullopt);
+    std::move(completion_callback_).Run(ret, base::nullopt, nullptr);
     return;
   }
 

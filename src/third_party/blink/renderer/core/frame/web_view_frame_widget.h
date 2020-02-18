@@ -44,7 +44,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void Close() override;
   WebSize Size() override;
   void Resize(const WebSize&) override;
-  void ResizeVisualViewport(const WebSize&) override;
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
@@ -67,8 +66,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void SetCursorVisibilityState(bool is_visible) override;
   void OnFallbackCursorModeToggled(bool is_on) override;
   void ApplyViewportChanges(const ApplyViewportChangesArgs&) override;
-  void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
-                                         bool has_scrolled_by_touch) override;
+  void RecordManipulationTypeCounts(cc::ManipulationInfo info) override;
   void SendOverscrollEventFromImplSide(
       const gfx::Vector2dF& overscroll_delta,
       cc::ElementId scroll_latched_element_id) override;
@@ -81,6 +79,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebURL GetURLForDebugTrace() override;
 
   // WebFrameWidget overrides:
+  void DidDetachLocalFrameTree() override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
   WebHitTestResult HitTestResultAt(const gfx::Point&) override;

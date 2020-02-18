@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 
 #include "ios/chrome/browser/infobars/infobar.h"
+#include "ios/chrome/browser/infobars/infobar_badge_model.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
@@ -31,21 +32,22 @@ void InfobarBadgeTabHelper::SetDelegate(
   delegate_ = delegate;
 }
 
-void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted() {
-  delegate_.badgeState |= InfobarBadgeStateAccepted;
-  is_badge_accepted_ = true;
+void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted(
+    InfobarType infobar_type) {
+    InfobarBadgeModel* badgeModel =
+        [[InfobarBadgeModel alloc] initWithInfobarType:infobar_type
+                                              accepted:YES];
+    [delegate_ updateInfobarBadge:badgeModel];
+    infobar_badge_models_[infobar_type] = badgeModel;
 }
 
-bool InfobarBadgeTabHelper::is_infobar_displaying() {
-  return is_infobar_displaying_;
-}
-
-InfobarType InfobarBadgeTabHelper::infobar_type() {
-  return infobar_type_;
-}
-
-bool InfobarBadgeTabHelper::is_badge_accepted() {
-  return is_badge_accepted_;
+std::vector<id<BadgeItem>> InfobarBadgeTabHelper::GetInfobarBadgeItems() {
+  // Return all infobar badge items.
+  std::vector<id<BadgeItem>> infobar_badges_items;
+  for (auto const& infobar_badge : infobar_badge_models_) {
+    infobar_badges_items.push_back(infobar_badge.second);
+  }
+  return infobar_badges_items;
 }
 
 InfobarBadgeTabHelper::~InfobarBadgeTabHelper() = default;
@@ -53,7 +55,7 @@ InfobarBadgeTabHelper::~InfobarBadgeTabHelper() = default;
 #pragma mark - Private
 
 InfobarBadgeTabHelper::InfobarBadgeTabHelper(web::WebState* web_state)
-    : infobar_observer_(this), is_infobar_displaying_(false) {
+    : infobar_observer_(this) {
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(web_state);
   if (infoBarManager) {
@@ -65,9 +67,6 @@ InfobarBadgeTabHelper::InfobarBadgeTabHelper(web::WebState* web_state)
 
 void InfobarBadgeTabHelper::OnInfoBarAdded(infobars::InfoBar* infobar) {
   this->UpdateBadgeForInfobar(infobar, true);
-  // Set the badgeState to None to allow for selecting the infobar when the
-  // banner is being presented.
-  delegate_.badgeState = InfobarBadgeStateNone;
 }
 
 void InfobarBadgeTabHelper::OnInfoBarRemoved(infobars::InfoBar* infobar,
@@ -86,10 +85,19 @@ void InfobarBadgeTabHelper::UpdateBadgeForInfobar(infobars::InfoBar* infobar,
                                                   bool display) {
   InfoBarIOS* infobar_ios = static_cast<InfoBarIOS*>(infobar);
   id<InfobarUIDelegate> controller_ = infobar_ios->InfobarUIDelegate();
-  if (IsInfobarUIRebootEnabled() && [controller_ isPresented]) {
-    is_infobar_displaying_ = display;
-    infobar_type_ = controller_.infobarType;
-    [delegate_ displayBadge:display type:infobar_type_];
+  if (IsInfobarUIRebootEnabled() && controller_.hasBadge) {
+    InfobarType infobar_type = controller_.infobarType;
+    if (display) {
+      InfobarBadgeModel* new_badge =
+          [[InfobarBadgeModel alloc] initWithInfobarType:infobar_type
+                                                accepted:NO];
+      infobar_badge_models_[infobar_type] = new_badge;
+      [delegate_ addInfobarBadge:new_badge];
+    } else {
+      InfobarBadgeModel* removed_badge = infobar_badge_models_[infobar_type];
+      infobar_badge_models_.erase(infobar_type);
+      [delegate_ removeInfobarBadge:removed_badge];
+    }
   }
 }
 

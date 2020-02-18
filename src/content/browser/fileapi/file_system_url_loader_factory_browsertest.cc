@@ -203,13 +203,13 @@ class FileSystemURLLoaderFactoryTest
     // The filesystem must be opened on the IO sequence.
     base::RunLoop loop;
     io_task_runner_->PostTask(
-        FROM_HERE, BindLambdaForTesting([&]() {
-          file_system_context_->OpenFileSystem(
-              GURL("http://remote/"), storage::kFileSystemTypeTemporary,
-              storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-              base::BindOnce(&FileSystemURLLoaderFactoryTest::OnOpenFileSystem,
-                             loop.QuitClosure()));
-        }));
+        FROM_HERE,
+        base::BindOnce(
+            &FileSystemContext::OpenFileSystem, file_system_context_,
+            GURL("http://remote/"), storage::kFileSystemTypeTemporary,
+            storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+            base::BindOnce(&FileSystemURLLoaderFactoryTest::OnOpenFileSystem,
+                           loop.QuitClosure())));
     loop.Run();
   }
 
@@ -473,7 +473,8 @@ class FileSystemURLLoaderFactoryTest
     const std::string storage_domain = url.GetOrigin().host();
 
     auto factory = content::CreateFileSystemURLLoaderFactory(
-        render_frame_host(), /*is_navigation=*/false, file_system_context,
+        render_frame_host()->GetProcess()->GetID(),
+        render_frame_host()->GetFrameTreeNodeId(), file_system_context,
         storage_domain);
 
     auto client = std::make_unique<network::TestURLLoaderClient>();

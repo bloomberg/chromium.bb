@@ -6,9 +6,9 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -49,6 +49,10 @@ struct TestParams {
       case media::VideoCaptureBufferType::kMailboxHolder:
         NOTREACHED();
         return media::mojom::VideoBufferHandle::Tag::SHARED_BUFFER_HANDLE;
+#if defined(OS_CHROMEOS)
+      case media::VideoCaptureBufferType::kGpuMemoryBuffer:
+        return media::mojom::VideoBufferHandle::Tag::GPU_MEMORY_BUFFER_HANDLE;
+#endif
     }
   }
 };
@@ -69,7 +73,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
     : public ContentBrowserTest,
       public testing::WithParamInterface<TestParams> {
  public:
-  WebRtcVideoCaptureSharedDeviceBrowserTest() : weak_factory_(this) {
+  WebRtcVideoCaptureSharedDeviceBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kMojoVideoCapture);
   }
 
@@ -127,9 +131,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
-    auto* connection = content::ServiceManagerConnection::GetForProcess();
-    ASSERT_TRUE(connection);
-    auto* connector = connection->GetConnector();
+    auto* connector = GetSystemConnector();
     ASSERT_TRUE(connector);
     // We need to clone it so that we can use the clone on a different thread.
     connector_ = connector->Clone();
@@ -214,7 +216,8 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   video_capture::mojom::PushVideoStreamSubscriptionPtr subscription_;
 
   video_capture::mojom::ReceiverPtr receiver_proxy_;
-  base::WeakPtrFactory<WebRtcVideoCaptureSharedDeviceBrowserTest> weak_factory_;
+  base::WeakPtrFactory<WebRtcVideoCaptureSharedDeviceBrowserTest> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoCaptureSharedDeviceBrowserTest);
 };

@@ -41,7 +41,7 @@ jumbo_static_library("renderer") {
   deps = [
     "//base",
     "//base:i18n",
-    "//components/autofill/content/common:mojo_interfaces",
+    "//components/autofill/content/common/mojom",
     "//components/autofill/core/common",
     "//components/strings",
     "//content/public/common",
@@ -66,8 +66,6 @@ jumbo_static_library("test_support") {
   sources = [
     "test_password_autofill_agent.cc",
     "test_password_autofill_agent.h",
-    "test_password_generation_agent.cc",
-    "test_password_generation_agent.h",
   ]
 
   public_deps = [
@@ -93,7 +91,7 @@ source_set("unit_tests") {
   deps = [
     ":test_support",
     "//base/test:test_support",
-    "//components/autofill/content/common:mojo_interfaces",
+    "//components/autofill/content/common/mojom",
     "//components/autofill/core/common",
     "//testing/gtest",
   ]

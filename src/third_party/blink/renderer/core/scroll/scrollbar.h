@@ -47,6 +47,7 @@ class WebMouseEvent;
 
 class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
                               public DisplayItemClient {
+    USING_PRE_FINALIZER(Scrollbar, Dispose);
  public:
   // Theme object ownership remains with the caller and it must outlive the
   // scrollbar.
@@ -191,14 +192,14 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
 
   // Promptly unregister from the theme manager + run finalizers of derived
   // Scrollbars.
-  EAGERLY_FINALIZE();
+  void Dispose();
   virtual void Trace(blink::Visitor*);
 
  protected:
   void AutoscrollTimerFired(TimerBase*);
-  void StartTimerIfNeeded(TimeDelta delay);
+  void StartTimerIfNeeded(base::TimeDelta delay);
   void StopTimerIfNeeded();
-  void AutoscrollPressedPart(TimeDelta delay);
+  void AutoscrollPressedPart(base::TimeDelta delay);
   bool HandleTapGesture();
   bool IsScrollGestureInjectionEnabled() const;
   void InjectScrollGestureForPressedPart(WebInputEvent::Type gesture_type);

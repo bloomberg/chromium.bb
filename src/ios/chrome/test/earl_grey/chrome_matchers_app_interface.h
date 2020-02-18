@@ -11,6 +11,8 @@
 
 // Helper class to return matchers for EG tests.  These helpers are compiled
 // into the app binary and can be called from either app or test code.
+// All calls of grey_... involve the App process, so it's more efficient to
+// define the matchers in the app process.
 @interface ChromeMatchersAppInterface : NSObject
 
 // Matcher for element with accessibility label corresponding to |label| and
@@ -129,6 +131,9 @@
 // Returns matcher for the account consistency confirmation button.
 + (id<GREYMatcher>)accountConsistencyConfirmationOKButton;
 
+// Returns matcher for "ADD ACCOUNT" button in unified consent dialog.
++ (id<GREYMatcher>)unifiedConsentAddAccountButton;
+
 // Returns matcher for the add account accounts button.
 + (id<GREYMatcher>)addAccountButton;
 
@@ -224,6 +229,9 @@
 // Returns matcher for the voice search button on the main Settings screen.
 + (id<GREYMatcher>)voiceSearchButton;
 
+// Returns matcher for the voice search button on the omnibox input accessory.
++ (id<GREYMatcher>)voiceSearchInputAccessoryButton;
+
 // Returns matcher for the settings main menu view.
 + (id<GREYMatcher>)settingsCollectionView;
 
@@ -282,6 +290,56 @@
 
 // Returns a matcher for the Clear Browsing Data button in the History UI.
 + (id<GREYMatcher>)historyClearBrowsingDataButton;
+
+// Returns a matcher for "Open In..." button.
++ (id<GREYMatcher>)openInButton;
+
+// Returns the GREYMatcher for the button that opens the tab grid.
++ (id<GREYMatcher>)tabGridOpenButton;
+
+// Returns the GREYMatcher for the cell at |index| in the tab grid.
++ (id<GREYMatcher>)tabGridCellAtIndex:(unsigned int)index;
+
+// Returns the GREYMatcher for the button that closes the tab grid.
++ (id<GREYMatcher>)tabGridDoneButton;
+
+// Returns the GREYMatcher for the button that closes all the tabs in the tab
+// grid.
++ (id<GREYMatcher>)tabGridCloseAllButton;
+
+// Returns the GREYMatcher for the button that reverts the close all tabs action
+// in the tab grid.
++ (id<GREYMatcher>)tabGridUndoCloseAllButton;
+
+// Returns the GREYMatcher for the cell that opens History in Recent Tabs.
++ (id<GREYMatcher>)tabGridSelectShowHistoryCell;
+
+// Returns the GREYMatcher for the regular tabs empty state view.
++ (id<GREYMatcher>)tabGridRegularTabsEmptyStateView;
+
+// Returns the GREYMatcher for the button that creates new non incognito tabs
+// from within the tab grid.
++ (id<GREYMatcher>)tabGridNewTabButton;
+
+// Returns the GREYMatcher for the button that creates new incognito tabs from
+// within the tab grid.
++ (id<GREYMatcher>)tabGridNewIncognitoTabButton;
+
+// Returns the GREYMatcher for the button to go to the non incognito panel in
+// the tab grid.
++ (id<GREYMatcher>)tabGridOpenTabsPanelButton;
+
+// Returns the GREYMatcher for the button to go to the incognito panel in
+// the tab grid.
++ (id<GREYMatcher>)tabGridIncognitoTabsPanelButton;
+
+// Returns the GREYMatcher for the button to go to the other devices panel in
+// the tab grid.
++ (id<GREYMatcher>)tabGridOtherDevicesPanelButton;
+
+// Returns the GREYMatcher for the button to close the cell at |index| in the
+// tab grid.
++ (id<GREYMatcher>)tabGridCloseButtonForCellAtIndex:(unsigned int)index;
 
 @end
 

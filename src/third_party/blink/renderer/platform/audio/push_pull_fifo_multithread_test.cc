@@ -9,13 +9,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -67,7 +67,7 @@ class FIFOClient {
           *client_thread_->GetTaskRunner(), FROM_HERE,
           CrossThreadBindOnce(&FIFOClient::RunTaskOnOwnThread,
                               CrossThreadUnretained(this)),
-          TimeDelta::FromMillisecondsD(interval_with_jitter));
+          base::TimeDelta::FromMillisecondsD(interval_with_jitter));
     } else {
       Stop(counter_);
       done_event_->Signal();
@@ -172,7 +172,7 @@ TEST_P(PushPullFIFOSmokeTest, SmokeTests) {
   std::unique_ptr<PushClient> push_client = std::make_unique<PushClient>(
       test_fifo.get(), param.push_buffer_size, param.push_jitter_range_ms);
 
-  std::vector<base::WaitableEvent*> done_events;
+  Vector<base::WaitableEvent*> done_events;
   done_events.push_back(
       pull_client->Start(param.test_duration_ms, pull_interval_ms));
   done_events.push_back(

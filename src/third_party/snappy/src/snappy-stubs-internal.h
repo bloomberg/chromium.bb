@@ -199,7 +199,7 @@ struct Unaligned32Struct {
     ((reinterpret_cast< ::snappy::base::internal::Unaligned32Struct *>(_p))->value = \
          (_val))
 
-// TODO(user): NEON supports unaligned 64-bit loads and stores.
+// TODO: NEON supports unaligned 64-bit loads and stores.
 // See if that would be more efficient on platforms supporting it,
 // at least for copies.
 
@@ -469,7 +469,7 @@ inline int Bits::Log2FloorNonZero(uint32 n) {
 }
 
 inline int Bits::Log2Floor(uint32 n) {
-  return (n == 0) ? -1 : Bits::Log2FloorNonZero(arg);
+  return (n == 0) ? -1 : Bits::Log2FloorNonZero(n);
 }
 
 inline int Bits::FindLSBSetNonZero(uint32 n) {

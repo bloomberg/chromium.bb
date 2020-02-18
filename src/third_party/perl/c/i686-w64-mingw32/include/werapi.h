@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_WERAPI
@@ -123,6 +123,56 @@ HRESULT WINAPI WerReportSubmit(HREPORT hReportHandle,WER_CONSENT consent,DWORD d
 HRESULT WINAPI WerSetFlags(DWORD dwFlags);
 HRESULT WINAPI WerUnregisterFile(PCWSTR pwzFilePath);
 HRESULT WINAPI WerUnregisterMemoryBlock(PVOID pvAddress);
+
+#if (_WIN32_WINNT >= 0x0601)
+typedef struct _WER_RUNTIME_EXCEPTION_INFORMATION {
+  DWORD            dwSize;
+  HANDLE           hProcess;
+  HANDLE           hThread;
+  EXCEPTION_RECORD exceptionRecord;
+  CONTEXT          context;
+  PCWSTR           pwszReportId;
+} WER_RUNTIME_EXCEPTION_INFORMATION, *PWER_RUNTIME_EXCEPTION_INFORMATION;
+
+typedef HRESULT (WINAPI *PFN_WER_RUNTIME_EXCEPTION_EVENT)(
+  PVOID pContext,
+  const PWER_RUNTIME_EXCEPTION_INFORMATION pExceptionInformation,
+  WINBOOL *pbOwnershipClaimed,
+  PWSTR pwszEventName,
+  PDWORD pchSize,
+  PDWORD pdwSignatureCount
+);
+
+typedef HRESULT (WINAPI *PFN_WER_RUNTIME_EXCEPTION_DEBUGGER_LAUNCH)(
+  PVOID pContext,
+  const PWER_RUNTIME_EXCEPTION_INFORMATION pExceptionInformation,
+  PBOOL pbIsCustomDebugger,
+  PWSTR pwszDebuggerLaunch,
+  PDWORD pchDebuggerLaunch,
+  PBOOL pbIsDebuggerAutolaunch
+);
+
+typedef HRESULT (WINAPI *PFN_WER_RUNTIME_EXCEPTION_EVENT_SIGNATURE)(
+  PVOID pContext,
+  const PWER_RUNTIME_EXCEPTION_INFORMATION pExceptionInformation,
+  DWORD dwIndex,
+  PWSTR pwszName,
+  PDWORD pchName,
+  PWSTR pwszValue,
+  PDWORD pchValue
+);
+
+HRESULT WINAPI WerRegisterRuntimeExceptionModule(
+  PCWSTR pwszOutOfProcessCallbackDll,
+  PVOID pContext
+);
+
+HRESULT WINAPI WerUnregisterRuntimeExceptionModule(
+  PCWSTR pwszOutOfProcessCallbackDll,
+  PVOID pContext
+);
+
+#endif /*(_WIN32_WINNT >= 0x0601)*/
 
 #ifdef __cplusplus
 }

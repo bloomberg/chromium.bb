@@ -63,8 +63,7 @@ class TrackShell implements m.ClassComponent<TrackShellAttrs> {
           {
             title: attrs.trackState.name,
           },
-          attrs.trackState.name,
-          m.trust('&#x200E;')),
+          attrs.trackState.name + '\u200E'),
         m(TrackButton, {
           action: Actions.toggleTrackPinned({trackId: attrs.trackState.id}),
           i: isPinned(attrs.trackState.id) ? 'star' : 'star_border',
@@ -227,7 +226,7 @@ export class TrackPanel extends Panel<TrackPanelAttrs> {
     ctx.restore();
 
     const localState = globals.frontendLocalState;
-    // Draw vertical line when hovering on the the notes panel.
+    // Draw vertical line when hovering on the notes panel.
     if (localState.showNotePreview) {
       drawVerticalLineAtTime(ctx,
                              localState.timeScale,
@@ -254,12 +253,13 @@ export class TrackPanel extends Panel<TrackPanelAttrs> {
                                note.color);
       }
       if (globals.state.currentSelection.kind === 'TIMESPAN') {
-        drawVerticalSelection(ctx,
-                              localState.timeScale,
-                              globals.state.currentSelection.startTs,
-                              globals.state.currentSelection.endTs,
-                              size.height,
-                              `rgba(52,69,150,0.3)`);
+        drawVerticalSelection(
+            ctx,
+            localState.timeScale,
+            globals.state.currentSelection.startTs,
+            globals.state.currentSelection.endTs,
+            size.height,
+            `rgba(0,0,0,0.5)`);
       }
       if (globals.state.currentSelection.kind === 'SLICE' &&
           globals.sliceDetails.wakeupTs !== undefined) {

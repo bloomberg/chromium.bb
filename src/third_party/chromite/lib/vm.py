@@ -16,16 +16,15 @@ import shutil
 import socket
 
 from chromite.cli.cros import cros_chrome_sdk
-from chromite.lib import commandline
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import device
-from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import remote_access
 from chromite.lib import retry_util
+from chromite.utils import memoize
 
 
 class VMError(device.DeviceError):
@@ -176,6 +175,8 @@ class VM(device.Device):
     self.start = opts.start
     self.stop = opts.stop
 
+    self.chroot_path = opts.chroot_path
+
     self.cache_dir = os.path.abspath(opts.cache_dir)
     assert os.path.isdir(self.cache_dir), "Cache directory doesn't exist"
 
@@ -273,8 +274,7 @@ class VM(device.Device):
 
     # Check chroot.
     if not self.qemu_path:
-      qemu_path = os.path.join(
-          constants.SOURCE_ROOT, constants.DEFAULT_CHROOT_DIR, qemu_exe_path)
+      qemu_path = os.path.join(self.chroot_path, qemu_exe_path)
       if os.path.isfile(qemu_path):
         self.qemu_path = qemu_path
 
@@ -321,10 +321,15 @@ class VM(device.Device):
     if not self.image_path:
       raise VMError('No VM image found. Use cros chrome-sdk --download-vm.')
     if not os.path.isfile(self.image_path):
-      raise VMError('VM image does not exist: %s' % self.image_path)
+      # Checks if the image path points to a directory containing the bin file.
+      image_path = os.path.join(self.image_path, constants.VM_IMAGE_BIN)
+      if os.path.isfile(image_path):
+        self.image_path = image_path
+      else:
+        raise VMError('VM image does not exist: %s' % self.image_path)
     logging.debug('VM image path: %s', self.image_path)
 
-  def _WaitForSSHPort(self):
+  def _WaitForSSHPort(self, sleep=5):
     """Wait for SSH port to become available."""
     class _SSHPortInUseError(Exception):
       """Exception for _CheckSSHPortBusy to throw."""
@@ -346,7 +351,7 @@ class VM(device.Device):
           exception=_SSHPortInUseError,
           max_retry=10,
           functor=lambda: _CheckSSHPortBusy(self.ssh_port),
-          sleep=5)
+          sleep=sleep)
     except _SSHPortInUseError:
       raise VMError('SSH port %d in use' % self.ssh_port)
 
@@ -473,7 +478,7 @@ class VM(device.Device):
     self._WaitForSSHPort()
     self._RmVMDir()
 
-  def _WaitForProcs(self):
+  def _WaitForProcs(self, sleep=2):
     """Wait for expected processes to launch."""
     class _TooFewPidsException(Exception):
       """Exception for _GetRunningPids to throw."""
@@ -490,15 +495,15 @@ class VM(device.Device):
             exception=_TooFewPidsException,
             max_retry=5,
             functor=lambda: _GetRunningPids(exe, numpids),
-            sleep=2)
+            sleep=sleep)
       except _TooFewPidsException:
         raise VMError('_WaitForProcs failed: timed out while waiting for '
                       '%d %s processes to start.' % (numpids, exe))
 
     # We could also wait for session_manager, nacl_helper, etc, but chrome is
-    # the long pole. We expect the parent, 2 zygotes, gpu-process, renderer.
-    # This could potentially break with Mustash.
-    _WaitForProc('chrome', 5)
+    # the long pole. We expect the parent, 2 zygotes, gpu-process,
+    # utility-process, 3 renderers.
+    _WaitForProc('chrome', 8)
 
   def WaitForBoot(self):
     """Wait for the VM to boot up.
@@ -525,10 +530,7 @@ class VM(device.Device):
     Returns:
       List of parsed opts.
     """
-    device_parser = device.Device.GetParser()
-    parser = commandline.ArgumentParser(description=__doc__,
-                                        parents=[device_parser],
-                                        add_help=False, logging=False)
+    parser = device.Device.GetParser()
     parser.add_argument('--start', action='store_true', default=False,
                         help='Start the VM.')
     parser.add_argument('--stop', action='store_true', default=False,
@@ -573,6 +575,9 @@ class VM(device.Device):
                         help='Do not display video output.')
     parser.add_argument('--ssh-port', type=int, default=VM.SSH_PORT,
                         help='ssh port to communicate with VM.')
+    parser.add_argument('--chroot-path', type='path',
+                        default=os.path.join(constants.SOURCE_ROOT,
+                                             constants.DEFAULT_CHROOT_DIR))
     parser.add_argument('--cache-dir', type='path',
                         default=path_util.GetCacheDir(),
                         help='Cache directory to use.')

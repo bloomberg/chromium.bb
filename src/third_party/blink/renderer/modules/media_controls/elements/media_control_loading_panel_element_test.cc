@@ -58,7 +58,8 @@ class MediaControlLoadingPanelElementTest : public PageTestBase {
   void SimulateLoadingMetadata() {
     SetMediaElementState(HTMLMediaElement::kHaveNothing,
                          HTMLMediaElement::kNetworkLoading);
-    EXPECT_EQ(media_controls_->State(), MediaControlsImpl::kLoadingMetadata);
+    EXPECT_EQ(media_controls_->State(),
+              MediaControlsImpl::kLoadingMetadataPaused);
     loading_element_->UpdateDisplayState();
   }
 

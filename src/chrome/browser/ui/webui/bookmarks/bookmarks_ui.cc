@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_message_handler.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
+#include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
@@ -23,7 +23,9 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/favicon_base/favicon_url_parser.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -110,9 +112,6 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
     AddLocalizedString(source, str.name, str.id);
 
   // Resources.
-  source->AddResourcePath("images/folder_open.svg",
-                          IDR_BOOKMARKS_IMAGES_FOLDER_OPEN_SVG);
-  source->AddResourcePath("images/folder.svg", IDR_BOOKMARKS_IMAGES_FOLDER_SVG);
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_BOOKMARKS_CRISPER_JS);
   source->SetDefaultResource(IDR_BOOKMARKS_VULCANIZED_HTML);
@@ -179,9 +178,12 @@ BookmarksUI::BookmarksUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   // Set up the chrome://bookmarks/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
   auto* source = CreateBookmarksUIHTMLSource(profile);
-  DarkModeHandler::Initialize(web_ui, source);
   ManagedUIHandler::Initialize(web_ui, source);
   content::WebUIDataSource::Add(profile, source);
+
+  content::URLDataSource::Add(
+      profile, std::make_unique<FaviconSource>(
+                   profile, chrome::FaviconUrlFormat::kFavicon2));
 
   auto plural_string_handler = std::make_unique<PluralStringHandler>();
   plural_string_handler->AddLocalizedString(

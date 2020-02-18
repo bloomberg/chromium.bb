@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
@@ -75,6 +74,7 @@
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -412,7 +412,7 @@ bool IsEditableElement(const Node& node) {
       return true;
   }
 
-  if (auto* element = ToElementOrNull(const_cast<Node*>(&node)))
+  if (auto* element = DynamicTo<Element>(&node))
     return EqualIgnoringASCIICase(element->getAttribute(kRoleAttr), "textbox");
 
   return false;
@@ -426,14 +426,14 @@ bool IsRootEditableElement(const Node& node) {
 }
 
 Element* RootEditableElement(const Node& node) {
-  const Node* result = nullptr;
+  const Element* result = nullptr;
   for (const Node* n = &node; n && HasEditableStyle(*n); n = n->parentNode()) {
-    if (n->IsElementNode())
-      result = n;
+    if (auto* element = DynamicTo<Element>(n))
+      result = element;
     if (node.GetDocument().body() == n)
       break;
   }
-  return ToElement(const_cast<Node*>(result));
+  return const_cast<Element*>(result);
 }
 
 ContainerNode* HighestEditableRoot(const Position& position) {
@@ -967,9 +967,7 @@ template <typename Strategy>
 Element* EnclosingBlockAlgorithm(const PositionTemplate<Strategy>& position,
                                  EditingBoundaryCrossingRule rule) {
   Node* enclosing_node = EnclosingNodeOfType(position, IsEnclosingBlock, rule);
-  return enclosing_node && enclosing_node->IsElementNode()
-             ? ToElement(enclosing_node)
-             : nullptr;
+  return DynamicTo<Element>(enclosing_node);
 }
 
 Element* EnclosingBlock(const Position& position,
@@ -984,11 +982,11 @@ Element* EnclosingBlock(const PositionInFlatTree& position,
 
 Element* EnclosingBlockFlowElement(const Node& node) {
   if (IsBlockFlowElement(node))
-    return const_cast<Element*>(&ToElement(node));
+    return const_cast<Element*>(To<Element>(&node));
 
   for (Node& runner : NodeTraversal::AncestorsOf(node)) {
     if (IsBlockFlowElement(runner) || IsHTMLBodyElement(runner))
-      return ToElement(&runner);
+      return To<Element>(&runner);
   }
   return nullptr;
 }
@@ -1065,7 +1063,7 @@ static Element* TableElementJustBeforeAlgorithm(
       MostBackwardCaretPosition(visible_position.DeepEquivalent()));
   if (IsDisplayInsideTable(upstream.AnchorNode()) &&
       upstream.AtLastEditingPositionForNode())
-    return ToElement(upstream.AnchorNode());
+    return To<Element>(upstream.AnchorNode());
 
   return nullptr;
 }
@@ -1085,7 +1083,7 @@ Element* TableElementJustAfter(const VisiblePosition& visible_position) {
       MostForwardCaretPosition(visible_position.DeepEquivalent()));
   if (IsDisplayInsideTable(downstream.AnchorNode()) &&
       downstream.AtFirstEditingPositionForNode())
-    return ToElement(downstream.AnchorNode());
+    return To<Element>(downstream.AnchorNode());
 
   return nullptr;
 }
@@ -1132,10 +1130,14 @@ bool IsPresentationalHTMLElement(const Node* node) {
 
 Element* AssociatedElementOf(const Position& position) {
   Node* node = position.AnchorNode();
-  if (!node || node->IsElementNode())
-    return ToElement(node);
+  if (!node)
+    return nullptr;
+
+  if (auto* element = DynamicTo<Element>(node))
+    return element;
+
   ContainerNode* parent = NodeTraversal::Parent(*node);
-  return parent && parent->IsElementNode() ? ToElement(parent) : nullptr;
+  return DynamicTo<Element>(parent);
 }
 
 Element* EnclosingElementWithTag(const Position& p,
@@ -1145,9 +1147,9 @@ Element* EnclosingElementWithTag(const Position& p,
 
   ContainerNode* root = HighestEditableRoot(p);
   for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*p.AnchorNode())) {
-    if (!runner.IsElementNode())
+    auto* ancestor = DynamicTo<Element>(runner);
+    if (!ancestor)
       continue;
-    Element* ancestor = ToElement(&runner);
     if (root && !HasEditableStyle(*ancestor))
       continue;
     if (ancestor->HasTagName(tag_name))
@@ -1309,14 +1311,13 @@ HTMLSpanElement* CreateTabSpanElement(Document& document) {
 
 PositionWithAffinity PositionRespectingEditingBoundary(
     const Position& position,
-    const LayoutPoint& local_point,
+    const PhysicalOffset& local_point,
     Node* target_node) {
   const LayoutObject* target_object = target_node->GetLayoutObject();
   if (!target_object)
     return PositionWithAffinity();
 
-  // Note that local_point is in flipped blocks direction.
-  LayoutPoint selection_end_point = local_point;
+  PhysicalOffset selection_end_point = local_point;
   Element* editable_element = RootEditableElementOf(position);
 
   if (editable_element && !editable_element->contains(target_node)) {
@@ -1324,13 +1325,11 @@ PositionWithAffinity PositionRespectingEditingBoundary(
     if (!editable_object)
       return PositionWithAffinity();
 
-    // TODO(yosin): This kIgnoreTransforms correct here?
+    // TODO(yosin): Is this kIgnoreTransforms correct here?
     PhysicalOffset absolute_point = target_object->LocalToAbsolutePoint(
-        target_object->FlipForWritingMode(selection_end_point),
-        kIgnoreTransforms);
-    selection_end_point = editable_object->FlipForWritingMode(
-        editable_object->AbsoluteToLocalPoint(absolute_point,
-                                              kIgnoreTransforms));
+        selection_end_point, kIgnoreTransforms);
+    selection_end_point = editable_object->AbsoluteToLocalPoint(
+        absolute_point, kIgnoreTransforms);
     target_object = editable_object;
   }
 

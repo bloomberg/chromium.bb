@@ -19,12 +19,14 @@
 #import "ios/web/common/crw_content_view.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #include "ios/web/common/features.h"
+#import "ios/web/js_messaging/crw_js_injector.h"
+#import "ios/web/js_messaging/web_view_js_utils.h"
 #include "ios/web/navigation/block_universal_links_buildflags.h"
 #import "ios/web/navigation/crw_session_controller.h"
+#import "ios/web/navigation/crw_wk_navigation_states.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_action_policy_util.h"
-
 #import "ios/web/public/deprecated/crw_native_content.h"
 #import "ios/web/public/deprecated/crw_native_content_holder.h"
 #import "ios/web/public/deprecated/crw_native_content_provider.h"
@@ -33,7 +35,7 @@
 #include "ios/web/public/deprecated/url_verification_constants.h"
 #import "ios/web/public/download/download_controller.h"
 #import "ios/web/public/download/download_task.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #include "ios/web/public/test/fakes/fake_download_controller_delegate.h"
@@ -53,10 +55,8 @@
 #include "ios/web/test/test_url_constants.h"
 #import "ios/web/test/web_test_with_web_controller.h"
 #import "ios/web/test/wk_web_view_crash_utils.h"
-#import "ios/web/web_state/ui/crw_js_injector.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
-#import "ios/web/web_state/ui/web_view_js_utils.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/cert/x509_util_ios_and_mac.h"
@@ -220,11 +220,11 @@ class CRWWebControllerTest : public WebTestWithWebController,
     OCMStub([result customUserAgent]);
     OCMStub([static_cast<WKWebView*>(result) loadRequest:OCMOCK_ANY]);
     OCMStub([result setFrame:GetExpectedWebViewFrame()]);
-    OCMStub([result addObserver:web_controller()
+    OCMStub([result addObserver:OCMOCK_ANY
                      forKeyPath:OCMOCK_ANY
                         options:0
                         context:nullptr]);
-    OCMStub([result removeObserver:web_controller() forKeyPath:OCMOCK_ANY]);
+    OCMStub([result removeObserver:OCMOCK_ANY forKeyPath:OCMOCK_ANY]);
     OCMStub([result evaluateJavaScript:OCMOCK_ANY
                      completionHandler:OCMOCK_ANY]);
     OCMStub([result allowsBackForwardNavigationGestures]);
@@ -233,6 +233,8 @@ class CRWWebControllerTest : public WebTestWithWebController,
     OCMStub([result isLoading]);
     OCMStub([result stopLoading]);
     OCMStub([result removeFromSuperview]);
+    OCMStub([result hasOnlySecureContent]).andReturn(YES);
+    OCMStub([(WKWebView*)result title]).andReturn(@"Title");
 
     return result;
   }
@@ -358,9 +360,6 @@ TEST_P(CRWWebControllerTest, AbortNativeUrlNavigation) {
 
 // Tests returning pending item stored in navigation context.
 TEST_P(CRWWebControllerTest, TestPendingItem) {
-  if (!web::features::StorePendingItemInContext())
-    return;
-
   ASSERT_FALSE([web_controller() pendingItemForSessionController:nil]);
   ASSERT_FALSE([web_controller() lastPendingItemForNewNavigation]);
   ASSERT_FALSE(web_controller().webStateImpl->GetPendingItem());
@@ -394,6 +393,32 @@ TEST_P(CRWWebControllerTest, SetAllowsBackForwardNavigationGestures) {
   }
 }
 
+// Tests that the navigation state is reset to FINISHED when a back/forward
+// navigation occurs during a pending navigation.
+TEST_P(CRWWebControllerTest, BackForwardWithPendingNavigation) {
+  ASSERT_FALSE([web_controller() pendingItemForSessionController:nil]);
+  ASSERT_FALSE([web_controller() lastPendingItemForNewNavigation]);
+  ASSERT_FALSE(web_controller().webStateImpl->GetPendingItem());
+
+  // Commit a navigation so that there is a back NavigationItem.
+  SetWebViewURL(@"about:blank");
+  [navigation_delegate_ webView:mock_web_view_
+      didStartProvisionalNavigation:nil];
+  [navigation_delegate_ webView:mock_web_view_ didCommitNavigation:nil];
+  [navigation_delegate_ webView:mock_web_view_ didFinishNavigation:nil];
+
+  // Create pending item by simulating a renderer-initiated navigation.
+  [navigation_delegate_ webView:mock_web_view_
+      didStartProvisionalNavigation:nil];
+  ASSERT_EQ(web::WKNavigationState::REQUESTED,
+            web_controller().navigationState);
+
+  [web_controller() didFinishGoToIndexSameDocumentNavigationWithType:
+                        web::NavigationInitiationType::BROWSER_INITIATED
+                                                      hasUserGesture:YES];
+  EXPECT_EQ(web::WKNavigationState::FINISHED, web_controller().navigationState);
+}
+
 INSTANTIATE_TEST_SUITES(CRWWebControllerTest);
 
 // Test fixture to test JavaScriptDialogPresenter.
@@ -412,7 +437,8 @@ class JavaScriptDialogPresenterTest : public ProgrammaticWebTestWithWebState {
   TestJavaScriptDialogPresenter* js_dialog_presenter() {
     return test_web_delegate_.GetTestJavaScriptDialogPresenter();
   }
-  const std::vector<TestJavaScriptDialog>& requested_dialogs() {
+  const std::vector<std::unique_ptr<TestJavaScriptDialog>>&
+  requested_dialogs() {
     return js_dialog_presenter()->requested_dialogs();
   }
   const GURL& page_url() { return page_url_; }
@@ -429,12 +455,12 @@ TEST_P(JavaScriptDialogPresenterTest, Alert) {
   ExecuteJavaScript(@"alert('test')");
 
   ASSERT_EQ(1U, requested_dialogs().size());
-  TestJavaScriptDialog dialog = requested_dialogs()[0];
-  EXPECT_EQ(web_state(), dialog.web_state);
-  EXPECT_EQ(page_url(), dialog.origin_url);
-  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_ALERT, dialog.java_script_dialog_type);
-  EXPECT_NSEQ(@"test", dialog.message_text);
-  EXPECT_FALSE(dialog.default_prompt_text);
+  auto& dialog = requested_dialogs().front();
+  EXPECT_EQ(web_state(), dialog->web_state);
+  EXPECT_EQ(page_url(), dialog->origin_url);
+  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_ALERT, dialog->java_script_dialog_type);
+  EXPECT_NSEQ(@"test", dialog->message_text);
+  EXPECT_FALSE(dialog->default_prompt_text);
 }
 
 // Tests that window.confirm dialog is shown and its result is true.
@@ -446,12 +472,12 @@ TEST_P(JavaScriptDialogPresenterTest, ConfirmWithTrue) {
   EXPECT_NSEQ(@YES, ExecuteJavaScript(@"confirm('test')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
-  TestJavaScriptDialog dialog = requested_dialogs()[0];
-  EXPECT_EQ(web_state(), dialog.web_state);
-  EXPECT_EQ(page_url(), dialog.origin_url);
-  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_CONFIRM, dialog.java_script_dialog_type);
-  EXPECT_NSEQ(@"test", dialog.message_text);
-  EXPECT_FALSE(dialog.default_prompt_text);
+  auto& dialog = requested_dialogs().front();
+  EXPECT_EQ(web_state(), dialog->web_state);
+  EXPECT_EQ(page_url(), dialog->origin_url);
+  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_CONFIRM, dialog->java_script_dialog_type);
+  EXPECT_NSEQ(@"test", dialog->message_text);
+  EXPECT_FALSE(dialog->default_prompt_text);
 }
 
 // Tests that window.confirm dialog is shown and its result is false.
@@ -461,12 +487,12 @@ TEST_P(JavaScriptDialogPresenterTest, ConfirmWithFalse) {
   EXPECT_NSEQ(@NO, ExecuteJavaScript(@"confirm('test')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
-  TestJavaScriptDialog dialog = requested_dialogs()[0];
-  EXPECT_EQ(web_state(), dialog.web_state);
-  EXPECT_EQ(page_url(), dialog.origin_url);
-  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_CONFIRM, dialog.java_script_dialog_type);
-  EXPECT_NSEQ(@"test", dialog.message_text);
-  EXPECT_FALSE(dialog.default_prompt_text);
+  auto& dialog = requested_dialogs().front();
+  EXPECT_EQ(web_state(), dialog->web_state);
+  EXPECT_EQ(page_url(), dialog->origin_url);
+  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_CONFIRM, dialog->java_script_dialog_type);
+  EXPECT_NSEQ(@"test", dialog->message_text);
+  EXPECT_FALSE(dialog->default_prompt_text);
 }
 
 // Tests that window.prompt dialog is shown.
@@ -478,12 +504,12 @@ TEST_P(JavaScriptDialogPresenterTest, Prompt) {
   EXPECT_NSEQ(@"Maybe", ExecuteJavaScript(@"prompt('Yes?', 'No')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
-  TestJavaScriptDialog dialog = requested_dialogs()[0];
-  EXPECT_EQ(web_state(), dialog.web_state);
-  EXPECT_EQ(page_url(), dialog.origin_url);
-  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_PROMPT, dialog.java_script_dialog_type);
-  EXPECT_NSEQ(@"Yes?", dialog.message_text);
-  EXPECT_NSEQ(@"No", dialog.default_prompt_text);
+  auto& dialog = requested_dialogs().front();
+  EXPECT_EQ(web_state(), dialog->web_state);
+  EXPECT_EQ(page_url(), dialog->origin_url);
+  EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_PROMPT, dialog->java_script_dialog_type);
+  EXPECT_NSEQ(@"Yes?", dialog->message_text);
+  EXPECT_NSEQ(@"No", dialog->default_prompt_text);
 }
 
 INSTANTIATE_TEST_SUITES(JavaScriptDialogPresenterTest);

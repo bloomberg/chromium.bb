@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
@@ -76,7 +77,7 @@ WideString CPDF_FormControl::GetExportValue() const {
     csOn = pArray->GetStringAt(m_pField->GetControlIndex(this));
   if (csOn.IsEmpty())
     csOn = "Yes";
-  return PDF_DecodeText(csOn.AsRawSpan());
+  return PDF_DecodeText(csOn.raw_span());
 }
 
 bool CPDF_FormControl::IsChecked() const {
@@ -213,7 +214,8 @@ CPDF_Font* CPDF_FormControl::GetDefaultControlFont() {
     if (pFonts) {
       CPDF_Dictionary* pElement = pFonts->GetDictFor(*csFontNameTag);
       if (pElement) {
-        CPDF_Font* pFont = m_pForm->GetDocument()->LoadFont(pElement);
+        auto* pData = CPDF_DocPageData::FromDocument(m_pForm->GetDocument());
+        CPDF_Font* pFont = pData->GetFont(pElement);
         if (pFont)
           return pFont;
       }
@@ -229,7 +231,8 @@ CPDF_Font* CPDF_FormControl::GetDefaultControlFont() {
     if (pFonts) {
       CPDF_Dictionary* pElement = pFonts->GetDictFor(*csFontNameTag);
       if (pElement) {
-        CPDF_Font* pFont = m_pForm->GetDocument()->LoadFont(pElement);
+        auto* pData = CPDF_DocPageData::FromDocument(m_pForm->GetDocument());
+        CPDF_Font* pFont = pData->GetFont(pElement);
         if (pFont)
           return pFont;
       }

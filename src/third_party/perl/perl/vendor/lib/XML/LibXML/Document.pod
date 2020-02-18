@@ -8,7 +8,7 @@ XML::LibXML::Document - XML::LibXML DOM Document Class
 
   use XML::LibXML;
   # Only methods specific to Document nodes are listed here,
-  # see XML::LibXML::Node manpage for other methods
+  # see the XML::LibXML::Node manpage for other methods
 
   $dom = XML::LibXML::Document->new( $version, $encoding );
   $dom = XML::LibXML::Document->createDocument( $version, $encoding );
@@ -23,9 +23,9 @@ XML::LibXML::Document - XML::LibXML DOM Document Class
   my $compression = $doc->compression;
   $doc->setCompression($ziplevel);
   $docstring = $dom->toString($format);
-  $c14nstr = $doc->toStringC14N($comment_flag, $xpath [, $xpath_context ]); 
-  $ec14nstr = $doc->toStringEC14N($comment_flag, $xpath [, $xpath_context ], $inclusive_prefix_list); 
-  $str = $doc->serialize($format); 
+  $c14nstr = $doc->toStringC14N($comment_flag, $xpath [, $xpath_context ]);
+  $ec14nstr = $doc->toStringEC14N($comment_flag, $xpath [, $xpath_context ], $inclusive_prefix_list);
+  $str = $doc->serialize($format);
   $state = $doc->toFile($filename, $format);
   $state = $doc->toFH($fh, $format);
   $str = $document->toStringHTML();
@@ -35,7 +35,7 @@ XML::LibXML::Document - XML::LibXML DOM Document Class
   $root = $dom->documentElement();
   $dom->setDocumentElement( $root );
   $element = $dom->createElement( $nodename );
-  $element = $dom->createElementNS( $namespaceURI, $qname );
+  $element = $dom->createElementNS( $namespaceURI, $nodename );
   $text = $dom->createTextNode( $content_text );
   $comment = $dom->createComment( $comment_text );
   $attrnode = $doc->createAttribute($name [,$value]);
@@ -82,7 +82,7 @@ methods as character strings (i.e. UTF-8 encoded, with the UTF8 flag on).
 
 =head1 METHODS
 
-Many functions listed here are extensively documented in the DOM Level 3 specification (L<<<<<< http://www.w3.org/TR/DOM-Level-3-Core/ >>>>>>). Please refer to the specification for extensive documentation. 
+Many functions listed here are extensively documented in the DOM Level 3 specification (L<<<<<< http://www.w3.org/TR/DOM-Level-3-Core/ >>>>>>). Please refer to the specification for extensive documentation.
 
 =over 4
 
@@ -135,7 +135,7 @@ is therefore a shortcut for
 Returns the URI (or filename) of the original document. For documents obtained
 by parsing a string of a FH without using the URI parsing argument of the
 corresponding C<<<<<< parse_* >>>>>> function, the result is a generated string unknown-XYZ where XYZ is some
-number; for documents created with the constructor C<<<<<< new >>>>>>, the URI is undefined. 
+number; for documents created with the constructor C<<<<<< new >>>>>>, the URI is undefined.
 
 The value can be modified by calling C<<<<<< setURI >>>>>> method on the document node.
 
@@ -145,7 +145,7 @@ The value can be modified by calling C<<<<<< setURI >>>>>> method on the documen
   $doc->setURI($strURI);
 
 Sets the URI of the document reported by the method URI (see also the URI
-argument to the various C<<<<<< parse_* >>>>>> functions). 
+argument to the various C<<<<<< parse_* >>>>>> functions).
 
 
 =item encoding
@@ -168,7 +168,7 @@ returns the encoding in which the XML will be returned by $doc->toString().
 This is usually the original encoding of the document as declared in the XML
 declaration and returned by $doc->encoding. If the original encoding is not
 known (e.g. if created in memory or parsed from a XML without a declared
-encoding), 'UTF-8' is returned. 
+encoding), 'UTF-8' is returned.
 
 
 
@@ -180,10 +180,10 @@ encoding), 'UTF-8' is returned.
 
   $doc->setEncoding($new_encoding);
 
-This method allows to change the declaration of encoding in the XML declaration
-of the document. The value also affects the encoding in which the document is
-serialized to XML by $doc->toString(). Use setEncoding() to remove the encoding
-declaration. 
+This method allows one to change the declaration of encoding in the XML
+declaration of the document. The value also affects the encoding in which the
+document is serialized to XML by $doc->toString(). Use setEncoding() to remove
+the encoding declaration.
 
 
 =item version
@@ -241,7 +241,7 @@ string, ready for output.
 
 IMPORTANT: unlike toString for other nodes, on document nodes this function
 returns the XML as a byte string in the original encoding of the document (see
-the actualEncoding() method)! This means you can simply do: 
+the actualEncoding() method)! This means you can simply do:
 
 
 
@@ -268,21 +268,21 @@ level. This value can not be altered on run-time.
 
 =item toStringC14N
 
-  $c14nstr = $doc->toStringC14N($comment_flag, $xpath [, $xpath_context ]); 
+  $c14nstr = $doc->toStringC14N($comment_flag, $xpath [, $xpath_context ]);
 
-See the documentation in L<<<<<< XML::LibXML::Node >>>>>>. 
+See the documentation in L<<<<<< XML::LibXML::Node >>>>>>.
 
 
 =item toStringEC14N
 
-  $ec14nstr = $doc->toStringEC14N($comment_flag, $xpath [, $xpath_context ], $inclusive_prefix_list); 
+  $ec14nstr = $doc->toStringEC14N($comment_flag, $xpath [, $xpath_context ], $inclusive_prefix_list);
 
-See the documentation in L<<<<<< XML::LibXML::Node >>>>>>. 
+See the documentation in L<<<<<< XML::LibXML::Node >>>>>>.
 
 
 =item serialize
 
-  $str = $doc->serialize($format); 
+  $str = $doc->serialize($format);
 
 An alias for toString(). This function was name added to be more consistent
 with libxml2.
@@ -390,7 +390,7 @@ This function creates a new Element Node bound to the DOM with the name C<<<<<< 
 
 =item createElementNS
 
-  $element = $dom->createElementNS( $namespaceURI, $qname );
+  $element = $dom->createElementNS( $namespaceURI, $nodename );
 
 This function creates a new Element Node bound to the DOM with the name C<<<<<< $nodename >>>>>> and placed in the given namespace.
 
@@ -518,7 +518,7 @@ document itself. Nevertheless it can be used for validation purposes.
 
 If a node is not part of a document, it can be imported to another document. As
 specified in DOM Level 2 Specification the Node will not be altered or removed
-from its original document (C<<<<<< $node->cloneNode(1) >>>>>> will get called implicitly).
+from its original document (C<<<<<< $node-E<gt>cloneNode(1) >>>>>> will get called implicitly).
 
 I<<<<<< NOTE: >>>>>> Don't try to use importNode() to import sub-trees that contain an entity
 reference - even if the entity reference is the root node of the sub-tree. This
@@ -646,11 +646,11 @@ documents with a DTD, the information about ID attributes is only available if
 DTD loading/validation has been requested. For HTML documents parsed with the
 HTML parser ID detection is done automatically. In XML documents, all "xml:id"
 attributes are considered to be of type ID. You can test ID-ness of an
-attribute node with $attr->isId(). 
+attribute node with $attr->isId().
 
 In versions 1.59 and earlier this method was called getElementsById() (plural)
 by mistake. Starting from 1.60 this name is maintained as an alias only for
-backward compatibility. 
+backward compatibility.
 
 
 =item indexElements
@@ -676,14 +676,14 @@ if this feature is not available in the running libxml2.
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -694,3 +694,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

@@ -10,7 +10,6 @@
 
 #include "base/base64.h"
 #include "base/hash/sha1.h"
-#include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
@@ -61,7 +60,7 @@ TEST(NonBlockingTypeCommitContributionTest, PopulateCommitProtoDefault) {
   // to make this item look more realistic.
   data->creation_time = creation_time;
   data->modification_time = modification_time;
-  data->non_unique_name = "Name:";
+  data->name = "Name:";
 
   CommitRequestData request_data;
   request_data.sequence_number = 2;
@@ -105,7 +104,7 @@ TEST(NonBlockingTypeCommitContributionTest, PopulateCommitProtoBookmark) {
   // to make this item look more realistic.
   data->creation_time = creation_time;
   data->modification_time = modification_time;
-  data->non_unique_name = "Name:";
+  data->name = "Name:";
   data->parent_id = "ParentOf:";
   data->is_folder = true;
   syncer::UniquePosition uniquePosition = syncer::UniquePosition::FromInt64(
@@ -166,8 +165,7 @@ TEST(NonBlockingTypeCommitContributionTest,
   base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
   DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
 
-  FakeEncryptor fake_encryptor;
-  Cryptographer cryptographer(&fake_encryptor);
+  Cryptographer cryptographer;
   cryptographer.AddKey({KeyDerivationParams::CreateForPbkdf2(), "dummy"});
 
   CommitRequestDataList requests_data;
@@ -228,8 +226,7 @@ TEST(NonBlockingTypeCommitContributionTest,
   base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
   DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
 
-  FakeEncryptor fake_encryptor;
-  Cryptographer cryptographer(&fake_encryptor);
+  Cryptographer cryptographer;
   cryptographer.AddKey({KeyDerivationParams::CreateForPbkdf2(), "dummy"});
 
   CommitRequestDataList requests_data;

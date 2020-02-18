@@ -62,11 +62,15 @@ namespace dawn_native {
         mCaches = std::make_unique<DeviceBase::Caches>();
         mFenceSignalTracker = std::make_unique<FenceSignalTracker>(this);
         mDynamicUploader = std::make_unique<DynamicUploader>(this);
+        SetDefaultToggles();
+
+        mFormatTable = BuildFormatTable(this);
     }
 
     DeviceBase::~DeviceBase() {
         // Devices must explicitly free the uploader
         ASSERT(mDynamicUploader == nullptr);
+        ASSERT(mDeferredCreateBufferMappedAsyncResults.empty());
     }
 
     void DeviceBase::HandleError(const char* message) {
@@ -75,8 +79,7 @@ namespace dawn_native {
         }
     }
 
-    void DeviceBase::SetErrorCallback(dawn::DeviceErrorCallback callback,
-                                      dawn::CallbackUserdata userdata) {
+    void DeviceBase::SetErrorCallback(dawn::DeviceErrorCallback callback, void* userdata) {
         mErrorCallback = callback;
         mErrorUserdata = userdata;
     }
@@ -95,12 +98,29 @@ namespace dawn_native {
         return mAdapter;
     }
 
-    DeviceBase* DeviceBase::GetDevice() {
-        return this;
-    }
-
     FenceSignalTracker* DeviceBase::GetFenceSignalTracker() const {
         return mFenceSignalTracker.get();
+    }
+
+    ResultOrError<const Format*> DeviceBase::GetInternalFormat(dawn::TextureFormat format) const {
+        size_t index = ComputeFormatIndex(format);
+        if (index >= mFormatTable.size()) {
+            return DAWN_VALIDATION_ERROR("Unknown texture format");
+        }
+
+        const Format* internalFormat = &mFormatTable[index];
+        if (!internalFormat->isSupported) {
+            return DAWN_VALIDATION_ERROR("Unsupported texture format");
+        }
+
+        return internalFormat;
+    }
+
+    const Format& DeviceBase::GetValidInternalFormat(dawn::TextureFormat format) const {
+        size_t index = ComputeFormatIndex(format);
+        ASSERT(index < mFormatTable.size());
+        ASSERT(mFormatTable[index].isSupported);
+        return mFormatTable[index];
     }
 
     ResultOrError<BindGroupLayoutBase*> DeviceBase::GetOrCreateBindGroupLayout(
@@ -264,28 +284,55 @@ namespace dawn_native {
         BufferBase* buffer = nullptr;
         uint8_t* data = nullptr;
 
+        uint64_t size = descriptor->size;
         if (ConsumedError(CreateBufferInternal(&buffer, descriptor)) ||
             ConsumedError(buffer->MapAtCreation(&data))) {
             // Map failed. Replace the buffer with an error buffer.
             if (buffer != nullptr) {
                 delete buffer;
             }
-            buffer = BufferBase::MakeErrorMapped(this, descriptor->size, &data);
+            buffer = BufferBase::MakeErrorMapped(this, size, &data);
         }
 
         ASSERT(buffer != nullptr);
-        ASSERT(data != nullptr);
+        if (data == nullptr) {
+            // |data| may be nullptr if there was an OOM in MakeErrorMapped.
+            // Non-zero dataLength and nullptr data is used to indicate there should be
+            // mapped data but the allocation failed.
+            ASSERT(buffer->IsError());
+        } else {
+            memset(data, 0, size);
+        }
 
         DawnCreateBufferMappedResult result = {};
         result.buffer = reinterpret_cast<DawnBuffer>(buffer);
         result.data = data;
-        result.dataLength = descriptor->size;
-        memset(result.data, 0, result.dataLength);
+        result.dataLength = size;
 
         return result;
     }
-    CommandEncoderBase* DeviceBase::CreateCommandEncoder() {
-        return new CommandEncoderBase(this);
+    void DeviceBase::CreateBufferMappedAsync(const BufferDescriptor* descriptor,
+                                             dawn::BufferCreateMappedCallback callback,
+                                             void* userdata) {
+        DawnCreateBufferMappedResult result = CreateBufferMapped(descriptor);
+
+        DawnBufferMapAsyncStatus status = DAWN_BUFFER_MAP_ASYNC_STATUS_SUCCESS;
+        if (result.data == nullptr || result.dataLength != descriptor->size) {
+            status = DAWN_BUFFER_MAP_ASYNC_STATUS_ERROR;
+        }
+
+        DeferredCreateBufferMappedAsync deferred_info;
+        deferred_info.callback = callback;
+        deferred_info.status = status;
+        deferred_info.result = result;
+        deferred_info.userdata = userdata;
+
+        // The callback is deferred so it matches the async behavior of WebGPU.
+        mDeferredCreateBufferMappedAsyncResults.push_back(deferred_info);
+    }
+    CommandEncoderBase* DeviceBase::CreateCommandEncoder(
+        const CommandEncoderDescriptor* descriptor) {
+        return new CommandEncoderBase(this, descriptor);
     }
     ComputePipelineBase* DeviceBase::CreateComputePipeline(
         const ComputePipelineDescriptor* descriptor) {
@@ -380,6 +427,12 @@ namespace dawn_native {
 
     void DeviceBase::Tick() {
         TickImpl();
+        {
+            auto deferredResults = std::move(mDeferredCreateBufferMappedAsyncResults);
+            for (const auto& deferred : deferredResults) {
+                deferred.callback(deferred.status, deferred.result, deferred.userdata);
+            }
+        }
         mFenceSignalTracker->Tick(GetCompletedCommandSerial());
     }
 
@@ -405,7 +458,6 @@ namespace dawn_native {
                 mTogglesSet.SetToggle(toggle, true);
             }
         }
-
         for (const char* toggleName : deviceDescriptor->forceDisabledToggles) {
             Toggle toggle = GetAdapter()->GetInstance()->ToggleNameToEnum(toggleName);
             if (toggle != Toggle::InvalidEnum) {
@@ -430,6 +482,11 @@ namespace dawn_native {
 
     bool DeviceBase::IsToggleEnabled(Toggle toggle) const {
         return mTogglesSet.IsEnabled(toggle);
+    }
+
+    void DeviceBase::SetDefaultToggles() {
+        // Sets the default-enabled toggles
+        mTogglesSet.SetToggle(Toggle::LazyClearResourceOnFirstUse, true);
     }
 
     // Implementation details of object creation

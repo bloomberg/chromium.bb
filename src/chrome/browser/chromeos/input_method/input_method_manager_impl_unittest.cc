@@ -136,13 +136,9 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
       : delegate_(nullptr),
         candidate_window_controller_(nullptr),
         keyboard_(nullptr) {
-    chrome_keyboard_controller_client_test_helper_ =
-        ChromeKeyboardControllerClientTestHelper::InitializeWithFake();
   }
 
-  ~InputMethodManagerImplTest() override {
-    chrome_keyboard_controller_client_test_helper_.reset();
-  }
+  ~InputMethodManagerImplTest() override = default;
 
   void SetUp() override {
     ui::InitializeInputMethodForTesting();
@@ -165,6 +161,10 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     InitImeList();
 
     BrowserWithTestWindowTest::SetUp();
+
+    // Needs ash::Shell keyboard to be created first.
+    chrome_keyboard_controller_client_test_helper_ =
+        ChromeKeyboardControllerClientTestHelper::InitializeForAsh();
   }
 
   void TearDown() override {
@@ -176,6 +176,9 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     candidate_window_controller_ = nullptr;
     keyboard_ = nullptr;
     manager_.reset();
+
+    // Needs to destroyed after ash::Shell keyboard.
+    chrome_keyboard_controller_client_test_helper_.reset();
   }
 
   scoped_refptr<InputMethodManagerImpl::StateImpl> GetActiveIMEState() {

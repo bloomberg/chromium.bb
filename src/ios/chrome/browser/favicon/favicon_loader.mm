@@ -55,23 +55,25 @@ FaviconLoader::~FaviconLoader() {}
 // TODO(pinkerton): How do we update the favicon if it's changed on the web?
 // We can possibly just rely on this class being purged or the app being killed
 // to reset it, but then how do we ensure the FaviconService is updated?
-FaviconAttributes* FaviconLoader::FaviconForPageUrl(
+void FaviconLoader::FaviconForPageUrl(
     const GURL& page_url,
     float size_in_points,
     float min_size_in_points,
     bool fallback_to_google_server,  // retrieve favicon from Google Server if
                                      // GetLargeIconOrFallbackStyle() doesn't
                                      // return valid favicon.
-    FaviconAttributesCompletionBlock block) {
-  NSString* key = base::SysUTF8ToNSString(page_url.spec());
+    FaviconAttributesCompletionBlock faviconBlockHandler) {
+  DCHECK(faviconBlockHandler);
+  NSString* key =
+      [NSString stringWithFormat:@"%d %@", (int)round(size_in_points),
+                                 base::SysUTF8ToNSString(page_url.spec())];
   FaviconAttributes* value = [favicon_cache_ objectForKey:key];
   if (value) {
-    return value;
+    faviconBlockHandler(value);
+    return;
   }
 
   const CGFloat scale = UIScreen.mainScreen.scale;
-  const CGFloat favicon_size_in_pixels = scale * size_in_points;
-  const CGFloat min_favicon_size_in_pixels = scale * min_size_in_points;
   GURL block_page_url(page_url);
   auto favicon_block = ^(const favicon_base::LargeIconResult& result) {
     // GetLargeIconOrFallbackStyle() either returns a valid favicon (which can
@@ -86,9 +88,10 @@ FaviconAttributes* FaviconLoader::FaviconForPageUrl(
       FaviconAttributes* attributes =
           [FaviconAttributes attributesWithImage:favicon];
       [favicon_cache_ setObject:attributes forKey:key];
-      if (block) {
-        block(attributes);
-      }
+
+      DCHECK(favicon.size.width <= size_in_points &&
+             favicon.size.height <= size_in_points);
+      faviconBlockHandler(attributes);
       return;
     } else if (fallback_to_google_server) {
       void (^favicon_loaded_from_server_block)(
@@ -101,16 +104,15 @@ FaviconAttributes* FaviconLoader::FaviconForPageUrl(
             // Favicon should be loaded to the db that backs LargeIconService
             // now.  Fetch it again. Even if the request was not successful, the
             // fallback style will be used.
-            FaviconForPageUrl(block_page_url, size_in_points,
-                              min_size_in_points,
-                              /*continueToGoogleServer=*/false, block);
+            FaviconForPageUrl(
+                block_page_url, size_in_points, min_size_in_points,
+                /*continueToGoogleServer=*/false, faviconBlockHandler);
           };
 
       large_icon_service_
           ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
               favicon::FaviconServerFetcherParams::CreateForMobile(
-                  block_page_url, min_favicon_size_in_pixels,
-                  favicon_size_in_pixels),
+                  block_page_url),
               /*may_page_url_be_private=*/true,
               /*should_trim_page_url_path=*/false, kTrafficAnnotation,
               base::BindRepeating(favicon_loaded_from_server_block));
@@ -129,28 +131,32 @@ FaviconAttributes* FaviconLoader::FaviconForPageUrl(
                                is_default_background_color];
 
     [favicon_cache_ setObject:attributes forKey:key];
-    if (block) {
-      block(attributes);
-    }
+    faviconBlockHandler(attributes);
   };
 
+  // First, synchronously return a fallback image.
+  faviconBlockHandler([FaviconAttributes attributesWithDefaultImage]);
+
+  // Now fetch the image synchronously.
   DCHECK(large_icon_service_);
   large_icon_service_->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
-      page_url, min_favicon_size_in_pixels, favicon_size_in_pixels,
+      page_url, scale * min_size_in_points, scale * size_in_points,
       base::BindRepeating(favicon_block), &cancelable_task_tracker_);
-
-  return [FaviconAttributes attributesWithDefaultImage];
 }
 
-FaviconAttributes* FaviconLoader::FaviconForIconUrl(
+void FaviconLoader::FaviconForIconUrl(
     const GURL& icon_url,
     float size_in_points,
     float min_size_in_points,
-    FaviconAttributesCompletionBlock block) {
-  NSString* key = base::SysUTF8ToNSString(icon_url.spec());
+    FaviconAttributesCompletionBlock faviconBlockHandler) {
+  DCHECK(faviconBlockHandler);
+  NSString* key =
+      [NSString stringWithFormat:@"%d %@", (int)round(size_in_points),
+                                 base::SysUTF8ToNSString(icon_url.spec())];
   FaviconAttributes* value = [favicon_cache_ objectForKey:key];
   if (value) {
-    return value;
+    faviconBlockHandler(value);
+    return;
   }
 
   const CGFloat scale = UIScreen.mainScreen.scale;
@@ -170,9 +176,7 @@ FaviconAttributes* FaviconLoader::FaviconForIconUrl(
       FaviconAttributes* attributes =
           [FaviconAttributes attributesWithImage:favicon];
       [favicon_cache_ setObject:attributes forKey:key];
-      if (block) {
-        block(attributes);
-      }
+      faviconBlockHandler(attributes);
       return;
     }
     // Did not get valid favicon back and are not attempting to retrieve one
@@ -187,18 +191,18 @@ FaviconAttributes* FaviconLoader::FaviconForIconUrl(
                                is_default_background_color];
 
     [favicon_cache_ setObject:attributes forKey:key];
-    if (block) {
-      block(attributes);
-    }
+    faviconBlockHandler(attributes);
   };
 
+  // First, return a fallback synchronously.
+  faviconBlockHandler([FaviconAttributes
+      attributesWithImage:[UIImage imageNamed:@"default_world_favicon"]]);
+
+  // Now call the service for a better async icon.
   DCHECK(large_icon_service_);
   large_icon_service_->GetLargeIconRawBitmapOrFallbackStyleForIconUrl(
       icon_url, min_favicon_size_in_pixels, favicon_size_in_pixels,
       base::BindRepeating(favicon_block), &cancelable_task_tracker_);
-
-  return [FaviconAttributes
-      attributesWithImage:[UIImage imageNamed:@"default_world_favicon"]];
 }
 
 void FaviconLoader::CancellAllRequests() {

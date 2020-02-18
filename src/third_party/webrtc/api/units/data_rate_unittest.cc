@@ -9,6 +9,7 @@
  */
 
 #include "api/units/data_rate.h"
+
 #include "rtc_base/logging.h"
 #include "test/gtest.h"
 
@@ -159,6 +160,19 @@ TEST(UnitConversionTest, DataRateAndDataSizeAndTimeDelta) {
   EXPECT_EQ((rate_b * delta_a).bytes(), kSeconds * kBitsPerSecond / 8);
   EXPECT_EQ((size_c / delta_a).bps(), kBytes * 8 / kSeconds);
   EXPECT_EQ((size_c / rate_b).seconds(), kBytes * 8 / kBitsPerSecond);
+}
+
+TEST(UnitConversionTest, DataRateAndDataSizeAndFrequency) {
+  const int64_t kHertz = 30;
+  const int64_t kBitsPerSecond = 96000;
+  const int64_t kBytes = 1200;
+  const Frequency freq_a = Frequency::hertz(kHertz);
+  const DataRate rate_b = DataRate::bps(kBitsPerSecond);
+  const DataSize size_c = DataSize::bytes(kBytes);
+  EXPECT_EQ((freq_a * size_c).bps(), kHertz * kBytes * 8);
+  EXPECT_EQ((size_c * freq_a).bps(), kHertz * kBytes * 8);
+  EXPECT_EQ((rate_b / size_c).hertz<int64_t>(), kBitsPerSecond / kBytes / 8);
+  EXPECT_EQ((rate_b / freq_a).bytes(), kBitsPerSecond / kHertz / 8);
 }
 
 TEST(UnitConversionTest, DivisionFailsOnLargeSize) {

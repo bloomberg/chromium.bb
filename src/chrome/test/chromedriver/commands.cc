@@ -286,7 +286,7 @@ void ExecuteSessionCommandOnSessionThread(
               status_tmp.code() != kChromeNotReachable) {
             status.AddDetails("failed to check if window was closed: " +
                               status_tmp.message());
-          } else if (!base::ContainsValue(web_view_ids, session->window)) {
+          } else if (!base::Contains(web_view_ids, session->window)) {
             status = Status(kOk);
           }
         }
@@ -314,11 +314,6 @@ void ExecuteSessionCommandOnSessionThread(
         }
       }
 
-      if (status.IsOk() && session->auto_reporting_enabled) {
-        std::string message = session->GetFirstBrowserError();
-        if (!message.empty())
-          status = Status(kUnknownError, message);
-      }
     }
   }
 

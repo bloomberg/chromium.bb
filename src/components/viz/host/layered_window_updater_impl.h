@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "components/viz/host/viz_host_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/privileged/interfaces/compositing/layered_window_updater.mojom.h"
@@ -30,9 +31,8 @@ class VIZ_HOST_EXPORT LayeredWindowUpdaterImpl
   ~LayeredWindowUpdaterImpl() override;
 
   // mojom::LayeredWindowUpdater implementation.
-  void OnAllocatedSharedMemory(
-      const gfx::Size& pixel_size,
-      mojo::ScopedSharedBufferHandle scoped_buffer_handle) override;
+  void OnAllocatedSharedMemory(const gfx::Size& pixel_size,
+                               base::UnsafeSharedMemoryRegion region) override;
   void Draw(DrawCallback draw_callback) override;
 
  private:

@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "build/build_config.h"
-#include "components/autofill/content/common/autofill_driver.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/password_manager/content/browser/content_credential_manager.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
@@ -34,6 +34,12 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/geometry/rect.h"
+
+#if defined(OS_ANDROID)
+#include "components/password_manager/core/browser/credential_cache.h"
+
+class PasswordAccessoryController;
+#endif
 
 class PasswordGenerationPopupObserver;
 class PasswordGenerationPopupControllerImpl;
@@ -100,10 +106,10 @@ class ChromePasswordManagerClient
           best_matches,
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
-      const override;
-  void AutofillHttpAuth(const autofill::PasswordForm& preferred_match,
-                        const password_manager::PasswordFormManagerForUI*
-                            form_manager) const override;
+      override;
+  void AutofillHttpAuth(
+      const autofill::PasswordForm& preferred_match,
+      const password_manager::PasswordFormManagerForUI* form_manager) override;
   bool IsIsolationForPasswordSitesEnabled() const override;
 
   PrefService* GetPrefs() const override;
@@ -122,7 +128,7 @@ class ChromePasswordManagerClient
   std::string GetPageLanguage() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;
-  const password_manager::LogManager* GetLogManager() const override;
+  const autofill::LogManager* GetLogManager() const override;
   password_manager::PasswordRequirementsService*
   GetPasswordRequirementsService() override;
   favicon::FaviconService* GetFaviconService() override;
@@ -137,7 +143,8 @@ class ChromePasswordManagerClient
       const autofill::password_generation::PasswordGenerationUIData& ui_data)
       override;
   void ShowPasswordEditingPopup(const gfx::RectF& bounds,
-                                const autofill::PasswordForm& form) override;
+                                const autofill::PasswordForm& form,
+                                uint32_t field_renderer_id) override;
   void GenerationAvailableForForm(const autofill::PasswordForm& form) override;
   void PasswordGenerationRejectedByTyping() override;
   void PresaveGeneratedPassword(
@@ -174,7 +181,7 @@ class ChromePasswordManagerClient
   void SetTestObserver(PasswordGenerationPopupObserver* observer);
 
   static void BindCredentialManager(
-      blink::mojom::CredentialManagerRequest request,
+      mojo::PendingReceiver<blink::mojom::CredentialManager> receiver,
       content::RenderFrameHost* render_frame_host);
 
   // A helper method to determine whether a save/update bubble can be shown
@@ -185,6 +192,13 @@ class ChromePasswordManagerClient
   bool was_store_ever_called() const { return was_store_ever_called_; }
   bool has_binding_for_credential_manager() const {
     return content_credential_manager_.HasBinding();
+  }
+#endif
+#if defined(OS_ANDROID)
+  PasswordAccessoryController* GetOrCreatePasswordAccessory();
+
+  password_manager::CredentialCache* GetCredentialCacheForTesting() {
+    return &credential_cache_;
   }
 #endif
 
@@ -258,6 +272,11 @@ class ChromePasswordManagerClient
       password_reuse_detection_manager_;
 #endif
 
+#if defined(OS_ANDROID)
+  // Holds and facilitates a credential store for each origin in this tab.
+  password_manager::CredentialCache credential_cache_;
+#endif
+
   password_manager::ContentPasswordManagerDriverFactory* driver_factory_;
 
   // As a mojo service, will be registered into service registry
@@ -280,7 +299,7 @@ class ChromePasswordManagerClient
 
   const password_manager::SyncCredentialsFilter credentials_filter_;
 
-  std::unique_ptr<password_manager::LogManager> log_manager_;
+  std::unique_ptr<autofill::LogManager> log_manager_;
 
   // Recorder of metrics that is associated with the last committed navigation
   // of the WebContents owning this ChromePasswordManagerClient. May be unset at

@@ -4,6 +4,7 @@
 
 #include "components/exo/text_input.h"
 
+#include <memory>
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
@@ -48,7 +49,7 @@ class MockTextInputDelegate : public TextInput::Delegate {
 
 class TestingInputMethodObserver : public ui::InputMethodObserver {
  public:
-  TestingInputMethodObserver(ui::InputMethod* input_method)
+  explicit TestingInputMethodObserver(ui::InputMethod* input_method)
       : input_method_(input_method) {
     input_method_->AddObserver(this);
   }
@@ -165,10 +166,11 @@ TEST_F(TextInputTest, ShowVirtualKeyboardIfEnabled) {
 
   EXPECT_CALL(observer, OnShowVirtualKeyboardIfEnabled)
       .WillOnce(testing::Invoke(
-          [this]() { text_input()->OnKeyboardVisibilityStateChanged(true); }));
+          [this]() { text_input()->OnKeyboardVisibilityChanged(true); }));
   EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged(true)).Times(1);
   text_input()->ShowVirtualKeyboardIfEnabled();
 
+  EXPECT_CALL(observer, OnTextInputStateChanged(nullptr)).Times(1);
   EXPECT_CALL(*delegate(), Deactivated).Times(1);
   text_input()->Deactivate();
 }
@@ -182,7 +184,7 @@ TEST_F(TextInputTest, ShowVirtualKeyboardIfEnabledBeforeActivated) {
   EXPECT_CALL(observer, OnTextInputStateChanged(text_input())).Times(1);
   EXPECT_CALL(observer, OnShowVirtualKeyboardIfEnabled)
       .WillOnce(testing::Invoke(
-          [this]() { text_input()->OnKeyboardVisibilityStateChanged(true); }));
+          [this]() { text_input()->OnKeyboardVisibilityChanged(true); }));
   EXPECT_CALL(*delegate(), Activated).Times(1);
   EXPECT_CALL(*delegate(), OnVirtualKeyboardVisibilityChanged(true)).Times(1);
   text_input()->Activate(surface());

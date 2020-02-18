@@ -31,7 +31,7 @@ namespace {
     };
     AddressModeTestCase addressModes[] = {
         { dawn::AddressMode::Repeat,           0, 255, },
-        { dawn::AddressMode::MirroredRepeat, 255,   0, },
+        { dawn::AddressMode::MirrorRepeat, 255,   0, },
         { dawn::AddressMode::ClampToEdge,    255, 255, },
     };
 }
@@ -50,7 +50,7 @@ protected:
 
         auto pipelineLayout = utils::MakeBasicPipelineLayout(device, &mBindGroupLayout);
 
-        auto vsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
+        auto vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
             #version 450
             void main() {
                 const vec2 pos[6] = vec2[6](vec2(-2.f, -2.f),
@@ -62,7 +62,7 @@ protected:
                 gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
             }
         )");
-        auto fsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+        auto fsModule = utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
             #version 450
             layout(set = 0, binding = 0) uniform sampler sampler0;
             layout(set = 0, binding = 1) uniform texture2D texture0;
@@ -88,9 +88,9 @@ protected:
         descriptor.size.depth = 1;
         descriptor.arrayLayerCount = 1;
         descriptor.sampleCount = 1;
-        descriptor.format = dawn::TextureFormat::R8G8B8A8Unorm;
+        descriptor.format = dawn::TextureFormat::RGBA8Unorm;
         descriptor.mipLevelCount = 1;
-        descriptor.usage = dawn::TextureUsageBit::TransferDst | dawn::TextureUsageBit::Sampled;
+        descriptor.usage = dawn::TextureUsageBit::CopyDst | dawn::TextureUsageBit::Sampled;
         dawn::Texture texture = device.CreateTexture(&descriptor);
 
         // Create a 2x2 checkerboard texture, with black in the top left and bottom right corners.
@@ -101,7 +101,8 @@ protected:
         data[0] = data[rowPixels + 1] = black;
         data[1] = data[rowPixels] = white;
 
-        dawn::Buffer stagingBuffer = utils::CreateBufferFromData(device, data, sizeof(data), dawn::BufferUsageBit::TransferSrc);
+        dawn::Buffer stagingBuffer =
+            utils::CreateBufferFromData(device, data, sizeof(data), dawn::BufferUsageBit::CopySrc);
         dawn::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(stagingBuffer, 0, 256, 0);
         dawn::TextureCopyView textureCopyView =
             utils::CreateTextureCopyView(texture, 0, 0, {0, 0, 0});
@@ -128,7 +129,7 @@ protected:
             descriptor.addressModeW = w.mMode;
             descriptor.lodMinClamp = kLodMin;
             descriptor.lodMaxClamp = kLodMax;
-            descriptor.compareFunction = dawn::CompareFunction::Never;
+            descriptor.compare = dawn::CompareFunction::Never;
             sampler = device.CreateSampler(&descriptor);
         }
 

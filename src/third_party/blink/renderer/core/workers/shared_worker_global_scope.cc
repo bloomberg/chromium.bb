@@ -91,10 +91,10 @@ SharedWorkerGlobalScope::SharedWorkerGlobalScope(
     SharedWorkerThread* thread,
     base::TimeTicks time_origin)
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
-  // When off-the-main-thread script fetch is enabled, ReadyToRunClassicScript()
+  // When off-the-main-thread script fetch is enabled, ReadyToRunWorkerScript()
   // will be called after an app cache is selected.
   if (!features::IsOffMainThreadSharedWorkerScriptFetchEnabled())
-    ReadyToRunClassicScript();
+    ReadyToRunWorkerScript();
 }
 
 SharedWorkerGlobalScope::~SharedWorkerGlobalScope() = default;
@@ -162,8 +162,8 @@ void SharedWorkerGlobalScope::FetchAndRunClassicScript(
       *this,
       CreateOutsideSettingsFetcher(outside_settings_object,
                                    outside_resource_timing_notifier),
-      script_url, destination, network::mojom::FetchRequestMode::kSameOrigin,
-      network::mojom::FetchCredentialsMode::kSameOrigin,
+      script_url, destination, network::mojom::RequestMode::kSameOrigin,
+      network::mojom::CredentialsMode::kSameOrigin,
       WTF::Bind(&SharedWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),
                 WrapPersistent(classic_script_loader)),
@@ -177,7 +177,7 @@ void SharedWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-    network::mojom::FetchCredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode) {
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."
 
@@ -208,7 +208,7 @@ void SharedWorkerGlobalScope::Connect(MessagePortChannel channel) {
 void SharedWorkerGlobalScope::OnAppCacheSelected() {
   DCHECK(IsContextThread());
   DCHECK(features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
-  ReadyToRunClassicScript();
+  ReadyToRunWorkerScript();
 }
 
 void SharedWorkerGlobalScope::DidReceiveResponseForClassicScript(

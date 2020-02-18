@@ -12,6 +12,7 @@
 #define RTC_BASE_THREAD_H_
 
 #include <stdint.h>
+
 #include <list>
 #include <memory>
 #include <string>
@@ -129,18 +130,6 @@ struct _SendMessage {
   bool* ready;
 };
 
-class Runnable {
- public:
-  virtual ~Runnable() {}
-  virtual void Run(Thread* thread) = 0;
-
- protected:
-  Runnable() {}
-
- private:
-  RTC_DISALLOW_COPY_AND_ASSIGN(Runnable);
-};
-
 // WARNING! SUBCLASSES MUST CALL Stop() IN THEIR DESTRUCTORS!  See ~Thread().
 
 class RTC_LOCKABLE Thread : public MessageQueue {
@@ -193,7 +182,7 @@ class RTC_LOCKABLE Thread : public MessageQueue {
   bool SetName(const std::string& name, const void* obj);
 
   // Starts the execution of the thread.
-  bool Start(Runnable* runnable = nullptr);
+  bool Start();
 
   // Tells the thread to stop and waits until it is joined.
   // Never call Stop on the current thread.  Instead use the inherited Quit
@@ -335,11 +324,6 @@ class RTC_LOCKABLE Thread : public MessageQueue {
   friend class ScopedDisallowBlockingCalls;
 
  private:
-  struct ThreadInit {
-    Thread* thread;
-    Runnable* runnable;
-  };
-
   // Sets the per-thread allow-blocking-calls flag and returns the previous
   // value. Must be called on this thread.
   bool SetAllowBlockingCalls(bool allow);
@@ -376,8 +360,8 @@ class RTC_LOCKABLE Thread : public MessageQueue {
   std::list<_SendMessage> sendlist_;
   std::string name_;
 
-// TODO(tommi): Add thread checks for proper use of control methods.
-// Ideally we should be able to just use PlatformThread.
+  // TODO(tommi): Add thread checks for proper use of control methods.
+  // Ideally we should be able to just use PlatformThread.
 
 #if defined(WEBRTC_POSIX)
   pthread_t thread_ = 0;

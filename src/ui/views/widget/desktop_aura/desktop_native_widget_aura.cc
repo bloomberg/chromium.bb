@@ -86,7 +86,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
                                           const gfx::Rect& bounds,
                                           bool full_screen,
                                           bool is_menu,
-                                          bool root_is_always_on_top) {
+                                          ui::ZOrderLevel root_z_order) {
     // This instance will get deleted when the widget is destroyed.
     DesktopNativeWidgetTopLevelHandler* top_level_handler =
         new DesktopNativeWidgetTopLevelHandler;
@@ -103,7 +103,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
     init_params.activatable = full_screen ?
         Widget::InitParams::ACTIVATABLE_YES :
         Widget::InitParams::ACTIVATABLE_NO;
-    init_params.keep_on_top = root_is_always_on_top;
+    init_params.z_order = root_z_order;
 
     // This widget instance will get deleted when the window is
     // destroyed.
@@ -193,14 +193,14 @@ class DesktopNativeWidgetAuraWindowParentingClient
     bool is_menu = window->type() == aura::client::WINDOW_TYPE_MENU;
 
     if (is_fullscreen || is_menu) {
-      bool root_is_always_on_top = false;
+      ui::ZOrderLevel root_z_order = ui::ZOrderLevel::kNormal;
       internal::NativeWidgetPrivate* native_widget =
           DesktopNativeWidgetAura::ForWindow(root_window_);
       if (native_widget)
-        root_is_always_on_top = native_widget->IsAlwaysOnTop();
+        root_z_order = native_widget->GetZOrderLevel();
 
       return DesktopNativeWidgetTopLevelHandler::CreateParentWindow(
-          window, bounds, is_fullscreen, is_menu, root_is_always_on_top);
+          window, bounds, is_fullscreen, is_menu, root_z_order);
     }
     return root_window_;
   }
@@ -249,8 +249,7 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
       last_drop_operation_(ui::DragDropTypes::DRAG_NONE),
       restore_focus_on_activate_(false),
       cursor_(gfx::kNullCursor),
-      widget_type_(Widget::InitParams::TYPE_WINDOW),
-      close_widget_factory_(this) {
+      widget_type_(Widget::InitParams::TYPE_WINDOW) {
   aura::client::SetFocusChangeObserver(content_window_, this);
   wm::SetActivationChangeObserver(content_window_, this);
 }
@@ -814,13 +813,15 @@ bool DesktopNativeWidgetAura::IsActive() const {
   return content_window_ && desktop_window_tree_host_->IsActive();
 }
 
-void DesktopNativeWidgetAura::SetAlwaysOnTop(bool always_on_top) {
+void DesktopNativeWidgetAura::SetZOrderLevel(ui::ZOrderLevel order) {
   if (content_window_)
-    desktop_window_tree_host_->SetAlwaysOnTop(always_on_top);
+    desktop_window_tree_host_->SetZOrderLevel(order);
 }
 
-bool DesktopNativeWidgetAura::IsAlwaysOnTop() const {
-  return content_window_ && desktop_window_tree_host_->IsAlwaysOnTop();
+ui::ZOrderLevel DesktopNativeWidgetAura::GetZOrderLevel() const {
+  if (content_window_)
+    return desktop_window_tree_host_->GetZOrderLevel();
+  return ui::ZOrderLevel::kNormal;
 }
 
 void DesktopNativeWidgetAura::SetVisibleOnAllWorkspaces(bool always_visible) {
@@ -888,11 +889,12 @@ void DesktopNativeWidgetAura::FlashFrame(bool flash_frame) {
 
 void DesktopNativeWidgetAura::RunShellDrag(
     View* view,
-    const ui::OSExchangeData& data,
+    std::unique_ptr<ui::OSExchangeData> data,
     const gfx::Point& location,
     int operation,
     ui::DragDropTypes::DragEventSource source) {
-  views::RunShellDrag(content_window_, data, location, operation, source);
+  views::RunShellDrag(content_window_, std::move(data), location, operation,
+                      source);
 }
 
 void DesktopNativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -1003,10 +1005,6 @@ void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
   NativeWidgetAura::SetResizeBehaviorFromDelegate(
       GetWidget()->widget_delegate(), content_window_);
   desktop_window_tree_host_->SizeConstraintsChanged();
-}
-
-void DesktopNativeWidgetAura::OnCanActivateChanged() {
-  desktop_window_tree_host_->OnCanActivateChanged();
 }
 
 std::string DesktopNativeWidgetAura::GetName() const {
@@ -1196,7 +1194,9 @@ void DesktopNativeWidgetAura::OnDragExited() {
   drop_helper_->OnDragExit();
 }
 
-int DesktopNativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
+int DesktopNativeWidgetAura::OnPerformDrop(
+    const ui::DropTargetEvent& event,
+    std::unique_ptr<ui::OSExchangeData> data) {
   DCHECK(drop_helper_.get() != nullptr);
   if (ShouldActivate())
     Activate();

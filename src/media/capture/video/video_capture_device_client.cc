@@ -31,6 +31,11 @@ namespace {
 
 bool IsFormatSupported(media::VideoPixelFormat pixel_format) {
   return (pixel_format == media::PIXEL_FORMAT_I420 ||
+#if defined(OS_CHROMEOS)
+          // Used by GpuMemoryBuffer on Chrome OS.
+          pixel_format == media::PIXEL_FORMAT_NV12 ||
+          pixel_format == media::PIXEL_FORMAT_MJPEG ||
+#endif
           pixel_format == media::PIXEL_FORMAT_Y16);
 }
 
@@ -78,7 +83,6 @@ gfx::ColorSpace OverrideColorSpaceForLibYuvConversion(
     case media::PIXEL_FORMAT_ARGB:
     case media::PIXEL_FORMAT_XRGB:
     case media::PIXEL_FORMAT_RGB24:
-    case media::PIXEL_FORMAT_RGB32:
     case media::PIXEL_FORMAT_ABGR:
     case media::PIXEL_FORMAT_XBGR:
       // Check if we can merge data 's primary and transfer function into the
@@ -137,6 +141,11 @@ class BufferPoolBufferHandleProvider
       override {
     return buffer_pool_->GetHandleForInProcessAccess(buffer_id_);
   }
+#if defined(OS_CHROMEOS)
+  gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() override {
+    return buffer_pool_->GetGpuMemoryBufferHandle(buffer_id_);
+  }
+#endif
 
  private:
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
@@ -194,6 +203,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     const VideoCaptureFormat& format,
     const gfx::ColorSpace& data_color_space,
     int rotation,
+    bool flip_y,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp,
     int frame_feedback_id) {
@@ -313,14 +323,9 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       flip = true;
 #endif
       break;
-    case PIXEL_FORMAT_RGB32:
-// Fallback to PIXEL_FORMAT_ARGB setting |flip| in Windows
-// platforms.
-#if defined(OS_WIN)
-      flip = true;
-      FALLTHROUGH;
-#endif
     case PIXEL_FORMAT_ARGB:
+      // Windows platforms e.g. send the data vertically flipped sometimes.
+      flip = flip_y;
       fourcc_format = libyuv::FOURCC_ARGB;
       break;
     case PIXEL_FORMAT_MJPEG:
@@ -479,7 +484,7 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(const gfx::Size& frame_size,
 
   DCHECK_NE(VideoCaptureBufferPool::kInvalidId, buffer_id);
 
-  if (!base::ContainsValue(buffer_ids_known_by_receiver_, buffer_id)) {
+  if (!base::Contains(buffer_ids_known_by_receiver_, buffer_id)) {
     media::mojom::VideoBufferHandlePtr buffer_handle =
         media::mojom::VideoBufferHandle::New();
     switch (target_buffer_type_) {
@@ -496,6 +501,12 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(const gfx::Size& frame_size,
       case VideoCaptureBufferType::kMailboxHolder:
         NOTREACHED();
         break;
+#if defined(OS_CHROMEOS)
+      case VideoCaptureBufferType::kGpuMemoryBuffer:
+        buffer_handle->set_gpu_memory_buffer_handle(
+            buffer_pool_->GetGpuMemoryBufferHandle(buffer_id));
+        break;
+#endif
     }
     receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
     buffer_ids_known_by_receiver_.push_back(buffer_id);

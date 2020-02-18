@@ -121,6 +121,15 @@ class Compiler {
     OpenGL_4_5 = 450,
   };
 
+  // SPIR-V version.
+  enum class SpirvVersion : uint32_t {
+    v1_0 = 0x010000u,
+    v1_1 = 0x010100u,
+    v1_2 = 0x010200u,
+    v1_3 = 0x010300u,
+    v1_4 = 0x010400u,
+  };
+
   enum class OutputType {
     SpirvBinary,  // A binary module, as defined by the SPIR-V specification.
     SpirvAssemblyText,  // Assembly syntax defined by the SPIRV-Tools project.
@@ -222,6 +231,8 @@ class Compiler {
         enabled_opt_passes_(),
         target_env_(TargetEnv::Vulkan),
         target_env_version_(TargetEnvVersion::Default),
+        target_spirv_version_(SpirvVersion::v1_0),
+        target_spirv_version_is_forced_(false),
         source_language_(SourceLanguage::GLSL),
         limits_(kDefaultTBuiltInResource),
         auto_bind_uniforms_(false),
@@ -231,6 +242,8 @@ class Compiler {
         hlsl_offsets_(false),
         hlsl_legalization_enabled_(true),
         hlsl_functionality1_enabled_(false),
+        invert_y_enabled_(false),
+        nan_clamp_(false),
         hlsl_explicit_bindings_() {}
 
   // Requests that the compiler place debug information into the object code,
@@ -246,6 +259,15 @@ class Compiler {
 
   // Enables or disables extension SPV_GOOGLE_hlsl_functionality1
   void EnableHlslFunctionality1(bool enable);
+
+  // Enables or disables invert position.Y output in vertex shader.
+  void EnableInvertY(bool enable);
+
+  // Sets whether the compiler generates code for max and min builtins which,
+  // if given a NaN operand, will return the other operand.  Also, the clamp
+  // builtin will favour the non-NaN operands, as if clamp were implemented
+  // as a composition of max and min.
+  void SetNanClamp(bool enable);
 
   // When a warning is encountered it treat it as an error.
   void SetWarningsAsErrors();
@@ -266,6 +288,12 @@ class Compiler {
   // 4.5 if the target environment is OpenGL.
   void SetTargetEnv(TargetEnv env,
                     TargetEnvVersion version = TargetEnvVersion::Default);
+
+  // Sets the target version of SPIR-V.  The module will use this version
+  // of SPIR-V.  Defaults to the highest version of SPIR-V required to be
+  // supported by the target environment.  E.g. default to SPIR-V 1.0 for
+  // Vulkan 1.0, and SPIR-V 1.3 for Vulkan 1.1.
+  void SetTargetSpirv(SpirvVersion version);
 
   // Sets the souce language.
   void SetSourceLanguage(SourceLanguage lang);
@@ -485,6 +513,11 @@ class Compiler {
   // for those defaults.
   TargetEnvVersion target_env_version_;
 
+  // The SPIR-V version to be used for the generated module.  Defaults to 1.0.
+  SpirvVersion target_spirv_version_;
+  // True if the user explicitly set the target SPIR-V version.
+  bool target_spirv_version_is_forced_;
+
   // The source language.  Defaults to GLSL.
   SourceLanguage source_language_;
 
@@ -517,6 +550,15 @@ class Compiler {
 
   // True if the compiler should support extension SPV_GOOGLE_hlsl_functionality1.
   bool hlsl_functionality1_enabled_;
+
+  // True if the compiler should invert position.Y output in vertex shader.
+  bool invert_y_enabled_;
+
+  // True if the compiler generates code for max and min builtins which,
+  // if given a NaN operand, will return the other operand.  Also, the clamp
+  // builtin will favour the non-NaN operands, as if clamp were implemented
+  // as a composition of max and min.
+  bool nan_clamp_;
 
   // A sequence of triples, each triple representing a specific HLSL register
   // name, and the set and binding numbers it should be mapped to, but in
@@ -568,6 +610,37 @@ inline Compiler::Stage ConvertToStage(EShLanguage stage) {
   assert(false && "Invalid case");
   return Compiler::Stage::Compute;
 }
+
+// A GlslangClientInfo captures target client version and desired SPIR-V
+// version.
+struct GlslangClientInfo {
+  GlslangClientInfo() {}
+  GlslangClientInfo(const std::string& e, glslang::EShClient c,
+                    glslang::EShTargetClientVersion cv,
+                    glslang::EShTargetLanguage l,
+                    glslang::EShTargetLanguageVersion lv)
+      : error(e),
+        client(c),
+        client_version(cv),
+        target_language(l),
+        target_language_version(lv) {}
+
+  std::string error;  // Empty if ok, otherwise contains the error message.
+  glslang::EShClient client = glslang::EShClientNone;
+  glslang::EShTargetClientVersion client_version;
+  glslang::EShTargetLanguage target_language = glslang::EShTargetSpv;
+  glslang::EShTargetLanguageVersion target_language_version =
+      glslang::EShTargetSpv_1_0;
+};
+
+// Returns the mappings to Glslang client, client version, and SPIR-V version.
+// Also indicates whether the input values were valid.
+GlslangClientInfo GetGlslangClientInfo(
+    const std::string& error_tag,  // Indicates source location, for errors.
+    shaderc_util::Compiler::TargetEnv env,
+    shaderc_util::Compiler::TargetEnvVersion env_version,
+    shaderc_util::Compiler::SpirvVersion spv_version,
+    bool spv_version_is_forced);
 
 }  // namespace shaderc_util
 #endif  // LIBSHADERC_UTIL_INC_COMPILER_H

@@ -15,24 +15,27 @@
 GrGLTextureRenderTarget::GrGLTextureRenderTarget(GrGLGpu* gpu,
                                                  SkBudgeted budgeted,
                                                  const GrSurfaceDesc& desc,
+                                                 int sampleCount,
                                                  const GrGLTexture::IDDesc& texIDDesc,
                                                  const GrGLRenderTarget::IDDesc& rtIDDesc,
                                                  GrMipMapsStatus mipMapsStatus)
-        : GrSurface(gpu, desc)
-        , GrGLTexture(gpu, desc, texIDDesc, mipMapsStatus)
-        , GrGLRenderTarget(gpu, desc, texIDDesc.fInfo.fFormat, rtIDDesc) {
+        : GrSurface(gpu, desc, GrProtected::kNo)
+        , GrGLTexture(gpu, desc, texIDDesc, nullptr, mipMapsStatus)
+        , GrGLRenderTarget(gpu, desc, sampleCount, texIDDesc.fInfo.fFormat, rtIDDesc) {
     this->registerWithCache(budgeted);
 }
 
 GrGLTextureRenderTarget::GrGLTextureRenderTarget(GrGLGpu* gpu,
                                                  const GrSurfaceDesc& desc,
+                                                 int sampleCount,
                                                  const GrGLTexture::IDDesc& texIDDesc,
+                                                 sk_sp<GrGLTextureParameters> parameters,
                                                  const GrGLRenderTarget::IDDesc& rtIDDesc,
                                                  GrWrapCacheable cacheable,
                                                  GrMipMapsStatus mipMapsStatus)
-        : GrSurface(gpu, desc)
-        , GrGLTexture(gpu, desc, texIDDesc, mipMapsStatus)
-        , GrGLRenderTarget(gpu, desc, texIDDesc.fInfo.fFormat, rtIDDesc) {
+        : GrSurface(gpu, desc, GrProtected::kNo)
+        , GrGLTexture(gpu, desc, texIDDesc, std::move(parameters), mipMapsStatus)
+        , GrGLRenderTarget(gpu, desc, sampleCount, texIDDesc.fInfo.fFormat, rtIDDesc) {
     this->registerWithCacheWrapped(cacheable);
 }
 
@@ -57,15 +60,16 @@ bool GrGLTextureRenderTarget::canAttemptStencilAttachment() const {
 }
 
 sk_sp<GrGLTextureRenderTarget> GrGLTextureRenderTarget::MakeWrapped(
-        GrGLGpu* gpu, const GrSurfaceDesc& desc, const GrGLTexture::IDDesc& texIDDesc,
+        GrGLGpu* gpu, const GrSurfaceDesc& desc, int sampleCount,
+        const GrGLTexture::IDDesc& texIDDesc, sk_sp<GrGLTextureParameters> parameters,
         const GrGLRenderTarget::IDDesc& rtIDDesc, GrWrapCacheable cacheable,
         GrMipMapsStatus mipMapsStatus) {
     return sk_sp<GrGLTextureRenderTarget>(
-            new GrGLTextureRenderTarget(gpu, desc, texIDDesc, rtIDDesc, cacheable, mipMapsStatus));
+            new GrGLTextureRenderTarget(gpu, desc, sampleCount, texIDDesc, std::move(parameters),
+                                        rtIDDesc, cacheable, mipMapsStatus));
 }
 
 size_t GrGLTextureRenderTarget::onGpuMemorySize() const {
     return GrSurface::ComputeSize(this->config(), this->width(), this->height(),
-                                    this->numSamplesOwnedPerPixel(),
-                                    this->texturePriv().mipMapped());
+                                  this->numSamplesOwnedPerPixel(), this->texturePriv().mipMapped());
 }

@@ -13,8 +13,8 @@
         display: flex;
         flex-direction: column;
         margin: 24px auto;
-        max-width: var(--card-width);
-        min-width: 550px;
+        max-width: var(--card-max-width);
+        min-width: var(--card-min-width);
       }
 
       .separated-row {
@@ -23,10 +23,18 @@
         justify-content: space-between;
       }
 
+      .card-row {
+        border-top: var(--card-separator);
+        padding: 0 24px;
+      }
+
       .permission-card-row {
         border-top: var(--card-separator);
-        cursor: pointer;
         padding: 0 24px;
+      }
+
+      .clickable {
+        cursor: pointer;
       }
 
       .permission-card-row:first-child {
@@ -50,18 +58,6 @@
 
       .permission-list > * {
         flex: 0 0 var(--permission-list-item-height);
-      }
-
-      .extra-permission-header-button {
-        margin-inline-end: 16px;
-      }
-
-      .native-settings-button {
-        --paper-button-ink-color: none;
-        --hover-bg-color: var(--google-grey-refresh-100);
-        border: none;
-        display: flex;
-        font-size: 12px;
       }
 
       .native-settings-icon {
@@ -89,6 +85,11 @@
         height: 36px;
         margin-inline-end: 12px;
         width: 36px;
+      }
+
+      .horizontal-align {
+        align-items: center;
+        display: flex;
       }
 
       .expander-list-row {

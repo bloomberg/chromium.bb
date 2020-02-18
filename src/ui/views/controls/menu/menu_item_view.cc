@@ -40,6 +40,7 @@
 #include "ui/views/controls/menu/menu_separator.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/vector_icons.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
@@ -97,9 +98,6 @@ int MenuItemView::item_right_margin_;
 
 // static
 int MenuItemView::pref_menu_height_;
-
-// static
-const char MenuItemView::kViewClassName[] = "MenuItemView";
 
 MenuItemView::MenuItemView(MenuDelegate* delegate)
     : delegate_(delegate),
@@ -765,10 +763,6 @@ MenuItemView::~MenuItemView() {
     delete item;
 }
 
-const char* MenuItemView::GetClassName() const {
-  return kViewClassName;
-}
-
 // Calculates all sizes that we can from the OS.
 //
 // This is invoked prior to Running a menu.
@@ -981,8 +975,14 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   if (type_ == CHECKBOX && delegate->IsItemChecked(GetCommand())) {
     radio_check_image_view_->SetImage(GetMenuCheckImage(icon_color));
   } else if (type_ == RADIO) {
-    radio_check_image_view_->SetImage(GetRadioButtonImage(
-        delegate->IsItemChecked(GetCommand()), render_selection, icon_color));
+    const bool toggled = delegate->IsItemChecked(GetCommand());
+    const gfx::VectorIcon& radio_icon =
+        toggled ? kMenuRadioSelectedIcon : kMenuRadioEmptyIcon;
+    const SkColor radio_icon_color = GetNativeTheme()->GetSystemColor(
+        toggled ? ui::NativeTheme::kColorId_ProminentButtonColor
+                : ui::NativeTheme::kColorId_ButtonEnabledColor);
+    radio_check_image_view_->SetImage(
+        gfx::CreateVectorIcon(radio_icon, kMenuCheckSize, radio_icon_color));
   }
 
   // Render the foreground.
@@ -1404,5 +1404,9 @@ bool MenuItemView::HasChecksOrRadioButtons() const {
       menu_items.cbegin(), menu_items.cend(),
       [](const auto* item) { return item->HasChecksOrRadioButtons(); });
 }
+
+BEGIN_METADATA(MenuItemView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

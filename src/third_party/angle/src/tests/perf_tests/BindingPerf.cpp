@@ -13,6 +13,7 @@
 #include <random>
 #include <sstream>
 
+#include "test_utils/angle_test_instantiate.h"
 #include "util/shader_utils.h"
 
 namespace angle
@@ -90,7 +91,14 @@ class BindingsBenchmark : public ANGLERenderTest,
     std::vector<GLenum> mBindingPoints;
 };
 
-BindingsBenchmark::BindingsBenchmark() : ANGLERenderTest("Bindings", GetParam()) {}
+BindingsBenchmark::BindingsBenchmark() : ANGLERenderTest("Bindings", GetParam())
+{
+    // Flaky on Windows Intel OpenGL. http://crbug.com/974083
+    if (IsIntel() && GetParam().eglParameters.renderer == EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE)
+    {
+        mSkipTest = true;
+    }
+}
 
 void BindingsBenchmark::initializeBenchmark()
 {
@@ -196,7 +204,7 @@ BindingsParams D3D9Params(AllocationStyle allocationStyle)
 BindingsParams OpenGLOrGLESParams(AllocationStyle allocationStyle)
 {
     BindingsParams params;
-    params.eglParameters   = egl_platform::OPENGL_OR_GLES(true);
+    params.eglParameters   = egl_platform::OPENGL_OR_GLES_NULL();
     params.allocationStyle = allocationStyle;
     return params;
 }

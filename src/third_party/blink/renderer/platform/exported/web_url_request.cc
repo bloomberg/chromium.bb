@@ -34,7 +34,7 @@
 
 #include "base/time/time.h"
 #include "net/base/load_flags.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -42,7 +42,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 using blink::mojom::FetchCacheMode;
 
@@ -172,7 +172,11 @@ void WebURLRequest::SetHttpReferrer(
       web_referrer.IsEmpty() ? Referrer::NoReferrer() : String(web_referrer);
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.
-  resource_request_->SetHttpReferrer(Referrer(referrer, referrer_policy));
+  resource_request_->SetHttpReferrer(
+      Referrer(referrer, referrer_policy),
+      ResourceRequest::SetHttpReferrerLocation::kWebURLRequest);
+  resource_request_->SetReferrerString(
+      referrer, ResourceRequest::SetReferrerStringLocation::kWebURLRequest);
 }
 
 void WebURLRequest::AddHttpHeaderField(const WebString& name,
@@ -300,31 +304,28 @@ void WebURLRequest::SetShouldResetAppCache(bool set_should_reset_app_cache) {
   resource_request_->SetShouldResetAppCache(set_should_reset_app_cache);
 }
 
-network::mojom::FetchRequestMode WebURLRequest::GetFetchRequestMode() const {
-  return resource_request_->GetFetchRequestMode();
+network::mojom::RequestMode WebURLRequest::GetMode() const {
+  return resource_request_->GetMode();
 }
 
-void WebURLRequest::SetFetchRequestMode(network::mojom::FetchRequestMode mode) {
-  return resource_request_->SetFetchRequestMode(mode);
+void WebURLRequest::SetMode(network::mojom::RequestMode mode) {
+  return resource_request_->SetMode(mode);
 }
 
-network::mojom::FetchCredentialsMode WebURLRequest::GetFetchCredentialsMode()
-    const {
-  return resource_request_->GetFetchCredentialsMode();
+network::mojom::CredentialsMode WebURLRequest::GetCredentialsMode() const {
+  return resource_request_->GetCredentialsMode();
 }
 
-void WebURLRequest::SetFetchCredentialsMode(
-    network::mojom::FetchCredentialsMode mode) {
-  return resource_request_->SetFetchCredentialsMode(mode);
+void WebURLRequest::SetCredentialsMode(network::mojom::CredentialsMode mode) {
+  return resource_request_->SetCredentialsMode(mode);
 }
 
-network::mojom::FetchRedirectMode WebURLRequest::GetFetchRedirectMode() const {
-  return resource_request_->GetFetchRedirectMode();
+network::mojom::RedirectMode WebURLRequest::GetRedirectMode() const {
+  return resource_request_->GetRedirectMode();
 }
 
-void WebURLRequest::SetFetchRedirectMode(
-    network::mojom::FetchRedirectMode redirect) {
-  return resource_request_->SetFetchRedirectMode(redirect);
+void WebURLRequest::SetRedirectMode(network::mojom::RedirectMode redirect) {
+  return resource_request_->SetRedirectMode(redirect);
 }
 
 WebString WebURLRequest::GetFetchIntegrity() const {
@@ -493,6 +494,14 @@ const ResourceRequest& WebURLRequest::ToResourceRequest() const {
 
 base::Optional<WebString> WebURLRequest::GetDevToolsId() const {
   return resource_request_->GetDevToolsId();
+}
+
+bool WebURLRequest::IsFromOriginDirtyStyleSheet() const {
+  return resource_request_->IsFromOriginDirtyStyleSheet();
+}
+
+bool WebURLRequest::IsSignedExchangePrefetchCacheEnabled() const {
+  return resource_request_->IsSignedExchangePrefetchCacheEnabled();
 }
 
 WebURLRequest::WebURLRequest(ResourceRequest& r) : resource_request_(&r) {}

@@ -17,6 +17,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "components/offline_items_collection/core/offline_item.h"
+#include "components/offline_items_collection/core/update_delta.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/gfx/image/image.h"
@@ -199,11 +200,7 @@ class BackgroundFetchDelegateImpl
 
       Status status = Status::kAbsent;
 
-      // The request body blob will be stored here after the Download Service
-      // queries the upload data. The blob handle needs to be kept alive
-      // while the request is sent out, and will be cleared after.
-      blink::mojom::SerializedBlobPtr request_body_blob = nullptr;
-
+      uint64_t body_size_bytes = 0u;
       uint64_t in_progress_uploaded_bytes = 0u;
       uint64_t in_progress_downloaded_bytes = 0u;
     };
@@ -217,6 +214,7 @@ class BackgroundFetchDelegateImpl
     std::map<std::string, RequestData> current_fetch_guids;
 
     offline_items_collection::OfflineItem offline_item;
+    base::Optional<offline_items_collection::UpdateDelta> update_delta;
     State job_state;
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description;
     bool cancelled_from_ui = false;
@@ -295,7 +293,7 @@ class BackgroundFetchDelegateImpl
   // Testing-only closure to inform tests when a UKM event has been recorded.
   base::OnceClosure ukm_event_recorded_for_testing_;
 
-  base::WeakPtrFactory<BackgroundFetchDelegateImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<BackgroundFetchDelegateImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchDelegateImpl);
 };

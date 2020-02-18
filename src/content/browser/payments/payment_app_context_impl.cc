@@ -56,7 +56,7 @@ void PaymentAppContextImpl::CreatePaymentManager(
 void PaymentAppContextImpl::PaymentManagerHadConnectionError(
     PaymentManager* payment_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(base::ContainsKey(payment_managers_, payment_manager));
+  DCHECK(base::Contains(payment_managers_, payment_manager));
 
   payment_managers_.erase(payment_manager);
 }

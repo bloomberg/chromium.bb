@@ -4,25 +4,28 @@
 
 #include "components/previews/content/previews_optimization_guide.h"
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_component_util.h"
+#include "components/optimization_guide/hints_fetcher.h"
+#include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/content/hint_cache_store.h"
-#include "components/previews/content/hints_fetcher.h"
 #include "components/previews/content/previews_hints.h"
-#include "components/previews/content/previews_hints_util.h"
-#include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_switches.h"
@@ -47,73 +50,6 @@ constexpr base::TimeDelta kFetchRetryDelay = base::TimeDelta::FromMinutes(15);
 constexpr base::TimeDelta kUpdateFetchedHintsDelay =
     base::TimeDelta::FromHours(24);
 
-// Hints are purged during startup if the explicit purge switch exists or if
-// a proto override is being used--in which case the hints need to come from the
-// override instead.
-bool ShouldPurgeHintCacheStoreOnStartup() {
-  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  return cmd_line->HasSwitch(switches::kHintsProtoOverride) ||
-         cmd_line->HasSwitch(switches::kPurgeHintCacheStore);
-}
-
-// Available hint components are only processed if a proto override isn't being
-// used; otherwise, the hints from the proto override are used instead.
-bool IsHintComponentProcessingDisabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHintsProtoOverride);
-}
-
-// Attempts to parse a base64 encoded Optimization Guide Configuration proto
-// from the command line. If no proto is given or if it is encoded incorrectly,
-// nullptr is returned.
-std::unique_ptr<optimization_guide::proto::Configuration>
-ParseHintsProtoFromCommandLine() {
-  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kHintsProtoOverride))
-    return nullptr;
-
-  std::string b64_pb =
-      cmd_line->GetSwitchValueASCII(switches::kHintsProtoOverride);
-
-  std::string binary_pb;
-  if (!base::Base64Decode(b64_pb, &binary_pb)) {
-    LOG(ERROR) << "Invalid base64 encoding of the Hints Proto Override";
-    return nullptr;
-  }
-
-  std::unique_ptr<optimization_guide::proto::Configuration>
-      proto_configuration =
-          std::make_unique<optimization_guide::proto::Configuration>();
-  if (!proto_configuration->ParseFromString(binary_pb)) {
-    LOG(ERROR) << "Invalid proto provided to the Hints Proto Override";
-    return nullptr;
-  }
-
-  return proto_configuration;
-}
-
-// Parses a list of hosts to have hints fetched for. This overrides scheduling
-// of the first hints fetch and forces it to occur immediately. If no hosts are
-// provided, nullopt is returned.
-base::Optional<std::vector<std::string>>
-ParseHintsFetchOverrideFromCommandLine() {
-  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kFetchHintsOverride))
-    return base::nullopt;
-
-  std::string override_hosts_value =
-      cmd_line->GetSwitchValueASCII(switches::kFetchHintsOverride);
-
-  std::vector<std::string> hosts =
-      base::SplitString(override_hosts_value, ",", base::TRIM_WHITESPACE,
-                        base::SPLIT_WANT_NONEMPTY);
-
-  if (hosts.size() == 0)
-    return base::nullopt;
-
-  return hosts;
-}
-
 // Provides a random time delta in seconds between |kFetchRandomMinDelay| and
 // |kFetchRandomMaxDelay|.
 base::TimeDelta RandomFetchDelay() {
@@ -132,27 +68,24 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
     const base::FilePath& profile_path,
     PrefService* pref_service,
     leveldb_proto::ProtoDatabaseProvider* database_provider,
-    PreviewsTopHostProvider* previews_top_host_provider,
+    optimization_guide::TopHostProvider* top_host_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : optimization_guide_service_(optimization_guide_service),
       ui_task_runner_(ui_task_runner),
       background_task_runner_(background_task_runner),
-      hint_cache_(std::make_unique<HintCache>(
-          std::make_unique<HintCacheStore>(database_provider,
-                                           profile_path,
-                                           pref_service,
-                                           background_task_runner_))),
-      previews_top_host_provider_(previews_top_host_provider),
+      hint_cache_(std::make_unique<optimization_guide::HintCache>(
+          std::make_unique<optimization_guide::HintCacheStore>(
+              database_provider,
+              profile_path,
+              pref_service,
+              background_task_runner_))),
+      top_host_provider_(top_host_provider),
       time_clock_(base::DefaultClock::GetInstance()),
       pref_service_(pref_service),
-      url_loader_factory_(url_loader_factory),
-      ui_weak_ptr_factory_(this) {
+      url_loader_factory_(url_loader_factory) {
   DCHECK(optimization_guide_service_);
-  // TODO(mcrouse): This needs to be a pref to persist the last fetch attempt
-  // time and prevent crash loops.
-  last_fetch_attempt_ = base::Time();
   hint_cache_->Initialize(
-      ShouldPurgeHintCacheStoreOnStartup(),
+      optimization_guide::switches::ShouldPurgeHintCacheStoreOnStartup(),
       base::BindOnce(&PreviewsOptimizationGuide::OnHintCacheInitialized,
                      ui_weak_ptr_factory_.GetWeakPtr()));
 }
@@ -197,6 +130,10 @@ bool PreviewsOptimizationGuide::IsBlacklisted(const GURL& url,
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   if (type == PreviewsType::LITE_PAGE_REDIRECT) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
+      return false;
+    }
 
     if (!hints_)
       return true;
@@ -268,7 +205,7 @@ void PreviewsOptimizationGuide::OnHintCacheInitialized() {
   // don't normally expect one, but if one is provided then use that and do not
   // register as an observer as the opt_guide service.
   std::unique_ptr<optimization_guide::proto::Configuration> manual_config =
-      ParseHintsProtoFromCommandLine();
+      optimization_guide::switches::ParseComponentConfigFromCommandLine();
   if (manual_config) {
     // Allow |UpdateHints| to block startup so that the first navigation gets
     // the hints when a command line hint proto is provided.
@@ -293,7 +230,7 @@ void PreviewsOptimizationGuide::OnHintsComponentAvailable(
   // Check for if hint component is disabled. This check is needed because the
   // optimization guide still registers with the service as an observer for
   // components as a signal during testing.
-  if (IsHintComponentProcessingDisabled()) {
+  if (optimization_guide::switches::IsHintComponentProcessingDisabled()) {
     return;
   }
 
@@ -316,17 +253,20 @@ void PreviewsOptimizationGuide::OnHintsComponentAvailable(
 
 void PreviewsOptimizationGuide::FetchHints() {
   base::Optional<std::vector<std::string>> top_hosts =
-      ParseHintsFetchOverrideFromCommandLine();
+      optimization_guide::switches::ParseHintsFetchOverrideFromCommandLine();
   if (!top_hosts) {
-    top_hosts = previews_top_host_provider_->GetTopHosts(
-        previews::params::MaxHostsForOptimizationGuideServiceHintsFetch());
+    top_hosts = top_host_provider_->GetTopHosts(
+        optimization_guide::features::
+            MaxHostsForOptimizationGuideServiceHintsFetch());
   }
-  DCHECK_GE(previews::params::MaxHostsForOptimizationGuideServiceHintsFetch(),
+  DCHECK_GE(optimization_guide::features::
+                MaxHostsForOptimizationGuideServiceHintsFetch(),
             top_hosts->size());
 
   if (!hints_fetcher_) {
-    hints_fetcher_ = std::make_unique<HintsFetcher>(
-        url_loader_factory_, params::GetOptimizationGuideServiceURL());
+    hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
+        url_loader_factory_,
+        optimization_guide::features::GetOptimizationGuideServiceURL());
   }
 
   if (top_hosts->size() > 0) {
@@ -362,6 +302,7 @@ void PreviewsOptimizationGuide::OnFetchedHintsStored() {
   hints_fetch_timer_.Start(
       FROM_HERE, hint_cache_->FetchedHintsUpdateTime() - time_clock_->Now(),
       this, &PreviewsOptimizationGuide::ScheduleHintsFetch);
+  // TODO(mcrouse): Purge hints now that new fetched hints have been stored.
 }
 
 void PreviewsOptimizationGuide::UpdateHints(
@@ -389,14 +330,15 @@ void PreviewsOptimizationGuide::OnHintsUpdated(
     base::OnceClosure update_closure) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   DCHECK(pref_service_);
-  if (!update_closure.is_null())
-    std::move(update_closure).Run();
 
   // Record the result of updating the hints. This is used as a signal for the
-  // hints being fully processed in testing.
+  // hints being fully processed in release tools and testing.
   LOCAL_HISTOGRAM_BOOLEAN(
-      kPreviewsOptimizationGuideUpdateHintsResultHistogramString,
-      hints_ != NULL);
+      optimization_guide::kComponentHintsUpdatedResultHistogramString,
+      hints_ != nullptr);
+
+  if (!update_closure.is_null())
+    std::move(update_closure).Run();
 
   // If the client is eligible to fetch hints, currently controlled by a feature
   // flag |kOptimizationHintsFetching|, fetch hints from the remote Optimization
@@ -409,17 +351,33 @@ void PreviewsOptimizationGuide::OnHintsUpdated(
     return;
   }
 
-  if (!previews::params::IsHintsFetchingEnabled())
+  if (!optimization_guide::features::IsHintsFetchingEnabled())
     return;
 
-  if (ParseHintsFetchOverrideFromCommandLine()) {
+  if (optimization_guide::switches::ParseHintsFetchOverrideFromCommandLine() ||
+      optimization_guide::switches::ShouldOverrideFetchHintsTimer()) {
     // Skip the fetch scheduling logic and perform a hints fetch immediately
     // after initialization.
-    last_fetch_attempt_ = time_clock_->Now();
+    SetLastHintsFetchAttemptTime(time_clock_->Now());
     FetchHints();
   } else {
     ScheduleHintsFetch();
   }
+}
+
+void PreviewsOptimizationGuide::SetLastHintsFetchAttemptTime(
+    base::Time last_attempt_time) {
+  DCHECK(pref_service_);
+  pref_service_->SetInt64(
+      optimization_guide::prefs::kHintsFetcherLastFetchAttempt,
+      last_attempt_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+}
+
+base::Time PreviewsOptimizationGuide::GetLastHintsFetchAttemptTime() const {
+  DCHECK(pref_service_);
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(pref_service_->GetInt64(
+          optimization_guide::prefs::kHintsFetcherLastFetchAttempt)));
 }
 
 void PreviewsOptimizationGuide::ScheduleHintsFetch() {
@@ -433,13 +391,13 @@ void PreviewsOptimizationGuide::ScheduleHintsFetch() {
   const base::TimeDelta time_until_update_time =
       hint_cache_->FetchedHintsUpdateTime() - time_clock_->Now();
   const base::TimeDelta time_until_retry =
-      last_fetch_attempt_ + kFetchRetryDelay - time_clock_->Now();
+      GetLastHintsFetchAttemptTime() + kFetchRetryDelay - time_clock_->Now();
   base::TimeDelta fetcher_delay;
   if (time_until_update_time <= base::TimeDelta() &&
       time_until_retry <= base::TimeDelta()) {
     // Fetched hints in the store should be updated and an attempt has not
     // been made in last |kFetchRetryDelay|.
-    last_fetch_attempt_ = time_clock_->Now();
+    SetLastHintsFetchAttemptTime(time_clock_->Now());
     hints_fetch_timer_.Start(FROM_HERE, RandomFetchDelay(), this,
                              &PreviewsOptimizationGuide::FetchHints);
   } else {
@@ -464,11 +422,12 @@ void PreviewsOptimizationGuide::SetTimeClockForTesting(
 }
 
 void PreviewsOptimizationGuide::SetHintsFetcherForTesting(
-    std::unique_ptr<previews::HintsFetcher> hints_fetcher) {
+    std::unique_ptr<optimization_guide::HintsFetcher> hints_fetcher) {
   hints_fetcher_ = std::move(hints_fetcher);
 }
 
-HintsFetcher* PreviewsOptimizationGuide::GetHintsFetcherForTesting() {
+optimization_guide::HintsFetcher*
+PreviewsOptimizationGuide::GetHintsFetcherForTesting() {
   return hints_fetcher_.get();
 }
 

@@ -14,12 +14,13 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_util.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
@@ -31,7 +32,6 @@
 #import "ios/web_view/internal/sync/web_view_sync_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
@@ -80,7 +80,7 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
   WebViewBrowserState* browser_state =
       WebViewBrowserState::FromBrowserState(context);
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       WebViewIdentityManagerFactory::GetForBrowserState(browser_state);
   WebViewGCMProfileServiceFactory::GetForBrowserState(browser_state);
 

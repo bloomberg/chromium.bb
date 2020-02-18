@@ -15,6 +15,26 @@
 
   data: [
     {
+      name: "FeatureName",
+      in_origin_trial: true,
+    },
+    {
+      name: "FeatureName1",
+      in_origin_trial: true,
+    },
+    {
+      name: "FeatureName2",
+      in_origin_trial: true,
+    },
+    {
+      name: "FeatureName3",
+      in_origin_trial: true,
+    },
+    {
+      name: "InterfaceFeatureName",
+      in_origin_trial: true,
+    },
+    {
       name: "Interface2PartialRuntimeFeature",
     },
     {
@@ -24,19 +44,7 @@
       name: "Mixin2RuntimeFeature",
     },
     {
-      name: "OriginTrialFeature",
-      in_origin_trial: true,
-    },
-    {
-      name: "OriginTrialFeature1",
-      in_origin_trial: true,
-    },
-    {
-      name: "OriginTrialFeature2",
-      in_origin_trial: true,
-    },
-    {
-      name: "OriginTrialFeature3",
+      name: "OriginTrialPartialFeature",
       in_origin_trial: true,
     },
     {
@@ -56,6 +64,10 @@
     },
     {
       name: "SecureFeature",
+    },
+    {
+      name: "TestFeature",
+      in_origin_trial: true,
     },
   ],
 }

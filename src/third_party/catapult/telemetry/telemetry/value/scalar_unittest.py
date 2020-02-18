@@ -6,7 +6,6 @@ import unittest
 
 from telemetry import story
 from telemetry import page as page_module
-from telemetry import value
 from telemetry.value import improvement_direction
 from telemetry.value import none_values
 from telemetry.value import scalar
@@ -34,12 +33,11 @@ class ValueTest(TestBase):
   def testRepr(self):
     page0 = self.pages[0]
     v = scalar.ScalarValue(page0, 'x', 'unit', 3, important=True,
-                           description='desc', tir_label='my_ir',
+                           description='desc',
                            improvement_direction=improvement_direction.DOWN)
 
     expected = ('ScalarValue(http://www.bar.com/, x, unit, 3, important=True, '
-                'description=desc, tir_label=my_ir, '
-                'improvement_direction=down, grouping_keys={}')
+                'description=desc, improvement_direction=down)')
 
     self.assertEquals(expected, str(v))
 
@@ -94,8 +92,7 @@ class ValueTest(TestBase):
     expected_none_value_reason = (
         'Merging values containing a None value results in a None value. '
         'None values: [ScalarValue(http://www.bar.com/, x, unit, None, '
-        'important=True, description=None, tir_label=None, '
-        'improvement_direction=down, grouping_keys={}]')
+        'important=True, description=None, improvement_direction=down)]')
     self.assertEquals(expected_none_value_reason, vM.none_value_reason)
 
   def testScalarWithNoneValueMustHaveNoneReason(self):
@@ -141,61 +138,3 @@ class ValueTest(TestBase):
         'type': 'scalar',
         'units': 'unit'
     })
-
-  def testFromDictInt(self):
-    d = {
-        'type': 'scalar',
-        'name': 'x',
-        'units': 'unit',
-        'value': 42,
-        'improvement_direction': improvement_direction.DOWN,
-    }
-
-    v = value.Value.FromDict(d, {})
-
-    self.assertTrue(isinstance(v, scalar.ScalarValue))
-    self.assertEquals(v.value, 42)
-    self.assertEquals(v.improvement_direction, improvement_direction.DOWN)
-
-  def testFromDictFloat(self):
-    d = {
-        'type': 'scalar',
-        'name': 'x',
-        'units': 'unit',
-        'value': 42.4,
-        'improvement_direction': improvement_direction.UP,
-    }
-
-    v = value.Value.FromDict(d, {})
-
-    self.assertTrue(isinstance(v, scalar.ScalarValue))
-    self.assertEquals(v.value, 42.4)
-
-  def testFromDictWithoutImprovementDirection(self):
-    d = {
-        'type': 'scalar',
-        'name': 'x',
-        'units': 'unit',
-        'value': 42,
-    }
-
-    v = value.Value.FromDict(d, {})
-
-    self.assertTrue(isinstance(v, scalar.ScalarValue))
-    self.assertIsNone(v.improvement_direction)
-
-  def testFromDictNoneValue(self):
-    d = {
-        'type': 'scalar',
-        'name': 'x',
-        'units': 'unit',
-        'value': None,
-        'none_value_reason': 'n',
-        'improvement_direction': improvement_direction.UP,
-    }
-
-    v = value.Value.FromDict(d, {})
-
-    self.assertTrue(isinstance(v, scalar.ScalarValue))
-    self.assertEquals(v.value, None)
-    self.assertEquals(v.none_value_reason, 'n')

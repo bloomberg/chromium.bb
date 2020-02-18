@@ -7,9 +7,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sessions/content/content_record_password_state.h"
-#include "components/sessions/content/content_record_task_id.h"
 #include "components/sessions/content/content_serialized_navigation_driver.h"
 #include "components/sessions/content/extended_info_handler.h"
+#include "components/sessions/content/navigation_task_id.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "content/public/browser/favicon_status.h"
@@ -84,14 +84,13 @@ std::unique_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   redirect_chain.push_back(test_data::kRedirectURL1);
   redirect_chain.push_back(test_data::kVirtualURL);
   navigation_entry->SetRedirectChain(redirect_chain);
-  ContextRecordTaskId::Get(navigation_entry.get())
-      ->set_task_id(test_data::kTaskId);
-  ContextRecordTaskId::Get(navigation_entry.get())
-      ->set_parent_task_id(test_data::kParentTaskId);
-  ContextRecordTaskId::Get(navigation_entry.get())
-      ->set_root_task_id(test_data::kRootTaskId);
-  ContextRecordTaskId::Get(navigation_entry.get())
-      ->set_children_task_ids(test_data::kChildrenTaskIds);
+  NavigationTaskId::Get(navigation_entry.get())->set_id(test_data::kTaskId);
+  NavigationTaskId::Get(navigation_entry.get())
+      ->set_parent_id(test_data::kParentTaskId);
+  NavigationTaskId::Get(navigation_entry.get())
+      ->set_root_id(test_data::kRootTaskId);
+  NavigationTaskId::Get(navigation_entry.get())
+      ->set_children_ids(test_data::kChildrenTaskIds);
   return navigation_entry;
 }
 
@@ -240,6 +239,12 @@ TEST_F(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
             new_navigation_entry->GetRedirectChain()[1]);
   EXPECT_EQ(test_data::kVirtualURL,
             new_navigation_entry->GetRedirectChain()[2]);
+  sessions::NavigationTaskId* new_navigation_task_id =
+      sessions::NavigationTaskId::Get(new_navigation_entry.get());
+
+  EXPECT_EQ(test_data::kTaskId, new_navigation_task_id->id());
+  EXPECT_EQ(test_data::kParentTaskId, new_navigation_task_id->parent_id());
+  EXPECT_EQ(test_data::kRootTaskId, new_navigation_task_id->root_id());
 
   TestData* test_data = static_cast<TestData*>(
       new_navigation_entry->GetUserData(kExtendedInfoKey1));

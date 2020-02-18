@@ -5,6 +5,8 @@
 #ifndef ASH_KEYBOARD_UI_CONTAINER_FLOATING_BEHAVIOR_H_
 #define ASH_KEYBOARD_UI_CONTAINER_FLOATING_BEHAVIOR_H_
 
+#include <memory>
+
 #include "ash/keyboard/ui/container_behavior.h"
 #include "ash/keyboard/ui/drag_descriptor.h"
 #include "ash/keyboard/ui/keyboard_export.h"
@@ -25,10 +27,10 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
 
   // ContainerBehavior overrides
   void DoHidingAnimation(
-      aura::Window* window,
+      aura::Window* container,
       ::wm::ScopedHidingAnimationSettings* animation_settings) override;
   void DoShowingAnimation(
-      aura::Window* window,
+      aura::Window* container,
       ui::ScopedLayerAnimationSettings* animation_settings) override;
   void InitializeShowAnimationStartingState(aura::Window* container) override;
   gfx::Rect AdjustSetBoundsRequest(
@@ -41,7 +43,7 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
                           const display::Display& current_display) override;
   void SetCanonicalBounds(aura::Window* container,
                           const gfx::Rect& display_bounds) override;
-  mojom::ContainerType GetType() const override;
+  ContainerType GetType() const override;
   bool TextBlurHidesKeyboard() const override;
   gfx::Rect GetOccludedBounds(
       const gfx::Rect& visual_bounds_in_screen) const override;

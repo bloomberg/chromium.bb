@@ -10,9 +10,9 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -20,6 +20,7 @@
 #include "components/download/internal/common/parallel_download_utils.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_destination_observer.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
 #include "components/download/public/common/download_stats.h"
 #include "crypto/secure_hash.h"
@@ -27,8 +28,10 @@
 #include "mojo/public/c/system/types.h"
 #include "net/base/io_buffer.h"
 #include "services/network/public/cpp/features.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/content_uri_utils.h"
 #include "components/download/internal/common/android/download_collection_bridge.h"
 #endif  // defined(OS_ANDROID)
 
@@ -167,9 +170,8 @@ DownloadFileImpl::DownloadFileImpl(
       bytes_seen_without_parallel_streams_(0),
       is_paused_(false),
       download_id_(download_id),
-      main_task_runner_(base::MessageLoopCurrent::Get()->task_runner()),
-      observer_(observer),
-      weak_factory_(this) {
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      observer_(observer) {
   TRACE_EVENT_INSTANT0("download", "DownloadFileCreated",
                        TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("download", "DownloadFileActive",
@@ -355,26 +357,33 @@ void DownloadFileImpl::RenameAndAnnotate(
     const std::string& client_guid,
     const GURL& source_url,
     const GURL& referrer_url,
+    std::unique_ptr<service_manager::Connector> connector,
     const RenameCompletionCallback& callback) {
   std::unique_ptr<RenameParameters> parameters(new RenameParameters(
       ANNOTATE_WITH_SOURCE_INFORMATION, full_path, callback));
   parameters->client_guid = client_guid;
   parameters->source_url = source_url;
   parameters->referrer_url = referrer_url;
+  parameters->connector = std::move(connector);
   RenameWithRetryInternal(std::move(parameters));
 }
 
 #if defined(OS_ANDROID)
-void DownloadFileImpl::CreateIntermediateUriForPublish(
+void DownloadFileImpl::RenameToIntermediateUri(
     const GURL& original_url,
     const GURL& referrer_url,
     const base::FilePath& file_name,
     const std::string& mime_type,
+    const base::FilePath& current_path,
     const RenameCompletionCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Create new content URI if |current_path| is not content URI
+  // or if it is already deleted.
   base::FilePath content_path =
-      DownloadCollectionBridge::CreateIntermediateUriForPublish(
-          original_url, referrer_url, file_name, mime_type);
+      current_path.IsContentUri() && base::ContentUriExists(current_path)
+          ? current_path
+          : DownloadCollectionBridge::CreateIntermediateUriForPublish(
+                original_url, referrer_url, file_name, mime_type);
   DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
   if (!content_path.empty()) {
     reason = file_.Rename(content_path);
@@ -382,13 +391,13 @@ void DownloadFileImpl::CreateIntermediateUriForPublish(
   }
   if (display_name_.empty())
     display_name_ = file_name;
-  OnRenameComplete(reason, content_path, callback);
+  OnRenameComplete(content_path, callback, reason);
 }
 
 void DownloadFileImpl::PublishDownload(
     const RenameCompletionCallback& callback) {
   DownloadInterruptReason reason = file_.PublishDownload();
-  OnRenameComplete(reason, file_.full_path(), callback);
+  OnRenameComplete(file_.full_path(), callback, reason);
 }
 
 base::FilePath DownloadFileImpl::GetDisplayName() {
@@ -466,18 +475,33 @@ void DownloadFileImpl::RenameWithRetryInternal(
     // anti-virus scanners on Windows to actually see the data
     // (http://crbug.com/127999) under the correct name (which is information
     // it uses).
-    reason = file_.AnnotateWithSourceInformation(parameters->client_guid,
-                                                 parameters->source_url,
-                                                 parameters->referrer_url);
+    //
+    // If concurrent downloads with the same target path are allowed, an
+    // asynchronous quarantine file may cause a file to be stamped with
+    // incorrect mark-of-the-web data. Therefore, fall back to non-service
+    // QuarantineFile when kPreventDownloadsWithSamePath is disabled.
+    if (base::FeatureList::IsEnabled(
+            download::features::kPreventDownloadsWithSamePath)) {
+      file_.AnnotateWithSourceInformation(
+          parameters->client_guid, parameters->source_url,
+          parameters->referrer_url, std::move(parameters->connector),
+          base::BindOnce(&DownloadFileImpl::OnRenameComplete,
+                         weak_factory_.GetWeakPtr(), new_path,
+                         parameters->completion_callback));
+      return;
+    }
+    reason = file_.AnnotateWithSourceInformationSync(parameters->client_guid,
+                                                     parameters->source_url,
+                                                     parameters->referrer_url);
   }
 
-  OnRenameComplete(reason, new_path, parameters->completion_callback);
+  OnRenameComplete(new_path, parameters->completion_callback, reason);
 }
 
 void DownloadFileImpl::OnRenameComplete(
-    DownloadInterruptReason reason,
     const base::FilePath& new_path,
-    const RenameCompletionCallback& callback) {
+    const RenameCompletionCallback& callback,
+    DownloadInterruptReason reason) {
   if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
     // Make sure our information is updated, since we're about to
     // error out.

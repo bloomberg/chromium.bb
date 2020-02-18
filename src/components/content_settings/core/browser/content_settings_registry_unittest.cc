@@ -136,7 +136,8 @@ TEST_F(ContentSettingsRegistryTest, Inheritance) {
       CONTENT_SETTINGS_TYPE_POPUPS,               //
       CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,  //
       CONTENT_SETTINGS_TYPE_ADS,                  //
-      CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
+      CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,      //
+      CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS,
   };
 
   for (const ContentSettingsInfo* info : *registry()) {
@@ -153,7 +154,7 @@ TEST_F(ContentSettingsRegistryTest, Inheritance) {
     }
     if (info->incognito_behavior() ==
             ContentSettingsInfo::INHERIT_IN_INCOGNITO &&
-        !base::ContainsValue(whitelist, info->website_settings_info()->type()))
+        !base::Contains(whitelist, info->website_settings_info()->type()))
       FAIL() << "Content setting not whitelisted.";
   }
 }

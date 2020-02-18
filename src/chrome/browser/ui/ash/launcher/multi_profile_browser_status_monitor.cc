@@ -69,7 +69,7 @@ void MultiProfileBrowserStatusMonitor::ActiveUserChanged(
 
 void MultiProfileBrowserStatusMonitor::AddV1AppToShelf(Browser* browser) {
   DCHECK(browser->is_type_popup() && browser->is_app());
-  DCHECK(!base::ContainsValue(app_list_, browser));
+  DCHECK(!base::Contains(app_list_, browser));
   app_list_.push_back(browser);
   if (multi_user_util::IsProfileFromActiveUser(browser->profile())) {
     BrowserStatusMonitor::AddV1AppToShelf(browser);

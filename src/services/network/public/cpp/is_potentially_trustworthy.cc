@@ -189,7 +189,7 @@ std::vector<std::string> ParseSecureOriginAllowlistFromCmdline() {
 
 bool IsAllowlisted(const std::vector<std::string>& allowlist,
                    const url::Origin& origin) {
-  if (base::ContainsValue(allowlist, origin.Serialize()))
+  if (base::Contains(allowlist, origin.Serialize()))
     return true;
 
   for (const std::string& origin_or_pattern : allowlist) {
@@ -249,8 +249,8 @@ bool IsOriginPotentiallyTrustworthy(const url::Origin& origin) {
   //   content::ContentClient::Schemes::secure_schemes
   // - url::AddLocalScheme
   // - url::AddSecureScheme
-  if (base::ContainsValue(url::GetSecureSchemes(), origin.scheme()) ||
-      base::ContainsValue(url::GetLocalSchemes(), origin.scheme())) {
+  if (base::Contains(url::GetSecureSchemes(), origin.scheme()) ||
+      base::Contains(url::GetLocalSchemes(), origin.scheme())) {
     return true;
   }
 

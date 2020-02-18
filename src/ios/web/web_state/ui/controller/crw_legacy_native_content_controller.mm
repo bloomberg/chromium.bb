@@ -10,7 +10,7 @@
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/public/deprecated/crw_native_content.h"
 #import "ios/web/public/deprecated/crw_native_content_provider.h"
-#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/web_state/ui/controller/crw_legacy_native_content_controller_delegate.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -28,6 +28,9 @@
 @property(nonatomic, assign, readonly)
     web::NavigationManagerImpl* navigationManagerImpl;
 @property(nonatomic, assign, readonly) web::NavigationItemImpl* currentNavItem;
+// Set to YES when [self close] is called.
+@property(nonatomic, assign) BOOL beingDestroyed;
+
 @end
 
 @implementation CRWLegacyNativeContentController
@@ -193,12 +196,8 @@
   }
 }
 
-- (void)dismissModals {
-  if ([self.nativeController respondsToSelector:@selector(dismissModals)])
-    [self.nativeController dismissModals];
-}
-
 - (void)close {
+  self.beingDestroyed = YES;
   self.nativeProvider = nil;
   if ([self.nativeController respondsToSelector:@selector(close)])
     [self.nativeController close];
@@ -239,7 +238,7 @@
 
 - (void)nativeContent:(id)content
     handleContextMenu:(const web::ContextMenuParams&)params {
-  if ([self.delegate legacyNativeContentControllerIsBeingDestroyed:self]) {
+  if (self.beingDestroyed) {
     return;
   }
   self.webStateImpl->HandleContextMenu(params);

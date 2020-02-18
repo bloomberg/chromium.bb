@@ -454,8 +454,8 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
       mock_callback;
   auto callback = mock_callback.Get();
   PresentationInfo connection(presentation_url1_, kPresentationId);
-  EXPECT_CALL(*router_, OnAddPresentationConnectionStateChangedCallbackInvoked(
-                            Equals(callback)));
+  EXPECT_CALL(*router_,
+              OnAddPresentationConnectionStateChangedCallbackInvoked(callback));
   delegate_impl_->ListenForConnectionStateChange(
       main_frame_process_id_, main_frame_routing_id_, connection, callback);
 }

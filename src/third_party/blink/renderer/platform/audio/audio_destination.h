@@ -152,12 +152,6 @@ class PLATFORM_EXPORT AudioDestination
   // engine. (i.e. DestinationNode)
   AudioIOCallback& callback_;
 
-  // When the last callback function from the device is called.
-  base::TimeTicks previous_callback_request_;
-
-  // The time duration spent on rendering previous render quanta per callback.
-  base::TimeDelta previous_render_duration_;
-
   // Accessed by rendering thread.
   size_t frames_elapsed_;
 
@@ -171,7 +165,8 @@ class PLATFORM_EXPORT AudioDestination
 
   // Required for RequestRender and also in the resampling callback (if used).
   AudioIOPosition output_position_;
-  AudioIOCallbackMetric metric_;
+
+  AudioCallbackMetricReporter metric_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDestination);
 };

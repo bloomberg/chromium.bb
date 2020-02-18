@@ -118,6 +118,10 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
 
     const gfx::Size size;
     PlaneResource plane_resources[VideoFrame::kMaxPlanes];
+    // The sync token used to recycle or destroy the resources. It is set when
+    // the resources are returned from the VideoFrame (via
+    // MailboxHoldersReleased).
+    gpu::SyncToken sync_token;
 
    private:
     bool is_used_ = true;
@@ -183,11 +187,6 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // longer referenced.
   void MailboxHoldersReleased(FrameResources* frame_resources,
                               const gpu::SyncToken& sync_token);
-
-  // Callback called when a VideoFrame generated with GetFrameResources has
-  // outlived its release SyncToken.
-  // This must be called on the thread where |media_task_runner_| is current.
-  void MailboxHoldersWaited(FrameResources* frame_resources);
 
   // Delete resources. This has to be called on the thread where |task_runner|
   // is current.
@@ -294,11 +293,11 @@ VideoPixelFormat VideoFormat(
     case GpuVideoAcceleratorFactories::OutputFormat::UYVY:
       return PIXEL_FORMAT_UYVY;
     case GpuVideoAcceleratorFactories::OutputFormat::XR30:
+    case GpuVideoAcceleratorFactories::OutputFormat::BGRA:
       return PIXEL_FORMAT_ARGB;
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:
     case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
-    case GpuVideoAcceleratorFactories::OutputFormat::BGRA:
-      return PIXEL_FORMAT_RGB32;
+      return PIXEL_FORMAT_ABGR;
     case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
       NOTREACHED();
       break;
@@ -634,7 +633,6 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_RGB24:
-    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_MT21:
     case PIXEL_FORMAT_YUV422P9:
@@ -934,8 +932,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
                                  gpu_factories_->GpuMemoryBufferManager(),
                                  video_frame->ColorSpace(), usage);
     } else if (!plane_resource.mailbox.IsZero()) {
-      // The sync token was waited on the client side before reuse.
-      sii->UpdateSharedImage(gpu::SyncToken(), plane_resource.mailbox);
+      sii->UpdateSharedImage(frame_resources->sync_token,
+                             plane_resource.mailbox);
     }
     mailbox_holders[i] = gpu::MailboxHolder(plane_resource.mailbox,
                                             gpu::SyncToken(), texture_target);
@@ -959,7 +957,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
 
   if (!frame) {
     frame_resources->MarkUnused(tick_clock_->NowTicks());
-    MailboxHoldersReleased(frame_resources, gpu::SyncToken());
+    MailboxHoldersReleased(frame_resources, sync_token);
     CompleteCopyRequestAndMaybeStartNextCopy(std::move(video_frame));
     return;
   }
@@ -1110,9 +1108,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::DeleteFrameResources(
 
   for (PlaneResource& plane_resource : frame_resources->plane_resources) {
     if (!plane_resource.mailbox.IsZero()) {
-      // The sync token was already waited on the client side in
-      // MailboxHoldersReleased.
-      sii->DestroySharedImage(gpu::SyncToken(), plane_resource.mailbox);
+      sii->DestroySharedImage(frame_resources->sync_token,
+                              plane_resource.mailbox);
     }
   }
 }
@@ -1128,27 +1125,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::MailboxHoldersReleased(
                                   frame_resources, release_sync_token));
     return;
   }
-
-  // TODO(sandersd): Remove once https://crbug.com/819914 is fixed. Correct
-  // clients must wait for READ_LOCK_FENCES_ENABLED frames to be read before
-  // returning the frame, so waiting on the sync token should be a no-op.
-  //
-  // If the context is lost, SignalSyncToken() drops its callbacks. Using a
-  // ScopedClosureRunner ensures MailboxHoldersWaited() is called if that
-  // happens.
-  std::unique_ptr<base::ScopedClosureRunner> waited_cb =
-      std::make_unique<base::ScopedClosureRunner>(base::BindOnce(
-          &GpuMemoryBufferVideoFramePool::PoolImpl::MailboxHoldersWaited, this,
-          frame_resources));
-  gpu_factories_->SignalSyncToken(
-      release_sync_token,
-      base::BindOnce(&base::ScopedClosureRunner::RunAndReset,
-                     std::move(waited_cb)));
-}
-
-void GpuMemoryBufferVideoFramePool::PoolImpl::MailboxHoldersWaited(
-    FrameResources* frame_resources) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  frame_resources->sync_token = release_sync_token;
 
   if (in_shutdown_) {
     DeleteFrameResources(gpu_factories_, frame_resources);

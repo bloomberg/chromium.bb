@@ -14,24 +14,22 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_local_frame_wrapper.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
-class MediaStreamVideoCapturerSource::InternalState {
+class MediaStreamVideoCapturerSource::InternalState
+    : public MediaStreamInternalFrameWrapper {
  public:
   InternalState(WebLocalFrame* web_frame)
-      : frame_(web_frame ? static_cast<LocalFrame*>(
-                               WebLocalFrame::ToCoreFrame(*web_frame))
-                         : nullptr) {}
-
-  LocalFrame* frame() { return frame_.Get(); }
+      : MediaStreamInternalFrameWrapper(web_frame) {}
 
   const mojom::blink::MediaStreamDispatcherHostPtr&
   GetMediaStreamDispatcherHost() {
-    DCHECK(frame_);
+    DCHECK(frame());
     if (!host_)
-      frame_->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&host_));
+      frame()->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&host_));
     return host_;
   }
 
@@ -41,7 +39,6 @@ class MediaStreamVideoCapturerSource::InternalState {
   }
 
  private:
-  WeakPersistent<LocalFrame> frame_;
   mojom::blink::MediaStreamDispatcherHostPtr host_;
 };
 
@@ -111,8 +108,8 @@ void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
   if (!internal_state_->frame())
     return;
   internal_state_->GetMediaStreamDispatcherHost()->SetCapturingLinkSecured(
-      device().session_id, static_cast<mojom::MediaStreamType>(device().type),
-      is_secure);
+      device().session_id,
+      static_cast<mojom::blink::MediaStreamType>(device().type), is_secure);
 }
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(
@@ -142,7 +139,7 @@ void MediaStreamVideoCapturerSource::StopSourceForRestartImpl() {
 
   // Force state update for nondevice sources, since they do not
   // automatically update state after StopCapture().
-  if (device().type == MEDIA_NO_SERVICE)
+  if (device().type == mojom::blink::MediaStreamType::NO_SERVICE)
     OnRunStateChanged(capture_params_, false);
 }
 
@@ -199,10 +196,11 @@ void MediaStreamVideoCapturerSource::OnRunStateChanged(
       if (is_running) {
         state_ = STARTED;
         DCHECK(capture_params_ == new_capture_params);
-        OnStartDone(MEDIA_DEVICE_OK);
+        OnStartDone(mojom::blink::MediaStreamRequestResult::OK);
       } else {
         state_ = STOPPED;
-        OnStartDone(MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO);
+        OnStartDone(
+            mojom::blink::MediaStreamRequestResult::TRACK_START_FAILURE_VIDEO);
       }
       break;
     case STARTED:

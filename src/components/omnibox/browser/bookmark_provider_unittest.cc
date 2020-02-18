@@ -195,7 +195,7 @@ void BookmarkProviderTest::SetUp() {
   for (size_t i = 0; i < base::size(bookmark_provider_test_data); ++i) {
     const BookmarksTestInfo& cur(bookmark_provider_test_data[i]);
     const GURL url(cur.url);
-    model_->AddURL(other_node, other_node->child_count(),
+    model_->AddURL(other_node, other_node->children().size(),
                    base::ASCIIToUTF16(cur.title), url);
   }
 }

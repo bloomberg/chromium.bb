@@ -46,12 +46,10 @@ class PictureInPictureWindowControllerImpl
   using MutedMediaPlayerMap = std::map<RenderFrameHost*, PlayerSet>;
 
   // PictureInPictureWindowController:
-  CONTENT_EXPORT gfx::Size Show() override;
+  CONTENT_EXPORT void Show() override;
   CONTENT_EXPORT void Close(bool should_pause_video) override;
   CONTENT_EXPORT void CloseAndFocusInitiator() override;
   CONTENT_EXPORT void OnWindowDestroyed() override;
-  CONTENT_EXPORT void EmbedSurface(const viz::SurfaceId& surface_id,
-                                   const gfx::Size& natural_size) override;
   CONTENT_EXPORT OverlayWindow* GetWindowForTesting() override;
   CONTENT_EXPORT void UpdateLayerBounds() override;
   CONTENT_EXPORT bool IsPlayerActive() override;
@@ -71,6 +69,8 @@ class PictureInPictureWindowControllerImpl
   CONTENT_EXPORT void MediaSessionActionsChanged(
       const std::set<media_session::mojom::MediaSessionAction>& actions);
 
+  gfx::Size GetSize();
+
   // WebContentsObserver:
   void MediaStartedPlaying(const MediaPlayerInfo&,
                            const MediaPlayerId&) override;
@@ -83,6 +83,10 @@ class PictureInPictureWindowControllerImpl
   // stored in a different location from the one that is used to update the
   // state of this object.
   void UpdateMediaPlayerId();
+
+  // Embeds a surface in the Picture-in-Picture window.
+  void EmbedSurface(const viz::SurfaceId& surface_id,
+                    const gfx::Size& natural_size);
 
   // Sets the active Picture-in-Picture session associated with the controller.
   // This is different from the service's active session as there is one

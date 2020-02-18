@@ -12,6 +12,7 @@
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 #include "fuchsia/engine/browser/web_engine_devtools_manager_delegate.h"
+#include "fuchsia/engine/common.h"
 
 WebEngineContentBrowserClient::WebEngineContentBrowserClient(
     fidl::InterfaceRequest<fuchsia::web::Context> request)
@@ -23,8 +24,8 @@ std::unique_ptr<content::BrowserMainParts>
 WebEngineContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   DCHECK(request_);
-  auto browser_main_parts =
-      std::make_unique<WebEngineBrowserMainParts>(std::move(request_));
+  auto browser_main_parts = std::make_unique<WebEngineBrowserMainParts>(
+      parameters, std::move(request_));
 
   main_parts_ = browser_main_parts.get();
 
@@ -38,13 +39,19 @@ WebEngineContentBrowserClient::GetDevToolsManagerDelegate() {
   return new WebEngineDevToolsManagerDelegate(main_parts_->browser_context());
 }
 
-std::string WebEngineContentBrowserClient::GetProduct() const {
+std::string WebEngineContentBrowserClient::GetProduct() {
   return version_info::GetProductNameAndVersionForUserAgent();
 }
 
-std::string WebEngineContentBrowserClient::GetUserAgent() const {
-  return content::BuildUserAgentFromProduct(
-      version_info::GetProductNameAndVersionForUserAgent());
+std::string WebEngineContentBrowserClient::GetUserAgent() {
+  std::string user_agent = content::BuildUserAgentFromProduct(GetProduct());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kUserAgentProductAndVersion)) {
+    user_agent +=
+        " " + base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+                  kUserAgentProductAndVersion);
+  }
+  return user_agent;
 }
 
 void WebEngineContentBrowserClient::OverrideWebkitPrefs(

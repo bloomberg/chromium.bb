@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/time/time.h"
-#include "cc/trees/element_id.h"
+#include "cc/paint/element_id.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
@@ -130,6 +130,13 @@ class MutatorHost {
   virtual bool IsElementAnimating(ElementId element_id) const = 0;
   virtual bool HasTickingKeyframeModelForTesting(
       ElementId element_id) const = 0;
+
+  virtual void ImplOnlyAutoScrollAnimationCreate(
+      ElementId element_id,
+      const gfx::ScrollOffset& target_offset,
+      const gfx::ScrollOffset& current_offset,
+      float autoscroll_velocity,
+      base::TimeDelta animation_start_offset) = 0;
 
   virtual void ImplOnlyScrollAnimationCreate(
       ElementId element_id,

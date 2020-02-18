@@ -568,7 +568,7 @@ For this step we just modify
 by adding a block of code as follows:
 
 ``` cpp
-void ChromeContentUtilityClient::MaybeCreateMainThreadService(
+std::unique_ptr<service_manager::Service> ChromeContentUtilityClient::MaybeCreateMainThreadService(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
   ...
@@ -617,9 +617,9 @@ an interface request to our service. This is accessible from the main thread of
 the browser process. Somewhere in `src/chrome/browser`, we can write:
 
 ``` cpp
-// This gives us the global content_browser's Connector
-service_manager::Connector* connector =
-    content::ServiceManagerConnection::GetForProcess()->GetConnector();
+// This gives us the system Connector for the browser process, which has access
+// to most service interfaces.
+service_manager::Connector* connector = content::GetSystemConnector();
 
 // Recall from the earlier Mojo section that mojo::MakeRequest creates a new
 // message pipe for our interface. Connector passes the request endpoint to

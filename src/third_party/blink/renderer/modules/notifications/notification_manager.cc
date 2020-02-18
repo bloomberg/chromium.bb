@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/notifications/notification_manager.h"
 
+#include <utility>
+
 #include "base/numerics/safe_conversions.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-blink.h"
@@ -21,7 +23,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -87,18 +89,16 @@ ScriptPromise NotificationManager::RequestPermission(
   permission_service_->RequestPermission(
       CreatePermissionDescriptor(mojom::blink::PermissionName::NOTIFICATIONS),
       LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
-      WTF::Bind(
-          &NotificationManager::OnPermissionRequestComplete,
-          WrapPersistent(this), WrapPersistent(resolver),
-          WrapPersistent(ToV8PersistentCallbackFunction(deprecated_callback))));
+      WTF::Bind(&NotificationManager::OnPermissionRequestComplete,
+                WrapPersistent(this), WrapPersistent(resolver),
+                WrapPersistent(deprecated_callback)));
 
   return promise;
 }
 
 void NotificationManager::OnPermissionRequestComplete(
     ScriptPromiseResolver* resolver,
-    V8PersistentCallbackFunction<V8NotificationPermissionCallback>*
-        deprecated_callback,
+    V8NotificationPermissionCallback* deprecated_callback,
     mojom::blink::PermissionStatus status) {
   String status_string = Notification::PermissionString(status);
   if (deprecated_callback)
@@ -119,7 +119,8 @@ void NotificationManager::DisplayNonPersistentNotification(
     const String& token,
     mojom::blink::NotificationDataPtr notification_data,
     mojom::blink::NotificationResourcesPtr notification_resources,
-    mojom::blink::NonPersistentNotificationListenerPtr event_listener) {
+    mojo::PendingRemote<mojom::blink::NonPersistentNotificationListener>
+        event_listener) {
   DCHECK(!token.IsEmpty());
   DCHECK(notification_resources);
   GetNotificationService()->DisplayNonPersistentNotification(
@@ -226,7 +227,7 @@ void NotificationManager::DidGetNotifications(
   resolver->Resolve(notifications);
 }
 
-const mojom::blink::NotificationServicePtr&
+const mojo::Remote<mojom::blink::NotificationService>&
 NotificationManager::GetNotificationService() {
   if (!notification_service_) {
     if (auto* provider = GetSupplementable()->GetInterfaceProvider()) {
@@ -234,9 +235,9 @@ NotificationManager::GetNotificationService() {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner =
           GetSupplementable()->GetTaskRunner(TaskType::kMiscPlatformAPI);
       provider->GetInterface(
-          mojo::MakeRequest(&notification_service_, std::move(task_runner)));
+          notification_service_.BindNewPipeAndPassReceiver(task_runner));
 
-      notification_service_.set_connection_error_handler(
+      notification_service_.set_disconnect_handler(
           WTF::Bind(&NotificationManager::OnNotificationServiceConnectionError,
                     WrapWeakPersistent(this)));
     }

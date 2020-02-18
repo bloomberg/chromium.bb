@@ -19,8 +19,8 @@
 #include <ostream>
 
 #include "perfetto/base/logging.h"
+#include "perfetto/ext/tracing/core/shared_memory_abi.h"
 #include "perfetto/protozero/proto_utils.h"
-#include "perfetto/tracing/core/shared_memory_abi.h"
 #include "src/tracing/core/trace_buffer.h"
 
 using protozero::proto_utils::ParseVarInt;
@@ -128,6 +128,11 @@ FakeChunk& FakeChunk::AddPacket(std::initializer_list<uint8_t> raw) {
 
 FakeChunk& FakeChunk::IncrementNumPackets() {
   num_packets++;
+  return *this;
+}
+
+FakeChunk& FakeChunk::SetFlags(uint8_t flags_to_set) {
+  flags |= flags_to_set;
   return *this;
 }
 

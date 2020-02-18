@@ -14,17 +14,18 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_auth_util.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/connection_status.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/backoff_entry.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
-namespace identity {
+namespace signin {
 class AccessTokenFetcher;
-}
+struct AccessTokenInfo;
+}  // namespace signin
 
 namespace syncer {
 
@@ -33,7 +34,7 @@ struct SyncCredentials;
 // SyncAuthManager tracks the account to be used for Sync and its authentication
 // state. Note that this account may or may not be the primary account (as per
 // IdentityManager::GetPrimaryAccountInfo() etc).
-class SyncAuthManager : public identity::IdentityManager::Observer {
+class SyncAuthManager : public signin::IdentityManager::Observer {
  public:
   // Called when the existence of an authenticated account changes. It's
   // guaranteed that this is only called for going from "no account" to "have
@@ -47,7 +48,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
 
   // |identity_manager| may be null (this is the case if local Sync is enabled),
   // but if non-null, must outlive this object.
-  SyncAuthManager(identity::IdentityManager* identity_manager,
+  SyncAuthManager(signin::IdentityManager* identity_manager,
                   const AccountStateChangedCallback& account_state_changed,
                   const CredentialsChangedCallback& credentials_changed);
   ~SyncAuthManager() override;
@@ -97,7 +98,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // cached access token, error from the server, etc).
   void ConnectionClosed();
 
-  // identity::IdentityManager::Observer implementation.
+  // signin::IdentityManager::Observer implementation.
   void OnPrimaryAccountSet(
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
@@ -107,7 +108,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   void OnRefreshTokenRemovedForAccount(
       const CoreAccountId& account_id) override;
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
   // Test-only methods for inspecting/modifying internal state.
@@ -144,11 +145,11 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
 
   // Callback for |ongoing_access_token_fetch_|.
   void AccessTokenFetched(GoogleServiceAuthError error,
-                          identity::AccessTokenInfo access_token_info);
+                          signin::AccessTokenInfo access_token_info);
 
   void SetLastAuthError(const GoogleServiceAuthError& error);
 
-  identity::IdentityManager* const identity_manager_;
+  signin::IdentityManager* const identity_manager_;
 
   const AccountStateChangedCallback account_state_changed_callback_;
   const CredentialsChangedCallback credentials_changed_callback_;
@@ -180,7 +181,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
 
   // Pending request for an access token. Non-null iff there is a request
   // ongoing.
-  std::unique_ptr<identity::AccessTokenFetcher> ongoing_access_token_fetch_;
+  std::unique_ptr<signin::AccessTokenFetcher> ongoing_access_token_fetch_;
 
   // If RequestAccessToken fails with transient error then retry requesting
   // access token with exponential backoff.
@@ -192,7 +193,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // |has_token| and |next_token_request_time| get computed on demand.
   SyncTokenStatus partial_token_status_;
 
-  base::WeakPtrFactory<SyncAuthManager> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncAuthManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncAuthManager);
 };

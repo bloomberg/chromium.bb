@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -23,7 +24,10 @@
 #include "content/common/content_export.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "url/gurl.h"
@@ -61,23 +65,31 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
  public:
   class CONTENT_EXPORT Observer {
    public:
+    Observer(const Observer&) = delete;
+    Observer& operator=(const Observer&) = delete;
+
     // Called just after the cache selection algorithm completes.
     virtual void OnCacheSelectionComplete(AppCacheHost* host) = 0;
 
     // Called just prior to the instance being deleted.
     virtual void OnDestructionImminent(AppCacheHost* host) = 0;
 
-    virtual ~Observer() {}
+   protected:
+    // The constructor and destructor exist to facilitate subclassing, and
+    // should not be called directly.
+    Observer() noexcept = default;
+    virtual ~Observer() = default;
   };
 
-  AppCacheHost(const base::UnguessableToken& host_id,
-               int process_id,
-               int render_frame_id,
-               blink::mojom::AppCacheFrontendPtr frontend,
-               AppCacheServiceImpl* service);
+  AppCacheHost(
+      const base::UnguessableToken& host_id,
+      int process_id,
+      int render_frame_id,
+      mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
+      AppCacheServiceImpl* service);
   ~AppCacheHost() override;
 
-  void BindRequest(blink::mojom::AppCacheHostRequest request);
+  void BindReceiver(mojo::PendingReceiver<blink::mojom::AppCacheHost> receiver);
 
   // Adds/removes an observer, the AppCacheHost does not take
   // ownership of the observer.
@@ -179,10 +191,11 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   // The AppCacheHost instance is created with a null AppCacheFrontend
   // pointer when the navigation starts. We need to switch it to the
   // actual frontend when the navigation commits.
-  void set_frontend(blink::mojom::AppCacheFrontendPtr frontend,
-                    int render_frame_id) {
-    frontend_ptr_ = std::move(frontend);
-    frontend_ = frontend_ptr_.get();
+  void set_frontend(
+      mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
+      int render_frame_id) {
+    frontend_remote_.Bind(std::move(frontend_remote));
+    frontend_ = frontend_remote_.get();
     render_frame_id_ = render_frame_id;
   }
 
@@ -320,7 +333,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   GURL new_master_entry_url_;
 
   // The frontend to deliver notifications to the child process.
-  blink::mojom::AppCacheFrontendPtr frontend_ptr_;
+  mojo::Remote<blink::mojom::AppCacheFrontend> frontend_remote_;
   blink::mojom::AppCacheFrontend* frontend_;
   int render_frame_id_;
 
@@ -381,9 +394,9 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   // In the network service world points to the subresource URLLoaderFactory.
   base::WeakPtr<AppCacheSubresourceURLFactory> subresource_url_factory_;
 
-  mojo::Binding<blink::mojom::AppCacheHost> binding_;
+  mojo::Receiver<blink::mojom::AppCacheHost> receiver_{this};
 
-  base::WeakPtrFactory<AppCacheHost> weak_factory_;
+  base::WeakPtrFactory<AppCacheHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheHost);
 };

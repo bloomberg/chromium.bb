@@ -22,7 +22,6 @@
 #include "include/utils/SkRandom.h"
 #include "samplecode/Sample.h"
 #include "src/utils/SkUTF.h"
-#include "tools/timer/AnimTimer.h"
 
 static SkRandom gRand;
 
@@ -179,15 +178,7 @@ public:
     }
 
 protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            SkString str;
-            str.printf("Hair-%s", gProcs[fProcIndex].fName);
-            Sample::TitleR(evt, str.c_str());
-            return true;
-        }
-        return this->INHERITED::onQuery(evt);
-    }
+    SkString name() override { return SkStringPrintf("Hair-%s", gProcs[fProcIndex].fName); }
 
     void show_bitmaps(SkCanvas* canvas, const SkBitmap& b0, const SkBitmap& b1,
                       const SkIRect& inset) {
@@ -216,7 +207,7 @@ protected:
         canvas->drawBitmap(bm2, SkIntToScalar(10), SkIntToScalar(10), nullptr);
     }
 
-    bool onAnimate(const AnimTimer&) override {
+    bool onAnimate(double /*nanos*/) override {
         if (fDoAA) {
             fProcIndex = cycle_hairproc_index(fProcIndex);
             // todo: signal that we want to rebuild our TITLE
@@ -225,7 +216,7 @@ protected:
         return true;
     }
 
-    Sample::Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned modi) override {
+    Sample::Click* onFindClickHandler(SkScalar x, SkScalar y, ModifierKey modi) override {
         fDoAA = !fDoAA;
         return this->INHERITED::onFindClickHandler(x, y, modi);
     }

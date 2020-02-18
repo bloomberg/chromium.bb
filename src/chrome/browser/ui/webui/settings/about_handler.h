@@ -85,6 +85,18 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void HandleOpenHelpPage(const base::ListValue* args);
 
 #if defined(OS_CHROMEOS)
+  // Checks if ReleaseNotes is enabled.
+  void HandleGetEnabledReleaseNotes(const base::ListValue* args);
+
+  // Checks if system is connected to internet.
+  void HandleCheckInternetConnection(const base::ListValue* args);
+
+  // Opens the release notes app. |args| must be empty.
+  void HandleLaunchReleaseNotes(const base::ListValue* args);
+
+  // Opens the help page. |args| must be empty.
+  void HandleOpenOsHelpPage(const base::ListValue* args);
+
   // Sets the release track version.
   void HandleSetChannel(const base::ListValue* args);
 
@@ -171,7 +183,7 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   bool apply_changes_from_upgrade_observer_;
 
   // Used for callbacks.
-  base::WeakPtrFactory<AboutHandler> weak_factory_;
+  base::WeakPtrFactory<AboutHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AboutHandler);
 };

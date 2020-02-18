@@ -23,7 +23,7 @@ namespace webrtc {
 class VCMEncodedFrame : protected EncodedImage {
  public:
   VCMEncodedFrame();
-  VCMEncodedFrame(const VCMEncodedFrame&) = delete;
+  VCMEncodedFrame(const VCMEncodedFrame&);
 
   ~VCMEncodedFrame();
   /**
@@ -54,8 +54,11 @@ class VCMEncodedFrame : protected EncodedImage {
 
   using EncodedImage::ColorSpace;
   using EncodedImage::data;
+  using EncodedImage::PacketInfos;
   using EncodedImage::set_size;
   using EncodedImage::SetColorSpace;
+  using EncodedImage::SetEncodedData;
+  using EncodedImage::SetPacketInfos;
   using EncodedImage::SetSpatialIndex;
   using EncodedImage::SetSpatialLayerFrameSize;
   using EncodedImage::SetTimestamp;

@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -118,7 +119,13 @@ class CacheCounterTest : public InProcessBrowserTest {
 };
 
 // Tests that for the empty cache, the result is zero.
-IN_PROC_BROWSER_TEST_F(CacheCounterTest, Empty) {
+// Flaky. See crbug.com/971650.
+#if defined(OS_LINUX)
+#define MAYBE_Empty DISABLED_Empty
+#else
+#define MAYBE_Empty Empty
+#endif
+IN_PROC_BROWSER_TEST_F(CacheCounterTest, MAYBE_Empty) {
   Profile* profile = browser()->profile();
 
   CacheCounter counter(profile);
@@ -167,9 +174,16 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, AfterDoom) {
   EXPECT_EQ(0u, GetResult());
 }
 
+// TODO(crbug.com/985131): Test is flaky in Linux component builds.
+#if defined(OS_LINUX) && defined(COMPONENT_BUILD)
+#define MAYBE_PrefChanged DISABLED_PrefChanged
+#else
+#define MAYBE_PrefChanged PrefChanged
+#endif
+
 // Tests that the counter starts counting automatically when the deletion
 // pref changes to true.
-IN_PROC_BROWSER_TEST_F(CacheCounterTest, PrefChanged) {
+IN_PROC_BROWSER_TEST_F(CacheCounterTest, MAYBE_PrefChanged) {
   SetCacheDeletionPref(false);
 
   Profile* profile = browser()->profile();

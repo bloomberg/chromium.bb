@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
@@ -31,17 +31,15 @@ class RoundedLabelView : public views::View {
       : horizontal_padding_(horizontal_padding),
         preferred_height_(preferred_height) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical,
+        views::BoxLayout::Orientation::kVertical,
         gfx::Insets(vertical_padding, horizontal_padding)));
     SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     layer()->SetColor(background_color);
     layer()->SetFillsBoundsOpaquely(false);
 
-    if (ash::features::ShouldUseShaderRoundedCorner()) {
-      const gfx::RoundedCornersF radii(rounding_dp);
-      layer()->SetRoundedCornerRadius(radii);
-      layer()->SetIsFastRoundedCorner(true);
-    }
+    const gfx::RoundedCornersF radii(rounding_dp);
+    layer()->SetRoundedCornerRadius(radii);
+    layer()->SetIsFastRoundedCorner(true);
 
     label_ = new views::Label(l10n_util::GetStringUTF16(message_id),
                               views::style::CONTEXT_LABEL);
@@ -71,14 +69,16 @@ class RoundedLabelView : public views::View {
 
 }  // namespace
 
+RoundedLabelWidget::InitParams::InitParams() = default;
+
 RoundedLabelWidget::RoundedLabelWidget() = default;
 
 RoundedLabelWidget::~RoundedLabelWidget() = default;
 
 void RoundedLabelWidget::Init(const InitParams& params) {
   views::Widget::InitParams widget_params;
+  widget_params.name = params.name;
   widget_params.type = views::Widget::InitParams::TYPE_POPUP;
-  widget_params.keep_on_top = false;
   widget_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -104,8 +104,14 @@ gfx::Rect RoundedLabelWidget::GetBoundsCenteredIn(const gfx::Rect& bounds) {
   return widget_bounds;
 }
 
-void RoundedLabelWidget::SetBoundsCenteredIn(const gfx::Rect& bounds) {
-  GetNativeWindow()->SetBounds(GetBoundsCenteredIn(bounds));
+void RoundedLabelWidget::SetBoundsCenteredIn(const gfx::Rect& bounds,
+                                             bool animate) {
+  auto* window = GetNativeWindow();
+  ScopedOverviewAnimationSettings animation_settings{
+      animate ? OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW
+              : OVERVIEW_ANIMATION_NONE,
+      window};
+  window->SetBounds(GetBoundsCenteredIn(bounds));
 }
 
 }  // namespace ash

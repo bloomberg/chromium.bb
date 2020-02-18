@@ -228,11 +228,9 @@ class FakeIdentityService
   void GetPrimaryAccountWhenAvailable(
       GetPrimaryAccountWhenAvailableCallback callback) override {
     auto account_id = AccountId::FromUserEmailGaiaId("test@example.com", "ID");
-    CoreAccountInfo account_info;
-    account_info.email = account_id.GetUserEmail();
-    account_info.gaia = account_id.GetGaiaId();
-    account_info.account_id = account_id.GetAccountIdKey();
-    std::move(callback).Run(account_info, {});
+    std::move(callback).Run(CoreAccountId(account_id.GetUserEmail()),
+                            account_id.GetGaiaId(), account_id.GetUserEmail(),
+                            {});
   }
 
   void GetAccessToken(const CoreAccountId& account_id,
@@ -318,7 +316,9 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
         *disk_manager_,
         MountPath(
             testing::StartsWith("drivefs://"), "", "drivefs-salt-g-ID",
-            testing::Contains("datadir=/path/to/profile/GCache/v2/salt-g-ID"),
+            testing::AllOf(testing::Contains(
+                               "datadir=/path/to/profile/GCache/v2/salt-g-ID"),
+                           testing::Contains("myfiles=/MyFiles")),
             _, chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
         .WillOnce(testing::SaveArg<0>(&source));
 
@@ -549,7 +549,8 @@ TEST_F(DriveFsHostTest, GetAccessToken_UnmountDuringMojoRequest) {
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs([&]() { host_->Unmount(); }),
           testing::Return(std::make_pair(
-              base::nullopt, GoogleServiceAuthError::ACCOUNT_DISABLED))));
+              base::nullopt,
+              GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS))));
 
   base::RunLoop run_loop;
   delegate_ptr_.set_connection_error_handler(run_loop.QuitClosure());

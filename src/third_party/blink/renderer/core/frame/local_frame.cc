@@ -37,6 +37,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
@@ -75,7 +76,6 @@
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
@@ -83,6 +83,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -110,8 +111,9 @@
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -144,67 +146,7 @@ bool ShouldUseClientLoFiForRequest(
   if (!(frame_previews_state & WebURLRequest::kClientLoFiOn))
     return false;
 
-  // Even if this frame is using Server Lo-Fi, https:// images won't be
-  // handled by Server Lo-Fi since their requests won't be sent to the Data
-  // Saver proxy, so use Client Lo-Fi instead.
-  if (frame_previews_state & WebURLRequest::kServerLoFiOn)
-    return request.Url().ProtocolIs("https");
-
   return true;
-}
-
-WeakPersistent<LocalFrame>& UserActivationNotifierFrame() {
-  DEFINE_STATIC_LOCAL(WeakPersistent<LocalFrame>,
-                      user_activation_notifier_frame, (nullptr));
-  return user_activation_notifier_frame;
-}
-
-enum class UserActivationFrameResultEnum : int {
-  kNullFailure = 0,
-  kNullSuccess = 1,
-  kSelfFailure = 2,
-  kSelfSuccess = 3,
-  kAncestorFailure = 4,
-  kAncestorSuccess = 5,
-  kDescendantFailure = 6,
-  kDescendantSuccess = 7,
-  kOtherFailure = 8,
-  kOtherSuccess = 9,
-  kNonMainThreadFailure = 10,
-  kNonMainThreadSuccess = 11,
-  kMaxValue = kNonMainThreadSuccess
-};
-
-UserActivationFrameResultEnum DetermineActivationResultEnum(
-    const LocalFrame* const caller_frame,
-    const bool call_succeeded,
-    const bool off_main_thread) {
-  if (off_main_thread) {
-    return call_succeeded
-               ? UserActivationFrameResultEnum::kNonMainThreadSuccess
-               : UserActivationFrameResultEnum::kNonMainThreadFailure;
-  }
-
-  LocalFrame* user_activation_notifier_frame = UserActivationNotifierFrame();
-
-  if (!caller_frame || !user_activation_notifier_frame) {
-    return call_succeeded ? UserActivationFrameResultEnum::kNullSuccess
-                          : UserActivationFrameResultEnum::kNullFailure;
-  }
-  if (caller_frame == user_activation_notifier_frame) {
-    return call_succeeded ? UserActivationFrameResultEnum::kSelfSuccess
-                          : UserActivationFrameResultEnum::kSelfFailure;
-  }
-  if (user_activation_notifier_frame->Tree().IsDescendantOf(caller_frame)) {
-    return call_succeeded ? UserActivationFrameResultEnum::kAncestorSuccess
-                          : UserActivationFrameResultEnum::kAncestorFailure;
-  }
-  if (caller_frame->Tree().IsDescendantOf(user_activation_notifier_frame)) {
-    return call_succeeded ? UserActivationFrameResultEnum::kDescendantSuccess
-                          : UserActivationFrameResultEnum::kDescendantFailure;
-  }
-  return call_succeeded ? UserActivationFrameResultEnum::kOtherSuccess
-                        : UserActivationFrameResultEnum::kOtherFailure;
 }
 
 }  // namespace
@@ -337,9 +279,6 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   // Starting here, the code must be safe against re-entrancy. Dispatching
   // events, et cetera can run Javascript, which can reenter Detach().
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  if (this == UserActivationNotifierFrame())
-    UserActivationNotifierFrame().Clear();
-
   frame_color_overlay_.reset();
 
   if (IsLocalRoot()) {
@@ -430,8 +369,8 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   WeakIdentifierMap<LocalFrame>::NotifyObjectDestroyed(this);
 }
 
-bool LocalFrame::PrepareForCommit() {
-  return Loader().PrepareForCommit();
+bool LocalFrame::DetachDocument() {
+  return Loader().DetachDocument();
 }
 
 void LocalFrame::CheckCompleted() {
@@ -552,9 +491,7 @@ void LocalFrame::DidChangeVisibilityState() {
 
 void LocalFrame::DidFreeze() {
   if (GetDocument()) {
-    auto* document_resource_coordinator =
-        GetDocument()->GetResourceCoordinator();
-    if (document_resource_coordinator) {
+    if (GetDocument()->GetResourceCoordinator()) {
       // Determine if there is a beforeunload handler by dispatching a
       // beforeunload that will *not* launch a user dialog. If
       // |proceed| is false then there is a non-empty beforeunload
@@ -562,13 +499,21 @@ void LocalFrame::DidFreeze() {
       bool unused_did_allow_navigation = false;
       bool proceed = GetDocument()->DispatchBeforeUnloadEvent(
           nullptr, false /* is_reload */, unused_did_allow_navigation);
-      document_resource_coordinator->SetHasNonEmptyBeforeUnload(!proceed);
+      // Running the beforeunload event may invalidate the
+      // DocumentResourceCoordinator. Because of that, it can't be stored in a
+      // local variable that is reused throughout the method.
+      // https://crbug.com/991380.
+      auto* document_resource_coordinator =
+          GetDocument()->GetResourceCoordinator();
+      if (document_resource_coordinator)
+        document_resource_coordinator->SetHasNonEmptyBeforeUnload(!proceed);
     }
 
     GetDocument()->DispatchFreezeEvent();
     // TODO(fmeawad): Move the following logic to the page once we have a
     // PageResourceCoordinator in Blink. http://crbug.com/838415
-    if (document_resource_coordinator) {
+    if (auto* document_resource_coordinator =
+            GetDocument()->GetResourceCoordinator()) {
       document_resource_coordinator->SetLifecycleState(
           resource_coordinator::mojom::LifecycleState::kFrozen);
     }
@@ -577,9 +522,9 @@ void LocalFrame::DidFreeze() {
 
 void LocalFrame::DidResume() {
   if (GetDocument()) {
-    const TimeTicks resume_event_start = CurrentTimeTicks();
+    const base::TimeTicks resume_event_start = base::TimeTicks::Now();
     GetDocument()->DispatchEvent(*Event::Create(event_type_names::kResume));
-    const TimeTicks resume_event_end = CurrentTimeTicks();
+    const base::TimeTicks resume_event_end = base::TimeTicks::Now();
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, resume_histogram,
         ("DocumentEventTiming.ResumeDuration", 0, 10000000, 50));
@@ -831,7 +776,7 @@ String LocalFrame::SelectedTextForClipboard() const {
 }
 
 PositionWithAffinity LocalFrame::PositionForPoint(
-    const LayoutPoint& frame_point) {
+    const PhysicalOffset& frame_point) {
   HitTestLocation location(frame_point);
   HitTestResult result = GetEventHandler().HitTestResultAtLocation(location);
   Node* node = result.InnerNodeOrImageMapImage();
@@ -847,7 +792,8 @@ PositionWithAffinity LocalFrame::PositionForPoint(
   return position;
 }
 
-Document* LocalFrame::DocumentAtPoint(const LayoutPoint& point_in_root_frame) {
+Document* LocalFrame::DocumentAtPoint(
+    const PhysicalOffset& point_in_root_frame) {
   if (!View())
     return nullptr;
 
@@ -892,11 +838,14 @@ bool LocalFrame::ShouldThrottleRendering() const {
 LocalFrame::LocalFrame(LocalFrameClient* client,
                        Page& page,
                        FrameOwner* owner,
-                       InterfaceRegistry* interface_registry)
+                       WindowAgentFactory* inheriting_agent_factory,
+                       InterfaceRegistry* interface_registry,
+                       const base::TickClock* clock)
     : Frame(client,
             page,
             owner,
-            MakeGarbageCollected<LocalWindowProxyManager>(*this)),
+            MakeGarbageCollected<LocalWindowProxyManager>(*this),
+            inheriting_agent_factory),
       frame_scheduler_(page.GetPageScheduler()->CreateFrameScheduler(
           this,
           client->GetFrameBlameContext(),
@@ -945,7 +894,7 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
     ad_tracker_ = LocalFrameRoot().ad_tracker_;
     performance_monitor_ = LocalFrameRoot().performance_monitor_;
   }
-  idleness_detector_ = MakeGarbageCollected<IdlenessDetector>(this);
+  idleness_detector_ = MakeGarbageCollected<IdlenessDetector>(this, clock);
   inspector_task_runner_->InitIsolate(V8PerIsolateData::MainThreadIsolate());
 
   if (ad_tracker_) {
@@ -1076,6 +1025,9 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
           !LocalFrame::HasTransientUserActivation(this)) {
         // With only 'allow-top-navigation-by-user-activation' (but not
         // 'allow-top-navigation'), top navigation requires a user gesture.
+        Client()->DidBlockNavigation(
+            destination_url, GetDocument()->Url(),
+            blink::NavigationBlockedReason::kRedirectWithNoUserGestureSandbox);
         PrintNavigationErrorMessage(
             target_frame,
             "The frame attempting navigation of the top-level window is "
@@ -1148,7 +1100,9 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
         "but is neither same-origin with its target nor has it received a "
         "user gesture. See "
         "https://www.chromestatus.com/features/5851021045661696.");
-    Client()->DidBlockFramebust(destination_url);
+    Client()->DidBlockNavigation(
+        destination_url, GetDocument()->Url(),
+        blink::NavigationBlockedReason::kRedirectWithNoUserGesture);
   } else {
     PrintNavigationErrorMessage(target_frame,
                                 "The frame attempting navigation is neither "
@@ -1183,8 +1137,8 @@ ContentCaptureManager* LocalFrame::GetContentCaptureManager() {
 
   if (auto* content_capture_client = Client()->GetWebContentCaptureClient()) {
     if (!content_capture_manager_) {
-      content_capture_manager_ = MakeGarbageCollected<ContentCaptureManager>(
-          *this, content_capture_client->GetNodeHolderType());
+      content_capture_manager_ =
+          MakeGarbageCollected<ContentCaptureManager>(*this);
     }
   } else if (content_capture_manager_) {
     content_capture_manager_->Shutdown();
@@ -1290,23 +1244,38 @@ bool LocalFrame::IsClientLoFiAllowed(const ResourceRequest& request) const {
                          request, Client()->GetPreviewsStateForFrame());
 }
 
-LocalFrame::LazyLoadImageEnabledState LocalFrame::GetLazyLoadImageEnabledState()
-    const {
+LocalFrame::LazyLoadImageSetting LocalFrame::GetLazyLoadImageSetting() const {
   DCHECK(GetSettings());
   if (!RuntimeEnabledFeatures::LazyImageLoadingEnabled() ||
       !GetSettings()->GetLazyLoadEnabled()) {
-    return LocalFrame::LazyLoadImageEnabledState::kDisabled;
+    return LocalFrame::LazyLoadImageSetting::kDisabled;
   }
   if (!RuntimeEnabledFeatures::AutomaticLazyImageLoadingEnabled())
-    return LocalFrame::LazyLoadImageEnabledState::kEnabledExplicit;
+    return LocalFrame::LazyLoadImageSetting::kEnabledExplicit;
   if (RuntimeEnabledFeatures::
           RestrictAutomaticLazyImageLoadingToDataSaverEnabled() &&
       !is_save_data_enabled_) {
-    return LocalFrame::LazyLoadImageEnabledState::kEnabledExplicit;
+    return LocalFrame::LazyLoadImageSetting::kEnabledExplicit;
   }
+
+  // Skip automatic lazyload when reloading a page.
+  if (!RuntimeEnabledFeatures::AutoLazyLoadOnReloadsEnabled() &&
+      Loader().GetDocumentLoader() &&
+      IsReloadLoadType(Loader().GetDocumentLoader()->LoadType())) {
+    return LocalFrame::LazyLoadImageSetting::kEnabledExplicit;
+  }
+
   if (Owner() && !Owner()->ShouldLazyLoadChildren())
-    return LocalFrame::LazyLoadImageEnabledState::kEnabledExplicit;
-  return LocalFrame::LazyLoadImageEnabledState::kEnabledAutomatic;
+    return LocalFrame::LazyLoadImageSetting::kEnabledExplicit;
+  return LocalFrame::LazyLoadImageSetting::kEnabledAutomatic;
+}
+
+bool LocalFrame::ShouldForceDeferScript() const {
+  // Check if enabled by runtime feature (for testing/evaluation) or if enabled
+  // by PreviewsState (for live intervention).
+  return RuntimeEnabledFeatures::ForceDeferScriptInterventionEnabled() ||
+         (Client() && Client()->GetPreviewsStateForFrame() ==
+                          WebURLRequest::kDeferAllScriptOn);
 }
 
 WebURLLoaderFactory* LocalFrame::GetURLLoaderFactory() {
@@ -1371,6 +1340,16 @@ FrameOcclusionState LocalFrame::GetOcclusionState() const {
   return LocalFrameRoot().GetOcclusionState();
 }
 
+bool LocalFrame::NeedsOcclusionTracking() const {
+  if (Document* document = GetDocument()) {
+    if (IntersectionObserverController* controller =
+            document->GetIntersectionObserverController()) {
+      return controller->NeedsOcclusionTracking();
+    }
+  }
+  return false;
+}
+
 void LocalFrame::ForceSynchronousDocumentInstall(
     const AtomicString& mime_type,
     scoped_refptr<SharedBuffer> data) {
@@ -1422,8 +1401,7 @@ bool LocalFrame::IsUsingDataSavingPreview() const {
       Client()->GetPreviewsStateForFrame();
   // Check for any data saving type of preview.
   return previews_state &
-         (WebURLRequest::kServerLoFiOn | WebURLRequest::kClientLoFiOn |
-          WebURLRequest::kNoScriptOn);
+         (WebURLRequest::kClientLoFiOn | WebURLRequest::kNoScriptOn);
 }
 
 bool LocalFrame::IsAdSubframe() const {
@@ -1536,10 +1514,8 @@ const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
 std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
     LocalFrame* frame,
     UserGestureToken::Status status) {
-  if (frame) {
-    UserActivationNotifierFrame() = frame;
+  if (frame)
     frame->NotifyUserActivation();
-  }
   return std::make_unique<UserGestureIndicator>(status);
 }
 
@@ -1548,32 +1524,20 @@ std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
     LocalFrame* frame,
     UserGestureToken* token) {
   DCHECK(!RuntimeEnabledFeatures::UserActivationV2Enabled());
-  if (frame) {
-    UserActivationNotifierFrame() = frame;
+  if (frame)
     frame->NotifyUserActivation();
-  }
   return std::make_unique<UserGestureIndicator>(token);
 }
 
 // static
 bool LocalFrame::HasTransientUserActivation(LocalFrame* frame,
                                             bool check_if_main_thread) {
-  bool available;
+  if (RuntimeEnabledFeatures::UserActivationV2Enabled())
+    return frame ? frame->HasTransientUserActivation() : false;
 
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
-    available = frame ? frame->HasTransientUserActivation() : false;
-  } else {
-    available = check_if_main_thread
-                    ? UserGestureIndicator::ProcessingUserGestureThreadSafe()
-                    : UserGestureIndicator::ProcessingUserGesture();
-  }
-
-  const bool off_main_thread = check_if_main_thread && !IsMainThread();
-  UMA_HISTOGRAM_ENUMERATION(
-      "UserActivation.AvailabilityCheck.FrameResult",
-      DetermineActivationResultEnum(frame, available, off_main_thread));
-
-  return available;
+  return check_if_main_thread
+             ? UserGestureIndicator::ProcessingUserGestureThreadSafe()
+             : UserGestureIndicator::ProcessingUserGesture();
 }
 
 // static
@@ -1581,25 +1545,12 @@ bool LocalFrame::ConsumeTransientUserActivation(
     LocalFrame* frame,
     bool check_if_main_thread,
     UserActivationUpdateSource update_source) {
-  bool consumed;
+  if (RuntimeEnabledFeatures::UserActivationV2Enabled())
+    return frame ? frame->ConsumeTransientUserActivation(update_source) : false;
 
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
-    consumed =
-        frame ? frame->ConsumeTransientUserActivation(update_source) : false;
-  } else {
-    consumed = check_if_main_thread
-                   ? UserGestureIndicator::ConsumeUserGestureThreadSafe()
-                   : UserGestureIndicator::ConsumeUserGesture();
-  }
-
-  const bool off_main_thread = check_if_main_thread && !IsMainThread();
-  UMA_HISTOGRAM_ENUMERATION(
-      "UserActivation.Consumption.FrameResult",
-      DetermineActivationResultEnum(frame, consumed, off_main_thread));
-  if (!off_main_thread)
-    UserActivationNotifierFrame().Clear();
-
-  return consumed;
+  return check_if_main_thread
+             ? UserGestureIndicator::ConsumeUserGestureThreadSafe()
+             : UserGestureIndicator::ConsumeUserGesture();
 }
 
 void LocalFrame::NotifyUserActivation() {
@@ -1710,6 +1661,10 @@ void LocalFrame::UnpauseContext() {
 }
 
 void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
+  // Don't allow lifecycle state changes for detached frames.
+  if (!IsAttached())
+    return;
+
   // If we have asked to be frozen we will only do this once the
   // load event has fired.
   if ((state == mojom::FrameLifecycleState::kFrozen ||
@@ -1737,14 +1692,24 @@ void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
   lifecycle_state_ = state;
 
   if (freeze) {
-    if (lifecycle_state_ != mojom::FrameLifecycleState::kPaused)
+    if (lifecycle_state_ != mojom::FrameLifecycleState::kPaused) {
       DidFreeze();
+      // DidFreeze can dispatch JS events, causing |this| to be detached.
+      if (!IsAttached())
+        return;
+    }
     PauseContext();
   } else {
     UnpauseContext();
-    if (old_state != mojom::FrameLifecycleState::kPaused)
+    if (old_state != mojom::FrameLifecycleState::kPaused) {
       DidResume();
+      // DidResume can dispatch JS events, causing |this| to be detached.
+      if (!IsAttached())
+        return;
+    }
   }
+  if (Client())
+    Client()->LifecycleStateChanged(state);
 }
 
 void LocalFrame::MaybeLogAdClickNavigation() {

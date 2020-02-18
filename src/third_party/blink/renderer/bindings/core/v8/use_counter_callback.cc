@@ -7,8 +7,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -227,6 +227,12 @@ void UseCounterCallback(v8::Isolate* isolate,
       break;
     case v8::Isolate::kStringNormalize:
       blink_feature = WebFeature::kV8StringNormalize;
+      break;
+    case v8::Isolate::kCallSiteAPIGetFunctionSloppyCall:
+      blink_feature = WebFeature::kV8CallSiteAPIGetFunctionSloppyCall;
+      break;
+    case v8::Isolate::kCallSiteAPIGetThisSloppyCall:
+      blink_feature = WebFeature::kV8CallSiteAPIGetThisSloppyCall;
       break;
     default:
       // This can happen if V8 has added counters that this version of Blink

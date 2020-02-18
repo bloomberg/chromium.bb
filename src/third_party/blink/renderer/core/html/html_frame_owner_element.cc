@@ -20,7 +20,7 @@
 
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -132,6 +132,11 @@ bool ShouldLazilyLoadFrame(const Document& document,
     return false;
   }
 
+  // Skip automatic lazyload when reloading a page.
+  if (!RuntimeEnabledFeatures::AutoLazyLoadOnReloadsEnabled() &&
+      document.Loader() && IsReloadLoadType(document.Loader()->LoadType())) {
+    return false;
+  }
   return true;
 }
 
@@ -362,8 +367,7 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
 
   GetDocument().GetRootScrollerController().DidUpdateIFrameFrameView(*this);
 
-  LayoutEmbeddedContent* layout_embedded_content =
-      ToLayoutEmbeddedContent(GetLayoutObject());
+  LayoutEmbeddedContent* layout_embedded_content = GetLayoutEmbeddedContent();
   if (!layout_embedded_content)
     return;
 
@@ -391,8 +395,7 @@ EmbeddedContentView* HTMLFrameOwnerElement::ReleaseEmbeddedContentView() {
     return nullptr;
   if (embedded_content_view_->IsAttached())
     embedded_content_view_->DetachFromLayout();
-  LayoutEmbeddedContent* layout_embedded_content =
-      ToLayoutEmbeddedContent(GetLayoutObject());
+  LayoutEmbeddedContent* layout_embedded_content = GetLayoutEmbeddedContent();
   if (layout_embedded_content) {
     if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
       cache->ChildrenChanged(layout_embedded_content);
@@ -421,7 +424,9 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
 
   KURL url_to_request = url.IsNull() ? BlankURL() : url;
   ResourceRequest request(url_to_request);
-  request.SetReferrerPolicy(ReferrerPolicyAttribute());
+  request.SetReferrerPolicy(ReferrerPolicyAttribute(),
+                            ResourceRequest::SetReferrerPolicyLocation::
+                                kFrameOwnerLoadOrRedirectSubframe);
 
   if (ContentFrame()) {
     // TODO(sclittle): Support lazily loading frame navigations.

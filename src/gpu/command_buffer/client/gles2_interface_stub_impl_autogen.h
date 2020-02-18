@@ -859,6 +859,7 @@ void GLES2InterfaceStub::BindImageTexture(GLuint /* unit */,
 void GLES2InterfaceStub::DispatchCompute(GLuint /* num_groups_x */,
                                          GLuint /* num_groups_y */,
                                          GLuint /* num_groups_z */) {}
+void GLES2InterfaceStub::DispatchComputeIndirect(GLintptr /* offset */) {}
 void GLES2InterfaceStub::GetProgramInterfaceiv(GLuint /* program */,
                                                GLenum /* program_interface */,
                                                GLenum /* pname */,
@@ -1076,6 +1077,7 @@ void GLES2InterfaceStub::ScheduleCALayerSharedStateCHROMIUM(
     GLfloat /* opacity */,
     GLboolean /* is_clipped */,
     const GLfloat* /* clip_rect */,
+    const GLfloat* /* rounded_corner_bounds */,
     GLint /* sorting_context_id */,
     const GLfloat* /* transform */) {}
 void GLES2InterfaceStub::ScheduleCALayerCHROMIUM(

@@ -12,7 +12,7 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/services/font/public/interfaces/font_service.mojom.h"
+#include "components/services/font/public/mojom/font_service.mojom.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
@@ -187,7 +187,7 @@ class FontServiceThread : public base::RefCountedThreadSafe<FontServiceThread> {
   std::set<base::WaitableEvent*> pending_waitable_events_;
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::WeakPtrFactory<FontServiceThread> weak_factory_;
+  base::WeakPtrFactory<FontServiceThread> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FontServiceThread);
 };

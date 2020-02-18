@@ -173,5 +173,7 @@ Mistakes are the best sometimes.
 \o/
 This is groovy.
 
-SECRET ENDING: IT WAS branch-heads/3809 ALL ALONG!
+SECRET ENDING: IT WAS _____ ALL ALONG!
 testing trailing line.
+
+So many books, so little time.

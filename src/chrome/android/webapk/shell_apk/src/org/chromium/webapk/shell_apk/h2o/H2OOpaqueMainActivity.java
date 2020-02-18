@@ -23,8 +23,9 @@ public class H2OOpaqueMainActivity extends Activity {
         PackageManager pm = context.getPackageManager();
         ComponentName component = new ComponentName(context, H2OOpaqueMainActivity.class);
         int enabledSetting = pm.getComponentEnabledSetting(component);
-        // Component is disabled by default.
-        return enabledSetting == PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
+        // Component is enabled by default.
+        return enabledSetting == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                || enabledSetting == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
     }
 
     @Override

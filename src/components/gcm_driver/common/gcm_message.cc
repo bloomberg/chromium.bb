@@ -8,17 +8,26 @@ namespace gcm {
 
 // static
 const int OutgoingMessage::kMaximumTTL = 24 * 60 * 60;  // 1 day.
+const int WebPushMessage::kMaximumTTL = 24 * 60 * 60;   // 1 day.
 
-OutgoingMessage::OutgoingMessage() : time_to_live(kMaximumTTL) {}
+OutgoingMessage::OutgoingMessage() = default;
 
 OutgoingMessage::OutgoingMessage(const OutgoingMessage& other) = default;
 
 OutgoingMessage::~OutgoingMessage() = default;
 
-IncomingMessage::IncomingMessage() : decrypted(false) {}
+IncomingMessage::IncomingMessage() = default;
 
 IncomingMessage::IncomingMessage(const IncomingMessage& other) = default;
 
 IncomingMessage::~IncomingMessage() = default;
+
+WebPushMessage::WebPushMessage() = default;
+
+WebPushMessage::WebPushMessage(WebPushMessage&& other) = default;
+
+WebPushMessage::~WebPushMessage() = default;
+
+WebPushMessage& WebPushMessage::operator=(WebPushMessage&& other) = default;
 
 }  // namespace gcm

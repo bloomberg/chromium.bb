@@ -4,14 +4,14 @@
 */
 'use strict';
 
-import MenuInput from './menu-input.js';
-import OptionGroup from './option-group.js';
-import TagFilter from './tag-filter.js';
-import findElements from './find-elements.js';
+import {MenuInput} from './menu-input.js';
+import {OptionGroup} from './option-group.js';
 import {STORE} from './element-base.js';
+import {TagFilter} from './tag-filter.js';
 import {UPDATE} from './simple-redux.js';
 import {afterRender} from './utils.js';
 import {assert} from 'chai';
+import {findElements} from './find-elements.js';
 
 suite('tag-filter', function() {
   teardown(() => {
@@ -54,15 +54,15 @@ suite('tag-filter', function() {
     await afterRender();
 
     const xxx = findElements(tagFilter, e =>
-      e.matches('cp-checkbox') && /xxx/.test(e.textContent))[0];
-    xxx.$.native.click();
+      e.matches('chops-checkbox') && /xxx/.test(e.textContent))[0];
+    xxx.click();
     await afterRender();
     let state = STORE.getState().test;
     assert.deepEqual(['aaa', 'ccc'],
         state.options[0].options.map(o => o.value));
     assert.deepEqual(['aaa', 'ccc'], state.selectedOptions);
 
-    xxx.$.native.click();
+    xxx.click();
     await afterRender();
     state = STORE.getState().test;
     assert.deepEqual(['aaa', 'bbb', 'ccc', 'ddd', 'eee'],
@@ -70,15 +70,15 @@ suite('tag-filter', function() {
     assert.deepEqual([], state.selectedOptions);
 
     const yyy = findElements(tagFilter, e =>
-      e.matches('cp-checkbox') && /yyy/.test(e.textContent))[0];
-    yyy.$.native.click();
+      e.matches('chops-checkbox') && /yyy/.test(e.textContent))[0];
+    yyy.click();
     await afterRender();
     state = STORE.getState().test;
     assert.deepEqual(['bbb', 'ddd'],
         state.options[0].options.map(o => o.value));
     assert.deepEqual(['bbb', 'ddd'], state.selectedOptions);
 
-    xxx.$.native.click();
+    xxx.click();
     await afterRender();
     state = STORE.getState().test;
     assert.deepEqual(['aaa', 'bbb', 'ccc', 'ddd'],

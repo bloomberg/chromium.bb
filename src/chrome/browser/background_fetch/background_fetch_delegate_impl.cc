@@ -34,7 +34,6 @@
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -47,9 +46,8 @@ BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(
     const std::string& provider_namespace)
     : profile_(profile),
       provider_namespace_(provider_namespace),
-      offline_content_aggregator_(
-          OfflineContentAggregatorFactory::GetForBrowserContext(profile)),
-      weak_ptr_factory_(this) {
+      offline_content_aggregator_(OfflineContentAggregatorFactory::GetForKey(
+          profile->GetProfileKey())) {
   DCHECK(profile_);
   DCHECK(!provider_namespace_.empty());
   offline_content_aggregator_->RegisterProvider(provider_namespace_, this);
@@ -71,8 +69,8 @@ download::DownloadService* BackgroundFetchDelegateImpl::GetDownloadService() {
   if (download_service_)
     return download_service_;
 
-  download_service_ =
-      DownloadServiceFactory::GetInstance()->GetForBrowserContext(profile_);
+  download_service_ = DownloadServiceFactory::GetInstance()->GetForKey(
+      profile_->GetProfileKey());
   return download_service_;
 }
 
@@ -267,7 +265,7 @@ void BackgroundFetchDelegateImpl::GetPermissionForOrigin(
     // The fetch should be thought of as one download. So the origin will be
     // used as the URL, and the |request_method| is set to GET.
     limiter->CanDownload(
-        wc_getter, origin.GetURL(), "GET",
+        wc_getter, origin.GetURL(), "GET", base::nullopt,
         base::AdaptCallbackForRepeating(base::BindOnce(
             &BackgroundFetchDelegateImpl::
                 DidGetPermissionFromDownloadRequestLimiter,
@@ -462,10 +460,14 @@ void BackgroundFetchDelegateImpl::UpdateUI(
 
   if (icon) {
     job_details.fetch_description->icon = *icon;
-    job_details.offline_item.refresh_visuals = true;
+    offline_items_collection::UpdateDelta update_delta;
+    update_delta.visuals_changed = true;
+    job_details.update_delta = update_delta;
   }
 
-  bool should_update_visuals = job_details.offline_item.refresh_visuals;
+  bool should_update_visuals = job_details.update_delta.has_value()
+                                   ? job_details.update_delta->visuals_changed
+                                   : false;
 #if !defined(OS_ANDROID)
   should_update_visuals = false;
 #endif
@@ -498,15 +500,10 @@ void BackgroundFetchDelegateImpl::OnDownloadStarted(
                                           std::move(response));
   }
 
-  // Release the request body blob, if any, and update the upload progress.
+  // Update the upload progress.
   auto it = job_details.current_fetch_guids.find(download_guid);
   DCHECK(it != job_details.current_fetch_guids.end());
-
-  if (it->second.request_body_blob) {
-    job_details.fetch_description->uploaded_bytes +=
-        it->second.request_body_blob->size;
-    it->second.request_body_blob.reset();
-  }
+  job_details.fetch_description->uploaded_bytes += it->second.body_size_bytes;
 }
 
 void BackgroundFetchDelegateImpl::OnDownloadUpdated(
@@ -651,8 +648,9 @@ void BackgroundFetchDelegateImpl::UpdateOfflineItemAndUpdateObservers(
     JobDetails* job_details) {
   job_details->UpdateOfflineItem();
 
+  auto update_delta = std::move(job_details->update_delta);
   for (auto* observer : observers_)
-    observer->OnItemUpdated(job_details->offline_item);
+    observer->OnItemUpdated(job_details->offline_item, update_delta);
 }
 
 void BackgroundFetchDelegateImpl::OpenItem(
@@ -788,7 +786,6 @@ void BackgroundFetchDelegateImpl::GetVisualsForItem(
     auto& job_details = it->second;
     visuals->icon =
         gfx::Image::CreateFrom1xBitmap(job_details.fetch_description->icon);
-    job_details.offline_item.refresh_visuals = false;
     if (job_details.client &&
         job_details.job_state == JobDetails::State::kDownloadsComplete) {
       job_details.client->OnUIUpdated(id.id);
@@ -915,23 +912,17 @@ void BackgroundFetchDelegateImpl::DidGetUploadData(
     return;
   }
 
-  auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      profile_->IsOffTheRecord()) {
-    // Use a Data Pipe to transfer the blob.
-    network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-    blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
-    blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
-    request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
-  } else {
-    // Use the blob itself and store the handle for the duration of the upload.
-    request_body->AppendBlob(blob->uuid);
+  auto& job_details = job_it->second;
+  DCHECK(job_details.current_fetch_guids.count(download_guid));
+  auto& request_data = job_details.current_fetch_guids.at(download_guid);
+  request_data.body_size_bytes = blob->size;
 
-    auto& job_details = job_it->second;
-    DCHECK(job_details.current_fetch_guids.count(download_guid));
-    job_details.current_fetch_guids.at(download_guid).request_body_blob =
-        std::move(blob);
-  }
+  // Use a Data Pipe to transfer the blob.
+  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
+  blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
+  auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
+  request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
 
   std::move(callback).Run(request_body);
 }

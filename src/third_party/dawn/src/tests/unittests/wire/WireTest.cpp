@@ -27,6 +27,14 @@ WireTest::WireTest() {
 WireTest::~WireTest() {
 }
 
+client::MemoryTransferService* WireTest::GetClientMemoryTransferService() {
+    return nullptr;
+}
+
+server::MemoryTransferService* WireTest::GetServerMemoryTransferService() {
+    return nullptr;
+}
+
 void WireTest::SetUp() {
     DawnProcTable mockProcs;
     DawnDevice mockDevice;
@@ -39,10 +47,20 @@ void WireTest::SetUp() {
     mS2cBuf = std::make_unique<utils::TerribleCommandBuffer>();
     mC2sBuf = std::make_unique<utils::TerribleCommandBuffer>(mWireServer.get());
 
-    mWireServer.reset(new WireServer(mockDevice, mockProcs, mS2cBuf.get()));
+    WireServerDescriptor serverDesc = {};
+    serverDesc.device = mockDevice;
+    serverDesc.procs = &mockProcs;
+    serverDesc.serializer = mS2cBuf.get();
+    serverDesc.memoryTransferService = GetServerMemoryTransferService();
+
+    mWireServer.reset(new WireServer(serverDesc));
     mC2sBuf->SetHandler(mWireServer.get());
 
-    mWireClient.reset(new WireClient(mC2sBuf.get()));
+    WireClientDescriptor clientDesc = {};
+    clientDesc.serializer = mC2sBuf.get();
+    clientDesc.memoryTransferService = GetClientMemoryTransferService();
+
+    mWireClient.reset(new WireClient(clientDesc));
     mS2cBuf->SetHandler(mWireClient.get());
 
     device = mWireClient->GetDevice();
@@ -61,17 +79,18 @@ void WireTest::TearDown() {
     // cannot be null.
     api.IgnoreAllReleaseCalls();
     mWireClient = nullptr;
+    mWireServer = nullptr;
 }
 
-void WireTest::FlushClient() {
-    ASSERT_TRUE(mC2sBuf->Flush());
+void WireTest::FlushClient(bool success) {
+    ASSERT_EQ(mC2sBuf->Flush(), success);
 
     Mock::VerifyAndClearExpectations(&api);
     SetupIgnoredCallExpectations();
 }
 
-void WireTest::FlushServer() {
-    ASSERT_TRUE(mS2cBuf->Flush());
+void WireTest::FlushServer(bool success) {
+    ASSERT_EQ(mS2cBuf->Flush(), success);
 }
 
 dawn_wire::WireServer* WireTest::GetWireServer() {

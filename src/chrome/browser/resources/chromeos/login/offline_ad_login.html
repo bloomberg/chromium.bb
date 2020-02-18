@@ -4,7 +4,7 @@
 
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/html/md_select_css.html">
+<link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 
@@ -135,18 +135,17 @@
               error-message="[[i18nDynamic(locale, 'adLoginInvalidPassword')]]">
           </cr-input>
           <div class="flex layout horizontal start-justified">
-            <gaia-button id="moreOptionsBtn" type="link"
-                on-tap="onMoreOptionsClicked_" hidden="[[!isDomainJoin]]"
-                disabled="[[disabled]]">
+            <gaia-button id="moreOptionsBtn" on-click="onMoreOptionsClicked_"
+                hidden="[[!isDomainJoin]]" disabled="[[disabled]]" link>
               [[i18nDynamic(locale, 'adJoinMoreOptions')]]
             </gaia-button>
           </div>
         </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal" hidden="[[loading]]">
-        <oobe-back-button id="backToUnlockButton" on-tap="onBackToUnlock_"
+        <oobe-back-button id="backToUnlockButton" on-click="onBackToUnlock_"
             disabled="[[disabled]]" hidden></oobe-back-button>
-        <oobe-back-button id="backButton" on-tap="onBackButton_"
+        <oobe-back-button id="backButton" on-click="onBackButton_"
             hidden="[[isDomainJoin]]"></oobe-back-button>
         <div class="flex"></div>
         <oobe-next-button id="nextButton" on-tap="onSubmit_"

@@ -197,16 +197,17 @@ InlineFlowBox* LayoutBlockFlow::CreateLineBoxes(LineLayoutItem line_layout_item,
       line_layout_item = LineLayoutItem(this);
     }
 
-    SECURITY_DCHECK(line_layout_item.IsLayoutInline() ||
-                    line_layout_item.IsEqual(this));
-
-    LineLayoutInline inline_flow(
-        !line_layout_item.IsEqual(this) ? line_layout_item : nullptr);
-
     // Get the last box we made for this layout object.
-    parent_box = inline_flow
-                     ? inline_flow.LastLineBox()
-                     : LineLayoutBlockFlow(line_layout_item).LastLineBox();
+    bool allowed_to_construct_new_box;
+    if (line_layout_item.IsLayoutInline()) {
+      LineLayoutInline inline_flow(line_layout_item);
+      parent_box = inline_flow.LastLineBox();
+      allowed_to_construct_new_box = inline_flow.AlwaysCreateLineBoxes();
+    } else {
+      DCHECK(line_layout_item.IsEqual(this));
+      parent_box = LineLayoutBlockFlow(line_layout_item).LastLineBox();
+      allowed_to_construct_new_box = true;
+    }
 
     // If this box or its ancestor is constructed then it is from a previous
     // line, and we need to make a new box for our line.  If this box or its
@@ -215,8 +216,6 @@ InlineFlowBox* LayoutBlockFlow::CreateLineBoxes(LineLayoutItem line_layout_item,
     // inline has actually been split in two on the same line (this can happen
     // with very fancy language mixtures).
     bool constructed_new_box = false;
-    bool allowed_to_construct_new_box =
-        !inline_flow || inline_flow.AlwaysCreateLineBoxes();
     bool can_use_existing_parent_box =
         parent_box && !ParentIsConstructedOrHaveNext(parent_box);
     if (allowed_to_construct_new_box && !can_use_existing_parent_box) {
@@ -2222,15 +2221,25 @@ void LayoutBlockFlow::DetermineEndPosition(LineLayoutState& layout_state,
                                            BidiStatus& clean_line_bidi_status) {
   DCHECK(!layout_state.EndLine());
   RootInlineBox* last = nullptr;
+  bool previous_was_clean = false;
   for (RootInlineBox* curr = start_line->NextRootBox(); curr;
        curr = curr->NextRootBox()) {
     if (!curr->IsDirty() && LineBoxHasBRWithClearance(curr))
       return;
 
-    if (curr->IsDirty())
+    // A line is considered clean when it's not marked dirty, AND it either
+    // doesn't contain floats, or follows another clean line. The legacy line
+    // layout engine has issues with handling floats at line boundaries,
+    // potentially resulting in a float belonging to two different lines,
+    // causing all kinds of misery.
+    if (curr->IsDirty() || (curr->FloatsPtr() && !previous_was_clean)) {
       last = nullptr;
-    else if (!last)
-      last = curr;
+      previous_was_clean = false;
+    } else {
+      if (!last)
+        last = curr;
+      previous_was_clean = true;
+    }
   }
 
   if (!last)
@@ -2315,10 +2324,11 @@ bool LayoutBlockFlow::MatchedEndLine(LineLayoutState& layout_state,
 
   // The first clean line doesn't match, but we can check a handful of following
   // lines to try to match back up.
-  static int num_lines = 8;  // The # of lines we're willing to match against.
+  // The # of lines we're willing to match against.
+  constexpr int kNumLines = 8;
   RootInlineBox* original_end_line = layout_state.EndLine();
   RootInlineBox* line = original_end_line;
-  for (int i = 0; i < num_lines && line; i++, line = line->NextRootBox()) {
+  for (int i = 0; i < kNumLines && line; i++, line = line->NextRootBox()) {
     if (line->LineBreakObj() == resolver.GetPosition().GetLineLayoutItem() &&
         line->LineBreakPos() == resolver.GetPosition().Offset()) {
       // We have a match.
@@ -2712,7 +2722,7 @@ LayoutUnit LayoutBlockFlow::StartAlignedOffsetForLine(
 void LayoutBlockFlow::SetShouldDoFullPaintInvalidationForFirstLine() {
   DCHECK(ChildrenInline());
   if (RootInlineBox* first_root_box = FirstRootBox())
-    first_root_box->SetShouldDoFullPaintInvalidationRecursively();
+    first_root_box->SetShouldDoFullPaintInvalidationForFirstLine();
   else if (const NGPaintFragment* paint_fragment = PaintFragment())
     paint_fragment->SetShouldDoFullPaintInvalidationForFirstLine();
 }

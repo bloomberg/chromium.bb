@@ -45,10 +45,6 @@ namespace remoting {
 
 namespace {
 
-const char* const kXmppServer = "talk.google.com";
-const int kXmppPort = 5222;
-const bool kXmppUseTls = true;
-
 // Default DPI to assume for old clients that use notifyClientResolution.
 const int kDefaultDPI = 96;
 
@@ -57,6 +53,11 @@ const int kMinDimension = 640;
 
 // Interval at which to log performance statistics, if enabled.
 constexpr base::TimeDelta kPerfStatsInterval = base::TimeDelta::FromMinutes(1);
+
+// Delay to destroy the signal strategy, so that the session-terminate event can
+// still be sent out.
+constexpr base::TimeDelta kDestroySignalingDelay =
+    base::TimeDelta::FromSeconds(2);
 
 bool IsClientResolutionValid(int dips_width, int dips_height) {
   // This prevents sending resolution on a portrait mode small phone screen
@@ -347,6 +348,9 @@ void ChromotingSession::Core::Disconnect() {
                                    ChromotingEvent::ConnectionError::NONE);
     session_state_ = protocol::ConnectionToHost::CLOSED;
 
+    // Make sure we send a session-terminate to the host.
+    client_->Close();
+
     Invalidate();
   }
 }
@@ -452,15 +456,31 @@ base::WeakPtr<ChromotingSession::Core> ChromotingSession::Core::GetWeakPtr() {
 }
 
 void ChromotingSession::Core::Invalidate() {
+  DCHECK(network_task_runner()->BelongsToCurrentThread());
+
   // Prevent all pending and future calls from ChromotingSession.
   weak_factory_.InvalidateWeakPtrs();
 
   client_.reset();
   token_getter_.reset();
-  signaling_.reset();
   perf_tracker_.reset();
   client_context_.reset();
   session_context_.reset();
+
+  // Dirty hack to make sure session-terminate message is sent before
+  // |signaling_| gets deleted. W/o the message being sent, the other side will
+  // believe an error has occurred.
+  if (signaling_) {
+    signaling_->Disconnect();
+    network_task_runner()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](std::unique_ptr<SignalStrategy> signaling) {
+              signaling.reset();
+            },
+            std::move(signaling_)),
+        kDestroySignalingDelay);
+  }
 }
 
 void ChromotingSession::Core::ConnectOnNetworkThread() {
@@ -486,30 +506,15 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
       client_context_.get(), this, session_context_->video_renderer.get(),
       session_context_->audio_player_weak_factory->GetWeakPtr()));
 
-  XmppSignalStrategy::XmppServerConfig xmpp_config;
-  xmpp_config.host = kXmppServer;
-  xmpp_config.port = kXmppPort;
-  xmpp_config.use_tls = kXmppUseTls;
-  xmpp_config.username = session_context_->info.username;
-  xmpp_config.auth_token = session_context_->info.auth_token;
-
-  if (!session_context_->info.host_ftl_id.empty()) {
-    signaling_ = std::make_unique<FtlSignalStrategy>(
-        runtime_->CreateOAuthTokenGetter(),
-        std::make_unique<FtlClientUuidDeviceIdProvider>());
-    logger_->SetSignalStrategyType(ChromotingEvent::SignalStrategyType::FTL);
-  } else {
-    signaling_ = std::make_unique<XmppSignalStrategy>(
-        net::ClientSocketFactory::GetDefaultFactory(),
-        runtime_->url_requester(), xmpp_config);
-    logger_->SetSignalStrategyType(ChromotingEvent::SignalStrategyType::XMPP);
-  }
+  signaling_ = std::make_unique<FtlSignalStrategy>(
+      runtime_->CreateOAuthTokenGetter(),
+      std::make_unique<FtlClientUuidDeviceIdProvider>());
+  logger_->SetSignalStrategyType(ChromotingEvent::SignalStrategyType::FTL);
 
   token_getter_ = runtime_->CreateOAuthTokenGetter();
 
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
-          signaling_.get(),
           std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
           std::make_unique<ChromiumUrlRequestFactory>(
               runtime_->url_loader_factory()),

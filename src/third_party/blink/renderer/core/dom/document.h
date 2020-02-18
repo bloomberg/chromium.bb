@@ -39,7 +39,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
@@ -66,7 +66,7 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/use_counter_helper.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
@@ -99,9 +99,11 @@ class CanvasFontCache;
 class ChromeClient;
 class Comment;
 class ComputedAccessibleNode;
+class WindowAgent;
 class ComputedStyle;
 class ConsoleMessage;
 class ContextFeatures;
+class CookieJar;
 class V0CustomElementMicrotaskRunQueue;
 class V0CustomElementRegistrationContext;
 class DOMImplementation;
@@ -144,7 +146,6 @@ class HitTestRequest;
 class HttpRefreshScheduler;
 class IdleRequestOptions;
 class IntersectionObserverController;
-class LayoutPoint;
 class LayoutView;
 class LazyLoadImageObserver;
 class LiveNodeListBase;
@@ -200,6 +201,7 @@ class WorkletAnimationController;
 struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
+struct PhysicalOffset;
 
 using MouseEventWithHitTestResults = EventWithHitTestResults<WebMouseEvent>;
 
@@ -224,6 +226,7 @@ enum DocumentClass {
   kMediaDocumentClass = 1 << 4,
   kSVGDocumentClass = 1 << 5,
   kXMLDocumentClass = 1 << 6,
+  kViewSourceDocumentClass = 1 << 7,
 };
 
 enum ShadowCascadeOrder {
@@ -536,7 +539,7 @@ class CORE_EXPORT Document : public ContainerNode,
     kRunPostLayoutTasksSynchronously,
   };
   void UpdateStyleAndLayoutForNode(const Node*);
-  scoped_refptr<ComputedStyle> StyleForPage(int page_index);
+  scoped_refptr<const ComputedStyle> StyleForPage(int page_index);
 
   // Ensures that location-based data will be valid for a given node.
   //
@@ -569,10 +572,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void Initialize();
   virtual void Shutdown();
 
-  void AttachLayoutTree(AttachContext&) override { NOTREACHED(); }
-  void DetachLayoutTree(const AttachContext& = AttachContext()) override {
-    NOTREACHED();
-  }
+  void InitContentSecurityPolicy(ContentSecurityPolicy*);
 
   // If you have a Document, use GetLayoutView() instead which is faster.
   void GetLayoutObject() const = delete;
@@ -735,8 +735,16 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // FinishingPrinting denotes that the non-printing layout state is being
   // restored.
-  enum PrintingState { kNotPrinting, kPrinting, kFinishingPrinting };
+  enum PrintingState {
+    kNotPrinting,
+    kBeforePrinting,
+    kPrinting,
+    kFinishingPrinting
+  };
   bool Printing() const { return printing_ == kPrinting; }
+  bool BeforePrintingOrPrinting() const {
+    return printing_ == kPrinting || printing_ == kBeforePrinting;
+  }
   bool FinishingOrIsPrinting() {
     return printing_ == kPrinting || printing_ == kFinishingPrinting;
   }
@@ -770,14 +778,13 @@ class CORE_EXPORT Document : public ContainerNode,
   bool HasFinishedParsing() const { return parsing_state_ == kFinishedParsing; }
 
   bool ShouldScheduleLayout() const;
-  int ElapsedTime() const;
 
   TextLinkColors& GetTextLinkColors() { return text_link_colors_; }
   const TextLinkColors& GetTextLinkColors() const { return text_link_colors_; }
   VisitedLinkState& GetVisitedLinkState() const { return *visited_link_state_; }
 
   MouseEventWithHitTestResults PerformMouseEventHitTest(const HitTestRequest&,
-                                                        const LayoutPoint&,
+                                                        const PhysicalOffset&,
                                                         const WebMouseEvent&);
 
   void SetHadKeyboardEvent(bool had_keyboard_event) {
@@ -793,6 +800,10 @@ class CORE_EXPORT Document : public ContainerNode,
   const UserActionElementSet& UserActionElements() const {
     return user_action_elements_;
   }
+  // Returns false if the function fails.  e.g. |pseudo| is not supported.
+  bool SetPseudoStateForTesting(Element& element,
+                                const String& pseudo,
+                                bool matches);
   void SetAutofocusElement(Element*);
   Element* AutofocusElement() const { return autofocus_element_.Get(); }
   void SetSequentialFocusNavigationStartingPoint(Node*);
@@ -935,6 +946,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   String cookie(ExceptionState&) const;
   void setCookie(const String&, ExceptionState&);
+  bool CookiesEnabled() const;
 
   const AtomicString& referrer() const;
 
@@ -1103,19 +1115,10 @@ class CORE_EXPORT Document : public ContainerNode,
   const SVGDocumentExtensions* SvgExtensions();
   SVGDocumentExtensions& AccessSVGExtensions();
 
-  // the first parameter specifies a policy to use as the document csp meaning
-  // the document will take ownership of the policy
-  // the second parameter specifies a policy to inherit meaning the document
-  // will attempt to copy over the policy
-  void InitContentSecurityPolicy(ContentSecurityPolicy* = nullptr,
-                                 const ContentSecurityPolicy* = nullptr);
-
   bool AllowInlineEventHandler(Node*,
                                EventListener*,
                                const String& context_url,
                                const WTF::OrdinalNumber& context_line);
-
-  void EnforceSandboxFlags(WebSandboxFlags mask) override;
 
   void StatePopped(scoped_refptr<SerializedScriptValue>);
 
@@ -1214,9 +1217,7 @@ class CORE_EXPORT Document : public ContainerNode,
                               const AtomicString& name,
                               const ElementRegistrationOptions*,
                               ExceptionState&);
-  V0CustomElementRegistrationContext* RegistrationContext() const {
-    return registration_context_.Get();
-  }
+  V0CustomElementRegistrationContext* RegistrationContext() const;
   V0CustomElementMicrotaskRunQueue* CustomElementMicrotaskRunQueue();
 
   void ClearImportsController();
@@ -1243,9 +1244,9 @@ class CORE_EXPORT Document : public ContainerNode,
   ElementDataCache* GetElementDataCache() { return element_data_cache_.Get(); }
 
   void DidLoadAllScriptBlockingResources();
-  void DidAddPendingStylesheetInBody();
-  void DidRemoveAllPendingStylesheet();
-  void DidRemoveAllPendingBodyStylesheets();
+  void DidAddPendingParserBlockingStylesheet();
+  void DidLoadAllPendingParserBlockingStylesheets();
+  void DidRemoveAllPendingStylesheets();
 
   bool InStyleRecalc() const {
     return lifecycle_.GetState() == DocumentLifecycle::kInStyleRecalc;
@@ -1255,6 +1256,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Locale& GetCachedLocale(const AtomicString& locale = g_null_atom);
 
   AnimationClock& GetAnimationClock();
+  const AnimationClock& GetAnimationClock() const;
   DocumentTimeline& Timeline() const { return *timeline_; }
   PendingAnimations& GetPendingAnimations() { return *pending_animations_; }
   WorkletAnimationController& GetWorkletAnimationController() {
@@ -1295,8 +1297,6 @@ class CORE_EXPORT Document : public ContainerNode,
   enum HttpRefreshType { kHttpRefreshFromHeader, kHttpRefreshFromMetaTag };
   void MaybeHandleHttpRefresh(const String&, HttpRefreshType);
   bool IsHttpRefreshScheduledWithin(double interval_in_seconds);
-
-  void UpdateSecurityOrigin(scoped_refptr<SecurityOrigin>);
 
   void SetHasViewportUnits() { has_viewport_units_ = true; }
   bool HasViewportUnits() const { return has_viewport_units_; }
@@ -1401,10 +1401,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // May return nullptr when PerformanceManager instrumentation is disabled.
   DocumentResourceCoordinator* GetResourceCoordinator();
 
-  // Set an explicit feature policy on this document in response to an HTTP
-  // Feature-Policy header. This will be relayed to the embedder through the
-  // LocalFrameClient.
-  void ApplyFeaturePolicyFromHeader(const String& feature_policy_header);
+  // Apply pending feature policy headers.
+  void ApplyPendingFeaturePolicyHeaders();
 
   // Set the report-only feature policy on this document in response to an HTTP
   // Feature-Policy-Report-Only header.
@@ -1492,6 +1490,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   LazyLoadImageObserver& EnsureLazyLoadImageObserver();
 
+  WindowAgent& GetWindowAgent();
+
   // TODO(binji): See http://crbug.com/798572. This implementation shares the
   // same agent cluster ID for any one document. The proper implementation of
   // this function must follow the rules described here:
@@ -1510,14 +1510,6 @@ class CORE_EXPORT Document : public ContainerNode,
       mojom::FeaturePolicyFeature,
       mojom::FeaturePolicyDisposition,
       const String& message = g_empty_string) const override;
-
-  bool IsParsedFeaturePolicy(mojom::FeaturePolicyFeature feature) const {
-    return parsed_feature_policies_[static_cast<size_t>(feature)];
-  }
-
-  void SetParsedFeaturePolicy(mojom::FeaturePolicyFeature feature) {
-    parsed_feature_policies_.set(static_cast<size_t>(feature));
-  }
 
   void IncrementNumberOfCanvases();
 
@@ -1584,10 +1576,18 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsUseCounted(CSSPropertyID property,
                     UseCounterHelper::CSSPropertyType) const;
   void ClearUseCounterForTesting(mojom::WebFeature);
+  void SetSecurityOrigin(scoped_refptr<SecurityOrigin>) final;
+
+  // Bind Content Security Policy to this document. This will cause the
+  // CSP to resolve the 'self' attribute and all policies will then be
+  // applied to this document.
+  void BindContentSecurityPolicy();
+
+  bool HasPendingJavaScriptUrlsForTest() {
+    return !pending_javascript_urls_.IsEmpty();
+  }
 
  protected:
-  void DidUpdateSecurityOrigin() final;
-
   void ClearXMLVersion() { xml_version_ = String(); }
 
   virtual Document* CloneDocumentWithoutChildren() const;
@@ -1605,6 +1605,16 @@ class CORE_EXPORT Document : public ContainerNode,
   FRIEND_TEST_ALL_PREFIXES(FrameFetchContextSubresourceFilterTest,
                            DuringOnFreeze);
   class NetworkStateObserver;
+  class SecurityContextInit;
+
+  Document(const DocumentInit& initization,
+           SecurityContextInit init_helper,
+           DocumentClassFlags document_classes);
+
+  // Post initialization of the object handling of the feature policy.
+  void FeaturePolicyInitialized(
+      const DocumentInit& document_initializer,
+      const SecurityContextInit& security_initializer);
 
   friend class AXContext;
   void AddAXContext(AXContext*);
@@ -1619,7 +1629,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   ScriptedAnimationController& EnsureScriptedAnimationController();
   ScriptedIdleTaskController& EnsureScriptedIdleTaskController();
-  void InitSecurityContext(const DocumentInit&);
+  void InitSecurityContext(const DocumentInit&,
+                           const SecurityContextInit& security_initializer);
   void InitSecureContextState();
   SecurityContext& GetSecurityContext() final { return *this; }
   const SecurityContext& GetSecurityContext() const final { return *this; }
@@ -1715,12 +1726,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   const ParsedFeaturePolicy GetOwnerContainerPolicy() const;
   const FeaturePolicy* GetParentFeaturePolicy() const;
-
-  // Set the feature policy on this document, inheriting as necessary from the
-  // parent document and frame owner (if they exist). The caller must ensure
-  // that any changes to the declared policy are relayed to the embedder through
-  // the LocalFrameClient.
-  void ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy);
 
   // Returns true if use of |method_name| for markup insertion is allowed by
   // feature policy; otherwise returns false and throws a DOM exception.
@@ -1877,7 +1882,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool is_freezing_in_progress_;
 
-  double start_time_;
+  base::ElapsedTimer start_time_;
 
   Member<ScriptRunner> script_runner_;
 
@@ -2053,15 +2058,15 @@ class CORE_EXPORT Document : public ContainerNode,
   // https://tc39.github.io/ecma262/#sec-agent-clusters
   const base::UnguessableToken agent_cluster_id_;
 
-  // Tracks which feature policies have already been parsed, so as not to count
-  // them multiple times.
-  std::bitset<static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
-      parsed_feature_policies_;
   // Tracks which features have already been potentially violated in this
   // document. This helps to count them only once per page load.
   mutable std::bitset<
       static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
       potentially_violated_features_;
+
+  // Pending parsed headers to send to browser after DidCommitNavigation
+  // IPC.
+  ParsedFeaturePolicy pending_parsed_headers_;
 
   AtomicString override_last_modified_;
 
@@ -2082,6 +2087,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // Used to communicate state associated with resource management to the
   // embedder.
   std::unique_ptr<DocumentResourceCoordinator> resource_coordinator_;
+
+  // Used for document.cookie. May be null.
+  std::unique_ptr<CookieJar> cookie_jar_;
 
   // A dummy scheduler to return when the document is detached.
   // All operations on it result in no-op, but due to this it's safe to

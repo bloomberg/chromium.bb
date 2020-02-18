@@ -24,12 +24,12 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRestriction;
@@ -62,7 +62,6 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PrefetchFlowTest implements WebServer.RequestHandler {
     private static final String TAG = "PrefetchFlowTest";
-    private static final String GCM_TOKEN = "dummy_gcm_token";
     private TestOfflinePageService mOPS = new TestOfflinePageService();
     private TestSuggestionsService mSuggestionsService = new TestSuggestionsService();
     private WebServer mServer;
@@ -138,6 +137,7 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
             PrefetchTestBridge.skipNTPSuggestionsAPIKeyCheck();
         });
         OfflineTestUtil.setPrefetchingEnabledByServer(true);
+        OfflineTestUtil.setGCMTokenForTesting("dummy_gcm_token");
     }
 
     @After
@@ -168,9 +168,7 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
         PrefetchBackgroundTask task = new PrefetchBackgroundTask();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TaskParameters.Builder builder =
-                    TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID)
-                            .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(
-                                    GCM_TOKEN));
+                    TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
             PrefetchBackgroundTask.skipConditionCheckingForTesting();
             task.onStartTask(ContextUtils.getApplicationContext(), builder.build(),
                     (boolean needsReschedule) -> { finished.notifyCalled(); });

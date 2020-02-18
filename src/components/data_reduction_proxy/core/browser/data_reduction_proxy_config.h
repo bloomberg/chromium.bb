@@ -35,7 +35,6 @@ class SingleThreadTaskRunner;
 
 namespace net {
 class ProxyServer;
-class URLRequest;
 }  // namespace net
 
 namespace data_reduction_proxy {
@@ -118,25 +117,6 @@ class DataReductionProxyConfig
   // Gets a list of all the configured proxies. These are the same proxies that
   // will be used if FindConfiguredDataReductionProxy() is called.
   net::ProxyList GetAllConfiguredProxies() const;
-
-  // Returns true if this request would be bypassed by the Data Reduction Proxy
-  // based on applying the |data_reduction_proxy_config| param rules to the
-  // request URL.
-  bool IsBypassedByDataReductionProxyLocalRules(
-      const net::URLRequest& request,
-      const net::ProxyConfig& data_reduction_proxy_config) const;
-
-  // Checks if all configured data reduction proxies are in the retry map.
-  // Returns true if the request is bypassed by all configured data reduction
-  // proxies that apply to the request scheme. If all possible data reduction
-  // proxies are bypassed, returns the minimum retry delay of the bypassed data
-  // reduction proxies in min_retry_delay (if not NULL). If there are no
-  // bypassed data reduction proxies for the request scheme, returns false and
-  // does not assign min_retry_delay.
-  bool AreDataReductionProxiesBypassed(
-      const net::URLRequest& request,
-      const net::ProxyConfig& data_reduction_proxy_config,
-      base::TimeDelta* min_retry_delay) const;
 
   // Returns true if the proxy is on the retry map and the retry delay is not
   // expired. If proxy is bypassed, retry_delay (if not NULL) returns the delay
@@ -229,8 +209,6 @@ class DataReductionProxyConfig
                            AreProxiesBypassedRetryDelay);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, WarmupURL);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
-                           ShouldAcceptServerLoFi);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            ShouldAcceptServerPreview);
 
   // Values of the estimated network quality at the beginning of the most
@@ -295,10 +273,10 @@ class DataReductionProxyConfig
   // Fetches the warmup URL.
   void FetchWarmupProbeURL();
 
-  // URL fetcher used for performing the secure proxy check.
+  // URL fetcher used for performing the secure proxy check. May be null.
   std::unique_ptr<SecureProxyChecker> secure_proxy_checker_;
 
-  // URL fetcher used for fetching the warmup URL.
+  // URL fetcher used for fetching the warmup URL. May be null.
   std::unique_ptr<WarmupURLFetcher> warmup_url_fetcher_;
 
   bool unreachable_;
@@ -340,7 +318,7 @@ class DataReductionProxyConfig
   // Current HTTP RTT estimate.
   base::Optional<base::TimeDelta> http_rtt_;
 
-  base::WeakPtrFactory<DataReductionProxyConfig> weak_factory_;
+  base::WeakPtrFactory<DataReductionProxyConfig> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyConfig);
 };

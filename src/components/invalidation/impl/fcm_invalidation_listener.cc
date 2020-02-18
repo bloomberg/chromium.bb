@@ -21,9 +21,7 @@ FCMInvalidationListener::Delegate::~Delegate() {}
 
 FCMInvalidationListener::FCMInvalidationListener(
     std::unique_ptr<FCMSyncNetworkChannel> network_channel)
-    : network_channel_(std::move(network_channel)),
-      delegate_(nullptr),
-      weak_factory_(this) {
+    : network_channel_(std::move(network_channel)), delegate_(nullptr) {
   network_channel_->AddObserver(this);
 }
 
@@ -189,6 +187,19 @@ void FCMInvalidationListener::RequestDetailedStatus(
 
 void FCMInvalidationListener::StopForTest() {
   Stop();
+}
+
+void FCMInvalidationListener::StartForTest(Delegate* delegate) {
+  delegate_ = delegate;
+}
+
+void FCMInvalidationListener::EmitStateChangeForTest(InvalidatorState state) {
+  delegate_->OnInvalidatorStateChange(state);
+}
+
+void FCMInvalidationListener::EmitSavedInvalidationsForTest(
+    const TopicInvalidationMap& to_emit) {
+  EmitSavedInvalidations(to_emit);
 }
 
 Topics FCMInvalidationListener::GetRegisteredIdsForTest() const {

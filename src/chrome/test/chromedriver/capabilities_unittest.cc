@@ -509,8 +509,8 @@ TEST(ParseCapabilities, ExcludeSwitches) {
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(2u, capabilities.exclude_switches.size());
   const std::set<std::string>& switches = capabilities.exclude_switches;
-  ASSERT_TRUE(base::ContainsKey(switches, "switch1"));
-  ASSERT_TRUE(base::ContainsKey(switches, "switch2"));
+  ASSERT_TRUE(base::Contains(switches, "switch1"));
+  ASSERT_TRUE(base::Contains(switches, "switch2"));
 }
 
 TEST(ParseCapabilities, UseRemoteBrowser) {

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -23,13 +24,15 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/renderer/media/render_media_log.h"
-#include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
-#include "content/renderer/media/webrtc/webrtc_video_utils.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/overlay_info.h"
 #include "media/base/video_types.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "media/video/video_decode_accelerator.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_video_utils.h"
 #include "third_party/webrtc/api/video/video_frame.h"
 #include "third_party/webrtc/media/base/vp9_profile.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
@@ -50,10 +53,6 @@ namespace {
 
 // Any reasonable size, will be overridden by the decoder anyway.
 const gfx::Size kDefaultSize(640, 480);
-
-// Assumed pixel format of the encoded content. WebRTC doesn't tell us, and in
-// practice the decoders ignore it. We're going with generic 4:2:0.
-const media::VideoPixelFormat kDefaultPixelFormat = media::PIXEL_FORMAT_I420;
 
 // Maximum number of buffers that we will queue in |pending_buffers_|.
 const int32_t kMaxPendingBuffers = 8;
@@ -158,10 +157,10 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
   // TODO(sandersd): Predict size from level.
   media::VideoDecoderConfig config(
       ToVideoCodec(webrtc::PayloadStringToCodecType(format.name)),
-      GuessVideoCodecProfile(format), kDefaultPixelFormat,
-      media::VideoColorSpace(), media::kNoTransformation, kDefaultSize,
-      gfx::Rect(kDefaultSize), kDefaultSize, media::EmptyExtraData(),
-      media::Unencrypted());
+      GuessVideoCodecProfile(format),
+      media::VideoDecoderConfig::AlphaMode::kIsOpaque, media::VideoColorSpace(),
+      media::kNoTransformation, kDefaultSize, gfx::Rect(kDefaultSize),
+      kDefaultSize, media::EmptyExtraData(), media::Unencrypted());
   if (!gpu_factories->IsDecoderConfigSupported(kImplementation, config))
     return nullptr;
 
@@ -185,8 +184,7 @@ RTCVideoDecoderAdapter::RTCVideoDecoderAdapter(
     : media_task_runner_(gpu_factories->GetTaskRunner()),
       gpu_factories_(gpu_factories),
       format_(format),
-      config_(config),
-      weak_this_factory_(this) {
+      config_(config) {
   DVLOG(1) << __func__;
   DETACH_FROM_SEQUENCE(decoding_sequence_checker_);
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -243,7 +241,9 @@ int32_t RTCVideoDecoderAdapter::Decode(
   // to software decoding. See https://crbug.com/webrtc/9304.
   if (video_codec_type_ == webrtc::kVideoCodecVP9 &&
       input_image.SpatialIndex().value_or(0) > 0) {
-    return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
+    if (!base::FeatureList::IsEnabled(media::kVp9kSVCHWDecoding)) {
+      return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
+    }
   }
 
   if (missing_frames || !input_image._completeFrame) {
@@ -264,16 +264,35 @@ int32_t RTCVideoDecoderAdapter::Decode(
     // ok, we got key frame and can continue decoding
     key_frame_required_ = false;
   }
+
+  std::vector<uint32_t> spatial_layer_frame_size;
+  for (int i = 0;; i++) {
+    auto frame_size = input_image.SpatialLayerFrameSize(i);
+    if (!frame_size)
+      break;
+    spatial_layer_frame_size.push_back(*frame_size);
+  }
+
   // Convert to media::DecoderBuffer.
   // TODO(sandersd): What is |render_time_ms|?
-  scoped_refptr<media::DecoderBuffer> buffer =
-      media::DecoderBuffer::CopyFrom(input_image.data(), input_image.size());
+  scoped_refptr<media::DecoderBuffer> buffer;
+  if (spatial_layer_frame_size.size() > 1) {
+    const uint8_t* side_data =
+        reinterpret_cast<const uint8_t*>(spatial_layer_frame_size.data());
+    size_t side_data_size =
+        spatial_layer_frame_size.size() * sizeof(uint32_t) / sizeof(uint8_t);
+    buffer = media::DecoderBuffer::CopyFrom(
+        input_image.data(), input_image.size(), side_data, side_data_size);
+  } else {
+    buffer =
+        media::DecoderBuffer::CopyFrom(input_image.data(), input_image.size());
+  }
   buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(input_image.Timestamp()));
 
   if (ShouldReinitializeForSettingHDRColorSpace(input_image)) {
     config_.set_color_space_info(
-        WebRtcToMediaVideoColorSpace(*input_image.ColorSpace()));
+        blink::WebRtcToMediaVideoColorSpace(*input_image.ColorSpace()));
     if (!ReinitializeSync(config_))
       return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
     if (input_image._frameType != webrtc::VideoFrameType::kVideoFrameKey)
@@ -285,6 +304,7 @@ int32_t RTCVideoDecoderAdapter::Decode(
     base::AutoLock auto_lock(lock_);
     if (has_error_)
       return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
+
     if (pending_buffers_.size() >= kMaxPendingBuffers) {
       // We are severely behind. Drop pending buffers and request a keyframe to
       // catch up as quickly as possible.
@@ -430,7 +450,7 @@ void RTCVideoDecoderAdapter::OnOutput(scoped_refptr<media::VideoFrame> frame) {
   webrtc::VideoFrame rtc_frame =
       webrtc::VideoFrame::Builder()
           .set_video_frame_buffer(
-              new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
+              new rtc::RefCountedObject<blink::WebRtcVideoFrameAdapter>(
                   std::move(frame)))
           .set_timestamp_rtp(timestamp.InMicroseconds())
           .set_timestamp_us(0)
@@ -439,7 +459,7 @@ void RTCVideoDecoderAdapter::OnOutput(scoped_refptr<media::VideoFrame> frame) {
 
   base::AutoLock auto_lock(lock_);
 
-  if (!base::ContainsValue(decode_timestamps_, timestamp)) {
+  if (!base::Contains(decode_timestamps_, timestamp)) {
     DVLOG(2) << "Discarding frame with timestamp " << timestamp;
     return;
   }
@@ -458,7 +478,7 @@ bool RTCVideoDecoderAdapter::ShouldReinitializeForSettingHDRColorSpace(
   if (config_.profile() == media::VP9PROFILE_PROFILE2 &&
       input_image.ColorSpace()) {
     const media::VideoColorSpace& new_color_space =
-        WebRtcToMediaVideoColorSpace(*input_image.ColorSpace());
+        blink::WebRtcToMediaVideoColorSpace(*input_image.ColorSpace());
     if (!config_.color_space_info().IsSpecified() ||
         new_color_space != config_.color_space_info()) {
       return true;

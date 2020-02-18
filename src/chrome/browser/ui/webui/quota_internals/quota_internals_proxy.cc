@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
-#include "base/trace_event/trace_event.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_handler.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -22,9 +21,7 @@ using content::BrowserThread;
 namespace quota_internals {
 
 QuotaInternalsProxy::QuotaInternalsProxy(QuotaInternalsHandler* handler)
-    : handler_(handler),
-      weak_factory_(this) {
-}
+    : handler_(handler) {}
 
 void QuotaInternalsProxy::RequestInfo(
     scoped_refptr<storage::QuotaManager> quota_manager) {

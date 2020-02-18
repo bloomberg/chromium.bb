@@ -385,8 +385,8 @@ absl_cc_library(
     ${ABSL_DEFAULT_COPTS}
   DEPS
     absl::strings
+    absl::config
     absl::core_headers
-    absl::inlined_vector
     absl::type_traits
     absl::int128
     absl::span

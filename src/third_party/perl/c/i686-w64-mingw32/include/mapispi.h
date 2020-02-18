@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef MAPISPI_H
@@ -19,10 +19,10 @@
 extern "C" {
 #endif
 
-#define CURRENT_SPI_VERSION 0x00010010L
-#define PDK1_SPI_VERSION 0x00010000L
-#define PDK2_SPI_VERSION 0x00010008L
-#define PDK3_SPI_VERSION 0x00010010L
+#define CURRENT_SPI_VERSION __MSABI_LONG(0x00010010)
+#define PDK1_SPI_VERSION __MSABI_LONG(0x00010000)
+#define PDK2_SPI_VERSION __MSABI_LONG(0x00010008)
+#define PDK3_SPI_VERSION __MSABI_LONG(0x00010010)
 
   DECLARE_MAPI_INTERFACE_PTR(IMAPISupport,LPMAPISUP);
 

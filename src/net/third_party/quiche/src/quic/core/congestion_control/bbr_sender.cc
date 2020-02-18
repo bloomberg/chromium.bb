@@ -109,7 +109,7 @@ BbrSender::BbrSender(QuicTime now,
       pacing_gain_(1),
       congestion_window_gain_(1),
       congestion_window_gain_constant_(
-          static_cast<float>(FLAGS_quic_bbr_cwnd_gain)),
+          static_cast<float>(GetQuicFlag(FLAGS_quic_bbr_cwnd_gain))),
       num_startup_rtts_(kRoundTripsWithoutGrowthBeforeExitingStartup),
       exit_startup_on_loss_(false),
       cycle_current_offset_(0),
@@ -125,7 +125,6 @@ BbrSender::BbrSender(QuicTime now,
       flexible_app_limited_(false),
       recovery_state_(NOT_IN_RECOVERY),
       recovery_window_(max_congestion_window_),
-      is_app_limited_recovery_(false),
       slower_startup_(false),
       rate_based_startup_(false),
       startup_rate_reduction_multiplier_(0),
@@ -137,9 +136,7 @@ BbrSender::BbrSender(QuicTime now,
       probe_rtt_skipped_if_similar_rtt_(false),
       probe_rtt_disabled_if_app_limited_(false),
       app_limited_since_last_probe_rtt_(false),
-      min_rtt_since_last_probe_rtt_(QuicTime::Delta::Infinite()),
-      always_get_bw_sample_when_acked_(
-          GetQuicReloadableFlag(quic_always_get_bw_sample_when_acked)) {
+      min_rtt_since_last_probe_rtt_(QuicTime::Delta::Infinite()) {
   if (stats_) {
     stats_->slowstart_count = 0;
     stats_->slowstart_start_time = QuicTime::Zero();
@@ -189,7 +186,7 @@ bool BbrSender::CanSend(QuicByteCount bytes_in_flight) {
   return bytes_in_flight < GetCongestionWindow();
 }
 
-QuicBandwidth BbrSender::PacingRate(QuicByteCount bytes_in_flight) const {
+QuicBandwidth BbrSender::PacingRate(QuicByteCount /*bytes_in_flight*/) const {
   if (pacing_rate_.IsZero()) {
     return high_gain_ * QuicBandwidth::FromBytesAndTimeDelta(
                             initial_congestion_window_, GetMinRtt());
@@ -312,21 +309,15 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
     QUIC_RELOADABLE_FLAG_COUNT(quic_bbr_flexible_app_limited);
     flexible_app_limited_ = true;
   }
-  if (GetQuicReloadableFlag(quic_bbr_slower_startup3) &&
-      config.HasClientRequestedIndependentOption(kBBQ1, perspective)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr_slower_startup3, 1, 4);
+  if (config.HasClientRequestedIndependentOption(kBBQ1, perspective)) {
     set_high_gain(kDerivedHighGain);
     set_high_cwnd_gain(kDerivedHighGain);
     set_drain_gain(1.f / kDerivedHighGain);
   }
-  if (GetQuicReloadableFlag(quic_bbr_slower_startup3) &&
-      config.HasClientRequestedIndependentOption(kBBQ2, perspective)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr_slower_startup3, 2, 4);
+  if (config.HasClientRequestedIndependentOption(kBBQ2, perspective)) {
     set_high_cwnd_gain(kDerivedHighCWNDGain);
   }
-  if (GetQuicReloadableFlag(quic_bbr_slower_startup3) &&
-      config.HasClientRequestedIndependentOption(kBBQ3, perspective)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr_slower_startup3, 3, 4);
+  if (config.HasClientRequestedIndependentOption(kBBQ3, perspective)) {
     enable_ack_aggregation_during_startup_ = true;
   }
   if (GetQuicReloadableFlag(quic_bbr_slower_startup4) &&
@@ -360,6 +351,14 @@ void BbrSender::AdjustNetworkParameters(QuicBandwidth bandwidth,
         std::max(kMinInitialCongestionWindow * kDefaultTCPMSS,
                  std::min(kMaxInitialCongestionWindow * kDefaultTCPMSS,
                           bandwidth * rtt_stats_->SmoothedOrInitialRtt()));
+    if (!rtt_stats_->smoothed_rtt().IsZero()) {
+      QUIC_CODE_COUNT(quic_smoothed_rtt_available);
+    } else if (rtt_stats_->initial_rtt() !=
+               QuicTime::Delta::FromMilliseconds(kInitialRttMs)) {
+      QUIC_CODE_COUNT(quic_client_initial_rtt_available);
+    } else {
+      QUIC_CODE_COUNT(quic_default_initial_rtt);
+    }
     if (new_cwnd > congestion_window_) {
       QUIC_RELOADABLE_FLAG_COUNT_N(quic_fix_bbr_cwnd_in_bandwidth_resumption, 1,
                                    3);
@@ -371,10 +370,13 @@ void BbrSender::AdjustNetworkParameters(QuicBandwidth bandwidth,
       // Only decrease cwnd if allow_cwnd_to_decrease is true.
       return;
     }
-    // Decreases cwnd gain and pacing gain. Please note, if pacing_rate_ has
-    // been calculated, it cannot decrease in STARTUP phase.
-    set_high_gain(kDerivedHighCWNDGain);
-    set_high_cwnd_gain(kDerivedHighCWNDGain);
+    if (GetQuicReloadableFlag(quic_conservative_cwnd_and_pacing_gains)) {
+      // Decreases cwnd gain and pacing gain. Please note, if pacing_rate_ has
+      // been calculated, it cannot decrease in STARTUP phase.
+      QUIC_RELOADABLE_FLAG_COUNT(quic_conservative_cwnd_and_pacing_gains);
+      set_high_gain(kDerivedHighCWNDGain);
+      set_high_cwnd_gain(kDerivedHighCWNDGain);
+    }
     congestion_window_ = new_cwnd;
   }
 }
@@ -526,14 +528,9 @@ bool BbrSender::UpdateBandwidthAndMinRtt(
     const AckedPacketVector& acked_packets) {
   QuicTime::Delta sample_min_rtt = QuicTime::Delta::Infinite();
   for (const auto& packet : acked_packets) {
-    if (!always_get_bw_sample_when_acked_ && packet.bytes_acked == 0) {
-      // Skip acked packets with 0 in flight bytes when updating bandwidth.
-      continue;
-    }
     BandwidthSample bandwidth_sample =
         sampler_.OnPacketAcknowledged(now, packet.packet_number);
-    if (always_get_bw_sample_when_acked_ &&
-        !bandwidth_sample.state_at_send.is_valid) {
+    if (!bandwidth_sample.state_at_send.is_valid) {
       // From the sampler's perspective, the packet has never been sent, or the
       // packet has been acked or marked as lost previously.
       continue;
@@ -752,11 +749,6 @@ void BbrSender::UpdateRecoveryState(QuicPacketNumber last_acked_packet,
         // Since the conservation phase is meant to be lasting for a whole
         // round, extend the current round as if it were started right now.
         current_round_trip_end_ = last_sent_packet_;
-        if (GetQuicReloadableFlag(quic_bbr_app_limited_recovery) &&
-            last_sample_is_app_limited_) {
-          QUIC_RELOADABLE_FLAG_COUNT(quic_bbr_app_limited_recovery);
-          is_app_limited_recovery_ = true;
-        }
       }
       break;
 
@@ -770,13 +762,9 @@ void BbrSender::UpdateRecoveryState(QuicPacketNumber last_acked_packet,
       // Exit recovery if appropriate.
       if (!has_losses && last_acked_packet > end_recovery_at_) {
         recovery_state_ = NOT_IN_RECOVERY;
-        is_app_limited_recovery_ = false;
       }
 
       break;
-  }
-  if (recovery_state_ != NOT_IN_RECOVERY && is_app_limited_recovery_) {
-    sampler_.OnAppLimited();
   }
 }
 

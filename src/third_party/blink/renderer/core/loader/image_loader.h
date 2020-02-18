@@ -90,7 +90,15 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
 
   // Returns true if this loader should be updated via UpdateFromElement() when
   // being inserted into a new parent; returns false otherwise.
-  bool ShouldUpdateOnInsertedInto(ContainerNode& insertion_point) const;
+  bool ShouldUpdateOnInsertedInto(
+      ContainerNode& insertion_point,
+      network::mojom::ReferrerPolicy referrer_policy =
+          network::mojom::ReferrerPolicy::kDefault) const;
+
+  // Returns true if a the owner of this loader should consider the image being
+  // loaded as "potentially available", i.e that it may eventually become
+  // available.
+  bool ImageIsPotentiallyAvailable() const;
 
   // Cancels pending load events, and doesn't dispatch new ones.
   // Note: ClearImage/SetImage.*() are not a simple setter.
@@ -110,7 +118,6 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   // Otherwise:
   //   Normal loading via ResourceFetcher/ResourceLoader.
   //   |image_resource_for_image_document_| is null.
-  bool IsLoadingImageDocument() { return loading_image_document_; }
   void SetLoadingImageDocument() { loading_image_document_ = true; }
   ImageResource* ImageResourceForImageDocument() const {
     return image_resource_for_image_document_;
@@ -208,6 +215,8 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   Member<ImageResource> image_resource_for_image_document_;
 
   String last_base_element_url_;
+  network::mojom::ReferrerPolicy last_referrer_policy_ =
+      network::mojom::ReferrerPolicy::kDefault;
   AtomicString failed_load_url_;
   base::WeakPtr<Task> pending_task_;  // owned by Microtask
   std::unique_ptr<IncrementLoadEventDelayCount>

@@ -32,15 +32,11 @@ class QuicConnectionPeer {
  public:
   QuicConnectionPeer() = delete;
 
-  static void SendAck(QuicConnection* connection);
-
   static void SetSendAlgorithm(QuicConnection* connection,
                                SendAlgorithmInterface* send_algorithm);
 
   static void SetLossAlgorithm(QuicConnection* connection,
                                LossDetectionInterface* loss_algorithm);
-
-  static const QuicFrame GetUpdatedAckFrame(QuicConnection* connection);
 
   static void PopulateStopWaitingFrame(QuicConnection* connection,
                                        QuicStopWaitingFrame* stop_waiting);
@@ -132,8 +128,6 @@ class QuicConnectionPeer {
   static void SetMaxConsecutiveNumPacketsWithNoRetransmittableFrames(
       QuicConnection* connection,
       size_t new_value);
-  static void SetNoVersionNegotiation(QuicConnection* connection,
-                                      bool no_version_negotiation);
   static bool SupportsReleaseTime(QuicConnection* connection);
   static QuicConnection::PacketContent GetCurrentPacketContent(
       QuicConnection* connection);

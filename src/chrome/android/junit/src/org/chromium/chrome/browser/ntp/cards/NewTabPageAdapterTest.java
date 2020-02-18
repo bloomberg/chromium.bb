@@ -37,6 +37,7 @@ import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.view.View;
 
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,6 +77,7 @@ import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
@@ -101,8 +103,8 @@ import java.util.Locale;
 @Config(manifest = Config.NONE,
         shadows = {CustomShadowAsyncTask.class, ShadowPostTask.class,
                 NewTabPageAdapterTest.ShadowChromeFeatureList.class})
-@DisableFeatures({ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
-        ChromeFeatureList.CHROME_DUET, ChromeFeatureList.UNIFIED_CONSENT})
+@DisableFeatures(
+        {ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD, ChromeFeatureList.CHROME_DUET})
 public class NewTabPageAdapterTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
@@ -275,6 +277,9 @@ public class NewTabPageAdapterTest {
 
     @Before
     public void setUp() {
+        // These tests fail on touchless builds, see https://crbug.com/981870.
+        Assume.assumeFalse(FeatureUtilities.isNoTouchModeEnabled());
+
         MockitoAnnotations.initMocks(this);
 
         // Ensure that NetworkChangeNotifier is initialized.
@@ -289,7 +294,6 @@ public class NewTabPageAdapterTest {
         // Set up test account and initialize the sign in state. We will be signed in by default
         // in the tests.
         NewTabPageTestUtils.setUpTestAccount();
-        SigninManager.setInstanceForTesting(mMockSigninManager);
         when(mMockSigninManager.isSignedInOnNative()).thenReturn(true);
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
 
@@ -311,7 +315,6 @@ public class NewTabPageAdapterTest {
     @After
     public void tearDown() {
         CardsVariationParameters.setTestVariationParams(null);
-        SigninManager.setInstanceForTesting(null);
         ChromePreferenceManager.getInstance().writeBoolean(
                 ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false);
         ChromePreferenceManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
@@ -1010,7 +1013,7 @@ public class NewTabPageAdapterTest {
     public void testSigninPromoDismissal() {
         final String signInPromoText = "sign in";
         when(MyShadowResources.sResources.getText(
-                     R.string.signin_promo_description_ntp_content_suggestions_legacy))
+                     R.string.signin_promo_description_ntp_content_suggestions_no_account))
                 .thenReturn(signInPromoText);
 
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
@@ -1189,7 +1192,8 @@ public class NewTabPageAdapterTest {
     private void reloadNtp() {
         mSource.removeObservers();
         mAdapter = new NewTabPageAdapter(mUiDelegate, mock(View.class), /* logoView = */
-                makeUiConfig(), mOfflinePageBridge, mock(ContextMenuManager.class)
+                makeUiConfig(), mOfflinePageBridge, mock(ContextMenuManager.class),
+                mMockSigninManager
                 /* tileGroupDelegate = */);
         mAdapter.refreshSuggestions();
     }

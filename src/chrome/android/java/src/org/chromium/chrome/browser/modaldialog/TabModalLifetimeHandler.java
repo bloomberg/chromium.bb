@@ -41,10 +41,8 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
 
     private final ChromeActivity mActivity;
     private final ModalDialogManager mManager;
-
     private TabModalPresenter mPresenter;
     private TabModelSelectorTabModelObserver mTabModelObserver;
-    private boolean mHasBottomControls;
     private Tab mActiveTab;
 
     /**
@@ -64,10 +62,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
     public void onOmniboxFocusChanged(boolean hasFocus) {
         if (mPresenter == null) return;
 
-        // If has bottom controls, the view hierarchy will be updated by mBottomSheetObserver.
-        if (mPresenter.getDialogModel() != null && !mHasBottomControls) {
-            mPresenter.updateContainerHierarchy(!hasFocus);
-        }
+        if (mPresenter.getDialogModel() != null) mPresenter.updateContainerHierarchy(!hasFocus);
     }
 
     /**
@@ -83,7 +78,6 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
     public void onFinishNativeInitialization() {
         mPresenter = new TabModalPresenter(mActivity);
         mManager.registerPresenter(mPresenter, ModalDialogType.TAB);
-        mHasBottomControls = mActivity.getBottomSheet() != null;
 
         handleTabChanged(mActivity.getActivityTab());
         TabModelSelector tabModelSelector = mActivity.getTabModelSelector();

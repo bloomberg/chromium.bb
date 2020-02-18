@@ -19,7 +19,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_browsertest.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
@@ -43,6 +42,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/switches.h"
@@ -66,39 +66,36 @@ namespace {
 // |script| in the last committed RVH and resumes the load when a URL ending in
 // |until_url_suffix| commits. This class expects |script| to trigger the load
 // of an URL ending in |until_url_suffix|.
-class DelayLoadStartAndExecuteJavascript
-    : public content::NotificationObserver,
-      public content::WebContentsObserver {
+class DelayLoadStartAndExecuteJavascript : public TabStripModelObserver,
+                                           public content::WebContentsObserver {
  public:
-  DelayLoadStartAndExecuteJavascript(
-      const GURL& delay_url,
-      const std::string& script,
-      const std::string& until_url_suffix)
+  DelayLoadStartAndExecuteJavascript(Browser* browser,
+                                     const GURL& delay_url,
+                                     const std::string& script,
+                                     const std::string& until_url_suffix)
       : content::WebContentsObserver(),
         delay_url_(delay_url),
         until_url_suffix_(until_url_suffix),
-        script_(script),
-        has_user_gesture_(false),
-        script_was_executed_(false),
-        rfh_(nullptr) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_TAB_ADDED,
-                   content::NotificationService::AllSources());
+        script_(script) {
+    tab_strip_observer_.Add(browser->tab_strip_model());
   }
+
   ~DelayLoadStartAndExecuteJavascript() override {}
 
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    if (type != chrome::NOTIFICATION_TAB_ADDED) {
-      NOTREACHED();
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (change.type() != TabStripModelChange::kInserted)
       return;
-    }
+
     content::WebContentsObserver::Observe(
-        content::Details<content::WebContents>(details).ptr());
-    registrar_.RemoveAll();
+        change.GetInsert()->contents[0].contents);
+    tab_strip_observer_.RemoveAll();
   }
 
+  // WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override {
     if (navigation_handle->GetURL() != delay_url_ || !rfh_)
@@ -127,7 +124,7 @@ class DelayLoadStartAndExecuteJavascript
     if (script_was_executed_ &&
         base::EndsWith(navigation_handle->GetURL().spec(), until_url_suffix_,
                        base::CompareCase::SENSITIVE)) {
-      content::WebContentsObserver::Observe(NULL);
+      content::WebContentsObserver::Observe(nullptr);
       if (throttle_)
         throttle_->Unblock();
     }
@@ -167,16 +164,16 @@ class DelayLoadStartAndExecuteJavascript
     bool throttled_ = false;
   };
 
-  content::NotificationRegistrar registrar_;
-
   base::WeakPtr<WillStartRequestObserverThrottle> throttle_;
 
+  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_{
+      this};
   GURL delay_url_;
   std::string until_url_suffix_;
   std::string script_;
-  bool has_user_gesture_;
-  bool script_was_executed_;
-  content::RenderFrameHost* rfh_;
+  bool has_user_gesture_ = false;
+  bool script_was_executed_ = false;
+  content::RenderFrameHost* rfh_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DelayLoadStartAndExecuteJavascript);
 };
@@ -498,13 +495,11 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcess) {
 
   // See crossProcess/d.html.
   DelayLoadStartAndExecuteJavascript call_script(
-      embedded_test_server()->GetURL("/test1"),
-      "navigate2()",
+      browser(), embedded_test_server()->GetURL("/test1"), "navigate2()",
       "empty.html");
 
   DelayLoadStartAndExecuteJavascript call_script_user_gesture(
-      embedded_test_server()->GetURL("/test2"),
-      "navigate2()",
+      browser(), embedded_test_server()->GetURL("/test2"), "navigate2()",
       "empty.html");
   call_script_user_gesture.set_has_user_gesture(true);
 
@@ -517,14 +512,12 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, DISABLED_CrossProcessFragment) {
 
   // See crossProcessFragment/f.html.
   DelayLoadStartAndExecuteJavascript call_script3(
-      embedded_test_server()->GetURL("/test3"),
-      "updateFragment()",
+      browser(), embedded_test_server()->GetURL("/test3"), "updateFragment()",
       base::StringPrintf("f.html?%u#foo", embedded_test_server()->port()));
 
   // See crossProcessFragment/g.html.
   DelayLoadStartAndExecuteJavascript call_script4(
-      embedded_test_server()->GetURL("/test4"),
-      "updateFragment()",
+      browser(), embedded_test_server()->GetURL("/test4"), "updateFragment()",
       base::StringPrintf("g.html?%u#foo", embedded_test_server()->port()));
 
   ASSERT_TRUE(RunExtensionTest("webnavigation/crossProcessFragment"))
@@ -536,20 +529,17 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessHistory) {
 
   // See crossProcessHistory/e.html.
   DelayLoadStartAndExecuteJavascript call_script2(
-      embedded_test_server()->GetURL("/test2"),
-      "updateHistory()",
+      browser(), embedded_test_server()->GetURL("/test2"), "updateHistory()",
       "empty.html");
 
   // See crossProcessHistory/h.html.
   DelayLoadStartAndExecuteJavascript call_script5(
-      embedded_test_server()->GetURL("/test5"),
-      "updateHistory()",
+      browser(), embedded_test_server()->GetURL("/test5"), "updateHistory()",
       "empty.html");
 
   // See crossProcessHistory/i.html.
   DelayLoadStartAndExecuteJavascript call_script6(
-      embedded_test_server()->GetURL("/test6"),
-      "updateHistory()",
+      browser(), embedded_test_server()->GetURL("/test6"), "updateHistory()",
       "empty.html");
 
   ASSERT_TRUE(RunExtensionTest("webnavigation/crossProcessHistory"))
@@ -569,8 +559,15 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, PendingDeletion) {
 }
 
 // TODO(jam): http://crbug.com/350550
-#if !(defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER))
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Crash) {
+// TODO(crbug/974787): Flaky on Win7 debug builds.
+#if (defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER)) || \
+    (defined(OS_WIN) && !(defined(NDEBUG)))
+#define MAYBE_Crash DISABLED_Crash
+#else
+#define MAYBE_Crash Crash
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Crash) {
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Wait for the extension to set itself up and return control to us.
@@ -597,7 +594,5 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Crash) {
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
-
-#endif
 
 }  // namespace extensions

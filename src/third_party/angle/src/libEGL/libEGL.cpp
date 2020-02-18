@@ -33,8 +33,9 @@ void EnsureEGLLoaded()
     if (gLoaded)
         return;
 
-    gEntryPointsLib.reset(angle::OpenSharedLibrary(ANGLE_GLESV2_LIBRARY_NAME));
-    angle::LoadEGL(GlobalLoad);
+    gEntryPointsLib.reset(
+        angle::OpenSharedLibrary(ANGLE_GLESV2_LIBRARY_NAME, angle::SearchType::ApplicationDir));
+    angle::LoadEGL_EGL(GlobalLoad);
     if (!EGL_GetPlatformDisplay)
     {
         fprintf(stderr, "Error loading EGL entry points.\n");
@@ -415,6 +416,14 @@ EGLBoolean EGLAPIENTRY eglQueryDisplayAttribEXT(EGLDisplay dpy, EGLint attribute
     return EGL_QueryDisplayAttribEXT(dpy, attribute, value);
 }
 
+EGLBoolean EGLAPIENTRY eglQueryDisplayAttribANGLE(EGLDisplay dpy,
+                                                  EGLint attribute,
+                                                  EGLAttrib *value)
+{
+    EnsureEGLLoaded();
+    return EGL_QueryDisplayAttribANGLE(dpy, attribute, value);
+}
+
 EGLBoolean EGLAPIENTRY eglQueryDeviceAttribEXT(EGLDeviceEXT device,
                                                EGLint attribute,
                                                EGLAttrib *value)
@@ -684,4 +693,17 @@ const char *EGLAPIENTRY eglQueryStringiANGLE(EGLDisplay dpy, EGLint name, EGLint
     EnsureEGLLoaded();
     return EGL_QueryStringiANGLE(dpy, name, index);
 }
+
+EGLClientBuffer EGLAPIENTRY eglGetNativeClientBufferANDROID(const struct AHardwareBuffer *buffer)
+{
+    EnsureEGLLoaded();
+    return EGL_GetNativeClientBufferANDROID(buffer);
+}
+
+EGLint EGLAPIENTRY eglDupNativeFenceFDANDROID(EGLDisplay dpy, EGLSyncKHR sync)
+{
+    EnsureEGLLoaded();
+    return EGL_DupNativeFenceFDANDROID(dpy, sync);
+}
+
 }  // extern "C"

@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_reference_space_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_utils.h"
 
 namespace blink {
 
@@ -37,31 +38,28 @@ void XRBoundedReferenceSpace::EnsureUpdated() {
   const device::mojom::blink::VRDisplayInfoPtr& display_info =
       session()->GetVRDisplayInfo();
 
-  if (display_info && display_info->stageParameters) {
-    // Use the transform given by xrDisplayInfo's stageParameters if available.
-    const WTF::Vector<float>& m =
-        display_info->stageParameters->standingTransform;
+  if (display_info && display_info->stage_parameters) {
+    // Use the transform given by xrDisplayInfo's stage_parameters if available.
     floor_level_transform_ = std::make_unique<TransformationMatrix>(
-        m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
-        m[11], m[12], m[13], m[14], m[15]);
+        display_info->stage_parameters->standing_transform.matrix());
 
     // In order to ensure that the bounds continue to line up with the user's
     // physical environment we need to transform by the inverse of the
     // originOffset.
     TransformationMatrix bounds_transform = InverseOriginOffsetMatrix();
 
-    if (display_info->stageParameters->bounds) {
+    if (display_info->stage_parameters->bounds) {
       bounds_geometry_.clear();
 
-      for (const auto& bound : *(display_info->stageParameters->bounds)) {
+      for (const auto& bound : *(display_info->stage_parameters->bounds)) {
         FloatPoint3D p =
-            bounds_transform.MapPoint(FloatPoint3D(bound->x, 0.0, bound->z));
+            bounds_transform.MapPoint(FloatPoint3D(bound.x, 0.0, bound.z));
         bounds_geometry_.push_back(
             DOMPointReadOnly::Create(p.X(), p.Y(), p.Z(), 1.0));
       }
     } else {
-      double hx = display_info->stageParameters->sizeX * 0.5;
-      double hz = display_info->stageParameters->sizeZ * 0.5;
+      double hx = display_info->stage_parameters->size_x * 0.5;
+      double hz = display_info->stage_parameters->size_z * 0.5;
       FloatPoint3D a = bounds_transform.MapPoint(FloatPoint3D(hx, 0.0, -hz));
       FloatPoint3D b = bounds_transform.MapPoint(FloatPoint3D(hx, 0.0, hz));
       FloatPoint3D c = bounds_transform.MapPoint(FloatPoint3D(-hx, 0.0, hz));

@@ -113,6 +113,7 @@
 <translation id="2500374554657206846">Pilihan untuk Menyimpan Kata Laluan</translation>
 <translation id="2523363575747517183">Tapak web ini berulang kali cuba membuka aplikasi lain.</translation>
 <translation id="2529021024822217800">Buka Semua</translation>
+<translation id="2562041823070056534">Menghantar kepada <ph name="DEVICE_NAME" />...</translation>
 <translation id="2570206273416014374">Menghantar beberapa kuki dan carian daripada bar alamat dan kotak carian ke enjin carian lalai anda.</translation>
 <translation id="2572712655377361602">Dasar peranti menyekat akses ke foto anda</translation>
 <translation id="2578571896248130439">Hantar Halaman Web</translation>
@@ -150,6 +151,7 @@
 <translation id="2933759065870693102">Lampu suluh</translation>
 <translation id="2958718410589002129">Kata laluan</translation>
 <translation id="2969979262385602596">Gagal melog masuk. Sila cuba sebentar lagi.</translation>
+<translation id="298306318844797842">Tambahkan Kaedah Pembayaran...</translation>
 <translation id="2989805286512600854">Buka dalam Tab Baharu</translation>
 <translation id="3037605927509011580">Oh, Tidak!</translation>
 <translation id="3112556859945124369">Tandakan...</translation>
@@ -313,6 +315,7 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="5556459405103347317">Muat Semula</translation>
 <translation id="5614553682702429503">Simpan kata laluan?</translation>
 <translation id="5626245204502895507">Fail tidak boleh dimuat turun pada masa ini.</translation>
+<translation id="5631164295104953411">Tambahkan Kaedah Pembayaran</translation>
 <translation id="5659593005791499971">E-mel</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versi <ph name="PRODUCT_VERSION" /></translation>
@@ -464,6 +467,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7772032839648071052">Sahkan frasa laluan</translation>
 <translation id="7781829728241885113">Semalam</translation>
 <translation id="778855399387580014">Mulakan carian dalam tab Chrome baharu.</translation>
+<translation id="7791543448312431591">Tambah</translation>
 <translation id="780301667611848630">Tidak, terima kasih</translation>
 <translation id="7840771868269352570">Item yang anda pilih akan dialih keluar.</translation>
 <translation id="7856733331829174190">Tidak Dapat Memuat Turun</translation>
@@ -477,6 +481,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7961015016161918242">Tidak sama sekali</translation>
 <translation id="7971521879845308059">Sekat P/Timbul</translation>
 <translation id="7982789257301363584">Rangkaian</translation>
+<translation id="8007420562015504427">Carian Inkognito</translation>
 <translation id="8019783059653722575">Langkah ini membolehkan anda menyimpan dan memuat naik foto.</translation>
 <translation id="802154636333426148">Muat turun gagal</translation>
 <translation id="8023878949384262191">Mengembangkan bahagian.</translation>
@@ -491,6 +496,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8225985093977202398">Imej dan Fail Dicache</translation>
 <translation id="8261506727792406068">Padam</translation>
 <translation id="8281781826761538115">Lalai - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8319076807703933069">Carian Baharu</translation>
 <translation id="8328777765163860529">Tutup Semua</translation>
 <translation id="8381750437846184350">Kawal cara Google menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain</translation>
 <translation id="8407669440184693619">Tiada kata laluan ditemui untuk tapak ini</translation>
@@ -507,7 +513,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8532105204136943229">Tahun Tamat Tempoh</translation>
 <translation id="8534481786647257214">Catatan Google+ selesai.</translation>
 <translation id="8548878600947630424">Cari dalam halaman...</translation>
-<translation id="8583866649835978847">Hantar <ph name="TITLE" /> ke salah satu peranti anda.</translation>
 <translation id="8605219856220328675">Tutup tab.</translation>
 <translation id="8620640915598389714">Edit</translation>
 <translation id="8636825310635137004">Hidupkan penyegerakan untuk mendapatkan tab daripada peranti anda yang lain.</translation>
@@ -530,7 +535,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8976382372951310360">Bantuan</translation>
 <translation id="8981454092730389528">Kawalan Aktiviti Google</translation>
 <translation id="8985320356172329008">Sedang log masuk ke Google sebagai</translation>
-<translation id="9016406938567631235">Menghantar...</translation>
 <translation id="902659348151742535">Google boleh menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain.</translation>
 <translation id="9034759925968272072">Anda tidak akan dilog keluar daripada Akaun Google anda. Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain di <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="9039373489628511875">Lebar Jalur</translation>

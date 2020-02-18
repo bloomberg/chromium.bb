@@ -105,7 +105,7 @@ BluetoothTestMac::~BluetoothTestMac() {}
 void BluetoothTestMac::SetUp() {}
 
 bool BluetoothTestMac::PlatformSupportsLowEnergy() {
-  return BluetoothAdapterMac::IsLowEnergyAvailable();
+  return true;
 }
 
 void BluetoothTestMac::InitWithDefaultAdapter() {
@@ -119,13 +119,11 @@ void BluetoothTestMac::InitWithoutDefaultAdapter() {
                      .get();
   adapter_ = adapter_mac_;
 
-  if (BluetoothAdapterMac::IsLowEnergyAvailable()) {
-    mock_central_manager_.reset(
-        new ScopedMockCentralManager([[MockCentralManager alloc] init]));
-    [mock_central_manager_->get() setBluetoothTestMac:this];
-    [mock_central_manager_->get() setState:CBCentralManagerStateUnsupported];
-    adapter_mac_->SetCentralManagerForTesting((id)mock_central_manager_->get());
-  }
+  mock_central_manager_.reset(
+      new ScopedMockCentralManager([[MockCentralManager alloc] init]));
+  [mock_central_manager_->get() setBluetoothTestMac:this];
+  [mock_central_manager_->get() setState:CBCentralManagerStateUnsupported];
+  adapter_mac_->SetCentralManagerForTesting((id)mock_central_manager_->get());
 }
 
 void BluetoothTestMac::InitWithFakeAdapter() {
@@ -135,16 +133,13 @@ void BluetoothTestMac::InitWithFakeAdapter() {
                      .get();
   adapter_ = adapter_mac_;
 
-  if (BluetoothAdapterMac::IsLowEnergyAvailable()) {
-    mock_central_manager_.reset(
-        new ScopedMockCentralManager([[MockCentralManager alloc] init]));
-    mock_central_manager_->get().bluetoothTestMac = this;
-    [mock_central_manager_->get() setState:CBCentralManagerStatePoweredOn];
-    adapter_mac_->SetCentralManagerForTesting((id)mock_central_manager_->get());
-    adapter_mac_->SetPowerStateFunctionForTesting(
-        base::BindRepeating(&BluetoothTestMac::SetMockControllerPowerState,
-                            base::Unretained(this)));
-  }
+  mock_central_manager_.reset(
+      new ScopedMockCentralManager([[MockCentralManager alloc] init]));
+  mock_central_manager_->get().bluetoothTestMac = this;
+  [mock_central_manager_->get() setState:CBCentralManagerStatePoweredOn];
+  adapter_mac_->SetCentralManagerForTesting((id)mock_central_manager_->get());
+  adapter_mac_->SetPowerStateFunctionForTesting(base::BindRepeating(
+      &BluetoothTestMac::SetMockControllerPowerState, base::Unretained(this)));
 }
 
 void BluetoothTestMac::ResetEventCounts() {

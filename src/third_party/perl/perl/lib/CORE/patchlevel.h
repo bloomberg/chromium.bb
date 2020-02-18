@@ -14,7 +14,7 @@
  * exactly on the third column */
 
 #define PERL_REVISION	5		/* age */
-#define PERL_VERSION	16		/* epoch */
+#define PERL_VERSION	30		/* epoch */
 #define PERL_SUBVERSION	0		/* generation */
 
 /* The following numbers describe the earliest compatible version of
@@ -35,7 +35,7 @@
    changing them should not be necessary.
 */
 #define PERL_API_REVISION	5
-#define PERL_API_VERSION	16
+#define PERL_API_VERSION	30
 #define PERL_API_SUBVERSION	0
 /*
    XXX Note:  The selection of non-default Configure options, such
@@ -90,8 +90,8 @@
 
 #!perl
 die "Usage: perl -x patchlevel.h comment ..." unless @ARGV;
-open PLIN, "patchlevel.h" or die "Couldn't open patchlevel.h : $!";
-open PLOUT, ">patchlevel.new" or die "Couldn't write on patchlevel.new : $!";
+open PLIN, "<", "patchlevel.h" or die "Couldn't open patchlevel.h : $!";
+open PLOUT, ">", "patchlevel.new" or die "Couldn't write on patchlevel.new : $!";
 my $seen=0;
 while (<PLIN>) {
     if (/\t,NULL/ and $seen) {
@@ -144,7 +144,7 @@ static const char * const local_patches[] = {
 
 /* Initial space prevents this variable from being inserted in config.sh  */
 #  define	LOCAL_PATCH_COUNT	\
-	((int)(sizeof(local_patches)/sizeof(local_patches[0])-2))
+	((int)(C_ARRAY_LENGTH(local_patches)-2))
 
 /* the old terms of reference, add them only when explicitly included */
 #define PATCHLEVEL		PERL_VERSION

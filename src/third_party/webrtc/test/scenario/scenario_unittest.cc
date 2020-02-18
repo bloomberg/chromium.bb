@@ -7,11 +7,12 @@
  *  in the file PATENTS.  All contributing project authors may
  *  be found in the AUTHORS file in the root of the source tree.
  */
+#include "test/scenario/scenario.h"
+
 #include <atomic>
 
 #include "test/gtest.h"
 #include "test/logging/memory_log_writer.h"
-#include "test/scenario/scenario.h"
 #include "test/scenario/stats_collection.h"
 
 namespace webrtc {
@@ -104,7 +105,7 @@ TEST(ScenarioTest, MAYBE_SimTimeEncoding) {
   }
   // Regression tests based on previous runs.
   EXPECT_EQ(analyzer.stats().lost_count, 0);
-  EXPECT_NEAR(analyzer.stats().psnr.Mean(), 38, 2);
+  EXPECT_NEAR(analyzer.stats().psnr_with_freeze.Mean(), 38, 2);
 }
 
 // TODO(bugs.webrtc.org/10515): Remove this when performance has been improved.
@@ -124,7 +125,7 @@ TEST(ScenarioTest, MAYBE_RealTimeEncoding) {
   }
   // Regression tests based on previous runs.
   EXPECT_LT(analyzer.stats().lost_count, 2);
-  EXPECT_NEAR(analyzer.stats().psnr.Mean(), 38, 10);
+  EXPECT_NEAR(analyzer.stats().psnr_with_freeze.Mean(), 38, 10);
 }
 
 TEST(ScenarioTest, SimTimeFakeing) {

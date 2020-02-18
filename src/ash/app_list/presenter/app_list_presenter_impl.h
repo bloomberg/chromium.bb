@@ -47,23 +47,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   using UpdateHomeLauncherAnimationSettingsCallback =
       base::RepeatingCallback<void(ui::ScopedLayerAnimationSettings* settings)>;
 
-  // Used to dismiss the app list without animations.
-  class ScopedDismissAnimationDisabler {
-   public:
-    explicit ScopedDismissAnimationDisabler(AppListPresenterImpl* presenter)
-        : presenter_(presenter) {
-      presenter_->dismiss_without_animation_ = true;
-    }
-    ~ScopedDismissAnimationDisabler() {
-      presenter_->dismiss_without_animation_ = false;
-    }
-
-   private:
-    AppListPresenterImpl* const presenter_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedDismissAnimationDisabler);
-  };
-
   explicit AppListPresenterImpl(
       std::unique_ptr<AppListPresenterDelegate> delegate);
   ~AppListPresenterImpl() override;
@@ -148,9 +131,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Forgets the view.
   void ResetView();
 
-  // Starts dismiss animation.
-  void ScheduleDismissAnimation();
-
   // Returns the id of the display containing the app list, if visible. If not
   // visible returns kInvalidDisplayId.
   int64_t GetDisplayId();
@@ -188,8 +168,9 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Responsible for laying out the app list UI.
   std::unique_ptr<AppListPresenterDelegate> delegate_;
 
-  // Whether we should show or hide app list widget.
-  bool is_visible_ = false;
+  // The target visibility of the AppListView, true if the target visibility is
+  // shown.
+  bool is_target_visibility_show_ = false;
 
   // The AppListView this class manages, owned by its widget.
   AppListView* view_ = nullptr;

@@ -15,6 +15,8 @@ namespace views {
 // The transparent scrollbar which overlays its contents.
 class VIEWS_EXPORT OverlayScrollBar : public ScrollBar {
  public:
+  METADATA_HEADER(OverlayScrollBar);
+
   explicit OverlayScrollBar(bool horizontal);
   ~OverlayScrollBar() override;
 

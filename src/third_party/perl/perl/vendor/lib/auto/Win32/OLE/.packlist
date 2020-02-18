@@ -8,5 +8,4 @@ C:\strawberry\perl\vendor\lib\Win32\OLE\NLS.pm
 C:\strawberry\perl\vendor\lib\Win32\OLE\TPJ.pod
 C:\strawberry\perl\vendor\lib\Win32\OLE\TypeInfo.pm
 C:\strawberry\perl\vendor\lib\Win32\OLE\Variant.pm
-C:\strawberry\perl\vendor\lib\auto\Win32\OLE\OLE.bs
-C:\strawberry\perl\vendor\lib\auto\Win32\OLE\OLE.dll
+C:\strawberry\perl\vendor\lib\auto\Win32\OLE\OLE.xs.dll

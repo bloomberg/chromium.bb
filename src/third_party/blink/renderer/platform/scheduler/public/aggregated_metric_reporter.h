@@ -13,7 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace base {
 class HistogramBase;
@@ -37,7 +37,7 @@ class AggregatedMetricReporter {
   // to histogram and modifies the passed value.
   // Example: aggregate(time) {
   //   return time.InMilliseconds();
-  //   time %= TimeDelta::FromMilliseconds(1);
+  //   time %= base::TimeDelta::FromMilliseconds(1);
   // }
   using AggregatorFuncPtr = int (*)(ValueType&);
 

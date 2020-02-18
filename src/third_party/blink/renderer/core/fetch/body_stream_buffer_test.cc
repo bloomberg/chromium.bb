@@ -68,8 +68,7 @@ class BodyStreamBufferTest : public testing::Test {
       ADD_FAILURE() << ToCoreString(block.Exception()
                                         ->ToString(script_state->GetContext())
                                         .ToLocalChecked())
-                           .Utf8()
-                           .data();
+                           .Utf8();
       block.ReThrow();
     }
     return r;

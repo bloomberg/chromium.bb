@@ -62,6 +62,10 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_MOUNT_PREVIOUS_MIGRATION_INCOMPLETE = 30;
   CRYPTOHOME_ERROR_MIGRATE_KEY_FAILED = 31;
   CRYPTOHOME_ERROR_REMOVE_FAILED = 32;
+  CRYPTOHOME_ERROR_INVALID_ARGUMENT = 33;
+  CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_GET_FAILED = 34;
+  CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_SET_FAILED = 35;
+  CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_FINALIZE_FAILED = 36;
 }
 
 message AccountIdentifier {
@@ -136,7 +140,7 @@ message BaseReply {
   optional CryptohomeErrorCode error = 1;
 
   extensions 1000 to max;
-  // Next ID to use for extensions: 1013
+  // Next ID to use for extensions: 1015
 }
 
 // The MountRequest call may return more than just success or failure
@@ -498,4 +502,21 @@ message LockToSingleUserMountUntilRebootReply {
   }
   // One of the values from LockToSingleUserMountUntilRebootResult.
   optional int32 result = 1;
+}
+
+// Returns lookup key for Remote Server Unlock
+message GetRsuDeviceIdReply {
+  extend BaseReply { optional GetRsuDeviceIdReply reply = 1013; }
+  optional bytes rsu_device_id = 1;
+}
+
+message GetRsuDeviceIdRequest {}
+
+// Informs the caller the created data restore key in raw bytes.
+message AddDataRestoreKeyReply {
+  extend BaseReply {
+    optional AddDataRestoreKeyReply reply = 1014;
+  }
+  // 256 bits data restore key in raw bytes
+  optional bytes data_restore_key= 1;
 }

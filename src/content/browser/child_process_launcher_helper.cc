@@ -13,6 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_traits.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_launcher_utils.h"
@@ -66,7 +67,6 @@ ChildProcessLauncherHelper::Process::Process::operator=(
 
 ChildProcessLauncherHelper::ChildProcessLauncherHelper(
     int child_process_id,
-    BrowserThread::ID client_thread_id,
     std::unique_ptr<base::CommandLine> command_line,
     std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
     const base::WeakPtr<ChildProcessLauncher>& child_process_launcher,
@@ -77,7 +77,7 @@ ChildProcessLauncherHelper::ChildProcessLauncherHelper(
     mojo::OutgoingInvitation mojo_invitation,
     const mojo::ProcessErrorCallback& process_error_callback)
     : child_process_id_(child_process_id),
-      client_thread_id_(client_thread_id),
+      client_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       command_line_(std::move(command_line)),
       delegate_(std::move(delegate)),
       child_process_launcher_(child_process_launcher),
@@ -94,7 +94,7 @@ ChildProcessLauncherHelper::ChildProcessLauncherHelper(
 ChildProcessLauncherHelper::~ChildProcessLauncherHelper() = default;
 
 void ChildProcessLauncherHelper::StartLaunchOnClientThread() {
-  DCHECK_CURRENTLY_ON(client_thread_id_);
+  DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
 
   BeforeLaunchOnClientThread();
 
@@ -173,8 +173,8 @@ void ChildProcessLauncherHelper::PostLaunchOnLauncherThread(
     }
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {client_thread_id_},
+  client_task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(&ChildProcessLauncherHelper::PostLaunchOnClientThread,
                      this, std::move(process), launch_result));
 }
@@ -224,16 +224,16 @@ base::SingleThreadTaskRunner* GetProcessLauncherTaskRunner() {
   // use-after-free if anything tries to access objects deleted by
   // AtExitManager, such as non-leaky LazyInstance.
   static base::NoDestructor<scoped_refptr<base::SingleThreadTaskRunner>>
-      launcher_task_runner(
-          android::LauncherThread::GetMessageLoop()->task_runner());
+      launcher_task_runner(android::LauncherThread::GetTaskRunner());
   return (*launcher_task_runner).get();
 #else   // defined(OS_ANDROID)
   // TODO(http://crbug.com/820200): Investigate whether we could use
   // SequencedTaskRunner on platforms other than Windows.
   static base::LazySingleThreadTaskRunner launcher_task_runner =
       LAZY_SINGLE_THREAD_TASK_RUNNER_INITIALIZER(
-          base::TaskTraits({base::MayBlock(), base::TaskPriority::USER_BLOCKING,
-                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+          base::TaskTraits(base::ThreadPool(), base::MayBlock(),
+                           base::TaskPriority::USER_BLOCKING,
+                           base::TaskShutdownBehavior::BLOCK_SHUTDOWN),
           base::SingleThreadTaskRunnerThreadMode::DEDICATED);
   return launcher_task_runner.Get().get();
 #endif  // defined(OS_ANDROID)

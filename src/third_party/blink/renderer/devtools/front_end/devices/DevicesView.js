@@ -35,11 +35,11 @@ Devices.DevicesView = class extends UI.VBox {
 
     const discoveryFooter = this.contentElement.createChild('div', 'devices-footer');
     this._deviceCountSpan = discoveryFooter.createChild('span');
-    discoveryFooter.createChild('span').textContent = Common.UIString(' Read ');
-    discoveryFooter.appendChild(UI.XLink.create(
+    const documentationLink = UI.XLink.create(
         'https://developers.google.com/chrome-developer-tools/docs/remote-debugging',
-        Common.UIString('remote debugging documentation')));
-    discoveryFooter.createChild('span').textContent = Common.UIString(' for more information.');
+        ls`remote debugging documentation`);
+    discoveryFooter.appendChild(
+        UI.formatLocalized('%s Read %s for more information.', [this._deviceCountSpan, documentationLink]));
     this._updateFooter();
     this._selectSidebarListItem(this._discoveryListItem, this._discoveryView);
 
@@ -217,10 +217,10 @@ Devices.DevicesView.DiscoveryView = class extends UI.VBox {
     }, false);
 
     const help = this.element.createChild('div', 'discovery-help');
-    help.createChild('span').textContent = Common.UIString('Need help? Read Chrome ');
-    help.appendChild(UI.XLink.create(
+    const documentationLink = UI.XLink.create(
         'https://developers.google.com/chrome-developer-tools/docs/remote-debugging',
-        Common.UIString('remote debugging documentation.')));
+        ls`remote debugging documentation`);
+    help.appendChild(UI.formatLocalized('Need help? Read Chrome %s.', [documentationLink]));
 
     /** @type {!Adb.Config} */
     this._config;
@@ -265,10 +265,12 @@ Devices.DevicesView.PortForwardingView = class extends UI.VBox {
     this._portForwardingEnabledCheckbox.addEventListener('click', this._update.bind(this), false);
 
     const portForwardingFooter = this.element.createChild('div', 'port-forwarding-footer');
-    portForwardingFooter.createChild('span').textContent = Common.UIString(
-        'Define the listening port on your device that maps to a port accessible from your development machine. ');
-    portForwardingFooter.appendChild(UI.XLink.create(
-        'https://developer.chrome.com/devtools/docs/remote-debugging#port-forwarding', Common.UIString('Learn more')));
+    const documentationLink = UI.XLink.create(
+        'https://developer.chrome.com/devtools/docs/remote-debugging#port-forwarding',
+        ls`remote debugging documentation`);
+    portForwardingFooter.appendChild(UI.formatLocalized(
+        'Define the listening port on your device that maps to a port accessible from your development machine. Read %s for more.',
+        [documentationLink]));
 
     /** @type {!UI.ListWidget<!Adb.PortForwardingRule>} */
     this._list = new UI.ListWidget(this);
@@ -388,35 +390,38 @@ Devices.DevicesView.PortForwardingView = class extends UI.VBox {
      * @param {number} index
      * @param {!HTMLInputElement|!HTMLSelectElement} input
      * @this {Devices.DevicesView.PortForwardingView}
-     * @return {boolean}
+     * @return {!UI.ListWidget.ValidatorResult}
      */
     function portValidator(rule, index, input) {
+      let valid = true;
       const value = input.value.trim();
       const match = value.match(/^(\d+)$/);
-      if (!match)
-        return false;
-      const port = parseInt(match[1], 10);
-      if (port < 1024 || port > 65535)
-        return false;
-      for (let i = 0; i < this._portForwardingConfig.length; ++i) {
-        if (i !== index && this._portForwardingConfig[i].port === value)
-          return false;
+      if (!match) {
+        valid = false;
+      } else {
+        const port = parseInt(match[1], 10);
+        if (port < 1024 || port > 65535)
+          valid = false;
+        for (let i = 0; i < this._portForwardingConfig.length; ++i) {
+          if (i !== index && this._portForwardingConfig[i].port === value)
+            valid = false;
+        }
       }
-      return true;
+      return {valid};
     }
 
     /**
      * @param {!Adb.PortForwardingRule} rule
      * @param {number} index
      * @param {!HTMLInputElement|!HTMLSelectElement} input
-     * @return {boolean}
+     * @return {!UI.ListWidget.ValidatorResult}
      */
     function addressValidator(rule, index, input) {
       const match = input.value.trim().match(/^([a-zA-Z0-9\.\-_]+):(\d+)$/);
       if (!match)
-        return false;
+        return {valid: false};
       const port = parseInt(match[2], 10);
-      return port <= 65535;
+      return {valid: port <= 65535};
     }
   }
 };

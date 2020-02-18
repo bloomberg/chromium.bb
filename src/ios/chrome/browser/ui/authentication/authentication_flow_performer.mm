@@ -14,7 +14,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/feature.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -35,7 +36,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -139,11 +139,12 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
 - (void)fetchManagedStatus:(ios::ChromeBrowserState*)browserState
                forIdentity:(ChromeIdentity*)identity {
-  if (gaia::ExtractDomainName(gaia::CanonicalizeEmail(
-          base::SysNSStringToUTF8(identity.userEmail))) == "gmail.com") {
-    // Do nothing for @gmail.com addresses as they can't have a hosted domain.
-    // This avoids waiting for this step to complete (and a network call).
-    [_delegate didFetchManagedStatus:nil];
+  ios::ChromeIdentityService* identityService =
+      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+  NSString* hostedDomain =
+      identityService->GetCachedHostedDomainForIdentity(identity);
+  if (hostedDomain) {
+    [_delegate didFetchManagedStatus:hostedDomain];
     return;
   }
 
@@ -177,7 +178,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
       withHostedDomain:(NSString*)hostedDomain
         toBrowserState:(ios::ChromeBrowserState*)browserState {
   AuthenticationServiceFactory::GetForBrowserState(browserState)
-      ->SignIn(identity, base::SysNSStringToUTF8(hostedDomain));
+      ->SignIn(identity);
 }
 
 - (void)signOutBrowserState:(ios::ChromeBrowserState*)browserState {
@@ -256,7 +257,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
   if (AuthenticationServiceFactory::GetForBrowserState(browserState)
           ->IsAuthenticatedIdentityManaged()) {
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForBrowserState(browserState);
     base::Optional<AccountInfo> primary_account_info =
         identity_manager->FindExtendedAccountInfoForAccount(

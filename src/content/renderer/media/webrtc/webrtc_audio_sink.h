@@ -17,10 +17,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/stream/media_stream_audio_level_calculator.h"
 #include "content/renderer/media/stream/media_stream_audio_processor.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_push_fifo.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_level_calculator.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/pc/media_stream_track.h"
@@ -54,7 +54,8 @@ class CONTENT_EXPORT WebRtcAudioSink : public blink::WebMediaStreamAudioSink {
   // level. This is passed via the Adapter to libjingle. This method may only
   // be called once, before the audio data flow starts, and before any calls to
   // Adapter::GetSignalLevel() might be made.
-  void SetLevel(scoped_refptr<MediaStreamAudioLevelCalculator::Level> level);
+  void SetLevel(
+      scoped_refptr<blink::MediaStreamAudioLevelCalculator::Level> level);
 
   // Set the processor that applies signal processing on the data from the
   // source. This is passed via the Adapter to libjingle. This method may only
@@ -88,7 +89,7 @@ class CONTENT_EXPORT WebRtcAudioSink : public blink::WebMediaStreamAudioSink {
       audio_processor_ = std::move(processor);
     }
     void set_level(
-        scoped_refptr<MediaStreamAudioLevelCalculator::Level> level) {
+        scoped_refptr<blink::MediaStreamAudioLevelCalculator::Level> level) {
       level_ = std::move(level);
     }
 
@@ -135,7 +136,7 @@ class CONTENT_EXPORT WebRtcAudioSink : public blink::WebMediaStreamAudioSink {
     // Thread-safe accessor to current audio signal level. This may be null, if
     // not applicable to the current use case. This must be set before calls to
     // GetSignalLevel() are made.
-    scoped_refptr<MediaStreamAudioLevelCalculator::Level> level_;
+    scoped_refptr<blink::MediaStreamAudioLevelCalculator::Level> level_;
 
     // Lock that protects concurrent access to the |sinks_| list.
     base::Lock lock_;

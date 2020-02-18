@@ -45,7 +45,7 @@
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/text/hyphenation.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -533,8 +533,14 @@ inline void BreakingContext::HandleFloat() {
     // early by skipTrailingWhitespace(), and later on they all get placed by
     // the first float here in handleFloat(). Their position may then be wrong,
     // but it's too late to do anything about that now. See crbug.com/671577
-    if (!floating_object->IsPlaced())
-      block_.PositionAndLayoutFloat(*floating_object, block_.LogicalHeight());
+    if (!floating_object->IsPlaced()) {
+      LayoutUnit logical_top = block_.LogicalHeight();
+      if (const FloatingObject* last_placed_float = block_.LastPlacedFloat()) {
+        logical_top = std::max(logical_top,
+                               block_.LogicalTopForFloat(*last_placed_float));
+      }
+      block_.PositionAndLayoutFloat(*floating_object, logical_top);
+    }
 
     // Check if it fits in the current line; if it does, place it now,
     // otherwise, place it after moving to next line (in newLine() func).

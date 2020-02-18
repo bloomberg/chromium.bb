@@ -42,8 +42,6 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
-                            extra_request_complete_info) override;
   void OnEventOccurred(const void* const event_key) override;
   ObservePolicy ShouldObserveMimeType(
       const std::string& mime_type) const override;
@@ -64,33 +62,34 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   void RecordOptimizationGuideInfo(
       const page_load_metrics::PageLoadExtraInfo& info);
 
-  // The preview type that was most recently committed.
+  // The preview type that was actually committed and seen by the user.
   PreviewsType committed_preview_;
 
-  bool server_lofi_seen_ = false;
-  bool client_lofi_seen_ = false;
   bool lite_page_seen_ = false;
   bool lite_page_redirect_seen_ = false;
   bool noscript_seen_ = false;
   bool resource_loading_hints_seen_ = false;
+  bool defer_all_script_seen_ = false;
   bool offline_preview_seen_ = false;
   bool opt_out_occurred_ = false;
   bool origin_opt_out_occurred_ = false;
   bool save_data_enabled_ = false;
   bool previews_likely_ = false;
   base::Optional<previews::PreviewsEligibilityReason>
-      lite_page_eligibility_reason_ = base::nullopt;
+      lite_page_eligibility_reason_;
   base::Optional<previews::PreviewsEligibilityReason>
-      lite_page_redirect_eligibility_reason_ = base::nullopt;
+      lite_page_redirect_eligibility_reason_;
   base::Optional<previews::PreviewsEligibilityReason>
-      noscript_eligibility_reason_ = base::nullopt;
+      noscript_eligibility_reason_;
   base::Optional<previews::PreviewsEligibilityReason>
-      resource_loading_hints_eligibility_reason_ = base::nullopt;
+      resource_loading_hints_eligibility_reason_;
   base::Optional<previews::PreviewsEligibilityReason>
-      offline_eligibility_reason_ = base::nullopt;
+      defer_all_script_eligibility_reason_;
+  base::Optional<previews::PreviewsEligibilityReason>
+      offline_eligibility_reason_;
   CoinFlipHoldbackResult coin_flip_result_ = CoinFlipHoldbackResult::kNotSet;
-  base::Optional<base::TimeDelta> navigation_restart_penalty_ = base::nullopt;
-  base::Optional<std::string> serialized_hint_version_string_ = base::nullopt;
+  base::Optional<base::TimeDelta> navigation_restart_penalty_;
+  base::Optional<std::string> serialized_hint_version_string_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -24,11 +24,6 @@ QuartcStream::QuartcStream(QuicStreamId id, QuicSession* session)
   sequencer()->set_level_triggered(true);
 }
 
-QuartcStream::QuartcStream(PendingStream pending)
-    : QuicStream(std::move(pending), BIDIRECTIONAL, /*is_static=*/false) {
-  sequencer()->set_level_triggered(true);
-}
-
 QuartcStream::~QuartcStream() {}
 
 void QuartcStream::OnDataAvailable() {
@@ -66,9 +61,10 @@ void QuartcStream::OnStreamDataConsumed(size_t bytes_consumed) {
 }
 
 void QuartcStream::OnDataBuffered(
-    QuicStreamOffset offset,
-    QuicByteCount data_length,
-    const QuicReferenceCountedPointer<QuicAckListenerInterface>& ack_listener) {
+    QuicStreamOffset /*offset*/,
+    QuicByteCount /*data_length*/,
+    const QuicReferenceCountedPointer<
+        QuicAckListenerInterface>& /*ack_listener*/) {
   DCHECK(delegate_);
   delegate_->OnBufferChanged(this);
 }

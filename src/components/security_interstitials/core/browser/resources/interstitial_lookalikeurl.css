@@ -12,3 +12,9 @@
       url(images/1x/info.png) 1x,
       url(images/2x/info.png) 2x);
 }
+
+@media (prefers-color-scheme: dark) {
+  .lookalike-url .icon {
+    filter: invert(1);
+  }
+}

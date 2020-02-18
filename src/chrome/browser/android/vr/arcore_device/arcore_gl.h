@@ -36,7 +36,7 @@ class GLSurface;
 }  // namespace gl
 
 namespace vr {
-class ArCoreInstallUtils;
+class ArCoreSessionUtils;
 class WebXrPresentationState;
 }  // namespace vr
 
@@ -63,7 +63,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   explicit ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport);
   ~ArCoreGl() override;
 
-  void Initialize(vr::ArCoreInstallUtils* install_utils,
+  void Initialize(vr::ArCoreSessionUtils* session_utils,
                   ArCoreFactory* arcore_factory,
                   gfx::AcceleratedWidget drawing_widget,
                   const gfx::Size& frame_size,
@@ -85,6 +85,8 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   void GetEnvironmentIntegrationProvider(
       mojom::XREnvironmentIntegrationProviderAssociatedRequest
           environment_provider) override;
+  void SetInputSourceButtonListener(
+      device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo) override;
 
   // XRPresentationProvider
   void SubmitFrameMissing(int16_t frame_index, const gpu::SyncToken&) override;

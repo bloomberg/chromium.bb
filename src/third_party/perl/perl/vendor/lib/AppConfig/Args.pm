@@ -12,10 +12,11 @@
 #============================================================================
 
 package AppConfig::Args;
+use 5.006;
 use strict;
 use warnings;
 use AppConfig::State;
-our $VERSION = '1.65';
+our $VERSION = '1.71';
 
 
 #------------------------------------------------------------------------
@@ -33,7 +34,7 @@ our $VERSION = '1.65';
 sub new {
     my $class = shift;
     my $state = shift;
-    
+
 
     my $self = {
         STATE    => $state,                # AppConfig::State ref
@@ -42,7 +43,7 @@ sub new {
     };
 
     bless $self, $class;
-        
+
     # call parse() to parse any arg list passed 
     $self->parse(shift)
         if @_;
@@ -166,12 +167,12 @@ in your Perl script:
 
 AppConfig::Args is used automatically if you use the AppConfig module 
 and create an AppConfig::Args object through the parse() method.
-      
+
 AppConfig::File is implemented using object-oriented methods.  A new 
 AppConfig::Args object is created and initialised using the new() method.
 This returns a reference to a new AppConfig::File object.  A reference to
 an AppConfig::State object should be passed in as the first parameter:
-       
+
     my $state   = AppConfig::State->new();
     my $cfgargs = AppConfig::Args->new($state);
 

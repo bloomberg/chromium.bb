@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/placeholder_image.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
@@ -41,7 +41,7 @@ class NullImageResourceInfo final
 
  private:
   const KURL& Url() const override { return url_; }
-  TimeTicks LoadResponseEnd() const override { return TimeTicks(); }
+  base::TimeTicks LoadResponseEnd() const override { return base::TimeTicks(); }
   bool IsSchedulingReload() const override { return false; }
   const ResourceResponse& GetResponse() const override { return response_; }
   bool ShouldShowPlaceholder() const override { return false; }
@@ -116,6 +116,14 @@ ImageResourceContent* ImageResourceContent::CreateLoaded(
   ImageResourceContent* content =
       MakeGarbageCollected<ImageResourceContent>(std::move(image));
   content->content_status_ = ResourceStatus::kCached;
+  return content;
+}
+
+ImageResourceContent* ImageResourceContent::CreateLazyImagePlaceholder() {
+  ImageResourceContent* content = MakeGarbageCollected<ImageResourceContent>();
+  content->content_status_ = ResourceStatus::kCached;
+  content->image_ =
+      PlaceholderImage::CreateForLazyImages(content, IntSize(1, 1));
   return content;
 }
 
@@ -655,7 +663,7 @@ const KURL& ImageResourceContent::Url() const {
   return info_->Url();
 }
 
-TimeTicks ImageResourceContent::LoadResponseEnd() const {
+base::TimeTicks ImageResourceContent::LoadResponseEnd() const {
   return info_->LoadResponseEnd();
 }
 

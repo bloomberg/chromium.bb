@@ -5,7 +5,7 @@
 #include "ash/login/ui/login_user_menu_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/public/cpp/ash_constants.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -63,8 +63,8 @@ class RemoveUserButton : public views::Button {
     SetBorder(views::CreateEmptyBorder(
         gfx::Insets(kUserMenuMarginAroundRemoveUserButtonDp,
                     kUserMenuMarginAroundRemoveUserButtonDp)));
-    SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-        kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
+    SetInstallFocusRingOnFocus(true);
+    focus_ring()->SetColor(kShelfFocusBorderColor);
   }
 
   ~RemoveUserButton() override = default;
@@ -150,7 +150,7 @@ LoginUserMenuView::LoginUserMenuView(
       kUserMenuMarginWidth);
   auto setup_horizontal_margin_container = [&](views::View* container) {
     container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical,
+        views::BoxLayout::Orientation::kVertical,
         gfx::Insets(0, margins.left(), 0, margins.right())));
     AddChildView(container);
     return container;
@@ -164,7 +164,7 @@ LoginUserMenuView::LoginUserMenuView(
   };
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       gfx::Insets(margins.top(), 0, margins.bottom(), 0)));
 
   // User information.
@@ -247,7 +247,7 @@ LoginUserMenuView::LoginUserMenuView(
     remove_user_button_ = new RemoveUserButton(this, remove_user_label_, this);
     remove_user_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     remove_user_button_->SetID(kUserMenuRemoveUserButtonIdForTest);
-    remove_user_button_->SetAccessibleName(remove_user_label_->text());
+    remove_user_button_->SetAccessibleName(remove_user_label_->GetText());
     container->AddChildView(remove_user_button_);
   }
 }

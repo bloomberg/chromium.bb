@@ -47,19 +47,26 @@ namespace dawn_native { namespace metal {
         }
     }
 
+    bool Buffer::IsMapWritable() const {
+        // TODO(enga): Handle CPU-visible memory on UMA
+        return (GetUsage() & (dawn::BufferUsageBit::MapRead | dawn::BufferUsageBit::MapWrite)) != 0;
+    }
+
     MaybeError Buffer::MapAtCreationImpl(uint8_t** mappedPointer) {
         *mappedPointer = reinterpret_cast<uint8_t*>([mMtlBuffer contents]);
         return {};
     }
 
-    void Buffer::MapReadAsyncImpl(uint32_t serial) {
+    MaybeError Buffer::MapReadAsyncImpl(uint32_t serial) {
         MapRequestTracker* tracker = ToBackend(GetDevice())->GetMapTracker();
         tracker->Track(this, serial, false);
+        return {};
     }
 
-    void Buffer::MapWriteAsyncImpl(uint32_t serial) {
+    MaybeError Buffer::MapWriteAsyncImpl(uint32_t serial) {
         MapRequestTracker* tracker = ToBackend(GetDevice())->GetMapTracker();
         tracker->Track(this, serial, true);
+        return {};
     }
 
     void Buffer::UnmapImpl() {

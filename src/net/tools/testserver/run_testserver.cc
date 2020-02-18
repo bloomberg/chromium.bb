@@ -9,9 +9,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/test/test_timeouts.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
@@ -24,7 +24,7 @@ static void PrintUsage() {
 
 int main(int argc, const char* argv[]) {
   base::AtExitManager at_exit_manager;
-  base::MessageLoopForIO message_loop;
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
 
   // Process command line
   base::CommandLine::Init(argc, argv);

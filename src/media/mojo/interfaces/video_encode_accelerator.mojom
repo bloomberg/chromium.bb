@@ -51,6 +51,12 @@ struct VideoEncodeAcceleratorConfig {
     kDisplay
   };
 
+  // See media::VideoEncodeAccelerator::Config::StorageType
+  enum StorageType {
+    kShmem,
+    kDmabuf
+  };
+
   VideoPixelFormat input_format;
   gfx.mojom.Size input_visible_size;
   VideoCodecProfile output_profile;
@@ -61,6 +67,8 @@ struct VideoEncodeAcceleratorConfig {
   bool has_gop_length;  // Whether or not config has group of picture length
   uint8 h264_output_level;
   bool has_h264_output_level;  // Whether or not config has H264 output level
+  StorageType storage_type;
+  bool has_storage_type;  // Whether or not config has storage type config
   ContentType content_type;
 };
 

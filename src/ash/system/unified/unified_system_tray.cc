@@ -4,7 +4,7 @@
 
 #include "ash/system/unified/unified_system_tray.h"
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
@@ -24,7 +24,7 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/unified/current_locale_view.h"
 #include "ash/system/unified/ime_mode_view.h"
-#include "ash/system/unified/managed_device_view.h"
+#include "ash/system/unified/managed_device_tray_item_view.h"
 #include "ash/system/unified/notification_counter_view.h"
 #include "ash/system/unified/unified_slider_bubble_controller.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
@@ -129,11 +129,12 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
           std::make_unique<UnifiedSliderBubbleController>(this)),
       current_locale_view_(new CurrentLocaleView(shelf)),
       ime_mode_view_(new ImeModeView(shelf)),
-      managed_device_view_(new ManagedDeviceView(shelf)),
+      managed_device_view_(new ManagedDeviceTrayItemView(shelf)),
       notification_counter_item_(new NotificationCounterView(shelf)),
       quiet_mode_view_(new QuietModeView(shelf)),
       time_view_(new tray::TimeTrayItemView(shelf)) {
-  tray_container()->SetMargin(kUnifiedTrayContentPadding, 0);
+  tray_container()->SetMargin(
+      kUnifiedTrayContentPadding - TrayConstants::hit_region_padding(), 0);
   tray_container()->AddChildView(current_locale_view_);
   tray_container()->AddChildView(ime_mode_view_);
   tray_container()->AddChildView(managed_device_view_);
@@ -192,7 +193,8 @@ void UnifiedSystemTray::ShowVolumeSliderBubble() {
 }
 
 void UnifiedSystemTray::ShowAudioDetailedViewBubble() {
-  ShowBubble(false /* show_by_click */);
+  // The settings menu bubble gains focus when |show_by_click| is true.
+  ShowBubble(true /* show_by_click */);
   bubble_->ShowAudioDetailedView();
 }
 
@@ -233,6 +235,10 @@ void UnifiedSystemTray::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     ResetInkDropMask();
     InstallInkDropMask(ink_drop_layer_);
   }
+}
+
+const char* UnifiedSystemTray::GetClassName() const {
+  return "UnifiedSystemTray";
 }
 
 void UnifiedSystemTray::SetTrayEnabled(bool enabled) {

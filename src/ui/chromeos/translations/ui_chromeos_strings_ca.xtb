@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Control lliscant de reproducció</translation>
 <translation id="1399648040768741453">Teclat telugu (fonètic)</translation>
 <translation id="1430915738399379752">Imprimeix</translation>
+<translation id="1439494416798956626">S'ha mogut a <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Teclat vietnamita (Telex)</translation>
 <translation id="1455548678241328678">Teclat noruec</translation>
 <translation id="1464724975715666883">1 error.</translation>
@@ -90,9 +91,9 @@
 <translation id="197560921582345123">Pot editar</translation>
 <translation id="1984603991036629094">Teclat fonètic armeni</translation>
 <translation id="2001796770603320721">Gestiona a Drive</translation>
+<translation id="2009067268969781306">En formatar una unitat, se'n suprimeixen totes les dades que s'hi hagin emmagatzemat. Aquesta acció no es pot desfer.</translation>
 <translation id="2028997212275086731">Arxiu RAR</translation>
 <translation id="2046702855113914483">Ramen</translation>
-<translation id="204914487372604757">Crea la drecera</translation>
 <translation id="2070909990982335904">Els noms que comencen amb punt estan reservats per al sistema. Trieu un altre nom.</translation>
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="2080010875307505892">Teclat serbi</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">S'està analitzant el dispositiu multimèdia...</translation>
 <translation id="3468522857997926824">S'ha creat una còpia de seguretat de <ph name="FILE_COUNT" /> fotos a <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">S'està copiant...</translation>
+<translation id="3473378059788601120">S'ha copiat a <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Full de càlcul de Google</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> errors.</translation>
 <translation id="3519867315646775981">Transliteració (shalom ← שלום)</translation>
@@ -220,6 +222,7 @@
 <translation id="3620292326130836921">Tots els elements tenen una còpia de seguretat.</translation>
 <translation id="3626281679859535460">Brillantor</translation>
 <translation id="3644896802912593514">Amplada</translation>
+<translation id="3645531960514756307">Deixa de fixar la carpeta</translation>
 <translation id="3678559383040232393">Teclat maltès</translation>
 <translation id="3685122418104378273">La sincronització amb Google Drive està desactivada de manera predeterminada en utilitzar les dades mòbils.</translation>
 <translation id="3726463242007121105">Aquest dispositiu no es pot obrir perquè el seu sistema de fitxers no és compatible.</translation>
@@ -240,6 +243,7 @@
 <translation id="383652340667548381">Serbi</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="3855472144336161447">Neo 2 alemany</translation>
+<translation id="3856075812838139784">Només de lectura</translation>
 <translation id="3858678421048828670">Teclat italià</translation>
 <translation id="386548886866354912">Crea un paquet amb l'extensió <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Descripció</translation>
@@ -266,6 +270,7 @@
 <translation id="426015154560005552">Teclat àrab</translation>
 <translation id="4261901459838235729">Presentació de Google</translation>
 <translation id="4290535918735525311">S'ha compartit 1 carpeta amb Linux</translation>
+<translation id="42981349822642051">Desplega</translation>
 <translation id="4298972503445160211">Teclat danès</translation>
 <translation id="4299729908419173967">Brasiler</translation>
 <translation id="4309915981827077375">Informació general</translation>
@@ -285,7 +290,9 @@
 <translation id="4568854179928172494">Hora de modificació</translation>
 <translation id="4572815280350369984">Fitxer <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Més...</translation>
+<translation id="4579744207439506346">S'ha afegit <ph name="ENTRY_NAME" /> a la selecció.</translation>
 <translation id="4582497162516204941">Instal·la amb Linux (versió beta)</translation>
+<translation id="4594543368593301662">Es mostren els resultats per a <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Artista</translation>
 <translation id="4656293982926141856">Aquest ordinador</translation>
 <translation id="4669606053856530811">Els membres de l'equip <ph name="SOURCE_NAME" /> ja no podran accedir a aquests elements, tret que es comparteixin amb ells.</translation>
@@ -338,6 +345,7 @@
 <translation id="5038625366300922036">Mostra'n més...</translation>
 <translation id="5061708541166515394">Contrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
+<translation id="5081517858322016911">Se suprimiran <ph name="TOTAL_FILE_SIZE" /> de fitxers</translation>
 <translation id="509429900233858213">S'ha produït un error.</translation>
 <translation id="5098629044894065541">Hebreu</translation>
 <translation id="5123433949759960244">Pilota de bàsquet</translation>
@@ -383,12 +391,14 @@
 <translation id="5412637665001827670">Teclat búlgar</translation>
 <translation id="5418923334382419584">Teclat de Birmània</translation>
 <translation id="5428105026674456456">Espanyol</translation>
+<translation id="5438282218546237410">No hi ha cap resultat per a <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Teclat polonès</translation>
 <translation id="5465122519792752163">Teclat nepalès (InScript)</translation>
 <translation id="5469868506864199649">Italià</translation>
 <translation id="5494920125229734069">Selecciona-ho tot</translation>
 <translation id="5500122897333236901">Islandès</translation>
 <translation id="5508696409934741614">Punts</translation>
+<translation id="5522908512596376669">La llista de fitxers ha canviat a la visualització de llista.</translation>
 <translation id="5524517123096967210">El fitxer no s'ha pogut llegir.</translation>
 <translation id="5533102081734025921">Imatge <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">Transliteració (namaste → नमस्ते)</translation>
@@ -407,6 +417,7 @@
 <translation id="5752453871435543420">Còpia de seguretat de Chrome OS Cloud</translation>
 <translation id="5756666464756035725">QWERTY hongarès</translation>
 <translation id="5771585441665576801">Transliteració (geia → γεια)</translation>
+<translation id="5776325638577448643">Esborra i formata</translation>
 <translation id="57838592816432529">Silencia</translation>
 <translation id="5788127256798019331">Fitxers de Play</translation>
 <translation id="5790193330357274855">Kazakh</translation>
@@ -415,6 +426,7 @@
 <translation id="5819442873484330149">Configuració 3 de hangul (final)</translation>
 <translation id="5833610766403489739">Aquest fitxer s'ha extraviat en algun lloc. Comproveu el paràmetre d'ubicació de les baixades i torneu-ho a provar.</translation>
 <translation id="5838051104334203064">Les aplicacions de Play Store no poden accedir a aquest dispositiu</translation>
+<translation id="5838451609423551646">S'han suprimit totes les entrades de la selecció.</translation>
 <translation id="5838825566232597749">Workman nord-americà internacional</translation>
 <translation id="5850516540536751549">Aquest tipus de fitxer no és compatible. Visiteu <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> per trobar una aplicació que pugui obrir aquest tipus de fitxer.
         <ph name="BEGIN_LINK_HELP" />Més informació<ph name="END_LINK_HELP" /></translation>
@@ -422,10 +434,12 @@
 <translation id="5857774240076772505">Dona permís a les aplicacions de Linux per modificar els fitxers de la carpeta <ph name="FOLDER_NAME" /></translation>
 <translation id="5892290200158927959">Teclat BÉPO francès</translation>
 <translation id="5911887972742538906">S'ha produït un error en instal·lar l'aplicació per a Linux.</translation>
+<translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">L'operació de còpia ha fallat; s'ha produït un error inesperat: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5923484009666796948">Introducció de japonès (per a teclat japonès)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Dona permís a les aplicacions de Linux per modificar fitxers a Google Drive. Els canvis se sincronitzaran amb els altres dispositius.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> elements</translation>
 <translation id="5982621672636444458">Ordena les opcions</translation>
 <translation id="6005282720244019462">Teclat llatinoamericà</translation>
 <translation id="6007237601604674381">El trasllat ha fallat. <ph name="ERROR_MESSAGE" /></translation>
@@ -436,6 +450,7 @@
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="6054173164583630569">Teclat francès</translation>
 <translation id="6074825444536523002">Formulari de Google</translation>
+<translation id="6096979789310008754">El text de cerca s'ha esborrat. Es mostren tots els fitxers i carpetes.</translation>
 <translation id="6111770213269631447">Transliteració (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Espai</translation>
 <translation id="6133173853026656527">S'està traslladant <ph name="FILE_NAME" />...</translation>
@@ -446,6 +461,7 @@
 <translation id="6189412234224385711">Obre amb <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">S'està esperant per rebre informació sobre l'espai...</translation>
 <translation id="6205710420833115353">Algunes operacions estan tardant més del que estava previst. Voleu cancel·lar-les?</translation>
+<translation id="6224253798271602650">Formata <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">No s'ha pogut reproduir aquest fitxer.</translation>
 <translation id="6248400709929739064">Activa els subtítols</translation>
 <translation id="6264347891387618177">Transliteració (selam → ሰላም)</translation>
@@ -488,6 +504,7 @@
 <translation id="6820687829547641339">Arxiu tar comprimit Gzip</translation>
 <translation id="6825883775269213504">Rus</translation>
 <translation id="6827236167376090743">La reproducció d'aquest vídeo continuarà indefinidament.</translation>
+<translation id="6847101934483209767">S'ha suprimit <ph name="ENTRY_NAME" /> de la selecció.</translation>
 <translation id="6862635236584086457">Es fa una còpia de seguretat en línia automàticament de tots els fitxers desats en aquesta carpeta</translation>
 <translation id="6870130893560916279">Teclat ucraïnès</translation>
 <translation id="6876155724392614295">Bicicleta</translation>
@@ -524,6 +541,7 @@
 <translation id="719009910964971313">Teclat Dvorak nord-americà per a programadors</translation>
 <translation id="7191454237977785534">Anomena i desa</translation>
 <translation id="7222624196722476520">Teclat de búlgar fonètic</translation>
+<translation id="7238097264433196391">Nom de la unitat</translation>
 <translation id="7248671827512403053">Aplicació</translation>
 <translation id="7268659760406822741">Serveis disponibles</translation>
 <translation id="7283041136720745563">La teva quota d'emmagatzematge de Google Drive no és prou gran.</translation>
@@ -594,7 +612,6 @@
 <translation id="7969525169268594403">Eslovè</translation>
 <translation id="7982283708762922719">Alçada</translation>
 <translation id="7987485481246785146">Teclat de kurd sorani basat en l'àrab</translation>
-<translation id="799547531016638432">Suprimeix la drecera</translation>
 <translation id="799923393800005025">Pot consultar</translation>
 <translation id="8008366997883261463">Gos</translation>
 <translation id="8028993641010258682">Mida</translation>
@@ -614,11 +631,13 @@
 <translation id="8148264977957212129">Mètode d'introducció de pinyin</translation>
 <translation id="8151638057146502721">Configura</translation>
 <translation id="8153607920959057464">No s'ha pogut mostrar aquest fitxer.</translation>
+<translation id="8154842056504218462">S'han seleccionat totes les entrades.</translation>
 <translation id="8157684860301034423">No s'ha pogut recuperar la informació de l'aplicació.</translation>
 <translation id="8157939133946352716">7 x 5</translation>
 <translation id="8160015581537295331">Teclat espanyol</translation>
 <translation id="8179976553408161302">Retorn</translation>
 <translation id="8193175696669055101">Model de dispositiu</translation>
+<translation id="8208580316430297579">Caràtula</translation>
 <translation id="8223479393428528563">Per desar aquests fitxers per utilitzar-los fora de línia, connecteu-vos a una xarxa, feu clic amb el botó dret als fitxers i seleccioneu l'opció <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Cancel·la</translation>
 <translation id="8261506727792406068">Suprimeix</translation>
@@ -632,6 +651,7 @@
 <translation id="8336153091935557858">Ahir a les <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Teclat islandès</translation>
 <translation id="8342318071240498787">Ja existeix un fitxer o un directori amb aquest nom.</translation>
+<translation id="8382450452152102026">A: <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Transliteració (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Dimensions</translation>
 <translation id="8412586565681117057">Mètode d'introducció ràpida</translation>
@@ -650,11 +670,13 @@
 <translation id="8561206103590473338">Elefant</translation>
 <translation id="8569764466147087991">Seleccioneu el fitxer que vulgueu obrir</translation>
 <translation id="8579285237314169903">S'estan sincronitzant <ph name="NUMBER_OF_FILES" /> elements...</translation>
+<translation id="8600173386174225982">La llista de fitxers ha canviat a la visualització de miniatures.</translation>
 <translation id="8669949407341943408">S'estan traslladant...</translation>
 <translation id="8671210955687109937">Pot comentar</translation>
 <translation id="8686213429977032554">Aquest fitxer de Drive encara no s'ha compartit</translation>
 <translation id="8698464937041809063">Dibuix de Google</translation>
 <translation id="8714406895390098252">Bicicleta</translation>
+<translation id="8719721339511222681">S'ha seleccionat <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">Teclat internacional nord-americà</translation>
 <translation id="872537912056138402">Croat</translation>
 <translation id="874420130893181774">Mètode d'introducció de pinyin tradicional</translation>
@@ -679,6 +701,7 @@
 <translation id="9099674669267916096">Nombre de pàgines</translation>
 <translation id="9110990317705400362">Mai no deixem de cercar maneres de millorar la seguretat de la navegació. Anteriorment, des de qualsevol lloc web se us podia demanar que afegíssiu una extensió al navegador. A les versions més recents de Google Chrome, heu d'afegir aquestes extensions mitjançant la pàgina Extensions per fer saber explícitament a Chrome que voleu instal·lar-les. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Còdec</translation>
+<translation id="9129931661813833980">Fixa la carpeta</translation>
 <translation id="9130775360844693113">Els membres de la unitat <ph name="DESTINATION_NAME" />, obtindran accés a aquets elements.</translation>
 <translation id="9131598836763251128">Seleccioneu un o diversos fitxers</translation>
 <translation id="9133055936679483811">S'ha produït un error en la compressió. <ph name="ERROR_MESSAGE" /></translation>
@@ -695,6 +718,7 @@
 <translation id="942954117721265519">No hi ha cap imatge en aquest directori.</translation>
 <translation id="943972244133411984">Modificat per</translation>
 <translation id="945522503751344254">Envia suggeriments</translation>
+<translation id="947144732524271678">S'ha seleccionat un interval de <ph name="ENTRY_COUNT" /> entrades, de l'entrada <ph name="FROM_ENTRY_NAME" /> a <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Sense connexió</translation>
 <translation id="988685240266037636">El nom de fitxer "<ph name="FILE_NAME" />" ja existeix. El vols substituir?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

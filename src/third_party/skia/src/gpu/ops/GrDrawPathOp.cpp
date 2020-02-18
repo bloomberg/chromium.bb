@@ -49,17 +49,17 @@ GrPipeline::InitArgs GrDrawPathOpBase::pipelineInitArgs(const GrOpFlushState& st
     }
     args.fUserStencil = &kCoverPass;
     args.fCaps = &state.caps();
-    args.fResourceProvider = state.resourceProvider();
     args.fDstProxy = state.drawOpArgs().fDstProxy;
+    args.fOutputSwizzle = state.drawOpArgs().fOutputSwizzle;
     return args;
 }
 
 const GrProcessorSet::Analysis& GrDrawPathOpBase::doProcessorAnalysis(
-        const GrCaps& caps, const GrAppliedClip* clip, GrFSAAType fsaaType,
+        const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
         GrClampType clampType) {
     fAnalysis = fProcessorSet.finalize(
-            fInputColor, GrProcessorAnalysisCoverage::kNone, clip, &kCoverPass, fsaaType, caps,
-            clampType, &fInputColor);
+            fInputColor, GrProcessorAnalysisCoverage::kNone, clip, &kCoverPass,
+            hasMixedSampledCoverage, caps, clampType, &fInputColor);
     return fAnalysis;
 }
 

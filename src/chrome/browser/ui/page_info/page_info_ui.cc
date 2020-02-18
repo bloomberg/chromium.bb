@@ -21,6 +21,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/device_features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -173,11 +174,9 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
     {CONTENT_SETTINGS_TYPE_USB_GUARD, IDS_PAGE_INFO_TYPE_USB},
 #if !defined(OS_ANDROID)
     {CONTENT_SETTINGS_TYPE_SERIAL_GUARD, IDS_PAGE_INFO_TYPE_SERIAL},
-    // TODO(https://crbug.com/960962): Implement Bluetooth scanning API content
-    // settings and page info on Android.
+#endif
     {CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
      IDS_PAGE_INFO_TYPE_BLUETOOTH_SCANNING},
-#endif
   };
   return kPermissionsUIInfo;
 }
@@ -232,6 +231,7 @@ PageInfoUI::ChosenObjectInfo::~ChosenObjectInfo() {}
 
 PageInfoUI::IdentityInfo::IdentityInfo()
     : identity_status(PageInfo::SITE_IDENTITY_STATUS_UNKNOWN),
+      safe_browsing_status(PageInfo::SAFE_BROWSING_STATUS_NONE),
       connection_status(PageInfo::SITE_CONNECTION_STATUS_UNKNOWN),
       show_ssl_decision_revoke_button(false),
       show_change_password_buttons(false) {}
@@ -245,6 +245,41 @@ std::unique_ptr<PageInfoUI::SecurityDescription>
 PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
       new PageInfoUI::SecurityDescription());
+
+  switch (identity_info.safe_browsing_status) {
+    case PageInfo::SAFE_BROWSING_STATUS_NONE:
+      break;
+    case PageInfo::SAFE_BROWSING_STATUS_MALWARE:
+      return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                       IDS_PAGE_INFO_MALWARE_SUMMARY,
+                                       IDS_PAGE_INFO_MALWARE_DETAILS);
+    case PageInfo::SAFE_BROWSING_STATUS_SOCIAL_ENGINEERING:
+      return CreateSecurityDescription(
+          SecuritySummaryColor::RED, IDS_PAGE_INFO_SOCIAL_ENGINEERING_SUMMARY,
+          IDS_PAGE_INFO_SOCIAL_ENGINEERING_DETAILS);
+    case PageInfo::SAFE_BROWSING_STATUS_UNWANTED_SOFTWARE:
+      return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
+                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
+    case PageInfo::SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE:
+#if defined(FULL_SAFE_BROWSING)
+      return CreateSecurityDescriptionForPasswordReuse(
+          /*is_enterprise_password=*/false);
+#endif
+      NOTREACHED();
+      break;
+    case PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE:
+#if defined(FULL_SAFE_BROWSING)
+      return CreateSecurityDescriptionForPasswordReuse(
+          /*is_enterprise_password=*/true);
+#endif
+      NOTREACHED();
+      break;
+    case PageInfo::SAFE_BROWSING_STATUS_BILLING:
+      return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                       IDS_PAGE_INFO_BILLING_SUMMARY,
+                                       IDS_PAGE_INFO_BILLING_DETAILS);
+  }
 
   switch (identity_info.identity_status) {
     case PageInfo::SITE_IDENTITY_STATUS_INTERNAL_PAGE:
@@ -260,9 +295,12 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
       NOTREACHED();
       FALLTHROUGH;
 #endif
-    case PageInfo::SITE_IDENTITY_STATUS_CERT:
     case PageInfo::SITE_IDENTITY_STATUS_EV_CERT:
+      FALLTHROUGH;
+    case PageInfo::SITE_IDENTITY_STATUS_CERT:
+      FALLTHROUGH;
     case PageInfo::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN:
+      FALLTHROUGH;
     case PageInfo::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
       switch (identity_info.connection_status) {
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:
@@ -282,32 +320,6 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
                                            IDS_PAGE_INFO_SECURE_SUMMARY,
                                            IDS_PAGE_INFO_SECURE_DETAILS);
       }
-    case PageInfo::SITE_IDENTITY_STATUS_MALWARE:
-      return CreateSecurityDescription(SecuritySummaryColor::RED,
-                                       IDS_PAGE_INFO_MALWARE_SUMMARY,
-                                       IDS_PAGE_INFO_MALWARE_DETAILS);
-    case PageInfo::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING:
-      return CreateSecurityDescription(
-          SecuritySummaryColor::RED, IDS_PAGE_INFO_SOCIAL_ENGINEERING_SUMMARY,
-          IDS_PAGE_INFO_SOCIAL_ENGINEERING_DETAILS);
-    case PageInfo::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE:
-      return CreateSecurityDescription(SecuritySummaryColor::RED,
-                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
-                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
-    case PageInfo::SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
-      return CreateSecurityDescriptionForPasswordReuse(
-          /*is_enterprise_password=*/false);
-#endif
-    case PageInfo::SITE_IDENTITY_STATUS_ENTERPRISE_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
-      return CreateSecurityDescriptionForPasswordReuse(
-          /*is_enterprise_password=*/true);
-#endif
-    case PageInfo::SITE_IDENTITY_STATUS_BILLING:
-      return CreateSecurityDescription(SecuritySummaryColor::RED,
-                                       IDS_PAGE_INFO_BILLING_SUMMARY,
-                                       IDS_PAGE_INFO_BILLING_DETAILS);
     case PageInfo::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
     case PageInfo::SITE_IDENTITY_STATUS_UNKNOWN:
     case PageInfo::SITE_IDENTITY_STATUS_NO_CERT:
@@ -562,12 +574,10 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
     case CONTENT_SETTINGS_TYPE_SERIAL_GUARD:
       icon = &vector_icons::kSerialPortIcon;
       break;
-    // TODO(https://crbug.com/960962): Implement Bluetooth scanning API content
-    // settings and page info on Android.
+#endif
     case CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
       icon = &vector_icons::kBluetoothScanningIcon;
       break;
-#endif
     default:
       // All other |ContentSettingsType|s do not have icons on desktop or are
       // not shown in the Page Info bubble.
@@ -632,7 +642,7 @@ const gfx::ImageSkia PageInfoUI::GetCertificateIcon(
 const gfx::ImageSkia PageInfoUI::GetSiteSettingsIcon(
     const SkColor related_text_color) {
   return gfx::CreateVectorIcon(
-      kSettingsIcon, kVectorIconSize,
+      vector_icons::kSettingsIcon, kVectorIconSize,
       color_utils::DeriveDefaultIconColor(related_text_color));
 }
 

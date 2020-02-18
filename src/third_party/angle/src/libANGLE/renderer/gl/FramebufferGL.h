@@ -19,7 +19,6 @@ class BlitGL;
 class ClearMultiviewGL;
 class FunctionsGL;
 class StateManagerGL;
-struct WorkaroundsGL;
 
 class FramebufferGL : public FramebufferImpl
 {
@@ -115,6 +114,12 @@ class FramebufferGL : public FramebufferImpl
 
     void maskOutInactiveOutputDrawBuffersImpl(const gl::Context *context,
                                               gl::DrawBufferMask targetAppliedDrawBuffers);
+
+    angle::Result adjustSrcDstRegion(const gl::Context *context,
+                                     const gl::Rectangle &sourceArea,
+                                     const gl::Rectangle &destArea,
+                                     gl::Rectangle *newSourceArea,
+                                     gl::Rectangle *newDestArea);
 
     GLuint mFramebufferID;
     bool mIsDefault;

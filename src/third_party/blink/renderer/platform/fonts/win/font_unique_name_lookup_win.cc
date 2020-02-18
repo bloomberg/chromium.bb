@@ -9,7 +9,7 @@
 #include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 
@@ -66,7 +66,7 @@ sk_sp<SkTypeface> FontUniqueNameLookupWin::MatchUniqueNameLookupTable(
     return nullptr;
 
   base::Optional<FontTableMatcher::MatchResult> match_result =
-      font_table_matcher_->MatchName(font_unique_name.Utf8().data());
+      font_table_matcher_->MatchName(font_unique_name.Utf8());
   if (!match_result)
     return nullptr;
 

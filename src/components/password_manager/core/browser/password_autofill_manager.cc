@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
@@ -173,8 +174,7 @@ PasswordAutofillManager::PasswordAutofillManager(
     PasswordManagerClient* password_client)
     : password_manager_driver_(password_manager_driver),
       autofill_client_(autofill_client),
-      password_client_(password_client),
-      weak_ptr_factory_(this) {}
+      password_client_(password_client) {}
 
 PasswordAutofillManager::~PasswordAutofillManager() {
   if (deletion_callback_)
@@ -205,14 +205,16 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
   if (identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY) {
     password_client_->GeneratePassword();
     metrics_util::LogPasswordDropdownItemSelected(
-        PasswordDropdownSelectedOption::kGenerate);
+        PasswordDropdownSelectedOption::kGenerate,
+        password_client_->IsIncognito());
   } else if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
     password_client_->NavigateToManagePasswordsPage(
         ManagePasswordsReferrer::kPasswordDropdown);
     metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
         metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
     metrics_util::LogPasswordDropdownItemSelected(
-        PasswordDropdownSelectedOption::kShowAll);
+        PasswordDropdownSelectedOption::kShowAll,
+        password_client_->IsIncognito());
 
     if (password_client_ && password_client_->GetMetricsRecorder()) {
       using UserAction =
@@ -222,7 +224,8 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
     }
   } else {
     metrics_util::LogPasswordDropdownItemSelected(
-        PasswordDropdownSelectedOption::kPassword);
+        PasswordDropdownSelectedOption::kPassword,
+        password_client_->IsIncognito());
     bool success = FillSuggestion(GetUsernameFromSuggestion(value));
     DCHECK(success);
   }
@@ -255,6 +258,13 @@ autofill::PopupType PasswordAutofillManager::GetPopupType() const {
 
 autofill::AutofillDriver* PasswordAutofillManager::GetAutofillDriver() {
   return password_manager_driver_->GetAutofillDriver();
+}
+
+int32_t PasswordAutofillManager::GetWebContentsPopupControllerAxId() const {
+  // TODO: Needs to be implemented when we step up accessibility features in the
+  // future.
+  NOTIMPLEMENTED_LOG_ONCE() << "See http://crbug.com/991253";
+  return 0;
 }
 
 void PasswordAutofillManager::RegisterDeletionCallback(
@@ -308,7 +318,8 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
   }
 
   metrics_util::LogPasswordDropdownShown(
-      metrics_util::PasswordDropdownState::kStandard);
+      metrics_util::PasswordDropdownState::kStandard,
+      password_client_->IsIncognito());
   autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
                                       false, autofill::PopupType::kPasswords,
                                       weak_ptr_factory_.GetWeakPtr());
@@ -356,7 +367,8 @@ bool PasswordAutofillManager::MaybeShowPasswordSuggestionsWithGeneration(
   }
 
   metrics_util::LogPasswordDropdownShown(
-      metrics_util::PasswordDropdownState::kStandardGenerate);
+      metrics_util::PasswordDropdownState::kStandardGenerate,
+      password_client_->IsIncognito());
   autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
                                       false, autofill::PopupType::kPasswords,
                                       weak_ptr_factory_.GetWeakPtr());

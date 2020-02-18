@@ -1,23 +1,35 @@
 # Net::Config.pm
 #
-# Copyright (c) 2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
-# This program is free software; you can redistribute it and/or
-# modify it under the same terms as Perl itself.
+# Copyright (C) 2000 Graham Barr.  All rights reserved.
+# Copyright (C) 2013-2014, 2016 Steve Hay.  All rights reserved.
+# This module is free software; you can redistribute it and/or modify it under
+# the same terms as Perl itself, i.e. under the terms of either the GNU General
+# Public License or the Artistic License, as specified in the F<LICENCE> file.
 
 package Net::Config;
 
-require Exporter;
-use vars qw(@ISA @EXPORT %NetConfig $VERSION $CONFIGURE $LIBNET_CFG);
-use Socket qw(inet_aton inet_ntoa);
+use 5.008001;
+
 use strict;
+use warnings;
 
-@EXPORT  = qw(%NetConfig);
-@ISA     = qw(Net::LocalCfg Exporter);
-$VERSION = "1.11";
+use Exporter;
+use Socket qw(inet_aton inet_ntoa);
 
-eval { local $SIG{__DIE__}; require Net::LocalCfg };
+our @EXPORT  = qw(%NetConfig);
+our @ISA     = qw(Net::LocalCfg Exporter);
+our $VERSION = "3.11";
 
-%NetConfig = (
+our($CONFIGURE, $LIBNET_CFG);
+
+eval {
+  local @INC = @INC;
+  pop @INC if $INC[-1] eq '.';
+  local $SIG{__DIE__};
+  require Net::LocalCfg;
+};
+
+our %NetConfig = (
   nntp_hosts      => [],
   snpp_hosts      => [],
   pop3_hosts      => [],
@@ -36,6 +48,8 @@ eval { local $SIG{__DIE__}; require Net::LocalCfg };
 #
 # Try to get as much configuration info as possible from InternetConfig
 #
+{
+## no critic (BuiltinFunctions::ProhibitStringyEval)
 $^O eq 'MacOS' and eval <<TRY_INTERNET_CONFIG;
 use Mac::InternetConfig;
 
@@ -49,13 +63,14 @@ my %nc = (
     ftp_ext_passive => \$InternetConfig{"646F676F\xA5UsePassiveMode"} || 0,
     ftp_int_passive => \$InternetConfig{"646F676F\xA5UsePassiveMode"} || 0,
     socks_hosts     => 
-    	\$InternetConfig{ kICUseSocks() }    ? [ \$InternetConfig{ kICSocksHost() }    ] : [],
+        \$InternetConfig{ kICUseSocks() }    ? [ \$InternetConfig{ kICSocksHost() }    ] : [],
     ftp_firewall    => 
-    	\$InternetConfig{ kICUseFTPProxy() } ? [ \$InternetConfig{ kICFTPProxyHost() } ] : [],
+        \$InternetConfig{ kICUseFTPProxy() } ? [ \$InternetConfig{ kICFTPProxyHost() } ] : [],
 );
 \@NetConfig{keys %nc} = values %nc;
 }
 TRY_INTERNET_CONFIG
+}
 
 my $file = __FILE__;
 my $ref;
@@ -112,7 +127,6 @@ sub requires_firewall {
   return 0;
 }
 
-use vars qw(*is_external);
 *is_external = \&requires_firewall;
 
 1;
@@ -123,7 +137,7 @@ __END__
 
 Net::Config - Local configuration data for libnet
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Net::Config qw(%NetConfig);
 
@@ -141,7 +155,7 @@ For example
     # .libnetrc
     {
         nntp_hosts => [ "my_preferred_host" ],
-	ph_hosts   => [ "my_ph_server" ],
+        ph_hosts   => [ "my_ph_server" ],
     }
     __END__
 
@@ -153,7 +167,7 @@ C<Net::LocalCfg> so you can override these methods if you want.
 
 =over 4
 
-=item requires_firewall HOST
+=item requires_firewall ( HOST )
 
 Attempts to determine if a given host is outside your firewall. Possible
 return values are.
@@ -213,23 +227,23 @@ sequence of commands that Net::FTP will use
 
 =over 4
 
-=item 0
+=item 0Z<>
 
 There is no firewall
 
-=item 1
+=item 1Z<>
 
      USER user@remote.host
      PASS pass
 
-=item 2
+=item 2Z<>
 
      USER fwuser
      PASS fwpass
      USER user@remote.host
      PASS pass
 
-=item 3
+=item 3Z<>
 
      USER fwuser
      PASS fwpass
@@ -237,7 +251,7 @@ There is no firewall
      USER user
      PASS pass
 
-=item 4
+=item 4Z<>
 
      USER fwuser
      PASS fwpass
@@ -245,19 +259,19 @@ There is no firewall
      USER user
      PASS pass
 
-=item 5
+=item 5Z<>
 
      USER user@fwuser@remote.site
      PASS pass@fwpass
 
-=item 6
+=item 6Z<>
 
      USER fwuser@remote.site
      PASS fwpass
      USER user
      PASS pass
 
-=item 7
+=item 7Z<>
 
      USER user@remote.host
      PASS pass
@@ -274,7 +288,7 @@ FTP servers can work in passive or active mode. Active mode is when
 you want to transfer data you have to tell the server the address and
 port to connect to.  Passive mode is when the server provide the
 address and port and you establish the connection.
- 
+
 With some firewalls active mode does not work as the server cannot
 connect to your machine (because you are behind a firewall) and the firewall
 does not re-write the command. In this case you should set C<ftp_ext_passive>
@@ -308,5 +322,24 @@ configuration.
 If true then C<Configure> will check each hostname given that it exists
 
 =back
+
+=head1 AUTHOR
+
+Graham Barr E<lt>F<gbarr@pobox.com>E<gt>.
+
+Steve Hay E<lt>F<shay@cpan.org>E<gt> is now maintaining libnet as of version
+1.22_02.
+
+=head1 COPYRIGHT
+
+Copyright (C) 1998-2011 Graham Barr.  All rights reserved.
+
+Copyright (C) 2013-2014, 2016 Steve Hay.  All rights reserved.
+
+=head1 LICENCE
+
+This module is free software; you can redistribute it and/or modify it under the
+same terms as Perl itself, i.e. under the terms of either the GNU General Public
+License or the Artistic License, as specified in the F<LICENCE> file.
 
 =cut

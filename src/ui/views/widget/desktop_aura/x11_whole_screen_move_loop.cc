@@ -23,13 +23,13 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/x/x11.h"
 
 namespace views {
@@ -53,8 +53,7 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
       should_reset_mouse_flags_(false),
       grab_input_window_(x11::None),
       grabbed_pointer_(false),
-      canceled_(false),
-      weak_factory_(this) {}
+      canceled_(false) {}
 
 X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() = default;
 

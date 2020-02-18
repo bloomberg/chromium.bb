@@ -11,12 +11,13 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "jni/HttpNegotiateAuthenticator_jni.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_multi_round_parse.h"
 #include "net/http/http_auth_preferences.h"
+#include "net/log/net_log_with_source.h"
+#include "net/net_jni_headers/HttpNegotiateAuthenticator_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -69,7 +70,7 @@ HttpAuthNegotiateAndroid::HttpAuthNegotiateAndroid(
 HttpAuthNegotiateAndroid::~HttpAuthNegotiateAndroid() {
 }
 
-bool HttpAuthNegotiateAndroid::Init() {
+bool HttpAuthNegotiateAndroid::Init(const NetLogWithSource& net_log) {
   return true;
 }
 
@@ -92,11 +93,22 @@ HttpAuth::AuthorizationResult HttpAuthNegotiateAndroid::ParseChallenge(
                                        &decoded_auth_token);
 }
 
+int HttpAuthNegotiateAndroid::GenerateAuthTokenAndroid(
+    const AuthCredentials* credentials,
+    const std::string& spn,
+    const std::string& channel_bindings,
+    std::string* auth_token,
+    net::CompletionOnceCallback callback) {
+  return GenerateAuthToken(credentials, spn, channel_bindings, auth_token,
+                           NetLogWithSource(), std::move(callback));
+}
+
 int HttpAuthNegotiateAndroid::GenerateAuthToken(
     const AuthCredentials* credentials,
     const std::string& spn,
     const std::string& channel_bindings,
     std::string* auth_token,
+    const NetLogWithSource& net_log,
     net::CompletionOnceCallback callback) {
   if (GetAuthAndroidNegotiateAccountType().empty()) {
     // This can happen if there is a policy change, removing the account type,

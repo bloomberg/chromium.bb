@@ -22,12 +22,14 @@
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
+namespace blink {
+class MediaStreamDispatcherEventHandler;
+}
+
 namespace content {
 
-class MediaStreamDispatcherEventHandler;
-
 // This class implements a Mojo object that receives device stopped
-// notifications and forwards them to MediaStreamDispatcherEventHandler.
+// notifications and forwards them to blink::MediaStreamDispatcherEventHandler.
 class CONTENT_EXPORT MediaStreamDeviceObserver
     : public RenderFrameObserver,
       public blink::mojom::MediaStreamDeviceObserver {
@@ -40,11 +42,11 @@ class CONTENT_EXPORT MediaStreamDeviceObserver
   // being shown to the user.
   blink::MediaStreamDevices GetNonScreenCaptureDevices();
 
-  void AddStream(
-      const std::string& label,
-      const blink::MediaStreamDevices& audio_devices,
-      const blink::MediaStreamDevices& video_devices,
-      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler);
+  void AddStream(const std::string& label,
+                 const blink::MediaStreamDevices& audio_devices,
+                 const blink::MediaStreamDevices& video_devices,
+                 const base::WeakPtr<blink::MediaStreamDispatcherEventHandler>&
+                     event_handler);
   void AddStream(const std::string& label,
                  const blink::MediaStreamDevice& device);
   bool RemoveStream(const std::string& label);

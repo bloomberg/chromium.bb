@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <vector>
-
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
@@ -90,7 +88,7 @@ class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<WebIDBCursorImpl> weak_factory_;
+  base::WeakPtrFactory<WebIDBCursorImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebIDBCursorImpl);
 };

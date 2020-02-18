@@ -114,7 +114,6 @@ class PaymentRequest : public PaymentOptionsProvider,
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   const std::string& GetApplicationLocale() const override;
   bool IsIncognito() const override;
-  bool IsSslCertificateValid() override;
   const GURL& GetLastCommittedURL() const override;
   void DoFullCardRequest(
       const autofill::CreditCard& credit_card,
@@ -463,6 +462,8 @@ class PaymentRequest : public PaymentOptionsProvider,
   // Finds all iOS payment instruments for the url payment methods requested by
   // the merchant.
   IOSPaymentInstrumentFinder ios_instrument_finder_;
+
+  base::WeakPtrFactory<PaymentRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

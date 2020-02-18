@@ -540,8 +540,9 @@ SI F F_from_U8(U8 v) {
 SI F F_from_U16_BE(U16 v) {
     // All 16-bit ICC values are big-endian, so we byte swap before converting to float.
     // MSVC catches the "loss" of data here in the portable path, so we also make sure to mask.
-    v = (U16)( ((v<<8)|(v>>8)) & 0xffff );
-    return cast<F>(v) * (1/65535.0f);
+    U16 lo = (v >> 8),
+        hi = (v << 8) & 0xffff;
+    return cast<F>(lo|hi) * (1/65535.0f);
 }
 
 SI U16 U16_from_F(F v) {
@@ -608,8 +609,9 @@ SI void sample_clut_16(const skcms_A2B* a2b, I32 ix, F* r, F* g, F* b) {
 }
 
 // GCC 7.2.0 hits an internal compiler error with -finline-functions (or -O3)
-// when targeting MIPS 64,  I think attempting to inline clut() into exec_ops().
-#if 1 && defined(__GNUC__) && !defined(__clang__) && defined(__mips64)
+// when targeting MIPS 64, i386, or s390x,  I think attempting to inline clut() into exec_ops().
+#if 1 && defined(__GNUC__) && !defined(__clang__) \
+      && (defined(__mips64) || defined(__i386) || defined(__s390x__))
     #define MAYBE_NOINLINE __attribute__((noinline))
 #else
     #define MAYBE_NOINLINE

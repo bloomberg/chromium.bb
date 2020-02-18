@@ -242,13 +242,13 @@ void HostContextFactoryPrivate::SetDisplayColorMatrix(
 
 void HostContextFactoryPrivate::SetDisplayColorSpace(
     Compositor* compositor,
-    const gfx::ColorSpace& blending_color_space,
-    const gfx::ColorSpace& output_color_space) {
+    const gfx::ColorSpace& output_color_space,
+    float sdr_white_level) {
   auto iter = compositor_data_map_.find(compositor);
   if (iter == compositor_data_map_.end() || !iter->second.display_private)
     return;
-  iter->second.display_private->SetDisplayColorSpace(blending_color_space,
-                                                     output_color_space);
+  iter->second.display_private->SetDisplayColorSpace(output_color_space,
+                                                     sdr_white_level);
 }
 
 void HostContextFactoryPrivate::SetDisplayVSyncParameters(
@@ -295,16 +295,6 @@ void HostContextFactoryPrivate::AddVSyncParameterObserver(
     iter->second.display_private->AddVSyncParameterObserver(
         std::move(observer));
   }
-}
-
-viz::FrameSinkManagerImpl* HostContextFactoryPrivate::GetFrameSinkManager() {
-  // When running with viz there is no FrameSinkManagerImpl in the browser
-  // process. FrameSinkManagerImpl runs in the GPU process instead. Anything in
-  // the browser process that relies FrameSinkManagerImpl or SurfaceManager
-  // internal state needs to change. See https://crbug.com/787097 and
-  // https://crbug.com/760181 for more context.
-  NOTREACHED();
-  return nullptr;
 }
 
 HostContextFactoryPrivate::CompositorData::CompositorData() = default;

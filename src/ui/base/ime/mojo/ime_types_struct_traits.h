@@ -7,11 +7,8 @@
 
 #include <vector>
 
-#include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/mojo/ime_types.mojom.h"
-#include "ui/base/ime/text_input_client.h"
-#include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 
 namespace mojo {
@@ -20,32 +17,6 @@ template <>
 struct EnumTraits<ui::mojom::TextInputType, ui::TextInputType> {
   static ui::mojom::TextInputType ToMojom(ui::TextInputType text_input_type);
   static bool FromMojom(ui::mojom::TextInputType input, ui::TextInputType* out);
-};
-
-template <>
-struct EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode> {
-  static ui::mojom::TextInputMode ToMojom(ui::TextInputMode text_input_mode);
-  static bool FromMojom(ui::mojom::TextInputMode input, ui::TextInputMode* out);
-};
-
-template <>
-struct StructTraits<ui::mojom::CompositionTextDataView, ui::CompositionText> {
-  static base::string16 text(const ui::CompositionText& c) { return c.text; }
-  static ui::ImeTextSpans ime_text_spans(const ui::CompositionText& c) {
-    return c.ime_text_spans;
-  }
-  static gfx::Range selection(const ui::CompositionText& c) {
-    return c.selection;
-  }
-  static bool Read(ui::mojom::CompositionTextDataView data,
-                   ui::CompositionText* out);
-};
-
-template <>
-struct EnumTraits<ui::mojom::FocusReason, ui::TextInputClient::FocusReason> {
-  static ui::mojom::FocusReason ToMojom(ui::TextInputClient::FocusReason input);
-  static bool FromMojom(ui::mojom::FocusReason input,
-                        ui::TextInputClient::FocusReason* out);
 };
 
 template <>

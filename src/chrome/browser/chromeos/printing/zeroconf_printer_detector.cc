@@ -304,7 +304,7 @@ class ZeroconfPrinterDetectorImpl : public ZeroconfPrinterDetector {
         this, discovery_client_.get(), service_type);
     lister->Start();
     lister->DiscoverNewDevices();
-    DCHECK(!base::ContainsKey(device_listers_, service_type));
+    DCHECK(!base::Contains(device_listers_, service_type));
     device_listers_[service_type] = std::move(lister);
   }
 

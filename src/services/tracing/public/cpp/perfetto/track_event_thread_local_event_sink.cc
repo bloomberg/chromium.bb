@@ -5,6 +5,8 @@
 #include "services/tracing/public/cpp/perfetto/track_event_thread_local_event_sink.h"
 
 #include "base/stl_util.h"
+#include "base/strings/pattern.h"
+#include "base/strings/strcat.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_log.h"
@@ -12,17 +14,19 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/startup_trace_writer.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/interned_data/interned_data.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/debug_annotation.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/process_descriptor.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/source_location.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/task_execution.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/thread_descriptor.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/track_event.pbzero.h"
 
 using TraceLog = base::trace_event::TraceLog;
 using TrackEvent = perfetto::protos::pbzero::TrackEvent;
+using perfetto::protos::pbzero::ThreadDescriptor;
 
 namespace tracing {
 
@@ -33,12 +37,6 @@ namespace {
 // at this point anyway.
 constexpr uint32_t kMagicChunkIndex =
     base::trace_event::TraceBufferChunk::kMaxChunkIndex;
-
-// Force an incremental state reset every 1000 events on each thread. This
-// limits the maximum number of events we lose when trace buffers wrap.
-// TODO(eseckler): Tune this value experimentally and/or replace it with a
-// signal by the service.
-constexpr int kMaxEventsBeforeIncrementalStateReset = 1000;
 
 // Replacement string for names of events with TRACE_EVENT_FLAG_COPY.
 const char* const kPrivacyFiltered = "PRIVACY_FILTERED";
@@ -70,13 +68,13 @@ void AddConvertableToTraceFormat(
 void WriteDebugAnnotations(
     base::trace_event::TraceEvent* trace_event,
     TrackEvent* track_event,
-    InterningIndexEntry** current_packet_interning_entries) {
+    InterningIndexEntry* current_packet_interning_entries) {
   for (size_t i = 0; i < trace_event->arg_size() && trace_event->arg_name(i);
        ++i) {
     auto type = trace_event->arg_type(i);
     auto* annotation = track_event->add_debug_annotations();
 
-    annotation->set_name_iid(current_packet_interning_entries[i]->id);
+    annotation->set_name_iid(current_packet_interning_entries[i].id);
 
     if (type == TRACE_VALUE_TYPE_CONVERTABLE) {
       AddConvertableToTraceFormat(trace_event->arg_convertible_value(i),
@@ -114,10 +112,48 @@ void WriteDebugAnnotations(
   }
 }
 
+ThreadDescriptor::ChromeThreadType GetThreadType(
+    const char* const thread_name) {
+  if (base::MatchPattern(thread_name, "Cr*Main")) {
+    return ThreadDescriptor::CHROME_THREAD_MAIN;
+  } else if (base::MatchPattern(thread_name, "Chrome*IOThread")) {
+    return ThreadDescriptor::CHROME_THREAD_IO;
+  } else if (base::MatchPattern(thread_name, "ThreadPoolForegroundWorker*")) {
+    return ThreadDescriptor::CHROME_THREAD_POOL_FG_WORKER;
+  } else if (base::MatchPattern(thread_name, "ThreadPoolBackgroundWorker*")) {
+    return ThreadDescriptor::CHROME_THREAD_POOL_BG_WORKER;
+  } else if (base::MatchPattern(thread_name,
+                                "ThreadPool*ForegroundBlocking*")) {
+    return ThreadDescriptor::CHROME_THREAD_POOL_FB_BLOCKING;
+  } else if (base::MatchPattern(thread_name,
+                                "ThreadPool*BackgroundBlocking*")) {
+    return ThreadDescriptor::CHROME_THREAD_POOL_BG_BLOCKING;
+  } else if (base::MatchPattern(thread_name, "ThreadPoolService*")) {
+    return ThreadDescriptor::CHROME_THREAD_POOL_SERVICE;
+  } else if (base::MatchPattern(thread_name, "CompositorTileWorker*")) {
+    return ThreadDescriptor::CHROME_THREAD_COMPOSITOR_WORKER;
+  } else if (base::MatchPattern(thread_name, "Compositor")) {
+    return ThreadDescriptor::CHROME_THREAD_COMPOSITOR;
+  } else if (base::MatchPattern(thread_name, "VizCompositor*")) {
+    return ThreadDescriptor::CHROME_THREAD_VIZ_COMPOSITOR;
+  } else if (base::MatchPattern(thread_name, "ServiceWorker*")) {
+    return ThreadDescriptor::CHROME_THREAD_SERVICE_WORKER;
+  } else if (base::MatchPattern(thread_name, "MemoryInfra")) {
+    return ThreadDescriptor::CHROME_THREAD_MEMORY_INFRA;
+  } else if (base::MatchPattern(thread_name, "StackSamplingProfiler")) {
+    return ThreadDescriptor::CHROME_THREAD_SAMPLING_PROFILER;
+  }
+  return ThreadDescriptor::CHROME_THREAD_UNSPECIFIED;
+}
+
 }  // namespace
 
 // static
 constexpr size_t TrackEventThreadLocalEventSink::kMaxCompleteEventDepth;
+
+// static
+std::atomic<uint32_t>
+    TrackEventThreadLocalEventSink::incremental_state_reset_id_{0};
 
 TrackEventThreadLocalEventSink::TrackEventThreadLocalEventSink(
     std::unique_ptr<perfetto::StartupTraceWriter> trace_writer,
@@ -134,15 +170,17 @@ TrackEventThreadLocalEventSink::TrackEventThreadLocalEventSink(
       interned_source_locations_(1000),
       process_id_(TraceLog::GetInstance()->process_id()),
       thread_id_(static_cast<int>(base::PlatformThread::CurrentId())),
-      privacy_filtering_enabled_(proto_writer_filtering_enabled) {}
+      privacy_filtering_enabled_(proto_writer_filtering_enabled) {
+  base::ThreadIdNameManager::GetInstance()->AddObserver(this);
+}
 
-TrackEventThreadLocalEventSink::~TrackEventThreadLocalEventSink() {}
+TrackEventThreadLocalEventSink::~TrackEventThreadLocalEventSink() {
+  base::ThreadIdNameManager::GetInstance()->RemoveObserver(this);
+}
 
-// TODO(eseckler): Trigger this upon a signal from the perfetto, once perfetto
-// supports this.
-void TrackEventThreadLocalEventSink::ResetIncrementalState() {
-  reset_incremental_state_ = true;
-  events_since_last_incremental_state_reset_ = 0;
+// static
+void TrackEventThreadLocalEventSink::ClearIncrementalState() {
+  incremental_state_reset_id_.fetch_add(1u, std::memory_order_relaxed);
 }
 
 void TrackEventThreadLocalEventSink::AddTraceEvent(
@@ -174,55 +212,35 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
 
   uint32_t flags = trace_event->flags();
   bool copy_strings = flags & TRACE_EVENT_FLAG_COPY;
+  bool is_java_event = flags & TRACE_EVENT_FLAG_JAVA_STRING_LITERALS;
   bool explicit_timestamp = flags & TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP;
 
+  // We access |incremental_state_reset_id_| atomically but racily. It's OK if
+  // we don't notice the reset request immediately, as long as we will notice
+  // and service it eventually.
+  auto reset_id = incremental_state_reset_id_.load(std::memory_order_relaxed);
+  if (reset_id != last_incremental_state_reset_id_) {
+    reset_incremental_state_ = true;
+    last_incremental_state_reset_id_ = reset_id;
+  }
+
   if (reset_incremental_state_) {
-    interned_event_categories_.ResetEmittedState();
-    interned_event_names_.ResetEmittedState();
-    interned_annotation_names_.ResetEmittedState();
-    interned_source_locations_.ResetEmittedState();
-
-    // Emit a new thread descriptor in a separate packet, where we also set
-    // the |reset_incremental_state| field.
-    auto trace_packet = trace_writer_->NewTracePacket();
-    trace_packet->set_incremental_state_cleared(true);
-    auto* thread_descriptor = trace_packet->set_thread_descriptor();
-    thread_descriptor->set_pid(process_id_);
-    thread_descriptor->set_tid(thread_id_);
-    if (explicit_timestamp) {
-      // Don't use a user-provided timestamp as a reference timestamp.
-      last_timestamp_ = TRACE_TIME_TICKS_NOW();
-    } else {
-      last_timestamp_ = trace_event->timestamp();
-    }
-    if (trace_event->thread_timestamp().is_null()) {
-      last_thread_time_ = ThreadNow();
-    } else {
-      // Thread timestamp is never user-provided.
-      DCHECK(trace_event->thread_timestamp() <= ThreadNow());
-      last_thread_time_ = trace_event->thread_timestamp();
-    }
-    thread_descriptor->set_reference_timestamp_us(
-        last_timestamp_.since_origin().InMicroseconds());
-    thread_descriptor->set_reference_thread_time_us(
-        last_thread_time_.since_origin().InMicroseconds());
-    // TODO(eseckler): Fill in remaining fields in ThreadDescriptor.
-
-    reset_incremental_state_ = false;
+    DoResetIncrementalState(trace_event, explicit_timestamp);
   }
 
   const char* category_name =
       TraceLog::GetCategoryGroupName(trace_event->category_group_enabled());
-  InterningIndexEntry* interned_category =
+  InterningIndexEntry interned_category =
       interned_event_categories_.LookupOrAdd(category_name);
 
-  InterningIndexEntry* interned_name;
+  InterningIndexEntry interned_name;
   const size_t kMaxSize = base::trace_event::TraceArguments::kMaxSize;
-  InterningIndexEntry* interned_annotation_names[kMaxSize] = {nullptr};
-  InterningIndexEntry* interned_source_location = nullptr;
+  InterningIndexEntry interned_annotation_names[kMaxSize] = {
+      InterningIndexEntry{}};
+  InterningIndexEntry interned_source_location{};
 
   if (copy_strings) {
-    if (privacy_filtering_enabled_) {
+    if (!is_java_event && privacy_filtering_enabled_) {
       interned_name = interned_event_names_.LookupOrAdd(kPrivacyFiltered);
     } else {
       interned_name =
@@ -303,18 +321,18 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   }
 
   // TODO(eseckler): Split comma-separated category strings.
-  track_event->add_category_iids(interned_category->id);
+  track_event->add_category_iids(interned_category.id);
 
-  if (interned_source_location) {
+  if (interned_source_location.id) {
     track_event->set_task_execution()->set_posted_from_iid(
-        interned_source_location->id);
+        interned_source_location.id);
   } else if (!privacy_filtering_enabled_) {
     WriteDebugAnnotations(trace_event, track_event, interned_annotation_names);
   }
 
   auto* legacy_event = track_event->set_legacy_event();
 
-  legacy_event->set_name_iid(interned_name->id);
+  legacy_event->set_name_iid(interned_name.id);
 
   char phase = trace_event->phase();
   legacy_event->set_phase(phase);
@@ -327,6 +345,13 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
       if (thread_duration != -1) {
         legacy_event->set_thread_duration_us(thread_duration);
       }
+    }
+
+    // TODO(acomminos): Add thread instruction count for BEGIN/END events
+    if (!trace_event->thread_instruction_count().is_null()) {
+      int64_t instruction_delta =
+          trace_event->thread_instruction_delta().ToInternalValue();
+      legacy_event->set_thread_instruction_delta(instruction_delta);
     }
   } else if (phase == TRACE_EVENT_PHASE_INSTANT) {
     switch (flags & TRACE_EVENT_FLAG_SCOPE_MASK) {
@@ -409,43 +434,52 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   }
 
   // Emit any new interned data entries into the packet.
-  auto* interned_data = trace_packet->set_interned_data();
-  if (!interned_category->was_emitted) {
+  perfetto::protos::pbzero::InternedData* interned_data = nullptr;
+  if (!interned_category.was_emitted) {
+    if (!interned_data) {
+      interned_data = trace_packet->set_interned_data();
+    }
     auto* category_entry = interned_data->add_event_categories();
-    category_entry->set_iid(interned_category->id);
+    category_entry->set_iid(interned_category.id);
     category_entry->set_name(category_name);
-    interned_category->was_emitted = true;
   }
 
-  if (!interned_name->was_emitted) {
+  if (!interned_name.was_emitted) {
+    if (!interned_data) {
+      interned_data = trace_packet->set_interned_data();
+    }
     auto* name_entry = interned_data->add_legacy_event_names();
-    name_entry->set_iid(interned_name->id);
-    name_entry->set_name(copy_strings && privacy_filtering_enabled_
+    name_entry->set_iid(interned_name.id);
+    name_entry->set_name(copy_strings && !is_java_event &&
+                                 privacy_filtering_enabled_
                              ? kPrivacyFiltered
                              : trace_event->name());
-    interned_name->was_emitted = true;
   }
 
-  if (interned_source_location) {
-    if (!interned_source_location->was_emitted) {
+  if (interned_source_location.id) {
+    if (!interned_source_location.was_emitted) {
+      if (!interned_data) {
+        interned_data = trace_packet->set_interned_data();
+      }
       auto* source_location_entry = interned_data->add_source_locations();
-      source_location_entry->set_iid(interned_source_location->id);
+      source_location_entry->set_iid(interned_source_location.id);
       source_location_entry->set_file_name(trace_event->arg_value(0).as_string);
       if (trace_event->arg_size() > 1) {
         source_location_entry->set_function_name(
             trace_event->arg_value(1).as_string);
       }
-      interned_source_location->was_emitted = true;
     }
   } else if (!privacy_filtering_enabled_) {
     for (size_t i = 0; i < trace_event->arg_size() && trace_event->arg_name(i);
          ++i) {
-      DCHECK(interned_annotation_names[i]);
-      if (!interned_annotation_names[i]->was_emitted) {
+      DCHECK(interned_annotation_names[i].id);
+      if (!interned_annotation_names[i].was_emitted) {
+        if (!interned_data) {
+          interned_data = trace_packet->set_interned_data();
+        }
         auto* name_entry = interned_data->add_debug_annotation_names();
-        name_entry->set_iid(interned_annotation_names[i]->id);
+        name_entry->set_iid(interned_annotation_names[i].id);
         name_entry->set_name(trace_event->arg_name(i));
-        interned_annotation_names[i]->was_emitted = true;
       }
     }
   }
@@ -456,18 +490,13 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
     interned_annotation_names_.Clear();
     interned_source_locations_.Clear();
   }
-
-  events_since_last_incremental_state_reset_++;
-  if (events_since_last_incremental_state_reset_ >=
-      kMaxEventsBeforeIncrementalStateReset) {
-    ResetIncrementalState();
-  }
 }
 
 void TrackEventThreadLocalEventSink::UpdateDuration(
     base::trace_event::TraceEventHandle handle,
     const base::TimeTicks& now,
-    const base::ThreadTicks& thread_now) {
+    const base::ThreadTicks& thread_now,
+    base::trace_event::ThreadInstructionCount thread_instruction_now) {
   if (!handle.event_index || handle.chunk_index != kMagicChunkIndex ||
       handle.chunk_seq != session_id_) {
     return;
@@ -488,7 +517,8 @@ void TrackEventThreadLocalEventSink::UpdateDuration(
   }
 
   current_stack_depth_--;
-  complete_event_stack_[current_stack_depth_].UpdateDuration(now, thread_now);
+  complete_event_stack_[current_stack_depth_].UpdateDuration(
+      now, thread_now, thread_instruction_now);
   AddTraceEvent(&complete_event_stack_[current_stack_depth_], nullptr);
 
 #if defined(OS_ANDROID)
@@ -498,6 +528,78 @@ void TrackEventThreadLocalEventSink::UpdateDuration(
 
 void TrackEventThreadLocalEventSink::Flush() {
   trace_writer_->Flush();
+}
+
+void TrackEventThreadLocalEventSink::OnThreadNameChanged(const char* name) {
+  if (thread_id_ != static_cast<int>(base::PlatformThread::CurrentId()))
+    return;
+  auto trace_packet = trace_writer_->NewTracePacket();
+  EmitThreadDescriptor(&trace_packet, nullptr, true, name);
+}
+
+void TrackEventThreadLocalEventSink::EmitThreadDescriptor(
+    protozero::MessageHandle<perfetto::protos::pbzero::TracePacket>*
+        trace_packet,
+    base::trace_event::TraceEvent* trace_event,
+    bool explicit_timestamp,
+    const char* maybe_new_name) {
+  auto* thread_descriptor = (*trace_packet)->set_thread_descriptor();
+  thread_descriptor->set_pid(process_id_);
+  thread_descriptor->set_tid(thread_id_);
+
+  if (!maybe_new_name) {
+    maybe_new_name =
+        base::ThreadIdNameManager::GetInstance()->GetNameForCurrentThread();
+  }
+  if (maybe_new_name && *maybe_new_name &&
+      base::StringPiece(thread_name_) != maybe_new_name) {
+    thread_name_ = maybe_new_name;
+    thread_type_ = GetThreadType(maybe_new_name);
+  }
+  // TODO(ssid): Adding name and type to thread descriptor adds thread names
+  // from killed processes. The catapult trace importer can't handle different
+  // processes with same process ids. To workaround this issue, we do not emit
+  // name and type when filtering is enabled (when metadata is not emitted).
+  // Thread names will be emitted by trace log at metadata generation step when
+  // filtering is not enabled. See crbug/978093.
+  if (privacy_filtering_enabled_) {
+    thread_descriptor->set_chrome_thread_type(thread_type_);
+  }
+
+  if (explicit_timestamp || !trace_event) {
+    // Don't use a user-provided timestamp as a reference timestamp.
+    last_timestamp_ = TRACE_TIME_TICKS_NOW();
+  } else {
+    last_timestamp_ = trace_event->timestamp();
+  }
+  if (!trace_event || trace_event->thread_timestamp().is_null()) {
+    last_thread_time_ = ThreadNow();
+  } else {
+    // Thread timestamp is never user-provided.
+    DCHECK(trace_event->thread_timestamp() <= ThreadNow());
+    last_thread_time_ = trace_event->thread_timestamp();
+  }
+  thread_descriptor->set_reference_timestamp_us(
+      last_timestamp_.since_origin().InMicroseconds());
+  thread_descriptor->set_reference_thread_time_us(
+      last_thread_time_.since_origin().InMicroseconds());
+  // TODO(eseckler): Fill in remaining fields in ThreadDescriptor.
+}
+
+void TrackEventThreadLocalEventSink::DoResetIncrementalState(
+    base::trace_event::TraceEvent* trace_event,
+    bool explicit_timestamp) {
+  interned_event_categories_.ResetEmittedState();
+  interned_event_names_.ResetEmittedState();
+  interned_annotation_names_.ResetEmittedState();
+  interned_source_locations_.ResetEmittedState();
+
+  // Emit a new thread descriptor in a separate packet, where we also set
+  // the |incremental_state_cleared| flag.
+  auto trace_packet = trace_writer_->NewTracePacket();
+  trace_packet->set_incremental_state_cleared(true);
+  EmitThreadDescriptor(&trace_packet, trace_event, explicit_timestamp);
+  reset_incremental_state_ = false;
 }
 
 }  // namespace tracing

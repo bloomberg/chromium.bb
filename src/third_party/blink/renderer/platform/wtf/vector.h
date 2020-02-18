@@ -49,13 +49,13 @@
 
 namespace WTF {
 
-#if defined(MEMORY_SANITIZER_INITIAL_SIZE)
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+// The allocation pool for nodes is one big chunk that ASAN has no insight
+// into, so it can cloak errors. Make it as small as possible to force nodes
+// to be allocated individually where ASAN can see them.
 static const wtf_size_t kInitialVectorSize = 1;
 #else
-#ifndef WTF_VECTOR_INITIAL_SIZE
-#define WTF_VECTOR_INITIAL_SIZE 4
-#endif
-static const wtf_size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
+static const wtf_size_t kInitialVectorSize = 4;
 #endif
 
 template <typename T, wtf_size_t inlineBuffer, typename Allocator>
@@ -1141,13 +1141,13 @@ class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator> {
   //     Insert a single element constructed as T(args...) to the back. The
   //     element is constructed directly on the backing buffer with placement
   //     new.
-  // append(buffer, size)
-  // appendVector(vector)
-  // appendRange(begin, end)
+  // Append(buffer, size)
+  // AppendVector(vector)
+  // AppendRange(begin, end)
   //     Insert multiple elements represented by (1) |buffer| and |size|
-  //     (for append), (2) |vector| (for appendVector), or (3) a pair of
-  //     iterators (for appendRange) to the back. The elements will be copied.
-  // uncheckedAppend(value)
+  //     (for append), (2) |vector| (for AppendVector), or (3) a pair of
+  //     iterators (for AppendRange) to the back. The elements will be copied.
+  // UncheckedAppend(value)
   //     Insert a single element like push_back(), but this function assumes
   //     the vector has enough capacity such that it can store the new element
   //     without a reallocation. Using this function could improve the
@@ -1176,15 +1176,24 @@ class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator> {
   // pointing to an element after |position| will be invalidated.
   //
   // insert(position, value)
-  //     Insert a single element at |position|.
+  //     Insert a single element at |position|, where |position| is an index.
   // insert(position, buffer, size)
   // InsertVector(position, vector)
+  //     Insert multiple elements represented by either |buffer| and |size|
+  //     or |vector| at |position|. The elements will be copied.
+  // InsertAt(position, value)
+  //     Insert a single element at |position|, where |position| is an iterator.
+  // InsertAt(position, buffer, size)
   //     Insert multiple elements represented by either |buffer| and |size|
   //     or |vector| at |position|. The elements will be copied.
   template <typename U>
   void insert(wtf_size_t position, U&&);
   template <typename U>
   void insert(wtf_size_t position, const U*, wtf_size_t);
+  template <typename U>
+  void InsertAt(iterator position, U&&);
+  template <typename U>
+  void InsertAt(iterator position, const U*, wtf_size_t);
   template <typename U, wtf_size_t otherCapacity, typename OtherAllocator>
   void InsertVector(wtf_size_t position,
                     const Vector<U, otherCapacity, OtherAllocator>&);
@@ -1197,7 +1206,7 @@ class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator> {
   // push_front(value)
   //     Insert a single element to the front.
   // push_front(buffer, size)
-  // prependVector(vector)
+  // PrependVector(vector)
   //     Insert multiple elements represented by either |buffer| and |size| or
   //     |vector| to the front. The elements will be copied.
   template <typename U>
@@ -1227,10 +1236,10 @@ class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator> {
   // growed as a result of this call, those events may invalidate some
   // iterators. See comments for shrink() and grow().
   //
-  // fill(value, size) will resize the Vector to |size|, and then copy-assign
+  // Fill(value, size) will resize the Vector to |size|, and then copy-assign
   // or copy-initialize all the elements.
   //
-  // fill(value) is a synonym for fill(value, size()).
+  // Fill(value) is a synonym for Fill(value, size()).
   void Fill(const T&, wtf_size_t);
   void Fill(const T& val) { Fill(val, size()); }
 
@@ -1854,6 +1863,20 @@ void Vector<T, inlineCapacity, Allocator>::insert(wtf_size_t position,
   VectorCopier<VectorTraits<T>::kCanCopyWithMemcpy, T,
                Allocator>::UninitializedCopy(data, &data[data_size], spot);
   size_ = new_size;
+}
+
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
+template <typename U>
+void Vector<T, inlineCapacity, Allocator>::InsertAt(T* position, U&& val) {
+  insert(position - begin(), val);
+}
+
+template <typename T, wtf_size_t inlineCapacity, typename Allocator>
+template <typename U>
+void Vector<T, inlineCapacity, Allocator>::InsertAt(T* position,
+                                                    const U* data,
+                                                    wtf_size_t data_size) {
+  insert(position - begin(), data, data_size);
 }
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>

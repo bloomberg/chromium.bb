@@ -115,9 +115,9 @@ class CPWL_ListCtrl {
    private:
     CPWL_EditImpl_Iterator* GetIterator() const;
 
-    std::unique_ptr<CPWL_EditImpl> m_pEdit;
-    bool m_bSelected;
+    bool m_bSelected = false;
     CFX_FloatRect m_rcListItem;
+    std::unique_ptr<CPWL_EditImpl> const m_pEdit;
   };
 
   CFX_PointF InToOut(const CFX_PointF& point) const;
@@ -145,7 +145,7 @@ class CPWL_ListCtrl {
   void SetScrollPosY(float fy);
   void AddItem(const WideString& str);
   WideString GetItemText(int32_t nIndex) const;
-  void SetItemSelect(int32_t nItemIndex, bool bSelected);
+  void SetItemSelect(int32_t nIndex, bool bSelected);
   int32_t GetLastSelected() const;
   CFX_PointF GetBTPoint() const {
     return CFX_PointF(m_rcPlate.left, m_rcPlate.top);

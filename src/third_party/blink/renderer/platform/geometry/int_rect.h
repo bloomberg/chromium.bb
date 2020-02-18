@@ -32,7 +32,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect_outsets.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/geometry/rect.h"
@@ -239,6 +239,14 @@ PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const IntRect&);
 PLATFORM_EXPORT WTF::TextStream& operator<<(WTF::TextStream&, const IntRect&);
 
 }  // namespace blink
+
+namespace WTF {
+template <>
+struct CrossThreadCopier<blink::IntRect>
+    : public CrossThreadCopierPassThrough<blink::IntRect> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+}
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::IntRect)
 

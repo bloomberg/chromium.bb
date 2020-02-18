@@ -119,7 +119,7 @@ class ResourceDispatcherTest : public testing::Test,
     request->referrer_policy = Referrer::GetDefaultReferrerPolicy();
     request->resource_type = static_cast<int>(ResourceType::kSubResource);
     request->priority = net::LOW;
-    request->fetch_request_mode = network::mojom::FetchRequestMode::kNoCors;
+    request->mode = network::mojom::RequestMode::kNoCors;
 
     const RequestExtraData extra_data;
     extra_data.CopyToResourceRequest(request.get());
@@ -137,7 +137,7 @@ class ResourceDispatcherTest : public testing::Test,
     int request_id = dispatcher()->StartAsync(
         std::move(request), 0,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-        TRAFFIC_ANNOTATION_FOR_TESTS, false, false, std::move(peer),
+        TRAFFIC_ANNOTATION_FOR_TESTS, false, std::move(peer),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(this),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
         nullptr /* navigation_response_override_params */);

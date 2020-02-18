@@ -166,10 +166,10 @@ TEST_P(SingleLinkHeaderTest, Single) {
   LinkHeader& header = header_set[0];
   EXPECT_EQ(test_case.valid, header.Valid());
   if (test_case.valid) {
-    EXPECT_STREQ(test_case.url, header.Url().Ascii().data());
-    EXPECT_STREQ(test_case.rel, header.Rel().Ascii().data());
-    EXPECT_STREQ(test_case.as, header.As().Ascii().data());
-    EXPECT_STREQ(test_case.media, header.Media().Ascii().data());
+    EXPECT_EQ(test_case.url, header.Url().Ascii());
+    EXPECT_EQ(test_case.rel, header.Rel().Ascii());
+    EXPECT_EQ(test_case.as, header.As().Ascii());
+    EXPECT_EQ(test_case.media, header.Media().Ascii());
   }
 }
 
@@ -270,13 +270,13 @@ TEST_P(CrossOriginLinkHeaderTest, CrossOrigin) {
   LinkHeaderSet header_set(test_case.header_value);
   ASSERT_GE(header_set.size(), 1u);
   LinkHeader& header = header_set[0];
-  EXPECT_STREQ(test_case.url, header.Url().Ascii().data());
-  EXPECT_STREQ(test_case.rel, header.Rel().Ascii().data());
+  EXPECT_EQ(test_case.url, header.Url().Ascii());
+  EXPECT_EQ(test_case.rel, header.Rel().Ascii());
   EXPECT_EQ(test_case.valid, header.Valid());
   if (!test_case.crossorigin)
     EXPECT_TRUE(header.CrossOrigin().IsNull());
   else
-    EXPECT_STREQ(test_case.crossorigin, header.CrossOrigin().Ascii().data());
+    EXPECT_EQ(test_case.crossorigin, header.CrossOrigin().Ascii());
 }
 
 INSTANTIATE_TEST_SUITE_P(LinkHeaderTest,

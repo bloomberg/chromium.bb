@@ -64,14 +64,12 @@ Session::Session(const std::string& id)
       w3c_compliant(kW3CDefault),
       quit(false),
       detach(false),
-      force_devtools_screenshot(false),
       sticky_modifiers(0),
       mouse_position(0, 0),
       pressed_mouse_button(kNoneMouseButton),
       implicit_wait(kDefaultImplicitWaitTimeout),
       page_load_timeout(kDefaultPageLoadTimeout),
       script_timeout(kDefaultScriptTimeout),
-      auto_reporting_enabled(false),
       strict_file_interactability(false),
       click_count(0),
       mouse_click_timestamp(base::TimeTicks::Now()) {}
@@ -81,7 +79,6 @@ Session::Session(const std::string& id, std::unique_ptr<Chrome> chrome)
       w3c_compliant(kW3CDefault),
       quit(false),
       detach(false),
-      force_devtools_screenshot(false),
       chrome(std::move(chrome)),
       sticky_modifiers(0),
       mouse_position(0, 0),
@@ -89,7 +86,6 @@ Session::Session(const std::string& id, std::unique_ptr<Chrome> chrome)
       implicit_wait(kDefaultImplicitWaitTimeout),
       page_load_timeout(kDefaultPageLoadTimeout),
       script_timeout(kDefaultScriptTimeout),
-      auto_reporting_enabled(false),
       strict_file_interactability(false),
       click_count(0),
       mouse_click_timestamp(base::TimeTicks::Now()) {}
@@ -136,17 +132,6 @@ std::vector<WebDriverLog*> Session::GetAllLogs() const {
   if (driver_log)
     logs.push_back(driver_log.get());
   return logs;
-}
-
-std::string Session::GetFirstBrowserError() const {
-  for (const auto& log : devtools_logs) {
-    if (log->type() == WebDriverLog::kBrowserType) {
-      std::string message = log->GetFirstErrorMessage();
-      if (!message.empty())
-        return message;
-    }
-  }
-  return std::string();
 }
 
 Session* GetThreadLocalSession() {

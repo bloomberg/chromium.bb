@@ -113,7 +113,7 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   bool IsKeyboardFocusable() const override;
   void DefaultEventHandler(Event&) final;
   bool HasActivationBehavior() const override;
-  void SetActive(bool = true) final;
+  void SetActive(bool active) final;
   void AccessKeyAction(bool send_mouse_events) final;
   bool IsURLAttribute(const Attribute&) const final;
   bool HasLegalLinkAttribute(const QualifiedName&) const final;

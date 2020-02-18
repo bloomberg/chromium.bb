@@ -33,7 +33,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
@@ -55,6 +54,8 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -192,6 +193,8 @@ class MODULES_EXPORT RTCPeerConnection final
 
   String connectionState() const;
 
+  void restartIce();
+
   // A local stream is any stream associated with a sender.
   MediaStreamVector getLocalStreams() const;
   // A remote stream is any stream associated with a receiver.
@@ -208,12 +211,14 @@ class MODULES_EXPORT RTCPeerConnection final
 
   // Calls LegacyCallbackBasedGetStats() or PromiseBasedGetStats() (or rejects
   // with an exception) depending on type, see rtc_peer_connection.idl.
-  ScriptPromise getStats(ScriptState* script_state);
-  ScriptPromise getStats(ScriptState* script_state,
-                         ScriptValue callback_or_selector);
+  ScriptPromise getStats(ScriptState* script_state, ExceptionState&);
   ScriptPromise getStats(ScriptState* script_state,
                          ScriptValue callback_or_selector,
-                         ScriptValue legacy_selector);
+                         ExceptionState&);
+  ScriptPromise getStats(ScriptState* script_state,
+                         ScriptValue callback_or_selector,
+                         ScriptValue legacy_selector,
+                         ExceptionState&);
   ScriptPromise LegacyCallbackBasedGetStats(
       ScriptState*,
       V8RTCStatsCallback* success_callback,
@@ -261,6 +266,7 @@ class MODULES_EXPORT RTCPeerConnection final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(icegatheringstatechange,
                                   kIcegatheringstatechange)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(datachannel, kDatachannel)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(icecandidateerror, kIcecandidateerror)
 
   // Utility to note result of CreateOffer / CreateAnswer
   void NoteSdpCreated(const RTCSessionDescription&);
@@ -280,6 +286,10 @@ class MODULES_EXPORT RTCPeerConnection final
   // WebRTCPeerConnectionHandlerClient
   void NegotiationNeeded() override;
   void DidGenerateICECandidate(scoped_refptr<WebRTCICECandidate>) override;
+  void DidFailICECandidate(const WebString& host_candidate,
+                           const WebString& url,
+                           int error_code,
+                           const WebString& error_text) override;
   void DidChangeSignalingState(
       webrtc::PeerConnectionInterface::SignalingState) override;
   void DidChangeIceGatheringState(
@@ -291,7 +301,7 @@ class MODULES_EXPORT RTCPeerConnection final
   void DidAddReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
   void DidRemoveReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
   void DidModifySctpTransport(WebRTCSctpTransportSnapshot) override;
-  void DidModifyTransceivers(std::vector<std::unique_ptr<WebRTCRtpTransceiver>>,
+  void DidModifyTransceivers(WebVector<std::unique_ptr<WebRTCRtpTransceiver>>,
                              bool is_remote_description) override;
   void DidAddRemoteDataChannel(
       scoped_refptr<webrtc::DataChannelInterface> channel) override;
@@ -347,6 +357,9 @@ class MODULES_EXPORT RTCPeerConnection final
   webrtc::SdpSemantics sdp_semantics() { return sdp_semantics_; }
 
   void Trace(blink::Visitor*) override;
+
+  base::TimeTicks WebRtcMsToBlinkTimeTicks(
+      double webrtc_monotonic_time_ms) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest, GetAudioTrack);
@@ -490,7 +503,7 @@ class MODULES_EXPORT RTCPeerConnection final
   void MaybeWarnAboutUnsafeSdp(
       const RTCSessionDescriptionInit* session_description_init) const;
 
-  std::set<RTCIceTransport*> ActiveIceTransports() const;
+  HeapHashSet<Member<RTCIceTransport>> ActiveIceTransports() const;
 
   webrtc::PeerConnectionInterface::SignalingState signaling_state_;
   webrtc::PeerConnectionInterface::IceGatheringState ice_gathering_state_;
@@ -553,6 +566,9 @@ class MODULES_EXPORT RTCPeerConnection final
   webrtc::SdpSemantics sdp_semantics_;
   // Whether sdpSemantics was specified at construction.
   bool sdp_semantics_specified_;
+
+  // Blink and WebRTC timestamp diff.
+  const base::TimeDelta blink_webrtc_time_diff_;
 };
 
 }  // namespace blink

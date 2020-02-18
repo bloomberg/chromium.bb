@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/component_export.h"
+#include "base/observer_list_types.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher.pb.h"
@@ -20,6 +21,19 @@ namespace chromeos {
 class COMPONENT_EXPORT(CHROMEOS_DBUS) VmPluginDispatcherClient
     : public DBusClient {
  public:
+  // Used to observe changes to VM state.
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnVmStateChanged(
+        const vm_tools::plugin_dispatcher::VmStateChangedSignal& signal) = 0;
+
+   protected:
+    ~Observer() override = default;
+  };
+
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
+
   // Asynchronously starts a given VM.
   virtual void StartVm(
       const vm_tools::plugin_dispatcher::StartVmRequest& request,

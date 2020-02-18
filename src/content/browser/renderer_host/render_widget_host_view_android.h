@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 
+#include "base/android/jni_android.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/queue.h"
@@ -21,7 +22,7 @@
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/common/presentation_feedback_map.h"
+#include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/quads/selection.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/browser/devtools/devtools_frame_metadata.h"
@@ -114,6 +115,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool IsShowing() override;
   gfx::Rect GetViewBounds() override;
   gfx::Size GetVisibleViewportSize() override;
+  void SetInsets(const gfx::Insets& insets) override;
   gfx::Size GetCompositorViewportPixelSize() override;
   bool IsSurfaceAvailableForCopy() override;
   void CopyFromSurface(
@@ -148,7 +150,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                                     bool down) override;
   void FallbackCursorModeSetCursorVisibility(bool visible) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
+      BrowserAccessibilityDelegate* delegate,
+      bool for_root_frame) override;
   bool LockMouse() override;
   void UnlockMouse() override;
   void DidCreateNewRendererCompositorFrameSink(
@@ -174,10 +177,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
   void SetWantsAnimateOnlyBeginFrames() override;
   const viz::FrameSinkId& GetFrameSinkId() const override;
-  bool TransformPointToLocalCoordSpaceLegacy(
-      const gfx::PointF& point,
-      const viz::SurfaceId& original_surface,
-      gfx::PointF* transformed_point) override;
   viz::FrameSinkId GetRootFrameSinkId() override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
   bool TransformPointToCoordSpaceForView(
@@ -196,6 +195,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
   void GetScreenInfo(ScreenInfo* screen_info) override;
+  void CancelActiveTouches() override;
 
   // ui::EventHandlerAndroid implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& m) override;
@@ -245,7 +245,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Used by DelegatedFrameHostClientAndroid.
   void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source);
   void DidPresentCompositorFrames(
-      const viz::PresentationFeedbackMap& feedbacks);
+      const viz::FrameTimingDetailsMap& timing_details);
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources);
   void ReclaimResources(const std::vector<viz::ReturnedResource>& resources);
@@ -353,6 +353,41 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetWebContentsAccessibility(
       WebContentsAccessibilityAndroid* web_contents_accessibility);
 
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+
+  // Methods called from Java
+  bool IsReady(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+
+  void DismissTextHandles(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
+
+  // Returns an int equivalent to an Optional<SKColor>, with a value of 0
+  // indicating SKTransparent for not set.
+  jint GetBackgroundColor(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
+
+  void ShowContextMenuAtTouchHandle(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint x,
+      jint y);
+
+  // Insets the Visual Viewport's bottom by the amount given.  The adjustment
+  // is specified in pixels and should not be negative.  An adjustment of 0
+  // returns the Visual Viewport to a non-inset viewport that matches the
+  // Layout Viewport.
+  void InsetViewportBottom(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           jint bottom_adjust_px);
+
+  void WriteContentBitmapToDiskAsync(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint width,
+      jint height,
+      const base::android::JavaParamRef<jstring>& jpath,
+      const base::android::JavaParamRef<jobject>& jcallback);
+
   ui::DelegatedFrameHostAndroid* delegated_frame_host_for_testing() {
     return delegated_frame_host_.get();
   }
@@ -388,6 +423,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                       float bottom_controls_shown_ratio);
   void OnDidUpdateVisualPropertiesComplete(
       const cc::RenderFrameMetadata& metadata);
+
+  void OnFinishGetContentBitmap(const base::android::JavaRef<jobject>& obj,
+                                const base::android::JavaRef<jobject>& callback,
+                                const std::string& path,
+                                const SkBitmap& bitmap);
 
   void ShowInternal();
   void HideInternal();
@@ -531,6 +571,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   gfx::Point prev_mousedown_point_;
   int left_click_count_ = 0;
 
+  gfx::Insets insets_;
+
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
 
@@ -544,7 +586,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // If true, then the next allocated surface should be embedded.
   bool navigation_while_hidden_ = false;
 
-  viz::PresentationFeedbackMap presentation_feedbacks_;
+  viz::FrameTimingDetailsMap timing_details_;
 
   // Tracks whether we are in SynchronousCopyContents to avoid repeated calls
   // into DevTools capture logic.
@@ -556,6 +598,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   base::Optional<DevToolsFrameMetadata> last_devtools_frame_metadata_;
 
   WebContentsAccessibilityAndroid* web_contents_accessibility_ = nullptr;
+
+  base::android::ScopedJavaGlobalRef<jobject> obj_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 

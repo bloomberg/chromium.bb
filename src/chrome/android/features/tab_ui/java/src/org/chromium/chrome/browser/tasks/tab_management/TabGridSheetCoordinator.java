@@ -4,20 +4,15 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.Nullable;
 
-import org.chromium.base.ApplicationStatus;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
@@ -46,12 +41,11 @@ public class TabGridSheetCoordinator {
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
                 null, null, null, null, bottomSheetController.getBottomSheet(), null, false,
-                R.layout.tab_list_recycler_view_layout, COMPONENT_NAME);
+                COMPONENT_NAME);
 
         mMediator = new TabGridSheetMediator(mContext, bottomSheetController,
                 this::resetWithListOfTabs, mToolbarPropertyModel, tabModelSelector,
                 tabCreatorManager, themeColorProvider);
-        startObservingForCreationIPH();
     }
 
     /**
@@ -98,13 +92,5 @@ public class TabGridSheetCoordinator {
                 mToolbarCoordinator = null;
             }
         }
-    }
-
-    private void startObservingForCreationIPH() {
-        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (!(activity instanceof ChromeTabbedActivity)) return;
-
-        TabGroupUtils.startObservingForTabGroupsIPH(
-                ((ChromeTabbedActivity) activity).getTabModelSelector());
     }
 }

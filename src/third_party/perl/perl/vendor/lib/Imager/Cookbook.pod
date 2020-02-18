@@ -16,6 +16,11 @@ This is described in detail in L<Imager::Files>.
 
   $image->read(file=>$filename) or die $image->errstr;
 
+Or:
+
+  my $image = Imager->new(file => $filename)
+    or die Imager->errstr;
+
 See L<Imager::Files>.
 
 =head2 Writing an image to a file
@@ -172,7 +177,7 @@ For example, if you allow the caller to set the size of an output
 image you should limit the size to prevent the client from specifying
 an image size that will consume all available memory.
 
-This is beside any any other controls you need over access to data.
+This is beside any other controls you need over access to data.
 
 See L<CGI> for a module useful for processing CGI submitted data.
 
@@ -431,6 +436,106 @@ in pixels per centimeter, you would do:
   $image->settag(name => 'tiff_resolutionunit', value => 3);
 
 Keywords: DPI
+
+=head1 IMAGE MANIPULATION
+
+=head2 Replacing a color with transparency
+X<replacing colors>
+
+To replace a color with transparency you can use the
+L<Imager::Filters/difference()> method.
+
+  # make a work image the same size as our input
+  my $work = Imager->new(xsize => $in->getwidth, ysize => $in->getheight,
+                         channels => $in->getchannels);
+  # and fill it with the color we want transparent
+  $work->box(filled => 1, color => $color);
+
+  # get an image with that color replaced with transparent black
+  my $out = $work->difference(other => $in);
+
+=head1 SPECIAL EFFECTS
+
+=head2 Drop Shadows
+X<drop shadow>X<effects, drop shadow>
+
+This can be used for a glow effect as well.
+
+First create a new image, either with an alpha channel (if you want
+transparency behind the shadow) or without, if you want a background
+color:
+
+  my $out = Imager->new
+     (
+     xsize => $shadow_size * 2 + $src->getwidth,
+     ysize => $shadow_size * 2 + $src->getheight,
+     channels => 4,
+     );
+  # fill it with your background color, if you want one
+  # $out->box(filled => 1, color => $back_color);
+
+Make a work image to render the shadow on:
+
+  my $shadow_work = Imager->new
+    (
+    xsize => $back->getwidth,
+    ysize => $back->getheight,
+    channels => 1,
+    );
+
+Extract the alpha channel from the source image, first the alpha version:
+
+  my $alpha = $src->convert(preset => "alpha");
+
+and draw that on the work shadow:
+
+  $shadow_work->paste
+    (
+    src => $slpha,
+    left => $shadow_size,
+    top => $shadow_size,
+    );
+
+otherwise just draw a box for the non-alpha source:
+
+  $shadow_work->box
+    (
+    filled => 1,
+    color => [ 255 ],
+    xmin => $shadow_size,
+    ymin => $shadow_size,
+    xmax => $shadow_size + $src->getwidth() - 1,
+    ymax => $shadow_size + $src->getheight() - 1,
+    );
+
+Blur the work shadow:
+
+  $shadow_work->filter(type => "gaussian", stddev => $shadow_size);
+
+Convert it to an RGB image with alpha:
+
+  $shadow_work = $shadow_work->convert
+     (
+      matrix => [ [ 0, $red / 255 ],
+                   [ 0, $green / 255 ],
+                   [ 0, $blue / 255 ],
+                   [ 1 ] ]
+     );
+
+Draw that on the output image:
+
+  $out->rubthrough(src => $shadow_work);
+
+Draw our original image on the output image, perhaps with an offset:
+
+  $out->rubthrough
+    (
+    src => $src,
+    tx => $shadow_size + $x_offset,
+    ty => $shadow_size + $y_offset,
+    );
+
+See F<samples/drop_shadow.pl> for an example of this recipe.
 
 =head1 AUTHOR
 

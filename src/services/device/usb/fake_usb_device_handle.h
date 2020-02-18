@@ -5,6 +5,8 @@
 #ifndef SERVICES_DEVICE_USB_FAKE_USB_DEVICE_HANDLE_H_
 #define SERVICES_DEVICE_USB_FAKE_USB_DEVICE_HANDLE_H_
 
+#include <vector>
+
 #include "services/device/usb/usb_device_handle.h"
 
 namespace device {
@@ -38,9 +40,9 @@ class FakeUsbDeviceHandle : public UsbDeviceHandle {
   void ResetDevice(ResultCallback callback) override;
   void ClearHalt(uint8_t endpoint, ResultCallback callback) override;
 
-  void ControlTransfer(UsbTransferDirection direction,
-                       UsbControlTransferType request_type,
-                       UsbControlTransferRecipient recipient,
+  void ControlTransfer(mojom::UsbTransferDirection direction,
+                       mojom::UsbControlTransferType request_type,
+                       mojom::UsbControlTransferRecipient recipient,
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
@@ -59,12 +61,12 @@ class FakeUsbDeviceHandle : public UsbDeviceHandle {
                               unsigned int timeout,
                               IsochronousTransferCallback callback) override;
 
-  void GenericTransfer(UsbTransferDirection direction,
+  void GenericTransfer(mojom::UsbTransferDirection direction,
                        uint8_t endpoint_number,
                        scoped_refptr<base::RefCountedBytes> buffer,
                        unsigned int timeout,
                        TransferCallback callback) override;
-  const UsbInterfaceDescriptor* FindInterfaceByEndpoint(
+  const mojom::UsbInterfaceInfo* FindInterfaceByEndpoint(
       uint8_t endpoint_address) override;
 
  private:

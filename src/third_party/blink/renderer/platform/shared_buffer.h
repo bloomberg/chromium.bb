@@ -45,8 +45,6 @@ class sk_sp;
 
 namespace blink {
 
-class WebProcessMemoryDump;
-
 class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
  public:
   // Iterator for ShreadBuffer contents. An Iterator will get invalid once the
@@ -182,7 +180,7 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   // SkData without merging segmented buffers into a flat buffer.
   sk_sp<SkData> GetAsSkData() const;
 
-  void OnMemoryDump(const String& dump_prefix, WebProcessMemoryDump*) const;
+  void GetMemoryDumpNameAndSize(String& dump_name, size_t& dump_size) const;
 
   // Helper for providing a contiguous view of the data.  If the SharedBuffer is
   // segmented, this will copy/merge all segments into a temporary buffer.
@@ -261,6 +259,19 @@ inline std::vector<char> SharedBuffer::CopyAs() const {
   for (const auto& span : *this)
     buffer.insert(buffer.end(), span.data(), span.data() + span.size());
 
+  DCHECK_EQ(buffer.size(), size_);
+  return buffer;
+}
+
+template <>
+inline std::vector<uint8_t> SharedBuffer::CopyAs() const {
+  std::vector<uint8_t> buffer;
+  buffer.reserve(size_);
+
+  for (const auto& span : *this) {
+    buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(span.data()),
+                  reinterpret_cast<const uint8_t*>(span.data() + span.size()));
+  }
   DCHECK_EQ(buffer.size(), size_);
   return buffer;
 }

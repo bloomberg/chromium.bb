@@ -9,12 +9,13 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "components/signin/public/identity_manager/access_token_fetcher.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/sync_credentials.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "services/identity/public/cpp/access_token_fetcher.h"
 
 namespace syncer {
 
@@ -53,15 +54,14 @@ constexpr net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
 }  // namespace
 
 SyncAuthManager::SyncAuthManager(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     const AccountStateChangedCallback& account_state_changed,
     const CredentialsChangedCallback& credentials_changed)
     : identity_manager_(identity_manager),
       account_state_changed_callback_(account_state_changed),
       credentials_changed_callback_(credentials_changed),
       registered_for_auth_notifications_(false),
-      request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
-      weak_ptr_factory_(this) {
+      request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy) {
   // |identity_manager_| can be null if local Sync is enabled.
 }
 
@@ -370,7 +370,7 @@ void SyncAuthManager::OnRefreshTokenRemovedForAccount(
 }
 
 void SyncAuthManager::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   UpdateSyncAccountIfNecessary();
 }
@@ -462,12 +462,12 @@ void SyncAuthManager::RequestAccessToken() {
           {GaiaConstants::kChromeSyncOAuth2Scope},
           base::BindOnce(&SyncAuthManager::AccessTokenFetched,
                          base::Unretained(this)),
-          identity::AccessTokenFetcher::Mode::kWaitUntilRefreshTokenAvailable);
+          signin::AccessTokenFetcher::Mode::kWaitUntilRefreshTokenAvailable);
 }
 
 void SyncAuthManager::AccessTokenFetched(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   DCHECK(registered_for_auth_notifications_);
 
   DCHECK(ongoing_access_token_fetch_);

@@ -15,64 +15,30 @@
 // zh_CN.txt zh_TW.txt zh_HK.txt zh_SG.txt\
 // no.txt in.txt iw.txt tl.txt sh.txt
       "zh_CN","zh_TW","zh_HK","zh_SG",
-      "no","in","iw","tl","sh",
+      "no","in","iw","tl",
 // # Ordinary resources
 // GENRB_SOURCE =\
 // .......
       "am",
-      "ar","ar_001","ar_AE","ar_BH","ar_DJ",
-      "ar_DZ","ar_EG","ar_EH","ar_ER","ar_IL",
-      "ar_IQ","ar_JO","ar_KM","ar_KW","ar_LB",
-      "ar_LY","ar_MA","ar_MR","ar_OM","ar_PS",
-      "ar_QA","ar_SA","ar_SD","ar_SO","ar_SS",
-      "ar_SY","ar_TD","ar_TN","ar_YE",
+      "ar",
       "bg",
       "bn",
       "ca",
       "cs",
       "da",
-      "de","de_AT","de_BE","de_CH","de_IT","de_LI","de_LU",
+      "de",
       "el",
-      "en","en_001","en_150","en_AG","en_AI","en_AS",
-      "en_AT","en_AU","en_BB","en_BE","en_BI",
-      "en_BM","en_BS","en_BW","en_BZ","en_CA",
-      "en_CC","en_CH","en_CK","en_CM","en_CX",
-      "en_CY","en_DE","en_DG","en_DK","en_DM",
-      "en_ER","en_FI","en_FJ","en_FK","en_FM",
-      "en_GB","en_GD","en_GG","en_GH","en_GI",
-      "en_GM","en_GU","en_GY","en_HK","en_IE",
-      "en_IL","en_IM","en_IN","en_IO","en_JE",
-      "en_JM","en_KE","en_KI","en_KN","en_KY",
-      "en_LC","en_LR","en_LS","en_MG","en_MH",
-      "en_MO","en_MP","en_MS","en_MT","en_MU",
-      "en_MW","en_MY","en_NA","en_NF","en_NG",
-      "en_NL","en_NR","en_NU","en_NZ","en_PG",
-      "en_PH","en_PK","en_PN","en_PR","en_PW",
-      "en_RW","en_SB","en_SC","en_SD","en_SE",
-      "en_SG","en_SH","en_SI","en_SL","en_SS",
-      "en_SX","en_SZ","en_TC","en_TK","en_TO",
-      "en_TT","en_TV","en_TZ","en_UG","en_UM",
-      "en_US","en_US_POSIX","en_VC","en_VG","en_VI",
-      "en_VU","en_WS","en_ZA","en_ZM","en_ZW",
+      "en",
+      "en_AU",
+      "en_CA",
+      "en_GB",
+      "en_US",
       "es","es_ES","es_419","es_AR","es_MX","es_US",
-      "es_BO","es_BR","es_BZ","es_CL","es_CO","es_CR","es_CU",
-      "es_DO","es_EA","es_EC","es_GQ","es_GT","es_HN","es_IC",
-      "es_NI","es_PA","es_PE","es_PH","es_PR","es_PY","es_SV",
-      "es_UY","es_VE",
       "et",
       "fa",
       "fi",
       "fil",
-      "fr","fr_BE","fr_BF","fr_BI",
-      "fr_BJ","fr_BL","fr_CA","fr_CD","fr_CF",
-      "fr_CG","fr_CH","fr_CI","fr_CM","fr_DJ",
-      "fr_DZ","fr_FR","fr_GA","fr_GF","fr_GN",
-      "fr_GP","fr_GQ","fr_HT","fr_KM","fr_LU",
-      "fr_MA","fr_MC","fr_MF","fr_MG","fr_ML",
-      "fr_MQ","fr_MR","fr_MU","fr_NC","fr_NE",
-      "fr_PF","fr_PM","fr_RE","fr_RW","fr_SC",
-      "fr_SN","fr_SY","fr_TD","fr_TG","fr_TN",
-      "fr_VU","fr_WF","fr_YT",
+      "fr",
       "gu",
       "he",
       "hi",
@@ -90,23 +56,16 @@
       "mr",
       "ms",
       "nb",
-      "nl","nl_AW","nl_BE","nl_BQ","nl_CW","nl_NL",
-      "nl_SR","nl_SX",
+      "nl",
       "pl",
-      "pt","pt_AO","pt_BR","pt_CH","pt_CV",
-      "pt_GQ","pt_GW","pt_LU","pt_MO","pt_MZ",
-      "pt_PT","pt_ST","pt_TL",
+      "pt","pt_BR","pt_PT",
       "ro",
-      "ru","ru_BY","ru_KG","ru_KZ","ru_MD","ru_RU","ru_UA",
+      "ru",
       "sk",
       "sl",
-      "sr","sr_BA","sr_CS","sr_ME","sr_RS","sr_XK",
-      "sr_Cyrl","sr_Cyrl_BA","sr_Cyrl_CS","sr_Cyrl_ME",
-      "sr_Cyrl_RS","sr_Cyrl_XK",
-      "sr_Latn","sr_Latn_BA","sr_Latn_CS","sr_Latn_ME",
-      "sr_Latn_RS","sr_Latn_XK",
+      "sr",
       "sv",
-      "sw","sw_CD","sw_KE",
+      "sw",
       "ta",
       "te",
       "th",
@@ -204,13 +163,11 @@
         "line_normal",
         "line_normal_cj",
         "sent",
-        "sent_el",
         "title",
-        "word",
-// Added by android/brkitr.patch
-        "word_ja"
+        "word"
       ]
     },
+    "brkitr_index": { "filterType": "exclude" },
 // # Ordinary resources
 // BRK_RES_SOURCE = de.txt el.txt en.txt en_US.txt\
 //  es.txt fr.txt it.txt ja.txt\
@@ -219,16 +176,6 @@
       "whitelist": [
 // Need to explicitly add "root"
 	"root",
-        "de",
-        "el",
-        "en",
-        "en_US",
-        "es",
-        "fr",
-        "it",
-        "ja",
-        "pt",
-        "ru",
         "zh",
         "zh_Hant"
       ]
@@ -363,53 +310,14 @@
         "zh_Hant", "zh_Hant_TW", "zh_Hant_HK", "zh_Hant_MO"
       ]
     },
+    "confusables": { "filterType": "exclude" },
 // Based on the ICU63 version of
 // https://cs.chromium.org/chromium/src/third_party/icu/source/data/coll/collocal.mk?rcl=797b7c
     "coll_tree": {
       "whitelist": [
 // Need to explicitly add "root"
 	"root",
-// # Aliases which do not have a corresponding xx.xml file (see icu-config.xml & build.xml)
-// COLLATION_SYNTHETIC_ALIAS = ...
-        "de_", "de__PHONEBOOK", "es_", "es__TRADITIONAL",
-        "he_IL", "id_ID", "in", "in_ID", "iw",
-        "iw_IL", "mo", "nb_NO", "no", "no_NO",
-        "ro_MD", "sh",
-        "sh_BA", "sh_CS", "sh_YU", "sr_BA", "sr_Cyrl",
-        "sr_Cyrl_BA", "sr_Cyrl_ME", "sr_Cyrl_RS", "sr_Latn_BA", "sr_Latn_RS",
-        "sr_ME", "sr_RS",
-        "zh_CN", "zh_HK", "zh_Hans", "zh_Hans_CN", "zh_Hans_SG",
-        "zh_Hant_HK", "zh_Hant_MO", "zh_Hant_TW", "zh_MO", "zh_SG",
-        "zh_TW",
-// # Ordinary resources
-// COLLATION_SOURCE = ...
-        "am", "ar",
-        "bg",
-// cast/patch_locale.sh remove        "bn",
-	"ca",
-        "cs",
-        "da", "de", "de_AT",
-        "el", "en", "en_US", "es",
-// cast/patch_locale.sh remove        "et",
-        "fa", "fi", "fil",
-        "fr", "fr_CA",
-// cast/patch_locale.sh remove        "gu",
-        "he", "hi", "hr", "hu",
-        "id", "it",
-        "ja",
-// cast/patch_locale.sh remove        "kn",
-	"ko",
-        "lt", "lv",
-// cast/patch_locale.sh remove        "ml", "mr", "ms",
-        "nb", "nn",
-        "pl", "pt",
-        "ro", "ru",
-        "sk", "sl", "sr", "sr_Latn", "sv", "sw",
-// cast/patch_locale.sh remove        "ta", "te",
-	"th", "tr",
-        "uk",
-        "vi",
-        "zh", "zh_Hant"
+	"da"
       ]
     },
 // Based on the ICU63 version of
@@ -429,24 +337,20 @@
 //  ...
         "am",
         "ar",
-	"ar_SA", "ar_LY", "ar_EG",
         "bg",
         "bn",
         "ca",
         "cs",
         "da",
         "de",
-	"de_AT", "de_CH",
         "el",
         "en", "en_GB",
-	"en_CA", "en_AU", "en_IN", "en_001", "en_NZ",
         "es", "es_419",
         "et",
         "fa",
         "fi",
         "fil",
         "fr",
-	"fr_CA", "fr_CH",
         "gu",
         "he",
         "hi",
@@ -543,6 +447,12 @@
         "zu"
       ]
     },
+    "misc": {
+      "blacklist": [
+	"currencyNumericCodes",
+	"windowsZones"
+      ]
+    },
 // Based on the ICU63 version of
 // https://cs.chromium.org/chromium/src/third_party/icu/source/data/rbnf/rbnflocal.mk?rcl=797b7c
     "rbnf_tree": {
@@ -583,7 +493,6 @@
         "fi",
         "fil",
         "fr",
-	"fr_CA",
         "gu",
         "he",
         "hi",
@@ -631,95 +540,6 @@
       "whitelist": [
 // Need to explicitly add "root"
 	"root"
-      ]
-    },
-// Based on the ICU63 version of
-// https://cs.chromium.org/chromium/src/third_party/icu/source/data/unit/reslocal.mk?rcl=797b7c
-    "unit_tree": {
-      "whitelist": [
-// Need to explicitly add "root"
-	"root",
-// # All aliases (to not be included under 'installed'), but not including root.
-// UNIT_ALIAS_SOURCE = $(UNIT_SYNTHETIC_ALIAS)\
-//  zh_CN.txt zh_TW.txt zh_HK.txt zh_SG.txt\
-//  no.txt in.txt iw.txt tl.txt sh.txt
-        "zh_CN", "zh_TW", "zh_HK", "zh_SG",
-        "no", "in", "iw", "tl", "sh",
-// # Ordinary resources
-// UNIT_SOURCE =\
-        "am",
-        "ar",
-        "bg",
-// cast/patch_locale.sh remove        "bn",
-        "ca",
-        "cs",
-        "da",
-        "de", "de_CH",
-        "el",
-        "en", "en_001", "en_150",
-        "en_AU", "en_CA", "en_GB", "en_IN", "en_NZ", "en_ZA",
-        "en_AG", "en_AI", "en_AT", "en_BB", "en_BE", "en_BM",
-        "en_BS", "en_BW", "en_BZ", "en_CC", "en_CH", "en_CK",
-        "en_CM", "en_CX", "en_CY", "en_DE", "en_DG", "en_DK",
-        "en_DM", "en_ER", "en_FI", "en_FJ", "en_FK", "en_FM",
-        "en_GD", "en_GG", "en_GH", "en_GI", "en_GM", "en_GY",
-        "en_HK", "en_IE", "en_IL", "en_IM", "en_IO",
-        "en_JE", "en_JM", "en_KE", "en_KI", "en_KN", "en_KY",
-        "en_LC", "en_LR", "en_LS", "en_MG", "en_MO", "en_MS",
-        "en_MT", "en_MU", "en_MW", "en_MY", "en_NA", "en_NF",
-        "en_NG", "en_NH", "en_NL", "en_NR", "en_NU", "en_PG",
-        "en_PH", "en_PK", "en_PN", "en_PW", "en_RH", "en_RW",
-        "en_SB", "en_SC", "en_SD", "en_SE", "en_SG", "en_SH",
-        "en_SI", "en_SL", "en_SS", "en_SX", "en_SZ", "en_TC",
-        "en_TK", "en_TO", "en_TT", "en_TV", "en_TZ", "en_UG",
-        "en_VC", "en_VG", "en_VU", "en_WS", "en_ZM", "en_ZW",
-        "es", "es_419", "es_AR", "es_MX", "es_US",
-        "es_BO", "es_BR", "es_BZ", "es_CL", "es_CO", "es_CR",
-        "es_CU", "es_DO", "es_EC", "es_GT", "es_HN", "es_NI",
-        "es_PA", "es_PE", "es_PR", "es_PY", "es_SV", "es_UY", "es_VE",
-// cast/patch_locale.sh remove        "et",
-        "fa",
-        "fi",
-        "fil",
-        "fr", "fr_CA", "fr_HT",
-// cast/patch_locale.sh remove        "gu",
-        "he",
-        "hi",
-        "hr",
-        "hu",
-        "id",
-        "it",
-        "ja",
-// cast/patch_locale.sh remove        "kn",
-        "ko",
-        "lt",
-        "lv",
-// cast/patch_locale.sh remove        "ml",
-// cast/patch_locale.sh remove        "mr",
-// cast/patch_locale.sh remove        "ms",
-        "nb",
-        "nl",
-        "pl",
-        "pt", "pt_PT",
-        "pt_AO", "pt_CH", "pt_CV", "pt_GQ", "pt_GW", "pt_LU",
-        "pt_MO", "pt_MZ", "pt_ST", "pt_TL",
-        "ro", "ro_MD",
-        "ru",
-        "sk",
-        "sl",
-        "sr", "sr_BA", "sr_CS", "sr_ME", "sr_RS", "sr_XK",
-        "sr_Cyrl", "sr_Cyrl_BA", "sr_Cyrl_CS", "sr_Cyrl_RS", "sr_Cyrl_XK",
-        "sr_Latn", "sr_Latn_BA", "sr_Latn_CS", "sr_Latn_ME", "sr_Latn_RS",
-        "sv",
-        "sw",
-// cast/patch_locale.sh remove        "ta",
-// cast/patch_locale.sh remove        "te",
-        "th",
-        "tr",
-        "uk",
-        "vi",
-        "zh", "zh_Hans", "zh_Hans_CN", "zh_Hans_SG",
-        "zh_Hant", "zh_Hant_TW", "zh_Hant_HK", "zh_Hant_MO"
       ]
     },
 // Based on the ICU63 version of
@@ -796,7 +616,8 @@
 // https://cs.chromium.org/chromium/src/third_party/icu/patches/data.build.patch?rcl=797b7c
     "unames": {
       "filterType": "exclude"
-    }
+    },
+    "unit_tree": { "filterType": "exclude" }
   },
 // Based on the ICU63 version of
 // https://cs.chromium.org/chromium/src/third_party/icu/scripts/trim_data.sh?rcl=797b7c
@@ -1302,23 +1123,6 @@
         "-/*/154",
         "-/*/155",
         "-/*/202"
-      ]
-    },
-// Based on remove_legacy_chinese_codepoint_collation
-// # big5han and gb2312han collation do not make any sense and nobody uses them.
-    {
-      "categories": [
-        "coll_tree"
-      ],
-      "files": {
-        "whitelist": [
-	  "zh"
-	]
-      },
-      "rules": [
-        "-/*/unihan",
-        "-/*/big5han",
-        "-/*/gb2312han"
       ]
     },
 // Based on https://cs.chromium.org/chromium/src/third_party/icu/patches/data.build.patch?rcl=797b7c
@@ -2176,7 +1980,6 @@
         "lang_tree",
         "rbnf_tree",
         "region_tree",
-        "unit_tree",
         "zone_tree"
       ],
       "rules": [

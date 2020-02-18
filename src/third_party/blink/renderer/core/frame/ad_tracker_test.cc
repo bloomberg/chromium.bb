@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -235,6 +236,10 @@ TEST_F(AdTrackerSimTest, ScriptLoadedWhileExecutingAdScript) {
     script.src = "vanilla_script.js";
     document.body.appendChild(script);
     )SCRIPT");
+
+  // Wait for script to run.
+  base::RunLoop().RunUntilIdle();
+
   vanilla_script.Complete("");
 
   EXPECT_TRUE(IsKnownAdScript(&GetDocument(), kAdUrl));
@@ -256,6 +261,9 @@ TEST_F(AdTrackerSimTest, ScriptDetectedByContext) {
     frame = document.createElement("iframe");
     document.body.appendChild(frame);
     )SCRIPT");
+
+  // Wait for script to run.
+  base::RunLoop().RunUntilIdle();
 
   // The child frame should be an ad subframe.
   auto* child_frame =
@@ -305,6 +313,9 @@ TEST_F(AdTrackerSimTest, AdResourceDetectedByContext) {
     document.body.appendChild(frame);
     )SCRIPT");
 
+  // Wait for script to run.
+  base::RunLoop().RunUntilIdle();
+
   // The child frame should be an ad subframe.
   auto* child_frame =
       To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild());
@@ -336,6 +347,9 @@ TEST_F(AdTrackerSimTest, InlineAdScriptRunningInNonAdContext) {
     frame.src = "ad_frame.html";
     document.body.appendChild(frame);
     )SCRIPT");
+
+  // Wait for script to run.
+  base::RunLoop().RunUntilIdle();
 
   // Verify that the new frame is an ad frame.
   EXPECT_TRUE(To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild())
@@ -373,6 +387,10 @@ TEST_F(AdTrackerSimTest, ImageLoadedWhileExecutingAdScript) {
     image.src = "vanilla_image.jpg";
     document.body.appendChild(image);
     )SCRIPT");
+
+  // Wait for script to run.
+  base::RunLoop().RunUntilIdle();
+
   vanilla_image.Complete("");
 
   EXPECT_TRUE(IsKnownAdScript(&GetDocument(), kAdUrl));
@@ -399,6 +417,10 @@ TEST_F(AdTrackerSimTest, FrameLoadedWhileExecutingAdScript) {
     iframe.src = "vanilla_page.html";
     document.body.appendChild(iframe);
     )SCRIPT");
+
+  // Wait for script to run.
+  base::RunLoop().RunUntilIdle();
+
   vanilla_page.Complete("<img src=vanilla_img.jpg></img>");
   vanilla_image.Complete("");
 
@@ -465,6 +487,9 @@ TEST_F(AdTrackerSimTest, SameOriginSubframeFromAdScript) {
     document.body.appendChild(iframe);
     )SCRIPT");
 
+  // Wait for script to run.
+  base::RunLoop().RunUntilIdle();
+
   iframe_resource.Complete("iframe data");
 
   Frame* subframe = GetDocument().GetFrame()->Tree().FirstChild();
@@ -489,16 +514,19 @@ TEST_F(AdTrackerSimTest, SameOriginDocWrittenSubframeFromAdScript) {
     iframeDocument.close();
     )SCRIPT");
 
+  // Wait for script to run.
+  base::RunLoop().RunUntilIdle();
+
   Frame* subframe = GetDocument().GetFrame()->Tree().FirstChild();
   auto* local_subframe = To<LocalFrame>(subframe);
   EXPECT_TRUE(local_subframe->IsAdSubframe());
 }
 
-class AdTrackerDisabledSimTest : public SimTest {
+class AdTrackerDisabledSimTest : public SimTest,
+                                 private ScopedAdTaggingForTest {
  protected:
+  AdTrackerDisabledSimTest() : ScopedAdTaggingForTest(false) {}
   void SetUp() override {
-    RuntimeEnabledFeatures::SetAdTaggingEnabled(false);
-
     SimTest::SetUp();
     main_resource_ = std::make_unique<SimRequest>(
         "https://example.com/test.html", "text/html");

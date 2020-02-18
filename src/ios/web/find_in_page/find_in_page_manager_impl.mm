@@ -12,7 +12,7 @@
 #import "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
-#include "ios/web/public/web_task_traits.h"
+#include "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/web_state/web_state_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -106,7 +106,8 @@ void FindInPageManagerImpl::Find(NSString* query, FindInPageOptions options) {
 }
 
 void FindInPageManagerImpl::StartSearch(NSString* query) {
-  std::set<WebFrame*> all_frames = GetAllWebFrames(web_state_);
+  std::set<WebFrame*> all_frames =
+      web_state_->GetWebFramesManager()->GetAllWebFrames();
   last_find_request_.Reset(query, all_frames.size());
   if (all_frames.size() == 0) {
     // No frames to search in.
@@ -148,7 +149,7 @@ void FindInPageManagerImpl::StopFinding() {
                            /*new_pending_frame_call_count=*/0);
 
   std::vector<base::Value> params;
-  for (WebFrame* frame : GetAllWebFrames(web_state_)) {
+  for (WebFrame* frame : web_state_->GetWebFramesManager()->GetAllWebFrames()) {
     frame->CallJavaScriptFunction(kFindInPageStop, params);
   }
   if (delegate_) {

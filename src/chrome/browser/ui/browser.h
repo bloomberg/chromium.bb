@@ -46,6 +46,7 @@
 #include "content/public/common/page_zoom.h"
 #include "extensions/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -58,10 +59,6 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/signin_view_controller.h"
-#endif
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/browser/extension_registry_observer.h"
 #endif
 
 class BrowserContentSettingBubbleModelDelegate;
@@ -87,9 +84,7 @@ class SessionStorageNamespace;
 
 namespace extensions {
 class BrowserExtensionWindowController;
-
-class Extension;
-class ExtensionRegistry;
+class ExtensionBrowserWindowHelper;
 }  // namespace extensions
 
 namespace gfx {
@@ -119,9 +114,6 @@ class Browser : public TabStripModelObserver,
                 public zoom::ZoomObserver,
                 public content::PageNavigator,
                 public content::NotificationObserver,
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-                public extensions::ExtensionRegistryObserver,
-#endif
                 public translate::ContentTranslateDriver::Observer,
                 public ui::SelectFileDialog::Listener {
  public:
@@ -448,9 +440,12 @@ class Browser : public TabStripModelObserver,
   // transition, and WindowFullscreenStateChanged is at the end.
   void WindowFullscreenStateWillChange();
   void WindowFullscreenStateChanged();
+
   // Only used on Mac. Called when the top ui style has been changed since this
   // may trigger bookmark bar state change.
   void FullscreenTopUIStateChanged();
+
+  void OnFindBarVisibilityChanged();
 
   // Assorted browser commands ////////////////////////////////////////////////
 
@@ -518,11 +513,11 @@ class Browser : public TabStripModelObserver,
   // Overridden from content::WebContentsDelegate:
   void SetTopControlsShownRatio(content::WebContents* web_contents,
                                 float ratio) override;
-  int GetTopControlsHeight() const override;
+  int GetTopControlsHeight() override;
   bool DoBrowserControlsShrinkRendererSize(
-      const content::WebContents* contents) const override;
+      const content::WebContents* contents) override;
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
-  bool CanOverscrollContent() const override;
+  bool CanOverscrollContent() override;
   bool ShouldPreserveAbortedURLs(content::WebContents* source) override;
   void SetFocusToLocationBar() override;
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
@@ -551,11 +546,14 @@ class Browser : public TabStripModelObserver,
                                          bool allowed_per_prefs,
                                          const url::Origin& origin,
                                          const GURL& resource_url) override;
-  void OnDidBlockFramebust(content::WebContents* web_contents,
-                           const GURL& url) override;
-  gfx::Size EnterPictureInPicture(content::WebContents* web_contents,
-                                  const viz::SurfaceId&,
-                                  const gfx::Size&) override;
+  void OnDidBlockNavigation(content::WebContents* web_contents,
+                            const GURL& blocked_url,
+                            const GURL& initiator_url,
+                            blink::NavigationBlockedReason reason) override;
+  content::PictureInPictureResult EnterPictureInPicture(
+      content::WebContents* web_contents,
+      const viz::SurfaceId&,
+      const gfx::Size&) override;
   void ExitPictureInPicture() override;
   std::unique_ptr<content::WebContents> SwapWebContents(
       content::WebContents* old_contents,
@@ -725,16 +723,16 @@ class Browser : public TabStripModelObserver,
   void EnumerateDirectory(content::WebContents* web_contents,
                           std::unique_ptr<content::FileSelectListener> listener,
                           const base::FilePath& path) override;
-  bool EmbedsFullscreenWidget() const override;
+  bool EmbedsFullscreenWidget() override;
   void EnterFullscreenModeForTab(
       content::WebContents* web_contents,
       const GURL& origin,
       const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(
-      const content::WebContents* web_contents) const override;
+      const content::WebContents* web_contents) override;
   blink::WebDisplayMode GetDisplayMode(
-      const content::WebContents* web_contents) const override;
+      const content::WebContents* web_contents) override;
   void RegisterProtocolHandler(content::WebContents* web_contents,
                                const std::string& protocol,
                                const GURL& url,
@@ -762,9 +760,10 @@ class Browser : public TabStripModelObserver,
       content::MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  blink::MediaStreamType type) override;
-  std::string GetDefaultMediaDeviceID(content::WebContents* web_contents,
-                                      blink::MediaStreamType type) override;
+                                  blink::mojom::MediaStreamType type) override;
+  std::string GetDefaultMediaDeviceID(
+      content::WebContents* web_contents,
+      blink::mojom::MediaStreamType type) override;
   void RequestPpapiBrokerPermission(
       content::WebContents* web_contents,
       const GURL& url,
@@ -807,15 +806,6 @@ class Browser : public TabStripModelObserver,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Overridden from extensions::ExtensionRegistryObserver:
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const extensions::Extension* extension) override;
-  void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                           const extensions::Extension* extension,
-                           extensions::UnloadedExtensionReason reason) override;
-#endif
-
   // Overridden from translate::ContentTranslateDriver::Observer:
   void OnIsPageTranslatedChanged(content::WebContents* source) override;
   void OnTranslateEnabledChanged(content::WebContents* source) override;
@@ -835,6 +825,9 @@ class Browser : public TabStripModelObserver,
   void OnTabReplacedAt(content::WebContents* old_contents,
                        content::WebContents* new_contents,
                        int index);
+  void OnTabGroupChanged(int index,
+                         base::Optional<TabGroupId> old_group,
+                         base::Optional<TabGroupId> new_group);
 
   // Handle changes to kDevToolsAvailability preference.
   void OnDevToolsAvailabilityChanged();
@@ -975,12 +968,6 @@ class Browser : public TabStripModelObserver,
 
   content::NotificationRegistrar registrar_;
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
-#endif
-
   PrefChangeRegistrar profile_pref_registrar_;
 
   // This Browser's type.
@@ -1055,6 +1042,8 @@ class Browser : public TabStripModelObserver,
   // Tracks when this browser is being created by session restore.
   bool is_session_restore_;
 
+  base::TimeTicks focus_mode_start_time_;
+
   UnloadController unload_controller_;
 
   std::unique_ptr<ChromeBubbleManager> bubble_manager_;
@@ -1106,11 +1095,16 @@ class Browser : public TabStripModelObserver,
 
   WarnBeforeClosingCallback warn_before_closing_callback_;
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  std::unique_ptr<extensions::ExtensionBrowserWindowHelper>
+      extension_browser_window_helper_;
+#endif
+
   // The following factory is used for chrome update coalescing.
-  base::WeakPtrFactory<Browser> chrome_updater_factory_;
+  base::WeakPtrFactory<Browser> chrome_updater_factory_{this};
 
   // The following factory is used to close the frame at a later time.
-  base::WeakPtrFactory<Browser> weak_factory_;
+  base::WeakPtrFactory<Browser> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

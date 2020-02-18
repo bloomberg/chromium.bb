@@ -8,10 +8,13 @@
  * list, add and delete Kerberos Accounts.
  */
 
+'use strict';
+
 Polymer({
   is: 'settings-kerberos-accounts',
 
   behaviors: [
+    I18nBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -28,19 +31,21 @@ Polymer({
     },
 
     /**
-     * The targeted account for menu operations.
+     * The targeted account for menu and other operations.
      * @private {?settings.KerberosAccount}
      */
-    actionMenuAccount_: Object,
-
-    /** @private */
-    addAccountPresetUsername_: {
-      type: String,
-      value: '',
-    },
+    selectedAccount_: Object,
 
     /** @private */
     showAddAccountDialog_: Boolean,
+
+    /** @private */
+    addAccountsAllowed_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('kerberosAddAccountsAllowed');
+      },
+    },
   },
 
   /** @private {?settings.KerberosAccountsBrowserProxy} */
@@ -56,7 +61,20 @@ Polymer({
   ready: function() {
     this.browserProxy_ =
         settings.KerberosAccountsBrowserProxyImpl.getInstance();
-    this.refreshAccounts_();
+
+    // Grab account list and - when done - pop up the reauthentication dialog if
+    // there is a kerberos_reauth param.
+    this.refreshAccounts_().then(() => {
+      const queryParams = settings.getQueryParameters();
+      const reauthPrincipal = queryParams.get('kerberos_reauth');
+      const reauthAccount = this.accounts_.find(account => {
+        return account.principalName == reauthPrincipal;
+      });
+      if (reauthAccount) {
+        this.selectedAccount_ = reauthAccount;
+        this.showAddAccountDialog_ = true;
+      }
+    });
   },
 
   /**
@@ -73,7 +91,7 @@ Polymer({
    * @private
    */
   onAddAccountClick_: function(event) {
-    this.addAccountPresetUsername_ = '';
+    this.selectedAccount_ = null;
     this.showAddAccountDialog_ = true;
   },
 
@@ -82,20 +100,23 @@ Polymer({
    * @private
    */
   onReauthenticationClick_: function(event) {
-    this.addAccountPresetUsername_ = event.model.item.principalName;
+    this.selectedAccount_ = event.model.item;
     this.showAddAccountDialog_ = true;
   },
 
   /** @private */
   onAddAccountDialogClosed_: function() {
     this.showAddAccountDialog_ = false;
+    // In case it was opened by the 'Refresh now' action menu.
+    this.closeActionMenu_();
   },
 
   /**
+   * @return {!Promise}
    * @private
    */
   refreshAccounts_: function() {
-    this.browserProxy_.getAccounts().then(accounts => {
+    return this.browserProxy_.getAccounts().then(accounts => {
       this.accounts_ = accounts;
     });
   },
@@ -107,7 +128,7 @@ Polymer({
    * @private
    */
   onAccountActionsMenuButtonClick_: function(event) {
-    this.actionMenuAccount_ = event.model.item;
+    this.selectedAccount_ = event.model.item;
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
         .showAt(event.target);
   },
@@ -118,16 +139,42 @@ Polymer({
    */
   closeActionMenu_: function() {
     this.$$('cr-action-menu').close();
-    this.actionMenuAccount_ = null;
+    this.selectedAccount_ = null;
   },
 
   /**
-   * Removes the account being pointed to by |this.actionMenuAccount_|.
+   * Removes |this.selectedAccount_|.
    * @private
    */
   onRemoveAccountClick_: function() {
-    this.browserProxy_.removeAccount(
-        /** @type {!settings.KerberosAccount} */ (this.actionMenuAccount_));
+    this.browserProxy_
+        .removeAccount(
+            /** @type {!settings.KerberosAccount} */ (this.selectedAccount_))
+        .then(error => {
+          if (error == settings.KerberosErrorType.kNone) {
+            this.$$('#account-removed-toast').show();
+          } else {
+            console.error('Unexpected error removing account: ' + error);
+          }
+        });
     this.closeActionMenu_();
+  },
+
+  /**
+   * Sets |this.selectedAccount_| as active Kerberos account.
+   * @private
+   */
+  onSetAsActiveAccountClick_: function() {
+    this.browserProxy_.setAsActiveAccount(
+        /** @type {!settings.KerberosAccount} */ (this.selectedAccount_));
+    this.closeActionMenu_();
+  },
+
+  /**
+   * Opens the reauth dialog for |this.selectedAccount_|.
+   * @private
+   */
+  onRefreshNowClick_: function() {
+    this.showAddAccountDialog_ = true;
   }
 });

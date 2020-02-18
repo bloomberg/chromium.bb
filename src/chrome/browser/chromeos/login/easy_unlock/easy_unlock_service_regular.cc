@@ -31,7 +31,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -56,7 +55,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace chromeos {
 
@@ -288,18 +286,10 @@ EasyUnlockService::Type EasyUnlockServiceRegular::GetType() const {
 }
 
 AccountId EasyUnlockServiceRegular::GetAccountId() const {
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile());
-  // |profile| has to be a signed-in profile with IdentityManager already
-  // created. Otherwise, just crash to collect stack.
-  DCHECK(identity_manager);
-  const CoreAccountInfo account_info =
-      identity_manager->GetPrimaryAccountInfo();
-  // A regular signed-in (i.e., non-login) profile should always have an email.
-  // TODO(crbug.com/857494): Enable this DCHECK once all browser tests create
-  // correctly signed in profiles.
-  // DCHECK(!account_info.email.empty());
-  return AccountIdFromAccountInfo(account_info);
+  const user_manager::User* const primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  DCHECK(primary_user);
+  return primary_user->GetAccountId();
 }
 
 void EasyUnlockServiceRegular::SetHardlockAfterKeyOperation(
@@ -363,18 +353,10 @@ void EasyUnlockServiceRegular::InitializeInternal() {
 
   pref_manager_.reset(new proximity_auth::ProximityAuthProfilePrefManager(
       profile()->GetPrefs(), multidevice_setup_client_));
+  pref_manager_->StartSyncingToLocalState(g_browser_process->local_state(),
+                                          GetAccountId());
 
-  // TODO(tengs): Due to badly configured browser_tests, Chrome crashes during
-  // shutdown. Revisit this condition after migration is fully completed.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
-    // Note: There is no local state in tests.
-    if (g_browser_process->local_state()) {
-      pref_manager_->StartSyncingToLocalState(g_browser_process->local_state(),
-                                              GetAccountId());
-    }
-
-    LoadRemoteDevices();
-  }
+  LoadRemoteDevices();
 
   registrar_.Init(profile()->GetPrefs());
   registrar_.Add(
@@ -385,6 +367,7 @@ void EasyUnlockServiceRegular::InitializeInternal() {
 
 void EasyUnlockServiceRegular::ShutdownInternal() {
   pref_manager_.reset();
+  notification_controller_.reset();
 
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
 
@@ -393,6 +376,8 @@ void EasyUnlockServiceRegular::ShutdownInternal() {
   device_sync_client_->RemoveObserver(this);
 
   multidevice_setup_client_->RemoveObserver(this);
+
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 bool EasyUnlockServiceRegular::IsAllowedInternal() const {

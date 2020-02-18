@@ -1,8 +1,6 @@
-
 package Locale::Maketext;
 use strict;
-use vars qw( @ISA $VERSION $MATCH_SUPERS $USING_LANGUAGE_TAGS
-$USE_LITERALS $MATCH_SUPERS_TIGHTLY);
+our $USE_LITERALS;
 use Carp ();
 use I18N::LangTags ();
 use I18N::LangTags::Detect ();
@@ -27,12 +25,12 @@ BEGIN {
 }
 
 
-$VERSION = '1.22';
-@ISA = ();
+our $VERSION = '1.29';
+our @ISA = ();
 
-$MATCH_SUPERS = 1;
-$MATCH_SUPERS_TIGHTLY = 1;
-$USING_LANGUAGE_TAGS  = 1;
+our $MATCH_SUPERS = 1;
+our $MATCH_SUPERS_TIGHTLY = 1;
+our $USING_LANGUAGE_TAGS  = 1;
 # Turning this off is somewhat of a security risk in that little or no
 # checking will be done on the legality of tokens passed to the
 # eval("use $module_name") in _try_use.  If you turn this off, you have
@@ -138,6 +136,56 @@ sub fail_with { # an actual attribute method!
 
 #--------------------------------------------------------------------------
 
+sub blacklist {
+    my ( $handle, @methods ) = @_;
+
+    unless ( defined $handle->{'blacklist'} ) {
+        no strict 'refs';
+
+        # Don't let people call methods they're not supposed to from maketext.
+        # Explicitly exclude all methods in this package that start with an
+        # underscore on principle.
+        $handle->{'blacklist'} = {
+            map { $_ => 1 } (
+                qw/
+                  blacklist
+                  encoding
+                  fail_with
+                  failure_handler_auto
+                  fallback_language_classes
+                  fallback_languages
+                  get_handle
+                  init
+                  language_tag
+                  maketext
+                  new
+                  whitelist
+                  /, grep { /^_/ } keys %{ __PACKAGE__ . "::" }
+            ),
+        };
+    }
+
+    if ( scalar @methods ) {
+        $handle->{'blacklist'} = { %{ $handle->{'blacklist'} }, map { $_ => 1 } @methods };
+    }
+
+    delete $handle->{'_external_lex_cache'};
+    return;
+}
+
+sub whitelist {
+    my ( $handle, @methods ) = @_;
+    if ( scalar @methods ) {
+        $handle->{'whitelist'} = {} unless defined $handle->{'whitelist'};
+        $handle->{'whitelist'} = { %{ $handle->{'whitelist'} }, map { $_ => 1 } @methods };
+    }
+
+    delete $handle->{'_external_lex_cache'};
+    return;
+}
+
+#--------------------------------------------------------------------------
+
 sub failure_handler_auto {
     # Meant to be used like:
     #  $handle->fail_with('failure_handler_auto')
@@ -179,6 +227,7 @@ sub new {
     # Nothing fancy!
     my $class = ref($_[0]) || $_[0];
     my $handle = bless {}, $class;
+    $handle->blacklist;
     $handle->init;
     return $handle;
 }
@@ -194,7 +243,7 @@ sub maketext {
     my($handle, $phrase) = splice(@_,0,2);
     Carp::confess('No handle/phrase') unless (defined($handle) && defined($phrase));
 
-    # backup $@ in case it it's still being used in the calling code.
+    # backup $@ in case it's still being used in the calling code.
     # If no failures, we'll re-set it back to what it was later.
     my $at = $@;
 
@@ -344,7 +393,7 @@ sub _langtag_munging {
     my($base_class, @languages) = @_;
 
     # We have all these DEBUG statements because otherwise it's hard as hell
-    # to diagnose ifwhen something goes wrong.
+    # to diagnose if/when something goes wrong.
 
     DEBUG and warn 'Lgs1: ', map("<$_>", @languages), "\n";
 
@@ -449,6 +498,8 @@ sub _try_use {   # Basically a wrapper around "require Modulename"
 
     local $SIG{'__DIE__'};
     local $@;
+    local @INC = @INC;
+    pop @INC if $INC[-1] eq '.';
     eval "require $module"; # used to be "use $module", but no point in that.
 
     if($@) {
@@ -508,7 +559,7 @@ sub _compile {
     # on strings that don't need compiling.
     return \"$string_to_compile" if($string_to_compile !~ m/[\[~\]]/ms); # return a string ref if chars [~] are not in the string
 
-    my $target = ref($_[0]) || $_[0];
+    my $handle = $_[0];
 
     my(@code);
     my(@c) = (''); # "chunks" -- scratch.
@@ -540,10 +591,10 @@ sub _compile {
                 #  preceding literal.
                 if($in_group) {
                     if($1 eq '') {
-                        $target->_die_pointing($string_to_compile, 'Unterminated bracket group');
+                        $handle->_die_pointing($string_to_compile, 'Unterminated bracket group');
                     }
                     else {
-                        $target->_die_pointing($string_to_compile, 'You can\'t nest bracket groups');
+                        $handle->_die_pointing($string_to_compile, 'You can\'t nest bracket groups');
                     }
                 }
                 else {
@@ -570,6 +621,7 @@ sub _compile {
                             $c[-1] = ''; # reuse this slot
                         }
                         else {
+                            $c[-1] =~ s/\\\\/\\/g;
                             push @code, ' $c[' . $#c . "],\n";
                             push @c, ''; # new chunk
                         }
@@ -625,26 +677,16 @@ sub _compile {
                         # 0-length method name means to just interpolate:
                         push @code, ' (';
                     }
-                    elsif($m =~ /^\w+(?:\:\:\w+)*$/s
-                            and $m !~ m/(?:^|\:)\d/s
-                        # exclude starting a (sub)package or symbol with a digit
+                    elsif($m =~ /^\w+$/s
+                        && !$handle->{'blacklist'}{$m}
+                        && ( !defined $handle->{'whitelist'} || $handle->{'whitelist'}{$m} )
+                        # exclude anything fancy and restrict to the whitelist/blacklist.
                     ) {
-                        # Yes, it even supports the demented (and undocumented?)
-                        #  $obj->Foo::bar(...) syntax.
-                        $target->_die_pointing(
-                            $string_to_compile, q{Can't use "SUPER::" in a bracket-group method},
-                            2 + length($c[-1])
-                        )
-                        if $m =~ m/^SUPER::/s;
-                        # Because for SUPER:: to work, we'd have to compile this into
-                        #  the right package, and that seems just not worth the bother,
-                        #  unless someone convinces me otherwise.
-
                         push @code, ' $_[0]->' . $m . '(';
                     }
                     else {
                         # TODO: implement something?  or just too icky to consider?
-                        $target->_die_pointing(
+                        $handle->_die_pointing(
                             $string_to_compile,
                             "Can't use \"$m\" as a method name in bracket group",
                             2 + length($c[-1])
@@ -686,14 +728,16 @@ sub _compile {
                     push @c, '';
                 }
                 else {
-                    $target->_die_pointing($string_to_compile, q{Unbalanced ']'});
+                    $handle->_die_pointing($string_to_compile, q{Unbalanced ']'});
                 }
 
             }
             elsif(substr($1,0,1) ne '~') {
                 # it's stuff not containing "~" or "[" or "]"
                 # i.e., a literal blob
-                $c[-1] .= $1;
+                my $text = $1;
+                $text =~ s/\\/\\\\/g;
+                $c[-1] .= $text;
 
             }
             elsif($1 eq '~~') { # "~~"
@@ -731,7 +775,9 @@ sub _compile {
             else {
                 # It's a "~X" where X is not a special character.
                 # Consider it a literal ~ and X.
-                $c[-1] .= $1;
+                my $text = $1;
+                $text =~ s/\\/\\\\/g;
+                $c[-1] .= $text;
             }
         }
     }
@@ -767,8 +813,9 @@ sub _compile {
 
 sub _die_pointing {
     # This is used by _compile to throw a fatal error
-    my $target = shift; # class name
-    # ...leaving $_[0] the error-causing text, and $_[1] the error message
+    my $target = shift;
+    $target = ref($target) || $target; # class name
+                                       # ...leaving $_[0] the error-causing text, and $_[1] the error message
 
     my $i = index($_[0], "\n");
 

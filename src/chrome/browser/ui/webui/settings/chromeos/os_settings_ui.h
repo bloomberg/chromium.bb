@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/time/time.h"
-#include "content/public/browser/web_contents_observer.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "ui/webui/mojo_web_ui_controller.h"
 
 namespace content {
 class WebUIMessageHandler;
@@ -19,25 +19,19 @@ class WebUIMessageHandler;
 namespace chromeos {
 namespace settings {
 
-// The WebUI handler for chrome://settings.
-class OSSettingsUI : public content::WebUIController,
-                     public content::WebContentsObserver {
+// The WebUI handler for chrome://os-settings.
+class OSSettingsUI : public ui::MojoWebUIController {
  public:
   explicit OSSettingsUI(content::WebUI* web_ui);
   ~OSSettingsUI() override;
 
-  // content::WebContentsObserver:
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override;
-  void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override;
-  void DocumentOnLoadCompletedInMainFrame() override;
-
  private:
   void AddSettingsPageUIHandler(
       std::unique_ptr<content::WebUIMessageHandler> handler);
+  void BindCrosNetworkConfig(
+      network_config::mojom::CrosNetworkConfigRequest request);
 
-  base::Time load_start_time_;
+  // TODO(crbug/950007): Create load histograms and embed WebuiLoadTimer.
 
   DISALLOW_COPY_AND_ASSIGN(OSSettingsUI);
 };

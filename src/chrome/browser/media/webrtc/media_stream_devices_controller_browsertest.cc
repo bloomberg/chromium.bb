@@ -42,11 +42,13 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
   MediaStreamDevicesControllerTest()
       : example_audio_id_("fake_audio_dev"),
         example_video_id_("fake_video_dev"),
-        media_stream_result_(blink::NUM_MEDIA_REQUEST_RESULTS) {}
+        media_stream_result_(
+            blink::mojom::MediaStreamRequestResult::NUM_MEDIA_REQUEST_RESULTS) {
+  }
 
   // Dummy callback for when we deny the current request directly.
   void OnMediaStreamResponse(const blink::MediaStreamDevices& devices,
-                             blink::MediaStreamRequestResult result,
+                             blink::mojom::MediaStreamRequestResult result,
                              std::unique_ptr<content::MediaStreamUI> ui) {
     media_stream_devices_ = devices;
     media_stream_result_ = result;
@@ -67,7 +69,7 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
   const std::string& example_audio_id() const { return example_audio_id_; }
   const std::string& example_video_id() const { return example_video_id_; }
 
-  blink::MediaStreamRequestResult media_stream_result() const {
+  blink::mojom::MediaStreamRequestResult media_stream_result() const {
     return media_stream_result_;
   }
 
@@ -115,7 +117,7 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
 
   // Checks whether the devices returned in OnMediaStreamResponse contains a
   // microphone and/or camera device.
-  bool CheckDevicesListContains(blink::MediaStreamType type) {
+  bool CheckDevicesListContains(blink::mojom::MediaStreamType type) {
     for (const auto& device : media_stream_devices_) {
       if (device.type == type) {
         return true;
@@ -134,12 +136,12 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
       const std::string& audio_id,
       const std::string& video_id,
       blink::MediaStreamRequestType request_type) {
-    blink::MediaStreamType audio_type = audio_id.empty()
-                                            ? blink::MEDIA_NO_SERVICE
-                                            : blink::MEDIA_DEVICE_AUDIO_CAPTURE;
-    blink::MediaStreamType video_type = video_id.empty()
-                                            ? blink::MEDIA_NO_SERVICE
-                                            : blink::MEDIA_DEVICE_VIDEO_CAPTURE;
+    blink::mojom::MediaStreamType audio_type =
+        audio_id.empty() ? blink::mojom::MediaStreamType::NO_SERVICE
+                         : blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE;
+    blink::mojom::MediaStreamType video_type =
+        video_id.empty() ? blink::mojom::MediaStreamType::NO_SERVICE
+                         : blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE;
     EXPECT_EQ(example_url(),
               GetWebContents()->GetMainFrame()->GetLastCommittedURL());
     int render_process_id =
@@ -181,11 +183,12 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
 
     // Cleanup.
     media_stream_devices_.clear();
-    media_stream_result_ = blink::NUM_MEDIA_REQUEST_RESULTS;
+    media_stream_result_ =
+        blink::mojom::MediaStreamRequestResult::NUM_MEDIA_REQUEST_RESULTS;
 
     blink::MediaStreamDevices audio_devices;
     blink::MediaStreamDevice fake_audio_device(
-        blink::MEDIA_DEVICE_AUDIO_CAPTURE, example_audio_id_,
+        blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE, example_audio_id_,
         "Fake Audio Device");
     audio_devices.push_back(fake_audio_device);
     MediaCaptureDevicesDispatcher::GetInstance()->SetTestAudioCaptureDevices(
@@ -193,7 +196,7 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
 
     blink::MediaStreamDevices video_devices;
     blink::MediaStreamDevice fake_video_device(
-        blink::MEDIA_DEVICE_VIDEO_CAPTURE, example_video_id_,
+        blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, example_video_id_,
         "Fake Video Device");
     video_devices.push_back(fake_video_device);
     MediaCaptureDevicesDispatcher::GetInstance()->SetTestVideoCaptureDevices(
@@ -211,7 +214,7 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
   const std::string example_video_id_;
 
   blink::MediaStreamDevices media_stream_devices_;
-  blink::MediaStreamRequestResult media_stream_result_;
+  blink::mojom::MediaStreamRequestResult media_stream_result_;
 
   base::Closure quit_closure_;
 
@@ -555,16 +558,17 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
 
   // Simulate that an a video stream is now being captured.
   blink::MediaStreamDevices video_devices(1);
-  video_devices[0] =
-      blink::MediaStreamDevice(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
-                               example_video_id(), example_video_id());
+  video_devices[0] = blink::MediaStreamDevice(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, example_video_id(),
+      example_video_id());
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
   dispatcher->SetTestVideoCaptureDevices(video_devices);
   std::unique_ptr<content::MediaStreamUI> video_stream_ui =
       dispatcher->GetMediaStreamCaptureIndicator()->RegisterMediaStream(
           GetWebContents(), video_devices);
-  video_stream_ui->OnStarted(base::OnceClosure(), base::RepeatingClosure());
+  video_stream_ui->OnStarted(base::OnceClosure(),
+                             content::MediaStreamUI::SourceCallback());
 
   // Request mic and deny.
   SetDevicePolicy(DEVICE_TYPE_AUDIO, ACCESS_DENIED);
@@ -637,10 +641,10 @@ struct ContentSettingsTestData {
 
   // The expected media stream result after clicking accept/deny for the given
   // inputs.
-  blink::MediaStreamRequestResult ExpectedMediaStreamResult() const {
+  blink::mojom::MediaStreamRequestResult ExpectedMediaStreamResult() const {
     if (ExpectMicAllowed() && ExpectCamAllowed())
-      return blink::MEDIA_DEVICE_OK;
-    return blink::MEDIA_DEVICE_PERMISSION_DENIED;
+      return blink::mojom::MediaStreamRequestResult::OK;
+    return blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
   }
 };
 
@@ -700,9 +704,11 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, ContentSettings) {
     // Check the media stream result is expected and the devices returned are
     // expected;
     ASSERT_EQ(test.ExpectedMediaStreamResult(), media_stream_result());
-    ASSERT_EQ(CheckDevicesListContains(blink::MEDIA_DEVICE_AUDIO_CAPTURE),
+    ASSERT_EQ(CheckDevicesListContains(
+                  blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE),
               test.ExpectMicAllowed() && test.ExpectCamAllowed());
-    ASSERT_EQ(CheckDevicesListContains(blink::MEDIA_DEVICE_VIDEO_CAPTURE),
+    ASSERT_EQ(CheckDevicesListContains(
+                  blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE),
               test.ExpectMicAllowed() && test.ExpectCamAllowed());
   }
 }
@@ -718,9 +724,11 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::MEDIA_DEVICE_OK, media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(blink::MEDIA_DEVICE_AUDIO_CAPTURE));
-  ASSERT_TRUE(CheckDevicesListContains(blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
+  ASSERT_FALSE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
+  ASSERT_TRUE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
@@ -742,9 +750,11 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       PermissionRequestType::PERMISSION_MEDIASTREAM_MIC));
 
   // Accept the prompt.
-  ASSERT_EQ(blink::MEDIA_DEVICE_OK, media_stream_result());
-  ASSERT_TRUE(CheckDevicesListContains(blink::MEDIA_DEVICE_AUDIO_CAPTURE));
-  ASSERT_TRUE(CheckDevicesListContains(blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
+  ASSERT_TRUE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
+  ASSERT_TRUE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   // Check that re-requesting allows without prompting.
   prompt_factory()->ResetCounts();
@@ -754,9 +764,11 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                  base::Unretained(this)));
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::MEDIA_DEVICE_OK, media_stream_result());
-  ASSERT_TRUE(CheckDevicesListContains(blink::MEDIA_DEVICE_AUDIO_CAPTURE));
-  ASSERT_TRUE(CheckDevicesListContains(blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
+  ASSERT_TRUE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
+  ASSERT_TRUE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
@@ -773,9 +785,12 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                  base::Unretained(this)));
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::MEDIA_DEVICE_PERMISSION_DENIED, media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(blink::MEDIA_DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+            media_stream_result());
+  ASSERT_FALSE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
+  ASSERT_FALSE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, WebContentsDestroyed) {
@@ -795,9 +810,12 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, WebContentsDestroyed) {
                  base::Unretained(this)));
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN, media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(blink::MEDIA_DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN,
+            media_stream_result());
+  ASSERT_FALSE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
+  ASSERT_FALSE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 }
 
 // Request and block microphone and camera access with kill switch.
@@ -826,9 +844,12 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::MEDIA_DEVICE_KILL_SWITCH_ON, media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(blink::MEDIA_DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON,
+            media_stream_result());
+  ASSERT_FALSE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
+  ASSERT_FALSE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
@@ -858,9 +879,12 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::MEDIA_DEVICE_PERMISSION_DENIED, media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(blink::MEDIA_DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+            media_stream_result());
+  ASSERT_FALSE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
+  ASSERT_FALSE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
   EXPECT_EQ(TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED,
             GetContentSettings()->GetMicrophoneCameraState());
 }
@@ -892,9 +916,12 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
 
   ASSERT_EQ(0, prompt_factory()->TotalRequestCount());
 
-  ASSERT_EQ(blink::MEDIA_DEVICE_PERMISSION_DENIED, media_stream_result());
-  ASSERT_FALSE(CheckDevicesListContains(blink::MEDIA_DEVICE_AUDIO_CAPTURE));
-  ASSERT_FALSE(CheckDevicesListContains(blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+            media_stream_result());
+  ASSERT_FALSE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
+  ASSERT_FALSE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
   EXPECT_EQ(TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED,
             GetContentSettings()->GetMicrophoneCameraState());
 }
@@ -910,9 +937,11 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
                      base::Unretained(this)));
 
-  EXPECT_EQ(blink::MEDIA_DEVICE_OK, media_stream_result());
-  EXPECT_TRUE(CheckDevicesListContains(blink::MEDIA_DEVICE_AUDIO_CAPTURE));
-  EXPECT_FALSE(CheckDevicesListContains(blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
+  EXPECT_TRUE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
+  EXPECT_FALSE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
@@ -926,7 +955,9 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
       base::BindOnce(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
                      base::Unretained(this)));
 
-  EXPECT_EQ(blink::MEDIA_DEVICE_OK, media_stream_result());
-  EXPECT_FALSE(CheckDevicesListContains(blink::MEDIA_DEVICE_AUDIO_CAPTURE));
-  EXPECT_TRUE(CheckDevicesListContains(blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());
+  EXPECT_FALSE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
+  EXPECT_TRUE(CheckDevicesListContains(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 }

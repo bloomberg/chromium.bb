@@ -219,7 +219,7 @@ AXObject* AXObjectCacheImpl::FocusedObject() {
 
   // the HTML element, for example, is focusable but has an AX object that is
   // ignored
-  if (obj->AccessibilityIsIgnored())
+  if (!obj->AccessibilityIsIncludedInTree())
     obj = obj->ParentObjectUnignored();
 
   return obj;
@@ -289,6 +289,8 @@ AXObject* AXObjectCacheImpl::Get(const Node* node) {
     objects_.Set(node_id, new_obj);
     new_obj->Init();
     new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
+    new_obj->SetLastKnownIsIgnoredButIncludedInTreeValue(
+        new_obj->AccessibilityIsIgnoredButIncludedInTree());
     return new_obj;
   }
 
@@ -342,11 +344,12 @@ AXObject* AXObjectCacheImpl::Get(AccessibleNode* accessible_node) {
 // FIXME: This probably belongs on Node.
 // FIXME: This should take a const char*, but one caller passes g_null_atom.
 static bool NodeHasRole(Node* node, const String& role) {
-  if (!node || !node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return false;
 
   // TODO(accessibility) support role strings with multiple roles.
-  return EqualIgnoringASCIICase(ToElement(node)->getAttribute(kRoleAttr), role);
+  return EqualIgnoringASCIICase(element->getAttribute(kRoleAttr), role);
 }
 
 AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
@@ -462,6 +465,8 @@ AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
   node_object_mapping_.Set(node, ax_id);
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
+  new_obj->SetLastKnownIsIgnoredButIncludedInTreeValue(
+      new_obj->AccessibilityIsIgnoredButIncludedInTree());
   MaybeNewRelationTarget(node, new_obj);
 
   return new_obj;
@@ -490,6 +495,8 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   layout_object_mapping_.Set(layout_object, axid);
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
+  new_obj->SetLastKnownIsIgnoredButIncludedInTreeValue(
+      new_obj->AccessibilityIsIgnoredButIncludedInTree());
   if (node && node->GetLayoutObject() == layout_object) {
     AXID prev_axid = node_object_mapping_.at(node);
     if (prev_axid != 0 && prev_axid != axid) {
@@ -520,7 +527,8 @@ AXObject* AXObjectCacheImpl::GetOrCreate(
   inline_text_box_object_mapping_.Set(inline_text_box, axid);
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
-
+  new_obj->SetLastKnownIsIgnoredButIncludedInTreeValue(
+      new_obj->AccessibilityIsIgnoredButIncludedInTree());
   return new_obj;
 }
 
@@ -717,7 +725,7 @@ AXObject::InOrderTraversalIterator AXObjectCacheImpl::InOrderTraversalEnd() {
 void AXObjectCacheImpl::DeferTreeUpdateInternal(Node* node,
                                                 base::OnceClosure callback) {
   tree_update_callback_queue_.push_back(
-      std::make_pair(WrapWeakPersistent(node), std::move(callback)));
+      MakeGarbageCollected<TreeUpdateParams>(node, std::move(callback)));
 }
 
 void AXObjectCacheImpl::DeferTreeUpdate(
@@ -827,10 +835,10 @@ void AXObjectCacheImpl::FocusableChangedWithCleanLayout(Element* element) {
     // hidden element's focusable state changes, it's ignored state must be
     // recomputed.
     ChildrenChangedWithCleanLayout(element->parentNode());
-  } else {
-    // Refresh the focusable state on the exposed object.
-    MarkAXObjectDirty(obj, false);
   }
+
+  // Refresh the focusable state and State::kIgnored on the exposed object.
+  MarkAXObjectDirty(obj, false);
 }
 
 void AXObjectCacheImpl::DocumentTitleChanged() {
@@ -926,14 +934,14 @@ void AXObjectCacheImpl::ProcessUpdatesAfterLayout(Document& document) {
     return;
   TreeUpdateCallbackQueue old_tree_update_callback_queue;
   tree_update_callback_queue_.swap(old_tree_update_callback_queue);
-  for (auto& pair : old_tree_update_callback_queue) {
-    Node* node = pair.first;
+  for (auto& tree_update : old_tree_update_callback_queue) {
+    Node* node = tree_update->node;
     if (!node)
       continue;
-    base::OnceClosure& callback = pair.second;
+    base::OnceClosure& callback = tree_update->callback;
     if (node->GetDocument() != document) {
       tree_update_callback_queue_.push_back(
-          std::make_pair(WrapWeakPersistent(node), std::move(callback)));
+          MakeGarbageCollected<TreeUpdateParams>(node, std::move(callback)));
       continue;
     }
     std::move(callback).Run();
@@ -941,10 +949,10 @@ void AXObjectCacheImpl::ProcessUpdatesAfterLayout(Document& document) {
 }
 
 void AXObjectCacheImpl::PostNotificationsAfterLayout(Document* document) {
-  std::vector<AXEventParams> old_notifications_to_post;
+  HeapVector<Member<AXEventParams>> old_notifications_to_post;
   notifications_to_post_.swap(old_notifications_to_post);
   for (auto& params : old_notifications_to_post) {
-    AXObject* obj = params.target;
+    AXObject* obj = params->target;
 
     if (!obj || !obj->AXObjectID())
       continue;
@@ -952,10 +960,11 @@ void AXObjectCacheImpl::PostNotificationsAfterLayout(Document* document) {
     if (obj->IsDetached())
       continue;
 
-    ax::mojom::Event event_type = params.event_type;
-    ax::mojom::EventFrom event_from = params.event_from;
+    ax::mojom::Event event_type = params->event_type;
+    ax::mojom::EventFrom event_from = params->event_from;
     if (obj->GetDocument() != document) {
-      notifications_to_post_.push_back({obj, event_type, event_from});
+      notifications_to_post_.push_back(
+          MakeGarbageCollected<AXEventParams>(obj, event_type, event_from));
       continue;
     }
 
@@ -999,7 +1008,8 @@ void AXObjectCacheImpl::PostNotification(AXObject* object,
     return;
 
   modification_count_++;
-  notifications_to_post_.push_back({object, notification, ComputeEventFrom()});
+  notifications_to_post_.push_back(MakeGarbageCollected<AXEventParams>(
+      object, notification, ComputeEventFrom()));
 }
 
 bool AXObjectCacheImpl::IsAriaOwned(const AXObject* object) const {
@@ -1436,8 +1446,9 @@ bool AXObjectCacheImpl::InlineTextBoxAccessibilityEnabled() {
 
 const Element* AXObjectCacheImpl::RootAXEditableElement(const Node* node) {
   const Element* result = RootEditableElement(*node);
-  const Element* element =
-      node->IsElementNode() ? ToElement(node) : node->parentElement();
+  const auto* element = DynamicTo<Element>(node);
+  if (!element)
+    element = node->parentElement();
 
   for (; element; element = element->parentElement()) {
     if (NodeIsTextControl(element))
@@ -1452,7 +1463,8 @@ AXObject* AXObjectCacheImpl::FirstAccessibleObjectFromNode(const Node* node) {
     return nullptr;
 
   AXObject* accessible_object = GetOrCreate(node->GetLayoutObject());
-  while (accessible_object && accessible_object->AccessibilityIsIgnored()) {
+  while (accessible_object &&
+         !accessible_object->AccessibilityIsIncludedInTree()) {
     node = NodeTraversal::Next(*node);
 
     while (node && !node->GetLayoutObject())
@@ -1476,15 +1488,13 @@ bool AXObjectCacheImpl::NodeIsTextControl(const Node* node) {
 }
 
 bool IsNodeAriaVisible(Node* node) {
-  if (!node)
-    return false;
-
-  if (!node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return false;
 
   bool is_null = true;
   bool hidden = AccessibleNode::GetPropertyOrARIAAttribute(
-      ToElement(node), AOMBooleanProperty::kHidden, is_null);
+      element, AOMBooleanProperty::kHidden, is_null);
   return !is_null && !hidden;
 }
 
@@ -1633,7 +1643,7 @@ void AXObjectCacheImpl::HandleScrolledToAnchor(const Node* anchor_node) {
   AXObject* obj = GetOrCreate(anchor_node->GetLayoutObject());
   if (!obj)
     return;
-  if (obj->AccessibilityIsIgnored())
+  if (!obj->AccessibilityIsIncludedInTree())
     obj = obj->ParentObjectUnignored();
   PostNotification(obj, ax::mojom::Event::kScrolledToAnchor);
 }
@@ -1773,7 +1783,9 @@ void AXObjectCacheImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_object_mapping_);
 
   visitor->Trace(objects_);
+  visitor->Trace(notifications_to_post_);
   visitor->Trace(documents_);
+  visitor->Trace(tree_update_callback_queue_);
   AXObjectCache::Trace(visitor);
 }
 

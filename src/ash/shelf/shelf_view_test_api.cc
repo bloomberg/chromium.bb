@@ -47,12 +47,15 @@ int ShelfViewTestAPI::GetButtonCount() {
 }
 
 ShelfAppButton* ShelfViewTestAPI::GetButton(int index) {
-  // App list and back button are not ShelfAppButtons.
-  if (shelf_view_->model_->items()[index].type == ash::TYPE_APP_LIST ||
-      shelf_view_->model_->items()[index].type == ash::TYPE_BACK_BUTTON)
-    return nullptr;
-
   return static_cast<ShelfAppButton*>(GetViewAt(index));
+}
+
+ShelfID ShelfViewTestAPI::AddItem(ShelfItemType type) {
+  ShelfItem item;
+  item.type = type;
+  item.id = ShelfID(base::NumberToString(id_++));
+  shelf_view_->model_->Add(item);
+  return item.id;
 }
 
 views::View* ShelfViewTestAPI::GetViewAt(int index) {

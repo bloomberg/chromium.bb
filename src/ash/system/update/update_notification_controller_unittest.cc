@@ -83,8 +83,8 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterUpdate) {
   EXPECT_FALSE(HasNotification());
 
   // Simulate an update.
-  Shell::Get()->system_tray_model()->ShowUpdateIcon(
-      mojom::UpdateSeverity::LOW, false, false, mojom::UpdateType::SYSTEM);
+  Shell::Get()->system_tray_model()->ShowUpdateIcon(UpdateSeverity::kLow, false,
+                                                    false, UpdateType::kSystem);
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -101,8 +101,8 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterFlashUpdate) {
   EXPECT_FALSE(HasNotification());
 
   // Simulate an update.
-  Shell::Get()->system_tray_model()->ShowUpdateIcon(
-      mojom::UpdateSeverity::LOW, false, false, mojom::UpdateType::FLASH);
+  Shell::Get()->system_tray_model()->ShowUpdateIcon(UpdateSeverity::kLow, false,
+                                                    false, UpdateType::kFlash);
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -148,8 +148,8 @@ TEST_F(UpdateNotificationControllerTest,
   EXPECT_FALSE(HasNotification());
 
   // Simulate an update that requires factory reset.
-  Shell::Get()->system_tray_model()->ShowUpdateIcon(
-      mojom::UpdateSeverity::LOW, true, false, mojom::UpdateType::SYSTEM);
+  Shell::Get()->system_tray_model()->ShowUpdateIcon(UpdateSeverity::kLow, true,
+                                                    false, UpdateType::kSystem);
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -167,8 +167,8 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterRollback) {
   EXPECT_FALSE(HasNotification());
 
   // Simulate a rollback.
-  Shell::Get()->system_tray_model()->ShowUpdateIcon(
-      mojom::UpdateSeverity::LOW, false, true, mojom::UpdateType::SYSTEM);
+  Shell::Get()->system_tray_model()->ShowUpdateIcon(UpdateSeverity::kLow, false,
+                                                    true, UpdateType::kSystem);
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -186,8 +186,8 @@ TEST_F(UpdateNotificationControllerTest, SetUpdateNotificationStateTest) {
   EXPECT_FALSE(HasNotification());
 
   // Simulate an update.
-  Shell::Get()->system_tray_model()->ShowUpdateIcon(
-      mojom::UpdateSeverity::LOW, false, false, mojom::UpdateType::SYSTEM);
+  Shell::Get()->system_tray_model()->ShowUpdateIcon(UpdateSeverity::kLow, false,
+                                                    false, UpdateType::kSystem);
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -204,7 +204,7 @@ TEST_F(UpdateNotificationControllerTest, SetUpdateNotificationStateTest) {
 
   // Simulate notification type set to recommended.
   Shell::Get()->system_tray_model()->SetUpdateNotificationState(
-      mojom::NotificationStyle::ADMIN_RECOMMENDED,
+      NotificationStyle::kAdminRecommended,
       base::UTF8ToUTF16(recommended_notification_title),
       base::UTF8ToUTF16(recommended_notification_body));
 
@@ -224,7 +224,7 @@ TEST_F(UpdateNotificationControllerTest, SetUpdateNotificationStateTest) {
 
   // Simulate notification type set to required.
   Shell::Get()->system_tray_model()->SetUpdateNotificationState(
-      mojom::NotificationStyle::ADMIN_REQUIRED,
+      NotificationStyle::kAdminRequired,
       base::UTF8ToUTF16(required_notification_title),
       base::UTF8ToUTF16(required_notification_body));
 
@@ -239,7 +239,7 @@ TEST_F(UpdateNotificationControllerTest, SetUpdateNotificationStateTest) {
 
   // Simulate notification type set back to default.
   Shell::Get()->system_tray_model()->SetUpdateNotificationState(
-      mojom::NotificationStyle::DEFAULT, base::string16(), base::string16());
+      NotificationStyle::kDefault, base::string16(), base::string16());
 
   // The notification has the default text.
   ASSERT_TRUE(HasNotification());

@@ -16,7 +16,8 @@ SyncManager::InitArgs::InitArgs()
     : enable_local_sync_backend(false),
       extensions_activity(nullptr),
       change_delegate(nullptr),
-      encryptor(nullptr),
+      user_share(nullptr),
+      encryption_handler(nullptr),
       cancelation_signal(nullptr) {}
 
 SyncManager::InitArgs::~InitArgs() {}

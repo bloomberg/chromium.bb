@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 
 // The BackgroundSyncLauncherAndroid singleton owns the Java
 // BackgroundSyncLauncher object and is used to register interest in starting
@@ -28,7 +29,15 @@ class BackgroundSyncLauncherAndroid {
   // is running when the device next goes online after that time has passed.
   // If this time is set to base::TimeDelta::Max() across all storage
   // partitions, the wake-up task is cancelled.
-  static void LaunchBrowserIfStopped();
+  static void ScheduleBrowserWakeUp(blink::mojom::BackgroundSyncType sync_type);
+
+  // Schedule a background task to bring up Chrome when the device next goes
+  // online after |soonest_wakeup_delta| has passed.
+  // If |soonest_wakeup_delta| is set to base::TimeDelta::Max(), the wake-up
+  // task is cancelled.
+  static void LaunchBrowserWithWakeUpDelta(
+      blink::mojom::BackgroundSyncType sync_type,
+      base::TimeDelta soonest_wakeup_delta);
 
   static bool ShouldDisableBackgroundSync();
 
@@ -38,7 +47,9 @@ class BackgroundSyncLauncherAndroid {
 
   // Fires all pending Background Sync events across all storage partitions
   // for the last used profile.
+  // Fires one-shot Background Sync events for registration of |sync_type|.
   void FireBackgroundSyncEvents(
+      blink::mojom::BackgroundSyncType sync_type,
       const base::android::JavaParamRef<jobject>& j_runnable);
 
  private:
@@ -48,8 +59,10 @@ class BackgroundSyncLauncherAndroid {
   BackgroundSyncLauncherAndroid();
   ~BackgroundSyncLauncherAndroid();
 
-  void LaunchBrowserIfStoppedImpl();
-  void LaunchBrowserWithWakeupDelta(base::TimeDelta soonest_wakeup_delta);
+  void ScheduleBrowserWakeUpImpl(blink::mojom::BackgroundSyncType sync_type);
+  void ScheduleBrowserWakeUpWithWakeUpDeltaImpl(
+      blink::mojom::BackgroundSyncType sync_type,
+      base::TimeDelta soonest_wakeup_delta);
 
   base::android::ScopedJavaGlobalRef<jobject>
       java_gcm_network_manager_launcher_;

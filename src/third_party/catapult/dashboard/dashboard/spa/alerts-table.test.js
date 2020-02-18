@@ -4,12 +4,12 @@
 */
 'use strict';
 
-import AlertsTable from './alerts-table.js';
-import findElements from './find-elements.js';
+import {AlertsTable} from './alerts-table.js';
 import {ENSURE, UPDATE} from './simple-redux.js';
 import {STORE} from './element-base.js';
-import {afterRender} from './utils.js';
+import {afterRender, timeout} from './utils.js';
 import {assert} from 'chai';
+import {findElements} from './find-elements.js';
 
 suite('alerts-table', function() {
   async function fixture(options = {}) {
@@ -81,8 +81,7 @@ suite('alerts-table', function() {
         },
       ],
     });
-    assert.isDefined(findElements(table, e =>
-      e.matches('iron-icon[icon="cp-big:cat"]'))[0]);
+    assert.isDefined(findElements(table, e => e.matches('svg#cat'))[0]);
   });
 
   test('allTriaged showingTriaged', async function() {
@@ -90,8 +89,7 @@ suite('alerts-table', function() {
       showingTriaged: true,
       alertGroups: [],
     });
-    assert.isDefined(findElements(table,
-        e => e.matches('iron-icon[icon="cp-big:cat"]'))[0]);
+    assert.isDefined(findElements(table, e => e.matches('svg#cat'))[0]);
   });
 
   test('sort', async function() {
@@ -170,7 +168,7 @@ suite('alerts-table', function() {
     });
 
     const measurementColumn = findElements(table, e =>
-      e.matches('column-head[name="measurement"]'))[0];
+      e.matches('column-head') && e.name === 'measurement')[0];
     measurementColumn.click();
     await afterRender();
     let state = STORE.getState().test;
@@ -188,45 +186,54 @@ suite('alerts-table', function() {
 
   test('shouldDisplayAlert', async function() {
     assert.isTrue(AlertsTable.shouldDisplayAlert(
-        true, false, {}, -1, false));
+        true, false, {triaged: {isExpanded: false}}, -1));
     assert.isTrue(AlertsTable.shouldDisplayAlert(
-        false, true, {isExpanded: true}, -1, false));
+        false, true, {isExpanded: true, triaged: {isExpanded: false}}, -1));
     assert.isTrue(AlertsTable.shouldDisplayAlert(
-        false, true, {isExpanded: false}, 0, false));
+        false, true, {isExpanded: false, triaged: {isExpanded: false}}, 0));
     assert.isFalse(AlertsTable.shouldDisplayAlert(
-        false, false, {alerts: []}, 0, false));
-    assert.isTrue(AlertsTable.shouldDisplayAlert(
-        false, false, {isExpanded: true, alerts: [{}]}, 0, false));
+        false, false, {alerts: [], triaged: {isExpanded: false}}, 0));
+    assert.isTrue(AlertsTable.shouldDisplayAlert(false, false, {
+      isExpanded: true,
+      alerts: [{}],
+      triaged: {isExpanded: false},
+    }, 0));
     assert.isFalse(AlertsTable.shouldDisplayAlert(false, false, {
       isExpanded: true,
       alerts: [
         {bugId: 42},
         {},
       ],
-    }, 0, false));
+      triaged: {isExpanded: false},
+    }, 0));
     assert.isTrue(AlertsTable.shouldDisplayAlert(false, false, {
       isExpanded: true,
       alerts: [
         {bugId: 42},
         {},
       ],
-    }, 1, false));
-    assert.isFalse(AlertsTable.shouldDisplayAlert(
-        false, false, {alerts: [{bugId: 42}]}, 0, false));
+      triaged: {isExpanded: false},
+    }, 1));
+    assert.isFalse(AlertsTable.shouldDisplayAlert(false, false, {
+      alerts: [{bugId: 42}],
+      triaged: {isExpanded: false},
+    }, 0));
     assert.isTrue(AlertsTable.shouldDisplayAlert(
-        false, false, {alerts: [{bugId: 42}]}, 0, true));
+        false, false, {alerts: [{bugId: 42}], triaged: {isExpanded: true}}, 0));
     assert.isFalse(AlertsTable.shouldDisplayAlert(false, false, {
       alerts: [
         {bugId: 42},
         {},
       ],
-    }, 0, false));
+      triaged: {isExpanded: false},
+    }, 0));
     assert.isTrue(AlertsTable.shouldDisplayAlert(false, false, {
       alerts: [
         {bugId: 42},
         {},
       ],
-    }, 1, false));
+      triaged: {isExpanded: false},
+    }, 1));
   });
 
   test('shouldDisplayExpandGroupButton', async function() {
@@ -306,11 +313,11 @@ suite('alerts-table', function() {
     });
 
     const selectedCounts = findElements(table, e =>
-      e.tagName === 'CP-CHECKBOX' && e.textContent.trim() === '1/2');
+      e.matches('chops-checkbox') && e.textContent.trim() === '1/2');
     assert.lengthOf(selectedCounts, 1);
     const row = selectedCounts[0].parentElement.parentElement;
     const tbody = row.parentElement;
-    assert.strictEqual(row, tbody.children[1]);
+    assert.strictEqual(row, tbody.children[0]);
   });
 
   test('shouldDisplaySelectedCount showingTriaged', async function() {
@@ -359,7 +366,7 @@ suite('alerts-table', function() {
     });
 
     const selectedCounts = findElements(table, e =>
-      e.tagName === 'CP-CHECKBOX' && e.textContent.trim() === '1/2');
+      e.matches('chops-checkbox') && e.textContent.trim() === '1/2');
     assert.lengthOf(selectedCounts, 1);
     const row = selectedCounts[0].parentElement.parentElement;
     const tbody = row.parentElement;
@@ -396,7 +403,7 @@ suite('alerts-table', function() {
       ],
     });
     assert.isDefined(findElements(table, e =>
-      e.tagName === 'TD' && e.textContent.trim() === 'ignored')[0]);
+      e.matches('td') && e.textContent.trim() === 'Ignored')[0]);
   });
 
   test('selectAlert single', async function() {
@@ -424,7 +431,7 @@ suite('alerts-table', function() {
       ],
     });
     const tbody = findElements(table, e => e.matches('tbody'))[0];
-    const checkbox = findElements(tbody, e => e.matches('cp-checkbox'))[0];
+    const checkbox = findElements(tbody, e => e.matches('chops-checkbox'))[0];
     checkbox.click();
     await afterRender();
     assert.isTrue(STORE.getState().test.alertGroups[0].alerts[0].isSelected);
@@ -469,7 +476,7 @@ suite('alerts-table', function() {
       ],
     });
     const tbody = findElements(table, e => e.matches('tbody'))[0];
-    const checkbox = findElements(tbody, e => e.matches('cp-checkbox'))[0];
+    const checkbox = findElements(tbody, e => e.matches('chops-checkbox'))[0];
     checkbox.click();
     await afterRender();
     assert.isTrue(STORE.getState().test.alertGroups[0].alerts[0].isSelected);
@@ -569,9 +576,9 @@ suite('alerts-table', function() {
     });
     const checkboxes = findElements(
         findElements(table, e => e.matches('tbody'))[0],
-        e => e.matches('cp-checkbox'));
+        e => e.matches('chops-checkbox'));
     checkboxes[1].click();
-    checkboxes[3].$.native.dispatchEvent(new CustomEvent('change', {
+    checkboxes[3].native.dispatchEvent(new CustomEvent('change', {
       detail: {shiftKey: true},
     }));
     await afterRender();

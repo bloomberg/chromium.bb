@@ -17,7 +17,7 @@ Are you a Google employee? See
 *   At least 100GB of free disk space.
 *   You must have Git and Python v2 installed already.
 
-Most development is done on Ubuntu (currently 14.04, Trusty Tahr). There are
+Most development is done on Ubuntu (currently 16.04, Xenial Xerus). There are
 some instructions for other distros below, but they are mostly unsupported.
 
 ## Install `depot_tools`
@@ -356,10 +356,10 @@ For the optional packages on Arch Linux:
 
 ### Crostini (Debian based)
 
-First install the `file` command for the script to run properly:
+First install the `file` and `lsb-release` commands for the script to run properly:
 
 ```shell
-$ sudo apt-get install file
+$ sudo apt-get install file lsb-release
 ```
 
 Then invoke install-build-deps.sh with the `--no-arm` argument,

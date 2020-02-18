@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "chrome/android/chrome_jni_headers/PartnerBookmarksReader_jni.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -23,7 +24,6 @@
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "jni/PartnerBookmarksReader_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
@@ -103,12 +103,12 @@ void PrepareAndSetFavicon(jbyte* icon_bytes,
 const BookmarkNode* GetNodeByID(const BookmarkNode* parent, int64_t id) {
   if (parent->id() == id)
     return parent;
-  for (int i= 0, child_count = parent->child_count(); i < child_count; ++i) {
-    const BookmarkNode* result = GetNodeByID(parent->GetChild(i), id);
+  for (const auto& child : parent->children()) {
+    const BookmarkNode* result = GetNodeByID(child.get(), id);
     if (result)
       return result;
   }
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace
@@ -144,6 +144,9 @@ void PartnerBookmarksReader::Reset(JNIEnv* env,
   wip_next_available_id_ = 0;
 }
 
+// TODO (crbug.com/980464): This method could theoretically accept contradicting
+// parameters for type (is_folder) and URL validity (jurl) and should therefore
+// be changed.
 jlong PartnerBookmarksReader::AddPartnerBookmark(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -158,8 +161,10 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
     const JavaParamRef<jobject>& j_callback) {
   base::string16 url;
   base::string16 title;
-  if (jurl)
+  if (jurl) {
+    DCHECK(!is_folder);
     url = ConvertJavaStringToUTF16(env, jurl);
+  }
   if (jtitle)
     title = ConvertJavaStringToUTF16(env, jtitle);
 
@@ -167,7 +172,6 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
   if (wip_partner_bookmarks_root_.get()) {
     std::unique_ptr<BookmarkNode> node =
         std::make_unique<BookmarkNode>(wip_next_available_id_++, GURL(url));
-    node->set_type(is_folder ? BookmarkNode::FOLDER : BookmarkNode::URL);
     node->SetTitle(title);
 
     // Handle favicon and touchicon
@@ -204,11 +208,11 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
       parent = wip_partner_bookmarks_root_.get();
     }
     node_id = node->id();
-    const_cast<BookmarkNode*>(parent)->Add(std::move(node),
-                                           parent->child_count());
+    const_cast<BookmarkNode*>(parent)->Add(std::move(node));
   } else {
     std::unique_ptr<BookmarkPermanentNode> node =
-        std::make_unique<BookmarkPermanentNode>(wip_next_available_id_++);
+        std::make_unique<BookmarkPermanentNode>(wip_next_available_id_++,
+                                                BookmarkNode::FOLDER);
     node_id = node->id();
     node->SetTitle(title);
     wip_partner_bookmarks_root_ = std::move(node);
@@ -316,9 +320,7 @@ void PartnerBookmarksReader::OnGetFaviconFromCacheFinished(
         })");
   GetLargeIconService()
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-          favicon::FaviconServerFetcherParams::CreateForMobile(
-              page_url, kPartnerBookmarksMinimumFaviconSizePx,
-              desired_favicon_size_px),
+          favicon::FaviconServerFetcherParams::CreateForMobile(page_url),
           false /* may_page_url_be_private */,
           false /* should_trim_page_url_path */, traffic_annotation,
           base::Bind(&PartnerBookmarksReader::OnGetFaviconFromServerFinished,

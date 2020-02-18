@@ -476,7 +476,7 @@ base::string16 FileInformationToString(
 }
 
 bool IsCompanyOnIgnoredReportingList(const base::string16& company_name) {
-  return base::ContainsValue(kCompanyIgnoredReportingList, company_name);
+  return base::Contains(kCompanyIgnoredReportingList, company_name);
 }
 
 bool IsExecutableOnIgnoredReportingList(const base::FilePath& file_path) {

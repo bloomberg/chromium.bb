@@ -32,7 +32,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/dice_header_helper.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/dns/mock_host_resolver.h"
@@ -66,7 +66,7 @@ class ThrottleContentBrowserClient : public ChromeContentBrowserClient {
 
   // ContentBrowserClient overrides:
   std::vector<std::unique_ptr<content::URLLoaderThrottle>>
-  CreateURLLoaderThrottles(
+  CreateURLLoaderThrottlesOnIO(
       const network::ResourceRequest& request,
       content::ResourceContext* resource_context,
       const base::RepeatingCallback<content::WebContents*()>& wc_getter,
@@ -76,6 +76,16 @@ class ThrottleContentBrowserClient : public ChromeContentBrowserClient {
     if (request.url == watch_url_)
       throttles.push_back(std::make_unique<HeaderModifyingThrottle>());
     return throttles;
+  }
+  std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+  CreateURLLoaderThrottles(
+      const network::ResourceRequest& request,
+      content::BrowserContext* browser_context,
+      const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+      content::NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id) override {
+    return CreateURLLoaderThrottlesOnIO(request, nullptr, wc_getter,
+                                        navigation_ui_data, frame_tree_node_id);
   }
 
  private:

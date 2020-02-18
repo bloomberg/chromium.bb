@@ -987,6 +987,39 @@ TEST_F(RenderTextTest, ElidedText) {
   }
 }
 
+TEST_F(RenderTextTest, ElidedText_NoTrimWhitespace) {
+  const int kGlyphWidth = 10;
+  RenderText* render_text = GetRenderText();
+  gfx::test::RenderTextTestApi render_text_test_api(render_text);
+  render_text_test_api.SetGlyphWidth(kGlyphWidth);
+  render_text->SetElideBehavior(ELIDE_TAIL);
+  render_text->SetWhitespaceElision(false);
+
+  // Pick a sufficiently long string that's mostly whitespace.
+  // Tail-eliding this with whitespace elision turned off should look like:
+  // [       ...]
+  // and not like:
+  // [...       ]
+  constexpr wchar_t kInputString[] = L"                     foo";
+  const base::string16 input = WideToUTF16(kInputString);
+  render_text->SetText(input);
+
+  // Choose a width based on being able to display 12 characters (one of which
+  // will be the trailing ellipsis).
+  constexpr int kDesiredChars = 12;
+  constexpr int kRequiredWidth = (kDesiredChars + 0.5f) * kGlyphWidth;
+  render_text->SetDisplayRect(Rect(0, 0, kRequiredWidth, 100));
+
+  // Verify this doesn't change the full text.
+  EXPECT_EQ(input, render_text->text());
+
+  // Verify that the string is truncated to |kDesiredChars| with the ellipsis.
+  const base::string16 result = render_text->GetDisplayText();
+  const base::string16 expected =
+      input.substr(0, kDesiredChars - 1) + kEllipsisUTF16[0];
+  EXPECT_EQ(expected, result);
+}
+
 TEST_F(RenderTextTest, ElidedObscuredText) {
   auto expected_render_text = std::make_unique<RenderTextHarfBuzz>();
   expected_render_text->SetFontList(FontList("serif, Sans serif, 12px"));
@@ -4102,6 +4135,24 @@ TEST_F(RenderTextTest, Multiline_ZeroWidthChars) {
   }
 }
 
+TEST_F(RenderTextTest, Multiline_ZeroWidthNewline) {
+  RenderTextHarfBuzz* render_text = GetRenderText();
+  render_text->SetMultiline(true);
+
+  const base::string16 text(UTF8ToUTF16("\n\n"));
+  render_text->SetText(text);
+  test_api()->EnsureLayout();
+  EXPECT_EQ(3u, test_api()->lines().size());
+  for (const auto& line : test_api()->lines()) {
+    EXPECT_EQ(0, line.size.width());
+    EXPECT_LT(0, line.size.height());
+  }
+
+  const internal::TextRunList* run_list = GetHarfBuzzRunList();
+  EXPECT_EQ(2U, run_list->size());
+  EXPECT_EQ(0, run_list->width());
+}
+
 TEST_F(RenderTextTest, Multiline_GetLineContainingCaret) {
   struct {
     const SelectionModel caret;
@@ -4438,6 +4489,36 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmoji) {
   EXPECT_EQ("[0][1->2][3->4]", GetRunListStructureString());
 }
 
+TEST_F(RenderTextTest, HarfBuzz_BreakRunsByNewline) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetMultiline(true);
+  render_text->SetText(WideToUTF16(L"x\ny"));
+  test_api()->EnsureLayout();
+  EXPECT_EQ(ToString16Vec({"x", "\n", "y"}), GetRunListStrings());
+  EXPECT_EQ("[0][1][2]", GetRunListStructureString());
+
+  // Validate that the character newline is an unknown glyph
+  // (see http://crbug/972090 and http://crbug/680430).
+  const internal::TextRunList* run_list = GetHarfBuzzRunList();
+  ASSERT_EQ(3U, run_list->size());
+  EXPECT_EQ(0U, run_list->runs()[0]->CountMissingGlyphs());
+  EXPECT_EQ(1U, run_list->runs()[1]->CountMissingGlyphs());
+  EXPECT_EQ(0U, run_list->runs()[2]->CountMissingGlyphs());
+
+  SkScalar x_width =
+      run_list->runs()[0]->GetGlyphWidthForCharRange(Range(0, 1));
+  EXPECT_GT(x_width, 0);
+
+  // Newline character must have a width of zero.
+  SkScalar newline_width =
+      run_list->runs()[1]->GetGlyphWidthForCharRange(Range(1, 2));
+  EXPECT_EQ(newline_width, 0);
+
+  SkScalar y_width =
+      run_list->runs()[2]->GetGlyphWidthForCharRange(Range(2, 3));
+  EXPECT_GT(y_width, 0);
+}
+
 TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmojiVariationSelectors) {
   constexpr int kGlyphWidth = 30;
   SetGlyphWidth(30);
@@ -4696,49 +4777,6 @@ TEST_F(RenderTextTest, HarfBuzz_FontListFallback) {
 }
 #endif  // !defined(OS_ANDROID)
 
-// Ensure that the fallback fonts of the Uniscribe font are tried for shaping.
-#if defined(OS_WIN)
-TEST_F(RenderTextTest, HarfBuzz_UniscribeFallback) {
-  std::string font_name;
-  std::string localized_font_name;
-
-  base::win::Version version = base::win::GetVersion();
-  if (version < base::win::Version::WIN10) {
-    // The font 'Meiryo' exists on windows 7 and windows 8. see:
-    // https://docs.microsoft.com/en-us/typography/fonts/windows_7_font_list
-    // https://docs.microsoft.com/en-us/typography/fonts/windows_8_font_list
-    font_name = "Meiryo";
-    // Japanese name for Meiryo.
-    localized_font_name = "\u30e1\u30a4\u30ea\u30aa";
-  } else {
-    ASSERT_GE(version, base::win::Version::WIN10);
-    // The font 'Malgun Gothic' exists on windows 10. see:
-    // https://docs.microsoft.com/en-us/typography/fonts/windows_10_font_list
-    font_name = "Malgun Gothic";
-    // Korean name for Malgun Gothic.
-    localized_font_name = "\ub9d1\uc740 \uace0\ub515";
-  }
-
-  // The localized name won't be found in the system's linked fonts, forcing
-  // RTHB to try the Uniscribe font and its fallbacks.
-  RenderTextHarfBuzz* render_text = GetRenderText();
-  Font font(localized_font_name, 12);
-  FontList font_list(font);
-
-  // Ensures the font didn't got substituted.
-  EXPECT_NE(font.GetFontName(), font_name);
-  EXPECT_EQ(font.GetActualFontNameForTesting(), localized_font_name);
-
-  render_text->SetFontList(font_list);
-  // An invalid Unicode character that somehow yields Korean character "han".
-  render_text->SetText(UTF8ToUTF16("\ud55c"));
-  test_api()->EnsureLayout();
-  const internal::TextRunList* run_list = GetHarfBuzzRunList();
-  ASSERT_EQ(1U, run_list->size());
-  EXPECT_EQ(0U, run_list->runs()[0]->CountMissingGlyphs());
-}
-#endif  // defined(OS_WIN)
-
 // Ensure that the fallback fonts offered by GetFallbackFonts() are tried. Note
 // this test assumes the font "Arial" doesn't provide a unicode glyph for a
 // particular character, and that there is a system fallback font which does.
@@ -4836,6 +4874,26 @@ TEST_F(RenderTextTest, CJKFontWithLocale) {
   }
 }
 #endif  // defined(OS_WIN)
+
+TEST_F(RenderTextTest, ZeroWidthCharacters) {
+  static const wchar_t* kEmptyText[] = {
+      L"\u200C",  // ZERO WIDTH NON-JOINER
+      L"\u200D",  // ZERO WIDTH JOINER
+      L"\u200B",  // ZERO WIDTH SPACE
+      L"\uFEFF",  // ZERO WIDTH NO-BREAK SPACE
+  };
+
+  for (const wchar_t* text : kEmptyText) {
+    RenderTextHarfBuzz* render_text = GetRenderText();
+    render_text->SetText(WideToUTF16(text));
+    test_api()->EnsureLayout();
+
+    const internal::TextRunList* run_list = GetHarfBuzzRunList();
+    EXPECT_EQ(0, run_list->width());
+    ASSERT_EQ(run_list->runs().size(), 1U);
+    EXPECT_EQ(run_list->runs()[0]->CountMissingGlyphs(), 0U);
+  }
+}
 
 // Ensure that the width reported by RenderText is sufficient for drawing. Draws
 // to a canvas and checks if any pixel beyond the bounding rectangle is colored.

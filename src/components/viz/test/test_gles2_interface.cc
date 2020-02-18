@@ -113,7 +113,7 @@ void TestGLES2Interface::BindTexture(GLenum target, GLuint texture) {
 
   if (!texture)
     return;
-  DCHECK(base::ContainsKey(textures_, texture));
+  DCHECK(base::Contains(textures_, texture));
   used_textures_.insert(texture);
 }
 
@@ -542,6 +542,10 @@ void TestGLES2Interface::set_max_texture_size(int size) {
   test_capabilities_.max_texture_size = size;
 }
 
+void TestGLES2Interface::set_supports_oop_raster(bool support) {
+  test_capabilities_.supports_oop_raster = support;
+}
+
 size_t TestGLES2Interface::NumTextures() const {
   return textures_.size();
 }
@@ -600,7 +604,7 @@ GLuint TestGLES2Interface::NextFramebufferId() {
 }
 
 void TestGLES2Interface::RetireFramebufferId(GLuint id) {
-  DCHECK(base::ContainsKey(framebuffer_set_, id));
+  DCHECK(base::Contains(framebuffer_set_, id));
   framebuffer_set_.erase(id);
 }
 
@@ -613,7 +617,7 @@ GLuint TestGLES2Interface::NextRenderbufferId() {
 }
 
 void TestGLES2Interface::RetireRenderbufferId(GLuint id) {
-  DCHECK(base::ContainsKey(renderbuffer_set_, id));
+  DCHECK(base::Contains(renderbuffer_set_, id));
   renderbuffer_set_.erase(id);
 }
 

@@ -15,8 +15,8 @@
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
-#include "ios/web/public/navigation_item.h"
-#include "ios/web/public/reload_type.h"
+#include "ios/web/public/navigation/navigation_item.h"
+#include "ios/web/public/navigation/reload_type.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
@@ -71,6 +71,7 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   }
 
   MOCK_METHOD0(ClearTransientContent, void());
+  MOCK_METHOD0(ClearDialogs, void());
   MOCK_METHOD0(RecordPageStateInNavigationItem, void());
   MOCK_METHOD2(OnGoToIndexSameDocumentNavigation,
                void(NavigationInitiationType type, bool has_user_gesture));

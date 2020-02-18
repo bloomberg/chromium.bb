@@ -26,7 +26,9 @@
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/browser/fileapi/obfuscated_file_util.h"
+#include "storage/browser/fileapi/obfuscated_file_util_memory_delegate.h"
 #include "storage/browser/fileapi/quota/quota_reservation.h"
+#include "storage/browser/fileapi/sandbox_file_stream_writer.h"
 #include "storage/common/fileapi/file_system_util.h"
 
 namespace storage {
@@ -51,7 +53,7 @@ class PluginPrivateFileSystemBackend::FileSystemIDToPluginMap {
                           const std::string& plugin_id) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     DCHECK(!filesystem_id.empty());
-    DCHECK(!base::ContainsKey(map_, filesystem_id)) << filesystem_id;
+    DCHECK(!base::Contains(map_, filesystem_id)) << filesystem_id;
     map_[filesystem_id] = plugin_id;
   }
 
@@ -125,7 +127,7 @@ void PluginPrivateFileSystemBackend::OpenPrivateFileSystem(
     const std::string& plugin_id,
     OpenFileSystemMode mode,
     StatusCallback callback) {
-  if (!CanHandleType(type) || file_system_options_.is_incognito()) {
+  if (!CanHandleType(type)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), base::File::FILE_ERROR_SECURITY));
@@ -187,23 +189,28 @@ FileSystemOperation* PluginPrivateFileSystemBackend::CreateFileSystemOperation(
 }
 
 bool PluginPrivateFileSystemBackend::SupportsStreaming(
-    const storage::FileSystemURL& url) const {
-  return false;
+    const FileSystemURL& url) const {
+  // Streaming is required for incognito file systems in order to access
+  // memory-backed files.
+  DCHECK(CanHandleType(url.type()));
+  return file_system_options_.is_incognito();
 }
 
 bool PluginPrivateFileSystemBackend::HasInplaceCopyImplementation(
-    storage::FileSystemType type) const {
+    FileSystemType type) const {
   return false;
 }
 
-std::unique_ptr<storage::FileStreamReader>
+std::unique_ptr<FileStreamReader>
 PluginPrivateFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64_t offset,
     int64_t max_bytes_to_read,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-  return std::unique_ptr<storage::FileStreamReader>();
+  DCHECK(CanHandleType(url.type()));
+  return FileStreamReader::CreateForFileSystemFile(context, url, offset,
+                                                   expected_modification_time);
 }
 
 std::unique_ptr<FileStreamWriter>
@@ -211,7 +218,11 @@ PluginPrivateFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64_t offset,
     FileSystemContext* context) const {
-  return std::unique_ptr<FileStreamWriter>();
+  DCHECK(CanHandleType(url.type()));
+
+  // Observers not supported by PluginPrivateFileSystemBackend.
+  return std::make_unique<SandboxFileStreamWriter>(context, url, offset,
+                                                   UpdateObserverList());
 }
 
 FileSystemQuotaUtil* PluginPrivateFileSystemBackend::GetQuotaUtil() {
@@ -371,6 +382,13 @@ const AccessObserverList* PluginPrivateFileSystemBackend::GetAccessObservers(
 ObfuscatedFileUtil* PluginPrivateFileSystemBackend::obfuscated_file_util() {
   return static_cast<ObfuscatedFileUtil*>(
       static_cast<AsyncFileUtilAdapter*>(file_util_.get())->sync_file_util());
+}
+
+ObfuscatedFileUtilMemoryDelegate*
+PluginPrivateFileSystemBackend::obfuscated_file_util_memory_delegate() {
+  auto* file_util = obfuscated_file_util();
+  DCHECK(file_util->is_incognito());
+  return static_cast<ObfuscatedFileUtilMemoryDelegate*>(file_util->delegate());
 }
 
 }  // namespace storage

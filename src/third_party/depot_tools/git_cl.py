@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -36,11 +36,6 @@ import urlparse
 import uuid
 import webbrowser
 import zlib
-
-try:
-  import readline  # pylint: disable=import-error,W0611
-except ImportError:
-  pass
 
 from third_party import colorama
 from third_party import httplib2
@@ -250,7 +245,7 @@ def confirm_or_exit(prefix='', action='confirm'):
 
 
 def ask_for_explicit_yes(prompt):
-  """Returns whether user typed 'y' or 'yes' to confirm the given prompt"""
+  """Returns whether user typed 'y' or 'yes' to confirm the given prompt."""
   result = ask_for_data(prompt + ' [Yes/No]: ').lower()
   while True:
     if 'yes'.startswith(result):
@@ -297,10 +292,10 @@ def _git_get_branch_config_value(key, default=None, value_type=str,
 
 
 def _git_set_branch_config_value(key, value, branch=None, **kwargs):
-  """Sets the value or unsets if it's None of a git branch config.
+  """Sets or unsets the git branch config value.
 
-  Valid, though not necessarily existing, branch must be provided,
-  otherwise currently checked out branch is used.
+  If value is None, the key will be unset, otherwise it will be set.
+  If no branch is given, the currently checked out branch is used.
   """
   if not branch:
     branch = GetCurrentBranch()
@@ -1022,7 +1017,7 @@ def GetCurrentBranch():
 
 
 class _CQState(object):
-  """Enum for states of CL with respect to Commit Queue."""
+  """Enum for states of CL with respect to CQ."""
   NONE = 'none'
   DRY_RUN = 'dry_run'
   COMMIT = 'commit'
@@ -1591,11 +1586,18 @@ class Changelist(object):
   def RunHook(self, committing, may_prompt, verbose, change, parallel):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
     try:
-      return presubmit_support.DoPresubmitChecks(change, committing,
+      start = time_time()
+      result = presubmit_support.DoPresubmitChecks(change, committing,
           verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
           default_presubmit=None, may_prompt=may_prompt,
           gerrit_obj=self._codereview_impl.GetGerritObjForPresubmit(),
           parallel=parallel)
+      metrics.collector.add_repeated('sub_commands', {
+        'command': 'presubmit',
+        'execution_time': time_time() - start,
+        'exit_code': 0 if result.should_continue() else 1,
+      })
+      return result
     except presubmit_support.PresubmitFailure as e:
       DieWithError('%s\nMaybe your depot_tools is out of date?' % e)
 
@@ -2110,8 +2112,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       * 'waiting' - waiting for review
       * 'reply'   - waiting for uploader to reply to review
       * 'lgtm'    - Code-Review label has been set
-      * 'dry-run' - dry-running in the commit queue
-      * 'commit'  - in the commit queue
+      * 'dry-run' - dry-running in the CQ
+      * 'commit'  - in the CQ
       * 'closed'  - successfully submitted or abandoned
     """
     if not self.GetIssue():
@@ -2368,7 +2370,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     detail = self._GetChangeDetail(['CURRENT_REVISION', 'LABELS'])
     if not force and self._IsCqConfigured():
-      confirm_or_exit('\nIt seems this repository has a Commit Queue, '
+      confirm_or_exit('\nIt seems this repository has a CQ, '
                         'which can test and land changes for you. '
                         'Are you sure you wish to bypass it?\n',
                         action='bypass CQ')
@@ -2759,6 +2761,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       if options.reviewers or options.tbrs or options.add_owners_to:
         change_desc.update_reviewers(options.reviewers, options.tbrs,
                                      options.add_owners_to, change)
+      if options.preserve_tryjobs:
+        change_desc.set_preserve_tryjobs()
 
       remote, upstream_branch = self.FetchUpstreamTuple(self.GetBranch())
       parent = self._ComputeParent(remote, upstream_branch, custom_cl_base,
@@ -3092,7 +3096,7 @@ def _add_codereview_select_options(parser):
 
 def _process_codereview_select_options(parser, options):
   if options.rietveld:
-    parser.error('--rietveld is no longer supported')
+    parser.error('--rietveld is no longer supported.')
   options.forced_codereview = None
   if options.gerrit:
     options.forced_codereview = 'gerrit'
@@ -3231,6 +3235,14 @@ class ChangeDescription(object):
         self.append_footer(new_r_line)
       if new_tbr_line:
         self.append_footer(new_tbr_line)
+
+  def set_preserve_tryjobs(self):
+    """Ensures description footer contains 'Cq-Do-Not-Cancel-Tryjobs: true'."""
+    footers = git_footers.parse_footers(self.description)
+    for v in footers.get('Cq-Do-Not-Cancel-Tryjobs', []):
+      if v.lower() == 'true':
+        return
+    self.append_footer('Cq-Do-Not-Cancel-Tryjobs: true')
 
   def prompt(self, bug=None, git_footer=True):
     """Asks the user to update the description."""
@@ -4113,7 +4125,7 @@ def CMDstatus(parser, args):
     - Yellow   waiting for you to reply to review, or not yet sent
     - Green    LGTM'ed
     - Red      'not LGTM'ed
-    - Magenta  in the commit queue
+    - Magenta  in the CQ
     - Cyan     was committed, branch can be deleted
     - White    error, or unknown status
 
@@ -4141,7 +4153,7 @@ def CMDstatus(parser, args):
   auth_config = auth.extract_auth_config_from_options(options)
 
   if options.issue is not None and not options.field:
-    parser.error('--field must be specified with --issue')
+    parser.error('--field must be specified with --issue.')
 
   if options.field:
     cl = Changelist(auth_config=auth_config, issue=options.issue,
@@ -4360,12 +4372,12 @@ def CMDcomments(parser, args):
     try:
       issue = int(options.issue)
     except ValueError:
-      DieWithError('A review issue id is expected to be a number')
+      DieWithError('A review issue ID is expected to be a number.')
 
   cl = Changelist(issue=issue, codereview='gerrit', auth_config=auth_config)
 
   if not cl.IsGerrit():
-    parser.error('rietveld is not supported')
+    parser.error('Rietveld is not supported.')
 
   if options.comment:
     cl.AddComment(options.comment, options.publish)
@@ -4423,7 +4435,7 @@ def CMDdescription(parser, args):
     target_issue_arg = ParseIssueNumberArgument(args[0],
                                                 options.forced_codereview)
     if not target_issue_arg.valid:
-      parser.error('invalid codereview url or CL id')
+      parser.error('Invalid issue ID or URL.')
 
   kwargs = {
     'auth_config': auth.extract_auth_config_from_options(options),
@@ -4722,9 +4734,6 @@ def CMDupload(parser, args):
                           'can be applied multiple times'))
   parser.add_option('-s', '--send-mail', action='store_true',
                     help='send email to reviewer(s) and cc(s) immediately')
-  parser.add_option('-c', '--use-commit-queue', action='store_true',
-                    help='tell the commit queue to commit this patchset; '
-                          'implies --send-mail')
   parser.add_option('--target_branch',
                     '--target-branch',
                     metavar='TARGET',
@@ -4740,10 +4749,17 @@ def CMDupload(parser, args):
                     const='TBR', help='add a set of OWNERS to TBR')
   parser.add_option('--r-owners', dest='add_owners_to', action='store_const',
                     const='R', help='add a set of OWNERS to R')
+  parser.add_option('-c', '--use-commit-queue', action='store_true',
+                    help='tell the CQ to commit this patchset; '
+                          'implies --send-mail')
   parser.add_option('-d', '--cq-dry-run', dest='cq_dry_run',
                     action='store_true',
                     help='Send the patchset to do a CQ dry run right after '
                          'upload.')
+  parser.add_option('--preserve-tryjobs', action='store_true',
+                    help='instruct the CQ to let tryjobs running even after '
+                         'new patchsets are uploaded instead of canceling '
+                         'prior patchset\' tryjobs')
   parser.add_option('--dependencies', action='store_true',
                     help='Uploads CLs of all the local branches that depend on '
                          'the current branch')
@@ -4776,12 +4792,12 @@ def CMDupload(parser, args):
 
   if options.message_file:
     if options.message:
-      parser.error('only one of --message and --message-file allowed.')
+      parser.error('Only one of --message and --message-file allowed.')
     options.message = gclient_utils.FileRead(options.message_file)
     options.message_file = None
 
   if options.cq_dry_run and options.use_commit_queue:
-    parser.error('only one of --use-commit-queue and --cq-dry-run allowed.')
+    parser.error('Only one of --use-commit-queue and --cq-dry-run allowed.')
 
   if options.use_commit_queue:
     options.send_mail = True
@@ -4885,7 +4901,7 @@ def CMDland(parser, args):
   cl = Changelist(auth_config=auth_config)
 
   if not cl.IsGerrit():
-    parser.error('rietveld is not supported')
+    parser.error('Rietveld is not supported.')
 
   if not cl.GetIssue():
     DieWithError('You must upload the change first to Gerrit.\n'
@@ -4936,18 +4952,18 @@ def CMDpatch(parser, args):
 
   if options.reapply:
     if options.newbranch:
-      parser.error('--reapply works on the current branch only')
+      parser.error('--reapply works on the current branch only.')
     if len(args) > 0:
-      parser.error('--reapply implies no additional arguments')
+      parser.error('--reapply implies no additional arguments.')
 
     cl = Changelist(auth_config=auth_config,
                     codereview=options.forced_codereview)
     if not cl.GetIssue():
-      parser.error('current branch must have an associated issue')
+      parser.error('Current branch must have an associated issue.')
 
     upstream = cl.GetUpstreamBranch()
     if upstream is None:
-      parser.error('No upstream branch specified. Cannot reset branch')
+      parser.error('No upstream branch specified. Cannot reset branch.')
 
     RunGit(['reset', '--hard', upstream])
     if options.pull:
@@ -4957,12 +4973,12 @@ def CMDpatch(parser, args):
                             options.directory)
 
   if len(args) != 1 or not args[0]:
-    parser.error('Must specify issue number or url')
+    parser.error('Must specify issue number or URL.')
 
   target_issue_arg = ParseIssueNumberArgument(args[0],
                                               options.forced_codereview)
   if not target_issue_arg.valid:
-    parser.error('invalid codereview url or CL id')
+    parser.error('Invalid issue ID or URL.')
 
   cl_kwargs = {
       'auth_config': auth_config,
@@ -4989,7 +5005,7 @@ def CMDpatch(parser, args):
 
   if cl.IsGerrit():
     if options.reject:
-      parser.error('--reject is not supported with Gerrit codereview.')
+      parser.error('--reject is not supported with Gerrit code review.')
     if options.directory:
       parser.error('--directory is not supported with Gerrit codereview.')
 
@@ -5046,7 +5062,7 @@ def CMDtree(parser, args):
 
 @metrics.collector.collect_metrics('git cl try')
 def CMDtry(parser, args):
-  """Triggers try jobs using either BuildBucket or CQ dry run."""
+  """Triggers tryjobs using either BuildBucket or CQ dry run."""
   group = optparse.OptionGroup(parser, 'Try job options')
   group.add_option(
       '-b', '--bot', action='append',
@@ -5108,7 +5124,7 @@ def CMDtry(parser, args):
   cl = Changelist(auth_config=auth_config, issue=options.issue,
                   codereview=options.forced_codereview)
   if not cl.GetIssue():
-    parser.error('Need to upload first')
+    parser.error('Need to upload first.')
 
   if cl.IsGerrit():
     # HACK: warm up Gerrit change detail cache to save on RPCs.
@@ -5150,7 +5166,7 @@ def CMDtry(parser, args):
 
 @metrics.collector.collect_metrics('git cl try-results')
 def CMDtry_results(parser, args):
-  """Prints info about try jobs associated with current CL."""
+  """Prints info about results for tryjobs associated with the current CL."""
   group = optparse.OptionGroup(parser, 'Try job results options')
   group.add_option(
       '-p', '--patchset', type=int, help='patchset number if not current.')
@@ -5178,15 +5194,15 @@ def CMDtry_results(parser, args):
       issue=options.issue, codereview=options.forced_codereview,
       auth_config=auth_config)
   if not cl.GetIssue():
-    parser.error('Need to upload first')
+    parser.error('Need to upload first.')
 
   patchset = options.patchset
   if not patchset:
     patchset = cl.GetMostRecentPatchset()
     if not patchset:
-      parser.error('Codereview doesn\'t know about issue %s. '
+      parser.error('Code review host doesn\'t know about issue %s. '
                    'No access to issue or wrong issue number?\n'
-                   'Either upload first, or pass --patchset explicitly' %
+                   'Either upload first, or pass --patchset explicitly.' %
                    cl.GetIssue())
 
   try:
@@ -5254,7 +5270,7 @@ def CMDweb(parser, args):
 
 @metrics.collector.collect_metrics('git cl set-commit')
 def CMDset_commit(parser, args):
-  """Sets the commit bit to trigger the Commit Queue."""
+  """Sets the commit bit to trigger the CQ."""
   parser.add_option('-d', '--dry-run', action='store_true',
                     help='trigger in dry run mode')
   parser.add_option('-c', '--clear', action='store_true',
@@ -5267,7 +5283,7 @@ def CMDset_commit(parser, args):
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
   if options.dry_run and options.clear:
-    parser.error('Make up your mind: both --dry-run and --clear not allowed')
+    parser.error('Only one of --dry-run and --clear are allowed.')
 
   cl = Changelist(auth_config=auth_config, issue=options.issue,
                   codereview=options.forced_codereview)
@@ -5278,7 +5294,7 @@ def CMDset_commit(parser, args):
   else:
     state = _CQState.COMMIT
   if not cl.GetIssue():
-    parser.error('Must upload the issue first')
+    parser.error('Must upload the issue first.')
   cl.SetCQState(state)
   return 0
 
@@ -5297,7 +5313,7 @@ def CMDset_close(parser, args):
                   codereview=options.forced_codereview)
   # Ensure there actually is an issue to close.
   if not cl.GetIssue():
-    DieWithError('ERROR No issue to close')
+    DieWithError('ERROR: No issue to close.')
   cl.CloseIssue()
   return 0
 
@@ -5360,6 +5376,12 @@ def CMDowners(parser, args):
       '--batch',
       action='store_true',
       help='Do not run interactively, just suggest some')
+  # TODO: Consider moving this to another command, since other
+  #       git-cl owners commands deal with owners for a given CL.
+  parser.add_option(
+      '--show-all',
+      action='store_true',
+      help='Show all owners for a particular file')
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
@@ -5368,9 +5390,20 @@ def CMDowners(parser, args):
 
   cl = Changelist(auth_config=auth_config)
 
+  if options.show_all:
+    for arg in args:
+      base_branch = cl.GetCommonAncestorWithUpstream()
+      change = cl.GetChange(base_branch, None)
+      database = owners.Database(change.RepositoryRoot(), file, os.path)
+      database.load_data_needed_for([arg])
+      print('Owners for %s:' % arg)
+      for owner in sorted(database.all_possible_owners([arg], None)):
+        print(' - %s' % owner)
+    return 0
+
   if args:
     if len(args) > 1:
-      parser.error('Unknown args')
+      parser.error('Unknown args.')
     base_branch = args[0]
   else:
     # Default to diffing against the common ancestor of the upstream branch.
@@ -5420,7 +5453,7 @@ def BuildGitDiffCmd(diff_type, upstream_commit, args, allow_prefix=False):
 
 
 def MatchingFileType(file_name, extensions):
-  """Returns true if the file name ends with one of the given extensions."""
+  """Returns True if the file name ends with one of the given extensions."""
   return bool([ext for ext in extensions if file_name.lower().endswith(ext)])
 
 
@@ -5688,7 +5721,7 @@ def CMDcheckout(parser, args):
 
   issue_arg = ParseIssueNumberArgument(args[0])
   if not issue_arg.valid:
-    parser.error('invalid codereview url or CL id')
+    parser.error('Invalid issue ID or URL.')
 
   target_issue = str(issue_arg.issue)
 
@@ -5797,7 +5830,7 @@ def main(argv):
       raise
     DieWithError(
         ('AppEngine is misbehaving and returned HTTP %d, again. Keep faith '
-          'and retry or visit go/isgaeup.\n%s') % (e.code, str(e)))
+         'and retry or visit go/isgaeup.\n%s') % (e.code, str(e)))
   return 0
 
 

@@ -35,7 +35,7 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/dbus/dbus_thread_linux.h"
+#include "components/dbus/thread_linux/dbus_thread_linux.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -60,6 +60,7 @@ const char kFreedesktopNotificationsPath[] = "/org/freedesktop/Notifications";
 // DBus methods.
 const char kMethodCloseNotification[] = "CloseNotification";
 const char kMethodGetCapabilities[] = "GetCapabilities";
+const char kMethodNameHasOwner[] = "NameHasOwner";
 const char kMethodNotify[] = "Notify";
 
 // DBus signals.
@@ -246,6 +247,21 @@ std::unique_ptr<ResourceFile> WriteDataToTmpFile(
   return resource_file;
 }
 
+bool CheckNotificationsNameHasOwner(dbus::Bus* bus) {
+  dbus::ObjectProxy* dbus_proxy =
+      bus->GetObjectProxy(DBUS_SERVICE_DBUS, dbus::ObjectPath(DBUS_PATH_DBUS));
+  dbus::MethodCall name_has_owner_call(DBUS_INTERFACE_DBUS,
+                                       kMethodNameHasOwner);
+  dbus::MessageWriter writer(&name_has_owner_call);
+  writer.AppendString(kFreedesktopNotificationsName);
+  std::unique_ptr<dbus::Response> name_has_owner_response =
+      dbus_proxy->CallMethodAndBlock(&name_has_owner_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT);
+  dbus::MessageReader reader(name_has_owner_response.get());
+  bool owned = false;
+  return name_has_owner_response && reader.PopBool(&owned) && owned;
+}
+
 }  // namespace
 
 // static
@@ -421,15 +437,15 @@ class NotificationPlatformBridgeLinuxImpl
       bus_ = base::MakeRefCounted<dbus::Bus>(bus_options);
     }
 
-    notification_proxy_ =
-        bus_->GetObjectProxy(kFreedesktopNotificationsName,
-                             dbus::ObjectPath(kFreedesktopNotificationsPath));
-    if (!notification_proxy_) {
+    if (!CheckNotificationsNameHasOwner(bus_.get())) {
       OnConnectionInitializationFinishedOnTaskRunner(
           ConnectionInitializationStatusCode::
               NATIVE_NOTIFICATIONS_NOT_SUPPORTED);
       return;
     }
+    notification_proxy_ =
+        bus_->GetObjectProxy(kFreedesktopNotificationsName,
+                             dbus::ObjectPath(kFreedesktopNotificationsPath));
 
     dbus::MethodCall get_capabilities_call(kFreedesktopNotificationsName,
                                            kMethodGetCapabilities);
@@ -444,8 +460,8 @@ class NotificationPlatformBridgeLinuxImpl
         capabilities_.insert(capability);
     }
     RecordMetricsForCapabilities();
-    if (!base::ContainsKey(capabilities_, kCapabilityBody) ||
-        !base::ContainsKey(capabilities_, kCapabilityActions)) {
+    if (!base::Contains(capabilities_, kCapabilityBody) ||
+        !base::Contains(capabilities_, kCapabilityActions)) {
       OnConnectionInitializationFinishedOnTaskRunner(
           ConnectionInitializationStatusCode::MISSING_REQUIRED_CAPABILITIES);
       return;
@@ -454,7 +470,7 @@ class NotificationPlatformBridgeLinuxImpl
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &NotificationPlatformBridgeLinuxImpl::SetBodyImagesSupported, this,
-            base::ContainsKey(capabilities_, kCapabilityBodyImages)));
+            base::Contains(capabilities_, kCapabilityBodyImages)));
 
     dbus::MethodCall get_server_information_call(kFreedesktopNotificationsName,
                                                  "GetServerInformation");
@@ -542,9 +558,9 @@ class NotificationPlatformBridgeLinuxImpl
         base::UTF16ToUTF8(CreateNotificationTitle(*notification)));
 
     std::ostringstream body;
-    if (base::ContainsKey(capabilities_, kCapabilityBody)) {
+    if (base::Contains(capabilities_, kCapabilityBody)) {
       const bool body_markup =
-          base::ContainsKey(capabilities_, kCapabilityBodyMarkup);
+          base::Contains(capabilities_, kCapabilityBodyMarkup);
 
       if (notification->UseOriginAsContextMessage()) {
         std::string url_display_text =
@@ -563,7 +579,7 @@ class NotificationPlatformBridgeLinuxImpl
         }
         EscapeUnsafeCharacters(&url_display_text);
         if (body_markup &&
-            base::ContainsKey(capabilities_, kCapabilityBodyHyperlinks)) {
+            base::Contains(capabilities_, kCapabilityBodyHyperlinks)) {
           body << "<a href=\""
                << net::EscapeForHTML(notification->origin_url().spec()) << "\">"
                << url_display_text << "</a>\n\n";
@@ -597,7 +613,7 @@ class NotificationPlatformBridgeLinuxImpl
         }
       } else if (notification->type() ==
                      message_center::NOTIFICATION_TYPE_IMAGE &&
-                 base::ContainsKey(capabilities_, kCapabilityBodyImages)) {
+                 base::Contains(capabilities_, kCapabilityBodyImages)) {
         std::unique_ptr<ResourceFile> image_file = WriteDataToTmpFile(
             ResizeImageToFdoMaxSize(notification->image()).As1xPNGBytes());
         if (image_file) {
@@ -615,7 +631,7 @@ class NotificationPlatformBridgeLinuxImpl
     // Even-indexed elements in this vector are action IDs passed back to
     // us in OnActionInvoked().  Odd-indexed ones contain the button text.
     std::vector<std::string> actions;
-    if (base::ContainsKey(capabilities_, kCapabilityActions)) {
+    if (base::Contains(capabilities_, kCapabilityActions)) {
       data->action_start = data->action_end;
       for (const auto& button_info : notification->buttons()) {
         // FDO notification buttons can contain either an icon or a label,
@@ -698,7 +714,7 @@ class NotificationPlatformBridgeLinuxImpl
     writer.AppendInt32(
         notification->never_timeout()
             ? kExpireTimeoutNever
-            : base::ContainsKey(capabilities_, kCapabilityPersistence)
+            : base::Contains(capabilities_, kCapabilityPersistence)
                   ? kExpireTimeoutDefault
                   : kExpireTimeout);
 
@@ -907,31 +923,27 @@ class NotificationPlatformBridgeLinuxImpl
     // callsite, so we can't roll the below into a nice loop.
     UMA_HISTOGRAM_BOOLEAN(
         "Notifications.Freedesktop.Capabilities.ActionIcons",
-        base::ContainsKey(capabilities_, kCapabilityActionIcons));
+        base::Contains(capabilities_, kCapabilityActionIcons));
     UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.Actions",
-                          base::ContainsKey(capabilities_, kCapabilityActions));
+                          base::Contains(capabilities_, kCapabilityActions));
     UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.Body",
-                          base::ContainsKey(capabilities_, kCapabilityBody));
+                          base::Contains(capabilities_, kCapabilityBody));
     UMA_HISTOGRAM_BOOLEAN(
         "Notifications.Freedesktop.Capabilities.BodyHyperlinks",
-        base::ContainsKey(capabilities_, kCapabilityBodyHyperlinks));
-    UMA_HISTOGRAM_BOOLEAN(
-        "Notifications.Freedesktop.Capabilities.BodyImages",
-        base::ContainsKey(capabilities_, kCapabilityBodyImages));
-    UMA_HISTOGRAM_BOOLEAN(
-        "Notifications.Freedesktop.Capabilities.BodyMarkup",
-        base::ContainsKey(capabilities_, kCapabilityBodyMarkup));
-    UMA_HISTOGRAM_BOOLEAN(
-        "Notifications.Freedesktop.Capabilities.IconMulti",
-        base::ContainsKey(capabilities_, kCapabilityIconMulti));
-    UMA_HISTOGRAM_BOOLEAN(
-        "Notifications.Freedesktop.Capabilities.IconStatic",
-        base::ContainsKey(capabilities_, kCapabilityIconStatic));
+        base::Contains(capabilities_, kCapabilityBodyHyperlinks));
+    UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.BodyImages",
+                          base::Contains(capabilities_, kCapabilityBodyImages));
+    UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.BodyMarkup",
+                          base::Contains(capabilities_, kCapabilityBodyMarkup));
+    UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.IconMulti",
+                          base::Contains(capabilities_, kCapabilityIconMulti));
+    UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.IconStatic",
+                          base::Contains(capabilities_, kCapabilityIconStatic));
     UMA_HISTOGRAM_BOOLEAN(
         "Notifications.Freedesktop.Capabilities.Persistence",
-        base::ContainsKey(capabilities_, kCapabilityPersistence));
+        base::Contains(capabilities_, kCapabilityPersistence));
     UMA_HISTOGRAM_BOOLEAN("Notifications.Freedesktop.Capabilities.Sound",
-                          base::ContainsKey(capabilities_, kCapabilitySound));
+                          base::Contains(capabilities_, kCapabilitySound));
   }
 
   void RewriteProductLogoFile() {

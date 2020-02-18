@@ -95,10 +95,10 @@ base::Optional<DawnTextureFormat> GetDawnFormat(viz::ResourceFormat format) {
     case viz::LUMINANCE_8:
       return DAWN_TEXTURE_FORMAT_R8_UNORM;
     case viz::RG_88:
-      return DAWN_TEXTURE_FORMAT_R8_G8_UNORM;
+      return DAWN_TEXTURE_FORMAT_RG8_UNORM;
     case viz::RGBA_8888:
     case viz::BGRA_8888:
-      return DAWN_TEXTURE_FORMAT_B8_G8_R8_A8_UNORM;
+      return DAWN_TEXTURE_FORMAT_BGRA8_UNORM;
     default:
       return {};
   }
@@ -109,11 +109,11 @@ base::Optional<DawnTextureFormat> GetDawnFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::R_8:
       return DAWN_TEXTURE_FORMAT_R8_UNORM;
     case gfx::BufferFormat::RG_88:
-      return DAWN_TEXTURE_FORMAT_R8_G8_UNORM;
+      return DAWN_TEXTURE_FORMAT_RG8_UNORM;
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
-      return DAWN_TEXTURE_FORMAT_B8_G8_R8_A8_UNORM;
+      return DAWN_TEXTURE_FORMAT_BGRA8_UNORM;
     default:
       return {};
   }
@@ -363,7 +363,12 @@ class SharedImageRepresentationDawnIOSurface
 };
 #endif  // BUILDFLAG(USE_DAWN)
 
-// Implementation of SharedImageBacking by wrapping IOSurfaces
+// Implementation of SharedImageBacking by wrapping IOSurfaces. Disable
+// unguarded availability warnings because they are incompatible with using a
+// scoped_nsprotocol for the id<MTLTexture> and because all access to Metal is
+// guarded on the context provider already successfully using Metal.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
 class SharedImageBackingIOSurface : public SharedImageBacking {
  public:
   SharedImageBackingIOSurface(const Mailbox& mailbox,
@@ -396,7 +401,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
     is_cleared_ = true;
   }
 
-  void Update() final {}
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) final {}
 
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) final {
     DCHECK(io_surface_);
@@ -416,7 +421,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
       legacy_texture_->RemoveLightweightRef(have_context());
       legacy_texture_ = nullptr;
     }
-
+    mtl_texture_.reset();
     io_surface_.reset();
   }
 
@@ -449,21 +454,17 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
                           &gr_backend_texture);
     }
     if (context_state->GrContextIsMetal()) {
-      if (@available(macOS 10.11, *)) {
+      if (!mtl_texture_) {
         id<MTLDevice> mtl_device =
             context_state->metal_context_provider()->GetMTLDevice();
-        base::scoped_nsprotocol<id<MTLTexture>> mtl_texture =
+        mtl_texture_ =
             CreateMetalTexture(mtl_device, io_surface_, size(), format());
-        DCHECK(mtl_texture);
-        // GrBackendTexture will take ownership of the MTLTexture passed in the
-        // GrMtlTextureInfo argument, so pass in a retained pointer.
-        GrMtlTextureInfo info;
-        info.fTexture = [mtl_texture retain];
-        gr_backend_texture = GrBackendTexture(size().width(), size().height(),
-                                              GrMipMapped::kNo, info);
-      } else {
-        return nullptr;
+        DCHECK(mtl_texture_);
       }
+      GrMtlTextureInfo info;
+      info.fTexture.retain(mtl_texture_.get());
+      gr_backend_texture = GrBackendTexture(size().width(), size().height(),
+                                            GrMipMapped::kNo, info);
     }
     sk_sp<SkPromiseImageTexture> promise_texture =
         SkPromiseImageTexture::Make(gr_backend_texture);
@@ -549,7 +550,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
                           gl_info.type, cleared_rect);
     texture->SetLevelImage(GL_TEXTURE_RECTANGLE, 0, image.get(),
                            gles2::Texture::BOUND);
-    texture->SetImmutable(true);
+    texture->SetImmutable(true, false);
 
     DCHECK_EQ(image->GetInternalFormat(), gl_info.format);
 
@@ -559,6 +560,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
 
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
   base::Optional<DawnTextureFormat> dawn_format_;
+  base::scoped_nsprotocol<id<MTLTexture>> mtl_texture_;
   bool is_cleared_ = false;
 
   // A texture for the associated legacy mailbox.
@@ -566,6 +568,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingIOSurface);
 };
+#pragma clang diagnostic pop
 
 // Implementation of SharedImageBackingFactoryIOSurface that creates
 // SharedImageBackings wrapping IOSurfaces.

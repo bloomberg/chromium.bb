@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -32,7 +31,6 @@
 namespace base {
 class CommandLine;
 class Value;
-struct Feature;
 }  // namespace base
 
 // A collection of functions designed for use with unit and browser tests.
@@ -94,6 +92,10 @@ base::Value ExecuteScriptAndGetValue(RenderFrameHost* render_frame_host,
 // that is incompatible with --site-per-process.
 bool AreAllSitesIsolatedForTesting();
 
+// Returns true if default SiteInstances are enabled. Typically used in a test
+// to mark expectations specific to default SiteInstances.
+bool AreDefaultSiteInstancesEnabled();
+
 // Appends --site-per-process to the command line, enabling tests to exercise
 // site isolation and cross-process iframes. This must be called early in
 // the test; the flag will be read on the first real navigation.
@@ -107,19 +109,6 @@ GURL GetWebUIURL(const std::string& host);
 
 // Returns a string constructed from the WebUI scheme and the given host.
 std::string GetWebUIURLString(const std::string& host);
-
-// Appends command line switches to |command_line| to enable the |feature| and
-// to set field trial params associated with the feature as specified by
-// |param_name| and |param_value|.
-//
-// Note that a dummy trial and trial group will be registered behind the scenes.
-// See also variations::testing::VariationsParamsManager class.
-// This method is deprecated because we want to unify the FeatureList change to
-// ScopedFeatureList. See crbug.com/713390
-void DeprecatedEnableFeatureWithParam(const base::Feature& feature,
-                                      const std::string& param_name,
-                                      const std::string& param_value,
-                                      base::CommandLine* command_line);
 
 // Creates a WebContents and attaches it as an inner WebContents, replacing
 // |rfh| in the frame tree. |rfh| should not be a main frame (in a browser test,
@@ -371,16 +360,20 @@ class TestPageScaleObserver : public WebContentsObserver {
 class EffectiveURLContentBrowserClient : public ContentBrowserClient {
  public:
   EffectiveURLContentBrowserClient(const GURL& url_to_modify,
-                                   const GURL& url_to_return)
-      : url_to_modify_(url_to_modify), url_to_return_(url_to_return) {}
-  ~EffectiveURLContentBrowserClient() override {}
+                                   const GURL& url_to_return,
+                                   bool requires_dedicated_process);
+  ~EffectiveURLContentBrowserClient() override;
 
  private:
   GURL GetEffectiveURL(BrowserContext* browser_context,
                        const GURL& url) override;
+  bool DoesSiteRequireDedicatedProcess(
+      BrowserOrResourceContext browser_or_resource_context,
+      const GURL& effective_site_url) override;
 
   GURL url_to_modify_;
   GURL url_to_return_;
+  bool requires_dedicated_process_;
 
   DISALLOW_COPY_AND_ASSIGN(EffectiveURLContentBrowserClient);
 };

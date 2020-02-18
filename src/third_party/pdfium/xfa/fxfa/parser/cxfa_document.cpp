@@ -18,7 +18,6 @@
 #include "third_party/base/stl_util.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
-#include "xfa/fxfa/layout/cxfa_layoutprocessor.h"
 #include "xfa/fxfa/parser/cscript_datawindow.h"
 #include "xfa/fxfa/parser/cscript_eventpseudomodel.h"
 #include "xfa/fxfa/parser/cscript_hostpseudomodel.h"
@@ -672,9 +671,8 @@ void CreateDataBinding(CXFA_Node* pFormNode,
     }
     case XFA_FFWidgetType::kChoiceList:
       if (pFormNode->IsChoiceListMultiSelect()) {
-        std::vector<CXFA_Node*> items = pDataNode->GetNodeList(
-            XFA_NODEFILTER_Children | XFA_NODEFILTER_Properties,
-            XFA_Element::Unknown);
+        std::vector<CXFA_Node*> items = pDataNode->GetNodeListWithFilter(
+            XFA_NODEFILTER_Children | XFA_NODEFILTER_Properties);
         if (!items.empty()) {
           bool single = items.size() == 1;
           wsNormalizeValue.clear();
@@ -1275,20 +1273,16 @@ void UpdateDataRelation(CXFA_Node* pDataNode, CXFA_Node* pDataDescriptionNode) {
 
 }  // namespace
 
-CXFA_Document::CXFA_Document(CXFA_FFNotify* notify)
+CXFA_Document::CXFA_Document(CXFA_FFNotify* notify,
+                             std::unique_ptr<LayoutProcessorIface> pLayout)
     : CXFA_NodeOwner(),
       notify_(notify),
-      m_pRootNode(nullptr),
-      m_eCurVersionMode(XFA_VERSION_DEFAULT),
-      m_dwDocFlags(0) {}
+      m_pLayoutProcessor(std::move(pLayout)) {
+  if (m_pLayoutProcessor)
+    m_pLayoutProcessor->SetDocument(this);
+}
 
 CXFA_Document::~CXFA_Document() = default;
-
-CXFA_LayoutProcessor* CXFA_Document::GetLayoutProcessor() {
-  if (!m_pLayoutProcessor)
-    m_pLayoutProcessor = pdfium::MakeUnique<CXFA_LayoutProcessor>(this);
-  return m_pLayoutProcessor.get();
-}
 
 void CXFA_Document::ClearLayoutData() {
   m_pLayoutProcessor.reset();
@@ -1810,7 +1804,7 @@ void CXFA_Document::DoDataRemerge(bool bDoDataMerge) {
   if (bDoDataMerge)
     DoDataMerge();
 
-  GetLayoutProcessor()->SetForceReLayout(true);
+  GetLayoutProcessor()->SetForceRelayout(true);
 }
 
 CXFA_Node* CXFA_Document::GetGlobalBinding(uint32_t dwNameHash) {
@@ -1822,3 +1816,24 @@ void CXFA_Document::RegisterGlobalBinding(uint32_t dwNameHash,
                                           CXFA_Node* pDataNode) {
   m_rgGlobalBinding[dwNameHash] = pDataNode;
 }
+
+void CXFA_Document::SetPendingNodesUnusedAndUnbound() {
+  for (CXFA_Node* pPageNode : m_pPendingPageSet) {
+    CXFA_NodeIterator sIterator(pPageNode);
+    for (CXFA_Node* pNode = sIterator.GetCurrent(); pNode;
+         pNode = sIterator.MoveToNext()) {
+      if (pNode->IsContainerNode()) {
+        CXFA_Node* pBindNode = pNode->GetBindData();
+        if (pBindNode) {
+          pBindNode->RemoveBindItem(pNode);
+          pNode->SetBindingNode(nullptr);
+        }
+      }
+      pNode->SetFlag(XFA_NodeFlag_UnusedNode);
+    }
+  }
+}
+
+CXFA_Document::LayoutProcessorIface::LayoutProcessorIface() = default;
+
+CXFA_Document::LayoutProcessorIface::~LayoutProcessorIface() = default;

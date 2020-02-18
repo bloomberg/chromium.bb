@@ -14,11 +14,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/gmock_callback_support.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/gmock_callback_support.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/media_util.h"
@@ -44,7 +44,6 @@ using ::testing::StrictMock;
 
 namespace media {
 
-static const VideoPixelFormat kVideoFormat = PIXEL_FORMAT_I420;
 static const gfx::Size kCodedSize(320, 240);
 static const gfx::Rect kVisibleRect(320, 240);
 static const gfx::Size kNaturalSize(320, 240);
@@ -201,7 +200,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
   StrictMock<MockMediaLog> media_log_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<FFmpegVideoDecoder> decoder_;
 
   // Various buffers for testing.
@@ -223,9 +222,10 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_Normal) {
 TEST_F(FFmpegVideoDecoderTest, Initialize_OpenDecoderFails) {
   // Specify Theora w/o extra data so that avcodec_open2() fails.
   VideoDecoderConfig config(kCodecTheora, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            kVideoFormat, VideoColorSpace(), kNoTransformation,
-                            kCodedSize, kVisibleRect, kNaturalSize,
-                            EmptyExtraData(), Unencrypted());
+                            VideoDecoderConfig::AlphaMode::kIsOpaque,
+                            VideoColorSpace(), kNoTransformation, kCodedSize,
+                            kVisibleRect, kNaturalSize, EmptyExtraData(),
+                            Unencrypted());
   InitializeWithConfigWithResult(config, false);
 }
 

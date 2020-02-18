@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "net/url_request/url_request_status.h"
 
 namespace net {
 struct RedirectInfo;

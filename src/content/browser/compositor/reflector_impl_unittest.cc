@@ -64,12 +64,38 @@ class TestOverlayCandidatesOzone : public ui::OverlayCandidatesOzone {
 };
 #endif  // defined(USE_OZONE)
 
-std::unique_ptr<viz::OverlayCandidateValidator> CreateTestValidatorOzone() {
 #if defined(USE_OZONE)
+std::unique_ptr<viz::OverlayCandidateValidator> CreateTestValidatorOzone() {
   std::vector<viz::OverlayStrategy> strategies = {
       viz::OverlayStrategy::kSingleOnTop, viz::OverlayStrategy::kUnderlay};
   return std::make_unique<viz::OverlayCandidateValidatorOzone>(
       std::make_unique<TestOverlayCandidatesOzone>(), std::move(strategies));
+}
+#endif  // defined(USE_OZONE)
+
+class TestOverlayProcessor : public viz::OverlayProcessor {
+ public:
+  explicit TestOverlayProcessor(const viz::ContextProvider* context_provider)
+      : OverlayProcessor(context_provider) {
+#if defined(USE_OZONE)
+    auto validator = CreateTestValidatorOzone();
+    overlay_validator_ = validator.get();
+    SetOverlayCandidateValidator(std::move(validator));
+#endif  // defined(USE_OZONE)
+  }
+
+  viz::OverlayCandidateValidator* get_overlay_validator() const {
+    return overlay_validator_;
+  }
+
+ private:
+  viz::OverlayCandidateValidator* overlay_validator_;
+};
+
+std::unique_ptr<TestOverlayProcessor> CreateTestOverlayProcessor(
+    const viz::ContextProvider* context_provider) {
+#if defined(USE_OZONE)
+  return std::make_unique<TestOverlayProcessor>(context_provider);
 #else
   return nullptr;
 #endif  // defined(USE_OZONE)
@@ -78,7 +104,7 @@ std::unique_ptr<viz::OverlayCandidateValidator> CreateTestValidatorOzone() {
 class TestOutputSurface : public BrowserCompositorOutputSurface {
  public:
   TestOutputSurface(scoped_refptr<viz::ContextProvider> context_provider)
-      : BrowserCompositorOutputSurface(std::move(context_provider), nullptr) {}
+      : BrowserCompositorOutputSurface(std::move(context_provider)) {}
 
   void SetFlip(bool flip) { capabilities_.flipped_output_surface = flip; }
 
@@ -146,7 +172,8 @@ class ReflectorImplTest : public testing::Test {
     context_provider->BindToCurrentThread();
     output_surface_ =
         std::make_unique<TestOutputSurface>(std::move(context_provider));
-    overlay_validator_ = CreateTestValidatorOzone();
+    overlay_processor_ =
+        CreateTestOverlayProcessor(output_surface_->context_provider());
 
     root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     compositor_->SetRootLayer(root_layer_.get());
@@ -160,8 +187,7 @@ class ReflectorImplTest : public testing::Test {
   void SetUpReflector() {
     reflector_ = std::make_unique<ReflectorImpl>(compositor_.get(),
                                                  mirroring_layer_.get());
-    reflector_->OnSourceSurfaceReady(output_surface_.get(),
-                                     overlay_validator_.get());
+    reflector_->OnSourceSurfaceReady(output_surface_.get());
   }
 
   void TearDown() override {
@@ -183,8 +209,11 @@ class ReflectorImplTest : public testing::Test {
   }
 
 #if defined(USE_OZONE)
-  void CheckOverlaySupport(viz::OverlayCandidateList* surfaces) {
-    overlay_validator_->CheckOverlaySupport(surfaces);
+  void ProcessForOverlays(viz::OverlayCandidateList* surfaces) {
+    overlay_processor_->SetSoftwareMirrorMode(
+        output_surface_->IsSoftwareMirrorMode());
+    DCHECK(overlay_processor_->get_overlay_validator());
+    overlay_processor_->get_overlay_validator()->CheckOverlaySupport(surfaces);
   }
 #endif  // defined(USE_OZONE)
 
@@ -199,7 +228,7 @@ class ReflectorImplTest : public testing::Test {
   std::unique_ptr<ui::Layer> mirroring_layer_;
   std::unique_ptr<ReflectorImpl> reflector_;
   std::unique_ptr<TestOutputSurface> output_surface_;
-  std::unique_ptr<viz::OverlayCandidateValidator> overlay_validator_;
+  std::unique_ptr<TestOverlayProcessor> overlay_processor_;
 };
 
 namespace {
@@ -241,7 +270,7 @@ TEST_F(ReflectorImplTest, CheckOverlayNoReflector) {
   plane_2.plane_z_order = 1;
   list.push_back(plane_1);
   list.push_back(plane_2);
-  CheckOverlaySupport(&list);
+  ProcessForOverlays(&list);
   EXPECT_TRUE(list[0].overlay_handled);
 }
 
@@ -257,7 +286,7 @@ TEST_F(ReflectorImplTest, CheckOverlaySWMirroring) {
   plane_2.plane_z_order = 1;
   list.push_back(plane_1);
   list.push_back(plane_2);
-  CheckOverlaySupport(&list);
+  ProcessForOverlays(&list);
   EXPECT_FALSE(list[0].overlay_handled);
 }
 #endif  // defined(USE_OZONE)

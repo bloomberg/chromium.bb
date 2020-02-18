@@ -27,8 +27,8 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -251,7 +251,7 @@ public class OriginVerifier {
 
         if (mNativeOriginVerifier != 0) cleanUp();
         if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
+                        .isFullBrowserStarted()) {
             // Early return for testing without native.
             return;
         }
@@ -424,7 +424,7 @@ public class OriginVerifier {
      * Checks for a previously saved verification result.
      */
     private void checkForSavedResult() {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             boolean verified = VerificationResultStore.isRelationshipSaved(
                     new Relationship(mPackageName, mSignatureFingerprint, mOrigin, mRelation));
 

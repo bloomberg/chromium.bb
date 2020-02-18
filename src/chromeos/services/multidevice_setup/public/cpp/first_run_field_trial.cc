@@ -30,7 +30,7 @@ constexpr const char* const kBoardsToEnableInstantTethering[] = {"eve",
 void CreateFirstRunFieldTrial(base::FeatureList* feature_list) {
   // If the hardware name of the current device is not one of the board names in
   // |kBoardsToEnableInstantTethering|, nothing needs to be done.
-  if (!base::ContainsValue(
+  if (!base::Contains(
           kBoardsToEnableInstantTethering,
           variations::VariationsFieldTrialCreator::GetShortHardwareClass())) {
     return;

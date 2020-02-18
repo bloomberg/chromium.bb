@@ -28,11 +28,11 @@
 #include "ui/gfx/geometry/point.h"
 
 using blink::WebDragOperationsMask;
-using content::mojom::DraggingInfo;
 using content::DropData;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContentsImpl;
+using remote_cocoa::mojom::DraggingInfo;
 
 namespace {
 

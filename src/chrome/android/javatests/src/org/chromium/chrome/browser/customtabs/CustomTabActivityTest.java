@@ -65,7 +65,6 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.base.PathUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
@@ -80,6 +79,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -89,7 +89,7 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuTestSupport;
-import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
+import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
@@ -164,7 +164,6 @@ public class CustomTabActivityTest {
     private static final String TARGET_BLANK_TEST_PAGE =
             "/chrome/test/data/android/cct_target_blank.html";
     private static final String TEST_MENU_TITLE = "testMenuTitle";
-    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
     private static final String WEBLITE_PREFIX = "http://googleweblight.com/i?u=";
     private static final String JS_MESSAGE = "from_js";
     private static final String TITLE_FROM_POSTMESSAGE_TO_CHANNEL =
@@ -225,7 +224,6 @@ public class CustomTabActivityTest {
         mTestServer = EmbeddedTestServer.createAndStartServer(appContext);
         mTestPage = mTestServer.getURL(TEST_PAGE);
         mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         mWebServer = TestWebServer.start();
     }
@@ -1170,7 +1168,7 @@ public class CustomTabActivityTest {
         assertEquals(getActivity().getIntentDataProvider().getSession(), session);
         Assert.assertFalse("CustomTabContentHandler handled intent with wrong session",
                 TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-                    return BrowserSessionContentUtils.handleBrowserServicesIntent(
+                    return getSessionDataHolder().handleIntent(
                             CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage2));
                 }));
         CriteriaHelper.pollInstrumentationThread(
@@ -1178,7 +1176,7 @@ public class CustomTabActivityTest {
         Assert.assertTrue("CustomTabContentHandler can't handle intent with same session",
                 TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
                     intent.setData(Uri.parse(mTestPage2));
-                    return BrowserSessionContentUtils.handleBrowserServicesIntent(intent);
+                    return getSessionDataHolder().handleIntent(intent);
                 }));
         final Tab tab = getActivity().getActivityTab();
         final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();
@@ -1252,7 +1250,8 @@ public class CustomTabActivityTest {
         });
         Assert.assertTrue("CustomTabContentHandler can't handle intent with same session",
                 TestThreadUtils.runOnUiThreadBlockingNoException(
-                        () -> BrowserSessionContentUtils.handleBrowserServicesIntent(intent)));
+                        () -> getSessionDataHolder()
+                                .handleIntent(intent)));
         pageLoadFinishedHelper.waitForCallback(0);
     }
 
@@ -1292,7 +1291,8 @@ public class CustomTabActivityTest {
         });
         Assert.assertTrue("CustomTabContentHandler can't handle intent with same session",
                 TestThreadUtils.runOnUiThreadBlockingNoException(
-                        () -> BrowserSessionContentUtils.handleBrowserServicesIntent(intent)));
+                        () -> getSessionDataHolder()
+                                .handleIntent(intent)));
         pageLoadFinishedHelper.waitForCallback(0);
     }
 
@@ -2889,5 +2889,9 @@ public class CustomTabActivityTest {
     private void waitForTitle(String newTitle) throws InterruptedException {
         Tab currentTab = getActivity().getActivityTab();
         ChromeTabUtils.waitForTitle(currentTab, newTitle);
+    }
+
+    private SessionDataHolder getSessionDataHolder() {
+        return ChromeApplication.getComponent().resolveSessionDataHolder();
     }
 }

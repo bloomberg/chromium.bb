@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/search/instant_service.h"
@@ -65,9 +66,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   // Check that a URL with attributions can be set.
   EXPECT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
-                                     "setBackgroundURLWithAttributions('https:/"
+                                     "setBackgroundInfo('https:/"
                                      "/www.test.com/', 'attr1', 'attr2', "
-                                     "'https://www.attribution.com/')"));
+                                     "'https://www.attribution.com/', '')"));
   observer.WaitForThemeInfoUpdated("https://www.test.com/", "attr1", "attr2",
                                    "https://www.attribution.com/");
 
@@ -93,9 +94,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest, AttributionSetAndReset) {
       GURL("https://www.test.com/"));
   EXPECT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
-                                     "setBackgroundURLWithAttributions('https:/"
+                                     "setBackgroundInfo('https:/"
                                      "/www.test.com/', 'attr1', 'attr2', "
-                                     "'https://www.attribution.com/')"));
+                                     "'https://www.attribution.com/', '')"));
   observer.WaitForThemeInfoUpdated("https://www.test.com/", "attr1", "attr2",
                                    "https://www.attribution.com/");
 
@@ -283,9 +284,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
       GURL("https://www.test.com/"));
   ASSERT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
-                                     "setBackgroundURLWithAttributions('https:/"
+                                     "setBackgroundInfo('https:/"
                                      "/www.test.com/', 'attr1', 'attr2', "
-                                     "'https://www.attribution.com/')"));
+                                     "'https://www.attribution.com/', '')"));
   observer.WaitForThemeInfoUpdated("https://www.test.com/", "attr1", "attr2",
                                    "https://www.attribution.com/");
 
@@ -431,6 +432,10 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   EXPECT_TRUE(result);
 }
 
+// TODO(crbug/980638): Update/Remove when Linux and/or ChromeOS support dark
+// mode.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+
 // Tests that dark mode styling is properly applied when a theme and/or custom
 // background is set.
 class LocalNTPBackgroundsAndDarkModeTest
@@ -443,11 +448,15 @@ class LocalNTPBackgroundsAndDarkModeTest
   void SetUpOnMainThread() override {
     LocalNTPCustomBackgroundsThemeTest::SetUpOnMainThread();
 
+    theme()->AddColorSchemeNativeThemeObserver(
+        ui::NativeTheme::GetInstanceForWeb());
+
     // Enable dark mode.
     instant_service =
         InstantServiceFactory::GetForProfile(browser()->profile());
     theme()->SetDarkMode(true);
-    instant_service->SetDarkModeThemeForTesting(theme());
+    instant_service->SetNativeThemeForTesting(theme());
+    theme()->NotifyObservers();
     instant_service->SetImageFetcherForTesting(
         new testing::NiceMock<image_fetcher::MockImageFetcher>());
   }
@@ -544,3 +553,5 @@ IN_PROC_BROWSER_TEST_F(LocalNTPBackgroundsAndDarkModeTest,
   EXPECT_TRUE(GetIsDarkModeApplied(active_tab));
   EXPECT_TRUE(GetIsLightChipsApplied(active_tab));
 }
+
+#endif

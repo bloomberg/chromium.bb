@@ -25,6 +25,10 @@ enum AcceleratorAction {
   BRIGHTNESS_UP,
   CYCLE_BACKWARD_MRU,
   CYCLE_FORWARD_MRU,
+  DESKS_ACTIVATE_DESK,
+  DESKS_MOVE_ACTIVE_ITEM,
+  DESKS_NEW_DESK,
+  DESKS_REMOVE_CURRENT_DESK,
   DEV_ADD_REMOVE_DISPLAY,
   DEV_TOGGLE_UNIFIED_DESKTOP,
   DISABLE_CAPS_LOCK,
@@ -73,6 +77,7 @@ enum AcceleratorAction {
   SHOW_SHORTCUT_VIEWER,
   SHOW_STYLUS_TOOLS,
   SHOW_TASK_MANAGER,
+  START_AMBIENT_MODE,
   START_VOICE_INTERACTION,
   SUSPEND,
   SWAP_PRIMARY_DISPLAY,
@@ -108,7 +113,6 @@ enum AcceleratorAction {
   WINDOW_CYCLE_SNAP_LEFT,
   WINDOW_CYCLE_SNAP_RIGHT,
   WINDOW_MINIMIZE,
-  WINDOW_POSITION_CENTER,
 
   // Debug accelerators are intentionally at the end, so that if you remove one
   // you don't need to update tests which check hashes of the ids.

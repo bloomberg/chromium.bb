@@ -9,7 +9,6 @@
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/home_button_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
@@ -92,9 +91,7 @@ void SetShelfBehaviorsFromPrefs() {
 
   // The shelf should always be bottom-aligned in tablet mode; alignment is
   // assigned from prefs when tablet mode is exited.
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     return;
   }
 
@@ -108,22 +105,6 @@ ShelfController::ShelfController()
           features::IsNotificationIndicatorEnabled()),
       message_center_observer_(this) {
   ShelfModel::SetInstance(&model_);
-
-  // Set the delegate and title string for the back button.
-  model_.SetShelfItemDelegate(ShelfID(kBackButtonId), nullptr);
-  DCHECK_EQ(0, model_.ItemIndexByID(ShelfID(kBackButtonId)));
-  ShelfItem back_item = model_.items()[0];
-  back_item.title = l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE);
-  model_.Set(0, back_item);
-
-  // Set the delegate and title string for the home button.
-  model_.SetShelfItemDelegate(ShelfID(kAppListId),
-                              std::make_unique<HomeButtonDelegate>());
-  DCHECK_EQ(1, model_.ItemIndexByID(ShelfID(kAppListId)));
-  ShelfItem launcher_item = model_.items()[1];
-  launcher_item.title =
-      l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE);
-  model_.Set(1, launcher_item);
 
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);

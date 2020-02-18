@@ -91,21 +91,6 @@ namespace {
 
 const uint32_t kMaxTransferCacheEntrySizeForTransferBuffer = 1024;
 
-void RecordPaintOpSize(size_t size) {
-  constexpr size_t kMinPaintOpSize = 512 * 1024;
-  constexpr size_t kMaxPaintOpSize = 16 * 1024 * 1024;
-
-  // Serialization failure, record max size.
-  if (size == 0u)
-    size = kMaxPaintOpSize;
-
-  if (size < kMinPaintOpSize)
-    return;
-
-  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.OopRaster.PaintOpSerializationSize", size,
-                              kMinPaintOpSize, kMaxPaintOpSize, 50);
-}
-
 }  // namespace
 
 // Helper to copy data to the GPU service over the transfer cache.
@@ -258,13 +243,11 @@ class RasterImplementation::PaintOpSerializer {
       }
 
       if (!size) {
-        RecordPaintOpSize(0u);
         LOG(ERROR) << "Failed to serialize op in " << block_size << " bytes.";
         return 0u;
       }
     }
 
-    RecordPaintOpSize(size);
     DCHECK_LE(size, free_bytes_);
     DCHECK(base::CheckAdd<uint32_t>(written_bytes_, size).IsValid());
 

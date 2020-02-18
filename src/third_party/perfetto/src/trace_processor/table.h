@@ -17,16 +17,17 @@
 #ifndef SRC_TRACE_PROCESSOR_TABLE_H_
 #define SRC_TRACE_PROCESSOR_TABLE_H_
 
-#include <sqlite3.h>
-
 #include <functional>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "perfetto/base/optional.h"
+#include "perfetto/ext/base/optional.h"
+#include "perfetto/ext/base/utils.h"
 #include "perfetto/trace_processor/basic_types.h"
+#include "perfetto/trace_processor/status.h"
 #include "src/trace_processor/query_constraints.h"
+#include "src/trace_processor/sqlite.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -48,7 +49,8 @@ class Table : public sqlite3_vtab {
     kLong = 3,
     kInt = 4,
     kDouble = 5,
-    kUnknown = 6,
+    kBool = 6,
+    kUnknown = 7,
   };
 
   // Describes a column of this table.

@@ -23,8 +23,8 @@ struct UrlOriginAdapter {
     scoped_refptr<blink::SecurityOrigin> tuple_origin;
     if (!tuple.IsInvalid()) {
       tuple_origin = blink::SecurityOrigin::Create(
-          String::FromUTF8(tuple.scheme().c_str()),
-          String::FromUTF8(tuple.host().c_str()), tuple.port());
+          String::FromUTF8(tuple.scheme()), String::FromUTF8(tuple.host()),
+          tuple.port());
     }
 
     if (nonce_if_opaque) {

@@ -38,19 +38,6 @@ std::string GetWebURLRequestHeadersAsString(
 blink::WebHTTPBody GetWebHTTPBodyForRequestBody(
     const network::ResourceRequestBody& input);
 
-// Takes a ResourceRequestBody with additional |blob_ptrs| which corresponds to
-// each Blob entries, and converts into WebHTTPBody.
-// TODO(kinuko): Remove this once Network Service is shipped.
-blink::WebHTTPBody GetWebHTTPBodyForRequestBodyWithBlobPtrs(
-    const network::ResourceRequestBody& input,
-    std::vector<blink::mojom::BlobPtrInfo> blob_ptrs);
-
-// Takes a ResourceRequestBody and gets blob pointers for Blob entries.
-// Used only in non-NetworkService case.
-// TODO(kinuko): Remove this once Network Service is shipped.
-std::vector<blink::mojom::BlobPtrInfo> GetBlobPtrsForRequestBody(
-    const network::ResourceRequestBody& input);
-
 // Takes a WebHTTPBody and converts into a ResourceRequestBody.
 scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
     const blink::WebHTTPBody& httpBody);

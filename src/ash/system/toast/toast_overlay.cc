@@ -4,6 +4,7 @@
 
 #include "ash/system/toast/toast_overlay.h"
 
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -149,8 +150,8 @@ class ToastOverlayView : public views::View, public views::ButtonListener {
                    const base::string16& text,
                    const base::Optional<base::string16>& dismiss_text)
       : overlay_(overlay) {
-    auto* layout = SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal));
 
     if (dismiss_text.has_value()) {
       button_ = new ToastOverlayButton(
@@ -230,7 +231,7 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.accept_events = true;
-  params.keep_on_top = true;
+  params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   params.bounds = CalculateOverlayBounds();
   // Show toasts above the app list and below the lock screen.
   params.parent = Shell::GetRootWindowForNewWindows()->GetChildById(
@@ -248,11 +249,11 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
       overlay_window,
       base::TimeDelta::FromMilliseconds(kSlideAnimationDurationMs));
 
-  keyboard::KeyboardController::Get()->AddObserver(this);
+  keyboard::KeyboardUIController::Get()->AddObserver(this);
 }
 
 ToastOverlay::~ToastOverlay() {
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
   overlay_widget_->Close();
 }
 
@@ -301,7 +302,7 @@ void ToastOverlay::OnImplicitAnimationsCompleted() {
     delegate_->OnClosed();
 }
 
-void ToastOverlay::OnKeyboardWorkspaceOccludedBoundsChanged(
+void ToastOverlay::OnKeyboardOccludedBoundsChanged(
     const gfx::Rect& new_bounds_in_screen) {
   // TODO(https://crbug.com/943446): Observe changes in user work area bounds
   // directly instead of listening for keyboard bounds changes.

@@ -66,6 +66,16 @@ SerializedHandle::SerializedHandle(const base::SharedMemoryHandle& handle,
       open_flags_(0),
       file_io_(0) {}
 
+SerializedHandle::SerializedHandle(base::ReadOnlySharedMemoryRegion region)
+    : SerializedHandle(
+          base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
+              std::move(region))) {}
+
+SerializedHandle::SerializedHandle(base::UnsafeSharedMemoryRegion region)
+    : SerializedHandle(
+          base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+              std::move(region))) {}
+
 SerializedHandle::SerializedHandle(
     base::subtle::PlatformSharedMemoryRegion region)
     : type_(SHARED_MEMORY_REGION),

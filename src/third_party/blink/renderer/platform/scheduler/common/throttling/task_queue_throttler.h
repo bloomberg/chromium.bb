@@ -5,9 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_THROTTLING_TASK_QUEUE_THROTTLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_THROTTLING_TASK_QUEUE_THROTTLER_H_
 
-#include <set>
-#include <unordered_map>
-
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -21,6 +18,8 @@
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/cpu_time_budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/wake_up_budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace base {
 namespace trace_event {
@@ -94,9 +93,7 @@ class PLATFORM_EXPORT BudgetPoolController {
 // See IncreaseThrottleRefCount & DecreaseThrottleRefCount.
 //
 // This class is main-thread only.
-class PLATFORM_EXPORT TaskQueueThrottler
-    : public base::sequence_manager::TaskQueue::Observer,
-      public BudgetPoolController {
+class PLATFORM_EXPORT TaskQueueThrottler : public BudgetPoolController {
  public:
   // We use tracing controller from ThreadSchedulerImpl because an instance
   // of this class is always its member, so has the same lifetime.
@@ -105,9 +102,8 @@ class PLATFORM_EXPORT TaskQueueThrottler
 
   ~TaskQueueThrottler() override;
 
-  // TaskQueue::Observer implementation:
   void OnQueueNextWakeUpChanged(base::sequence_manager::TaskQueue* queue,
-                                base::TimeTicks wake_up) override;
+                                base::TimeTicks wake_up);
 
   // BudgetPoolController implementation:
   void AddQueueToBudgetPool(base::sequence_manager::TaskQueue* queue,
@@ -159,15 +155,38 @@ class PLATFORM_EXPORT TaskQueueThrottler
                    base::TimeTicks now) const;
 
  private:
-  struct Metadata {
-    Metadata() : throttling_ref_count(0) {}
+  class Metadata : public base::sequence_manager::TaskQueue::Observer {
+   public:
+    Metadata(base::sequence_manager::TaskQueue* queue,
+             TaskQueueThrottler* throttler);
 
-    size_t throttling_ref_count;
+    ~Metadata() override;
 
-    std::unordered_set<BudgetPool*> budget_pools;
+    // Returns true if |throttling_ref_count_| was zero.
+    bool IncrementRefCount();
+
+    // Returns true if |throttling_ref_count_| is now zero.
+    bool DecrementRefCount();
+
+    // TaskQueue::Observer implementation:
+    void OnPostTask(base::Location from_here, base::TimeDelta delay) override;
+    void OnQueueNextWakeUpChanged(base::TimeTicks wake_up) override;
+
+    size_t throttling_ref_count() const { return throttling_ref_count_; }
+
+    const HashSet<BudgetPool*>& budget_pools() const { return budget_pools_; }
+
+    HashSet<BudgetPool*>& budget_pools() { return budget_pools_; }
+
+   private:
+    base::sequence_manager::TaskQueue* const queue_;
+    TaskQueueThrottler* const throttler_;
+    size_t throttling_ref_count_ = 0;
+    HashSet<BudgetPool*> budget_pools_;
   };
+
   using TaskQueueMap =
-      std::unordered_map<base::sequence_manager::TaskQueue*, Metadata>;
+      HashMap<base::sequence_manager::TaskQueue*, std::unique_ptr<Metadata>>;
 
   void PumpThrottledTasks();
 
@@ -218,9 +237,9 @@ class PLATFORM_EXPORT TaskQueueThrottler
   base::Optional<base::TimeTicks> pending_pump_throttled_tasks_runtime_;
   bool allow_throttling_;
 
-  std::unordered_map<BudgetPool*, std::unique_ptr<BudgetPool>> budget_pools_;
+  HashMap<BudgetPool*, std::unique_ptr<BudgetPool>> budget_pools_;
 
-  base::WeakPtrFactory<TaskQueueThrottler> weak_factory_;
+  base::WeakPtrFactory<TaskQueueThrottler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueThrottler);
 };

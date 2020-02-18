@@ -8,11 +8,13 @@
 
 #include "base/one_shot_event.h"
 #include "chrome/browser/extensions/convert_web_app.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -39,16 +41,15 @@ bool BookmarkAppRegistrar::IsInstalled(const GURL& start_url) const {
   // Iterate through the extensions and extract the LaunchWebUrl (bookmark apps)
   // or check the web extent (hosted apps).
   for (const scoped_refptr<const Extension>& extension : extensions) {
-    if (!extension->is_hosted_app())
+    if (!extension->from_bookmark())
       continue;
 
     if (!BookmarkAppIsLocallyInstalled(profile(), extension.get()))
       continue;
 
-    if (extension->web_extent().MatchesURL(start_url) ||
-        AppLaunchInfo::GetLaunchWebURL(extension.get()) == start_url) {
+    DCHECK(extension->web_extent().is_empty());
+    if (AppLaunchInfo::GetLaunchWebURL(extension.get()) == start_url)
       return true;
-    }
   }
   return false;
 }
@@ -62,27 +63,21 @@ bool BookmarkAppRegistrar::WasExternalAppUninstalledByUser(
   return ExtensionPrefs::Get(profile())->IsExternalExtensionUninstalled(app_id);
 }
 
-bool BookmarkAppRegistrar::HasScopeUrl(const web_app::AppId& app_id) const {
-  const auto* extension = GetExtension(app_id);
-  DCHECK(extension);
+base::Optional<web_app::AppId> BookmarkAppRegistrar::FindAppWithUrlInScope(
+    const GURL& url) const {
+  const Extension* extension = util::GetInstalledPwaForUrl(profile(), url);
 
-  if (!extension->from_bookmark())
-    return false;
+  if (!extension)
+    extension = GetInstalledShortcutForUrl(profile(), url);
 
-  return UrlHandlers::GetUrlHandlers(extension) != nullptr;
+  if (extension)
+    return extension->id();
+
+  return base::nullopt;
 }
 
-GURL BookmarkAppRegistrar::GetScopeUrlForApp(
-    const web_app::AppId& app_id) const {
-  // Returning an empty GURL for a Bookmark App that doesn't have a scope, could
-  // lead to incorrecly thinking some URLs are in-scope of the app. To avoid
-  // this, CHECK that the Bookmark App has a scope. Callers can use
-  // HasScopeUrl() to know if they can call this method.
-  CHECK(HasScopeUrl(app_id));
-
-  GURL scope_url = GetScopeURLFromBookmarkApp(GetExtension(app_id));
-  CHECK(scope_url.is_valid());
-  return scope_url;
+int BookmarkAppRegistrar::CountUserInstalledApps() const {
+  return CountUserInstalledBookmarkApps(profile());
 }
 
 void BookmarkAppRegistrar::OnExtensionInstalled(
@@ -112,6 +107,52 @@ const Extension* BookmarkAppRegistrar::GetExtension(
     const web_app::AppId& app_id) const {
   return ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
       app_id);
+}
+
+std::string BookmarkAppRegistrar::GetAppShortName(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  return extension ? extension->short_name() : std::string();
+}
+
+std::string BookmarkAppRegistrar::GetAppDescription(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  return extension ? extension->description() : std::string();
+}
+
+base::Optional<SkColor> BookmarkAppRegistrar::GetAppThemeColor(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  if (!extension)
+    return base::nullopt;
+
+  base::Optional<SkColor> extension_theme_color =
+      AppThemeColorInfo::GetThemeColor(extension);
+  if (extension_theme_color)
+    return SkColorSetA(*extension_theme_color, SK_AlphaOPAQUE);
+
+  return base::nullopt;
+}
+
+const GURL& BookmarkAppRegistrar::GetAppLaunchURL(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  return extension ? AppLaunchInfo::GetLaunchWebURL(extension)
+                   : GURL::EmptyGURL();
+}
+
+base::Optional<GURL> BookmarkAppRegistrar::GetAppScope(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  if (!extension)
+    return base::nullopt;
+
+  GURL scope_url = GetScopeURLFromBookmarkApp(GetExtension(app_id));
+  if (scope_url.is_valid())
+    return scope_url;
+
+  return base::nullopt;
 }
 
 }  // namespace extensions

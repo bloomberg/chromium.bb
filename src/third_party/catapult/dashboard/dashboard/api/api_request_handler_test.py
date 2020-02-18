@@ -27,13 +27,23 @@ class TestApiRequestHandler(api_request_handler.ApiRequestHandler):
     return {'foo': 'response'}
 
 
+class TestApiRequestHandlerForbidden(api_request_handler.ApiRequestHandler):
+
+  def _CheckUser(self):
+    return self._CheckIsInternalUser()
+
+  def Post(self):
+    raise api_request_handler.ForbiddenError()
+
+
 class ApiRequestHandlerTest(testing_common.TestCase):
 
   def setUp(self):
     super(ApiRequestHandlerTest, self).setUp()
 
     app = webapp2.WSGIApplication(
-        [(r'/api/test', TestApiRequestHandler)])
+        [(r'/api/test', TestApiRequestHandler),
+         (r'/api/forbidden', TestApiRequestHandlerForbidden)])
     self.testapp = webtest.TestApp(app)
 
   def testPost_Authorized_PostCalled(self):
@@ -43,6 +53,11 @@ class ApiRequestHandlerTest(testing_common.TestCase):
     self.assertEqual(
         {'foo': 'response'},
         json.loads(response.body))
+
+  def testPost_ForbiddenError_Raised(self):
+    self.SetCurrentUserOAuth(testing_common.INTERNAL_USER)
+    self.SetCurrentClientIdOAuth(api_auth.OAUTH_CLIENT_ID_WHITELIST[0])
+    self.Post('/api/forbidden', status=403)
 
   @mock.patch.object(
       api_auth,
@@ -124,13 +139,13 @@ class ApiRequestHandlerTest(testing_common.TestCase):
     api_request_handler._ALLOWED_ORIGINS = ['foo.appspot.com']
     response = self.testapp.options(
         '/api/test',
-        headers={'origin': 'https://123jkjasdf-dot-foo.appspot.com'})
+        headers={'origin': 'https://dev-simon-123jkjasdf-dot-foo.appspot.com'})
     self.assertListEqual(
         [('Content-Length', '0'),
          ('Cache-Control', 'no-cache'),
          ('Content-Type', 'application/json; charset=utf-8'),
          ('Access-Control-Allow-Origin',
-          'https://123jkjasdf-dot-foo.appspot.com'),
+          'https://dev-simon-123jkjasdf-dot-foo.appspot.com'),
          ('Access-Control-Allow-Credentials', 'true'),
          ('Access-Control-Allow-Methods', 'GET,OPTIONS,POST'),
          ('Access-Control-Allow-Headers', 'Accept,Authorization,Content-Type'),

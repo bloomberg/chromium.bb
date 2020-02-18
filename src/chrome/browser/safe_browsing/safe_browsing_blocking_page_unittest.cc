@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
@@ -25,7 +26,6 @@
 #include "components/safe_browsing/features.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/core/safe_browsing_quiet_error_ui.h"
-#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,6 +38,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -75,6 +76,38 @@ namespace safe_browsing {
 
 namespace {
 
+// This is used to avoid a DCHECK in ~ThreatDetails because the response wasn't
+// received yet.
+class CacheMissNetworkURLLoaderFactory final
+    : public network::mojom::URLLoaderFactory {
+ public:
+  CacheMissNetworkURLLoaderFactory() = default;
+  ~CacheMissNetworkURLLoaderFactory() override = default;
+
+  // network::mojom::URLLoaderFactory implementation.
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& url_request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    network::URLLoaderCompletionStatus status;
+    status.error_code = net::ERR_CACHE_MISS;
+    client->OnComplete(status);
+  }
+
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+ private:
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(CacheMissNetworkURLLoaderFactory);
+};
+
 // A SafeBrowingBlockingPage class that does not create windows.
 class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
  public:
@@ -83,12 +116,14 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
       WebContents* web_contents,
       const GURL& main_frame_url,
       const UnsafeResourceList& unsafe_resources,
-      const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options)
+      const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options,
+      network::SharedURLLoaderFactory* url_loader_for_testing = nullptr)
       : SafeBrowsingBlockingPage(manager,
                                  web_contents,
                                  main_frame_url,
                                  unsafe_resources,
-                                 display_options) {
+                                 display_options,
+                                 url_loader_for_testing) {
     // Don't delay details at all for the unittest.
     SetThreatDetailsProceedDelayForTesting(0);
     DontCreateViewForTesting();
@@ -98,8 +133,17 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
 class TestSafeBrowsingBlockingPageFactory
     : public SafeBrowsingBlockingPageFactory {
  public:
-  TestSafeBrowsingBlockingPageFactory() { }
-  ~TestSafeBrowsingBlockingPageFactory() override {}
+  TestSafeBrowsingBlockingPageFactory() {
+    fake_url_loader_factory_ =
+        std::make_unique<CacheMissNetworkURLLoaderFactory>();
+    url_loader_factory_wrapper_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            fake_url_loader_factory_.get());
+  }
+  ~TestSafeBrowsingBlockingPageFactory() override {
+    if (url_loader_factory_wrapper_)
+      url_loader_factory_wrapper_->Detach();
+  }
 
   SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
       BaseUIManager* manager,
@@ -123,10 +167,15 @@ class TestSafeBrowsingBlockingPageFactory
         true,  // should_open_links_in_new_tab
         true,  // always_show_back_to_safety
         "cpn_safe_browsing" /* help_center_article_link */);
-    return new TestSafeBrowsingBlockingPage(manager, web_contents,
-                                            main_frame_url, unsafe_resources,
-                                            display_options);
+    return new TestSafeBrowsingBlockingPage(
+        manager, web_contents, main_frame_url, unsafe_resources,
+        display_options, url_loader_factory_wrapper_.get());
   }
+
+ private:
+  std::unique_ptr<CacheMissNetworkURLLoaderFactory> fake_url_loader_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      url_loader_factory_wrapper_;
 };
 
 class TestSafeBrowsingBlockingPageQuiet : public SafeBrowsingBlockingPage {
@@ -237,13 +286,6 @@ class SafeBrowsingBlockingPageTestBase
       SetContents(std::move(incognito_web_contents));
     }
 
-    system_request_context_getter_ =
-        base::MakeRefCounted<net::TestURLRequestContextGetter>(
-            base::CreateSingleThreadTaskRunnerWithTraits(
-                {content::BrowserThread::IO}));
-    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
-        system_request_context_getter_.get());
-
     SafeBrowsingBlockingPage::RegisterFactory(&factory_);
     ResetUserResponse();
     SafeBrowsingUIManager::CreateWhitelistForTesting(web_contents());
@@ -260,6 +302,8 @@ class SafeBrowsingBlockingPageTestBase
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     safe_browsing_service->AddPrefService(profile->GetPrefs());
+    content::BrowserThread::RunAllPendingTasksOnThreadForTesting(
+        content::BrowserThread::IO);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // EventRouterFactory redirects incognito context to original profile.
     test_event_router_ =
@@ -280,10 +324,13 @@ class SafeBrowsingBlockingPageTestBase
     TestingBrowserProcess::GetGlobal()->safe_browsing_service()->ShutDown();
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
     SafeBrowsingBlockingPage::RegisterFactory(NULL);
-    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(nullptr);
-    system_request_context_getter_ = nullptr;
     // Clean up singleton reference (crbug.com/110594).
     ThreatDetails::RegisterFactory(NULL);
+
+    // Depends on LocalState from ChromeRenderViewHostTestHarness.
+    if (SystemNetworkContextManager::GetInstance())
+      SystemNetworkContextManager::DeleteInstance();
+
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -344,7 +391,6 @@ class SafeBrowsingBlockingPageTestBase
   }
 
   scoped_refptr<TestSafeBrowsingUIManager> ui_manager_;
-  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::TestEventRouter* test_event_router_;
@@ -1051,13 +1097,6 @@ class SafeBrowsingBlockingQuietPageTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    system_request_context_getter_ =
-        base::MakeRefCounted<net::TestURLRequestContextGetter>(
-            base::CreateSingleThreadTaskRunnerWithTraits(
-                {content::BrowserThread::IO}));
-    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
-        system_request_context_getter_.get());
-
     SafeBrowsingBlockingPage::RegisterFactory(&factory_);
     SafeBrowsingUIManager::CreateWhitelistForTesting(web_contents());
 
@@ -1073,6 +1112,8 @@ class SafeBrowsingBlockingQuietPageTest
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(
         safe_browsing_service);
     g_browser_process->safe_browsing_service()->Initialize();
+    content::BrowserThread::RunAllPendingTasksOnThreadForTesting(
+        content::BrowserThread::IO);
   }
 
   void TearDown() override {
@@ -1081,10 +1122,12 @@ class SafeBrowsingBlockingQuietPageTest
     TestingBrowserProcess::GetGlobal()->safe_browsing_service()->ShutDown();
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
     SafeBrowsingBlockingPage::RegisterFactory(NULL);
-    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(nullptr);
-    system_request_context_getter_ = nullptr;
     // Clean up singleton reference (crbug.com/110594).
     ThreatDetails::RegisterFactory(NULL);
+
+    // Depends on LocalState from ChromeRenderViewHostTestHarness.
+    if (SystemNetworkContextManager::GetInstance())
+      SystemNetworkContextManager::DeleteInstance();
 
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -1140,7 +1183,6 @@ class SafeBrowsingBlockingQuietPageTest
   ScopedTestingLocalState scoped_testing_local_state_;
   UserResponse user_response_;
   TestSafeBrowsingBlockingQuietPageFactory factory_;
-  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
 };
 
 // Tests showing a quiet blocking page for a malware page.

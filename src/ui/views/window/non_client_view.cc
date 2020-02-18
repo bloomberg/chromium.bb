@@ -15,14 +15,11 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 
+#if defined(OS_WIN)
+#include "ui/display/win/screen_win.h"
+#endif
+
 namespace views {
-
-// static
-const char NonClientFrameView::kViewClassName[] =
-    "ui/views/window/NonClientFrameView";
-
-const char NonClientView::kViewClassName[] =
-    "ui/views/window/NonClientView";
 
 // The frame view and the client view are always at these specific indices,
 // because the RootView message dispatch sends messages to items higher in the
@@ -39,6 +36,17 @@ bool NonClientFrameView::GetClientMask(const gfx::Size& size,
                                        SkPath* mask) const {
   return false;
 }
+
+#if defined(OS_WIN)
+gfx::Point NonClientFrameView::GetSystemMenuScreenPixelLocation() const {
+  gfx::Point point(GetMirroredXInView(GetBoundsForClientView().x()),
+                   GetSystemMenuY());
+  View::ConvertPointToScreen(this, &point);
+  point = display::win::ScreenWin::DIPToScreenPoint(point);
+  // The native system menu seems to overlap the titlebar by 1 px.  Match that.
+  return point - gfx::Vector2d(0, 1);
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientView, public:
@@ -195,10 +203,6 @@ void NonClientView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(accessible_name_);
 }
 
-const char* NonClientView::GetClassName() const {
-  return kViewClassName;
-}
-
 View* NonClientView::GetTooltipHandlerForPoint(const gfx::Point& point) {
   // The same logic as for |TargetForRect()| applies here.
   if (frame_view_->parent() == this) {
@@ -243,6 +247,10 @@ View* NonClientView::TargetForRect(View* root, const gfx::Rect& rect) {
 
   return ViewTargeterDelegate::TargetForRect(root, rect);
 }
+
+BEGIN_METADATA(NonClientView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, public:
@@ -308,10 +316,6 @@ void NonClientFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kClient;
 }
 
-const char* NonClientFrameView::GetClassName() const {
-  return kViewClassName;
-}
-
 void NonClientFrameView::OnThemeChanged() {
   SchedulePaint();
 }
@@ -332,5 +336,18 @@ bool NonClientFrameView::DoesIntersectRect(const View* target,
   // the client view.
   return !GetWidget()->client_view()->bounds().Intersects(rect);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// NonClientFrameView, private:
+
+#if defined(OS_WIN)
+int NonClientFrameView::GetSystemMenuY() const {
+  return GetBoundsForClientView().y();
+}
+#endif
+
+BEGIN_METADATA(NonClientFrameView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

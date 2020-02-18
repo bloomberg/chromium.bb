@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-#include "perfetto/base/string_view.h"
+#include "perfetto/ext/base/string_view.h"
 
 #include <forward_list>
 #include <unordered_map>
 #include <unordered_set>
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 namespace perfetto {
 namespace base {

@@ -5,7 +5,7 @@
 #include "services/device/usb/usb_interface_android.h"
 
 #include "base/android/build_info.h"
-#include "jni/ChromeUsbInterface_jni.h"
+#include "services/device/usb/jni_headers/ChromeUsbInterface_jni.h"
 #include "services/device/usb/usb_endpoint_android.h"
 
 using base::android::ScopedJavaLocalRef;
@@ -13,7 +13,7 @@ using base::android::ScopedJavaLocalRef;
 namespace device {
 
 // static
-UsbInterfaceDescriptor UsbInterfaceAndroid::Convert(
+mojom::UsbInterfaceInfoPtr UsbInterfaceAndroid::Convert(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& usb_interface) {
   ScopedJavaLocalRef<jobject> wrapper =
@@ -26,7 +26,7 @@ UsbInterfaceDescriptor UsbInterfaceAndroid::Convert(
         Java_ChromeUsbInterface_getAlternateSetting(env, wrapper);
   }
 
-  UsbInterfaceDescriptor interface(
+  auto interface = BuildUsbInterfaceInfoPtr(
       Java_ChromeUsbInterface_getInterfaceNumber(env, wrapper),
       alternate_setting,
       Java_ChromeUsbInterface_getInterfaceClass(env, wrapper),
@@ -35,9 +35,10 @@ UsbInterfaceDescriptor UsbInterfaceAndroid::Convert(
 
   base::android::JavaObjectArrayReader<jobject> endpoints(
       Java_ChromeUsbInterface_getEndpoints(env, wrapper));
-  interface.endpoints.reserve(endpoints.size());
+  interface->alternates[0]->endpoints.reserve(endpoints.size());
   for (auto endpoint : endpoints) {
-    interface.endpoints.push_back(UsbEndpointAndroid::Convert(env, endpoint));
+    interface->alternates[0]->endpoints.push_back(
+        UsbEndpointAndroid::Convert(env, endpoint));
   }
 
   return interface;

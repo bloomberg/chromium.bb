@@ -68,8 +68,6 @@ cast_source_set("browser") {
     "cast_media_blocker.h",
     "cast_navigation_ui_data.cc",
     "cast_navigation_ui_data.h",
-    "cast_net_log.cc",
-    "cast_net_log.h",
     "cast_network_contexts.cc",
     "cast_network_contexts.h",
     "cast_network_delegate.cc",
@@ -82,8 +80,8 @@ cast_source_set("browser") {
     "cast_permission_manager.h",
     "cast_quota_permission_context.cc",
     "cast_quota_permission_context.h",
-    "cast_resource_dispatcher_host_delegate.cc",
-    "cast_resource_dispatcher_host_delegate.h",
+    "cast_renderer_block_data.cc",
+    "cast_renderer_block_data.h",
     "cast_session_id_map.cc",
     "cast_session_id_map.h",
     "cast_web_contents_impl.cc",
@@ -291,8 +289,6 @@ cast_source_set("browser") {
       "cast_extension_url_loader_factory.h",
       "extension_page.cc",
       "extension_page.h",
-      "extension_request_protocol_handler.cc",
-      "extension_request_protocol_handler.h",
       "extensions/api/accessibility_private/accessibility_extension_api.cc",
       "extensions/api/accessibility_private/accessibility_extension_api.h",
       "extensions/api/automation_internal/chromecast_automation_internal_api_delegate.cc",
@@ -319,8 +315,6 @@ cast_source_set("browser") {
       "extensions/api/tts/tts_extension_api.h",
       "extensions/api/tts/tts_extension_api_constants.cc",
       "extensions/api/tts/tts_extension_api_constants.h",
-      "extensions/cast_display_info_provider.cc",
-      "extensions/cast_display_info_provider.h",
       "extensions/cast_extension_host_delegate.cc",
       "extensions/cast_extension_host_delegate.h",
       "extensions/cast_extension_system.cc",
@@ -379,12 +373,20 @@ cast_source_set("browser") {
 
   if (enable_cast_wayland_server) {
     sources += [
+      "exo/cast_wm_helper.cc",
+      "exo/cast_wm_helper.h",
       "exo/wayland_server_controller.cc",
       "exo/wayland_server_controller.h",
-      "exo/wm_helper_cast_shell.cc",
-      "exo/wm_helper_cast_shell.h",
+      "webview/webview_controller.cc",
+      "webview/webview_controller.h",
+      "webview/webview_grpc_service.cc",
+      "webview/webview_grpc_service.h",
+      "webview/webview_layout_manager.cc",
+      "webview/webview_layout_manager.h",
     ]
+    configs += [ "//third_party/grpc:grpc_config" ]
     deps += [
+      "//chromecast/browser/webview/proto",
       "//components/exo",
       "//components/exo/wayland",
       "//services/viz/privileged/interfaces/compositing",
@@ -506,6 +508,7 @@ cast_source_set("unittests") {
   testonly = true
 
   sources = [
+    "application_media_info_manager_unittest.cc",
     "bluetooth/cast_bluetooth_chooser_unittest.cc",
     "cast_media_blocker_unittest.cc",
     "cast_network_delegate_unittest.cc",
@@ -553,8 +556,6 @@ if (is_android) {
     if (is_android_things_non_public) {
       sources += [ "android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java" ]
     }
-
-    jni_package = "chromecast"
   }
 
   java_cpp_enum("java_enums") {

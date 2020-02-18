@@ -14,7 +14,9 @@
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/network/public/mojom/url_loader.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data_element_mojom_traits.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data_mojom_traits.h"
 #include "third_party/blink/renderer/platform/network/wrapped_data_pipe_getter.h"
 
@@ -118,9 +120,8 @@ TEST_F(EncodedFormDataMojomTraitsTest, Roundtrips_FormDataElement) {
   original1.type_ = blink::FormDataElement::kData;
   original1.data_ = {'a', 'b', 'c', 'd'};
   FormDataElement copied1;
-  EXPECT_TRUE(
-      mojo::test::SerializeAndDeserialize<network::mojom::blink::DataElement>(
-          &original1, &copied1));
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
+              blink::mojom::blink::FetchAPIDataElement>(&original1, &copied1));
   EXPECT_EQ(original1.type_, copied1.type_);
   EXPECT_EQ(original1.data_, copied1.data_);
 
@@ -131,9 +132,8 @@ TEST_F(EncodedFormDataMojomTraitsTest, Roundtrips_FormDataElement) {
   original2.filename_ = "file.name";
   original2.expected_file_modification_time_ = base::Time::Now().ToDoubleT();
   FormDataElement copied2;
-  EXPECT_TRUE(
-      mojo::test::SerializeAndDeserialize<network::mojom::blink::DataElement>(
-          &original2, &copied2));
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
+              blink::mojom::blink::FetchAPIDataElement>(&original2, &copied2));
   EXPECT_EQ(original2.type_, copied2.type_);
   EXPECT_EQ(original2.file_start_, copied2.file_start_);
   EXPECT_EQ(original2.file_length_, copied2.file_length_);
@@ -149,9 +149,8 @@ TEST_F(EncodedFormDataMojomTraitsTest, Roundtrips_FormDataElement) {
       original3.blob_uuid_, "type-test", 100,
       mojom::blink::BlobPtrInfo(std::move(pipe.handle0), 0));
   FormDataElement copied3;
-  EXPECT_TRUE(
-      mojo::test::SerializeAndDeserialize<network::mojom::blink::DataElement>(
-          &original3, &copied3));
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
+              blink::mojom::blink::FetchAPIDataElement>(&original3, &copied3));
   EXPECT_EQ(copied3.type_, blink::FormDataElement::kDataPipe);
 
   FormDataElement original4;
@@ -162,9 +161,8 @@ TEST_F(EncodedFormDataMojomTraitsTest, Roundtrips_FormDataElement) {
       base::MakeRefCounted<blink::WrappedDataPipeGetter>(
           std::move(data_pipe_getter));
   FormDataElement copied4;
-  EXPECT_TRUE(
-      mojo::test::SerializeAndDeserialize<network::mojom::blink::DataElement>(
-          &original4, &copied4));
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
+              blink::mojom::blink::FetchAPIDataElement>(&original4, &copied4));
   EXPECT_TRUE(copied4.data_pipe_getter_);
 }
 
@@ -174,7 +172,7 @@ TEST_F(EncodedFormDataMojomTraitsTest, Roundtrips_EncodedFormData) {
   original1->SetContainsPasswordData(true);
   scoped_refptr<EncodedFormData> copied1 = EncodedFormData::Create();
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
-              network::mojom::blink::URLRequestBody>(&original1, &copied1));
+              blink::mojom::blink::FetchAPIRequestBody>(&original1, &copied1));
   EXPECT_EQ(original1->Identifier(), copied1->Identifier());
   EXPECT_EQ(original1->ContainsPasswordData(), copied1->ContainsPasswordData());
 }

@@ -44,6 +44,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/views_export.h"
@@ -278,7 +279,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
  public:
   using Views = std::vector<View*>;
 
-  METADATA_HEADER(View);
+  METADATA_HEADER_BASE(View);
 
   enum class FocusBehavior {
     // Use when the View is never focusable. Default.
@@ -630,6 +631,21 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual void AddLayerBeneathView(ui::Layer* new_layer);
   virtual void RemoveLayerBeneathView(ui::Layer* old_layer);
 
+  // This is like RemoveLayerBeneathView() but doesn't remove |old_layer| from
+  // its parent. This is useful for when a layer beneth this view is owned by a
+  // ui::LayerOwner which just recreated it (by calling RecreateLayer()). In
+  // this case, this function can be called to remove it from |layers_beneath_|,
+  // and to stop observing it, but it remains in the layer tree since the
+  // expectation of ui::LayerOwner::RecreateLayer() is that the old layer
+  // remains under the same parent, and stacked above the newly cloned layer.
+  void RemoveLayerBeneathViewKeepInLayerTree(ui::Layer* old_layer);
+
+  // Gets the layers associated with this view that should be immediate children
+  // of the parent layer. They are returned in bottom-to-top order. This
+  // includes |this->layer()| and any layers added with |AddLayerBeneathView()|.
+  // Returns an empty vector if this view doesn't paint to a layer.
+  std::vector<ui::Layer*> GetLayersInOrder();
+
   // ui::LayerObserver:
   void LayerDestroyed(ui::Layer* layer) override;
 
@@ -722,15 +738,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void SetLayoutManager(std::nullptr_t);
 
   // Attributes ----------------------------------------------------------------
-
-  // The view class name.
-  static const char kViewClassName[];
-
-  // Return the receiving view's class name. A view class is a string which
-  // uniquely identifies the view class. It is intended to be used as a way to
-  // find out during run time if a view can be safely cast to a specific view
-  // subclass. The default implementation returns kViewClassName.
-  virtual const char* GetClassName() const;
 
   // Returns the first ancestor, starting at this, whose class name is |name|.
   // Returns null if no ancestor has the class name |name|.
@@ -1580,6 +1587,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void OnPropertyChanged(PropertyKey property,
                          PropertyEffects property_effects);
 
+  // Empty function called in HandlePropertyChangeEffects to be overridden in
+  // subclasses if they have custom functions for property changes.
+  virtual void OnHandlePropertyChangeEffects(PropertyEffects property_effects) {
+  }
+
  private:
   friend class internal::PreEventDispatchHandler;
   friend class internal::PostEventDispatchHandler;
@@ -1746,9 +1758,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   bool UpdateParentLayers();
 
   // Parents this view's layer to |parent_layer|, and sets its bounds and other
-  // properties in accordance to |offset|, the view's offset from the
-  // |parent_layer|.
-  void ReparentLayer(const gfx::Vector2d& offset, ui::Layer* parent_layer);
+  // properties in accordance to the layer hierarchy.
+  void ReparentLayer(ui::Layer* parent_layer);
 
   // Called to update the layer visibility. The layer will be visible if the
   // View itself, and all its parent Views are visible. This also updates

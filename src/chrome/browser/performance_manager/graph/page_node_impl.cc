@@ -11,6 +11,7 @@
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
 
@@ -28,30 +29,17 @@ size_t ToIndex(
   return kIndex;
 }
 
-// Calls |map_function| for |frame_node| and all its offspring, or until
-// |map_function| returns false.
-template <typename MapFunction>
-void ForFrameAndDescendents(FrameNodeImpl* frame_node,
-                            MapFunction map_function) {
-  if (!map_function(frame_node))
-    return;
-
-  for (FrameNodeImpl* child : frame_node->child_frame_nodes())
-    ForFrameAndDescendents(child, map_function);
-}
-
 }  // namespace
-
-PageNodeImplObserver::PageNodeImplObserver() = default;
-PageNodeImplObserver::~PageNodeImplObserver() = default;
 
 PageNodeImpl::PageNodeImpl(GraphImpl* graph,
                            const WebContentsProxy& contents_proxy,
-                           bool is_visible)
+                           bool is_visible,
+                           bool is_audible)
     : TypedNodeBase(graph),
       contents_proxy_(contents_proxy),
       visibility_change_time_(PerformanceManagerClock::NowTicks()),
-      is_visible_(is_visible) {
+      is_visible_(is_visible),
+      is_audible_(is_audible) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -105,6 +93,10 @@ void PageNodeImpl::SetIsVisible(bool is_visible) {
   }
 }
 
+void PageNodeImpl::SetIsAudible(bool is_audible) {
+  is_audible_.SetAndMaybeNotify(this, is_audible);
+}
+
 void PageNodeImpl::SetUkmSourceId(ukm::SourceId ukm_source_id) {
   ukm_source_id_.SetAndMaybeNotify(this, ukm_source_id);
 }
@@ -113,12 +105,16 @@ void PageNodeImpl::OnFaviconUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnFaviconUpdated(this);
+  for (auto* observer : GetObservers())
+    observer->OnFaviconUpdated(this);
 }
 
 void PageNodeImpl::OnTitleUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
     observer.OnTitleUpdated(this);
+  for (auto* observer : GetObservers())
+    observer->OnTitleUpdated(this);
 }
 
 void PageNodeImpl::OnMainFrameNavigationCommitted(
@@ -131,26 +127,19 @@ void PageNodeImpl::OnMainFrameNavigationCommitted(
   navigation_id_ = navigation_id;
   for (auto& observer : observers())
     observer.OnMainFrameNavigationCommitted(this);
-}
-
-base::flat_set<ProcessNodeImpl*> PageNodeImpl::GetAssociatedProcessNodes()
-    const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::flat_set<ProcessNodeImpl*> process_nodes;
-  ForAllFrameNodes([&process_nodes](FrameNodeImpl* frame_node) -> bool {
-    if (auto* process_node = frame_node->process_node())
-      process_nodes.insert(process_node);
-    return true;
-  });
-  return process_nodes;
+  for (auto* observer : GetObservers())
+    observer->OnMainFrameNavigationCommitted(this);
 }
 
 double PageNodeImpl::GetCPUUsage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   double cpu_usage = 0;
 
-  for (auto* process_node : GetAssociatedProcessNodes()) {
-    size_t pages_in_process = process_node->GetAssociatedPageNodes().size();
+  // TODO(chrisha/siggi): This should all be ripped out / refactored.
+  for (auto* process_node :
+       GraphImplOperations::GetAssociatedProcessNodes(this)) {
+    size_t pages_in_process =
+        GraphImplOperations::GetAssociatedPageNodes(process_node).size();
     DCHECK_LE(1u, pages_in_process);
     cpu_usage += process_node->cpu_usage() / pages_in_process;
   }
@@ -170,17 +159,7 @@ base::TimeDelta PageNodeImpl::TimeSinceLastVisibilityChange() const {
   return PerformanceManagerClock::NowTicks() - visibility_change_time_;
 }
 
-std::vector<FrameNodeImpl*> PageNodeImpl::GetFrameNodes() const {
-  std::vector<FrameNodeImpl*> all_frames;
-  ForAllFrameNodes([&all_frames](FrameNodeImpl* frame_node) -> bool {
-    all_frames.push_back(frame_node);
-    return true;
-  });
-
-  return all_frames;
-}
-
-FrameNodeImpl* PageNodeImpl::GetMainFrameNode() const {
+FrameNodeImpl* PageNodeImpl::GetMainFrameNodeImpl() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (main_frame_nodes_.empty())
     return nullptr;
@@ -199,6 +178,11 @@ FrameNodeImpl* PageNodeImpl::GetMainFrameNode() const {
 bool PageNodeImpl::is_visible() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return is_visible_.value();
+}
+
+bool PageNodeImpl::is_audible() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_audible_.value();
 }
 
 bool PageNodeImpl::is_loading() const {
@@ -338,19 +322,62 @@ void PageNodeImpl::LeaveGraph() {
   NodeBase::LeaveGraph();
 }
 
-bool PageNodeImpl::HasFrame(FrameNodeImpl* frame_node) {
+bool PageNodeImpl::IsPageAlmostIdle() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return page_almost_idle();
+}
 
-  bool has_node = false;
-  ForAllFrameNodes([&has_node, &frame_node](FrameNodeImpl* node) -> bool {
-    if (node != frame_node)
-      return true;
+bool PageNodeImpl::IsVisible() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_visible();
+}
 
-    has_node = true;
-    return false;
-  });
+base::TimeDelta PageNodeImpl::GetTimeSinceLastVisibilityChange() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return TimeSinceLastVisibilityChange();
+}
 
-  return has_node;
+bool PageNodeImpl::IsAudible() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_audible();
+}
+
+bool PageNodeImpl::IsLoading() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_loading();
+}
+
+ukm::SourceId PageNodeImpl::GetUkmSourceID() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return ukm_source_id();
+}
+
+PageNodeImpl::LifecycleState PageNodeImpl::GetLifecycleState() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return lifecycle_state();
+}
+
+int64_t PageNodeImpl::GetNavigationID() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return navigation_id();
+}
+
+base::TimeDelta PageNodeImpl::GetTimeSinceLastNavigation() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return TimeSinceLastNavigation();
+}
+
+const FrameNode* PageNodeImpl::GetMainFrameNode() const {
+  return GetMainFrameNodeImpl();
+}
+
+const WebContentsProxy& PageNodeImpl::GetContentProxy() const {
+  return contents_proxy();
+}
+
+const GURL& PageNodeImpl::GetMainFrameUrl() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return main_frame_url();
 }
 
 void PageNodeImpl::SetPageAlmostIdle(bool page_almost_idle) {
@@ -370,12 +397,13 @@ void PageNodeImpl::InvalidateAllInterventionPolicies() {
         resource_coordinator::mojom::InterventionPolicy::kUnknown;
 }
 
+// TODO(chrisha): Move this all out to a decorator.
 void PageNodeImpl::MaybeInvalidateInterventionPolicies(
     FrameNodeImpl* frame_node,
     bool adding_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Ensure that the frame was already added or removed as expected.
-  DCHECK(!adding_frame || HasFrame(frame_node));
+  DCHECK(!adding_frame || GraphImplOperations::HasFrame(this, frame_node));
 
   // Determine whether or not the frames had all reported prior to this change.
   const size_t prior_frame_count = frame_node_count_ + (adding_frame ? -1 : 1);
@@ -409,39 +437,30 @@ void PageNodeImpl::RecomputeInterventionPolicy(
 
   resource_coordinator::mojom::InterventionPolicy policy =
       resource_coordinator::mojom::InterventionPolicy::kDefault;
-  ForAllFrameNodes([&policy, &kIndex](FrameNodeImpl* frame) -> bool {
-    // No frame should have an unknown policy, as aggregation should only be
-    // invoked after all frames have checked in.
-    DCHECK_NE(resource_coordinator::mojom::InterventionPolicy::kUnknown,
-              frame->intervention_policy_[kIndex]);
+  GraphImplOperations::VisitFrameTreePreOrder(
+      this, [&policy, &kIndex](FrameNodeImpl* frame) -> bool {
+        // No frame should have an unknown policy, as aggregation should only be
+        // invoked after all frames have checked in.
+        DCHECK_NE(resource_coordinator::mojom::InterventionPolicy::kUnknown,
+                  frame->intervention_policy_[kIndex]);
 
-    // If any frame opts out then the whole frame tree opts out, even if other
-    // frames have opted in.
-    if (frame->intervention_policy_[kIndex] ==
-        resource_coordinator::mojom::InterventionPolicy::kOptOut) {
-      policy = resource_coordinator::mojom::InterventionPolicy::kOptOut;
-      return false;
-    }
+        // If any frame opts out then the whole frame tree opts out, even if
+        // other frames have opted in.
+        if (frame->intervention_policy_[kIndex] ==
+            resource_coordinator::mojom::InterventionPolicy::kOptOut) {
+          policy = resource_coordinator::mojom::InterventionPolicy::kOptOut;
+          return false;
+        }
 
-    // If any frame opts in and none opt out, then the whole tree opts in.
-    if (frame->intervention_policy_[kIndex] ==
-        resource_coordinator::mojom::InterventionPolicy::kOptIn) {
-      policy = resource_coordinator::mojom::InterventionPolicy::kOptIn;
-    }
-    return true;
-  });
+        // If any frame opts in and none opt out, then the whole tree opts in.
+        if (frame->intervention_policy_[kIndex] ==
+            resource_coordinator::mojom::InterventionPolicy::kOptIn) {
+          policy = resource_coordinator::mojom::InterventionPolicy::kOptIn;
+        }
+        return true;
+      });
 
   intervention_policy_[kIndex] = policy;
 }
-
-template <typename MapFunction>
-void PageNodeImpl::ForAllFrameNodes(MapFunction map_function) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto* main_frame_node : main_frame_nodes_)
-    ForFrameAndDescendents(main_frame_node, map_function);
-}
-
-PageNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
-PageNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

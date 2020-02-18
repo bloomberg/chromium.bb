@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_drawer/cr_drawer.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_page_host_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
@@ -25,9 +26,8 @@
 
 <dom-module id="settings-ui">
   <template>
-    <style include="settings-shared">
+    <style include="cr-page-host-style settings-shared">
       :host {
-        @apply --cr-page-host;
         @apply --layout-fit;
         display: flex;
         flex-direction: column;
@@ -48,8 +48,10 @@
         --cr-toolbar-center-basis: var(--settings-main-basis);
       }
 
-      :host-context(html:not([dark])) cr-toolbar {
-        --iron-icon-fill-color: white;
+      @media (prefers-color-scheme: light) {
+        cr-toolbar {
+          --iron-icon-fill-color: white;
+        }
       }
 
       #cr-container-shadow-top {
@@ -127,8 +129,8 @@
               show-apps="[[showApps_]]"
               show-android-apps="[[showAndroidApps_]]"
               show-crostini="[[showCrostini_]]"
+              show-parental-controls="[[showParentalControls_]]"
               show-plugin-vm="[[showPluginVm_]]"
-              show-multidevice="[[showMultidevice_]]"
               have-play-store-app="[[havePlayStoreApp_]]"
               on-iron-activate="onIronActivate_"
               advanced-opened="{{advancedOpenedInMenu_}}">
@@ -142,8 +144,8 @@
             show-apps="[[showApps_]]"
             show-android-apps="[[showAndroidApps_]]"
             show-crostini="[[showCrostini_]]"
+            show-parental-controls="[[showParentalControls_]]"
             show-plugin-vm="[[showPluginVm_]]"
-            show-multidevice="[[showMultidevice_]]"
             have-play-store-app="[[havePlayStoreApp_]]"
             on-iron-activate="onIronActivate_"
             advanced-opened="{{advancedOpenedInMenu_}}">
@@ -154,10 +156,9 @@
           page-visibility="[[pageVisibility_]]"
           show-apps="[[showApps_]]"
           show-android-apps="[[showAndroidApps_]]"
-          show-kiosk-next-shell="[[showKioskNextShell_]]"
           show-crostini="[[showCrostini_]]"
+          show-parental-controls="[[showParentalControls_]]"
           show-plugin-vm="[[showPluginVm_]]"
-          show-multidevice="[[showMultidevice_]]"
           have-play-store-app="[[havePlayStoreApp_]]"
           advanced-toggle-expanded="{{advancedOpenedInMain_}}">
       </settings-main>

@@ -24,6 +24,8 @@
 namespace {
 
 const int kNumStandardFonts = 14;
+static_assert(CFX_FontMapper::kDingbats + 1 == kNumStandardFonts,
+              "StandardFont enum count mismatch");
 
 const char* const g_Base14FontNames[kNumStandardFonts] = {
     "Courier",
@@ -44,99 +46,99 @@ const char* const g_Base14FontNames[kNumStandardFonts] = {
 
 struct AltFontName {
   const char* m_pName;  // Raw, POD struct.
-  int m_Index;
+  CFX_FontMapper::StandardFont m_Index;
 };
 
 const AltFontName g_AltFontNames[] = {
-    {"Arial", 4},
-    {"Arial,Bold", 5},
-    {"Arial,BoldItalic", 6},
-    {"Arial,Italic", 7},
-    {"Arial-Bold", 5},
-    {"Arial-BoldItalic", 6},
-    {"Arial-BoldItalicMT", 6},
-    {"Arial-BoldMT", 5},
-    {"Arial-Italic", 7},
-    {"Arial-ItalicMT", 7},
-    {"ArialBold", 5},
-    {"ArialBoldItalic", 6},
-    {"ArialItalic", 7},
-    {"ArialMT", 4},
-    {"ArialMT,Bold", 5},
-    {"ArialMT,BoldItalic", 6},
-    {"ArialMT,Italic", 7},
-    {"ArialRoundedMTBold", 5},
-    {"Courier", 0},
-    {"Courier,Bold", 1},
-    {"Courier,BoldItalic", 2},
-    {"Courier,Italic", 3},
-    {"Courier-Bold", 1},
-    {"Courier-BoldOblique", 2},
-    {"Courier-Oblique", 3},
-    {"CourierBold", 1},
-    {"CourierBoldItalic", 2},
-    {"CourierItalic", 3},
-    {"CourierNew", 0},
-    {"CourierNew,Bold", 1},
-    {"CourierNew,BoldItalic", 2},
-    {"CourierNew,Italic", 3},
-    {"CourierNew-Bold", 1},
-    {"CourierNew-BoldItalic", 2},
-    {"CourierNew-Italic", 3},
-    {"CourierNewBold", 1},
-    {"CourierNewBoldItalic", 2},
-    {"CourierNewItalic", 3},
-    {"CourierNewPS-BoldItalicMT", 2},
-    {"CourierNewPS-BoldMT", 1},
-    {"CourierNewPS-ItalicMT", 3},
-    {"CourierNewPSMT", 0},
-    {"CourierStd", 0},
-    {"CourierStd-Bold", 1},
-    {"CourierStd-BoldOblique", 2},
-    {"CourierStd-Oblique", 3},
-    {"Helvetica", 4},
-    {"Helvetica,Bold", 5},
-    {"Helvetica,BoldItalic", 6},
-    {"Helvetica,Italic", 7},
-    {"Helvetica-Bold", 5},
-    {"Helvetica-BoldItalic", 6},
-    {"Helvetica-BoldOblique", 6},
-    {"Helvetica-Italic", 7},
-    {"Helvetica-Oblique", 7},
-    {"HelveticaBold", 5},
-    {"HelveticaBoldItalic", 6},
-    {"HelveticaItalic", 7},
-    {"Symbol", 12},
-    {"SymbolMT", 12},
-    {"Times-Bold", 9},
-    {"Times-BoldItalic", 10},
-    {"Times-Italic", 11},
-    {"Times-Roman", 8},
-    {"TimesBold", 9},
-    {"TimesBoldItalic", 10},
-    {"TimesItalic", 11},
-    {"TimesNewRoman", 8},
-    {"TimesNewRoman,Bold", 9},
-    {"TimesNewRoman,BoldItalic", 10},
-    {"TimesNewRoman,Italic", 11},
-    {"TimesNewRoman-Bold", 9},
-    {"TimesNewRoman-BoldItalic", 10},
-    {"TimesNewRoman-Italic", 11},
-    {"TimesNewRomanBold", 9},
-    {"TimesNewRomanBoldItalic", 10},
-    {"TimesNewRomanItalic", 11},
-    {"TimesNewRomanPS", 8},
-    {"TimesNewRomanPS-Bold", 9},
-    {"TimesNewRomanPS-BoldItalic", 10},
-    {"TimesNewRomanPS-BoldItalicMT", 10},
-    {"TimesNewRomanPS-BoldMT", 9},
-    {"TimesNewRomanPS-Italic", 11},
-    {"TimesNewRomanPS-ItalicMT", 11},
-    {"TimesNewRomanPSMT", 8},
-    {"TimesNewRomanPSMT,Bold", 9},
-    {"TimesNewRomanPSMT,BoldItalic", 10},
-    {"TimesNewRomanPSMT,Italic", 11},
-    {"ZapfDingbats", 13},
+    {"Arial", CFX_FontMapper::kHelvetica},
+    {"Arial,Bold", CFX_FontMapper::kHelveticaBold},
+    {"Arial,BoldItalic", CFX_FontMapper::kHelveticaBoldOblique},
+    {"Arial,Italic", CFX_FontMapper::kHelveticaOblique},
+    {"Arial-Bold", CFX_FontMapper::kHelveticaBold},
+    {"Arial-BoldItalic", CFX_FontMapper::kHelveticaBoldOblique},
+    {"Arial-BoldItalicMT", CFX_FontMapper::kHelveticaBoldOblique},
+    {"Arial-BoldMT", CFX_FontMapper::kHelveticaBold},
+    {"Arial-Italic", CFX_FontMapper::kHelveticaOblique},
+    {"Arial-ItalicMT", CFX_FontMapper::kHelveticaOblique},
+    {"ArialBold", CFX_FontMapper::kHelveticaBold},
+    {"ArialBoldItalic", CFX_FontMapper::kHelveticaBoldOblique},
+    {"ArialItalic", CFX_FontMapper::kHelveticaOblique},
+    {"ArialMT", CFX_FontMapper::kHelvetica},
+    {"ArialMT,Bold", CFX_FontMapper::kHelveticaBold},
+    {"ArialMT,BoldItalic", CFX_FontMapper::kHelveticaBoldOblique},
+    {"ArialMT,Italic", CFX_FontMapper::kHelveticaOblique},
+    {"ArialRoundedMTBold", CFX_FontMapper::kHelveticaBold},
+    {"Courier", CFX_FontMapper::kCourier},
+    {"Courier,Bold", CFX_FontMapper::kCourierBold},
+    {"Courier,BoldItalic", CFX_FontMapper::kCourierBoldOblique},
+    {"Courier,Italic", CFX_FontMapper::kCourierOblique},
+    {"Courier-Bold", CFX_FontMapper::kCourierBold},
+    {"Courier-BoldOblique", CFX_FontMapper::kCourierBoldOblique},
+    {"Courier-Oblique", CFX_FontMapper::kCourierOblique},
+    {"CourierBold", CFX_FontMapper::kCourierBold},
+    {"CourierBoldItalic", CFX_FontMapper::kCourierBoldOblique},
+    {"CourierItalic", CFX_FontMapper::kCourierOblique},
+    {"CourierNew", CFX_FontMapper::kCourier},
+    {"CourierNew,Bold", CFX_FontMapper::kCourierBold},
+    {"CourierNew,BoldItalic", CFX_FontMapper::kCourierBoldOblique},
+    {"CourierNew,Italic", CFX_FontMapper::kCourierOblique},
+    {"CourierNew-Bold", CFX_FontMapper::kCourierBold},
+    {"CourierNew-BoldItalic", CFX_FontMapper::kCourierBoldOblique},
+    {"CourierNew-Italic", CFX_FontMapper::kCourierOblique},
+    {"CourierNewBold", CFX_FontMapper::kCourierBold},
+    {"CourierNewBoldItalic", CFX_FontMapper::kCourierBoldOblique},
+    {"CourierNewItalic", CFX_FontMapper::kCourierOblique},
+    {"CourierNewPS-BoldItalicMT", CFX_FontMapper::kCourierBoldOblique},
+    {"CourierNewPS-BoldMT", CFX_FontMapper::kCourierBold},
+    {"CourierNewPS-ItalicMT", CFX_FontMapper::kCourierOblique},
+    {"CourierNewPSMT", CFX_FontMapper::kCourier},
+    {"CourierStd", CFX_FontMapper::kCourier},
+    {"CourierStd-Bold", CFX_FontMapper::kCourierBold},
+    {"CourierStd-BoldOblique", CFX_FontMapper::kCourierBoldOblique},
+    {"CourierStd-Oblique", CFX_FontMapper::kCourierOblique},
+    {"Helvetica", CFX_FontMapper::kHelvetica},
+    {"Helvetica,Bold", CFX_FontMapper::kHelveticaBold},
+    {"Helvetica,BoldItalic", CFX_FontMapper::kHelveticaBoldOblique},
+    {"Helvetica,Italic", CFX_FontMapper::kHelveticaOblique},
+    {"Helvetica-Bold", CFX_FontMapper::kHelveticaBold},
+    {"Helvetica-BoldItalic", CFX_FontMapper::kHelveticaBoldOblique},
+    {"Helvetica-BoldOblique", CFX_FontMapper::kHelveticaBoldOblique},
+    {"Helvetica-Italic", CFX_FontMapper::kHelveticaOblique},
+    {"Helvetica-Oblique", CFX_FontMapper::kHelveticaOblique},
+    {"HelveticaBold", CFX_FontMapper::kHelveticaBold},
+    {"HelveticaBoldItalic", CFX_FontMapper::kHelveticaBoldOblique},
+    {"HelveticaItalic", CFX_FontMapper::kHelveticaOblique},
+    {"Symbol", CFX_FontMapper::kSymbol},
+    {"SymbolMT", CFX_FontMapper::kSymbol},
+    {"Times-Bold", CFX_FontMapper::kTimesBold},
+    {"Times-BoldItalic", CFX_FontMapper::kTimesBoldOblique},
+    {"Times-Italic", CFX_FontMapper::kTimesOblique},
+    {"Times-Roman", CFX_FontMapper::kTimes},
+    {"TimesBold", CFX_FontMapper::kTimesBold},
+    {"TimesBoldItalic", CFX_FontMapper::kTimesBoldOblique},
+    {"TimesItalic", CFX_FontMapper::kTimesOblique},
+    {"TimesNewRoman", CFX_FontMapper::kTimes},
+    {"TimesNewRoman,Bold", CFX_FontMapper::kTimesBold},
+    {"TimesNewRoman,BoldItalic", CFX_FontMapper::kTimesBoldOblique},
+    {"TimesNewRoman,Italic", CFX_FontMapper::kTimesOblique},
+    {"TimesNewRoman-Bold", CFX_FontMapper::kTimesBold},
+    {"TimesNewRoman-BoldItalic", CFX_FontMapper::kTimesBoldOblique},
+    {"TimesNewRoman-Italic", CFX_FontMapper::kTimesOblique},
+    {"TimesNewRomanBold", CFX_FontMapper::kTimesBold},
+    {"TimesNewRomanBoldItalic", CFX_FontMapper::kTimesBoldOblique},
+    {"TimesNewRomanItalic", CFX_FontMapper::kTimesOblique},
+    {"TimesNewRomanPS", CFX_FontMapper::kTimes},
+    {"TimesNewRomanPS-Bold", CFX_FontMapper::kTimesBold},
+    {"TimesNewRomanPS-BoldItalic", CFX_FontMapper::kTimesBoldOblique},
+    {"TimesNewRomanPS-BoldItalicMT", CFX_FontMapper::kTimesBoldOblique},
+    {"TimesNewRomanPS-BoldMT", CFX_FontMapper::kTimesBold},
+    {"TimesNewRomanPS-Italic", CFX_FontMapper::kTimesOblique},
+    {"TimesNewRomanPS-ItalicMT", CFX_FontMapper::kTimesOblique},
+    {"TimesNewRomanPSMT", CFX_FontMapper::kTimes},
+    {"TimesNewRomanPSMT,Bold", CFX_FontMapper::kTimesBold},
+    {"TimesNewRomanPSMT,BoldItalic", CFX_FontMapper::kTimesBoldOblique},
+    {"TimesNewRomanPSMT,Italic", CFX_FontMapper::kTimesOblique},
+    {"ZapfDingbats", CFX_FontMapper::kDingbats},
 };
 
 struct AltFontFamily {
@@ -255,23 +257,9 @@ void UpdatePitchFamily(uint32_t flags, int* PitchFamily) {
 
 }  // namespace
 
-CFX_FontMapper::CFX_FontMapper(CFX_FontMgr* mgr)
-    : m_bListLoaded(false), m_pFontMgr(mgr) {
-  m_MMFaces[0] = nullptr;
-  m_MMFaces[1] = nullptr;
-  memset(m_FoxitFaces, 0, sizeof(m_FoxitFaces));
-}
+CFX_FontMapper::CFX_FontMapper(CFX_FontMgr* mgr) : m_pFontMgr(mgr) {}
 
-CFX_FontMapper::~CFX_FontMapper() {
-  for (size_t i = 0; i < FX_ArraySize(m_FoxitFaces); ++i) {
-    if (m_FoxitFaces[i])
-      FXFT_Done_Face(m_FoxitFaces[i]);
-  }
-  if (m_MMFaces[0])
-    FXFT_Done_Face(m_MMFaces[0]);
-  if (m_MMFaces[1])
-    FXFT_Done_Face(m_MMFaces[1]);
-}
+CFX_FontMapper::~CFX_FontMapper() = default;
 
 void CFX_FontMapper::SetSystemFontInfo(
     std::unique_ptr<SystemFontInfoIface> pFontInfo) {
@@ -281,20 +269,26 @@ void CFX_FontMapper::SetSystemFontInfo(
   m_pFontInfo = std::move(pFontInfo);
 }
 
-ByteString CFX_FontMapper::GetPSNameFromTT(void* hFont) {
-  if (!m_pFontInfo)
-    return ByteString();
+uint32_t CFX_FontMapper::GetChecksumFromTT(void* hFont) {
+  uint32_t buffer[256];
+  m_pFontInfo->GetFontData(
+      hFont, kTableTTCF, pdfium::as_writable_bytes(pdfium::make_span(buffer)));
 
-  uint32_t size = m_pFontInfo->GetFontData(hFont, kTableNAME, nullptr, 0);
+  uint32_t checksum = 0;
+  for (auto x : buffer)
+    checksum += x;
+
+  return checksum;
+}
+
+ByteString CFX_FontMapper::GetPSNameFromTT(void* hFont) {
+  uint32_t size = m_pFontInfo->GetFontData(hFont, kTableNAME, {});
   if (!size)
     return ByteString();
 
   std::vector<uint8_t> buffer(size);
-  uint8_t* buffer_ptr = buffer.data();
-  uint32_t bytes_read =
-      m_pFontInfo->GetFontData(hFont, kTableNAME, buffer_ptr, size);
-  return bytes_read == size ? GetNameFromTT(buffer_ptr, bytes_read, 6)
-                            : ByteString();
+  uint32_t bytes_read = m_pFontInfo->GetFontData(hFont, kTableNAME, buffer);
+  return bytes_read == size ? GetNameFromTT(buffer, 6) : ByteString();
 }
 
 void CFX_FontMapper::AddInstalledFont(const ByteString& name, int charset) {
@@ -350,18 +344,19 @@ ByteString CFX_FontMapper::MatchInstalledFonts(const ByteString& norm_name) {
   return ByteString();
 }
 
-FXFT_Face CFX_FontMapper::UseInternalSubst(CFX_SubstFont* pSubstFont,
-                                           int iBaseFont,
-                                           int italic_angle,
-                                           int weight,
-                                           int pitch_family) {
+RetainPtr<CFX_Face> CFX_FontMapper::UseInternalSubst(CFX_SubstFont* pSubstFont,
+                                                     int iBaseFont,
+                                                     int italic_angle,
+                                                     int weight,
+                                                     int pitch_family) {
   if (iBaseFont < kNumStandardFonts) {
     if (m_FoxitFaces[iBaseFont])
       return m_FoxitFaces[iBaseFont];
     Optional<pdfium::span<const uint8_t>> font_data =
         m_pFontMgr->GetBuiltinFont(iBaseFont);
     if (font_data.has_value()) {
-      m_FoxitFaces[iBaseFont] = m_pFontMgr->GetFixedFace(font_data.value(), 0);
+      m_FoxitFaces[iBaseFont] =
+          m_pFontMgr->NewFixedFace(nullptr, font_data.value(), 0);
       return m_FoxitFaces[iBaseFont];
     }
   }
@@ -373,26 +368,26 @@ FXFT_Face CFX_FontMapper::UseInternalSubst(CFX_SubstFont* pSubstFont,
     pSubstFont->m_Weight = pSubstFont->m_Weight * 4 / 5;
     pSubstFont->m_Family = "Chrome Serif";
     if (!m_MMFaces[1]) {
-      m_MMFaces[1] =
-          m_pFontMgr->GetFixedFace(m_pFontMgr->GetBuiltinFont(14).value(), 0);
+      m_MMFaces[1] = m_pFontMgr->NewFixedFace(
+          nullptr, m_pFontMgr->GetBuiltinFont(14).value(), 0);
     }
     return m_MMFaces[1];
   }
   pSubstFont->m_Family = "Chrome Sans";
   if (!m_MMFaces[0]) {
-    m_MMFaces[0] =
-        m_pFontMgr->GetFixedFace(m_pFontMgr->GetBuiltinFont(15).value(), 0);
+    m_MMFaces[0] = m_pFontMgr->NewFixedFace(
+        nullptr, m_pFontMgr->GetBuiltinFont(15).value(), 0);
   }
   return m_MMFaces[0];
 }
 
-FXFT_Face CFX_FontMapper::FindSubstFont(const ByteString& name,
-                                        bool bTrueType,
-                                        uint32_t flags,
-                                        int weight,
-                                        int italic_angle,
-                                        int WindowCP,
-                                        CFX_SubstFont* pSubstFont) {
+RetainPtr<CFX_Face> CFX_FontMapper::FindSubstFont(const ByteString& name,
+                                                  bool bTrueType,
+                                                  uint32_t flags,
+                                                  int weight,
+                                                  int italic_angle,
+                                                  int CharsetCP,
+                                                  CFX_SubstFont* pSubstFont) {
   if (weight == 0)
     weight = FXFONT_FW_NORMAL;
 
@@ -528,8 +523,8 @@ FXFT_Face CFX_FontMapper::FindSubstFont(const ByteString& name,
   }
 
   int Charset = FX_CHARSET_ANSI;
-  if (WindowCP)
-    Charset = FX_GetCharsetFromCodePage(WindowCP);
+  if (CharsetCP)
+    Charset = FX_GetCharsetFromCodePage(CharsetCP);
   else if (iBaseFont == kNumStandardFonts && FontStyleIsSymbolic(flags))
     Charset = FX_CHARSET_Symbol;
   const bool bCJK = FX_CharSetIsCJK(Charset);
@@ -632,15 +627,15 @@ FXFT_Face CFX_FontMapper::FindSubstFont(const ByteString& name,
   m_pFontInfo->GetFaceName(hFont, &SubstName);
   if (Charset == FX_CHARSET_Default)
     m_pFontInfo->GetFontCharset(hFont, &Charset);
-  uint32_t ttc_size = m_pFontInfo->GetFontData(hFont, kTableTTCF, nullptr, 0);
-  uint32_t font_size = m_pFontInfo->GetFontData(hFont, 0, nullptr, 0);
+  uint32_t ttc_size = m_pFontInfo->GetFontData(hFont, kTableTTCF, {});
+  uint32_t font_size = m_pFontInfo->GetFontData(hFont, 0, {});
   if (font_size == 0 && ttc_size == 0) {
     m_pFontInfo->DeleteFont(hFont);
     return nullptr;
   }
-  FXFT_Face face = nullptr;
+  RetainPtr<CFX_Face> face;
   if (ttc_size)
-    face = GetCachedTTCFace(hFont, kTableTTCF, ttc_size, font_size);
+    face = GetCachedTTCFace(hFont, ttc_size, font_size);
   else
     face = GetCachedFace(hFont, SubstName, weight, bItalic, font_size);
   if (!face) {
@@ -650,13 +645,13 @@ FXFT_Face CFX_FontMapper::FindSubstFont(const ByteString& name,
   pSubstFont->m_Family = SubstName;
   pSubstFont->m_Charset = Charset;
   bool bNeedUpdateWeight = false;
-  if (FXFT_Is_Face_Bold(face))
+  if (FXFT_Is_Face_Bold(face->GetRec()))
     bNeedUpdateWeight = weight != FXFONT_FW_BOLD;
   else
     bNeedUpdateWeight = weight != FXFONT_FW_NORMAL;
   if (bNeedUpdateWeight)
     pSubstFont->m_Weight = weight;
-  if (bItalic && !FXFT_Is_Face_Italic(face)) {
+  if (bItalic && !FXFT_Is_Face_Italic(face->GetRec())) {
     if (italic_angle == 0)
       italic_angle = -12;
     else if (abs(italic_angle) < 5)
@@ -671,7 +666,7 @@ int CFX_FontMapper::GetFaceSize() const {
   return pdfium::CollectionSize<int>(m_FaceArray);
 }
 
-bool CFX_FontMapper::IsBuiltinFace(const FXFT_Face face) const {
+bool CFX_FontMapper::IsBuiltinFace(const RetainPtr<CFX_Face>& face) const {
   for (size_t i = 0; i < MM_FACE_COUNT; ++i) {
     if (m_MMFaces[i] == face)
       return true;
@@ -683,52 +678,67 @@ bool CFX_FontMapper::IsBuiltinFace(const FXFT_Face face) const {
   return false;
 }
 
-FXFT_Face CFX_FontMapper::GetCachedTTCFace(void* hFont,
-                                           const uint32_t tableTTCF,
-                                           uint32_t ttc_size,
-                                           uint32_t font_size) {
-  uint32_t checksum = 0;
-  {
-    uint8_t buffer[1024];
-    m_pFontInfo->GetFontData(hFont, tableTTCF, buffer, sizeof(buffer));
-    uint32_t* pBuffer = reinterpret_cast<uint32_t*>(buffer);
-    for (int i = 0; i < 256; i++)
-      checksum += pBuffer[i];
+RetainPtr<CFX_Face> CFX_FontMapper::GetCachedTTCFace(void* hFont,
+                                                     uint32_t ttc_size,
+                                                     uint32_t font_size) {
+  uint32_t checksum = GetChecksumFromTT(hFont);
+  RetainPtr<CFX_FontMgr::FontDesc> pFontDesc =
+      m_pFontMgr->GetCachedTTCFontDesc(ttc_size, checksum);
+  if (!pFontDesc) {
+    std::unique_ptr<uint8_t, FxFreeDeleter> pFontData(
+        FX_Alloc(uint8_t, ttc_size));
+    m_pFontInfo->GetFontData(hFont, kTableTTCF, {pFontData.get(), ttc_size});
+    pFontDesc = m_pFontMgr->AddCachedTTCFontDesc(
+        ttc_size, checksum, std::move(pFontData), ttc_size);
   }
-  uint8_t* pIgnore = nullptr;
-  FXFT_Face face = m_pFontMgr->GetCachedTTCFace(ttc_size, checksum,
-                                                ttc_size - font_size, &pIgnore);
-  if (face)
-    return face;
+  ASSERT(ttc_size >= font_size);
+  uint32_t font_offset = ttc_size - font_size;
+  int face_index =
+      GetTTCIndex(pFontDesc->FontData().first(ttc_size), font_offset);
+  RetainPtr<CFX_Face> pFace(pFontDesc->GetFace(face_index));
+  if (pFace)
+    return pFace;
 
-  std::unique_ptr<uint8_t, FxFreeDeleter> pFontData(
-      FX_Alloc(uint8_t, ttc_size));
-  m_pFontInfo->GetFontData(hFont, tableTTCF, pFontData.get(), ttc_size);
-  return m_pFontMgr->AddCachedTTCFace(ttc_size, checksum, std::move(pFontData),
-                                      ttc_size, ttc_size - font_size);
+  pFace = m_pFontMgr->NewFixedFace(
+      pFontDesc, pFontDesc->FontData().first(ttc_size), face_index);
+  if (!pFace)
+    return nullptr;
+
+  pFontDesc->SetFace(face_index, pFace.Get());
+  return pFace;
 }
 
-FXFT_Face CFX_FontMapper::GetCachedFace(void* hFont,
-                                        ByteString SubstName,
-                                        int weight,
-                                        bool bItalic,
-                                        uint32_t font_size) {
-  uint8_t* pIgnore = nullptr;
-  FXFT_Face face =
-      m_pFontMgr->GetCachedFace(SubstName, weight, bItalic, &pIgnore);
-  if (face)
-    return face;
+RetainPtr<CFX_Face> CFX_FontMapper::GetCachedFace(void* hFont,
+                                                  ByteString SubstName,
+                                                  int weight,
+                                                  bool bItalic,
+                                                  uint32_t font_size) {
+  RetainPtr<CFX_FontMgr::FontDesc> pFontDesc =
+      m_pFontMgr->GetCachedFontDesc(SubstName, weight, bItalic);
+  if (!pFontDesc) {
+    std::unique_ptr<uint8_t, FxFreeDeleter> pFontData(
+        FX_Alloc(uint8_t, font_size));
+    m_pFontInfo->GetFontData(hFont, 0, {pFontData.get(), font_size});
+    pFontDesc = m_pFontMgr->AddCachedFontDesc(SubstName, weight, bItalic,
+                                              std::move(pFontData), font_size);
+  }
+  RetainPtr<CFX_Face> pFace(pFontDesc->GetFace(0));
+  if (pFace)
+    return pFace;
 
-  std::unique_ptr<uint8_t, FxFreeDeleter> pFontData(
-      FX_Alloc(uint8_t, font_size));
-  m_pFontInfo->GetFontData(hFont, 0, pFontData.get(), font_size);
-  return m_pFontMgr->AddCachedFace(SubstName, weight, bItalic,
-                                   std::move(pFontData), font_size,
+  pFace = m_pFontMgr->NewFixedFace(pFontDesc,
+                                   pFontDesc->FontData().first(font_size),
                                    m_pFontInfo->GetFaceIndex(hFont));
+  if (!pFace)
+    return nullptr;
+
+  pFontDesc->SetFace(0, pFace.Get());
+  return pFace;
 }
 
 // static
-int CFX_FontMapper::GetStandardFontName(ByteString* name) {
+Optional<CFX_FontMapper::StandardFont> CFX_FontMapper::GetStandardFontName(
+    ByteString* name) {
   const auto* end = std::end(g_AltFontNames);
   const auto* found =
       std::lower_bound(std::begin(g_AltFontNames), end, name->c_str(),
@@ -736,8 +746,20 @@ int CFX_FontMapper::GetStandardFontName(ByteString* name) {
                          return FXSYS_stricmp(element.m_pName, name) < 0;
                        });
   if (found == end || FXSYS_stricmp(found->m_pName, name->c_str()))
-    return -1;
+    return {};
 
-  *name = g_Base14FontNames[found->m_Index];
+  *name = g_Base14FontNames[static_cast<size_t>(found->m_Index)];
   return found->m_Index;
+}
+
+// static
+bool CFX_FontMapper::IsSymbolicFont(StandardFont font) {
+  return font == StandardFont::kSymbol || font == StandardFont::kDingbats;
+}
+
+// static
+bool CFX_FontMapper::IsFixedFont(StandardFont font) {
+  return font == StandardFont::kCourier || font == StandardFont::kCourierBold ||
+         font == StandardFont::kCourierBoldOblique ||
+         font == StandardFont::kCourierOblique;
 }

@@ -26,7 +26,7 @@ def crosurlize(value, autoescape=None):
   functionality in the chromium_status AE app.
   """
   words = value.split(' ')
-  for i in xrange(len(words)):
+  for i in range(len(words)):
     is_url = False
     word = words[i]
     if (word.startswith('crbug.com/') or word.startswith('crosreview.com/') or

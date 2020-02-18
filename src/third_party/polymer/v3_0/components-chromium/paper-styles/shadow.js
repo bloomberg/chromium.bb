@@ -9,9 +9,9 @@ part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
 
-import '../polymer/polymer-legacy.js';
+import '../polymer/polymer_bundled.min.js';
 
-import {html} from '../polymer/lib/utils/html-tag.js';
+import {html} from '../polymer/polymer_bundled.min.js';
 const template = html`
 <custom-style>
   <style is="custom-style">

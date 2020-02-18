@@ -21,14 +21,11 @@ class GrRenderTargetContext;
 #endif
 
 class SkGlyphRunPainterInterface;
-class SkStrikeSpecStorage;
+class SkStrikeSpec;
 
 class SkStrikeCommon {
 public:
     static SkVector PixelRounding(bool isSubpixel, SkAxisAlignment axisAlignment);
-
-    // This assumes that position has the appropriate rounding term applied.
-    static SkIPoint SubpixelLookup(SkAxisAlignment axisAlignment, SkPoint position);
 
     // An atlas consists of plots, and plots hold glyphs. The minimum a plot can be is 256x256.
     // This means that the maximum size a glyph can be is 256x256.
@@ -76,9 +73,6 @@ public:
                              SkGlyphRunPainterInterface* process);
 #endif  // SK_SUPPORT_GPU
 
-    // TODO: Make this the canonical check for Skia.
-    static bool ShouldDrawAsPath(const SkPaint& paint, const SkFont& font, const SkMatrix& matrix);
-
 private:
     SkGlyphRunListPainter(const SkSurfaceProps& props, SkColorType colorType,
                           SkScalerContextFlags flags, SkStrikeCacheInterface* strikeCache);
@@ -107,6 +101,24 @@ private:
                              const SkMatrix& viewMatrix,
                              SkGlyphRunPainterInterface* process);
 
+    static SkSpan<const SkPackedGlyphID> DeviceSpacePackedGlyphIDs(
+            SkStrikeInterface* strike,
+            const SkMatrix& viewMatrix,
+            const SkPoint& origin,
+            int n,
+            const SkGlyphID* glyphIDs,
+            const SkPoint* positions,
+            SkPoint* mappedPositions,
+            SkPackedGlyphID* results);
+
+    static SkSpan<const SkPackedGlyphID> SourceSpacePackedGlyphIDs(
+            const SkPoint& origin,
+            int n,
+            const SkGlyphID* glyphIDs,
+            const SkPoint* positions,
+            SkPoint* mappedPositions,
+            SkPackedGlyphID* results);
+
     // The props as on the actual device.
     const SkSurfaceProps fDeviceProps;
     // The props for when the bitmap device can't draw LCD text.
@@ -118,6 +130,7 @@ private:
 
     int fMaxRunSize{0};
     SkAutoTMalloc<SkPoint> fPositions;
+    SkAutoTMalloc<SkPackedGlyphID> fPackedGlyphIDs;
     SkAutoTMalloc<SkGlyphPos> fGlyphPos;
 
     std::vector<SkGlyphPos> fPaths;
@@ -146,26 +159,26 @@ public:
     virtual void startRun(const SkGlyphRun& glyphRun, bool useSDFT) = 0;
 
     virtual void processDeviceMasks(SkSpan<const SkGlyphPos> masks,
-                                    const SkStrikeSpecStorage& strikeSpec) = 0;
+                                    const SkStrikeSpec& strikeSpec) = 0;
 
     virtual void processSourcePaths(SkSpan<const SkGlyphPos> paths,
-                                    const SkStrikeSpecStorage& strikeSpec) = 0;
+                                    const SkStrikeSpec& strikeSpec) = 0;
 
     virtual void processDevicePaths(SkSpan<const SkGlyphPos> paths) = 0;
 
     virtual void processSourceSDFT(SkSpan<const SkGlyphPos> masks,
-                                   const SkStrikeSpecStorage& strikeSpec,
+                                   const SkStrikeSpec& strikeSpec,
                                    const SkFont& runFont,
                                    SkScalar minScale,
                                    SkScalar maxScale,
                                    bool hasWCoord) = 0;
 
     virtual void processSourceFallback(SkSpan<const SkGlyphPos> masks,
-                                       const SkStrikeSpecStorage& strikeSpec,
+                                       const SkStrikeSpec& strikeSpec,
                                        bool hasW) = 0;
 
     virtual void processDeviceFallback(SkSpan<const SkGlyphPos> masks,
-                                       const SkStrikeSpecStorage& strikeSpec) = 0;
+                                       const SkStrikeSpec& strikeSpec) = 0;
 
 };
 

@@ -8,7 +8,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/blink/public/web/web_content_capture_client.h"
 #include "third_party/blink/public/web/web_content_holder.h"
-#include "third_party/blink/renderer/core/content_capture/content_holder.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
@@ -27,7 +26,7 @@ ContentCaptureTask::ContentCaptureTask(LocalFrame& local_frame_root,
       ->GetTaskTimingParameters(task_short_delay_, task_long_delay_);
   // The histogram is all about time, just disable it if high resolution isn't
   // supported.
-  if (TimeTicks::IsHighResolution()) {
+  if (base::TimeTicks::IsHighResolution()) {
     histogram_reporter_ =
         base::MakeRefCounted<ContentCaptureTaskHistogramReporter>();
     task_session_->SetSentNodeCountCallback(
@@ -44,7 +43,7 @@ void ContentCaptureTask::Shutdown() {
   local_frame_root_ = nullptr;
 }
 
-bool ContentCaptureTask::CaptureContent(std::vector<cc::NodeHolder>& data) {
+bool ContentCaptureTask::CaptureContent(Vector<cc::NodeId>& data) {
   if (captured_content_for_testing_) {
     data = captured_content_for_testing_.value();
     return true;
@@ -53,8 +52,15 @@ bool ContentCaptureTask::CaptureContent(std::vector<cc::NodeHolder>& data) {
   // lifecycle step so we need to early-out in many cases.
   if (const auto* root_frame_view = local_frame_root_->View()) {
     if (const auto* cc_layer = root_frame_view->RootCcLayer()) {
-      if (auto* layer_tree_host = cc_layer->layer_tree_host())
-        return layer_tree_host->CaptureContent(&data);
+      if (auto* layer_tree_host = cc_layer->layer_tree_host()) {
+        std::vector<cc::NodeId> content;
+        if (layer_tree_host->CaptureContent(&content)) {
+          for (auto c : content)
+            data.push_back(std::move(c));
+          return true;
+        }
+        return false;
+      }
     }
   }
   return false;
@@ -62,13 +68,13 @@ bool ContentCaptureTask::CaptureContent(std::vector<cc::NodeHolder>& data) {
 
 bool ContentCaptureTask::CaptureContent() {
   DCHECK(task_session_);
-  std::vector<cc::NodeHolder> buffer;
+  Vector<cc::NodeId> buffer;
   if (histogram_reporter_)
     histogram_reporter_->OnCaptureContentStarted();
   bool result = CaptureContent(buffer);
   if (histogram_reporter_)
     histogram_reporter_->OnCaptureContentEnded(buffer.size());
-  if (!buffer.empty())
+  if (!buffer.IsEmpty())
     task_session_->SetCapturedContent(buffer);
   return result;
 }
@@ -82,20 +88,19 @@ void ContentCaptureTask::SendContent(
 
   if (histogram_reporter_)
     histogram_reporter_->OnSendContentStarted();
-  std::vector<scoped_refptr<WebContentHolder>> content_batch;
+  WebVector<WebContentHolder> content_batch;
   content_batch.reserve(kBatchSize);
   // Only send changed content after the new content was sent.
   bool sending_changed_content = !doc_session.HasUnsentCapturedContent();
   while (content_batch.size() < kBatchSize) {
-    scoped_refptr<ContentHolder> content_holder;
+    Node* node;
     if (sending_changed_content)
-      content_holder = doc_session.GetNextChangedContentHolder();
+      node = doc_session.GetNextChangedNode();
     else
-      content_holder = doc_session.GetNextUnsentContentHolder();
-    if (!content_holder)
+      node = doc_session.GetNextUnsentNode();
+    if (!node)
       break;
-    content_batch.push_back(
-        base::MakeRefCounted<WebContentHolder>(content_holder));
+    content_batch.emplace_back(WebContentHolder(*node));
   }
   if (!content_batch.empty()) {
     if (sending_changed_content) {
@@ -203,7 +208,7 @@ void ContentCaptureTask::ScheduleInternal(ScheduleReason reason) {
   if (is_scheduled_)
     return;
 
-  TimeDelta delay;
+  base::TimeDelta delay;
   switch (reason) {
     case ScheduleReason::kFirstContentChange:
     case ScheduleReason::kScrolling:

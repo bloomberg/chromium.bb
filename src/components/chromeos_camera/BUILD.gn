@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
 import("//build/config/ui.gni")
 import("//media/gpu/args.gni")
 import("//testing/test.gni")
@@ -144,6 +143,7 @@ if (use_v4l2_codec || use_vaapi) {
       "//media:test_support",
       "//media/capture:chromeos_test_utils",
       "//media/gpu:buildflags",
+      "//media/gpu/linux:video_frame_mapper",
       "//media/gpu/test:helpers",
       "//media/parsers",
       "//mojo/core/embedder",
@@ -206,6 +206,11 @@ test("jpeg_decode_accelerator_unittest") {
     deps += [
       "//media/gpu/vaapi",
       "//media/gpu/vaapi:jpeg_decoder_unit_test",
+      # TODO(crbug.com/986074): we should move this to its own executable, but
+      # this would imply creating a new Tast wrapper in Chrome OS. So, for
+      # convenience, we make the WebP tests run with the
+      # jpeg_decode_accelerator_unittest binary.
+      "//media/gpu/vaapi:webp_decoder_unit_test",
     ]
 
     data += [ "//media/test/data/pixel-1280x720.jpg" ]

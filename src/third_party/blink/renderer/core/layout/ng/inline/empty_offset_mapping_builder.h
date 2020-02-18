@@ -5,9 +5,11 @@
 #ifndef EmptyOffsetMappingBuilder_h
 #define EmptyOffsetMappingBuilder_h
 
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
+
+class LayoutText;
 
 // A mock class providing all APIs of an offset mapping builder, but not doing
 // anything. For templates functions/classes that can optionally create an
@@ -29,6 +31,7 @@ class EmptyOffsetMappingBuilder {
   void CollapseTrailingSpace(unsigned) {}
   void Composite(const EmptyOffsetMappingBuilder&) {}
   void Concatenate(const EmptyOffsetMappingBuilder&) {}
+  void RestoreTrailingCollapsibleSpace(const LayoutText&, unsigned) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyOffsetMappingBuilder);

@@ -45,6 +45,11 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
                     Thread::IdleTask idle_task) override {
     idle_task_ = std::move(idle_task);
   }
+  void PostDelayedIdleTask(const base::Location&,
+                           base::TimeDelta,
+                           Thread::IdleTask) override {
+    NOTIMPLEMENTED();
+  }
   void PostNonNestableIdleTask(const base::Location&,
                                Thread::IdleTask) override {}
   std::unique_ptr<PageScheduler> CreatePageScheduler(
@@ -73,7 +78,7 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
 
   void SetV8Isolate(v8::Isolate* isolate) override {}
 
-  void RunIdleTask() { std::move(idle_task_).Run(TimeTicks()); }
+  void RunIdleTask() { std::move(idle_task_).Run(base::TimeTicks()); }
   bool HasIdleTask() const { return !!idle_task_; }
 
  private:

@@ -12,7 +12,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gl/dc_renderer_layer_params.h"
+#include "ui/gfx/video_types.h"
 
 namespace viz {
 class DisplayResourceProvider;
@@ -32,7 +32,8 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
   // hardware protected video and soon for Finch experiment on software
   // protected video.
   bool RequiresOverlay() const {
-    return (protected_video_type == ui::ProtectedVideoType::kHardwareProtected);
+    return (protected_video_type ==
+            gfx::ProtectedVideoType::kHardwareProtected);
   }
 
   // Resource ids for video Y and UV planes.  Can be the same resource.
@@ -62,7 +63,8 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
   // normally BT.709.
   gfx::ColorSpace color_space;
 
-  ui::ProtectedVideoType protected_video_type = ui::ProtectedVideoType::kClear;
+  gfx::ProtectedVideoType protected_video_type =
+      gfx::ProtectedVideoType::kClear;
 };
 
 typedef std::vector<DCLayerOverlay> DCLayerOverlayList;

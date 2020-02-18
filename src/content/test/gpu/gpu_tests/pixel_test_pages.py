@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import sys
-
 _FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS = [
   {
     'comment': 'top left video, yellow',
@@ -132,13 +130,13 @@ class PixelTestPages(object):
   def DefaultPages(base_name):
     sw_compositing_args = ['--disable-gpu-compositing']
 
-    tolerance = 3
-    tolerance_vp9 = 5 # VP9 video requires larger tolerance
-    if sys.platform == 'darwin':
-      # On MacOSX, pixels are slightly off.
-      # https://crbug.com/911895
-      tolerance = 10
-      tolerance_vp9 = 20
+    # Tolerance of 10% is required for all the formats to match gold/pixel
+    # expectations on all the platforms for pixel video tests. Hence setting it
+    # to 20.
+    # Bug filed on MacOSX to investigate the tolerance -
+    # https://crbug.com/911895.
+    tolerance = 20
+    tolerance_vp9 = 20
 
     return [
       PixelTestPage(
@@ -306,43 +304,43 @@ class PixelTestPages(object):
       PixelTestPage(
         'pixel_video_mp4_four_colors_rot_90.html',
         base_name + '_Video_MP4_FourColors_Rot_90',
-        test_rect=[0, 0, 427, 240],
+        test_rect=[0, 0, 270, 240],
         revision=0, # Golden image revision is not used
         tolerance=tolerance,
         expected_colors=[
           {
             'comment': 'outside video content, left side, white',
             'location': [1, 1],
-            'size': [144, 238],
+            'size': [60, 238],
             'color': [255, 255, 255],
           },
           {
             'comment': 'outside video content, right side, white',
-            'location': [282, 1],
-            'size': [144, 238],
+            'location': [210, 1],
+            'size': [60, 238],
             'color': [255, 255, 255],
           },
           {
             'comment': 'top left video, red',
-            'location': [152, 5],
+            'location': [73, 5],
             'size': [55, 110],
             'color': [255, 17, 24],
           },
           {
             'comment': 'top right video, green',
-            'location': [220, 5],
+            'location': [141, 5],
             'size': [55, 110],
             'color': [44, 255, 16],
           },
           {
             'comment': 'bottom left video, yellow',
-            'location': [152, 125],
+            'location': [73, 125],
             'size': [55, 110],
             'color': [255, 255, 15],
           },
           {
             'comment': 'bottom right video, blue',
-            'location': [220, 125],
+            'location': [141, 125],
             'size': [55, 110],
             'color': [12, 12, 255],
           }
@@ -384,43 +382,43 @@ class PixelTestPages(object):
       PixelTestPage(
         'pixel_video_mp4_four_colors_rot_270.html',
         base_name + '_Video_MP4_FourColors_Rot_270',
-        test_rect=[0, 0, 427, 240],
+        test_rect=[0, 0, 270, 240],
         revision=0, # Golden image revision is not used
         tolerance=tolerance,
         expected_colors=[
           {
             'comment': 'outside video content, left side, white',
             'location': [1, 1],
-            'size': [144, 238],
+            'size': [60, 238],
             'color': [255, 255, 255],
           },
           {
             'comment': 'outside video content, right side, white',
-            'location': [282, 1],
-            'size': [144, 238],
+            'location': [210, 1],
+            'size': [60, 238],
             'color': [255, 255, 255],
           },
           {
             'comment': 'top left video, blue',
-            'location': [152, 5],
+            'location': [73, 5],
             'size': [55, 110],
             'color': [12, 12, 255],
           },
           {
             'comment': 'top right video, yellow',
-            'location': [220, 5],
+            'location': [141, 5],
             'size': [55, 110],
             'color': [255, 255, 15],
           },
           {
             'comment': 'bottom left video, green',
-            'location': [152, 125],
+            'location': [73, 125],
             'size': [55, 110],
             'color': [44, 255, 16],
           },
           {
             'comment': 'bottom right video, red',
-            'location': [220, 125],
+            'location': [141, 125],
             'size': [55, 110],
             'color': [255, 17, 24],
           }
@@ -1188,7 +1186,7 @@ class PixelTestPages(object):
       PixelTestPage(
         'pixel_video_mp4_four_colors_rot_90.html',
         base_name + '_DirectComposition_Video_MP4_FourColors_Rot_90',
-        test_rect=[0, 0, 427, 240],
+        test_rect=[0, 0, 270, 240],
         revision=0, # Golden image revision is not used
         browser_args=browser_args,
         other_args={'video_is_rotated': True},
@@ -1197,36 +1195,36 @@ class PixelTestPages(object):
           {
             'comment': 'outside video content, left side, white',
             'location': [1, 1],
-            'size': [144, 238],
+            'size': [60, 238],
             'color': [255, 255, 255],
           },
           {
             'comment': 'outside video content, right side, white',
-            'location': [282, 1],
-            'size': [144, 238],
+            'location': [210, 1],
+            'size': [60, 238],
             'color': [255, 255, 255],
           },
           {
             'comment': 'top left video, red',
-            'location': [152, 5],
+            'location': [73, 5],
             'size': [55, 110],
             'color': [255, 17, 24],
           },
           {
             'comment': 'top right video, green',
-            'location': [220, 5],
+            'location': [141, 5],
             'size': [55, 110],
             'color': [44, 255, 16],
           },
           {
             'comment': 'bottom left video, yellow',
-            'location': [152, 125],
+            'location': [73, 125],
             'size': [55, 110],
             'color': [255, 255, 15],
           },
           {
             'comment': 'bottom right video, blue',
-            'location': [220, 125],
+            'location': [141, 125],
             'size': [55, 110],
             'color': [12, 12, 255],
           }]),
@@ -1268,7 +1266,7 @@ class PixelTestPages(object):
       PixelTestPage(
         'pixel_video_mp4_four_colors_rot_270.html',
         base_name + '_DirectComposition_Video_MP4_FourColors_Rot_270',
-        test_rect=[0, 0, 427, 240],
+        test_rect=[0, 0, 270, 240],
         revision=0, # Golden image revision is not used
         browser_args=browser_args,
         other_args={'video_is_rotated': True},
@@ -1277,36 +1275,36 @@ class PixelTestPages(object):
           {
             'comment': 'outside video content, left side, white',
             'location': [1, 1],
-            'size': [144, 238],
+            'size': [60, 238],
             'color': [255, 255, 255],
           },
           {
             'comment': 'outside video content, right side, white',
-            'location': [282, 1],
-            'size': [144, 238],
+            'location': [210, 1],
+            'size': [60, 238],
             'color': [255, 255, 255],
           },
           {
             'comment': 'top left video, blue',
-            'location': [152, 5],
+            'location': [73, 5],
             'size': [55, 110],
             'color': [12, 12, 255],
           },
           {
             'comment': 'top right video, yellow',
-            'location': [220, 5],
+            'location': [141, 5],
             'size': [55, 110],
             'color': [255, 255, 15],
           },
           {
             'comment': 'bottom left video, green',
-            'location': [152, 125],
+            'location': [73, 125],
             'size': [55, 110],
             'color': [44, 255, 16],
           },
           {
             'comment': 'bottom right video, red',
-            'location': [220, 125],
+            'location': [141, 125],
             'size': [55, 110],
             'color': [255, 17, 24],
           }]),

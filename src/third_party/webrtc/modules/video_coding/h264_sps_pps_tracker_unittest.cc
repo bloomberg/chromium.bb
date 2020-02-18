@@ -11,6 +11,7 @@
 #include "modules/video_coding/h264_sps_pps_tracker.h"
 
 #include <string.h>
+
 #include <vector>
 
 #include "absl/types/variant.h"
@@ -126,6 +127,7 @@ TEST_F(TestH264SpsPpsTracker, FuAFirstPacket) {
   uint8_t data[] = {1, 2, 3};
   H264VcmPacket packet;
   packet.h264().packetization_type = kH264FuA;
+  packet.h264().nalus_length = 1;
   packet.video_header.is_first_packet_in_frame = true;
   packet.dataPtr = data;
   packet.sizeBytes = sizeof(data);
@@ -149,10 +151,10 @@ TEST_F(TestH264SpsPpsTracker, StapAIncorrectSegmentLength) {
   EXPECT_EQ(H264SpsPpsTracker::kDrop, tracker_.CopyAndFixBitstream(&packet));
 }
 
-TEST_F(TestH264SpsPpsTracker, NoNalusFirstPacket) {
+TEST_F(TestH264SpsPpsTracker, SingleNaluInsertStartCode) {
   uint8_t data[] = {1, 2, 3};
   H264VcmPacket packet;
-  packet.video_header.is_first_packet_in_frame = true;
+  packet.h264().nalus_length = 1;
   packet.dataPtr = data;
   packet.sizeBytes = sizeof(data);
 
@@ -164,12 +166,14 @@ TEST_F(TestH264SpsPpsTracker, NoNalusFirstPacket) {
   delete[] packet.dataPtr;
 }
 
-TEST_F(TestH264SpsPpsTracker, IdrNoSpsPpsInserted) {
+TEST_F(TestH264SpsPpsTracker, NoStartCodeInsertedForSubsequentFuAPacket) {
   std::vector<uint8_t> data = {1, 2, 3};
   H264VcmPacket packet;
   packet.h264().packetization_type = kH264FuA;
 
-  AddIdr(&packet, 0);
+  // Since no NALU begin in this packet the nalus_length is zero.
+  packet.h264().nalus_length = 0;
+
   packet.dataPtr = data.data();
   packet.sizeBytes = data.size();
 

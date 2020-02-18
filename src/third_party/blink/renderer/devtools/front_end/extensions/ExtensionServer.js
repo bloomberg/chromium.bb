@@ -83,19 +83,13 @@ Extensions.ExtensionServer = class extends Common.Object {
     window.addEventListener('message', this._onWindowMessage.bind(this), false);  // Only for main window.
 
     InspectorFrontendHost.events.addEventListener(
-        InspectorFrontendHostAPI.Events.AddExtensions, this._addExtensions, this);
-    InspectorFrontendHost.events.addEventListener(
         InspectorFrontendHostAPI.Events.SetInspectedTabId, this._setInspectedTabId, this);
 
     this._initExtensions();
   }
 
   initializeExtensions() {
-    this._initializeCommandIssued = true;
-    if (this._pendingExtensionInfos) {
-      this._pendingExtensionInfos.forEach(this._addExtension, this);
-      delete this._pendingExtensionInfos;
-    }
+    InspectorFrontendHost.setAddExtensionCallback(this._addExtension.bind(this));
   }
 
   /**
@@ -620,8 +614,6 @@ Extensions.ExtensionServer = class extends Common.Object {
     this._registerResourceContentCommittedHandler(this._notifyUISourceCodeContentCommitted);
 
     SDK.targetManager.addEventListener(SDK.TargetManager.Events.InspectedURLChanged, this._inspectedURLChanged, this);
-
-    self.InspectorExtensionRegistry.getExtensionsAsync();
   }
 
   _notifyResourceAdded(event) {
@@ -658,20 +650,6 @@ Extensions.ExtensionServer = class extends Common.Object {
       endColumn: range.endColumn,
       url: url,
     });
-  }
-
-  /**
-   * @param {!Common.Event} event
-   */
-  _addExtensions(event) {
-    if (Extensions.extensionServer._overridePlatformExtensionAPIForTest)
-      window.buildPlatformExtensionAPI = Extensions.extensionServer._overridePlatformExtensionAPIForTest;
-
-    const extensionInfos = /** @type {!Array.<!ExtensionDescriptor>} */ (event.data);
-    if (this._initializeCommandIssued)
-      extensionInfos.forEach(this._addExtension, this);
-    else
-      this._pendingExtensionInfos = extensionInfos;
   }
 
   /**

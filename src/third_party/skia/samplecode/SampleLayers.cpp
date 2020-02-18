@@ -100,13 +100,7 @@ public:
     LayersView() {}
 
 protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "Layers");
-            return true;
-        }
-        return this->INHERITED::onQuery(evt);
-    }
+    SkString name() override { return SkString("Layers"); }
 
     void drawBG(SkCanvas* canvas) {
         canvas->drawColor(SK_ColorGRAY);
@@ -185,7 +179,6 @@ DEF_SAMPLE( return new LayersView; )
 #include "include/effects/SkMorphologyImageFilter.h"
 
 #include "tools/Resources.h"
-#include "tools/timer/AnimTimer.h"
 
 class BackdropView : public Sample {
     SkPoint fCenter;
@@ -201,13 +194,7 @@ public:
     }
 
 protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "Backdrop");
-            return true;
-        }
-        return this->INHERITED::onQuery(evt);
-    }
+    SkString name() override { return SkString("Backdrop"); }
 
     void onDrawContent(SkCanvas* canvas) override {
         canvas->drawImage(fImage.get(), 0, 0, nullptr);
@@ -231,18 +218,18 @@ protected:
         canvas->restore();
     }
 
-    bool onAnimate(const AnimTimer& timer) override {
-        fAngle = SkDoubleToScalar(fmod(timer.secs() * 360 / 5, 360));
+    bool onAnimate(double nanos) override {
+        fAngle = SkDoubleToScalar(fmod(1e-9 * nanos * 360 / 5, 360));
         return true;
     }
 
-    Sample::Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned modi) override {
-        return new Click(this);
+    Sample::Click* onFindClickHandler(SkScalar x, SkScalar y, ModifierKey modi) override {
+        return new Click();
     }
 
     bool onClick(Click* click) override {
         fCenter = click->fCurr;
-        return this->INHERITED::onClick(click);
+        return true;
     }
 
 private:

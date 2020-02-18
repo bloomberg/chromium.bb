@@ -2,14 +2,12 @@ package Filter::Simple;
 
 use Text::Balanced ':ALL';
 
-use vars qw{ $VERSION @EXPORT };
-
-$VERSION = '0.88';
+our $VERSION = '0.95';
 
 use Filter::Util::Call;
 use Carp;
 
-@EXPORT = qw( FILTER FILTER_ONLY );
+our @EXPORT = qw( FILTER FILTER_ONLY );
 
 
 sub import {
@@ -119,8 +117,8 @@ sub gen_std_filter_for {
         }
         if ($type =~ /^code/) {
             my $count = 0;
-            local $placeholder = qr/\Q$;\E(\C{4})\Q$;\E/;
-            my $extractor =      qr/\Q$;\E(\C{4})\Q$;\E/;
+            local $placeholder = qr/\Q$;\E(.{4})\Q$;\E/s;
+            my $extractor =      qr/\Q$;\E(.{4})\Q$;\E/s;
             $_ = join "",
                   map { ref $_ ? $;.pack('N',$count++).$; : $_ }
                       @components;
@@ -198,6 +196,7 @@ sub gen_filter_import {
                     if ($terminator{terminator} &&
                         m/$terminator{terminator}/) {
                         $lastline = $_;
+                        $count++;
                         last;
                     }
                     $data .= $_;
@@ -243,7 +242,6 @@ __END__
 
 Filter::Simple - Simplified source filtering
 
-
 =head1 SYNOPSIS
 
  # in MyFilter.pm:
@@ -251,7 +249,7 @@ Filter::Simple - Simplified source filtering
      package MyFilter;
 
      use Filter::Simple;
-     
+
      FILTER { ... };
 
      # or just:
@@ -338,7 +336,7 @@ to the sequence C<die 'BANG' if $BANG> in any piece of code following a
 C<use BANG;> statement (until the next C<no BANG;> statement, if any):
 
     package BANG;
- 
+
     use Filter::Util::Call ;
 
     sub import {
@@ -403,7 +401,7 @@ In other words, the previous example, would become:
 
     package BANG;
     use Filter::Simple;
-    
+
     FILTER {
         s/BANG\s+BANG/die 'BANG' if \$BANG/g;
     };
@@ -447,7 +445,7 @@ you would write:
 
     package BANG;
     use Filter::Simple;
-    
+
     FILTER {
         s/BANG\s+BANG/die 'BANG' if \$BANG/g;
     }
@@ -464,7 +462,7 @@ and to prevent the filter's being turned off in any way:
 
     package BANG;
     use Filter::Simple;
-    
+
     FILTER {
         s/BANG\s+BANG/die 'BANG' if \$BANG/g;
     }
@@ -761,9 +759,9 @@ list to the filtering subroutine, so the BANG.pm filter could easily
 be made parametric:
 
     package BANG;
- 
+
     use Filter::Simple;
-    
+
     FILTER {
         my ($die_msg, $var_name) = @_;
         s/BANG\s+BANG/die '$die_msg' if \${$var_name}/g;
@@ -801,6 +799,6 @@ Damian Conway E<lt>damian@conway.orgE<gt>.
 
 =head1 COPYRIGHT AND LICENSE
 
-    Copyright (c) 2000-2008, Damian Conway. All Rights Reserved.
+    Copyright (c) 2000-2014, Damian Conway. All Rights Reserved.
     This module is free software. It may be used, redistributed
     and/or modified under the same terms as Perl itself.

@@ -7,13 +7,14 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "fuchsia/base/lifecycle_impl.h"
 #include "fuchsia/engine/context_provider_impl.h"
 
 int ContextProviderMain() {
-  base::MessageLoopForUI message_loop;
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
   base::fuchsia::ServiceDirectory* const directory =
       base::fuchsia::ServiceDirectory::GetDefault();
 
@@ -21,9 +22,8 @@ int ContextProviderMain() {
   base::fuchsia::ScopedServiceBinding<fuchsia::web::ContextProvider> binding(
       directory, &context_provider);
 
-  fuchsia::web::ContextProviderPtr fuchsia_context_provider;
-  fidl::Binding<fuchsia::web::ContextProvider> fuchsia_binding(
-      &context_provider, fuchsia_context_provider.NewRequest());
+  base::fuchsia::ScopedServiceBinding<fuchsia::web::Debug> debug_binding(
+      directory->outgoing_directory()->debug_dir(), &context_provider);
 
   base::RunLoop run_loop;
   cr_fuchsia::LifecycleImpl lifecycle(directory, run_loop.QuitClosure());

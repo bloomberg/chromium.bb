@@ -32,7 +32,7 @@
 #include "cc/trees/paint_holding_commit_trigger.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/html/forms/external_date_time_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/popup_menu.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
@@ -96,6 +97,7 @@ class WebViewImpl;
 
 struct DateTimeChooserParameters;
 struct FrameLoadRequest;
+struct WebTextAutosizerPageInfo;
 struct ViewportDescription;
 struct WebCursorInfo;
 struct WebScreenInfo;
@@ -145,9 +147,32 @@ class CORE_EXPORT ChromeClient
 
   virtual bool HadFormInteraction() const = 0;
 
-  virtual void BeginLifecycleUpdates() = 0;
-  virtual void StartDeferringCommits(base::TimeDelta timeout) = 0;
-  virtual void StopDeferringCommits(cc::PaintHoldingCommitTrigger) = 0;
+  // Allow document lifecycle updates to be run in order to produce composited
+  // outputs. Updates are blocked from occurring during loading navigation in
+  // order to prevent contention and allow Blink to proceed more quickly. This
+  // signals that enough progress has been made and document lifecycle updates
+  // are desirable. This will allow visual updates to occur unless the caller
+  // also uses StartDeferringCommits().
+  //
+  // This may only be called for the main frame, and takes it as
+  // reference to make it clear that callers may only call this while a local
+  // main frame is present and the values does not persist between instances of
+  // local main frames.
+  virtual void BeginLifecycleUpdates(LocalFrame& main_frame) = 0;
+
+  // Start or stop compositor commits from occurring, with a timeout before they
+  // are allowed again. Document lifecycle updates are still allowed during this
+  // time, which will update compositor state, but this prevents the state from
+  // being committed to the compositor thread and generating visual updates.
+  //
+  // These may only be called for the main frame, and takes it as
+  // reference to make it clear that callers may only call this while a local
+  // main frame is present and the state does not persist between instances of
+  // local main frames.
+  virtual void StartDeferringCommits(LocalFrame& main_frame,
+                                     base::TimeDelta timeout) = 0;
+  virtual void StopDeferringCommits(LocalFrame& main_frame,
+                                    cc::PaintHoldingCommitTrigger) = 0;
 
   // Start a system drag and drop operation.
   virtual void StartDragging(LocalFrame*,
@@ -269,7 +294,7 @@ class CORE_EXPORT ChromeClient
   virtual float ClampPageScaleFactorToLimits(float scale) const {
     return scale;
   }
-  virtual void MainFrameScrollOffsetChanged() const {}
+  virtual void MainFrameScrollOffsetChanged(LocalFrame& main_frame) const = 0;
   virtual void ResizeAfterLayout() const {}
   virtual void MainFrameLayoutUpdated() const {}
 
@@ -317,8 +342,13 @@ class CORE_EXPORT ChromeClient
   virtual void AttachRootLayer(scoped_refptr<cc::Layer>,
                                LocalFrame* local_root) = 0;
 
+  // Set the CompositorAnimationTimeline for a local root. Should later be unset
+  // by a call to DetachCompositorAnimationTimeline().
   virtual void AttachCompositorAnimationTimeline(CompositorAnimationTimeline*,
                                                  LocalFrame* local_root) {}
+  // Removes the CompositorAnimationTimeline for a local root. The timeline
+  // would have previously been given to AttachCompositorAnimationTimeline() but
+  // it's valid to call this even if the timeline was never attached.
   virtual void DetachCompositorAnimationTimeline(CompositorAnimationTimeline*,
                                                  LocalFrame* local_root) {}
 
@@ -330,12 +360,17 @@ class CORE_EXPORT ChromeClient
   virtual void ClearLayerSelection(LocalFrame*) {}
   virtual void UpdateLayerSelection(LocalFrame*, const cc::LayerSelection&) {}
 
+  // The client keeps track of which touch/mousewheel event types have handlers,
+  // and if they do, whether the handlers are passive and/or blocking. This
+  // allows the client to know which optimizations can be used for the
+  // associated event classes.
   virtual void SetEventListenerProperties(LocalFrame*,
                                           cc::EventListenerClass,
                                           cc::EventListenerProperties) = 0;
   virtual cc::EventListenerProperties EventListenerProperties(
       LocalFrame*,
       cc::EventListenerClass) const = 0;
+
   virtual void SetHasScrollEventHandlers(LocalFrame*, bool) = 0;
   virtual void SetNeedsLowLatencyInput(LocalFrame*, bool) = 0;
   virtual void SetNeedsUnbufferedInputForDebugger(LocalFrame*, bool) = 0;
@@ -438,6 +473,9 @@ class CORE_EXPORT ChromeClient
 
   virtual void Trace(blink::Visitor*);
 
+  virtual void DidUpdateTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) {
+  }
+
  protected:
   ChromeClient() = default;
 
@@ -467,7 +505,7 @@ class CORE_EXPORT ChromeClient
   void SetToolTip(LocalFrame&, const HitTestLocation&, const HitTestResult&);
 
   WeakMember<Node> last_mouse_over_node_;
-  LayoutPoint last_tool_tip_point_;
+  PhysicalOffset last_tool_tip_point_;
   String last_tool_tip_text_;
 
   FRIEND_TEST_ALL_PREFIXES(ChromeClientTest, SetToolTipFlood);

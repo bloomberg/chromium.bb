@@ -11,13 +11,15 @@
 #include "components/viz/service/display/output_surface.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/src/gpu/GrSemaphore.h"
 #include "ui/gfx/swap_result.h"
+#include "ui/latency/latency_tracker.h"
 
-class GrBackendSemaphore;
 class SkSurface;
 
 namespace gfx {
 class ColorSpace;
+class GpuFence;
 class Rect;
 class Size;
 struct PresentationFeedback;
@@ -27,6 +29,29 @@ namespace viz {
 
 class SkiaOutputDevice {
  public:
+  // A helper class for defining a BeginPaint() and EndPaint() scope.
+  class ScopedPaint {
+   public:
+    explicit ScopedPaint(SkiaOutputDevice* device)
+        : device_(device), sk_surface_(device->BeginPaint()) {
+      DCHECK(sk_surface_);
+    }
+    ~ScopedPaint() { device_->EndPaint(semaphore_); }
+
+    SkSurface* sk_surface() const { return sk_surface_; }
+    void set_semaphore(const GrBackendSemaphore& semaphore) {
+      DCHECK(!semaphore_.isInitialized());
+      semaphore_ = semaphore;
+    }
+
+   private:
+    SkiaOutputDevice* const device_;
+    SkSurface* const sk_surface_;
+    GrBackendSemaphore semaphore_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedPaint);
+  };
+
   using BufferPresentedCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback& feedback)>;
   using DidSwapBufferCompleteCallback =
@@ -37,21 +62,26 @@ class SkiaOutputDevice {
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   virtual ~SkiaOutputDevice();
 
-  // SkSurface that can be drawn to.
-  SkSurface* draw_surface() const { return draw_surface_.get(); }
-
   // Changes the size of draw surface and invalidates it's contents.
   virtual void Reshape(const gfx::Size& size,
                        float device_scale_factor,
                        const gfx::ColorSpace& color_space,
-                       bool has_alpha) = 0;
+                       bool has_alpha,
+                       gfx::OverlayTransform transform) = 0;
 
-  // Presents DrawSurface.
-  virtual gfx::SwapResponse SwapBuffers(const GrBackendSemaphore& semaphore,
-                                        BufferPresentedCallback feedback) = 0;
-  virtual gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
-                                          const GrBackendSemaphore& semaphore,
-                                          BufferPresentedCallback feedback);
+  // Presents the back buffer.
+  virtual void SwapBuffers(BufferPresentedCallback feedback,
+                           std::vector<ui::LatencyInfo> latency_info) = 0;
+  virtual void PostSubBuffer(const gfx::Rect& rect,
+                             BufferPresentedCallback feedback,
+                             std::vector<ui::LatencyInfo> latency_info);
+
+  virtual gl::GLImage* GetOverlayImage();
+  virtual std::unique_ptr<gfx::GpuFence> SubmitOverlayGpuFence();
+
+  // Set the rectangle that will be drawn into on the surface.
+  virtual void SetDrawRectangle(const gfx::Rect& draw_rectangle);
+
   const OutputSurface::Capabilities& capabilities() const {
     return capabilities_;
   }
@@ -63,15 +93,27 @@ class SkiaOutputDevice {
   virtual void DiscardBackbuffer();
 
   bool need_swap_semaphore() const { return need_swap_semaphore_; }
+  bool is_emulated_rgbx() const { return is_emulated_rgbx_; }
 
  protected:
-  void StartSwapBuffers(base::Optional<BufferPresentedCallback> feedback);
-  gfx::SwapResponse FinishSwapBuffers(gfx::SwapResult result);
+  // Begin paint the back buffer.
+  virtual SkSurface* BeginPaint() = 0;
 
-  sk_sp<SkSurface> draw_surface_;
+  // End paint the back buffer.
+  virtual void EndPaint(const GrBackendSemaphore& semaphore) = 0;
+
+  // Helper method for SwapBuffers() and PostSubBuffer(). It should be called
+  // at the beginning of SwapBuffers() and PostSubBuffer() implementations
+  void StartSwapBuffers(base::Optional<BufferPresentedCallback> feedback);
+
+  // Helper method for SwapBuffers() and PostSubBuffer(). It should be called
+  // at the end of SwapBuffers() and PostSubBuffer() implementations
+  void FinishSwapBuffers(gfx::SwapResult result,
+                         const gfx::Size& size,
+                         std::vector<ui::LatencyInfo> latency_info);
+
   OutputSurface::Capabilities capabilities_;
 
- private:
   const bool need_swap_semaphore_;
   uint64_t swap_id_ = 0;
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
@@ -79,6 +121,11 @@ class SkiaOutputDevice {
   // Only valid between StartSwapBuffers and FinishSwapBuffers.
   base::Optional<BufferPresentedCallback> feedback_;
   base::Optional<gpu::SwapBuffersCompleteParams> params_;
+
+  ui::LatencyTracker latency_tracker_;
+
+  // RGBX format is emulated with RGBA.
+  bool is_emulated_rgbx_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDevice);
 };

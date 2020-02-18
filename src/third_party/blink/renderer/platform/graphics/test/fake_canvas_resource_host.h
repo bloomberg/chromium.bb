@@ -31,26 +31,43 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
       AccelerationHint hint) override {
     if (ResourceProvider())
       return ResourceProvider();
+
     CanvasResourceProvider::ResourceUsage usage =
-        hint == kPreferAcceleration
-            ? CanvasResourceProvider::kAcceleratedCompositedResourceUsage
-            : CanvasResourceProvider::kSoftwareCompositedResourceUsage;
+        hint == kPreferAcceleration ? CanvasResourceProvider::ResourceUsage::
+                                          kAcceleratedCompositedResourceUsage
+                                    : CanvasResourceProvider::ResourceUsage::
+                                          kSoftwareCompositedResourceUsage;
 
     CanvasResourceProvider::PresentationMode presentation_mode =
         RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()
             ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
             : CanvasResourceProvider::kDefaultPresentationMode;
 
-    ReplaceResourceProvider(CanvasResourceProvider::Create(
-        size_, usage, SharedGpuContext::ContextProviderWrapper(), 0,
-        CanvasColorParams(), presentation_mode, nullptr));
+    std::unique_ptr<CanvasResourceProvider> provider;
+    if (provider_type_) {
+      provider = CanvasResourceProvider::CreateForTesting(
+          size_, *provider_type_, SharedGpuContext::ContextProviderWrapper(), 0,
+          CanvasColorParams(), presentation_mode, nullptr);
+    } else {
+      provider = CanvasResourceProvider::Create(
+          size_, usage, SharedGpuContext::ContextProviderWrapper(), 0,
+          CanvasColorParams(), presentation_mode, nullptr);
+    }
+
+    ReplaceResourceProvider(std::move(provider));
     return ResourceProvider();
   }
+
   SkFilterQuality FilterQuality() const override {
     return kLow_SkFilterQuality;
   }
 
+  void set_provider_type(CanvasResourceProvider::ResourceProviderType type) {
+    provider_type_ = type;
+  }
+
  private:
+  base::Optional<CanvasResourceProvider::ResourceProviderType> provider_type_;
   IntSize size_;
 };
 

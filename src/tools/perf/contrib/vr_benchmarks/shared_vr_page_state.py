@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import os
+import time
 from core import path_util
 path_util.AddAndroidPylibToPath()
 from pylib.utils import shared_preference_utils
@@ -16,6 +18,8 @@ from contrib.vr_benchmarks.desktop_runtimes import wmr_runtimes
 
 CARDBOARD_PATH = os.path.join('chrome', 'android', 'shared_preference_files',
                               'test', 'vr_cardboard_skipdon_setupcomplete.json')
+WEBXR_CONSENT_DIALOG_DISABLE_FLAG = (
+    '--disable-xr-device-consent-prompt-for-testing')
 
 
 class SharedVrPageStateFactory(shared_page_state.SharedPageState):
@@ -62,6 +66,8 @@ class _SharedVrPageState(shared_page_state.SharedPageState):
     super(_SharedVrPageState, self).__init__(
         test, finder_options, story_set, possible_browser)
     self._story_set = story_set
+    self._finder_options.AppendExtraBrowserArgs(
+        [WEBXR_CONSENT_DIALOG_DISABLE_FLAG])
 
   @property
   def recording_wpr(self):
@@ -87,6 +93,8 @@ class AndroidSharedVrPageState(_SharedVrPageState):
   def __init__(self, test, finder_options, story_set, possible_browser=None):
     super(AndroidSharedVrPageState, self).__init__(
         test, finder_options, story_set, possible_browser)
+    if self._finder_options.remove_system_vrcore:
+      self._RemoveSystemVrCore()
     if not self._finder_options.disable_vrcore_install:
       self._InstallVrCore()
     self._ConfigureVrCore(os.path.join(path_util.GetChromiumSrcDir(),
@@ -94,6 +102,29 @@ class AndroidSharedVrPageState(_SharedVrPageState):
     self._InstallNfcApk()
     if not self._finder_options.disable_keyboard_install:
       self._InstallKeyboardApk()
+
+  def _RemoveSystemVrCore(self):
+    # Import done here since importing Devil on Windows breaks the Telemetry
+    # unittests.
+    from devil.android import forwarder # pylint: disable=import-error
+    # Close the existing network controller since RemoveSystemPackages could
+    # potentially reboot the device, which breaks the existing port forwarding
+    # and makes it impossible to cleanly re-establish it if the network
+    # controller is still running.
+    self.platform.network_controller.Close()
+    self.platform.RemoveSystemPackages(['com.google.vr.vrcore'])
+    # Re-open the network controller, which in turn re-establishes the adb
+    # forwarding necessary for the local server to work. Since port forwarding
+    # often refuses to work for a short period after rebooting, try several
+    # times.
+    for _ in xrange(5):
+      try:
+        self.platform.network_controller.Open(self.wpr_mode)
+        break
+      except forwarder.HostForwarderError:
+        logging.error(
+            'Failed to open network controller, will retry after a short nap')
+        time.sleep(5)
 
   def _InstallVrCore(self):
     """Installs the VrCore APK."""

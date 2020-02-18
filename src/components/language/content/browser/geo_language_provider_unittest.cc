@@ -82,7 +82,7 @@ class GeoLanguageProviderTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
   // Object under test.
@@ -92,20 +92,6 @@ class GeoLanguageProviderTest : public testing::Test {
   std::unique_ptr<service_manager::Connector> connector_;
   TestingPrefServiceSimple local_state_;
 };
-
-TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguages_OldGeo) {
-  scoped_feature_list_.InitAndDisableFeature(kImprovedGeoLanguageData);
-  // Setup a random place in Madhya Pradesh, India.
-  MoveToLocation(23.0, 80.0);
-  StartGeoLanguageProvider();
-  scoped_task_environment_.RunUntilIdle();
-
-  const std::vector<std::string>& result = GetCurrentGeoLanguages();
-  std::vector<std::string> expected_langs = {"hi", "mr", "ur"};
-  EXPECT_EQ(expected_langs, result);
-  EXPECT_EQ(1, GetQueryNextPositionCalledTimes());
-  EXPECT_EQ(expected_langs, GetCachedLanguages());
-}
 
 TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguages_India) {
   // Setup a random place in West Bengal, India.

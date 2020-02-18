@@ -21,9 +21,9 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/loader/prefetched_signed_exchange_cache.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/frame_messages.h"
@@ -38,7 +38,6 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/stream_handle.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -51,6 +50,31 @@
 #include "url/url_util.h"
 
 namespace content {
+
+namespace {
+
+// A renderer-initiated navigation should be ignored iff a) there is an ongoing
+// request b) which is browser initiated and c) the renderer request is not
+// user-initiated.
+bool ShouldIgnoreIncomingRendererRequest(
+    NavigationRequest* ongoing_navigation_request,
+    bool has_user_gesture) {
+  return ongoing_navigation_request &&
+         ongoing_navigation_request->browser_initiated() && !has_user_gesture;
+}
+
+// Informs the RenderFrameImpl associated with the |frame_tree_node| that a
+// navigation it started was dropped.
+void DropNavigation(FrameTreeNode* frame_tree_node) {
+  if (!IsPerNavigationMojoInterfaceEnabled()) {
+    RenderFrameHost* current_frame_host =
+        frame_tree_node->render_manager()->current_frame_host();
+    current_frame_host->Send(
+        new FrameMsg_DroppedNavigation(current_frame_host->GetRoutingID()));
+  }
+}
+
+}  // namespace
 
 struct NavigatorImpl::NavigationMetricsData {
   NavigationMetricsData(base::TimeTicks start_time,
@@ -171,10 +195,9 @@ void NavigatorImpl::DidFailLoadWithError(
 
 bool NavigatorImpl::StartHistoryNavigationInNewSubframe(
     RenderFrameHostImpl* render_frame_host,
-    const GURL& default_url,
     mojom::NavigationClientAssociatedPtrInfo* navigation_client) {
-  return controller_->StartHistoryNavigationInNewSubframe(
-      render_frame_host, default_url, navigation_client);
+  return controller_->StartHistoryNavigationInNewSubframe(render_frame_host,
+                                                          navigation_client);
 }
 
 void NavigatorImpl::DidNavigate(
@@ -241,7 +264,7 @@ void NavigatorImpl::DidNavigate(
   SiteInstanceImpl* site_instance = render_frame_host->GetSiteInstance();
   if (!site_instance->HasSite() &&
       SiteInstanceImpl::ShouldAssignSiteForURL(params.url)) {
-    site_instance->SetSite(params.url);
+    site_instance->ConvertToDefaultOrSetSite(params.url);
   }
 
   // Need to update MIME type here because it's referred to in
@@ -482,7 +505,8 @@ void NavigatorImpl::NavigateFromFrameProxy(
     const std::string& method,
     scoped_refptr<network::ResourceRequestBody> post_body,
     const std::string& extra_headers,
-    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+    bool has_user_gesture) {
   // |method != "POST"| should imply absence of |post_body|.
   if (method != "POST" && post_body) {
     NOTREACHED();
@@ -521,6 +545,13 @@ void NavigatorImpl::NavigateFromFrameProxy(
 
     // Navigations in Web UI pages count as browser-initiated navigations.
     is_renderer_initiated = false;
+  }
+
+  if (is_renderer_initiated &&
+      ShouldIgnoreIncomingRendererRequest(
+          render_frame_host->frame_tree_node()->navigation_request(),
+          has_user_gesture)) {
+    return;
   }
 
   base::Optional<url::Origin> final_initiator_origin = initiator_origin;
@@ -601,8 +632,7 @@ void NavigatorImpl::OnBeginNavigation(
     // on the frame's unique name.  If this can't be found, fall back to the
     // default path below.
     if (frame_tree_node->navigator()->StartHistoryNavigationInNewSubframe(
-            frame_tree_node->current_frame_host(), common_params.url,
-            &navigation_client)) {
+            frame_tree_node->current_frame_host(), &navigation_client)) {
       return;
     }
   }
@@ -621,18 +651,10 @@ void NavigatorImpl::OnBeginNavigation(
     frame_tree_node->ResetNavigationRequest(false, true);
   }
 
-  // The renderer-initiated navigation request is ignored iff a) there is an
-  // ongoing request b) which is browser initiated and c) the renderer request
-  // is not user-initiated.
-  if (ongoing_navigation_request &&
-      ongoing_navigation_request->browser_initiated() &&
-      !common_params.has_user_gesture) {
-    if (!IsPerNavigationMojoInterfaceEnabled()) {
-      RenderFrameHost* current_frame_host =
-          frame_tree_node->render_manager()->current_frame_host();
-      current_frame_host->Send(
-          new FrameMsg_DroppedNavigation(current_frame_host->GetRoutingID()));
-    }
+  // Verify this navigation has precedence.
+  if (ShouldIgnoreIncomingRendererRequest(ongoing_navigation_request,
+                                          common_params.has_user_gesture)) {
+    DropNavigation(frame_tree_node);
     return;
   }
 
@@ -647,8 +669,8 @@ void NavigatorImpl::OnBeginNavigation(
     // DidStartMainFrameNavigation with the SiteInstance from the current
     // RenderFrameHost.
     DidStartMainFrameNavigation(
-        common_params.url,
-        frame_tree_node->current_frame_host()->GetSiteInstance(), nullptr);
+        common_params, frame_tree_node->current_frame_host()->GetSiteInstance(),
+        nullptr);
     navigation_data_.reset();
   }
   NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
@@ -726,12 +748,8 @@ void NavigatorImpl::OnAbortNavigation(FrameTreeNode* frame_tree_node) {
 
 void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node,
                                      bool inform_renderer) {
-  if (frame_tree_node->navigation_request() &&
-      frame_tree_node->navigation_request()->navigation_handle()) {
-    frame_tree_node->navigation_request()
-        ->navigation_handle()
-        ->set_net_error_code(net::ERR_ABORTED);
-  }
+  if (frame_tree_node->navigation_request())
+    frame_tree_node->navigation_request()->set_net_error(net::ERR_ABORTED);
   frame_tree_node->ResetNavigationRequest(false, inform_renderer);
   if (frame_tree_node->IsMainFrame())
     navigation_data_.reset();
@@ -856,7 +874,7 @@ void NavigatorImpl::RecordNavigationMetrics(
 }
 
 void NavigatorImpl::DidStartMainFrameNavigation(
-    const GURL& url,
+    const CommonNavigationParams& common_params,
     SiteInstanceImpl* site_instance,
     NavigationHandleImpl* navigation_handle) {
   // If there is no browser-initiated pending entry for this navigation and it
@@ -874,7 +892,7 @@ void NavigatorImpl::DidStartMainFrameNavigation(
   // a duplicate navigation entry here.
   bool renderer_provisional_load_to_pending_url =
       pending_entry && pending_entry->is_renderer_initiated() &&
-      (pending_entry->GetURL() == url);
+      (pending_entry->GetURL() == common_params.url);
 
   // If there is a transient entry, creating a new pending entry will result
   // in deleting it, which leads to inconsistent state.
@@ -885,7 +903,8 @@ void NavigatorImpl::DidStartMainFrameNavigation(
     std::unique_ptr<NavigationEntryImpl> entry =
         NavigationEntryImpl::FromNavigationEntry(
             NavigationController::CreateNavigationEntry(
-                url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
+                common_params.url, content::Referrer(),
+                common_params.initiator_origin, ui::PAGE_TRANSITION_LINK,
                 true /* is_renderer_initiated */, std::string(),
                 controller_->GetBrowserContext(),
                 nullptr /* blob_url_loader_factory */));

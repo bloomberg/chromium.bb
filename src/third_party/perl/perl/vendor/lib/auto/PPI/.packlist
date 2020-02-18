@@ -8,12 +8,12 @@ C:\strawberry\perl\vendor\lib\PPI\Dumper.pm
 C:\strawberry\perl\vendor\lib\PPI\Element.pm
 C:\strawberry\perl\vendor\lib\PPI\Exception.pm
 C:\strawberry\perl\vendor\lib\PPI\Exception\ParserRejection.pm
-C:\strawberry\perl\vendor\lib\PPI\Exception\ParserTimeout.pm
 C:\strawberry\perl\vendor\lib\PPI\Find.pm
 C:\strawberry\perl\vendor\lib\PPI\Lexer.pm
 C:\strawberry\perl\vendor\lib\PPI\Node.pm
 C:\strawberry\perl\vendor\lib\PPI\Normal.pm
 C:\strawberry\perl\vendor\lib\PPI\Normal\Standard.pm
+C:\strawberry\perl\vendor\lib\PPI\Singletons.pm
 C:\strawberry\perl\vendor\lib\PPI\Statement.pm
 C:\strawberry\perl\vendor\lib\PPI\Statement\Break.pm
 C:\strawberry\perl\vendor\lib\PPI\Statement\Compound.pm

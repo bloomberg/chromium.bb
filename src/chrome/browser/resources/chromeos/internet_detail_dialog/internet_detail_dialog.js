@@ -10,7 +10,11 @@
 Polymer({
   is: 'internet-detail-dialog',
 
-  behaviors: [CrPolicyNetworkBehavior, I18nBehavior],
+  behaviors: [
+    CrNetworkListenerBehavior,
+    CrPolicyNetworkBehavior,
+    I18nBehavior,
+  ],
 
   properties: {
     /** The network GUID to display details for. */
@@ -45,13 +49,6 @@ Polymer({
   },
 
   /**
-   * Listener function for chrome.networkingPrivate.onNetworksChanged event.
-   * @type {?function(!Array<string>)}
-   * @private
-   */
-  networksChangedListener_: null,
-
-  /**
    * Set to true to once the initial properties have been received. This
    * prevents setProperties from being called when setting default properties.
    * @private {boolean}
@@ -80,12 +77,6 @@ Polymer({
       this.close_();
     }
 
-    if (!this.networksChangedListener_) {
-      this.networksChangedListener_ = this.onNetworksChangedEvent_.bind(this);
-      this.networkingPrivate.onNetworksChanged.addListener(
-          this.networksChangedListener_);
-    }
-
     // Set basic networkProperties until they are loaded.
     this.networkProperties = {
       GUID: this.guid,
@@ -98,12 +89,31 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
-    if (this.networksChangedListener_) {
-      this.networkingPrivate.onNetworksChanged.removeListener(
-          this.networksChangedListener_);
-      this.networksChangedListener_ = null;
-    }
+  ready: function() {
+    CrOncStrings = {
+      OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
+      OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
+      OncTypeMobile: loadTimeData.getString('OncTypeMobile'),
+      OncTypeTether: loadTimeData.getString('OncTypeTether'),
+      OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
+      OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
+      OncTypeWiMAX: loadTimeData.getString('OncTypeWiMAX'),
+      networkListItemConnected:
+          loadTimeData.getString('networkListItemConnected'),
+      networkListItemConnecting:
+          loadTimeData.getString('networkListItemConnecting'),
+      networkListItemConnectingTo:
+          loadTimeData.getString('networkListItemConnectingTo'),
+      networkListItemInitializing:
+          loadTimeData.getString('networkListItemInitializing'),
+      networkListItemScanning:
+          loadTimeData.getString('networkListItemScanning'),
+      networkListItemNotConnected:
+          loadTimeData.getString('networkListItemNotConnected'),
+      networkListItemNoNetwork:
+          loadTimeData.getString('networkListItemNoNetwork'),
+      vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
+    };
   },
 
   /** @private */
@@ -112,13 +122,30 @@ Polymer({
   },
 
   /**
-   * networkingPrivate.onNetworksChanged event callback.
-   * @param {!Array<string>} networkIds The list of changed network GUIDs.
-   * @private
+   * CrosNetworkConfigObserver impl
+   * @param {!Array<OncMojo.NetworkStateProperties>} networks
    */
-  onNetworksChangedEvent_: function(networkIds) {
-    if (networkIds.includes(this.guid))
+  onActiveNetworksChanged: function(networks) {
+    if (!this.guid || !this.networkProperties) {
+      return;
+    }
+    // If the network was or is active, request an update.
+    if (this.networkProperties.ConnectionState !=
+            CrOnc.ConnectionState.NOT_CONNECTED ||
+        networks.find(network => network.guid == this.guid)) {
       this.getNetworkDetails_();
+    }
+  },
+
+  /**
+   * CrosNetworkConfigObserver impl
+   * @param {!chromeos.networkConfig.mojom.NetworkStateProperties} network
+   */
+  onDeviceStateListChanged: function() {
+    if (!this.guid || !this.networkProperties) {
+      return;
+    }
+    this.getNetworkDetails_();
   },
 
   /**
@@ -156,6 +183,14 @@ Polymer({
     }
     this.networkProperties = properties;
     this.networkPropertiesReceived_ = true;
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} properties
+   * @return {!OncMojo.NetworkStateProperties}
+   */
+  getNetworkState_: function(properties) {
+    return OncMojo.oncPropertiesToNetworkState(properties);
   },
 
   /**
@@ -356,18 +391,13 @@ Polymer({
   },
 
   /** @private */
-  onConnectDisconnectTap_: function() {
+  onConnectDisconnectClick_: function() {
     assert(this.networkProperties);
-    if (this.showConnect_(this.networkProperties)) {
-      this.onConnectTap_();
+    if (!this.showConnect_(this.networkProperties)) {
+      this.networkingPrivate.startDisconnect(this.guid);
       return;
     }
 
-    this.onDisconnectTap_();
-  },
-
-  /** @private */
-  onConnectTap_: function() {
     var properties = this.networkProperties;
     this.networkingPrivate.startConnect(properties.GUID, function() {
       if (chrome.runtime.lastError) {
@@ -381,11 +411,6 @@ Polymer({
             ' For: ' + properties.GUID);
       }
     });
-  },
-
-  /** @private */
-  onDisconnectTap_: function() {
-    this.networkingPrivate.startDisconnect(this.guid);
   },
 
   /**

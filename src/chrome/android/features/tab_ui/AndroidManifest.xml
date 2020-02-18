@@ -5,12 +5,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dist="http://schemas.android.com/apk/distribution"
-    featureSplit="tab_ui"
-    package="{{manifest_package}}">
+    featureSplit="tab_ui">
 
-    <uses-sdk
-        android:minSdkVersion="21"
-        android:targetSdkVersion="{{target_sdk_version}}" />
     <application></application>
     <dist:module
         dist:onDemand="true"

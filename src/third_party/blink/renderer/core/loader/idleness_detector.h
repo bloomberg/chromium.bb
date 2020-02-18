@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/task/sequence_manager/task_time_observer.h"
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -25,7 +26,9 @@ class CORE_EXPORT IdlenessDetector
     : public GarbageCollectedFinalized<IdlenessDetector>,
       public base::sequence_manager::TaskTimeObserver {
  public:
-  explicit IdlenessDetector(LocalFrame*);
+  IdlenessDetector(
+      LocalFrame*,
+      const base::TickClock* = base::DefaultTickClock::GetInstance());
 
   void Shutdown();
   void WillCommitLoad();
@@ -35,8 +38,8 @@ class CORE_EXPORT IdlenessDetector
   void OnWillSendRequest(ResourceFetcher*);
   void OnDidLoadResource();
 
-  TimeTicks GetNetworkAlmostIdleTime();
-  TimeTicks GetNetworkIdleTime();
+  base::TimeTicks GetNetworkAlmostIdleTime();
+  base::TimeTicks GetNetworkIdleTime();
   bool NetworkIsAlmostIdle();
 
   void Trace(blink::Visitor*);
@@ -46,9 +49,10 @@ class CORE_EXPORT IdlenessDetector
 
   // The page is quiet if there are no more than 2 active network requests for
   // this duration of time.
-  static constexpr TimeDelta kNetworkQuietWindow =
-      TimeDelta::FromMilliseconds(500);
-  static constexpr TimeDelta kNetworkQuietWatchdog = TimeDelta::FromSeconds(2);
+  static constexpr base::TimeDelta kNetworkQuietWindow =
+      base::TimeDelta::FromMilliseconds(500);
+  static constexpr base::TimeDelta kNetworkQuietWatchdog =
+      base::TimeDelta::FromSeconds(2);
   static constexpr int kNetworkQuietMaximumConnections = 2;
 
   // TaskTimeObserver implementation.
@@ -65,13 +69,15 @@ class CORE_EXPORT IdlenessDetector
   bool in_network_0_quiet_period_ = true;
   bool in_network_2_quiet_period_ = true;
 
-  TimeDelta network_quiet_window_ = kNetworkQuietWindow;
+  const base::TickClock* clock_;
+
+  base::TimeDelta network_quiet_window_ = kNetworkQuietWindow;
   // Store the accumulated time of network quiet.
-  TimeTicks network_0_quiet_;
-  TimeTicks network_2_quiet_;
+  base::TimeTicks network_0_quiet_;
+  base::TimeTicks network_2_quiet_;
   // Record the actual start time of network quiet.
-  TimeTicks network_0_quiet_start_time_;
-  TimeTicks network_2_quiet_start_time_;
+  base::TimeTicks network_0_quiet_start_time_;
+  base::TimeTicks network_2_quiet_start_time_;
   TaskRunnerTimer<IdlenessDetector> network_quiet_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(IdlenessDetector);

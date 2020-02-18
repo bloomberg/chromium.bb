@@ -93,7 +93,7 @@ body {
       "sidebar alerts"
       "sidebar page";
     grid-template-rows: var(--topbar-height) auto 1fr;
-    grid-template-columns: var(--sidebar-width) auto;
+    grid-template-columns: auto 1fr;
     color: #121212;
 }
 
@@ -131,6 +131,18 @@ button.close {
     position: relative;
     display: flex;
     flex-direction: column
+}
+
+.split-panel {
+  flex: 1;
+  display: flex;
+  flex-flow: row;
+  position: relative;
+}
+
+.video-panel {
+  grid-area: video;
+  position: relative;
 }
 
 .alerts {

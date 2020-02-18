@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/range/mojo/range_traits_test_service.mojom.h"
@@ -35,7 +35,7 @@ class RangeStructTraitsTest : public testing::Test,
     std::move(callback).Run(p);
   }
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   mojo::BindingSet<RangeTraitsTestService> traits_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(RangeStructTraitsTest);

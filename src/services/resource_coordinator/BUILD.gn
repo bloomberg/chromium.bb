@@ -7,6 +7,8 @@
 # Others modules should only need the public targets.
 source_set("lib") {
   sources = [
+    "memory_instrumentation/aggregate_metrics_processor.cc",
+    "memory_instrumentation/aggregate_metrics_processor.h",
     "memory_instrumentation/coordinator_impl.cc",
     "memory_instrumentation/coordinator_impl.h",
     "memory_instrumentation/graph.cc",

@@ -26,7 +26,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.CachedMetrics;
-import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
+import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
@@ -197,7 +198,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         // Check if we should launch a WebApk to handle the intent.
         // For NoTouchMode, prefer to launch PWAs instead of the browser on view intents.
-        if (FeatureUtilities.isNoTouchModeEnabled() && url != null
+        if (!mIsCustomTabIntent && FeatureUtilities.isNoTouchModeEnabled() && url != null
                 && Intent.ACTION_VIEW.equals(mIntent.getAction())) {
             String packageName = WebApkValidator.queryFirstWebApkPackage(
                     ContextUtils.getApplicationContext(), url);
@@ -228,7 +229,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
         searchIntent.putExtra(SearchManager.QUERY, query);
 
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             int resolvers =
                     ContextUtils.getApplicationContext()
                             .getPackageManager()
@@ -303,7 +304,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             // - Multiple clients hosting CCTs,
             // - Multiwindow mode.
             Class<? extends Activity> handlerClass =
-                    BrowserSessionContentUtils.getActiveHandlerClassInCurrentTask(intent, context);
+                    getSessionDataHolder().getActiveHandlerClassInCurrentTask(intent, context);
             if (handlerClass != null) {
                 newIntent.setClassName(context, handlerClass.getName());
                 newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP |
@@ -382,6 +383,10 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         return newIntent;
     }
 
+    private static SessionDataHolder getSessionDataHolder() {
+        return ChromeApplication.getComponent().resolveSessionDataHolder();
+    }
+
     /**
      * Handles launching a {@link CustomTabActivity}, which will sit on top of a client's activity
      * in the same task.
@@ -393,7 +398,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             // The old way of delivering intents relies on calling the activity directly via a
             // static reference. It doesn't allow using CLEAR_TOP, and also doesn't work when an
             // intent brings the task to foreground. The condition above is a temporary safety net.
-            boolean handled = BrowserSessionContentUtils.handleBrowserServicesIntent(mIntent);
+            boolean handled = getSessionDataHolder().handleIntent(mIntent);
             if (handled) return;
         }
         maybePrefetchDnsInBackground();
@@ -403,7 +408,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         boolean hasOffTheRecordProfile =
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()
+                        .isFullBrowserStarted()
                 && Profile.getLastUsedProfile().hasOffTheRecordProfile();
 
         boolean shouldShowIncognitoDisclosure =
@@ -417,7 +422,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         // Allow disk writes during startActivity() to avoid strict mode violations on some
         // Samsung devices, see https://crbug.com/796548.
-        try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
             if (TwaSplashController.handleIntent(mActivity, launchIntent)) {
                 return;
             }

@@ -11,7 +11,7 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -52,9 +52,7 @@ SerialPortManager* SerialPortManager::Get(content::BrowserContext* context) {
 }
 
 SerialPortManager::SerialPortManager(content::BrowserContext* context)
-    : thread_id_(SerialConnection::kThreadId),
-      context_(context),
-      weak_factory_(this) {
+    : thread_id_(SerialConnection::kThreadId), context_(context) {
   ApiResourceManager<SerialConnection>* manager =
       ApiResourceManager<SerialConnection>::Get(context_);
   DCHECK(manager) << "No serial connection manager.";
@@ -137,7 +135,7 @@ void SerialPortManager::DispatchReceiveEvent(const ReceiveParams& params,
       SerialConnection* connection =
           params.connections->Get(params.extension_id, params.connection_id);
       if (connection)
-        connection->set_paused(true);
+        connection->SetPaused(true);
     }
   }
 }
@@ -176,11 +174,9 @@ void SerialPortManager::EnsureConnection() {
     return;
 
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(content::ServiceManagerConnection::GetForProcess());
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&port_manager_));
+  DCHECK(content::GetSystemConnector());
+  content::GetSystemConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&port_manager_));
   port_manager_.set_connection_error_handler(
       base::BindOnce(&SerialPortManager::OnPortManagerConnectionError,
                      weak_factory_.GetWeakPtr()));

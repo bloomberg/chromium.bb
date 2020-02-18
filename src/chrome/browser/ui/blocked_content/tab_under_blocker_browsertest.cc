@@ -80,7 +80,7 @@ class TabUnderBlockerBrowserTest : public extensions::ExtensionBrowserTest {
 #if defined(OS_ANDROID)
     return false;
 #else
-    return base::ContainsValue(
+    return base::Contains(
         FramebustBlockTabHelper::FromWebContents(web_contents)->blocked_urls(),
         url);
 #endif

@@ -48,7 +48,6 @@
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/transform_source.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_entity_parser.h"
@@ -66,6 +65,7 @@
 #include "third_party/blink/renderer/core/xmlns_names.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
@@ -606,8 +606,8 @@ static void* OpenFunc(const char* uri) {
     ResourceLoaderOptions options;
     options.initiator_info.name = fetch_initiator_type_names::kXml;
     FetchParameters params(ResourceRequest(url), options);
-    params.MutableResourceRequest().SetFetchRequestMode(
-        network::mojom::FetchRequestMode::kSameOrigin);
+    params.MutableResourceRequest().SetMode(
+        network::mojom::RequestMode::kSameOrigin);
     Resource* resource =
         RawResource::FetchSynchronously(params, document->Fetcher());
     if (!resource->ErrorOccurred()) {
@@ -684,12 +684,12 @@ scoped_refptr<XMLParserContext> XMLParserContext::CreateStringParser(
 scoped_refptr<XMLParserContext> XMLParserContext::CreateMemoryParser(
     xmlSAXHandlerPtr handlers,
     void* user_data,
-    const CString& chunk) {
+    const std::string& chunk) {
   InitializeLibXMLIfNecessary();
 
   // appendFragmentSource() checks that the length doesn't overflow an int.
   xmlParserCtxtPtr parser =
-      xmlCreateMemoryParserCtxt(chunk.data(), chunk.length());
+      xmlCreateMemoryParserCtxt(chunk.c_str(), chunk.length());
 
   if (!parser)
     return nullptr;
@@ -1050,16 +1050,13 @@ void XMLDocumentParser::EndElementNs() {
     return;
 
   ContainerNode* n = current_node_;
-  if (current_node_->IsElementNode())
-    ToElement(n)->FinishParsingChildren();
-
-  if (!n->IsElementNode()) {
+  auto* element = DynamicTo<Element>(n);
+  if (!element) {
     PopCurrentNode();
     return;
   }
 
-  Element* element = ToElement(n);
-
+  element->FinishParsingChildren();
   if (element->IsScriptElement() &&
       !ScriptingContentIsAllowed(GetParserContentPolicy())) {
     PopCurrentNode();
@@ -1491,7 +1488,7 @@ static void IgnorableWhitespaceHandler(void*, const xmlChar*, int) {
   // http://bugs.webkit.org/show_bug.cgi?id=5792
 }
 
-void XMLDocumentParser::InitializeParserContext(const CString& chunk) {
+void XMLDocumentParser::InitializeParserContext(const std::string& chunk) {
   xmlSAXHandler sax;
   memset(&sax, 0, sizeof(sax));
 
@@ -1525,7 +1522,6 @@ void XMLDocumentParser::InitializeParserContext(const CString& chunk) {
   if (parsing_fragment_) {
     context_ = XMLParserContext::CreateMemoryParser(&sax, this, chunk);
   } else {
-    DCHECK(!chunk.data());
     context_ = XMLParserContext::CreateStringParser(&sax, this);
   }
 }
@@ -1633,7 +1629,7 @@ bool XMLDocumentParser::AppendFragmentSource(const String& chunk) {
   DCHECK(!context_);
   DCHECK(parsing_fragment_);
 
-  CString chunk_as_utf8 = chunk.Utf8();
+  std::string chunk_as_utf8 = chunk.Utf8();
 
   // libxml2 takes an int for a length, and therefore can't handle XML chunks
   // larger than 2 GiB.

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
-import android.preference.Preference;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -21,7 +20,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.browserservices.Origin;
-import org.chromium.chrome.browser.preferences.ChromeImageViewPreference;
+import org.chromium.chrome.browser.preferences.ChromeImageViewPreferenceCompat;
 import org.chromium.chrome.browser.preferences.ExpandablePreferenceGroup;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
@@ -82,7 +81,7 @@ public class TrustedWebActivityPreferencesUiTest {
         final SingleCategoryPreferences websitePreferences =
                 TestThreadUtils.runOnUiThreadBlocking(() -> {
                     final SingleCategoryPreferences preferences =
-                            (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
+                            (SingleCategoryPreferences) preferenceActivity.getMainFragmentCompat();
                     final ExpandablePreferenceGroup group =
                             (ExpandablePreferenceGroup) preferences.findPreference(groupName);
                     preferences.onPreferenceClick(group);
@@ -104,7 +103,7 @@ public class TrustedWebActivityPreferencesUiTest {
             final ExpandablePreferenceGroup group =
                     (ExpandablePreferenceGroup) websitePreferences.findPreference(groupName);
             Assert.assertEquals(1, group.getPreferenceCount());
-            Preference preference = group.getPreference(0);
+            android.support.v7.preference.Preference preference = group.getPreference(0);
             CharSequence title = preference.getTitle();
             Assert.assertEquals("example.com", title.toString());
         });
@@ -136,9 +135,9 @@ public class TrustedWebActivityPreferencesUiTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             final SingleWebsitePreferences websitePreferences =
-                    (SingleWebsitePreferences) preferenceActivity.getFragmentForTest();
-            final ChromeImageViewPreference notificationPreference =
-                    (ChromeImageViewPreference) websitePreferences.findPreference(
+                    (SingleWebsitePreferences) preferenceActivity.getMainFragmentCompat();
+            final ChromeImageViewPreferenceCompat notificationPreference =
+                    (ChromeImageViewPreferenceCompat) websitePreferences.findPreference(
                             "push_notifications_list");
             CharSequence summary = notificationPreference.getSummary();
             Assert.assertTrue(summary.toString().startsWith("Managed by "));

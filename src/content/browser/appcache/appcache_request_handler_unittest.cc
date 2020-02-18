@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/containers/stack.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -35,7 +36,9 @@
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -178,8 +181,8 @@ class AppCacheRequestHandlerTest
   };
 
   static void SetUpTestCase() {
-    thread_bundle_.reset(
-        new TestBrowserThreadBundle(TestBrowserThreadBundle::REAL_IO_THREAD));
+    thread_bundle_ = std::make_unique<TestBrowserThreadBundle>(
+        TestBrowserThreadBundle::REAL_IO_THREAD);
     io_task_runner_ =
         base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
   }
@@ -194,10 +197,14 @@ class AppCacheRequestHandlerTest
   AppCacheRequestHandlerTest()
       : host_(nullptr), request_(nullptr), request_handler_type_(GetParam()) {
     AppCacheRequestHandler::SetRunningInTests(true);
-    if (request_handler_type_ == URLLOADER)
-      feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-    else
+    if (request_handler_type_ == URLLOADER) {
+      // TODO(http://crbug.com/824840): Enable NavigationLoaderOnUI for these
+      // tests.
+      feature_list_.InitWithFeatures({network::features::kNetworkService},
+                                     {features::kNavigationLoaderOnUI});
+    } else {
       feature_list_.InitAndDisableFeature(network::features::kNetworkService);
+    }
   }
 
   ~AppCacheRequestHandlerTest() {
@@ -206,9 +213,9 @@ class AppCacheRequestHandlerTest
 
   template <class Method>
   void RunTestOnIOThread(Method method) {
-    test_finished_event_.reset(new base::WaitableEvent(
+    test_finished_event_ = std::make_unique<base::WaitableEvent>(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
-        base::WaitableEvent::InitialState::NOT_SIGNALED));
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     io_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&AppCacheRequestHandlerTest::MethodWrapper<Method>,
@@ -218,21 +225,21 @@ class AppCacheRequestHandlerTest
 
   void SetUpTest() {
     DCHECK(io_task_runner_->BelongsToCurrentThread());
-    mock_service_.reset(new MockAppCacheService);
+    mock_service_ = std::make_unique<MockAppCacheService>();
     // Initializes URLRequestContext on the IO thread.
-    empty_context_.reset(new net::URLRequestContext);
+    empty_context_ = std::make_unique<net::URLRequestContext>();
     mock_service_->set_request_context(empty_context_.get());
-    mock_policy_.reset(new MockAppCachePolicy);
+    mock_policy_ = std::make_unique<MockAppCachePolicy>();
     mock_service_->set_appcache_policy(mock_policy_.get());
     const auto kHostId = base::UnguessableToken::Create();
     const int kRenderFrameId = 2;
-    blink::mojom::AppCacheFrontendPtrInfo frontend;
-    mojo::MakeRequest(&frontend);
+    mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote;
+    ignore_result(frontend_remote.InitWithNewPipeAndPassReceiver());
     mock_service_->RegisterHostForFrame(
-        mojo::MakeRequest(&host_ptr_), std::move(frontend), kHostId,
-        kRenderFrameId, kMockProcessId, GetBadMessageCallback());
+        host_remote_.BindNewPipeAndPassReceiver(), std::move(frontend_remote),
+        kHostId, kRenderFrameId, kMockProcessId, GetBadMessageCallback());
     host_ = mock_service_->GetHost(kHostId);
-    job_factory_.reset(new MockURLRequestJobFactory());
+    job_factory_ = std::make_unique<MockURLRequestJobFactory>();
     empty_context_->set_job_factory(job_factory_.get());
   }
 
@@ -247,6 +254,7 @@ class AppCacheRequestHandlerTest
     url_request_.reset();
     mock_service_.reset();
     mock_policy_.reset();
+    host_remote_.reset();
     job_factory_.reset();
     empty_context_.reset();
     host_ = nullptr;
@@ -526,7 +534,7 @@ class AppCacheRequestHandlerTest
         "x-chromium-appcache-fallback-override: disallow-fallback\0"
         "\0";
     net::HttpResponseInfo info;
-    info.headers = new net::HttpResponseHeaders(
+    info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         std::string(kOverrideHeaders, base::size(kOverrideHeaders)));
     SimulateResponseInfo(info);
 
@@ -910,8 +918,7 @@ class AppCacheRequestHandlerTest
       url_request_ = empty_context_->CreateRequest(
           url, net::DEFAULT_PRIORITY, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
 
-      std::unique_ptr<AppCacheRequest> request =
-          AppCacheURLRequest::Create(url_request_.get());
+      auto request = std::make_unique<AppCacheURLRequest>(url_request_.get());
       request_ = request.get();
       handler_ =
           host->CreateRequestHandler(std::move(request), resource_type, false);
@@ -920,8 +927,8 @@ class AppCacheRequestHandlerTest
       network::ResourceRequest resource_request;
       resource_request.url = url;
       resource_request.method = "GET";
-      std::unique_ptr<AppCacheRequest> request =
-          AppCacheURLLoaderRequest::Create(resource_request);
+      auto request =
+          std::make_unique<AppCacheURLLoaderRequest>(resource_request);
       request_ = request.get();
       handler_ =
           host->CreateRequestHandler(std::move(request), resource_type, false);
@@ -937,7 +944,7 @@ class AppCacheRequestHandlerTest
   std::unique_ptr<MockAppCacheService> mock_service_;
   std::unique_ptr<MockAppCachePolicy> mock_policy_;
   AppCacheHost* host_;
-  blink::mojom::AppCacheHostPtr host_ptr_;
+  mojo::Remote<blink::mojom::AppCacheHost> host_remote_;
   std::unique_ptr<net::URLRequestContext> empty_context_;
   std::unique_ptr<MockURLRequestJobFactory> job_factory_;
   MockURLRequestDelegate delegate_;

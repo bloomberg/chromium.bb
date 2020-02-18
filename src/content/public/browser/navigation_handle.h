@@ -14,6 +14,7 @@
 #include "content/public/browser/restore_type.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
+#include "net/base/auth.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_info.h"
@@ -29,7 +30,6 @@ class HttpResponseHeaders;
 
 namespace content {
 struct GlobalRequestID;
-class NavigationData;
 class NavigationThrottle;
 class NavigationUIData;
 class RenderFrameHost;
@@ -266,7 +266,12 @@ class CONTENT_EXPORT NavigationHandle {
   // Returns the SSLInfo for a request that succeeded or failed due to a
   // certificate error. In the case of other request failures or of a non-secure
   // scheme, returns an empty object.
-  virtual const base::Optional<net::SSLInfo> GetSSLInfo() = 0;
+  virtual const base::Optional<net::SSLInfo>& GetSSLInfo() = 0;
+
+  // Returns the AuthChallengeInfo for the request, if the response contained an
+  // authentication challenge.
+  virtual const base::Optional<net::AuthChallengeInfo>&
+  GetAuthChallengeInfo() = 0;
 
   // Returns the ID of the URLRequest associated with this navigation. Can only
   // be called from NavigationThrottle::WillProcessResponse and
@@ -290,6 +295,10 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Returns true if the target is an inner response of a signed exchange.
   virtual bool IsSignedExchangeInnerResponse() = 0;
+
+  // Returns true if prefetched alternative subresource signed exchange was sent
+  // to the renderer process.
+  virtual bool HasPrefetchedAlternativeSubresourceSignedExchange() = 0;
 
   // Returns true if the navigation response was cached.
   virtual bool WasResponseCached() = 0;
@@ -323,6 +332,9 @@ class CONTENT_EXPORT NavigationHandle {
   //   navigation entry.
   virtual int GetNavigationEntryOffset() = 0;
 
+  virtual void RegisterSubresourceOverride(
+      mojom::TransferrableURLLoaderPtr transferrable_loader) = 0;
+
   // Testing methods ----------------------------------------------------------
   //
   // The following methods should be used exclusively for writing unit tests.
@@ -340,13 +352,9 @@ class CONTENT_EXPORT NavigationHandle {
   // Returns whether this navigation is currently deferred.
   virtual bool IsDeferredForTesting() = 0;
 
-  // The NavigationData that the embedder returned from
-  // ResourceDispatcherHostDelegate::GetNavigationData during commit. This will
-  // be a clone of the NavigationData.
-  virtual NavigationData* GetNavigationData() = 0;
-
-  virtual void RegisterSubresourceOverride(
-      mojom::TransferrableURLLoaderPtr transferrable_loader) = 0;
+  // Whether this navigation was triggered by a x-origin redirect following a
+  // prior (most likely <a download>) download attempt.
+  virtual bool FromDownloadCrossOriginRedirect() = 0;
 };
 
 }  // namespace content

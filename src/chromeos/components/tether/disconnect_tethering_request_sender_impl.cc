@@ -63,7 +63,7 @@ DisconnectTetheringRequestSenderImpl::~DisconnectTetheringRequestSenderImpl() {
 
 void DisconnectTetheringRequestSenderImpl::SendDisconnectRequestToDevice(
     const std::string& device_id) {
-  if (base::ContainsKey(device_id_to_operation_map_, device_id))
+  if (base::Contains(device_id_to_operation_map_, device_id))
     return;
 
   num_pending_host_fetches_++;
@@ -126,7 +126,7 @@ void DisconnectTetheringRequestSenderImpl::OnOperationFinished(
 
   bool had_pending_requests = HasPendingRequests();
 
-  if (base::ContainsKey(device_id_to_operation_map_, device_id)) {
+  if (base::Contains(device_id_to_operation_map_, device_id)) {
     // Regardless of success/failure, unregister as a listener and delete the
     // operation.
     device_id_to_operation_map_.at(device_id)->RemoveObserver(this);

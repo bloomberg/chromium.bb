@@ -26,7 +26,6 @@
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
@@ -177,11 +176,19 @@ BOOL IsKeyboardDockedForLayout(UIView* layout) {
   return [@(maxY) isEqualToNumber:@(screenBounds.size.height)];
 }
 
-// Undocks the keyboard by swiping it up. Does nothing if already undocked.
-void UndockKeyboard() {
-  if (!IsIPadIdiom()) {
-    return;
+// Undocks and split the keyboard by swiping it up. Does nothing if already
+// undocked.  Only works on iOS 12; it is an error to call this method on
+// iOS 13.  Some devices, like iPhone or iPad Pro, do not allow undocking or
+// splitting, this returns NO if it is the case.
+BOOL UndockAndSplitKeyboard() {
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    return NO;
   }
+
+  // TODO(crbug.com/985977): Remove this DCHECK once this method is updated to
+  // support iOS 13.
+  DCHECK(!base::ios::IsRunningOnIOS13OrLater())
+      << "Undocking the keyboard via this method does not work on iOS 13";
 
   UITextField* textField = ShowKeyboard();
 
@@ -194,7 +201,7 @@ void UndockKeyboard() {
   if (!IsKeyboardDockedForLayout(layout)) {
     // If we created a dummy textfield for this, remove it.
     [textField removeFromSuperview];
-    return;
+    return YES;
   }
 
   // Swipe it up.
@@ -210,7 +217,6 @@ void UndockKeyboard() {
   CGRect keyboardContainerFrame = KeyboardContainerForLayout(layout).frame;
   CGPoint pointToKey = {keyFrame.origin.x - keyboardContainerFrame.origin.x,
                         keyFrame.origin.y - keyboardContainerFrame.origin.y};
-  CGRectIntersection(keyFrame, keyboardContainerFrame);
   CGPoint startPoint = CGPointMake((pointToKey.x + keyFrame.size.width / 2.0) /
                                        keyboardContainerFrame.size.width,
                                    (pointToKey.y + keyFrame.size.height / 2.0) /
@@ -219,13 +225,21 @@ void UndockKeyboard() {
   id action = grey_swipeFastInDirectionWithStartPoint(
       kGREYDirectionUp, startPoint.x, startPoint.y);
   [[EarlGrey selectElementWithMatcher:matcher] performAction:action];
+
+  return !IsKeyboardDockedForLayout(layout);
 }
 
-// Docks the keyboard by swiping it down. Does nothing if already docked.
+// Docks the keyboard by swiping it down. Does nothing if already docked.  Only
+// works on iOS 12; it is an error to call this method on iOS 13.
 void DockKeyboard() {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
+
+  // TODO(crbug.com/985977): Remove this DCHECK once this method is updated to
+  // support iOS 13.
+  DCHECK(!base::ios::IsRunningOnIOS13OrLater())
+      << "Docking the keyboard via this method does not work on iOS 13";
 
   UITextField* textField = ShowKeyboard();
 
@@ -263,6 +277,9 @@ void DockKeyboard() {
 
   // If we created a dummy textfield for this, remove it.
   [textField removeFromSuperview];
+
+  GREYAssertTrue(IsKeyboardDockedForLayout(layout),
+                 @"Keyboard should be docked");
 }
 
 }  // namespace
@@ -312,13 +329,27 @@ void DockKeyboard() {
   }
 }
 
++ (void)setUp {
+  [super setUp];
+  // If the previous run was manually stopped then the profile will be in the
+  // store and the test will fail. We clean it here for those cases.
+  ios::ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+  autofill::PersonalDataManager* personalDataManager =
+      autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
+  for (const auto* profile : personalDataManager->GetProfiles()) {
+    personalDataManager->RemoveByGUID(profile->guid());
+  }
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForActionTimeout,
+                 ^bool() {
+                   return 0 == personalDataManager->GetProfiles().size();
+                 }),
+             @"Failed to clean profiles.");
+}
+
 - (void)setUp {
   [super setUp];
-  GREYAssert(autofill::features::IsAutofillManualFallbackEnabled(),
-             @"Manual Fallback must be enabled for this Test Case");
-  GREYAssert(autofill::features::IsAutofillManualFallbackEnabled(),
-             @"Manual Fallback phase 2 must be enabled for this Test Case");
-
   ios::ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   _personalDataManager =
@@ -326,9 +357,8 @@ void DockKeyboard() {
   _personalDataManager->SetSyncingForTest(true);
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Profile form"]);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:"Profile form"];
 }
 
 - (void)tearDown {
@@ -337,7 +367,7 @@ void DockKeyboard() {
   }
   // Leaving a picker on iPads causes problems with the docking logic. This
   // will dismiss any.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Tap in the web view so the popover dismisses.
     [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
         performAction:grey_tapAtPoint(CGPointMake(0, 0))];
@@ -346,14 +376,18 @@ void DockKeyboard() {
     [[EarlGrey selectElementWithMatcher:grey_kindOfClass([UITableView class])]
         assertWithMatcher:grey_notVisible()];
   }
-  DockKeyboard();
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    // TODO(crbug.com/985977): Remove this conditional once DockKeyboard() is
+    // updated to support iOS 13.
+    DockKeyboard();
+  }
   [super tearDown];
 }
 
 // Tests that the when tapping the outside the popover on iPad, suggestions
 // continue working.
 - (void)testIPadTappingOutsidePopOverResumesSuggestionsCorrectly {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
   }
 
@@ -441,6 +475,8 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Tap on the profiles icon.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       performAction:grey_tap()];
 
@@ -458,7 +494,7 @@ void DockKeyboard() {
 
   // On iPad the picker is a table view in a popover, we need to dismiss that
   // first.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Tap in the web view so the popover dismisses.
     [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
         performAction:grey_tapAtPoint(CGPointMake(0, 0))];
@@ -470,23 +506,31 @@ void DockKeyboard() {
 
   // Bring up the regular keyboard again.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementName)];
+      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Wait for the accessory icon to appear.
   [GREYKeyboard waitForKeyboardToAppear];
 
   // Verify the profiles icon is visible, and therefore also the input accessory
   // bar.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Same as before but with the keyboard undocked.
-- (void)testUndockedInputAccessoryBarIsPresentAfterPickers {
+// Same as before but with the keyboard undocked the re-docked.
+- (void)testRedockedInputAccessoryBarIsPresentAfterPickers {
   // No need to run if not iPad.
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
   }
+
+  // TODO(crbug.com/985977): Reenable once undocking is supported on iOS 13.
+  if (base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Undocking the keyboard does not work on iOS 13");
+  }
+
   // Add the profile to be used.
   AddAutofillProfile(_personalDataManager);
 
@@ -495,13 +539,18 @@ void DockKeyboard() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
-  UndockKeyboard();
+  if (!UndockAndSplitKeyboard()) {
+    EARL_GREY_TEST_DISABLED(
+        @"Undocking the keyboard does not work on iPhone or iPad Pro");
+  }
 
-  // Verify the profiles icon is visible. EarlGrey synchronization isn't working
-  // properly with the keyboard, instead this waits with a condition for the
-  // icon to appear.
+  // When keyboard is split, icons are not visible, so we rely on timeout before
+  // docking again, because EarlGrey synchronization isn't working properly with
+  // the keyboard.
   [self waitForMatcherToBeVisible:ProfilesIconMatcher()
                           timeout:base::test::ios::kWaitForUIElementTimeout];
+
+  DockKeyboard();
 
   // Tap on the profiles icon.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
@@ -539,15 +588,20 @@ void DockKeyboard() {
   // bar.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
-
-  DockKeyboard();
 }
 
-// Test the input accessory bar is present when undocking the keyboard.
+// Test the input accessory bar is present when undocking then docking the
+// keyboard.
 - (void)testInputAccessoryBarIsPresentAfterUndockingKeyboard {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
   }
+
+  // TODO(crbug.com/985977): Reenable once undocking is supported on iOS 13.
+  if (base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Undocking the keyboard does not work on iOS 13");
+  }
+
   // Add the profile to use for verification.
   AddAutofillProfile(_personalDataManager);
 
@@ -556,11 +610,14 @@ void DockKeyboard() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
-  UndockKeyboard();
+  if (!UndockAndSplitKeyboard()) {
+    EARL_GREY_TEST_DISABLED(
+        @"Undocking the keyboard does not work on iPhone or iPad Pro");
+  }
 
-  // Verify the profiles icon is visible. EarlGrey synchronization isn't working
-  // properly with the keyboard, instead this waits with a condition for the
-  // icon to appear.
+  // When keyboard is split, icons are not visible, so we rely on timeout before
+  // docking again, because EarlGrey synchronization isn't working properly with
+  // the keyboard.
   [self waitForMatcherToBeVisible:ProfilesIconMatcher()
                           timeout:base::test::ios::kWaitForUIElementTimeout];
 
@@ -589,12 +646,10 @@ void DockKeyboard() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Open a tab in incognito.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
+  [ChromeEarlGrey openNewIncognitoTab];
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
-  NSString* omniboxText = base::SysUTF8ToNSString(URL.spec() + "\n");
-  [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Profile form"]);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:"Profile form"];
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -613,7 +668,6 @@ void DockKeyboard() {
 // autorelease pool, and some times a DCHECK will be hit.
 - (void)testOpeningIncognitoTabsDoNotLeak {
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
-  NSString* omniboxText = base::SysUTF8ToNSString(URL.spec() + "\n");
   std::string webViewText("Profile form");
   AddAutofillProfile(_personalDataManager);
 
@@ -621,27 +675,29 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Open a tab in incognito.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
-  [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:webViewText]);
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:webViewText];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [ChromeEarlGrey closeCurrentTab];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:webViewText]);
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:webViewText];
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -649,14 +705,15 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Open a tab in incognito.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
-  [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:webViewText]);
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:webViewText];
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -664,10 +721,9 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Open a  regular tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:webViewText]);
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:webViewText];
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -675,6 +731,8 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // This will fail if there is more than one profiles icon in the hierarchy.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
@@ -690,16 +748,16 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Open a tab in incognito.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
+  [ChromeEarlGrey openNewIncognitoTab];
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
-  NSString* omniboxText = base::SysUTF8ToNSString(URL.spec() + "\n");
-  [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Profile form"]);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:"Profile form"];
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -707,10 +765,9 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // Open a  regular tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Profile form"]);
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:"Profile form"];
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -718,6 +775,8 @@ void DockKeyboard() {
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
   // This will fail if there is more than one profiles icon in the hierarchy.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }

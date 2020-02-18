@@ -147,23 +147,23 @@ static sk_sp<GrRenderTargetContext> random_render_target_context(GrContext* cont
                                                                  const GrCaps* caps) {
     GrSurfaceOrigin origin = random->nextBool() ? kTopLeft_GrSurfaceOrigin
                                                 : kBottomLeft_GrSurfaceOrigin;
-    int sampleCnt =
-            random->nextBool() ? caps->getRenderTargetSampleCount(2, kRGBA_8888_GrPixelConfig) : 1;
+
+    GrColorType ct = GrColorType::kRGBA_8888;
+    const GrBackendFormat format = caps->getBackendFormatFromColorType(ct);
+
+    int sampleCnt = random->nextBool() ? caps->getRenderTargetSampleCount(2, ct, format) : 1;
     // Above could be 0 if msaa isn't supported.
     sampleCnt = SkTMax(1, sampleCnt);
 
-    const GrBackendFormat format = caps->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
-
     sk_sp<GrRenderTargetContext> renderTargetContext(
-        context->priv().makeDeferredRenderTargetContext(format,
-                                                        SkBackingFit::kExact,
-                                                        kRenderTargetWidth,
-                                                        kRenderTargetHeight,
-                                                        kRGBA_8888_GrPixelConfig,
-                                                        nullptr,
-                                                        sampleCnt,
-                                                        GrMipMapped::kNo,
-                                                        origin));
+            context->priv().makeDeferredRenderTargetContext(SkBackingFit::kExact,
+                                                            kRenderTargetWidth,
+                                                            kRenderTargetHeight,
+                                                            GrColorType::kRGBA_8888,
+                                                            nullptr,
+                                                            sampleCnt,
+                                                            GrMipMapped::kNo,
+                                                            origin));
     return renderTargetContext;
 }
 
@@ -268,27 +268,27 @@ bool GrDrawingManager::ProgramUnitTest(GrContext* context, int maxStages, int ma
     GrMipMapped mipMapped = GrMipMapped(context->priv().caps()->mipMapSupport());
     {
         GrSurfaceDesc dummyDesc;
-        dummyDesc.fFlags = kRenderTarget_GrSurfaceFlag;
         dummyDesc.fWidth = 34;
         dummyDesc.fHeight = 18;
         dummyDesc.fConfig = kRGBA_8888_GrPixelConfig;
         const GrBackendFormat format =
-            context->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
-        proxies[0] = proxyProvider->createProxy(format, dummyDesc, kBottomLeft_GrSurfaceOrigin,
-                                                mipMapped, SkBackingFit::kExact, SkBudgeted::kNo,
-                                                GrInternalSurfaceFlags::kNone);
+            context->priv().caps()->getBackendFormatFromColorType(GrColorType::kRGBA_8888);
+        proxies[0] = proxyProvider->createProxy(format, dummyDesc, GrRenderable::kYes, 1,
+                                                kBottomLeft_GrSurfaceOrigin, mipMapped,
+                                                SkBackingFit::kExact, SkBudgeted::kNo,
+                                                GrProtected::kNo, GrInternalSurfaceFlags::kNone);
     }
     {
         GrSurfaceDesc dummyDesc;
-        dummyDesc.fFlags = kNone_GrSurfaceFlags;
         dummyDesc.fWidth = 16;
         dummyDesc.fHeight = 22;
         dummyDesc.fConfig = kAlpha_8_GrPixelConfig;
         const GrBackendFormat format =
-            context->priv().caps()->getBackendFormatFromColorType(kAlpha_8_SkColorType);
-        proxies[1] = proxyProvider->createProxy(format, dummyDesc, kTopLeft_GrSurfaceOrigin,
-                                                mipMapped, SkBackingFit::kExact, SkBudgeted::kNo,
-                                                GrInternalSurfaceFlags::kNone);
+            context->priv().caps()->getBackendFormatFromColorType(GrColorType::kAlpha_8);
+        proxies[1] = proxyProvider->createProxy(format, dummyDesc, GrRenderable::kNo, 1,
+                                                kTopLeft_GrSurfaceOrigin, mipMapped,
+                                                SkBackingFit::kExact, SkBudgeted::kNo,
+                                                GrProtected::kNo, GrInternalSurfaceFlags::kNone);
     }
 
     if (!proxies[0] || !proxies[1]) {
@@ -320,16 +320,13 @@ bool GrDrawingManager::ProgramUnitTest(GrContext* context, int maxStages, int ma
     drawingManager->flush(nullptr, 0, SkSurface::BackendSurfaceAccess::kNoAccess, GrFlushInfo(),
                           GrPrepareForExternalIORequests());
 
-    const GrBackendFormat format =
-            context->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
     // Validate that GrFPs work correctly without an input.
     sk_sp<GrRenderTargetContext> renderTargetContext(
-                 context->priv().makeDeferredRenderTargetContext(format,
-                                                                 SkBackingFit::kExact,
-                                                                 kRenderTargetWidth,
-                                                                 kRenderTargetHeight,
-                                                                 kRGBA_8888_GrPixelConfig,
-                                                                 nullptr));
+            context->priv().makeDeferredRenderTargetContext(SkBackingFit::kExact,
+                                                            kRenderTargetWidth,
+                                                            kRenderTargetHeight,
+                                                            GrColorType::kRGBA_8888,
+                                                            nullptr));
     if (!renderTargetContext) {
         SkDebugf("Could not allocate a renderTargetContext");
         return false;

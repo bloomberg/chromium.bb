@@ -1,0 +1,88 @@
+=encoding utf8
+
+=head1 NAME
+
+Log::Report::Minimal::Domain - administer one text-domain
+
+=head1 SYNOPSIS
+
+ use Log::Report::Minimal::Domain;
+ my $domain = Log::Report::Minimal::Domain->new(name => $name);
+
+ # normal usage
+ use Log::Report::Optional;       # or Log::Report itself
+ my $domain = textdomain $name;   # find config
+ textdomain $name, %configure;    # set config, only once.
+
+=head1 DESCRIPTION
+
+Read L<Log::Report::Domain>.
+
+=head1 METHODS
+
+=head2 Constructors
+
+=over 4
+
+=item Log::Report::Minimal::Domain-E<gt>B<new>(%options)
+
+ -Option--Default
+  name    <required>
+
+=over 2
+
+=item name => STRING
+
+=back
+
+=back
+
+=head2 Attributes
+
+=over 4
+
+=item $obj-E<gt>B<configure>(%options)
+
+ -Option--Default
+  where   <required>
+
+=over 2
+
+=item where => ARRAY
+
+Specifies the location of the configuration.  It is not allowed to
+configure a domain on more than one location.
+
+=back
+
+=item $obj-E<gt>B<isConfigured>()
+
+=item $obj-E<gt>B<name>()
+
+=back
+
+=head2 Action
+
+=over 4
+
+=item $obj-E<gt>B<interpolate>( $msgid, [$args] )
+
+Interpolate the keys used in C<$msgid> from the values in C<$args>.
+This is handled by the formatter, by default a L<String::Print|String::Print>
+instance.
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of Log-Report-Optional distribution version 1.06,
+built on February 02, 2018. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2013-2018 by [Mark Overmeer <mark@overmeer.net>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

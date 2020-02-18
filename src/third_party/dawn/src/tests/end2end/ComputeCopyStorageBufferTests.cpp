@@ -35,7 +35,7 @@ void ComputeCopyStorageBufferTests::BasicTest(const char* shader) {
                 });
 
     // Set up shader and pipeline
-    auto module = utils::CreateShaderModule(device, dawn::ShaderStage::Compute, shader);
+    auto module = utils::CreateShaderModule(device, utils::ShaderStage::Compute, shader);
     auto pl = utils::MakeBasicPipelineLayout(device, &bgl);
 
     dawn::ComputePipelineDescriptor csDesc;
@@ -51,26 +51,26 @@ void ComputeCopyStorageBufferTests::BasicTest(const char* shader) {
     // Set up src storage buffer
     dawn::BufferDescriptor srcDesc;
     srcDesc.size = kNumUints * sizeof(uint32_t);
-    srcDesc.usage = dawn::BufferUsageBit::Storage | dawn::BufferUsageBit::TransferSrc |
-                    dawn::BufferUsageBit::TransferDst;
+    srcDesc.usage = dawn::BufferUsageBit::Storage | dawn::BufferUsageBit::CopySrc |
+                    dawn::BufferUsageBit::CopyDst;
     dawn::Buffer src = device.CreateBuffer(&srcDesc);
 
     std::array<uint32_t, kNumUints> expected;
     for (uint32_t i = 0; i < kNumUints; ++i) {
         expected[i] = (i + 1u) * 0x11111111u;
     }
-    src.SetSubData(0, sizeof(expected), reinterpret_cast<const uint8_t*>(expected.data()));
+    src.SetSubData(0, sizeof(expected), expected.data());
     EXPECT_BUFFER_U32_RANGE_EQ(expected.data(), src, 0, kNumUints);
 
     // Set up dst storage buffer
     dawn::BufferDescriptor dstDesc;
     dstDesc.size = kNumUints * sizeof(uint32_t);
-    dstDesc.usage = dawn::BufferUsageBit::Storage | dawn::BufferUsageBit::TransferSrc |
-                    dawn::BufferUsageBit::TransferDst;
+    dstDesc.usage = dawn::BufferUsageBit::Storage | dawn::BufferUsageBit::CopySrc |
+                    dawn::BufferUsageBit::CopyDst;
     dawn::Buffer dst = device.CreateBuffer(&dstDesc);
 
     std::array<uint32_t, kNumUints> zero{};
-    dst.SetSubData(0, sizeof(zero), reinterpret_cast<const uint8_t*>(zero.data()));
+    dst.SetSubData(0, sizeof(zero), zero.data());
 
     // Set up bind group and issue dispatch
     dawn::BindGroup bindGroup = utils::MakeBindGroup(device, bgl, {
@@ -97,9 +97,6 @@ void ComputeCopyStorageBufferTests::BasicTest(const char* shader) {
 
 // Test that a trivial compute-shader memcpy implementation works.
 TEST_P(ComputeCopyStorageBufferTests, SizedArrayOfBasic) {
-    // TODO(cwallez@chromium.org): Fails on D3D12, could be a spirv-cross issue?
-    DAWN_SKIP_TEST_IF(IsD3D12());
-
     BasicTest(R"(
         #version 450
         #define kInstances 4
@@ -114,7 +111,8 @@ TEST_P(ComputeCopyStorageBufferTests, SizedArrayOfBasic) {
 
 // Test that a slightly-less-trivial compute-shader memcpy implementation works.
 TEST_P(ComputeCopyStorageBufferTests, SizedArrayOfStruct) {
-    // TODO(kainino@chromium.org): Fails on D3D12. Probably due to a limitation in SPIRV-Cross?
+    // TODO(kainino@chromium.org): Fails on D3D12 due to SPIRV-Cross not supporting
+    // reading structs from ByteAddressBuffer.
     DAWN_SKIP_TEST_IF(IsD3D12());
 
     BasicTest(R"(
@@ -134,9 +132,6 @@ TEST_P(ComputeCopyStorageBufferTests, SizedArrayOfStruct) {
 
 // Test that a trivial compute-shader memcpy implementation works.
 TEST_P(ComputeCopyStorageBufferTests, UnsizedArrayOfBasic) {
-    // TODO(cwallez@chromium.org): Fails on D3D12, could be a spirv-cross issue?
-    DAWN_SKIP_TEST_IF(IsD3D12());
-
     BasicTest(R"(
         #version 450
         #define kInstances 4

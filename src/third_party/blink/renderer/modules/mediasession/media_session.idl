@@ -20,11 +20,14 @@ enum MediaSessionAction {
   "seekbackward",
   "seekforward",
   "skipad",
+  "stop",
+  "seekto"
 };
 
-callback MediaSessionActionHandler = void ();
+callback MediaSessionActionHandler = void ([RuntimeEnabled=MediaSessionSeeking] MediaSessionActionDetails details);
 
 [
+    Exposed=Window,
     RuntimeEnabled=MediaSession
 ] interface MediaSession {
     [Measure] attribute MediaMetadata? metadata;

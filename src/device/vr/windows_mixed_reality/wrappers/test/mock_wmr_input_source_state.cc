@@ -19,7 +19,7 @@ MockWMRInputSourceState::~MockWMRInputSourceState() = default;
 
 std::unique_ptr<WMRPointerPose> MockWMRInputSourceState::TryGetPointerPose(
     const WMRCoordinateSystem* origin) const {
-  return std::make_unique<MockWMRPointerPose>();
+  return std::make_unique<MockWMRPointerPose>(data_);
 }
 
 std::unique_ptr<WMRInputSource> MockWMRInputSourceState::GetSource() const {

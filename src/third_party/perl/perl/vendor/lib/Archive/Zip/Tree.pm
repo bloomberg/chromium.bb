@@ -2,14 +2,15 @@ package Archive::Zip::Tree;
 
 use strict;
 use vars qw{$VERSION};
+
 BEGIN {
-	$VERSION = '1.30';
+	$VERSION = '1.64';
 }
 
 use Archive::Zip;
 
 warn(
-"Archive::Zip::Tree is deprecated; its methods have been moved into Archive::Zip."
+    "Archive::Zip::Tree is deprecated; its methods have been moved into Archive::Zip."
 ) if $^W;
 
 1;
@@ -19,8 +20,6 @@ __END__
 =head1 NAME
 
 Archive::Zip::Tree - (DEPRECATED) methods for adding/extracting trees using Archive::Zip
-
-=head1 SYNOPSIS
 
 =head1 DESCRIPTION
 

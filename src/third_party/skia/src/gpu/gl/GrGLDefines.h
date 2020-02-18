@@ -147,6 +147,7 @@
 /*      GL_ALWAYS */
 
 /* EnableCap */
+#define GR_GL_TEXTURE_NONE                   0x0000
 #define GR_GL_TEXTURE_2D                     0x0DE1
 #define GR_GL_CULL_FACE                      0x0B44
 #define GR_GL_BLEND                          0x0BE2
@@ -460,6 +461,7 @@
 
 /* Luminance sized formats */
 #define GR_GL_LUMINANCE8                     0x8040
+#define GR_GL_LUMINANCE16F                   0x881E
 
 /* Alpha sized formats */
 #define GR_GL_ALPHA8                         0x803C
@@ -480,6 +482,7 @@
 #define GR_GL_RG16                           0x822C
 #define GR_GL_R16F                           0x822D
 #define GR_GL_R32F                           0x822E
+#define GR_GL_RG16F                          0x822F
 
 /* RG sized integer formats */
 #define GR_GL_RG8I                           0x8237
@@ -512,6 +515,7 @@
 #define GR_GL_RGBA16F                        0x881A
 #define GR_GL_RGBA32F                        0x8814
 #define GR_GL_RG32F                          0x8230
+#define GR_GL_RGBA16                         0x805B
 
 /* RGBA integer sized formats */
 #define GR_GL_RGBA8I                         0x8D8E

@@ -5,17 +5,15 @@
 #ifndef CHROME_TEST_BASE_WEB_UI_BROWSER_TEST_H_
 #define CHROME_TEST_BASE_WEB_UI_BROWSER_TEST_H_
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/javascript_browser_test.h"
-
-#if defined(OS_CHROMEOS)
-#include "base/test/scoped_feature_list.h"
-#endif
 
 namespace {
 class WebUITestMessageHandler;
@@ -112,6 +110,7 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
   void set_preload_test_name(const std::string& preload_test_name);
 
   void set_loader_file(const std::string& loader_file);
+  void set_webui_host(const std::string& webui_host);
 
   // Enable command line flags for test.
   void SetUpCommandLine(base::CommandLine* command_line) override;
@@ -178,9 +177,6 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
   content::WebUI* override_selected_web_ui_;
 
   std::unique_ptr<TestChromeWebUIControllerFactory> test_factory_;
-#if defined(OS_CHROMEOS)
-  base::test::ScopedFeatureList scoped_feature_list_;
-#endif
 };
 
 class WebUIBrowserTest : public BaseWebUIBrowserTest {

@@ -26,7 +26,7 @@ class ReportUploaderTest : public ::testing::Test {
  public:
   ReportUploaderTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
     CreateUploader(0);
   }
   ~ReportUploaderTest() override {}
@@ -109,6 +109,20 @@ TEST_F(ReportUploaderTest, PersistentError) {
   client_.SetStatus(policy::DM_STATUS_SERVICE_DEVICE_NOT_FOUND);
   UploadReportAndSetExpectation(/*number_of_request=*/2,
                                 ReportUploader::kPersistentError);
+  RunNextTask();
+  EXPECT_TRUE(has_responded_);
+  ::testing::Mock::VerifyAndClearExpectations(&client_);
+}
+
+TEST_F(ReportUploaderTest, RequestTooBigError) {
+  CreateUploader(/* *retyr_count = */ 2);
+  EXPECT_CALL(client_, UploadChromeDesktopReportProxy(_, _))
+      .Times(2)
+      .WillOnce(WithArgs<1>(policy::ScheduleStatusCallback(false)))
+      .WillOnce(WithArgs<1>(policy::ScheduleStatusCallback(false)));
+  client_.SetStatus(policy::DM_STATUS_REQUEST_TOO_LARGE);
+  UploadReportAndSetExpectation(/*number_of_request=*/2,
+                                ReportUploader::kSuccess);
   RunNextTask();
   EXPECT_TRUE(has_responded_);
   ::testing::Mock::VerifyAndClearExpectations(&client_);

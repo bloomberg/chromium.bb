@@ -59,6 +59,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
@@ -419,6 +420,21 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
   EXPECT_TRUE(base::ContentsEqual(GetTestDirFile("a.htm"), full_file_name));
 }
 
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveFileURL) {
+  GURL url = net::FilePathToFileURL(GetTestDirFile("text.txt"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  base::FilePath full_file_name, dir;
+  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_ONLY_HTML, "test", 1, &dir,
+                 &full_file_name);
+  ASSERT_FALSE(HasFailure());
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  EXPECT_TRUE(base::PathExists(full_file_name));
+  EXPECT_FALSE(base::PathExists(dir));
+  EXPECT_TRUE(base::ContentsEqual(GetTestDirFile("text.txt"), full_file_name));
+}
+
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
                        SaveHTMLOnly_CrossOriginReadPolicy) {
   GURL url = embedded_test_server()->GetURL(
@@ -529,6 +545,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyTabDestroy) {
 }
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
+  // TODO(lukasza): https://crbug.com/971811: Disallow renderer crashes once the
+  // bug is fixed.
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+
   GURL mock_url = embedded_test_server()->GetURL("/save_page/a.htm");
   GURL view_source_url =
       GURL(content::kViewSourceScheme + std::string(":") + mock_url.spec());
@@ -1059,8 +1079,7 @@ class SavePageOriginalVsSavedComparisonTest
       const GURL& url,
       int expected_number_of_frames_in_original_page,
       int expected_number_of_frames_in_mhtml_page,
-      const std::vector<std::string>& expected_substrings,
-      bool skip_find_in_page = false) {
+      const std::vector<std::string>& expected_substrings) {
     // Navigate to the test page and verify if test expectations
     // are met (this is mostly a sanity check - a failure to meet
     // expectations would probably mean that there is a test bug
@@ -1069,8 +1088,7 @@ class SavePageOriginalVsSavedComparisonTest
     DLOG(INFO) << "Verifying test expectations for original page... : "
                << GetCurrentTab(browser())->GetLastCommittedURL();
     AssertExpectationsAboutCurrentTab(
-        expected_number_of_frames_in_original_page, expected_substrings,
-        skip_find_in_page);
+        expected_number_of_frames_in_original_page, expected_substrings);
 
     // Save the page.
     base::FilePath full_file_name, dir;
@@ -1098,7 +1116,7 @@ class SavePageOriginalVsSavedComparisonTest
         expected_number_of_frames_in_mhtml_page :
         expected_number_of_frames_in_original_page;
     AssertExpectationsAboutCurrentTab(expected_number_of_frames_in_saved_page,
-                                      expected_substrings, skip_find_in_page);
+                                      expected_substrings);
 
     if (GetParam() == content::SAVE_PAGE_TYPE_AS_MHTML) {
       std::set<url::Origin> origins;
@@ -1115,7 +1133,7 @@ class SavePageOriginalVsSavedComparisonTest
     chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
     content::WaitForLoadStop(GetCurrentTab(browser()));
     AssertExpectationsAboutCurrentTab(expected_number_of_frames_in_saved_page,
-                                      expected_substrings, skip_find_in_page);
+                                      expected_substrings);
   }
 
   // Helper method to deduplicate some code across 2 tests.
@@ -1144,42 +1162,34 @@ class SavePageOriginalVsSavedComparisonTest
         "frames-nested2.htm: 6d23dc47-f283-4977-96ec-66bcf72301a4",
         "text-object.txt: ae52dd09-9746-4b7e-86a6-6ada5e2680c2",
         "svg: 0875fd06-131d-4708-95e1-861853c6b8dc",
+
+        // TODO(lukasza): Consider also verifying presence of "PDF test file"
+        // from <object data="pdf.pdf">.  This requires ensuring that the PDF is
+        // loaded before continuing with the test.
     };
 
     // TODO(lukasza): crbug.com/553478: Enable <object> testing of MHTML.
     if (save_page_type == content::SAVE_PAGE_TYPE_AS_MHTML)
       return;
 
-    // TODO(lukasza): https://crbug.com/965254: Re-enable find-in-page aspect of
-    // the test.
-    bool skip_find_in_page =
-        content::MimeHandlerViewMode::UsesCrossProcessFrame();
-
     TestOriginalVsSavedPage(save_page_type, url, expected_number_of_frames,
-                            expected_number_of_frames, expected_substrings,
-                            skip_find_in_page);
+                            expected_number_of_frames, expected_substrings);
   }
 
  private:
   void AssertExpectationsAboutCurrentTab(
       int expected_number_of_frames,
-      const std::vector<std::string>& expected_substrings,
-      bool skip_find_in_page) {
+      const std::vector<std::string>& expected_substrings) {
     int actual_number_of_frames = 0;
     GetCurrentTab(browser())->ForEachFrame(base::BindRepeating(
         &IncrementInteger, base::Unretained(&actual_number_of_frames)));
     EXPECT_EQ(expected_number_of_frames, actual_number_of_frames);
 
-    // TODO(lukasza): https://crbug.com/965254: Re-enable find-in-page aspect of
-    // the test.
-    if (skip_find_in_page)
-      return;
-
     for (const auto& expected_substring : expected_substrings) {
       int actual_number_of_matches = ui_test_utils::FindInPage(
           GetCurrentTab(browser()), base::UTF8ToUTF16(expected_substring),
-          true,  // |forward|
-          true,  // |case_sensitive|
+          true,   // |forward|
+          false,  // |case_sensitive|
           nullptr, nullptr);
 
       EXPECT_EQ(1, actual_number_of_matches)
@@ -1197,7 +1207,7 @@ class SavePageOriginalVsSavedComparisonTest
     for (const auto& forbidden_substring : forbidden_substrings) {
       int actual_number_of_matches = ui_test_utils::FindInPage(
           GetCurrentTab(browser()), base::UTF8ToUTF16(forbidden_substring),
-          true,  // |forward|
+          true,   // |forward|
           false,  // |case_sensitive|
           nullptr, nullptr);
       EXPECT_EQ(0, actual_number_of_matches)
@@ -1255,9 +1265,12 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest,
 }
 
 // Tests that saving a page from file: URI works.
-// TODO(https://crbug.com/840063): Deflake and reenable.
 IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest,
-                       DISABLED_ObjectElementsViaFile) {
+                       ObjectElementsViaFile) {
+  // TODO(lukasza): https://crbug.com/964364: Re-enable the test.
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame())
+    return;
+
   base::FilePath test_data_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
   GURL url(net::FilePathToFileURL(

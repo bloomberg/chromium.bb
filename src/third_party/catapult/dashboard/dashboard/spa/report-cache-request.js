@@ -7,13 +7,13 @@
 import {
   CacheRequestBase, READONLY, READWRITE, jsonResponse,
 } from './cache-request-base.js';
-import ResultChannelSender from './result-channel-sender.js';
+import {ResultChannelSender} from '@chopsui/result-channel';
 
 const STORE_REPORTS = 'reports';
 const STORE_METADATA = 'metadata';
 const STORES = [STORE_REPORTS, STORE_METADATA];
 
-export default class ReportCacheRequest extends CacheRequestBase {
+export class ReportCacheRequest extends CacheRequestBase {
   constructor(fetchEvent) {
     super(fetchEvent);
     this.parseRequestPromise = this.parseRequest();

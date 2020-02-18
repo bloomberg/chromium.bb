@@ -74,8 +74,7 @@ class LockImplTest : public testing::Test {
   bool HasSuccessfullyLockedWithAttemptId(
       const base::UnguessableToken& attempt_id) {
     lock_->lock();
-    bool contains_key =
-        base::ContainsKey(successful_lock_attempts_, attempt_id);
+    bool contains_key = base::Contains(successful_lock_attempts_, attempt_id);
     lock_->unlock();
     return contains_key;
   }

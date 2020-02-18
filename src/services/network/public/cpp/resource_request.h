@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
@@ -40,6 +41,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   GURL url;
   GURL site_for_cookies;
   base::Optional<url::Origin> top_frame_origin;
+  net::NetworkIsolationKey trusted_network_isolation_key;
+  mojom::UpdateNetworkIsolationKeyOnRedirect
+      update_network_isolation_key_on_redirect =
+          network::mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate;
   bool attach_same_site_cookies = false;
   bool update_first_party_url_on_redirect = false;
   base::Optional<url::Origin> request_initiator;
@@ -63,11 +68,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   bool skip_service_worker = false;
   bool corb_detachable = false;
   bool corb_excluded = false;
-  mojom::FetchRequestMode fetch_request_mode = mojom::FetchRequestMode::kNoCors;
-  mojom::FetchCredentialsMode fetch_credentials_mode =
-      mojom::FetchCredentialsMode::kInclude;
-  mojom::FetchRedirectMode fetch_redirect_mode =
-      mojom::FetchRedirectMode::kFollow;
+  mojom::RequestMode mode = mojom::RequestMode::kNoCors;
+  mojom::CredentialsMode credentials_mode = mojom::CredentialsMode::kInclude;
+  mojom::RedirectMode redirect_mode = mojom::RedirectMode::kFollow;
   std::string fetch_integrity;
   int fetch_request_context_type = 0;
   scoped_refptr<ResourceRequestBody> request_body;
@@ -92,6 +95,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   bool custom_proxy_use_alternate_proxy_list = false;
   base::Optional<base::UnguessableToken> fetch_window_id;
   base::Optional<std::string> devtools_request_id;
+  bool is_signed_exchange_prefetch_cache_enabled = false;
 };
 
 }  // namespace network

@@ -16,3 +16,6 @@ crbug.com/933880 http/tests/inspector-protocol/network/raw-headers-for-websocket
 crbug.com/933880 http/tests/inspector-protocol/network/security-info-on-response.js [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/xhr-interception-auth-fail.js [ Failure ]
 crbug.com/933880 http/tests/misc/redirect-to-about-blank.html [ Timeout ]
+
+# Test is for OOPIF-specific behavior.
+Bug(none) http/tests/inspector-protocol/fetch/fetch-oopif.js [ Skip ]

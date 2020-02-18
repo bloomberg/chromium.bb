@@ -186,8 +186,17 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // Set the web site that this SiteInstance is rendering pages for.
   // This includes the scheme and registered domain, but not the port.  If the
   // URL does not have a valid registered domain, then the full hostname is
-  // stored.
+  // stored. This method does not convert this instance into a default
+  // SiteInstance, but the BrowsingInstance will call this method with |url|
+  // set to GetDefaultSiteURL(), when it is creating its default SiteInstance.
   void SetSite(const GURL& url);
+
+  // Similar to SetSite(), but first attempts to convert this object to a
+  // default SiteInstance if |url| can be placed inside a default SiteInstance.
+  // If conversion is not possible, then the normal SetSite() logic is run.
+  void ConvertToDefaultOrSetSite(const GURL& url);
+
+  // Returns whether SetSite() has been called.
   bool HasSite() const;
 
   // Returns whether there is currently a related SiteInstance (registered with
@@ -307,7 +316,15 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   RenderProcessHost* GetDefaultProcessIfUsable();
 
   // Returns true if this object was constructed as a default site instance.
-  bool IsDefaultSiteInstance();
+  bool IsDefaultSiteInstance() const;
+
+  // Returns true if |site_url| is a site URL that the BrowsingInstance has
+  // associated with its default SiteInstance.
+  bool IsSiteInDefaultSiteInstance(const GURL& site_url) const;
+
+  // Returns true if the the site URL for |url| matches the site URL
+  // for this instance (i.e. GetSiteURL()). Otherwise returns false.
+  bool DoesSiteForURLMatch(const GURL& url);
 
  private:
   friend class BrowsingInstance;
@@ -355,6 +372,19 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // URL instead of a plain URL.
   static bool DoesSiteURLRequireDedicatedProcess(
       const IsolationContext& isolation_context,
+      const GURL& site_url);
+
+  // Returns true if |url| and its |site_url| can be placed inside a default
+  // SiteInstance.
+  //
+  // Note: |url| and |site_url| must be consistent with each other. In contexts
+  // where the caller only has |url| it can use
+  // SiteInstanceImpl::GetSiteForURL() to generate |site_url|. This call is
+  // intentionally not set as a default value to encourage the caller to reuse
+  // a site URL computation if they already have one.
+  static bool CanBePlacedInDefaultSiteInstance(
+      const IsolationContext& isolation_context,
+      const GURL& url,
       const GURL& site_url);
 
   // An object used to construct RenderProcessHosts.

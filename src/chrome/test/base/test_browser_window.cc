@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/find_bar/find_bar.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -64,8 +65,8 @@ bool TestBrowserWindow::IsActive() const {
   return false;
 }
 
-bool TestBrowserWindow::IsAlwaysOnTop() const {
-  return false;
+ui::ZOrderLevel TestBrowserWindow::GetZOrderLevel() const {
+  return ui::ZOrderLevel::kNormal;
 }
 
 gfx::NativeWindow TestBrowserWindow::GetNativeWindow() const {
@@ -152,6 +153,10 @@ ToolbarActionsBar* TestBrowserWindow::GetToolbarActionsBar() {
   return nullptr;
 }
 
+ExtensionsContainer* TestBrowserWindow::GetExtensionsContainer() {
+  return nullptr;
+}
+
 content::KeyboardEventProcessingResult
 TestBrowserWindow::PreHandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
@@ -200,6 +205,12 @@ autofill::SaveCardBubbleView* TestBrowserWindow::ShowSaveCreditCardBubble(
   return nullptr;
 }
 
+ClickToCallDialog* TestBrowserWindow::ShowClickToCallDialog(
+    content::WebContents* web_contents,
+    ClickToCallSharingDialogController* controller) {
+  return nullptr;
+}
+
 autofill::LocalCardMigrationBubble*
 TestBrowserWindow::ShowLocalCardMigrationBubble(
     content::WebContents* contents,
@@ -224,7 +235,7 @@ DownloadShelf* TestBrowserWindow::GetDownloadShelf() {
   return &download_shelf_;
 }
 
-FindBar* TestBrowserWindow::CreateFindBar() {
+std::unique_ptr<FindBar> TestBrowserWindow::CreateFindBar() {
   return NULL;
 }
 

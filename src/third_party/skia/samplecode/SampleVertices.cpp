@@ -66,13 +66,7 @@ public:
     }
 
 protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "Vertices");
-            return true;
-        }
-        return this->INHERITED::onQuery(evt);
-    }
+    SkString name() override { return SkString("Vertices"); }
 
     SkScalar fScale;
 
@@ -105,8 +99,8 @@ protected:
         }
     }
 
-    Sample::Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned) override {
-        return new Click(this);
+    Sample::Click* onFindClickHandler(SkScalar x, SkScalar y, ModifierKey) override {
+        return new Click();
     }
 
     bool onClick(Click* click) override {

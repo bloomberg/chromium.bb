@@ -15,6 +15,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,11 +26,12 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.task.TaskTraits;
+import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.BackHandler;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishHandler;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
 import org.chromium.chrome.browser.customtabs.shadows.ShadowExternalNavigationDelegateImpl;
-import org.chromium.chrome.browser.customtabs.shadows.ShadowPostTask;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -55,6 +57,10 @@ public class CustomTabActivityNavigationControllerTest {
 
     @Before
     public void setUp() {
+        ShadowPostTask.setTestImpl(new ShadowPostTask.TestImpl() {
+            @Override
+            public void postDelayedTask(TaskTraits taskTraits, Runnable task, long delay) {}
+        });
         MockitoAnnotations.initMocks(this);
         mNavigationController = env.createNavigationController(mTabController);
         mNavigationController.setFinishHandler(mFinishHandler);
@@ -138,5 +144,10 @@ public class CustomTabActivityNavigationControllerTest {
         mNavigationController.openCurrentUrlInBrowser(false);
         verify(mTabController, never()).detachAndStartReparenting(any(), any(), any());
         verify(env.activity).startActivity(any(), any());
+    }
+
+    @After
+    public void tearDown() {
+        ShadowPostTask.reset();
     }
 }

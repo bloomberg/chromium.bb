@@ -1,46 +1,50 @@
-# $Id: Search.pm 35 2011-06-17 01:34:42Z stro $
+# $Id: Search.pm 79 2019-01-30 02:35:31Z stro $
 
 package CPAN::SQLite::DBI::Search;
 
 use strict;
 use warnings;
 
-use base qw(CPAN::SQLite::DBI);
+BEGIN {
+  our $VERSION = '0.217';
+  $CPAN::SQLite::DBI::Search::info::VERSION  = $VERSION;
+  $CPAN::SQLite::DBI::Search::mods::VERSION  = $VERSION;
+  $CPAN::SQLite::DBI::Search::dists::VERSION = $VERSION;
+  $CPAN::SQLite::DBI::Search::auths::VERSION = $VERSION;
+}
+
+use parent 'CPAN::SQLite::DBI';
 use CPAN::SQLite::DBI qw($tables $dbh);
 use CPAN::SQLite::Util qw($full_id);
 
-our $VERSION = '0.202';
-
-package CPAN::SQLite::DBI::Search::chaps;
-use base qw(CPAN::SQLite::DBI::Search);
+package CPAN::SQLite::DBI::Search::info;
+use parent 'CPAN::SQLite::DBI::Search';
 use CPAN::SQLite::DBI qw($dbh);
 
 package CPAN::SQLite::DBI::Search::mods;
-use base qw(CPAN::SQLite::DBI::Search);
+use parent 'CPAN::SQLite::DBI::Search';
 use CPAN::SQLite::DBI qw($dbh);
 
 package CPAN::SQLite::DBI::Search::dists;
-use base qw(CPAN::SQLite::DBI::Search);
+use parent 'CPAN::SQLite::DBI::Search';
 use CPAN::SQLite::DBI qw($dbh);
 
 package CPAN::SQLite::DBI::Search::auths;
-use base qw(CPAN::SQLite::DBI::Search);
+use parent 'CPAN::SQLite::DBI::Search';
 use CPAN::SQLite::DBI qw($dbh);
 
 package CPAN::SQLite::DBI::Search;
-use base qw(CPAN::SQLite::DBI);
+use parent 'CPAN::SQLite::DBI';
 use CPAN::SQLite::DBI qw($tables $dbh);
-use CPAN::SQLite::Util qw($full_id expand_dslip download %chaps);
+use CPAN::SQLite::Util qw($full_id download);
 
 sub fetch {
   my ($self, %args) = @_;
   my $fields = $args{fields};
   my $search = $args{search};
-  my @fields = ref($fields) eq 'ARRAY' ?
-    @{$fields} : ($fields);
-  my $sql = $self->sql_statement(%args) or do {
-    $self->{error} = 'Error constructing sql statement: ' .
-      $self->{error};
+  my @fields = ref($fields) eq 'ARRAY' ? @{$fields} : ($fields);
+  my $sql    = $self->sql_statement(%args) or do {
+    $self->{error} = 'Error constructing sql statement: ' . $self->{error};
     return;
   };
   my $sth = $dbh->prepare($sql) or do {
@@ -60,10 +64,9 @@ sub fetch {
     undef $sth;
     $self->extra_info($results) if $results;
     return $results;
-  }
-  else {
+  } else {
     my (%hash, $results);
-    while ( @hash{@fields} = $sth->fetchrow_array) {
+    while (@hash{@fields} = $sth->fetchrow_array) {
       my %tmp = %hash;
       $self->extra_info(\%tmp);
       push @{$results}, \%tmp;
@@ -77,16 +80,14 @@ sub fetch {
 
 sub fetch_and_set {
   my ($self, %args) = @_;
-  my $fields = $args{fields};
-  my $search = $args{search};
+  my $fields   = $args{fields};
+  my $search   = $args{search};
   my $meta_obj = $args{meta_obj};
   die "Please supply a CPAN::SQLite::Meta::* object"
     unless ($meta_obj and ref($meta_obj) =~ /^CPAN::SQLite::META/);
-  my @fields = ref($fields) eq 'ARRAY' ? 
-    @{$fields} : ($fields);
+  my @fields = ref($fields) eq 'ARRAY' ? @{$fields} : ($fields);
   my $sql = $self->sql_statement(%args) or do {
-    $self->{error} = 'Error constructing sql statement: ' .
-      $self->{error};
+    $self->{error} = 'Error constructing sql statement: ' . $self->{error};
     return;
   };
   my $sth = $dbh->prepare($sql) or do {
@@ -110,32 +111,32 @@ sub fetch_and_set {
     return unless $results;
     $self->extra_info($results);
     $meta_obj->set_data($results);
+
     if ($want_ids) {
       $meta_results{dist_id} = $results{dist_id};
-      $meta_results{download} = download($results{cpanid},
-                     $results{dist_file});
+      $meta_results{download} = download($results{cpanid}, $results{dist_file});
       return \%meta_results;
-    }
-    else {
+    } else {
       return 1;
     }
-  }
-  else {
+  } else {
     my (%hash, $meta_results);
-    while ( @hash{@fields} = $sth->fetchrow_array) {
+    while (@hash{@fields} = $sth->fetchrow_array) {
       my %tmp = %hash;
       if ($set_list) {
-    push @{$meta_results}, \%tmp;
-      }
-      else {
-    $self->extra_info(\%tmp);
-    $meta_obj->set_data(\%tmp); 
-    if ($want_ids) {
-      my $download = download($tmp{cpanid}, $tmp{dist_file});
-      push @{$meta_results}, {dist_id => $tmp{dist_id},
-                  download => $download};
+        push @{$meta_results}, \%tmp;
+      } else {
+        $self->extra_info(\%tmp);
+        $meta_obj->set_data(\%tmp);
+        if ($want_ids) {
+          my $download = download($tmp{cpanid}, $tmp{dist_file});
+          push @{$meta_results},
+            {
+            dist_id  => $tmp{dist_id},
+            download => $download
+            };
 
-    }
+        }
       }
     }
     $meta_results = undef if ($sth->rows == 0);
@@ -152,55 +153,48 @@ sub extra_info {
   if ($results->{cpanid} and $results->{dist_file}) {
     $results->{download} = download($results->{cpanid}, $results->{dist_file});
   }
-  my $what;
-  if ( ($what = $results->{dslip}) or ($what = $results->{dist_dslip}) ) {
-    $results->{dslip_info} = expand_dslip($what);
-  }
-  if (my $chapterid = $results->{chapterid}) {
-    $chapterid += 0;
-    $results->{chapter_desc} = $chaps{$chapterid};
-  }
   return;
 }
 
 sub sql_statement {
   my ($self, %args) = @_;
 
-  my $search = $args{search};
+  my $search   = $args{search};
   my $distinct = $search->{distinct} ? 'DISTINCT' : '';
-  my $table = $args{table};
+  my $table    = $args{table};
 
   my $fields = $args{fields};
-  my @fields = ref($fields) eq 'ARRAY' ? 
-    @{$fields} : ($fields);
+  my @fields = ref($fields) eq 'ARRAY' ? @{$fields} : ($fields);
   for (@fields) {
     $_ = $full_id->{$_} if $full_id->{$_};
   }
 
-  my $sql = qq{SELECT $distinct } . join(',', @fields);
+  my $sql   = qq{SELECT $distinct } . join(',', @fields);
   my $where = '';
-  my $type = $search->{type};
- QUERY: {
-    ($type eq 'query' ) and do {
+  my $type  = $search->{type};
+QUERY: {
+    ($type eq 'query') and do {
       my $value = $search->{value};
       last QUERY if ($value eq '^');
-      my $name = $search->{name};
-      my $text = $search->{text};
+      my $name     = $search->{name};
+      my $text     = $search->{text};
       my $use_like = ($value =~ /^\^?[A-Za-z0-9_\\\:\-]+$/) ? 1 : 0;
-      my $prepend = '%';
+      my $prepend  = '%';
       if ($use_like and $value =~ /^\^/) {
-    $prepend = '';
-    $value =~ s/^\^//;
-    $value =~ s{\\}{}g;
+        $prepend = '';
+        $value =~ s/^\^//;
+        $value =~ s{\\}{}g;
       }
-      $where = $use_like ?
-    qq{$name LIKE '$prepend$value%'} : 
-      qq{$name REGEXP '(?i:$value)'};
+      $where =
+        $use_like
+        ? qq{$name LIKE '$prepend$value%'}
+        : qq{$name REGEXP '(?i:$value)'};
 
       if ($name eq 'cpanid') {
-    $where .= $use_like ?
-      qq{ OR $text LIKE '$prepend$value%'} : 
-        qq{ OR $text REGEXP '(?i:$value)'};
+        $where .=
+          $use_like
+          ? qq{ OR $text LIKE '$prepend$value%'}
+          : qq{ OR $text REGEXP '(?i:$value)'};
       }
       last QUERY;
     };
@@ -221,9 +215,9 @@ sub sql_statement {
   my $left_join = $args{join} || $args{left_join};
   if ($left_join) {
     if (ref($left_join) eq 'HASH') {
-      foreach my $key(keys %$left_join) {
-    my $id = $left_join->{$key};
-    $sql .= " LEFT JOIN $key ON $table.$id=$key.$id ";
+      foreach my $key (keys %$left_join) {
+        my $id = $left_join->{$key};
+        $sql .= " LEFT JOIN $key ON $table.$id=$key.$id ";
       }
     }
   }
@@ -231,8 +225,7 @@ sub sql_statement {
   if ($where) {
     $sql .= ' WHERE ( ' . $where . ' )';
     $sql .= ' AND (' . $join . ')' if $join;
-  }
-  else {
+  } else {
     $sql .= ' WHERE (' . $join . ')' if $join;
   }
 
@@ -245,9 +238,10 @@ sub sql_statement {
   }
 
   if (my $limit = $args{limit}) {
-    my ($min, $max) = ref($limit) eq 'HASH' ?
-      ( $limit->{min} || 0, $limit->{max} ) :
-    (0, $limit );
+    my ($min, $max) =
+      ref($limit) eq 'HASH'
+      ? ($limit->{min} || 0, $limit->{max})
+      : (0, $limit);
     $sql .= qq{ LIMIT $min,$max };
   }
   return $sql;
@@ -255,11 +249,13 @@ sub sql_statement {
 
 1;
 
-__END__
-
 =head1 NAME
 
 CPAN::SQLite::DBI::Search - DBI information for searching the CPAN::SQLite database
+
+=head1 VERSION
+
+version 0.217
 
 =head1 DESCRIPTION
 

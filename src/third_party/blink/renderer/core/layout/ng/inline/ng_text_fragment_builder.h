@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_end_effect.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -22,9 +22,10 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
-  NGTextFragmentBuilder(NGInlineNode node, WritingMode writing_mode)
-      : NGFragmentBuilder(writing_mode, TextDirection::kLtr),
-        inline_node_(node) {}
+  NGTextFragmentBuilder(WritingMode writing_mode)
+      : NGFragmentBuilder(writing_mode, TextDirection::kLtr) {}
+
+  NGTextFragmentBuilder(const NGPhysicalTextFragment& fragment);
 
   // NOTE: Takes ownership of the shape result within the item result.
   void SetItem(NGPhysicalTextFragment::NGTextType,
@@ -47,17 +48,13 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
   // pseudo-element, ...) instead of from a DOM text node.
   bool IsGeneratedText() const;
 
-  NGInlineNode inline_node_;
   String text_;
-  unsigned item_index_;
   unsigned start_offset_;
   unsigned end_offset_;
   scoped_refptr<const ShapeResultView> shape_result_;
 
   NGPhysicalTextFragment::NGTextType text_type_ =
       NGPhysicalTextFragment::kNormalText;
-
-  NGTextEndEffect end_effect_ = NGTextEndEffect::kNone;
 
   friend class NGPhysicalTextFragment;
 };

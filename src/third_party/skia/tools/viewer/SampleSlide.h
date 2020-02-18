@@ -24,16 +24,15 @@ public:
         fSample->setSize(winWidth, winHeight);
     }
     void unload() override;
-    bool animate(const AnimTimer& timer) override { return fSample->animate(timer); }
+    bool animate(double) override;
 
     bool onChar(SkUnichar c) override;
-    bool onMouse(SkScalar x, SkScalar y, sk_app::Window::InputState state,
-                 uint32_t modifiers) override;
+    bool onMouse(SkScalar x, SkScalar y, InputState state,
+                 ModifierKey modifiers) override;
 
 private:
     const SampleFactory fSampleFactory;
-    sk_sp<Sample> fSample;
-    Sample::Click* fClick;
+    std::unique_ptr<Sample> fSample;
 };
 
 #endif

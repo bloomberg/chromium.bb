@@ -103,8 +103,7 @@ HttpAuthHandlerFactory* HttpAuthHandlerRegistryFactory::GetSchemeFactory(
 std::unique_ptr<HttpAuthHandlerRegistryFactory>
 HttpAuthHandlerFactory::CreateDefault(
     const HttpAuthPreferences* prefs
-#if (defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)) || \
-    defined(OS_FUCHSIA)
+#if BUILDFLAG(USE_EXTERNAL_GSSAPI)
     ,
     const std::string& gssapi_library_name
 #endif
@@ -116,7 +115,7 @@ HttpAuthHandlerFactory::CreateDefault(
   std::vector<std::string> auth_types(std::begin(kDefaultAuthSchemes),
                                       std::end(kDefaultAuthSchemes));
   return HttpAuthHandlerRegistryFactory::Create(prefs, auth_types
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if BUILDFLAG(USE_EXTERNAL_GSSAPI)
                                                 ,
                                                 gssapi_library_name
 #endif
@@ -132,8 +131,7 @@ std::unique_ptr<HttpAuthHandlerRegistryFactory>
 HttpAuthHandlerRegistryFactory::Create(
     const HttpAuthPreferences* prefs,
     const std::vector<std::string>& auth_schemes
-#if (defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)) || \
-    defined(OS_FUCHSIA)
+#if BUILDFLAG(USE_EXTERNAL_GSSAPI)
     ,
     const std::string& gssapi_library_name
 #endif
@@ -147,17 +145,17 @@ HttpAuthHandlerRegistryFactory::Create(
 
   std::unique_ptr<HttpAuthHandlerRegistryFactory> registry_factory(
       new HttpAuthHandlerRegistryFactory());
-  if (base::ContainsKey(auth_schemes_set, kBasicAuthScheme)) {
+  if (base::Contains(auth_schemes_set, kBasicAuthScheme)) {
     registry_factory->RegisterSchemeFactory(
         kBasicAuthScheme, new HttpAuthHandlerBasic::Factory());
   }
 
-  if (base::ContainsKey(auth_schemes_set, kDigestAuthScheme)) {
+  if (base::Contains(auth_schemes_set, kDigestAuthScheme)) {
     registry_factory->RegisterSchemeFactory(
         kDigestAuthScheme, new HttpAuthHandlerDigest::Factory());
   }
 
-  if (base::ContainsKey(auth_schemes_set, kNtlmAuthScheme)) {
+  if (base::Contains(auth_schemes_set, kNtlmAuthScheme)) {
     HttpAuthHandlerNTLM::Factory* ntlm_factory =
         new HttpAuthHandlerNTLM::Factory();
 #if defined(OS_WIN)
@@ -167,16 +165,14 @@ HttpAuthHandlerRegistryFactory::Create(
   }
 
 #if BUILDFLAG(USE_KERBEROS)
-  if (base::ContainsKey(auth_schemes_set, kNegotiateAuthScheme)) {
+  if (base::Contains(auth_schemes_set, kNegotiateAuthScheme)) {
     HttpAuthHandlerNegotiate::Factory* negotiate_factory =
         new HttpAuthHandlerNegotiate::Factory(negotiate_auth_system_factory);
 #if defined(OS_WIN)
     negotiate_factory->set_library(std::make_unique<SSPILibraryDefault>());
-#elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#elif BUILDFLAG(USE_EXTERNAL_GSSAPI)
     negotiate_factory->set_library(
         std::make_unique<GSSAPISharedLibrary>(gssapi_library_name));
-#elif defined(OS_CHROMEOS)
-    negotiate_factory->set_library(std::make_unique<GSSAPISharedLibrary>(""));
 #endif
     registry_factory->RegisterSchemeFactory(kNegotiateAuthScheme,
                                             negotiate_factory);

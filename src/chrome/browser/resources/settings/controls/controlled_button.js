@@ -50,11 +50,11 @@ Polymer({
 
   /**
    * @param {!boolean} actionButton
-   * @return {string} Class of the paper-button.
+   * @return {string} Class of the cr-button.
    * @private
    */
   getClass_: function(actionButton) {
-    return actionButton ? "action-button" : "";
+    return actionButton ? 'action-button' : '';
   },
 
   /**

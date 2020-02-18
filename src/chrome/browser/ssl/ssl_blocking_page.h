@@ -68,7 +68,7 @@ class SSLBlockingPage : public SSLBlockingPageBase {
           callback);
 
   // InterstitialPageDelegate method:
-  InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
+  InterstitialPageDelegate::TypeID GetTypeForTesting() override;
 
   // Returns true if |options_mask| refers to a soft-overridable SSL error and
   // if SSL error overriding is allowed by policy.
@@ -112,10 +112,6 @@ class SSLBlockingPage : public SSLBlockingPageBase {
   base::Callback<void(content::CertificateRequestResultType)> callback_;
   const net::SSLInfo ssl_info_;
   const bool overridable_;  // The UI allows the user to override the error.
-
-  // The user previously allowed a bad certificate, but the decision has now
-  // expired.
-  const bool expired_but_previously_allowed_;
 
   const std::unique_ptr<security_interstitials::SSLErrorUI> ssl_error_ui_;
 

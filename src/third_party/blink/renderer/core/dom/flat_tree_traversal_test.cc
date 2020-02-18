@@ -49,7 +49,7 @@ void FlatTreeTraversalTest::SetupSampleHTML(const char* main_html,
                                             unsigned index) {
   Element* body = GetDocument().body();
   body->SetInnerHTMLFromString(String::FromUTF8(main_html));
-  Element* shadow_host = ToElement(NodeTraversal::ChildAt(*body, index));
+  auto* shadow_host = To<Element>(NodeTraversal::ChildAt(*body, index));
   ShadowRoot& shadow_root = shadow_host->CreateV0ShadowRootForTesting();
   shadow_root.SetInnerHTMLFromString(String::FromUTF8(shadow_html));
   body->UpdateDistributionForFlatTreeTraversal();

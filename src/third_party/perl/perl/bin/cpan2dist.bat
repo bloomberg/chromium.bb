@@ -1,17 +1,31 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
 #!/usr/bin/perl -w
-#line 15
+#line 29
 use strict;
 use CPANPLUS::Backend;
 use CPANPLUS::Dist;
@@ -290,7 +304,7 @@ for my $name (@modules) {
     ### is it a tarball? then we get it locally and transform it
     ### and its dependencies into .debs
     if( $tarball ) {
-        ### make sure we use an absolute path, so chdirs() dont
+        ### make sure we use an absolute path, so chdirs() don't
         ### mess things up
         $name = File::Spec->rel2abs( $name );
 
@@ -509,7 +523,7 @@ Options:
                   May be given multiple times.
     --logfile     File to log all output to. By default, all output goes
                   to the console.
-    --timeout     The allowed time for buliding a distribution before
+    --timeout     The allowed time for building a distribution before
                   aborting. This is useful to terminate any build that
                   hang or happen to be interactive despite being told not
                   to be. Defaults to 300 seconds. To turn off, you can
@@ -547,7 +561,7 @@ Examples:
     ### the tarballs Makefile.PL if it has one.
     cpan2dist --makefile --flushcache --archive /path/to/Cwd-1.0.tgz
 
-    ### build a package from Net::FTP, but dont build any packages or
+    ### build a package from Net::FTP, but don't build any packages or
     ### dependencies whose name match 'Foo', 'Bar' or any of the
     ### patterns mentioned in /tmp/ban
     cpan2dist --ban Foo --ban Bar --banlist /tmp/ban Net::FTP
@@ -583,7 +597,7 @@ Builtin Lists:
 =head1 Built-In Filter Lists
 
 Some modules you'd rather not package. Some because they
-are part of core-perl and you dont want a new package.
+are part of core-perl and you don't want a new package.
 Some because they won't build on your system. Some because
 your package manager of choice already packages them for you.
 
@@ -637,7 +651,7 @@ sub _default_ban_list {
     my $list = << '=cut';
 =pod
 
-    ^GD$                # Needs c libaries
+    ^GD$                # Needs c libraries
     ^Berk.*DB           # DB packages require specific options & linking
     ^DBD::              # DBD drivers require database files/headers
     ^XML::              # XML modules usually require expat libraries

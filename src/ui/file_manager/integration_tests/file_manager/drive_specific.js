@@ -143,6 +143,12 @@ testcase.driveClickFirstSearchResult = async () => {
 
   await remoteCall.waitForFiles(
       appId, TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET));
+
+  // Fetch A11y messages.
+  const a11yMessages =
+      await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
+  chrome.test.assertEq(1, a11yMessages.length, 'Missing a11y message');
+  chrome.test.assertEq('Showing results for hello.', a11yMessages[0]);
 };
 
 /**
@@ -158,6 +164,36 @@ testcase.drivePressEnterToSearch = async () => {
       ['#search-box cr-input', 'Enter', false, false, false]));
   await remoteCall.waitForFiles(
       appId, TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET));
+
+  // Fetch A11y messages.
+  const a11yMessages =
+      await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
+  chrome.test.assertEq(1, a11yMessages.length, 'Missing a11y message');
+  chrome.test.assertEq('Showing results for hello.', a11yMessages[0]);
+
+  return appId;
+};
+
+/**
+ * Tests that pressing the clear search button announces an a11y message and
+ * shows all files/folders.
+ */
+testcase.drivePressClearSearch = async () => {
+  const appId = await testcase.drivePressEnterToSearch();
+
+  // Click on the clear search button.
+  await remoteCall.waitAndClickElement(appId, '#search-box cr-input .clear');
+
+  // Wait for fil list to display all files.
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows(BASIC_DRIVE_ENTRY_SET));
+
+  // Check that a11y message for clearing the search term has been issued.
+  const a11yMessages =
+      await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
+  chrome.test.assertEq(2, a11yMessages.length, 'Missing a11y message');
+  chrome.test.assertEq(
+      'Search text cleared, showing all files and folders.', a11yMessages[1]);
 };
 
 /**
@@ -185,8 +221,12 @@ testcase.drivePinFileMobileNetwork = async () => {
   // Wait the toggle pinned async action to finish, so the next call to display
   // context menu is after the action has finished.
   await remoteCall.waitForElement(appId, '#file-context-menu[hidden]');
-  // TODO(crbug.com/953616): Change wait for a deterministic option.
-  await wait(100);
+
+  // Wait the pinned action to finish, it's flagged in the file list by
+  // removing CSS class "dim-offline".
+  await remoteCall.waitForElementLost(
+      appId, '#file-list .dim-offline[file-name="hello.txt"]');
+
 
   // Open context menu again.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -506,4 +546,104 @@ testcase.driveAvailableOfflineDirectoryGearMenu = async () => {
 
   // Check that "Available Offline" is shown in the menu.
   await remoteCall.waitForElement(appId, pinnedMenuQuery);
+};
+
+/**
+ * Tests following links to folders.
+ */
+testcase.driveLinkToDirectory = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET.concat([
+        ENTRIES.directoryA,
+        ENTRIES.directoryB,
+        ENTRIES.directoryC,
+        ENTRIES.deeplyBurriedSmallJpeg,
+        ENTRIES.linkGtoB,
+        ENTRIES.linkHtoFile,
+        ENTRIES.linkTtoTransitiveDirectory,
+      ]));
+
+  // Select the link
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['G']),
+      'selectFile failed');
+  await remoteCall.waitForElement(appId, '.table-row[selected]');
+
+  // Open the link
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('openFile', appId, ['G']));
+
+  // Check the contents of current directory.
+  await remoteCall.waitForFiles(appId, [ENTRIES.directoryC.getExpectedRow()]);
+};
+
+/**
+ * Tests opening files through folder links.
+ */
+testcase.driveLinkOpenFileThroughLinkedDirectory = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET.concat([
+        ENTRIES.directoryA,
+        ENTRIES.directoryB,
+        ENTRIES.directoryC,
+        ENTRIES.deeplyBurriedSmallJpeg,
+        ENTRIES.linkGtoB,
+        ENTRIES.linkHtoFile,
+        ENTRIES.linkTtoTransitiveDirectory,
+      ]));
+
+  // Navigate through link.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('openFile', appId, ['G']));
+  await remoteCall.waitForFiles(appId, [ENTRIES.directoryC.getExpectedRow()]);
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('openFile', appId, ['C']));
+  await remoteCall.waitForFiles(
+      appId, [ENTRIES.deeplyBurriedSmallJpeg.getExpectedRow()]);
+
+  await sendTestMessage(
+      {name: 'expectFileTask', fileNames: ['deep.jpg'], openType: 'launch'});
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('openFile', appId, ['deep.jpg']));
+
+  // The Gallery window should open with the image in it.
+  const galleryAppId = await galleryApp.waitForWindow('gallery.html');
+  await galleryApp.waitForSlideImage(galleryAppId, 100, 100, 'deep');
+  chrome.test.assertTrue(
+      await galleryApp.closeWindowAndWait(galleryAppId),
+      'Failed to close Gallery window');
+};
+
+/**
+ * Tests opening files through transitive links.
+ */
+testcase.driveLinkOpenFileThroughTransitiveLink = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET.concat([
+        ENTRIES.directoryA,
+        ENTRIES.directoryB,
+        ENTRIES.directoryC,
+        ENTRIES.deeplyBurriedSmallJpeg,
+        ENTRIES.linkGtoB,
+        ENTRIES.linkHtoFile,
+        ENTRIES.linkTtoTransitiveDirectory,
+      ]));
+
+  // Navigate through link.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('openFile', appId, ['T']));
+  await remoteCall.waitForFiles(
+      appId, [ENTRIES.deeplyBurriedSmallJpeg.getExpectedRow()]);
+
+  await sendTestMessage(
+      {name: 'expectFileTask', fileNames: ['deep.jpg'], openType: 'launch'});
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('openFile', appId, ['deep.jpg']));
+
+  // The Gallery window should open with the image in it.
+  const galleryAppId = await galleryApp.waitForWindow('gallery.html');
+  await galleryApp.waitForSlideImage(galleryAppId, 100, 100, 'deep');
+  chrome.test.assertTrue(
+      await galleryApp.closeWindowAndWait(galleryAppId),
+      'Failed to close Gallery window');
 };

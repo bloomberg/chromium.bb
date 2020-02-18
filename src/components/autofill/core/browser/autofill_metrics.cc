@@ -23,11 +23,12 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/autofill/core/common/submission_source.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace autofill {
+
+using mojom::SubmissionSource;
 
 namespace {
 
@@ -1154,12 +1155,12 @@ void AutofillMetrics::LogUserHappinessMetric(
   DCHECK_LT(metric, NUM_USER_HAPPINESS_METRICS);
   UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness", metric,
                             NUM_USER_HAPPINESS_METRICS);
-  if (base::ContainsKey(form_types, CREDIT_CARD_FORM)) {
+  if (base::Contains(form_types, CREDIT_CARD_FORM)) {
     UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness.CreditCard", metric,
                               NUM_USER_HAPPINESS_METRICS);
     LogUserHappinessBySecurityLevel(metric, CREDIT_CARD_FORM, security_level);
   }
-  if (base::ContainsKey(form_types, ADDRESS_FORM)) {
+  if (base::Contains(form_types, ADDRESS_FORM)) {
     UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness.Address", metric,
                               NUM_USER_HAPPINESS_METRICS);
     if (metric != AutofillMetrics::FORMS_LOADED) {
@@ -1167,12 +1168,12 @@ void AutofillMetrics::LogUserHappinessMetric(
     }
     LogUserHappinessBySecurityLevel(metric, ADDRESS_FORM, security_level);
   }
-  if (base::ContainsKey(form_types, PASSWORD_FORM)) {
+  if (base::Contains(form_types, PASSWORD_FORM)) {
     UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness.Password", metric,
                               NUM_USER_HAPPINESS_METRICS);
     LogUserHappinessBySecurityLevel(metric, PASSWORD_FORM, security_level);
   }
-  if (base::ContainsKey(form_types, UNKNOWN_FORM_TYPE)) {
+  if (base::Contains(form_types, UNKNOWN_FORM_TYPE)) {
     UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness.Unknown", metric,
                               NUM_USER_HAPPINESS_METRICS);
     LogUserHappinessBySecurityLevel(metric, UNKNOWN_FORM_TYPE, security_level);
@@ -1259,16 +1260,16 @@ void AutofillMetrics::LogFormFillDurationFromInteraction(
     parent_metric = "Autofill.FillDuration.FromInteraction.WithoutAutofill";
   }
   LogFormFillDuration(parent_metric, duration);
-  if (base::ContainsKey(form_types, CREDIT_CARD_FORM)) {
+  if (base::Contains(form_types, CREDIT_CARD_FORM)) {
     LogFormFillDuration(parent_metric + ".CreditCard", duration);
   }
-  if (base::ContainsKey(form_types, ADDRESS_FORM)) {
+  if (base::Contains(form_types, ADDRESS_FORM)) {
     LogFormFillDuration(parent_metric + ".Address", duration);
   }
-  if (base::ContainsKey(form_types, PASSWORD_FORM)) {
+  if (base::Contains(form_types, PASSWORD_FORM)) {
     LogFormFillDuration(parent_metric + ".Password", duration);
   }
-  if (base::ContainsKey(form_types, UNKNOWN_FORM_TYPE)) {
+  if (base::Contains(form_types, UNKNOWN_FORM_TYPE)) {
     LogFormFillDuration(parent_metric + ".Unknown", duration);
   }
 }
@@ -1415,20 +1416,6 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
         "Autofill.StoredCreditCardDisusedCount.Server.Unmasked",
         num_disused_unmasked_cards);
   }
-
-  // Legacy histogram names.
-  // Validated by:
-  //     AutofillMetricsTest.StoredLocalCreditCardCount
-  //     AutofillMetricsTest.StoredServerCreditCardCount_Masked
-  //     AutofillMetricsTest.StoredServerCreditCardCount_Unmasked
-  // TODO(crbug/762131): Delete these in 2018/Q2 once enough UMA history is
-  // established for the new names.
-  UMA_HISTOGRAM_COUNTS_1M("Autofill.StoredLocalCreditCardCount",
-                          num_local_cards);
-  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredServerCreditCardCount.Masked",
-                            num_masked_cards);
-  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredServerCreditCardCount.Unmasked",
-                            num_unmasked_cards);
 }
 
 // static
@@ -1457,13 +1444,6 @@ void AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
 }
 
 // static
-void AutofillMetrics::LogHasModifiedProfileOnCreditCardFormSubmission(
-    bool has_modified_profile) {
-  UMA_HISTOGRAM_BOOLEAN("Autofill.HasModifiedProfile.CreditCardFormSubmission",
-                        has_modified_profile);
-}
-
-// static
 void AutofillMetrics::LogNumberOfAddressesSuppressedForDisuse(
     size_t num_profiles) {
   UMA_HISTOGRAM_COUNTS_1000("Autofill.AddressesSuppressedForDisuse",
@@ -1482,11 +1462,28 @@ void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
 }
 
 // static
-void AutofillMetrics::LogAutofillSuggestionAcceptedIndex(int index) {
+void AutofillMetrics::LogAutofillSuggestionAcceptedIndex(int index,
+                                                         PopupType popup_type,
+                                                         bool off_the_record) {
   base::UmaHistogramSparse("Autofill.SuggestionAcceptedIndex",
                            std::min(index, kMaxBucketsCount));
 
+  if (popup_type == PopupType::kCreditCards) {
+    base::UmaHistogramSparse("Autofill.SuggestionAcceptedIndex.CreditCard",
+                             std::min(index, kMaxBucketsCount));
+  } else if (popup_type == PopupType::kAddresses ||
+             popup_type == PopupType::kPersonalInformation) {
+    base::UmaHistogramSparse("Autofill.SuggestionAcceptedIndex.Profile",
+                             std::min(index, kMaxBucketsCount));
+  } else {
+    base::UmaHistogramSparse("Autofill.SuggestionAcceptedIndex.Other",
+                             std::min(index, kMaxBucketsCount));
+  }
+
   base::RecordAction(base::UserMetricsAction("Autofill_SelectedSuggestion"));
+
+  base::UmaHistogramBoolean("Autofill.SuggestionAccepted.OffTheRecord",
+                            off_the_record);
 }
 
 // static
@@ -1756,7 +1753,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogInteractedWithForm(
 void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown(
     const FormStructure& form,
     const AutofillField& field,
-    const base::TimeTicks& form_parsed_timestamp) {
+    const base::TimeTicks& form_parsed_timestamp,
+    bool off_the_record) {
   if (!CanLog())
     return;
 
@@ -1769,6 +1767,9 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown(
       .SetMillisecondsSinceFormParsed(
           MillisecondsSinceFormParsed(form_parsed_timestamp))
       .Record(ukm_recorder_);
+
+  base::UmaHistogramBoolean("Autofill.SuggestionShown.OffTheRecord",
+                            off_the_record);
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(

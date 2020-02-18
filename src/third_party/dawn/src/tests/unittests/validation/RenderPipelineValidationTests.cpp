@@ -23,14 +23,13 @@ class RenderPipelineValidationTest : public ValidationTest {
         void SetUp() override {
             ValidationTest::SetUp();
 
-            vsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
+            vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
                 #version 450
                 void main() {
                     gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
-                })"
-            );
+                })");
 
-            fsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+            fsModule = utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) out vec4 fragColor;
                 void main() {
@@ -51,7 +50,8 @@ TEST_F(RenderPipelineValidationTest, CreationSuccess) {
     device.CreateRenderPipeline(&descriptor);
 }
 
-TEST_F(RenderPipelineValidationTest, ColorState) {
+// Tests that at least one color state is required.
+TEST_F(RenderPipelineValidationTest, ColorStateRequired) {
     {
         // This one succeeds because attachment 0 is the color attachment
         utils::ComboRenderPipelineDescriptor descriptor(device);
@@ -67,6 +67,29 @@ TEST_F(RenderPipelineValidationTest, ColorState) {
         descriptor.cVertexStage.module = vsModule;
         descriptor.cFragmentStage.module = fsModule;
         descriptor.colorStateCount = 0;
+
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    }
+}
+
+// Tests that the color formats must be renderable.
+TEST_F(RenderPipelineValidationTest, NonRenderableFormat) {
+    {
+        // Succeeds because RGBA8Unorm is renderable
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.cVertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        descriptor.cColorStates[0]->format = dawn::TextureFormat::RGBA8Unorm;
+
+        device.CreateRenderPipeline(&descriptor);
+    }
+
+    {
+        // Fails because RG11B10Float is non-renderable
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.cVertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        descriptor.cColorStates[0]->format = dawn::TextureFormat::RG11B10Float;
 
         ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
     }
@@ -97,8 +120,8 @@ TEST_F(RenderPipelineValidationTest, SampleCount) {
 // in the render pass.
 TEST_F(RenderPipelineValidationTest, SampleCountCompatibilityWithRenderPass) {
     constexpr uint32_t kMultisampledCount = 4;
-    constexpr dawn::TextureFormat kColorFormat = dawn::TextureFormat::R8G8B8A8Unorm;
-    constexpr dawn::TextureFormat kDepthStencilFormat = dawn::TextureFormat::D32FloatS8Uint;
+    constexpr dawn::TextureFormat kColorFormat = dawn::TextureFormat::RGBA8Unorm;
+    constexpr dawn::TextureFormat kDepthStencilFormat = dawn::TextureFormat::Depth24PlusStencil8;
 
     dawn::TextureDescriptor baseTextureDescriptor;
     baseTextureDescriptor.size.width = 4;

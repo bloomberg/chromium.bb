@@ -90,7 +90,11 @@ const char* const kModelIdsBlacklistedForMediaFoundation[] = {
     "0c45:64d0", "0c45:64d2",
     // Lenovo Thinkpad Model 20CG0006FMZ front and rear cameras, see
     // also https://crbug.com/924528
-    "04ca:7047", "04ca:7048"};
+    "04ca:7047", "04ca:7048",
+    // HP Elitebook 840 G1
+    "04f2:b3ed", "04f2:b3ca", "05c8:035d",
+    // RBG/IR camera for Windows Hello Face Auth. See https://crbug.com/984864.
+    "13d3:5257"};
 
 const std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>
     kMfAttributes[] = {{VideoCaptureApi::WIN_MEDIA_FOUNDATION,
@@ -111,7 +115,7 @@ bool IsDeviceBlacklistedForQueryingDetailedFrameRates(
 
 bool IsDeviceBlacklistedForMediaFoundationByModelId(
     const std::string& model_id) {
-  return base::ContainsValue(kModelIdsBlacklistedForMediaFoundation, model_id);
+  return base::Contains(kModelIdsBlacklistedForMediaFoundation, model_id);
 }
 
 bool LoadMediaFoundationDlls() {

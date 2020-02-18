@@ -28,6 +28,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/service_worker/payment_handler_support.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_installed_scripts_sender.h"
@@ -245,8 +246,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       tick_clock_(base::DefaultTickClock::GetInstance()),
       clock_(base::DefaultClock::GetInstance()),
       ping_controller_(this),
-      validator_(std::make_unique<blink::TrialTokenValidator>()),
-      weak_factory_(this) {
+      validator_(std::make_unique<blink::TrialTokenValidator>()) {
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId, version_id);
   DCHECK(context_);
   DCHECK(registration);
@@ -645,8 +645,6 @@ bool ServiceWorkerVersion::FinishRequest(int request_id, bool was_handled) {
   InflightRequest* request = inflight_requests_.Lookup(request_id);
   if (!request)
     return false;
-  if (event_recorder_)
-    event_recorder_->RecordEventHandledStatus(request->event_type);
   ServiceWorkerMetrics::RecordEventDuration(
       request->event_type, tick_clock_->NowTicks() - request->start_time_ticks,
       was_handled);
@@ -711,7 +709,7 @@ void ServiceWorkerVersion::AddControllee(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const std::string& uuid = provider_host->client_uuid();
   CHECK(!provider_host->client_uuid().empty());
-  DCHECK(!base::ContainsKey(controllee_map_, uuid));
+  DCHECK(!base::Contains(controllee_map_, uuid));
   // TODO(crbug.com/951571): Change to DCHECK once we figured out the cause of
   // invalid controller status.
   CHECK(status_ == ACTIVATING || status_ == ACTIVATED);
@@ -739,7 +737,7 @@ void ServiceWorkerVersion::AddControllee(
 
 void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(base::ContainsKey(controllee_map_, client_uuid));
+  DCHECK(base::Contains(controllee_map_, client_uuid));
   controllee_map_.erase(client_uuid);
 
   embedded_worker_->UpdateForegroundPriority();
@@ -1185,6 +1183,15 @@ void ServiceWorkerVersion::OpenPaymentHandlerWindow(
     return;
   }
 
+  if (!url.is_valid() ||
+      !url::Origin::Create(url).IsSameOriginWith(script_origin_)) {
+    mojo::ReportBadMessage(
+        "Received PaymentRequestEvent#openWindow() request for a cross-origin "
+        "URL.");
+    binding_.Close();
+    return;
+  }
+
   PaymentHandlerSupport::ShowPaymentHandlerWindow(
       url, context_.get(),
       base::BindOnce(&DidShowPaymentHandlerWindow, url, context_),
@@ -1567,8 +1574,6 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
             "ServiceWorker", "ServiceWorkerVersion::StartWorker", trace_id,
             "Script", script_url_.spec(), "Purpose",
             ServiceWorkerMetrics::EventTypeToString(purpose));
-        DCHECK(!start_worker_first_purpose_);
-        start_worker_first_purpose_ = purpose;
         start_callbacks_.push_back(
             base::BindOnce(&ServiceWorkerVersion::RecordStartWorkerResult,
                            weak_factory_.GetWeakPtr(), purpose, prestart_status,
@@ -1596,22 +1601,6 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   DCHECK_EQ(EmbeddedWorkerStatus::STOPPED, running_status());
   DCHECK(inflight_requests_.IsEmpty());
   DCHECK(request_timeouts_.empty());
-
-  // TODO(falken): Figure out why |start_worker_first_purpose_| can be null
-  // here. Probably there is a bug with restarting the worker in
-  // OnStoppedInternal, despite the comment below about not clearing it.
-  if (start_worker_first_purpose_) {
-    if (!ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(site_for_uma_) &&
-        *start_worker_first_purpose_ ==
-            ServiceWorkerMetrics::EventType::NAVIGATION_HINT) {
-      DCHECK(!event_recorder_);
-      event_recorder_ =
-          std::make_unique<ServiceWorkerMetrics::ScopedEventRecorder>();
-    }
-  }
-  // We don't clear |start_worker_first_purpose_| here but clear in
-  // FinishStartWorker. This is because StartWorkerInternal may be called
-  // again from OnStoppedInternal if StopWorker is called before OnStarted.
 
   StartTimeoutTimer();
   worker_is_idle_on_renderer_ = false;
@@ -1654,11 +1643,10 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   if (!pause_after_download())
     InitializeGlobalScope();
 
-  if (!controller_request_.is_pending()) {
-    DCHECK(!controller_ptr_.is_bound());
-    controller_request_ = mojo::MakeRequest(&controller_ptr_);
+  if (!controller_receiver_.is_valid()) {
+    controller_receiver_ = remote_controller_.BindNewPipeAndPassReceiver();
   }
-  params->controller_request = std::move(controller_request_);
+  params->controller_receiver = std::move(controller_receiver_);
 
   params->provider_info = std::move(provider_info);
 
@@ -1778,7 +1766,6 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
     if (MaybeTimeoutRequest(info)) {
       stop_for_timeout =
           stop_for_timeout || info.timeout_behavior == KILL_ON_TIMEOUT;
-      ServiceWorkerMetrics::RecordEventTimeout(info.event_type);
     }
     timeout_iter = request_timeouts_.erase(timeout_iter);
   }
@@ -1831,12 +1818,8 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
   if (context_ && IsInstalled(prestart_status))
     context_->UpdateVersionFailureCount(version_id_, status);
 
-  if (installed_scripts_sender_) {
-    ServiceWorkerMetrics::RecordInstalledScriptsSenderStatus(
-        installed_scripts_sender_->last_finished_reason());
-  }
-  ServiceWorkerMetrics::RecordStartWorkerStatus(status, purpose,
-                                                IsInstalled(prestart_status));
+  if (IsInstalled(prestart_status))
+    ServiceWorkerMetrics::RecordStartInstalledWorkerStatus(status, purpose);
 
   if (status == blink::ServiceWorkerStatusCode::kOk && !start_time.is_null() &&
       !skip_recording_startup_time_) {
@@ -1938,7 +1921,8 @@ void ServiceWorkerVersion::MarkIfStale() {
     return;
   base::TimeDelta time_since_last_check =
       clock_->Now() - registration->last_update_check();
-  if (time_since_last_check > kServiceWorkerScriptMaxCacheAge)
+  if (time_since_last_check >
+      ServiceWorkerConsts::kServiceWorkerScriptMaxCacheAge)
     RestartTick(&stale_time_);
 }
 
@@ -1966,8 +1950,6 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   scoped_refptr<ServiceWorkerVersion> protect;
   if (!in_dtor_)
     protect = this;
-
-  event_recorder_.reset();
 
   // |start_callbacks_| can be non-empty if a start worker request arrived while
   // the worker was stopping. The worker must be restarted to fulfill the
@@ -2022,8 +2004,8 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   request_timeouts_.clear();
   external_request_uuid_to_request_id_.clear();
   service_worker_ptr_.reset();
-  controller_ptr_.reset();
-  DCHECK(!controller_request_.is_pending());
+  remote_controller_.reset();
+  DCHECK(!controller_receiver_.is_valid());
   installed_scripts_sender_.reset();
   binding_.Close();
   pending_external_requests_.clear();
@@ -2040,7 +2022,6 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
 
 void ServiceWorkerVersion::FinishStartWorker(
     blink::ServiceWorkerStatusCode status) {
-  start_worker_first_purpose_ = base::nullopt;
   RunCallbacks(this, &start_callbacks_, status);
 }
 
@@ -2076,7 +2057,7 @@ bool ServiceWorkerVersion::IsStartWorkerAllowed() const {
   // resource_context() can return null in unit tests.
   if ((context_->wrapper()->resource_context() &&
        !GetContentClient()->browser()->AllowServiceWorker(
-           scope_, scope_, context_->wrapper()->resource_context(),
+           scope_, scope_, script_url_, context_->wrapper()->resource_context(),
            base::NullCallback()))) {
     return false;
   }

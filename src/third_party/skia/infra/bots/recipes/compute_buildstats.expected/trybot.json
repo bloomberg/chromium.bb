@@ -52,6 +52,7 @@
     },
     "infra_step": true,
     "name": "gerrit fetch current CL info",
+    "timeout": 600,
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
@@ -87,7 +88,7 @@
       "--patch_ref",
       "https://skia.googlesource.com/skia@refs/heads/master:refs/changes/89/456789/12",
       "--patch_ref",
-      "https://skia.googlesource.com/skia.git@refs/changes/89/456789/12",
+      "https://skia.googlesource.com/skia.git@abc123:refs/changes/89/456789/12",
       "--revision",
       "skia@abc123"
     ],
@@ -446,7 +447,6 @@
     "name": "Make code size treemap"
   },
   {
-    "jsonResult": null,
     "name": "$result"
   }
 ]

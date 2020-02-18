@@ -15,16 +15,16 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -34,10 +34,10 @@ namespace blink {
 namespace {
 
 // small slack period between deadline and current time for safety
-constexpr TimeDelta kCreateBlobSlackBeforeDeadline =
-    TimeDelta::FromMilliseconds(1);
-constexpr TimeDelta kEncodeRowSlackBeforeDeadline =
-    TimeDelta::FromMicroseconds(100);
+constexpr base::TimeDelta kCreateBlobSlackBeforeDeadline =
+    base::TimeDelta::FromMilliseconds(1);
+constexpr base::TimeDelta kEncodeRowSlackBeforeDeadline =
+    base::TimeDelta::FromMicroseconds(100);
 
 /* The value is based on user statistics on Nov 2017. */
 #if (defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN))
@@ -59,18 +59,19 @@ const double kIdleTaskCompleteTimeoutDelayMs = 5700.0;
 const double kIdleTaskCompleteTimeoutDelayMs = 9000.0;
 #endif
 
-bool IsCreateBlobDeadlineNearOrPassed(TimeTicks deadline) {
-  return CurrentTimeTicks() >= deadline - kCreateBlobSlackBeforeDeadline;
+bool IsCreateBlobDeadlineNearOrPassed(base::TimeTicks deadline) {
+  return base::TimeTicks::Now() >= deadline - kCreateBlobSlackBeforeDeadline;
 }
 
-bool IsEncodeRowDeadlineNearOrPassed(TimeTicks deadline, size_t image_width) {
+bool IsEncodeRowDeadlineNearOrPassed(base::TimeTicks deadline,
+                                     size_t image_width) {
   // Rough estimate of the row encoding time in micro seconds. We will consider
   // a slack time later to not pass the idle task deadline.
   int row_encode_time_us = 1000 * (kIdleTaskCompleteTimeoutDelayMs / 4000.0) *
                            (image_width / 4000.0);
-  TimeDelta row_encode_time_delta =
-      TimeDelta::FromMicroseconds(row_encode_time_us);
-  return CurrentTimeTicks() >=
+  base::TimeDelta row_encode_time_delta =
+      base::TimeDelta::FromMicroseconds(row_encode_time_us);
+  return base::TimeTicks::Now() >=
          deadline - row_encode_time_delta - kEncodeRowSlackBeforeDeadline;
 }
 
@@ -80,29 +81,30 @@ void RecordIdleTaskStatusHistogram(
 }
 
 void RecordInitiateEncodingTimeHistogram(ImageEncodingMimeType mime_type,
-                                         TimeDelta elapsed_time) {
+                                         base::TimeDelta elapsed_time) {
+  // TODO(crbug.com/983261) Change this to use UmaHistogramMicrosecondsTimes.
   if (mime_type == kMimeTypePng) {
-    UmaHistogramMicrosecondsTimes(
+    UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
         "Blink.Canvas.ToBlob.InitiateEncodingDelay.PNG", elapsed_time);
   } else if (mime_type == kMimeTypeJpeg) {
-    UmaHistogramMicrosecondsTimes(
+    UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
         "Blink.Canvas.ToBlob.InitiateEncodingDelay.JPEG", elapsed_time);
   }
 }
 
 void RecordCompleteEncodingTimeHistogram(ImageEncodingMimeType mime_type,
-                                         TimeDelta elapsed_time) {
+                                         base::TimeDelta elapsed_time) {
   if (mime_type == kMimeTypePng) {
-    UmaHistogramMicrosecondsTimes(
+    UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
         "Blink.Canvas.ToBlob.CompleteEncodingDelay.PNG", elapsed_time);
   } else if (mime_type == kMimeTypeJpeg) {
-    UmaHistogramMicrosecondsTimes(
+    UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
         "Blink.Canvas.ToBlob.CompleteEncodingDelay.JPEG", elapsed_time);
   }
 }
 
 void RecordScaledDurationHistogram(ImageEncodingMimeType mime_type,
-                                   TimeDelta elapsed_time,
+                                   base::TimeDelta elapsed_time,
                                    float width,
                                    float height) {
   float sqrt_pixels = std::sqrt(width) * std::sqrt(height);
@@ -127,13 +129,22 @@ void RecordScaledDurationHistogram(ImageEncodingMimeType mime_type,
   }
 }
 
+SkColorType GetColorTypeForConversion(SkColorType color_type) {
+  if (color_type == kRGBA_8888_SkColorType ||
+      color_type == kBGRA_8888_SkColorType) {
+    return color_type;
+  }
+
+  return kN32_SkColorType;
+}
+
 }  // anonymous namespace
 
 CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
     scoped_refptr<StaticBitmapImage> image,
     const ImageEncodeOptions* options,
     ToBlobFunctionType function_type,
-    TimeTicks start_time,
+    base::TimeTicks start_time,
     ExecutionContext* context,
     ScriptPromiseResolver* resolver)
     : CanvasAsyncBlobCreator(image,
@@ -149,7 +160,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
     const ImageEncodeOptions* options,
     ToBlobFunctionType function_type,
     V8BlobCallback* callback,
-    TimeTicks start_time,
+    base::TimeTicks start_time,
     ExecutionContext* context,
     ScriptPromiseResolver* resolver)
     : fail_encoder_initialization_for_test_(false),
@@ -160,7 +171,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
       function_type_(function_type),
       start_time_(start_time),
       static_bitmap_image_loaded_(false),
-      callback_(ToV8PersistentCallbackFunction(callback)),
+      callback_(callback),
       script_promise_resolver_(resolver) {
   DCHECK(image);
 
@@ -189,7 +200,9 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
   // covnert to the requested color space and pixel format.
   if (function_type_ != kHTMLCanvasConvertToBlobPromise) {
     if (skia_image->colorSpace()) {
-      image_ = image_->ConvertToColorSpace(SkColorSpace::MakeSRGB());
+      image_ = image_->ConvertToColorSpace(
+          SkColorSpace::MakeSRGB(),
+          GetColorTypeForConversion(skia_image->colorType()));
       skia_image = image_->PaintImageForCurrentFrame().GetSkImage();
     }
 
@@ -210,7 +223,8 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
       DCHECK(skia_image->colorSpace());
     }
 
-    SkColorType target_color_type = kN32_SkColorType;
+    SkColorType target_color_type =
+        GetColorTypeForConversion(skia_image->colorType());
     if (encode_options_->pixelFormat() == kRGBA16ImagePixelFormatName)
       target_color_type = kRGBA_F16_SkColorType;
     // We can do color space and color type conversion together.
@@ -342,19 +356,19 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
 }
 
 void CanvasAsyncBlobCreator::ScheduleInitiateEncoding(double quality) {
-  schedule_idle_task_start_time_ = WTF::CurrentTimeTicks();
+  schedule_idle_task_start_time_ = base::TimeTicks::Now();
   ThreadScheduler::Current()->PostIdleTask(
       FROM_HERE, WTF::Bind(&CanvasAsyncBlobCreator::InitiateEncoding,
                            WrapPersistent(this), quality));
 }
 
 void CanvasAsyncBlobCreator::InitiateEncoding(double quality,
-                                              TimeTicks deadline) {
+                                              base::TimeTicks deadline) {
   if (idle_task_status_ == kIdleTaskSwitchedToImmediateTask) {
     return;
   }
   RecordInitiateEncodingTimeHistogram(
-      mime_type_, WTF::CurrentTimeTicks() - schedule_idle_task_start_time_);
+      mime_type_, base::TimeTicks::Now() - schedule_idle_task_start_time_);
 
   DCHECK(idle_task_status_ == kIdleTaskNotStarted);
   idle_task_status_ = kIdleTaskStarted;
@@ -365,11 +379,11 @@ void CanvasAsyncBlobCreator::InitiateEncoding(double quality,
   }
 
   // Re-use this time variable to collect data on complete encoding delay
-  schedule_idle_task_start_time_ = WTF::CurrentTimeTicks();
+  schedule_idle_task_start_time_ = base::TimeTicks::Now();
   IdleEncodeRows(deadline);
 }
 
-void CanvasAsyncBlobCreator::IdleEncodeRows(TimeTicks deadline) {
+void CanvasAsyncBlobCreator::IdleEncodeRows(base::TimeTicks deadline) {
   if (idle_task_status_ == kIdleTaskSwitchedToImmediateTask) {
     return;
   }
@@ -392,8 +406,8 @@ void CanvasAsyncBlobCreator::IdleEncodeRows(TimeTicks deadline) {
   num_rows_completed_ = src_data_.height();
 
   idle_task_status_ = kIdleTaskCompleted;
-  TimeDelta elapsed_time =
-      WTF::CurrentTimeTicks() - schedule_idle_task_start_time_;
+  base::TimeDelta elapsed_time =
+      base::TimeTicks::Now() - schedule_idle_task_start_time_;
   RecordCompleteEncodingTimeHistogram(mime_type_, elapsed_time);
   if (IsCreateBlobDeadlineNearOrPassed(deadline)) {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
@@ -438,8 +452,7 @@ void CanvasAsyncBlobCreator::CreateBlobAndReturnResult() {
   if (function_type_ == kHTMLCanvasToBlobCallback) {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(FROM_HERE,
-                   WTF::Bind(&V8PersistentCallbackFunction<
-                                 V8BlobCallback>::InvokeAndReportException,
+                   WTF::Bind(&V8BlobCallback::InvokeAndReportException,
                              WrapPersistent(callback_.Get()), nullptr,
                              WrapPersistent(result_blob)));
   } else {
@@ -451,7 +464,7 @@ void CanvasAsyncBlobCreator::CreateBlobAndReturnResult() {
   }
 
   RecordScaledDurationHistogram(mime_type_,
-                                WTF::CurrentTimeTicks() - start_time_,
+                                base::TimeTicks::Now() - start_time_,
                                 image_->width(), image_->height());
   // Avoid unwanted retention, see dispose().
   Dispose();
@@ -465,8 +478,7 @@ void CanvasAsyncBlobCreator::CreateNullAndReturnResult() {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(
             FROM_HERE,
-            WTF::Bind(&V8PersistentCallbackFunction<
-                          V8BlobCallback>::InvokeAndReportException,
+            WTF::Bind(&V8BlobCallback::InvokeAndReportException,
                       WrapPersistent(callback_.Get()), nullptr, nullptr));
   } else {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
@@ -585,7 +597,7 @@ void CanvasAsyncBlobCreator::PostDelayedTaskToCurrentThread(
     double delay_ms) {
   context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
       ->PostDelayedTask(location, std::move(task),
-                        TimeDelta::FromMillisecondsD(delay_ms));
+                        base::TimeDelta::FromMillisecondsD(delay_ms));
 }
 
 void CanvasAsyncBlobCreator::Trace(Visitor* visitor) {

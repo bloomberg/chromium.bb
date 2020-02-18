@@ -14,10 +14,6 @@
 #include "build/build_config.h"
 #include "ui/surface/surface_export.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 class SkCanvas;
 
 // -----------------------------------------------------------------------------

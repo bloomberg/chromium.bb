@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/events/blink/prediction/least_squares_predictor.h"
-
-#include "base/trace_event/trace_event.h"
+#include "ui/events/blink/prediction/predictor_factory.h"
 
 namespace ui {
 
@@ -41,7 +40,7 @@ LeastSquaresPredictor::LeastSquaresPredictor() {}
 LeastSquaresPredictor::~LeastSquaresPredictor() {}
 
 const char* LeastSquaresPredictor::GetName() const {
-  return "LSQ";
+  return input_prediction::kScrollPredictorNameLsq;
 }
 
 void LeastSquaresPredictor::Reset() {
@@ -80,29 +79,21 @@ gfx::Matrix3F LeastSquaresPredictor::GetXMatrix() const {
 }
 
 bool LeastSquaresPredictor::GeneratePrediction(base::TimeTicks predict_time,
-                                               bool is_resampling,
                                                InputData* result) const {
   if (!HasPrediction())
     return false;
 
-  // For resampling, we don't want to predict too far away because the result
-  // will likely be inaccurate in that case.
-  if (is_resampling && predict_time - time_.back() > kMaxResampleTime)
-    return false;
+  float pred_dt = (predict_time - time_[0]).InMillisecondsF();
 
+  gfx::Vector3dF b1, b2;
   gfx::Matrix3F time_matrix = GetXMatrix();
+  if (SolveLeastSquares(time_matrix, x_queue_, b1) &&
+      SolveLeastSquares(time_matrix, y_queue_, b2)) {
+    gfx::Vector3dF prediction_time(1, pred_dt, pred_dt * pred_dt);
 
-  double dt = (predict_time - time_[0]).InMillisecondsF();
-  if (dt > 0) {
-    gfx::Vector3dF b1, b2;
-    if (SolveLeastSquares(time_matrix, x_queue_, b1) &&
-        SolveLeastSquares(time_matrix, y_queue_, b2)) {
-      gfx::Vector3dF prediction_time(1, dt, dt * dt);
-
-      result->pos.set_x(gfx::DotProduct(prediction_time, b1));
-      result->pos.set_y(gfx::DotProduct(prediction_time, b2));
-      return true;
-    }
+    result->pos.set_x(gfx::DotProduct(prediction_time, b1));
+    result->pos.set_y(gfx::DotProduct(prediction_time, b2));
+    return true;
   }
   return false;
 }

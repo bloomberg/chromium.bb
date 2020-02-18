@@ -8,25 +8,28 @@ import android.net.Uri;
 import android.support.annotation.IntDef;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.TabLoadStatus;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkPage;
 import org.chromium.chrome.browser.download.DownloadPage;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesPage;
 import org.chromium.chrome.browser.feed.FeedNewTabPage;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.history.HistoryPage;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.RecentTabsManager;
 import org.chromium.chrome.browser.ntp.RecentTabsPage;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.touchless.TouchlessDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.lang.annotation.Retention;
@@ -42,6 +45,10 @@ public class NativePageFactory {
     static class NativePageBuilder {
         protected NativePage buildNewTabPage(ChromeActivity activity, Tab tab,
                 TabModelSelector tabModelSelector) {
+            ActivityTabProvider activityTabProvider = activity.getActivityTabProvider();
+            ActivityLifecycleDispatcher activityLifecycleDispatcher =
+                    activity.getLifecycleDispatcher();
+
             if (tab.isIncognito()) {
                 return new IncognitoNewTabPage(activity, new TabShim(tab));
             }
@@ -51,10 +58,13 @@ public class NativePageFactory {
             }
 
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
-                return new FeedNewTabPage(activity, new TabShim(tab), tabModelSelector);
+                return new FeedNewTabPage(activity, new TabShim(tab), tabModelSelector,
+                        IdentityServicesProvider.getSigninManager(), activityTabProvider,
+                        activityLifecycleDispatcher);
             }
 
-            return new NewTabPage(activity, new TabShim(tab), tabModelSelector);
+            return new NewTabPage(activity, new TabShim(tab), tabModelSelector, activityTabProvider,
+                    activityLifecycleDispatcher);
         }
 
         protected NativePage buildBookmarksPage(ChromeActivity activity, Tab tab) {

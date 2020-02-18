@@ -122,7 +122,7 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
     return nullptr;
 
   static_assert(
-      CheckSupportedCdmHostVersions(cdm::Host_9::kVersion,
+      CheckSupportedCdmHostVersions(cdm::Host_10::kVersion,
                                     cdm::Host_11::kVersion),
       "Mismatch between GetCdmHost() and IsSupportedCdmHostVersion()");
 
@@ -131,8 +131,6 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
   CdmAdapter* cdm_adapter = static_cast<CdmAdapter*>(user_data);
   DVLOG(1) << "Create CDM Host with version " << host_interface_version;
   switch (host_interface_version) {
-    case cdm::Host_9::kVersion:
-      return static_cast<cdm::Host_9*>(cdm_adapter);
     case cdm::Host_10::kVersion:
       return static_cast<cdm::Host_10*>(cdm_adapter);
     case cdm::Host_11::kVersion:
@@ -216,8 +214,7 @@ CdmAdapter::CdmAdapter(
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      pool_(new AudioBufferMemoryPool()),
-      weak_factory_(this) {
+      pool_(new AudioBufferMemoryPool()) {
   DVLOG(1) << __func__;
 
   DCHECK(!key_system_.empty());
@@ -532,6 +529,14 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   DCHECK(!video_init_cb_);
   TRACE_EVENT0("media", "CdmAdapter::InitializeVideoDecoder");
 
+  // Alpha decoding is not supported by the CDM.
+  if (config.alpha_mode() != VideoDecoderConfig::AlphaMode::kIsOpaque) {
+    DVLOG(1) << __func__
+             << ": Unsupported config: " << config.AsHumanReadableString();
+    init_cb.Run(false);
+    return;
+  }
+
   // cdm::kUnknownVideoCodecProfile and cdm::kUnknownVideoFormat are not checked
   // because it's possible the container has wrong information or the demuxer
   // doesn't parse them correctly.
@@ -709,6 +714,22 @@ void CdmAdapter::TimerExpired(void* context) {
 cdm::Time CdmAdapter::GetCurrentWallTime() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return base::Time::Now().ToDoubleT();
+}
+
+void CdmAdapter::OnInitialized(bool success) {
+  DVLOG(3) << __func__ << ": success = " << success;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_NE(init_promise_id_, CdmPromiseAdapter::kInvalidPromiseId);
+
+  if (!success) {
+    cdm_promise_adapter_.RejectPromise(
+        init_promise_id_, CdmPromise::Exception::INVALID_STATE_ERROR, 0,
+        "Unable to create CDM.");
+  } else {
+    cdm_promise_adapter_.ResolvePromise(init_promise_id_);
+  }
+
+  init_promise_id_ = CdmPromiseAdapter::kInvalidPromiseId;
 }
 
 void CdmAdapter::OnResolveKeyStatusPromise(uint32_t promise_id,
@@ -1036,22 +1057,6 @@ void CdmAdapter::RequestStorageId(uint32_t version) {
 
   helper_->GetStorageId(version, base::Bind(&CdmAdapter::OnStorageIdObtained,
                                             weak_factory_.GetWeakPtr()));
-}
-
-void CdmAdapter::OnInitialized(bool success) {
-  DVLOG(3) << __func__ << ": success = " << success;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_NE(init_promise_id_, CdmPromiseAdapter::kInvalidPromiseId);
-
-  if (!success) {
-    cdm_promise_adapter_.RejectPromise(
-        init_promise_id_, CdmPromise::Exception::INVALID_STATE_ERROR, 0,
-        "Unable to create CDM.");
-  } else {
-    cdm_promise_adapter_.ResolvePromise(init_promise_id_);
-  }
-
-  init_promise_id_ = CdmPromiseAdapter::kInvalidPromiseId;
 }
 
 cdm::CdmProxy* CdmAdapter::RequestCdmProxy(cdm::CdmProxyClient* client) {

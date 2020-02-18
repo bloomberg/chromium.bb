@@ -14,18 +14,16 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/android/download/download_controller.h"
+#include "chrome/browser/download/download_manager_utils.h"
 #include "components/download/public/common/all_download_event_notifier.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 using base::android::JavaParamRef;
 
-class Profile;
+class ProfileKey;
 
 namespace download {
 class DownloadItem;
@@ -36,8 +34,7 @@ class SimpleDownloadManagerCoordinator;
 // Java object.
 class DownloadManagerService
     : public download::AllDownloadEventNotifier::Observer,
-      public content::NotificationObserver,
-      public service_manager::Service {
+      public content::NotificationObserver {
  public:
   static void CreateAutoResumptionHandler();
 
@@ -54,8 +51,6 @@ class DownloadManagerService
   DownloadManagerService();
   ~DownloadManagerService() override;
 
-  void BindServiceRequest(service_manager::mojom::ServiceRequest request);
-
   // Called to Initialize this object. If |is_full_browser_started| is false,
   // it means only the service manager is launched. OnFullBrowserStarted() will
   // be called later when browser process fully launches.
@@ -67,6 +62,11 @@ class DownloadManagerService
   // Called to show the download manager, with a choice to focus on prefetched
   // content instead of regular downloads.
   void ShowDownloadManager(bool show_prefetched_content);
+
+  // Called to handle subsequent steps, after a download was determined as a OMA
+  // download type.
+  void HandleOMADownload(download::DownloadItem* download,
+                         int64_t system_download_id);
 
   // Called to open a given download item.
   void OpenDownload(download::DownloadItem* download, int source);
@@ -179,17 +179,9 @@ class DownloadManagerService
   download::InProgressDownloadManager* RetriveInProgressDownloadManager(
       content::BrowserContext* context);
 
-  // Get all downloads from DownloadManager or InProgressManager.
-  void GetAllDownloads(content::DownloadManager::DownloadVector* all_items,
-                       bool is_off_the_record);
-
   // Gets a download item from DownloadManager or InProgressManager.
   download::DownloadItem* GetDownload(const std::string& download_guid,
                                       bool is_off_the_record);
-
-  // Creates the InProgressDownloadmanager when running with ServiceManager
-  // only mode.
-  void CreateInProgressDownloadManager();
 
   // Helper method to record the interrupt reason UMA for the first background
   // download.
@@ -199,17 +191,10 @@ class DownloadManagerService
       const JavaParamRef<jstring>& jdownload_guid,
       jboolean download_started);
 
- protected:
-  // Called to get the content::DownloadManager instance.
-  virtual content::DownloadManager* GetDownloadManager(bool is_off_the_record);
-
  private:
   // For testing.
   friend class DownloadManagerServiceTest;
   friend struct base::DefaultSingletonTraits<DownloadManagerService>;
-
-  // service_manager::Service implementation.
-  void OnDisconnected() final;
 
   // Helper function to start the download resumption.
   void ResumeDownloadInternal(const std::string& download_guid,
@@ -250,7 +235,7 @@ class DownloadManagerService
   }
 
   // Helper method to reset the SimpleDownloadManagerCoordinator if needed.
-  void ResetCoordinatorIfNeeded(Profile* profile);
+  void ResetCoordinatorIfNeeded(ProfileKey* profile_key);
 
   // Helper method to reset the SimpleDownloadManagerCoordinator for a given
   // profile type.
@@ -258,7 +243,12 @@ class DownloadManagerService
       download::SimpleDownloadManagerCoordinator* coordinator,
       bool is_off_the_record);
 
-  service_manager::ServiceBinding service_binding_{this};
+  // Called to get the content::DownloadManager instance.
+  content::DownloadManager* GetDownloadManager(bool is_off_the_record);
+
+  // Retrieves the SimpleDownloadManagerCoordinator this object is listening to.
+  download::SimpleDownloadManagerCoordinator* GetCoordinator(
+      bool is_off_the_record);
 
   // Reference to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
@@ -297,10 +287,6 @@ class DownloadManagerService
 
   // The Registrar used to register for notifications.
   content::NotificationRegistrar registrar_;
-
-  // In-progress download manager when download is running as a service. Will
-  // pass this object to DownloadManagerImpl once it is created.
-  std::unique_ptr<download::InProgressDownloadManager> in_progress_manager_;
 
   download::SimpleDownloadManagerCoordinator* original_coordinator_;
   download::SimpleDownloadManagerCoordinator* off_the_record_coordinator_;

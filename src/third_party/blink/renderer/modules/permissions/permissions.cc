@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_midi_permission_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_permission_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_push_permission_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_wake_lock_permission_descriptor.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -144,12 +145,33 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
   if (name == "idle-detection")
     return CreatePermissionDescriptor(PermissionName::IDLE_DETECTION);
   if (name == "periodic-background-sync") {
-    if (!RuntimeEnabledFeatures::PeriodicBackgroundSyncEnabled()) {
+    if (!RuntimeEnabledFeatures::PeriodicBackgroundSyncEnabled(
+            ExecutionContext::From(script_state))) {
       exception_state.ThrowTypeError(
           "Periodic Background Sync is not enabled.");
       return nullptr;
     }
     return CreatePermissionDescriptor(PermissionName::PERIODIC_BACKGROUND_SYNC);
+  }
+  if (name == "wake-lock") {
+    if (!RuntimeEnabledFeatures::WakeLockEnabled()) {
+      exception_state.ThrowTypeError("Wake Lock is not enabled.");
+      return nullptr;
+    }
+    WakeLockPermissionDescriptor* wake_lock_permission =
+        NativeValueTraits<WakeLockPermissionDescriptor>::NativeValue(
+            script_state->GetIsolate(), raw_permission.V8Value(),
+            exception_state);
+    const String& type = wake_lock_permission->type();
+    if (type == "screen") {
+      return CreateWakeLockPermissionDescriptor(
+          mojom::blink::WakeLockType::kScreen);
+    } else if (type == "system") {
+      return CreateWakeLockPermissionDescriptor(
+          mojom::blink::WakeLockType::kSystem);
+    } else {
+      NOTREACHED();
+    }
   }
 
   return nullptr;

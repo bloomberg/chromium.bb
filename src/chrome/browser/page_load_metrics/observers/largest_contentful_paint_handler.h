@@ -16,20 +16,22 @@ namespace page_load_metrics {
 class ContentfulPaintTimingInfo {
  public:
   explicit ContentfulPaintTimingInfo(
-      page_load_metrics::PageLoadMetricsObserver::LargestContentType);
+      page_load_metrics::PageLoadMetricsObserver::LargestContentType,
+      bool in_main_frame);
   explicit ContentfulPaintTimingInfo(
       const base::Optional<base::TimeDelta>&,
       const uint64_t& size,
-      const page_load_metrics::PageLoadMetricsObserver::LargestContentType);
+      const page_load_metrics::PageLoadMetricsObserver::LargestContentType,
+      bool in_main_frame);
   explicit ContentfulPaintTimingInfo(const ContentfulPaintTimingInfo& other);
   void Reset(const base::Optional<base::TimeDelta>&, const uint64_t& size);
-  base::Optional<base::TimeDelta> Time() const {
-    return time_;
-  }
+  base::Optional<base::TimeDelta> Time() const { return time_; }
+  bool InMainFrame() const { return in_main_frame_; }
   uint64_t Size() const { return size_; }
   page_load_metrics::PageLoadMetricsObserver::LargestContentType Type() const {
     return type_;
   }
+
   bool IsEmpty() const {
     // |size_| is not necessarily 0, for example, when the largest image is
     // still loading.
@@ -44,11 +46,12 @@ class ContentfulPaintTimingInfo {
   base::Optional<base::TimeDelta> time_;
   uint64_t size_;
   page_load_metrics::PageLoadMetricsObserver::LargestContentType type_;
+  bool in_main_frame_;
 };
 
 class ContentfulPaint {
  public:
-  ContentfulPaint();
+  explicit ContentfulPaint(bool in_main_frame);
   ContentfulPaintTimingInfo& Text() { return text_; }
   ContentfulPaintTimingInfo& Image() { return image_; }
   const ContentfulPaintTimingInfo& MergeTextAndImageTiming();
@@ -60,13 +63,21 @@ class ContentfulPaint {
 
 class LargestContentfulPaintHandler {
  public:
+  using FrameTreeNodeId =
+      page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;
   static void SetTestMode(bool enabled);
   LargestContentfulPaintHandler();
   ~LargestContentfulPaintHandler();
-  using FrameTreeNodeId =
-      page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;
   void RecordTiming(const page_load_metrics::mojom::PaintTimingPtr&,
                     content::RenderFrameHost* subframe_rfh);
+  inline void RecordMainFrameTreeNodeId(int main_frame_tree_node_id) {
+    main_frame_tree_node_id_.emplace(main_frame_tree_node_id);
+  }
+
+  inline int MainFrameTreeNodeId() const {
+    return main_frame_tree_node_id_.value();
+  }
+
   // We merge the candidates from main frame and subframe to get the largest
   // candidate across all frames.
   const ContentfulPaintTimingInfo& MergeMainFrameAndSubframes();
@@ -80,6 +91,10 @@ class LargestContentfulPaintHandler {
   void RecordMainFrameTiming(const page_load_metrics::mojom::PaintTimingPtr&);
   ContentfulPaint main_frame_contentful_paint_;
   ContentfulPaint subframe_contentful_paint_;
+
+  // Used for Telemetry to distinguish the LCP events from different
+  // navigations.
+  base::Optional<int> main_frame_tree_node_id_;
 
   // Navigation start offsets for the most recently committed document in each
   // frame.

@@ -25,7 +25,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/udp_client_socket.h"
@@ -219,8 +218,7 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
   client.reset();
 
   // Check the server's log.
-  TestNetLogEntry::List server_entries;
-  server_log.GetEntries(&server_entries);
+  auto server_entries = server_log.GetEntries();
   ASSERT_EQ(6u, server_entries.size());
   EXPECT_TRUE(
       LogContainsBeginEvent(server_entries, 0, NetLogEventType::SOCKET_ALIVE));
@@ -240,8 +238,7 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
       LogContainsEndEvent(server_entries, 5, NetLogEventType::SOCKET_ALIVE));
 
   // Check the client's log.
-  TestNetLogEntry::List client_entries;
-  client_log.GetEntries(&client_entries);
+  auto client_entries = client_log.GetEntries();
   EXPECT_EQ(7u, client_entries.size());
   EXPECT_TRUE(
       LogContainsBeginEvent(client_entries, 0, NetLogEventType::SOCKET_ALIVE));
@@ -651,8 +648,6 @@ TEST_F(UDPSocketTest, JoinMulticastGroup) {
   socket.Close();
 }
 
-#if !defined(OS_FUCHSIA)
-// TODO(https://crbug.com/900709): SO_REUSEPORT doesn't work on Fuchsia.
 #if defined(OS_IOS)
 // TODO(https://crbug.com/947115): failing on device on iOS 12.2.
 #define MAYBE_SharedMulticastAddress DISABLED_SharedMulticastAddress
@@ -711,7 +706,6 @@ TEST_F(UDPSocketTest, MAYBE_SharedMulticastAddress) {
   EXPECT_EQ(kMessage, RecvFromSocket(&socket2));
 #endif  // !defined(OS_CHROMEOS)
 }
-#endif  // !defined(OS_FUCHSIA)
 #endif  // !defined(OS_ANDROID)
 
 TEST_F(UDPSocketTest, MulticastOptions) {

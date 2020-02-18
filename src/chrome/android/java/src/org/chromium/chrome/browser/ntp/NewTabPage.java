@@ -10,7 +10,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,12 +24,15 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
+import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
@@ -39,17 +41,16 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
-import org.chromium.chrome.browser.suggestions.Tile;
-import org.chromium.chrome.browser.suggestions.TileGroup;
-import org.chromium.chrome.browser.suggestions.TileGroupDelegateImpl;
+import org.chromium.chrome.browser.suggestions.tile.Tile;
+import org.chromium.chrome.browser.suggestions.tile.TileGroup;
+import org.chromium.chrome.browser.suggestions.tile.TileGroupDelegateImpl;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
@@ -57,8 +58,10 @@ import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -81,6 +84,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     public static final String CONTEXT_MENU_USER_ACTION_PREFIX = "Suggestions";
 
     protected final Tab mTab;
+    private final ActivityTabProvider mActivityTabProvider;
+    private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
 
     private final String mTitle;
     private final int mBackgroundColor;
@@ -95,6 +100,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     private @Nullable NewTabPageView mNewTabPageView;
     protected NewTabPageLayout mNewTabPageLayout;
     private TabObserver mTabObserver;
+    private LifecycleObserver mLifecycleObserver;
     protected boolean mSearchProviderHasLogo;
 
     protected FakeboxDelegate mFakeboxDelegate;
@@ -283,12 +289,17 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      * @param activity The activity used for context to create the new tab page's View.
      * @param nativePageHost The host that is showing this new tab page.
      * @param tabModelSelector The TabModelSelector used to open tabs.
+     * @param activityTabProvider Allows us to check if we are the current tab.
+     * @param activityLifecycleDispatcher Allows us to subscribe to backgrounding events.
      */
     public NewTabPage(ChromeActivity activity, NativePageHost nativePageHost,
-            TabModelSelector tabModelSelector) {
+            TabModelSelector tabModelSelector, ActivityTabProvider activityTabProvider,
+            ActivityLifecycleDispatcher activityLifecycleDispatcher) {
         mConstructedTimeNs = System.nanoTime();
         TraceEvent.begin(TAG);
 
+        mActivityTabProvider = activityTabProvider;
+        mActivityLifecycleDispatcher = activityLifecycleDispatcher;
         mTab = nativePageHost.getActiveTab();
         Profile profile = mTab.getProfile();
 
@@ -299,15 +310,15 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         SuggestionsNavigationDelegate navigationDelegate = new SuggestionsNavigationDelegate(
                 activity, profile, nativePageHost, tabModelSelector);
         mNewTabPageManager = new NewTabPageManagerImpl(suggestionsSource, eventReporter,
-                navigationDelegate, profile, nativePageHost, ChromeApplication.getReferencePool(),
-                activity.getSnackbarManager());
+                navigationDelegate, profile, nativePageHost,
+                GlobalDiscardableReferencePool.getReferencePool(), activity.getSnackbarManager());
         mTileGroupDelegate = new NewTabPageTileGroupDelegate(activity, profile, navigationDelegate);
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);
         mBackgroundColor = ApiCompatibilityUtils.getColor(
                 activity.getResources(), R.color.modern_primary_color);
         mIsTablet = activity.isTablet();
-        TemplateUrlService.getInstance().addObserver(this);
+        TemplateUrlServiceFactory.get().addObserver(this);
 
         mTabObserver = new EmptyTabObserver() {
             @Override
@@ -334,8 +345,22 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             }
         };
         mTab.addObserver(mTabObserver);
-        updateSearchProviderHasLogo();
 
+        mLifecycleObserver = new PauseResumeWithNativeObserver() {
+            @Override
+            public void onResumeWithNative() {}
+
+            @Override
+            public void onPauseWithNative() {
+                // Only record when this tab is the current tab.
+                if (mActivityTabProvider.get() == mTab) {
+                    RecordUserAction.record("MobileNTPPaused");
+                }
+            }
+        };
+        mActivityLifecycleDispatcher.register(mLifecycleObserver);
+
+        updateSearchProviderHasLogo();
         initializeMainView(activity, nativePageHost);
 
         mFullscreenManager = activity.getFullscreenManager();
@@ -374,7 +399,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
         mNewTabPageView.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
                 mSearchProviderHasLogo,
-                TemplateUrlService.getInstance().isDefaultSearchEngineGoogle(),
+                TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
                 getScrollPositionFromNavigationEntry(NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mTab),
                 mConstructedTimeNs);
     }
@@ -467,13 +492,13 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     }
 
     private void updateSearchProviderHasLogo() {
-        mSearchProviderHasLogo = TemplateUrlService.getInstance().doesDefaultSearchEngineHaveLogo();
+        mSearchProviderHasLogo = TemplateUrlServiceFactory.doesDefaultSearchEngineHaveLogo();
     }
 
     private void onSearchEngineUpdated() {
         updateSearchProviderHasLogo();
         setSearchProviderInfoOnView(mSearchProviderHasLogo,
-                TemplateUrlService.getInstance().isDefaultSearchEngineGoogle());
+                TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
         mNewTabPageLayout.loadSearchProviderLogo();
     }
 
@@ -671,16 +696,20 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
     @Override
     public void destroy() {
-        assert !mIsDestroyed;
-        assert !ViewCompat
-                .isAttachedToWindow(getView()) : "Destroy called before removed from window";
+        // Temporarily removing asserts during window when they're not compiled out of release
+        // builds, see https://crbug.com/992585 for more information.
+        // assert !mIsDestroyed;
+        // assert !ViewCompat
+        //        .isAttachedToWindow(getView()) : "Destroy called before removed from window";
         if (mIsLoaded && !mTab.isHidden()) recordNTPHidden();
 
         mNewTabPageManager.onDestroy();
         mTileGroupDelegate.destroy();
-        TemplateUrlService.getInstance().removeObserver(this);
+        TemplateUrlServiceFactory.get().removeObserver(this);
         mTab.removeObserver(mTabObserver);
         mTabObserver = null;
+        mActivityLifecycleDispatcher.unregister(mLifecycleObserver);
+        mLifecycleObserver = null;
         mFullscreenManager.removeListener(this);
         mIsDestroyed = true;
     }

@@ -33,19 +33,10 @@
 #define TIFF_UINT8_T unsigned char
 
 /* Signed size type */
-#define TIFF_SSIZE_T signed long
+#define TIFF_SSIZE_T signed int
 
 /* Pointer difference type */
 #define TIFF_PTRDIFF_T ptrdiff_t
-
-/* Define to 1 if the system has the type `int16'. */
-/* #undef HAVE_INT16 */
-
-/* Define to 1 if the system has the type `int32'. */
-/* #undef HAVE_INT32 */
-
-/* Define to 1 if the system has the type `int8'. */
-/* #undef HAVE_INT8 */
 
 /* Compatibility stuff. */
 

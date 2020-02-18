@@ -206,18 +206,18 @@ int PepperMediaDeviceManager::GetSessionID(PP_DeviceType_Dev type,
 }
 
 // static
-blink::MediaStreamType PepperMediaDeviceManager::FromPepperDeviceType(
+blink::mojom::MediaStreamType PepperMediaDeviceManager::FromPepperDeviceType(
     PP_DeviceType_Dev type) {
   switch (type) {
     case PP_DEVICETYPE_DEV_INVALID:
-      return blink::MEDIA_NO_SERVICE;
+      return blink::mojom::MediaStreamType::NO_SERVICE;
     case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
-      return blink::MEDIA_DEVICE_AUDIO_CAPTURE;
+      return blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE;
     case PP_DEVICETYPE_DEV_VIDEOCAPTURE:
-      return blink::MEDIA_DEVICE_VIDEO_CAPTURE;
+      return blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE;
     default:
       NOTREACHED();
-      return blink::MEDIA_NO_SERVICE;
+      return blink::mojom::MediaStreamType::NO_SERVICE;
   }
 }
 

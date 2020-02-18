@@ -53,7 +53,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
 FakeTileManager::~FakeTileManager() = default;
 
 bool FakeTileManager::HasBeenAssignedMemory(Tile* tile) {
-  return base::ContainsValue(tiles_for_raster, tile);
+  return base::Contains(tiles_for_raster, tile);
 }
 
 }  // namespace cc

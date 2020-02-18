@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _PDH_H_
@@ -23,10 +23,10 @@ extern "C" {
 
 #define PDH_VERSION ((DWORD)((PDH_CVERSION_WIN50) + 0x0003))
 
-#define IsSuccessSeverity(ErrorCode) ((((DWORD)(ErrorCode) & (0xC0000000L))==0x00000000L) ? TRUE : FALSE)
-#define IsInformationalSeverity(ErrorCode) ((((DWORD)(ErrorCode) & (0xC0000000L))==0x40000000L) ? TRUE : FALSE)
-#define IsWarningSeverity(ErrorCode) ((((DWORD)(ErrorCode) & (0xC0000000L))==0x80000000L) ? TRUE : FALSE)
-#define IsErrorSeverity(ErrorCode) ((((DWORD)(ErrorCode) & (0xC0000000L))==0xC0000000L) ? TRUE : FALSE)
+#define IsSuccessSeverity(ErrorCode) ((!((DWORD)(ErrorCode) & 0xC0000000)) ? TRUE : FALSE)
+#define IsInformationalSeverity(ErrorCode) ((((DWORD)(ErrorCode) & 0xC0000000)==(DWORD)0x40000000) ? TRUE : FALSE)
+#define IsWarningSeverity(ErrorCode) ((((DWORD)(ErrorCode) & 0xC0000000)==(DWORD)0x80000000) ? TRUE : FALSE)
+#define IsErrorSeverity(ErrorCode) ((((DWORD)(ErrorCode) & 0xC0000000)==(DWORD)0xC0000000) ? TRUE : FALSE)
 
 #define MAX_COUNTER_PATH 256
 
@@ -303,8 +303,8 @@ extern "C" {
   PDH_FUNCTION PdhGetCounterInfoW(PDH_HCOUNTER hCounter,BOOLEAN bRetrieveExplainText,LPDWORD pdwBufferSize,PPDH_COUNTER_INFO_W lpBuffer);
   PDH_FUNCTION PdhGetCounterInfoA(PDH_HCOUNTER hCounter,BOOLEAN bRetrieveExplainText,LPDWORD pdwBufferSize,PPDH_COUNTER_INFO_A lpBuffer);
 
-#define PDH_MAX_SCALE (7L)
-#define PDH_MIN_SCALE (-7L)
+#define PDH_MAX_SCALE (__MSABI_LONG(7))
+#define PDH_MIN_SCALE (__MSABI_LONG(-7))
 
   PDH_FUNCTION PdhSetCounterScaleFactor(PDH_HCOUNTER hCounter,LONG lFactor);
   PDH_FUNCTION PdhConnectMachineW(LPCWSTR szMachineName);
@@ -555,36 +555,15 @@ extern "C" {
 #define PdhVerifySQLDB __MINGW_NAME_AW(PdhVerifySQLDB)
 
 #if (_WIN32_WINNT >= 0x0600)
-PDH_STATUS PdhAddEnglishCounterA(
-  PDH_HQUERY hQuery,
-  LPCSTR szFullCounterPath,
-  DWORD_PTR dwUserData,
-  PDH_HCOUNTER *phCounter
-);
-
-PDH_STATUS PdhAddEnglishCounterW(
-  PDH_HQUERY hQuery,
-  LPCWSTR szFullCounterPath,
-  DWORD_PTR dwUserData,
-  PDH_HCOUNTER *phCounter
-);
+PDH_FUNCTION PdhAddEnglishCounterW(PDH_HQUERY hQuery,LPCWSTR szFullCounterPath,DWORD_PTR dwUserData,PDH_HCOUNTER *phCounter);
+PDH_FUNCTION PdhAddEnglishCounterA(PDH_HQUERY hQuery,LPCSTR szFullCounterPath,DWORD_PTR dwUserData,PDH_HCOUNTER *phCounter);
 
 #define PdhAddEnglishCounter __MINGW_NAME_AW(PdhAddEnglishCounter)
 
-PDH_STATUS PdhCollectQueryDataWithTime(
-  PDH_HQUERY hQuery,
-  LONGLONG *pllTimeStamp
-);
+PDH_FUNCTION PdhCollectQueryDataWithTime(PDH_HQUERY hQuery,LONGLONG *pllTimeStamp);
 
-PDH_STATUS PdhValidatePathExA(
-  PDH_HLOG hDataSource,
-  LPCSTR szFullPathBuffer
-);
-
-PDH_STATUS PdhValidatePathExA(
-  PDH_HLOG hDataSource,
-  LPCWSTR szFullPathBuffer
-);
+PDH_FUNCTION PdhValidatePathExW(PDH_HLOG hDataSource,LPCWSTR szFullPathBuffer);
+PDH_FUNCTION PdhValidatePathExA(PDH_HLOG hDataSource,LPCSTR szFullPathBuffer);
 
 #define PdhValidatePathEx __MINGW_NAME_AW(PdhValidatePathEx)
 

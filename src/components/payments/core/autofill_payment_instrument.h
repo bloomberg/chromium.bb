@@ -42,6 +42,8 @@ class AutofillPaymentInstrument
   // PaymentInstrument:
   void InvokePaymentApp(PaymentInstrument::Delegate* delegate) override;
   bool IsCompleteForPayment() const override;
+  uint32_t GetCompletenessScore() const override;
+  bool CanPreselect() const override;
   bool IsExactlyMatchingMerchantRequest() const override;
   base::string16 GetMissingInfoLabel() const override;
   bool IsValidForCanMakePayment() const override;
@@ -54,8 +56,10 @@ class AutofillPaymentInstrument
                           bool supported_types_specified,
                           const std::set<autofill::CreditCard::CardType>&
                               supported_types) const override;
-  bool IsValidForPaymentMethodIdentifier(
-      const std::string& payment_method_identifier) const override;
+  void IsValidForPaymentMethodIdentifier(
+      const std::string& payment_method_identifier,
+      bool* is_valid) const override;
+  base::WeakPtr<PaymentInstrument> AsWeakPtr() override;
 
   // autofill::payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(
@@ -64,7 +68,10 @@ class AutofillPaymentInstrument
       const base::string16& cvc) override;
   void OnFullCardRequestFailed() override;
 
+  void RecordMissingFieldsForInstrument() const;
+
   autofill::CreditCard* credit_card() { return &credit_card_; }
+  const autofill::CreditCard* credit_card() const { return &credit_card_; }
 
   const std::string& method_name() const { return method_name_; }
 
@@ -101,7 +108,7 @@ class AutofillPaymentInstrument
   bool is_waiting_for_card_unmask_;
   bool is_waiting_for_billing_address_normalization_;
 
-  base::WeakPtrFactory<AutofillPaymentInstrument> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillPaymentInstrument> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPaymentInstrument);
 };

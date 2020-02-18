@@ -15,12 +15,6 @@
     "args": ["--enable-blink-features=IsolatedWorldCSP"]
   },
   {
-    "prefix": "gpu-threaded-compositing",
-    "base": "fast/canvas/gpu-threaded-compositing",
-    "args": ["--enable-accelerated-2d-canvas",
-    "--enable-threaded-compositing"]
-  },
-  {
     "prefix": "threaded",
     "base": "fast/idleToBlob",
     "args": ["--enable-threaded-compositing"]
@@ -334,6 +328,36 @@
     "args": ["--force-device-scale-factor=2"]
   },
   {
+    "prefix": "scalefactor200",
+    "base": "css3/filters",
+    "args": ["--force-device-scale-factor=2"]
+  },
+  {
+    "prefix": "scalefactor200",
+    "base": "external/wpt/css/filter-effects",
+    "args": ["--force-device-scale-factor=2"]
+  },
+  {
+    "prefix": "scalefactor200",
+    "base": "external/wpt/element-timing",
+    "args": ["--force-device-scale-factor=2"]
+  },
+  {
+    "prefix": "scalefactor200withoutzoom",
+    "base": "external/wpt/element-timing",
+    "args": ["--force-device-scale-factor=2", "--enable-use-zoom-for-dsf=false"]
+  },
+  {
+    "prefix": "scalefactor200",
+    "base": "external/wpt/largest-contentful-paint",
+    "args": ["--force-device-scale-factor=2"]
+  },
+  {
+    "prefix": "scalefactor200withoutzoom",
+    "base": "external/wpt/largest-contentful-paint",
+    "args": ["--force-device-scale-factor=2", "--enable-use-zoom-for-dsf=false"]
+  },
+  {
     "prefix": "scalefactor150",
     "base": "fast/hidpi/static",
     "args": ["--force-device-scale-factor=1.5"]
@@ -459,12 +483,6 @@
     "args": ["--force-presentation-receiver-for-testing"]
   },
   {
-    "prefix": "sharedarraybuffer",
-    "base": "external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers",
-    "args": ["--js-flags=--harmony-sharedarraybuffer",
-             "--enable-blink-features=SharedArrayBuffer"]
-  },
-  {
     "prefix": "longtask-v2",
     "base": "http/tests/performance-timing/longtask-v2",
     "args": ["--enable-blink-features=LongTaskV2"]
@@ -508,19 +526,15 @@
              "--disable-smooth-scrolling"]
   },
   {
+    "prefix": "compositor_threaded_scrollbar_scrolling",
+    "base": "paint/invalidation/scroll/sticky",
+    "args": ["--enable-threaded-compositing",
+             "--enable-prefer-compositing-to-lcd-text"]
+  },
+  {
     "prefix": "main_thread_scrollbar_gestures",
     "base": "fast/scrolling/scrollbars",
     "args": ["--enable-features=ScrollbarInjectScrollGestures"]
-  },
-  {
-    "prefix": "fractional_scrolling_threaded",
-    "base": "fast/scrolling",
-    "args": ["--enable-blink-features=FractionalScrollOffsets", "--enable-threaded-compositing"]
-  },
-  {
-    "prefix": "fractional_scrolling",
-    "base": "fast/scrolling",
-    "args": ["--enable-blink-features=FractionalScrollOffsets"]
   },
   {
     "prefix": "speech-with-unified-autoplay",
@@ -553,6 +567,11 @@
     "args": ["--enable-features=NetworkService"]
   },
   {
+    "prefix": "sxg-subresource",
+    "base": "external/wpt/signed-exchange",
+    "args": ["--enable-features=SignedExchangeSubresourcePrefetch"]
+  },
+  {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/content-security-policy/inside-worker",
     "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
@@ -560,6 +579,11 @@
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/content-security-policy/worker-src",
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
+  },
+  {
+    "prefix": "omt-worker-fetch",
+    "base": "external/wpt/fetch/",
     "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
@@ -590,7 +614,7 @@
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/referrer-policy",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
@@ -620,7 +644,7 @@
   {
     "prefix": "omt-worker-fetch",
     "base": "fast/workers",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
@@ -637,6 +661,96 @@
     "prefix": "omt-worker-fetch",
     "base": "http/tests/workers",
     "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/content-security-policy/inside-worker",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/content-security-policy/worker-src",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/fetch/",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/html/browsers/offline/appcache/workers/",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/mixed-content/classic-data-worker-fetch",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/mixed-content/module-data-worker-import",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/mixed-content/module-worker-top-level",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/mixed-content/worker-request",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/referrer-policy",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/resource-timing",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/service-workers",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/upgrade-insecure-requests",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/workers",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "external/wpt/xhr",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "fast/workers",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "http/tests/origin_trials",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "http/tests/security/cors-rfc1918",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch", "--enable-blink-features=CorsRFC1918"]
+  },
+  {
+    "prefix": "not-omt-sw-fetch",
+    "base": "http/tests/workers",
+    "args": ["--disable-features=OffMainThreadServiceWorkerScriptFetch"]
   },
   {
     "prefix": "webrtc-wpt-plan-b",
@@ -667,29 +781,18 @@
              "--disable-blink-features=RestrictAutomaticLazyFrameLoadingToDataSaver,RestrictAutomaticLazyImageLoadingToDataSaver"]
   },
   {
-    "prefix": "display-lock",
-    "base": "wpt_internal/display-lock",
-    "args": ["--enable-blink-features=DisplayLocking"]
-  },
-  {
-    "prefix": "display-lock",
-    "base": "http/tests/devtools/elements/highlight",
-    "args": ["--enable-blink-features=DisplayLocking"]
-  },
-  {
-    "prefix": "display-lock",
-    "base": "inspector-protocol/css",
-    "args": ["--enable-blink-features=DisplayLocking"]
-  },
-  {
     "prefix" : "autoupgrade-optionally-blockable-mixed-content",
     "base": "http/tests/mixed-autoupgrade/optionally",
-    "args": ["--enable-features=AutoupgradeMixedContent<AU --force-fieldtrials=AU/G1 --force-fieldtrial-params=AU.G1:mode/optionally-blockable"]
+    "args": ["--enable-features=AutoupgradeMixedContent<AU",
+             "--force-fieldtrials=AU/G1",
+             "--force-fieldtrial-params=AU.G1:mode/optionally-blockable"]
   },
   {
     "prefix" : "autoupgrade-blockable-mixed-content",
     "base": "http/tests/mixed-autoupgrade/blockable",
-    "args": ["--enable-features=AutoupgradeMixedContent<AU --force-fieldtrials=AU/G1 --force-fieldtrial-params=AU.G1:mode/blockable"]
+    "args": ["--enable-features=AutoupgradeMixedContent<AU",
+             "--force-fieldtrials=AU/G1",
+	     "--force-fieldtrial-params=AU.G1:mode/blockable"]
   },
   {
     "prefix" : "autoupgrade-all-mixed-content",
@@ -930,31 +1033,6 @@
     "args": ["--enable-features=ScriptStreamingOnPreload"]
   },
   {
-    "prefix": "streams-native",
-    "base": "external/wpt/streams",
-    "args": ["--enable-blink-features=StreamsNative"]
-  },
-  {
-    "prefix": "streams-native",
-    "base": "http/tests/streams",
-    "args": ["--enable-blink-features=StreamsNative"]
-  },
-  {
-    "prefix": "streams-native",
-    "base": "http/tests/fetch",
-    "args": ["--enable-blink-features=StreamsNative"]
-  },
-  {
-    "prefix": "streams-native",
-    "base": "external/wpt/fetch",
-    "args": ["--enable-blink-features=StreamsNative"]
-  },
-  {
-    "prefix": "streams-native",
-    "base": "external/wpt/encoding/streams",
-    "args": ["--enable-blink-features=StreamsNative"]
-  },
-  {
     "prefix": "focusless-spat-nav",
     "base": "fast/spatial-navigation/focusless",
     "args": ["--enable-blink-features=FocuslessSpatialNavigation",
@@ -976,6 +1054,11 @@
     "args": ["--enable-features=NativeFileSystemAPI"]
   },
   {
+    "prefix": "file-handling",
+    "base": "file-handling",
+    "args": ["--enable-features=NativeFileSystemAPI,FileHandlingAPI"]
+  },
+  {
     "prefix": "controls-refresh",
     "base": "fast/forms/controls-new-ui",
     "args": ["--enable-features=FormControlsRefresh"]
@@ -994,5 +1077,137 @@
     "prefix": "cookies-without-samesite-must-be-secure",
     "base": "external/wpt/cookies/samesite-none-secure",
     "args": ["--enable-features=SameSiteByDefaultCookies,CookiesWithoutSameSiteMustBeSecure"]
+  },
+  {
+    "prefix": "blink-cors",
+    "base": "external/wpt/fetch",
+    "args": ["--disable-features=OutOfBlinkCors"]
+  },
+  {
+    "prefix": "blink-cors",
+    "base": "external/wpt/http",
+    "args": ["--disable-features=OutOfBlinkCors"]
+  },
+  {
+    "prefix": "blink-cors",
+    "base": "external/wpt/referrer-policy",
+    "args": ["--disable-features=OutOfBlinkCors"]
+  },
+  {
+    "prefix": "blink-cors",
+    "base": "external/wpt/service-workers",
+    "args": ["--disable-features=OutOfBlinkCors"]
+  },
+  {
+    "prefix": "blink-cors",
+    "base": "external/wpt/xhr",
+    "args": ["--disable-features=OutOfBlinkCors"]
+  },
+  {
+    "prefix": "blink-cors",
+    "base": "http/tests/fetch",
+    "args": ["--disable-features=OutOfBlinkCors"]
+  },
+  {
+    "prefix": "blink-cors",
+    "base": "http/tests/navigation",
+    "args": ["--disable-features=OutOfBlinkCors"]
+  },
+  {
+    "prefix": "blink-cors",
+    "base": "http/tests/security",
+    "args": ["--disable-features=OutOfBlinkCors"]
+  },
+  {
+    "prefix": "blink-cors",
+    "base": "http/tests/xmlhttprequest",
+    "args": ["--disable-features=OutOfBlinkCors"]
+  },
+  {
+    "prefix": "forced-colors",
+    "base": "external/wpt/css/css-forced-color-adjust",
+    "args": ["--enable-blink-features=ForcedColors"]
+  },
+  {
+    "prefix": "force-defer-script",
+    "base": "defer-script",
+    "args": ["--enable-blink-features=ForceDeferScriptIntervention"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "animations/custom-properties",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "animations/interpolation",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "external/wpt/css/css-cascade",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "external/wpt/css/css-paint-api",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "external/wpt/css/css-properties-values-api",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "external/wpt/css/css-scoping",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "external/wpt/css/css-typed-om",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "external/wpt/css/css-variables",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "external/wpt/css/css-forced-colors-adjust",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "fast/css/variables",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "at-property",
+    "base": "fast/css/css-properties-values-api",
+    "args": ["--enable-blink-features=CSSVariables2AtProperty"]
+  },
+  {
+    "prefix": "at-property",
+    "base": "external/wpt/css/css-properties-values-api",
+    "args": ["--enable-blink-features=CSSVariables2AtProperty"]
+  },
+  {
+    "prefix": "cache-storage-parallel",
+    "base": "external/wpt/service-workers",
+    "args": ["--enable-features=CacheStorageParallelOps<CSPO",
+             "--force-fieldtrials=CSPO/G1",
+             "--force-fieldtrial-params=CSPO.G1:max_shared_ops/64"]
+  },
+  {
+    "prefix": "cache-storage-sequence",
+    "base": "external/wpt/service-workers",
+    "args": ["--enable-features=CacheStorageSequence"]
+  },
+  {
+    "prefix": "conditional-appcache-delay",
+    "base": "http/tests/loading/appcache-delay",
+    "args": ["--enable-features=VerifyHTMLFetchedFromAppCacheBeforeDelay"]
   }
 ]

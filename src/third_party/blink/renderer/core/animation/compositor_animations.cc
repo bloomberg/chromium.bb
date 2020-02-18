@@ -35,6 +35,7 @@
 #include <memory>
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_color.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_filter_operations.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_transform.h"
@@ -42,6 +43,7 @@
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
@@ -51,6 +53,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/animation/animation_translation_util.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
+#include "third_party/blink/renderer/platform/animation/compositor_color_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_filter_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_filter_keyframe.h"
 #include "third_party/blink/renderer/platform/animation/compositor_float_animation_curve.h"
@@ -227,7 +230,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
     }
 
     const PropertySpecificKeyframeVector& keyframes =
-        keyframe_effect.GetPropertySpecificKeyframes(property);
+        *keyframe_effect.GetPropertySpecificKeyframes(property);
     DCHECK_GE(keyframes.size(), 2U);
     for (const auto& keyframe : keyframes) {
       if (keyframe->Composite() != EffectModel::kCompositeReplace &&
@@ -253,7 +256,6 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           }
           break;
         case CSSPropertyID::kFilter:
-        case CSSPropertyID::kBackdropFilter:
           if (keyframe->GetCompositorKeyframeValue() &&
               ToCompositorKeyframeFilterOperations(
                   keyframe->GetCompositorKeyframeValue())
@@ -262,13 +264,24 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
             reasons |= kFilterRelatedPropertyMayMovePixels;
           }
           break;
-        case CSSPropertyID::kVariable:
+        case CSSPropertyID::kBackdropFilter:
+          // Backdrop-filter pixel moving filters do not change the layer bounds
+          // like regular filters do, so they can still be composited.
+          break;
+        case CSSPropertyID::kVariable: {
           // Custom properties are supported only in the case of
           // OffMainThreadCSSPaintEnabled, and even then only for some specific
           // property types. Otherwise they are treated as unsupported.
-          if (keyframe->GetCompositorKeyframeValue()) {
+          const CompositorKeyframeValue* keyframe_value =
+              keyframe->GetCompositorKeyframeValue();
+          if (keyframe_value) {
             DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
-            DCHECK(keyframe->GetCompositorKeyframeValue()->IsDouble());
+            DCHECK(keyframe_value->IsDouble() || keyframe_value->IsColor());
+            // TODO: Add support for keyframes containing different types
+            if (keyframes.front()->GetCompositorKeyframeValue()->GetType() !=
+                keyframe_value->GetType()) {
+              reasons |= kMixedKeyframeValueTypes;
+            }
           } else {
             // We skip the rest of the loop in this case for the same reason as
             // unsupported CSS properties - see below.
@@ -276,6 +289,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
             continue;
           }
           break;
+        }
         default:
           // We skip the rest of the loop in this case for two reasons:
           //   i.  Getting a CompositorElementId below will DCHECK if we pass it
@@ -330,40 +344,37 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
     const Element& target_element) {
   FailureReasons reasons = kNoFailure;
 
-  if (!Platform::Current()->IsThreadedAnimationEnabled())
+  // Both of these checks are required. It is legal to enable the compositor
+  // thread but disable threaded animations, and there are situations where
+  // threaded animations are enabled globally but this particular LocalFrame
+  // does not have a compositor (e.g. for overlays).
+  const Settings* settings = target_element.GetDocument().GetSettings();
+  if ((settings && !settings->GetAcceleratedCompositingEnabled()) ||
+      !Platform::Current()->IsThreadedAnimationEnabled()) {
     reasons |= kAcceleratedAnimationsDisabled;
+  }
 
-  LayoutObject* layout_object = target_element.GetLayoutObject();
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+  if (const auto* layout_object = target_element.GetLayoutObject()) {
     // We query paint property tree state below to determine whether the
-    // animation is compositable. There is a known lifecycle violation where an
-    // animation can be cancelled during style update. See
-    // CompositorAnimations::cancelAnimationOnCompositor and
-    // http://crbug.com/676456. When this is fixed we would like to enable
-    // the DCHECK below.
-    // DCHECK(document().lifecycle().state() >=
-    // DocumentLifecycle::PrePaintClean);
-    DCHECK(layout_object);
-
-    if (!layout_object->UniqueId())
-      reasons |= kTargetHasInvalidCompositingState;
-
+    // animation is compositable. TODO(crbug.com/676456): There is a known
+    // lifecycle violation where an animation can be cancelled during style
+    // update. See CompositorAnimations::CancelAnimationOnCompositor().
+    // When this is fixed we would like to enable the DCHECK below.
+    // DCHECK_GE(GetDocument().Lifecycle().GetState(),
+    //           DocumentLifecycle::kPrePaintClean);
+    bool has_direct_compositing_reasons = false;
     if (const auto* paint_properties =
             layout_object->FirstFragment().PaintProperties()) {
-      const TransformPaintPropertyNode* transform_node =
-          paint_properties->Transform();
-      const EffectPaintPropertyNode* effect_node = paint_properties->Effect();
-      bool has_direct_compositing_reasons =
-          (transform_node && transform_node->HasDirectCompositingReasons()) ||
-          (effect_node && effect_node->HasDirectCompositingReasons());
-      if (!has_direct_compositing_reasons)
-        reasons |= kTargetHasInvalidCompositingState;
+      const auto* transform = paint_properties->Transform();
+      const auto* effect = paint_properties->Effect();
+      has_direct_compositing_reasons =
+          (transform && transform->HasDirectCompositingReasons()) ||
+          (effect && effect->HasDirectCompositingReasons());
     }
-  } else {
-    if (!layout_object ||
-        layout_object->GetCompositingState() != kPaintsIntoOwnBacking) {
+    if (!has_direct_compositing_reasons)
       reasons |= kTargetHasInvalidCompositingState;
-    }
+  } else {
+    reasons |= kTargetHasInvalidCompositingState;
   }
 
   return reasons;
@@ -479,11 +490,6 @@ void CompositorAnimations::PauseAnimationForTestingOnCompositor(
     const Animation& animation,
     int id,
     double pause_time) {
-  // FIXME: CheckCanStartAnimationOnCompositor queries compositingState, which
-  // is not necessarily up to date.
-  // https://code.google.com/p/chromium/issues/detail?id=339847
-  DisableCompositingQueryAsserts disabler;
-
   DCHECK_EQ(CheckCanStartElementOnCompositor(element), kNoFailure);
   CompositorAnimation* compositor_animation =
       animation.GetCompositorAnimation();
@@ -598,6 +604,16 @@ void AddKeyframeToCurve(CompositorFloatAnimationCurve& curve,
   curve.AddKeyframe(float_keyframe);
 }
 
+void AddKeyframeToCurve(CompositorColorAnimationCurve& curve,
+                        Keyframe::PropertySpecificKeyframe* keyframe,
+                        const CompositorKeyframeValue* value,
+                        const TimingFunction& keyframe_timing_function) {
+  CompositorColorKeyframe color_keyframe(
+      keyframe->Offset(), ToCompositorKeyframeColor(value)->ToColor(),
+      keyframe_timing_function);
+  curve.AddKeyframe(color_keyframe);
+}
+
 void AddKeyframeToCurve(CompositorTransformAnimationCurve& curve,
                         Keyframe::PropertySpecificKeyframe* keyframe,
                         const CompositorKeyframeValue* value,
@@ -649,6 +665,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
   PropertyHandleSet properties = effect.Properties();
   DCHECK(!properties.IsEmpty());
   for (const auto& property : properties) {
+    AtomicString custom_property_name = "";
     // If the animation duration is infinite, it doesn't make sense to scale
     // the keyframe offset, so use a scale of 1.0. This is connected to
     // the known issue of how the Web Animations spec handles infinite
@@ -657,7 +674,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
     if (!std::isfinite(scale))
       scale = 1.0;
     const PropertySpecificKeyframeVector& values =
-        effect.GetPropertySpecificKeyframes(property);
+        *effect.GetPropertySpecificKeyframes(property);
 
     compositor_target_property::Type target_property;
     std::unique_ptr<CompositorAnimationCurve> curve;
@@ -701,13 +718,23 @@ void CompositorAnimations::GetAnimationOnCompositor(
       }
       case CSSPropertyID::kVariable: {
         DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
+        custom_property_name = property.CustomPropertyName();
         target_property = compositor_target_property::CSS_CUSTOM_PROPERTY;
-        // TODO(kevers): Extend support to non-float types.
-        auto float_curve = std::make_unique<CompositorFloatAnimationCurve>();
-        AddKeyframesToCurve(*float_curve, values);
-        float_curve->SetTimingFunction(*timing.timing_function);
-        float_curve->SetScaledDuration(scale);
-        curve = std::move(float_curve);
+
+        // Create curve based on the keyframe value type
+        if (values.front()->GetCompositorKeyframeValue()->IsColor()) {
+          auto color_curve = std::make_unique<CompositorColorAnimationCurve>();
+          AddKeyframesToCurve(*color_curve, values);
+          color_curve->SetTimingFunction(*timing.timing_function);
+          color_curve->SetScaledDuration(scale);
+          curve = std::move(color_curve);
+        } else {
+          auto float_curve = std::make_unique<CompositorFloatAnimationCurve>();
+          AddKeyframesToCurve(*float_curve, values);
+          float_curve->SetTimingFunction(*timing.timing_function);
+          float_curve->SetScaledDuration(scale);
+          curve = std::move(float_curve);
+        }
         break;
       }
       default:
@@ -717,7 +744,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
     DCHECK(curve.get());
 
     auto keyframe_model = std::make_unique<CompositorKeyframeModel>(
-        *curve, target_property, 0, group);
+        *curve, target_property, 0, group, std::move(custom_property_name));
 
     if (start_time)
       keyframe_model->SetStartTime(start_time.value());

@@ -33,7 +33,11 @@ IceTransportAdapterImpl::IceTransportAdapterImpl(
                              cricket::PORTALLOCATOR_ENABLE_IPV6_ON_WIFI);
   port_allocator_->Initialize();
 
-  ice_transport_channel_ = webrtc::CreateIceTransport(port_allocator_.get());
+  webrtc::IceTransportInit ice_transport_init;
+  ice_transport_init.set_port_allocator(port_allocator_.get());
+  ice_transport_init.set_async_resolver_factory(async_resolver_factory_.get());
+  ice_transport_channel_ =
+      webrtc::CreateIceTransport(std::move(ice_transport_init));
   SetupIceTransportChannel();
   // We need to set the ICE role even before Start is called since the Port
   // assumes that the role has been set before receiving incoming connectivity
@@ -83,13 +87,16 @@ static uint32_t GetCandidateFilterForPolicy(IceTransportPolicy policy) {
 void IceTransportAdapterImpl::StartGathering(
     const cricket::IceParameters& local_parameters,
     const cricket::ServerAddresses& stun_servers,
-    const std::vector<cricket::RelayServerConfig>& turn_servers,
+    const WebVector<cricket::RelayServerConfig>& turn_servers,
     IceTransportPolicy policy) {
   if (port_allocator_) {
     port_allocator_->set_candidate_filter(GetCandidateFilterForPolicy(policy));
-    port_allocator_->SetConfiguration(stun_servers, turn_servers,
-                                      port_allocator_->candidate_pool_size(),
-                                      port_allocator_->prune_turn_ports());
+    port_allocator_->SetConfiguration(
+        stun_servers,
+        const_cast<WebVector<cricket::RelayServerConfig>&>(turn_servers)
+            .ReleaseVector(),
+        port_allocator_->candidate_pool_size(),
+        port_allocator_->prune_turn_ports());
   }
   if (!ice_transport_channel()) {
     LOG(ERROR) << "StartGathering called, but ICE transport released";
@@ -104,7 +111,7 @@ void IceTransportAdapterImpl::StartGathering(
 void IceTransportAdapterImpl::Start(
     const cricket::IceParameters& remote_parameters,
     cricket::IceRole role,
-    const std::vector<cricket::Candidate>& initial_remote_candidates) {
+    const Vector<cricket::Candidate>& initial_remote_candidates) {
   if (!ice_transport_channel()) {
     LOG(ERROR) << "Start called, but ICE transport released";
     return;
@@ -182,9 +189,9 @@ void IceTransportAdapterImpl::OnNetworkRouteChanged(
     LOG(ERROR) << "OnNetworkRouteChanged called, but ICE transport released";
     return;
   }
-  const cricket::CandidatePairInterface* selected_connection =
-      ice_transport_channel()->selected_connection();
-  if (!selected_connection) {
+  const absl::optional<const cricket::CandidatePair> selected_pair =
+      ice_transport_channel()->GetSelectedCandidatePair();
+  if (!selected_pair) {
     // The selected connection will only be null if the ICE connection has
     // totally failed, at which point we'll get a StateChanged signal. The
     // client will implicitly clear the selected candidate pair when it receives
@@ -192,9 +199,8 @@ void IceTransportAdapterImpl::OnNetworkRouteChanged(
     // here.
     return;
   }
-  delegate_->OnSelectedCandidatePairChanged(
-      std::make_pair(selected_connection->local_candidate(),
-                     selected_connection->remote_candidate()));
+  delegate_->OnSelectedCandidatePairChanged(std::make_pair(
+      selected_pair->local_candidate(), selected_pair->remote_candidate()));
 }
 
 static const char* IceRoleToString(cricket::IceRole role) {

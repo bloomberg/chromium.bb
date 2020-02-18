@@ -117,7 +117,7 @@ void ChromeDevToolsManagerDelegate::HandleCommand(
 
 std::string ChromeDevToolsManagerDelegate::GetTargetType(
     content::WebContents* web_contents) {
-  if (base::ContainsValue(AllTabContentses(), web_contents))
+  if (base::Contains(AllTabContentses(), web_contents))
     return DevToolsAgentHost::kTypePage;
 
   std::string extension_name;

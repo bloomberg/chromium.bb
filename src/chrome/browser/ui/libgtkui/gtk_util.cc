@@ -8,6 +8,7 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
+#include <locale.h>
 #include <stddef.h>
 
 #include <memory>
@@ -20,6 +21,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "build/branding_buildflags.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -34,6 +36,13 @@ namespace {
 const char kAuraTransientParent[] = "aura-transient-parent";
 
 void CommonInitFromCommandLine(const base::CommandLine& command_line) {
+  // Callers should have already called setlocale(LC_ALL, "") and
+  // setlocale(LC_NUMERIC, "C") by now. Chrome does this in
+  // service_manager::Main.
+  DCHECK_EQ(strcmp(setlocale(LC_NUMERIC, NULL), "C"), 0);
+  // This prevent GTK from calling setlocale(LC_ALL, ""), which potentially
+  // overwrites the LC_NUMERIC locale to something other than "C".
+  gtk_disable_setlocale();
 #if GTK_CHECK_VERSION(3, 90, 0)
   gtk_init();
 #else
@@ -76,9 +85,9 @@ void GtkInitFromCommandLine(const base::CommandLine& command_line) {
 // of how this library is structured as a stand alone .so, we can't call code
 // from browser and above.
 std::string GetDesktopName(base::Environment* env) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return "google-chrome.desktop";
-#else  // CHROMIUM_BUILD
+#else  // BUILDFLAG(CHROMIUM_BRANDING)
   // Allow $CHROME_DESKTOP to override the built-in value, so that development
   // versions can set themselves as the default without interfering with
   // non-official, packaged versions using the built-in value.

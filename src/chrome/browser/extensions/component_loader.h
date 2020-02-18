@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 
-class PrefService;
 class Profile;
 
 namespace extensions {
@@ -34,8 +33,6 @@ class ExtensionServiceInterface;
 class ComponentLoader {
  public:
   ComponentLoader(ExtensionServiceInterface* extension_service,
-                  PrefService* prefs,
-                  PrefService* local_state,
                   Profile* browser_context);
   virtual ~ComponentLoader();
 
@@ -112,6 +109,10 @@ class ComponentLoader {
                                         const std::string& description_string);
 
   void AddChromeOsSpeechSynthesisExtensions();
+
+  // Loads the Kiosk Next extension or adds it to the load list. If this device
+  // doesn't support Kiosk Next, this method is a no-op.
+  void AddKioskNextExtension();
 #endif
 
   void set_ignore_whitelist_for_testing(bool value) {
@@ -215,8 +216,6 @@ class ComponentLoader {
   void FinishLoadSpeechSynthesisExtension(const char* extension_id);
 #endif
 
-  PrefService* profile_prefs_;
-  PrefService* local_state_;
   Profile* profile_;
 
   ExtensionServiceInterface* extension_service_;
@@ -227,7 +226,7 @@ class ComponentLoader {
 
   bool ignore_whitelist_for_testing_;
 
-  base::WeakPtrFactory<ComponentLoader> weak_factory_;
+  base::WeakPtrFactory<ComponentLoader> weak_factory_{this};
 
   friend class TtsApiTest;
 

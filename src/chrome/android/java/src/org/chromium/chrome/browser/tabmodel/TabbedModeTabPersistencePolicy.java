@@ -17,13 +17,10 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.base.task.TaskRunner;
-import org.chromium.chrome.browser.browseractions.BrowserActionsTabModelSelector;
-import org.chromium.chrome.browser.browseractions.BrowserActionsTabPersistencePolicy;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -121,11 +118,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
         if (FeatureUtilities.isTabModelMergingEnabled()) {
             mergedFileNames.add(getStateFileName(mOtherSelectorIndex));
         }
-        if (!BrowserActionsTabModelSelector.isInitialized()) {
-            BrowserActionsTabPersistencePolicy browserActionsPersistencePolicy =
-                    new BrowserActionsTabPersistencePolicy();
-            mergedFileNames.add(browserActionsPersistencePolicy.getStateFileName());
-        }
+        // TODO(peconn): Can I clean up this code now that Browser Actions are gone?
         return mergedFileNames;
     }
 
@@ -244,19 +237,10 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
         File oldMetadataFile = new File(stateDir, LEGACY_SAVED_STATE_FILE);
         if (newMetadataFile.exists()) {
             Log.e(TAG, "New metadata file already exists");
-            if (LibraryLoader.getInstance().isInitialized()) {
-                RecordHistogram.recordBooleanHistogram(
-                        "Android.MultiInstanceMigration.NewMetadataFileExists", true);
-            }
         } else if (oldMetadataFile.exists()) {
             // 1. Rename tab metadata file for tab directory "0".
             if (!oldMetadataFile.renameTo(newMetadataFile)) {
                 Log.e(TAG, "Failed to rename file: " + oldMetadataFile);
-
-                if (LibraryLoader.getInstance().isInitialized()) {
-                    RecordHistogram.recordBooleanHistogram(
-                            "Android.MultiInstanceMigration.FailedToRenameMetadataFile", true);
-                }
             }
         }
 

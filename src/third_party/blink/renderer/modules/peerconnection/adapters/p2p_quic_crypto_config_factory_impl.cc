@@ -5,8 +5,6 @@
 #include "net/third_party/quiche/src/quic/core/crypto/proof_source.h"
 #include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
 
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
-#include "net/third_party/quiche/src/quic/core/tls_server_handshaker.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_crypto_config_factory_impl.h"
 
 namespace blink {
@@ -116,7 +114,7 @@ P2PQuicCryptoConfigFactoryImpl::CreateClientCryptoConfig() {
   std::unique_ptr<quic::ProofVerifier> proof_verifier(
       new InsecureProofVerifier);
   return std::make_unique<quic::QuicCryptoClientConfig>(
-      std::move(proof_verifier), quic::TlsClientHandshaker::CreateSslCtx());
+      std::move(proof_verifier));
 }
 
 std::unique_ptr<quic::QuicCryptoServerConfig>
@@ -130,8 +128,7 @@ P2PQuicCryptoConfigFactoryImpl::CreateServerCryptoConfig() {
   return std::make_unique<quic::QuicCryptoServerConfig>(
       std::string(source_address_token_secret, kInputKeyingMaterialLength),
       random_generator_, std::move(proof_source),
-      quic::KeyExchangeSource::Default(),
-      quic::TlsServerHandshaker::CreateSslCtx());
+      quic::KeyExchangeSource::Default());
 }
 
 }  // namespace blink

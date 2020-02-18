@@ -161,6 +161,10 @@ int MixerInput::FillAudioData(int num_frames,
     redirected = true;
   }
 
+  float* channels[num_channels_];
+  for (int c = 0; c < num_channels_; ++c) {
+    channels[c] = dest->channel(c);
+  }
   if (first_buffer_ && redirected) {
     // If the first buffer is redirected, don't provide any data to the mixer
     // (we want to avoid a 'blip' of sound from the first buffer if it is being
@@ -173,11 +177,11 @@ int MixerInput::FillAudioData(int num_frames,
       filled = 0;
     } else {
       // Smoothly fade in from previous silence.
-      AudioFader::FadeInHelper(dest, filled, 0, filled, filled);
+      AudioFader::FadeInHelper(channels, num_channels_, filled, filled, filled);
     }
   } else if (redirected) {
     // Smoothly fade out to silence, since output is now being redirected.
-    AudioFader::FadeOutHelper(dest, filled, 0, filled, filled);
+    AudioFader::FadeOutHelper(channels, num_channels_, filled, filled, filled);
   }
   previous_ended_in_silence_ = redirected;
   first_buffer_ = false;
@@ -287,6 +291,9 @@ float MixerInput::TargetVolume() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   float volume = stream_volume_multiplier_ * type_volume_multiplier_ *
                  mute_volume_multiplier_;
+  // Volume is clamped after all gains have been multiplied, to avoid clipping.
+  // TODO(kmackay): Consider removing this clamp and use a postprocessor filter
+  // to avoid clipping instead.
   return std::max(0.0f, std::min(volume, 1.0f));
 }
 

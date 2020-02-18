@@ -58,6 +58,7 @@ rtc_source_set("video_test_common") {
     "../api/video:video_frame",
     "../api/video:video_frame_i010",
     "../api/video:video_frame_i420",
+    "../api/video:video_rtp_headers",
     "../api/video_codecs:video_codecs_api",
     "../call:video_stream_api",
     "../common_video",
@@ -139,7 +140,6 @@ rtc_source_set("rtp_test_utils") {
     "../rtc_base:checks",
     "../rtc_base:rtc_base_approved",
     "../rtc_base/system:arch",
-    "//testing/gtest",
   ]
 }
 
@@ -256,6 +256,8 @@ if (rtc_include_tests) {
       "../system_wrappers:field_trial",
       "../system_wrappers:metrics",
       "//testing/gtest",
+      "//third_party/abseil-cpp/absl/flags:flag",
+      "//third_party/abseil-cpp/absl/flags:parse",
       "//third_party/abseil-cpp/absl/memory",
 
       # TODO(bugs.webrtc.org/9792): This is needed for downstream projects on
@@ -300,6 +302,7 @@ if (rtc_include_tests) {
       "../api:scoped_refptr",
       "../api/video:video_frame",
       "../api/video:video_frame_i420",
+      "../api/video:video_rtp_headers",
       "../common_video",
       "../rtc_base:checks",
       "../rtc_base:rtc_base_approved",
@@ -330,6 +333,8 @@ if (rtc_include_tests) {
       ":fileutils",
       "../rtc_base:rtc_base_approved",
       "../rtc_base/system:file_wrapper",
+      "//third_party/abseil-cpp/absl/flags:flag",
+      "//third_party/abseil-cpp/absl/flags:parse",
     ]
   }
 
@@ -376,6 +381,7 @@ if (rtc_include_tests) {
       "../api/video:builtin_video_bitrate_allocator_factory",
       "../api/video:video_frame",
       "../api/video:video_frame_i420",
+      "../api/video:video_rtp_headers",
       "../call:video_stream_api",
       "../modules/rtp_rtcp",
       "../modules/video_coding:simulcast_test_fixture_impl",
@@ -387,6 +393,7 @@ if (rtc_include_tests) {
       "time_controller:time_controller_unittests",
       "//testing/gmock",
       "//testing/gtest",
+      "//third_party/abseil-cpp/absl/flags:flag",
       "//third_party/abseil-cpp/absl/memory",
       "//third_party/abseil-cpp/absl/strings",
     ]
@@ -630,12 +637,14 @@ rtc_source_set("fake_video_codecs") {
     "fake_vp8_encoder.h",
   ]
   deps = [
+    "../api:fec_controller_api",
     "../api:scoped_refptr",
     "../api/task_queue",
     "../api/video:encoded_image",
     "../api/video:video_bitrate_allocation",
     "../api/video:video_frame",
     "../api/video:video_frame_i420",
+    "../api/video:video_rtp_headers",
     "../api/video_codecs:video_codecs_api",
     "../api/video_codecs:vp8_temporal_layers_factory",
     "../common_video",
@@ -733,6 +742,7 @@ rtc_source_set("test_common") {
     "../api/video:builtin_video_bitrate_allocator_factory",
     "../api/video:video_bitrate_allocator_factory",
     "../api/video:video_frame",
+    "../api/video:video_rtp_headers",
     "../api/video_codecs:video_codecs_api",
     "../audio",
     "../call",
@@ -743,7 +753,6 @@ rtc_source_set("test_common") {
     "../call:simulated_packet_receiver",
     "../call:video_stream_api",
     "../logging:rtc_event_log_api",
-    "../logging:rtc_event_log_impl_base",
     "../media:rtc_internal_video_codecs",
     "../media:rtc_media_base",
     "../modules/audio_device",
@@ -823,6 +832,7 @@ rtc_source_set("test_renderer_generic") {
     ":test_support",
     "../api:scoped_refptr",
     "../api/video:video_frame",
+    "../api/video:video_rtp_headers",
     "../common_video",
     "../media:rtc_media_base",
     "../rtc_base:checks",
@@ -931,6 +941,9 @@ if (!build_with_chromium && is_android) {
 }
 
 rtc_source_set("call_config_utils") {
+  # TODO(bugs.webrtc.org/10814): Remove rtc_json_suppressions as soon as it
+  # gets removed upstream.
+  public_configs = [ "../rtc_base:rtc_json_suppressions" ]
   sources = [
     "call_config_utils.cc",
     "call_config_utils.h",

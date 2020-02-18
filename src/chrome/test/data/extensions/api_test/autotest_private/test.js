@@ -234,21 +234,21 @@ var defaultTests = [
   function setAssistantEnabled() {
     chrome.autotestPrivate.setAssistantEnabled(true, 1000 /* timeout_ms */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 4'));
+            'Assistant not allowed - state: 9'));
   },
   function sendAssistantTextQuery() {
     chrome.autotestPrivate.sendAssistantTextQuery(
         'what time is it?' /* query */,
         1000 /* timeout_ms */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 4'));
+            'Assistant not allowed - state: 9'));
   },
   function setWhitelistedPref() {
     chrome.autotestPrivate.setWhitelistedPref(
         'settings.voice_interaction.hotword.enabled' /* pref_name */,
         true /* value */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 4'));
+            'Assistant not allowed - state: 9'));
   },
   // This test verifies that getArcState returns provisioned False in case ARC
   // is not provisioned by default.
@@ -335,7 +335,9 @@ var defaultTests = [
         }
       }
       chrome.test.assertTrue(displayId != "-1");
-      var behaviors = ["always", "never", "hidden"];
+      // SHELF_AUTO_HIDE_ALWAYS_HIDDEN not supported by shelf_prefs.
+      // TODO(ricardoq): Use enums in IDL instead of hardcoded strings.
+      var behaviors = ["always", "never"];
       var l = behaviors.length;
       for (var i = 0; i < l; i++) {
         var behavior = behaviors[i];
@@ -365,19 +367,24 @@ var defaultTests = [
         }
       }
       chrome.test.assertTrue(displayId != "-1");
-      // When running 'browser_tests', Chrome OS reports itself as locked,
-      // so the only valid shelf is Bottom Locked.
-      var alignment = chrome.autotestPrivate.ShelfAlignmentType.BOTTOM_LOCKED;
-      chrome.autotestPrivate.setShelfAlignment(displayId, alignment,
-          function() {
-        chrome.test.assertNoLastError();
-        chrome.autotestPrivate.getShelfAlignment(displayId,
-            function(newAlignment) {
+      // SHELF_ALIGNMENT_BOTTOM_LOCKED not supported by shelf_prefs.
+      var alignments = [chrome.autotestPrivate.ShelfAlignmentType.LEFT,
+        chrome.autotestPrivate.ShelfAlignmentType.BOTTOM,
+        chrome.autotestPrivate.ShelfAlignmentType.RIGHT]
+      var l = alignments.length;
+      for (var i = 0; i < l; i++) {
+        var alignment = alignments[i];
+        chrome.autotestPrivate.setShelfAlignment(displayId, alignment,
+            function() {
           chrome.test.assertNoLastError();
-          chrome.test.assertEq(newAlignment, alignment);
-          chrome.test.succeed();
+          chrome.autotestPrivate.getShelfAlignment(displayId,
+              function(newAlignment) {
+            chrome.test.assertNoLastError();
+            chrome.test.assertEq(newAlignment, alignment);
+          });
         });
-      });
+      }
+      chrome.test.succeed();
     });
   },
 ];
@@ -482,9 +489,36 @@ var arcEnabledTests = [
   },
 ];
 
+var policyTests = [
+  function getAllEnterpricePolicies() {
+    chrome.autotestPrivate.getAllEnterprisePolicies(
+      chrome.test.callbackPass(function(policydata) {
+        chrome.test.assertNoLastError();
+        // See AutotestPrivateWithPolicyApiTest for constants.
+        var expectedPolicy;
+        expectedPolicy =
+          {
+            "chromePolicies":
+              {"AllowDinosaurEasterEgg":
+                {"level":"mandatory",
+                 "scope":"user",
+                 "source":"cloud",
+                 "value":true}
+              },
+            "deviceLocalAccountPolicies":{},
+            "extensionPolicies":{}
+          }
+        chrome.test.assertEq(expectedPolicy, policydata);
+        chrome.test.succeed();
+      }));
+  },
+];
+
+
 var test_suites = {
   'default': defaultTests,
-  'arcEnabled': arcEnabledTests
+  'arcEnabled': arcEnabledTests,
+  'enterprisePolicies': policyTests
 };
 
 chrome.test.getConfig(function(config) {

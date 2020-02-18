@@ -62,15 +62,14 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, NonImmersiveFullscreen) {
   // Entering fullscreen should close the bubble. (We enter into tab fullscreen
   // here because tab fullscreen is non-immersive even on Chrome OS.)
   {
-    // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously. Wait for the
+    // The fullscreen change notification is sent asynchronously. Wait for the
     // notification before testing the zoom bubble visibility.
-    std::unique_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
+    FullscreenNotificationObserver waiter(browser());
     browser()
         ->exclusive_access_manager()
         ->fullscreen_controller()
         ->EnterFullscreenModeForTab(web_contents, GURL());
-    waiter->Wait();
+    waiter.Wait();
   }
   ASSERT_FALSE(browser_view->immersive_mode_controller()->IsEnabled());
   EXPECT_FALSE(ZoomBubbleView::GetZoomBubble());
@@ -85,10 +84,9 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, NonImmersiveFullscreen) {
 
   // Exit fullscreen before ending the test for the sake of sanity.
   {
-    std::unique_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
+    FullscreenNotificationObserver waiter(browser());
     chrome::ToggleFullscreenMode(browser());
-    waiter->Wait();
+    waiter.Wait();
   }
 }
 
@@ -108,10 +106,9 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
 
   // Enter immersive fullscreen.
   {
-    std::unique_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
+    FullscreenNotificationObserver waiter(browser());
     chrome::ToggleFullscreenMode(browser());
-    waiter->Wait();
+    waiter.Wait();
   }
   ASSERT_TRUE(immersive_controller->IsEnabled());
   ASSERT_FALSE(immersive_controller->IsRevealed());
@@ -151,10 +148,9 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
 
   // Exit fullscreen before ending the test for the sake of sanity.
   {
-    std::unique_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
+    FullscreenNotificationObserver waiter(browser());
     chrome::ToggleFullscreenMode(browser());
-    waiter->Wait();
+    waiter.Wait();
   }
 }
 #endif  // OS_CHROMEOS
@@ -244,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest,
   ASSERT_TRUE(bubble);
 
   const double old_zoom_level = zoom_controller->GetZoomLevel();
-  const base::string16 old_label = bubble->label_->text();
+  const base::string16 old_label = bubble->label_->GetText();
 
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder("Test").Build();
@@ -254,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest,
   zoom_controller->SetZoomLevelByClient(new_zoom_level, client);
 
   ASSERT_EQ(ZoomBubbleView::GetZoomBubble(), bubble);
-  const base::string16 new_label = bubble->label_->text();
+  const base::string16 new_label = bubble->label_->GetText();
 
   EXPECT_NE(new_label, old_label);
 }

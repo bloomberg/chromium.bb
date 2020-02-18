@@ -36,7 +36,7 @@ class MockResourcePrefetchPredictor : public ResourcePrefetchPredictor {
 };
 
 void InitializeRedirectStat(RedirectStat* redirect,
-                            const std::string& url,
+                            const GURL& url,
                             int number_of_hits,
                             int number_of_misses,
                             int consecutive_misses);
@@ -68,6 +68,10 @@ content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
     const std::string& url,
     content::ResourceType resource_type = content::ResourceType::kMainFrame,
     bool always_access_network = false);
+
+content::mojom::ResourceLoadInfoPtr CreateLowPriorityResourceLoadInfo(
+    const std::string& url,
+    content::ResourceType resource_type = content::ResourceType::kMainFrame);
 
 content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
     const std::vector<std::string>& redirect_chain,

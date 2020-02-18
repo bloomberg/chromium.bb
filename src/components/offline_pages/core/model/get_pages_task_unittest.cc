@@ -41,7 +41,7 @@ class GetPagesTaskTest : public ModelTaskTestBase {
 
   std::unique_ptr<GetPagesTask> CreateTask(const PageCriteria& criteria) {
     return std::make_unique<GetPagesTask>(
-        store(), &policy_controller_, criteria,
+        store(), criteria,
         base::BindOnce(&GetPagesTaskTest::OnGetPagesDone,
                        base::Unretained(this)));
   }
@@ -57,7 +57,6 @@ class GetPagesTaskTest : public ModelTaskTestBase {
   }
 
  protected:
-  ClientPolicyController policy_controller_;
   std::set<OfflinePageItem> task_result_;
   std::vector<OfflinePageItem> ordered_task_result_;
 };
@@ -308,7 +307,7 @@ TEST_F(GetPagesTaskTest, RemovedOnCacheReset) {
   store_test_util()->InsertItem(generator()->CreateItem());
 
   PageCriteria criteria;
-  criteria.removed_on_cache_reset = true;
+  criteria.lifetime_type = LifetimeType::TEMPORARY;
   RunTask(CreateTask(criteria));
 
   EXPECT_EQ(std::set<OfflinePageItem>({cct_item}), task_result());

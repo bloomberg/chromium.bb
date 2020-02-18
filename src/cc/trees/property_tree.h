@@ -15,8 +15,8 @@
 #include "cc/base/synced_property.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_sticky_position_constraint.h"
+#include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
-#include "cc/trees/element_id.h"
 #include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -631,7 +631,6 @@ class CC_EXPORT PropertyTrees final {
   ClipTree clip_tree;
   ScrollTree scroll_tree;
   bool needs_rebuild;
-  bool can_adjust_raster_scales;
   // Change tracking done on property trees needs to be preserved across commits
   // (when they are not rebuild). We cache a global bool which stores whether
   // we did any change tracking so that we can skip copying the change status

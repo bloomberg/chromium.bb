@@ -21,7 +21,6 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Pair;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
@@ -33,8 +32,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueRequest;
@@ -42,6 +39,7 @@ import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueu
 import org.chromium.chrome.browser.download.DownloadMetrics.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaBackgroundDownload;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDownloadResumption;
+import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -57,7 +55,11 @@ import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
+import org.chromium.components.offline_items_collection.OfflineContentProvider;
+import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.PendingState;
+import org.chromium.components.offline_items_collection.UpdateDelta;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifierAutoDetect;
@@ -160,6 +162,9 @@ public class DownloadManagerService
 
         /** Called when a download has been removed. */
         void onDownloadItemRemoved(String guid, boolean isOffTheRecord);
+
+        /** Only for testing */
+        default void broadcastDownloadSuccessfulForTesting(DownloadInfo downloadInfo) {}
     }
 
     @VisibleForTesting protected final List<String> mAutoResumableDownloadIds =
@@ -180,6 +185,9 @@ public class DownloadManagerService
 
     // Whether any ChromeActivity is launched.
     private boolean mActivityLaunched;
+
+    // Disabling call to DownloadManager.addCompletedDownload() for test.
+    private boolean mDisableAddCompletedDownloadForTesting;
 
     /**
      * Interface to intercept download request to Android DownloadManager. This is implemented by
@@ -222,6 +230,44 @@ public class DownloadManagerService
             mIsSupportedMimeType = progress.mIsSupportedMimeType;
         }
     }
+
+    private class BackgroundDownloadUmaRecorder implements OfflineContentProvider.Observer {
+        BackgroundDownloadUmaRecorder() {
+            OfflineContentAggregatorFactory.get().addObserver(this);
+        }
+
+        @Override
+        public void onItemUpdated(OfflineItem item, UpdateDelta updateDelta) {
+            if (!LegacyHelpers.isLegacyDownload(item.id)) return;
+            switch (item.state) {
+                case OfflineItemState.COMPLETE:
+                    maybeRecordBackgroundDownload(UmaBackgroundDownload.COMPLETED, item.id.id);
+                    break;
+                case OfflineItemState.CANCELLED:
+                    maybeRecordBackgroundDownload(UmaBackgroundDownload.CANCELLED, item.id.id);
+                    break;
+                case OfflineItemState.INTERRUPTED:
+                    maybeRecordBackgroundDownload(UmaBackgroundDownload.INTERRUPTED, item.id.id);
+                    break;
+                case OfflineItemState.FAILED:
+                    maybeRecordBackgroundDownload(UmaBackgroundDownload.FAILED, item.id.id);
+                    break;
+                case OfflineItemState.PENDING:
+                case OfflineItemState.PAUSED:
+                case OfflineItemState.IN_PROGRESS:
+                default:
+                    break;
+            }
+        }
+
+        @Override
+        public void onItemsAdded(ArrayList<OfflineItem> items) {}
+
+        @Override
+        public void onItemRemoved(ContentId id) {}
+    }
+
+    private BackgroundDownloadUmaRecorder mBackgroundDownloadUmaRecorder;
 
     /**
      * Creates DownloadManagerService.
@@ -334,6 +380,7 @@ public class DownloadManagerService
         downloadItem.setSystemDownloadId(
                 DownloadManagerBridge.getDownloadIdForDownloadGuid(downloadInfo.getDownloadGuid()));
         updateDownloadProgress(downloadItem, status);
+        updateDownloadInfoBar(downloadItem);
     }
 
     @Override
@@ -344,14 +391,19 @@ public class DownloadManagerService
             removeAutoResumableDownload(item.getId());
         }
         updateDownloadProgress(item, DownloadStatus.IN_PROGRESS);
+        updateDownloadInfoBar(item);
         scheduleUpdateIfNeeded();
     }
 
     @Override
     public void onDownloadCancelled(final DownloadInfo downloadInfo) {
-        DownloadItem item = new DownloadItem(false, downloadInfo);
+        DownloadInfo newInfo = DownloadInfo.Builder.fromDownloadInfo(downloadInfo)
+                                       .setState(DownloadState.CANCELLED)
+                                       .build();
+        DownloadItem item = new DownloadItem(false, newInfo);
         removeAutoResumableDownload(item.getId());
         updateDownloadProgress(new DownloadItem(false, downloadInfo), DownloadStatus.CANCELLED);
+        updateDownloadInfoBar(item);
     }
 
     @Override
@@ -372,6 +424,7 @@ public class DownloadManagerService
                     UmaBackgroundDownload.INTERRUPTED, downloadInfo.getDownloadGuid());
         }
         updateDownloadProgress(item, status);
+        updateDownloadInfoBar(item);
 
         if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
         DownloadProgress progress = mDownloadProgressMap.get(item.getId());
@@ -422,11 +475,21 @@ public class DownloadManagerService
         }
     }
 
+    private void updateDownloadInfoBar(DownloadItem item) {
+        DownloadInfoBarController infobarController =
+                getInfoBarController(item.getDownloadInfo().isOffTheRecord());
+        if (infobarController != null) infobarController.onDownloadItemUpdated(item);
+    }
+
     /**
      * Broadcast that a download was successful.
      * @param downloadInfo info about the download.
      */
-    protected void broadcastDownloadSuccessful(DownloadInfo downloadInfo) {}
+    protected void broadcastDownloadSuccessful(DownloadInfo downloadInfo) {
+        for (DownloadObserver observer : mDownloadObservers) {
+            observer.broadcastDownloadSuccessfulForTesting(downloadInfo);
+        }
+    }
 
     /**
      * Gets download information from SharedPreferences.
@@ -539,8 +602,8 @@ public class DownloadManagerService
         AsyncTask<Pair<Boolean, Boolean>> task = new AsyncTask<Pair<Boolean, Boolean>>() {
             @Override
             public Pair<Boolean, Boolean> doInBackground() {
-                boolean success =
-                        ContentUriUtils.isContentUri(item.getDownloadInfo().getFilePath());
+                boolean success = mDisableAddCompletedDownloadForTesting
+                        || ContentUriUtils.isContentUri(item.getDownloadInfo().getFilePath());
                 if (!success
                         && !ChromeFeatureList.isEnabled(
                                 ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
@@ -552,7 +615,8 @@ public class DownloadManagerService
                     if (success) item.setSystemDownloadId(systemDownloadId);
                 }
                 boolean canResolve = success
-                        && (isOMADownloadDescription(item.getDownloadInfo().getMimeType())
+                        && (DownloadUtils.isOMADownloadDescription(
+                                    item.getDownloadInfo().getMimeType())
                                 || canResolveDownloadItem(item, isSupportedMimeType));
                 return Pair.create(success, canResolve);
             }
@@ -588,6 +652,11 @@ public class DownloadManagerService
         }
     }
 
+    @CalledByNative
+    private void handleOMADownload(DownloadItem download, long systemDownloadId) {
+        mOMADownloadHandler.handleOMADownload(download.getDownloadInfo(), systemDownloadId);
+    }
+
     /**
      * Handle auto opennable files after download completes.
      * TODO(qinmin): move this to DownloadManagerBridge.
@@ -595,7 +664,7 @@ public class DownloadManagerService
      * @param download A download item.
      */
     private void handleAutoOpenAfterDownload(DownloadItem download) {
-        if (isOMADownloadDescription(download.getDownloadInfo().getMimeType())) {
+        if (DownloadUtils.isOMADownloadDescription(download.getDownloadInfo().getMimeType())) {
             mOMADownloadHandler.handleOMADownload(
                     download.getDownloadInfo(), download.getSystemDownloadId());
             return;
@@ -771,32 +840,10 @@ public class DownloadManagerService
             return;
         }
 
+        // TODO(shaktisahu): We should show this on infobar instead.
         DownloadUtils.showDownloadStartToast(ContextUtils.getApplicationContext());
         addUmaStatsEntry(new DownloadUmaStatsEntry(String.valueOf(response.downloadId),
                 downloadItem.getStartTime(), 0, false, true, 0, 0));
-    }
-
-    /**
-     * Determines if the download should be immediately opened after
-     * downloading.
-     *
-     * @param mimeType The mime type of the download.
-     * @param hasUserGesture Whether the download is associated with an user gesture.
-     * @return true if the downloaded content should be opened, or false otherwise.
-     */
-    @VisibleForTesting
-    static boolean shouldOpenAfterDownload(String mimeType, boolean hasUserGesture) {
-        return hasUserGesture && MIME_TYPES_TO_OPEN.contains(mimeType);
-    }
-
-    /**
-     * Returns true if the download is for OMA download description file.
-     *
-     * @param mimeType The mime type of the download.
-     * @return true if the downloaded is OMA download description, or false otherwise.
-     */
-    static boolean isOMADownloadDescription(String mimeType) {
-        return OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME.equalsIgnoreCase(mimeType);
     }
 
     @Nullable
@@ -814,10 +861,9 @@ public class DownloadManagerService
                 DownloadManagerBridge.queryDownloadResult(downloadId);
         if (mimeType == null) mimeType = queryResult.mimeType;
 
-        Uri contentUri = filePath == null
-                ? queryResult.contentUri
-                : ApiCompatibilityUtils.getUriForDownloadedFile(new File(filePath));
-        if (contentUri == null) return null;
+        Uri contentUri = filePath == null ? queryResult.contentUri
+                                          : DownloadUtils.getUriForOtherApps(filePath);
+        if (contentUri == null || Uri.EMPTY.equals(contentUri)) return null;
 
         Uri fileUri = filePath == null ? contentUri : Uri.fromFile(new File(filePath));
         return createLaunchIntent(
@@ -903,7 +949,7 @@ public class DownloadManagerService
     public static boolean canResolveDownload(
             String filePath, String mimeType, long systemDownloadId) {
         assert !ThreadUtils.runningOnUiThread();
-        if (isOMADownloadDescription(mimeType)) return true;
+        if (DownloadUtils.isOMADownloadDescription(mimeType)) return true;
 
         Intent intent = getLaunchIntentForDownload(filePath, systemDownloadId,
                 DownloadManagerService.isSupportedMimeType(mimeType), null, null, mimeType);
@@ -1095,6 +1141,8 @@ public class DownloadManagerService
             removeDownloadProgress(id.id);
         } else {
             mDownloadNotifier.notifyDownloadCanceled(id);
+            DownloadInfoBarController infoBarController = getInfoBarController(isOffTheRecord);
+            if (infoBarController != null) infoBarController.onDownloadItemRemoved(id);
         }
         recordDownloadFinishedUMA(DownloadStatus.CANCELLED, id.id, 0);
         maybeRecordBackgroundDownload(UmaBackgroundDownload.CANCELLED, id.id);
@@ -1145,9 +1193,7 @@ public class DownloadManagerService
             return;
         }
 
-        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
-            DownloadManagerBridge.removeCompletedDownload(downloadGuid, externallyRemoved);
-        });
+        DownloadManagerBridge.removeCompletedDownload(downloadGuid, externallyRemoved);
     }
 
     /**
@@ -1181,7 +1227,7 @@ public class DownloadManagerService
         if (mNativeDownloadManagerService == 0) {
             boolean startupCompleted =
                     BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isStartupSuccessfullyCompleted();
+                            .isFullBrowserStarted();
             mNativeDownloadManagerService = nativeInit(startupCompleted);
             if (!startupCompleted) {
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
@@ -1194,7 +1240,7 @@ public class DownloadManagerService
     @Override
     public void onSuccess() {
         if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
+                        .isFullBrowserStarted()) {
             nativeOnFullBrowserStarted(mNativeDownloadManagerService);
         }
     }
@@ -1224,7 +1270,9 @@ public class DownloadManagerService
     public void onSuccessNotificationShown(
             DownloadInfo info, boolean canResolve, int notificationId, long systemDownloadId) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
-            if (canResolve && shouldOpenAfterDownload(info.getMimeType(), info.hasUserGesture())) {
+            if (canResolve
+                    && DownloadUtils.shouldAutoOpenDownload(
+                            info.getMimeType(), info.hasUserGesture())) {
                 DownloadItem item = new DownloadItem(false, info);
                 item.setSystemDownloadId(systemDownloadId);
                 handleAutoOpenAfterDownload(item);
@@ -1245,7 +1293,7 @@ public class DownloadManagerService
         }
 
         if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
+                        .isFullBrowserStarted()) {
             Profile profile = info.isOffTheRecord()
                     ? Profile.getLastUsedProfile().getOffTheRecordProfile()
                     : Profile.getLastUsedProfile().getOriginalProfile();
@@ -1364,7 +1412,7 @@ public class DownloadManagerService
 
                         @Override
                         protected void onPostExecute(Boolean canResolve) {
-                            if (shouldOpenAfterDownload(
+                            if (DownloadUtils.shouldAutoOpenDownload(
                                         result.mimeType, item.getDownloadInfo().hasUserGesture())
                                     && canResolve) {
                                 handleAutoOpenAfterDownload(item);
@@ -1743,9 +1791,6 @@ public class DownloadManagerService
         for (DownloadObserver adapter : mDownloadObservers) {
             adapter.onDownloadItemCreated(item);
         }
-        DownloadInfoBarController infobarController =
-                getInfoBarController(item.getDownloadInfo().isOffTheRecord());
-        if (infobarController != null) infobarController.onDownloadItemUpdated(item);
     }
 
     @CalledByNative
@@ -1753,10 +1798,6 @@ public class DownloadManagerService
         for (DownloadObserver adapter : mDownloadObservers) {
             adapter.onDownloadItemUpdated(item);
         }
-
-        DownloadInfoBarController infobarController =
-                getInfoBarController(item.getDownloadInfo().isOffTheRecord());
-        if (infobarController != null) infobarController.onDownloadItemUpdated(item);
     }
 
     @CalledByNative
@@ -1813,10 +1854,11 @@ public class DownloadManagerService
             public Boolean doInBackground() {
                 DownloadInfo info = downloadItem.getDownloadInfo();
                 boolean isSupportedMimeType = isSupportedMimeType(info.getMimeType());
-                boolean canResolve = isOMADownloadDescription(info.getMimeType())
+                boolean canResolve = DownloadUtils.isOMADownloadDescription(info.getMimeType())
                         || canResolveDownloadItem(downloadItem, isSupportedMimeType);
                 return canResolve
-                        && shouldOpenAfterDownload(info.getMimeType(), info.hasUserGesture());
+                        && DownloadUtils.shouldAutoOpenDownload(
+                                info.getMimeType(), info.hasUserGesture());
             }
             @Override
             protected void onPostExecute(Boolean result) {
@@ -1987,6 +2029,9 @@ public class DownloadManagerService
             nativeRecordFirstBackgroundInterruptReason(getNativeDownloadManagerService(),
                     mFirstBackgroundDownloadId, true /* downloadStarted */);
         }
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
+            mBackgroundDownloadUmaRecorder = new BackgroundDownloadUmaRecorder();
+        }
     }
 
     /**
@@ -2022,6 +2067,10 @@ public class DownloadManagerService
     void createInterruptedDownloadForTest(String url, String guid, String targetPath) {
         nativeCreateInterruptedDownloadForTest(
                 getNativeDownloadManagerService(), url, guid, targetPath);
+    }
+
+    void disableAddCompletedDownloadToDownloadManager() {
+        mDisableAddCompletedDownloadForTesting = true;
     }
 
     /**

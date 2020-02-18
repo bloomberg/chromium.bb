@@ -59,7 +59,8 @@ bool GinJavaBridgeMessageFilter::OnMessageReceived(
   return handled;
 }
 
-base::TaskRunner* GinJavaBridgeMessageFilter::OverrideTaskRunnerForMessage(
+scoped_refptr<base::SequencedTaskRunner>
+GinJavaBridgeMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   // As the filter is only invoked for the messages of the particular class,
   // we can return the task runner unconditionally.

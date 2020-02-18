@@ -380,7 +380,8 @@ void AutofillPopupItemView::CreateContent() {
   AutofillPopupController* controller = popup_view_->controller();
 
   auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(0, GetHorizontalMargin())));
+      views::BoxLayout::Orientation::kHorizontal,
+      gfx::Insets(0, GetHorizontalMargin())));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
@@ -399,13 +400,13 @@ void AutofillPopupItemView::CreateContent() {
   auto description_label = CreateDescriptionLabel();
 
   std::unique_ptr<views::View> all_labels = std::make_unique<views::View>();
-  views::GridLayout* grid_layout = all_labels->SetLayoutManager(
-      std::make_unique<views::GridLayout>(all_labels.get()));
+  views::GridLayout* grid_layout =
+      all_labels->SetLayoutManager(std::make_unique<views::GridLayout>());
   BuildColumnSet(grid_layout);
   grid_layout->StartRow(0, 0);
-  grid_layout->AddView(value_label.release());
+  grid_layout->AddView(std::move(value_label));
   if (description_label)
-    grid_layout->AddView(description_label.release());
+    grid_layout->AddView(std::move(description_label));
   else
     grid_layout->SkipColumns(1);
 
@@ -415,7 +416,7 @@ void AutofillPopupItemView::CreateContent() {
     layout_manager->set_minimum_cross_axis_size(
         kStandardRowHeight + kAutofillPopupAdditionalDoubleRowHeight);
     grid_layout->StartRowWithPadding(0, 0, 0, kAdjacentLabelsVerticalSpacing);
-    grid_layout->AddView(lower_value_label.release());
+    grid_layout->AddView(std::move(lower_value_label));
     grid_layout->SkipColumns(1);
   } else {
     layout_manager->set_minimum_cross_axis_size(kStandardRowHeight);
@@ -510,9 +511,9 @@ AutofillPopupSuggestionView* AutofillPopupSuggestionView::Create(
 
 std::unique_ptr<views::Background>
 AutofillPopupSuggestionView::CreateBackground() {
-  return views::CreateSolidBackground(
-      is_selected_ ? popup_view_->GetSelectedBackgroundColor()
-                   : popup_view_->GetBackgroundColor());
+  return is_selected_ ? views::CreateSolidBackground(
+                            popup_view_->GetSelectedBackgroundColor())
+                      : nullptr;
 }
 
 int AutofillPopupSuggestionView::GetPrimaryTextStyle() {
@@ -618,7 +619,7 @@ void AutofillPopupFooterView::CreateContent() {
 
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal,
+          views::BoxLayout::Orientation::kHorizontal,
           gfx::Insets(0, GetHorizontalMargin())));
 
   layout_manager->set_cross_axis_alignment(
@@ -646,8 +647,10 @@ void AutofillPopupFooterView::CreateContent() {
 
   auto value_label = CreateValueLabel();
   AddChildView(std::move(value_label));
-  AddSpacerWithSize(AutofillPopupBaseView::kValueLabelPadding,
-                    /*resize=*/true, layout_manager);
+  AddSpacerWithSize(
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_BETWEEN_PRIMARY_AND_SECONDARY_LABELS_HORIZONTAL),
+      /*resize=*/true, layout_manager);
 
   if (!icon.isNull() && !use_leading_icon) {
     AddSpacerWithSize(GetHorizontalMargin(), /*resize=*/false, layout_manager);
@@ -656,9 +659,9 @@ void AutofillPopupFooterView::CreateContent() {
 }
 
 std::unique_ptr<views::Background> AutofillPopupFooterView::CreateBackground() {
-  return views::CreateSolidBackground(
-      is_selected_ ? popup_view_->GetSelectedBackgroundColor()
-                   : popup_view_->GetFooterBackgroundColor());
+  return is_selected_ ? views::CreateSolidBackground(
+                            popup_view_->GetSelectedBackgroundColor())
+                      : nullptr;
 }
 
 int AutofillPopupFooterView::GetPrimaryTextStyle() {
@@ -709,8 +712,6 @@ void AutofillPopupSeparatorView::CreateContent() {
       /*bottom=*/0,
       /*right=*/0));
   AddChildView(separator);
-
-  SetBackground(CreateBackground());
 }
 
 void AutofillPopupSeparatorView::RefreshStyle() {
@@ -719,7 +720,7 @@ void AutofillPopupSeparatorView::RefreshStyle() {
 
 std::unique_ptr<views::Background>
 AutofillPopupSeparatorView::CreateBackground() {
-  return views::CreateSolidBackground(popup_view_->GetBackgroundColor());
+  return nullptr;
 }
 
 AutofillPopupSeparatorView::AutofillPopupSeparatorView(
@@ -780,7 +781,7 @@ void AutofillPopupWarningView::CreateContent() {
 
 std::unique_ptr<views::Background>
 AutofillPopupWarningView::CreateBackground() {
-  return views::CreateSolidBackground(popup_view_->GetBackgroundColor());
+  return nullptr;
 }
 
 }  // namespace
@@ -792,7 +793,12 @@ void AutofillPopupRowView::SetSelected(bool is_selected) {
     return;
 
   is_selected_ = is_selected;
-  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  if (is_selected)
+    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  RefreshStyle();
+}
+
+void AutofillPopupRowView::OnThemeChanged() {
   RefreshStyle();
 }
 
@@ -823,8 +829,8 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
     views::Widget* parent_widget)
     : AutofillPopupBaseView(controller, parent_widget),
       controller_(controller) {
-  layout_ = SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   layout_->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
 
   CreateChildViews();
@@ -832,6 +838,20 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
 }
 
 AutofillPopupViewNativeViews::~AutofillPopupViewNativeViews() {}
+
+void AutofillPopupViewNativeViews::OnThemeChanged() {
+  SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
+  // |body_container_| and |footer_container_| will be null if there is no body
+  // or footer content, respectively.
+  if (body_container_) {
+    body_container_->SetBackground(
+        views::CreateSolidBackground(GetBackgroundColor()));
+  }
+  if (footer_container_) {
+    footer_container_->SetBackground(
+        views::CreateSolidBackground(GetFooterBackgroundColor()));
+  }
+}
 
 void AutofillPopupViewNativeViews::Show() {
   DoShow();
@@ -858,6 +878,11 @@ void AutofillPopupViewNativeViews::OnSelectedRowChanged(
 void AutofillPopupViewNativeViews::OnSuggestionsChanged() {
   CreateChildViews();
   DoUpdateBoundsAndRedrawPopup();
+}
+
+base::Optional<int32_t> AutofillPopupViewNativeViews::GetAxUniqueId() {
+  return base::Optional<int32_t>(
+      AutofillPopupBaseView::GetViewAccessibility().GetUniqueId());
 }
 
 void AutofillPopupViewNativeViews::CreateChildViews() {
@@ -911,9 +936,11 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
 
   if (!rows_.empty()) {
     // Create a container to wrap the "regular" (non-footer) rows.
-    auto body_container = std::make_unique<views::View>();
-    views::BoxLayout* body_layout = body_container->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    std::unique_ptr<views::View> body_container =
+        std::make_unique<views::View>();
+    views::BoxLayout* body_layout =
+        body_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical));
     body_layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kStart);
     for (auto* row : rows_) {
@@ -921,12 +948,10 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
     }
 
     scroll_view_ = new views::ScrollView();
-    scroll_view_->set_hide_horizontal_scrollbar(true);
-    auto* body_container_ptr =
-        scroll_view_->SetContents(std::move(body_container));
-    scroll_view_->set_draw_overflow_indicator(false);
-    scroll_view_->ClipHeightTo(0,
-                               body_container_ptr->GetPreferredSize().height());
+    scroll_view_->SetHideHorizontalScrollBar(true);
+    body_container_ = scroll_view_->SetContents(std::move(body_container));
+    scroll_view_->SetDrawOverflowIndicator(false);
+    scroll_view_->ClipHeightTo(0, body_container_->GetPreferredSize().height());
 
     // Use an additional container to apply padding outside the scroll view, so
     // that the padding area is stationary. This ensures that the rounded
@@ -947,12 +972,11 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   // affected by scrolling behavior (it's "sticky") and because it has a
   // special background color.
   if (has_footer) {
-    views::View* footer_container = new views::View();
-    footer_container->SetBackground(
-        views::CreateSolidBackground(GetFooterBackgroundColor()));
+    auto* footer_container = new views::View();
 
-    views::BoxLayout* footer_layout = footer_container->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    views::BoxLayout* footer_layout =
+        footer_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical));
     footer_layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kStart);
 
@@ -964,8 +988,8 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
       line_number++;
     }
 
-    AddChildView(footer_container);
-    layout_->SetFlexForView(footer_container, 0);
+    footer_container_ = AddChildView(footer_container);
+    layout_->SetFlexForView(footer_container_, 0);
   }
 }
 

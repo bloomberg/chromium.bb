@@ -5,10 +5,14 @@
 #ifndef QUICHE_QUIC_CORE_HTTP_HTTP_FRAMES_H_
 #define QUICHE_QUIC_CORE_HTTP_HTTP_FRAMES_H_
 
+#include <cstdint>
 #include <map>
+#include <ostream>
 
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_string_utils.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 
 namespace quic {
@@ -45,7 +49,15 @@ struct HeadersFrame {
 //
 //   The PRIORITY (type=0x02) frame specifies the sender-advised priority
 //   of a stream
-enum PriorityElementType {
+
+// Length of the weight field of a priority frame.
+const QuicByteCount kPriorityWeightLength = 1;
+// Length of a priority frame's first byte.
+const QuicByteCount kPriorityFirstByteLength = 1;
+// The bit that indicates Priority frame is exclusive.
+const uint8_t kPriorityExclusiveBit = 8;
+
+enum PriorityElementType : uint8_t {
   REQUEST_STREAM = 0,
   PUSH_STREAM = 1,
   PLACEHOLDER = 2,
@@ -53,12 +65,12 @@ enum PriorityElementType {
 };
 
 struct PriorityFrame {
-  PriorityElementType prioritized_type;
-  PriorityElementType dependency_type;
-  bool exclusive;
-  uint64_t prioritized_element_id;
-  uint64_t element_dependency_id;
-  uint8_t weight;
+  PriorityElementType prioritized_type = REQUEST_STREAM;
+  PriorityElementType dependency_type = REQUEST_STREAM;
+  bool exclusive = false;
+  uint64_t prioritized_element_id = 0;
+  uint64_t element_dependency_id = 0;
+  uint8_t weight = 0;
 
   bool operator==(const PriorityFrame& rhs) const {
     return prioritized_type == rhs.prioritized_type &&
@@ -67,6 +79,20 @@ struct PriorityFrame {
            prioritized_element_id == rhs.prioritized_element_id &&
            element_dependency_id == rhs.element_dependency_id &&
            weight == rhs.weight;
+  }
+  std::string ToString() const {
+    return QuicStrCat("Priority Frame : {prioritized_type: ", prioritized_type,
+                      ", dependency_type: ", dependency_type,
+                      ", exclusive: ", exclusive,
+                      ", prioritized_element_id: ", prioritized_element_id,
+                      ", element_dependency_id: ", element_dependency_id,
+                      ", weight: ", weight, "}");
+  }
+
+  friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
+                                                      const PriorityFrame& s) {
+    os << s.ToString();
+    return os;
   }
 };
 
@@ -97,6 +123,21 @@ struct SettingsFrame {
 
   bool operator==(const SettingsFrame& rhs) const {
     return values == rhs.values;
+  }
+
+  std::string ToString() const {
+    std::string s;
+    for (auto it : values) {
+      std::string setting =
+          QuicStrCat("[id->", it.first, " | value->", it.second, "] ");
+      QuicStrAppend(&s, setting);
+    }
+    return s;
+  }
+  friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
+                                                      const SettingsFrame& s) {
+    os << s.ToString();
+    return os;
   }
 };
 

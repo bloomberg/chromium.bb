@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "url/gurl.h"
@@ -48,6 +49,8 @@ class FakeInstallableManager : public InstallableManager {
   GURL manifest_url_;
   std::unique_ptr<blink::Manifest> manifest_;
   std::unique_ptr<InstallableData> data_;
+
+  base::WeakPtrFactory<FakeInstallableManager> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_INSTALLABLE_FAKE_INSTALLABLE_MANAGER_H_

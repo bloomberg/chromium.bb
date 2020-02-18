@@ -77,7 +77,10 @@ class ImageFetchTabHelper : public web::WebStateObserver,
   void RecordGetImageDataByJsResult(ContextMenuGetImageDataByJsResult result);
 
   // Handler for messages sent back from injected JavaScript.
-  bool OnJsMessage(const base::DictionaryValue& message);
+  void OnJsMessage(const base::DictionaryValue& message,
+                   const GURL& page_url,
+                   bool user_is_interacting,
+                   web::WebFrame* sender_frame);
 
   // Handler for timeout on GetImageDataByJs.
   void OnJsTimeout(int call_id);
@@ -99,6 +102,9 @@ class ImageFetchTabHelper : public web::WebStateObserver,
   // when calling JavaScript. The ID will be regained in the message received in
   // |OnImageDataReceived| and used to invoke the corresponding callback.
   int call_id_ = 0;
+
+  // Subscription for JS message.
+  std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription_;
 
   base::WeakPtrFactory<ImageFetchTabHelper> weak_ptr_factory_;
 

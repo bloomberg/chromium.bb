@@ -8,7 +8,7 @@ XML::LibXML::Element - XML::LibXML Class for Element Nodes
 
   use XML::LibXML;
   # Only methods specific to Element nodes are listed here,
-  # see XML::LibXML::Node manpage for other methods
+  # see the XML::LibXML::Node manpage for other methods
 
   $node = XML::LibXML::Element->new( $name );
   $node->setAttribute( $aname, $avalue );
@@ -37,9 +37,9 @@ XML::LibXML::Element - XML::LibXML Class for Element Nodes
 
 =head1 METHODS
 
-The class inherits from L<<<<<< XML::LibXML::Node >>>>>>. The documentation for Inherited methods is not listed here. 
+The class inherits from L<<<<<< XML::LibXML::Node >>>>>>. The documentation for Inherited methods is not listed here.
 
-Many functions listed here are extensively documented in the DOM Level 3 specification (L<<<<<< http://www.w3.org/TR/DOM-Level-3-Core/ >>>>>>). Please refer to the specification for extensive documentation. 
+Many functions listed here are extensively documented in the DOM Level 3 specification (L<<<<<< http://www.w3.org/TR/DOM-Level-3-Core/ >>>>>>). Please refer to the specification for extensive documentation.
 
 =over 4
 
@@ -62,9 +62,9 @@ This method sets or replaces the node's attribute C<<<<<< $aname >>>>>> to the v
   $node->setAttributeNS( $nsURI, $aname, $avalue );
 
 Namespace-aware version of C<<<<<< setAttribute >>>>>>, where C<<<<<< $nsURI >>>>>> is a namespace URI, C<<<<<< $aname >>>>>> is a qualified name, and C<<<<<< $avalue >>>>>> is the value. The namespace URI may be null (empty or undefined) in order to
-create an attribute which has no namespace. 
+create an attribute which has no namespace.
 
-The current implementation differs from DOM in the following aspects 
+The current implementation differs from DOM in the following aspects
 
 If an attribute with the same local name and namespace URI already exists on
 the element, but its prefix differs from the prefix of C<<<<<< $aname >>>>>>, then this function is supposed to change the prefix (regardless of namespace
@@ -72,7 +72,7 @@ declarations and possible collisions). However, the current implementation does
 rather the opposite. If a prefix is declared for the namespace URI in the scope
 of the attribute, then the already declared prefix is used, disregarding the
 prefix specified in C<<<<<< $aname >>>>>>. If no prefix is declared for the namespace, the function tries to declare the
-prefix specified in C<<<<<< $aname >>>>>> and dies if the prefix is already taken by some other namespace. 
+prefix specified in C<<<<<< $aname >>>>>> and dies if the prefix is already taken by some other namespace.
 
 According to DOM Level 2 specification, this method can also be used to create
 or modify special attributes used for declaring XML namespaces (which belong to
@@ -82,7 +82,7 @@ DOM specification in the following: if a declaration of the same namespace
 prefix already exists on the element, then changing its value via this method
 automatically changes the namespace of all elements and attributes in its
 scope. This is because in libxml2 the namespace URI of an element is not static
-but is computed from a pointer to a namespace declaration attribute. 
+but is computed from a pointer to a namespace declaration attribute.
 
 
 =item getAttribute
@@ -187,7 +187,7 @@ found.
 
 This function is part of the spec. It fetches all descendants of a node with a
 given tagname, where C<<<<<< tagname >>>>>> is a qualified name, that is, in case of namespace usage it may consist of a
-prefix and local name. A special C<<<<<< tagname >>>>>> '*' can be used to match any tag name. 
+prefix and local name. A special C<<<<<< tagname >>>>>> '*' can be used to match any tag name.
 
 In SCALAR context this function returns an L<<<<<< XML::LibXML::NodeList >>>>>> object.
 
@@ -259,7 +259,7 @@ takes three parameters: 1. the namespace URI, which is required and the two
 optional values prefix, which is the namespace prefix, as it should be used in
 child elements or attributes as well as the additional activate parameter. If
 prefix is not given, undefined or empty, this function tries to create a
-declaration of the default namespace. 
+declaration of the default namespace.
 
 The activate parameter is most useful: If this parameter is set to FALSE (0), a
 new namespace declaration is simply added to the element while the element's
@@ -270,7 +270,7 @@ namespace already active for the node, it will be replaced (but its declaration
 is not removed from the document). A new namespace declaration is only created
 if necessary (that is, if the element is already in the scope of a namespace
 declaration associating the prefix with the namespace URI, then this
-declaration is reused). 
+declaration is reused).
 
 The following example may clarify this:
 
@@ -303,7 +303,7 @@ declarations on a single element.
 
 The function fails if it is required to create a declaration associating the
 prefix with the namespace URI but the element already carries a declaration
-with the same prefix but different namespace URI. 
+with the same prefix but different namespace URI.
 
 
 =item setNamespaceDeclURI
@@ -320,12 +320,12 @@ It returns 1 if the namespace declaration was found and changed, 0 otherwise.
 
 All elements and attributes (even those previously unbound from the document)
 for which the namespace declaration determines their namespace belong to the
-new namespace after the change. 
+new namespace after the change.
 
 If the new URI is undef or empty, the nodes have no namespace and no prefix
 after the change. Namespace declarations once nulled in this way do not further
 appear in the serialized output (but do remain in the document for internal
-integrity of libxml2 data structures). 
+integrity of libxml2 data structures).
 
 This function is NOT part of any DOM API.
 
@@ -348,13 +348,13 @@ Otherwise, it returns 1 if the namespace declaration was found and changed and
 
 All elements and attributes (even those previously unbound from the document)
 for which the namespace declaration determines their namespace change their
-prefix to the new value. 
+prefix to the new value.
 
 If the new prefix is undef or empty, the namespace declaration becomes a
 declaration of a default namespace. The corresponding nodes drop their
 namespace prefix (but remain in the, now default, namespace). In this case the
 function fails, if the containing element is in the scope of another default
-namespace declaration. 
+namespace declaration.
 
 This function is NOT part of any DOM API.
 
@@ -375,14 +375,14 @@ read-write access to the element's attributes. For more information, see L<<<<<<
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -393,3 +393,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

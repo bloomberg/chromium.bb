@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "chrome/browser/webauthn/authenticator_reference.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -96,7 +97,7 @@ class AuthenticatorRequestDialogModelTest : public ::testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   base::ListValue test_paired_device_list_;
 
  private:
@@ -303,11 +304,11 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
     transports_info.request_type = test_case.request_type;
     transports_info.available_transports = test_case.available_transports;
 
-    if (base::ContainsKey(test_case.transport_params,
-                          TransportAvailabilityParam::kHasTouchIdCredential))
+    if (base::Contains(test_case.transport_params,
+                       TransportAvailabilityParam::kHasTouchIdCredential))
       transports_info.has_recognized_mac_touch_id_credential = true;
 
-    if (base::ContainsKey(
+    if (base::Contains(
             test_case.transport_params,
             TransportAvailabilityParam::kHasWinNativeAuthenticator)) {
       transports_info.has_win_native_api_authenticator = true;
@@ -436,7 +437,41 @@ TEST_F(AuthenticatorRequestDialogModelTest, BlePairingFlow) {
   }
 }
 
-TEST_F(AuthenticatorRequestDialogModelTest, BleAdapaterAlreadyPowered) {
+// Verify there is no request for a pin when a BLE authenticator does not
+// require one.
+// Not run on Mac because it has its own pairing flow.
+#if !defined(OS_MACOSX)
+TEST_F(AuthenticatorRequestDialogModelTest, BlePairingWithNoPin) {
+  TransportAvailabilityInfo transports_info;
+  transports_info.available_transports = {
+      AuthenticatorTransport::kBluetoothLowEnergy};
+  transports_info.is_ble_powered = true;
+
+  bool pin_present = true;
+  AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
+  model.SetBlePairingCallback(base::BindRepeating(
+      [](bool* pin, std::string authenticator_id,
+         base::Optional<std::string> pin_code,
+         base::OnceClosure success_callback,
+         base::OnceClosure error_callback) { *pin = pin_code.has_value(); },
+      &pin_present));
+  model.saved_authenticators().AddAuthenticator(AuthenticatorReference(
+      "authenticator" /* authenticator_id */,
+      base::string16() /* authenticator_display_name */,
+      AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */,
+      false /* is_paired */, false /* requires_ble_pairing_pin */));
+
+  // Simulate user selecting the BLE authenticator.
+  model.StartFlow(std::move(transports_info), base::nullopt, nullptr);
+  model.SetCurrentStep(Step::kBleDeviceSelection);
+  model.InitiatePairingDevice("authenticator");
+
+  EXPECT_FALSE(pin_present);
+  EXPECT_EQ(Step::kBleVerifying, model.current_step());
+}
+#endif  // defined(OS_MACOSX)
+
+TEST_F(AuthenticatorRequestDialogModelTest, BleAdapterAlreadyPowered) {
   const struct {
     AuthenticatorTransport transport;
     Step expected_final_step;
@@ -463,8 +498,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, BleAdapaterAlreadyPowered) {
   }
 }
 
-TEST_F(AuthenticatorRequestDialogModelTest,
-       BleAdapaterNeedToBeManuallyPowered) {
+TEST_F(AuthenticatorRequestDialogModelTest, BleAdapterNeedToBeManuallyPowered) {
   const struct {
     AuthenticatorTransport transport;
     Step expected_final_step;
@@ -506,7 +540,7 @@ TEST_F(AuthenticatorRequestDialogModelTest,
 }
 
 TEST_F(AuthenticatorRequestDialogModelTest,
-       BleAdapaterCanBeAutomaticallyPowered) {
+       BleAdapterCanBeAutomaticallyPowered) {
   const struct {
     AuthenticatorTransport transport;
     Step expected_final_step;
@@ -561,7 +595,7 @@ TEST_F(AuthenticatorRequestDialogModelTest,
       "authenticator" /* authenticator_id */,
       base::string16() /* authenticator_display_name */,
       AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */,
-      false /* is_paired */));
+      false /* is_paired */, true /* requires_passkey */));
 
   model.StartFlow(std::move(transports_info), base::nullopt,
                   &test_paired_device_list_);

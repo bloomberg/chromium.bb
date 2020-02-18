@@ -157,7 +157,9 @@ public interface TabObserver {
     /**
      * Called when a context menu is shown for a {@link WebContents} owned by a {@link Tab}.
      * @param tab  The notifying {@link Tab}.
-     * @param menu The {@link ContextMenu} that is being shown.
+     * @param menu The {@link ContextMenu} that is being shown. Deprecated: The menu param is only
+     *             used for some tests and new context menu implementations don't extend
+     *             ContextMenu.
      */
     void onContextMenuShown(Tab tab, ContextMenu menu);
 
@@ -356,20 +358,18 @@ public interface TabObserver {
     void onFindMatchRectsAvailable(FindMatchRectsDetails result);
 
     /**
-     * Invoked when a child view is added or removed to Tab's content view.
-     */
-    void onContentViewChildrenStateUpdated(Tab tab);
-
-    /**
-     * Invoked when the status bar changes visibility.
-     * @param visibility Flags indicating the global state of the UI visibility.
-     * @see View#setSystemUiVisibility(int)
-     */
-    void onContentViewSystemUiVisibilityChanged(Tab tab, int visibility);
-
-    /**
      * Called when the root Id of tab is changed.
      * @param newRootId New root ID to be set.
      */
     void onRootIdChanged(Tab tab, int newRootId);
+
+    /**
+     * Called when offset values related with the browser controls have been changed by the
+     * renderer.
+     * @param topControlsOffsetY The Y offset of the top controls in physical pixels.
+     * @param bottomControlsOffsetY The Y offset of the bottom controls in physical pixels.
+     * @param contentOffsetY The Y offset of the content in physical pixels.
+     */
+    void onBrowserControlsOffsetChanged(
+            Tab tab, int topControlsOffsetY, int bottomControlsOffsetY, int contentOffsetY);
 }

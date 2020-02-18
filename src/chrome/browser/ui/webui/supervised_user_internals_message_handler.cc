@@ -23,12 +23,12 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/common/channel_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/supervised_user_error_page/supervised_user_error_page.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 using content::BrowserThread;
 
@@ -118,7 +118,7 @@ std::string FilteringBehaviorReasonToString(
 }  // namespace
 
 SupervisedUserInternalsMessageHandler::SupervisedUserInternalsMessageHandler()
-    : scoped_observer_(this), weak_factory_(this) {}
+    : scoped_observer_(this) {}
 
 SupervisedUserInternalsMessageHandler::
     ~SupervisedUserInternalsMessageHandler() {
@@ -216,7 +216,7 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
                   FilteringBehaviorToString(
                       filter->GetDefaultFilteringBehavior()));
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   // |identity_manager| is null in incognito and guest profiles.
   if (identity_manager) {

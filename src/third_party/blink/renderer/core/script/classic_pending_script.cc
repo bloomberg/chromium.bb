@@ -18,10 +18,11 @@
 #include "third_party/blink/renderer/core/script/document_write_intervention.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/detachable_use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
@@ -249,10 +250,13 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
 
     // It is possible to get back a script resource with integrity metadata
     // for a request with an empty integrity attribute. In that case, the
-    // integrity check should be skipped, so this check ensures that the
-    // integrity attribute isn't empty in addition to checking if the
-    // resource has empty integrity metadata.
-    if (!element->IntegrityAttributeValue().IsEmpty()) {
+    // integrity check should be skipped, as the integrity may not have been
+    // "meant" for this specific request. If the resource is being served from
+    // the preload cache however, we know any associated integrity metadata and
+    // checks were destined for this request, so we cannot skip the integrity
+    // check.
+    if (!element->IntegrityAttributeValue().IsEmpty() ||
+        GetResource()->IsLinkPreload()) {
       integrity_failure_ = GetResource()->IntegrityDisposition() !=
                            ResourceIntegrityDisposition::kPassed;
     }
@@ -276,7 +280,7 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
   AdvanceReadyState(error_occurred ? kErrorOccurred : kReady);
 }
 
-void ClassicPendingScript::Trace(blink::Visitor* visitor) {
+void ClassicPendingScript::Trace(Visitor* visitor) {
   ResourceClient::Trace(visitor);
   MemoryPressureListener::Trace(visitor);
   PendingScript::Trace(visitor);
@@ -342,7 +346,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
   auto* fetcher = GetElement()->GetDocument().ContextDocument()->Fetcher();
   // If the MIME check fails, which is considered as load failure.
   if (!AllowedByNosniff::MimeTypeAsScript(
-          fetcher->Context(), &fetcher->GetConsoleLogger(),
+          fetcher->GetUseCounter(), &fetcher->GetConsoleLogger(),
           resource->GetResponse(), AllowedByNosniff::MimeTypeCheck::kLax)) {
     return nullptr;
   }

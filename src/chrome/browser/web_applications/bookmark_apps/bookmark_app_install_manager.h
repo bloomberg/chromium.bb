@@ -20,7 +20,6 @@ class WebContents;
 }
 
 namespace web_app {
-class InstallFinalizer;
 class WebAppDataRetriever;
 }
 
@@ -32,8 +31,7 @@ class BookmarkAppHelper;
 // crbug.com/915043.
 class BookmarkAppInstallManager final : public web_app::InstallManager {
  public:
-  BookmarkAppInstallManager(Profile* profile,
-                            web_app::InstallFinalizer* finalizer);
+  explicit BookmarkAppInstallManager(Profile* profile);
   ~BookmarkAppInstallManager() override;
 
   // InstallManager:
@@ -53,9 +51,10 @@ class BookmarkAppInstallManager final : public web_app::InstallManager {
       bool no_network_install,
       WebappInstallSource install_source,
       OnceInstallCallback callback) override;
-  void InstallWebAppWithOptions(content::WebContents* web_contents,
-                                const web_app::InstallOptions& install_options,
-                                OnceInstallCallback callback) override;
+  void InstallWebAppWithOptions(
+      content::WebContents* web_contents,
+      const web_app::ExternalInstallOptions& install_options,
+      OnceInstallCallback callback) override;
   void InstallOrUpdateWebAppFromSync(
       const web_app::AppId& app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
@@ -85,7 +84,6 @@ class BookmarkAppInstallManager final : public web_app::InstallManager {
  private:
   BookmarkAppHelperFactory bookmark_app_helper_factory_;
   DataRetrieverFactory data_retriever_factory_;
-  web_app::InstallFinalizer* finalizer_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallManager);
 };

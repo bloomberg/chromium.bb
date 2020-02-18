@@ -93,7 +93,7 @@ class OmniboxEditModel {
 
   // Returns the current state.  This assumes we are switching tabs, and changes
   // the internal state appropriately.
-  const State GetStateForTabSwitch();
+  State GetStateForTabSwitch() const;
 
   // Resets the tab state, then restores local state from |state|. |state| may
   // be nullptr if there is no saved state.
@@ -189,17 +189,16 @@ class OmniboxEditModel {
       const base::string16& text,
       base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
-  // Returns true if |text| classifies as a Search rather than a URL.
-  bool ClassifiesAsSearch(const base::string16& text) const;
+  // Sets |match| and |alternate_nav_url| based on classifying |text|.
+  // |alternate_nav_url| may be nullptr.
+  void ClassifyString(const base::string16& text,
+                      AutocompleteMatch* match,
+                      GURL* alternate_nav_url) const;
 
   // Asks the browser to load the popup's currently selected item, using the
-  // supplied disposition.  This may close the popup. If |for_drop| is true,
-  // it indicates the input is being accepted as part of a drop operation and
-  // the transition should be treated as LINK (so that it won't trigger the
-  // URL to be autocompleted).
+  // supplied disposition.  This may close the popup.
   void AcceptInput(
       WindowOpenDisposition disposition,
-      bool for_drop,
       base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
   // Asks the browser to load the item at |index|, with the given properties.
@@ -444,12 +443,6 @@ class OmniboxEditModel {
   // keyword.
   static bool IsSpaceCharForAcceptingKeyword(wchar_t c);
 
-  // Sets |match| and |alternate_nav_url| based on classifying |text|.
-  // |alternate_nav_url| may be NULL.
-  void ClassifyString(const base::string16& text,
-                      AutocompleteMatch* match,
-                      GURL* alternate_nav_url) const;
-
   // Sets the state of user_input_in_progress_. Returns whether said state
   // changed, so that the caller can evoke NotifyObserversInputInProgress().
   bool SetInputInProgressNoNotify(bool in_progress);
@@ -462,6 +455,11 @@ class OmniboxEditModel {
   // change). If the caret visibility changes, we call ApplyCaretVisibility() on
   // the view.
   void SetFocusState(OmniboxFocusState state, OmniboxFocusChangeReason reason);
+
+  // Calculates the new selected line based on |count|, how many
+  // suggestions are currently in the results, and any features
+  // that are enabled.
+  size_t GetNewSelectedLine(int count);
 
   // NOTE: |client_| must outlive |omnibox_controller_|, as the latter has a
   // reference to the former.

@@ -329,8 +329,7 @@ sub lock {
     my($passphrase) = @_;
     my $cipher = Crypt::OpenPGP::Cipher->new($cert->{cipher});
     my $sym_key = $cert->{s2k}->generate($passphrase, $cipher->keysize);
-    require Crypt::Random;
-    $cert->{iv} = Crypt::Random::makerandom_octet( Length => 8 );
+    $cert->{iv} = Crypt::OpenPGP::Util::get_random_bytes(8);
     $cipher->init($sym_key, $cert->{iv});
     my @sec = $cert->{key}->secret_props;
     if ($cert->{version} < 4) {

@@ -13,22 +13,22 @@
 
 namespace blink {
 
-class WorkerGlobalScope;
 class CachedMetadata;
+class ServiceWorkerGlobalScope;
 
 class ServiceWorkerScriptCachedMetadataHandler
     : public SingleCachedMetadataHandler {
  public:
   static ServiceWorkerScriptCachedMetadataHandler* Create(
-      WorkerGlobalScope* worker_global_scope,
+      ServiceWorkerGlobalScope* global_scope,
       const KURL& script_url,
       std::unique_ptr<Vector<uint8_t>> meta_data) {
     return MakeGarbageCollected<ServiceWorkerScriptCachedMetadataHandler>(
-        worker_global_scope, script_url, std::move(meta_data));
+        global_scope, script_url, std::move(meta_data));
   }
 
   ServiceWorkerScriptCachedMetadataHandler(
-      WorkerGlobalScope*,
+      ServiceWorkerGlobalScope*,
       const KURL& script_url,
       std::unique_ptr<Vector<uint8_t>> meta_data);
   ~ServiceWorkerScriptCachedMetadataHandler() override;
@@ -47,7 +47,7 @@ class ServiceWorkerScriptCachedMetadataHandler
   size_t GetCodeCacheSize() const override;
 
  private:
-  Member<WorkerGlobalScope> worker_global_scope_;
+  Member<ServiceWorkerGlobalScope> global_scope_;
   KURL script_url_;
   scoped_refptr<CachedMetadata> cached_metadata_;
 };

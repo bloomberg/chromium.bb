@@ -8,9 +8,8 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/html/md_select_css.html">
+<link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="display_layout.html">
 <link rel="import" href="display_overscan_dialog.html">
 <link rel="import" href="night_light_slider.html">
@@ -49,7 +48,7 @@
         margin: 10px 0;
       }
 
-      .settings-box > paper-button:first-child {
+      .settings-box > cr-button:first-child {
         padding-inline-start: 0
       }
 
@@ -64,6 +63,10 @@
       #nightLightSlider {
         flex-grow: 1;
         margin-top: 20px;
+      }
+
+      iron-collapse {
+       width: 100%;
       }
     </style>
     <div class="settings-box first layout vertical self-stretch">
@@ -274,16 +277,17 @@
         </settings-dropdown-menu>
       </div>
       <!-- Custom schedule slider -->
-      <div class="settings-box indented continuation">
-        <iron-collapse id="nightLightCustomScheduleCollapse"
-            class="start text-area layout vertical"
-            opened="[[shouldOpenCustomScheduleCollapse_]]">
-          <div class="settings-box continuation self-stretch">
-            <night-light-slider id="nightLightSlider" prefs="{{prefs}}">
-            </night-light-slider>
+      <iron-collapse id="nightLightCustomScheduleCollapse"
+           opened="[[shouldOpenCustomScheduleCollapse_]]">
+        <div class="settings-box indented continuation">
+          <div class="start text-area layout vertical">
+            <div class="settings-box continuation self-stretch">
+              <night-light-slider id="nightLightSlider" prefs="{{prefs}}">
+              </night-light-slider>
+            </div>
           </div>
-        </iron-collapse>
-      </div>
+        </div>
+      </iron-collapse>
     </div>
 
   </template>

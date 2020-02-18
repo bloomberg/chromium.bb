@@ -890,6 +890,8 @@ void DispatchCompute(GLuint num_groups_x,
                      GLuint num_groups_y,
                      GLuint num_groups_z) override;
 
+void DispatchComputeIndirect(GLintptr offset) override;
+
 void GetProgramInterfaceiv(GLuint program,
                            GLenum program_interface,
                            GLenum pname,
@@ -1111,6 +1113,7 @@ void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
 void ScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
                                         GLboolean is_clipped,
                                         const GLfloat* clip_rect,
+                                        const GLfloat* rounded_corner_bounds,
                                         GLint sorting_context_id,
                                         const GLfloat* transform) override;
 

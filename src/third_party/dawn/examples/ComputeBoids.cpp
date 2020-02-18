@@ -83,7 +83,8 @@ void initBuffers() {
     for (size_t i = 0; i < 2; i++) {
         dawn::BufferDescriptor descriptor;
         descriptor.size = sizeof(Particle) * kNumParticles;
-        descriptor.usage = dawn::BufferUsageBit::TransferDst | dawn::BufferUsageBit::Vertex | dawn::BufferUsageBit::Storage;
+        descriptor.usage = dawn::BufferUsageBit::CopyDst | dawn::BufferUsageBit::Vertex |
+                           dawn::BufferUsageBit::Storage;
         particleBuffers[i] = device.CreateBuffer(&descriptor);
 
         particleBuffers[i].SetSubData(0,
@@ -93,7 +94,7 @@ void initBuffers() {
 }
 
 void initRender() {
-    dawn::ShaderModule vsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
+    dawn::ShaderModule vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
         #version 450
         layout(location = 0) in vec2 a_particlePos;
         layout(location = 1) in vec2 a_particleVel;
@@ -106,7 +107,8 @@ void initRender() {
         }
     )");
 
-    dawn::ShaderModule fsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+    dawn::ShaderModule fsModule =
+        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
         #version 450
         layout(location = 0) out vec4 fragColor;
         void main() {
@@ -120,29 +122,29 @@ void initRender() {
     descriptor.cVertexStage.module = vsModule;
     descriptor.cFragmentStage.module = fsModule;
 
-    descriptor.cVertexInput.numAttributes = 3;
+    descriptor.cVertexInput.bufferCount = 2;
+    descriptor.cVertexInput.cBuffers[0].stride = sizeof(Particle);
+    descriptor.cVertexInput.cBuffers[0].stepMode = dawn::InputStepMode::Instance;
+    descriptor.cVertexInput.cBuffers[0].attributeCount = 2;
     descriptor.cVertexInput.cAttributes[0].offset = offsetof(Particle, pos);
     descriptor.cVertexInput.cAttributes[0].format = dawn::VertexFormat::Float2;
     descriptor.cVertexInput.cAttributes[1].shaderLocation = 1;
     descriptor.cVertexInput.cAttributes[1].offset = offsetof(Particle, vel);
     descriptor.cVertexInput.cAttributes[1].format = dawn::VertexFormat::Float2;
-    descriptor.cVertexInput.cAttributes[2].shaderLocation = 2;
-    descriptor.cVertexInput.cAttributes[2].inputSlot = 1;
-    descriptor.cVertexInput.cAttributes[2].format = dawn::VertexFormat::Float2;
-    descriptor.cVertexInput.numBuffers = 2;
-    descriptor.cVertexInput.cBuffers[0].stride = sizeof(Particle);
-    descriptor.cVertexInput.cBuffers[0].stepMode = dawn::InputStepMode::Instance;
-    descriptor.cVertexInput.cBuffers[1].inputSlot = 1;
     descriptor.cVertexInput.cBuffers[1].stride = sizeof(glm::vec2);
+    descriptor.cVertexInput.cBuffers[1].attributeCount = 1;
+    descriptor.cVertexInput.cBuffers[1].attributes = &descriptor.cVertexInput.cAttributes[2];
+    descriptor.cVertexInput.cAttributes[2].shaderLocation = 2;
+    descriptor.cVertexInput.cAttributes[2].format = dawn::VertexFormat::Float2;
     descriptor.depthStencilState = &descriptor.cDepthStencilState;
-    descriptor.cDepthStencilState.format = dawn::TextureFormat::D32FloatS8Uint;
+    descriptor.cDepthStencilState.format = dawn::TextureFormat::Depth24PlusStencil8;
     descriptor.cColorStates[0]->format = GetPreferredSwapChainTextureFormat();
 
     renderPipeline = device.CreateRenderPipeline(&descriptor);
 }
 
 void initSim() {
-    dawn::ShaderModule module = utils::CreateShaderModule(device, dawn::ShaderStage::Compute, R"(
+    dawn::ShaderModule module = utils::CreateShaderModule(device, utils::ShaderStage::Compute, R"(
         #version 450
 
         struct Particle {

@@ -14,12 +14,14 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_item_impl_delegate.h"
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/simple_download_manager.h"
 #include "components/download/public/common/url_download_handler.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -116,8 +118,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       const GURL& tab_url,
       const GURL& tab_referrer_url,
       std::vector<GURL> url_chain,
-      scoped_refptr<network::ResourceResponse> response,
       net::CertStatus cert_status,
+      scoped_refptr<network::ResourceResponse> response_head,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter);
 
@@ -148,6 +151,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     download_start_observer_ = observer;
   }
 
+#if defined(OS_ANDROID)
   // Callback to generate an intermediate file path from the given target file
   // path;
   using IntermediatePathCallback =
@@ -156,6 +160,11 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       const IntermediatePathCallback& intermediate_path_cb) {
     intermediate_path_cb_ = intermediate_path_cb;
   }
+
+  void set_default_download_dir(base::FilePath default_download_dir) {
+    default_download_dir_ = default_download_dir;
+  }
+#endif
 
   // Called to get all in-progress DownloadItemImpl.
   // TODO(qinmin): remove this method once InProgressDownloadManager owns
@@ -258,8 +267,13 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // callback to check if an origin is secure.
   IsOriginSecureCallback is_origin_secure_cb_;
 
-  // callback to generate the intermediate file path.
+#if defined(OS_ANDROID)
+  // Callback to generate the intermediate file path.
   IntermediatePathCallback intermediate_path_cb_;
+
+  // Default download directory.
+  base::FilePath default_download_dir_;
+#endif
 
   // A list of in-progress download items, could be null if DownloadManagerImpl
   // is managing all downloads.
@@ -285,7 +299,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Connector to the service manager.
   service_manager::Connector* connector_;
 
-  base::WeakPtrFactory<InProgressDownloadManager> weak_factory_;
+  base::WeakPtrFactory<InProgressDownloadManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InProgressDownloadManager);
 };

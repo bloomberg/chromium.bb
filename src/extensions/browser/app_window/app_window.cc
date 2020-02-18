@@ -244,8 +244,7 @@ AppWindow::AppWindow(BrowserContext* context,
     : browser_context_(context),
       extension_id_(extension->id()),
       session_id_(SessionID::NewUnique()),
-      app_delegate_(app_delegate),
-      image_loader_ptr_factory_(this) {
+      app_delegate_(app_delegate) {
   ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
   CHECK(!client->IsGuestSession(context) || context->IsOffTheRecord())
       << "Only off the record window may be opened in the guest mode.";
@@ -355,7 +354,7 @@ void AppWindow::RequestMediaAccessPermission(
 bool AppWindow::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    blink::MediaStreamType type) {
+    blink::mojom::MediaStreamType type) {
   DCHECK_EQ(web_contents(),
             content::WebContents::FromRenderFrameHost(render_frame_host)
                 ->GetOutermostWebContents());
@@ -444,9 +443,10 @@ bool AppWindow::TakeFocus(WebContents* source, bool reverse) {
   return app_delegate_->TakeFocus(source, reverse);
 }
 
-gfx::Size AppWindow::EnterPictureInPicture(content::WebContents* web_contents,
-                                           const viz::SurfaceId& surface_id,
-                                           const gfx::Size& natural_size) {
+content::PictureInPictureResult AppWindow::EnterPictureInPicture(
+    content::WebContents* web_contents,
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& natural_size) {
   return app_delegate_->EnterPictureInPicture(web_contents, surface_id,
                                               natural_size);
 }
@@ -729,7 +729,9 @@ void AppWindow::SetAlwaysOnTop(bool always_on_top) {
        ExtensionsBrowserClient::Get()->IsScreensaverInDemoMode(
            extension_id())) &&
       !IntersectsWithTaskbar()) {
-    native_app_window_->SetAlwaysOnTop(always_on_top);
+    native_app_window_->SetZOrderLevel(always_on_top
+                                           ? ui::ZOrderLevel::kFloatingWindow
+                                           : ui::ZOrderLevel::kNormal);
   }
 
   OnNativeWindowChanged();
@@ -854,18 +856,19 @@ bool AppWindow::IntersectsWithTaskbar() const {
 
 void AppWindow::UpdateNativeAlwaysOnTop() {
   DCHECK(cached_always_on_top_);
-  bool is_on_top = native_app_window_->IsAlwaysOnTop();
+  bool is_on_top =
+      native_app_window_->GetZOrderLevel() == ui::ZOrderLevel::kFloatingWindow;
   bool fullscreen = IsFullscreen();
   bool intersects_taskbar = IntersectsWithTaskbar();
 
   if (is_on_top && (fullscreen || intersects_taskbar)) {
     // When entering fullscreen or overlapping the taskbar, ensure windows are
     // not always-on-top.
-    native_app_window_->SetAlwaysOnTop(false);
+    native_app_window_->SetZOrderLevel(ui::ZOrderLevel::kNormal);
   } else if (!is_on_top && !fullscreen && !intersects_taskbar) {
     // When exiting fullscreen and moving away from the taskbar, reinstate
     // always-on-top.
-    native_app_window_->SetAlwaysOnTop(true);
+    native_app_window_->SetZOrderLevel(ui::ZOrderLevel::kFloatingWindow);
   }
 }
 
@@ -940,13 +943,13 @@ void AppWindow::ToggleFullscreenModeForTab(content::WebContents* source,
   SetFullscreen(FULLSCREEN_TYPE_HTML_API, enter_fullscreen);
 }
 
-bool AppWindow::IsFullscreenForTabOrPending(const content::WebContents* source)
-    const {
+bool AppWindow::IsFullscreenForTabOrPending(
+    const content::WebContents* source) {
   return IsHtmlApiFullscreen();
 }
 
 blink::WebDisplayMode AppWindow::GetDisplayMode(
-    const content::WebContents* source) const {
+    const content::WebContents* source) {
   return IsFullscreen() ? blink::kWebDisplayModeFullscreen
                         : blink::kWebDisplayModeStandalone;
 }

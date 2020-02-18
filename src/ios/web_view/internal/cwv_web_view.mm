@@ -5,6 +5,7 @@
 #import "ios/web_view/internal/cwv_web_view_internal.h"
 
 #include <memory>
+#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,17 +16,19 @@
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
+#include "components/url_formatter/elide_url.h"
 #include "google_apis/google_api_keys.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
-#include "ios/web/public/favicon_url.h"
+#include "ios/web/public/favicon/favicon_url.h"
+#include "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/referrer.h"
-#include "ios/web/public/reload_type.h"
+#import "ios/web/public/navigation/navigation_context.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
+#include "ios/web/public/navigation/referrer.h"
+#include "ios/web/public/navigation/reload_type.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/context_menu_params.h"
-#import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -109,8 +112,13 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
   // Handles presentation of JavaScript dialogs.
   std::unique_ptr<ios_web_view::WebViewJavaScriptDialogPresenter>
       _javaScriptDialogPresenter;
-  std::map<std::string, web::WebState::ScriptCommandCallback>
+  // Stores the script command callbacks with subscriptions.
+  std::unordered_map<
+      std::string,
+      std::pair<web::WebState::ScriptCommandCallback,
+                std::unique_ptr<web::WebState::ScriptCommandSubscription>>>
       _scriptCommandCallbacks;
+  CRWSessionStorage* _cachedSessionStorage;
 }
 
 // Redefine these properties as readwrite to define setters, which send KVO
@@ -122,6 +130,7 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
 @property(nonatomic, readwrite) BOOL loading;
 @property(nonatomic, readwrite, copy) NSString* title;
 @property(nonatomic, readwrite) NSURL* visibleURL;
+@property(nonatomic, readwrite) NSString* visibleLocationString;
 @property(nonatomic, readwrite) CWVSSLStatus* visibleSSLStatus;
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 @property(nonatomic, readonly) CWVAutofillController* autofillController;
@@ -294,10 +303,6 @@ static NSString* gUserAgentProduct = nil;
 - (void)webStateDestroyed:(web::WebState*)webState {
   webState->RemoveObserver(_webStateObserver.get());
   _webStateObserver.reset();
-  for (const auto& pair : _scriptCommandCallbacks) {
-    webState->RemoveScriptCommandCallback(pair.first);
-  }
-  _scriptCommandCallbacks.clear();
 }
 
 - (void)webState:(web::WebState*)webState
@@ -481,28 +486,28 @@ static NSString* gUserAgentProduct = nil;
 - (void)addScriptCommandHandler:(id<CWVScriptCommandHandler>)handler
                   commandPrefix:(NSString*)commandPrefix {
   CWVWebView* __weak weakSelf = self;
-  const web::WebState::ScriptCommandCallback callback =
-      base::BindRepeating(^bool(
-          const base::DictionaryValue& content, const GURL& mainDocumentURL,
-          bool userInteracting, bool isMainFrame, web::WebFrame* senderFrame) {
+  const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
+      ^(const base::DictionaryValue& content, const GURL& mainDocumentURL,
+        bool userInteracting, web::WebFrame* senderFrame) {
         NSDictionary* nsContent = NSDictionaryFromDictionaryValue(content);
         CWVScriptCommand* command = [[CWVScriptCommand alloc]
             initWithContent:nsContent
             mainDocumentURL:net::NSURLWithGURL(mainDocumentURL)
             userInteracting:userInteracting];
-        return [handler webView:weakSelf
+        [handler webView:weakSelf
             handleScriptCommand:command
-                  fromMainFrame:isMainFrame];
+                  fromMainFrame:senderFrame->IsMainFrame()];
       });
 
   std::string stdCommandPrefix = base::SysNSStringToUTF8(commandPrefix);
-  _webState->AddScriptCommandCallback(callback, stdCommandPrefix);
-  _scriptCommandCallbacks[stdCommandPrefix] = callback;
+  auto subscription =
+      _webState->AddScriptCommandCallback(callback, stdCommandPrefix);
+  _scriptCommandCallbacks[stdCommandPrefix] = {callback,
+                                               std::move(subscription)};
 }
 
 - (void)removeScriptCommandHandlerForCommandPrefix:(NSString*)commandPrefix {
   std::string stdCommandPrefix = base::SysNSStringToUTF8(commandPrefix);
-  _webState->RemoveScriptCommandCallback(stdCommandPrefix);
   _scriptCommandCallbacks.erase(stdCommandPrefix);
 }
 
@@ -550,9 +555,7 @@ static NSString* gUserAgentProduct = nil;
       base::mac::ObjCCastStrict<JsSuggestionManager>(
           [_webState->GetJSInjectionReceiver()
               instanceOfClass:[JsSuggestionManager class]]);
-  web::WebFramesManager* framesManager =
-      web::WebFramesManager::FromWebState(_webState.get());
-  [JSSuggestionManager setWebFramesManager:framesManager];
+  [JSSuggestionManager setWebFramesManager:_webState->GetWebFramesManager()];
   return [[CWVAutofillController alloc] initWithWebState:_webState.get()
                                            autofillAgent:autofillAgent
                                        JSAutofillManager:JSAutofillManager
@@ -565,8 +568,18 @@ static NSString* gUserAgentProduct = nil;
 
 - (void)encodeRestorableStateWithCoder:(NSCoder*)coder {
   [super encodeRestorableStateWithCoder:coder];
-  [coder encodeObject:_webState->BuildSessionStorage()
-               forKey:kSessionStorageKey];
+
+  // It is possible for this instance to be encoded when the |_webState| is a
+  // nullptr, i.e. when this method is called after |shutDown| has occurred.
+  CRWSessionStorage* sessionStorage;
+  if (_webState) {
+    sessionStorage = _webState->BuildSessionStorage();
+  } else if (_cachedSessionStorage) {
+    sessionStorage = _cachedSessionStorage;
+  } else {
+    return;
+  }
+  [coder encodeObject:sessionStorage forKey:kSessionStorageKey];
 }
 
 - (void)decodeRestorableStateWithCoder:(NSCoder*)coder {
@@ -594,9 +607,6 @@ static NSString* gUserAgentProduct = nil;
   if (_webState) {
     if (_webStateObserver) {
       _webState->RemoveObserver(_webStateObserver.get());
-    }
-    for (const auto& pair : _scriptCommandCallbacks) {
-      _webState->RemoveScriptCommandCallback(pair.first);
     }
     WebViewHolder::RemoveFromWebState(_webState.get());
     if (_webState->GetView().superview == self) {
@@ -640,8 +650,9 @@ static NSString* gUserAgentProduct = nil;
       std::make_unique<ios_web_view::WebViewJavaScriptDialogPresenter>(self,
                                                                        nullptr);
 
-  for (const auto& pair : _scriptCommandCallbacks) {
-    _webState->AddScriptCommandCallback(pair.second, pair.first);
+  for (auto& pair : _scriptCommandCallbacks) {
+    pair.second.second =
+        _webState->AddScriptCommandCallback(pair.second.first, pair.first);
   }
 
   _webState->GetWebViewProxy().allowsBackForwardNavigationGestures =
@@ -702,6 +713,8 @@ static NSString* gUserAgentProduct = nil;
 - (void)updateCurrentURLs {
   self.lastCommittedURL = net::NSURLWithGURL(_webState->GetLastCommittedURL());
   self.visibleURL = net::NSURLWithGURL(_webState->GetVisibleURL());
+  self.visibleLocationString = base::SysUTF16ToNSString(
+      url_formatter::FormatUrlForSecurityDisplay(_webState->GetVisibleURL()));
 }
 
 - (void)updateTitle {
@@ -722,6 +735,10 @@ static NSString* gUserAgentProduct = nil;
 #pragma mark - Internal Methods
 
 - (void)shutDown {
+  // To handle the case where -[CWVWebView encodeRestorableStateWithCoder:] is
+  // called after this method, precompute the session storage so it may be used
+  // during encoding later.
+  _cachedSessionStorage = _webState->BuildSessionStorage();
   _webState.reset();
 }
 

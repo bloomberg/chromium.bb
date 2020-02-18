@@ -33,12 +33,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/process_type.h"
-#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -167,13 +167,13 @@ class MemoryInternalsDOMHandler : public content::WebUIMessageHandler,
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   content::WebUI* web_ui_;  // The WebUI that owns us.
 
-  base::WeakPtrFactory<MemoryInternalsDOMHandler> weak_factory_;
+  base::WeakPtrFactory<MemoryInternalsDOMHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MemoryInternalsDOMHandler);
 };
 
 MemoryInternalsDOMHandler::MemoryInternalsDOMHandler(content::WebUI* web_ui)
-    : web_ui_(web_ui), weak_factory_(this) {}
+    : web_ui_(web_ui) {}
 
 MemoryInternalsDOMHandler::~MemoryInternalsDOMHandler() {
   if (select_file_dialog_)
@@ -269,7 +269,7 @@ void MemoryInternalsDOMHandler::HandleStartProfiling(
     supervisor->StartManualProfiling(pid);
   } else {
     supervisor->Start(
-        content::ServiceManagerConnection::GetForProcess(),
+        content::GetSystemConnector(),
         base::BindOnce(&heap_profiling::Supervisor::StartManualProfiling,
                        base::Unretained(supervisor), pid));
   }

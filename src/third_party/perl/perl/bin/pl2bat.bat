@@ -1,17 +1,31 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
 #!perl
-#line 15
+#line 29
     eval 'exec perl -x -S "$0" ${1+"$@"}'
 	if 0;	# In case running under some shell
 
@@ -47,7 +61,7 @@ EOT
 
 my %OPT = ();
 warn($usage), exit(0) if !getopts('whun:o:a:s:',\%OPT) or $OPT{'h'};
-# NOTE: %0 is already enclosed in doublequotes by cmd.exe, as appropriate
+# NOTE: %0 is already enclosed in double quotes by cmd.exe, as appropriate
 $OPT{'n'} = '-x -S %0 %*' unless exists $OPT{'n'};
 $OPT{'o'} = '-x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9' unless exists $OPT{'o'};
 $OPT{'s'} = '/\\.plx?/' unless exists $OPT{'s'};
@@ -58,7 +72,14 @@ if(  defined( $OPT{'a'} )  ) {
     $head = <<EOT;
 	\@rem = '--*-Perl-*--
 	\@echo off
-	"%~dp0perl.exe" $OPT{'a'}
+	IF EXIST "\%~dp0perl.exe" (
+	"\%~dp0perl.exe" $OPT{'a'}
+	) ELSE IF EXIST "\%~dp0..\\..\\bin\\perl.exe" (
+	"\%~dp0..\\..\\bin\\perl.exe" $OPT{'a'}
+	) ELSE (
+	perl $OPT{'a'}
+	)
+	
 	goto endofperl
 	\@rem ';
 EOT
@@ -67,10 +88,24 @@ EOT
 	\@rem = '--*-Perl-*--
 	\@echo off
 	if "%OS%" == "Windows_NT" goto WinNT
-	"%~dp0perl.exe" $OPT{'o'}
+	IF EXIST "\%~dp0perl.exe" (
+	"\%~dp0perl.exe" $OPT{'o'}
+	) ELSE IF EXIST "\%~dp0..\\..\\bin\\perl.exe" (
+	"\%~dp0..\\..\\bin\\perl.exe" $OPT{'o'}
+	) ELSE (
+	perl $OPT{'o'}
+	)
+	
 	goto endofperl
 	:WinNT
-	"%~dp0perl.exe" $OPT{'n'}
+	IF EXIST "\%~dp0perl.exe" (
+	"\%~dp0perl.exe" $OPT{'n'}
+	) ELSE IF EXIST "\%~dp0..\\..\\bin\\perl.exe" (
+	"\%~dp0..\\..\\bin\\perl.exe" $OPT{'n'}
+	) ELSE (
+	perl $OPT{'n'}
+	)
+	
 	if NOT "%COMSPEC%" == "%SystemRoot%\\system32\\cmd.exe" goto endofperl
 	if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 	if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
@@ -98,7 +133,7 @@ sub process {
     my $line;
     my $start= $Config{startperl};
     $start= "#!perl"   unless  $start =~ /^#!.*perl/;
-    open( FILE, $file ) or die "$0: Can't open $file: $!";
+    open( FILE, '<', $file ) or die "$0: Can't open $file: $!";
     @file = <FILE>;
     foreach $line ( @file ) {
 	$linenum++;
@@ -125,7 +160,7 @@ sub process {
     close( FILE );
     $file =~ s/$OPT{'s'}$//oi;
     $file .= '.bat' unless $file =~ /\.bat$/i or $file =~ /^-$/;
-    open( FILE, ">$file" ) or die "Can't open $file: $!";
+    open( FILE, '>', $file ) or die "Can't open $file: $!";
     print FILE $myhead;
     print FILE $start, ( $OPT{'w'} ? " -w" : "" ),
 	       "\n#line ", ($headlines+1), "\n" unless $linedone;
@@ -377,21 +412,21 @@ Show command line usage.
 
 	C:\> pl2bat foo.pl bar.PM 
 	[..creates foo.bat, bar.PM.bat..]
-	
+
 	C:\> pl2bat -s "/\.pl|\.pm/" foo.pl bar.PM
 	[..creates foo.bat, bar.bat..]
-	
+
 	C:\> pl2bat < somefile > another.bat
-	
+
 	C:\> pl2bat > another.bat
 	print scalar reverse "rekcah lrep rehtona tsuj\n";
 	^Z
 	[..another.bat is now a certified japh application..]
-	
+
 	C:\> ren *.bat *.pl
 	C:\> pl2bat -u *.pl
 	[..updates the wrapping of some previously wrapped scripts..]
-	
+
 	C:\> pl2bat -u -s .bat *.bat
 	[..same as previous example except more dangerous..]
 

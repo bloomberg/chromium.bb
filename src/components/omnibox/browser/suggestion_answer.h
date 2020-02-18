@@ -125,6 +125,10 @@ class SuggestionAnswer {
    public:
     TextField();
     ~TextField();
+    TextField(const TextField&);
+    TextField(TextField&&) noexcept;
+    TextField& operator=(const TextField&);
+    TextField& operator=(TextField&&) noexcept;
 
     // Parses |field_json| dictionary and populates |text_field| with the
     // contents.  If any of the required elements is missing, returns false and
@@ -162,7 +166,9 @@ class SuggestionAnswer {
    public:
     ImageLine();
     explicit ImageLine(const ImageLine& line);
+    ImageLine(ImageLine&&) noexcept;
     ImageLine& operator=(const ImageLine& line);
+    ImageLine& operator=(ImageLine&&) noexcept;
     ~ImageLine();
 
     // Parses dictionary |line_json| and populates |image_line| with the
@@ -213,7 +219,9 @@ class SuggestionAnswer {
 
   SuggestionAnswer();
   SuggestionAnswer(const SuggestionAnswer& answer);
+  SuggestionAnswer(SuggestionAnswer&&) noexcept;
   SuggestionAnswer& operator=(const SuggestionAnswer& answer);
+  SuggestionAnswer& operator=(SuggestionAnswer&&) noexcept;
   ~SuggestionAnswer();
 
   // Parses dictionary |answer_json| and fills a SuggestionAnswer containing the

@@ -29,7 +29,7 @@ void TransferConsumer(
     GestureConsumer* current_consumer,
     GestureConsumer* new_consumer,
     std::map<GestureConsumer*, std::unique_ptr<GestureProviderAura>>* map) {
-  if (!map->empty() && base::ContainsKey(*map, current_consumer)) {
+  if (!map->empty() && base::Contains(*map, current_consumer)) {
     (*map)[new_consumer] = std::move((*map)[current_consumer]);
     (*map)[new_consumer]->set_gesture_consumer(new_consumer);
     map->erase(current_consumer);
@@ -112,7 +112,7 @@ void GestureRecognizerImpl::CancelActiveTouchesExcept(
 void GestureRecognizerImpl::CancelActiveTouchesOn(
     const std::vector<GestureConsumer*>& consumers) {
   for (auto* consumer : consumers) {
-    if (base::ContainsKey(consumer_gesture_provider_, consumer))
+    if (base::Contains(consumer_gesture_provider_, consumer))
       CancelActiveTouchesImpl(consumer);
   }
 }
@@ -174,7 +174,7 @@ void GestureRecognizerImpl::TransferEventsTo(
   // gesture detection for some reasons but that might not be applied to the new
   // consumer. See also:
   // https://docs.google.com/document/d/1AKeK8IuF-j2TJ-2sPsewORXdjnr6oAzy5nnR1zwrsfc/edit#
-  if (base::ContainsKey(consumer_gesture_provider_, new_consumer))
+  if (base::Contains(consumer_gesture_provider_, new_consumer))
     GetGestureProviderForConsumer(new_consumer)->ResetGestureHandlingState();
 
   for (int touch_id : touchids_targeted_at_current)
@@ -186,7 +186,7 @@ bool GestureRecognizerImpl::GetLastTouchPointForTarget(
     gfx::PointF* point) {
   if (consumer_gesture_provider_.empty())
     return false;
-  if (!base::ContainsKey(consumer_gesture_provider_, consumer))
+  if (!base::Contains(consumer_gesture_provider_, consumer))
     return false;
   const MotionEvent& pointer_state =
       consumer_gesture_provider_[consumer]->pointer_state();
@@ -203,7 +203,7 @@ GestureRecognizerImpl::GetEventPerPointForConsumer(GestureConsumer* consumer,
   if (consumer_gesture_provider_.empty())
     return cancelling_touches;
 
-  if (!base::ContainsKey(consumer_gesture_provider_, consumer))
+  if (!base::Contains(consumer_gesture_provider_, consumer))
     return cancelling_touches;
   const MotionEventAura& pointer_state =
       consumer_gesture_provider_[consumer]->pointer_state();
@@ -235,7 +235,7 @@ GestureProviderAura* GestureRecognizerImpl::GetGestureProviderForConsumer(
   GestureProviderAura* gesture_provider = nullptr;
 
   if (!consumer_gesture_provider_.empty() &&
-      base::ContainsKey(consumer_gesture_provider_, consumer)) {
+      base::Contains(consumer_gesture_provider_, consumer)) {
     gesture_provider = consumer_gesture_provider_.at(consumer).get();
   }
 

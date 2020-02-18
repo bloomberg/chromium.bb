@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
@@ -20,8 +21,12 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/features.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_timing_info.h"
@@ -54,14 +59,14 @@ bool IsSupportedProtocol(page_load_metrics::NetworkProtocol protocol) {
   }
 }
 
-int64_t LayoutJankUkmValue(float jank_score) {
-  // Report (jank_score * 100) as an int in the range [0, 1000].
-  return static_cast<int>(roundf(std::min(jank_score, 10.0f) * 100.0f));
+int64_t LayoutShiftUkmValue(float shift_score) {
+  // Report (shift_score * 100) as an int in the range [0, 1000].
+  return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 100.0f));
 }
 
-int32_t LayoutJankUmaValue(float jank_score) {
-  // Report (jank_score * 10) as an int in the range [0, 100].
-  return static_cast<int>(roundf(std::min(jank_score, 10.0f) * 10.0f));
+int32_t LayoutShiftUmaValue(float shift_score) {
+  // Report (shift_score * 10) as an int in the range [0, 100].
+  return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 10.0f));
 }
 
 }  // namespace
@@ -134,6 +139,10 @@ UkmPageLoadMetricsObserver::ShouldObserveMimeType(
 UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
+  if (navigation_handle->IsInMainFrame()) {
+    largest_contentful_paint_handler_.RecordMainFrameTreeNodeId(
+        navigation_handle->GetFrameTreeNodeId());
+  }
   if (navigation_handle->GetWebContents()->GetContentsMimeType() ==
       kOfflinePreviewsMimeType) {
     if (!IsOfflinePreview(navigation_handle->GetWebContents()))
@@ -222,7 +231,9 @@ void UkmPageLoadMetricsObserver::OnResourceDataUseObserved(
     return;
   for (auto const& resource : resources) {
     network_bytes_ += resource->delta_bytes;
-    if (resource->is_complete && resource->was_fetched_via_cache) {
+    if (resource->is_complete &&
+        resource->cache_type !=
+            page_load_metrics::mojom::CacheType::kNotCached) {
       cache_bytes_ += resource->encoded_body_length;
     }
   }
@@ -249,6 +260,13 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
       GetRoundedSiteEngagementScore(info);
   if (rounded_site_engagement_score) {
     builder.SetSiteEngagementScore(rounded_site_engagement_score.value());
+  }
+
+  base::Optional<bool> third_party_cookie_blocking_enabled =
+      GetThirdPartyCookieBlockingEnabled(info);
+  if (third_party_cookie_blocking_enabled) {
+    builder.SetThirdPartyCookieBlockingEnabledForSite(
+        third_party_cookie_blocking_enabled.value());
   }
 
   if (timing.input_to_navigation_start) {
@@ -300,19 +318,15 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
           &largest_content_paint_size, &largest_content_type) &&
       WasStartedInForegroundOptionalEventInForeground(
           largest_content_paint_time, info)) {
-    builder.SetExperimental_PaintTiming_NavigationToLargestContentPaint(
+    builder.SetPaintTiming_NavigationToLargestContentfulPaint_MainFrame(
         largest_content_paint_time.value().InMilliseconds());
   }
   const page_load_metrics::ContentfulPaintTimingInfo& paint =
       largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
   if (!paint.IsEmpty() &&
       WasStartedInForegroundOptionalEventInForeground(paint.Time(), info)) {
-    TRACE_EVENT_INSTANT1(
-        "loading", "NavStartToLargestContentfulPaint::AllFrames::UKM",
-        TRACE_EVENT_SCOPE_THREAD, "data", paint.DataAsTraceValue());
-    builder
-        .SetExperimental_PaintTiming_NavigationToLargestContentPaintAllFrames(
-            paint.Time().value().InMilliseconds());
+    builder.SetPaintTiming_NavigationToLargestContentfulPaint(
+        paint.Time().value().InMilliseconds());
   }
   if (timing.interactive_timing->interactive) {
     base::TimeDelta time_to_interactive =
@@ -379,7 +393,7 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
   builder.SetCpuTime(total_foreground_cpu_time_.InMilliseconds());
 
   // Use a bucket spacing factor of 1.3 for bytes.
-  builder.SetNet_CacheBytes(ukm::GetExponentialBucketMin(cache_bytes_, 1.3));
+  builder.SetNet_CacheBytes2(ukm::GetExponentialBucketMin(cache_bytes_, 1.3));
   builder.SetNet_NetworkBytes2(
       ukm::GetExponentialBucketMin(network_bytes_, 1.3));
 
@@ -547,22 +561,22 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
 void UkmPageLoadMetricsObserver::ReportLayoutStability(
     const page_load_metrics::PageLoadExtraInfo& info) {
   ukm::builders::PageLoad(info.source_id)
-      .SetLayoutStability_JankScore(
-          LayoutJankUkmValue(info.page_render_data.layout_jank_score))
-      .SetLayoutStability_JankScore_MainFrame(
-          LayoutJankUkmValue(info.main_frame_render_data.layout_jank_score))
-      .SetLayoutStability_JankScore_MainFrame_BeforeInputOrScroll(
-          LayoutJankUkmValue(info.main_frame_render_data
-                                 .layout_jank_score_before_input_or_scroll))
+      .SetLayoutInstability_CumulativeShiftScore(
+          LayoutShiftUkmValue(info.page_render_data.layout_shift_score))
+      .SetLayoutInstability_CumulativeShiftScore_MainFrame(
+          LayoutShiftUkmValue(info.main_frame_render_data.layout_shift_score))
+      .SetLayoutInstability_CumulativeShiftScore_MainFrame_BeforeInputOrScroll(
+          LayoutShiftUkmValue(info.main_frame_render_data
+                                  .layout_shift_score_before_input_or_scroll))
       .Record(ukm::UkmRecorder::Get());
 
   UMA_HISTOGRAM_COUNTS_100(
-      "PageLoad.Experimental.LayoutStability.JankScore",
-      LayoutJankUmaValue(info.page_render_data.layout_jank_score));
+      "PageLoad.LayoutInstability.CumulativeShiftScore",
+      LayoutShiftUmaValue(info.page_render_data.layout_shift_score));
 
   UMA_HISTOGRAM_COUNTS_100(
-      "PageLoad.Experimental.LayoutStability.JankScore.MainFrame",
-      LayoutJankUmaValue(info.main_frame_render_data.layout_jank_score));
+      "PageLoad.LayoutInstability.CumulativeShiftScore.MainFrame",
+      LayoutShiftUmaValue(info.main_frame_render_data.layout_shift_score));
 }
 
 base::Optional<int64_t>
@@ -589,12 +603,51 @@ UkmPageLoadMetricsObserver::GetRoundedSiteEngagementScore(
   return rounded_document_engagement_score;
 }
 
+base::Optional<bool>
+UkmPageLoadMetricsObserver::GetThirdPartyCookieBlockingEnabled(
+    const page_load_metrics::PageLoadExtraInfo& info) const {
+  if (!browser_context_)
+    return base::nullopt;
+
+  if (!base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls))
+    return base::nullopt;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+  if (!profile->GetPrefs()->GetBoolean(prefs::kCookieControlsEnabled))
+    return base::nullopt;
+
+  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
+  return !cookie_settings->IsThirdPartyAccessAllowed(info.url);
+}
+
 void UkmPageLoadMetricsObserver::OnTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
                                                  subframe_rfh);
+  bool loading_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("loading", &loading_enabled);
+  if (!loading_enabled)
+    return;
+  const page_load_metrics::ContentfulPaintTimingInfo& paint =
+      largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+
+  if (!paint.IsEmpty()) {
+    TRACE_EVENT_INSTANT2(
+        "loading",
+        "NavStartToLargestContentfulPaint::Candidate::AllFrames::UKM",
+        TRACE_EVENT_SCOPE_THREAD, "data", paint.DataAsTraceValue(),
+        "main_frame_tree_node_id",
+        largest_contentful_paint_handler_.MainFrameTreeNodeId());
+  } else {
+    TRACE_EVENT_INSTANT1(
+        "loading",
+        "NavStartToLargestContentfulPaint::"
+        "Invalidate::AllFrames::UKM",
+        TRACE_EVENT_SCOPE_THREAD, "main_frame_tree_node_id",
+        largest_contentful_paint_handler_.MainFrameTreeNodeId());
+  }
 }
 
 void UkmPageLoadMetricsObserver::OnCpuTimingUpdate(

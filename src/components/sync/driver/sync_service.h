@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/user_demographics.h"
 #include "components/sync/driver/sync_service_observer.h"
 
 struct CoreAccountInfo;
@@ -126,13 +127,11 @@ class SyncService : public KeyedService {
     DISABLE_REASON_ENTERPRISE_POLICY = 1 << 1,
     // Sync can't start because there is no authenticated user.
     DISABLE_REASON_NOT_SIGNED_IN = 1 << 2,
-    // Sync is suppressed by user choice, either via platform-level toggle (e.g.
-    // Android's "ChromeSync" toggle), a “Reset Sync” operation from the
-    // dashboard on desktop/ChromeOS.
-    // NOTE: Other code paths that go through RequestStop also set this reason
-    // (e.g. disabling due to sign-out or policy), so it's only really
-    // meaningful when it's the *only* disable reason.
-    // TODO(crbug.com/839834): Only set this reason when it's meaningful.
+    // Sync is suppressed by user choice, either via the feature toggle in
+    // Chrome settings (which exists on Android and iOS), a platform-level
+    // toggle (e.g. Android's "ChromeSync" toggle), or a “Reset Sync” operation
+    // from the dashboard. This is also set if there's simply no signed-in user
+    // (in addition to DISABLE_REASON_NOT_SIGNED_IN).
     DISABLE_REASON_USER_CHOICE = 1 << 3,
     // Sync has encountered an unrecoverable error. It won't attempt to start
     // again until either the browser is restarted, or the user fully signs out
@@ -346,6 +345,19 @@ class SyncService : public KeyedService {
   // only when user is interested in session sync data, e.g. the history sync
   // page is opened.
   virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // USER DEMOGRAPHICS
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Gets the synced user’s noised birth year and gender, see doc of
+  // metrics::DemographicMetricsProvider in
+  // components/metrics/demographic_metrics_provider.h for more details. Returns
+  // an error status with an empty value when the user's birth year or gender
+  // cannot be provided. You need to provide an accurate |now| time that
+  // represents the current time.
+  virtual UserDemographicsResult GetUserNoisedBirthYearAndGender(
+      base::Time now) = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // OBSERVERS

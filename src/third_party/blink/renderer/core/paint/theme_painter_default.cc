@@ -28,6 +28,8 @@
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_progress.h"
 #include "third_party/blink/renderer/core/layout/layout_theme_default.h"
@@ -149,6 +151,7 @@ bool ThemePainterDefault::PaintCheckbox(const Node* node,
                                         const IntRect& rect) {
   WebThemeEngine::ExtraParams extra_params;
   cc::PaintCanvas* canvas = paint_info.context.Canvas();
+  extra_params.button = WebThemeEngine::ButtonExtraParams();
   extra_params.button.checked = LayoutTheme::IsChecked(node);
   extra_params.button.indeterminate = LayoutTheme::IsIndeterminate(node);
 
@@ -177,6 +180,7 @@ bool ThemePainterDefault::PaintRadio(const Node* node,
                                      const IntRect& rect) {
   WebThemeEngine::ExtraParams extra_params;
   cc::PaintCanvas* canvas = paint_info.context.Canvas();
+  extra_params.button = WebThemeEngine::ButtonExtraParams();
   extra_params.button.checked = LayoutTheme::IsChecked(node);
 
   Platform::Current()->ThemeEngine()->Paint(canvas, WebThemeEngine::kPartRadio,
@@ -192,6 +196,7 @@ bool ThemePainterDefault::PaintButton(const Node* node,
                                       const IntRect& rect) {
   WebThemeEngine::ExtraParams extra_params;
   cc::PaintCanvas* canvas = paint_info.context.Canvas();
+  extra_params.button = WebThemeEngine::ButtonExtraParams();
   extra_params.button.has_border = true;
   extra_params.button.background_color =
       UseMockTheme() ? 0xffc0c0c0 : kDefaultButtonBackgroundColor;
@@ -326,8 +331,10 @@ void ThemePainterDefault::SetupMenuListArrow(
     extra_params.menu_list.arrow_size = arrow_size;
   } else {
     // TODO(tkent): This should be 7.0 to match scroll bar buttons.
-    float arrow_size = 6.0 * arrow_scale_factor;
-    // Put the 6px arrow at the center of paddingForArrow area.
+    float arrow_size =
+        (RuntimeEnabledFeatures::FormControlsRefreshEnabled() ? 12.0 : 6.0) *
+        arrow_scale_factor;
+    // Put the arrow at the center of paddingForArrow area.
     // |arrowX| is the left position for Aura theme engine.
     extra_params.menu_list.arrow_x =
         (style.Direction() == TextDirection::kRtl)
@@ -346,6 +353,7 @@ bool ThemePainterDefault::PaintSliderTrack(const LayoutObject& o,
   cc::PaintCanvas* canvas = i.context.Canvas();
   extra_params.slider.vertical =
       o.StyleRef().Appearance() == kSliderVerticalPart;
+  extra_params.slider.in_drag = false;
 
   PaintSliderTicks(o, i, rect);
 
@@ -360,6 +368,23 @@ bool ThemePainterDefault::PaintSliderTrack(const LayoutObject& o,
     i.context.Translate(unzoomed_rect.X(), unzoomed_rect.Y());
     i.context.Scale(zoom_level, zoom_level);
     i.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
+  }
+
+  const Node* node = o.GetNode();
+  auto* input = ToHTMLInputElementOrNull(node);
+  extra_params.slider.thumb_x = 0;
+  extra_params.slider.thumb_y = 0;
+  if (input) {
+    Element* thumb_element = input->UserAgentShadowRoot()
+                                 ? input->UserAgentShadowRoot()->getElementById(
+                                       shadow_element_names::SliderThumb())
+                                 : nullptr;
+    LayoutBox* thumb = thumb_element ? thumb_element->GetLayoutBox() : nullptr;
+    if (thumb) {
+      IntRect thumb_rect = PixelSnappedIntRect(thumb->FrameRect());
+      extra_params.slider.thumb_x = thumb_rect.X() / zoom_level;
+      extra_params.slider.thumb_y = thumb_rect.Y() / zoom_level;
+    }
   }
 
   Platform::Current()->ThemeEngine()->Paint(

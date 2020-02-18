@@ -18,18 +18,23 @@
 #include "Matrix.hpp"
 #include "Context.hpp"
 #include "RoutineCache.hpp"
+#include "Vertex.hpp"
 #include "Pipeline/SpirvShader.hpp"
 
 namespace sw
 {
 	struct DrawData;
 
-	struct VertexCache   // FIXME: Variable size
+	// Basic direct mapped vertex cache.
+	struct VertexCache
 	{
+		static constexpr uint32_t SIZE = 64;  // TODO: Variable size?
+		static constexpr uint32_t TAG_MASK = SIZE - 1;  // Size must be power of 2.
+
 		void clear();
 
-		Vertex vertex[16][4];
-		unsigned int tag[16];
+		Vertex vertex[SIZE];
+		uint32_t tag[SIZE];
 
 		int drawCall;
 	};
@@ -44,14 +49,13 @@ namespace sw
 	class VertexProcessor
 	{
 	public:
-		struct States
+		struct States : Memset<States>
 		{
-			unsigned int computeHash();
+			States() : Memset(this, 0) {}
+
+			uint32_t computeHash();
 
 			uint64_t shaderID;
-
-			bool textureSampling           : 1;   // TODO: Eliminate by querying shader.
-			unsigned char verticesPerPrimitive                : 2; // 1 (points), 2 (lines) or 3 (triangles)
 
 			struct Input
 			{
@@ -66,16 +70,14 @@ namespace sw
 				unsigned int attribType : BITS(SpirvShader::ATTRIBTYPE_LAST);
 			};
 
-			Input input[MAX_VERTEX_INPUTS];
+			Input input[MAX_INTERFACE_COMPONENTS / 4];
 		};
 
 		struct State : States
 		{
-			State();
-
 			bool operator==(const State &state) const;
 
-			unsigned int hash;
+			uint32_t hash;
 		};
 
 		typedef void (*RoutinePointer)(Vertex *output, unsigned int *batch, VertexTask *vertexTask, DrawData *draw);

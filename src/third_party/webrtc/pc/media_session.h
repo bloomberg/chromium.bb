@@ -106,6 +106,7 @@ struct MediaSessionOptions {
   bool rtcp_mux_enabled = true;
   bool bundle_enabled = false;
   bool offer_extmap_allow_mixed = false;
+  bool raw_packetization_for_video = false;
   std::string rtcp_cname = kDefaultRtcpCname;
   webrtc::CryptoOptions crypto_options;
   // List of media description options in the same order that the media
@@ -202,6 +203,7 @@ class MediaSessionDescriptionFactory {
       RtpDataCodecs* rtp_data_codecs) const;
   void GetRtpHdrExtsToOffer(
       const std::vector<const ContentInfo*>& current_active_contents,
+      bool extmap_allow_mixed,
       RtpHeaderExtensions* audio_extensions,
       RtpHeaderExtensions* video_extensions) const;
   bool AddTransportOffer(const std::string& content_name,
@@ -362,9 +364,6 @@ const RtpDataContentDescription* GetFirstRtpDataContentDescription(
     const SessionDescription* sdesc);
 const SctpDataContentDescription* GetFirstSctpDataContentDescription(
     const SessionDescription* sdesc);
-// Returns shim. Deprecated - ask for the right protocol instead.
-RTC_DEPRECATED const DataContentDescription* GetFirstDataContentDescription(
-    const SessionDescription* sdesc);
 // Non-const versions of the above functions.
 // Useful when modifying an existing description.
 ContentInfo* GetFirstMediaContent(ContentInfos* contents, MediaType media_type);
@@ -383,8 +382,6 @@ VideoContentDescription* GetFirstVideoContentDescription(
 RtpDataContentDescription* GetFirstRtpDataContentDescription(
     SessionDescription* sdesc);
 SctpDataContentDescription* GetFirstSctpDataContentDescription(
-    SessionDescription* sdesc);
-RTC_DEPRECATED DataContentDescription* GetFirstDataContentDescription(
     SessionDescription* sdesc);
 
 // Helper functions to return crypto suites used for SDES.

@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
@@ -150,8 +151,8 @@ class Parser final {
   // Traverses descendants of |node|. The |node| may be removed when it is
   // |CharacterData| node contains only selection markers.
   void Traverse(Node* node) {
-    if (node->IsElementNode()) {
-      HandleElementNode(ToElement(node));
+    if (auto* element = DynamicTo<Element>(node)) {
+      HandleElementNode(element);
       return;
     }
     if (auto* data = DynamicTo<CharacterData>(node)) {
@@ -178,7 +179,7 @@ class Serializer final {
 
   std::string Serialize(const ContainerNode& root) {
     SerializeChildren(root);
-    return builder_.ToString().Utf8().data();
+    return builder_.ToString().Utf8();
   }
 
  private:
@@ -258,7 +259,7 @@ class Serializer final {
       attributes.push_back(&attribute);
     std::sort(attributes.begin(), attributes.end(),
               [](const Attribute* attribute1, const Attribute* attribute2) {
-                return CodePointCompareLessThan(
+                return CodeUnitCompareLessThan(
                     attribute1->GetName().ToString(),
                     attribute2->GetName().ToString());
               });
@@ -282,8 +283,8 @@ class Serializer final {
   }
 
   void HandleNode(const Node& node) {
-    if (node.IsElementNode()) {
-      HandleElementNode(ToElement(node));
+    if (auto* element = DynamicTo<Element>(node)) {
+      HandleElementNode(*element);
       return;
     }
     if (node.IsTextNode()) {

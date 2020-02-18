@@ -58,6 +58,13 @@ class PasswordManager : public FormSubmissionObserver {
 
   void GenerationAvailableForForm(const autofill::PasswordForm& form);
 
+  // Notifies the renderer to start the generation flow or pops up additional UI
+  // in case there is a danger to overwrite an existing password.
+  void OnGeneratedPasswordAccepted(PasswordManagerDriver* driver,
+                                   const autofill::FormData& form_data,
+                                   uint32_t generation_element_id,
+                                   const base::string16& password);
+
   // Presaves the form with generated password. |driver| is needed to find the
   // matched form manager.
   void OnPresaveGeneratedPassword(PasswordManagerDriver* driver,
@@ -111,6 +118,14 @@ class PasswordManager : public FormSubmissionObserver {
   void OnPasswordFormSubmittedNoChecks(
       PasswordManagerDriver* driver,
       const autofill::PasswordForm& password_form);
+
+  // Called when a user changed a value in a non-password field. The field is in
+  // a frame corresponding to |driver| and has a renderer id |renderer_id|.
+  // |value| is the current value of the field.
+  void OnUserModifiedNonPasswordField(
+      password_manager::PasswordManagerDriver* driver,
+      int32_t renderer_id,
+      const base::string16& value);
 
   // Handles a request to show manual fallback for password saving, i.e. the
   // omnibox icon with the anchored hidden prompt.
@@ -224,7 +239,9 @@ class PasswordManager : public FormSubmissionObserver {
   // Returns true if there already exists a provisionally saved password form
   // from the origin |origin|, but with a different and secure scheme.
   // This prevents a potential attack where users can be tricked into saving
-  // unwanted credentials, see http://crbug.com/571580 for details.
+  // unwanted credentials, see http://crbug.com/571580 and [1] for details.
+  //
+  // [1] docs.google.com/document/d/1ei3PcUNMdgmSKaWSb-A4KhowLXaBMFxDdt5hvU_0YY8
   bool ShouldBlockPasswordForSameOriginButDifferentScheme(
       const GURL& origin) const;
 
@@ -268,11 +285,9 @@ class PasswordManager : public FormSubmissionObserver {
   // should be skipped on saving.
   // TODO(https://crbug.com/949519): move |is_gaia_with_skip_save_password_form|
   // from PasswordForm to FormData, and remove it from arguments.
-  NewPasswordFormManager* ProvisionallySaveForm(
-      const autofill::FormData& form,
-      PasswordManagerDriver* driver,
-      bool is_manual_fallback,
-      bool is_gaia_with_skip_save_password_form);
+  NewPasswordFormManager* ProvisionallySaveForm(const autofill::FormData& form,
+                                                PasswordManagerDriver* driver,
+                                                bool is_manual_fallback);
 
   // Returns the best match in |pending_login_managers_| for |form|. May return
   // nullptr if no match exists.

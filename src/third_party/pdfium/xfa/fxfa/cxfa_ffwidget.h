@@ -11,6 +11,7 @@
 
 #include "core/fpdfdoc/cpdf_formfield.h"
 #include "core/fxcodec/fx_codec_def.h"
+#include "core/fxcrt/observed_ptr.h"
 #include "core/fxge/cfx_graphstatedata.h"
 #include "xfa/fwl/cfwl_app.h"
 #include "xfa/fwl/cfwl_messagemouse.h"
@@ -59,10 +60,9 @@ class CXFA_CalcData {
   ~CXFA_CalcData();
 
   std::vector<CXFA_Node*> m_Globals;
-  int32_t m_iRefCount;
 };
 
-class CXFA_FFWidget : public CFWL_Widget::AdapterIface {
+class CXFA_FFWidget : public Observable, public CFWL_Widget::AdapterIface {
  public:
   enum FocusOption { kDoNotDrawFocus = 0, kDrawFocus };
   enum HighlightOption { kNoHighlight = 0, kHighlight };
@@ -73,6 +73,7 @@ class CXFA_FFWidget : public CFWL_Widget::AdapterIface {
   // CFWL_Widget::AdapterIface:
   CFX_Matrix GetRotateMatrix() override;
   void DisplayCaret(bool bVisible, const CFX_RectF* pRtAnchor) override;
+  void GetBorderColorAndThickness(FX_ARGB* cr, float* fWidth) override;
 
   virtual CFX_RectF GetBBox(FocusOption focus);
   virtual void RenderWidget(CXFA_Graphics* pGS,
@@ -100,8 +101,10 @@ class CXFA_FFWidget : public CFWL_Widget::AdapterIface {
   virtual bool OnRButtonUp(uint32_t dwFlags, const CFX_PointF& point);
   virtual bool OnRButtonDblClk(uint32_t dwFlags, const CFX_PointF& point);
 
-  virtual bool OnSetFocus(CXFA_FFWidget* pOldWidget);
-  virtual bool OnKillFocus(CXFA_FFWidget* pNewWidget);
+  // Returning false may imply |this| is gone, continue with caution.
+  virtual bool OnSetFocus(CXFA_FFWidget* pOldWidget) WARN_UNUSED_RESULT;
+  virtual bool OnKillFocus(CXFA_FFWidget* pNewWidget) WARN_UNUSED_RESULT;
+
   virtual bool OnKeyDown(uint32_t dwKeyCode, uint32_t dwFlags);
   virtual bool OnKeyUp(uint32_t dwKeyCode, uint32_t dwFlags);
   virtual bool OnChar(uint32_t dwChar, uint32_t dwFlags);

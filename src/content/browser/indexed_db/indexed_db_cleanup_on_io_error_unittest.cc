@@ -15,8 +15,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
+#include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/leveldb/fake_leveldb_factory.h"
-#include "content/browser/indexed_db/leveldb/leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -37,15 +39,16 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
   const base::FilePath path = temp_directory.GetPath();
 
   auto task_runner = base::SequencedTaskRunnerHandle::Get();
-  std::unique_ptr<IndexedDBBackingStore> backing_store =
-      std::make_unique<IndexedDBBackingStore>(
-          IndexedDBBackingStore::Mode::kInMemory, nullptr, origin, path,
-          std::make_unique<LevelDBDatabase>(
-              indexed_db::FakeLevelDBFactory::GetBrokenLevelDB(
-                  leveldb::Status::IOError("It's broken!"), path),
-              task_runner.get(),
-              LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase),
-          task_runner.get());
+  std::unique_ptr<IndexedDBBackingStore> backing_store = std::make_unique<
+      IndexedDBBackingStore>(
+      IndexedDBBackingStore::Mode::kInMemory, nullptr,
+      indexed_db::LevelDBFactory::Get(), origin, path,
+      std::make_unique<TransactionalLevelDBDatabase>(
+          indexed_db::FakeLevelDBFactory::GetBrokenLevelDB(
+              leveldb::Status::IOError("It's broken!"), path),
+          indexed_db::LevelDBFactory::Get(), task_runner.get(),
+          TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase),
+      task_runner.get());
   leveldb::Status s = backing_store->Initialize(false);
   EXPECT_FALSE(s.ok());
 }
@@ -69,15 +72,16 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
       MakeIOError("some filename", "some message", leveldb_env::kNewLogger,
                   base::File::FILE_ERROR_FAILED)};
   for (leveldb::Status error_status : errors) {
-    std::unique_ptr<IndexedDBBackingStore> backing_store =
-        std::make_unique<IndexedDBBackingStore>(
-            IndexedDBBackingStore::Mode::kInMemory, nullptr, origin, path,
-            std::make_unique<LevelDBDatabase>(
-                indexed_db::FakeLevelDBFactory::GetBrokenLevelDB(error_status,
-                                                                 path),
-                task_runner.get(),
-                LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase),
-            task_runner.get());
+    std::unique_ptr<IndexedDBBackingStore> backing_store = std::make_unique<
+        IndexedDBBackingStore>(
+        IndexedDBBackingStore::Mode::kInMemory, nullptr,
+        indexed_db::LevelDBFactory::Get(), origin, path,
+        std::make_unique<TransactionalLevelDBDatabase>(
+            indexed_db::FakeLevelDBFactory::GetBrokenLevelDB(error_status,
+                                                             path),
+            indexed_db::LevelDBFactory::Get(), task_runner.get(),
+            TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase),
+        task_runner.get());
     leveldb::Status s = backing_store->Initialize(false);
     ASSERT_TRUE(s.IsIOError());
   }

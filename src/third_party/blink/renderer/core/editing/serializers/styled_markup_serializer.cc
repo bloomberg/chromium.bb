@@ -359,27 +359,23 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
     } else {
       next = Strategy::Next(*n);
       if (IsEnclosingBlock(n) && CanHaveChildrenForEditing(n) &&
-          next == past_end && !ContainsOnlyBRElement(ToElement(*n))) {
+          next == past_end && !ContainsOnlyBRElement(To<Element>(*n))) {
         // Don't write out empty block containers that aren't fully selected
         // unless the block container only contains br element.
         continue;
       }
 
-      if (!n->GetLayoutObject() &&
-          (!n->IsElementNode() || !ToElement(n)->HasDisplayContentsStyle()) &&
-          !EnclosingElementWithTag(FirstPositionInOrBeforeNode(*n),
-                                   kSelectTag)) {
-        next = Strategy::NextSkippingChildren(*n);
-        // Don't skip over pastEnd.
-        if (past_end && Strategy::IsDescendantOf(*past_end, *n))
-          next = past_end;
-      } else {
+      auto* element = DynamicTo<Element>(n);
+      if (n->GetLayoutObject() ||
+          (element && element->HasDisplayContentsStyle()) ||
+          EnclosingElementWithTag(FirstPositionInOrBeforeNode(*n),
+                                  kSelectTag)) {
         // Add the node to the markup if we're not skipping the descendants
         AppendStartMarkup(*n);
 
         // If node has no children, close the tag now.
         if (Strategy::HasChildren(*n)) {
-          if (next == past_end && ContainsOnlyBRElement(ToElement(*n))) {
+          if (next == past_end && ContainsOnlyBRElement(*element)) {
             // node is not fully selected and node contains only one br element
             // as child. Close the br tag now.
             AppendStartMarkup(*next);
@@ -392,6 +388,11 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
         }
         AppendEndMarkup(*n);
         last_closed = n;
+      } else {
+        next = Strategy::NextSkippingChildren(*n);
+        // Don't skip over pastEnd.
+        if (past_end && Strategy::IsDescendantOf(*past_end, *n))
+          next = past_end;
       }
     }
 
@@ -466,15 +467,15 @@ void StyledMarkupTraverser<Strategy>::WrapWithNode(ContainerNode& node,
     accumulator_->PushMarkup(markup.ToString());
     return;
   }
-  if (!node.IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return;
-  Element& element = ToElement(node);
-  if (ShouldApplyWrappingStyle(element) || NeedsInlineStyle(element))
-    accumulator_->AppendElementWithInlineStyle(markup, element, style);
+  if (ShouldApplyWrappingStyle(*element) || NeedsInlineStyle(*element))
+    accumulator_->AppendElementWithInlineStyle(markup, *element, style);
   else
-    accumulator_->AppendElement(markup, element);
+    accumulator_->AppendElement(markup, *element);
   accumulator_->PushMarkup(markup.ToString());
-  accumulator_->AppendEndTag(ToElement(node));
+  accumulator_->AppendEndTag(*element);
 }
 
 template <typename Strategy>
@@ -482,9 +483,11 @@ EditingStyle* StyledMarkupTraverser<Strategy>::CreateInlineStyleIfNeeded(
     Node& node) {
   if (!accumulator_)
     return nullptr;
-  if (!node.IsElementNode())
+
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
     return nullptr;
-  EditingStyle* inline_style = CreateInlineStyle(ToElement(node));
+  EditingStyle* inline_style = CreateInlineStyle(*element);
   if (ShouldConvertBlocksToInlines() && IsEnclosingBlock(&node))
     inline_style->ForceInline();
   return inline_style;
@@ -517,7 +520,7 @@ void StyledMarkupTraverser<Strategy>::AppendStartMarkup(Node& node) {
       break;
     }
     case Node::kElementNode: {
-      Element& element = ToElement(node);
+      auto& element = To<Element>(node);
       if ((element.IsHTMLElement() && ShouldAnnotate()) ||
           ShouldApplyWrappingStyle(element)) {
         EditingStyle* inline_style = CreateInlineStyle(element);
@@ -535,9 +538,10 @@ void StyledMarkupTraverser<Strategy>::AppendStartMarkup(Node& node) {
 
 template <typename Strategy>
 void StyledMarkupTraverser<Strategy>::AppendEndMarkup(Node& node) {
-  if (!accumulator_ || !node.IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!accumulator_ || !element)
     return;
-  accumulator_->AppendEndTag(ToElement(node));
+  accumulator_->AppendEndTag(*element);
 }
 
 template <typename Strategy>

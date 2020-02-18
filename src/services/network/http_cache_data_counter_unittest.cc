@@ -215,7 +215,8 @@ TEST_F(HttpCacheDataCounterTest, Basic) {
 
 // Return the sensible thing (0 bytes used) when there is no cache.
 TEST(HttpCacheDataCounterTestNoCache, BeSensible) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   std::unique_ptr<NetworkService> network_service(
       NetworkService::CreateForTesting());
   std::unique_ptr<NetworkContext> network_context;

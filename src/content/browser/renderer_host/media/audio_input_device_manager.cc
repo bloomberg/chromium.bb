@@ -120,7 +120,7 @@ void AudioInputDeviceManager::Close(int session_id) {
   auto device = GetDevice(session_id);
   if (device == devices_.end())
     return;
-  const blink::MediaStreamType stream_type = device->type;
+  const blink::mojom::MediaStreamType stream_type = device->type;
   if (session_id != kFakeOpenSessionId)
     devices_.erase(device);
 
@@ -216,7 +216,7 @@ void AudioInputDeviceManager::OpenedOnIOThread(
 }
 
 void AudioInputDeviceManager::ClosedOnIOThread(
-    blink::MediaStreamType stream_type,
+    blink::mojom::MediaStreamType stream_type,
     int session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (auto& listener : listeners_)

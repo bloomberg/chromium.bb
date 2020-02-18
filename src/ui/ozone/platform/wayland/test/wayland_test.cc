@@ -6,6 +6,8 @@
 
 #include "base/run_loop.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
+#include "ui/ozone/platform/wayland/host/wayland_screen.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
@@ -31,10 +33,9 @@ WaylandTest::WaylandTest()
       std::make_unique<StubKeyboardLayoutEngine>());
 #endif
   connection_ = std::make_unique<WaylandConnection>();
-  surface_factory_ = std::make_unique<WaylandSurfaceFactory>(connection_.get());
-  buffer_manager_gpu_ =
-      std::make_unique<WaylandBufferManagerGpu>(surface_factory_.get());
-  surface_factory_->SetBufferManager(buffer_manager_gpu_.get());
+  buffer_manager_gpu_ = std::make_unique<WaylandBufferManagerGpu>();
+  surface_factory_ = std::make_unique<WaylandSurfaceFactory>(
+      connection_.get(), buffer_manager_gpu_.get());
   window_ = std::make_unique<WaylandWindow>(&delegate_, connection_.get());
 }
 
@@ -43,6 +44,8 @@ WaylandTest::~WaylandTest() {}
 void WaylandTest::SetUp() {
   ASSERT_TRUE(server_.Start(GetParam()));
   ASSERT_TRUE(connection_->Initialize());
+  screen_ = connection_->wayland_output_manager()->CreateWaylandScreen(
+      connection_.get());
   EXPECT_CALL(delegate_, OnAcceleratedWidgetAvailable(_))
       .WillOnce(SaveArg<0>(&widget_));
   PlatformWindowInitProperties properties;

@@ -19,6 +19,7 @@
 #include "android_webview/renderer/aw_render_view_ext.h"
 #include "android_webview/renderer/aw_url_loader_throttle_provider.h"
 #include "android_webview/renderer/aw_websocket_handshake_throttle_provider.h"
+#include "android_webview/renderer/js_java_interaction/js_java_configurator.h"
 #include "android_webview/renderer/print_render_frame_observer.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -26,10 +27,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/printing/renderer/print_render_frame_helper.h"
-#include "components/supervised_user_error_page/gin_wrapper.h"
-#include "components/supervised_user_error_page/supervised_user_error_page_android.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
-#include "components/web_restrictions/interfaces/web_restrictions.mojom.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -165,6 +163,7 @@ void AwContentRendererClient::RenderFrameCreated(
   new printing::PrintRenderFrameHelper(
       render_frame, std::make_unique<AwPrintRenderFrameHelperDelegate>());
   new AwRenderFrameExt(render_frame);
+  new JsJavaConfigurator(render_frame);
 
   // TODO(jam): when the frame tree moves into content and parent() works at
   // RenderFrame construction, simplify this by just checking parent().
@@ -224,31 +223,6 @@ void AwContentRendererClient::PrepareErrorPage(
   std::string url_string = gurl.possibly_invalid_spec();
   int reason_id = IDS_AW_WEBPAGE_CAN_NOT_BE_LOADED;
 
-  if (error.reason() == net::ERR_BLOCKED_BY_ADMINISTRATOR) {
-    // This creates a different error page giving considerably more
-    // detail, and possibly allowing the user to request access.
-    // Get the details this needs from the browser.
-    render_frame->GetRemoteInterfaces()->GetInterface(
-        &web_restrictions_service_);
-    web_restrictions::mojom::ClientResultPtr result;
-    if (web_restrictions_service_->GetResult(url_string, &result)) {
-      std::string detailed_error_html =
-          supervised_user_error_page::BuildHtmlFromWebRestrictionsResult(
-              result, RenderThread::Get()->GetLocale());
-      if (!detailed_error_html.empty()) {
-        *error_html = detailed_error_html;
-        supervised_user_error_page::GinWrapper::InstallWhenFrameReady(
-            render_frame, url_string, web_restrictions_service_);
-        return;
-      }
-      // If the error page isn't available (it is only available in
-      // Monochrome) but the user is a child then we want to give a simple
-      // custom message.
-      if (result->intParams["Is child account"])
-        reason_id = IDS_AW_WEBPAGE_PARENTAL_PERMISSION_NEEDED;
-    }
-  }
-
   if (err.empty())
     reason_id = IDS_AW_WEBPAGE_TEMPORARILY_DOWN;
 
@@ -260,9 +234,7 @@ void AwContentRendererClient::PrepareErrorPage(
       l10n_util::GetStringFUTF8(reason_id, base::UTF8ToUTF16(escaped_url)));
 
   // Having chosen the base reason, chose what extra information to add.
-  if (reason_id == IDS_AW_WEBPAGE_PARENTAL_PERMISSION_NEEDED) {
-    replacements.push_back("");
-  } else if (reason_id == IDS_AW_WEBPAGE_TEMPORARILY_DOWN) {
+  if (reason_id == IDS_AW_WEBPAGE_TEMPORARILY_DOWN) {
     replacements.push_back(
         l10n_util::GetStringUTF8(IDS_AW_WEBPAGE_TEMPORARILY_DOWN_SUGGESTIONS));
   } else {

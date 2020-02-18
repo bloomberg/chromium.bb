@@ -21,5 +21,5 @@ deps = [
 ]
 type_mappings = [
   "viz.mojom.RenderPass=std::unique_ptr<viz::RenderPass>[move_only,nullable_is_same_type]",
-  "viz::mojom::ProtectedVideoState=ui::ProtectedVideoType",
+  "viz::mojom::ProtectedVideoState=gfx::ProtectedVideoType",
 ]

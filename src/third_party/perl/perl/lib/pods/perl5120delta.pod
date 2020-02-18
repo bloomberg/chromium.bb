@@ -65,7 +65,7 @@ years, it will become a standard practice.
 
 
 However, C<package NAME VERSION> requires a new, 'strict' version
-number format. See L<"Version number formats"> for details.
+number format. See L</"Version number formats"> for details.
 
 
 =head2 The C<...> operator
@@ -116,7 +116,7 @@ it is interpolated into a regexp. See L<overload>.
 Extension modules can now cleanly hook into the Perl parser to define
 new kinds of keyword-headed expression and compound statement. The
 syntax following the keyword is defined entirely by the extension. This
-allow a completely non-Perl sublanguage to be parsed inline, with the
+allows a completely non-Perl sublanguage to be parsed inline, with the
 correct ops cleanly generated.
 
 See L<perlapi/PL_keyword_plugin> for the mechanism. The Perl core
@@ -279,7 +279,7 @@ functions to check a scalar against these rules.
 
 =head2 @INC reorganization
 
-In C<@INC>, C<ARCHLIB> and C<PRIVLIB> now occur after after the current
+In C<@INC>, C<ARCHLIB> and C<PRIVLIB> now occur after the current
 version's C<site_perl> and C<vendor_perl>.  Modules installed into
 C<site_perl> and C<vendor_perl> will now be loaded in preference to
 those installed in C<ARCHLIB> and C<PRIVLIB>.
@@ -430,7 +430,7 @@ to bless them into C<IO::Handle>.
 =item *
 
 The semantics of C<use feature :5.10*> have changed slightly.
-See L<"Modules and Pragmata"> for more information.
+See L</"Modules and Pragmata"> for more information.
 
 =item *
 
@@ -743,7 +743,7 @@ the most widely used are the soft hyphen (U+00AD), and BOM, ZWSP, ZWNJ,
 WJ, and similar characters, plus bidirectional controls.
 
 C<\p{Alpha}> now matches the same characters as C<\p{Alphabetic}>. Before
-5.12, Perl's definition definition included a number of things that aren't
+5.12, Perl's definition included a number of things that aren't
 really alpha (all marks) while omitting many that were. The definitions
 of C<\p{Alnum}> and C<\p{Word}> depend on Alpha's definition and have
 changed accordingly.
@@ -1707,7 +1707,7 @@ Two flag bits are currently supported.
 =item *
 
 C<SVf_UTF8> will call C<SvUTF8_on()> for you. (Note that this does
-not convert an sequence of ISO 8859-1 characters to UTF-8). A wrapper,
+not convert a sequence of ISO 8859-1 characters to UTF-8). A wrapper,
 C<newSVpvn_utf8()> is available for this.
 
 =item *

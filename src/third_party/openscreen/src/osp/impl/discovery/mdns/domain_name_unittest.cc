@@ -6,8 +6,8 @@
 
 #include <sstream>
 
-#include "osp_base/error.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 namespace mdns {
@@ -159,8 +159,12 @@ TEST(DomainNameTest, Append) {
 
 TEST(DomainNameTest, GetLabels) {
   const auto labels = std::vector<std::string>{"alpha", "beta", "gamma", "org"};
-  DomainName d = UnpackErrorOr(FromLabels(labels));
-  EXPECT_EQ(d.GetLabels(), labels);
+  DomainName domain_name = UnpackErrorOr(FromLabels(labels));
+
+  const auto actual_labels = domain_name.GetLabels();
+  for (auto i = 0; i < labels.size(); ++i) {
+    EXPECT_EQ(labels[i], actual_labels[i]);
+  }
 }
 
 TEST(DomainNameTest, StreamEscaping) {

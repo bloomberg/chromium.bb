@@ -17,11 +17,11 @@
 #ifndef TEST_TEST_HELPER_H_
 #define TEST_TEST_HELPER_H_
 
-#include "perfetto/base/scoped_file.h"
-#include "perfetto/tracing/core/consumer.h"
+#include "perfetto/ext/base/scoped_file.h"
+#include "perfetto/ext/tracing/core/consumer.h"
+#include "perfetto/ext/tracing/core/trace_packet.h"
+#include "perfetto/ext/tracing/ipc/consumer_ipc_client.h"
 #include "perfetto/tracing/core/trace_config.h"
-#include "perfetto/tracing/core/trace_packet.h"
-#include "perfetto/tracing/ipc/consumer_ipc_client.h"
 #include "src/base/test/test_task_runner.h"
 #include "test/fake_producer.h"
 #include "test/task_runner_thread.h"
@@ -62,7 +62,7 @@ class TestHelper : public Consumer {
   void WaitForProducerSetup();
   void WaitForProducerEnabled();
   void WaitForTracingDisabled(uint32_t timeout_ms = 5000);
-  void WaitForReadData(uint32_t read_count = 0);
+  void WaitForReadData(uint32_t read_count = 0, uint32_t timeout_ms = 5000);
 
   std::string AddID(const std::string& checkpoint) {
     return checkpoint + "." + std::to_string(instance_num_);

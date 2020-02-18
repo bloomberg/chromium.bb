@@ -10,12 +10,11 @@ import os
 import random
 import shutil
 import string
-import StringIO
 import subprocess
 import sys
 
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from third_party.pymox import mox
+import mox
+from six.moves import StringIO
 
 
 class IsOneOf(mox.Comparator):
@@ -36,15 +35,15 @@ class TestCaseUtils(object):
   _OS_SEP = os.sep
   _RANDOM_CHOICE = random.choice
   _RANDOM_RANDINT = random.randint
-  _STRING_LETTERS = string.letters
+  _STRING_LETTERS = string.ascii_letters
 
   ## Some utilities for generating arbitrary arguments.
   def String(self, max_length):
     return ''.join([self._RANDOM_CHOICE(self._STRING_LETTERS)
-                    for _ in xrange(self._RANDOM_RANDINT(1, max_length))])
+                    for _ in range(self._RANDOM_RANDINT(1, max_length))])
 
   def Strings(self, max_arg_count, max_arg_length):
-    return [self.String(max_arg_length) for _ in xrange(max_arg_count)]
+    return [self.String(max_arg_length) for _ in range(max_arg_count)]
 
   def Args(self, max_arg_count=8, max_arg_length=16):
     return self.Strings(max_arg_count,
@@ -87,7 +86,7 @@ class StdoutCheck(object):
   def setUp(self):
     # Override the mock with a StringIO, it's much less painful to test.
     self._old_stdout = sys.stdout
-    stdout = StringIO.StringIO()
+    stdout = StringIO()
     stdout.flush = lambda: None
     sys.stdout = stdout
 
@@ -96,7 +95,7 @@ class StdoutCheck(object):
       # If sys.stdout was used, self.checkstdout() must be called.
       # pylint: disable=no-member
       if not sys.stdout.closed:
-        self.assertEquals('', sys.stdout.getvalue())
+        self.assertEqual('', sys.stdout.getvalue())
     except AttributeError:
       pass
     sys.stdout = self._old_stdout
@@ -105,7 +104,7 @@ class StdoutCheck(object):
     value = sys.stdout.getvalue()
     sys.stdout.close()
     # pylint: disable=no-member
-    self.assertEquals(expected, value)
+    self.assertEqual(expected, value)
 
 
 class SuperMoxTestBase(TestCaseUtils, StdoutCheck, mox.MoxTestBase):

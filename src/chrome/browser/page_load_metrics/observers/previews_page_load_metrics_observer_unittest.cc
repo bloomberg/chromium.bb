@@ -15,7 +15,6 @@
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
-#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
@@ -143,17 +142,9 @@ class PreviewsPageLoadMetricsObserverTest
     if (network_resources > 0) {
       histogram_tester().ExpectUniqueSample(
           "PageLoad.Clients." + preview_type_name +
-              ".Experimental.CompletedResources.Network",
-          network_resources, 1);
-      histogram_tester().ExpectUniqueSample(
-          "PageLoad.Clients." + preview_type_name +
               ".Experimental.Bytes.NetworkIncludingHeaders",
           static_cast<int>(network_bytes / 1024), 1);
     } else {
-      histogram_tester().ExpectTotalCount(
-          "PageLoad.Clients." + preview_type_name +
-              ".Experimental.CompletedResources.Network",
-          0);
       histogram_tester().ExpectTotalCount(
           "PageLoad.Clients." + preview_type_name +
               ".Experimental.Bytes.NetworkIncludingHeaders",

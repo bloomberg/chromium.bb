@@ -4,6 +4,9 @@
 
 #include "cc/test/pixel_test.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -19,7 +22,6 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_utils.h"
-#include "cc/test/test_in_process_context_provider.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -33,10 +35,12 @@
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/display/software_renderer.h"
 #include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
+#include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/test/paths.h"
+#include "components/viz/test/test_in_process_context_provider.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
@@ -50,33 +54,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
-namespace {
-
-// A wrapper around SkiaOutputSurfaceImpl that can be used to change settings
-// for tests.
-class PixelTestSkiaOutputSurfaceImpl : public viz::SkiaOutputSurfaceImpl {
- public:
-  PixelTestSkiaOutputSurfaceImpl(viz::GpuServiceImpl* gpu_service,
-                                 gpu::SurfaceHandle surface_handle,
-                                 const viz::RendererSettings& renderer_settings,
-                                 bool flipped_output_surface)
-      : SkiaOutputSurfaceImpl(gpu_service,
-                              surface_handle,
-                              renderer_settings),
-        flipped_output_surface_(flipped_output_surface) {}
-
-  // |capabilities_| is set in InitializeForGL(), so wrap BindToClient() and set
-  // |flipped_output_surface| once that is complete.
-  void BindToClient(viz::OutputSurfaceClient* client) override {
-    SkiaOutputSurfaceImpl::BindToClient(client);
-    SetCapabilitiesForTesting(flipped_output_surface_);
-  }
-
- private:
-  const bool flipped_output_surface_;
-};
-
-}  // namespace
 
 PixelTest::PixelTest()
     : device_viewport_size_(gfx::Size(200, 200)),
@@ -241,8 +218,9 @@ viz::ResourceId PixelTest::AllocateAndFillSoftwareResource(
 void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
   enable_pixel_output_ = std::make_unique<gl::DisableNullDrawGLBindings>();
 
-  auto context_provider = base::MakeRefCounted<TestInProcessContextProvider>(
-      /*enable_oop_rasterization=*/false, /*support_locking=*/false);
+  auto context_provider =
+      base::MakeRefCounted<viz::TestInProcessContextProvider>(
+          /*enable_oop_rasterization=*/false, /*support_locking=*/false);
   gpu::ContextResult result = context_provider->BindToCurrentThread();
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   output_surface_ = std::make_unique<PixelTestOutputSurface>(
@@ -254,8 +232,9 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
       viz::DisplayResourceProvider::kGpu, output_surface_->context_provider(),
       shared_bitmap_manager_.get());
 
-  child_context_provider_ = base::MakeRefCounted<TestInProcessContextProvider>(
-      /*enable_oop_rasterization=*/false, /*support_locking=*/false);
+  child_context_provider_ =
+      base::MakeRefCounted<viz::TestInProcessContextProvider>(
+          /*enable_oop_rasterization=*/false, /*support_locking=*/false);
   result = child_context_provider_->BindToCurrentThread();
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   constexpr bool sync_token_verification = false;
@@ -275,17 +254,24 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
 void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface,
                                   bool enable_vulkan) {
   if (enable_vulkan) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kEnableVulkan);
+    auto* command_line = base::CommandLine::ForCurrentProcess();
+    bool use_gpu = command_line->HasSwitch(::switches::kUseGpuInTests);
+    command_line->AppendSwitchASCII(
+        ::switches::kUseVulkan,
+        use_gpu ? ::switches::kVulkanImplementationNameNative
+                : ::switches::kVulkanImplementationNameSwiftshader);
   }
   // Set up the GPU service.
   gpu_service_holder_ = viz::TestGpuServiceHolder::GetInstance();
 
   // Set up the skia renderer.
-  output_surface_ = std::make_unique<PixelTestSkiaOutputSurfaceImpl>(
-      gpu_service(), gpu::kNullSurfaceHandle, renderer_settings_,
-      flipped_output_surface);
+  output_surface_ = viz::SkiaOutputSurfaceImpl::Create(
+      std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
+          gpu_service(), gpu::kNullSurfaceHandle),
+      renderer_settings_);
   output_surface_->BindToClient(output_surface_client_.get());
+  static_cast<viz::SkiaOutputSurfaceImpl*>(output_surface_.get())
+      ->SetCapabilitiesForTesting(flipped_output_surface);
   resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
       viz::DisplayResourceProvider::kGpu,
       /*compositor_context_provider=*/nullptr,

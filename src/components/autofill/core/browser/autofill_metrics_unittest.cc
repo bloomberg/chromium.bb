@@ -39,6 +39,7 @@
 #include "components/autofill/core/browser/test_form_structure.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -56,10 +57,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
-using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
-using SyncSigninState = autofill::AutofillSyncSigninState;
 using base::ASCIIToUTF16;
 using base::Bucket;
 using base::TimeTicks;
@@ -69,6 +66,13 @@ using ::testing::Matcher;
 using ::testing::UnorderedPointwise;
 
 namespace autofill {
+
+using features::kAutofillEnforceMinRequiredFieldsForHeuristics;
+using features::kAutofillEnforceMinRequiredFieldsForQuery;
+using features::kAutofillEnforceMinRequiredFieldsForUpload;
+using mojom::SubmissionSource;
+using SyncSigninState = AutofillSyncSigninState;
+
 namespace {
 
 using UkmCardUploadDecisionType = ukm::builders::Autofill_CardUploadDecision;
@@ -96,7 +100,7 @@ int64_t Collapse(uint64_t sig) {
 }
 
 void VerifyDeveloperEngagementUkm(
-    const ukm::TestAutoSetUkmRecorder& ukm_recorder,
+    const ukm::TestUkmRecorder* ukm_recorder,
     const FormData& form,
     const bool is_for_credit_card,
     const std::set<FormType>& form_types,
@@ -106,22 +110,22 @@ void VerifyDeveloperEngagementUkm(
     expected_metric_value |= 1 << it;
 
   auto entries =
-      ukm_recorder.GetEntriesByName(UkmDeveloperEngagementType::kEntryName);
+      ukm_recorder->GetEntriesByName(UkmDeveloperEngagementType::kEntryName);
   EXPECT_EQ(1u, entries.size());
   for (const auto* const entry : entries) {
-    ukm_recorder.ExpectEntrySourceHasUrl(entry,
-                                         GURL(form.main_frame_origin.GetURL()));
+    ukm_recorder->ExpectEntrySourceHasUrl(
+        entry, GURL(form.main_frame_origin.GetURL()));
     EXPECT_EQ(4u, entry->metrics.size());
-    ukm_recorder.ExpectEntryMetric(
+    ukm_recorder->ExpectEntryMetric(
         entry, UkmDeveloperEngagementType::kDeveloperEngagementName,
         expected_metric_value);
-    ukm_recorder.ExpectEntryMetric(
+    ukm_recorder->ExpectEntryMetric(
         entry, UkmDeveloperEngagementType::kIsForCreditCardName,
         is_for_credit_card);
-    ukm_recorder.ExpectEntryMetric(
+    ukm_recorder->ExpectEntryMetric(
         entry, UkmDeveloperEngagementType::kFormTypesName,
         AutofillMetrics::FormTypesToBitVector(form_types));
-    ukm_recorder.ExpectEntryMetric(
+    ukm_recorder->ExpectEntryMetric(
         entry, UkmDeveloperEngagementType::kFormSignatureName,
         Collapse(CalculateFormSignature(form)));
   }
@@ -137,16 +141,16 @@ MATCHER(CompareMetricsIgnoringMillisecondsSinceFormParsed, "") {
                UkmSuggestionFilledType::kMillisecondsSinceFormParsedName));
 }
 
-void VerifyUkm(const ukm::TestAutoSetUkmRecorder& ukm_recorder,
+void VerifyUkm(const ukm::TestUkmRecorder* ukm_recorder,
                const FormData& form,
                const char* event_name,
                const ExpectedUkmMetrics& expected_metrics) {
-  auto entries = ukm_recorder.GetEntriesByName(event_name);
+  auto entries = ukm_recorder->GetEntriesByName(event_name);
 
   EXPECT_LE(entries.size(), expected_metrics.size());
   for (size_t i = 0; i < expected_metrics.size() && i < entries.size(); i++) {
-    ukm_recorder.ExpectEntrySourceHasUrl(entries[i],
-                                         GURL(form.main_frame_origin.GetURL()));
+    ukm_recorder->ExpectEntrySourceHasUrl(
+        entries[i], GURL(form.main_frame_origin.GetURL()));
     EXPECT_THAT(
         entries[i]->metrics,
         UnorderedPointwise(CompareMetricsIgnoringMillisecondsSinceFormParsed(),
@@ -154,7 +158,7 @@ void VerifyUkm(const ukm::TestAutoSetUkmRecorder& ukm_recorder,
   }
 }
 
-void VerifySubmitFormUkm(const ukm::TestAutoSetUkmRecorder& ukm_recorder,
+void VerifySubmitFormUkm(const ukm::TestUkmRecorder* ukm_recorder,
                          const FormData& form,
                          AutofillMetrics::AutofillFormSubmittedState state,
                          bool is_for_credit_card,
@@ -280,8 +284,8 @@ class AutofillMetricsTest : public testing::Test {
   void PurgeUKM();
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   MockAutofillClient autofill_client_;
+  ukm::TestUkmRecorder* test_ukm_recorder_;
   syncer::TestSyncService sync_service_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;
@@ -296,6 +300,7 @@ class AutofillMetricsTest : public testing::Test {
 
 AutofillMetricsTest::AutofillMetricsTest() {
   autofill_driver_ = std::make_unique<TestAutofillDriver>();
+  test_ukm_recorder_ = autofill_client_.GetTestUkmRecorder();
 }
 
 AutofillMetricsTest::~AutofillMetricsTest() {
@@ -349,12 +354,12 @@ void AutofillMetricsTest::TearDown() {
   autofill_driver_.reset();
   personal_data_.reset();
   test::ReenableSystemServices();
-  test_ukm_recorder_.Purge();
+  test_ukm_recorder_->Purge();
 }
 
 void AutofillMetricsTest::PurgeUKM() {
   autofill_manager_->Reset();
-  test_ukm_recorder_.Purge();
+  test_ukm_recorder_->Purge();
   autofill_client_.InitializeUKMSources();
 }
 
@@ -392,7 +397,7 @@ void AutofillMetricsTest::OnDidGetRealPan(
     const std::string& real_pan) {
   payments::FullCardRequest* full_card_request =
       autofill_manager_->credit_card_access_manager_
-          ->credit_card_cvc_authenticator()
+          ->GetOrCreateCVCAuthenticator()
           ->full_card_request_.get();
   DCHECK(full_card_request);
   full_card_request->OnDidGetRealPan(result, real_pan);
@@ -1046,7 +1051,7 @@ TEST_F(AutofillMetricsTest, LogRepeatedAddressTypeRationalized) {
       autofill_manager_->form_interactions_ukm_logger());
 
   ASSERT_EQ(test_ukm_recorder_
-                .GetEntriesByName(
+                ->GetEntriesByName(
                     UkmLogRepeatedServerTypePredictionRationalized::kEntryName)
                 .size(),
             (size_t)2);
@@ -1161,7 +1166,7 @@ TEST_F(AutofillMetricsTest, LogRepeatedStateCountryTypeRationalized) {
       autofill_manager_->form_interactions_ukm_logger());
 
   ASSERT_EQ(test_ukm_recorder_
-                .GetEntriesByName(
+                ->GetEntriesByName(
                     UkmLogRepeatedServerTypePredictionRationalized::kEntryName)
                 .size(),
             (size_t)3);
@@ -2652,7 +2657,7 @@ TEST_F(AutofillMetricsTest,
     autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
     autofill_manager_->Reset();
 
-    EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
+    EXPECT_EQ(0ul, test_ukm_recorder_->entries_count());
   }
 
   // Add another field to the form, so that it becomes fillable.
@@ -5551,7 +5556,7 @@ TEST_F(AutofillMetricsTest, AddressParsedFormEvents) {
 
   // Check if FormEvent UKM is logged properly
   auto entries =
-      test_ukm_recorder_.GetEntriesByName(UkmFormEventType::kEntryName);
+      test_ukm_recorder_->GetEntriesByName(UkmFormEventType::kEntryName);
   EXPECT_EQ(1u, entries.size());
   VerifyUkm(
       test_ukm_recorder_, form, UkmFormEventType::kEntryName,
@@ -5596,7 +5601,7 @@ TEST_F(AutofillMetricsTest, AddressInteractedFormEvents) {
 
     // Check if FormEvent UKM is logged properly
     auto entries =
-        test_ukm_recorder_.GetEntriesByName(UkmFormEventType::kEntryName);
+        test_ukm_recorder_->GetEntriesByName(UkmFormEventType::kEntryName);
     EXPECT_EQ(1u, entries.size());
     VerifyUkm(
         test_ukm_recorder_, form, UkmFormEventType::kEntryName,
@@ -5623,7 +5628,7 @@ TEST_F(AutofillMetricsTest, AddressInteractedFormEvents) {
                                         FORM_EVENT_INTERACTED_ONCE, 1);
     // Check if FormEvent UKM is logged properly
     auto entries =
-        test_ukm_recorder_.GetEntriesByName(UkmFormEventType::kEntryName);
+        test_ukm_recorder_->GetEntriesByName(UkmFormEventType::kEntryName);
     EXPECT_EQ(1u, entries.size());
     VerifyUkm(
         test_ukm_recorder_, form, UkmFormEventType::kEntryName,
@@ -5673,7 +5678,7 @@ TEST_F(AutofillMetricsTest, AddressSuppressedFormEvents) {
 
     // Check if FormEvent UKM is logged properly
     auto entries =
-        test_ukm_recorder_.GetEntriesByName(UkmFormEventType::kEntryName);
+        test_ukm_recorder_->GetEntriesByName(UkmFormEventType::kEntryName);
     EXPECT_EQ(2u, entries.size());
     VerifyUkm(
         test_ukm_recorder_, form, UkmFormEventType::kEntryName,
@@ -5706,7 +5711,7 @@ TEST_F(AutofillMetricsTest, AddressSuppressedFormEvents) {
 
     // Check if FormEvent UKM is logged properly
     auto entries =
-        test_ukm_recorder_.GetEntriesByName(UkmFormEventType::kEntryName);
+        test_ukm_recorder_->GetEntriesByName(UkmFormEventType::kEntryName);
     EXPECT_EQ(3u, entries.size());
     VerifyUkm(
         test_ukm_recorder_, form, UkmFormEventType::kEntryName,
@@ -5770,7 +5775,7 @@ TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
                      ["Autofill.FormEvents.CreditCard.BankNameDisplayed"]);
     // Check if FormEvent UKM is logged properly
     auto entries =
-        test_ukm_recorder_.GetEntriesByName(UkmFormEventType::kEntryName);
+        test_ukm_recorder_->GetEntriesByName(UkmFormEventType::kEntryName);
     EXPECT_EQ(2u, entries.size());
     VerifyUkm(
         test_ukm_recorder_, form, UkmFormEventType::kEntryName,
@@ -5807,7 +5812,7 @@ TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
                      ["Autofill.FormEvents.CreditCard.BankNameDisplayed"]);
     // Check if FormEvent UKM is logged properly
     auto entries =
-        test_ukm_recorder_.GetEntriesByName(UkmFormEventType::kEntryName);
+        test_ukm_recorder_->GetEntriesByName(UkmFormEventType::kEntryName);
     EXPECT_EQ(3u, entries.size());
     VerifyUkm(
         test_ukm_recorder_, form, UkmFormEventType::kEntryName,
@@ -5849,7 +5854,7 @@ TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
                      ["Autofill.FormEvents.CreditCard.BankNameDisplayed"]);
     // Check if FormEvent UKM is logged properly
     auto entries =
-        test_ukm_recorder_.GetEntriesByName(UkmFormEventType::kEntryName);
+        test_ukm_recorder_->GetEntriesByName(UkmFormEventType::kEntryName);
     EXPECT_EQ(0u, entries.size());
   }
 }
@@ -5895,7 +5900,7 @@ TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
                                        1);
     // Check if FormEvent UKM is logged properly
     auto entries =
-        test_ukm_recorder_.GetEntriesByName(UkmFormEventType::kEntryName);
+        test_ukm_recorder_->GetEntriesByName(UkmFormEventType::kEntryName);
     EXPECT_EQ(2u, entries.size());
     VerifyUkm(
         test_ukm_recorder_, form, UkmFormEventType::kEntryName,
@@ -6182,7 +6187,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
 
     // Check if FormEvent UKM is logged properly
     auto entries =
-        test_ukm_recorder_.GetEntriesByName(UkmFormEventType::kEntryName);
+        test_ukm_recorder_->GetEntriesByName(UkmFormEventType::kEntryName);
     EXPECT_EQ(2u, entries.size());
   }
 }
@@ -6322,7 +6327,7 @@ TEST_F(AutofillMetricsTest, AddressWillSubmitFormEvents) {
         0);
     // Check if FormEvent UKM is logged properly
     auto entries =
-        test_ukm_recorder_.GetEntriesByName(UkmFormEventType::kEntryName);
+        test_ukm_recorder_->GetEntriesByName(UkmFormEventType::kEntryName);
     EXPECT_EQ(3u, entries.size());
   }
 
@@ -6372,7 +6377,7 @@ TEST_F(AutofillMetricsTest, AddressWillSubmitFormEvents) {
         0);
     // Check if FormEvent UKM is logged properly
     auto entries =
-        test_ukm_recorder_.GetEntriesByName(UkmFormEventType::kEntryName);
+        test_ukm_recorder_->GetEntriesByName(UkmFormEventType::kEntryName);
     EXPECT_EQ(2u, entries.size());
   }
 }
@@ -8227,16 +8232,16 @@ TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric) {
   int upload_decision = 1;
   autofill_client_.set_form_origin(url);
 
-  AutofillMetrics::LogCardUploadDecisionsUkm(&test_ukm_recorder_,
+  AutofillMetrics::LogCardUploadDecisionsUkm(test_ukm_recorder_,
                                              autofill_client_.GetUkmSourceId(),
                                              url, upload_decision);
-  auto entries = test_ukm_recorder_.GetEntriesByName(
+  auto entries = test_ukm_recorder_->GetEntriesByName(
       UkmCardUploadDecisionType::kEntryName);
   EXPECT_EQ(1u, entries.size());
   for (const auto* const entry : entries) {
-    test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, url);
+    test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
     EXPECT_EQ(1u, entry->metrics.size());
-    test_ukm_recorder_.ExpectEntryMetric(
+    test_ukm_recorder_->ExpectEntryMetric(
         entry, UkmCardUploadDecisionType::kUploadDecisionName, upload_decision);
   }
 }
@@ -8249,23 +8254,23 @@ TEST_F(AutofillMetricsTest, RecordDeveloperEngagementMetric) {
   autofill_client_.set_form_origin(url);
 
   AutofillMetrics::LogDeveloperEngagementUkm(
-      &test_ukm_recorder_, autofill_client_.GetUkmSourceId(), url, true,
+      test_ukm_recorder_, autofill_client_.GetUkmSourceId(), url, true,
       {FormType::CREDIT_CARD_FORM}, form_structure_metric, form_signature);
-  auto entries = test_ukm_recorder_.GetEntriesByName(
+  auto entries = test_ukm_recorder_->GetEntriesByName(
       UkmDeveloperEngagementType::kEntryName);
   EXPECT_EQ(1u, entries.size());
   for (const auto* const entry : entries) {
-    test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, url);
+    test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
     EXPECT_EQ(4u, entry->metrics.size());
-    test_ukm_recorder_.ExpectEntryMetric(
+    test_ukm_recorder_->ExpectEntryMetric(
         entry, UkmDeveloperEngagementType::kDeveloperEngagementName,
         form_structure_metric);
-    test_ukm_recorder_.ExpectEntryMetric(
+    test_ukm_recorder_->ExpectEntryMetric(
         entry, UkmDeveloperEngagementType::kIsForCreditCardName, true);
-    test_ukm_recorder_.ExpectEntryMetric(
+    test_ukm_recorder_->ExpectEntryMetric(
         entry, UkmDeveloperEngagementType::kFormTypesName,
         AutofillMetrics::FormTypesToBitVector({FormType::CREDIT_CARD_FORM}));
-    test_ukm_recorder_.ExpectEntryMetric(
+    test_ukm_recorder_->ExpectEntryMetric(
         entry, UkmDeveloperEngagementType::kFormSignatureName, form_signature);
   }
 }
@@ -8273,19 +8278,19 @@ TEST_F(AutofillMetricsTest, RecordDeveloperEngagementMetric) {
 // Tests that no UKM is logged when the URL is not valid.
 TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_InvalidUrl) {
   GURL url("");
-  test_ukm_recorder_.Purge();
-  AutofillMetrics::LogCardUploadDecisionsUkm(&test_ukm_recorder_, -1, url, 1);
-  EXPECT_EQ(0ul, test_ukm_recorder_.sources_count());
-  EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
+  test_ukm_recorder_->Purge();
+  AutofillMetrics::LogCardUploadDecisionsUkm(test_ukm_recorder_, -1, url, 1);
+  EXPECT_EQ(0ul, test_ukm_recorder_->sources_count());
+  EXPECT_EQ(0ul, test_ukm_recorder_->entries_count());
 }
 
 // Tests that no UKM is logged when the ukm service is null.
 TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_NoUkmService) {
   GURL url("https://www.google.com");
-  test_ukm_recorder_.Purge();
+  test_ukm_recorder_->Purge();
   AutofillMetrics::LogCardUploadDecisionsUkm(nullptr, -1, url, 1);
-  EXPECT_EQ(0ul, test_ukm_recorder_.sources_count());
-  EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
+  EXPECT_EQ(0ul, test_ukm_recorder_->sources_count());
+  EXPECT_EQ(0ul, test_ukm_recorder_->entries_count());
 }
 
 // Test the ukm recorded when Suggestion is shown.
@@ -8826,6 +8831,64 @@ TEST_F(AutofillMetricsTest, LogAutocompleteSuggestionAcceptedIndex_IndexCap) {
   histogram_tester.ExpectBucketCount(
       "Autocomplete.Events", AutofillMetrics::AUTOCOMPLETE_SUGGESTION_SELECTED,
       /*expected_count=*/1);
+}
+
+TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_CreditCard) {
+  const int index = 2;
+  const PopupType popup_type = PopupType::kCreditCards;
+
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type,
+                                                      /*off_the_record=*/false);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SuggestionAcceptedIndex.CreditCard", index, 1);
+
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(HasSubstr("Autofill.SuggestionAcceptedIndex.Other"),
+                HasSubstr("Autofill.SuggestionAcceptedIndex.Profile"))));
+}
+
+TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_Profile) {
+  const int index = 1;
+  const PopupType popup_type1 = PopupType::kPersonalInformation;
+  const PopupType popup_type2 = PopupType::kAddresses;
+
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type1,
+                                                      /*off_the_record=*/false);
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type2,
+                                                      /*off_the_record=*/false);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SuggestionAcceptedIndex.Profile", index, 2);
+
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(HasSubstr("Autofill.SuggestionAcceptedIndex.CreditCard"),
+                HasSubstr("Autofill.SuggestionAcceptedIndex.Other"))));
+}
+
+TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_Other) {
+  const int index = 0;
+  const PopupType popup_type1 = PopupType::kUnspecified;
+  const PopupType popup_type2 = PopupType::kPasswords;
+
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type1,
+                                                      /*off_the_record=*/false);
+  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type2,
+                                                      /*off_the_record=*/false);
+
+  histogram_tester.ExpectUniqueSample("Autofill.SuggestionAcceptedIndex.Other",
+                                      index, 2);
+
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(HasSubstr("Autofill.SuggestionAcceptedIndex.CreditCard"),
+                HasSubstr("Autofill.SuggestionAcceptedIndex.Profile"))));
 }
 
 TEST_F(AutofillMetricsTest, OnAutocompleteSuggestionsShown) {

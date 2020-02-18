@@ -17,12 +17,19 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
 
 namespace content {
 class BrowserContext;
 class RenderFrameHost;
+}
+
+namespace prerender {
+class PrerenderHandle;
+class PrerenderManager;
 }
 
 class SiteEngagementService;
@@ -96,6 +103,10 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // URL that we decided to prefetch.
   base::Optional<GURL> prefetch_url_;
 
+  // True if a prefetch_url_ has already been prefetched, so we know
+  // whether to prefetch the url again when a tab becomes visible.
+  bool prefetch_url_prefetched_ = false;
+
  private:
   // Struct holding navigation score, rank and other info of the anchor element.
   // Used for look up when an anchor element is clicked.
@@ -105,7 +116,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   void ReportAnchorElementMetricsOnClick(
       blink::mojom::AnchorElementMetricsPtr metrics) override;
   void ReportAnchorElementMetricsOnLoad(
-      std::vector<blink::mojom::AnchorElementMetricsPtr> metrics) override;
+      std::vector<blink::mojom::AnchorElementMetricsPtr> metrics,
+      const gfx::Size& viewport_size) override;
 
   // Returns true if the anchor element metric from the renderer process is
   // valid.
@@ -134,8 +146,11 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
       const blink::mojom::AnchorElementMetrics& metrics,
       double document_engagement_score,
       double target_engagement_score,
-      int area_rank,
-      int number_of_anchors) const;
+      int area_rank) const;
+
+  // If |sum_page_scales_| is non-zero, return the page-wide score to add to
+  // all the navigation scores. Computed once per page.
+  double GetPageMetricsScore() const;
 
   // Given a vector of navigation scores sorted in descending order, decide what
   // action to take, or decide not to do anything. Example actions including
@@ -144,6 +159,13 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
       const url::Origin& document_origin,
       const std::vector<std::unique_ptr<NavigationScore>>&
           sorted_navigation_scores);
+
+  // Decides whether to prefetch a URL and, if yes, calls Prefetch.
+  void MaybePrefetch();
+
+  // Given a url to prefetch, uses PrerenderManager to start a NoStatePrefetch
+  // of that URL.
+  virtual void Prefetch(prerender::PrerenderManager* prerender_manager);
 
   base::Optional<GURL> GetUrlToPrefetch(
       const url::Origin& document_origin,
@@ -186,8 +208,16 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   int number_of_anchors_contains_image_ = 0;
   int number_of_anchors_in_iframe_ = 0;
   int number_of_anchors_url_incremented_ = 0;
+  int number_of_anchors_ = 0;
 
-  // Scaling factors used to compute navigation scores.
+  // Viewport-related metrics for anchor elements: the viewport size,
+  // the median distance down the viewport of all the links, and the
+  // total clickable space for first viewport links.
+  gfx::Size viewport_size_;
+  int median_link_location_ = 0;
+  int total_clickable_space_ = 0;
+
+  // Anchor-specific scaling factors used to compute navigation scores.
   const int ratio_area_scale_;
   const int is_in_iframe_scale_;
   const int is_same_host_scale_;
@@ -197,8 +227,23 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   const int target_engagement_score_scale_;
   const int area_rank_scale_;
 
-  // Sum of all scales. Used to normalize the final computed weight.
-  const int sum_scales_;
+  // Page-wide scaling factors used to compute navigation scores.
+  const int link_total_scale_;
+  const int iframe_link_total_scale_;
+  const int increment_link_total_scale_;
+  const int same_origin_link_total_scale_;
+  const int image_link_total_scale_;
+  const int clickable_space_scale_;
+  const int median_link_location_scale_;
+  const int viewport_height_scale_;
+  const int viewport_width_scale_;
+
+  // Sum of all scales for individual anchor metrics.
+  // Used to normalize the final computed weight.
+  const int sum_link_scales_;
+
+  // Sum of all scales for page-wide metrics.
+  const int sum_page_scales_;
 
   // True if device is a low end device.
   const bool is_low_end_device_;
@@ -216,6 +261,15 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // True if |this| is allowed to preconnect to same origin hosts.
   const bool same_origin_preconnecting_allowed_;
 
+  // True if |this| should use the PrerenderManager to prefetch after
+  // a preconnect.
+  const bool prefetch_after_preconnect_;
+
+  // True by default, otherwise navigation scores will not be normalized
+  // by the sum of metrics weights nor normalized from 0 to 100 across
+  // all navigation scores for a page.
+  const bool normalize_navigation_scores_;
+
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;
   base::TimeTicks last_click_timing_;
@@ -229,6 +283,14 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
 
   // Used to preconnect regularly.
   base::OneShotTimer timer_;
+
+  // PrerenderHandle returned after completing a prefetch in PrerenderManager.
+  std::unique_ptr<prerender::PrerenderHandle> prerender_handle_;
+
+  // UKM ID for navigation
+  // TODO(sofiyase): implement that function that uses this id to send aggregate
+  // link information to the UKM.
+  ukm::SourceId ukm_source_id_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

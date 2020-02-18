@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -37,13 +38,6 @@ namespace autofill_assistant {
 using autofill::ContentAutofillDriver;
 
 namespace {
-// Expiration time for the Autofill Assistant cookie.
-constexpr int kCookieExpiresSeconds = 600;
-
-// Name and value used for the static cookie.
-const char* const kAutofillAssistantCookieName = "autofill_assistant_cookie";
-const char* const kAutofillAssistantCookieValue = "true";
-
 const char* const kGetBoundingClientRectAsList =
     R"(function(node) {
       const r = node.getBoundingClientRect();
@@ -71,6 +65,14 @@ const char* const kScrollIntoViewWithPaddingScript =
       topPadding = window.innerHeight * topPaddingRatio;
     }
     window.scrollBy({top: rect.top - topPadding});
+  })";
+
+// Scroll the window or any scrollable container as needed for the element to
+// appear centered. This is in preparation of a click, to improve the chances
+// for the element to click to be visible.
+const char* const kScrollIntoViewCenterScript =
+    R"(function(node) {
+    node.scrollIntoView({block: "center", inline: "center"});
   })";
 
 const char* const kScrollIntoViewIfNeededScript =
@@ -355,6 +357,73 @@ bool SafeGetBool(const runtime::RemoteObject* result, bool* out) {
   }
   *out = false;
   return false;
+}
+
+// Converts a int that correspond to the DocumentReadyState enum into an
+// equivalent quoted Javascript string.
+std::string DocumentReadyStateToQuotedJsString(int state) {
+  switch (static_cast<DocumentReadyState>(state)) {
+    case DOCUMENT_UNKNOWN_READY_STATE:
+      return "''";
+    case DOCUMENT_UNINITIALIZED:
+      return "'uninitialized'";
+    case DOCUMENT_LOADING:
+      return "'loading'";
+    case DOCUMENT_LOADED:
+      return "'loaded'";
+    case DOCUMENT_INTERACTIVE:
+      return "'interactive'";
+    case DOCUMENT_COMPLETE:
+      return "'complete'";
+
+      // No default, to get a compilation error if a new enum value is left
+      // unsupported.
+  }
+
+  // If the enum values aren't sequential, just add empty strings to fill in the
+  // blanks.
+  return "''";
+}
+
+// Appends to |out| the definition of a function that'll wait for a
+// ready state, expressed as a DocumentReadyState enum value.
+void AppendWaitForDocumentReadyStateFunction(std::string* out) {
+  // quoted_names covers all possible DocumentReadyState values.
+  std::vector<std::string> quoted_names(DOCUMENT_MAX_READY_STATE + 1);
+  for (int i = 0; i <= DOCUMENT_MAX_READY_STATE; i++) {
+    quoted_names[i] = DocumentReadyStateToQuotedJsString(i);
+  }
+  base::StrAppend(out, {R"(function (minReadyStateNum) {
+  return new Promise((fulfill, reject) => {
+    let handler = function(event) {
+      let readyState = document.readyState;
+      let readyStates = [)",
+                        base::JoinString(quoted_names, ", "), R"(];
+      let readyStateNum = readyStates.indexOf(readyState);
+      if (readyStateNum == -1) readyStateNum = 0;
+      if (readyStateNum >= minReadyStateNum) {
+        document.removeEventListener('readystatechange', handler);
+        fulfill(readyStateNum);
+      }
+    }
+    document.addEventListener('readystatechange', handler)
+    handler();
+  })
+})"});
+}
+
+// Forward the result of WaitForDocumentReadyState to the callback. The same
+// code work on both EvaluateResult and CallFunctionOnResult.
+template <typename T>
+void OnWaitForDocumentReadyState(
+    base::OnceCallback<void(const ClientStatus&, DocumentReadyState)> callback,
+    std::unique_ptr<T> result) {
+  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  DVLOG_IF(1, !status.ok())
+      << __func__ << " Failed to get document ready state.";
+  int ready_state;
+  SafeGetIntValue(result->GetResult(), &ready_state);
+  std::move(callback).Run(status, static_cast<DocumentReadyState>(ready_state));
 }
 }  // namespace
 
@@ -992,7 +1061,7 @@ void WebController::ClickOrTapElement(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(element_object_id)
           .SetArguments(std::move(argument))
-          .SetFunctionDeclaration(std::string(kScrollIntoViewIfNeededScript))
+          .SetFunctionDeclaration(std::string(kScrollIntoViewCenterScript))
           .SetReturnByValue(true)
           .Build(),
       base::BindOnce(&WebController::OnScrollIntoView,
@@ -1188,6 +1257,74 @@ void WebController::OnWaitForWindowHeightChange(
     std::unique_ptr<runtime::EvaluateResult> result) {
   std::move(callback).Run(
       CheckJavaScriptResult(result.get(), __FILE__, __LINE__));
+}
+
+void WebController::GetDocumentReadyState(
+    const Selector& optional_frame,
+    base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+        callback) {
+  WaitForDocumentReadyState(optional_frame, DOCUMENT_UNKNOWN_READY_STATE,
+                            std::move(callback));
+}
+
+void WebController::WaitForDocumentReadyState(
+    const Selector& optional_frame,
+    DocumentReadyState min_ready_state,
+    base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+        callback) {
+  if (optional_frame.empty()) {
+    std::string expression;
+    expression.append("(");
+    AppendWaitForDocumentReadyStateFunction(&expression);
+    base::StringAppendF(&expression, ")(%d)",
+                        static_cast<int>(min_ready_state));
+    devtools_client_->GetRuntime()->Evaluate(
+        runtime::EvaluateParams::Builder()
+            .SetExpression(expression)
+            .SetReturnByValue(true)
+            .SetAwaitPromise(true)
+            .Build(),
+        base::BindOnce(&OnWaitForDocumentReadyState<runtime::EvaluateResult>,
+                       std::move(callback)));
+    return;
+  }
+  FindElement(
+      optional_frame, /* strict= */ false,
+      base::BindOnce(&WebController::OnFindElementForWaitForDocumentReadyState,
+                     weak_ptr_factory_.GetWeakPtr(), min_ready_state,
+                     std::move(callback)));
+}
+
+void WebController::OnFindElementForWaitForDocumentReadyState(
+    DocumentReadyState min_ready_state,
+    base::OnceCallback<void(const ClientStatus&, DocumentReadyState)> callback,
+    const ClientStatus& status,
+    std::unique_ptr<FindElementResult> element) {
+  if (!status.ok()) {
+    std::move(callback).Run(status, DOCUMENT_UNKNOWN_READY_STATE);
+    return;
+  }
+
+  std::string function_declaration;
+  AppendWaitForDocumentReadyStateFunction(&function_declaration);
+
+  std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
+  arguments.emplace_back(
+      runtime::CallArgument::Builder()
+          .SetValue(base::Value::ToUniquePtrValue(
+              base::Value(static_cast<int>(min_ready_state))))
+          .Build());
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(element ? element->object_id : "")
+          .SetFunctionDeclaration(function_declaration)
+          .SetArguments(std::move(arguments))
+          .SetReturnByValue(true)
+          .SetAwaitPromise(true)
+          .Build(),
+      base::BindOnce(
+          &OnWaitForDocumentReadyState<runtime::CallFunctionOnResult>,
+          std::move(callback)));
 }
 
 void WebController::FindElement(const Selector& selector,
@@ -1930,61 +2067,6 @@ void WebController::OnGetOuterHtml(
   std::string value;
   SafeGetStringValue(result->GetResult(), &value);
   std::move(callback).Run(OkClientStatus(), value);
-}
-
-void WebController::SetCookie(const std::string& domain,
-                              base::OnceCallback<void(bool)> callback) {
-  DVLOG(3) << __func__ << " domain=" << domain;
-  DCHECK(!domain.empty());
-  auto expires_seconds =
-      std::chrono::seconds(std::time(nullptr)).count() + kCookieExpiresSeconds;
-  devtools_client_->GetNetwork()->SetCookie(
-      network::SetCookieParams::Builder()
-          .SetName(kAutofillAssistantCookieName)
-          .SetValue(kAutofillAssistantCookieValue)
-          .SetDomain(domain)
-          .SetExpires(expires_seconds)
-          .Build(),
-      base::BindOnce(&WebController::OnSetCookie,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void WebController::OnSetCookie(
-    base::OnceCallback<void(bool)> callback,
-    std::unique_ptr<network::SetCookieResult> result) {
-  std::move(callback).Run(result && result->GetSuccess());
-}
-
-void WebController::HasCookie(base::OnceCallback<void(bool)> callback) {
-  DVLOG(3) << __func__;
-  devtools_client_->GetNetwork()->GetCookies(
-      base::BindOnce(&WebController::OnHasCookie,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void WebController::OnHasCookie(
-    base::OnceCallback<void(bool)> callback,
-    std::unique_ptr<network::GetCookiesResult> result) {
-  if (!result) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  const auto& cookies = *result->GetCookies();
-  for (const auto& cookie : cookies) {
-    if (cookie->GetName() == kAutofillAssistantCookieName &&
-        cookie->GetValue() == kAutofillAssistantCookieValue) {
-      std::move(callback).Run(true);
-      return;
-    }
-  }
-  std::move(callback).Run(false);
-}
-
-void WebController::ClearCookie() {
-  DVLOG(3) << __func__;
-  devtools_client_->GetNetwork()->DeleteCookies(kAutofillAssistantCookieName,
-                                                base::DoNothing());
 }
 
 void WebController::WaitForDocumentToBecomeInteractive(

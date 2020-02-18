@@ -89,13 +89,25 @@
     "label": "//third_party/webrtc/test/fuzzers:agc_fuzzer",
     "type": "fuzzer",
   },
+  "android_browsertests": {
+    "label": "//chrome/test:android_browsertests",
+    "type": "windowed_test_launcher",
+  },
   "android_crazy_linker_zip_fuzzer": {
     "label": "//third_party/android_crazy_linker:android_crazy_linker_zip_fuzzer",
     "type": "fuzzer",
   },
+  "android_webview_junit_tests": {
+    "label": "//android_webview/test:android_webview_junit_tests",
+    "type": "junit_test",
+  },
   "android_webview_unittests": {
     "label": "//android_webview/test:android_webview_unittests",
     "type": "console_test_launcher",
+  },
+  "angle_apks": {
+    "label": "//third_party/angle:angle_apks",
+    "type": "additional_compile_target",
   },
   "angle_deqp_egl_tests": {
     "args": [],
@@ -125,6 +137,11 @@
   "angle_deqp_khr_gles3_tests": {
     "args": [],
     "label": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests",
+    "type": "raw",
+  },
+  "angle_deqp_khr_gles31_tests": {
+    "args": [],
+    "label": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests",
     "type": "raw",
   },
   "angle_end2end_tests": {
@@ -612,6 +629,11 @@
     "label": "//sandbox/linux:chrome_sandbox",
     "type": "additional_compile_target",
   },
+  "chrome_sizes": {
+    "label": "//chrome/test:chrome_sizes",
+    "type": "generated_script",
+    "script": "bin/run_chrome_sizes",
+  },
   "chromedriver": {
     "label": "//chrome/test/chromedriver:chromedriver",
     "type": "additional_compile_target",
@@ -635,8 +657,18 @@
       "../../chrome/test/chromedriver/test/run_webdriver_tests.py",
       "-v",
       "--chromedriver=chromedriver",
-      "--isolated-script-test-output=${ISOLATED_OUTDIR}/results.json",
+      "--output-dir=${ISOLATED_OUTDIR}",
       "--test-path=../../third_party/blink/web_tests/external/wpt/webdriver/tests/",
+    ],
+  },
+  "wpt_tests_isolate": {
+    "label": "//:wpt_tests_isolate",
+    "type": "script",
+    "script": "//testing/scripts/run_wpt_tests.py",
+    "args": [
+      "--old-json-output-file-path=${ISOLATED_OUTDIR}/output.json",
+      "--new-json-output-dir=${ISOLATED_OUTDIR}",
+      "--new-json-output-filename=output.json",
     ],
   },
   "chrome/installer/linux": {
@@ -741,10 +773,6 @@
     "label": "//components/variations/android:components_variations_junit_tests",
     "type": "junit_test",
   },
-  "components_web_restrictions_junit_tests": {
-    "label": "//components/web_restrictions:components_web_restrictions_junit_tests",
-    "type": "junit_test",
-  },
   "compositor_unittests": {
     "label": "//ui/compositor:compositor_unittests",
     "type": "windowed_test_launcher",
@@ -813,7 +841,7 @@
   "cronet_sizes": {
     "label": "//components/cronet/android:cronet_sizes",
     "type": "generated_script",
-    "script": "bin/cronet_sizes",
+    "script": "bin/run_cronet_sizes",
   },
   "cronet_smoketests_missing_native_library_instrumentation_apk": {
     "label": "//components/cronet/android:cronet_smoketests_missing_native_library_instrumentation_apk",
@@ -851,11 +879,11 @@
     "label": "//components/cronet/ios:cronet_unittests_ios",
     "type": "raw",
   },
-  "cros_vm_sanity_test": {
+  "cros_browser_sanity_test": {
     "args": [
       "--vm-logs-dir=${ISOLATED_OUTDIR}",
     ],
-    "label": "//chromeos:cros_vm_sanity_test",
+    "label": "//chromeos:cros_browser_sanity_test",
     "type": "raw",
   },
   "crypto_unittests": {
@@ -1198,7 +1226,7 @@
     "type": "console_test_launcher",
   },
   "http_structured_header_fuzzer": {
-    "label": "//content/test/fuzzer:http_structured_header_fuzzer",
+    "label": "//third_party/blink/common:http_structured_header_fuzzer",
     "type": "fuzzer",
   },
   "hunspell_fuzzer": {
@@ -1262,13 +1290,6 @@
     "label": "//ios/chrome/test/earl_grey:ios_chrome_integration_egtests",
     "type": "raw",
   },
-  "ios_chrome_manual_fill_egtests": {
-    "args": [
-      "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging",
-    ],
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_manual_fill_egtests",
-    "type": "raw",
-  },
   "ios_chrome_reading_list_egtests": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests",
@@ -1280,9 +1301,6 @@
     "type": "raw",
   },
   "ios_chrome_translate_egtests": {
-    "args": [
-      "--enable-features=CompactTranslateInfobarIOS",
-    ],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_translate_egtests",
     "type": "raw",
   },
@@ -1306,9 +1324,24 @@
     "label": "//ios/chrome/test/earl_grey:ios_chrome_web_egtests",
     "type": "raw",
   },
-  "ios_chrome_smoke_eg2tests": {
+  "ios_chrome_smoke_eg2tests_module": {
     "args": [],
-    "label": "//ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests",
+    "label": "//ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module",
+    "type": "raw",
+  },
+  "ios_chrome_ui_eg2tests_module": {
+    "args": [],
+    "label": "//ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module",
+    "type": "raw",
+  },
+"ios_chrome_web_eg2tests_module": {
+    "args": [],
+    "label": "//ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module",
+    "type": "raw",
+  },
+  "ios_web_shell_eg2tests_module": {
+    "args": [],
+    "label": "//ios/web/shell/test:ios_web_shell_eg2tests_module",
     "type": "raw",
   },
   "ios_components_unittests": {
@@ -1329,11 +1362,6 @@
   "ios_showcase_egtests": {
     "args": [],
     "label": "//ios/showcase:ios_showcase_egtests",
-    "type": "raw",
-  },
-  "ios_chrome_unified_consent_egtests": {
-    "args": [],
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_unified_consent_egtests",
     "type": "raw",
   },
   "ios_web_inttests": {
@@ -1544,7 +1572,7 @@
       "--output-dir=${ISOLATED_OUTDIR}",
     ],
     "label": "//chrome/test/media_router:media_router_perf_tests",
-    "script": "//chrome/test/media_router/telemetry/run_benchmark.py",
+    "script": "//tools/perf/contrib/media_router_benchmarks/run_benchmark.py",
     "type": "script",
   },
   "media_service_unittests": {
@@ -1715,10 +1743,16 @@
       "../../chrome/android/monochrome/scripts/monochrome_apk_checker.py",
       "--chrome-apk",
       "apks/ChromeModernPublic.apk",
+      "--chrome-pathmap",
+      "apks/ChromeModernPublic.apk.pathmap.txt",
       "--system-webview-apk",
       "apks/SystemWebView.apk",
+      "--system-webview-pathmap",
+      "apks/SystemWebView.apk.pathmap.txt",
       "--monochrome-apk",
       "apks/MonochromePublic.apk",
+      "--monochrome-pathmap",
+      "apks/MonochromePublic.apk.pathmap.txt",
     ],
     "label": "//chrome/android/monochrome:monochrome_apk_checker",
     "script": "//testing/scripts/monochrome_apk_checker_wrapper.py",
@@ -2037,16 +2071,8 @@
     "label": "//components/password_manager/core/browser/form_parsing/fuzzer:password_manager_form_parser_fuzzer",
     "type": "fuzzer",
   },
-  "password_manager_form_parser_generic_fuzzer": {
-    "label": "//components/password_manager/core/browser/form_parsing/fuzzer:password_manager_form_parser_generic_fuzzer",
-    "type": "fuzzer",
-  },
   "password_manager_form_parser_proto_fuzzer": {
     "label": "//components/password_manager/core/browser/form_parsing/fuzzer:password_manager_form_parser_proto_fuzzer",
-    "type": "fuzzer",
-  },
-  "password_manager_form_parser_proto_generic_fuzzer": {
-    "label": "//components/password_manager/core/browser/form_parsing/fuzzer:password_manager_form_parser_proto_generic_fuzzer",
     "type": "fuzzer",
   },
   "payment_method_manifest_fuzzer": {
@@ -2179,6 +2205,18 @@
     "label": "//base:pickle_fuzzer",
     "type": "fuzzer",
   },
+  "pixel_browser_tests": {
+    "label": "//chrome/test:pixel_browser_tests",
+    "type": "console_test_launcher",
+  },
+  "polymer_tools_python_unittests": {
+    "args": [
+      "../../tools/polymer/run_polymer_tools_tests.py",
+    ],
+    "label": "//tools/polymer:polymer_tools_python_unittests",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "type": "script",
+  },
   "postmortem-metadata": {
     "label": "//v8:postmortem-metadata",
     "type": "additional_compile_target",
@@ -2245,12 +2283,11 @@
   },
   "rendering_representative_perf_tests": {
     "args": [
-      "../../tools/perf/run_benchmark",
-      "--benchmarks=rendering.desktop",
       "--output-format=csv",
       "--browser=release",
+      "--upload-results",
     ],
-    "label": "//testing:rendering_representative_perf_tests",
+    "label": "//chrome/test:rendering_representative_perf_tests",
     "script": "//testing/scripts/run_rendering_benchmark_with_gated_performance.py",
     "type": "script",
   },
@@ -2826,6 +2863,10 @@
   },
   "web_engine_browsertests": {
     "label": "//fuchsia/engine:web_engine_browsertests",
+    "type": "console_test_launcher",
+  },
+  "web_engine_integration_tests": {
+    "label": "//fuchsia/engine:web_engine_integration_tests",
     "type": "console_test_launcher",
   },
   "web_engine_unittests": {

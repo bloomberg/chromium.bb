@@ -212,7 +212,8 @@ class UnifiedMessageListView::MessageViewContainer
 UnifiedMessageListView::UnifiedMessageListView(
     UnifiedMessageCenterView* message_center_view,
     UnifiedSystemTrayModel* model)
-    : message_center_view_(message_center_view),
+    : views::AnimationDelegateViews(this),
+      message_center_view_(message_center_view),
       model_(model),
       animation_(std::make_unique<gfx::LinearAnimation>(this)) {
   MessageCenter::Get()->AddObserver(this);
@@ -222,7 +223,10 @@ UnifiedMessageListView::UnifiedMessageListView(
 }
 
 UnifiedMessageListView::~UnifiedMessageListView() {
-  MessageCenter::Get()->RemoveObserver(this);
+  // The MessageCenter may be destroyed already during shutdown. See
+  // crbug.com/946153.
+  if (MessageCenter::Get())
+    MessageCenter::Get()->RemoveObserver(this);
 
   model_->ClearNotificationChanges();
   for (auto* view : children())
@@ -488,9 +492,7 @@ void UnifiedMessageListView::CollapseAllNotifications() {
 void UnifiedMessageListView::UpdateBorders() {
   // The top notification is drawn with rounded corners when the stacking bar is
   // not shown.
-  bool is_top = (!features::IsNotificationStackingBarRedesignEnabled() ||
-                 children().size() == 1) &&
-                state_ != State::MOVE_DOWN;
+  bool is_top = children().size() == 1 && state_ != State::MOVE_DOWN;
   for (auto* child : children()) {
     AsMVC(child)->UpdateBorder(is_top, child == children().back());
     is_top = false;

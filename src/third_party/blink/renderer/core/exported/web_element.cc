@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -172,7 +173,7 @@ WebElement& WebElement::operator=(Element* elem) {
 }
 
 WebElement::operator Element*() const {
-  return ToElement(private_.Get());
+  return blink::To<Element>(private_.Get());
 }
 
 }  // namespace blink

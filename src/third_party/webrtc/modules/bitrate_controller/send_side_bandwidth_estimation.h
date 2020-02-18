@@ -14,6 +14,7 @@
 #define MODULES_BITRATE_CONTROLLER_SEND_SIDE_BANDWIDTH_ESTIMATION_H_
 
 #include <stdint.h>
+
 #include <deque>
 #include <utility>
 #include <vector>
@@ -24,7 +25,6 @@
 #include "api/units/time_delta.h"
 #include "api/units/timestamp.h"
 #include "modules/bitrate_controller/loss_based_bandwidth_estimation.h"
-#include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "rtc_base/experiments/field_trial_parser.h"
 
 namespace webrtc {
@@ -114,6 +114,8 @@ class SendSideBandwidthEstimation {
   void IncomingPacketFeedbackVector(const TransportPacketsFeedback& report);
 
  private:
+  friend class GoogCcStatePrinter;
+
   enum UmaState { kNoUpdate, kFirstDone, kDone };
 
   bool IsInStartPhase(Timestamp at_time) const;

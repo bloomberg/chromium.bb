@@ -6,9 +6,8 @@
 
 #include <algorithm>
 
-#include "ash/accessibility/accessibility_controller.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
@@ -40,14 +39,14 @@ VirtualKeyboardTray::VirtualKeyboardTray(Shelf* shelf)
   if (Shell::HasInstance()) {
     Shell::Get()->accessibility_controller()->AddObserver(this);
     Shell::Get()->AddShellObserver(this);
-    keyboard::KeyboardController::Get()->AddObserver(this);
+    keyboard::KeyboardUIController::Get()->AddObserver(this);
   }
 }
 
 VirtualKeyboardTray::~VirtualKeyboardTray() {
   // The Shell may not exist in some unit tests.
   if (Shell::HasInstance()) {
-    keyboard::KeyboardController::Get()->RemoveObserver(this);
+    keyboard::KeyboardUIController::Get()->RemoveObserver(this);
     Shell::Get()->RemoveShellObserver(this);
     Shell::Get()->accessibility_controller()->RemoveObserver(this);
   }
@@ -67,7 +66,7 @@ bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
   UserMetricsRecorder::RecordUserClickOnTray(
       LoginMetricsRecorder::TrayClickTarget::kVirtualKeyboardTray);
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
 
   // Keyboard may not always be enabled. https://crbug.com/749989
   if (!keyboard_controller->IsEnabled())
@@ -92,11 +91,12 @@ bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
 }
 
 void VirtualKeyboardTray::OnAccessibilityStatusChanged() {
-  UpdateIconVisibility();
+  bool new_enabled =
+      Shell::Get()->accessibility_controller()->virtual_keyboard_enabled();
+  SetVisible(new_enabled);
 }
 
-void VirtualKeyboardTray::OnKeyboardVisibilityStateChanged(
-    const bool is_visible) {
+void VirtualKeyboardTray::OnKeyboardVisibilityChanged(const bool is_visible) {
   SetIsActive(is_visible);
 }
 
@@ -121,13 +121,6 @@ void VirtualKeyboardTray::UpdateIcon() {
   const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
   icon_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(vertical_padding, horizontal_padding)));
-}
-
-void VirtualKeyboardTray::UpdateIconVisibility() {
-  bool visible =
-      Shell::Get()->accessibility_controller()->virtual_keyboard_enabled() &&
-      !Shell::Get()->kiosk_next_shell_controller()->IsEnabled();
-  SetVisible(visible);
 }
 
 }  // namespace ash

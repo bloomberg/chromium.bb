@@ -169,19 +169,17 @@ private:
 };
 
 sk_sp<SkSpecialSurface> SkSpecialSurface::MakeRenderTarget(GrRecordingContext* context,
-                                                           const GrBackendFormat& format,
                                                            int width, int height,
-                                                           GrPixelConfig config,
+                                                           GrColorType colorType,
                                                            sk_sp<SkColorSpace> colorSpace,
                                                            const SkSurfaceProps* props) {
     if (!context) {
         return nullptr;
     }
-
     sk_sp<GrRenderTargetContext> renderTargetContext(
-        context->priv().makeDeferredRenderTargetContext(
-                format, SkBackingFit::kApprox, width, height, config, std::move(colorSpace), 1,
-                GrMipMapped::kNo, kBottomLeft_GrSurfaceOrigin, props));
+            context->priv().makeDeferredRenderTargetContext(
+                    SkBackingFit::kApprox, width, height, colorType, std::move(colorSpace), 1,
+                    GrMipMapped::kNo, kBottomLeft_GrSurfaceOrigin, props));
     if (!renderTargetContext) {
         return nullptr;
     }

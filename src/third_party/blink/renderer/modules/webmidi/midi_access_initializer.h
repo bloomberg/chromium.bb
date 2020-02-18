@@ -24,6 +24,8 @@ class ScriptState;
 
 class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
                                              public MIDIAccessorClient {
+  USING_PRE_FINALIZER(MIDIAccessInitializer, Dispose);
+
  public:
   struct PortDescriptor {
     DISALLOW_NEW();
@@ -59,9 +61,7 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
   MIDIAccessInitializer(ScriptState*, const MIDIOptions*);
   ~MIDIAccessInitializer() override = default;
 
-  // Eager finalization to allow dispose() operation access
-  // other (non eager) heap objects.
-  EAGERLY_FINALIZE();
+  void Dispose();
 
   // MIDIAccessorClient
   void DidAddInputPort(const String& id,
@@ -82,7 +82,7 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
   void DidReceiveMIDIData(unsigned port_index,
                           const unsigned char* data,
                           wtf_size_t length,
-                          TimeTicks time_stamp) override {}
+                          base::TimeTicks time_stamp) override {}
 
   void Trace(Visitor*) override;
 

@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/infobars/core/infobar.h"
@@ -145,23 +146,40 @@ void AutofillSaveCardInfoBarDelegateMobile::InfoBarDismissed() {
   LogUserAction(AutofillMetrics::INFOBAR_DENIED);
 }
 
+bool AutofillSaveCardInfoBarDelegateMobile::Cancel() {
+  RunSaveCardPromptCallbackWithUserDecision(AutofillClient::DECLINED);
+  LogUserAction(AutofillMetrics::INFOBAR_DENIED);
+  return true;
+}
+
 int AutofillSaveCardInfoBarDelegateMobile::GetButtons() const {
-  return BUTTON_OK;
+  if (base::FeatureList::IsEnabled(features::kAutofillSaveCardShowNoThanks)) {
+    return BUTTON_OK | BUTTON_CANCEL;
+  } else {
+    return BUTTON_OK;
+  }
 }
 
 base::string16 AutofillSaveCardInfoBarDelegateMobile::GetButtonLabel(
     InfoBarButton button) const {
-  if (button != BUTTON_OK) {
-    NOTREACHED() << "Unsupported button label requested.";
-    return base::string16();
+  if (button == BUTTON_OK) {
+    // Requesting name or expiration date from the user makes the save prompt a
+    // 2-step fix flow.
+    bool prompt_continue = options_.should_request_name_from_user ||
+                           options_.should_request_expiration_date_from_user;
+    return l10n_util::GetStringUTF16(
+        prompt_continue ? IDS_AUTOFILL_SAVE_CARD_PROMPT_CONTINUE
+                        : IDS_AUTOFILL_SAVE_CARD_INFOBAR_ACCEPT);
   }
 
-  // Requesting name or expiration date from the user makes the save prompt a
-  // 2-step fix flow.
-  return options_.should_request_name_from_user ||
-                 options_.should_request_expiration_date_from_user
-             ? l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_CONTINUE)
-             : l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_INFOBAR_ACCEPT);
+  if (button == BUTTON_CANCEL) {
+    return l10n_util::GetStringUTF16(
+        upload_ ? IDS_AUTOFILL_NO_THANKS_MOBILE_UPLOAD_SAVE
+                : IDS_AUTOFILL_NO_THANKS_MOBILE_LOCAL_SAVE);
+  }
+
+  NOTREACHED() << "Unsupported button label requested.";
+  return base::string16();
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::Accept() {

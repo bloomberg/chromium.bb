@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "perfetto/base/weak_ptr.h"
+#include "perfetto/ext/base/weak_ptr.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 namespace perfetto {
 namespace base {

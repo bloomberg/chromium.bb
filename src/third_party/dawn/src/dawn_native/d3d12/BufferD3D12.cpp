@@ -36,10 +36,10 @@ namespace dawn_native { namespace d3d12 {
         D3D12_RESOURCE_STATES D3D12BufferUsage(dawn::BufferUsageBit usage) {
             D3D12_RESOURCE_STATES resourceState = D3D12_RESOURCE_STATE_COMMON;
 
-            if (usage & dawn::BufferUsageBit::TransferSrc) {
+            if (usage & dawn::BufferUsageBit::CopySrc) {
                 resourceState |= D3D12_RESOURCE_STATE_COPY_SOURCE;
             }
-            if (usage & dawn::BufferUsageBit::TransferDst) {
+            if (usage & dawn::BufferUsageBit::CopyDst) {
                 resourceState |= D3D12_RESOURCE_STATE_COPY_DEST;
             }
             if (usage & (dawn::BufferUsageBit::Vertex | dawn::BufferUsageBit::Uniform)) {
@@ -50,6 +50,9 @@ namespace dawn_native { namespace d3d12 {
             }
             if (usage & dawn::BufferUsageBit::Storage) {
                 resourceState |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+            }
+            if (usage & dawn::BufferUsageBit::Indirect) {
+                resourceState |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
             }
 
             return resourceState;
@@ -79,7 +82,9 @@ namespace dawn_native { namespace d3d12 {
         resourceDescriptor.SampleDesc.Count = 1;
         resourceDescriptor.SampleDesc.Quality = 0;
         resourceDescriptor.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-        resourceDescriptor.Flags = D3D12ResourceFlags(GetUsage());
+        // Add CopyDst for non-mappable buffer initialization in CreateBufferMapped
+        // and robust resource initialization.
+        resourceDescriptor.Flags = D3D12ResourceFlags(GetUsage() | dawn::BufferUsageBit::CopyDst);
 
         auto heapType = D3D12HeapType(GetUsage());
         auto bufferUsage = D3D12_RESOURCE_STATE_COMMON;
@@ -89,7 +94,7 @@ namespace dawn_native { namespace d3d12 {
         if (heapType == D3D12_HEAP_TYPE_READBACK) {
             bufferUsage |= D3D12_RESOURCE_STATE_COPY_DEST;
             mFixedResourceState = true;
-            mLastUsage = dawn::BufferUsageBit::TransferDst;
+            mLastUsage = dawn::BufferUsageBit::CopyDst;
         }
 
         // D3D12 requires buffers on the UPLOAD heap to have the D3D12_RESOURCE_STATE_GENERIC_READ
@@ -97,7 +102,7 @@ namespace dawn_native { namespace d3d12 {
         if (heapType == D3D12_HEAP_TYPE_UPLOAD) {
             bufferUsage |= D3D12_RESOURCE_STATE_GENERIC_READ;
             mFixedResourceState = true;
-            mLastUsage = dawn::BufferUsageBit::TransferSrc;
+            mLastUsage = dawn::BufferUsageBit::CopySrc;
         }
 
         mResource =
@@ -117,35 +122,73 @@ namespace dawn_native { namespace d3d12 {
         return mResource;
     }
 
-    void Buffer::TransitionUsageNow(ComPtr<ID3D12GraphicsCommandList> commandList,
-                                    dawn::BufferUsageBit usage) {
+    // When true is returned, a D3D12_RESOURCE_BARRIER has been created and must be used in a
+    // ResourceBarrier call. Failing to do so will cause the tracked state to become invalid and can
+    // cause subsequent errors.
+    bool Buffer::TransitionUsageAndGetResourceBarrier(D3D12_RESOURCE_BARRIER* barrier,
+                                                      dawn::BufferUsageBit newUsage) {
         // Resources in upload and readback heaps must be kept in the COPY_SOURCE/DEST state
         if (mFixedResourceState) {
-            ASSERT(usage == mLastUsage);
-            return;
+            ASSERT(mLastUsage == newUsage);
+            return false;
         }
 
         // We can skip transitions to already current usages.
         // TODO(cwallez@chromium.org): Need some form of UAV barriers at some point.
-        bool lastIncludesTarget = (mLastUsage & usage) == usage;
-        if (lastIncludesTarget) {
-            return;
+        if ((mLastUsage & newUsage) == newUsage) {
+            return false;
         }
 
         D3D12_RESOURCE_STATES lastState = D3D12BufferUsage(mLastUsage);
-        D3D12_RESOURCE_STATES newState = D3D12BufferUsage(usage);
+        D3D12_RESOURCE_STATES newState = D3D12BufferUsage(newUsage);
+        mLastUsage = newUsage;
 
+        // The COMMON state represents a state where no write operations can be pending, which makes
+        // it possible to transition to and from some states without synchronizaton (i.e. without an
+        // explicit ResourceBarrier call). A buffer can be implicitly promoted to 1) a single write
+        // state, or 2) multiple read states. A buffer that is accessed within a command list will
+        // always implicitly decay to the COMMON state after the call to ExecuteCommandLists
+        // completes - this is because all buffer writes are guaranteed to be completed before the
+        // next ExecuteCommandLists call executes.
+        // https://docs.microsoft.com/en-us/windows/desktop/direct3d12/using-resource-barriers-to-synchronize-resource-states-in-direct3d-12#implicit-state-transitions
+
+        // To track implicit decays, we must record the pending serial on which a transition will
+        // occur. When that buffer is used again, the previously recorded serial must be compared to
+        // the last completed serial to determine if the buffer has implicity decayed to the common
+        // state.
+        const Serial pendingCommandSerial = ToBackend(GetDevice())->GetPendingCommandSerial();
+        if (pendingCommandSerial > mLastUsedSerial) {
+            lastState = D3D12_RESOURCE_STATE_COMMON;
+            mLastUsedSerial = pendingCommandSerial;
+        }
+
+        // All possible buffer states used by Dawn are eligible for implicit promotion from COMMON.
+        // These are: COPY_SOURCE, VERTEX_AND_COPY_BUFFER, INDEX_BUFFER, COPY_DEST,
+        // UNORDERED_ACCESS, and INDIRECT_ARGUMENT. Note that for implicit promotion, the
+        // destination state cannot be 1) more than one write state, or 2) both a read and write
+        // state. This goes unchecked here because it should not be allowed through render/compute
+        // pass validation.
+        if (lastState == D3D12_RESOURCE_STATE_COMMON) {
+            return false;
+        }
+
+        barrier->Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrier->Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+        barrier->Transition.pResource = mResource.Get();
+        barrier->Transition.StateBefore = lastState;
+        barrier->Transition.StateAfter = newState;
+        barrier->Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+        return true;
+    }
+
+    void Buffer::TransitionUsageNow(ComPtr<ID3D12GraphicsCommandList> commandList,
+                                    dawn::BufferUsageBit usage) {
         D3D12_RESOURCE_BARRIER barrier;
-        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-        barrier.Transition.pResource = mResource.Get();
-        barrier.Transition.StateBefore = lastState;
-        barrier.Transition.StateAfter = newState;
-        barrier.Transition.Subresource = 0;
 
-        commandList->ResourceBarrier(1, &barrier);
-
-        mLastUsage = usage;
+        if (TransitionUsageAndGetResourceBarrier(&barrier, usage)) {
+            commandList->ResourceBarrier(1, &barrier);
+        }
     }
 
     D3D12_GPU_VIRTUAL_ADDRESS Buffer::GetVA() const {
@@ -160,6 +203,11 @@ namespace dawn_native { namespace d3d12 {
         }
     }
 
+    bool Buffer::IsMapWritable() const {
+        // TODO(enga): Handle CPU-visible memory on UMA
+        return (GetUsage() & (dawn::BufferUsageBit::MapRead | dawn::BufferUsageBit::MapWrite)) != 0;
+    }
+
     MaybeError Buffer::MapAtCreationImpl(uint8_t** mappedPointer) {
         mWrittenMappedRange = {0, GetSize()};
         ASSERT_SUCCESS(
@@ -167,7 +215,7 @@ namespace dawn_native { namespace d3d12 {
         return {};
     }
 
-    void Buffer::MapReadAsyncImpl(uint32_t serial) {
+    MaybeError Buffer::MapReadAsyncImpl(uint32_t serial) {
         mWrittenMappedRange = {};
         D3D12_RANGE readRange = {0, GetSize()};
         char* data = nullptr;
@@ -177,9 +225,10 @@ namespace dawn_native { namespace d3d12 {
         // writes available when the fence is passed.
         MapRequestTracker* tracker = ToBackend(GetDevice())->GetMapRequestTracker();
         tracker->Track(this, serial, data, false);
+        return {};
     }
 
-    void Buffer::MapWriteAsyncImpl(uint32_t serial) {
+    MaybeError Buffer::MapWriteAsyncImpl(uint32_t serial) {
         mWrittenMappedRange = {0, GetSize()};
         char* data = nullptr;
         ASSERT_SUCCESS(mResource->Map(0, &mWrittenMappedRange, reinterpret_cast<void**>(&data)));
@@ -188,6 +237,7 @@ namespace dawn_native { namespace d3d12 {
         // writes available on queue submission.
         MapRequestTracker* tracker = ToBackend(GetDevice())->GetMapRequestTracker();
         tracker->Track(this, serial, data, true);
+        return {};
     }
 
     void Buffer::UnmapImpl() {

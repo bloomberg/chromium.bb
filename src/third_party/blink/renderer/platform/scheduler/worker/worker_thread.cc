@@ -17,7 +17,7 @@
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
+#include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
@@ -36,8 +36,9 @@ WorkerThread::WorkerThread(const ThreadCreationParams& params)
   base::SimpleThread::Options options;
   options.priority = params.thread_priority;
   thread_ = std::make_unique<SimpleThreadImpl>(
-      params.name ? params.name : std::string(), options,
-      std::move(non_main_thread_scheduler_factory));
+      params.name ? params.name : String(), options,
+      std::move(non_main_thread_scheduler_factory), supports_gc_,
+      const_cast<scheduler::WorkerThread*>(this));
   if (supports_gc_) {
     MemoryPressureListenerRegistry::Instance().RegisterThread(
         const_cast<scheduler::WorkerThread*>(this));
@@ -81,17 +82,26 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerThread::GetTaskRunner()
   return thread_->GetDefaultTaskRunner();
 }
 
+void WorkerThread::ShutdownOnThread() {
+  thread_->ShutdownOnThread();
+  Scheduler()->Shutdown();
+}
+
 WorkerThread::SimpleThreadImpl::SimpleThreadImpl(
-    const std::string& name_prefix,
+    const String& name_prefix,
     const base::SimpleThread ::Options& options,
-    NonMainThreadSchedulerFactory factory)
-    : SimpleThread(name_prefix, options),
-      scheduler_factory_(std::move(factory)) {
+    NonMainThreadSchedulerFactory factory,
+    bool supports_gc,
+    WorkerThread* worker_thread)
+    : SimpleThread(name_prefix.Utf8(), options),
+      thread_(worker_thread),
+      scheduler_factory_(std::move(factory)),
+      supports_gc_(supports_gc) {
   // TODO(alexclarke): Do we need to unify virtual time for workers and the main
   // thread?
   sequence_manager_ = base::sequence_manager::CreateUnboundSequenceManager(
       base::sequence_manager::SequenceManager::Settings::Builder()
-          .SetMessagePumpType(base::MessageLoop::TYPE_DEFAULT)
+          .SetMessagePumpType(base::MessagePump::Type::DEFAULT)
           .SetRandomisedSamplingEnabled(true)
           .Build());
   internal_task_queue_ = sequence_manager_->CreateTaskQueue(
@@ -110,6 +120,25 @@ void WorkerThread::SimpleThreadImpl::WaitForInit() {
   initialized.Wait();
 }
 
+WorkerThread::GCSupport::GCSupport(WorkerThread* thread) {
+  ThreadState::AttachCurrentThread();
+  gc_task_runner_ = std::make_unique<GCTaskRunner>(thread);
+}
+
+WorkerThread::GCSupport::~GCSupport() {
+#if defined(LEAK_SANITIZER)
+  ThreadState::Current()->ReleaseStaticPersistentNodes();
+#endif
+  // Ensure no posted tasks will run from this point on.
+  gc_task_runner_.reset();
+
+  ThreadState::DetachCurrentThread();
+}
+
+void WorkerThread::SimpleThreadImpl::ShutdownOnThread() {
+  gc_support_.reset();
+}
+
 void WorkerThread::SimpleThreadImpl::Run() {
   auto scoped_sequence_manager = std::move(sequence_manager_);
   auto scoped_internal_task_queue = std::move(internal_task_queue_);
@@ -124,7 +153,14 @@ void WorkerThread::SimpleThreadImpl::Run() {
   base::RunLoop run_loop;
   run_loop_ = &run_loop;
   is_initialized_.Set();
+  // UpdateThreadTLS requires |default_task_runner_| and |is_initialized| set.
+  Thread::UpdateThreadTLS(thread_);
+
+  if (supports_gc_)
+    gc_support_ = std::make_unique<GCSupport>(thread_);
   run_loop_->Run();
+  gc_support_.reset();
+
   non_main_thread_scheduler_.reset();
   run_loop_ = nullptr;
 }
@@ -136,7 +172,6 @@ void WorkerThread::SimpleThreadImpl::Quit() {
                                   base::Unretained(this)));
     return;
   }
-  non_main_thread_scheduler_.reset();
   // We should only get here if we are called by the run loop.
   DCHECK(run_loop_);
   run_loop_->Quit();

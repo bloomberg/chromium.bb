@@ -61,14 +61,11 @@ void FirstRunDialog::Show(Profile* profile) {
   run_loop.Run();
 }
 
-FirstRunDialog::FirstRunDialog(Profile* profile)
-    : profile_(profile),
-      make_default_(NULL),
-      report_crashes_(NULL) {
+FirstRunDialog::FirstRunDialog(Profile* profile) : profile_(profile) {
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
 
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
@@ -76,20 +73,20 @@ FirstRunDialog::FirstRunDialog(Profile* profile)
                         views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
-  make_default_ = new views::Checkbox(l10n_util::GetStringUTF16(
-      IDS_FR_CUSTOMIZE_DEFAULT_BROWSER));
-  make_default_->SetChecked(true);
-  layout->AddView(make_default_);
+  auto make_default = std::make_unique<views::Checkbox>(
+      l10n_util::GetStringUTF16(IDS_FR_CUSTOMIZE_DEFAULT_BROWSER));
+  make_default->SetChecked(true);
+  make_default_ = layout->AddView(std::move(make_default));
 
   layout->StartRowWithPadding(views::GridLayout::kFixedSize, 0,
                               views::GridLayout::kFixedSize,
                               ChromeLayoutProvider::Get()->GetDistanceMetric(
                                   views::DISTANCE_RELATED_CONTROL_VERTICAL));
-  report_crashes_ = new views::Checkbox(
+  auto report_crashes = std::make_unique<views::Checkbox>(
       l10n_util::GetStringUTF16(IDS_SETTINGS_ENABLE_LOGGING));
   // Having this box checked means the user has to opt-out of metrics recording.
-  report_crashes_->SetChecked(!first_run::IsMetricsReportingOptIn());
-  layout->AddView(report_crashes_);
+  report_crashes->SetChecked(!first_run::IsMetricsReportingOptIn());
+  report_crashes_ = layout->AddView(std::move(report_crashes));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::FIRST_RUN_DIALOG);
 }
 
@@ -101,9 +98,9 @@ void FirstRunDialog::Done() {
   quit_runloop_.Run();
 }
 
-views::View* FirstRunDialog::CreateExtraView() {
-  views::Link* link = new views::Link(l10n_util::GetStringUTF16(
-      IDS_LEARN_MORE));
+std::unique_ptr<views::View> FirstRunDialog::CreateExtraView() {
+  auto link =
+      std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   link->set_listener(this);
   return link;
 }

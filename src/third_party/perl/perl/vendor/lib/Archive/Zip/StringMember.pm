@@ -4,7 +4,7 @@ use strict;
 use vars qw( $VERSION @ISA );
 
 BEGIN {
-    $VERSION = '1.30';
+    $VERSION = '1.64';
     @ISA     = qw( Archive::Zip::Member );
 }
 
@@ -24,8 +24,8 @@ sub _newFromString {
     $self->fileName($name) if defined($name);
 
     # Set the file date to now
-    $self->setLastModFileDateTimeFromUnix( time() );
-    $self->unixFileAttributes( $self->DEFAULT_FILE_PERMISSIONS );
+    $self->setLastModFileDateTimeFromUnix(time());
+    $self->unixFileAttributes($self->DEFAULT_FILE_PERMISSIONS);
     return $self;
 }
 
@@ -33,7 +33,7 @@ sub _become {
     my $self     = shift;
     my $newClass = shift;
     return $self if ref($self) eq $newClass;
-    delete( $self->{'contents'} );
+    delete($self->{'contents'});
     return $self->SUPER::_become($newClass);
 }
 
@@ -42,11 +42,11 @@ sub _become {
 sub contents {
     my $self   = shift;
     my $string = shift;
-    if ( defined($string) ) {
+    if (defined($string)) {
         $self->{'contents'} =
-          pack( 'C0a*', ( ref($string) eq 'SCALAR' ) ? $$string : $string );
+          pack('C0a*', (ref($string) eq 'SCALAR') ? $$string : $string);
         $self->{'uncompressedSize'} = $self->{'compressedSize'} =
-          length( $self->{'contents'} );
+          length($self->{'contents'});
         $self->{'compressionMethod'} = COMPRESSION_STORED;
     }
     return $self->{'contents'};
@@ -56,9 +56,9 @@ sub contents {
 # my $data;
 # my ( $bytesRead, $status) = $self->readRawChunk( \$data, $chunkSize );
 sub _readRawChunk {
-    my ( $self, $dataRef, $chunkSize ) = @_;
-    $$dataRef = substr( $self->contents(), $self->_readOffset(), $chunkSize );
-    return ( length($$dataRef), AZ_OK );
+    my ($self, $dataRef, $chunkSize) = @_;
+    $$dataRef = substr($self->contents(), $self->_readOffset(), $chunkSize);
+    return (length($$dataRef), AZ_OK);
 }
 
 1;

@@ -101,6 +101,14 @@ class SupervisedUserService : public KeyedService,
     return whitelists_;
   }
 
+  // Returns true if the preference value is pre-defined and is controlled by
+  // neither the supervised user nor the supervised user's custodians.
+  bool IsRestrictedCrosSettingForChildUser(const std::string& name) const;
+
+  // Returns the value of the restricted preference.
+  const base::Value* GetRestrictedCrosSettingValueForChildUser(
+      const std::string& name) const;
+
   // Whether the user can request to get access to blocked URLs or to new
   // extensions.
   bool AccessRequestsEnabled();
@@ -183,6 +191,15 @@ class SupervisedUserService : public KeyedService,
 
   // SupervisedUserURLFilter::Observer implementation:
   void OnSiteListUpdated() override;
+
+#if !defined(OS_ANDROID)
+  bool signout_required_after_supervision_enabled() {
+    return signout_required_after_supervision_enabled_;
+  }
+  void set_signout_required_after_supervision_enabled() {
+    signout_required_after_supervision_enabled_ = true;
+  }
+#endif  // !defined(OS_ANDROID)
 
  private:
   friend class SupervisedUserServiceExtensionTestBase;
@@ -327,6 +344,9 @@ class SupervisedUserService : public KeyedService,
   // It is only relevant for SU-initiated installs.
   std::map<std::string, base::Version> approved_extensions_map_;
 
+  // Stores the restricted preference values for child users.
+  std::map<std::string, base::Value> child_user_restricted_cros_settings_;
+
   enum class BlacklistLoadState {
     NOT_LOADED,
     LOAD_STARTED,
@@ -351,7 +371,11 @@ class SupervisedUserService : public KeyedService,
 
   base::ObserverList<SupervisedUserServiceObserver>::Unchecked observer_list_;
 
-  base::WeakPtrFactory<SupervisedUserService> weak_ptr_factory_;
+#if !defined(OS_ANDROID)
+  bool signout_required_after_supervision_enabled_ = false;
+#endif
+
+  base::WeakPtrFactory<SupervisedUserService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserService);
 };

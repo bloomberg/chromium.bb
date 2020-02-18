@@ -47,6 +47,7 @@ constexpr char kDeleteKeys[] = "DeleteKeys";
 constexpr char kResetIdentity[] = "ResetIdentity";
 constexpr char kSetSystemSalt[] = "SetSystemSalt";
 constexpr char kGetEnrollmentId[] = "GetEnrollmentId";
+constexpr char kGetCertifiedNvIndex[] = "GetCertifiedNvIndex";
 
 }  // namespace attestation
 

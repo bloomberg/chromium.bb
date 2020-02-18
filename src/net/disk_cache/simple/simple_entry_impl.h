@@ -13,7 +13,7 @@
 #include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
@@ -44,9 +44,9 @@ class SimpleFileTracker;
 class SimpleSynchronousEntry;
 struct SimpleEntryCreationResults;
 
-// SimpleEntryImpl is the IO thread interface to an entry in the very simple
-// disk cache. It proxies for the SimpleSynchronousEntry, which performs IO
-// on the worker thread.
+// SimpleEntryImpl is the source task_runner interface to an entry in the very
+// simple disk cache. It proxies for the SimpleSynchronousEntry, which performs
+// IO on the worker thread.
 class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
     public base::RefCounted<SimpleEntryImpl> {
   friend class base::RefCounted<SimpleEntryImpl>;
@@ -214,10 +214,21 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // count.
   void ReturnEntryToCaller(Entry** out_entry);
 
-  // Like above, but also invokes the result callback (with net::OK), making
-  // sure to handle the backend being deleted in the interim.
-  void ReturnEntryToCallerAndPostCallback(Entry** out_entry,
-                                          CompletionOnceCallback callback);
+  // Like above, but for asynchronous return after the event loop runs again,
+  // also invoking the callback per the usual net convention.
+  // The return is cancelled if the backend is deleted in the interim.
+  //
+  // |out_opened| may be null.
+  void ReturnEntryToCallerAsync(Entry** out_entry,
+                                bool* out_opened,
+                                bool opened,
+                                CompletionOnceCallback callback);
+
+  // Portion of the above that runs off the event loop.
+  void FinishReturnEntryToCallerAsync(Entry** out_entry,
+                                      bool* out_opened,
+                                      bool opened,
+                                      CompletionOnceCallback callback);
 
   // Remove |this| from the Backend and the index, either because
   // SimpleSynchronousEntry has detected an error or because we are about to
@@ -307,7 +318,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
 
   // Called after an asynchronous write completes.
   // |buf| parameter brings back a reference to net::IOBuffer to the original
-  // thread, so that we can reduce cross thread malloc/free pair.
+  // sequence, so that we can reduce cross thread malloc/free pair.
   // See http://crbug.com/708644 for details.
   void WriteOperationComplete(
       int stream_index,
@@ -367,9 +378,10 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
 
   std::unique_ptr<ActiveEntryProxy> active_entry_proxy_;
 
-  // All nonstatic SimpleEntryImpl methods should always be called on the IO
-  // thread, in all cases. |io_thread_checker_| documents and enforces this.
-  base::ThreadChecker io_thread_checker_;
+  // All nonstatic SimpleEntryImpl methods should always be called on the
+  // source creation sequence, in all cases. |sequence_checker_| documents and
+  // enforces this.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   const base::WeakPtr<SimpleBackendImpl> backend_;
   SimpleFileTracker* const file_tracker_;

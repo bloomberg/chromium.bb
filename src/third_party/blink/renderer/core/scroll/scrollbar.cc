@@ -83,7 +83,9 @@ Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
   current_pos_ = ScrollableAreaCurrentPos();
 }
 
-Scrollbar::~Scrollbar() {
+Scrollbar::~Scrollbar() =default;
+
+void Scrollbar::Dispose() {
   theme_.UnregisterScrollbar(*this);
 }
 
@@ -182,7 +184,7 @@ bool Scrollbar::ThumbWillBeUnderMouse() const {
   return PressedPos() >= thumb_pos && PressedPos() < thumb_pos + thumb_length;
 }
 
-void Scrollbar::AutoscrollPressedPart(TimeDelta delay) {
+void Scrollbar::AutoscrollPressedPart(base::TimeDelta delay) {
   if (!scrollable_area_)
     return;
 
@@ -203,7 +205,8 @@ void Scrollbar::AutoscrollPressedPart(TimeDelta delay) {
   } else {
     scrollable_area_->UserScroll(
         PressedPartScrollGranularity(),
-        ToScrollDelta(PressedPartScrollDirectionPhysical(), 1));
+        ToScrollDelta(PressedPartScrollDirectionPhysical(), 1),
+        ScrollableArea::ScrollCallback());
   }
 
   // Always start timer when user press on button since scrollable area maybe
@@ -218,7 +221,7 @@ void Scrollbar::AutoscrollPressedPart(TimeDelta delay) {
   }
 }
 
-void Scrollbar::StartTimerIfNeeded(TimeDelta delay) {
+void Scrollbar::StartTimerIfNeeded(base::TimeDelta delay) {
   // Don't do anything for the thumb.
   if (pressed_part_ == kThumbPart)
     return;
@@ -435,22 +438,14 @@ bool Scrollbar::HandleTapGesture() {
         // Taps perform a single scroll begin/update/end sequence of gesture
         // events. There's no autoscroll timer since long press is not treated
         // the same as holding a mouse down.
-        // TODO(dlibby): Injecting GSE immediately after GSU causes scroll snap
-        // to be applied immediately when the GSE is handled, which makes it
-        // look like an instant scroll to the snap position (and if this is the
-        // button part, most likely doesn't give the user any visual indication
-        // as button scrolls are small enough that they don't exceed thresholds
-        // needed to advance to the next snap point).
-        // The GSE should probably be queued up as a delayed task
-        // (proportional to the tap gesture timeout?). At that point we should
-        // also clear state related to pressed_part_, etc.
         InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollBegin);
         InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollUpdate);
         InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollEnd);
       } else {
         scrollable_area_->UserScroll(
             PressedPartScrollGranularity(),
-            ToScrollDelta(PressedPartScrollDirectionPhysical(), 1));
+            ToScrollDelta(PressedPartScrollDirectionPhysical(), 1),
+            ScrollableArea::ScrollCallback());
       }
       return true;
     }

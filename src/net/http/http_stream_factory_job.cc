@@ -66,18 +66,17 @@ const base::Feature kLimitEarlyPreconnectsExperiment{
 }  // namespace
 
 // Returns parameters associated with the start of a HTTP stream job.
-base::Value NetLogHttpStreamJobCallback(const NetLogSource& source,
-                                        const GURL* original_url,
-                                        const GURL* url,
-                                        bool expect_spdy,
-                                        bool using_quic,
-                                        RequestPriority priority,
-                                        NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogHttpStreamJobParams(const NetLogSource& source,
+                                      const GURL& original_url,
+                                      const GURL& url,
+                                      bool expect_spdy,
+                                      bool using_quic,
+                                      RequestPriority priority) {
   base::DictionaryValue dict;
   if (source.IsValid())
     source.AddToEventParameters(&dict);
-  dict.SetString("original_url", original_url->GetOrigin().spec());
-  dict.SetString("url", url->GetOrigin().spec());
+  dict.SetString("original_url", original_url.GetOrigin().spec());
+  dict.SetString("url", url.GetOrigin().spec());
   dict.SetBoolean("expect_spdy", expect_spdy);
   dict.SetBoolean("using_quic", using_quic);
   dict.SetString("priority", RequestPriorityToString(priority));
@@ -86,9 +85,7 @@ base::Value NetLogHttpStreamJobCallback(const NetLogSource& source,
 
 // Returns parameters associated with the Proto (with NPN negotiation) of a HTTP
 // stream.
-base::Value NetLogHttpStreamProtoCallback(
-    NextProto negotiated_protocol,
-    NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogHttpStreamProtoParams(NextProto negotiated_protocol) {
   base::DictionaryValue dict;
 
   dict.SetString("proto", NextProtoToString(negotiated_protocol));
@@ -169,8 +166,7 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
                                           request_info_.socket_tag,
                                           request_info_.network_isolation_key)),
       stream_type_(HttpStreamRequest::BIDIRECTIONAL_STREAM),
-      init_connection_already_resumed_(false),
-      ptr_factory_(this) {
+      init_connection_already_resumed_(false) {
   // QUIC can only be spoken to servers, never to proxies.
   if (alternative_protocol == kProtoQUIC)
     DCHECK(proxy_info_.is_direct());
@@ -180,7 +176,7 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
   if (quic_version_ == quic::UnsupportedQuicVersion() &&
       ShouldForceQuic(session, destination, origin_url, proxy_info,
                       using_ssl_)) {
-    quic_version_ = session->params().quic_supported_versions[0];
+    quic_version_ = session->params().quic_params.supported_versions[0];
   }
 
   if (using_quic_)
@@ -362,10 +358,10 @@ bool HttpStreamFactory::Job::ShouldForceQuic(HttpNetworkSession* session,
   // handled by the socket pools, using an HttpProxyConnectJob.
   if (proxy_info.is_quic())
     return !using_ssl;
-  return (base::ContainsKey(session->params().origins_to_force_quic_on,
-                            HostPortPair()) ||
-          base::ContainsKey(session->params().origins_to_force_quic_on,
-                            destination)) &&
+  return (base::Contains(session->params().quic_params.origins_to_force_quic_on,
+                         HostPortPair()) ||
+          base::Contains(session->params().quic_params.origins_to_force_quic_on,
+                         destination)) &&
          proxy_info.is_direct() && origin_url.SchemeIs(url::kHttpsScheme);
 }
 
@@ -630,13 +626,13 @@ int HttpStreamFactory::Job::DoStart() {
   const NetLogWithSource* net_log = delegate_->GetNetLog();
 
   if (net_log) {
-    net_log_.BeginEvent(
-        NetLogEventType::HTTP_STREAM_JOB,
-        base::Bind(&NetLogHttpStreamJobCallback, net_log->source(),
-                   &request_info_.url, &origin_url_, expect_spdy_, using_quic_,
-                   priority_));
-    net_log->AddEvent(NetLogEventType::HTTP_STREAM_REQUEST_STARTED_JOB,
-                      net_log_.source().ToEventParametersCallback());
+    net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_JOB, [&] {
+      return NetLogHttpStreamJobParams(net_log->source(), request_info_.url,
+                                       origin_url_, expect_spdy_, using_quic_,
+                                       priority_);
+    });
+    net_log->AddEventReferencingSource(
+        NetLogEventType::HTTP_STREAM_REQUEST_STARTED_JOB, net_log_.source());
   }
 
   // Don't connect to restricted ports.
@@ -657,8 +653,9 @@ int HttpStreamFactory::Job::DoStart() {
 int HttpStreamFactory::Job::DoWait() {
   next_state_ = STATE_WAIT_COMPLETE;
   bool should_wait = delegate_->ShouldWait(this);
-  net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_JOB_WAITING,
-                      NetLog::BoolCallback("should_wait", should_wait));
+  net_log_.AddEntryWithBoolParams(NetLogEventType::HTTP_STREAM_JOB_WAITING,
+                                  NetLogEventPhase::BEGIN, "should_wait",
+                                  should_wait);
   if (should_wait)
     return ERR_IO_PENDING;
 
@@ -711,25 +708,6 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     // Disable network fetches for HTTPS proxies, since the network requests
     // are probably going to need to go through the proxy too.
     proxy_ssl_config_.disable_cert_verification_network_fetches = true;
-
-    if (proxy_ssl_config_.send_client_cert) {
-      // When connecting through an HTTPS proxy, disable TLS False Start so that
-      // client authentication errors can be distinguished between those
-      // originating from the proxy server (ERR_PROXY_CONNECTION_FAILED) and
-      // those originating from the endpoint (ERR_SSL_PROTOCOL_ERROR /
-      // ERR_BAD_SSL_CLIENT_AUTH_CERT).
-      //
-      // We now handle this fine for SSLClientAuthCache updates, though not
-      // ReconsiderProxyAfterError() below. In case of issues there, and general
-      // False Start compatibility risk, we continue to disable False Start. (If
-      // it becomes a problem, the risk of removing this is likely low.)
-      //
-      // This assumes the proxy will only request certificates on the initial
-      // handshake; renegotiation on the proxy connection is unsupported.
-      //
-      // See https://crbug.com/828965.
-      proxy_ssl_config_.false_start_enabled = false;
-    }
   }
   if (using_ssl_) {
     // Prior to HTTP/2 and SPDY, some servers use TLS renegotiation to request
@@ -773,8 +751,8 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
       ssl_config = &server_ssl_config_;
     }
     int rv = quic_request_.Request(
-        destination, quic_version_.transport_version,
-        request_info_.privacy_mode, priority_, request_info_.socket_tag,
+        destination, quic_version_, request_info_.privacy_mode, priority_,
+        request_info_.socket_tag, request_info_.network_isolation_key,
         ssl_config->GetCertVerifyFlags(), url, net_log_, &net_error_details_,
         base::BindOnce(&Job::OnFailedOnDefaultNetwork,
                        ptr_factory_.GetWeakPtr()),
@@ -875,7 +853,8 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     return PreconnectSocketsForHttpRequest(
         GetSocketGroup(), destination_, request_info_.load_flags, priority_,
         session_, proxy_info_, server_ssl_config_, proxy_ssl_config_,
-        request_info_.privacy_mode, net_log_, num_streams_);
+        request_info_.privacy_mode, request_info_.network_isolation_key,
+        net_log_, num_streams_);
   }
 
   ClientSocketPool::ProxyAuthCallback proxy_auth_callback =
@@ -945,9 +924,9 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
       if (connection_->socket()->WasAlpnNegotiated()) {
         was_alpn_negotiated_ = true;
         negotiated_protocol_ = connection_->socket()->GetNegotiatedProtocol();
-        net_log_.AddEvent(
-            NetLogEventType::HTTP_STREAM_REQUEST_PROTO,
-            base::Bind(&NetLogHttpStreamProtoCallback, negotiated_protocol_));
+        net_log_.AddEvent(NetLogEventType::HTTP_STREAM_REQUEST_PROTO, [&] {
+          return NetLogHttpStreamProtoParams(negotiated_protocol_);
+        });
         if (negotiated_protocol_ == kProtoHTTP2) {
           if (is_websocket_) {
             // WebSocket is not supported over a fresh HTTP/2 connection.
@@ -1152,9 +1131,9 @@ int HttpStreamFactory::Job::DoCreateStream() {
           net_log_);
 
   if (!spdy_session->HasAcceptableTransportSecurity()) {
-    spdy_session->CloseSessionOnError(ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY,
+    spdy_session->CloseSessionOnError(ERR_HTTP2_INADEQUATE_TRANSPORT_SECURITY,
                                       "");
-    return ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY;
+    return ERR_HTTP2_INADEQUATE_TRANSPORT_SECURITY;
   }
 
   url::SchemeHostPort scheme_host_port(

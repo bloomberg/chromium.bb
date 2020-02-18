@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace content {
@@ -35,7 +36,9 @@ bool WebContentsDelegate::ShouldTransferNavigation(
   return true;
 }
 
-bool WebContentsDelegate::CanOverscrollContent() const { return false; }
+bool WebContentsDelegate::CanOverscrollContent() {
+  return false;
+}
 
 bool WebContentsDelegate::ShouldSuppressDialogs(WebContents* source) {
   return false;
@@ -143,6 +146,10 @@ std::unique_ptr<BluetoothChooser> WebContentsDelegate::RunBluetoothChooser(
   return nullptr;
 }
 
+std::unique_ptr<SmsDialog> WebContentsDelegate::CreateSmsDialog() {
+  return nullptr;
+}
+
 std::unique_ptr<BluetoothScanningPrompt>
 WebContentsDelegate::ShowBluetoothScanningPrompt(
     RenderFrameHost* frame,
@@ -150,17 +157,17 @@ WebContentsDelegate::ShowBluetoothScanningPrompt(
   return nullptr;
 }
 
-bool WebContentsDelegate::EmbedsFullscreenWidget() const {
+bool WebContentsDelegate::EmbedsFullscreenWidget() {
   return false;
 }
 
 bool WebContentsDelegate::IsFullscreenForTabOrPending(
-    const WebContents* web_contents) const {
+    const WebContents* web_contents) {
   return false;
 }
 
 blink::WebDisplayMode WebContentsDelegate::GetDisplayMode(
-    const WebContents* web_contents) const {
+    const WebContents* web_contents) {
   return blink::kWebDisplayModeBrowser;
 }
 
@@ -192,14 +199,14 @@ void WebContentsDelegate::RequestMediaAccessPermission(
   LOG(ERROR) << "WebContentsDelegate::RequestMediaAccessPermission: "
              << "Not supported.";
   std::move(callback).Run(blink::MediaStreamDevices(),
-                          blink::MEDIA_DEVICE_NOT_SUPPORTED,
+                          blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED,
                           std::unique_ptr<content::MediaStreamUI>());
 }
 
 bool WebContentsDelegate::CheckMediaAccessPermission(
     RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    blink::MediaStreamType type) {
+    blink::mojom::MediaStreamType type) {
   LOG(ERROR) << "WebContentsDelegate::CheckMediaAccessPermission: "
              << "Not supported.";
   return false;
@@ -207,7 +214,7 @@ bool WebContentsDelegate::CheckMediaAccessPermission(
 
 std::string WebContentsDelegate::GetDefaultMediaDeviceID(
     WebContents* web_contents,
-    blink::MediaStreamType type) {
+    blink::mojom::MediaStreamType type) {
   return std::string();
 }
 
@@ -244,7 +251,7 @@ void WebContentsDelegate::Detach(WebContents* web_contents) {
 }
 
 gfx::Size WebContentsDelegate::GetSizeForNewRenderView(
-    WebContents* web_contents) const {
+    WebContents* web_contents) {
   return gfx::Size();
 }
 
@@ -274,23 +281,24 @@ bool WebContentsDelegate::ShouldAllowRunningInsecureContent(
   return allowed_per_prefs;
 }
 
-int WebContentsDelegate::GetTopControlsHeight() const {
+int WebContentsDelegate::GetTopControlsHeight() {
   return 0;
 }
 
-int WebContentsDelegate::GetBottomControlsHeight() const {
+int WebContentsDelegate::GetBottomControlsHeight() {
   return 0;
 }
 
 bool WebContentsDelegate::DoBrowserControlsShrinkRendererSize(
-    const WebContents* web_contents) const {
+    const WebContents* web_contents) {
   return false;
 }
 
-gfx::Size WebContentsDelegate::EnterPictureInPicture(WebContents* web_contents,
-                                                     const viz::SurfaceId&,
-                                                     const gfx::Size&) {
-  return gfx::Size();
+PictureInPictureResult WebContentsDelegate::EnterPictureInPicture(
+    WebContents* web_contents,
+    const viz::SurfaceId&,
+    const gfx::Size&) {
+  return PictureInPictureResult::kNotSupported;
 }
 
 bool WebContentsDelegate::ShouldAllowLazyLoad() {

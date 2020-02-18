@@ -186,7 +186,7 @@ use 5.009001;
 use Carp;
 $Carp::Internal{__PACKAGE__.""}++;
 
-our $VERSION = '1.28';
+our $VERSION = '1.36';
 our $DEBUG;
 our $VERBOSE;
 our $PRETTY;
@@ -194,6 +194,7 @@ our $TRACEONLY = 0;
 our $WARNTRACE = 0;
 
 use Config;
+use Text::Tabs 'expand';
 my $privlib = $Config{privlibexp};
 if ($^O eq 'VMS') {
     require VMS::Filespec;
@@ -208,7 +209,6 @@ unshift @trypod, "./pod/perldiag.pod" if -e "pod/perldiag.pod";
 (my $PODFILE) = ((grep { -e } @trypod), $trypod[$#trypod])[0];
 
 $DEBUG ||= 0;
-my $WHOAMI = ref bless [];  # nobody's business, prolly not even mine
 
 local $| = 1;
 local $_;
@@ -231,16 +231,16 @@ CONFIG: {
 	$PRETTY = $opt_p;
     }
 
-    if (open(POD_DIAG, $PODFILE)) {
+    if (open(POD_DIAG, '<', $PODFILE)) {
 	warn "Happy happy podfile from real $PODFILE\n" if $DEBUG;
 	last CONFIG;
     } 
 
     if (caller) {
 	INCPATH: {
-	    for my $file ( (map { "$_/$WHOAMI.pm" } @INC), $0) {
+	    for my $file ( (map { "$_/".__PACKAGE__.".pm" } @INC), $0) {
 		warn "Checking $file\n" if $DEBUG;
-		if (open(POD_DIAG, $file)) {
+		if (open(POD_DIAG, '<', $file)) {
 		    while (<POD_DIAG>) {
 			next unless
 			    /^__END__\s*# wish diag dbase were more accessible/;
@@ -310,6 +310,7 @@ sub transmo {
 EOFUNC
 
 my %msg;
+my $over_level = 0;     # We look only at =item lines at the first =over level
 {
     print STDERR "FINISHING COMPILATION for $_\n" if $DEBUG;
     local $/ = '';
@@ -321,7 +322,7 @@ my %msg;
     while (<POD_DIAG>) {
 
 	sub _split_pod_link {
-	    $_[0] =~ '(?:([^|]*)\|)?([^/]*)(?:/("?)(.*)\3)?';
+	    $_[0] =~ m'(?:([^|]*)\|)?([^/]*)(?:/("?)(.*)\3)?'s;
 	    ($1,$2,$4);
 	}
 
@@ -367,6 +368,7 @@ my %msg;
 		{
 		    next;
 		}
+		$_ = expand $_;
 		s/^/    /gm;
 		$msg{$header} .= $_;
 		for my $h(@headers) { $msg{$h} .= $_ }
@@ -385,7 +387,7 @@ my %msg;
 	    push @headers, $header if defined $header;
 	}
 
-	unless ( s/=item (.*?)\s*\z//) {
+	if ( ! s/=item (.*?)\s*\z//s || $over_level != 1) {
 
 	    if ( s/=head1\sDESCRIPTION//) {
 		$msg{$header = 'DESCRIPTION'} = '';
@@ -393,26 +395,36 @@ my %msg;
 	    }
 	    elsif( s/^=for\s+diagnostics\s*\n(.*?)\s*\z// ) {
 		$for_item = $1;
-	    } 
+	    }
+	    elsif( /^=over\b/ ) {
+                $over_level++;
+            }
+	    elsif( /^=back\b/ ) { # Stop processing body here
+                $over_level--;
+                if ($over_level == 0) {
+                    undef $header;
+                    undef $for_item;
+                    $seen_body = 0;
+                    next;
+                }
+	    }
 	    next;
 	}
 
 	if( $for_item ) { $header = $for_item; undef $for_item } 
 	else {
 	    $header = $1;
-	    while( $header =~ /[;,]\z/ ) {
-		<POD_DIAG> =~ /^\s*(.*?)\s*\z/;
-		$header .= ' '.$1;
-	    }
+
+	    $header =~ s/\n/ /gs; # Allow multi-line headers
 	}
 
 	# strip formatting directives from =item line
 	$header =~ s/[A-Z]<(.*?)>/$1/g;
 
-	# Since we strip "\.\n" when we search a warning, strip it here as well
-	$header =~ s/\.?$//;
+	# Since we strip "(\.\s*)\n" when we search a warning, strip it here as well
+	$header =~ s/(\.\s*)?$//;
 
-        my @toks = split( /(%l?[dxX]|%u|%c|%(?:\.\d+)?[fs])/, $header );
+        my @toks = split( /(%l?[dxX]|%[ucp]|%(?:\.\d+)?[fs])/, $header );
 	if (@toks > 1) {
             my $conlen = 0;
             for my $i (0..$#toks){
@@ -425,8 +437,8 @@ my %msg;
                         $toks[$i] = $i == $#toks ? '.*' : '.*?';
                     } elsif( $toks[$i] =~ '%.(\d+)s' ){
                         $toks[$i] = ".{$1}";
-                    } elsif( $toks[$i] =~ '^%l*([xX])$' ){
-                        $toks[$i] = $1 eq 'x' ? '[\da-f]+' : '[\dA-F]+';
+                    } elsif( $toks[$i] =~ '^%l*([pxX])$' ){
+                        $toks[$i] = $1 eq 'X' ? '[\dA-F]+' : '[\da-f]+';
                     }
                 } elsif( length( $toks[$i] ) ){
                     $toks[$i] = quotemeta $toks[$i];
@@ -434,16 +446,19 @@ my %msg;
                 }
             }  
             my $lhs = join( '', @toks );
+            $lhs =~ s/(\\\s)+/\\s+/g; # Replace lit space with multi-space match
 	    $transfmt{$header}{pat} =
-              "    s{^$lhs}\n     {\Q$header\E}s\n\t&& return 1;\n";
+              "    s^\\s*$lhs\\s*\Q$header\Es\n\t&& return 1;\n";
             $transfmt{$header}{len} = $conlen;
 	} else {
+            my $lhs = "\Q$header\E";
+            $lhs =~ s/(\\\s)+/\\s+/g; # Replace lit space with multi-space match
             $transfmt{$header}{pat} =
-	      "    m{^\Q$header\E} && return 1;\n";
+	      "    s^\\s*$lhs\\s*\Q$header\E\n\t && return 1;\n";
             $transfmt{$header}{len} = length( $header );
 	} 
 
-	print STDERR "$WHOAMI: Duplicate entry: \"$header\"\n"
+	print STDERR __PACKAGE__.": Duplicate entry: \"$header\"\n"
 	    if $msg{$header};
 
 	$msg{$header} = '';
@@ -531,7 +546,7 @@ sub disable {
 
 sub warn_trap {
     my $warning = $_[0];
-    if (caller eq $WHOAMI or !splainthis($warning)) {
+    if (caller eq __PACKAGE__ or !splainthis($warning)) {
 	if ($WARNTRACE) {
 	    print STDERR Carp::longmess($warning);
 	} else {
@@ -556,7 +571,9 @@ sub death_trap {
     }
 
     splainthis($exception) unless $in_eval;
-    if (caller eq $WHOAMI) { print STDERR "INTERNAL EXCEPTION: $exception"; } 
+    if (caller eq __PACKAGE__) {
+	print STDERR "INTERNAL EXCEPTION: $exception";
+    } 
     &$olddie if defined $olddie and $olddie and $olddie ne \&death_trap;
 
     return if $in_eval;
@@ -589,7 +606,7 @@ sub splainthis {
     local $\;
     local $!;
     ### &finish_compilation unless %msg;
-    s/\.?\n+$//;
+    s/(\.\s*)?\n+$//;
     my $orig = $_;
     # return unless defined;
 
@@ -610,7 +627,7 @@ sub splainthis {
             $_ .= ' at ' . $secs[$i];
 	}
     }
-    
+
     # remove parenthesis occurring at the end of some messages 
     s/^\((.*)\)$/$1/;
 

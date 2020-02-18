@@ -16,8 +16,15 @@ namespace features {
 
 // Enables the perfetto tracing backend. For startup tracing, pass the
 // --enable-perfetto flag instead.
-const base::Feature kTracingPerfettoBackend{"TracingPerfettoBackend",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kTracingPerfettoBackend {
+  "TracingPerfettoBackend",
+#if defined(IS_CHROMECAST)
+
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Causes the BackgroundTracingManager to upload proto messages via UMA,
 // rather than JSON via the crash frontend.
@@ -26,7 +33,7 @@ const base::Feature kBackgroundTracingProtoOutput{
 
 // Causes Perfetto to run in-process mode for in-process tracing producers.
 const base::Feature kPerfettoForceOutOfProcessProducer{
-    "PerfettoForceOutOfProcessProducer", base::FEATURE_ENABLED_BY_DEFAULT};
+    "PerfettoForceOutOfProcessProducer", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Runs the tracing service as an in-process browser service.
 const base::Feature kTracingServiceInProcess {
@@ -37,6 +44,9 @@ const base::Feature kTracingServiceInProcess {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+const base::Feature kEnablePerfettoSystemTracing{
+    "EnablePerfettoSystemTracing", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 
@@ -51,11 +61,17 @@ bool TracingUsesPerfettoBackend() {
     return false;
   }
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePerfetto)) {
+    return true;
+  }
+
   if (base::FeatureList::GetInstance()) {
     return base::FeatureList::IsEnabled(features::kTracingPerfettoBackend);
   }
 
-  return true;
+  return features::kTracingPerfettoBackend.default_state ==
+         base::FEATURE_ENABLED_BY_DEFAULT;
 }
 
 }  // namespace tracing

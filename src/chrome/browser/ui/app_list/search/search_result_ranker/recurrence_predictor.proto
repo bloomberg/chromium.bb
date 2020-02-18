@@ -14,8 +14,7 @@ message FakePredictorProto {
   map<uint32, float> counts = 1;
 }
 
-// Zero-state frecency predictor.
-message ZeroStateFrecencyPredictorProto {
+message FrecencyPredictorProto {
   // Field 1 (targets) has been deleted.
   reserved 1;
 
@@ -34,8 +33,7 @@ message ZeroStateFrecencyPredictorProto {
   required uint32 num_updates = 5;
 }
 
-// Zero-state hour bin predictor
-message ZeroStateHourBinPredictorProto {
+message HourBinPredictorProto {
   // Records all data related to a single hour bin.
   message FrequencyTable {
     // Total number of training counts in a bin.
@@ -49,11 +47,41 @@ message ZeroStateHourBinPredictorProto {
   optional uint32 last_decay_timestamp = 4;
 }
 
+// Conditional frequency predictor.
+message ConditionalFrequencyPredictorProto {
+  message Event {
+    required fixed64 condition = 1;
+    required uint32 event = 2;
+    required float freq = 3;
+  }
+
+  repeated Event events = 1;
+}
+
+// First-order markov chain predictor
+message MarkovPredictorProto {
+  // Stores a conditional frequency predictor.
+  required RecurrencePredictorProto frequencies = 1;
+}
+
+// Simple ensemble predictor.
+message ExponentialWeightsEnsembleProto {
+  // The state of each component predictor.
+  repeated RecurrencePredictorProto predictors = 1;
+
+  // The weights assigned to each member predictor. The order of |weights|
+  // corresponds to the order of |predictors|.
+  repeated float weights = 2;
+}
+
 // Represents the serialisation of one particular predictor.
 message RecurrencePredictorProto {
   oneof predictor {
     FakePredictorProto fake_predictor = 1;
-    ZeroStateFrecencyPredictorProto zero_state_frecency_predictor = 2;
-    ZeroStateHourBinPredictorProto zero_state_hour_bin_predictor = 3;
+    FrecencyPredictorProto frecency_predictor = 2;
+    HourBinPredictorProto hour_bin_predictor = 3;
+    ConditionalFrequencyPredictorProto conditional_frequency_predictor = 4;
+    MarkovPredictorProto markov_predictor = 5;
+    ExponentialWeightsEnsembleProto exponential_weights_ensemble = 6;
   }
 }

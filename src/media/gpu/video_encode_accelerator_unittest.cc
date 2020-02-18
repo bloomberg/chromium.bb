@@ -22,14 +22,17 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -121,11 +124,16 @@ const int k2160PSizeInPixels = 3840 * 2160;
 const unsigned int kMinFramesForBitrateTests = 300;
 // The percentiles to measure for encode latency.
 const unsigned int kLoggedLatencyPercentiles[] = {50, 75, 95};
-// Timeout for the flush is completed. In the multiple encoder test case, the
-// FPS might be lower than expected. Let us assume that the lowest FPS is 5,
-// then the period per frame is 200 milliseconds. Here we set the timeout 10x
-// periods considering that there might be some pending frames.
-const unsigned int kFlushTimeoutMs = 2000;
+// Timeout for the flush is completed. The period starts from passing the last
+// frame to the encoder, to the flush callback is called. There might be many
+// pending frames in the encoder, so the timeout might be larger than a frame
+// period.
+// In the multiple encoder test case, the FPS might be lower than expected.
+// Currently the largest resolution we run at lab is 4K. The FPS of the slowest
+// device in single encoder is about 10. In MultipleEncoders test case, the
+// measured time period on the slowest device is about 5 seconds. Here we set
+// the timeout 2x of the measured period.
+const unsigned int kFlushTimeoutMs = 10000;
 
 // The syntax of multiple test streams is:
 //  test-stream1;test-stream2;test-stream3
@@ -326,6 +334,44 @@ static bool IsVP8(VideoCodecProfile profile) {
 static bool IsVP9(VideoCodecProfile profile) {
   return profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX;
 }
+
+#if defined(OS_CHROMEOS)
+// Determine the test is known-to-fail and should be skipped.
+bool ShouldSkipTest() {
+  struct Pattern {
+    const char* board_pattern;
+    const char* suite_name_prefix;
+  };
+
+  // Warning: The list should be only used as a last resort for known vendor
+  // issues that will never be fixed.
+  constexpr Pattern kSkipTestPatterns[] = {
+      // crbug.com/769722: MTK driver doesn't compute bitrate correctly.
+      // Disable mid_stream_bitrate_switch test cases for elm/hana.
+      {"elm", "MidStreamParamSwitchBitrate"},
+      {"elm", "MultipleEncoders"},
+      {"hana", "MidStreamParamSwitchBitrate"},
+      {"hana", "MultipleEncoders"},
+  };
+
+  const std::string board = base::SysInfo::GetLsbReleaseBoard();
+  if (board == "unknown") {
+    LOG(WARNING) << "Cannot get CrOS board name. Do you run at CrOS device?";
+    return false;
+  }
+
+  const std::string suite_name = ::testing::UnitTest::GetInstance()
+                                     ->current_test_info()
+                                     ->test_suite_name();
+  for (const auto& pattern : kSkipTestPatterns) {
+    if (suite_name.find(pattern.suite_name_prefix) == 0 &&
+        base::MatchPattern(board, pattern.board_pattern)) {
+      return true;
+    }
+  }
+  return false;
+}
+#endif  // defined(OS_CHROMEOS)
 
 // Helper functions to do string conversions.
 static base::FilePath::StringType StringToFilePathStringType(
@@ -999,9 +1045,10 @@ void VP9Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
   // no simple way to detect this. We'd need to parse the frames and go through
   // partition numbers/sizes. For now assume one frame per buffer.
   Vp9FrameHeader header;
-  parser_.SetStream(stream, size, nullptr);
+  gfx::Size allocate_size;
+  parser_.SetStream(stream, size, {}, nullptr);
   EXPECT_TRUE(Vp9Parser::kInvalidStream !=
-              parser_.ParseNextFrame(&header, nullptr));
+              parser_.ParseNextFrame(&header, &allocate_size, nullptr));
   if (header.IsKeyframe()) {
     seen_keyframe_ = true;
     visible_size_.SetSize(header.render_width, header.render_height);
@@ -1105,18 +1152,20 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
   gfx::Size natural_size(visible_size.size());
   // The default output format of ffmpeg video decoder is YV12.
   VideoDecoderConfig config;
+  const auto alpha_mode = IsOpaque(pixel_format_)
+                              ? VideoDecoderConfig::AlphaMode::kIsOpaque
+                              : VideoDecoderConfig::AlphaMode::kHasAlpha;
   if (IsVP8(profile_)) {
-    config.Initialize(kCodecVP8, VP8PROFILE_ANY, pixel_format_,
-                      VideoColorSpace(), kNoTransformation, coded_size,
-                      visible_size, natural_size, EmptyExtraData(),
-                      Unencrypted());
+    config.Initialize(kCodecVP8, VP8PROFILE_ANY, alpha_mode, VideoColorSpace(),
+                      kNoTransformation, coded_size, visible_size, natural_size,
+                      EmptyExtraData(), Unencrypted());
   } else if (IsVP9(profile_)) {
-    config.Initialize(kCodecVP9, VP9PROFILE_PROFILE0, pixel_format_,
+    config.Initialize(kCodecVP9, VP9PROFILE_PROFILE0, alpha_mode,
                       VideoColorSpace(), kNoTransformation, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
                       Unencrypted());
   } else if (IsH264(profile_)) {
-    config.Initialize(kCodecH264, H264PROFILE_MAIN, pixel_format_,
+    config.Initialize(kCodecH264, H264PROFILE_MAIN, alpha_mode,
                       VideoColorSpace(), kNoTransformation, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
                       Unencrypted());
@@ -1463,7 +1512,7 @@ class VEAClientBase : public VideoEncodeAccelerator::Client {
   // All methods of this class should be run on the same thread.
   base::ThreadChecker thread_checker_;
 
-  std::vector<std::unique_ptr<base::SharedMemory>> output_shms_;
+  std::vector<std::unique_ptr<base::UnsafeSharedMemoryRegion>> output_shms_;
   int32_t next_output_buffer_id_;
 };
 
@@ -1507,7 +1556,7 @@ class VEAClient : public VEAClientBase {
   void FeedEncoderWithOneInput();
 
   // Provide the encoder with a new output buffer.
-  void FeedEncoderWithOutput(base::SharedMemory* shm);
+  void FeedEncoderWithOutput(base::UnsafeSharedMemoryRegion* shm);
 
   // Called on finding a complete frame (with |keyframe| set to true for
   // keyframes, |visible_size| for the visible size of encoded frame) in the
@@ -1592,7 +1641,7 @@ class VEAClient : public VEAClientBase {
   std::queue<size_t> keyframe_indices_;
 
   // Ids for output BitstreamBuffers.
-  typedef std::map<int32_t, base::SharedMemory*> IdToSHM;
+  typedef std::map<int32_t, base::UnsafeSharedMemoryRegion*> IdToSHM;
   IdToSHM output_buffers_at_client_;
 
   // Current offset into input stream.
@@ -1908,8 +1957,9 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
   ASSERT_GT(output_buffer_size_, 0UL);
 
   for (unsigned int i = 0; i < kNumOutputBuffers; ++i) {
-    auto shm = std::make_unique<base::SharedMemory>();
-    LOG_ASSERT(shm->CreateAndMapAnonymous(output_buffer_size_));
+    auto shm = std::make_unique<base::UnsafeSharedMemoryRegion>();
+    *shm = base::UnsafeSharedMemoryRegion::Create(output_buffer_size_);
+    LOG_ASSERT(shm->IsValid());
     FeedEncoderWithOutput(shm.get());
     output_shms_.push_back(std::move(shm));
   }
@@ -1947,7 +1997,8 @@ void VEAClient::BitstreamBufferReady(
 
   IdToSHM::iterator it = output_buffers_at_client_.find(bitstream_buffer_id);
   ASSERT_NE(it, output_buffers_at_client_.end());
-  base::SharedMemory* shm = it->second;
+  base::UnsafeSharedMemoryRegion* shm = it->second;
+  LOG_ASSERT(shm->IsValid());
   output_buffers_at_client_.erase(it);
 
   if (state_ == CS_FLUSHED || state_ == CS_VALIDATED)
@@ -1961,7 +2012,9 @@ void VEAClient::BitstreamBufferReady(
 
   encoded_stream_size_since_last_check_ += metadata.payload_size_bytes;
 
-  const uint8_t* stream_ptr = static_cast<const uint8_t*>(shm->memory());
+  base::WritableSharedMemoryMapping mapping = shm->Map();
+  LOG_ASSERT(mapping.IsValid());
+  const uint8_t* stream_ptr = static_cast<const uint8_t*>(mapping.memory());
   if (metadata.payload_size_bytes > 0) {
     if (stream_validator_) {
       stream_validator_->ProcessStreamBuffer(stream_ptr,
@@ -1974,7 +2027,7 @@ void VEAClient::BitstreamBufferReady(
 
     if (quality_validator_) {
       scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
-          static_cast<const uint8_t*>(shm->memory()),
+          static_cast<const uint8_t*>(mapping.memory()),
           static_cast<int>(metadata.payload_size_bytes)));
       quality_validator_->AddDecodeBuffer(buffer);
     }
@@ -1993,7 +2046,7 @@ void VEAClient::BitstreamBufferReady(
 
       EXPECT_TRUE(base::AppendToFile(
           base::FilePath::FromUTF8Unsafe(test_stream_->out_filename),
-          static_cast<char*>(shm->memory()),
+          static_cast<char*>(mapping.memory()),
           base::checked_cast<int>(metadata.payload_size_bytes)));
     }
   }
@@ -2050,12 +2103,12 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
     planes[i].stride = VideoFrame::RowBytes(i, test_stream_->pixel_format,
                                             input_coded_size_.width());
     planes[i].offset = offset;
+    planes[i].size = test_stream_->aligned_plane_size[i];
     offset += test_stream_->aligned_plane_size[i];
   }
 
   auto layout = VideoFrameLayout::CreateWithPlanes(
-      test_stream_->pixel_format, input_coded_size_, std::move(planes),
-      {test_stream_->aligned_buffer_size});
+      test_stream_->pixel_format, input_coded_size_, std::move(planes));
   if (!layout) {
     LOG(ERROR) << "Failed to create VideoFrameLayout";
     return nullptr;
@@ -2162,7 +2215,7 @@ void VEAClient::FeedEncoderWithOneInput() {
   }
 }
 
-void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
+void VEAClient::FeedEncoderWithOutput(base::UnsafeSharedMemoryRegion* shm) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!has_encoder())
     return;
@@ -2170,8 +2223,11 @@ void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
   if (state_ != CS_ENCODING && state_ != CS_FLUSHING)
     return;
 
-  BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, shm->handle(),
-                                   false /* read_only */, output_buffer_size_);
+  BitstreamBuffer bitstream_buffer(
+      next_output_buffer_id_++,
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          shm->Duplicate()),
+      output_buffer_size_);
   LOG_ASSERT(output_buffers_at_client_
                  .insert(std::make_pair(bitstream_buffer.id(), shm))
                  .second);
@@ -2416,7 +2472,8 @@ class SimpleVEAClientBase : public VEAClientBase {
   void SetState(ClientState new_state) override;
 
   // Provide the encoder with a new output buffer.
-  void FeedEncoderWithOutput(base::SharedMemory* shm, size_t output_size);
+  void FeedEncoderWithOutput(base::UnsafeSharedMemoryRegion* shm,
+                             size_t output_size);
 
   const int width_;
   const int height_;
@@ -2477,24 +2534,26 @@ void SimpleVEAClientBase::RequireBitstreamBuffers(
   ASSERT_GT(output_size, 0UL);
 
   for (unsigned int i = 0; i < kNumOutputBuffers; ++i) {
-    auto shm = std::make_unique<base::SharedMemory>();
-    LOG_ASSERT(shm->CreateAndMapAnonymous(output_size));
+    auto shm = std::make_unique<base::UnsafeSharedMemoryRegion>();
+    *shm = base::UnsafeSharedMemoryRegion::Create(output_size);
+    LOG_ASSERT(shm->IsValid());
     FeedEncoderWithOutput(shm.get(), output_size);
     output_shms_.push_back(std::move(shm));
   }
 }
 
-void SimpleVEAClientBase::FeedEncoderWithOutput(base::SharedMemory* shm,
-                                                size_t output_size) {
+void SimpleVEAClientBase::FeedEncoderWithOutput(
+    base::UnsafeSharedMemoryRegion* shm,
+    size_t output_size) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!has_encoder())
     return;
 
-  base::SharedMemoryHandle dup_handle = shm->handle().Duplicate();
-  LOG_ASSERT(dup_handle.IsValid());
-
-  BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, dup_handle,
-                                   false /* read_only */, output_size);
+  BitstreamBuffer bitstream_buffer(
+      next_output_buffer_id_++,
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          shm->Duplicate()),
+      output_size);
   encoder_->UseOutputBitstreamBuffer(std::move(bitstream_buffer));
 }
 
@@ -2623,12 +2682,11 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
     planes[i].stride =
         VideoFrame::RowBytes(i, pixel_format, input_coded_size.width());
     planes[i].offset = 0;
-    buffer_sizes[i] = plane_size;
+    planes[i].size = plane_size;
   }
 
   auto layout = VideoFrameLayout::CreateWithPlanes(
-      pixel_format, input_coded_size, std::move(planes),
-      std::move(buffer_sizes));
+      pixel_format, input_coded_size, std::move(planes));
   ASSERT_TRUE(layout);
 
   scoped_refptr<VideoFrame> video_frame =
@@ -2674,6 +2732,11 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
       std::get<7>(GetParam()) || g_env->verify_all_output();
   const bool verify_output_timestamp = std::get<8>(GetParam());
   const bool force_level = std::get<9>(GetParam());
+
+#if defined(OS_CHROMEOS)
+  if (ShouldSkipTest())
+    GTEST_SKIP();
+#endif  // defined(OS_CHROMEOS)
 
   if (force_level) {
     // Skip ForceLevel test if "--force_level=false".
@@ -2800,6 +2863,11 @@ void SimpleTestFunc() {
 TEST_P(VideoEncodeAcceleratorSimpleTest, TestSimpleEncode) {
   const int test_type = GetParam();
   ASSERT_LT(test_type, 2) << "Invalid test type=" << test_type;
+
+#if defined(OS_CHROMEOS)
+  if (ShouldSkipTest())
+    GTEST_SKIP();
+#endif  // defined(OS_CHROMEOS)
 
   if (test_type == 0)
     SimpleTestFunc<VEANoInputClient>();
@@ -3061,6 +3129,9 @@ class VEATestSuite : public base::TestSuite {
     base::test::ScopedFeatureList scoped_feature_list;
     // TODO(crbug.com/811912): remove once enabled by default.
     scoped_feature_list.InitAndEnableFeature(media::kVaapiVP9Encoder);
+    // TODO(crbug.com/828482): Remove once H264 encoder on AMD is enabled by
+    // default.
+    scoped_feature_list.InitAndEnableFeature(media::kVaapiH264AMDEncoder);
     media::VaapiWrapper::PreSandboxInitialization();
 #elif defined(OS_WIN)
     media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();

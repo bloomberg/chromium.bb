@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 
 #include "base/auto_reset.h"
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -16,8 +17,8 @@ namespace scheduler {
 
 namespace {
 // Minimum time interval between nested loop runs.
-constexpr WTF::TimeDelta kNestedLoopMinimumInterval =
-    WTF::TimeDelta::FromMilliseconds(15);
+constexpr base::TimeDelta kNestedLoopMinimumInterval =
+    base::TimeDelta::FromMilliseconds(15);
 }  // namespace
 
 // static
@@ -38,7 +39,8 @@ CooperativeSchedulingManager::AllowedStackScope::~AllowedStackScope() {
   cooperative_scheduling_manager_->LeaveAllowedStackScope();
 }
 
-CooperativeSchedulingManager::CooperativeSchedulingManager() {}
+CooperativeSchedulingManager::CooperativeSchedulingManager()
+    : clock_(base::DefaultTickClock::GetInstance()) {}
 
 void CooperativeSchedulingManager::EnterAllowedStackScope() {
   TRACE_EVENT_ASYNC_BEGIN0("renderer.scheduler", "PreemptionAllowedStackScope",
@@ -56,23 +58,32 @@ void CooperativeSchedulingManager::LeaveAllowedStackScope() {
 
 void CooperativeSchedulingManager::SafepointSlow() {
   // Avoid nesting more than two levels.
-  if (running_nested_loop_)
+  if (running_nested_loop_ || base::RunLoop::IsNestedOnCurrentThread())
     return;
 
   // TODO(keishi): Also bail if V8 EnteredContextCount is more than 1
-  Thread::MainThread()->Scheduler()->SetHasSafepoint();
+  // This task slice completes here.
+  Thread::MainThread()->Scheduler()->OnSafepointEntered();
 
   RunNestedLoop();
+
+  // A new task slice starts here.
+  Thread::MainThread()->Scheduler()->OnSafepointExited();
 }
 
 void CooperativeSchedulingManager::RunNestedLoop() {
   TRACE_EVENT0("renderer.scheduler",
                "CooperativeSchedulingManager::RunNestedLoop");
   base::AutoReset<bool> nested_loop_scope(&running_nested_loop_, true);
-  wait_until_ = WTF::CurrentTimeTicks() + kNestedLoopMinimumInterval;
+  wait_until_ = clock_->NowTicks() + kNestedLoopMinimumInterval;
 
   // TODO(keishi): Ask scheduler to run high priority tasks from different
   // EventLoops.
+}
+
+void CooperativeSchedulingManager::SetTickClockForTesting(
+    const base::TickClock* clock) {
+  clock_ = clock;
 }
 
 }  // namespace scheduler

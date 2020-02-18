@@ -11,10 +11,10 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/remote_cocoa/app_shim/bridged_native_widget_host_helper.h"
-#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 #import "components/remote_cocoa/app_shim/drag_drop_client.h"
-#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
+#import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
+#include "components/remote_cocoa/app_shim/native_widget_ns_window_host_helper.h"
+#include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -162,7 +162,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 @synthesize bridge = bridge_;
 @synthesize drawMenuBackgroundForBlur = drawMenuBackgroundForBlur_;
 
-- (instancetype)initWithBridge:(views::BridgedNativeWidgetImpl*)bridge
+- (instancetype)initWithBridge:(remote_cocoa::NativeWidgetNSWindowBridge*)bridge
                         bounds:(gfx::Rect)bounds {
   // To keep things simple, assume the origin is (0, 0) until there exists a use
   // case for something other than that.
@@ -220,9 +220,6 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // By the time |self| is dealloc'd, it should never be in an NSWindow, and it
   // should never be the current input context.
   DCHECK_EQ(nil, [self window]);
-  // Sanity check: NSView always provides an -inputContext.
-  DCHECK_NE(nil, [super inputContext]);
-  DCHECK_NE([NSTextInputContext currentInputContext], [super inputContext]);
   [super dealloc];
 }
 
@@ -1463,7 +1460,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 - (id)accessibilityFocusedUIElement {
   // This function should almost-never be called because when |self| is the
-  // first responder for the key NSWindow, BridgedNativeWidgetHostImpl's
+  // first responder for the key NSWindow, NativeWidgetMacNSWindowHost's
   // AccessibilityFocusOverrider will override the accessibility focus query.
   if (!bridge_)
     return nil;

@@ -1,7 +1,8 @@
+# ABSTRACT: Report errors from perspective of caller of a "clan" of modules
 
 ##
 ## Based on Carp.pm from Perl 5.005_03.
-## Last modified 24-Oct-2009 by Steffen Beyer.
+## Last modified 22-May-2016 by Kent Fredric.
 ## Should be reasonably backwards compatible.
 ##
 ## This module is free software and can
@@ -11,10 +12,9 @@
 
 @DB::args = ();    # Avoid warning "used only once" in Perl 5.003
 
-package Carp::Clan;
+package Carp::Clan; # git description: v6.06-8-g0cfdd10
 
 use strict;
-use vars qw( $MaxEvalLen $MaxArgLen $MaxArgNums $Verbose $VERSION );
 use overload ();
 
 # Original comments by Andy Wardley <abw@kfs.org> 09-Apr-1998.
@@ -22,13 +22,13 @@ use overload ();
 # The $Max(EvalLen|(Arg(Len|Nums)) variables are used to specify how
 # the eval text and function arguments should be formatted when printed.
 
-$MaxEvalLen = 0;     # How much eval '...text...' to show. 0 = all.
-$MaxArgLen  = 64;    # How much of each argument to print. 0 = all.
-$MaxArgNums = 8;     # How many arguments to print.        0 = all.
+our $MaxEvalLen = 0;     # How much eval '...text...' to show. 0 = all.
+our $MaxArgLen  = 64;    # How much of each argument to print. 0 = all.
+our $MaxArgNums = 8;     # How many arguments to print.        0 = all.
 
-$Verbose = 0;        # If true then make _shortmsg call _longmsg instead.
+our $Verbose = 0;        # If true then make _shortmsg call _longmsg instead.
 
-$VERSION = '6.04';
+our $VERSION = '6.07';
 
 # _longmsg() crawls all the way up the stack reporting on all the function
 # calls made. The error string, $error, is originally constructed from the
@@ -47,7 +47,8 @@ sub _longmsg {
         do {
             {
 
-                package DB;
+                package # hide from PAUSE
+                    DB;
                 ( $pack, $file, $line, $sub, $hargs, undef, $eval, $require )
                     = caller( $i++ )
             }
@@ -231,3 +232,142 @@ sub import {
 
 1;
 
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Carp::Clan - Report errors from perspective of caller of a "clan" of modules
+
+=head1 VERSION
+
+version 6.07
+
+=head1 SYNOPSIS
+
+ carp    - warn of errors (from perspective of caller)
+
+ cluck   - warn of errors with stack backtrace
+
+ croak   - die of errors (from perspective of caller)
+
+ confess - die of errors with stack backtrace
+
+    use Carp::Clan qw(^MyClan::);
+    croak "We're outta here!";
+
+    use Carp::Clan;
+    confess "This is how we got here!";
+
+=head1 DESCRIPTION
+
+This module is based on "C<Carp.pm>" from Perl 5.005_03. It has been
+modified to skip all package names matching the pattern given in
+the "use" statement inside the "C<qw()>" term (or argument list).
+
+Suppose you have a family of modules or classes named "Pack::A",
+"Pack::B" and so on, and each of them uses "C<Carp::Clan qw(^Pack::);>"
+(or at least the one in which the error or warning gets raised).
+
+Thus when for example your script "tool.pl" calls module "Pack::A",
+and module "Pack::A" calls module "Pack::B", an exception raised in
+module "Pack::B" will appear to have originated in "tool.pl" where
+"Pack::A" was called, and not in "Pack::A" where "Pack::B" was called,
+as the unmodified "C<Carp.pm>" would try to make you believe C<:-)>.
+
+This works similarly if "Pack::B" calls "Pack::C" where the
+exception is raised, et cetera.
+
+In other words, this blames all errors in the "C<Pack::*>" modules
+on the user of these modules, i.e., on you. C<;-)>
+
+The skipping of a clan (or family) of packages according to a pattern
+describing its members is necessary in cases where these modules are
+not classes derived from each other (and thus when examining C<@ISA>
+- as in the original "C<Carp.pm>" module - doesn't help).
+
+The purpose and advantage of this is that a "clan" of modules can work
+together (and call each other) and throw exceptions at various depths
+down the calling hierarchy and still appear as a monolithic block (as
+though they were a single module) from the perspective of the caller.
+
+In case you just want to ward off all error messages from the module
+in which you "C<use Carp::Clan>", i.e., if you want to make all error
+messages or warnings to appear to originate from where your module
+was called (this is what you usually used to "C<use Carp;>" for C<;-)>),
+instead of in your module itself (which is what you can do with a
+"die" or "warn" anyway), you do not need to provide a pattern,
+the module will automatically provide the correct one for you.
+
+I.e., just "C<use Carp::Clan;>" without any arguments and call "carp"
+or "croak" as appropriate, and they will automatically defend your
+module against all blames!
+
+In other words, a pattern is only necessary if you want to make
+several modules (more than one) work together and appear as though
+they were only one.
+
+=head2 Forcing a Stack Trace
+
+As a debugging aid, you can force "C<Carp::Clan>" to treat a "croak" as
+a "confess" and a "carp" as a "cluck". In other words, force a detailed
+stack trace to be given. This can be very helpful when trying to
+understand why, or from where, a warning or error is being generated.
+
+This feature is enabled either by "importing" the non-existent symbol
+'verbose', or by setting the global variable "C<$Carp::Clan::Verbose>"
+to a true value.
+
+You would typically enable it by saying
+
+    use Carp::Clan qw(verbose);
+
+Note that you can both specify a "family pattern" and the string "verbose"
+inside the "C<qw()>" term (or argument list) of the "use" statement, but
+consider that a pattern of packages to skip is pointless when "verbose"
+causes a full stack trace anyway.
+
+=head1 BUGS
+
+The "C<Carp::Clan>" routines don't handle exception objects currently.
+If called with a first argument that is a reference, they simply
+call "C<die()>" or "C<warn()>", as appropriate.
+
+Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=Carp-Clan>
+(or L<bug-Carp-Clan@rt.cpan.org|mailto:bug-Carp-Clan@rt.cpan.org>).
+
+=head1 AUTHOR
+
+Steffen Beyer <STBEY@cpan.org>
+
+=head1 CONTRIBUTORS
+
+=for stopwords Joshua ben Jore Karen Etheridge Kent Fredric
+
+=over 4
+
+=item *
+
+Joshua ben Jore <jjore@cpan.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Kent Fredric <kentnl@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2001 by Steffen Beyer, Joshua ben Jore.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

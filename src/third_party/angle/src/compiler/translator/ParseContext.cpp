@@ -166,6 +166,7 @@ TParseContext::TParseContext(TSymbolTable &symt,
                              TExtensionBehavior &ext,
                              sh::GLenum type,
                              ShShaderSpec spec,
+                             ShCompileOptions options,
                              bool checksPrecErrors,
                              TDiagnostics *diagnostics,
                              const ShBuiltInResources &resources)
@@ -173,6 +174,7 @@ TParseContext::TParseContext(TSymbolTable &symt,
       mDeferredNonEmptyDeclarationErrorCheck(false),
       mShaderType(type),
       mShaderSpec(spec),
+      mCompileOptions(options),
       mShaderVersion(100),
       mTreeRoot(nullptr),
       mLoopNestingLevel(0),
@@ -2447,6 +2449,28 @@ TIntermDeclaration *TParseContext::parseSingleDeclaration(
     const ImmutableString &identifier)
 {
     TType *type = new TType(publicType);
+    if ((mCompileOptions & SH_FLATTEN_PRAGMA_STDGL_INVARIANT_ALL) &&
+        mDirectiveHandler.pragma().stdgl.invariantAll)
+    {
+        TQualifier qualifier = type->getQualifier();
+
+        // The directive handler has already taken care of rejecting invalid uses of this pragma
+        // (for example, in ESSL 3.00 fragment shaders), so at this point, flatten it into all
+        // affected variable declarations:
+        //
+        // 1. Built-in special variables which are inputs to the fragment shader. (These are handled
+        // elsewhere, in TranslatorGLSL.)
+        //
+        // 2. Outputs from vertex shaders in ESSL 1.00 and 3.00 (EvqVaryingOut and EvqVertexOut). It
+        // is actually less likely that there will be bugs in the handling of ESSL 3.00 shaders, but
+        // the way this is currently implemented we have to enable this compiler option before
+        // parsing the shader and determining the shading language version it uses. If this were
+        // implemented as a post-pass, the workaround could be more targeted.
+        if (qualifier == EvqVaryingOut || qualifier == EvqVertexOut)
+        {
+            type->setInvariant(true);
+        }
+    }
 
     checkGeometryShaderInputAndSetArraySize(identifierOrTypeLocation, identifier, type);
 
@@ -5193,9 +5217,11 @@ bool TParseContext::binaryOpCommonCheck(TOperator op,
             break;
     }
 
-    // GLSL ES 1.00 and 3.00 do not support implicit type casting.
-    // So the basic type should usually match.
-    if (!isBitShift && left->getBasicType() != right->getBasicType())
+    ImplicitTypeConversion conversion = GetConversion(left->getBasicType(), right->getBasicType());
+
+    // Implicit type casting only supported for GL shaders
+    if (!isBitShift && conversion != ImplicitTypeConversion::Same &&
+        (!IsDesktopGLSpec(mShaderSpec) || !IsValidImplicitConversion(conversion, op)))
     {
         return false;
     }
@@ -5889,6 +5915,14 @@ TIntermTyped *TParseContext::addNonConstructorFunctionCall(TFunctionLookup *fnCa
         // There are no inner functions, so it's enough to look for user-defined functions in the
         // global scope.
         const TSymbol *symbol = symbolTable.findGlobal(fnCall->getMangledName());
+
+        if (symbol == nullptr && IsDesktopGLSpec(mShaderSpec))
+        {
+            // If using Desktop GL spec, need to check for implicit conversion
+            symbol = symbolTable.findGlobalWithConversion(
+                fnCall->getMangledNamesForImplicitConversions());
+        }
+
         if (symbol != nullptr)
         {
             // A user-defined function - could be an overloaded built-in as well.
@@ -5903,11 +5937,15 @@ TIntermTyped *TParseContext::addNonConstructorFunctionCall(TFunctionLookup *fnCa
         }
 
         symbol = symbolTable.findBuiltIn(fnCall->getMangledName(), mShaderVersion);
-        if (symbol == nullptr)
+
+        if (symbol == nullptr && IsDesktopGLSpec(mShaderSpec))
         {
-            error(loc, "no matching overloaded function found", fnCall->name());
+            // If using Desktop GL spec, need to check for implicit conversion
+            symbol = symbolTable.findBuiltInWithConversion(
+                fnCall->getMangledNamesForImplicitConversions(), mShaderVersion);
         }
-        else
+
+        if (symbol != nullptr)
         {
             // A built-in function.
             ASSERT(symbol->symbolType() == SymbolType::BuiltIn);
@@ -5954,6 +5992,10 @@ TIntermTyped *TParseContext::addNonConstructorFunctionCall(TFunctionLookup *fnCa
             checkImageMemoryAccessForBuiltinFunctions(callNode);
             functionCallRValueLValueErrorCheck(fnCandidate, callNode);
             return callNode;
+        }
+        else
+        {
+            error(loc, "no matching overloaded function found", fnCall->name());
         }
     }
 

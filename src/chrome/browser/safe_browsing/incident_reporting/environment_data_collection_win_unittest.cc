@@ -50,9 +50,8 @@ bool DllEntryContainsLspFeature(
     const std::string& dll_path) {
   for (const auto& dll : process_report.dll()) {
     if (dll.path() == dll_path &&
-        base::ContainsValue(
-            dll.feature(),
-            ClientIncidentReport_EnvironmentData_Process_Dll::LSP)) {
+        base::Contains(dll.feature(),
+                       ClientIncidentReport_EnvironmentData_Process_Dll::LSP)) {
       // LSP feature found.
       return true;
     }

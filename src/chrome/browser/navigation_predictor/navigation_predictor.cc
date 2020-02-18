@@ -16,6 +16,9 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
+#include "chrome/browser/prerender/prerender_handle.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/search_engines/template_url_service.h"
@@ -110,19 +113,61 @@ NavigationPredictor::NavigationPredictor(
       source_engagement_score_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kNavigationPredictor,
           "source_engagement_score_scale",
-          100)),
+          0)),
       target_engagement_score_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kNavigationPredictor,
           "target_engagement_score_scale",
-          100)),
+          0)),
       area_rank_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kNavigationPredictor,
           "area_rank_scale",
           100)),
-      sum_scales_(ratio_area_scale_ + is_in_iframe_scale_ +
-                  is_same_host_scale_ + contains_image_scale_ +
-                  is_url_incremented_scale_ + source_engagement_score_scale_ +
-                  target_engagement_score_scale_ + area_rank_scale_),
+      link_total_scale_(base::GetFieldTrialParamByFeatureAsInt(
+          blink::features::kNavigationPredictor,
+          "link_total_scale",
+          0)),
+      iframe_link_total_scale_(base::GetFieldTrialParamByFeatureAsInt(
+          blink::features::kNavigationPredictor,
+          "iframe_link_total_scale",
+          0)),
+      increment_link_total_scale_(base::GetFieldTrialParamByFeatureAsInt(
+          blink::features::kNavigationPredictor,
+          "increment_link_total_scale",
+          0)),
+      same_origin_link_total_scale_(base::GetFieldTrialParamByFeatureAsInt(
+          blink::features::kNavigationPredictor,
+          "same_origin_link_total_scale",
+          0)),
+      image_link_total_scale_(base::GetFieldTrialParamByFeatureAsInt(
+          blink::features::kNavigationPredictor,
+          "image_link_total_scale",
+          0)),
+      clickable_space_scale_(base::GetFieldTrialParamByFeatureAsInt(
+          blink::features::kNavigationPredictor,
+          "clickable_space_scale",
+          0)),
+      median_link_location_scale_(base::GetFieldTrialParamByFeatureAsInt(
+          blink::features::kNavigationPredictor,
+          "median_link_location_scale",
+          0)),
+      viewport_height_scale_(base::GetFieldTrialParamByFeatureAsInt(
+          blink::features::kNavigationPredictor,
+          "viewport_height_scale",
+          0)),
+      viewport_width_scale_(base::GetFieldTrialParamByFeatureAsInt(
+          blink::features::kNavigationPredictor,
+          "viewport_width_scale",
+          0)),
+      sum_link_scales_(ratio_area_scale_ + is_in_iframe_scale_ +
+                       is_same_host_scale_ + contains_image_scale_ +
+                       is_url_incremented_scale_ +
+                       source_engagement_score_scale_ +
+                       target_engagement_score_scale_ + area_rank_scale_),
+      sum_page_scales_(link_total_scale_ + iframe_link_total_scale_ +
+                       increment_link_total_scale_ +
+                       same_origin_link_total_scale_ + image_link_total_scale_ +
+                       clickable_space_scale_ + median_link_location_scale_ +
+                       viewport_height_scale_ + viewport_width_scale_),
       is_low_end_device_(base::SysInfo::IsLowEndDevice()),
       prefetch_url_score_threshold_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kNavigationPredictor,
@@ -136,7 +181,15 @@ NavigationPredictor::NavigationPredictor(
           base::GetFieldTrialParamByFeatureAsBool(
               blink::features::kNavigationPredictor,
               "same_origin_preconnecting_allowed",
-              false)) {
+              false)),
+      prefetch_after_preconnect_(base::GetFieldTrialParamByFeatureAsBool(
+          blink::features::kNavigationPredictor,
+          "prefetch_after_preconnect",
+          false)),
+      normalize_navigation_scores_(base::GetFieldTrialParamByFeatureAsBool(
+          blink::features::kNavigationPredictor,
+          "normalize_scores",
+          true)){
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK_LE(0, preconnect_origin_score_threshold_);
@@ -148,12 +201,16 @@ NavigationPredictor::NavigationPredictor(
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   current_visibility_ = web_contents->GetVisibility();
+  ukm_source_id_ = web_contents->GetLastCommittedSourceId();
   Observe(web_contents);
 }
 
 NavigationPredictor::~NavigationPredictor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Observe(nullptr);
+  if (prerender_handle_) {
+    prerender_handle_->OnNavigateAway();
+  }
 }
 
 void NavigationPredictor::Create(
@@ -262,12 +319,17 @@ void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
   if (current_visibility_ == visibility)
     return;
 
-  // Check if the visibility changed from HIDDEN to VISIBLE. Since navigation
+  // Check if the visibility changed from VISIBLE to HIDDEN. Since navigation
   // predictor is currently restricted to Android, it is okay to disregard the
   // occluded state.
   if (current_visibility_ != content::Visibility::HIDDEN ||
       visibility != content::Visibility::VISIBLE) {
     current_visibility_ = visibility;
+
+    if (prerender_handle_) {
+      prerender_handle_->OnNavigateAway();
+      prerender_handle_.reset();
+    }
 
     // Stop any future preconnects while hidden.
     timer_.Stop();
@@ -279,6 +341,9 @@ void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
   // Previously, the visibility was HIDDEN, and now it is VISIBLE implying that
   // the web contents that was fully hidden is now fully visible.
   MaybePreconnectNow(Action::kPreconnectOnVisibilityChange);
+  if (prefetch_url_.has_value()) {
+    MaybePrefetch();
+  }
 }
 
 void NavigationPredictor::MaybePreconnectNow(Action log_action) {
@@ -410,15 +475,15 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
 
   // Guaranteed to be non-zero since we have found the clicked link in
   // |navigation_scores_map_|.
-  int number_of_anchors = static_cast<int>(navigation_scores_map_.size());
+  DCHECK_LT(0, number_of_anchors_);
   if (metrics->is_same_host) {
     UMA_HISTOGRAM_PERCENTAGE(
         "AnchorElementMetrics.Clicked.RatioSameHost_SameHost",
-        (number_of_anchors_same_host_ * 100) / number_of_anchors);
+        (number_of_anchors_same_host_ * 100) / number_of_anchors_);
   } else {
     UMA_HISTOGRAM_PERCENTAGE(
         "AnchorElementMetrics.Clicked.RatioSameHost_DiffHost",
-        (number_of_anchors_same_host_ * 100) / number_of_anchors);
+        (number_of_anchors_same_host_ * 100) / number_of_anchors_);
   }
 
   if (source_is_default_search_engine_page_) {
@@ -434,31 +499,31 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
   if (metrics->contains_image || iter->second->contains_image) {
     UMA_HISTOGRAM_PERCENTAGE(
         "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage",
-        (number_of_anchors_contains_image_ * 100) / number_of_anchors);
+        (number_of_anchors_contains_image_ * 100) / number_of_anchors_);
   } else {
     UMA_HISTOGRAM_PERCENTAGE(
         "AnchorElementMetrics.Clicked.RatioContainsImage_NoImage",
-        (number_of_anchors_contains_image_ * 100) / number_of_anchors);
+        (number_of_anchors_contains_image_ * 100) / number_of_anchors_);
   }
 
   if (metrics->is_in_iframe) {
     UMA_HISTOGRAM_PERCENTAGE(
         "AnchorElementMetrics.Clicked.RatioInIframe_InIframe",
-        (number_of_anchors_in_iframe_ * 100) / number_of_anchors);
+        (number_of_anchors_in_iframe_ * 100) / number_of_anchors_);
   } else {
     UMA_HISTOGRAM_PERCENTAGE(
         "AnchorElementMetrics.Clicked.RatioInIframe_NotInIframe",
-        (number_of_anchors_in_iframe_ * 100) / number_of_anchors);
+        (number_of_anchors_in_iframe_ * 100) / number_of_anchors_);
   }
 
   if (metrics->is_url_incremented_by_one) {
     UMA_HISTOGRAM_PERCENTAGE(
         "AnchorElementMetrics.Clicked.RatioUrlIncremented_UrlIncremented",
-        (number_of_anchors_url_incremented_ * 100) / number_of_anchors);
+        (number_of_anchors_url_incremented_ * 100) / number_of_anchors_);
   } else {
     UMA_HISTOGRAM_PERCENTAGE(
         "AnchorElementMetrics.Clicked.RatioUrlIncremented_NotIncremented",
-        (number_of_anchors_url_incremented_ * 100) / number_of_anchors);
+        (number_of_anchors_url_incremented_ * 100) / number_of_anchors_);
   }
 }
 
@@ -560,7 +625,8 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
 }
 
 void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
-    std::vector<blink::mojom::AnchorElementMetricsPtr> metrics) {
+    std::vector<blink::mojom::AnchorElementMetricsPtr> metrics,
+    const gfx::Size& viewport_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(base::FeatureList::IsEnabled(blink::features::kNavigationPredictor));
 
@@ -596,7 +662,13 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
   if (metrics.empty())
     return;
 
+  number_of_anchors_ = metrics.size();
+  viewport_size_ = viewport_size;
+
   // Count the number of anchors that have specific metrics.
+  std::vector<double> link_locations;
+  link_locations.reserve(metrics.size());
+
   for (const auto& metric : metrics) {
     number_of_anchors_same_host_ += static_cast<int>(metric->is_same_host);
     number_of_anchors_contains_image_ +=
@@ -604,7 +676,14 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
     number_of_anchors_in_iframe_ += static_cast<int>(metric->is_in_iframe);
     number_of_anchors_url_incremented_ +=
         static_cast<int>(metric->is_url_incremented_by_one);
+
+    link_locations.push_back(metric->ratio_distance_top_to_visible_top);
+    total_clickable_space_ += metric->ratio_visible_area;
   }
+
+  sort(link_locations.begin(), link_locations.end());
+  median_link_location_ = link_locations[link_locations.size() / 2];
+  double page_metrics_score = GetPageMetricsScore();
 
   // Retrieve site engagement score of the document. |metrics| is guaranteed to
   // be non-empty. All |metrics| have the same source_url.
@@ -649,20 +728,23 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
     if (i > 0 && metric->ratio_area == metrics[i - 1]->ratio_area)
       area_rank = navigation_scores[navigation_scores.size() - 1]->area_rank;
 
-    double score = CalculateAnchorNavigationScore(
-        *metric, document_engagement_score, target_engagement_score, area_rank,
-        metrics.size());
+    double score =
+        CalculateAnchorNavigationScore(*metric, document_engagement_score,
+                                       target_engagement_score, area_rank) +
+        page_metrics_score;
     total_score += score;
 
     navigation_scores.push_back(std::make_unique<NavigationScore>(
         metric->target_url, area_rank, score, metric->contains_image));
   }
 
-  // Normalize |score| to a total sum of 100.0 across all anchor elements
-  // received.
-  if (total_score > 0.0) {
-    for (auto& navigation_score : navigation_scores) {
-      navigation_score->score = navigation_score->score / total_score * 100.0;
+  if (normalize_navigation_scores_) {
+    // Normalize |score| to a total sum of 100.0 across all anchor elements
+    // received.
+    if (total_score > 0.0) {
+      for (auto& navigation_score : navigation_scores) {
+        navigation_score->score = navigation_score->score / total_score * 100.0;
+      }
     }
   }
 
@@ -690,11 +772,10 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
     const blink::mojom::AnchorElementMetrics& metrics,
     double document_engagement_score,
     double target_engagement_score,
-    int area_rank,
-    int number_of_anchors) const {
+    int area_rank) const {
   DCHECK(!browser_context_->IsOffTheRecord());
 
-  if (sum_scales_ == 0)
+  if (sum_link_scales_ == 0)
     return 0.0;
 
   double max_engagement_points = GetEngagementService()->GetMaxPoints();
@@ -702,7 +783,7 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
   target_engagement_score /= max_engagement_points;
 
   double area_rank_score =
-      (double)((number_of_anchors - area_rank)) / number_of_anchors;
+      (double)((number_of_anchors_ - area_rank)) / number_of_anchors_;
 
   DCHECK_LE(0, metrics.ratio_visible_area);
   DCHECK_GE(1, metrics.ratio_visible_area);
@@ -748,11 +829,29 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
                  target_engagement_score_scale_ * target_engagement_score +
                  area_rank_scale_ * (area_rank_score);
 
-  // Normalize to 100.
-  score = score / sum_scales_ * 100.0;
-  DCHECK_LE(0.0, score);
-  DCHECK_GE(100.0, score);
+  if (normalize_navigation_scores_) {
+    score = score / sum_link_scales_ * 100.0;
+    DCHECK_LE(0.0, score);
+  }
+
   return score;
+}
+
+double NavigationPredictor::GetPageMetricsScore() const {
+  if (sum_page_scales_ == 0.0) {
+    return 0;
+  } else {
+    DCHECK(!viewport_size_.IsEmpty());
+    return link_total_scale_ * number_of_anchors_ +
+           iframe_link_total_scale_ * number_of_anchors_in_iframe_ +
+           increment_link_total_scale_ * number_of_anchors_url_incremented_ +
+           same_origin_link_total_scale_ * number_of_anchors_same_host_ +
+           image_link_total_scale_ * number_of_anchors_contains_image_ +
+           clickable_space_scale_ * total_clickable_space_ +
+           median_link_location_scale_ * median_link_location_ +
+           viewport_width_scale_ * viewport_size_.width() +
+           viewport_height_scale_ * viewport_size_.height();
+  }
 }
 
 void NavigationPredictor::MaybeTakeActionOnLoad(
@@ -780,6 +879,7 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
   if (prefetch_url_.has_value()) {
     DCHECK_EQ(document_origin.host(), prefetch_url_->host());
     MaybePreconnectNow(Action::kPrefetch);
+    MaybePrefetch();
     return;
   }
 
@@ -793,6 +893,38 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
   }
 
   base::UmaHistogramEnumeration(action_histogram_name, Action::kNone);
+}
+
+void NavigationPredictor::MaybePrefetch() {
+  // If prefetches aren't allowed here, this URL has already
+  // been prefetched, or the current tab is hidden,
+  // we shouldn't prefetch again.
+  if (!prefetch_after_preconnect_ || prefetch_url_prefetched_ ||
+      current_visibility_ == content::Visibility::HIDDEN) {
+    return;
+  }
+
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          browser_context_);
+
+  if (prerender_manager) {
+    Prefetch(prerender_manager);
+    prefetch_url_prefetched_ = true;
+  }
+}
+
+void NavigationPredictor::Prefetch(
+    prerender::PrerenderManager* prerender_manager) {
+  DCHECK(!prefetch_url_prefetched_);
+  DCHECK(!prerender_handle_);
+
+  content::SessionStorageNamespace* session_storage_namespace =
+      web_contents()->GetController().GetDefaultSessionStorageNamespace();
+  gfx::Size size = web_contents()->GetContainerBounds().size();
+
+  prerender_handle_ = prerender_manager->AddPrerenderFromNavigationPredictor(
+      prefetch_url_.value(), session_storage_namespace, size);
 }
 
 base::Optional<GURL> NavigationPredictor::GetUrlToPrefetch(
@@ -825,6 +957,7 @@ base::Optional<GURL> NavigationPredictor::GetUrlToPrefetch(
   // threshold, then return.
   if (sorted_navigation_scores[0]->score < prefetch_url_score_threshold_)
     return base::nullopt;
+
   return sorted_navigation_scores[0]->url;
 }
 

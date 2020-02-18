@@ -66,10 +66,11 @@ TEST_F(CrostiniReportingUtilTest, WriteMetricsForReportingToPrefsIfEnabled) {
   int64_t timestamp =
       preferences->GetInt64(prefs::kCrostiniLastLaunchTimeWindowStart);
   std::string termina_version =
-      preferences->GetString(prefs::kCrostiniLastLaunchVersion);
+      preferences->GetString(prefs::kCrostiniLastLaunchTerminaComponentVersion);
   EXPECT_FALSE(
       preferences->HasPrefPath(prefs::kCrostiniLastLaunchTimeWindowStart));
-  EXPECT_FALSE(preferences->HasPrefPath(prefs::kCrostiniLastLaunchVersion));
+  EXPECT_FALSE(preferences->HasPrefPath(
+      prefs::kCrostiniLastLaunchTerminaComponentVersion));
   EXPECT_EQ(0, timestamp);
   EXPECT_TRUE(termina_version.empty());
 
@@ -80,7 +81,8 @@ TEST_F(CrostiniReportingUtilTest, WriteMetricsForReportingToPrefsIfEnabled) {
                                            &test_clock_);
 
   timestamp = preferences->GetInt64(prefs::kCrostiniLastLaunchTimeWindowStart);
-  termina_version = preferences->GetString(prefs::kCrostiniLastLaunchVersion);
+  termina_version =
+      preferences->GetString(prefs::kCrostiniLastLaunchTerminaComponentVersion);
   EXPECT_EQ(1535760000000, timestamp);  // 1 Sep 2018 00:00:00 GMT
   EXPECT_EQ("1.33.7", termina_version);
 }
@@ -104,7 +106,7 @@ TEST_F(CrostiniReportingUtilTest, WriteMetricsIfThereIsNoTerminaVersion) {
   const int64_t timestamp =
       preferences->GetInt64(prefs::kCrostiniLastLaunchTimeWindowStart);
   const std::string termina_version =
-      preferences->GetString(prefs::kCrostiniLastLaunchVersion);
+      preferences->GetString(prefs::kCrostiniLastLaunchTerminaComponentVersion);
   EXPECT_EQ(1535760000000, timestamp);  // 1 Sep 2018 00:00:00 GMT
   EXPECT_TRUE(termina_version.empty());
 }
@@ -119,7 +121,7 @@ TEST_F(CrostiniReportingUtilTest, GetThreeDayWindowStart) {
   base::Time window_start;
   EXPECT_TRUE(
       base::Time::FromString("Wed, 29 Aug 2018 00:00:00 GMT", &window_start));
-  EXPECT_EQ(window_start, GetThreeDayWindowStart(&test_clock_));
+  EXPECT_EQ(window_start, GetThreeDayWindowStart(test_clock_.Now()));
 
   // Since a three-day period has been crossed, another time is returned
   // for three consecutive days:
@@ -127,13 +129,13 @@ TEST_F(CrostiniReportingUtilTest, GetThreeDayWindowStart) {
   EXPECT_TRUE(base::Time::FromString("Sat, 1 Sep 2018 00:00:00 GMT",
                                      &next_window_start));
   test_clock_.Advance(base::TimeDelta::FromDays(1));
-  EXPECT_EQ(next_window_start, GetThreeDayWindowStart(&test_clock_));
+  EXPECT_EQ(next_window_start, GetThreeDayWindowStart(test_clock_.Now()));
 
   test_clock_.Advance(base::TimeDelta::FromDays(1));
-  EXPECT_EQ(next_window_start, GetThreeDayWindowStart(&test_clock_));
+  EXPECT_EQ(next_window_start, GetThreeDayWindowStart(test_clock_.Now()));
 
   test_clock_.Advance(base::TimeDelta::FromDays(1));
-  EXPECT_EQ(next_window_start, GetThreeDayWindowStart(&test_clock_));
+  EXPECT_EQ(next_window_start, GetThreeDayWindowStart(test_clock_.Now()));
 
   // After three consecutive days logged with the same value, we now expect
   // a three day change again:
@@ -141,7 +143,7 @@ TEST_F(CrostiniReportingUtilTest, GetThreeDayWindowStart) {
   EXPECT_TRUE(base::Time::FromString("Tue, 4 Sep 2018 00:00:00 GMT",
                                      &three_days_later));
   test_clock_.Advance(base::TimeDelta::FromDays(1));
-  EXPECT_EQ(three_days_later, GetThreeDayWindowStart(&test_clock_));
+  EXPECT_EQ(three_days_later, GetThreeDayWindowStart(test_clock_.Now()));
 }
 
 TEST_F(CrostiniReportingUtilTest, GetTerminaVersion) {

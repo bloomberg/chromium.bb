@@ -1,0 +1,411 @@
+=for stopwords freetype MinGW dfont Redhat SDK IFD GDI TTF preprocessor Redhat-like
+
+=head1 NAME
+
+Imager::Install - installation notes for Imager
+
+=head1 SYNOPSIS
+
+  perl Makefile.PL
+  make
+  make test
+  make install
+
+=head1 DESCRIPTION
+
+Assuming you have all of your required libraries in the places Imager
+looks, you should be able to use the standard mantra:
+
+  perl Makefile.PL
+  make
+  make test
+  make install
+
+to install Imager.
+
+If you've installed libraries in places Imager doesn't look, you can
+supply extra locations either with command-line options:
+
+  perl Makefile.PL --libpath=/home/tony/local/lib --incpath=/home/tony/local/include
+
+or with environment variables:
+
+  export IM_LIBPATH=/home/tony/local/lib IM_INCPATH=/home/tony/local/include
+  perl Makefile.PL
+
+Imager's F<Makefile.PL> produces an epilogue indicating which
+libraries have and haven't been found, for example:
+
+  Libraries found:
+    FT2
+    GIF
+    JPEG
+    PNG
+    T1
+    TIFF
+  Libraries *not* found:
+    Win32
+
+If a library you expect to be found isn't on this list, use the
+C<--verbose> or C<-v> option to produce way too much information from
+Imager's search for the libraries:
+
+  perl Makefile.PL -v
+
+If you can't resolve this, then run
+
+  perl errep.perl
+
+and include the (large) generated F<report.txt> in your email to:
+
+  bug-Imager@rt.cpan.org
+
+There are other options used to configure how Imager is built:
+
+=over
+
+=item C<--nolog>
+
+build Imager without logging support.  This will speed up Imager a
+little.  You can also remove logging by setting the C<IMAGER_NOLOG>
+environment variable to a true value.
+
+=item C<--coverage>
+
+used to build Imager for C<gcov> coverage testing.  This is intended
+for development and also requires options supplied to C<make>.
+
+=item C<--assert>
+
+build Imager with assertions enabled.
+
+=item C<--tracecontext>
+
+build Imager to trace context object management to C<stderr> for
+debugging.
+
+=back
+
+=head2 Build time environment variables
+X<build time environment variables>
+
+=over
+
+=item *
+
+X<< C<IMAGER_NOLOG> >>C<IMAGER_NOLOG> - build Imager with logging disabled.
+
+=item *
+
+X<< C<IMAGER_DEBUG_MALLOC> >>C<IMAGER_DEBUG_MALLOC> - build Imager with it's
+debug malloc wrappers.  This is I<not> compatible with threaded code.
+
+=item *
+
+X<< C<IM_INCPATH> >>C<IM_INCPATH> - equivalent to C<--incpath>.
+
+=item *
+
+X<< C<IM_LIBPATH> >>C<IM_LIBPATH> - equivalent to C<--libpath>.
+
+=item *
+
+X<< C<IM_VERBOSE> >>C<IM_VERBOSE> - equivalent to C<--verbose>
+
+=item *
+
+X<< C<IM_CFLAGS> >>C<IM_CFLAGS> - extra C compiler flags.
+
+=item *
+
+X<< C<IM_LFLAGS> >>C<IM_LFLAGS> - extra linker flags.
+
+=item *
+
+X<< C<IM_DFLAGS> >>C<IM_DFLAGS> - extra preprocessor flags.
+
+=back
+
+=head1 EXTERNAL LIBRARIES
+
+Some of the file format and font modules included with Imager use
+external libraries, which should be installed before you try to
+install Imager itself.
+
+If you don't have the libraries installed then Imager itself will
+install successfully, but the file format or font support module won't
+be.
+
+Preferably the latest version of each library should be used, simple
+because it has the latest security fixes.
+
+=head2 PNG - C<libpng>
+
+X<< C<libpng> >>L<Imager::File::PNG> uses L<< C<libpng>
+|http://www.libpng.org/pub/png/libpng.html >> for PNG image file
+support.
+
+Debian package: C<libpng12-dev>
+
+Redhat package: C<libpng-devel>
+
+=head2 TIFF - C<libtiff>
+
+X<< C<libtiff> >>L<Imager::File::TIFF> uses
+L<< C<libtiff> |http://www.remotesensing.org/libtiff/ >> for GIF image file
+support.
+
+Version 3.6.0 or later is required to avoid an exploit with infinite
+IFD loops, though it's possible some distributions have applied the
+fix to older versions as a security fix.
+
+Version 3.9.0 is rejected during the probe process due to a serious
+bug, fixed in 3.9.1.
+
+Debian package: C<libtiff4-dev>
+
+Redhat package: C<libtiff-devel>
+
+=head2 GIF - C<libgif>
+
+X<< C<libgif> >>L<Imager::File::GIF> uses
+L<< C<libgif> |http://sourceforge.net/projects/giflib/ >> for GIF image file
+support.
+
+C<libgif> releases 4.2.0 and 5.0.0 are specifically not supported, due
+to bugs in those versions.
+
+Release 4.1.4 or later should be used.
+
+C<giflib> 3 is no longer supported.
+
+C<libungif> is no longer supported as an alternative.
+
+Debian package: C<libgif-dev>
+
+Redhat package: C<giflib-devel>
+
+=head2 JPEG - C<libjpeg>
+
+L<Imager::File::JPEG> uses L<< C<libjpeg> |http://www.ijg.org/ >> for JPEG
+image file support.
+
+You may also use
+L<< C<libjpeg-turbo> |http://sourceforge.net/projects/libjpeg-turbo/ >>.
+
+To install older releases of C<libjpeg> from source, you'll need to
+run:
+
+  make install-lib
+
+to install the libraries.  C<make install> only installs the program
+binaries.
+
+Redhat package: C<libjpeg-devel>
+
+Debian package: C<libjpeg8-dev>
+
+=head2 Freetype 2.x - C<libfreetype>
+
+L<Imager::Font::FT2> uses L<< Freetype 2
+(C<libfreetype>)|http://www.freetype.org/ >> for font support, supporting
+too many font formats to mention here.
+
+This is the recommended library to use for font support.
+
+Debian package: C<libfreetype6-dev>
+
+Redhat package: C<freetype-devel>
+
+=head2 Win32 GDI fonts
+
+L<Imager::Font::W32> uses L<Win32
+GDI|http://msdn.microsoft.com/en-us/library/dd145203%28v=vs.85%29.aspx>
+to render text using installed Windows fonts.
+
+This requires Win32 SDK headers and libraries, and is only expected to
+work on native Win32 or Cygwin.
+
+For this to work under Cygwin, install the C<w32api-headers> and
+C<w32api-runtime> packages.
+
+=head2 C<t1lib>
+
+L<Imager::Font::T1> uses L<< C<t1lib> |http://www.t1lib.org/ >> for
+font support, supporting Postscript Type 1 fonts only.
+
+Debian package: C<libt1-dev>
+
+Redhat package: C<t1lib-devel>
+
+=head2 Freetype 1.x - C<libttf>
+
+Imager uses L<< Freetype 1 (C<libttf>)|http://www.freetype.org/ >> if
+available for font support, supporting TTF fonts only.
+
+Freetype 1.x is essentially unsupported and shouldn't be used for new
+code.
+
+=head1 PLATFORM SPECIFICS
+
+=head2 Linux
+
+Several distributions include an Imager package, but they are
+typically several releases behind due to the nature of release cycles.
+
+Imager typically supports the external libraries as packaged with any
+supported release of Linux.
+
+=head3 Debian
+
+To install the libraries used by Imager under Debian (or Ubuntu), run
+as root (or with sudo):
+
+  apt-get install libgif-dev libjpeg8-dev libtiff4-dev libpng12-dev libfreetype6-dev
+
+You may also need to install development tools:
+
+  apt-get install build-essential
+
+=head3 Redhat
+
+To install the libraries used by Imager under Redhat and related Linux
+distributions, run as root (or sudo):
+
+  yum install giflib-devel libjpeg-devel libtiff-devel libpng-devel freetype-devel
+
+To install the development tools needed:
+
+  yum install gcc
+
+(which appears to be enough on a base Redhat-like install) or the more
+commonly recommended recipe:
+
+  yum groupinstall "Development Tools"
+
+which is massive overkill.
+
+=head2 Mac OS X
+
+=head3 Building libraries
+
+The default perl build in Snow Leopard and Lion is a fat binary, and
+default builds of C<giflib>, C<libpng> and C<libjpeg> (and maybe other
+libraries) will produce link failures.
+
+To avoid this you need to supply a C<CFLAGS> parameter to the
+library's configure script, but since the C<-arch> flag conflicts with
+the options used to build the dependency files, you need to supply
+another flag to disable dependency tracking.
+
+Snow Leopard fat binaries include C<i386>, C<x86_64> and C<PPC>
+objects, hence you would run configure like:
+
+  ./configure --disable-dependency-tracking CFLAGS='-arch x86_64 -arch i386 -arch ppc'
+
+Lion doesn't support C<PPC>, so there you run configure like:
+
+  ./configure --disable-dependency-tracking CFLAGS='-arch x86_64 -arch i386'
+
+For C<libgif> you might also want to supply the C<--without-x> option:
+
+  ./configure --disable-dependency-tracking --without-x CFLAGS='-arch x86_64 -arch i386'
+
+If you copy library files into place manually, you may need to run
+C<ranlib> on them in their new location:
+
+  ranlib /usr/local/lib/libgif.a
+
+=head3 Macintosh C<dfont> and suitcase font support
+
+Through Freetype 2.1, Imager can use Macintosh C<DFON> (C<.dfont>)
+fonts and suitcase font files.
+
+If you want to be able to use more than just the first face in the
+font file though, you will need to configure C<freetype2> with the
+--with-old-mac-fonts option:
+
+  ./configure --with-old-mac-fonts
+
+You can use the index option to get to the other font faces in the
+file:
+
+  # get the second face from $file
+  my $font = Imager::Font->new(file=>$file, index=>1)
+    or die Imager->errstr;
+
+If you're using a suitcase font, you will also need to force the use
+of Freetype 2 with the type argument:
+
+  my $font = Imager::Font->new(file=>$suitcase, type=>'ft2', index=>$index)
+    or die Imager->errstr;
+
+=head2 Microsoft Windows
+
+The simplest way to install the libraries used by Imager is to install
+L<Strawberry perl|http://strawberryperl.com/>.
+
+You can then use either the bundled Imager, or install from CPAN.
+
+If you get errors from your make tool, make sure you're using the same
+make that was used to build your perl - C<nmake> for Visual C/C++ and
+C<dmake> for MinGW, run:
+
+  perl -V:make
+
+to see which make was used to build your perl.
+
+=head2 Cygwin
+
+To build Imager with as much library support as possible on Cygwin,
+install the following packages:
+
+  libjpeg-devel libpng-devel libgif-devel libtiff-devel
+  libfreetype-devel t1lib-devel w32api-headers w32api-runtime
+
+If you see an error under cygwin during testing along the lines of:
+
+  C:\cygwin\bin\perl.exe: *** unable to remap C:\cygwin\...some dll to the 
+    same address as parent (0x...) != 0x....
+
+you will need to install the cygwin C<rebase> package and run:
+
+  $ rebaseall -v
+
+or possibly, just:
+
+  $ perlrebase
+
+will fix the problem.
+
+=head1 Other issues
+
+=head2 Freetype 1.x vs Freetype 2.x
+
+Freetype 1.x is no longer recommended, is no longer supported
+upstream, and receives only limited updates in Imager.
+
+These two libraries have some conflicting include file names, but as
+long as you don't put the Freetype 2.x F<freetype.h> directory in the
+include path it should all work.
+
+Put the directory containing F<ft2build.h> in the include path, but
+not the directory containing the freetype 2.x F<freetype.h>.
+
+If you see compilation errors from font.c you've probably made the
+mistake of putting the Freetype 2.x F<freetype.h> directory into the
+include path.
+
+To see which directories should be in the include path, try:
+
+  freetype-config --cflags
+
+Ideally, C<freetype-config> should be in the PATH when building Imager
+with freetype 2.x support, in which case L<Imager::Font::FT2> can
+configure itself.
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>, Arnar M. Hrafnkelsson
+
+=cut

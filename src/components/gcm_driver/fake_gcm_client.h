@@ -47,6 +47,7 @@ class FakeGCMClient : public GCMClient {
       const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       base::RepeatingCallback<
           void(network::mojom::ProxyResolvingSocketFactoryRequest)>
           get_socket_factory_callback,
@@ -124,7 +125,7 @@ class FakeGCMClient : public GCMClient {
   scoped_refptr<base::SequencedTaskRunner> io_thread_;
   std::map<std::string, std::pair<std::string, std::string>> instance_id_data_;
   GCMStatsRecorderImpl recorder_;
-  base::WeakPtrFactory<FakeGCMClient> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeGCMClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeGCMClient);
 };

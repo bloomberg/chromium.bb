@@ -100,9 +100,11 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void SetOverscrollBehavior(LocalFrame& frame,
                              const cc::OverscrollBehavior&) override {}
 
-  void BeginLifecycleUpdates() override {}
-  void StartDeferringCommits(base::TimeDelta timeout) override {}
-  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override {}
+  void BeginLifecycleUpdates(LocalFrame& main_frame) override {}
+  void StartDeferringCommits(LocalFrame& main_frame,
+                             base::TimeDelta timeout) override {}
+  void StopDeferringCommits(LocalFrame& main_frame,
+                            cc::PaintHoldingCommitTrigger) override {}
 
   bool HadFormInteraction() const override { return false; }
 
@@ -233,6 +235,8 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) override {}
 
   void InstallSupplements(LocalFrame&) override {}
+
+  void MainFrameScrollOffsetChanged(LocalFrame& main_frame) const override {}
 };
 
 class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
@@ -336,8 +340,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   LocalFrame* CreateFrame(const AtomicString&, HTMLFrameOwnerElement*) override;
   std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
-      mojom::blink::PortalAssociatedRequest,
-      mojom::blink::PortalClientAssociatedPtrInfo) override;
+      mojo::PendingAssociatedReceiver<mojom::blink::Portal>,
+      mojo::PendingAssociatedRemote<mojom::blink::PortalClient>) override;
   RemoteFrame* AdoptPortal(HTMLPortalElement*) override;
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
                                        const KURL&,
@@ -367,8 +371,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   void VisibilityChanged(blink::mojom::FrameVisibility) override {}
 
-  WebCookieJar* CookieJar() const override { return nullptr; }
-
   service_manager::InterfaceProvider* GetInterfaceProvider() override {
     return &interface_provider_;
   }
@@ -386,9 +388,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   WebContentSettingsClient* GetContentSettingsClient() override {
     return nullptr;
   }
-  std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
-      DocumentLoader*,
-      WebApplicationCacheHostClient*) override;
 
   void SetTextCheckerClientForTesting(WebTextCheckClient*);
   WebTextCheckClient* GetTextCheckerClient() const override;

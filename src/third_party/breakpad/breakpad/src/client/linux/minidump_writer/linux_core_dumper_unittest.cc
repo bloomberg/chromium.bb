@@ -116,7 +116,11 @@ TEST(LinuxCoreDumperTest, VerifyDumpWithMultipleThreads) {
   EXPECT_EQ(crash_generator.GetThreadId(kCrashThread),
             dumper.crash_thread());
 
-  EXPECT_EQ(kNumOfThreads, dumper.threads().size());
+#if defined(THREAD_SANITIZER)
+  EXPECT_GE(dumper.threads().size(), kNumOfThreads);
+#else
+  EXPECT_EQ(dumper.threads().size(), kNumOfThreads);
+#endif
   for (unsigned i = 0; i < kNumOfThreads; ++i) {
     ThreadInfo info;
     EXPECT_TRUE(dumper.GetThreadInfoByIndex(i, &info));

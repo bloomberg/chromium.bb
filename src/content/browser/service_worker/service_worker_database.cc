@@ -6,10 +6,10 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -126,10 +126,13 @@ constexpr size_t kWriteBufferSize = 512 * 1024;
 class ServiceWorkerEnv : public leveldb_env::ChromiumEnv {
  public:
   ServiceWorkerEnv() : ChromiumEnv("LevelDBEnv.ServiceWorker") {}
-};
 
-base::LazyInstance<ServiceWorkerEnv>::Leaky g_service_worker_env =
-    LAZY_INSTANCE_INITIALIZER;
+  // Returns a shared instance of ServiceWorkerEnv. This is thread-safe.
+  static ServiceWorkerEnv* GetInstance() {
+    static base::NoDestructor<ServiceWorkerEnv> instance;
+    return instance.get();
+  }
+};
 
 bool RemovePrefix(const std::string& str,
                   const std::string& prefix,
@@ -1038,7 +1041,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::RewriteDB() {
 
   leveldb_env::Options options;
   options.create_if_missing = true;
-  options.env = g_service_worker_env.Pointer();
+  options.env = ServiceWorkerEnv::GetInstance();
   options.write_buffer_size = kWriteBufferSize;
 
   status = LevelDBStatusToServiceWorkerDBStatus(
@@ -1356,7 +1359,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
     env_ = leveldb_chrome::NewMemEnv("service-worker");
     options.env = env_.get();
   } else {
-    options.env = g_service_worker_env.Pointer();
+    options.env = ServiceWorkerEnv::GetInstance();
   }
   options.write_buffer_size = kWriteBufferSize;
 

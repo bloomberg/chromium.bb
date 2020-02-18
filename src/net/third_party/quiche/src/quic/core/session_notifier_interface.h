@@ -19,7 +19,8 @@ class QUIC_EXPORT_PRIVATE SessionNotifierInterface {
   // Called when |frame| is acked. Returns true if any new data gets acked,
   // returns false otherwise.
   virtual bool OnFrameAcked(const QuicFrame& frame,
-                            QuicTime::Delta ack_delay_time) = 0;
+                            QuicTime::Delta ack_delay_time,
+                            QuicTime receive_timestamp) = 0;
 
   // Called when |frame| is retransmitted.
   virtual void OnStreamFrameRetransmitted(const QuicStreamFrame& frame) = 0;
@@ -36,6 +37,9 @@ class QUIC_EXPORT_PRIVATE SessionNotifierInterface {
 
   // Returns true if crypto stream is waiting for acks.
   virtual bool HasUnackedCryptoData() const = 0;
+
+  // Returns true if any stream is waiting for acks.
+  virtual bool HasUnackedStreamData() const = 0;
 };
 
 }  // namespace quic

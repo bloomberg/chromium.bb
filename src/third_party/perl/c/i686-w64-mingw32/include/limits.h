@@ -1,9 +1,9 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
-#include <_mingw.h>
+#include <crtdefs.h>
 
 #ifndef _INC_LIMITS
 #define _INC_LIMITS
@@ -24,8 +24,13 @@
 #define SCHAR_MAX 127
 #define UCHAR_MAX 0xff
 
+#ifdef __CHAR_UNSIGNED__
+#define CHAR_MIN 0
+#define CHAR_MAX UCHAR_MAX
+#else
 #define CHAR_MIN SCHAR_MIN
 #define CHAR_MAX SCHAR_MAX
+#endif
 
 #define MB_LEN_MAX 5
 #define SHRT_MIN (-32768)

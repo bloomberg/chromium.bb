@@ -58,7 +58,6 @@ cr.define('print_preview_app_test', function() {
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
       const previewArea = page.$.previewArea;
-      pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
       return nativeLayer.whenCalled('getPreview');
     });
 
@@ -86,7 +85,6 @@ cr.define('print_preview_app_test', function() {
 
     test(assert(TestNames.PrintPresets), function() {
       assertEquals(1, page.settings.copies.value);
-      page.setSetting('duplex', false);
       assertFalse(page.settings.duplex.value);
 
       // Send preset values of duplex LONG_EDGE and 2 copies.
@@ -95,6 +93,8 @@ cr.define('print_preview_app_test', function() {
       cr.webUIListenerCallback('print-preset-options', true, copies, duplex);
       assertEquals(copies, page.getSettingValue('copies'));
       assertTrue(page.getSettingValue('duplex'));
+      assertFalse(page.getSetting('duplex').setFromUi);
+      assertFalse(page.getSetting('copies').setFromUi);
     });
   });
 

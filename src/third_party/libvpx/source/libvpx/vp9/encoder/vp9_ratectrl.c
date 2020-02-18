@@ -436,6 +436,10 @@ void vp9_rc_init(const VP9EncoderConfig *oxcf, int pass, RATE_CONTROL *rc) {
   rc->use_post_encode_drop = 0;
   rc->ext_use_post_encode_drop = 0;
   rc->arf_active_best_quality_adjustment_factor = 1.0;
+  rc->arf_increase_active_best_quality = 0;
+  rc->preserve_arf_as_gld = 0;
+  rc->preserve_next_arf_as_gld = 0;
+  rc->show_arf_as_gld = 0;
 }
 
 static int check_buffer_above_thresh(VP9_COMP *cpi, int drop_mark) {
@@ -1416,8 +1420,8 @@ static int rc_pick_q_and_bounds_two_pass(const VP9_COMP *cpi, int *bottom_index,
   int active_worst_quality = cpi->twopass.active_worst_quality;
   int q;
   int *inter_minq;
-  int arf_active_best_quality_adjustment, arf_active_best_quality_max;
-  int *arfgf_high_motion_minq;
+  int arf_active_best_quality_hl;
+  int *arfgf_high_motion_minq, *arfgf_low_motion_minq;
   const int boost_frame =
       !rc->is_src_frame_alt_ref &&
       (cpi->refresh_golden_frame || cpi->refresh_alt_ref_frame);
@@ -1444,14 +1448,20 @@ static int rc_pick_q_and_bounds_two_pass(const VP9_COMP *cpi, int *bottom_index,
       if (q < cq_level) q = cq_level;
     }
     active_best_quality = get_gf_active_quality(cpi, q, cm->bit_depth);
+    arf_active_best_quality_hl = active_best_quality;
 
-    ASSIGN_MINQ_TABLE(cm->bit_depth, arfgf_high_motion_minq);
-    arf_active_best_quality_max = arfgf_high_motion_minq[q];
-    arf_active_best_quality_adjustment =
-        arf_active_best_quality_max - active_best_quality;
-    active_best_quality = arf_active_best_quality_max -
-                          (int)(arf_active_best_quality_adjustment *
-                                rc->arf_active_best_quality_adjustment_factor);
+    if (rc->arf_increase_active_best_quality == 1) {
+      ASSIGN_MINQ_TABLE(cm->bit_depth, arfgf_high_motion_minq);
+      arf_active_best_quality_hl = arfgf_high_motion_minq[q];
+    } else if (rc->arf_increase_active_best_quality == -1) {
+      ASSIGN_MINQ_TABLE(cm->bit_depth, arfgf_low_motion_minq);
+      arf_active_best_quality_hl = arfgf_low_motion_minq[q];
+    }
+    active_best_quality =
+        (int)((double)active_best_quality *
+                  rc->arf_active_best_quality_adjustment_factor +
+              (double)arf_active_best_quality_hl *
+                  (1.0 - rc->arf_active_best_quality_adjustment_factor));
 
     // Modify best quality for second level arfs. For mode VPX_Q this
     // becomes the baseline frame q.
@@ -1476,17 +1486,30 @@ static int rc_pick_q_and_bounds_two_pass(const VP9_COMP *cpi, int *bottom_index,
   // Extension to max or min Q if undershoot or overshoot is outside
   // the permitted range.
   if (frame_is_intra_only(cm) || boost_frame) {
+    const int layer_depth = gf_group->layer_depth[gf_group_index];
     active_best_quality -=
         (cpi->twopass.extend_minq + cpi->twopass.extend_minq_fast);
     active_worst_quality += (cpi->twopass.extend_maxq / 2);
+
+    if (gf_group->rf_level[gf_group_index] == GF_ARF_LOW) {
+      assert(layer_depth > 1);
+      active_best_quality =
+          VPXMAX(active_best_quality,
+                 cpi->twopass.last_qindex_of_arf_layer[layer_depth - 1]);
+    }
   } else {
+    const int max_layer_depth = gf_group->max_layer_depth;
+    assert(max_layer_depth > 0);
+
     active_best_quality -=
         (cpi->twopass.extend_minq + cpi->twopass.extend_minq_fast) / 2;
     active_worst_quality += cpi->twopass.extend_maxq;
 
     // For normal frames do not allow an active minq lower than the q used for
     // the last boosted frame.
-    active_best_quality = VPXMAX(active_best_quality, rc->last_boosted_qindex);
+    active_best_quality =
+        VPXMAX(active_best_quality,
+               cpi->twopass.last_qindex_of_arf_layer[max_layer_depth - 1]);
   }
 
 #if LIMIT_QRANGE_FOR_ALTREF_AND_KEY
@@ -1521,6 +1544,8 @@ static int rc_pick_q_and_bounds_two_pass(const VP9_COMP *cpi, int *bottom_index,
     } else {
       q = rc->last_boosted_qindex;
     }
+  } else if (frame_is_intra_only(cm) && !rc->this_key_frame_forced) {
+    q = active_best_quality;
   } else {
     q = vp9_rc_regulate_q(cpi, rc->this_frame_target, active_best_quality,
                           active_worst_quality);
@@ -1574,6 +1599,7 @@ void vp9_configure_buffer_updates(VP9_COMP *cpi, int gf_group_index) {
 
   cpi->rc.is_src_frame_alt_ref = 0;
   cm->show_existing_frame = 0;
+  cpi->rc.show_arf_as_gld = 0;
   switch (twopass->gf_group.update_type[gf_group_index]) {
     case KF_UPDATE:
       cpi->refresh_last_frame = 1;
@@ -1595,6 +1621,12 @@ void vp9_configure_buffer_updates(VP9_COMP *cpi, int gf_group_index) {
       cpi->refresh_golden_frame = 1;
       cpi->refresh_alt_ref_frame = 0;
       cpi->rc.is_src_frame_alt_ref = 1;
+      if (cpi->rc.preserve_arf_as_gld) {
+        cpi->rc.show_arf_as_gld = 1;
+        cpi->refresh_golden_frame = 0;
+        cm->show_existing_frame = 1;
+        cm->refresh_frame_context = 0;
+      }
       break;
     case MID_OVERLAY_UPDATE:
       cpi->refresh_last_frame = 1;
@@ -1716,6 +1748,15 @@ static void update_golden_frame_stats(VP9_COMP *cpi) {
     if (rc->frames_till_gf_update_due > 0) rc->frames_till_gf_update_due--;
 
     rc->frames_since_golden++;
+
+    if (rc->show_arf_as_gld) {
+      rc->frames_since_golden = 0;
+      // If we are not using alt ref in the up and coming group clear the arf
+      // active flag. In multi arf group case, if the index is not 0 then
+      // we are overlaying a mid group arf so should not reset the flag.
+      if (!rc->source_alt_ref_pending && (cpi->twopass.gf_group.index == 0))
+        rc->source_alt_ref_active = 0;
+    }
   }
 }
 
@@ -1767,6 +1808,9 @@ void vp9_rc_postencode_update(VP9_COMP *cpi, uint64_t bytes_used) {
   RATE_CONTROL *const rc = &cpi->rc;
   SVC *const svc = &cpi->svc;
   const int qindex = cm->base_qindex;
+  const GF_GROUP *gf_group = &cpi->twopass.gf_group;
+  const int gf_group_index = cpi->twopass.gf_group.index;
+  const int layer_depth = gf_group->layer_depth[gf_group_index];
 
   // Update rate control heuristics
   rc->projected_frame_size = (int)(bytes_used << 3);
@@ -1821,6 +1865,15 @@ void vp9_rc_postencode_update(VP9_COMP *cpi, uint64_t bytes_used) {
         (cpi->refresh_golden_frame && !rc->is_src_frame_alt_ref)))) {
     rc->last_boosted_qindex = qindex;
   }
+
+  if ((qindex < cpi->twopass.last_qindex_of_arf_layer[layer_depth]) ||
+      (cm->frame_type == KEY_FRAME) ||
+      (!rc->constrained_gf_group &&
+       (cpi->refresh_alt_ref_frame ||
+        (cpi->refresh_golden_frame && !rc->is_src_frame_alt_ref)))) {
+    cpi->twopass.last_qindex_of_arf_layer[layer_depth] = qindex;
+  }
+
   if (frame_is_intra_only(cm)) rc->last_kf_qindex = qindex;
 
   update_buffer_level_postencode(cpi, rc->projected_frame_size);

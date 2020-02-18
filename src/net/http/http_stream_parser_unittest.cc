@@ -24,6 +24,7 @@
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -71,7 +72,7 @@ class ReadErrorUploadDataStream : public UploadDataStream {
   enum class FailureMode { SYNC, ASYNC };
 
   explicit ReadErrorUploadDataStream(FailureMode mode)
-      : UploadDataStream(true, 0), async_(mode), weak_factory_(this) {}
+      : UploadDataStream(true, 0), async_(mode) {}
 
  private:
   void CompleteRead() { UploadDataStream::OnReadCompleted(ERR_FAILED); }
@@ -93,7 +94,7 @@ class ReadErrorUploadDataStream : public UploadDataStream {
 
   const FailureMode async_;
 
-  base::WeakPtrFactory<ReadErrorUploadDataStream> weak_factory_;
+  base::WeakPtrFactory<ReadErrorUploadDataStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ReadErrorUploadDataStream);
 };
@@ -200,7 +201,7 @@ TEST(HttpStreamParser, DataReadErrorAsynchronous) {
 class InitAsyncUploadDataStream : public ChunkedUploadDataStream {
  public:
   explicit InitAsyncUploadDataStream(int64_t identifier)
-      : ChunkedUploadDataStream(identifier), weak_factory_(this) {}
+      : ChunkedUploadDataStream(identifier) {}
 
  private:
   void CompleteInit() { UploadDataStream::OnInitCompleted(OK); }
@@ -212,7 +213,7 @@ class InitAsyncUploadDataStream : public ChunkedUploadDataStream {
     return ERR_IO_PENDING;
   }
 
-  base::WeakPtrFactory<InitAsyncUploadDataStream> weak_factory_;
+  base::WeakPtrFactory<InitAsyncUploadDataStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InitAsyncUploadDataStream);
 };

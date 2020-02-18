@@ -89,17 +89,7 @@ bool VulkanImplementationAndroid::InitializeVulkanInstance(bool using_surface) {
   if (!vulkan_function_pointers->vulkan_loader_library_)
     return false;
 
-  if (!vulkan_instance_.Initialize(required_extensions, {}))
-    return false;
-
-  // Initialize platform function pointers
-  vkCreateAndroidSurfaceKHR_ =
-      reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(vkGetInstanceProcAddr(
-          vulkan_instance_.vk_instance(), "vkCreateAndroidSurfaceKHR"));
-  if (!vkCreateAndroidSurfaceKHR_)
-    return false;
-
-  return true;
+  return vulkan_instance_.Initialize(required_extensions, {});
 }
 
 VulkanInstance* VulkanImplementationAndroid::GetVulkanInstance() {
@@ -112,7 +102,7 @@ std::unique_ptr<VulkanSurface> VulkanImplementationAndroid::CreateViewSurface(
   VkAndroidSurfaceCreateInfoKHR surface_create_info = {};
   surface_create_info.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
   surface_create_info.window = window;
-  VkResult result = vkCreateAndroidSurfaceKHR_(
+  VkResult result = vkCreateAndroidSurfaceKHR(
       vulkan_instance_.vk_instance(), &surface_create_info, nullptr, &surface);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateAndroidSurfaceKHR() failed: " << result;
@@ -143,7 +133,8 @@ VulkanImplementationAndroid::GetRequiredDeviceExtensions() {
           VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME,
           VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
           VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,
-          VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME};
+          VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
+          VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME};
 }
 
 VkFence VulkanImplementationAndroid::CreateVkFenceForGpuFence(

@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/chrome_cleaner/engines/broker/engine_client_mock.h"
 #include "chrome/chrome_cleaner/engines/common/engine_result_codes.h"
@@ -94,7 +94,7 @@ class EngineCleanerTest : public testing::Test {
   TestPUPData test_pup_data_;
   std::unique_ptr<EngineCleaner> engine_cleaner_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ResultCode done_status_ = RESULT_CODE_INVALID;
 };
 

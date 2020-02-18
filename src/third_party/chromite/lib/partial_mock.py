@@ -182,7 +182,7 @@ def _RecursiveCompare(lhs, rhs):
             len(lhs) == len(rhs) and
             all(_RecursiveCompare(i, j) for i, j in zip(lhs, rhs)))
   elif isinstance(lhs, dict):
-    return _RecursiveCompare(sorted(lhs.iteritems()), sorted(rhs.iteritems()))
+    return _RecursiveCompare(sorted(lhs.items()), sorted(rhs.iteritems()))
   else:
     return lhs == rhs
 
@@ -191,20 +191,20 @@ def ListContains(small, big, strict=False):
   """Looks for a sublist within a bigger list.
 
   Args:
-    small: The sublist to search for.
+    small: The sublist or string to search for.
     big: The list to search in.
     strict: If True, all items in list must be adjacent.
   """
   if strict:
-    for i in xrange(len(big) - len(small) + 1):
+    for i in range(len(big) - len(small) + 1):
       if _RecursiveCompare(small, big[i:i + len(small)]):
         return True
     return False
   else:
     j = 0
-    for i in xrange(len(small)):
-      for j in xrange(j, len(big)):
-        if _RecursiveCompare(small[i], big[j]):
+    for s in small:
+      for j in range(j, len(big)):
+        if _RecursiveCompare(s, big[j]):
           j += 1
           break
       else:
@@ -219,7 +219,7 @@ def DictContains(small, big):
     small: The sub-dict to search for.
     big: The dict to search in.
   """
-  for k, v in small.iteritems():
+  for k, v in small.items():
     if k not in big or not _RecursiveCompare(v, big[k]):
       return False
   return True
@@ -491,7 +491,7 @@ class PartialMock(object):
       if self.__saved_env__ is not None:
         osutils.SetEnvironment(self.__saved_env__)
 
-      tasks = ([self.PreStop] + [p.stop for p in self.patchers.itervalues()] +
+      tasks = ([self.PreStop] + [p.stop for p in self.patchers.values()] +
                [p.stop for p in self.external_patchers])
       if self._tempdir_obj is not None:
         tasks += [self._tempdir_obj.Cleanup]
@@ -584,7 +584,8 @@ class PartialCmdMock(PartialMock):
       mock_attr: Which attributes's mock is being referenced.
     """
     for call_args, call_kwargs in self.patched[mock_attr].call_args_list:
-      if (ListContains(args, call_args[cmd_arg_index]) and
+      if (ListContains(args, call_args[cmd_arg_index],
+                       strict=isinstance(args, str)) and
           DictContains(kwargs, call_kwargs)):
         return True
     return False

@@ -59,13 +59,12 @@ class MockObserver : public PluginVmImageManager::Observer {
   MOCK_METHOD3(OnDownloadProgressUpdated,
                void(uint64_t bytes_downloaded,
                     int64_t content_length,
-                    int64_t download_bytes_per_sec));
+                    base::TimeDelta elapsed_time));
   MOCK_METHOD0(OnDownloadCompleted, void());
   MOCK_METHOD0(OnDownloadCancelled, void());
   MOCK_METHOD0(OnDownloadFailed, void());
   MOCK_METHOD2(OnImportProgressUpdated,
-               void(uint64_t percent_completed,
-                    int64_t import_percent_per_second));
+               void(int percent_completed, base::TimeDelta elapsed_time));
   MOCK_METHOD0(OnImported, void());
   MOCK_METHOD0(OnImportCancelled, void());
   MOCK_METHOD0(OnImportFailed, void());
@@ -73,30 +72,13 @@ class MockObserver : public PluginVmImageManager::Observer {
 
 class PluginVmImageManagerTest : public testing::Test {
  public:
-  PluginVmImageManagerTest()
-      : download_service_(new download::test::TestDownloadService()) {
-    chromeos::DBusThreadManager::Initialize();
-    fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
-        chromeos::DBusThreadManager::Get()->GetConciergeClient());
-  }
-
-  ~PluginVmImageManagerTest() override {
-    chromeos::DBusThreadManager::Shutdown();
-  }
+  PluginVmImageManagerTest() = default;
+  ~PluginVmImageManagerTest() override = default;
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  std::unique_ptr<PluginVmTestHelper> plugin_vm_test_helper_;
-  std::unique_ptr<TestingProfile> profile_;
-  PluginVmImageManager* manager_;
-  download::test::TestDownloadService* download_service_;
-  std::unique_ptr<MockObserver> observer_;
-  base::FilePath fake_downloaded_plugin_vm_image_archive_;
-  std::unique_ptr<base::HistogramTester> histogram_tester_;
-  // Owned by chromeos::DBusThreadManager
-  chromeos::FakeConciergeClient* fake_concierge_client_;
-
   void SetUp() override {
+    chromeos::DBusThreadManager::Initialize();
+
     ASSERT_TRUE(profiles_dir_.CreateUniqueTempDir());
     CreateProfile();
     plugin_vm_test_helper_ =
@@ -106,22 +88,31 @@ class PluginVmImageManagerTest : public testing::Test {
     SetPluginVmImagePref(kUrl, kHash);
 
     manager_ = PluginVmImageManagerFactory::GetForProfile(profile_.get());
+    download_service_ = std::make_unique<download::test::TestDownloadService>();
     download_service_->SetIsReady(true);
     download_service_->SetHash256(kHash);
-    download_service_->set_client(
-        new PluginVmImageDownloadClient(profile_.get()));
-    manager_->SetDownloadServiceForTesting(download_service_);
+    client_ = std::make_unique<PluginVmImageDownloadClient>(profile_.get());
+    download_service_->set_client(client_.get());
+    manager_->SetDownloadServiceForTesting(download_service_.get());
     observer_ = std::make_unique<MockObserver>();
     manager_->SetObserver(observer_.get());
 
     fake_downloaded_plugin_vm_image_archive_ = CreateZipFile();
-
     histogram_tester_ = std::make_unique<base::HistogramTester>();
+    fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
+        chromeos::DBusThreadManager::Get()->GetConciergeClient());
   }
 
   void TearDown() override {
+    histogram_tester_.reset();
+    observer_.reset();
+    download_service_.reset();
+    client_.reset();
+    plugin_vm_test_helper_.reset();
     profile_.reset();
     observer_.reset();
+
+    chromeos::DBusThreadManager::Shutdown();
   }
 
   void SetPluginVmImagePref(std::string url, std::string hash) {
@@ -154,9 +145,18 @@ class PluginVmImageManagerTest : public testing::Test {
     return zip_file_path;
   }
 
- private:
-  base::ScopedTempDir profiles_dir_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<PluginVmTestHelper> plugin_vm_test_helper_;
+  PluginVmImageManager* manager_;
+  std::unique_ptr<download::test::TestDownloadService> download_service_;
+  std::unique_ptr<MockObserver> observer_;
+  base::FilePath fake_downloaded_plugin_vm_image_archive_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
+  // Owned by chromeos::DBusThreadManager
+  chromeos::FakeConciergeClient* fake_concierge_client_;
 
+ private:
   void CreateProfile() {
     TestingProfile::Builder profile_builder;
     profile_builder.SetProfileName(kProfileName);
@@ -167,6 +167,9 @@ class PluginVmImageManagerTest : public testing::Test {
     profile_builder.SetPrefService(std::move(pref_service));
     profile_ = profile_builder.Build();
   }
+
+  base::ScopedTempDir profiles_dir_;
+  std::unique_ptr<PluginVmImageDownloadClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginVmImageManagerTest);
 };

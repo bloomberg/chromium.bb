@@ -58,6 +58,9 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
 
   void UpdateSharedImage(const gpu::SyncToken& sync_token,
                          const gpu::Mailbox& mailbox) override;
+  void UpdateSharedImage(const gpu::SyncToken& sync_token,
+                         std::unique_ptr<gfx::GpuFence> acquire_fence,
+                         const gpu::Mailbox& mailbox) override;
 
   void DestroySharedImage(const gpu::SyncToken& sync_token,
                           const gpu::Mailbox& mailbox) override;
@@ -74,6 +77,8 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
 
   gpu::SyncToken GenVerifiedSyncToken() override;
   gpu::SyncToken GenUnverifiedSyncToken() override;
+
+  void Flush() override;
 
   size_t shared_image_count() const { return shared_images_.size(); }
   const gfx::Size& MostRecentSize() const { return most_recent_size_; }
@@ -113,6 +118,11 @@ class TestContextProvider
   explicit TestContextProvider(
       std::unique_ptr<TestContextSupport> support,
       std::unique_ptr<TestGLES2Interface> gl,
+      bool support_locking);
+  explicit TestContextProvider(
+      std::unique_ptr<TestContextSupport> support,
+      std::unique_ptr<TestGLES2Interface> gl,
+      std::unique_ptr<gpu::raster::RasterInterface> raster,
       bool support_locking);
 
   // ContextProvider / RasterContextProvider implementation.
@@ -173,7 +183,7 @@ class TestContextProvider
 
   base::ObserverList<ContextLostObserver>::Unchecked observers_;
 
-  base::WeakPtrFactory<TestContextProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<TestContextProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestContextProvider);
 };

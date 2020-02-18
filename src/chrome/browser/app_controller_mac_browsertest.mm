@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -471,6 +472,8 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
 class AppControllerOpenShortcutBrowserTest : public InProcessBrowserTest {
  protected:
   AppControllerOpenShortcutBrowserTest() {
+    scoped_feature_list_.InitWithFeatures({nux::kNuxOnboardingForceEnabled},
+                                          {});
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -510,6 +513,9 @@ class AppControllerOpenShortcutBrowserTest : public InProcessBrowserTest {
     // append about:blank as default url.
     command_line->AppendArg(chrome::kChromeUINewTabURL);
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(AppControllerOpenShortcutBrowserTest,
@@ -701,12 +707,12 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
   // Create profile 2.
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath path2 = profile_manager->GenerateNextProfileDirectoryPath();
-  Profile* profile2 =
-      Profile::CreateProfile(path2, NULL, Profile::CREATE_MODE_SYNCHRONOUS)
-          .release();
-  profile_manager->RegisterTestingProfile(profile2, false, true);
+  std::unique_ptr<Profile> profile2 =
+      Profile::CreateProfile(path2, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
+  Profile* profile2_ptr = profile2.get();
+  profile_manager->RegisterTestingProfile(std::move(profile2), false, true);
   bookmarks::test::WaitForBookmarkModelToLoad(
-      BookmarkModelFactory::GetForBrowserContext(profile2));
+      BookmarkModelFactory::GetForBrowserContext(profile2_ptr));
 
   // Switch to profile 1, create bookmark 1 and force the menu to build.
   [ac windowChangedToProfile:profile1];
@@ -717,7 +723,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
   [[profile1_submenu delegate] menuNeedsUpdate:profile1_submenu];
 
   // Switch to profile 2, create bookmark 2 and force the menu to build.
-  [ac windowChangedToProfile:profile2];
+  [ac windowChangedToProfile:profile2_ptr];
   [ac bookmarkMenuBridge]->GetBookmarkModel()->AddURL(
       [ac bookmarkMenuBridge]->GetBookmarkModel()->bookmark_bar_node(),
       0, title2, url2);
@@ -751,15 +757,10 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
 static GURL g_handoff_url;
 
 @interface AppController (BrowserTest)
-- (BOOL)new_shouldUseHandoff;
 - (void)new_passURLToHandoffManager:(const GURL&)handoffURL;
 @end
 
 @implementation AppController (BrowserTest)
-- (BOOL)new_shouldUseHandoff {
-  return YES;
-}
-
 - (void)new_passURLToHandoffManager:(const GURL&)handoffURL {
   g_handoff_url = handoffURL;
 }
@@ -790,16 +791,10 @@ class AppControllerHandoffBrowserTest : public InProcessBrowserTest {
 
   // Swizzle Handoff related implementations.
   void SetUpInProcessBrowserTestFixture() override {
-    // Handoff is only available on OSX 10.10+. This swizzle makes the logic
-    // run on all OSX versions.
-    SEL originalMethod = @selector(shouldUseHandoff);
-    SEL newMethod = @selector(new_shouldUseHandoff);
-    ExchangeSelectors(originalMethod, newMethod);
-
     // This swizzle intercepts the URL that would be sent to the Handoff
     // Manager, and instead puts it into a variable accessible to this test.
-    originalMethod = @selector(passURLToHandoffManager:);
-    newMethod = @selector(new_passURLToHandoffManager:);
+    SEL originalMethod = @selector(passURLToHandoffManager:);
+    SEL newMethod = @selector(new_passURLToHandoffManager:);
     ExchangeSelectors(originalMethod, newMethod);
   }
 

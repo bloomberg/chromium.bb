@@ -5,8 +5,11 @@
 #include <wayland-server.h>
 #include <memory>
 
+#include "base/strings/stringprintf.h"
+#include "base/test/scoped_command_line.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/display_switches.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_screen.h"
@@ -223,9 +226,8 @@ TEST_P(WaylandScreenTest, OutputPropertyChanges) {
   EXPECT_EQ(observer.GetAndClearChangedMetrics(), changed_values);
   EXPECT_EQ(observer.GetDisplay().bounds(), new_rect);
 
-  const float new_scale_value = 2.0f;
-  wl_output_send_scale(output_->resource(), new_scale_value);
-  wl_output_send_done(output_->resource());
+  const int32_t new_scale_value = 2;
+  output_->SetScale(new_scale_value);
 
   Sync();
 
@@ -578,6 +580,48 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
   Sync();
 
   EXPECT_EQ(gfx::Point(1912, 1071), platform_screen_->GetCursorScreenPoint());
+}
+
+// Checks that the surface that backs the window receives new scale of the
+// output that it is in.
+TEST_P(WaylandScreenTest, SetBufferScale) {
+  // Place the window onto the output.
+  wl_surface_send_enter(surface_->resource(), output_->resource());
+
+  // Change the scale of the output.  Windows looking into that output must get
+  // the new scale and update scale of their buffers.  The default UI scale
+  // equals the output scale.
+  const int32_t kTripleScale = 3;
+  EXPECT_CALL(*surface_, SetBufferScale(kTripleScale));
+  output_->SetScale(kTripleScale);
+
+  Sync();
+
+  EXPECT_EQ(window_->buffer_scale(), kTripleScale);
+  EXPECT_EQ(window_->ui_scale_, kTripleScale);
+
+  // Now simulate the --force-device-scale-factor=1.5
+  const float kForcedUIScale = 1.5;
+  base::test::ScopedCommandLine command_line;
+  command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      switches::kForceDeviceScaleFactor,
+      base::StringPrintf("%.1f", kForcedUIScale));
+  display::Display::ResetForceDeviceScaleFactorForTesting();
+
+  // Change the scale of the output again.  Windows must update scale of
+  // their buffers but the UI scale must get the forced value.
+  const int32_t kDoubleScale = 2;
+  // Question ourselves before questioning others!
+  EXPECT_NE(kForcedUIScale, kDoubleScale);
+  EXPECT_CALL(*surface_, SetBufferScale(kDoubleScale));
+  output_->SetScale(kDoubleScale);
+
+  Sync();
+
+  EXPECT_EQ(window_->buffer_scale(), kDoubleScale);
+  EXPECT_EQ(window_->ui_scale_, kForcedUIScale);
+
+  display::Display::ResetForceDeviceScaleFactorForTesting();
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,

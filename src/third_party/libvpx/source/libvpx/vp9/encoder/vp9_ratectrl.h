@@ -198,7 +198,11 @@ typedef struct {
 
   int damped_adjustment[RATE_FACTOR_LEVELS];
   double arf_active_best_quality_adjustment_factor;
-  int arf_active_best_quality_adjustment_window;
+  int arf_increase_active_best_quality;
+
+  int preserve_arf_as_gld;
+  int preserve_next_arf_as_gld;
+  int show_arf_as_gld;
 } RATE_CONTROL;
 
 struct VP9_COMP;

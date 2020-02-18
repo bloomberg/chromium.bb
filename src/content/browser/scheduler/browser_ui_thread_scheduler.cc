@@ -38,14 +38,15 @@ BrowserUIThreadScheduler::BrowserUIThreadScheduler()
     : owned_sequence_manager_(
           base::sequence_manager::CreateUnboundSequenceManager(
               base::sequence_manager::SequenceManager::Settings::Builder()
-                  .SetMessagePumpType(base::MessageLoop::TYPE_UI)
+                  .SetMessagePumpType(base::MessagePump::Type::UI)
                   .Build())),
       task_queues_(BrowserThread::UI,
                    owned_sequence_manager_.get(),
                    owned_sequence_manager_->GetRealTimeDomain()),
-      handle_(task_queues_.CreateHandle()) {
+      handle_(task_queues_.GetHandle()) {
   CommonSequenceManagerSetup(owned_sequence_manager_.get());
-  owned_sequence_manager_->SetDefaultTaskRunner(handle_.GetDefaultTaskRunner());
+  owned_sequence_manager_->SetDefaultTaskRunner(
+      handle_->GetDefaultTaskRunner());
 
   owned_sequence_manager_->BindToMessagePump(
       base::MessagePump::Create(base::MessagePump::Type::UI));
@@ -55,7 +56,7 @@ BrowserUIThreadScheduler::BrowserUIThreadScheduler(
     base::sequence_manager::SequenceManager* sequence_manager,
     base::sequence_manager::TimeDomain* time_domain)
     : task_queues_(BrowserThread::UI, sequence_manager, time_domain),
-      handle_(task_queues_.CreateHandle()) {
+      handle_(task_queues_.GetHandle()) {
   CommonSequenceManagerSetup(sequence_manager);
 }
 

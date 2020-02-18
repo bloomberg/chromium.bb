@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_details.h"
+#include "components/policy/core/common/policy_merger.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/schema.h"
@@ -55,60 +56,15 @@ namespace em = enterprise_management;
 namespace policy {
 namespace {
 
-// Maps known policy names to their schema. If a policy is not present, it is
-// not known (either through policy_templates.json or through an extenion's
-// managed storage schema).
-using PolicyToSchemaMap = base::flat_map<std::string, Schema>;
-
-// Utility function that returns a JSON serialization of the given |dict|.
-std::string DictionaryToJSONString(const Value& dict, bool is_pretty_print) {
-  std::string json_string;
-  base::JSONWriter::WriteWithOptions(
-      dict, (is_pretty_print ? base::JSONWriter::OPTIONS_PRETTY_PRINT : 0),
-      &json_string);
-  return json_string;
-}
-
-// Returns a copy of |value|. If necessary (which is specified by
-// |convert_values|), converts some values to a representation that
-// i18n_template.js will display.
-Value CopyAndMaybeConvert(const Value& value,
-                          bool convert_values,
-                          const base::Optional<Schema>& schema,
-                          bool is_pretty_print) {
-  Value value_copy = value.Clone();
-  if (schema.has_value())
-    schema->MaskSensitiveValues(&value_copy);
-  if (!convert_values)
-    return value_copy;
-  if (value_copy.is_dict())
-    return Value(DictionaryToJSONString(value_copy, is_pretty_print));
-
-  if (!value_copy.is_list()) {
-    return value_copy;
-  }
-
-  Value result(Value::Type::LIST);
-  for (const auto& element : value_copy.GetList()) {
-    if (element.is_dict()) {
-      result.GetList().emplace_back(
-          Value(DictionaryToJSONString(element, is_pretty_print)));
-    } else {
-      result.GetList().push_back(element.Clone());
-    }
-  }
-  return result;
-}
-
-PolicyService* GetPolicyService(content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
+PolicyService* GetPolicyService(Profile* profile) {
   return profile->GetProfilePolicyConnector()->policy_service();
 }
 
 // Returns the Schema for |policy_name| if that policy is known. If the policy
 // is unknown, returns |base::nullopt|.
 base::Optional<Schema> GetKnownPolicySchema(
-    const base::Optional<PolicyToSchemaMap>& known_policy_schemas,
+    const base::Optional<PolicyConversions::PolicyToSchemaMap>&
+        known_policy_schemas,
     const std::string& policy_name) {
   if (!known_policy_schemas.has_value())
     return base::nullopt;
@@ -118,111 +74,9 @@ base::Optional<Schema> GetKnownPolicySchema(
   return known_policy_iterator->second;
 }
 
-// Create a description of the policy |policy_name| using |policy| and the
-// optional errors in |errors| to determine the status of each policy. If
-// |convert_values| is true, converts the values to show them in javascript.
-// |known_policy_schemas| contains |Schema|s for known policies in the same
-// policy namespace of |map|. A policy without an entry in
-// |known_policy_schemas| is an unknown policy.
-Value GetPolicyValue(
-    const std::string& policy_name,
-    const PolicyMap::Entry& policy,
-    PolicyErrorMap* errors,
-    bool convert_values,
-    const base::Optional<PolicyToSchemaMap>& known_policy_schemas,
-    bool is_pretty_print) {
-  base::Optional<Schema> known_policy_schema =
-      GetKnownPolicySchema(known_policy_schemas, policy_name);
-  Value value(Value::Type::DICTIONARY);
-  value.SetKey("value",
-               CopyAndMaybeConvert(*policy.value, convert_values,
-                                   known_policy_schema, is_pretty_print));
-  value.SetKey("scope", Value((policy.scope == POLICY_SCOPE_USER)
-                                  ? "user"
-                                  : ((policy.scope == POLICY_SCOPE_MACHINE)
-                                         ? "machine"
-                                         : "merged")));
-  value.SetKey("level",
-               Value((policy.level == POLICY_LEVEL_RECOMMENDED) ? "recommended"
-                                                                : "mandatory"));
-  value.SetKey("source", Value(kPolicySources[policy.source].name));
-  base::string16 error;
-  if (!known_policy_schema.has_value()) {
-    // We don't know what this policy is. This is an important error to
-    // show.
-    error = l10n_util::GetStringUTF16(IDS_POLICY_UNKNOWN);
-  } else {
-    // The PolicyMap contains errors about retrieving the policy, while the
-    // PolicyErrorMap contains validation errors. Concat the errors.
-    auto policy_map_errors = policy.GetLocalizedErrors(
-        base::BindRepeating(&l10n_util::GetStringUTF16));
-    auto error_map_errors = errors->GetErrors(policy_name);
-    if (policy_map_errors.empty())
-      error = error_map_errors;
-    else if (error_map_errors.empty())
-      error = policy_map_errors;
-    else
-      error =
-          base::JoinString({policy_map_errors, errors->GetErrors(policy_name)},
-                           base::ASCIIToUTF16("\n"));
-  }
-  if (!error.empty())
-    value.SetKey("error", Value(error));
-
-  base::string16 warning = policy.GetLocalizedWarnings(
-      base::BindRepeating(&l10n_util::GetStringUTF16));
-  if (!warning.empty())
-    value.SetKey("warning", Value(warning));
-
-  if (policy.IsBlockedOrIgnored())
-    value.SetBoolKey("ignored", true);
-
-  if (!policy.conflicts.empty()) {
-    Value conflict_values(Value::Type::LIST);
-    for (const auto& conflict : policy.conflicts) {
-      base::Value conflicted_policy_value =
-          GetPolicyValue(policy_name, conflict, errors, convert_values,
-                         known_policy_schemas, is_pretty_print);
-      conflict_values.GetList().push_back(std::move(conflicted_policy_value));
-    }
-
-    value.SetKey("conflicts", std::move(conflict_values));
-  }
-
-  return value;
-}
-
-// Inserts a description of each policy in |map| into |values|, using the
-// optional errors in |errors| to determine the status of each policy. If
-// |convert_values| is true, converts the values to show them in javascript.
-// |known_policy_schemas| contains |Schema|s for known policies in the same
-// policy namespace of |map|. A policy in |map| but without an entry
-// |known_policy_schemas| is an unknown policy.
-void GetPolicyValues(
-    const PolicyMap& map,
-    PolicyErrorMap* errors,
-    bool with_user_policies,
-    bool convert_values,
-    const base::Optional<PolicyToSchemaMap>& known_policy_schemas,
-    Value* values,
-    bool is_pretty_print) {
-  DCHECK(values);
-  for (const auto& entry : map) {
-    const std::string& policy_name = entry.first;
-    const PolicyMap::Entry& policy = entry.second;
-    if (policy.scope == POLICY_SCOPE_USER && !with_user_policies)
-      continue;
-    base::Value value =
-        GetPolicyValue(policy_name, policy, errors, convert_values,
-                       known_policy_schemas, is_pretty_print);
-    values->SetKey(policy_name, std::move(value));
-  }
-}
-
-base::Optional<PolicyToSchemaMap> GetKnownPolicies(
+base::Optional<PolicyConversions::PolicyToSchemaMap> GetKnownPolicies(
     const scoped_refptr<SchemaMap> schema_map,
-    const PolicyNamespace& policy_namespace,
-    bool is_pretty_print) {
+    const PolicyNamespace& policy_namespace) {
   const Schema* schema = schema_map->GetSchema(policy_namespace);
   // There is no policy name verification without valid schema.
   if (!schema || !schema->valid())
@@ -236,22 +90,76 @@ base::Optional<PolicyToSchemaMap> GetKnownPolicies(
   for (auto it = schema->GetPropertiesIterator(); !it.IsAtEnd(); it.Advance()) {
     policy_to_schema_entries.push_back(std::make_pair(it.key(), it.schema()));
   }
-  return PolicyToSchemaMap(std::move(policy_to_schema_entries));
+  return PolicyConversions::PolicyToSchemaMap(
+      std::move(policy_to_schema_entries));
 }
 
-void GetChromePolicyValues(content::BrowserContext* context,
-                           bool keep_user_policies,
-                           bool convert_values,
-                           Value* values,
-                           bool is_pretty_print) {
-  PolicyService* policy_service = GetPolicyService(context);
+}  // namespace
+
+const LocalizedString kPolicySources[POLICY_SOURCE_COUNT] = {
+    {"sourceEnterpriseDefault", IDS_POLICY_SOURCE_ENTERPRISE_DEFAULT},
+    {"cloud", IDS_POLICY_SOURCE_CLOUD},
+    {"sourceActiveDirectory", IDS_POLICY_SOURCE_ACTIVE_DIRECTORY},
+    {"sourceDeviceLocalAccountOverride",
+     IDS_POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE},
+    {"platform", IDS_POLICY_SOURCE_PLATFORM},
+    {"priorityCloud", IDS_POLICY_SOURCE_CLOUD},
+    {"merged", IDS_POLICY_SOURCE_MERGED},
+};
+
+PolicyConversions::PolicyConversions() = default;
+PolicyConversions::~PolicyConversions() = default;
+
+PolicyConversions& PolicyConversions::WithBrowserContext(
+    content::BrowserContext* context) {
+  profile_ = Profile::FromBrowserContext(
+      chrome::GetBrowserContextRedirectedInIncognito(context));
+  return *this;
+}
+
+PolicyConversions& PolicyConversions::EnableConvertTypes(bool enabled) {
+  convert_types_enabled_ = enabled;
+  return *this;
+}
+
+PolicyConversions& PolicyConversions::EnableConvertValues(bool enabled) {
+  convert_values_enabled_ = enabled;
+  return *this;
+}
+
+PolicyConversions& PolicyConversions::EnableDeviceLocalAccountPolicies(
+    bool enabled) {
+  device_local_account_policies_enabled_ = enabled;
+  return *this;
+}
+
+PolicyConversions& PolicyConversions::EnableDeviceInfo(bool enabled) {
+  device_info_enabled_ = enabled;
+  return *this;
+}
+
+PolicyConversions& PolicyConversions::EnablePrettyPrint(bool enabled) {
+  pretty_print_enabled_ = enabled;
+  return *this;
+}
+
+PolicyConversions& PolicyConversions::EnableUserPolicies(bool enabled) {
+  user_policies_enabled_ = enabled;
+  return *this;
+}
+
+std::string PolicyConversions::ToJSON() {
+  return ConvertValueToJSON(ToValue());
+}
+
+Value PolicyConversions::GetChromePolicies() {
+  PolicyService* policy_service = GetPolicyService(profile_);
   PolicyMap map;
 
-  Profile* profile = Profile::FromBrowserContext(context);
-  auto* schema_registry_service = profile->GetPolicySchemaRegistryService();
+  auto* schema_registry_service = profile_->GetPolicySchemaRegistryService();
   if (!schema_registry_service || !schema_registry_service->registry()) {
-    LOG(ERROR) << "Can not dump extension policies, no schema registry service";
-    return;
+    LOG(ERROR) << "Can not dump Chrome policies, no schema registry service";
+    return Value(Value::Type::DICTIONARY);
   }
 
   const scoped_refptr<SchemaMap> schema_map =
@@ -273,25 +181,66 @@ void GetChromePolicyValues(content::BrowserContext* context,
   // Convert dictionary values to strings for display.
   handler_list->PrepareForDisplaying(&map);
 
-  GetPolicyValues(
-      map, &errors, keep_user_policies, convert_values,
-      GetKnownPolicies(schema_map, policy_namespace, is_pretty_print), values,
-      is_pretty_print);
+  return GetPolicyValues(map, &errors,
+                         GetKnownPolicies(schema_map, policy_namespace));
+}
+
+Value PolicyConversions::GetExtensionsPolicies() {
+  Value policies(Value::Type::LIST);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Add extension policy values.
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  if (!registry) {
+    LOG(ERROR) << "Can not dump extension policies, no extension registry";
+    return policies;
+  }
+  auto* schema_registry_service = profile_->GetPolicySchemaRegistryService();
+  if (!schema_registry_service || !schema_registry_service->registry()) {
+    LOG(ERROR) << "Can not dump extension policies, no schema registry service";
+    return policies;
+  }
+  const scoped_refptr<SchemaMap> schema_map =
+      schema_registry_service->registry()->schema_map();
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       registry->enabled_extensions()) {
+    // Skip this extension if it's not an enterprise extension.
+    if (!extension->manifest()->HasPath(
+            extensions::manifest_keys::kStorageManagedSchema)) {
+      continue;
+    }
+
+    PolicyNamespace policy_namespace =
+        PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, extension->id());
+    PolicyErrorMap empty_error_map;
+    Value extension_policies = GetPolicyValues(
+        GetPolicyService(profile_)->GetPolicies(policy_namespace),
+        &empty_error_map, GetKnownPolicies(schema_map, policy_namespace));
+    Value extension_policies_data(Value::Type::DICTIONARY);
+    extension_policies_data.SetKey("name", Value(extension->name()));
+    extension_policies_data.SetKey("id", Value(extension->id()));
+    extension_policies_data.SetKey("policies", std::move(extension_policies));
+    policies.GetList().push_back(std::move(extension_policies_data));
+  }
+#endif
+  return policies;
 }
 
 #if defined(OS_CHROMEOS)
-void GetDeviceLocalAccountPolicies(bool convert_values,
-                                   Value* values,
-                                   bool with_device_data,
-                                   bool is_pretty_print) {
+Value PolicyConversions::GetDeviceLocalAccountPolicies() {
+  Value policies(Value::Type::LIST);
   // DeviceLocalAccount policies are only available for affiliated users and for
   // system logs.
-  if (!with_device_data &&
+  if (!device_local_account_policies_enabled_ &&
       (!user_manager::UserManager::IsInitialized() ||
        !user_manager::UserManager::Get()->GetPrimaryUser() ||
        !user_manager::UserManager::Get()->GetPrimaryUser()->IsAffiliated())) {
-    return;
+    return policies;
   }
+
+  // Always includes user policies for device local account policies.
+  bool current_use_policy_setup = user_policies_enabled_;
+  user_policies_enabled_ = true;
 
   BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -305,7 +254,6 @@ void GetDeviceLocalAccountPolicies(bool convert_values,
       GetDeviceLocalAccounts(chromeos::CrosSettings::Get());
   for (const auto& account : device_local_accounts) {
     std::string user_id = account.user_id;
-    Value current_account_policies(Value::Type::DICTIONARY);
 
     auto* device_local_account_policy_broker =
         device_local_account_policy_service->GetBrokerForUser(user_id);
@@ -341,240 +289,367 @@ void GetDeviceLocalAccountPolicies(bool convert_values,
     // Convert dictionary values to strings for display.
     handler_list->PrepareForDisplaying(&map);
 
-    GetPolicyValues(
-        map, &errors, true, convert_values,
-        GetKnownPolicies(schema_map, policy_namespace, is_pretty_print),
-        &current_account_policies, is_pretty_print);
-
-    if (values->is_list()) {
-      Value current_account_policies_data(Value::Type::DICTIONARY);
-      current_account_policies_data.SetKey("id", Value(user_id));
-      current_account_policies_data.SetKey("user_id", Value(user_id));
-      current_account_policies_data.SetKey("name", Value(user_id));
-      current_account_policies_data.SetKey("policies",
-                                           std::move(current_account_policies));
-      values->GetList().push_back(std::move(current_account_policies_data));
-    } else {
-      values->SetKey(user_id, std::move(current_account_policies));
-    }
+    Value current_account_policies = GetPolicyValues(
+        map, &errors, GetKnownPolicies(schema_map, policy_namespace));
+    Value current_account_policies_data(Value::Type::DICTIONARY);
+    current_account_policies_data.SetKey("id", Value(user_id));
+    current_account_policies_data.SetKey("user_id", Value(user_id));
+    current_account_policies_data.SetKey("name", Value(user_id));
+    current_account_policies_data.SetKey("policies",
+                                         std::move(current_account_policies));
+    policies.GetList().push_back(std::move(current_account_policies_data));
   }
-}
-#endif  // defined(OS_CHROMEOS)
 
-}  // namespace
+  // Reset |user_policies_enabled_| setup.
+  user_policies_enabled_ = current_use_policy_setup;
 
-const LocalizedString kPolicySources[POLICY_SOURCE_COUNT] = {
-    {"sourceEnterpriseDefault", IDS_POLICY_SOURCE_ENTERPRISE_DEFAULT},
-    {"sourceCloud", IDS_POLICY_SOURCE_CLOUD},
-    {"sourceActiveDirectory", IDS_POLICY_SOURCE_ACTIVE_DIRECTORY},
-    {"sourceDeviceLocalAccountOverride",
-     IDS_POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE},
-    {"sourcePlatform", IDS_POLICY_SOURCE_PLATFORM},
-    {"sourcePriorityCloud", IDS_POLICY_SOURCE_CLOUD},
-    {"sourceMerged", IDS_POLICY_SOURCE_MERGED},
-};
-
-Value GetAllPolicyValuesAsArray(content::BrowserContext* context,
-                                bool with_user_policies,
-                                bool convert_values,
-                                bool with_device_data,
-                                bool is_pretty_print) {
-  Value all_policies(Value::Type::LIST);
-  DCHECK(context);
-
-  context = chrome::GetBrowserContextRedirectedInIncognito(context);
-
-  // Add Chrome policy values.
-  Value chrome_policies(Value::Type::DICTIONARY);
-  GetChromePolicyValues(context, with_user_policies, convert_values,
-                        &chrome_policies, is_pretty_print);
-  Value chrome_policies_data(Value::Type::DICTIONARY);
-  chrome_policies_data.SetKey("name", Value("Chrome Policies"));
-  chrome_policies_data.SetKey("policies", std::move(chrome_policies));
-
-  all_policies.GetList().push_back(std::move(chrome_policies_data));
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Add extension policy values.
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(Profile::FromBrowserContext(context));
-  if (!registry) {
-    LOG(ERROR) << "Can not dump extension policies, no extension registry";
-    return all_policies;
-  }
-  Profile* profile = Profile::FromBrowserContext(context);
-  auto* schema_registry_service = profile->GetPolicySchemaRegistryService();
-  if (!schema_registry_service || !schema_registry_service->registry()) {
-    LOG(ERROR) << "Can not dump extension policies, no schema registry service";
-    return all_policies;
-  }
-  const scoped_refptr<SchemaMap> schema_map =
-      schema_registry_service->registry()->schema_map();
-  for (const scoped_refptr<const extensions::Extension>& extension :
-       registry->enabled_extensions()) {
-    // Skip this extension if it's not an enterprise extension.
-    if (!extension->manifest()->HasPath(
-            extensions::manifest_keys::kStorageManagedSchema)) {
-      continue;
-    }
-
-    Value extension_policies(Value::Type::DICTIONARY);
-    PolicyNamespace policy_namespace =
-        PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, extension->id());
-    PolicyErrorMap empty_error_map;
-    GetPolicyValues(
-        GetPolicyService(context)->GetPolicies(policy_namespace),
-        &empty_error_map, with_user_policies, convert_values,
-        GetKnownPolicies(schema_map, policy_namespace, is_pretty_print),
-        &extension_policies, is_pretty_print);
-    Value extension_policies_data(Value::Type::DICTIONARY);
-    extension_policies_data.SetKey("name", Value(extension->name()));
-    extension_policies_data.SetKey("id", Value(extension->id()));
-    extension_policies_data.SetKey("policies", std::move(extension_policies));
-    all_policies.GetList().push_back(std::move(extension_policies_data));
-  }
-#endif
-
-#if defined(OS_CHROMEOS)
-  Value device_local_account_policies(Value::Type::DICTIONARY);
-  GetDeviceLocalAccountPolicies(convert_values, &all_policies, with_device_data,
-                                is_pretty_print);
-#endif  // defined(OS_CHROMEOS)
-
-  return all_policies;
+  return policies;
 }
 
-Value GetAllPolicyValuesAsDictionary(content::BrowserContext* context,
-                                     bool with_user_policies,
-                                     bool convert_values,
-                                     bool with_device_data,
-                                     bool is_pretty_print) {
-  Value all_policies(Value::Type::DICTIONARY);
-  if (!context) {
-    LOG(ERROR) << "Can not dump policies, null context";
-    return all_policies;
-  }
-
-  context = chrome::GetBrowserContextRedirectedInIncognito(context);
-
-  // Add Chrome policy values.
-  Value chrome_policies(Value::Type::DICTIONARY);
-  GetChromePolicyValues(context, with_user_policies, convert_values,
-                        &chrome_policies, is_pretty_print);
-  all_policies.SetKey("chromePolicies", std::move(chrome_policies));
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Add extension policy values.
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(Profile::FromBrowserContext(context));
-  if (!registry) {
-    LOG(ERROR) << "Can not dump extension policies, no extension registry";
-    return all_policies;
-  }
-  Value extension_values(Value::Type::DICTIONARY);
-  Profile* profile = Profile::FromBrowserContext(context);
-  auto* schema_registry_service = profile->GetPolicySchemaRegistryService();
-  if (!schema_registry_service || !schema_registry_service->registry()) {
-    LOG(ERROR) << "Can not dump extension policies, no schema registry service";
-    return all_policies;
-  }
-  const scoped_refptr<SchemaMap> schema_map =
-      schema_registry_service->registry()->schema_map();
-  for (const scoped_refptr<const extensions::Extension>& extension :
-       registry->enabled_extensions()) {
-    // Skip this extension if it's not an enterprise extension.
-    if (!extension->manifest()->HasPath(
-            extensions::manifest_keys::kStorageManagedSchema))
-      continue;
-    Value extension_policies(Value::Type::DICTIONARY);
-    PolicyNamespace policy_namespace =
-        PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, extension->id());
-    PolicyErrorMap empty_error_map;
-    GetPolicyValues(
-        GetPolicyService(context)->GetPolicies(policy_namespace),
-        &empty_error_map, with_user_policies, convert_values,
-        GetKnownPolicies(schema_map, policy_namespace, is_pretty_print),
-        &extension_policies, is_pretty_print);
-    extension_values.SetKey(extension->id(), std::move(extension_policies));
-  }
-  all_policies.SetKey("extensionPolicies", std::move(extension_values));
-#endif
-
-#if defined(OS_CHROMEOS)
-  Value device_local_account_policies(Value::Type::DICTIONARY);
-  GetDeviceLocalAccountPolicies(convert_values, &device_local_account_policies,
-                                with_device_data, is_pretty_print);
-  all_policies.SetKey("deviceLocalAccountPolicies",
-                      std::move(device_local_account_policies));
-#endif  // defined(OS_CHROMEOS)
-
-  return all_policies;
-}
-
-#if defined(OS_CHROMEOS)
-void FillIdentityFieldsFromPolicy(const em::PolicyData* policy,
-                                  Value* policy_dump) {
-  if (!policy) {
-    return;
-  }
-  DCHECK(policy_dump);
-
-  if (policy->has_device_id())
-    policy_dump->SetKey("client_id", Value(policy->device_id()));
-
-  if (policy->has_annotated_location())
-    policy_dump->SetKey("device_location", Value(policy->annotated_location()));
-
-  if (policy->has_annotated_asset_id())
-    policy_dump->SetKey("asset_id", Value(policy->annotated_asset_id()));
-
-  if (policy->has_display_domain())
-    policy_dump->SetKey("display_domain", Value(policy->display_domain()));
-
-  if (policy->has_machine_name())
-    policy_dump->SetKey("machine_name", Value(policy->machine_name()));
-}
-#endif  // defined(OS_CHROMEOS)
-
-void FillIdentityFields(Value* policy_dump) {
-#if defined(OS_CHROMEOS)
-  DCHECK(policy_dump);
+Value PolicyConversions::GetIdentityFields() {
+  Value identity_fields(Value::Type::DICTIONARY);
+  if (!device_info_enabled_)
+    return Value();
   BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (!connector) {
     LOG(ERROR) << "Can not dump identity fields, no policy connector";
-    return;
+    return Value();
   }
   if (connector->IsEnterpriseManaged()) {
-    policy_dump->SetKey("enrollment_domain",
-                        Value(connector->GetEnterpriseEnrollmentDomain()));
+    identity_fields.SetKey("enrollment_domain",
+                           Value(connector->GetEnterpriseEnrollmentDomain()));
 
     if (connector->IsActiveDirectoryManaged()) {
-      FillIdentityFieldsFromPolicy(
-          connector->GetDeviceActiveDirectoryPolicyManager()->store()->policy(),
-          policy_dump);
+      Value active_directory_info = GetIdentityFieldsFromPolicy(
+          connector->GetDeviceActiveDirectoryPolicyManager()
+              ->store()
+              ->policy());
+      identity_fields.MergeDictionary(&active_directory_info);
     }
 
     if (connector->IsCloudManaged()) {
-      FillIdentityFieldsFromPolicy(
-          connector->GetDeviceCloudPolicyManager()->device_store()->policy(),
-          policy_dump);
+      Value cloud_info = GetIdentityFieldsFromPolicy(
+          connector->GetDeviceCloudPolicyManager()->device_store()->policy());
+      identity_fields.MergeDictionary(&cloud_info);
     }
   }
+  return identity_fields;
+}
+#endif
+
+std::string PolicyConversions::ConvertValueToJSON(const Value& value) {
+  std::string json_string;
+  base::JSONWriter::WriteWithOptions(
+      value,
+      (pretty_print_enabled_ ? base::JSONWriter::OPTIONS_PRETTY_PRINT : 0),
+      &json_string);
+  return json_string;
+}
+
+Value PolicyConversions::CopyAndMaybeConvert(
+    const Value& value,
+    const base::Optional<Schema>& schema) {
+  Value value_copy = value.Clone();
+  if (schema.has_value())
+    schema->MaskSensitiveValues(&value_copy);
+  if (!convert_values_enabled_)
+    return value_copy;
+  if (value_copy.is_dict())
+    return Value(ConvertValueToJSON(value_copy));
+
+  if (!value_copy.is_list()) {
+    return value_copy;
+  }
+
+  Value result(Value::Type::LIST);
+  for (const auto& element : value_copy.GetList()) {
+    if (element.is_dict()) {
+      result.GetList().emplace_back(Value(ConvertValueToJSON(element)));
+    } else {
+      result.GetList().push_back(element.Clone());
+    }
+  }
+  return result;
+}
+
+Value PolicyConversions::GetPolicyValue(
+    const std::string& policy_name,
+    const PolicyMap::Entry& policy,
+    PolicyErrorMap* errors,
+    const base::Optional<PolicyToSchemaMap>& known_policy_schemas) {
+  base::Optional<Schema> known_policy_schema =
+      GetKnownPolicySchema(known_policy_schemas, policy_name);
+  Value value(Value::Type::DICTIONARY);
+  value.SetKey("value",
+               CopyAndMaybeConvert(*policy.value, known_policy_schema));
+  if (convert_types_enabled_) {
+    value.SetKey(
+        "scope",
+        Value((policy.scope == POLICY_SCOPE_USER) ? "user" : "machine"));
+    value.SetKey("level", Value(Value((policy.level == POLICY_LEVEL_RECOMMENDED)
+                                          ? "recommended"
+                                          : "mandatory")));
+    value.SetKey("source", Value(kPolicySources[policy.source].name));
+  } else {
+    value.SetKey("scope", Value(policy.scope));
+    value.SetKey("level", Value(policy.level));
+    value.SetKey("source", Value(policy.source));
+  }
+
+  // Policies that have at least one source that could not be merged will
+  // still be treated as conflicted policies while policies that had all of
+  // their sources merged will not be considered conflicted anymore. Some
+  // policies have only one source but still appear as POLICY_SOURCE_MERGED
+  // because all policies that are listed as policies that should be merged are
+  // treated as merged regardless the number of sources. Those policies will not
+  // be treated as conflicted policies.
+  if (policy.source == POLICY_SOURCE_MERGED) {
+    bool policy_has_unmerged_source = false;
+    for (const auto& conflict : policy.conflicts) {
+      if (PolicyMerger::ConflictCanBeMerged(conflict, policy))
+        continue;
+      policy_has_unmerged_source = true;
+      break;
+    }
+    value.SetKey("allSourcesMerged", Value(policy.conflicts.size() <= 1 ||
+                                           !policy_has_unmerged_source));
+  }
+
+  base::string16 error;
+  if (!known_policy_schema.has_value()) {
+    // We don't know what this policy is. This is an important error to
+    // show.
+    error = l10n_util::GetStringUTF16(IDS_POLICY_UNKNOWN);
+  } else {
+    // The PolicyMap contains errors about retrieving the policy, while the
+    // PolicyErrorMap contains validation errors. Concat the errors.
+    auto policy_map_errors = policy.GetLocalizedErrors(
+        base::BindRepeating(&l10n_util::GetStringUTF16));
+    auto error_map_errors = errors->GetErrors(policy_name);
+    if (policy_map_errors.empty())
+      error = error_map_errors;
+    else if (error_map_errors.empty())
+      error = policy_map_errors;
+    else
+      error =
+          base::JoinString({policy_map_errors, errors->GetErrors(policy_name)},
+                           base::ASCIIToUTF16("\n"));
+  }
+  if (!error.empty())
+    value.SetKey("error", Value(error));
+
+  base::string16 warning = policy.GetLocalizedWarnings(
+      base::BindRepeating(&l10n_util::GetStringUTF16));
+  if (!warning.empty())
+    value.SetKey("warning", Value(warning));
+
+  if (policy.IsBlockedOrIgnored())
+    value.SetBoolKey("ignored", true);
+
+  if (!policy.conflicts.empty()) {
+    Value conflict_values(Value::Type::LIST);
+    for (const auto& conflict : policy.conflicts) {
+      base::Value conflicted_policy_value =
+          GetPolicyValue(policy_name, conflict, errors, known_policy_schemas);
+      conflict_values.GetList().push_back(std::move(conflicted_policy_value));
+    }
+
+    value.SetKey("conflicts", std::move(conflict_values));
+  }
+
+  return value;
+}
+
+Value PolicyConversions::GetPolicyValues(
+    const PolicyMap& map,
+    PolicyErrorMap* errors,
+    const base::Optional<PolicyToSchemaMap>& known_policy_schemas) {
+  base::Value values(base::Value::Type::DICTIONARY);
+  for (const auto& entry : map) {
+    const std::string& policy_name = entry.first;
+    const PolicyMap::Entry& policy = entry.second;
+    if (policy.scope == POLICY_SCOPE_USER && !user_policies_enabled_)
+      continue;
+    base::Value value =
+        GetPolicyValue(policy_name, policy, errors, known_policy_schemas);
+    values.SetKey(policy_name, std::move(value));
+  }
+  return values;
+}
+
+#if defined(OS_CHROMEOS)
+Value PolicyConversions::GetIdentityFieldsFromPolicy(
+    const em::PolicyData* policy) {
+  Value identity_fields(Value::Type::DICTIONARY);
+  if (!policy) {
+    return identity_fields;
+  }
+
+  if (policy->has_device_id())
+    identity_fields.SetKey("client_id", Value(policy->device_id()));
+
+  if (policy->has_annotated_location()) {
+    identity_fields.SetKey("device_location",
+                           Value(policy->annotated_location()));
+  }
+
+  if (policy->has_annotated_asset_id())
+    identity_fields.SetKey("asset_id", Value(policy->annotated_asset_id()));
+
+  if (policy->has_display_domain())
+    identity_fields.SetKey("display_domain", Value(policy->display_domain()));
+
+  if (policy->has_machine_name())
+    identity_fields.SetKey("machine_name", Value(policy->machine_name()));
+
+  return identity_fields;
+}
+
 #endif  // defined(OS_CHROMEOS)
+
+/**
+ * DictionaryPolicyConversions
+ */
+
+DictionaryPolicyConversions::DictionaryPolicyConversions() = default;
+DictionaryPolicyConversions::~DictionaryPolicyConversions() = default;
+
+Value DictionaryPolicyConversions::ToValue() {
+  Value all_policies(Value::Type::DICTIONARY);
+
+  if (profile()) {
+    all_policies.SetKey("chromePolicies", GetChromePolicies());
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    all_policies.SetKey("extensionPolicies", GetExtensionsPolicies());
+#endif
+  }
+
+#if defined(OS_CHROMEOS)
+  all_policies.SetKey("deviceLocalAccountPolicies",
+                      GetDeviceLocalAccountPolicies());
+  Value identity_fields = GetIdentityFields();
+  if (!identity_fields.is_none())
+    all_policies.MergeDictionary(&identity_fields);
+#endif  // defined(OS_CHROMEOS)
+  return all_policies;
+}
+
+#if defined(OS_CHROMEOS)
+Value DictionaryPolicyConversions::GetDeviceLocalAccountPolicies() {
+  Value policies = PolicyConversions::GetDeviceLocalAccountPolicies();
+  Value device_values(Value::Type::DICTIONARY);
+  for (auto&& policy : policies.GetList()) {
+    device_values.SetKey(policy.FindKey("id")->GetString(),
+                         std::move(*policy.FindKey("policies")));
+  }
+  return device_values;
+}
+#endif
+
+Value DictionaryPolicyConversions::GetExtensionsPolicies() {
+  Value policies = PolicyConversions::GetExtensionsPolicies();
+  Value extension_values(Value::Type::DICTIONARY);
+  for (auto&& policy : policies.GetList()) {
+    extension_values.SetKey(policy.FindKey("id")->GetString(),
+                            std::move(*policy.FindKey("policies")));
+  }
+  return extension_values;
+}
+
+/**
+ * ArrayPolicyConversions
+ */
+
+ArrayPolicyConversions::ArrayPolicyConversions() = default;
+ArrayPolicyConversions::~ArrayPolicyConversions() = default;
+
+Value ArrayPolicyConversions::ToValue() {
+  Value all_policies(Value::Type::LIST);
+
+  if (profile()) {
+    all_policies.GetList().push_back(GetChromePolicies());
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    Value extension_policies = GetExtensionsPolicies();
+    all_policies.GetList().insert(
+        all_policies.GetList().end(),
+        std::make_move_iterator(extension_policies.GetList().begin()),
+        std::make_move_iterator(extension_policies.GetList().end()));
+#endif
+  }
+
+#if defined(OS_CHROMEOS)
+  Value device_policeis = GetDeviceLocalAccountPolicies();
+  all_policies.GetList().insert(
+      all_policies.GetList().end(),
+      std::make_move_iterator(device_policeis.GetList().begin()),
+      std::make_move_iterator(device_policeis.GetList().end()));
+
+  Value identity_fields = GetIdentityFields();
+  if (!identity_fields.is_none())
+    all_policies.GetList().push_back(std::move(identity_fields));
+#endif  // defined(OS_CHROMEOS)
+
+  return all_policies;
+}
+
+Value ArrayPolicyConversions::GetChromePolicies() {
+  Value chrome_policies_data(Value::Type::DICTIONARY);
+  chrome_policies_data.SetKey("name", Value("Chrome Policies"));
+  chrome_policies_data.SetKey("policies",
+                              PolicyConversions::GetChromePolicies());
+  return chrome_policies_data;
+}
+
+base::Value GetAllPolicyValuesAsArray(content::BrowserContext* context,
+                                      bool with_user_policies,
+                                      bool convert_values,
+                                      bool with_device_data,
+                                      bool is_pretty_print,
+                                      bool convert_types) {
+  return ArrayPolicyConversions()
+      .WithBrowserContext(context)
+      .EnableConvertTypes(convert_types)
+      .EnableConvertValues(convert_values)
+      .EnableDeviceLocalAccountPolicies(with_device_data)
+      .EnableDeviceInfo(false)
+      .EnablePrettyPrint(is_pretty_print)
+      .EnableUserPolicies(with_user_policies)
+      .ToValue();
+}
+
+base::Value GetAllPolicyValuesAsDictionary(content::BrowserContext* context,
+                                           bool with_user_policies,
+                                           bool convert_values,
+                                           bool with_device_data,
+                                           bool is_pretty_print,
+                                           bool convert_types) {
+  return DictionaryPolicyConversions()
+      .WithBrowserContext(context)
+      .EnableConvertTypes(convert_types)
+      .EnableConvertValues(convert_values)
+      .EnableDeviceLocalAccountPolicies(with_device_data)
+      .EnableDeviceInfo(with_device_data)
+      .EnablePrettyPrint(is_pretty_print)
+      .EnableUserPolicies(with_user_policies)
+      .ToValue();
 }
 
 std::string GetAllPolicyValuesAsJSON(content::BrowserContext* context,
                                      bool with_user_policies,
                                      bool with_device_data,
                                      bool is_pretty_print) {
-  Value all_policies = GetAllPolicyValuesAsDictionary(
-      context, with_user_policies, false /* convert_values */, with_device_data,
-      is_pretty_print);
-  if (with_device_data) {
-    FillIdentityFields(&all_policies);
-  }
-  return DictionaryToJSONString(all_policies, is_pretty_print);
+  return DictionaryPolicyConversions()
+      .WithBrowserContext(context)
+      .EnableConvertTypes(true)
+      .EnableConvertValues(false)
+      .EnableDeviceLocalAccountPolicies(with_device_data)
+      .EnableDeviceInfo(with_device_data)
+      .EnablePrettyPrint(is_pretty_print)
+      .EnableUserPolicies(with_user_policies)
+      .ToJSON();
 }
 
 }  // namespace policy

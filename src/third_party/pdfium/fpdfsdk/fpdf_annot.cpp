@@ -245,7 +245,7 @@ FPDFPage_CreateAnnot(FPDF_PAGE page, FPDF_ANNOTATION_SUBTYPE subtype) {
   CPDF_Array* pAnnotList = pPage->GetDict()->GetArrayFor("Annots");
   if (!pAnnotList)
     pAnnotList = pPage->GetDict()->SetNewFor<CPDF_Array>("Annots");
-  pAnnotList->Add(std::move(pDict));
+  pAnnotList->Add(pDict);
 
   // Caller takes ownership.
   return FPDFAnnotationFromCPDFAnnotContext(pNewAnnot.release());
@@ -774,7 +774,7 @@ FPDFAnnot_SetAP(FPDF_ANNOTATION annot,
 
     ByteString newValue = PDF_EncodeText(WideStringFromFPDFWideString(value));
     auto* pNewApStream = pApDict->SetNewFor<CPDF_Stream>(modeKey);
-    pNewApStream->SetData(newValue.AsRawSpan());
+    pNewApStream->SetData(newValue.raw_span());
   } else {
     if (pApDict) {
       if (appearanceMode == FPDF_ANNOT_APPEARANCEMODE_NORMAL)
@@ -948,4 +948,32 @@ FPDFAnnot_GetFontSize(FPDF_FORMHANDLE hHandle,
 
   *value = pWidget->GetFontSize();
   return true;
+}
+
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFAnnot_IsChecked(FPDF_FORMHANDLE hHandle,
+                                                        FPDF_ANNOTATION annot) {
+  CPDFSDK_InteractiveForm* pForm = FormHandleToInteractiveForm(hHandle);
+  if (!pForm)
+    return false;
+
+  CPDF_Dictionary* pAnnotDict = GetAnnotDictFromFPDFAnnotation(annot);
+  if (!pAnnotDict)
+    return false;
+
+  CPDF_InteractiveForm* pPDFForm = pForm->GetInteractiveForm();
+  CPDF_FormField* pFormField = pPDFForm->GetFieldByDict(pAnnotDict);
+  if (!pFormField)
+    return false;
+
+  if (pFormField->GetType() != CPDF_FormField::kCheckBox &&
+      pFormField->GetType() != CPDF_FormField::kRadioButton) {
+    return false;
+  }
+
+  CPDF_FormControl* pFormControl = pPDFForm->GetControlByDict(pAnnotDict);
+  if (!pFormControl)
+    return false;
+
+  CPDFSDK_Widget* pWidget = pForm->GetWidget(pFormControl);
+  return pWidget && pWidget->IsChecked();
 }

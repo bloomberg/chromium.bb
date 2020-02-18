@@ -185,8 +185,8 @@ FileSystemContext::FileSystemContext(
   // Chrome OS the additional backend chromeos::FileSystemBackend handles these
   // types.
   isolated_backend_.reset(new IsolatedFileSystemBackend(
-      !base::ContainsKey(backend_map_, kFileSystemTypeNativeLocal),
-      !base::ContainsKey(backend_map_, kFileSystemTypeNativeForPlatformApp)));
+      !base::Contains(backend_map_, kFileSystemTypeNativeLocal),
+      !base::Contains(backend_map_, kFileSystemTypeNativeForPlatformApp)));
   RegisterBackend(isolated_backend_.get());
 
   if (quota_manager_proxy) {

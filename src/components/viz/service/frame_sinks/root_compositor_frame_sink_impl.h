@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
@@ -48,8 +49,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   void DisableSwapUntilResize(DisableSwapUntilResizeCallback callback) override;
   void Resize(const gfx::Size& size) override;
   void SetDisplayColorMatrix(const gfx::Transform& color_matrix) override;
-  void SetDisplayColorSpace(const gfx::ColorSpace& blending_color_space,
-                            const gfx::ColorSpace& device_color_space) override;
+  void SetDisplayColorSpace(const gfx::ColorSpace& device_color_space,
+                            float sdr_white_level) override;
   void SetOutputIsSecure(bool secure) override;
   void SetDisplayVSyncParameters(base::TimeTicks timebase,
                                  base::TimeDelta interval) override;
@@ -73,7 +74,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       base::Optional<HitTestRegionList> hit_test_region_list,
       uint64_t submit_time) override;
   void DidNotProduceFrame(const BeginFrameAck& begin_frame_ack) override;
-  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+  void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
                                const SharedBitmapId& id) override;
   void DidDeleteSharedBitmap(const SharedBitmapId& id) override;
   void SubmitCompositorFrameSync(

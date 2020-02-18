@@ -1,20 +1,10 @@
-
 package metaclass;
-BEGIN {
-  $metaclass::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $metaclass::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use Carp         'confess';
-use Class::Load  'load_class';
-use Scalar::Util 'blessed';
-use Try::Tiny;
-
+use Module::Runtime 'use_package_optimistically', 'use_module';
 use Class::MOP;
 
 sub import {
@@ -29,16 +19,16 @@ sub import {
     unless ( defined $metaclass ) {
         $metaclass = "Class::MOP::Class";
     } else {
-        load_class($metaclass);
+        use_package_optimistically($metaclass);
     }
 
     ($metaclass->isa('Class::MOP::Class'))
-        || confess "The metaclass ($metaclass) must be derived from Class::MOP::Class";
+        || die use_module('Moose::Exception::MetaclassMustBeDerivedFromClassMOPClass')->new( class_name => $metaclass );
 
     # make sure the custom metaclasses get loaded
     foreach my $key (grep { /_(?:meta)?class$/ } keys %options) {
         unless ( ref( my $class = $options{$key} ) ) {
-            load_class($class)
+            use_package_optimistically($class)
         }
     }
 
@@ -54,9 +44,11 @@ sub import {
 
 # ABSTRACT: a pragma for installing and using Class::MOP metaclasses
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -64,7 +56,7 @@ metaclass - a pragma for installing and using Class::MOP metaclasses
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -107,19 +99,57 @@ is passed to the C<meta_name> option.
 Note that if you are using Moose, you most likely do B<not> want
 to be using this - look into L<Moose::Util::MetaRole> instead.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

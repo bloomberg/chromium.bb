@@ -22,6 +22,7 @@ source_set("base") {
   ]
   public_deps = [
     "../../include/perfetto/base",
+    "../../include/perfetto/ext/base",
   ]
   sources = [
     "file_utils.cc",
@@ -33,12 +34,13 @@ source_set("base") {
     "thread_checker.cc",
     "time.cc",
     "virtual_destructors.cc",
+    "waitable_event.cc",
   ]
 
   # TODO(brucedawson): Enable these for Windows when possible.
   if (!is_win) {
     sources += [
-      "event.cc",
+      "event_fd.cc",
       "pipe.cc",
       "temp_file.cc",
       "thread_task_runner.cc",
@@ -82,10 +84,11 @@ if (is_debug && perfetto_build_standalone && !is_wasm) {
     ]
     deps = [
       "../../gn:default_deps",
-      "../../include/perfetto/base",
+      "../../include/perfetto/ext/base",
+      "../../include/perfetto/ext/base",
     ]
     if (is_linux || is_android) {
-      deps += [ "../../buildtools:libbacktrace" ]
+      deps += [ "../../gn:libbacktrace" ]
     }
     cflags = [ "-Wno-deprecated" ]
   }
@@ -96,7 +99,8 @@ if (perfetto_build_with_ipc_layer) {
   source_set("unix_socket") {
     deps = [
       "../../gn:default_deps",
-      "../../include/perfetto/base",
+      "../../include/perfetto/ext/base",
+      "../../include/perfetto/ext/base",
     ]
     sources = [
       "unix_socket.cc",
@@ -109,7 +113,6 @@ source_set("test_support") {
   deps = [
     ":base",
     "../../gn:default_deps",
-    "../../gn:gtest_deps",
   ]
   sources = [
     "test/utils.cc",
@@ -133,14 +136,16 @@ source_set("unittests") {
     ":base",
     ":test_support",
     "../../gn:default_deps",
-    "../../gn:gtest_deps",
+    "../../gn:gtest_and_gmock",
   ]
 
-  if (is_android && (perfetto_build_standalone || perfetto_build_with_android)) {
+  if (is_android &&
+      (perfetto_build_standalone || perfetto_build_with_android)) {
     deps += [ ":android_task_runner" ]
   }
   sources = [
     "circular_queue_unittest.cc",
+    "copyable_ptr_unittest.cc",
     "no_destructor_unittest.cc",
     "optional_unittest.cc",
     "paged_memory_unittest.cc",
@@ -156,6 +161,7 @@ source_set("unittests") {
   # TODO(brucedawson): Enable these for Windows when possible.
   if (!is_win) {
     sources += [
+      "metatrace_unittest.cc",
       "task_runner_unittest.cc",
       "temp_file_unittest.cc",
       "thread_checker_unittest.cc",

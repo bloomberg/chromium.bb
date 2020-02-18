@@ -55,7 +55,6 @@
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
-#include "third_party/blink/renderer/core/dom/scripted_task_queue_controller.h"
 #include "third_party/blink/renderer/core/dom/sink_document.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
@@ -93,7 +92,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/create_window.h"
-#include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
@@ -116,7 +114,8 @@
 namespace blink {
 
 // Timeout for link preloads to be used after window.onload
-static constexpr TimeDelta kUnusedPreloadTimeout = TimeDelta::FromSeconds(3);
+static constexpr base::TimeDelta kUnusedPreloadTimeout =
+    base::TimeDelta::FromSeconds(3);
 
 static void UpdateSuddenTerminationStatus(
     LocalDOMWindow* dom_window,
@@ -132,14 +131,15 @@ using DOMWindowSet = HeapHashCountedSet<WeakMember<LocalDOMWindow>>;
 
 static DOMWindowSet& WindowsWithUnloadEventListeners() {
   DEFINE_STATIC_LOCAL(Persistent<DOMWindowSet>,
-                      windows_with_unload_event_listeners, (new DOMWindowSet));
+                      windows_with_unload_event_listeners,
+                      (MakeGarbageCollected<DOMWindowSet>()));
   return *windows_with_unload_event_listeners;
 }
 
 static DOMWindowSet& WindowsWithBeforeUnloadEventListeners() {
   DEFINE_STATIC_LOCAL(Persistent<DOMWindowSet>,
                       windows_with_before_unload_event_listeners,
-                      (new DOMWindowSet));
+                      (MakeGarbageCollected<DOMWindowSet>()));
   return *windows_with_before_unload_event_listeners;
 }
 
@@ -554,26 +554,17 @@ void LocalDOMWindow::SchedulePostMessage(
       ->PostTask(FROM_HERE,
                  WTF::Bind(&LocalDOMWindow::DispatchPostMessage,
                            WrapPersistent(this), WrapPersistent(event),
-                           WrapRefCounted(UserGestureIndicator::CurrentToken()),
                            std::move(target), std::move(location)));
   probe::AsyncTaskScheduled(document(), "postMessage", event);
 }
 
 void LocalDOMWindow::DispatchPostMessage(
     MessageEvent* event,
-    scoped_refptr<UserGestureToken> token,
     scoped_refptr<const SecurityOrigin> intended_target_origin,
     std::unique_ptr<SourceLocation> location) {
   probe::AsyncTask async_task(document(), event);
   if (!IsCurrentlyDisplayedInFrame())
     return;
-
-  std::unique_ptr<UserGestureIndicator> gesture_indicator;
-  if (!RuntimeEnabledFeatures::UserActivationV2Enabled() && token &&
-      token->HasGestures() && document()) {
-    gesture_indicator =
-        LocalFrame::NotifyUserActivation(document()->GetFrame(), token.get());
-  }
 
   event->EntangleMessagePorts(document());
 
@@ -993,13 +984,6 @@ ScriptPromise LocalDOMWindow::getComputedAccessibleNode(
   return promise;
 }
 
-ScriptedTaskQueueController* LocalDOMWindow::taskQueue() const {
-  if (Document* document = this->document()) {
-    return ScriptedTaskQueueController::From(*document);
-  }
-  return nullptr;
-}
-
 double LocalDOMWindow::devicePixelRatio() const {
   if (!GetFrame())
     return 0.0;
@@ -1028,12 +1012,16 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
   if (!page)
     return;
 
-  double x = 0.0;
-  double y = 0.0;
-  if (scroll_to_options->hasLeft())
-    x = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left());
-  if (scroll_to_options->hasTop())
-    y = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top());
+  float x = 0.0f;
+  float y = 0.0f;
+  if (scroll_to_options->hasLeft()) {
+    x = ScrollableArea::NormalizeNonFiniteScroll(
+        base::saturated_cast<float>(scroll_to_options->left()));
+  }
+  if (scroll_to_options->hasTop()) {
+    y = ScrollableArea::NormalizeNonFiniteScroll(
+        base::saturated_cast<float>(scroll_to_options->top()));
+  }
 
   PaintLayerScrollableArea* viewport = view->LayoutViewport();
   FloatPoint current_position = viewport->ScrollPosition();
@@ -1084,23 +1072,25 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
     document()->UpdateStyleAndLayout();
   }
 
-  double scaled_x = 0.0;
-  double scaled_y = 0.0;
+  float scaled_x = 0.0f;
+  float scaled_y = 0.0f;
 
   PaintLayerScrollableArea* viewport = view->LayoutViewport();
   ScrollOffset current_offset = viewport->GetScrollOffset();
   scaled_x = current_offset.Width();
   scaled_y = current_offset.Height();
 
-  if (scroll_to_options->hasLeft())
-    scaled_x =
-        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()) *
-        GetFrame()->PageZoomFactor();
+  if (scroll_to_options->hasLeft()) {
+    scaled_x = ScrollableArea::NormalizeNonFiniteScroll(
+                   base::saturated_cast<float>(scroll_to_options->left())) *
+               GetFrame()->PageZoomFactor();
+  }
 
-  if (scroll_to_options->hasTop())
-    scaled_y =
-        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()) *
-        GetFrame()->PageZoomFactor();
+  if (scroll_to_options->hasTop()) {
+    scaled_y = ScrollableArea::NormalizeNonFiniteScroll(
+                   base::saturated_cast<float>(scroll_to_options->top())) *
+               GetFrame()->PageZoomFactor();
+  }
 
   FloatPoint new_scaled_position =
       viewport->ScrollOffsetToPosition(ScrollOffset(scaled_x, scaled_y));
@@ -1229,9 +1219,9 @@ void LocalDOMWindow::cancelPostAnimationFrame(int id) {
 }
 
 void LocalDOMWindow::queueMicrotask(V8VoidFunction* callback) {
-  Microtask::EnqueueMicrotask(WTF::Bind(
-      &V8PersistentCallbackFunction<V8VoidFunction>::InvokeAndReportException,
-      WrapPersistent(ToV8PersistentCallbackFunction(callback)), nullptr));
+  Microtask::EnqueueMicrotask(
+      WTF::Bind(&V8VoidFunction::InvokeAndReportException,
+                WrapPersistent(callback), nullptr));
 }
 
 int LocalDOMWindow::requestIdleCallback(V8IdleRequestCallback* callback,
@@ -1511,7 +1501,8 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
       SecurityPolicy::GenerateReferrer(
           active_document->GetReferrerPolicy(), completed_url,
           window_features.noreferrer ? Referrer::NoReferrer()
-                                     : active_document->OutgoingReferrer()));
+                                     : active_document->OutgoingReferrer()),
+      ResourceRequest::SetHttpReferrerLocation::kLocalDomWindow);
 
   frame_request.GetResourceRequest().SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(GetFrame()));
@@ -1522,18 +1513,6 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
           frame_request, target.IsEmpty() ? "_blank" : target);
   if (!result.frame)
     return nullptr;
-
-  // If the navigation opened a new window, focus is handled during window
-  // creation. If the navigation reused an existing frame in a different page,
-  // FindOrCreateFrameForNavigation() took care of focus. Most navigations don't
-  // refocus when a different frame in the same page is navigated, but
-  // window.open() does. Why?
-  if (result.frame->GetPage() == GetFrame()->GetPage()) {
-    GetFrame()->GetPage()->GetFocusController().SetFocusedFrame(result.frame);
-    // Focusing can fire onblur, so check for detach.
-    if (!result.frame->GetPage())
-      return nullptr;
-  }
 
   if (!completed_url.IsEmpty() || result.new_window)
     result.frame->Navigate(frame_request, WebFrameLoadType::kStandard);

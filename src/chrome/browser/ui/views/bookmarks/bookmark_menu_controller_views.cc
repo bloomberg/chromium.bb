@@ -28,7 +28,7 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
                                                PageNavigator* page_navigator,
                                                views::Widget* parent,
                                                const BookmarkNode* node,
-                                               int start_child_index,
+                                               size_t start_child_index,
                                                bool for_drop)
     : menu_delegate_(new BookmarkMenuDelegate(browser, page_navigator, parent)),
       node_(node),
@@ -163,7 +163,7 @@ views::MenuItemView* BookmarkMenuController::GetSiblingMenu(
     return NULL;
   gfx::Point bookmark_bar_loc(screen_point);
   views::View::ConvertPointFromScreen(bookmark_bar_, &bookmark_bar_loc);
-  int start_index;
+  size_t start_index;
   const BookmarkNode* node = bookmark_bar_->GetNodeForButtonAtModelIndex(
       bookmark_bar_loc, &start_index);
   if (!node || !node->is_folder())

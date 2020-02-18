@@ -6,16 +6,22 @@
 
 #include <limits>
 
-#include "base/files/file_path.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/base_search_provider.h"
+#include "components/omnibox/browser/on_device_head_provider.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
+#include "third_party/metrics_proto/omnibox_input_type.pb.h"
 
 namespace {
 const int kBaseRelevance = 99;
@@ -49,6 +55,9 @@ struct OnDeviceHeadProvider::OnDeviceHeadProviderParams {
   // Indicates whether this request failed or not.
   bool failed = false;
 
+  // The time when this request is created.
+  base::TimeTicks creation_time;
+
   OnDeviceHeadProviderParams(size_t request_id, const AutocompleteInput& input)
       : request_id(request_id), input(input) {}
 
@@ -73,8 +82,14 @@ OnDeviceHeadProvider::OnDeviceHeadProvider(
       listener_(listener),
       serving_(nullptr),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      on_device_search_request_id_(0),
-      weak_ptr_factory_(this) {}
+      on_device_search_request_id_(0) {
+  auto* model_update_listener = OnDeviceModelUpdateListener::GetInstance();
+  if (model_update_listener) {
+    model_update_subscription_ = model_update_listener->AddModelUpdateCallback(
+        base::BindRepeating(&OnDeviceHeadProvider::OnModelUpdate,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
+}
 
 OnDeviceHeadProvider::~OnDeviceHeadProvider() {
   serving_.reset();
@@ -84,7 +99,7 @@ bool OnDeviceHeadProvider::IsOnDeviceHeadProviderAllowed(
     const AutocompleteInput& input) {
   // Only accept asynchronous request.
   if (!input.want_asynchronous_matches() ||
-      input.type() == metrics::OmniboxInputType::INVALID)
+      input.type() == metrics::OmniboxInputType::EMPTY)
     return false;
 
   // Make sure search suggest is enabled and user is not in incognito.
@@ -111,6 +126,9 @@ void OnDeviceHeadProvider::Start(const AutocompleteInput& input,
   if (minimal_changes)
     return;
 
+  // Load the new model first before fulfilling the request if it's available.
+  MaybeResetServingInstanceFromNewModel();
+
   matches_.clear();
   if (!input.text().empty() && serving_) {
     done_ = false;
@@ -119,10 +137,21 @@ void OnDeviceHeadProvider::Start(const AutocompleteInput& input,
     // request.
     std::unique_ptr<OnDeviceHeadProviderParams> params = base::WrapUnique(
         new OnDeviceHeadProviderParams(on_device_search_request_id_, input));
-    task_runner_->PostTask(
+
+    // Since the On Device provider usually runs much faster than online
+    // providers, it will be very likely users will see on device suggestions
+    // first and then the Omnibox UI gets refreshed to show suggestions fetched
+    // from server, if we issue both requests simultaneously.
+    // Therefore, we might want to delay the On Device suggest requests (and
+    // also apply a timeout to search default loader) to mitigate this issue.
+    int delay = base::GetFieldTrialParamByFeatureAsInt(
+        omnibox::kOnDeviceHeadProvider, "DelayOnDeviceHeadSuggestRequestMs", 0);
+    task_runner_->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&OnDeviceHeadProvider::DoSearch,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(params)));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(params)),
+        delay > 0 ? base::TimeDelta::FromMilliseconds(delay)
+                  : base::TimeDelta());
   }
 }
 
@@ -139,10 +168,21 @@ void OnDeviceHeadProvider::Stop(bool clear_cached_results,
   done_ = true;
 }
 
-bool OnDeviceHeadProvider::CreateOnDeviceHeadServingInstance() {
-  // TODO(crbug.com/925072): A placeholder later will be used to create
-  // serving instance from downloaded model.
-  return serving_ ? true : false;
+void OnDeviceHeadProvider::OnModelUpdate(
+    const std::string& new_model_filename) {
+  if (new_model_filename != current_model_filename_ &&
+      new_model_filename_.empty())
+    new_model_filename_ = new_model_filename;
+}
+
+void OnDeviceHeadProvider::MaybeResetServingInstanceFromNewModel() {
+  if (new_model_filename_.empty())
+    return;
+
+  serving_ =
+      OnDeviceHeadServing::Create(new_model_filename_, provider_max_matches_);
+  current_model_filename_ = new_model_filename_;
+  new_model_filename_.clear();
 }
 
 void OnDeviceHeadProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
@@ -156,7 +196,7 @@ void OnDeviceHeadProvider::DoSearch(
     std::unique_ptr<OnDeviceHeadProviderParams> params) {
   if (serving_ && params &&
       params->request_id == on_device_search_request_id_) {
-    // TODO(crbug.com/925072): Add model search time to UMA.
+    params->creation_time = base::TimeTicks::Now();
     base::string16 trimmed_input;
     base::TrimWhitespace(params->input.text(), base::TRIM_ALL, &trimmed_input);
     auto results = serving_->GetSuggestionsForPrefix(
@@ -187,8 +227,15 @@ void OnDeviceHeadProvider::SearchDone(
       client()->GetTemplateURLService();
 
   if (IsDefaultSearchProviderGoogle(template_url_service) && !params->failed) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Omnibox.OnDeviceHeadSuggest.ResultCount",
+                                params->suggestions.size(), 1, 5, 6);
     matches_.clear();
-    int relevance = kBaseRelevance;
+    int relevance =
+        (params->input.type() != metrics::OmniboxInputType::URL)
+            ? base::GetFieldTrialParamByFeatureAsInt(
+                  omnibox::kOnDeviceHeadProvider,
+                  "OnDeviceSuggestMaxScoreForNonUrlInput", kBaseRelevance)
+            : kBaseRelevance;
     for (const auto& item : params->suggestions) {
       matches_.push_back(BaseSearchProvider::CreateOnDeviceSearchSuggestion(
           /*autocomplete_provider=*/this, /*input=*/params->input,
@@ -199,6 +246,8 @@ void OnDeviceHeadProvider::SearchDone(
           template_url_service->search_terms_data(),
           /*accepted_suggestion=*/TemplateURLRef::NO_SUGGESTION_CHOSEN));
     }
+    UMA_HISTOGRAM_TIMES("Omnibox.OnDeviceHeadSuggest.AsyncQueryTime",
+                        base::TimeTicks::Now() - params->creation_time);
   }
 
   done_ = true;

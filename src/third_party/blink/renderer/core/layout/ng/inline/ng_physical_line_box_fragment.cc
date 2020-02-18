@@ -84,7 +84,7 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     PhysicalSize container_physical_size) const {
   WritingMode container_writing_mode = container_style->GetWritingMode();
   TextDirection container_direction = container_style->Direction();
-  PhysicalRect overflow({}, Size());
+  PhysicalRect overflow;
   for (const auto& child : Children()) {
     PhysicalRect child_scroll_overflow =
         child->ScrollableOverflowForPropagation(container);
@@ -116,11 +116,20 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     }
     overflow.Unite(child_scroll_overflow);
   }
+
+  // Make sure we include the inline-size of the line-box in the overflow.
+  PhysicalRect rect;
+  if (IsHorizontalWritingMode(container_writing_mode))
+    rect.size.width = Size().width;
+  else
+    rect.size.height = Size().height;
+  overflow.UniteEvenIfEmpty(rect);
+
   return overflow;
 }
 
 const NGPhysicalFragment* NGPhysicalLineBoxFragment::FirstLogicalLeaf() const {
-  if (Children().IsEmpty())
+  if (Children().empty())
     return nullptr;
   // TODO(xiaochengh): This isn't correct for mixed Bidi. Fix it. Besides, we
   // should compute and store it during layout.
@@ -130,7 +139,7 @@ const NGPhysicalFragment* NGPhysicalLineBoxFragment::FirstLogicalLeaf() const {
              DynamicTo<NGPhysicalContainerFragment>(runner)) {
     if (runner->IsBlockFormattingContextRoot())
       break;
-    if (runner_as_container->Children().IsEmpty())
+    if (runner_as_container->Children().empty())
       break;
     runner = direction == TextDirection::kLtr
                  ? runner_as_container->Children().front().get()
@@ -141,7 +150,7 @@ const NGPhysicalFragment* NGPhysicalLineBoxFragment::FirstLogicalLeaf() const {
 }
 
 const NGPhysicalFragment* NGPhysicalLineBoxFragment::LastLogicalLeaf() const {
-  if (Children().IsEmpty())
+  if (Children().empty())
     return nullptr;
   // TODO(xiaochengh): This isn't correct for mixed Bidi. Fix it. Besides, we
   // should compute and store it during layout.
@@ -151,7 +160,7 @@ const NGPhysicalFragment* NGPhysicalLineBoxFragment::LastLogicalLeaf() const {
              DynamicTo<NGPhysicalContainerFragment>(runner)) {
     if (runner->IsBlockFormattingContextRoot())
       break;
-    if (runner_as_container->Children().IsEmpty())
+    if (runner_as_container->Children().empty())
       break;
     runner = direction == TextDirection::kLtr
                  ? runner_as_container->Children().back().get()

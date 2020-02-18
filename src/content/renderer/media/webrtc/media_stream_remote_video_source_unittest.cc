@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
+#include "third_party/blink/public/web/modules/peerconnection/media_stream_remote_video_source.h"
 
 #include <memory>
 #include <utility>
@@ -15,13 +15,14 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/stream/mock_media_stream_video_sink.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/track_observer.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/webrtc/track_observer.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_sink.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/webrtc/api/video/color_space.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
@@ -34,10 +35,10 @@ ACTION_P(RunClosure, closure) {
 }
 
 class MediaStreamRemoteVideoSourceUnderTest
-    : public MediaStreamRemoteVideoSource {
+    : public blink::MediaStreamRemoteVideoSource {
  public:
   explicit MediaStreamRemoteVideoSourceUnderTest(
-      std::unique_ptr<TrackObserver> observer)
+      std::unique_ptr<blink::TrackObserver> observer)
       : MediaStreamRemoteVideoSource(std::move(observer)) {}
   using MediaStreamRemoteVideoSource::SinkInterfaceForTesting;
   using MediaStreamRemoteVideoSource::StartSourceImpl;
@@ -64,16 +65,16 @@ class MediaStreamRemoteVideoSourceTest
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-    std::unique_ptr<TrackObserver> track_observer;
+    std::unique_ptr<blink::TrackObserver> track_observer;
     mock_factory_->GetWebRtcSignalingThread()->PostTask(
         FROM_HERE,
         base::BindOnce(
             [](scoped_refptr<base::SingleThreadTaskRunner> main_thread,
                webrtc::MediaStreamTrackInterface* webrtc_track,
-               std::unique_ptr<TrackObserver>* track_observer,
+               std::unique_ptr<blink::TrackObserver>* track_observer,
                base::WaitableEvent* waitable_event) {
               track_observer->reset(
-                  new TrackObserver(main_thread, webrtc_track));
+                  new blink::TrackObserver(main_thread, webrtc_track));
               waitable_event->Signal();
             },
             main_thread, base::Unretained(webrtc_video_track_.get()),
@@ -140,10 +141,10 @@ class MediaStreamRemoteVideoSourceTest
 
  private:
   void OnTrackStarted(blink::WebPlatformMediaStreamSource* source,
-                      blink::MediaStreamRequestResult result,
+                      blink::mojom::MediaStreamRequestResult result,
                       const blink::WebString& result_name) {
     ASSERT_EQ(source, remote_source_);
-    if (result == blink::MEDIA_DEVICE_OK)
+    if (result == blink::mojom::MediaStreamRequestResult::OK)
       ++number_of_successful_track_starts_;
     else
       ++number_of_failed_track_starts_;
@@ -164,7 +165,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
   std::unique_ptr<blink::MediaStreamVideoTrack> track(CreateTrack());
   EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
 
-  MockMediaStreamVideoSink sink;
+  blink::MockMediaStreamVideoSink sink;
   track->AddSink(&sink, sink.GetDeliverFrameCB(), false);
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
@@ -190,7 +191,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
 TEST_F(MediaStreamRemoteVideoSourceTest, RemoteTrackStop) {
   std::unique_ptr<blink::MediaStreamVideoTrack> track(CreateTrack());
 
-  MockMediaStreamVideoSink sink;
+  blink::MockMediaStreamVideoSink sink;
   track->AddSink(&sink, sink.GetDeliverFrameCB(), false);
   EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive, sink.state());
   EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
@@ -206,7 +207,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, RemoteTrackStop) {
 
 TEST_F(MediaStreamRemoteVideoSourceTest, PreservesColorSpace) {
   std::unique_ptr<blink::MediaStreamVideoTrack> track(CreateTrack());
-  MockMediaStreamVideoSink sink;
+  blink::MockMediaStreamVideoSink sink;
   track->AddSink(&sink, sink.GetDeliverFrameCB(), false);
 
   base::RunLoop run_loop;

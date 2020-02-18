@@ -300,6 +300,7 @@ jumbo_source_set("headless_shared_sources") {
   deps = [
     ":gen_devtools_client_api",
     ":protocol_sources",
+    ":version_header",
     "//base:base_static",
     "//content/public/common",
     "//content/public/common:service_names",
@@ -357,8 +358,6 @@ jumbo_component("headless_non_renderer") {
     "lib/browser/headless_quota_permission_context.h",
     "lib/browser/headless_request_context_manager.cc",
     "lib/browser/headless_request_context_manager.h",
-    "lib/browser/headless_resource_dispatcher_host_delegate.cc",
-    "lib/browser/headless_resource_dispatcher_host_delegate.h",
     "lib/browser/headless_shell_application_mac.h",
     "lib/browser/headless_shell_application_mac.mm",
     "lib/browser/headless_window_tree_host.h",
@@ -464,7 +463,7 @@ jumbo_component("headless_non_renderer") {
       "//components/crash/core/common:crash_key",
       "//components/security_state/content",
       "//components/services/pdf_compositor/public/cpp:manifest",
-      "//components/services/pdf_compositor/public/interfaces",
+      "//components/services/pdf_compositor/public/mojom",
       "//gin",
       "//third_party/blink/public:blink",
       "//third_party/blink/public:blink_headers",
@@ -484,7 +483,7 @@ jumbo_component("headless_non_renderer") {
         "//components/printing/browser",
         "//components/printing/renderer",
         "//components/services/pdf_compositor/public/cpp:factory",
-        "//components/services/pdf_compositor/public/interfaces",
+        "//components/services/pdf_compositor/public/mojom",
       ]
     }
   }
@@ -611,7 +610,7 @@ test("headless_unittests") {
     "//base/test:test_support",
     "//components/security_state/content",
     "//components/services/pdf_compositor/public/cpp:manifest",
-    "//components/services/pdf_compositor/public/interfaces",
+    "//components/services/pdf_compositor/public/mojom",
     "//content/public/app:both",
     "//content/public/child:child",
     "//content/public/common",
@@ -761,7 +760,7 @@ test("headless_browsertests") {
     "//base",
     "//components/security_state/content",
     "//components/services/pdf_compositor/public/cpp:manifest",
-    "//components/services/pdf_compositor/public/interfaces",
+    "//components/services/pdf_compositor/public/mojom",
     "//content/test:test_support",
     "//services/network/public/mojom",
     "//testing/gmock",
@@ -815,7 +814,7 @@ if (is_win) {
     deps = [
       ":headless_non_renderer",
       "//components/services/pdf_compositor/public/cpp:manifest",
-      "//components/services/pdf_compositor/public/interfaces",
+      "//components/services/pdf_compositor/public/mojom",
       "//content:sandbox_helper_win",
       "//content/public/browser",
       "//content/public/common",
@@ -899,7 +898,7 @@ jumbo_static_library("headless_shell_lib") {
     "//components/os_crypt",
     "//components/security_state/content",
     "//components/services/pdf_compositor/public/cpp:manifest",
-    "//components/services/pdf_compositor/public/interfaces",
+    "//components/services/pdf_compositor/public/mojom",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/child:child",
@@ -942,7 +941,7 @@ if (is_fuchsia) {
   fuchsia_package("headless_shell_pkg") {
     binary = ":headless_shell"
     package_name_override = "headless_shell"
-    sandbox_policy = "//build/config/fuchsia/testing_sandbox_policy"
+    manifest = "//build/config/fuchsia/tests.cmx"
   }
 
   fuchsia_package_runner("headless_shell_fuchsia") {

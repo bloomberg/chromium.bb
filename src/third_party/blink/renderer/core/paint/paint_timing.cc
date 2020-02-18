@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -20,10 +21,10 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
@@ -59,7 +60,7 @@ void PaintTiming::MarkFirstPaint() {
   // markFirstPaint().
   if (!first_paint_.is_null())
     return;
-  SetFirstPaint(CurrentTimeTicks());
+  SetFirstPaint(clock_->NowTicks());
 }
 
 void PaintTiming::MarkFirstContentfulPaint() {
@@ -69,18 +70,18 @@ void PaintTiming::MarkFirstContentfulPaint() {
   // markFirstContentfulPaint().
   if (!first_contentful_paint_.is_null())
     return;
-  SetFirstContentfulPaint(CurrentTimeTicks());
+  SetFirstContentfulPaint(clock_->NowTicks());
 }
 
 void PaintTiming::MarkFirstImagePaint() {
   if (!first_image_paint_.is_null())
     return;
-  first_image_paint_ = CurrentTimeTicks();
+  first_image_paint_ = clock_->NowTicks();
   SetFirstContentfulPaint(first_image_paint_);
   RegisterNotifySwapTime(PaintEvent::kFirstImagePaint);
 }
 
-void PaintTiming::SetFirstMeaningfulPaintCandidate(TimeTicks timestamp) {
+void PaintTiming::SetFirstMeaningfulPaintCandidate(base::TimeTicks timestamp) {
   if (!first_meaningful_paint_candidate_.is_null())
     return;
   first_meaningful_paint_candidate_ = timestamp;
@@ -90,7 +91,7 @@ void PaintTiming::SetFirstMeaningfulPaintCandidate(TimeTicks timestamp) {
 }
 
 void PaintTiming::SetFirstMeaningfulPaint(
-    TimeTicks swap_stamp,
+    base::TimeTicks swap_stamp,
     FirstMeaningfulPaintDetector::HadUserInput had_input) {
   DCHECK(first_meaningful_paint_swap_.is_null());
   DCHECK(!swap_stamp.is_null());
@@ -111,19 +112,6 @@ void PaintTiming::SetFirstMeaningfulPaint(
     first_meaningful_paint_swap_ = swap_stamp;
     NotifyPaintTimingChanged();
   }
-
-  ReportUserInputHistogram(had_input);
-}
-
-void PaintTiming::ReportUserInputHistogram(
-    FirstMeaningfulPaintDetector::HadUserInput had_input) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, had_user_input_histogram,
-                      ("PageLoad.Internal.PaintTiming."
-                       "HadUserInputBeforeFirstMeaningfulPaint",
-                       FirstMeaningfulPaintDetector::kHadUserInputEnumMax));
-
-  if (GetFrame() && GetFrame()->IsMainFrame())
-    had_user_input_histogram.Count(had_input);
 }
 
 void PaintTiming::NotifyPaint(bool is_first_paint,
@@ -138,6 +126,10 @@ void PaintTiming::NotifyPaint(bool is_first_paint,
   fmp_detector_->NotifyPaint();
 }
 
+void PaintTiming::SetTickClockForTesting(const base::TickClock* clock) {
+  clock_ = clock;
+}
+
 void PaintTiming::Trace(blink::Visitor* visitor) {
   visitor->Trace(fmp_detector_);
   Supplement<Document>::Trace(visitor);
@@ -145,7 +137,8 @@ void PaintTiming::Trace(blink::Visitor* visitor) {
 
 PaintTiming::PaintTiming(Document& document)
     : Supplement<Document>(document),
-      fmp_detector_(MakeGarbageCollected<FirstMeaningfulPaintDetector>(this)) {}
+      fmp_detector_(MakeGarbageCollected<FirstMeaningfulPaintDetector>(this)),
+      clock_(base::DefaultTickClock::GetInstance()) {}
 
 LocalFrame* PaintTiming::GetFrame() const {
   return GetSupplementable()->GetFrame();
@@ -156,14 +149,14 @@ void PaintTiming::NotifyPaintTimingChanged() {
     GetSupplementable()->Loader()->DidChangePerformanceTiming();
 }
 
-void PaintTiming::SetFirstPaint(TimeTicks stamp) {
+void PaintTiming::SetFirstPaint(base::TimeTicks stamp) {
   if (!first_paint_.is_null())
     return;
   first_paint_ = stamp;
   RegisterNotifySwapTime(PaintEvent::kFirstPaint);
 }
 
-void PaintTiming::SetFirstContentfulPaint(TimeTicks stamp) {
+void PaintTiming::SetFirstContentfulPaint(base::TimeTicks stamp) {
   if (!first_contentful_paint_.is_null())
     return;
   SetFirstPaint(stamp);
@@ -171,10 +164,10 @@ void PaintTiming::SetFirstContentfulPaint(TimeTicks stamp) {
   RegisterNotifySwapTime(PaintEvent::kFirstContentfulPaint);
 
   // Restart commits that may have been deferred.
-  if (!GetFrame() || !GetFrame()->GetPage())
+  if (!GetFrame() || !GetFrame()->IsMainFrame())
     return;
   GetFrame()->GetPage()->GetChromeClient().StopDeferringCommits(
-      cc::PaintHoldingCommitTrigger::kFirstContentfulPaint);
+      *GetFrame(), cc::PaintHoldingCommitTrigger::kFirstContentfulPaint);
 }
 
 void PaintTiming::RegisterNotifySwapTime(PaintEvent event) {
@@ -226,7 +219,7 @@ void PaintTiming::ReportSwapTime(PaintEvent event,
   }
 }
 
-void PaintTiming::SetFirstPaintSwap(TimeTicks stamp) {
+void PaintTiming::SetFirstPaintSwap(base::TimeTicks stamp) {
   DCHECK(first_paint_swap_.is_null());
   first_paint_swap_ = stamp;
   probe::PaintTiming(GetSupplementable(), "firstPaint",
@@ -237,7 +230,7 @@ void PaintTiming::SetFirstPaintSwap(TimeTicks stamp) {
   NotifyPaintTimingChanged();
 }
 
-void PaintTiming::SetFirstContentfulPaintSwap(TimeTicks stamp) {
+void PaintTiming::SetFirstContentfulPaintSwap(base::TimeTicks stamp) {
   DCHECK(first_contentful_paint_swap_.is_null());
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0("loading", "FirstContentfulPaint",
                                       TRACE_EVENT_SCOPE_GLOBAL, stamp);
@@ -253,7 +246,7 @@ void PaintTiming::SetFirstContentfulPaintSwap(TimeTicks stamp) {
   fmp_detector_->NotifyFirstContentfulPaint(first_contentful_paint_swap_);
 }
 
-void PaintTiming::SetFirstImagePaintSwap(TimeTicks stamp) {
+void PaintTiming::SetFirstImagePaintSwap(base::TimeTicks stamp) {
   DCHECK(first_image_paint_swap_.is_null());
   first_image_paint_swap_ = stamp;
   probe::PaintTiming(GetSupplementable(), "firstImagePaint",

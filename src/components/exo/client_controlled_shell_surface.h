@@ -37,10 +37,9 @@ enum class Orientation { PORTRAIT, LANDSCAPE };
 // controlled by a remote shell client rather than the window manager. The
 // position specified as part of the geometry is relative to the origin of
 // the screen coordinate system.
-class ClientControlledShellSurface
-    : public ShellSurfaceBase,
-      public display::DisplayObserver,
-      public ui::CompositorLockClient {
+class ClientControlledShellSurface : public ShellSurfaceBase,
+                                     public display::DisplayObserver,
+                                     public ui::CompositorLockClient {
  public:
   ClientControlledShellSurface(Surface* surface,
                                bool can_minimize,
@@ -125,10 +124,13 @@ class ClientControlledShellSurface
 
   // Pin/unpin the surface. Pinned surface cannot be switched to
   // other windows unless its explicitly unpinned.
-  void SetPinned(ash::mojom::WindowPinType type);
+  void SetPinned(ash::WindowPinType type);
 
   // Sets the surface to be on top of all other windows.
   void SetAlwaysOnTop(bool always_on_top);
+
+  // Sets the IME to be blocked so that all events are forwarded by Exo.
+  void SetImeBlocked(bool ime_blocked);
 
   // Controls the visibility of the system UI when this surface is active.
   void SetSystemUiVisibility(bool autohide);
@@ -226,7 +228,7 @@ class ClientControlledShellSurface
 
   // A factory callback to create ClientControlledState::Delegate.
   using DelegateFactoryCallback = base::RepeatingCallback<
-      std::unique_ptr<ash::wm::ClientControlledState::Delegate>(void)>;
+      std::unique_ptr<ash::ClientControlledState::Delegate>(void)>;
 
   // Set the factory callback for unit test.
   static void SetClientControlledStateDelegateFactoryForTest(
@@ -245,7 +247,7 @@ class ClientControlledShellSurface
   // Overridden from ShellSurfaceBase:
   void SetWidgetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetShadowBounds() const override;
-  void InitializeWindowState(ash::wm::WindowState* window_state) override;
+  void InitializeWindowState(ash::WindowState* window_state) override;
   float GetScale() const override;
   base::Optional<gfx::Rect> GetWidgetBounds() const override;
   gfx::Point GetSurfaceOrigin() const override;
@@ -271,7 +273,7 @@ class ClientControlledShellSurface
   // crbug.com/765954
   void EnsureCompositorIsLockedForOrientationChange();
 
-  ash::wm::WindowState* GetWindowState();
+  ash::WindowState* GetWindowState();
   ash::NonClientFrameViewAsh* GetFrameView();
   const ash::NonClientFrameViewAsh* GetFrameView() const;
 
@@ -296,9 +298,11 @@ class ClientControlledShellSurface
   Orientation orientation_ = Orientation::LANDSCAPE;
   Orientation expected_orientation_ = Orientation::LANDSCAPE;
 
-  ash::wm::ClientControlledState* client_controlled_state_ = nullptr;
+  ash::ClientControlledState* client_controlled_state_ = nullptr;
 
   ash::WindowStateType pending_window_state_ = ash::WindowStateType::kNormal;
+
+  ash::WindowPinType current_pin_;
 
   bool can_maximize_ = true;
 
@@ -328,6 +332,11 @@ class ClientControlledShellSurface
   // N uses older protocol which expects that server will reparent the window.
   // TODO(oshima): Remove this once all boards are migrated to P or above.
   bool server_reparent_window_ = false;
+
+  bool ignore_bounds_change_request_ = false;
+
+  // True if the window state has changed during the commit.
+  bool state_changed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ClientControlledShellSurface);
 };

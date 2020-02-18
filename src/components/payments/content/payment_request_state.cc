@@ -10,20 +10,24 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/content/service_worker_payment_instrument.h"
+#include "components/payments/core/autofill_card_validation.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_request_data_util.h"
+#include "components/payments/core/payments_experimental_features.h"
 #include "content/public/common/content_features.h"
 
 namespace payments {
@@ -56,17 +60,19 @@ PaymentRequestState::PaymentRequestState(
       selected_instrument_(nullptr),
       number_of_pending_sw_payment_instruments_(0),
       payment_request_delegate_(payment_request_delegate),
-      profile_comparator_(app_locale, *spec),
-      weak_ptr_factory_(this) {
+      profile_comparator_(app_locale, *spec) {
   if (base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps)) {
     DCHECK(web_contents);
     get_all_instruments_finished_ = false;
+    bool may_crawl_for_installable_payment_apps =
+        PaymentsExperimentalFeatures::IsEnabled(
+            features::kAlwaysAllowJustInTimePaymentApp) ||
+        !spec_->supports_basic_card();
+
     ServiceWorkerPaymentAppFactory::GetInstance()->GetAllPaymentApps(
         web_contents,
         payment_request_delegate_->GetPaymentManifestWebDataService(),
-        spec_->method_data(),
-        /*may_crawl_for_installable_payment_apps=*/
-        !spec_->supports_basic_card(),
+        spec_->method_data(), may_crawl_for_installable_payment_apps,
         base::BindOnce(&PaymentRequestState::GetAllPaymentAppsCallback,
                        weak_ptr_factory_.GetWeakPtr(), web_contents,
                        top_level_origin, frame_origin),
@@ -88,9 +94,11 @@ void PaymentRequestState::GetAllPaymentAppsCallback(
     const GURL& top_level_origin,
     const GURL& frame_origin,
     content::PaymentAppProvider::PaymentApps apps,
-    ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps) {
+    ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps,
+    const std::string& error_message) {
   number_of_pending_sw_payment_instruments_ =
       apps.size() + installable_apps.size();
+  get_all_payment_apps_error_ = error_message;
   if (number_of_pending_sw_payment_instruments_ == 0U) {
     FinishedGetAllSWPaymentInstruments();
     return;
@@ -167,6 +175,11 @@ void PaymentRequestState::FinishedGetAllSWPaymentInstruments() {
 void PaymentRequestState::OnPaymentResponseReady(
     mojom::PaymentResponsePtr payment_response) {
   delegate_->OnPaymentResponseAvailable(std::move(payment_response));
+}
+
+void PaymentRequestState::OnPaymentResponseError(
+    const std::string& error_message) {
+  delegate_->OnPaymentResponseError(error_message);
 }
 
 void PaymentRequestState::OnSpecUpdated() {
@@ -262,7 +275,7 @@ void PaymentRequestState::CheckHasEnrolledInstrument(StatusCallback callback) {
 }
 
 void PaymentRequestState::AreRequestedMethodsSupported(
-    StatusCallback callback) {
+    MethodsSupportedCallback callback) {
   if (!get_all_instruments_finished_) {
     are_requested_methods_supported_callback_ = std::move(callback);
     return;
@@ -275,10 +288,11 @@ void PaymentRequestState::AreRequestedMethodsSupported(
 }
 
 void PaymentRequestState::CheckRequestedMethodsSupported(
-    StatusCallback callback) {
+    MethodsSupportedCallback callback) {
   DCHECK(get_all_instruments_finished_);
 
-  std::move(callback).Run(are_requested_methods_supported_);
+  std::move(callback).Run(are_requested_methods_supported_,
+                          get_all_payment_apps_error_);
 }
 
 std::string PaymentRequestState::GetAuthenticatedEmail() const {
@@ -505,8 +519,15 @@ void PaymentRequestState::SelectDefaultShippingAddressAndNotifyObservers() {
       profile_comparator()->IsShippingComplete(shipping_profiles_[0])) {
     selected_shipping_profile_ = shipping_profiles()[0];
   }
-
+  // Record the missing required fields (if any) of the most complete shipping
+  // profile.
+  profile_comparator()->RecordMissingFieldsOfShippingProfile(
+      shipping_profiles().empty() ? nullptr : shipping_profiles()[0]);
   UpdateIsReadyToPayAndNotifyObservers();
+}
+
+base::WeakPtr<PaymentRequestState> PaymentRequestState::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void PaymentRequestState::PopulateProfileCache() {
@@ -569,31 +590,45 @@ void PaymentRequestState::SetDefaultProfileSelections() {
       profile_comparator()->IsContactInfoComplete(contact_profiles_[0]))
     selected_contact_profile_ = contact_profiles()[0];
 
-  // TODO(crbug.com/702063): Change this code to prioritize instruments by use
-  // count and other means, and implement a way to modify this function's return
-  // value.
-  const std::vector<std::unique_ptr<PaymentInstrument>>& instruments =
-      available_instruments();
-  auto first_complete_instrument =
-      std::find_if(instruments.begin(), instruments.end(),
-                   [](const std::unique_ptr<PaymentInstrument>& instrument) {
-                     return instrument->IsCompleteForPayment() &&
-                            instrument->IsExactlyMatchingMerchantRequest();
-                   });
-  selected_instrument_ = first_complete_instrument == instruments.end()
-                             ? nullptr
-                             : first_complete_instrument->get();
+  // Record the missing required fields (if any) of the most complete contact
+  // profile.
+  profile_comparator()->RecordMissingFieldsOfContactProfile(
+      contact_profiles().empty() ? nullptr : contact_profiles()[0]);
+
+  // Sort instruments.
+  PaymentInstrument::SortInstruments(&available_instruments_);
+
+  selected_instrument_ = nullptr;
+  if (!available_instruments_.empty() &&
+      available_instruments_[0]->IsCompleteForPayment() &&
+      available_instruments_[0]->IsExactlyMatchingMerchantRequest()) {
+    selected_instrument_ = available_instruments_[0].get();
+  }
+
+  // Record the missing required payment fields when no complete payment
+  // info exists.
+  if (available_instruments_.empty()) {
+    if (spec_->supports_basic_card()) {
+      // All fields are missing when basic-card is requested but no card exits.
+      base::UmaHistogramSparse("PaymentRequest.MissingPaymentFields",
+                               CREDIT_CARD_EXPIRED | CREDIT_CARD_NO_CARDHOLDER |
+                                   CREDIT_CARD_NO_NUMBER |
+                                   CREDIT_CARD_NO_BILLING_ADDRESS);
+    }
+  } else if (available_instruments_[0]->type() ==
+             PaymentInstrument::Type::AUTOFILL) {
+    // Record the missing fields (if any) of the most complete instrument when
+    // it's autofill based. SW based instruments are always complete.
+    static_cast<const AutofillPaymentInstrument*>(
+        available_instruments_[0].get())
+        ->RecordMissingFieldsForInstrument();
+  }
 
   SelectDefaultShippingAddressAndNotifyObservers();
 
-  bool has_complete_instrument =
-      available_instruments().empty()
-          ? false
-          : available_instruments()[0]->IsCompleteForPayment();
-
   journey_logger_->SetNumberOfSuggestionsShown(
       JourneyLogger::Section::SECTION_PAYMENT_METHOD,
-      available_instruments().size(), has_complete_instrument);
+      available_instruments().size(), selected_instrument_);
 }
 
 void PaymentRequestState::UpdateIsReadyToPayAndNotifyObservers() {

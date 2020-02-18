@@ -328,6 +328,12 @@ void DataReductionProxySettings::SetConfiguredProxies(
   configured_proxies_ = proxies;
 }
 
+void DataReductionProxySettings::SetProxiesForHttp(
+    const std::vector<DataReductionProxyServer>& proxies_for_http) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  proxies_for_http_ = proxies_for_http;
+}
+
 bool DataReductionProxySettings::IsConfiguredDataReductionProxy(
     const net::ProxyServer& proxy_server) const {
   if (proxy_server.is_direct() || !proxy_server.is_valid())
@@ -354,7 +360,6 @@ void DataReductionProxySettings::RemoveDataReductionProxySettingsObserver(
 
 void DataReductionProxySettings::SetCustomProxyConfigClient(
     network::mojom::CustomProxyConfigClientPtrInfo proxy_config_client) {
-  DCHECK(!data_reduction_proxy_service_);
   proxy_config_client_ = std::move(proxy_config_client);
 }
 

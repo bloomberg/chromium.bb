@@ -4,26 +4,6 @@
 
 #include "chrome/common/search/instant_types.h"
 
-RGBAColor::RGBAColor()
-    : r(0),
-      g(0),
-      b(0),
-      a(0) {
-}
-
-RGBAColor::RGBAColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-    : r(r), g(g), b(b), a(a) {}
-
-RGBAColor::~RGBAColor() {
-}
-
-bool RGBAColor::operator==(const RGBAColor& rhs) const {
-  return r == rhs.r &&
-      g == rhs.g &&
-      b == rhs.b &&
-      a == rhs.a;
-}
-
 ThemeBackgroundInfo::ThemeBackgroundInfo()
     : using_default_theme(true),
       using_dark_mode(false),
@@ -31,6 +11,7 @@ ThemeBackgroundInfo::ThemeBackgroundInfo()
       custom_background_attribution_line_1(std::string()),
       custom_background_attribution_line_2(std::string()),
       custom_background_attribution_action_url(std::string()),
+      collection_id(std::string()),
       background_color(),
       text_color(),
       text_color_light(),
@@ -38,7 +19,13 @@ ThemeBackgroundInfo::ThemeBackgroundInfo()
       image_vertical_alignment(THEME_BKGRND_IMAGE_ALIGN_CENTER),
       image_tiling(THEME_BKGRND_IMAGE_NO_REPEAT),
       has_attribution(false),
-      logo_alternate(false) {}
+      logo_alternate(false),
+      has_theme_image(false),
+      theme_name(),
+      color_id(-1),
+      color_dark(),
+      color_light(),
+      color_picked() {}
 
 ThemeBackgroundInfo::~ThemeBackgroundInfo() {
 }
@@ -53,6 +40,7 @@ bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
              rhs.custom_background_attribution_line_2 &&
          custom_background_attribution_action_url ==
              rhs.custom_background_attribution_action_url &&
+         collection_id == rhs.collection_id &&
          background_color == rhs.background_color &&
          text_color == rhs.text_color &&
          text_color_light == rhs.text_color_light && theme_id == rhs.theme_id &&
@@ -60,7 +48,11 @@ bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
          image_vertical_alignment == rhs.image_vertical_alignment &&
          image_tiling == rhs.image_tiling &&
          has_attribution == rhs.has_attribution &&
-         logo_alternate == rhs.logo_alternate;
+         logo_alternate == rhs.logo_alternate &&
+         has_theme_image == rhs.has_theme_image &&
+         theme_name == rhs.theme_name && color_id == rhs.color_id &&
+         color_dark == rhs.color_dark && color_light == rhs.color_light &&
+         color_picked == rhs.color_picked;
 }
 
 InstantMostVisitedItem::InstantMostVisitedItem()
@@ -71,3 +63,13 @@ InstantMostVisitedItem::InstantMostVisitedItem(
     const InstantMostVisitedItem& other) = default;
 
 InstantMostVisitedItem::~InstantMostVisitedItem() {}
+
+InstantMostVisitedInfo::InstantMostVisitedInfo()
+    : items_are_custom_links(false),
+      use_most_visited(false),
+      is_visible(true) {}
+
+InstantMostVisitedInfo::InstantMostVisitedInfo(
+    const InstantMostVisitedInfo& other) = default;
+
+InstantMostVisitedInfo::~InstantMostVisitedInfo() {}

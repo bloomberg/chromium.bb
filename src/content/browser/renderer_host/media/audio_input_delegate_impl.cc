@@ -181,8 +181,7 @@ AudioInputDelegateImpl::AudioInputDelegateImpl(
       controller_(),
       keyboard_mic_registration_(std::move(keyboard_mic_registration)),
       stream_id_(stream_id),
-      render_process_id_(render_process_id),
-      weak_factory_(this) {
+      render_process_id_(render_process_id) {
   // Prevent process backgrounding while audio input is active:
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
@@ -208,7 +207,8 @@ AudioInputDelegateImpl::AudioInputDelegateImpl(
         writer_.get(), user_input_monitor);
     DCHECK(controller_);
     // Only count for captures from desktop media picker dialog.
-    if (device->type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE)
+    if (device->type ==
+        blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE)
       IncrementDesktopCaptureCounter(TAB_AUDIO_CAPTURER_CREATED);
   } else {
     controller_ = media::AudioInputController::Create(
@@ -218,7 +218,8 @@ AudioInputDelegateImpl::AudioInputDelegateImpl(
 
     // Only count for captures from desktop media picker dialog and system loop
     // back audio.
-    if (device->type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
+    if (device->type ==
+            blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE &&
         (media::AudioDeviceDescription::IsLoopbackDevice(device_id))) {
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
     }

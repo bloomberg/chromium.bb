@@ -149,16 +149,6 @@ fuzzer_test("inspector_fuzzer") {
   seed_corpus = "//components/cbor/reader_fuzzer_corpus/"
 }
 
-fuzzer_test("http_structured_header_fuzzer") {
-  sources = [
-    "http_structured_header_fuzzer.cc",
-  ]
-  deps = [
-    "//content/test:test_support",
-  ]
-  seed_corpus = "//content/test/data/fuzzer_corpus/http_structured_header_data/"
-}
-
 fuzzer_test("signed_exchange_certificate_chain_fuzzer") {
   sources = [
     "../../browser/web_package/signed_exchange_certificate_chain_fuzzer.cc",
@@ -269,7 +259,6 @@ fuzzer_test("speech_audio_encoder_fuzzer") {
     "../../browser/speech/audio_encoder.cc",
     "../../browser/speech/audio_encoder.h",
     "../../browser/speech/audio_encoder_fuzzer.cc",
-    "//base/test/fuzzed_data_provider.h",
     "//content/common/content_export.h",
   ]
 

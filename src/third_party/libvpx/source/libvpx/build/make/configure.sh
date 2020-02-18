@@ -507,6 +507,7 @@ AS_SFX    = ${AS_SFX:-.asm}
 EXE_SFX   = ${EXE_SFX}
 VCPROJ_SFX = ${VCPROJ_SFX}
 RTCD_OPTIONS = ${RTCD_OPTIONS}
+LIBYUV_CXXFLAGS = ${LIBYUV_CXXFLAGS}
 EOF
 
   if enabled rvct; then cat >> $1 << EOF
@@ -1238,7 +1239,9 @@ EOF
     ppc64le*)
       link_with_cc=gcc
       setup_gnu_toolchain
-      check_gcc_machine_option "vsx"
+      # Do not enable vsx by default.
+      # https://bugs.chromium.org/p/webm/issues/detail?id=1522
+      enabled vsx || RTCD_OPTIONS="${RTCD_OPTIONS}--disable-vsx "
       if [ -n "${tune_cpu}" ]; then
         case ${tune_cpu} in
           power?)

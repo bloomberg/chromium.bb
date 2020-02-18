@@ -39,12 +39,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
   // off-the-record/incognito context.
   static bool IsAvailable(const AuthenticatorConfig& config);
 
-  // CreateIfAvailable returns a TouchIdAuthenticator if IsAvailable() returns
-  // true and nullptr otherwise.
-  static std::unique_ptr<TouchIdAuthenticator> CreateIfAvailable(
-      AuthenticatorConfig config);
-
-  static std::unique_ptr<TouchIdAuthenticator> CreateForTesting(
+  // CreateIfAvailable returns a TouchIdAuthenticator. Callers must check
+  // IsAvailable() first.
+  static std::unique_ptr<TouchIdAuthenticator> Create(
       AuthenticatorConfig config);
 
   ~TouchIdAuthenticator() override;
@@ -58,6 +55,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
                       MakeCredentialCallback callback) override;
   void GetAssertion(CtapGetAssertionRequest request,
                     GetAssertionCallback callback) override;
+  void GetNextAssertion(GetAssertionCallback callback) override;
   void Cancel() override;
   std::string GetId() const override;
   base::string16 GetDisplayName() const override;
@@ -65,6 +63,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
   base::Optional<FidoTransportProtocol> AuthenticatorTransport() const override;
   bool IsInPairingMode() const override;
   bool IsPaired() const override;
+  bool RequiresBlePairingPin() const override;
   void GetTouch(base::OnceClosure callback) override;
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
 

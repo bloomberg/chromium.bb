@@ -45,10 +45,11 @@
 #include "components/drive/drive_uploader.h"
 #include "components/drive/service/drive_api_service.h"
 #include "components/drive/service/drive_service_interface.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -58,7 +59,6 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/blob/scoped_file.h"
 #include "storage/common/fileapi/file_system_util.h"
@@ -94,7 +94,7 @@ constexpr net::NetworkTrafficAnnotationTag kSyncFileSystemTrafficAnnotation =
 
 std::unique_ptr<drive::DriveServiceInterface>
 SyncEngine::DriveServiceFactory::CreateDriveService(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::SequencedTaskRunner* blocking_task_runner) {
   return std::unique_ptr<
@@ -209,7 +209,7 @@ std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
       drive::DriveNotificationManagerFactory::GetForBrowserContext(context);
   extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(context)->extension_service();
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(context)
@@ -275,11 +275,9 @@ void SyncEngine::Initialize() {
           identity_manager_, url_loader_factory_, drive_task_runner_.get());
 
   device::mojom::WakeLockProviderPtr wake_lock_provider(nullptr);
-  DCHECK(content::ServiceManagerConnection::GetForProcess());
-  auto* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&wake_lock_provider));
+  DCHECK(content::GetSystemConnector());
+  content::GetSystemConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&wake_lock_provider));
 
   std::unique_ptr<drive::DriveUploaderInterface> drive_uploader(
       new drive::DriveUploader(drive_service.get(), drive_task_runner_.get(),
@@ -722,7 +720,7 @@ SyncEngine::SyncEngine(
     TaskLogger* task_logger,
     drive::DriveNotificationManager* notification_manager,
     extensions::ExtensionServiceInterface* extension_service,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<DriveServiceFactory> drive_service_factory,
     leveldb::Env* env_override)
@@ -741,8 +739,7 @@ SyncEngine::SyncEngine(
       has_refresh_token_(false),
       network_available_(false),
       sync_enabled_(false),
-      env_override_(env_override),
-      weak_ptr_factory_(this) {
+      env_override_(env_override) {
   DCHECK(sync_file_system_dir_.IsAbsolute());
   if (notification_manager_)
     notification_manager_->AddObserver(this);

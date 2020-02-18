@@ -26,8 +26,10 @@ enum class WebThreadType {
   kReverbConvolutionBackgroundThread = 13,
   kHRTFDatabaseLoaderThread = 14,
   kTestThread = 15,
+  kAudioEncoderThread = 16,
+  kVideoEncoderThread = 17,
 
-  kCount = 16
+  kCount = 18
 };
 
 BLINK_PLATFORM_EXPORT const char* GetNameForThreadType(WebThreadType);

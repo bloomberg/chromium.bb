@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_WEB_INPUT_EVENT_CONVERSION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_WEB_INPUT_EVENT_CONVERSION_H_
 
-#include <vector>
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
@@ -92,10 +91,10 @@ CORE_EXPORT WebPointerEvent TransformWebPointerEvent(LocalFrameView*,
 
 Vector<WebMouseEvent> CORE_EXPORT
 TransformWebMouseEventVector(LocalFrameView*,
-                             const std::vector<const WebInputEvent*>&);
+                             const WebVector<const WebInputEvent*>&);
 Vector<WebPointerEvent> CORE_EXPORT
 TransformWebPointerEventVector(LocalFrameView*,
-                               const std::vector<const WebInputEvent*>&);
+                               const WebVector<const WebInputEvent*>&);
 
 }  // namespace blink
 

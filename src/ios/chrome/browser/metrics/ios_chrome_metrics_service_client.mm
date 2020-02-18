@@ -27,6 +27,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
+#include "components/metrics/demographic_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -56,16 +57,17 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#include "ios/chrome/browser/metrics/chrome_browser_state_client.h"
 #include "ios/chrome/browser/metrics/ios_chrome_stability_metrics_provider.h"
 #include "ios/chrome/browser/metrics/ios_user_type_metrics_provider.h"
 #include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_status_metrics_provider_delegate.h"
 #include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#include "ios/chrome/browser/tab_parenting_global_observer.h"
+#include "ios/chrome/browser/tabs/tab_parenting_global_observer.h"
 #include "ios/chrome/browser/translate/translate_ranker_metrics_provider.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -89,7 +91,7 @@ void CleanupBrowserMetricsDataFiles() {
   if (base::IsDirectoryEmpty(browser_metrics_upload_dir))
     return;
   // Delete accumulated metrics files due to http://crbug/992946
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
@@ -264,6 +266,10 @@ void IOSChromeMetricsServiceClient::Initialize() {
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<IOSUserTypeMetricsProvider>());
+
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::DemographicMetricsProvider>(
+          std::make_unique<metrics::ChromeBrowserStateClient>()));
 
   // TODO(crbug.com/992946): This is an interim fix to stop logging of
   // persistent histograms and delete any accumulated metrics files.

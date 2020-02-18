@@ -36,11 +36,15 @@ class SharedImageInterfaceProxy : public SharedImageInterface {
                             uint32_t usage) override;
   void UpdateSharedImage(const SyncToken& sync_token,
                          const Mailbox& mailbox) override;
+  void UpdateSharedImage(const SyncToken& sync_token,
+                         std::unique_ptr<gfx::GpuFence> acquire_fence,
+                         const Mailbox& mailbox) override;
 
   void DestroySharedImage(const SyncToken& sync_token,
                           const Mailbox& mailbox) override;
   SyncToken GenVerifiedSyncToken() override;
   SyncToken GenUnverifiedSyncToken() override;
+  void Flush() override;
 
 #if defined(OS_WIN)
   SwapChainMailboxes CreateSwapChain(viz::ResourceFormat format,

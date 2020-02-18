@@ -146,7 +146,8 @@ struct QUIC_EXPORT_PRIVATE WriteResult {
 enum TransmissionType : int8_t {
   NOT_RETRANSMISSION,
   FIRST_TRANSMISSION_TYPE = NOT_RETRANSMISSION,
-  HANDSHAKE_RETRANSMISSION,    // Retransmits due to handshake timeouts.
+  HANDSHAKE_RETRANSMISSION,  // Retransmits due to handshake timeouts.
+  // TODO(fayang): remove ALL_UNACKED_RETRANSMISSION.
   ALL_UNACKED_RETRANSMISSION,  // Retransmits all unacked packets.
   ALL_INITIAL_RETRANSMISSION,  // Retransmits all initially encrypted packets.
   LOSS_RETRANSMISSION,         // Retransmits due to loss detection.
@@ -368,7 +369,14 @@ enum QuicPacketPrivateFlags {
 // QUIC. Note that this is separate from the congestion feedback type -
 // some congestion control algorithms may use the same feedback type
 // (Reno and Cubic are the classic example for that).
-enum CongestionControlType { kCubicBytes, kRenoBytes, kBBR, kPCC, kGoogCC };
+enum CongestionControlType {
+  kCubicBytes,
+  kRenoBytes,
+  kBBR,
+  kPCC,
+  kGoogCC,
+  kBBRv2,
+};
 
 enum LossDetectionType : uint8_t {
   kNack,          // Used to mimic TCP's loss detection.
@@ -496,6 +504,7 @@ struct LostPacket {
 // A vector of lost packets.
 typedef std::vector<LostPacket> LostPacketVector;
 
+// TODO(fkastenholz): Change this to uint64_t to reflect -22 of the ID.
 enum QuicIetfTransportErrorCodes : uint16_t {
   NO_IETF_QUIC_ERROR = 0x0,
   INTERNAL_ERROR = 0x1,

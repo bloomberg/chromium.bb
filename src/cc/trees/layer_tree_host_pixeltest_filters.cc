@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
@@ -21,14 +22,6 @@ class LayerTreeHostFiltersPixelTest
     : public LayerTreePixelTest,
       public ::testing::WithParamInterface<LayerTreeTest::RendererType> {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    LayerTreePixelTest::InitializeSettings(settings);
-    // Required so that device scale is inherited by content scale. True for
-    // most tests, but can be overwritten before RunPixelTest() is called.
-    settings->layer_transforms_should_scale_layer_contents =
-        layer_transforms_should_scale_layer_contents_;
-  }
-
   RendererType renderer_type() { return GetParam(); }
 
   // Text string for graphics backend of the RendererType. Suitable for
@@ -38,7 +31,9 @@ class LayerTreeHostFiltersPixelTest
       case RENDERER_GL:
         return "gl";
       case RENDERER_SKIA_GL:
-        return "skia";
+        return "skia_gl";
+      case RENDERER_SKIA_VK:
+        return "skia_vk";
       case RENDERER_SOFTWARE:
         return "sw";
     }
@@ -71,23 +66,20 @@ class LayerTreeHostFiltersPixelTest
 
     return background;
   }
+};
 
-  bool layer_transforms_should_scale_layer_contents_ = true;
+LayerTreeTest::RendererType const kRendererTypes[] = {
+    LayerTreeTest::RENDERER_GL,
+    LayerTreeTest::RENDERER_SKIA_GL,
+    LayerTreeTest::RENDERER_SOFTWARE,
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    LayerTreeTest::RENDERER_SKIA_VK,
+#endif
 };
 
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostFiltersPixelTest,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL,
-                                           LayerTreeTest::RENDERER_SOFTWARE));
-
-using LayerTreeHostFiltersPixelTestNonSkia = LayerTreeHostFiltersPixelTest;
-
-// TODO(crbug.com/948128): Enable these tests for Skia.
-INSTANTIATE_TEST_SUITE_P(,
-                         LayerTreeHostFiltersPixelTestNonSkia,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SOFTWARE));
+                         ::testing::ValuesIn(kRendererTypes));
 
 using LayerTreeHostFiltersPixelTestGL = LayerTreeHostFiltersPixelTest;
 
@@ -98,12 +90,19 @@ INSTANTIATE_TEST_SUITE_P(,
 
 using LayerTreeHostFiltersPixelTestGPU = LayerTreeHostFiltersPixelTest;
 
+LayerTreeTest::RendererType const kRendererTypesGpu[] = {
+    LayerTreeTest::RENDERER_GL,
+    LayerTreeTest::RENDERER_SKIA_GL,
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    LayerTreeTest::RENDERER_SKIA_VK,
+#endif
+};
+
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostFiltersPixelTestGPU,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL));
+                         ::testing::ValuesIn(kRendererTypesGpu));
 
-TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRect) {
+TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRect) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -139,11 +138,56 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRect) {
       small_error_allowed));
 #endif
 
-  RunPixelTest(renderer_type(), background,
-               base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur.png")));
+  RunPixelTest(
+      renderer_type(), background,
+      (renderer_type() == RENDERER_SOFTWARE)
+          ? base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_sw.png"))
+          : base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRounded) {
+TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRadius) {
+  if (renderer_type() == RENDERER_SOFTWARE) {
+    // TODO(989238): Software renderer does not support/implement
+    // kClamp_TileMode.
+    return;
+  }
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(400, 400), SK_ColorRED);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(200, 200, 200, 200), kCSSLime);
+  gfx::Rect blur_rect(100, 100, 200, 200);
+  scoped_refptr<SolidColorLayer> blur =
+      CreateSolidColorLayer(blur_rect, SkColorSetARGB(40, 10, 20, 200));
+  background->AddChild(green);
+  background->AddChild(blur);
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateBlurFilter(
+      30.f, SkBlurImageFilter::kClamp_TileMode));
+  blur->SetBackdropFilters(filters);
+  gfx::RRectF backdrop_filter_bounds(gfx::RectF(gfx::SizeF(blur->bounds())), 0);
+  blur->SetBackdropFilterBounds(backdrop_filter_bounds);
+
+#if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
+  // Windows and ARM64 have 436 pixels off by 1: crbug.com/259915
+  float percentage_pixels_large_error = 1.09f;  // 436px / (200*200)
+  float percentage_pixels_small_error = 0.0f;
+  float average_error_allowed_in_bad_pixels = 1.f;
+  int large_error_allowed = 1;
+  int small_error_allowed = 0;
+  pixel_comparator_.reset(new FuzzyPixelComparator(
+      true,  // discard_alpha
+      percentage_pixels_large_error, percentage_pixels_small_error,
+      average_error_allowed_in_bad_pixels, large_error_allowed,
+      small_error_allowed));
+#endif
+  RunPixelTest(
+      renderer_type(), background,
+      base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_radius_.png"))
+          .InsertBeforeExtensionASCII(GetRendererSuffix()));
+}
+
+TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRounded) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -180,17 +224,17 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRounded) {
   pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
 #endif
 
-  RunPixelTest(
-      renderer_type(), background,
-      base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_rounded.png")));
+  RunPixelTest(renderer_type(), background,
+               (renderer_type() == RENDERER_SOFTWARE)
+                   ? base::FilePath(FILE_PATH_LITERAL(
+                         "backdrop_filter_blur_rounded_sw.png"))
+                   : base::FilePath(FILE_PATH_LITERAL(
+                         "backdrop_filter_blur_rounded.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOutsets) {
-  if (renderer_type() == RENDERER_SKIA_GL
-#if defined(ENABLE_CC_VULKAN_TESTS)
-      || renderer_type() == RENDERER_SKIA_VK
-#endif
-  ) {
+TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurOutsets) {
+  if (renderer_type() == RENDERER_SKIA_GL ||
+      renderer_type() == RENDERER_SKIA_VK) {
     // TODO(973696): Implement bounds clipping in skia_renderer.
     return;
   }
@@ -233,6 +277,9 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOutsets) {
       average_error_allowed_in_bad_pixels,
       large_error_allowed,
       small_error_allowed));
+#else
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 #endif
 
   RunPixelTest(
@@ -380,9 +427,7 @@ class LayerTreeHostFiltersScaledPixelTest
 
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostFiltersScaledPixelTest,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL,
-                                           LayerTreeTest::RENDERER_SOFTWARE));
+                         ::testing::ValuesIn(kRendererTypes));
 
 TEST_P(LayerTreeHostFiltersScaledPixelTest, StandardDpi) {
   RunPixelTestType(100, 1.f);
@@ -393,8 +438,6 @@ TEST_P(LayerTreeHostFiltersScaledPixelTest, HiDpi) {
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, NullFilter) {
-  layer_transforms_should_scale_layer_contents_ = false;
-
   scoped_refptr<SolidColorLayer> foreground =
       CreateSolidColorLayer(gfx::Rect(0, 0, 200, 200), SK_ColorGREEN);
 
@@ -407,8 +450,6 @@ TEST_P(LayerTreeHostFiltersPixelTest, NullFilter) {
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, CroppedFilter) {
-  layer_transforms_should_scale_layer_contents_ = false;
-
   scoped_refptr<SolidColorLayer> foreground =
       CreateSolidColorLayer(gfx::Rect(0, 0, 200, 200), SK_ColorGREEN);
 
@@ -668,7 +709,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageRenderSurfaceScaled) {
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestNonSkia, ZoomFilter) {
+TEST_P(LayerTreeHostFiltersPixelTest, ZoomFilter) {
   scoped_refptr<SolidColorLayer> root =
       CreateSolidColorLayer(gfx::Rect(300, 300), SK_ColorWHITE);
 
@@ -945,8 +986,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, EnlargedTextureWithCropOffsetFilter) {
       base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_crop_offset.png")));
 }
 
-// TODO(crbug.com/948128): Enable this test for SkiaRenderer.
-TEST_P(LayerTreeHostFiltersPixelTestNonSkia, BlurFilterWithClip) {
+TEST_P(LayerTreeHostFiltersPixelTest, BlurFilterWithClip) {
   scoped_refptr<SolidColorLayer> child1 =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLUE);
   scoped_refptr<SolidColorLayer> child2 =
@@ -1010,32 +1050,49 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, FilterWithGiantCropRectNoClip) {
       base::FilePath(FILE_PATH_LITERAL("filter_with_giant_crop_rect.png")));
 }
 
-class BackdropFilterWithDeviceScaleFactorTest
-    : public LayerTreeHostFiltersPixelTest {
+class BackdropFilterOffsetTest : public LayerTreeHostFiltersPixelTest {
  protected:
-  void RunPixelTestType(float device_scale_factor,
-                        const base::FilePath& expected_result) {
-    device_scale_factor_ = device_scale_factor;
-
+  void RunPixelTestType(int device_scale_factor) {
     scoped_refptr<Layer> root =
         CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
-
     scoped_refptr<SolidColorLayer> background =
         CreateSolidColorLayer(gfx::Rect(100, 120), SK_ColorBLACK);
     root->AddChild(background);
-
     scoped_refptr<SolidColorLayer> filtered = CreateSolidColorLayer(
         gfx::Rect(0, 100, 200, 100), SkColorSetA(SK_ColorGREEN, 127));
     FilterOperations filters;
+    // TODO(989329): This test actually also tests how the OffsetPaintFilter
+    // handles the edge condition. Because the OffsetPaintFilter is pulling
+    // content from outside the filter region (just the bottom 200x100 square),
+    // it must create content for all but the bottom 20px of the filter rect.
+    // The GPU implementation of OffsetPaintFilter effectively clamps to the
+    // edge pixels and copies them into the top 80px of the image. The CPU
+    // implementation, on the other hand, pulls in transparent pixels for those
+    // 80px. The behavior is basically unspecified, though for blur filters the
+    // explicitly specified behavior is edgemode:duplicate, as seen in [1]. And
+    // the default for svg filters, including feOffset, is also duplicate.
+    // [1] https://drafts.fxtf.org/filter-effects-2/#backdrop-filter-operation
+    // [2] https://www.w3.org/TR/SVG11/filters.html#feConvolveMatrixElementEdgeModeAttribute
     filters.Append(FilterOperation::CreateReferenceFilter(
         sk_make_sp<OffsetPaintFilter>(0, 80, nullptr)));
     filtered->SetBackdropFilters(filters);
     filtered->ClearBackdropFilterBounds();
     root->AddChild(filtered);
-
     // This should appear as a grid of 4 100x100 squares which are:
     // BLACK       WHITE
-    // DARK GREEN  LIGHT GREEN
+    // DARK GREEN*  LIGHT GREEN
+    //
+    // *except for software (see crbug.com/989329) which will be a
+    // dark-light-dark horizontal sandwich.
+    device_scale_factor_ = device_scale_factor;
+
+    base::FilePath expected_result =
+        base::FilePath(FILE_PATH_LITERAL("offset_backdrop_filter_.png"));
+    expected_result = expected_result.InsertBeforeExtensionASCII(
+        base::NumberToString(device_scale_factor) + "x");
+    if (renderer_type() == RENDERER_SOFTWARE) {
+      expected_result = expected_result.InsertBeforeExtensionASCII("_sw");
+    }
     RunPixelTest(renderer_type(), std::move(root), expected_result);
   }
 
@@ -1049,21 +1106,63 @@ class BackdropFilterWithDeviceScaleFactorTest
   float device_scale_factor_ = 1;
 };
 
-// TODO(973699): This test is broken in software_renderer. Re-enable this test
-// when fixed.
 INSTANTIATE_TEST_SUITE_P(,
-                         BackdropFilterWithDeviceScaleFactorTest,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL));
+                         BackdropFilterOffsetTest,
+                         ::testing::ValuesIn(kRendererTypes));
 
-TEST_P(BackdropFilterWithDeviceScaleFactorTest, StandardDpi) {
-  RunPixelTestType(
-      1.f, base::FilePath(FILE_PATH_LITERAL("offset_backdrop_filter_1x.png")));
+TEST_P(BackdropFilterOffsetTest, StandardDpi) {
+  RunPixelTestType(1.f);
 }
 
-TEST_P(BackdropFilterWithDeviceScaleFactorTest, HiDpi) {
-  RunPixelTestType(
-      2.f, base::FilePath(FILE_PATH_LITERAL("offset_backdrop_filter_2x.png")));
+TEST_P(BackdropFilterOffsetTest, HiDpi) {
+  RunPixelTestType(2.f);
+}
+
+class BackdropFilterInvertTest : public LayerTreeHostFiltersPixelTest {
+ protected:
+  void RunPixelTestType(int device_scale_factor) {
+    scoped_refptr<Layer> root =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
+    scoped_refptr<SolidColorLayer> filtered =
+        CreateSolidColorLayer(gfx::Rect(50, 50, 100, 100), SK_ColorTRANSPARENT);
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateInvertFilter(1.0));
+    filtered->SetBackdropFilters(filters);
+    gfx::RRectF backdrop_filter_bounds(
+        gfx::RectF(gfx::SizeF(filtered->bounds())), 20);
+    filtered->SetBackdropFilterBounds(backdrop_filter_bounds);
+    root->AddChild(filtered);
+    device_scale_factor_ = device_scale_factor;
+    base::FilePath expected_result =
+        base::FilePath(FILE_PATH_LITERAL("invert_backdrop_filter_.png"));
+    expected_result = expected_result.InsertBeforeExtensionASCII(
+        base::NumberToString(device_scale_factor) + "x");
+    if (renderer_type() == RENDERER_SOFTWARE) {
+      expected_result = expected_result.InsertBeforeExtensionASCII("_sw");
+    }
+    RunPixelTest(renderer_type(), std::move(root), expected_result);
+  }
+
+ private:
+  // LayerTreePixelTest overrides
+  void SetupTree() override {
+    SetInitialDeviceScaleFactor(device_scale_factor_);
+    LayerTreeHostFiltersPixelTest::SetupTree();
+  }
+
+  float device_scale_factor_ = 1;
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         BackdropFilterInvertTest,
+                         ::testing::ValuesIn(kRendererTypes));
+
+TEST_P(BackdropFilterInvertTest, StandardDpi) {
+  RunPixelTestType(1.f);
+}
+
+TEST_P(BackdropFilterInvertTest, HiDpi) {
+  RunPixelTestType(2.f);
 }
 
 }  // namespace

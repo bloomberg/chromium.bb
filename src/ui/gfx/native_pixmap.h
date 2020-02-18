@@ -27,8 +27,11 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
 
   virtual bool AreDmaBufFdsValid() const = 0;
   virtual int GetDmaBufFd(size_t plane) const = 0;
-  virtual int GetDmaBufPitch(size_t plane) const = 0;
-  virtual int GetDmaBufOffset(size_t plane) const = 0;
+  virtual uint32_t GetDmaBufPitch(size_t plane) const = 0;
+  virtual size_t GetDmaBufOffset(size_t plane) const = 0;
+  virtual size_t GetDmaBufPlaneSize(size_t plane) const = 0;
+  // Return the number of non-interleaved "color" planes.
+  virtual size_t GetNumberOfPlanes() const = 0;
 
   // The following methods return format, modifier and size of the buffer,
   // respectively.

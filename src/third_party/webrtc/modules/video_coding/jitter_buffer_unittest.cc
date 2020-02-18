@@ -8,16 +8,16 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include <string>
+#include "modules/video_coding/jitter_buffer.h"
 
 #include <list>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "absl/memory/memory.h"
 #include "common_video/h264/h264_common.h"
 #include "modules/video_coding/frame_buffer.h"
-#include "modules/video_coding/jitter_buffer.h"
 #include "modules/video_coding/media_opt_util.h"
 #include "modules/video_coding/packet.h"
 #include "modules/video_coding/test/stream_generator.h"
@@ -67,7 +67,8 @@ class TestBasicJitterBuffer : public ::testing::Test {
     video_header.is_first_packet_in_frame = true;
     video_header.frame_type = VideoFrameType::kVideoFrameDelta;
     packet_.reset(new VCMPacket(data_, size_, rtp_header, video_header,
-                                /*ntp_time_ms=*/0));
+                                /*ntp_time_ms=*/0,
+                                clock_->TimeInMilliseconds()));
   }
 
   VCMEncodedFrame* DecodeCompleteFrame() {
@@ -223,9 +224,7 @@ class TestRunningJitterBuffer : public ::testing::Test {
 class TestJitterBufferNack : public TestRunningJitterBuffer {
  protected:
   TestJitterBufferNack() {}
-  virtual void SetUp() {
-    TestRunningJitterBuffer::SetUp();
-  }
+  virtual void SetUp() { TestRunningJitterBuffer::SetUp(); }
 
   virtual void TearDown() { TestRunningJitterBuffer::TearDown(); }
 };
@@ -542,7 +541,7 @@ TEST_F(TestBasicJitterBuffer, TestReorderingWithPadding) {
   video_header.codec = kVideoCodecGeneric;
   video_header.frame_type = VideoFrameType::kEmptyFrame;
   VCMPacket empty_packet(data_, 0, rtp_header, video_header,
-                         /*ntp_time_ms=*/0);
+                         /*ntp_time_ms=*/0, clock_->TimeInMilliseconds());
   EXPECT_EQ(kOldPacket,
             jitter_buffer_->InsertPacket(empty_packet, &retransmitted));
   empty_packet.seqNum += 1;

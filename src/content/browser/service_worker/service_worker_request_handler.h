@@ -7,17 +7,20 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/resource_type.h"
+
+class GURL;
+
+namespace network {
+struct ResourceRequest;
+}  // namespace network
 
 namespace content {
 
-class ResourceContext;
+class ServiceWorkerNavigationHandle;
 class ServiceWorkerNavigationHandleCore;
 class ServiceWorkerProviderHost;
 struct NavigationRequestInfo;
@@ -28,19 +31,36 @@ struct NavigationRequestInfo;
 // non-member functions?
 class CONTENT_EXPORT ServiceWorkerRequestHandler {
  public:
-  // Returns a loader interceptor for a navigation. May return nullptr
-  // if the navigation cannot use service workers.
-  static std::unique_ptr<NavigationLoaderInterceptor> CreateForNavigation(
+  // Returns a loader interceptor for a navigation. May return nullptr if the
+  // navigation cannot use service workers. Called on the UI thread.
+  static std::unique_ptr<NavigationLoaderInterceptor> CreateForNavigationUI(
       const GURL& url,
-      ResourceContext* resource_context,
+      base::WeakPtr<ServiceWorkerNavigationHandle> navigation_handle,
+      const NavigationRequestInfo& request_info);
+
+  // Returns a loader interceptor for a navigation. May return nullptr if the
+  // navigation cannot use service workers. Called on the IO thread.
+  static std::unique_ptr<NavigationLoaderInterceptor> CreateForNavigationIO(
+      const GURL& url,
       ServiceWorkerNavigationHandleCore* navigation_handle_core,
       const NavigationRequestInfo& request_info,
       base::WeakPtr<ServiceWorkerProviderHost>* out_provider_host);
 
-  // Same as above but for a dedicated worker or shared worker.
-  static std::unique_ptr<NavigationLoaderInterceptor> CreateForWorker(
+  // Returns a loader interceptor for a dedicated worker or shared worker. May
+  // return nullptr if the worker cannot use service workers. Called on the IO
+  // thread.
+  static std::unique_ptr<NavigationLoaderInterceptor> CreateForWorkerUI(
       const network::ResourceRequest& resource_request,
-      ServiceWorkerProviderHost* host);
+      int process_id,
+      base::WeakPtr<ServiceWorkerNavigationHandle> navigation_handle);
+
+  // Returns a loader interceptor for a dedicated worker or shared worker. May
+  // return nullptr if the worker cannot use service workers. Called on the UI
+  // thread.
+  static std::unique_ptr<NavigationLoaderInterceptor> CreateForWorkerIO(
+      const network::ResourceRequest& resource_request,
+      int process_id,
+      ServiceWorkerNavigationHandleCore* navigation_handle_core);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestHandler);

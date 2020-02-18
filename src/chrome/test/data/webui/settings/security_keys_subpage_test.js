@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {settings.SecurityKeysBrowserProxy} */
-class TestSecurityKeysBrowserProxy extends TestBrowserProxy {
+/** @implements {settings.SecurityKeysPINBrowserProxy} */
+class TestSecurityKeysPINBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'startSetPIN',
       'setPIN',
-      'reset',
-      'completeReset',
       'close',
     ]);
 
@@ -59,6 +57,56 @@ class TestSecurityKeysBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
+  close() {
+    this.methodCalled('close');
+  }
+}
+
+/** @implements {settings.SecurityKeysResetBrowserProxy} */
+class TestSecurityKeysResetBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'reset',
+      'completeReset',
+      'close',
+    ]);
+
+    /**
+     * A map from method names to a promise to return when that method is
+     * called. (If no promise is installed, a never-resolved promise is
+     * returned.)
+     * @private {!Map<string, !Promise>}
+     */
+    this.promiseMap_ = new Map();
+  }
+
+  /**
+   * @param {string} methodName
+   * @param {!Promise} promise
+   */
+  setResponseFor(methodName, promise) {
+    this.promiseMap_.set(methodName, promise);
+  }
+
+  /**
+   * @param {string} methodName
+   * @param {*} opt_arg
+   * @return {!Promise}
+   * @private
+   */
+  handleMethod_(methodName, opt_arg) {
+    this.methodCalled(methodName, opt_arg);
+    const promise = this.promiseMap_.get(methodName);
+    if (promise != undefined) {
+      this.promiseMap_.delete(methodName);
+      return promise;
+    }
+
+    // Return a Promise that never resolves.
+    return new Promise(() => {});
+  }
+
+  /** @override */
   reset() {
     return this.handleMethod_('reset');
   }
@@ -74,12 +122,84 @@ class TestSecurityKeysBrowserProxy extends TestBrowserProxy {
   }
 }
 
+/** @implements {settings.SecurityKeysCredentialBrowserProxy} */
+class TestSecurityKeysCredentialBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'startCredentialManagement',
+      'providePIN',
+      'enumerateCredentials',
+      'deleteCredentials',
+      'close',
+    ]);
+
+    /**
+     * A map from method names to a promise to return when that method is
+     * called. (If no promise is installed, a never-resolved promise is
+     * returned.)
+     * @private {!Map<string, !Promise>}
+     */
+    this.promiseMap_ = new Map();
+  }
+
+  /**
+   * @param {string} methodName
+   * @param {!Promise} promise
+   */
+  setResponseFor(methodName, promise) {
+    this.promiseMap_.set(methodName, promise);
+  }
+
+  /**
+   * @param {string} methodName
+   * @param {*} opt_arg
+   * @return {!Promise}
+   * @private
+   */
+  handleMethod_(methodName, opt_arg) {
+    this.methodCalled(methodName, opt_arg);
+    const promise = this.promiseMap_.get(methodName);
+    if (promise != undefined) {
+      this.promiseMap_.delete(methodName);
+      return promise;
+    }
+
+    // Return a Promise that never resolves.
+    return new Promise(() => {});
+  }
+
+  /** @override */
+  startCredentialManagement() {
+    return this.handleMethod_('startCredentialManagement');
+  }
+
+  /** @override */
+  providePIN(pin) {
+    return this.handleMethod_('providePIN', pin);
+  }
+
+  /** @override */
+  enumerateCredentials() {
+    return this.handleMethod_('enumerateCredentials');
+  }
+
+  /** @override */
+  deleteCredentials(ids) {
+    return this.handleMethod_('deleteCredentials', ids);
+  }
+
+  /** @override */
+  close() {
+    this.methodCalled('close');
+  }
+}
+
 suite('SecurityKeysResetDialog', function() {
   let dialog = null;
 
   setup(function() {
-    browserProxy = new TestSecurityKeysBrowserProxy();
-    settings.SecurityKeysBrowserProxyImpl.instance_ = browserProxy;
+    browserProxy = new TestSecurityKeysResetBrowserProxy();
+    settings.SecurityKeysResetBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     dialog = document.createElement('settings-security-keys-reset-dialog');
   });
@@ -197,8 +317,8 @@ suite('SecurityKeysSetPINDialog', function() {
   let dialog = null;
 
   setup(function() {
-    browserProxy = new TestSecurityKeysBrowserProxy();
-    settings.SecurityKeysBrowserProxyImpl.instance_ = browserProxy;
+    browserProxy = new TestSecurityKeysPINBrowserProxy();
+    settings.SecurityKeysPINBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     dialog = document.createElement('settings-security-keys-set-pin-dialog');
   });
@@ -291,11 +411,18 @@ suite('SecurityKeysSetPINDialog', function() {
   function setNewPINEntries(pinValue, confirmPINValue) {
     setPINEntry(dialog.$.newPIN, pinValue);
     setPINEntry(dialog.$.confirmPIN, confirmPINValue);
+    const ret = test_util.eventToPromise('ui-ready', dialog);
+    dialog.$.pinSubmit.click();
+    return ret;
   }
 
   function setChangePINEntries(currentPINValue, pinValue, confirmPINValue) {
-    setNewPINEntries(pinValue, confirmPINValue);
+    setPINEntry(dialog.$.newPIN, pinValue);
+    setPINEntry(dialog.$.confirmPIN, confirmPINValue);
     setPINEntry(dialog.$.currentPIN, currentPINValue);
+    const ret = test_util.eventToPromise('ui-ready', dialog);
+    dialog.$.pinSubmit.click();
+    return ret;
   }
 
   test('SetPIN', async function() {
@@ -312,21 +439,21 @@ suite('SecurityKeysSetPINDialog', function() {
     assertShown('pinPrompt');
     assertTrue(dialog.$.currentPINEntry.hidden);
 
-    setNewPINEntries('123', '');
-    assertTrue(dialog.$.pinSubmit.disabled);
+    await setNewPINEntries('123', '');
+    assertTrue(dialog.$.newPIN.invalid);
+    assertFalse(dialog.$.confirmPIN.invalid);
 
-    setNewPINEntries('123', '123');
-    assertTrue(dialog.$.pinSubmit.disabled);
+    await setNewPINEntries('123', '123');
+    assertTrue(dialog.$.newPIN.invalid);
+    assertFalse(dialog.$.confirmPIN.invalid);
 
-    setNewPINEntries('1234', '123');
-    assertTrue(dialog.$.pinSubmit.disabled);
-
-    setNewPINEntries('1234', '1234');
-    assertFalse(dialog.$.pinSubmit.disabled);  // Note True -> False
+    await setNewPINEntries('1234', '123');
+    assertFalse(dialog.$.newPIN.invalid);
+    assertTrue(dialog.$.confirmPIN.invalid);
 
     const setPINResolver = new PromiseResolver();
     browserProxy.setResponseFor('setPIN', setPINResolver.promise);
-    dialog.$.pinSubmit.click();
+    setNewPINEntries('1234', '1234');
     ({oldPIN, newPIN} = await browserProxy.whenCalled('setPIN'));
     assertTrue(dialog.$.pinSubmit.disabled);
     assertEquals(oldPIN, '');
@@ -352,11 +479,10 @@ suite('SecurityKeysSetPINDialog', function() {
       startSetPINResolver.resolve(
           [0 /* not yet complete */, null /* no current PIN */]);
       await uiReady;
-      setNewPINEntries('1234', '1234');
 
       browserProxy.setResponseFor(
           'setPIN', Promise.resolve([1 /* complete */, testCase[0]]));
-      dialog.$.pinSubmit.click();
+      setNewPINEntries('1234', '1234');
       await browserProxy.whenCalled('setPIN');
       await browserProxy.whenCalled('close');
       assertComplete();
@@ -384,31 +510,30 @@ suite('SecurityKeysSetPINDialog', function() {
     assertFalse(dialog.$.currentPINEntry.hidden);
 
     setChangePINEntries('123', '', '');
-    assertTrue(dialog.$.pinSubmit.disabled);
+    assertTrue(dialog.$.currentPIN.invalid);
+    assertFalse(dialog.$.newPIN.invalid);
+    assertFalse(dialog.$.confirmPIN.invalid);
 
     setChangePINEntries('123', '123', '');
-    assertTrue(dialog.$.pinSubmit.disabled);
+    assertTrue(dialog.$.currentPIN.invalid);
+    assertFalse(dialog.$.newPIN.invalid);
+    assertFalse(dialog.$.confirmPIN.invalid);
 
     setChangePINEntries('1234', '123', '1234');
-    assertTrue(dialog.$.pinSubmit.disabled);
+    assertFalse(dialog.$.currentPIN.invalid);
+    assertTrue(dialog.$.newPIN.invalid);
+    assertFalse(dialog.$.confirmPIN.invalid);
 
     setChangePINEntries('123', '1234', '1234');
-    assertTrue(dialog.$.pinSubmit.disabled);
-
-    setChangePINEntries('4321', '1234', '1234');
-    assertFalse(dialog.$.pinSubmit.disabled);  // Note True -> False
-
-    // Changing the new PIN so that it no longer matches the confirm PIN should
-    // prevent submitting the dialog.
-    setNewPINEntry('12345');
-    assertTrue(dialog.$.pinSubmit.disabled);
-
-    // Fixing the new PIN should be sufficient to address that.
-    setNewPINEntry('1234');
-    assertFalse(dialog.$.pinSubmit.disabled);
+    assertTrue(dialog.$.currentPIN.invalid);
+    assertFalse(dialog.$.newPIN.invalid);
+    assertFalse(dialog.$.confirmPIN.invalid);
 
     let setPINResolver = new PromiseResolver();
     browserProxy.setResponseFor('setPIN', setPINResolver.promise);
+    setPINEntry(dialog.$.currentPIN, '4321');
+    setPINEntry(dialog.$.newPIN, '1234');
+    setPINEntry(dialog.$.confirmPIN, '1234');
     dialog.$.pinSubmit.click();
     let {oldPIN, newPIN} = await browserProxy.whenCalled('setPIN');
     assertShown('pinPrompt');
@@ -421,12 +546,11 @@ suite('SecurityKeysSetPINDialog', function() {
     uiReady = test_util.eventToPromise('ui-ready', dialog);
     setPINResolver.resolve([1 /* complete */, 49 /* incorrect PIN */]);
     await uiReady;
-    // Text box for current PIN should be cleared.
-    assertEquals(dialog.$.currentPIN.value, '');
-    assertTrue(dialog.$.pinSubmit.disabled);
+    assertTrue(dialog.$.currentPIN.invalid);
+    // Text box for current PIN should not be cleared.
+    assertEquals(dialog.$.currentPIN.value, '4321');
 
-    setChangePINEntries('43211', '1234', '1234');
-    assertFalse(dialog.$.pinSubmit.disabled);
+    setPINEntry(dialog.$.currentPIN, '43211');
 
     browserProxy.resetResolver('setPIN');
     setPINResolver = new PromiseResolver();
@@ -441,5 +565,138 @@ suite('SecurityKeysSetPINDialog', function() {
     await browserProxy.whenCalled('close');
     assertShown('success');
     assertComplete();
+  });
+});
+
+suite('SecurityKeysCredentialManagement', function() {
+  let dialog = null;
+
+  setup(function() {
+    browserProxy = new TestSecurityKeysCredentialBrowserProxy();
+    settings.SecurityKeysCredentialBrowserProxyImpl.instance_ = browserProxy;
+    PolymerTest.clearBody();
+    dialog = document.createElement(
+        'settings-security-keys-credential-management-dialog');
+  });
+
+  function assertShown(expectedID) {
+    const allDivs = ['initial', 'pinPrompt', 'credentials', 'error'];
+    assertTrue(allDivs.includes(expectedID));
+
+    const allShown =
+        allDivs.filter(id => dialog.$[id].className == 'iron-selected');
+    assertEquals(allShown.length, 1);
+    assertEquals(allShown[0], expectedID);
+  }
+
+  test('Initialization', async function() {
+    document.body.appendChild(dialog);
+    await browserProxy.whenCalled('startCredentialManagement');
+    assertShown('initial');
+  });
+
+  test('Cancel', async function() {
+    document.body.appendChild(dialog);
+    await browserProxy.whenCalled('startCredentialManagement');
+    assertShown('initial');
+    dialog.$.cancelButton.click();
+    await browserProxy.whenCalled('close');
+    assertFalse(dialog.$.dialog.open);
+  });
+
+  test('Finished', async function() {
+    const startResolver = new PromiseResolver();
+    browserProxy.setResponseFor(
+        'startCredentialManagement', startResolver.promise);
+
+    document.body.appendChild(dialog);
+    await browserProxy.whenCalled('startCredentialManagement');
+    assertShown('initial');
+    startResolver.resolve();
+
+    const errorString = 'foo bar baz';
+    cr.webUIListenerCallback(
+        'security-keys-credential-management-finished', errorString);
+    assertShown('error');
+    assertTrue(dialog.$.error.textContent.trim().includes(errorString));
+  });
+
+  test('Credentials', async function() {
+    const startCredentialManagementResolver = new PromiseResolver();
+    browserProxy.setResponseFor(
+        'startCredentialManagement', startCredentialManagementResolver.promise);
+    const pinResolver = new PromiseResolver();
+    browserProxy.setResponseFor('providePIN', pinResolver.promise);
+    const enumerateResolver = new PromiseResolver();
+    browserProxy.setResponseFor(
+        'enumerateCredentials', enumerateResolver.promise);
+    const deleteResolver = new PromiseResolver();
+    browserProxy.setResponseFor('deleteCredentials', deleteResolver.promise);
+
+    document.body.appendChild(dialog);
+    await browserProxy.whenCalled('startCredentialManagement');
+    assertShown('initial');
+
+    // Simulate PIN entry.
+    let uiReady = test_util.eventToPromise(
+        'credential-management-dialog-ready-for-testing', dialog);
+    startCredentialManagementResolver.resolve();
+    await uiReady;
+    assertShown('pinPrompt');
+    dialog.$.pin.value = '0000';
+    dialog.$.confirmButton.click();
+    const pin = await browserProxy.whenCalled('providePIN');
+    assertEquals(pin, '0000');
+
+    // Show a list of three credentials.
+    pinResolver.resolve();
+    await browserProxy.whenCalled('enumerateCredentials');
+    uiReady = test_util.eventToPromise(
+        'credential-management-dialog-ready-for-testing', dialog);
+    const credentials = [
+      {
+        id: 'aaaaaa',
+        relyingPartyId: 'acme.com',
+        userName: 'userA@example.com',
+        userDisplayName: 'User Aaa',
+      },
+      {
+        id: 'bbbbbb',
+        relyingPartyId: 'acme.com',
+        userName: 'userB@example.com',
+        userDisplayName: 'User B',
+      },
+      {
+        id: 'cccccc',
+        relyingPartyId: 'acme.com',
+        userName: 'userC@example.com',
+        userDisplayName: 'User C',
+      },
+    ];
+    enumerateResolver.resolve(credentials);
+    await uiReady;
+    assertShown('credentials');
+    assertEquals(dialog.$.credentialList.items, credentials);
+
+    // Select two of the credentials and delete them.
+    Polymer.flush();
+    assertTrue(dialog.$.confirmButton.disabled);
+    const checkboxes = Array.from(
+        Polymer.dom(dialog.$.credentialList).querySelectorAll('cr-checkbox'));
+    assertEquals(checkboxes.length, 3);
+    assertEquals(checkboxes.filter(el => el.checked).length, 0);
+    checkboxes[1].click();
+    checkboxes[2].click();
+    assertFalse(dialog.$.confirmButton.disabled);
+
+    dialog.$.confirmButton.click();
+    const credentialIds = await browserProxy.whenCalled('deleteCredentials');
+    assertDeepEquals(credentialIds, ['bbbbbb', 'cccccc']);
+    uiReady = test_util.eventToPromise(
+        'credential-management-dialog-ready-for-testing', dialog);
+    deleteResolver.resolve('foobar' /* localized response message */);
+    await uiReady;
+    assertShown('error');
+    assertTrue(dialog.$.error.textContent.trim().includes('foobar'));
   });
 });

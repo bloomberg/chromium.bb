@@ -85,7 +85,13 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime SimpleDuration() const;
 
   void SeekToIntervalCorrespondingToTime(double elapsed);
-  bool Progress(double elapsed, bool seek_to_time);
+
+  bool NeedsToProgress(double elapsed);
+  void Progress(double elapsed, bool seek_to_time);
+  void TriggerPendingEvents(double elapsed);
+  void UpdateSyncbases();
+  void UpdateNextProgressTime(double elapsed);
+
   SMILTime NextProgressTime() const;
   void UpdateAnimatedValue(SVGSMILElement* result_element) {
     UpdateAnimation(last_percent_, last_repeat_, result_element);
@@ -106,6 +112,11 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   virtual void ClearAnimatedType() = 0;
   virtual void ApplyResultsToTarget() = 0;
 
+  // Returns true if this animation "sets" the
+  // value of the animation. Thus all previous
+  // animations are rendered useless.
+  virtual bool OverwritesUnderlyingAnimationValue() = 0;
+
   bool AnimatedTypeIsLocked() const { return animated_property_locked_; }
   void LockAnimatedType() {
     DCHECK(!animated_property_locked_);
@@ -124,6 +135,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void DispatchPendingEvent(const AtomicString& event_type);
 
   virtual bool IsSVGDiscardElement() const { return false; }
+
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   void Trace(blink::Visitor*) override;
 
@@ -168,14 +181,12 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   SMILInterval ResolveInterval(IntervalSelector) const;
   void ResolveFirstInterval();
-  bool ResolveNextInterval();
+  base::Optional<SMILInterval> ResolveNextInterval();
   SMILTime ResolveActiveEnd(SMILTime resolved_begin,
                             SMILTime resolved_end) const;
   SMILTime RepeatingDuration() const;
 
-  enum RestartedInterval { kDidNotRestartInterval, kDidRestartInterval };
-
-  RestartedInterval MaybeRestartInterval(double elapsed);
+  base::Optional<SMILInterval> CheckForNewRestartInterval(double elapsed);
   void BeginListChanged(SMILTime event_time);
   void EndListChanged(SMILTime event_time);
 
@@ -227,8 +238,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void DisconnectSyncBaseConditions();
   void DisconnectEventBaseConditions();
 
-  void NotifyDependentsIntervalChanged();
-  void CreateInstanceTimesFromSyncbase(SVGSMILElement& syncbase);
+  void NotifyDependentsIntervalChanged(const SMILInterval& interval);
+  void CreateInstanceTimesFromSyncbase(SVGSMILElement& syncbase,
+                                       const SMILInterval& interval);
   void AddSyncBaseDependent(SVGSMILElement&);
   void RemoveSyncBaseDependent(SVGSMILElement&);
 
@@ -238,8 +250,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     return static_cast<ActiveState>(active_state_);
   }
   ActiveState DetermineActiveState(SMILTime elapsed) const;
-  float CalculateAnimationPercentAndRepeat(double elapsed,
-                                           unsigned& repeat) const;
+  float CalculateAnimationPercent(double elapsed) const;
+  unsigned CalculateAnimationRepeat(double elapsed) const;
   SMILTime CalculateNextProgressTime(double elapsed) const;
 
   Member<SVGElement> target_element_;
@@ -284,6 +296,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   mutable SMILTime cached_max_;
 
   bool animated_property_locked_;
+  bool interval_has_changed_;
 
   friend class ConditionEventListener;
 };
@@ -296,8 +309,15 @@ inline bool IsSVGSMILElement(const SVGElement& element) {
          element.HasTagName((svg_names::kDiscardTag));
 }
 
-DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);
+template <>
+struct DowncastTraits<SVGSMILElement> {
+  static bool AllowFrom(const Node& node) {
+    auto* svg_element = DynamicTo<SVGElement>(node);
+    return svg_element && IsSVGSMILElement(*svg_element);
+  }
+};
 
+DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SVG_SMIL_ELEMENT_H_

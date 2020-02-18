@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.content_public.browser.WebContents;
 
 import java.util.Arrays;
 
@@ -72,8 +71,6 @@ public final class PageViewObserverTest {
     @Mock
     private SuspensionTracker mSuspensionTracker;
     @Mock
-    private WebContents mWebContents;
-    @Mock
     private ChromeActivity mChromeActivity;
     @Captor
     private ArgumentCaptor<TabObserver> mTabObserverCaptor;
@@ -94,7 +91,6 @@ public final class PageViewObserverTest {
         doReturn(false).when(mTab).isIncognito();
         doReturn(null).when(mTab).getUrl();
         doReturn(mChromeActivity).when(mTab).getActivity();
-        doReturn(mWebContents).when(mTab).getWebContents();
         doReturn(Arrays.asList(mTabModel)).when(mTabModelSelector).getModels();
         doReturn(mTab).when(mTabModelSelector).getCurrentTab();
         doReturn(mUserDataHost).when(mTab).getUserDataHost();
@@ -407,6 +403,19 @@ public final class PageViewObserverTest {
 
         updateUrl(mTab, DIFFERENT_URL);
         verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStopEvent(STARTING_FQDN)));
+    }
+
+    @Test
+    public void customTab_startReportedUponConstruction() {
+        doReturn(STARTING_URL).when(mTab).getUrl();
+        doReturn(false).when(mTab).isHidden();
+        PageViewObserver observer = createPageViewObserver();
+        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
+
+        doReturn(DIFFERENT_URL).when(mTab2).getUrl();
+        doReturn(true).when(mTab2).isHidden();
+        didAddTab(mTab2, TabLaunchType.FROM_EXTERNAL_APP);
+        verify(mEventTracker, times(0)).addWebsiteEvent(argThat(isStartEvent(DIFFERENT_FQDN)));
     }
 
     private PageViewObserver createPageViewObserver() {

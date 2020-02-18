@@ -18,7 +18,8 @@ constexpr int kCPBWindowSizeMs = 1500;
 
 // Based on WebRTC's defaults.
 constexpr int kMinQP = 4;
-constexpr int kMaxQP = 112;
+// b/110059922: Tuned 112->113 for bitrate issue in a lower resolution (180p).
+constexpr int kMaxQP = 113;
 constexpr int kDefaultQP = (3 * kMinQP + kMaxQP) / 4;
 }  // namespace
 
@@ -57,13 +58,6 @@ bool VP8Encoder::Initialize(const VideoEncodeAccelerator::Config& config,
 
   if (config.input_visible_size.IsEmpty()) {
     DVLOGF(1) << "Input visible size could not be empty";
-    return false;
-  }
-  // 4:2:0 format has to be 2-aligned.
-  if ((config.input_visible_size.width() % 2 != 0) ||
-      (config.input_visible_size.height() % 2 != 0)) {
-    DVLOGF(1) << "The pixel sizes are not even: "
-              << config.input_visible_size.ToString();
     return false;
   }
 
@@ -168,6 +162,12 @@ void VP8Encoder::InitializeFrameHeader() {
   // TODO(sprang): Make this dynamic. Value based on reference implementation
   // in libyami (https://github.com/intel/libyami).
   current_frame_hdr_.loopfilter_hdr.level = 19;
+
+  // b/138840822: Set mb_no_skip_coeff and loop_filter_adj_enable to 1 as a
+  // workaround of color artifacts issue with a kepler device hw decoder and
+  // ffmpeg sw decoder.
+  current_frame_hdr_.mb_no_skip_coeff = 1;
+  current_frame_hdr_.loopfilter_hdr.loop_filter_adj_enable = 1;
 }
 
 void VP8Encoder::UpdateFrameHeader(bool keyframe) {

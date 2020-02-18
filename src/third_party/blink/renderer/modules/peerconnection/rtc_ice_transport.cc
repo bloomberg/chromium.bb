@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 
-#include <vector>
-
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -45,7 +43,7 @@ base::Optional<cricket::Candidate> ConvertToCricketIceCandidate(
     const RTCIceCandidate& candidate) {
   webrtc::JsepIceCandidate jsep_candidate("", 0);
   webrtc::SdpParseError error;
-  if (!webrtc::SdpDeserializeCandidate(WebString(candidate.candidate()).Utf8(),
+  if (!webrtc::SdpDeserializeCandidate(candidate.candidate().Utf8(),
                                        &jsep_candidate, &error)) {
     LOG(WARNING) << "Failed to deserialize candidate: " << error.description;
     return base::nullopt;
@@ -55,7 +53,7 @@ base::Optional<cricket::Candidate> ConvertToCricketIceCandidate(
 
 RTCIceCandidate* ConvertToRtcIceCandidate(const cricket::Candidate& candidate) {
   return RTCIceCandidate::Create(WebRTCICECandidate::Create(
-      WebString::FromUTF8(webrtc::SdpSerializeCandidate(candidate)), "", 0));
+      String::FromUTF8(webrtc::SdpSerializeCandidate(candidate)), "", 0));
 }
 
 class DtlsIceTransportAdapterCrossThreadFactory
@@ -303,27 +301,26 @@ static webrtc::PeerConnectionInterface::IceServer ConvertIceServer(
     url_strings.push_back(ice_server->url());
   }
   for (const String& url_string : url_strings) {
-    converted_ice_server.urls.push_back(WebString(url_string).Utf8());
+    converted_ice_server.urls.push_back(url_string.Utf8());
   }
-  converted_ice_server.username = WebString(ice_server->username()).Utf8();
-  converted_ice_server.password = WebString(ice_server->credential()).Utf8();
+  converted_ice_server.username = ice_server->username().Utf8();
+  converted_ice_server.password = ice_server->credential().Utf8();
   return converted_ice_server;
 }
 
 static cricket::IceParameters ConvertIceParameters(
     const RTCIceParameters* ice_parameters) {
   cricket::IceParameters converted_ice_parameters;
-  converted_ice_parameters.ufrag =
-      WebString(ice_parameters->usernameFragment()).Utf8();
-  converted_ice_parameters.pwd = WebString(ice_parameters->password()).Utf8();
+  converted_ice_parameters.ufrag = ice_parameters->usernameFragment().Utf8();
+  converted_ice_parameters.pwd = ice_parameters->password().Utf8();
   return converted_ice_parameters;
 }
 
-static std::vector<webrtc::PeerConnectionInterface::IceServer>
-ConvertIceServers(const HeapVector<Member<RTCIceServer>>& ice_servers) {
-  std::vector<webrtc::PeerConnectionInterface::IceServer> converted_ice_servers;
+static WebVector<webrtc::PeerConnectionInterface::IceServer> ConvertIceServers(
+    const HeapVector<Member<RTCIceServer>>& ice_servers) {
+  Vector<webrtc::PeerConnectionInterface::IceServer> converted_ice_servers;
   for (const RTCIceServer* ice_server : ice_servers) {
-    converted_ice_servers.push_back(ConvertIceServer(ice_server));
+    converted_ice_servers.emplace_back(ConvertIceServer(ice_server));
   }
   return converted_ice_servers;
 }
@@ -351,14 +348,14 @@ void RTCIceTransport::gather(RTCIceGatherOptions* options,
                                       "Can only call gather() once.");
     return;
   }
-  std::vector<webrtc::PeerConnectionInterface::IceServer> ice_servers;
+  WebVector<webrtc::PeerConnectionInterface::IceServer> ice_servers;
   if (options->hasIceServers()) {
     ice_servers = ConvertIceServers(options->iceServers());
   }
   cricket::ServerAddresses stun_servers;
   std::vector<cricket::RelayServerConfig> turn_servers;
-  webrtc::RTCErrorType error_type =
-      webrtc::ParseIceServers(ice_servers, &stun_servers, &turn_servers);
+  webrtc::RTCErrorType error_type = webrtc::ParseIceServers(
+      ice_servers.ReleaseVector(), &stun_servers, &turn_servers);
   if (error_type != webrtc::RTCErrorType::NONE) {
     ThrowExceptionFromRTCError(
         webrtc::RTCError(error_type, "Invalid ICE server URL(s)."),
@@ -418,7 +415,7 @@ void RTCIceTransport::start(RTCIceParameters* remote_parameters,
     if (remote_candidates_.size() > 0) {
       state_ = webrtc::IceTransportState::kChecking;
     }
-    std::vector<cricket::Candidate> initial_remote_candidates;
+    Vector<cricket::Candidate> initial_remote_candidates;
     for (RTCIceCandidate* remote_candidate : remote_candidates_) {
       // This conversion is safe since we throw an exception in
       // addRemoteCandidate on malformed ICE candidates.
@@ -465,9 +462,9 @@ void RTCIceTransport::addRemoteCandidate(RTCIceCandidate* remote_candidate,
 void RTCIceTransport::GenerateLocalParameters() {
   local_parameters_ = RTCIceParameters::Create();
   local_parameters_->setUsernameFragment(
-      WebString::FromUTF8(rtc::CreateRandomString(cricket::ICE_UFRAG_LENGTH)));
+      String::FromUTF8(rtc::CreateRandomString(cricket::ICE_UFRAG_LENGTH)));
   local_parameters_->setPassword(
-      WebString::FromUTF8(rtc::CreateRandomString(cricket::ICE_PWD_LENGTH)));
+      String::FromUTF8(rtc::CreateRandomString(cricket::ICE_PWD_LENGTH)));
 }
 
 void RTCIceTransport::OnGatheringStateChanged(
@@ -509,10 +506,11 @@ void RTCIceTransport::OnStateChanged(webrtc::IceTransportState new_state) {
   if (state_ == webrtc::IceTransportState::kFailed) {
     selected_candidate_pair_ = nullptr;
   }
-  DispatchEvent(*Event::Create(event_type_names::kStatechange));
+  // Make sure the peerconnection's state is updated before the event fires.
   if (peer_connection_) {
     peer_connection_->UpdateIceConnectionState();
   }
+  DispatchEvent(*Event::Create(event_type_names::kStatechange));
   if (state_ == webrtc::IceTransportState::kClosed ||
       state_ == webrtc::IceTransportState::kFailed) {
     stop();

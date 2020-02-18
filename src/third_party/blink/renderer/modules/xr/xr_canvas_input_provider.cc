@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_canvas_input_provider.h"
 
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
@@ -75,12 +76,12 @@ bool XRCanvasInputProvider::ShouldProcessEvents() {
 
 void XRCanvasInputProvider::OnPointerDown(PointerEvent* event) {
   UpdateInputSource(event);
-  session_->OnSelectStart(input_source_);
+  input_source_->OnSelectStart();
 }
 
 void XRCanvasInputProvider::OnPointerUp(PointerEvent* event) {
   UpdateInputSource(event);
-  session_->OnSelect(input_source_);
+  input_source_->OnSelect();
   ClearInputSource();
 }
 
@@ -96,8 +97,8 @@ void XRCanvasInputProvider::UpdateInputSource(PointerEvent* event) {
     // XRSession doesn't like source ID's of 0.  We should only be processing
     // Canvas Input events in non-immersive sessions anyway, where we don't
     // expect other controllers, so this number is somewhat arbitrary anyway.
-    input_source_ = MakeGarbageCollected<XRInputSource>(session_, 1,
-                                                        XRInputSource::kScreen);
+    input_source_ = MakeGarbageCollected<XRInputSource>(
+        session_, 1, device::mojom::XRTargetRayMode::TAPPING);
     session_->AddTransientInputSource(input_source_);
   }
 
@@ -110,12 +111,11 @@ void XRCanvasInputProvider::UpdateInputSource(PointerEvent* event) {
   // projection matrix to get a 3D point in space, which is then returned in
   // matrix form so we can use it as an XRInputSource's pointerMatrix.
   XRViewData& view = session_->views()[0];
-  std::unique_ptr<TransformationMatrix> pointer_transform_matrix =
-      view.UnprojectPointer(element_x, element_y, canvas_->OffsetWidth(),
-                            canvas_->OffsetHeight());
+  TransformationMatrix pointer_transform_matrix = view.UnprojectPointer(
+      element_x, element_y, canvas_->OffsetWidth(), canvas_->OffsetHeight());
 
   // Update the input source's pointer matrix.
-  input_source_->SetPointerTransformMatrix(std::move(pointer_transform_matrix));
+  input_source_->SetPointerTransformMatrix(&pointer_transform_matrix);
 }
 
 void XRCanvasInputProvider::ClearInputSource() {

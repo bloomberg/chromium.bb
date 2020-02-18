@@ -25,6 +25,7 @@ enum class WebFrameLoadType;
 class WebView;
 struct WebRect;
 struct WebScrollIntoViewParams;
+class WindowAgentFactory;
 
 class CORE_EXPORT WebRemoteFrameImpl final
     : public GarbageCollectedFinalized<WebRemoteFrameImpl>,
@@ -34,6 +35,9 @@ class CORE_EXPORT WebRemoteFrameImpl final
   static WebRemoteFrameImpl* CreateMainFrame(WebView*,
                                              WebRemoteFrameClient*,
                                              WebFrame* opener = nullptr);
+  static WebRemoteFrameImpl* CreateForPortal(WebTreeScopeType,
+                                             WebRemoteFrameClient*,
+                                             const WebElement& portal_element);
 
   WebRemoteFrameImpl(WebTreeScopeType, WebRemoteFrameClient*);
   ~WebRemoteFrameImpl() override;
@@ -78,8 +82,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
       WebContentSecurityPolicySource) override;
   void ResetReplicatedContentSecurityPolicy() override;
   void SetReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy) override;
-  void SetReplicatedInsecureNavigationsSet(
-      const std::vector<unsigned>&) override;
+  void SetReplicatedInsecureNavigationsSet(const WebVector<unsigned>&) override;
   void ForwardResourceTimingToParent(const WebResourceTimingInfo&) override;
   void DispatchLoadEventForFrameOwner() override;
   void SetNeedsOcclusionTracking(bool) override;
@@ -99,7 +102,10 @@ class CORE_EXPORT WebRemoteFrameImpl final
   WebRect GetCompositingRect() override;
   void RenderFallbackContent() const override;
 
-  void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
+  void InitializeCoreFrame(Page&,
+                           FrameOwner*,
+                           const AtomicString& name,
+                           WindowAgentFactory*);
   RemoteFrame* GetFrame() const { return frame_.Get(); }
 
   WebRemoteFrameClient* Client() const { return client_; }

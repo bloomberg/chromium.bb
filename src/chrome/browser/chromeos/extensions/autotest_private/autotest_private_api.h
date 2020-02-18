@@ -11,9 +11,7 @@
 
 #include "ash/public/cpp/assistant/assistant_state_proxy.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
-#include "ash/public/cpp/shelf_types.h"
-#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
-#include "ash/public/interfaces/shelf_integration_test_api.mojom.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
@@ -22,12 +20,7 @@
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-#include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/snapshot/screenshot_grabber.h"
-
-namespace message_center {
-class Notification;
-}
 
 namespace crostini {
 enum class CrostiniResult;
@@ -201,11 +194,6 @@ class AutotestPrivateGetVisibleNotificationsFunction
  private:
   ~AutotestPrivateGetVisibleNotificationsFunction() override;
   ResponseAction Run() override;
-
-  void OnGotNotifications(
-      const std::vector<message_center::Notification>& notifications);
-
-  ash::mojom::AshMessageCenterControllerPtr controller_;
 };
 
 class AutotestPrivateGetPlayStoreStateFunction
@@ -445,6 +433,17 @@ class AutotestPrivateRemovePrinterFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivateGetAllEnterprisePoliciesFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getAllEnterprisePolicies",
+                             AUTOTESTPRIVATE_GETALLENTERPRISEPOLICIES)
+
+ private:
+  ~AutotestPrivateGetAllEnterprisePoliciesFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateBootstrapMachineLearningServiceFunction
     : public UIThreadExtensionFunction {
  public:
@@ -517,7 +516,7 @@ class AutotestPrivateSendAssistantTextQueryFunction
   void OnInteractionStarted(bool is_voice_interaction) override {}
   void OnSuggestionsResponse(
       std::vector<AssistantSuggestionPtr> response) override {}
-  void OnOpenUrlResponse(const GURL& url) override {}
+  void OnOpenUrlResponse(const GURL& url, bool in_background) override {}
   void OnSpeechRecognitionStarted() override {}
   void OnSpeechRecognitionIntermediateResult(
       const std::string& high_confidence_text,
@@ -631,11 +630,8 @@ class AutotestPrivateGetShelfAutoHideBehaviorFunction
                              AUTOTESTPRIVATE_GETSHELFAUTOHIDEBEHAVIOR)
 
  private:
-  void OnGetShelfAutoHideBehaviorCompleted(ash::ShelfAutoHideBehavior behavior);
   ~AutotestPrivateGetShelfAutoHideBehaviorFunction() override;
   ResponseAction Run() override;
-
-  ash::mojom::ShelfIntegrationTestApiPtr shelf_test_api_;
 };
 
 // Sets shelf autohide behavior.
@@ -647,11 +643,8 @@ class AutotestPrivateSetShelfAutoHideBehaviorFunction
                              AUTOTESTPRIVATE_SETSHELFAUTOHIDEBEHAVIOR)
 
  private:
-  void OnSetShelfAutoHideBehaviorCompleted();
   ~AutotestPrivateSetShelfAutoHideBehaviorFunction() override;
   ResponseAction Run() override;
-
-  ash::mojom::ShelfIntegrationTestApiPtr shelf_test_api_;
 };
 
 // Returns the shelf alignment.
@@ -663,11 +656,8 @@ class AutotestPrivateGetShelfAlignmentFunction
                              AUTOTESTPRIVATE_GETSHELFALIGNMENT)
 
  private:
-  void OnGetShelfAlignmentCompleted(ash::ShelfAlignment alignment);
   ~AutotestPrivateGetShelfAlignmentFunction() override;
   ResponseAction Run() override;
-
-  ash::mojom::ShelfIntegrationTestApiPtr shelf_test_api_;
 };
 
 // Sets shelf alignment.
@@ -679,11 +669,8 @@ class AutotestPrivateSetShelfAlignmentFunction
                              AUTOTESTPRIVATE_SETSHELFALIGNMENT)
 
  private:
-  void OnSetShelfAlignmentCompleted();
   ~AutotestPrivateSetShelfAlignmentFunction() override;
   ResponseAction Run() override;
-
-  ash::mojom::ShelfIntegrationTestApiPtr shelf_test_api_;
 };
 
 class AutotestPrivateShowVirtualKeyboardIfEnabledFunction
@@ -696,6 +683,25 @@ class AutotestPrivateShowVirtualKeyboardIfEnabledFunction
  private:
   ~AutotestPrivateShowVirtualKeyboardIfEnabledFunction() override;
   ResponseAction Run() override;
+};
+
+class AutotestPrivateSetArcAppWindowStateFunction
+    : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateSetArcAppWindowStateFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setArcAppWindowState",
+                             AUTOTESTPRIVATE_SETARCAPPWINDOWSTATE)
+
+ private:
+  class WindowStateChangeObserver;
+
+  ~AutotestPrivateSetArcAppWindowStateFunction() override;
+  ResponseAction Run() override;
+
+  // Callback function to be called after window state is changed.
+  void WindowStateChanged(ash::WindowStateType expected_type, bool success);
+
+  std::unique_ptr<WindowStateChangeObserver> window_state_observer_;
 };
 
 template <>

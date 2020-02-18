@@ -14,8 +14,8 @@
 #include "osp/public/presentation/presentation_connection.h"
 #include "osp/public/protocol_connection.h"
 #include "osp/public/service_listener.h"
-#include "osp_base/error.h"
 #include "platform/api/time.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 namespace presentation {
@@ -170,6 +170,7 @@ class Controller final : public ServiceListener::Observer,
   static std::string MakePresentationId(const std::string& url,
                                         const std::string& service_id);
 
+  void AddConnection(Connection* connection);
   void OpenConnection(uint64_t connection_id,
                       uint64_t endpoint_id,
                       const std::string& service_id,

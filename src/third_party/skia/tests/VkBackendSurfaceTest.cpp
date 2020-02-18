@@ -19,9 +19,9 @@
 #include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrTexture.h"
 #include "include/gpu/vk/GrVkTypes.h"
-#include "include/private/GrTextureProxy.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/SkGpuDevice.h"
 #include "src/gpu/vk/GrVkGpu.h"
 #include "src/gpu/vk/GrVkImageLayout.h"
@@ -34,8 +34,10 @@ DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkImageLayoutTest, reporter, ctxInfo) {
 
     GrBackendTexture backendTex = context->createBackendTexture(1, 1,
                                                                 kRGBA_8888_SkColorType,
+                                                                SkColors::kTransparent,
                                                                 GrMipMapped::kNo,
-                                                                GrRenderable::kNo);
+                                                                GrRenderable::kNo,
+                                                                GrProtected::kNo);
     REPORTER_ASSERT(reporter, backendTex.isValid());
 
     GrVkImageInfo info;
@@ -140,8 +142,10 @@ DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkReleaseExternalQueueTest, reporter, ctxInfo) {
     for (bool useExternal : {false, true}) {
         GrBackendTexture backendTex = context->createBackendTexture(1, 1,
                                                                     kRGBA_8888_SkColorType,
+                                                                    SkColors::kTransparent,
                                                                     GrMipMapped::kNo,
-                                                                    GrRenderable::kNo);
+                                                                    GrRenderable::kNo,
+                                                                    GrProtected::kNo);
         sk_sp<SkImage> image;
         int count = 0;
         if (useExternal) {
@@ -223,8 +227,10 @@ DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkPrepareForExternalIOQueueTransitionTest, report
                 continue;
             }
             GrBackendTexture backendTex = context->createBackendTexture(
-                    4, 4, kRGBA_8888_SkColorType, GrMipMapped::kNo,
-                    useSurface ? GrRenderable::kYes : GrRenderable::kNo);
+                    4, 4, kRGBA_8888_SkColorType,
+                    SkColors::kTransparent, GrMipMapped::kNo,
+                    useSurface ? GrRenderable::kYes : GrRenderable::kNo,
+                    GrProtected::kNo);
 
             // Make a backend texture with an external queue family and general layout.
             GrVkImageInfo vkInfo;
@@ -328,7 +334,10 @@ DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkPrepareForExternalIOQueueTransitionTest, report
     }
 }
 
-
+// This test is disabled because it executes illegal vulkan calls which cause the validations layers
+// to fail and makes us assert. Once fixed to use a valid vulkan call sequence it should be
+// renenabled, see skbug.com/8936.
+#if 0
 // Test to make sure we transition from the EXTERNAL queue even when no layout transition is needed.
 DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkTransitionExternalQueueTest, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
@@ -339,7 +348,8 @@ DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkTransitionExternalQueueTest, reporter, ctxInfo)
     }
 
     GrBackendTexture backendTex = context->createBackendTexture(
-            1, 1, kRGBA_8888_SkColorType, GrMipMapped::kNo, GrRenderable::kNo);
+            1, 1, kRGBA_8888_SkColorType,
+            SkColors::kTransparent, GrMipMapped::kNo, GrRenderable::kNo);
     sk_sp<SkImage> image;
     // Make a backend texture with an external queue family and general layout.
     GrVkImageInfo vkInfo;
@@ -379,5 +389,6 @@ DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkTransitionExternalQueueTest, reporter, ctxInfo)
     gpu->testingOnly_flushGpuAndSync();
     context->deleteBackendTexture(backendTex);
 }
+#endif
 
 #endif

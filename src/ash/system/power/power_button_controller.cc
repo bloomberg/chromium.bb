@@ -64,7 +64,7 @@ std::unique_ptr<views::Widget> CreateMenuWidget() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.keep_on_top = true;
+  params.z_order = ui::ZOrderLevel::kFloatingWindow;
   params.accept_events = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.name = "PowerButtonMenuWindow";
@@ -432,7 +432,8 @@ void PowerButtonController::StartPowerMenuAnimation() {
   // Avoid a distracting deactivation animation on the formerly-active
   // window when the menu is activated.
   views::Widget* active_toplevel_widget =
-      views::Widget::GetTopLevelWidgetForNativeView(wm::GetActiveWindow());
+      views::Widget::GetTopLevelWidgetForNativeView(
+          window_util::GetActiveWindow());
   active_window_paint_as_active_lock_ =
       active_toplevel_widget ? active_toplevel_widget->LockPaintAsActive()
                              : nullptr;

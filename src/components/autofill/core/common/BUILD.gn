@@ -13,6 +13,10 @@ jumbo_static_library("common") {
     "autofill_data_validation.h",
     "autofill_features.cc",
     "autofill_features.h",
+    "autofill_internals/log_message.cc",
+    "autofill_internals/log_message.h",
+    "autofill_internals/logging_scope.cc",
+    "autofill_internals/logging_scope.h",
     "autofill_l10n_util.cc",
     "autofill_l10n_util.h",
     "autofill_payments_features.cc",
@@ -27,8 +31,6 @@ jumbo_static_library("common") {
     "autofill_switches.h",
     "autofill_util.cc",
     "autofill_util.h",
-    "button_title_type.h",
-    "filling_status.h",
     "form_data.cc",
     "form_data.h",
     "form_data_predictions.cc",
@@ -50,9 +52,6 @@ jumbo_static_library("common") {
     "save_password_progress_logger.h",
     "signatures_util.cc",
     "signatures_util.h",
-    "submission_indicator_event.cc",
-    "submission_indicator_event.h",
-    "submission_source.h",
   ]
 
   deps = [

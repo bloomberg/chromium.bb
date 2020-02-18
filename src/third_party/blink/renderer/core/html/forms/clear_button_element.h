@@ -48,7 +48,7 @@ class ClearButtonElement final : public HTMLDivElement {
   void Trace(Visitor*) override;
 
  private:
-  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
+  void DetachLayoutTree(bool performing_reattach) override;
   bool IsMouseFocusable() const override { return false; }
   void DefaultEventHandler(Event&) override;
   bool IsClearButtonElement() const override;

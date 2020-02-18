@@ -10,9 +10,11 @@
 #import "ios/chrome/browser/ui/settings/language/cells/language_item.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_data_source.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_histograms.h"
+#import "ios/chrome/browser/ui/settings/language/language_settings_ui_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -22,13 +24,6 @@
 #endif
 
 namespace {
-
-NSString* const kAddLanguageTableViewAccessibilityIdentifier =
-    @"kAddLanguageTableViewAccessibilityIdentifier";
-NSString* const kAddLanguageSearchControllerAccessibilityIdentifier =
-    @"kAddLanguageSearchControllerAccessibilityIdentifier";
-NSString* const kAddLanguageSearchScrimAccessibilityIdentifier =
-    @"kAddLanguageSearchScrimAccessibilityIdentifier";
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierLanguages = kSectionIdentifierEnumZero,
@@ -98,7 +93,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Search controller.
   self.searchController =
       [[UISearchController alloc] initWithSearchResultsController:nil];
-  self.searchController.dimsBackgroundDuringPresentation = NO;
+  self.searchController.obscuresBackgroundDuringPresentation = NO;
   self.searchController.searchResultsUpdater = self;
   self.searchController.searchBar.accessibilityIdentifier =
       kAddLanguageSearchControllerAccessibilityIdentifier;
@@ -118,9 +113,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Scrim.
   self.scrimView = [[UIControl alloc] init];
   self.scrimView.alpha = 0.0f;
-  self.scrimView.backgroundColor =
-      [UIColor colorWithWhite:0
-                        alpha:kTableViewNavigationWhiteAlphaForSearchScrim];
+  self.scrimView.backgroundColor = [UIColor colorNamed:kScrimBackgroundColor];
   self.scrimView.translatesAutoresizingMaskIntoConstraints = NO;
   self.scrimView.accessibilityIdentifier =
       kAddLanguageSearchScrimAccessibilityIdentifier;

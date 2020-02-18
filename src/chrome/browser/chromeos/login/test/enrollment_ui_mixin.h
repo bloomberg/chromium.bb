@@ -20,6 +20,7 @@ namespace ui {
 //  WaitForStep(...) constants.
 
 extern const char kEnrollmentStepSignin[];
+extern const char kEnrollmentStepWorking[];
 extern const char kEnrollmentStepLicenses[];
 extern const char kEnrollmentStepDeviceAttributes[];
 extern const char kEnrollmentStepSuccess[];
@@ -53,7 +54,7 @@ class EnrollmentUIMixin : public InProcessBrowserTestMixin {
 
   // Waits until specific enrollment step is displayed.
   void WaitForStep(const std::string& step);
-  bool IsStepDisplayed(const std::string& step);
+  void ExpectStepVisibility(bool visibility, const std::string& step);
 
   void ExpectErrorMessage(int error_message_id, bool can_retry);
   void RetryAfterError();
@@ -63,6 +64,8 @@ class EnrollmentUIMixin : public InProcessBrowserTestMixin {
                               const std::string& location);
 
   void LeaveDeviceAttributeErrorScreen();
+
+  void LeaveSuccessScreen();
 
   // Selects enrollment license.
   void SelectEnrollmentLicense(const std::string& license_type);

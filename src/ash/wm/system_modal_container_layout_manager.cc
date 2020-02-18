@@ -7,7 +7,7 @@
 #include <cmath>
 #include <memory>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -48,7 +48,7 @@ SystemModalContainerLayoutManager::SystemModalContainerLayoutManager(
     : container_(container) {}
 
 SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   if (keyboard_controller->HasObserver(this))
     keyboard_controller->RemoveObserver(this);
 }
@@ -63,7 +63,7 @@ void SystemModalContainerLayoutManager::OnChildWindowVisibilityChanged(
     return;
 
   if (window->IsVisible()) {
-    DCHECK(!base::ContainsValue(modal_windows_, window));
+    DCHECK(!base::Contains(modal_windows_, window));
     AddModalWindow(window);
   } else {
     if (RemoveModalWindow(window))
@@ -103,7 +103,7 @@ void SystemModalContainerLayoutManager::OnWillRemoveWindowFromLayout(
 void SystemModalContainerLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
-  WmSnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
+  WmDefaultLayoutManager::SetChildBounds(child, requested_bounds);
   if (IsBoundsCentered(requested_bounds))
     windows_to_center_.insert(child);
   else
@@ -121,7 +121,7 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
     return;
 
   if (window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM) {
-    if (base::ContainsValue(modal_windows_, window))
+    if (base::Contains(modal_windows_, window))
       return;
     AddModalWindow(window);
   } else {
@@ -134,9 +134,8 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
 // SystemModalContainerLayoutManager, Keyboard::KeyboardControllerObserver
 // implementation:
 
-void SystemModalContainerLayoutManager::
-    OnKeyboardWorkspaceOccludedBoundsChanged(
-        const gfx::Rect& new_bounds_in_screen) {
+void SystemModalContainerLayoutManager::OnKeyboardOccludedBoundsChanged(
+    const gfx::Rect& new_bounds_in_screen) {
   PositionDialogsAfterWorkAreaResize();
 }
 
@@ -161,8 +160,8 @@ void SystemModalContainerLayoutManager::CreateModalBackground() {
     window_dimmer_->window()->SetName(
         "SystemModalContainerLayoutManager.ModalBackground");
     // The keyboard isn't always enabled.
-    if (keyboard::KeyboardController::Get()->IsEnabled())
-      keyboard::KeyboardController::Get()->AddObserver(this);
+    if (keyboard::KeyboardUIController::Get()->IsEnabled())
+      keyboard::KeyboardUIController::Get()->AddObserver(this);
   }
   window_dimmer_->window()->Show();
 }
@@ -171,7 +170,7 @@ void SystemModalContainerLayoutManager::DestroyModalBackground() {
   if (!window_dimmer_)
     return;
 
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   if (keyboard_controller->HasObserver(this))
     keyboard_controller->RemoveObserver(this);
   window_dimmer_.reset();
@@ -196,12 +195,12 @@ bool SystemModalContainerLayoutManager::IsModalBackground(
 
 void SystemModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
   if (modal_windows_.empty()) {
-    aura::Window* capture_window = wm::GetCaptureWindow();
+    aura::Window* capture_window = window_util::GetCaptureWindow();
     if (capture_window)
       capture_window->ReleaseCapture();
   }
   DCHECK(window->IsVisible());
-  DCHECK(!base::ContainsValue(modal_windows_, window));
+  DCHECK(!base::Contains(modal_windows_, window));
 
   modal_windows_.push_back(window);
   // Create the modal background on all displays for |window|.
@@ -256,8 +255,8 @@ gfx::Rect SystemModalContainerLayoutManager::GetUsableDialogArea() const {
   // windows. This way we avoid flashing lines upon resize animation and if the
   // keyboard will not fill left to right, the background is still covered.
   gfx::Rect valid_bounds = container_->bounds();
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::Get();
+  keyboard::KeyboardUIController* keyboard_controller =
+      keyboard::KeyboardUIController::Get();
   if (keyboard_controller->IsEnabled()) {
     gfx::Rect bounds =
         keyboard_controller->GetWorkspaceOccludedBoundsInScreen();

@@ -75,13 +75,14 @@ content_files=	\
 	usermanual-what-is-harfbuzz.xml \
 	usermanual-install-harfbuzz.xml \
 	usermanual-getting-started.xml \
+	usermanual-glyph-information.xml \
 	usermanual-shaping-concepts.xml \
 	usermanual-object-model.xml \
 	usermanual-buffers-language-script-and-direction.xml \
 	usermanual-fonts-and-faces.xml \
-	usermanual-clusters.xml \
 	usermanual-opentype-features.xml \
-	usermanual-glyph-information.xml \
+	usermanual-clusters.xml \
+	usermanual-utilities.xml \
 	version.xml
 
 # SGML files where gtk-doc abbrevations (#GtkWidget) are expanded

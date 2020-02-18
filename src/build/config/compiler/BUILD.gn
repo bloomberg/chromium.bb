@@ -25,6 +25,9 @@ if (current_cpu == "mipsel" || current_cpu == "mips64el" ||
     current_cpu == "mips" || current_cpu == "mips64") {
   import("//build/config/mips.gni")
 }
+if (current_cpu == "x64") {
+  import("//build/config/x64.gni")
+}
 if (is_mac) {
   import("//build/config/mac/symbols.gni")
 }
@@ -177,6 +180,26 @@ if (use_debug_fission == "default") {
       (use_gold || use_lld) && cc_wrapper == ""
 }
 
+if (is_win || is_android || is_chromeos) {
+  # Set the path to use orderfile for linking Chrome
+  # Note that this is for using only one orderfile for linking
+  # the Chrome binary/library.
+  declare_args() {
+    chrome_orderfile_path = ""
+
+    if (defined(default_chrome_orderfile)) {
+      # Allow downstream tools to set orderfile path with
+      # another variable.
+      chrome_orderfile_path = default_chrome_orderfile
+    } else if (is_win && is_clang && is_official_build) {
+      chrome_orderfile_path = "//chrome/build/chrome.$target_cpu.orderfile"
+    } else if (is_chromeos) {
+      # FIXME(tcwang): update this with autoroller.
+      chrome_orderfile_path = ""
+    }
+  }
+}
+
 # default_include_dirs ---------------------------------------------------------
 #
 # This is a separate config so that third_party code (which would not use the
@@ -216,6 +239,9 @@ config("compiler") {
     configs += [ "//build/config/android:compiler" ]
   } else if (is_linux) {
     configs += [ "//build/config/linux:compiler" ]
+    if (is_chromeos) {
+      configs += [ "//build/config/chromeos:compiler" ]
+    }
   } else if (is_nacl) {
     configs += [ "//build/config/nacl:compiler" ]
   } else if (is_mac) {
@@ -655,9 +681,9 @@ config("compiler") {
   if (compiler_timing) {
     if (is_clang) {
       if (is_win) {
-        cflags += [ "/clang:-ftime-report" ]
+        cflags += [ "/clang:-ftime-trace" ]
       } else {
-        cflags += [ "-ftime-report" ]
+        cflags += [ "-ftime-trace" ]
       }
     } else if (is_win) {
       cflags += [
@@ -713,7 +739,7 @@ config("compiler_cpu_abi") {
     if (current_cpu == "x64") {
       cflags += [
         "-m64",
-        "-march=x86-64",
+        "-march=$x64_arch",
       ]
       ldflags += [ "-m64" ]
     } else if (current_cpu == "x86") {
@@ -1431,6 +1457,12 @@ config("default_warnings") {
         "-Wno-narrowing",
       ]
 
+      # -Wno-class-memaccess warns about hash table and vector in blink.
+      # But the violation is intentional.
+      if (!is_nacl) {
+        cflags_cc += [ "-Wno-class-memaccess" ]
+      }
+
       # -Wunused-local-typedefs is broken in gcc,
       # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63872
       cflags += [ "-Wno-unused-local-typedefs" ]
@@ -1500,12 +1532,6 @@ config("default_warnings") {
           # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
           "-Wno-ignored-pragma-optimize",
         ]
-        if (is_fuchsia) {
-          cflags += [
-            # TODO(hans): https://crbug.com/890307
-            "-Wno-defaulted-function-deleted",
-          ]
-        }
       }
     }
   }
@@ -1567,11 +1593,16 @@ config("chromium_code") {
       # For intentional fallthrough, use FALLTHROUGH; from
       # base/compiler_specific.h
       "-Wimplicit-fallthrough",
-
-      # Thread safety analysis. See base/thread_annotations.h and
-      # https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
-      "-Wthread-safety",
     ]
+
+    # Thread safety analysis is broken under nacl: https://crbug.com/982423.
+    if (!is_nacl) {
+      cflags += [
+        # Thread safety analysis. See base/thread_annotations.h and
+        # https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
+        "-Wthread-safety",
+      ]
+    }
 
     # TODO(thakis): Enable this for more platforms, https://crbug.com/926235
     # ChromeOS: http://crbug.com/940863
@@ -2327,17 +2358,15 @@ config("symbols") {
 # when crash happens in unittests running on buildbot.
 config("minimal_symbols") {
   if (is_win) {
-    # Linker symbols for backtraces only.
+    # Functions, files, and line tables only.
     cflags = []
     ldflags = [ "/DEBUG" ]
 
     # All configs using /DEBUG should include this:
     configs = [ ":win_pdbaltpath" ]
 
-    # For win/asan, get stack traces with full line numbers.
-    # AddressSanitizerTests.TestAddressSanitizer needs this, and since
-    # win/asan isn't a default cq bot the build time hit is ok.
-    if (is_clang && using_sanitizer) {
+    # Enable line tables for clang. MSVC doesn't have an equivalent option.
+    if (is_clang) {
       # -gline-tables-only is the same as -g1, but clang-cl only exposes the
       # former.
       cflags += [ "-gline-tables-only" ]
@@ -2421,5 +2450,47 @@ if (is_ios || is_mac) {
     common_flags = [ "-fobjc-arc" ]
     cflags_objc = common_flags
     cflags_objcc = common_flags
+  }
+}
+
+if (is_chromeos) {
+  # This config is intended to be a temporary to facilitate
+  # the transition to use orderfile in Chrome OS. Once orderfile
+  # use becomes a default in Chrome OS, this config should not
+  # be needed.
+  config("use_orderfile_for_hugepage") {
+    if (chrome_orderfile_path != "") {
+      defines = [ "CHROMEOS_ORDERFILE_USE" ]
+    }
+  }
+}
+
+if (is_win || is_android || is_chromeos) {
+  # Use orderfile for linking Chrome on win, android, and Chrome OS.
+  # This config enables using an orderfile for linking in LLD.
+  config("chrome_orderfile_config") {
+    if (chrome_orderfile_path != "") {
+      assert(use_lld)
+      _rebased_orderfile = rebase_path(chrome_orderfile_path, root_build_dir)
+      if (is_android || is_chromeos) {
+        ldflags = [
+          "-Wl,--symbol-ordering-file",
+          "-Wl,$_rebased_orderfile",
+          "-Wl,--no-warn-symbol-ordering",
+        ]
+      } else {
+        ldflags = [
+          "/order:@$_rebased_orderfile",
+
+          # Ignore warnings about missing functions or functions not in their
+          # own section.
+          "/ignore:4037",
+          "/ignore:4065",
+        ]
+      }
+      inputs = [
+        chrome_orderfile_path,
+      ]
+    }
   }
 }

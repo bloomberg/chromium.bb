@@ -394,13 +394,10 @@ void EnterpriseEnrollmentHelperImpl::ReportAuthStatus(
     const GoogleServiceAuthError& error) {
   switch (error.state()) {
     case GoogleServiceAuthError::NONE:
-    case GoogleServiceAuthError::CAPTCHA_REQUIRED:
-    case GoogleServiceAuthError::TWO_FACTOR:
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::REQUEST_CANCELED:
     case GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE:
     case GoogleServiceAuthError::SERVICE_ERROR:
-    case GoogleServiceAuthError::WEB_LOGIN_REQUIRED:
       UMA(policy::kMetricEnrollmentLoginFailed);
       LOG(ERROR) << "Auth error " << error.state();
       break;
@@ -408,20 +405,11 @@ void EnterpriseEnrollmentHelperImpl::ReportAuthStatus(
       UMA(policy::kMetricEnrollmentAccountNotSignedUp);
       LOG(ERROR) << "Account not signed up " << error.state();
       break;
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-      UMA(policy::kMetricEnrollmentAccountDeleted);
-      LOG(ERROR) << "Account deleted " << error.state();
-      break;
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
-      UMA(policy::kMetricEnrollmentAccountDisabled);
-      LOG(ERROR) << "Account disabled " << error.state();
-      break;
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
       UMA(policy::kMetricEnrollmentNetworkFailed);
       LOG(WARNING) << "Network error " << error.state();
       break;
-    case GoogleServiceAuthError::HOSTED_NOT_ALLOWED_DEPRECATED:
     case GoogleServiceAuthError::NUM_STATES:
       NOTREACHED();
       break;
@@ -465,6 +453,7 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
           UMA(policy::kMetricEnrollmentRegisterPolicyTempUnavailable);
           break;
         case policy::DM_STATUS_HTTP_STATUS_ERROR:
+        case policy::DM_STATUS_REQUEST_TOO_LARGE:
           UMA(policy::kMetricEnrollmentRegisterPolicyHttpError);
           break;
         case policy::DM_STATUS_RESPONSE_DECODING_ERROR:

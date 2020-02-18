@@ -109,27 +109,39 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
       const base::TaskTraits& traits);
 
   // base::TaskExecutor implementation.
-  bool PostDelayedTaskWithTraits(const base::Location& from_here,
-                                 const base::TaskTraits& traits,
-                                 base::OnceClosure task,
-                                 base::TimeDelta delay) override;
+  bool PostDelayedTask(const base::Location& from_here,
+                       const base::TaskTraits& traits,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override;
 
-  scoped_refptr<base::TaskRunner> CreateTaskRunnerWithTraits(
+  scoped_refptr<base::TaskRunner> CreateTaskRunner(
       const base::TaskTraits& traits) override;
 
-  scoped_refptr<base::SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
+  scoped_refptr<base::SequencedTaskRunner> CreateSequencedTaskRunner(
       const base::TaskTraits& traits) override;
 
-  scoped_refptr<base::SingleThreadTaskRunner>
-  CreateSingleThreadTaskRunnerWithTraits(
+  scoped_refptr<base::SingleThreadTaskRunner> CreateSingleThreadTaskRunner(
       const base::TaskTraits& traits,
       base::SingleThreadTaskRunnerThreadMode thread_mode) override;
 
 #if defined(OS_WIN)
-  scoped_refptr<base::SingleThreadTaskRunner> CreateCOMSTATaskRunnerWithTraits(
+  scoped_refptr<base::SingleThreadTaskRunner> CreateCOMSTATaskRunner(
       const base::TaskTraits& traits,
       base::SingleThreadTaskRunnerThreadMode thread_mode) override;
 #endif  // defined(OS_WIN)
+
+#if DCHECK_IS_ON()
+  // Adds a Validator for |traits|. It is assumed the lifetime of |validator| is
+  // is longer than that of the BrowserTaskExecutor unless RemoveValidator
+  // is called. Does nothing if the BrowserTaskExecutor is not registered.
+  static void AddValidator(const base::TaskTraits& traits,
+                           BrowserTaskQueues::Validator* validator);
+
+  // Removes a Validator previously added by AddValidator. Does nothing if the
+  // BrowserTaskExecutor is not registered.
+  static void RemoveValidator(const base::TaskTraits& traits,
+                              BrowserTaskQueues::Validator* validator);
+#endif  // DCHECK_IS_ON()
 
  private:
   friend class BrowserTaskExecutorTest;
@@ -155,10 +167,10 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
       const base::TaskTraits& traits) const;
 
   std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler_;
-  BrowserUIThreadScheduler::Handle browser_ui_thread_handle_;
+  scoped_refptr<BrowserUIThreadScheduler::Handle> browser_ui_thread_handle_;
 
   std::unique_ptr<BrowserIOTaskEnvironment> browser_io_task_environment_;
-  BrowserIOTaskEnvironment::Handle browser_io_thread_handle_;
+  scoped_refptr<BrowserIOTaskEnvironment::Handle> browser_io_thread_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTaskExecutor);
 };

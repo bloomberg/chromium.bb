@@ -17,10 +17,8 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/common/google_util.h"
-#include "components/signin/core/browser/chrome_connected_header_helper.h"
-#include "components/signin/core/browser/signin_header_helper.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
@@ -208,8 +206,7 @@ SearchSuggestLoaderImpl::SearchSuggestLoaderImpl(
     const std::string& application_locale)
     : url_loader_factory_(url_loader_factory),
       google_url_tracker_(google_url_tracker),
-      application_locale_(application_locale),
-      weak_ptr_factory_(this) {}
+      application_locale_(application_locale) {}
 
 SearchSuggestLoaderImpl::~SearchSuggestLoaderImpl() = default;
 
@@ -269,8 +266,7 @@ void SearchSuggestLoaderImpl::LoadDone(
   }
 
   data_decoder::SafeJsonParser::Parse(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      response,
+      content::GetSystemConnector(), response,
       base::BindOnce(&SearchSuggestLoaderImpl::JsonParsed,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&SearchSuggestLoaderImpl::JsonParseFailed,

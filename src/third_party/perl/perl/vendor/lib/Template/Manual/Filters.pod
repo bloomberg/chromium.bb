@@ -13,6 +13,8 @@
 #
 #========================================================================
 
+=encoding latin1
+
 =head1 NAME
 
 Template::Manual::Filters - Standard filters
@@ -125,7 +127,7 @@ equally as comprehensive) to perform the encoding.
 If one or other of these modules are installed on your system then the text
 will be encoded (via the C<escape_html()> or C<encode_entities()> subroutines
 respectively) to convert all extended characters into their appropriate HTML
-entities (e.g. converting 'C<é>' to 'C<&eacute;>'). If neither module is
+entities (e.g. converting 'C<?>' to 'C<&eacute;>'). If neither module is
 available on your system then an 'C<html_entity>' exception will be thrown
 reporting an appropriate message.
 
@@ -204,7 +206,7 @@ Output:
 =head1 uri
 
 This filter URI escapes the input text, converting any characters 
-outside of the permitted URI character set (as defined by RFC 2396)
+outside of the permitted URI character set (as defined by RFC 3986)
 into a C<%nn> hex escape.
 
     [% 'my file.html' | uri %]
@@ -256,9 +258,24 @@ you should use the B<url> (note spelling) filter for this purpose.
 Please note that this behaviour was changed in version 2.16 of the 
 Template Toolkit.  Prior to that, the uri filter did not encode the
 reserved characters, making it technically incorrect according to the
-RFC 2396 specification.  So we fixed it in 2.16 and provided the url
-filter to implement the old behaviour of not encoding reserved 
-characters.
+RFC 2396 specification (since superceded by RFC2732 and RFC3986).  So we 
+fixed it in 2.16 and provided the url filter to implement the old behaviour 
+of not encoding reserved characters.
+
+As of version 2.28 of the Template Toolkit, the C<uri> and L<url> filters
+use the unsafe character set defined by RFC3986.  This means that certain
+characters ("(", ")", "*", "!", "'", and '"') are now deemed unsafe and
+will be escaped as hex character sequences.
+
+The ability to use the RFC3986 character set was added in 2.26 but not
+enabled by default; double quote was incorrectly deemed safe in 2.26 but
+correctly escaped in 2.27.
+
+If you want to enable the old behaviour then call the C<use_rfc2732()>
+method in L<Template::Filters>
+
+    use Template::Filters
+    Template::Filters->use_rfc2732;
 
 =head1 url
 

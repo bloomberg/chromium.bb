@@ -478,7 +478,7 @@ class PlatformKeysService::SelectTask : public Task {
             certificate->cert_buffer(), &unused_key_size, &actual_key_type);
         const std::vector<net::X509Certificate::PublicKeyType>& accepted_types =
             request_.certificate_key_types;
-        if (!base::ContainsValue(accepted_types, actual_key_type))
+        if (!base::Contains(accepted_types, actual_key_type))
           continue;
       }
 

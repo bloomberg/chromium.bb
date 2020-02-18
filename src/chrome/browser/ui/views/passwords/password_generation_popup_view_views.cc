@@ -46,24 +46,21 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
             const base::string16& suggestion,
             PasswordGenerationPopupController::GenerationUIState state) {
     views::GridLayout* layout =
-        SetLayoutManager(std::make_unique<views::GridLayout>(this));
+        SetLayoutManager(std::make_unique<views::GridLayout>());
     BuildColumnSet(layout);
     layout->StartRow(views::GridLayout::kFixedSize, 0);
 
-    layout->AddView(
-        autofill::CreateLabelWithColorReadabilityDisabled(
-            suggestion, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-            state == PasswordGenerationPopupController::kOfferGeneration
-                ? views::style::STYLE_PRIMARY
-                : STYLE_SECONDARY)
-            .release());
+    layout->AddView(autofill::CreateLabelWithColorReadabilityDisabled(
+        suggestion, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+        state == PasswordGenerationPopupController::kOfferGeneration
+            ? views::style::STYLE_PRIMARY
+            : STYLE_SECONDARY));
 
     DCHECK(!password_label_);
-    password_label_ = autofill::CreateLabelWithColorReadabilityDisabled(
-                          password, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                          STYLE_SECONDARY_MONOSPACED)
-                          .release();
-    layout->AddView(password_label_);
+    password_label_ =
+        layout->AddView(autofill::CreateLabelWithColorReadabilityDisabled(
+            password, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+            STYLE_SECONDARY_MONOSPACED));
   }
 
   void UpdatePassword(const base::string16& password) {
@@ -83,8 +80,10 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
     column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                           0 /* resize_percent */, views::GridLayout::USE_PREF,
                           0, 0);
-    column_set->AddPaddingColumn(0 /* resize_percent */,
-                                 AutofillPopupBaseView::kValueLabelPadding);
+    column_set->AddPaddingColumn(
+        0 /* resize_percent */,
+        ChromeLayoutProvider::Get()->GetDistanceMetric(
+            DISTANCE_BETWEEN_PRIMARY_AND_SECONDARY_LABELS_HORIZONTAL));
     column_set->AddColumn(views::GridLayout::TRAILING,
                           views::GridLayout::CENTER, 1.0 /* resize_percent */,
                           views::GridLayout::USE_PREF, 0, 0);
@@ -159,7 +158,7 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
   // Add 1px distance between views for the separator.
   views::BoxLayout* box_layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, gfx::Insets(), 1));
+          views::BoxLayout::Orientation::kVertical, gfx::Insets(), 1));
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 

@@ -8,13 +8,16 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/activity_flags.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_init.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
@@ -35,12 +38,10 @@ std::unique_ptr<base::Thread> CreateAndStartIOThread() {
   // TODO(sad): We do not need the IO thread once gpu has a separate process.
   // It should be possible to use |main_task_runner_| for doing IO tasks.
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
-  thread_options.priority = base::ThreadPriority::NORMAL;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
   // TODO(reveman): Remove this in favor of setting it explicitly for each
   // type of process.
-  thread_options.priority = base::ThreadPriority::DISPLAY;
-#endif
+  if (base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority))
+    thread_options.priority = base::ThreadPriority::DISPLAY;
   auto io_thread = std::make_unique<base::Thread>("GpuIOThread");
   CHECK(io_thread->StartWithOptions(thread_options));
   return io_thread;
@@ -66,24 +67,22 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
     : delegate_(delegate),
       dependencies_(std::move(dependencies)),
       gpu_init_(std::move(gpu_init)),
-      gpu_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      binding_(this),
-      associated_binding_(this) {
+      gpu_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(gpu_init_);
 
   // TODO(crbug.com/609317): Remove this when Mus Window Server and GPU are
   // split into separate processes. Until then this is necessary to be able to
   // run Mushrome (chrome with mus) with Mus running in the browser process.
-  if (!base::PowerMonitor::Get()) {
-    power_monitor_ = std::make_unique<base::PowerMonitor>(
+  if (!base::PowerMonitor::IsInitialized()) {
+    base::PowerMonitor::Initialize(
         std::make_unique<base::PowerMonitorDeviceSource>());
   }
 
   if (!dependencies_.io_thread_task_runner)
     io_thread_ = CreateAndStartIOThread();
   if (dependencies_.create_display_compositor) {
-    viz_compositor_thread_runner_ =
-        std::make_unique<VizCompositorThreadRunner>();
+    viz_compositor_thread_runner_ = std::make_unique<VizCompositorThreadRunner>(
+        gpu_init_->gpu_preferences().message_loop_type);
     if (delegate_) {
       delegate_->PostCompositorThreadCreated(
           viz_compositor_thread_runner_->task_runner());
@@ -97,7 +96,7 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
       gpu_init_->gpu_feature_info(), gpu_init_->gpu_preferences(),
       gpu_init_->gpu_info_for_hardware_gpu(),
       gpu_init_->gpu_feature_info_for_hardware_gpu(),
-      gpu_init_->vulkan_implementation(),
+      gpu_init_->gpu_extra_info(), gpu_init_->vulkan_implementation(),
       base::BindOnce(&VizMainImpl::ExitProcess, base::Unretained(this)));
   if (dependencies_.create_display_compositor)
     gpu_service_->set_oopd_enabled();
@@ -114,8 +113,7 @@ VizMainImpl::~VizMainImpl() {
   // compositor first, before destroying the gpu service. However, before the
   // compositor is destroyed, close the binding, so that the gpu service doesn't
   // need to process commands from the host as it is shutting down.
-  binding_.Close();
-  associated_binding_.Close();
+  receiver_.reset();
 
   // If the VizCompositorThread was started then this will block until the
   // thread has been shutdown. All RootCompositorFrameSinks must be destroyed
@@ -131,12 +129,9 @@ void VizMainImpl::SetLogMessagesForHost(LogMessages log_messages) {
   log_messages_ = std::move(log_messages);
 }
 
-void VizMainImpl::Bind(mojom::VizMainRequest request) {
-  binding_.Bind(std::move(request));
-}
-
-void VizMainImpl::BindAssociated(mojom::VizMainAssociatedRequest request) {
-  associated_binding_.Bind(std::move(request));
+void VizMainImpl::BindAssociated(
+    mojo::PendingAssociatedReceiver<mojom::VizMain> pending_receiver) {
+  receiver_.Bind(std::move(pending_receiver));
 }
 
 #if defined(USE_OZONE)
@@ -151,13 +146,15 @@ void VizMainImpl::BindInterface(const std::string& interface_name,
 #endif
 
 void VizMainImpl::CreateGpuService(
-    mojom::GpuServiceRequest request,
-    mojom::GpuHostPtr gpu_host,
+    mojo::PendingReceiver<mojom::GpuService> pending_receiver,
+    mojo::PendingRemote<mojom::GpuHost> pending_gpu_host,
     discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
         discardable_memory_manager,
     mojo::ScopedSharedBufferHandle activity_flags,
     gfx::FontRenderParams::SubpixelRendering subpixel_rendering) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
+
+  mojo::Remote<mojom::GpuHost> gpu_host(std::move(pending_gpu_host));
 
   // If GL is disabled then don't try to collect GPUInfo, we're not using GPU.
   if (gl::GetGLImplementation() != gl::kGLImplementationDisabled)
@@ -192,9 +189,9 @@ void VizMainImpl::CreateGpuService(
       gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
           subpixel_rendering));
 
-  gpu_service_->Bind(std::move(request));
+  gpu_service_->Bind(std::move(pending_receiver));
   gpu_service_->InitializeWithHost(
-      std::move(gpu_host),
+      gpu_host.Unbind(),
       gpu::GpuProcessActivityFlags(std::move(activity_flags)),
       gpu_init_->TakeDefaultOffscreenSurface(),
       dependencies_.sync_point_manager, dependencies_.shared_image_manager,
@@ -279,8 +276,7 @@ void VizMainImpl::ExitProcess() {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
 
   // Close mojom::VizMain bindings first so the browser can't try to reconnect.
-  binding_.Close();
-  associated_binding_.Close();
+  receiver_.reset();
 
   if (viz_compositor_thread_runner_) {
     // OOP-D requires destroying RootCompositorFrameSinkImpls on the compositor

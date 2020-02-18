@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_system_info_view.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -170,8 +171,8 @@ BatteryView::BatteryView()
       status_(new views::Label) {
   PowerStatus::Get()->AddObserver(this);
 
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
 
   separator_->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_STATUS_SEPARATOR));
@@ -248,7 +249,8 @@ ManagedStateView::ManagedStateView(views::ButtonListener* listener,
                                    const gfx::VectorIcon& icon)
     : Button(listener) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), kUnifiedSystemInfoSpacing));
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+      kUnifiedSystemInfoSpacing));
 
   auto* label = new views::Label;
   label->SetAutoColorReadabilityEnabled(false);
@@ -374,11 +376,9 @@ SupervisedUserView::SupervisedUserView()
 }  // namespace
 
 UnifiedSystemInfoView::UnifiedSystemInfoView(
-    UnifiedSystemTrayController* controller)
-    : enterprise_managed_(new EnterpriseManagedView(controller)),
-      supervised_(new SupervisedUserView()) {
+    UnifiedSystemTrayController* controller) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, kUnifiedSystemInfoViewPadding,
+      views::BoxLayout::Orientation::kHorizontal, kUnifiedSystemInfoViewPadding,
       kUnifiedSystemInfoSpacing));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
@@ -398,8 +398,13 @@ UnifiedSystemInfoView::UnifiedSystemInfoView(
   AddChildView(spacing);
   layout->SetFlexForView(spacing, 1);
 
-  AddChildView(enterprise_managed_);
-  AddChildView(supervised_);
+  if (!features::IsManagedDeviceUIRedesignEnabled()) {
+    // UnifiedManagedDeviceView is shown instead.
+    enterprise_managed_ = new EnterpriseManagedView(controller);
+    supervised_ = new SupervisedUserView();
+    AddChildView(enterprise_managed_);
+    AddChildView(supervised_);
+  }
 }
 
 UnifiedSystemInfoView::~UnifiedSystemInfoView() = default;

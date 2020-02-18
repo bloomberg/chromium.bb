@@ -9,7 +9,6 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
@@ -18,8 +17,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-@class Tab;
 
 using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OpenLinkInNewTabButton;
@@ -58,87 +55,86 @@ const char kLinksTestURL2Text[] = "arrived";
   const GURL URL1 = self.testServer->GetURL(kLinksTestURL1);
 
   // Create a tab that will act as the parent tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL1Text]);
-  Tab* parentTab = chrome_test_util::GetCurrentTab();
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL1Text];
+  web::WebState* parentWebState = GetCurrentWebState();
 
   // Child tab should be inserted after the parent.
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewInWebState(parentWebState)]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:kLinkSelectorID],
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2U]);
-  Tab* childTab1 = chrome_test_util::GetNextTab();
+  [ChromeEarlGrey waitForMainTabCount:2U];
+  web::WebState* childWebState1 = chrome_test_util::GetNextWebState();
 
-  // New child tab should be inserted AFTER |childTab1|.
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+  // New child tab should be inserted AFTER |childWebState1|.
+  [[EarlGrey selectElementWithMatcher:WebViewInWebState(parentWebState)]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:kLinkSelectorID],
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:3U]);
-  GREYAssertEqual(childTab1, chrome_test_util::GetNextTab(),
+  [ChromeEarlGrey waitForMainTabCount:3U];
+  GREYAssertEqual(childWebState1, chrome_test_util::GetNextWebState(),
                   @"Unexpected next tab");
 
   // Navigate the parent tab away and again to |kLinksTestURL1| to break
   // grouping with the current child tabs. Total number of tabs should not
   // change.
   const GURL URL2 = self.testServer->GetURL(kLinksTestURL2);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL2]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL2Text]);
+  [ChromeEarlGrey loadURL:URL2];
+  [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL2Text];
   GREYAssertEqual(3U, [ChromeEarlGrey mainTabCount],
                   @"Unexpected number of tabs");
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL1]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL1Text]);
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kLinksTestURL1Text];
   GREYAssertEqual(3U, [ChromeEarlGrey mainTabCount],
                   @"Unexpected number of tabs");
 
-  // New child tab should be inserted BEFORE |childTab1|.
+  // New child WebState should be inserted BEFORE |childWebState1|.
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:kLinkSelectorID],
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:4U]);
-  Tab* childTab3 = chrome_test_util::GetNextTab();
-  GREYAssertNotEqual(childTab1, childTab3, @"Unexpected next tab");
+  [ChromeEarlGrey waitForMainTabCount:4U];
+  web::WebState* childWebState3 = chrome_test_util::GetNextWebState();
+  GREYAssertNotEqual(childWebState1, childWebState3,
+                     @"Unexpected next web state");
 
-  // New child tab should be inserted AFTER |childTab3|.
+  // New child WebState should be inserted AFTER |childWebState3|.
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:kLinkSelectorID],
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:5U]);
-  GREYAssertEqual(childTab3, chrome_test_util::GetNextTab(),
-                  @"Unexpected next tab");
+  [ChromeEarlGrey waitForMainTabCount:5U];
+  GREYAssertEqual(childWebState3, chrome_test_util::GetNextWebState(),
+                  @"Unexpected next web state");
 
-  // Verify that |childTab1| is now at index 3.
+  // Verify that |childWebState1| is now at index 3.
   [ChromeEarlGrey selectTabAtIndex:3];
-  GREYAssertEqual(childTab1, chrome_test_util::GetCurrentTab(),
-                  @"Unexpected current tab");
+  GREYAssertEqual(childWebState1, GetCurrentWebState(),
+                  @"Unexpected current web state");
 
   // Add a non-owned tab. It should be added at the end and marked as the
-  // current tab. Next tab should wrap back to index 0, the original parent tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:6U]);
-  GREYAssertEqual(parentTab, chrome_test_util::GetNextTab(),
-                  @"Unexpected next tab");
+  // current web state. Next web state should wrap back to index 0, the original
+  // parent web state.
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey waitForMainTabCount:6U];
+  GREYAssertEqual(parentWebState, chrome_test_util::GetNextWebState(),
+                  @"Unexpected next web state");
 
-  // Verify that |anotherTab| is at index 5.
-  Tab* anotherTab = chrome_test_util::GetCurrentTab();
+  // Verify that |anotherWebState| is at index 5.
+  web::WebState* anotherWebState = GetCurrentWebState();
   [ChromeEarlGrey selectTabAtIndex:5];
-  GREYAssertEqual(anotherTab, chrome_test_util::GetCurrentTab(),
-                  @"Unexpected current tab");
+  GREYAssertEqual(anotherWebState, GetCurrentWebState(),
+                  @"Unexpected current web state");
 }
 
 @end

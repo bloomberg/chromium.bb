@@ -14,10 +14,7 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw(struct);
 
-$VERSION = '0.63';
-
-## Tested on 5.002 and 5.003 without class membership tests:
-my $CHECK_CLASS_MEMBERSHIP = ($] >= 5.003_95);
+$VERSION = '0.65';
 
 my $print = 0;
 sub printem {
@@ -130,6 +127,9 @@ sub struct {
     elsif( $base_type eq 'ARRAY' ){
         $out .= "    my(\$r) = [];\n";
     }
+
+    $out .= " bless \$r, \$class;\n\n";
+
     while( $idx < @decls ){
         $name = $decls[$idx];
         $type = $decls[$idx+1];
@@ -150,24 +150,24 @@ sub struct {
         if( $type eq '@' ){
             $out .= "    croak 'Initializer for $name must be array reference'\n"; 
             $out .= "        if defined(\$init{'$name'}) && ref(\$init{'$name'}) ne 'ARRAY';\n";
-            $out .= "    \$r->$elem = $init [];$cmt\n"; 
+            $out .= "    \$r->$name( $init [] );$cmt\n"; 
             $arrays{$name}++;
         }
         elsif( $type eq '%' ){
             $out .= "    croak 'Initializer for $name must be hash reference'\n";
             $out .= "        if defined(\$init{'$name'}) && ref(\$init{'$name'}) ne 'HASH';\n";
-            $out .= "    \$r->$elem = $init {};$cmt\n";
+            $out .= "    \$r->$name( $init {} );$cmt\n";
             $hashes{$name}++;
         }
         elsif ( $type eq '$') {
-            $out .= "    \$r->$elem = $init undef;$cmt\n";
+            $out .= "    \$r->$name( $init undef );$cmt\n";
         }
         elsif( $type =~ /^\w+(?:::\w+)*$/ ){
             $out .= "    if (defined(\$init{'$name'})) {\n";
            $out .= "       if (ref \$init{'$name'} eq 'HASH')\n";
-            $out .= "            { \$r->$elem = $type->new(\%{\$init{'$name'}}) } $cmt\n";
+            $out .= "            { \$r->$name( $type->new(\%{\$init{'$name'}}) ) } $cmt\n";
            $out .= "       elsif (UNIVERSAL::isa(\$init{'$name'}, '$type'))\n";
-            $out .= "            { \$r->$elem = \$init{'$name'} } $cmt\n";
+            $out .= "            { \$r->$name( \$init{'$name'} ) } $cmt\n";
             $out .= "       else { croak 'Initializer for $name must be hash or $type reference' }\n";
             $out .= "    }\n";
             $classes{$name} = $type;
@@ -178,7 +178,8 @@ sub struct {
         }
         $idx += 2;
     }
-    $out .= "    bless \$r, \$class;\n  }\n";
+
+    $out .= "\n \$r;\n}\n";
 
     # Create accessor methods.
 
@@ -216,9 +217,7 @@ sub struct {
                 $sel = "->{\$i}";
             }
             elsif( defined $classes{$name} ){
-                if ( $CHECK_CLASS_MEMBERSHIP ) {
-                    $out .= "    croak '$name argument is wrong class' if \@_ && ! UNIVERSAL::isa(\$_[0], '$classes{$name}');\n";
-                }
+                $out .= "    croak '$name argument is wrong class' if \@_ && ! UNIVERSAL::isa(\$_[0], '$classes{$name}');\n";
             }
             $out .= "    croak 'Too many args to $name' if \@_ > 1;\n";
             $out .= "    \@_ ? ($pre\$r->$elem$sel = shift$pst) : $pre\$r->$elem$sel$pst;\n";
@@ -263,10 +262,11 @@ Class::Struct - declare struct-like datatypes as Perl classes
     struct( ELEMENT_NAME => ELEMENT_TYPE, ... );
 
     # Declare struct at compile time
-    use Class::Struct CLASS_NAME => [ ELEMENT_NAME => ELEMENT_TYPE, ... ];
-    use Class::Struct CLASS_NAME => { ELEMENT_NAME => ELEMENT_TYPE, ... };
+    use Class::Struct CLASS_NAME => [ELEMENT_NAME => ELEMENT_TYPE, ...];
+    use Class::Struct CLASS_NAME => {ELEMENT_NAME => ELEMENT_TYPE, ...};
 
-    # declare struct at compile time, based on array, implicit class name:
+    # declare struct at compile time, based on array, implicit
+    # class name:
     package CLASS_NAME;
     use Class::Struct ELEMENT_NAME => ELEMENT_TYPE, ... ;
 
@@ -476,11 +476,12 @@ type C<Timeval>.
         tv_usecs => '$',        # microseconds
     ]);
 
-        # create an object:
-    my $t = Rusage->new(ru_utime=>Timeval->new(), ru_stime=>Timeval->new());
+    # create an object:
+    my $t = Rusage->new(ru_utime=>Timeval->new(),
+        ru_stime=>Timeval->new());
 
-        # $t->ru_utime and $t->ru_stime are objects of type Timeval.
-        # set $t->ru_utime to 100.0 sec and $t->ru_stime to 5.0 sec.
+    # $t->ru_utime and $t->ru_stime are objects of type Timeval.
+    # set $t->ru_utime to 100.0 sec and $t->ru_stime to 5.0 sec.
     $t->ru_utime->tv_secs(100);
     $t->ru_utime->tv_usecs(0);
     $t->ru_stime->tv_secs(5);
@@ -550,16 +551,16 @@ that are passed on to the nested struct's constructor.
     ];
 
 
-    my $cat = Cat->new( name     => 'Socks',
-                        kittens  => ['Monica', 'Kenneth'],
-                        markings => { socks=>1, blaze=>"white" },
-                        breed    => Breed->new(name=>'short-hair', cross=>1),
-                   or:  breed    => {name=>'short-hair', cross=>1},
+    my $cat = Cat->new( name => 'Socks',
+               kittens  => ['Monica', 'Kenneth'],
+               markings => { socks=>1, blaze=>"white" },
+               breed    => Breed->new(name=>'short-hair', cross=>1),
+          or:  breed    => {name=>'short-hair', cross=>1},
                       );
 
     print "Once a cat called ", $cat->name, "\n";
     print "(which was a ", $cat->breed->name, ")\n";
-    print "had two kittens: ", join(' and ', @{$cat->kittens}), "\n";
+    print "had 2 kittens: ", join(' and ', @{$cat->kittens}), "\n";
 
 =back
 
@@ -630,7 +631,7 @@ Originally C<Class::Template> by Dean Roehrich.
     #  - Now using my() rather than local().
     #
     # Uses perl5 classes to create nested data types.
-    # This is offered as one implementation of Tom Christiansen's "structs.pl"
-    # idea.
+    # This is offered as one implementation of Tom Christiansen's
+    # "structs.pl" idea.
 
 =cut

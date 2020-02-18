@@ -33,6 +33,7 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
 
   // network::mojom::NetworkServiceClient implementation:
   void OnAuthRequired(
+      const base::Optional<base::UnguessableToken>& window_id,
       uint32_t process_id,
       uint32_t routing_id,
       uint32_t request_id,
@@ -55,18 +56,6 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
                              const net::SSLInfo& ssl_info,
                              bool fatal,
                              OnSSLCertificateErrorCallback response) override;
-  void OnCookiesRead(int process_id,
-                     int routing_id,
-                     const GURL& url,
-                     const GURL& first_party_url,
-                     const net::CookieList& cookie_list,
-                     bool blocked_by_policy) override;
-  void OnCookieChange(int process_id,
-                      int routing_id,
-                      const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override;
 #if defined(OS_CHROMEOS)
   void OnTrustAnchorUsed(const std::string& username_hash) override;
 #endif
@@ -87,14 +76,19 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
       const std::string& spn,
       OnGenerateHttpNegotiateAuthTokenCallback callback) override;
 #endif
-  void OnFlaggedRequestCookies(
+  void OnRawRequest(
       int32_t process_id,
       int32_t routing_id,
-      const net::CookieStatusList& excluded_cookies) override;
-  void OnFlaggedResponseCookies(
+      const std::string& devtools_request_id,
+      const net::CookieStatusList& cookies_with_status,
+      std::vector<network::mojom::HttpRawHeaderPairPtr> headers) override;
+  void OnRawResponse(
       int32_t process_id,
       int32_t routing_id,
-      const net::CookieAndLineStatusList& excluded_cookies) override;
+      const std::string& devtools_request_id,
+      const net::CookieAndLineStatusList& cookies_with_status,
+      std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
+      const base::Optional<std::string>& raw_response_headers) override;
 
  private:
   bool upload_files_invalid_ = false;

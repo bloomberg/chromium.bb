@@ -27,9 +27,7 @@
 #include "remoting/signaling/ftl_signal_strategy.h"
 #include "remoting/signaling/log_to_server.h"
 #include "remoting/signaling/server_log_entry.h"
-#include "remoting/signaling/signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
-#include "remoting/signaling/xmpp_signal_strategy.h"
 
 namespace remoting {
 
@@ -75,48 +73,42 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
     false,
 };
 
-using HeartbeatResponseCallback =
-    base::OnceCallback<void(const grpc::Status&,
-                            const apis::v1::HeartbeatResponse&)>;
-
 }  // namespace
 
-class HeartbeatSender::HeartbeatClient final {
+class HeartbeatSender::HeartbeatClientImpl final
+    : public HeartbeatSender::HeartbeatClient {
  public:
-  HeartbeatClient(OAuthTokenGetter* oauth_token_getter);
-  ~HeartbeatClient();
+  explicit HeartbeatClientImpl(OAuthTokenGetter* oauth_token_getter);
+  ~HeartbeatClientImpl() override;
 
   void Heartbeat(const apis::v1::HeartbeatRequest& request,
-                 HeartbeatResponseCallback callback);
-  void CancelPendingRequests();
-  void SetChannelForTest(GrpcChannelSharedPtr channel);
+                 HeartbeatResponseCallback callback) override;
+  void CancelPendingRequests() override;
 
  private:
   using DirectoryService = apis::v1::RemotingDirectoryService;
   std::unique_ptr<DirectoryService::Stub> directory_;
   GrpcAuthenticatedExecutor executor_;
-  DISALLOW_COPY_AND_ASSIGN(HeartbeatClient);
+  DISALLOW_COPY_AND_ASSIGN(HeartbeatClientImpl);
 };
 
-HeartbeatSender::HeartbeatClient::HeartbeatClient(
+HeartbeatSender::HeartbeatClientImpl::HeartbeatClientImpl(
     OAuthTokenGetter* oauth_token_getter)
     : executor_(oauth_token_getter) {
   directory_ = DirectoryService::NewStub(CreateSslChannelForEndpoint(
       ServiceUrls::GetInstance()->remoting_server_endpoint()));
 }
 
-HeartbeatSender::HeartbeatClient::~HeartbeatClient() = default;
+HeartbeatSender::HeartbeatClientImpl::~HeartbeatClientImpl() = default;
 
-void HeartbeatSender::HeartbeatClient::Heartbeat(
+void HeartbeatSender::HeartbeatClientImpl::Heartbeat(
     const apis::v1::HeartbeatRequest& request,
     HeartbeatResponseCallback callback) {
   std::string host_offline_reason_or_empty_log =
       request.has_host_offline_reason()
           ? (", host_offline_reason: " + request.host_offline_reason())
           : "";
-  HOST_LOG << "Sending outgoing heartbeat."
-           << " jabber_id: " << request.jabber_id()
-           << ", tachyon_id: " << request.tachyon_id()
+  HOST_LOG << "Sending outgoing heartbeat. tachyon_id: " << request.tachyon_id()
            << host_offline_reason_or_empty_log;
 
   auto client_context = std::make_unique<grpc::ClientContext>();
@@ -129,24 +121,18 @@ void HeartbeatSender::HeartbeatClient::Heartbeat(
   executor_.ExecuteRpc(std::move(async_request));
 }
 
-void HeartbeatSender::HeartbeatClient::CancelPendingRequests() {
+void HeartbeatSender::HeartbeatClientImpl::CancelPendingRequests() {
   executor_.CancelPendingRequests();
 }
 
-void HeartbeatSender::HeartbeatClient::SetChannelForTest(
-    GrpcChannelSharedPtr channel) {
-  directory_ = DirectoryService::NewStub(channel);
-}
-
-// end of HeartbeatSender::HeartbeatClient
+// end of HeartbeatSender::HeartbeatClientImpl
 
 HeartbeatSender::HeartbeatSender(
     base::OnceClosure on_heartbeat_successful_callback,
     base::OnceClosure on_unknown_host_id_error,
     base::OnceClosure on_auth_error,
     const std::string& host_id,
-    MuxingSignalStrategy* signal_strategy,
-    const scoped_refptr<const RsaKeyPair>& host_key_pair,
+    SignalStrategy* signal_strategy,
     OAuthTokenGetter* oauth_token_getter,
     LogToServer* log_to_server)
     : on_heartbeat_successful_callback_(
@@ -155,12 +141,10 @@ HeartbeatSender::HeartbeatSender(
       on_auth_error_(std::move(on_auth_error)),
       host_id_(host_id),
       signal_strategy_(signal_strategy),
-      host_key_pair_(host_key_pair),
-      client_(std::make_unique<HeartbeatClient>(oauth_token_getter)),
+      client_(std::make_unique<HeartbeatClientImpl>(oauth_token_getter)),
       log_to_server_(log_to_server),
       oauth_token_getter_(oauth_token_getter),
       backoff_(&kBackoffPolicy) {
-  DCHECK(host_key_pair_.get());
   DCHECK(log_to_server_);
 
   signal_strategy_->AddListener(this);
@@ -186,10 +170,6 @@ void HeartbeatSender::SetHostOfflineReason(
   if (signal_strategy_->GetState() == SignalStrategy::State::CONNECTED) {
     SendHeartbeat();
   }
-}
-
-void HeartbeatSender::SetGrpcChannelForTest(GrpcChannelSharedPtr channel) {
-  client_->SetChannelForTest(channel);
 }
 
 void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
@@ -236,9 +216,9 @@ void HeartbeatSender::OnHostOfflineReasonAck() {
 void HeartbeatSender::SendHeartbeat() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (signal_strategy_->GetState() == SignalStrategy::State::DISCONNECTED) {
-    LOG(WARNING)
-        << "Not sending heartbeat because all strategies are disconnected.";
+  if (signal_strategy_->GetState() != SignalStrategy::State::CONNECTED) {
+    LOG(WARNING) << "Not sending heartbeat because the signal strategy is not "
+                    "connected.";
     return;
   }
 
@@ -250,7 +230,6 @@ void HeartbeatSender::SendHeartbeat() {
   client_->Heartbeat(
       CreateHeartbeatRequest(),
       base::BindOnce(&HeartbeatSender::OnResponse, base::Unretained(this)));
-  ++sequence_id_;
 
   // Send a heartbeat log
   std::unique_ptr<ServerLogEntry> log_entry = MakeLogEntryForHeartbeat();
@@ -345,28 +324,11 @@ apis::v1::HeartbeatRequest HeartbeatSender::CreateHeartbeatRequest() {
 
   apis::v1::HeartbeatRequest heartbeat;
   std::string signaling_id;
-  if (signal_strategy_->ftl_signal_strategy()->GetState() ==
-      SignalStrategy::State::CONNECTED) {
-    heartbeat.set_tachyon_id(
-        signal_strategy_->ftl_signal_strategy()->GetLocalAddress().jid());
-    signaling_id =
-        signal_strategy_->ftl_signal_strategy()->GetLocalAddress().jid();
-  }
-  if (signal_strategy_->xmpp_signal_strategy()->GetState() ==
-      SignalStrategy::State::CONNECTED) {
-    heartbeat.set_jabber_id(
-        signal_strategy_->xmpp_signal_strategy()->GetLocalAddress().jid());
-    if (signaling_id.empty()) {
-      signaling_id =
-          signal_strategy_->xmpp_signal_strategy()->GetLocalAddress().jid();
-    }
-  }
+  heartbeat.set_tachyon_id(signal_strategy_->GetLocalAddress().jid());
   heartbeat.set_host_id(host_id_);
-  heartbeat.set_sequence_id(sequence_id_);
   if (!host_offline_reason_.empty()) {
     heartbeat.set_host_offline_reason(host_offline_reason_);
   }
-  heartbeat.set_signature(CreateSignature(signaling_id));
   // Append host version.
   heartbeat.set_host_version(STRINGIZE(VERSION));
   // If we have not recorded a heartbeat success, continue sending host OS info.
@@ -377,12 +339,6 @@ apis::v1::HeartbeatRequest HeartbeatSender::CreateHeartbeatRequest() {
     heartbeat.set_host_os_version(GetHostOperatingSystemVersion());
   }
   return heartbeat;
-}
-
-std::string HeartbeatSender::CreateSignature(const std::string& signaling_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::string message = signaling_id + ' ' + base::NumberToString(sequence_id_);
-  return host_key_pair_->SignMessage(message);
 }
 
 }  // namespace remoting

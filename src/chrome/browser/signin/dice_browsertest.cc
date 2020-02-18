@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -47,13 +48,16 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/dice_header_helper.h"
-#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/browser/signin_metrics.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/base/signin_client.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync_user_events/user_event_service.h"
 #include "components/variations/variations_switches.h"
@@ -68,9 +72,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -168,7 +169,7 @@ std::unique_ptr<HttpResponse> HandleSigninURL(
         kDiceResponseHeader,
         base::StringPrintf(
             "action=SIGNIN,authuser=1,id=%s,email=%s,authorization_code=%s",
-            identity::GetTestGaiaIdForEmail(main_email).c_str(),
+            signin::GetTestGaiaIdForEmail(main_email).c_str(),
             main_email.c_str(), kAuthorizationCode));
   }
 
@@ -196,7 +197,7 @@ std::unique_ptr<HttpResponse> HandleEnableSyncURL(
   http_response->AddCustomHeader(
       kDiceResponseHeader,
       base::StringPrintf("action=ENABLE_SYNC,authuser=1,id=%s,email=%s",
-                         identity::GetTestGaiaIdForEmail(main_email).c_str(),
+                         signin::GetTestGaiaIdForEmail(main_email).c_str(),
                          main_email.c_str()));
   http_response->AddCustomHeader("Cache-Control", "no-store");
   return std::move(http_response);
@@ -219,7 +220,7 @@ std::unique_ptr<HttpResponse> HandleSignoutURL(const std::string& main_email,
   EXPECT_LT(signout_type, kSignoutTypeLast);
   std::string signout_header_value;
   if (signout_type == kAllAccounts || signout_type == kMainAccount) {
-    std::string main_gaia_id = identity::GetTestGaiaIdForEmail(main_email);
+    std::string main_gaia_id = signin::GetTestGaiaIdForEmail(main_email);
     signout_header_value =
         base::StringPrintf("email=\"%s\", obfuscatedid=\"%s\", sessionindex=1",
                            main_email.c_str(), main_gaia_id.c_str());
@@ -228,7 +229,7 @@ std::unique_ptr<HttpResponse> HandleSignoutURL(const std::string& main_email,
     if (!signout_header_value.empty())
       signout_header_value += ", ";
     std::string secondary_gaia_id =
-        identity::GetTestGaiaIdForEmail(kSecondaryEmail);
+        signin::GetTestGaiaIdForEmail(kSecondaryEmail);
     signout_header_value +=
         base::StringPrintf("email=\"%s\", obfuscatedid=\"%s\", sessionindex=2",
                            kSecondaryEmail, secondary_gaia_id.c_str());
@@ -312,7 +313,7 @@ std::unique_ptr<HttpResponse> HandleChromeSigninEmbeddedURL(
 
 class DiceBrowserTest : public InProcessBrowserTest,
                         public AccountReconcilor::Observer,
-                        public identity::IdentityManager::Observer {
+                        public signin::IdentityManager::Observer {
  protected:
   ~DiceBrowserTest() override {}
 
@@ -359,7 +360,7 @@ class DiceBrowserTest : public InProcessBrowserTest,
   }
 
   // Returns the identity manager.
-  identity::IdentityManager* GetIdentityManager() {
+  signin::IdentityManager* GetIdentityManager() {
     return IdentityManagerFactory::GetForProfile(browser()->profile());
   }
 
@@ -367,14 +368,14 @@ class DiceBrowserTest : public InProcessBrowserTest,
   // gaia ID.
   std::string GetMainAccountID() {
     return GetIdentityManager()->PickAccountIdForAccount(
-        identity::GetTestGaiaIdForEmail(main_email_), main_email_);
+        signin::GetTestGaiaIdForEmail(main_email_), main_email_);
   }
 
   // Returns the account ID associated with kSecondaryEmail and its associated
   // gaia ID.
   std::string GetSecondaryAccountID() {
     return GetIdentityManager()->PickAccountIdForAccount(
-        identity::GetTestGaiaIdForEmail(kSecondaryEmail), kSecondaryEmail);
+        signin::GetTestGaiaIdForEmail(kSecondaryEmail), kSecondaryEmail);
   }
 
   std::string GetDeviceId() {
@@ -384,8 +385,8 @@ class DiceBrowserTest : public InProcessBrowserTest,
   // Signin with a main account and add token for a secondary account.
   void SetupSignedInAccounts() {
     // Signin main account.
-    AccountInfo primary_account_info = identity::MakePrimaryAccountAvailable(
-        GetIdentityManager(), main_email_);
+    AccountInfo primary_account_info =
+        signin::MakePrimaryAccountAvailable(GetIdentityManager(), main_email_);
     ASSERT_TRUE(
         GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
     ASSERT_FALSE(
@@ -395,7 +396,7 @@ class DiceBrowserTest : public InProcessBrowserTest,
 
     // Add a token for a secondary account.
     AccountInfo secondary_account_info =
-        identity::MakeAccountAvailable(GetIdentityManager(), kSecondaryEmail);
+        signin::MakeAccountAvailable(GetIdentityManager(), kSecondaryEmail);
     ASSERT_TRUE(GetIdentityManager()->HasAccountWithRefreshToken(
         secondary_account_info.account_id));
     ASSERT_FALSE(
@@ -514,7 +515,7 @@ class DiceBrowserTest : public InProcessBrowserTest,
     }
   }
 
-  // identity::IdentityManager::Observer
+  // signin::IdentityManager::Observer
   void OnPrimaryAccountSet(
       const CoreAccountInfo& primary_account_info) override {
     RunClosureIfValid(std::move(on_primary_account_set_quit_closure_));

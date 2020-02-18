@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/public/interfaces/locale.mojom.h"
+#include "ash/public/cpp/locale_update_controller.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -37,7 +37,6 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -170,28 +169,29 @@ void RestoreDefaultLocaleForNextSession() {
 }
 
 // Returns the list of locales (and related info) supported by demo mode.
-std::vector<ash::mojom::LocaleInfoPtr> GetSupportedLocales() {
+std::vector<ash::LocaleInfo> GetSupportedLocales() {
   const base::flat_set<std::string> kSupportedLocales(
-      {"da", "en-GB", "en-US", "fi", "fr", "fr-CA", "nb", "nl", "sv"});
+      {"da", "de", "en-GB", "en-US", "fi", "fr", "fr-CA", "ja", "nb", "nl",
+       "sv"});
 
   const std::vector<std::string>& available_locales =
       l10n_util::GetAvailableLocales();
   const std::string current_locale_iso_code =
       ProfileManager::GetActiveUserProfile()->GetPrefs()->GetString(
           language::prefs::kApplicationLocale);
-  std::vector<ash::mojom::LocaleInfoPtr> supported_locales;
+  std::vector<ash::LocaleInfo> supported_locales;
   for (const std::string& locale : available_locales) {
     if (!kSupportedLocales.contains(locale))
       continue;
-    ash::mojom::LocaleInfoPtr locale_info = ash::mojom::LocaleInfo::New();
-    locale_info->iso_code = locale;
-    locale_info->display_name = l10n_util::GetDisplayNameForLocale(
+    ash::LocaleInfo locale_info;
+    locale_info.iso_code = locale;
+    locale_info.display_name = l10n_util::GetDisplayNameForLocale(
         locale, current_locale_iso_code, true /* is_for_ui */);
     const base::string16 native_display_name =
         l10n_util::GetDisplayNameForLocale(locale, locale,
                                            true /* is_for_ui */);
-    if (locale_info->display_name != native_display_name) {
-      locale_info->display_name +=
+    if (locale_info.display_name != native_display_name) {
+      locale_info.display_name +=
           base::UTF8ToUTF16(" - ") + native_display_name;
     }
     supported_locales.push_back(std::move(locale_info));
@@ -346,10 +346,6 @@ bool DemoSession::ShouldDisplayInAppLauncher(const std::string& app_id) {
 // static
 base::Value DemoSession::GetCountryList() {
   base::Value country_list(base::Value::Type::LIST);
-  if (!base::FeatureList::IsEnabled(
-          switches::kSupportCountryCustomizationInDemoMode)) {
-    return country_list;
-  }
   const std::string current_country =
       g_browser_process->local_state()->GetString(prefs::kDemoModeCountry);
   const std::string current_locale = g_browser_process->GetApplicationLocale();
@@ -392,15 +388,13 @@ bool DemoSession::ShouldIgnorePinPolicy(const std::string& app_id_or_package) {
   if (!content::GetNetworkConnectionTracker()->IsOffline())
     return false;
 
-  return base::ContainsValue(ignore_pin_policy_offline_apps_,
-                             app_id_or_package);
+  return base::Contains(ignore_pin_policy_offline_apps_, app_id_or_package);
 }
 
 void DemoSession::SetExtensionsExternalLoader(
     scoped_refptr<DemoExtensionsExternalLoader> extensions_external_loader) {
   extensions_external_loader_ = extensions_external_loader;
-  if (!offline_enrolled_)
-    InstallAppFromUpdateUrl(GetScreensaverAppId());
+  InstallAppFromUpdateUrl(GetScreensaverAppId());
 }
 
 void DemoSession::OverrideIgnorePinPolicyAppsForTesting(
@@ -508,19 +502,15 @@ void DemoSession::InstallAppFromUpdateUrl(const std::string& id) {
 void DemoSession::OnSessionStateChanged() {
   switch (session_manager::SessionManager::Get()->session_state()) {
     case session_manager::SessionState::LOGIN_PRIMARY:
-      if (base::FeatureList::IsEnabled(switches::kShowSplashScreenInDemoMode)) {
-        EnsureOfflineResourcesLoaded(base::BindOnce(
-            &DemoSession::ShowSplashScreen, weak_ptr_factory_.GetWeakPtr()));
-      }
+      EnsureOfflineResourcesLoaded(base::BindOnce(
+          &DemoSession::ShowSplashScreen, weak_ptr_factory_.GetWeakPtr()));
       break;
     case session_manager::SessionState::ACTIVE:
       if (ShouldRemoveSplashScreen())
         RemoveSplashScreen();
 
       // SystemTrayClient may not exist in unit tests.
-      if (SystemTrayClient::Get() &&
-          base::FeatureList::IsEnabled(
-              switches::kShowLanguageToggleInDemoMode)) {
+      if (SystemTrayClient::Get()) {
         const std::string current_locale_iso_code =
             ProfileManager::GetActiveUserProfile()->GetPrefs()->GetString(
                 language::prefs::kApplicationLocale);
@@ -568,8 +558,7 @@ void DemoSession::RemoveSplashScreen() {
 bool DemoSession::ShouldRemoveSplashScreen() {
   // TODO(crbug.com/934979): Launch screensaver after active session starts, so
   // that there's no need to check session state here.
-  return base::FeatureList::IsEnabled(switches::kShowSplashScreenInDemoMode) &&
-         session_manager::SessionManager::Get()->session_state() ==
+  return session_manager::SessionManager::Get()->session_state() ==
              session_manager::SessionState::ACTIVE &&
          screensaver_activated_;
 }
@@ -581,9 +570,11 @@ void DemoSession::OnExtensionInstalled(content::BrowserContext* browser_context,
     return;
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
-  OpenApplication(AppLaunchParams(
-      profile, extension, extensions::LAUNCH_CONTAINER_WINDOW,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
+  OpenApplication(
+      AppLaunchParams(profile, extension->id(),
+                      extensions::LaunchContainer::kLaunchContainerWindow,
+                      WindowOpenDisposition::NEW_WINDOW,
+                      extensions::AppLaunchSource::kSourceChromeInternal));
 }
 
 void DemoSession::OnAppWindowActivated(extensions::AppWindow* app_window) {

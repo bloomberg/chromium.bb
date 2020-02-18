@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -94,6 +94,7 @@ import platform
 import posixpath
 import pprint
 import re
+import six
 import sys
 import time
 
@@ -117,10 +118,9 @@ import subprocess2
 import setup_color
 
 
+
 # TODO(crbug.com/953884): Remove this when python3 migration is done.
-try:
-  basestring
-except NameError:
+if six.PY3:
   # pylint: disable=redefined-builtin
   basestring = str
 
@@ -241,10 +241,11 @@ class Hook(object):
 
     cmd = [arg for arg in self._action]
 
-    if cmd[0] == 'python':
+    if cmd[0] == 'python' and six.PY2:
       # If the hook specified "python" as the first item, the action is a
-      # Python script.  Run it by starting a new copy of the same
-      # interpreter.
+      # Python script. Run it by starting a new copy of the same interpreter if
+      # we're running on Python 2.
+      # On Python 3 we simply execute 'python'.
       cmd[0] = sys.executable
     elif cmd[0] == 'vpython' and _detect_host_os() == 'win':
       cmd[0] += '.bat'
@@ -586,7 +587,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     # If a line is in custom_deps, but not in the solution, we want to append
     # this line to the solution.
-    for dep_name, dep_info in self.custom_deps.items():
+    for dep_name, dep_info in six.iteritems(self.custom_deps):
       if dep_name not in deps:
         deps[dep_name] = {'url': dep_info, 'dep_type': 'git'}
 
@@ -597,13 +598,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # recursively included by "src/ios_foo/DEPS" should also require
     # "checkout_ios=True".
     if self.condition:
-      for value in deps.itervalues():
+      for value in six.itervalues(deps):
         gclient_eval.UpdateCondition(value, 'and', self.condition)
 
     if rel_prefix:
       logging.warning('use_relative_paths enabled.')
       rel_deps = {}
-      for d, url in deps.items():
+      for d, url in six.iteritems(deps):
         # normpath is required to allow DEPS to use .. in their
         # dependency local path.
         rel_deps[os.path.normpath(os.path.join(rel_prefix, d))] = url
@@ -615,7 +616,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   def _deps_to_objects(self, deps, use_relative_paths):
     """Convert a deps dict to a dict of Dependency objects."""
     deps_to_add = []
-    for name, dep_value in deps.items():
+    for name, dep_value in six.iteritems(deps):
       should_process = self.should_process
       if dep_value is None:
         continue
@@ -723,7 +724,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     self._vars = local_scope.get('vars', {})
     if self.parent:
-      for key, value in self.parent.get_vars().items():
+      for key, value in six.iteritems(self.parent.get_vars()):
         if key in self._vars:
           self._vars[key] = value
     # Since we heavily post-process things, freeze ones which should
@@ -760,7 +761,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       if rel_prefix:
         logging.warning('Updating recursedeps by prepending %s.', rel_prefix)
         rel_deps = {}
-        for depname, options in self.recursedeps.items():
+        for depname, options in six.iteritems(self.recursedeps):
           rel_deps[
               os.path.normpath(os.path.join(rel_prefix, depname))] = options
         self.recursedeps = rel_deps
@@ -1252,6 +1253,7 @@ _PLATFORM_MAPPING = {
   'cygwin': 'win',
   'darwin': 'mac',
   'linux2': 'linux',
+  'linux': 'linux',
   'win32': 'win',
   'aix6': 'aix',
 }
@@ -1346,7 +1348,7 @@ solutions = %(solution_list)s
     else:
       enforced_os = [self.DEPS_OS_CHOICES.get(sys.platform, 'unix')]
     if 'all' in enforced_os:
-      enforced_os = self.DEPS_OS_CHOICES.itervalues()
+      enforced_os = self.DEPS_OS_CHOICES.values()
     self._enforced_os = tuple(set(enforced_os))
     self._enforced_cpu = detect_host_arch.HostArch(),
     self._root_dir = root_dir
@@ -1450,7 +1452,7 @@ it or fix the checkout.
     metrics.collector.add(
         'project_urls',
         [
-            dep.url if not dep.url.endswith('.git') else dep.url[:-len('.git')]
+            dep.FuzzyMatchUrl(metrics_utils.KNOWN_PROJECT_URLS)
             for dep in deps_to_add
             if dep.FuzzyMatchUrl(metrics_utils.KNOWN_PROJECT_URLS)
         ]
@@ -1574,13 +1576,12 @@ it or fix the checkout.
       return patch_refs, target_branches
     for given_patch_ref in self._options.patch_refs:
       patch_repo, _, patch_ref = given_patch_ref.partition('@')
-      if not patch_repo or not patch_ref:
+      if not patch_repo or not patch_ref or ':' not in patch_ref:
         raise gclient_utils.Error(
             'Wrong revision format: %s should be of the form '
-            'patch_repo@[target_branch:]patch_ref.' % given_patch_ref)
-      if ':' in patch_ref:
-        target_branch, _, patch_ref = patch_ref.partition(':')
-        target_branches[patch_repo] = target_branch
+            'patch_repo@target_branch:patch_ref.' % given_patch_ref)
+      target_branch, _, patch_ref = patch_ref.partition(':')
+      target_branches[patch_repo] = target_branch
       patch_refs[patch_repo] = patch_ref
     return patch_refs, target_branches
 
@@ -1596,7 +1597,7 @@ it or fix the checkout.
     full_entries = [os.path.join(self.root_dir, e.replace('/', os.path.sep))
                     for e in entries]
 
-    for entry, prev_url in self._ReadEntries().items():
+    for entry, prev_url in six.iteritems(self._ReadEntries()):
       if not prev_url:
         # entry must have been overridden via .gclient custom_deps
         continue
@@ -1743,7 +1744,7 @@ it or fix the checkout.
           'The following --patch-ref flags were not used. Please fix it:\n%s' %
           ('\n'.join(
               patch_repo + '@' + patch_ref
-              for patch_repo, patch_ref in patch_refs.iteritems())))
+              for patch_repo, patch_ref in six.iteritems(patch_refs))))
 
     # Once all the dependencies have been processed, it's now safe to write
     # out the gn_args_file and run the hooks.
@@ -1830,7 +1831,7 @@ it or fix the checkout.
                 'url': rev.split('@')[0] if rev else None,
                 'rev': rev.split('@')[1] if rev and '@' in rev else None,
             }
-            for name, rev in entries.iteritems()
+            for name, rev in six.iteritems(entries)
         }
         if self._options.output_json == '-':
           print(json.dumps(json_output, indent=2, separators=(',', ': ')))
@@ -2118,7 +2119,7 @@ class Flattener(object):
       self._flatten_dep(solution)
 
     if pin_all_deps:
-      for dep in self._deps.itervalues():
+      for dep in six.itervalues(self._deps):
         self._pin_dep(dep)
 
     def add_deps_file(dep):
@@ -2136,7 +2137,7 @@ class Flattener(object):
           return
       assert dep.url
       self._deps_files.add((dep.url, deps_file, dep.hierarchy_data()))
-    for dep in self._deps.itervalues():
+    for dep in six.itervalues(self._deps):
       add_deps_file(dep)
 
     gn_args_dep = self._deps.get(self._client.dependencies[0]._gn_args_from,
@@ -2179,7 +2180,7 @@ class Flattener(object):
     # Only include vars explicitly listed in the DEPS files or gclient solution,
     # not automatic, local overrides (i.e. not all of dep.get_vars()).
     hierarchy = dep.hierarchy(include_url=False)
-    for key, value in dep._vars.iteritems():
+    for key, value in six.iteritems(dep._vars):
       # Make sure there are no conflicting variables. It is fine however
       # to use same variable name, as long as the value is consistent.
       assert key not in self._vars or self._vars[key][1] == value, (
@@ -2187,7 +2188,7 @@ class Flattener(object):
           dep.name, key, value, self._vars[key][1]))
       self._vars[key] = (hierarchy, value)
     # Override explicit custom variables.
-    for key, value in dep.custom_vars.iteritems():
+    for key, value in six.iteritems(dep.custom_vars):
       # Do custom_vars that don't correspond to DEPS vars ever make sense? DEPS
       # conditionals shouldn't be using vars that aren't also defined in the
       # DEPS (presubmit actually disallows this), so any new custom_var must be
@@ -2278,7 +2279,7 @@ def _DepsToLines(deps):
   if not deps:
     return []
   s = ['deps = {']
-  for _, dep in sorted(deps.iteritems()):
+  for _, dep in sorted(deps.items()):
     s.extend(dep.ToLines())
   s.extend(['}', ''])
   return s
@@ -2289,9 +2290,9 @@ def _DepsOsToLines(deps_os):
   if not deps_os:
     return []
   s = ['deps_os = {']
-  for dep_os, os_deps in sorted(deps_os.iteritems()):
+  for dep_os, os_deps in sorted(deps_os.items()):
     s.append('  "%s": {' % dep_os)
-    for name, dep in sorted(os_deps.iteritems()):
+    for name, dep in sorted(os_deps.items()):
       condition_part = (['      "condition": %r,' % dep.condition]
                         if dep.condition else [])
       s.extend([
@@ -2340,7 +2341,7 @@ def _HooksOsToLines(hooks_os):
   if not hooks_os:
     return []
   s = ['hooks_os = {']
-  for hook_os, os_hooks in hooks_os.iteritems():
+  for hook_os, os_hooks in six.iteritems(hooks_os):
     s.append('  "%s": [' % hook_os)
     for dep, hook in os_hooks:
       s.extend([
@@ -2371,7 +2372,7 @@ def _VarsToLines(variables):
   if not variables:
     return []
   s = ['vars = {']
-  for key, tup in sorted(variables.iteritems()):
+  for key, tup in sorted(variables.items()):
     hierarchy, value = tup
     s.extend([
         '  # %s' % hierarchy,
@@ -2598,7 +2599,7 @@ def CMDsync(parser, args):
   parser.add_option('--patch-ref', action='append',
                     dest='patch_refs', metavar='GERRIT_REF', default=[],
                     help='Patches the given reference with the format '
-                         'dep@[target-ref:]patch-ref. '
+                         'dep@target-ref:patch-ref. '
                          'For |dep|, you can specify URLs as well as paths, '
                          'with URLs taking preference. '
                          '|patch-ref| will be applied to |dep|, rebased on top '
@@ -2608,10 +2609,7 @@ def CMDsync(parser, args):
                          '|target-ref| is the target branch against which a '
                          'patch was created, it is used to determine which '
                          'commits from the |patch-ref| actually constitute a '
-                         'patch. If not given, we will iterate over all remote '
-                         'branches and select one that contains the revision '
-                         '|dep| is synced at. '
-                         'WARNING: |target-ref| will be mandatory soon.')
+                         'patch.')
   parser.add_option('--with_branch_heads', action='store_true',
                     help='Clone git "branch_heads" refspecs in addition to '
                          'the default refspecs. This adds about 1/2GB to a '
@@ -3057,7 +3055,7 @@ class OptionParser(optparse.OptionParser):
     # Store the options passed by the user in an _actual_options attribute.
     # We store only the keys, and not the values, since the values can contain
     # arbitrary information, which might be PII.
-    metrics.collector.add('arguments', actual_options.__dict__.keys())
+    metrics.collector.add('arguments', list(actual_options.__dict__))
 
     levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
     logging.basicConfig(

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-#include "perfetto/tracing/core/trace_packet.h"
+#include "perfetto/ext/tracing/core/trace_packet.h"
 
 #include <string>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include "perfetto/trace/trace.pb.h"
 #include "perfetto/trace/trace_packet.pb.h"

@@ -5,7 +5,9 @@
 #ifndef SERVICES_MEDIA_SESSION_AUDIO_FOCUS_REQUEST_H_
 #define SERVICES_MEDIA_SESSION_AUDIO_FOCUS_REQUEST_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/audio_focus_manager_metrics_helper.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -13,13 +15,15 @@
 
 namespace media_session {
 
+using GetMediaImageBitmapCallback = base::OnceCallback<void(const SkBitmap&)>;
+
 class AudioFocusManager;
 struct EnforcementState;
 class MediaController;
 
 class AudioFocusRequest : public mojom::AudioFocusRequestClient {
  public:
-  AudioFocusRequest(AudioFocusManager* owner,
+  AudioFocusRequest(base::WeakPtr<AudioFocusManager> owner,
                     mojom::AudioFocusRequestClientRequest request,
                     mojom::MediaSessionPtr session,
                     mojom::MediaSessionInfoPtr session_info,
@@ -50,14 +54,25 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
   mojom::AudioFocusRequestStatePtr ToAudioFocusRequestState() const;
 
   // Bind a mojo media controller to control the underlying media session.
-  void BindToMediaController(mojom::MediaControllerRequest request);
+  void BindToMediaController(
+      mojo::PendingReceiver<mojom::MediaController> receiver);
 
   // Suspends the underlying media session.
   void Suspend(const EnforcementState& state);
 
   // If the underlying media session previously suspended this session then this
-  // will resume it.
-  void MaybeResume();
+  // will resume it and apply any delayed action.
+  void ReleaseTransientHold();
+
+  // Perform a UI action (play/pause/stop). This may be delayed if the service
+  // has transiently suspended the session.
+  void PerformUIAction(mojom::MediaSessionAction action);
+
+  // Retrieves the bitmap associated with a |image|.
+  void GetMediaImageBitmap(const MediaImage& image,
+                           int minimum_size_px,
+                           int desired_size_px,
+                           GetMediaImageBitmapCallback callback);
 
   mojom::MediaSession* ipc() { return session_.get(); }
   const mojom::MediaSessionInfoPtr& info() const { return session_info_; }
@@ -68,6 +83,9 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
  private:
   void SetSessionInfo(mojom::MediaSessionInfoPtr session_info);
   void OnConnectionError();
+
+  void OnImageDownloaded(GetMediaImageBitmapCallback callback,
+                         const SkBitmap& bitmap);
 
   AudioFocusManagerMetricsHelper metrics_helper_;
   bool encountered_error_ = false;
@@ -81,6 +99,9 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
 
   mojo::Binding<mojom::AudioFocusRequestClient> binding_;
 
+  // The action to apply when the transient hold is released.
+  base::Optional<mojom::MediaSessionAction> delayed_action_;
+
   // The ID of the audio focus request.
   base::UnguessableToken const id_;
 
@@ -92,7 +113,7 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
   base::UnguessableToken const group_id_;
 
   // Weak pointer to the owning |AudioFocusManager| instance.
-  AudioFocusManager* const owner_;
+  const base::WeakPtr<AudioFocusManager> owner_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioFocusRequest);
 };

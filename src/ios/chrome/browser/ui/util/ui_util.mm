@@ -64,10 +64,6 @@ bool IsClosingLastIncognitoTabEnabled() {
   return base::FeatureList::IsEnabled(kClosingLastIncognitoTab);
 }
 
-bool IsRefreshLocationBarEnabled() {
-  return true;
-}
-
 CGFloat DeviceCornerRadius() {
   return IsIPhoneX() ? 40.0 : 0.0;
 }

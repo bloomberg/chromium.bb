@@ -63,8 +63,7 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -76,12 +75,24 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 namespace {
 
 void RemoveURLFromMemoryCacheInternal(const KURL& url) {
   GetMemoryCache()->RemoveURLFromCache(url);
+}
+
+scoped_refptr<SecurityOrigin> CreateSecurityOrigin(
+    GlobalScopeCreationParams* creation_params) {
+  scoped_refptr<SecurityOrigin> security_origin =
+      SecurityOrigin::Create(creation_params->script_url);
+  if (creation_params->starter_origin) {
+    security_origin->TransferPrivilegesFrom(
+        creation_params->starter_origin->CreatePrivilegeData());
+  }
+  return security_origin;
 }
 
 }  // namespace
@@ -390,7 +401,7 @@ void WorkerGlobalScope::WorkerScriptFetchFinished(
     RunWorkerScript();
 }
 
-void WorkerGlobalScope::ReadyToRunClassicScript() {
+void WorkerGlobalScope::ReadyToRunWorkerScript() {
   DCHECK(IsContextThread());
 
   DCHECK_EQ(ScriptEvalState::kPauseAfterFetch, script_eval_state_);
@@ -454,6 +465,7 @@ WorkerGlobalScope::WorkerGlobalScope(
     base::TimeTicks time_origin)
     : WorkerOrWorkletGlobalScope(
           thread->GetIsolate(),
+          CreateSecurityOrigin(creation_params.get()),
           Agent::CreateForWorkerOrWorklet(thread->GetIsolate()),
           creation_params->off_main_thread_fetch_option,
           creation_params->global_scope_name,
@@ -478,13 +490,6 @@ WorkerGlobalScope::WorkerGlobalScope(
       script_eval_state_(ScriptEvalState::kPauseAfterFetch) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
-  scoped_refptr<SecurityOrigin> security_origin =
-      SecurityOrigin::Create(creation_params->script_url);
-  if (creation_params->starter_origin) {
-    security_origin->TransferPrivilegesFrom(
-        creation_params->starter_origin->CreatePrivilegeData());
-  }
-  SetSecurityOrigin(std::move(security_origin));
 
   // https://html.spec.whatwg.org/C/#run-a-worker
   // 4. Set worker global scope's HTTPS state to response's HTTPS state. [spec
@@ -538,9 +543,9 @@ NOINLINE void WorkerGlobalScope::InitializeURL(const KURL& url) {
 }
 
 void WorkerGlobalScope::queueMicrotask(V8VoidFunction* callback) {
-  GetAgent()->event_loop()->EnqueueMicrotask(WTF::Bind(
-      &V8PersistentCallbackFunction<V8VoidFunction>::InvokeAndReportException,
-      WrapPersistent(ToV8PersistentCallbackFunction(callback)), nullptr));
+  GetAgent()->event_loop()->EnqueueMicrotask(
+      WTF::Bind(&V8VoidFunction::InvokeAndReportException,
+                WrapPersistent(callback), nullptr));
 }
 
 int WorkerGlobalScope::requestAnimationFrame(V8FrameRequestCallback* callback,

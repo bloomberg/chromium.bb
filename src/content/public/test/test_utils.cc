@@ -22,7 +22,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/variations/variations_params_manager.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/url_schemes.h"
@@ -35,6 +34,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/url_constants.h"
@@ -189,6 +189,12 @@ bool AreAllSitesIsolatedForTesting() {
   return SiteIsolationPolicy::UseDedicatedProcessesForAllSites();
 }
 
+bool AreDefaultSiteInstancesEnabled() {
+  return !AreAllSitesIsolatedForTesting() &&
+         base::FeatureList::IsEnabled(
+             features::kProcessSharingWithDefaultSiteInstances);
+}
+
 void IsolateAllSitesForTesting(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kSitePerProcess);
 }
@@ -206,23 +212,6 @@ GURL GetWebUIURL(const std::string& host) {
 std::string GetWebUIURLString(const std::string& host) {
   return std::string(content::kChromeUIScheme) + url::kStandardSchemeSeparator +
          host;
-}
-
-void DeprecatedEnableFeatureWithParam(const base::Feature& feature,
-                                      const std::string& param_name,
-                                      const std::string& param_value,
-                                      base::CommandLine* command_line) {
-  static const char kFakeTrialName[] = "TrialNameForTesting";
-  static const char kFakeTrialGroupName[] = "TrialGroupForTesting";
-
-  // Enable all the |feature|, associating them with |trial_name|.
-  command_line->AppendSwitchASCII(
-      switches::kEnableFeatures,
-      std::string(feature.name) + "<" + kFakeTrialName);
-
-  std::map<std::string, std::string> param_values = {{param_name, param_value}};
-  variations::testing::VariationParamsManager::AppendVariationParams(
-      kFakeTrialName, kFakeTrialGroupName, param_values, command_line);
 }
 
 WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh) {
@@ -450,12 +439,32 @@ float TestPageScaleObserver::WaitForPageScaleUpdate() {
   return last_scale_;
 }
 
+EffectiveURLContentBrowserClient::EffectiveURLContentBrowserClient(
+    const GURL& url_to_modify,
+    const GURL& url_to_return,
+    bool requires_dedicated_process)
+    : url_to_modify_(url_to_modify),
+      url_to_return_(url_to_return),
+      requires_dedicated_process_(requires_dedicated_process) {}
+
+EffectiveURLContentBrowserClient::~EffectiveURLContentBrowserClient() {}
+
 GURL EffectiveURLContentBrowserClient::GetEffectiveURL(
     BrowserContext* browser_context,
     const GURL& url) {
   if (url == url_to_modify_)
     return url_to_return_;
   return url;
+}
+
+bool EffectiveURLContentBrowserClient::DoesSiteRequireDedicatedProcess(
+    BrowserOrResourceContext browser_or_resource_context,
+    const GURL& effective_site_url) {
+  GURL expected_effective_site_url = SiteInstance::GetSiteForURL(
+      browser_or_resource_context.ToBrowserContext(), url_to_modify_);
+
+  return requires_dedicated_process_ &&
+         expected_effective_site_url == effective_site_url;
 }
 
 }  // namespace content

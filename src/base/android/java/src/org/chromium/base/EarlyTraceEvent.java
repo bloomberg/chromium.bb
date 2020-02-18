@@ -22,7 +22,8 @@ import java.util.Map;
 
 import javax.annotation.concurrent.GuardedBy;
 
-/** Support for early tracing, before the native library is loaded.
+/**
+ * Support for early tracing, before the native library is loaded.
  *
  * This is limited, as:
  * - Arguments are not supported
@@ -37,6 +38,9 @@ import javax.annotation.concurrent.GuardedBy;
  *          as some are pending, then early tracing is permanently disabled after dumping the
  *          events.  This means that if any early event is still pending when tracing is disabled,
  *          all early events are dropped.
+ *
+ * Like the TraceEvent, the event name of the trace events must be a string literal or a |static
+ * final String| class member. Otherwise NoDynamicStringsInTraceEventCheck error will be thrown.
  */
 @JNINamespace("base::android")
 @MainDex
@@ -45,7 +49,8 @@ public class EarlyTraceEvent {
     private static final String TRACE_CONFIG_FILENAME = "/data/local/chrome-trace-config.json";
 
     /** Single trace event. */
-    public static final class Event {
+    @VisibleForTesting
+    static final class Event {
         final String mName;
         final int mThreadId;
         final long mBeginTimeNanos;
@@ -53,14 +58,14 @@ public class EarlyTraceEvent {
         long mEndTimeNanos;
         long mEndThreadTimeMillis;
 
-        public Event(String name) {
+        Event(String name) {
             mName = name;
             mThreadId = Process.myTid();
             mBeginTimeNanos = elapsedRealtimeNanos();
             mBeginThreadTimeMillis = SystemClock.currentThreadTimeMillis();
         }
 
-        public void end() {
+        void end() {
             assert mEndTimeNanos == 0;
             assert mEndThreadTimeMillis == 0;
             mEndTimeNanos = elapsedRealtimeNanos();
@@ -249,15 +254,6 @@ public class EarlyTraceEvent {
             event.end();
             sCompletedEvents.add(event);
             if (sState == STATE_FINISHING) maybeFinishLocked();
-        }
-    }
-
-    /** Add events that were captured before {@link TraceEvent#maybeEnableEarlyTracing()}. */
-    public static void addEvent(Event e) {
-        if (!enabled()) return;
-        synchronized (sLock) {
-            if (!enabled()) return;
-            sCompletedEvents.add(e);
         }
     }
 

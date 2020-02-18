@@ -1,0 +1,9 @@
+{
+  "build_target": {
+    "name": "betty"
+  },
+  "flags": {
+    "chroot_current": true,
+    "replace": true
+  }
+}

@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/loader/fetch/detachable_use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
@@ -133,8 +134,8 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
     ResourceFetcher* fetch_client_settings_object_fetcher,
     const KURL& url,
     mojom::RequestContextType request_context,
-    network::mojom::FetchRequestMode fetch_request_mode,
-    network::mojom::FetchCredentialsMode fetch_credentials_mode,
+    network::mojom::RequestMode request_mode,
+    network::mojom::CredentialsMode credentials_mode,
     base::OnceClosure response_callback,
     base::OnceClosure finished_callback) {
   DCHECK(fetch_client_settings_object_fetcher);
@@ -152,8 +153,8 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
           .GetFetchClientSettingsObject()
           .GetAddressSpace());
   request.SetRequestContext(request_context);
-  request.SetFetchRequestMode(fetch_request_mode);
-  request.SetFetchCredentialsMode(fetch_credentials_mode);
+  request.SetMode(request_mode);
+  request.SetCredentialsMode(credentials_mode);
 
   need_to_cancel_ = true;
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
@@ -177,7 +178,7 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
     return;
   }
   if (!AllowedByNosniff::MimeTypeAsScript(
-          fetch_client_settings_object_fetcher_->Context(),
+          fetch_client_settings_object_fetcher_->GetUseCounter(),
           &fetch_client_settings_object_fetcher_->GetConsoleLogger(), response,
           fetch_client_settings_object_fetcher_->GetProperties()
               .GetFetchClientSettingsObject()

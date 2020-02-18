@@ -22,7 +22,7 @@ SBOX_TESTS_COMMAND int NamedPipe_Create(int argc, wchar_t** argv) {
   if (INVALID_HANDLE_VALUE == pipe)
     return SBOX_TEST_DENIED;
 
-  // The second parameter allows us to enforce a whitelist for where the
+  // The second parameter allows us to enforce an allowlist for where the
   // pipe should be in the object namespace after creation.
   if (argc == 2) {
     base::string16 handle_name;

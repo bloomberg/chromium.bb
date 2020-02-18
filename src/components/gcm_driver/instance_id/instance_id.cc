@@ -16,7 +16,7 @@ namespace instance_id {
 const char kGCMScope[] = "GCM";
 
 InstanceID::InstanceID(const std::string& app_id, gcm::GCMDriver* gcm_driver)
-    : gcm_driver_(gcm_driver), app_id_(app_id), weak_ptr_factory_(this) {}
+    : gcm_driver_(gcm_driver), app_id_(app_id) {}
 
 InstanceID::~InstanceID() {}
 
@@ -30,9 +30,9 @@ void InstanceID::NotifyTokenRefresh(bool update_id) {
 }
 
 void InstanceID::GetEncryptionInfo(const std::string& authorized_entity,
-                                   const GetEncryptionInfoCallback& callback) {
+                                   GetEncryptionInfoCallback callback) {
   gcm_driver_->GetEncryptionProviderInternal()->GetEncryptionInfo(
-      app_id_, authorized_entity, callback);
+      app_id_, authorized_entity, std::move(callback));
 }
 
 void InstanceID::DeleteToken(const std::string& authorized_entity,

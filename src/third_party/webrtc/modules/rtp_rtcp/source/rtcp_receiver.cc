@@ -32,6 +32,7 @@
 #include "modules/rtp_rtcp/source/rtcp_packet/rapid_resync_request.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/receiver_report.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/remb.h"
+#include "modules/rtp_rtcp/source/rtcp_packet/remote_estimate.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/sdes.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/sender_report.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/tmmbn.h"
@@ -63,6 +64,8 @@ const int64_t kRtcpMinFrameLengthMs = 17;
 // Maximum number of received RRTRs that will be stored.
 const size_t kMaxNumberOfStoredRrtrs = 200;
 
+constexpr int32_t kDefaultVideoReportInterval = 1000;
+constexpr int32_t kDefaultAudioReportInterval = 5000;
 }  // namespace
 
 struct RTCPReceiver::PacketInformation {
@@ -77,6 +80,7 @@ struct RTCPReceiver::PacketInformation {
   uint32_t receiver_estimated_max_bitrate_bps = 0;
   std::unique_ptr<rtcp::TransportFeedback> transport_feedback;
   absl::optional<VideoBitrateAllocation> target_bitrate_allocation;
+  absl::optional<NetworkStateEstimate> network_state_estimate;
   std::unique_ptr<rtcp::LossNotification> loss_notification;
 };
 
@@ -118,27 +122,22 @@ struct RTCPReceiver::LastFirStatus {
   uint8_t sequence_number;
 };
 
-RTCPReceiver::RTCPReceiver(
-    Clock* clock,
-    bool receiver_only,
-    RtcpPacketTypeCounterObserver* packet_type_counter_observer,
-    RtcpBandwidthObserver* rtcp_bandwidth_observer,
-    RtcpIntraFrameObserver* rtcp_intra_frame_observer,
-    RtcpLossNotificationObserver* rtcp_loss_notification_observer,
-    TransportFeedbackObserver* transport_feedback_observer,
-    VideoBitrateAllocationObserver* bitrate_allocation_observer,
-    int report_interval_ms,
-    ModuleRtpRtcp* owner)
-    : clock_(clock),
-      receiver_only_(receiver_only),
+RTCPReceiver::RTCPReceiver(const RtpRtcp::Configuration& config,
+                           ModuleRtpRtcp* owner)
+    : clock_(config.clock),
+      receiver_only_(config.receiver_only),
       rtp_rtcp_(owner),
-      rtcp_bandwidth_observer_(rtcp_bandwidth_observer),
-      rtcp_intra_frame_observer_(rtcp_intra_frame_observer),
-      rtcp_loss_notification_observer_(rtcp_loss_notification_observer),
-      transport_feedback_observer_(transport_feedback_observer),
-      bitrate_allocation_observer_(bitrate_allocation_observer),
-      report_interval_ms_(report_interval_ms),
-      main_ssrc_(0),
+      rtcp_bandwidth_observer_(config.bandwidth_callback),
+      rtcp_intra_frame_observer_(config.intra_frame_callback),
+      rtcp_loss_notification_observer_(config.rtcp_loss_notification_observer),
+      network_state_estimate_observer_(config.network_state_estimate_observer),
+      transport_feedback_observer_(config.transport_feedback_callback),
+      bitrate_allocation_observer_(config.bitrate_allocation_observer),
+      report_interval_ms_(config.rtcp_report_interval_ms > 0
+                              ? config.rtcp_report_interval_ms
+                              : (config.audio ? kDefaultAudioReportInterval
+                                              : kDefaultVideoReportInterval)),
+      main_ssrc_(config.media_send_ssrc.value_or(0)),
       remote_ssrc_(0),
       remote_sender_rtp_time_(0),
       xr_rrtr_status_(false),
@@ -148,10 +147,19 @@ RTCPReceiver::RTCPReceiver(
       last_increased_sequence_number_ms_(0),
       stats_callback_(nullptr),
       report_block_data_observer_(nullptr),
-      packet_type_counter_observer_(packet_type_counter_observer),
+      packet_type_counter_observer_(config.rtcp_packet_type_counter_observer),
       num_skipped_packets_(0),
-      last_skipped_packets_warning_ms_(clock->TimeInMilliseconds()) {
+      last_skipped_packets_warning_ms_(clock_->TimeInMilliseconds()) {
   RTC_DCHECK(owner);
+  if (config.media_send_ssrc) {
+    registered_ssrcs_.insert(*config.media_send_ssrc);
+  }
+  if (config.rtx_send_ssrc) {
+    registered_ssrcs_.insert(*config.rtx_send_ssrc);
+  }
+  if (config.flexfec_sender) {
+    registered_ssrcs_.insert(config.flexfec_sender->ssrc());
+  }
 }
 
 RTCPReceiver::~RTCPReceiver() {}
@@ -354,6 +362,9 @@ bool RTCPReceiver::ParseCompoundPacket(const uint8_t* packet_begin,
         break;
       case rtcp::Bye::kPacketType:
         HandleBye(rtcp_block);
+        break;
+      case rtcp::App::kPacketType:
+        HandleApp(rtcp_block, packet_information);
         break;
       case rtcp::Rtpfb::kPacketType:
         switch (rtcp_block.fmt()) {
@@ -683,6 +694,22 @@ void RTCPReceiver::HandleNack(const CommonHeader& rtcp_block,
     packet_type_counter_.nack_requests = nack_stats_.requests();
     packet_type_counter_.unique_nack_requests = nack_stats_.unique_requests();
   }
+}
+
+void RTCPReceiver::HandleApp(const rtcp::CommonHeader& rtcp_block,
+                             PacketInformation* packet_information) {
+  rtcp::App app;
+  if (app.Parse(rtcp_block)) {
+    if (app.name() == rtcp::RemoteEstimate::kName &&
+        app.sub_type() == rtcp::RemoteEstimate::kSubType) {
+      rtcp::RemoteEstimate estimate(std::move(app));
+      if (estimate.ParseData()) {
+        packet_information->network_state_estimate = estimate.estimate();
+        return;
+      }
+    }
+  }
+  ++num_skipped_packets_;
 }
 
 void RTCPReceiver::HandleBye(const CommonHeader& rtcp_block) {
@@ -1067,6 +1094,12 @@ void RTCPReceiver::TriggerCallbacksFromRtcpPacket(
       transport_feedback_observer_->OnTransportFeedback(
           *packet_information.transport_feedback);
     }
+  }
+
+  if (network_state_estimate_observer_ &&
+      packet_information.network_state_estimate) {
+    network_state_estimate_observer_->OnRemoteNetworkEstimate(
+        *packet_information.network_state_estimate);
   }
 
   if (bitrate_allocation_observer_ &&

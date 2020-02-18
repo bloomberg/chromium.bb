@@ -86,6 +86,7 @@
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
 #include "google_apis/gaia/gaia_switches.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_util.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -97,7 +98,6 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -221,46 +221,6 @@ bool HasSeenWebRequestInBackgroundPage(const Extension* extension,
   return seen;
 }
 
-// The DevTool's remote front-end is hardcoded to a URL with a fixed port.
-// Redirect all responses to a URL with port.
-class DevToolsFrontendInterceptor : public net::URLRequestInterceptor {
- public:
-  DevToolsFrontendInterceptor(int port, const base::FilePath& root_dir)
-      : port_(port), test_root_dir_(root_dir) {}
-
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    // The DevTools front-end has a hard-coded scheme (and implicit port 443).
-    // We simulate a response for it.
-    // net::URLRequestRedirectJob cannot be used because DevToolsUIBindings
-    // rejects URLs whose base URL is not the hard-coded URL.
-    if (request->url().EffectiveIntPort() != port_) {
-      return new net::URLRequestMockHTTPJob(
-          request, network_delegate,
-          test_root_dir_.AppendASCII(request->url().path().substr(1)));
-    }
-    return nullptr;
-  }
-
- private:
-  int port_;
-  base::FilePath test_root_dir_;
-};
-
-void SetUpDevToolsFrontendInterceptorOnIO(int port,
-                                          const base::FilePath& root_dir) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-      "https", kRemoteFrontendDomain,
-      std::make_unique<DevToolsFrontendInterceptor>(port, root_dir));
-}
-
-void TearDownDevToolsFrontendInterceptorOnIO() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::URLRequestFilter::GetInstance()->ClearHandlers();
-}
-
 }  // namespace
 
 class ExtensionWebRequestApiTest : public ExtensionApiTest {
@@ -294,6 +254,14 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
     test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), R"(
         chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
           details.requestHeaders.push({name: 'foo', value: 'bar'});
+          details.requestHeaders.push({
+            name: 'frameId',
+            value: details.frameId.toString()
+          });
+          details.requestHeaders.push({
+            name: 'resourceType',
+            value: details.type
+          });
           return {requestHeaders: details.requestHeaders};
         }, {urls: ['*://*/echoheader*']}, ['blocking', 'requestHeaders']);
 
@@ -361,32 +329,13 @@ class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
 
     int port = embedded_test_server()->port();
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
-          base::BindRepeating(&DevToolsFrontendInWebRequestApiTest::OnIntercept,
-                              base::Unretained(this), port));
-    } else {
-      base::RunLoop run_loop;
-      base::PostTaskWithTraitsAndReply(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(&SetUpDevToolsFrontendInterceptorOnIO, port,
-                         test_root_dir_),
-          run_loop.QuitClosure());
-      run_loop.Run();
-    }
+    url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
+        base::BindRepeating(&DevToolsFrontendInWebRequestApiTest::OnIntercept,
+                            base::Unretained(this), port));
   }
 
   void TearDownOnMainThread() override {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      url_loader_interceptor_.reset();
-    } else {
-      base::RunLoop run_loop;
-      base::PostTaskWithTraitsAndReply(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(&TearDownDevToolsFrontendInterceptorOnIO),
-          run_loop.QuitClosure());
-      run_loop.Run();
-    }
+    url_loader_interceptor_.reset();
     ExtensionApiTest::TearDownOnMainThread();
   }
 
@@ -407,9 +356,9 @@ class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
  private:
   bool OnIntercept(int test_server_port,
                    content::URLLoaderInterceptor::RequestParams* params) {
-    // See comments in DevToolsFrontendInterceptor above. The devtools remote
-    // frontend URLs are hardcoded into Chrome and are requested by some of the
-    // tests here to exercise their behavior with respect to WebRequest.
+    // The devtools remote frontend URLs are hardcoded into Chrome and are
+    // requested by some of the tests here to exercise their behavior with
+    // respect to WebRequest.
     //
     // We treat any URL request not targeting the test server as targeting the
     // remote frontend, and we intercept them to fulfill from test data rather
@@ -473,8 +422,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestComplex) {
       message_;
 }
 
-// This test times out regularly on MSAN trybots. See https://crbug.com/733395.
-#if defined(MEMORY_SANITIZER)
+// This test times out regularly on ASAN/MSAN trybots. See
+// https://crbug.com/733395.
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_WebRequestTypes DISABLED_WebRequestTypes
 #else
 #define MAYBE_WebRequestTypes WebRequestTypes
@@ -743,12 +693,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        MAYBE_WebRequestDeclarative2) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  const char* network_service_arg =
-      base::FeatureList::IsEnabled(network::features::kNetworkService)
-          ? "NetworkServiceEnabled"
-          : "NetworkServiceDisabled";
-  ASSERT_TRUE(RunExtensionSubtestWithArg("webrequest", "test_declarative2.html",
-                                         network_service_arg))
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_declarative2.html"))
       << message_;
 }
 
@@ -1532,34 +1477,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebSocketRequestOnWorker) {
       << message_;
 }
 
-// Tests the WebRequestProxyingWebSocket does not crash when there is a
-// connection error before AddChannelRequest is called. Regression test for
-// http://crbug.com/878574.
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       WebSocketConnectionErrorBeforeChannelRequest) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
-  InstallWebRequestExtension("extension");
-
-  network::mojom::WebSocketPtr web_socket;
-  network::mojom::WebSocketRequest request = mojo::MakeRequest(&web_socket);
-  network::mojom::AuthenticationHandlerPtr auth_handler;
-  content::RenderFrameHost* host =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-  extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
-      profile())
-      ->MaybeProxyWebSocket(host, &request, &auth_handler, nullptr);
-  content::BrowserContext::GetDefaultStoragePartition(profile())
-      ->GetNetworkContext()
-      ->CreateWebSocket(std::move(request), network::mojom::kBrowserProcessId,
-                        host->GetProcess()->GetID(),
-                        url::Origin::Create(GURL("http://example.com")),
-                        network::mojom::kWebSocketOptionNone,
-                        std::move(auth_handler), nullptr);
-  web_socket.reset();
-}
-
 // Tests that a clean close from the server is not reported as an error when
 // there is a race between OnDropChannel and SendFrame.
 // Regression test for https://crbug.com/937790.
@@ -1803,11 +1720,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, InitiatorAccessRequired) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestApiClearsBindingOnFirstListener) {
-  // Skip if network service is disabled since the proxy is not used. Also skip
-  // if the proxy is forced since the bindings will never be cleared in that
-  // case.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      base::FeatureList::IsEnabled(
+  // Skip if the proxy is forced since the bindings will never be cleared in
+  // that case.
+  if (base::FeatureList::IsEnabled(
           extensions_features::kForceWebRequestProxyForTest)) {
     return;
   }
@@ -1836,9 +1751,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 // Regression test for http://crbug.com/878366.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestApiDoesNotCrashOnErrorAfterProfileDestroyed) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Create a profile that will be destroyed later.
@@ -1859,20 +1771,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   content::BrowserContext::GetDefaultStoragePartition(temp_profile)
       ->FlushNetworkInterfaceForTesting();
 
-  network::mojom::URLLoaderFactoryPtr factory;
-  auto request = mojo::MakeRequest(&factory);
+  mojo::Remote<network::mojom::URLLoaderFactory> factory;
+  auto pending_receiver = factory.BindNewPipeAndPassReceiver();
   auto temp_web_contents =
       WebContents::Create(WebContents::CreateParams(temp_profile));
   content::RenderFrameHost* frame = temp_web_contents->GetMainFrame();
   EXPECT_TRUE(api->MaybeProxyURLLoaderFactory(
       frame->GetProcess()->GetBrowserContext(), frame,
-      frame->GetProcess()->GetID(), false, false, &request, nullptr));
+      frame->GetProcess()->GetID(), false, false, &pending_receiver, nullptr));
   temp_web_contents.reset();
   auto params = network::mojom::URLLoaderFactoryParams::New();
   params->process_id = 0;
   content::BrowserContext::GetDefaultStoragePartition(temp_profile)
       ->GetNetworkContext()
-      ->CreateURLLoaderFactory(std::move(request), std::move(params));
+      ->CreateURLLoaderFactory(std::move(pending_receiver), std::move(params));
 
   network::TestURLLoaderClient client;
   network::mojom::URLLoaderPtr loader;
@@ -2109,21 +2021,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPInterceptionWebRequestAPITest,
 
 // Ensure that devtools frontend requests are hidden from the webRequest API.
 IN_PROC_BROWSER_TEST_F(DevToolsFrontendInWebRequestApiTest, HiddenRequests) {
-  // Test expectations differ with the Network Service because of the way
-  // request interception is done for the test. In the legacy networking path a
-  // URLRequestMockHTTPJob is used, which does not generate
-  // |onBeforeHeadersSent| events. With the Network Service enabled, requests
-  // issued to HTTP URLs by these tests look like real HTTP requests and
-  // therefore do generate |onBeforeHeadersSent| events.
-  //
-  // These tests adjust their expectations accordingly based on whether or not
-  // the Network Service is enabled.
-  const char* network_service_arg =
-      base::FeatureList::IsEnabled(network::features::kNetworkService)
-          ? "NetworkServiceEnabled"
-          : "NetworkServiceDisabled";
-  ASSERT_TRUE(RunExtensionSubtestWithArg("webrequest", "test_devtools.html",
-                                         network_service_arg))
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_devtools.html"))
       << message_;
 }
 
@@ -2633,21 +2531,51 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // response for the navigation preload request, and respond with it to create
   // the page.
   GURL url = embedded_test_server()->GetURL(
-      "/echoheader?foo&service-worker-navigation-preload");
+      "/echoheader?frameId&resourceType&service-worker-navigation-preload");
   ui_test_utils::NavigateToURL(browser(), url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
 
   // Since the request was to "/echoheader", the response describes the request
   // headers.
   //
-  // The extension is expected to add a "foo: bar" header to the request
-  // before it goes to network. Verify that it did.
+  // The expectation is "0\nmain_frame\ntrue" because...
   //
-  // The browser adds a "service-worker-navigation-preload: true" header for
-  // navigation preload requests, so also sanity check that header to prove
-  // that this test is really testing the navigation preload request.
-  EXPECT_EQ("bar\ntrue",
-            EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
-                   "document.body.textContent;"));
+  // 1) The extension is expected to add a "frameId: {id}" header, where {id} is
+  //    details.frameId. This id is 0 for the main frame.
+  // 2) The extension is similarly expected to add a "resourceType: {type}"
+  //    header, where {type} is details.type.
+  // 3) The browser adds a "service-worker-navigation-preload: true" header for
+  //    navigation preload requests, so also sanity check that header to prove
+  //    that this test is really testing the navigation preload request.
+  EXPECT_EQ("0\nmain_frame\ntrue",
+            EvalJs(web_contents, "document.body.textContent;"));
+
+  // Repeat the test from an iframe, to test that details.frameId and resource
+  // type is populated correctly.
+  const char kAddIframe[] = R"(
+    (async () => {
+      const iframe = document.createElement('iframe');
+      await new Promise(resolve => {
+        iframe.src = $1;
+        iframe.onload = resolve;
+        document.body.appendChild(iframe);
+      });
+      const result = iframe.contentWindow.document.body.textContent;
+
+      // Expect "{frameId}\nsub_frame\ntrue" where {frameId} is a positive
+      // integer.
+      const split = result.split('\n');
+      if (parseInt(split[0]) > 0 && split[1] == 'sub_frame' &&
+          split[2] == 'true') {
+          return 'ok';
+      }
+      return 'bad result: ' + result;
+    })();
+  )";
+
+  EXPECT_EQ("ok", EvalJs(web_contents, content::JsReplace(kAddIframe, url)));
 }
 
 // Ensure we don't strip off initiator incorrectly in web request events when

@@ -2,6 +2,10 @@
 
 perlfaq5 - Files and Formats
 
+=head1 VERSION
+
+version 5.20190126
+
 =head1 DESCRIPTION
 
 This section deals with I/O and the "f" issues: filehandles, flushing,
@@ -194,13 +198,13 @@ you can fit the whole thing in memory!):
     open my $in,  '<',  $file      or die "Can't read old file: $!"
     open my $out, '>', "$file.new" or die "Can't write new file: $!";
 
-    my @lines = do { local $/; <$in> }; # slurp!
+    my $content = do { local $/; <$in> }; # slurp!
 
         # do your magic here
 
-    print $out @lines;
+    print $out $content;
 
-Modules such as L<File::Slurp> and L<Tie::File> can help with that
+Modules such as L<Path::Tiny> and L<Tie::File> can help with that
 too. If you can, however, avoid reading the entire file at once. Perl
 won't give that memory back to the operating system until the process
 finishes.
@@ -280,7 +284,7 @@ newlines:
     while( sysread $fh, $buffer, 4096 ) {
         $lines += ( $buffer =~ tr/\n// );
     }
-    close FILE;
+    close $fh;
 
 However, that doesn't work if the line ending isn't a newline. You
 might change that C<tr///> to a C<s///> so you can count the number of
@@ -291,7 +295,7 @@ times the input record separator, C<$/>, shows up:
     while( sysread $fh, $buffer, 4096 ) {
         $lines += ( $buffer =~ s|$/||g; );
     }
-    close FILE;
+    close $fh;
 
 If you don't mind shelling out, the C<wc> command is usually the
 fastest, even with the extra interprocess overhead. Ensure that you
@@ -431,8 +435,10 @@ temporary files in one process, use a counter:
 
     BEGIN {
         use Fcntl;
-        my $temp_dir = -d '/tmp' ? '/tmp' : $ENV{TMPDIR} || $ENV{TEMP};
-        my $base_name = sprintf "%s/%d-%d-0000", $temp_dir, $$, time;
+        use File::Spec;
+        my $temp_dir  = File::Spec->tmpdir();
+        my $file_base = sprintf "%d-%d-0000", $$, time;
+        my $base_name = File::Spec->catfile($temp_dir, $file_base);
 
         sub temp_file {
             my $fh;
@@ -620,6 +626,25 @@ related to whether they're strings, typeglobs, objects, or anything else.
 It's the syntax of the fundamental operators. Playing the object
 game doesn't help you at all here.
 
+=head2 How can I open a filehandle to a string?
+X<string> X<open> X<IO::String> X<filehandle>
+
+(contributed by Peter J. Holzer, hjp-usenet2@hjp.at)
+
+Since Perl 5.8.0 a file handle referring to a string can be created by
+calling open with a reference to that string instead of the filename.
+This file handle can then be used to read from or write to the string:
+
+    open(my $fh, '>', \$string) or die "Could not open string for writing";
+    print $fh "foo\n";
+    print $fh "bar\n";    # $string now contains "foo\nbar\n"
+
+    open(my $fh, '<', \$string) or die "Could not open string for reading";
+    my $x = <$fh>;    # $x now contains "foo\n"
+
+With older versions of Perl, the L<IO::String> module provides similar
+functionality.
+
 =head2 How can I set up a footer format to be used with write()?
 X<footer>
 
@@ -677,25 +702,6 @@ There are also some tricks that you can play with C<formline> and the
 accumulator variable C<$^A>, but you lose a lot of the value of formats
 since C<formline> won't handle paging and so on. You end up reimplementing
 formats when you use them.
-
-=head2 How can I open a filehandle to a string?
-X<string> X<open> X<IO::String> X<filehandle>
-
-(contributed by Peter J. Holzer, hjp-usenet2@hjp.at)
-
-Since Perl 5.8.0 a file handle referring to a string can be created by
-calling open with a reference to that string instead of the filename.
-This file handle can then be used to read from or write to the string:
-
-    open(my $fh, '>', \$string) or die "Could not open string for writing";
-    print $fh "foo\n";
-    print $fh "bar\n";    # $string now contains "foo\nbar\n"
-
-    open(my $fh, '<', \$string) or die "Could not open string for reading";
-    my $x = <$fh>;    # $x now contains "foo\n"
-
-With older versions of Perl, the L<IO::String> module provides similar
-functionality.
 
 =head2 How can I output my numbers with commas added?
 X<number, commify>
@@ -795,7 +801,7 @@ To open file for writing, create new file, file must not exist:
 
 To open file for appending, create if necessary:
 
-    open my $fh, '>>' $path                               or die $!;
+    open my $fh, '>>', $path                              or die $!;
     sysopen my $fh, $path, O_WRONLY|O_APPEND|O_CREAT      or die $!;
     sysopen my $fh, $path, O_WRONLY|O_APPEND|O_CREAT, 0666 or die $!;
 
@@ -844,7 +850,7 @@ To get around this, either upgrade to Perl v5.6.0 or later, do the glob
 yourself with readdir() and patterns, or use a module like L<File::Glob>,
 one that doesn't use the shell to do globbing.
 
-=head2 How can I open a file with a leading ">" or trailing blanks?
+=head2 How can I open a file named with a leading ">" or trailing blanks?
 X<filename, special characters>
 
 (contributed by Brian McCauley)
@@ -1133,13 +1139,13 @@ C<$DB_RECNO> bindings, which allow you to tie an array to a file so that
 accessing an element of the array actually accesses the corresponding
 line in the file.
 
-If you want to load the entire file, you can use the L<File::Slurp>
-module to do it in one one simple and efficient step:
+If you want to load the entire file, you can use the L<Path::Tiny>
+module to do it in one simple and efficient step:
 
-    use File::Slurp;
+    use Path::Tiny;
 
-    my $all_of_it = read_file($filename); # entire file in scalar
-    my @all_lines = read_file($filename); # one line per element
+    my $all_of_it = path($filename)->slurp; # entire file in scalar
+    my @all_lines = path($filename)->lines; # one line per element
 
 Or you can read the entire file contents into a scalar like this:
 
@@ -1272,7 +1278,7 @@ comes with Perl tries to convert C include files to Perl code, which
 can be C<require>d. FIONREAD ends up defined as a function in the
 I<sys/ioctl.ph> file:
 
-    require 'sys/ioctl.ph';
+    require './sys/ioctl.ph';
 
     $size = pack("L", 0);
     ioctl(FH, FIONREAD(), $size)    or die "Couldn't call ioctl: $!\n";
@@ -1372,8 +1378,8 @@ used for things that Perl opened itself, even if it was a dup of a
 numeric descriptor as with C<MHCONTEXT> above. But if you really have
 to, you may be able to do this:
 
-    require 'sys/syscall.ph';
-    my $rc = syscall(&SYS_close, $fd + 0);  # must force numeric
+    require './sys/syscall.ph';
+    my $rc = syscall(SYS_close(), $fd + 0);  # must force numeric
     die "can't sysclose $fd: $!" unless $rc == -1;
 
 Or, just use the fdopen(3S) feature of C<open()>:
@@ -1537,7 +1543,7 @@ a similar interface, but does the traversal for you too:
 (contributed by brian d foy)
 
 If you have an empty directory, you can use Perl's built-in C<rmdir>.
-If the directory is not empty (so, no files or subdirectories), you
+If the directory is not empty (so, with files or subdirectories), you
 either have to empty it yourself (a lot of work) or use a module to
 help you.
 

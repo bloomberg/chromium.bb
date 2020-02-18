@@ -141,9 +141,6 @@ class PostEventDispatchHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(PostEventDispatchHandler);
 };
 
-// static
-const char RootView::kViewClassName[] = "RootView";
-
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, public:
 
@@ -175,8 +172,7 @@ RootView::RootView(Widget* widget)
 RootView::~RootView() {
   // If we have children remove them explicitly so to make sure a remove
   // notification is sent for each one of them.
-  if (!children().empty())
-    RemoveAllChildViews(true);
+  RemoveAllChildViews(true);
 }
 
 // Tree operations -------------------------------------------------------------
@@ -317,10 +313,6 @@ Widget* RootView::GetWidget() {
 
 bool RootView::IsDrawn() const {
   return GetVisible();
-}
-
-const char* RootView::GetClassName() const {
-  return kViewClassName;
 }
 
 void RootView::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -616,7 +608,7 @@ void RootView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void RootView::UpdateParentLayer() {
   if (layer())
-    ReparentLayer(gfx::Vector2d(GetMirroredX(), y()), widget_->GetLayer());
+    ReparentLayer(widget_->GetLayer());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -767,5 +759,8 @@ ui::EventDispatchDetails RootView::PostDispatchEvent(ui::EventTarget* target,
   return details;
 }
 
+BEGIN_METADATA(RootView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 }  // namespace internal
 }  // namespace views

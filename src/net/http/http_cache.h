@@ -56,7 +56,6 @@ namespace net {
 
 class HttpNetworkSession;
 class HttpResponseInfo;
-class IOBuffer;
 class NetLog;
 struct HttpRequestInfo;
 
@@ -203,17 +202,6 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
                                 HttpResponseInfo* response_info,
                                 bool* response_truncated);
 
-  // Writes |buf_len| bytes of metadata stored in |buf| to the cache entry
-  // referenced by |url|, as long as the entry's |expected_response_time| has
-  // not changed. This method returns without blocking, and the operation will
-  // be performed asynchronously without any completion notification.
-  // Takes ownership of |buf|.
-  virtual void WriteMetadata(const GURL& url,
-                             RequestPriority priority,
-                             base::Time expected_response_time,
-                             IOBuffer* buf,
-                             int buf_len);
-
   // Get/Set the cache's mode.
   void set_mode(Mode value) { mode_ = value; }
   Mode mode() { return mode_; }
@@ -231,13 +219,10 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   void CloseIdleConnections();
 
   // Called whenever an external cache in the system reuses the resource
-  // referred to by |url| and |http_method|, inside a page with a top-level
-  // URL at |top_frame_origin|.
-  // TODO(crbug.com/965126): Use NetworkIsolationKey instead of top frame
-  // origin.
+  // referred to by |url| and |http_method| and |network_isolation_key|.
   void OnExternalCacheHit(const GURL& url,
                           const std::string& http_method,
-                          base::Optional<url::Origin> top_frame_origin);
+                          const NetworkIsolationKey& network_isolation_key);
 
   // Causes all transactions created after this point to simulate lock timeout
   // and effectively bypass the cache lock whenever there is lock contention.
@@ -277,6 +262,13 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                        const std::string& parent_absolute_name) const;
 
+  // Get the URL from the entry's cache key. If double-keying is not enabled,
+  // this will be the key itself.
+  static std::string GetResourceURLFromHttpCacheKey(const std::string& key);
+
+  // Function to generate cache key for testing.
+  std::string GenerateCacheKeyForTest(const HttpRequestInfo* request);
+
  private:
   // Types --------------------------------------------------------------------
 
@@ -293,13 +285,17 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   enum {
     kResponseInfoIndex = 0,
     kResponseContentIndex,
+    // Only currently used in DoTruncateCachedMetadata().
+    // TODO(mmenke): Remove this in and DoTruncateCachedMetadata() in M79, after
+    // most metadata entries in the cache have been removed. Without
+    // DoTruncateCachedMetadata(), the metadata will be removed when a cache
+    // entry is destroyed, but some conditionalized updates will keep it around.
     kMetadataIndex,
 
     // Must remain at the end of the enum.
     kNumCacheEntryDataIndices
   };
 
-  class MetadataWriter;
   class QuicServerInfoFactoryAdaptor;
   class Transaction;
   class WorkItem;
@@ -625,6 +621,12 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // Processes the backend creation notification.
   void OnBackendCreated(int result, PendingOp* pending_op);
 
+  // Constants ----------------------------------------------------------------
+
+  // Used when generating and accessing keys if cache is split.
+  static const char kDoubleKeyPrefix[];
+  static const char kDoubleKeySeparator[];
+
   // Variables ----------------------------------------------------------------
 
   NetLog* net_log_;
@@ -658,7 +660,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<HttpCache> weak_factory_;
+  base::WeakPtrFactory<HttpCache> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HttpCache);
 };

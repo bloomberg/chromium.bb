@@ -4,12 +4,10 @@
 
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/ssl/chrome_mock_cert_verifier.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -22,6 +20,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 
@@ -189,8 +188,6 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    scoped_feature_list_.InitWithFeatures({features::kDesktopPWAsStayInWindow},
-                                          {});
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
     // Everything should be redirected to the http server.
@@ -243,12 +240,10 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
     DCHECK(app_controller_);
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_server_;
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
-  // used by the NetworkService. This is needed for when tests run with
-  // the NetworkService enabled.
-  ChromeMockCertVerifier cert_verifier_;
+  // used by the NetworkService.
+  content::ContentMockCertVerifier cert_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomTabBarViewBrowserTest);
 };
@@ -277,6 +272,31 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest, IsNotCreatedInPopup) {
   EXPECT_FALSE(popup_view->toolbar()->custom_tab_bar());
 }
 
+IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
+                       BackToAppButtonIsNotVisibleInOutOfScopePopups) {
+  ASSERT_TRUE(https_server()->Start());
+
+  const GURL& app_url = https_server()->GetURL("app.com", "/ssl/google.html");
+  const GURL& out_of_scope_url = GURL("https://example.com");
+
+  InstallBookmark(app_url);
+
+  BrowserView* app_view = BrowserView::GetBrowserViewForBrowser(app_browser_);
+
+  Browser* popup_browser =
+      OpenPopup(app_view->GetActiveWebContents(), out_of_scope_url);
+
+  // Out of scope, so custom tab bar should be shown.
+  EXPECT_TRUE(popup_browser->app_controller()->ShouldShowToolbar());
+
+  // As the popup was opened out of scope the close button should not be shown.
+  EXPECT_FALSE(BrowserView::GetBrowserViewForBrowser(popup_browser)
+                   ->toolbar()
+                   ->custom_tab_bar()
+                   ->close_button_for_testing()
+                   ->GetVisible());
+}
+
 // Check the custom tab will be used for a Desktop PWA.
 IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest, IsUsedForDesktopPWA) {
   ASSERT_TRUE(https_server()->Start());
@@ -302,8 +322,10 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest, TitleAndLocationUpdate) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL& app_url = https_server()->GetURL("app.com", "/ssl/google.html");
-  const GURL& navigate_to =
-      https_server()->GetURL("app.com", "/ssl/blank_page.html");
+
+  // This url is out of scope, because the CustomTabBar is not updated when it
+  // is not shown.
+  const GURL& navigate_to = https_server()->GetURL("app.com", "/simple.html");
 
   InstallPWA(app_url);
 

@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/bindings/modules/v8/module_bindings_initializer.h"
 #include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
@@ -51,21 +52,21 @@
 #include "third_party/blink/renderer/modules/filesystem/dragged_isolated_file_system_impl.h"
 #include "third_party/blink/renderer/modules/filesystem/local_file_system_client.h"
 #include "third_party/blink/renderer/modules/gamepad/navigator_gamepad.h"
+#include "third_party/blink/renderer/modules/image_downloader/image_downloader_impl.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
 #include "third_party/blink/renderer/modules/indexeddb/inspector_indexed_db_agent.h"
 #include "third_party/blink/renderer/modules/installation/installation_service_impl.h"
 #include "third_party/blink/renderer/modules/installedapp/installed_app_controller.h"
+#include "third_party/blink/renderer/modules/launch/web_launch_service_impl.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_manager.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
-#include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils.h"
-#include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils_client.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_receiver.h"
-#include "third_party/blink/renderer/modules/push_messaging/push_controller.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_messaging_client.h"
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
@@ -76,11 +77,12 @@
 #include "third_party/blink/renderer/modules/storage/storage_namespace.h"
 #include "third_party/blink/renderer/modules/vr/navigator_vr.h"
 #include "third_party/blink/renderer/modules/vr/vr_controller.h"
-#include "third_party/blink/renderer/modules/webaudio/base_audio_context_tracker.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/inspector_web_audio_agent.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_client.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_manager.h"
 #include "third_party/blink/renderer/modules/webdatabase/inspector_database_agent.h"
+#include "third_party/blink/renderer/modules/webdatabase/web_database_host.h"
 #include "third_party/blink/renderer/modules/webdatabase/web_database_impl.h"
 #include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
 #include "third_party/blink/renderer/modules/xr/navigator_xr.h"
@@ -91,9 +93,9 @@
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_canvas_context.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -119,6 +121,7 @@ void ModulesInitializer::Initialize() {
   DraggedIsolatedFileSystem::Init(
       DraggedIsolatedFileSystemImpl::PrepareForDataObject);
   CSSPaintImageGenerator::Init(CSSPaintImageGeneratorImpl::Create);
+  WebDatabaseHost::GetInstance().Init();
 
   CoreInitializer::Initialize();
 
@@ -154,10 +157,13 @@ void ModulesInitializer::Initialize() {
 }
 
 void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
-  // CoreInitializer::RegisterLocalFrameInitCallback([](LocalFrame& frame) {
   if (frame.IsMainFrame()) {
     frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
         &CopylessPasteServer::BindMojoRequest, WrapWeakPersistent(&frame)));
+  }
+  if (RuntimeEnabledFeatures::FileHandlingEnabled()) {
+    frame.GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
+        &WebLaunchServiceImpl::Create, WrapWeakPersistent(&frame)));
   }
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &InstallationServiceImpl::Create, WrapWeakPersistent(&frame)));
@@ -174,14 +180,12 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(&frame);
   WebLocalFrameClient* client = web_frame->Client();
   DCHECK(client);
-  ProvidePushControllerTo(frame, client->PushClient());
+  ProvidePushMessagingClientTo(
+      frame, MakeGarbageCollected<PushMessagingClient>(frame));
   ProvideUserMediaTo(
       frame, std::make_unique<UserMediaClient>(client->UserMediaClient()));
   ProvideIndexedDBClientTo(frame, MakeGarbageCollected<IndexedDBClient>(frame));
   ProvideLocalFileSystemTo(frame, std::make_unique<LocalFileSystemClient>());
-  NavigatorContentUtils::ProvideTo(
-      *frame.DomWindow()->navigator(),
-      MakeGarbageCollected<NavigatorContentUtilsClient>(web_frame));
 
   ScreenOrientationControllerImpl::ProvideTo(frame);
   if (RuntimeEnabledFeatures::PresentationEnabled())
@@ -190,6 +194,10 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   InspectorAccessibilityAgent::ProvideTo(&frame);
   ManifestManager::ProvideTo(frame);
   InstalledAppController::ProvideTo(frame);
+  if (frame.IsMainFrame()) {
+    // Only main frame has ImageDownloader service.
+    ImageDownloaderImpl::ProvideTo(frame);
+  }
 }
 
 void ModulesInitializer::ProvideLocalFileSystemToWorker(
@@ -290,7 +298,7 @@ void ModulesInitializer::ProvideModulesToPage(Page& page,
   ::blink::ProvideDatabaseClientTo(page,
                                    MakeGarbageCollected<DatabaseClient>());
   StorageNamespace::ProvideSessionStorageNamespaceTo(page, client);
-  BaseAudioContextTracker::ProvideToPage(page);
+  AudioGraphTracer::ProvideAudioGraphTracerTo(page);
 }
 
 void ModulesInitializer::ForceNextWebGLContextCreationToFail() const {
@@ -326,7 +334,7 @@ void ModulesInitializer::RegisterInterfaces(
     service_manager::BinderRegistry& registry) {
   DCHECK(Platform::Current());
   registry.AddInterface(
-      ConvertToBaseCallback(blink::CrossThreadBind(&WebDatabaseImpl::Create)),
+      ConvertToBaseCallback(CrossThreadBindRepeating(&WebDatabaseImpl::Create)),
       Platform::Current()->GetIOTaskRunner());
 }
 

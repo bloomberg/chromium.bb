@@ -129,9 +129,7 @@ MediaRouterMojoImpl::MediaSinksQuery::MediaSinksQuery() = default;
 MediaRouterMojoImpl::MediaSinksQuery::~MediaSinksQuery() = default;
 
 MediaRouterMojoImpl::MediaRouterMojoImpl(content::BrowserContext* context)
-    : instance_id_(base::GenerateGUID()),
-      context_(context),
-      weak_factory_(this) {
+    : instance_id_(base::GenerateGUID()), context_(context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -144,7 +142,7 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
     mojom::MediaRouteProviderPtr media_route_provider_ptr,
     mojom::MediaRouter::RegisterMediaRouteProviderCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!base::ContainsKey(media_route_providers_, provider_id));
+  DCHECK(!base::Contains(media_route_providers_, provider_id));
   media_route_provider_ptr.set_connection_error_handler(
       base::BindOnce(&MediaRouterMojoImpl::OnProviderConnectionError,
                      weak_factory_.GetWeakPtr(), provider_id));
@@ -462,10 +460,6 @@ scoped_refptr<MediaRouteController> MediaRouterMojoImpl::GetRouteController(
       return nullptr;
     case RouteControllerType::kGeneric:
       route_controller = new MediaRouteController(route_id, context_, this);
-      break;
-    case RouteControllerType::kHangouts:
-      route_controller =
-          new HangoutsMediaRouteController(route_id, context_, this);
       break;
     case RouteControllerType::kMirroring:
       route_controller =

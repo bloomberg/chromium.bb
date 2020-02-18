@@ -177,25 +177,11 @@
 #  define EAI_NODATA WSANO_DATA
 #endif
 
-#include "win32.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#undef ENOTSOCK
-#define ENOTSOCK       WSAENOTSOCK
-
-#undef ECONNABORTED
-#define ECONNABORTED WSAECONNABORTED
-
-#undef ECONNRESET
-#define ECONNRESET WSAECONNRESET
-
-#undef EAFNOSUPPORT
-#define EAFNOSUPPORT WSAEAFNOSUPPORT
-
-#ifdef USE_SOCKETS_AS_HANDLES
+#include "errno2.h"
 
 #ifndef PERL_FD_SETSIZE
 #define PERL_FD_SETSIZE		64
@@ -220,16 +206,6 @@ typedef struct	Perl_fd_set {
 
 #define PERL_FD_ISSET(n,p) \
     ((p)->bits[(n)/PERL_NFDBITS] &   ((unsigned)1 << ((n)%PERL_NFDBITS)))
-
-#else	/* USE_SOCKETS_AS_HANDLES */
-
-#define Perl_fd_set	fd_set
-#define PERL_FD_SET(n,p)	FD_SET(n,p)
-#define PERL_FD_CLR(n,p)	FD_CLR(n,p)
-#define PERL_FD_ISSET(n,p)	FD_ISSET(n,p)
-#define PERL_FD_ZERO(p)		FD_ZERO(p)
-
-#endif	/* USE_SOCKETS_AS_HANDLES */
 
 SOCKET win32_accept (SOCKET s, struct sockaddr *addr, int *addrlen);
 int win32_bind (SOCKET s, const struct sockaddr *addr, int namelen);
@@ -331,7 +307,6 @@ void win32_endservent(void);
 #define setprotoent	win32_setprotoent
 #define setservent	win32_setservent
 
-#ifdef USE_SOCKETS_AS_HANDLES
 #undef fd_set
 #undef FD_SET
 #undef FD_CLR
@@ -342,7 +317,6 @@ void win32_endservent(void);
 #define FD_CLR(n,p)	PERL_FD_CLR(n,p)
 #define FD_ISSET(n,p)	PERL_FD_ISSET(n,p)
 #define FD_ZERO(p)	PERL_FD_ZERO(p)
-#endif	/* USE_SOCKETS_AS_HANDLES */
 
 #endif	/* WIN32SCK_IS_STDSCK */
 

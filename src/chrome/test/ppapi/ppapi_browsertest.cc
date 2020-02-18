@@ -30,10 +30,10 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -49,7 +49,6 @@
 #include "net/ssl/ssl_info.h"
 #include "ppapi/shared_impl/test_utils.h"
 #include "rlz/buildflags/buildflags.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
@@ -359,15 +358,12 @@ TEST_PPAPI_NACL_WITH_SSL_SERVER(TCPSocketPrivate_LargeRead)
 TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
 
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocketPrivateCrash_Resolve) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      content::IsInProcessNetworkService())
+  if (content::IsInProcessNetworkService())
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(content::mojom::kNetworkServiceName,
-                      &network_service_test);
+  content::GetSystemConnector()->BindInterface(
+      content::mojom::kNetworkServiceName, &network_service_test);
   network_service_test->CrashOnResolveHost("crash.com");
 
   RunTestViaHTTP(STRIP_PREFIXES(TCPSocketPrivateCrash_Resolve));
@@ -1260,15 +1256,12 @@ TEST_PPAPI_NACL_DISALLOWED_SOCKETS(UDPSocketPrivateDisallowed)
   )
 
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, HostResolverCrash_Basic) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      content::IsInProcessNetworkService())
+  if (content::IsInProcessNetworkService())
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(content::mojom::kNetworkServiceName,
-                      &network_service_test);
+  content::GetSystemConnector()->BindInterface(
+      content::mojom::kNetworkServiceName, &network_service_test);
   network_service_test->CrashOnResolveHost("crash.com");
 
   RunTestViaHTTP(STRIP_PREFIXES(HostResolverCrash_Basic));
@@ -2188,9 +2181,10 @@ class PackagedAppTest : public extensions::ExtensionBrowserTest {
     const extensions::Extension* extension = LoadExtension(app_dir);
     ASSERT_TRUE(extension);
 
-    AppLaunchParams params(
-        browser()->profile(), extension, extensions::LAUNCH_CONTAINER_NONE,
-        WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST);
+    AppLaunchParams params(browser()->profile(), extension->id(),
+                           extensions::LaunchContainer::kLaunchContainerNone,
+                           WindowOpenDisposition::NEW_WINDOW,
+                           extensions::AppLaunchSource::kSourceTest);
     params.command_line = *base::CommandLine::ForCurrentProcess();
     OpenApplication(params);
   }

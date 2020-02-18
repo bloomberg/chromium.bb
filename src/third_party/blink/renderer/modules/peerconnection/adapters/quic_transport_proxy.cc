@@ -12,8 +12,8 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_transport_host.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -25,8 +25,7 @@ QuicTransportProxy::QuicTransportProxy(
     : host_(nullptr,
             base::OnTaskRunnerDeleter(ice_transport_proxy->host_thread())),
       delegate_(delegate),
-      ice_transport_proxy_(ice_transport_proxy),
-      weak_ptr_factory_(this) {
+      ice_transport_proxy_(ice_transport_proxy) {
   DCHECK(delegate_);
   DCHECK(ice_transport_proxy_);
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
@@ -102,8 +101,7 @@ QuicStreamProxy* QuicTransportProxy::CreateStream() {
                                           WTF::Passed(std::move(stream_host))));
 
   QuicStreamProxy* stream_proxy_ptr = stream_proxy.get();
-  stream_proxies_.insert(
-      std::make_pair(stream_proxy_ptr, std::move(stream_proxy)));
+  stream_proxies_.insert(stream_proxy_ptr, std::move(stream_proxy));
   return stream_proxy_ptr;
 }
 
@@ -160,8 +158,7 @@ void QuicTransportProxy::OnStream(
   stream_proxy->Initialize(this);
 
   QuicStreamProxy* stream_proxy_ptr = stream_proxy.get();
-  stream_proxies_.insert(
-      std::make_pair(stream_proxy_ptr, std::move(stream_proxy)));
+  stream_proxies_.insert(stream_proxy_ptr, std::move(stream_proxy));
   delegate_->OnStream(stream_proxy_ptr);
 }
 

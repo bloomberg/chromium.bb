@@ -6,8 +6,9 @@
 
 #include <string>
 
-#include "base/command_line.h"
+#include "base/numerics/safe_conversions.h"
 #include "content/public/common/content_features.h"
+#include "net/base/features.h"
 #include "services/network/loader_util.h"
 
 namespace content {
@@ -81,7 +82,24 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
       }
       break;
   }
+
+  if (base::FeatureList::IsEnabled(net::features::kCapRefererHeaderLength) &&
+      base::saturated_cast<int>(sanitized_referrer.url.spec().length()) >
+          net::features::kMaxRefererHeaderLength.Get()) {
+    sanitized_referrer.url = sanitized_referrer.url.GetOrigin();
+  }
+
   return sanitized_referrer;
+}
+
+// static
+url::Origin Referrer::SanitizeOriginForRequest(
+    const GURL& request,
+    const url::Origin& initiator,
+    network::mojom::ReferrerPolicy policy) {
+  Referrer fake_referrer(initiator.GetURL(), policy);
+  Referrer sanitizied_referrer = SanitizeForRequest(request, fake_referrer);
+  return url::Origin::Create(sanitizied_referrer.url);
 }
 
 // static

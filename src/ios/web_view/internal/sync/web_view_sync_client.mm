@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -30,8 +29,8 @@
 #include "components/sync_user_events/user_event_service.h"
 #include "components/version_info/version_info.h"
 #include "components/version_info/version_string.h"
-#include "ios/web/public/web_task_traits.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/pref_names.h"
@@ -181,10 +180,6 @@ WebViewSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     return base::WeakPtr<syncer::SyncableService>();
   }
   switch (type) {
-    case syncer::AUTOFILL_PROFILE:
-      return autofill::AutofillProfileSyncableService::FromWebDataService(
-                 service.get())
-          ->AsWeakPtr();
     case syncer::AUTOFILL_WALLET_METADATA:
       return autofill::AutofillWalletMetadataSyncableService::
           FromWebDataService(service.get())

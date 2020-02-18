@@ -1,9 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
@@ -42,13 +42,13 @@
           </template>
           <template is="dom-if" if="[[!prefs.crostini.enabled.value]]">
             <div class="separator"></div>
-            <paper-button id="enable"
+            <cr-button id="enable"
                 disabled="[[!allowCrostini]]"
                 on-click="onEnableTap_"
                 aria-label="$i18n{crostiniPageTitle}"
                 aria-describedby="secondaryText">
               $i18n{crostiniEnable}
-            </paper-button>
+            </cr-button>
           </template>
         </div>
       </div>

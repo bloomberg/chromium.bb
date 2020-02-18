@@ -133,9 +133,9 @@ void PickerIndicatorElement::ClosePopup() {
   chooser_->EndChooser();
 }
 
-void PickerIndicatorElement::DetachLayoutTree(const AttachContext& context) {
+void PickerIndicatorElement::DetachLayoutTree(bool performing_reattach) {
   ClosePopup();
-  HTMLDivElement::DetachLayoutTree(context);
+  HTMLDivElement::DetachLayoutTree(performing_reattach);
 }
 
 AXObject* PickerIndicatorElement::PopupRootAXObject() const {

@@ -30,7 +30,6 @@
  */
 
 #include "third_party/blink/renderer/core/page/chrome_client_impl.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 #include <memory>
 #include <utility>
@@ -43,6 +42,7 @@
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
@@ -68,7 +68,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -101,12 +100,13 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
 
@@ -508,7 +508,9 @@ void ChromeClientImpl::PageScaleFactorChanged() const {
   web_view_->PageScaleFactorChanged();
 }
 
-void ChromeClientImpl::MainFrameScrollOffsetChanged() const {
+void ChromeClientImpl::MainFrameScrollOffsetChanged(
+    LocalFrame& main_frame) const {
+  DCHECK(main_frame.IsMainFrame());
   web_view_->MainFrameScrollOffsetChanged();
 }
 
@@ -782,28 +784,27 @@ void ChromeClientImpl::AttachRootLayer(scoped_refptr<cc::Layer> root_layer,
 void ChromeClientImpl::AttachCompositorAnimationTimeline(
     CompositorAnimationTimeline* compositor_timeline,
     LocalFrame* local_frame) {
-  if (!Platform::Current()->IsThreadedAnimationEnabled())
-    return;
+  DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(local_frame);
-  if (WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget()) {
-    widget->AnimationHost()->AddAnimationTimeline(
-        compositor_timeline->GetAnimationTimeline());
-  }
+  WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
+  // TODO(crbug.com/912193): This is called while a frame is attached so widget
+  // is never null, right?
+  CHECK(widget);
+  widget->AnimationHost()->AddAnimationTimeline(
+      compositor_timeline->GetAnimationTimeline());
 }
 
 void ChromeClientImpl::DetachCompositorAnimationTimeline(
     CompositorAnimationTimeline* compositor_timeline,
     LocalFrame* local_frame) {
-  if (!Platform::Current()->IsThreadedAnimationEnabled())
-    return;
+  DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(local_frame);
-  // This method can be called when the frame is being detached, after the
-  // widget is destroyed.
-  // TODO(dcheng): This should be called before the widget is gone...
-  if (WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget()) {
-    widget->AnimationHost()->RemoveAnimationTimeline(
-        compositor_timeline->GetAnimationTimeline());
-  }
+  WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
+  // TODO(crbug.com/912193): This should not be called after Document::Shutdown,
+  // so widget is never null, right?
+  CHECK(widget);
+  widget->AnimationHost()->RemoveAnimationTimeline(
+      compositor_timeline->GetAnimationTimeline());
 }
 
 void ChromeClientImpl::EnterFullscreen(LocalFrame& frame,
@@ -976,65 +977,36 @@ void ChromeClientImpl::SetEventListenerProperties(
     return;
 
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
-  // The widget may be nullptr if the frame is provisional.
-  // TODO(dcheng): This needs to be cleaned up at some point.
-  // https://crbug.com/578349
-  if (web_frame->IsProvisional()) {
-    // If we hit a provisional frame, we expect it to be during initialization
-    // in which case the |properties| should be 'nothing'.
-    DCHECK(properties == cc::EventListenerProperties::kNone);
-    return;
-  }
   WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
   // TODO(https://crbug.com/820787): When creating a local root, the widget
   // won't be set yet. While notifications in this case are technically
   // redundant, it adds an awkward special case.
   if (!widget) {
+    if (web_frame->IsProvisional()) {
+      // If we hit a provisional frame, we expect it to be during initialization
+      // in which case the |properties| should be 'nothing'.
+      DCHECK(properties == cc::EventListenerProperties::kNone);
+    }
     return;
   }
 
-  // This relies on widget always pointing to a WebFrameWidgetBase when
-  // |frame| points to an OOPIF frame, i.e. |frame|'s mainFrame() is
-  // remote.
   WebWidgetClient* client = widget->Client();
-  if (WebLayerTreeView* tree_view = widget->GetLayerTreeView()) {
-    tree_view->SetEventListenerProperties(event_class, properties);
-    if (event_class == cc::EventListenerClass::kTouchStartOrMove) {
-      client->HasTouchEventHandlers(
-          properties != cc::EventListenerProperties::kNone ||
-          tree_view->EventListenerProperties(
-              cc::EventListenerClass::kTouchEndOrCancel) !=
-              cc::EventListenerProperties::kNone);
-    } else if (event_class == cc::EventListenerClass::kTouchEndOrCancel) {
-      client->HasTouchEventHandlers(
-          properties != cc::EventListenerProperties::kNone ||
-          tree_view->EventListenerProperties(
-              cc::EventListenerClass::kTouchStartOrMove) !=
-              cc::EventListenerProperties::kNone);
-    } else if (event_class == cc::EventListenerClass::kPointerRawUpdate) {
-      client->HasPointerRawUpdateEventHandlers(
-          properties != cc::EventListenerProperties::kNone);
-    }
-  } else {
-    client->HasTouchEventHandlers(true);
+
+  client->SetEventListenerProperties(event_class, properties);
+
+  if (event_class == cc::EventListenerClass::kTouchStartOrMove ||
+      event_class == cc::EventListenerClass::kTouchEndOrCancel) {
+    client->SetHasTouchEventHandlers(
+        client->EventListenerProperties(
+            cc::EventListenerClass::kTouchStartOrMove) !=
+            cc::EventListenerProperties::kNone ||
+        client->EventListenerProperties(
+            cc::EventListenerClass::kTouchEndOrCancel) !=
+            cc::EventListenerProperties::kNone);
+  } else if (event_class == cc::EventListenerClass::kPointerRawUpdate) {
+    client->SetHasPointerRawUpdateEventHandlers(
+        properties != cc::EventListenerProperties::kNone);
   }
-}
-
-void ChromeClientImpl::BeginLifecycleUpdates() {
-  web_view_->StopDeferringMainFrameUpdate();
-  // The WidgetClient is null for some WebViews, in which case they can not
-  // composite.
-  if (web_view_->WidgetClient())
-    web_view_->WidgetClient()->ScheduleAnimation();
-}
-
-void ChromeClientImpl::StartDeferringCommits(base::TimeDelta timeout) {
-  web_view_->StartDeferringCommits(timeout);
-}
-
-void ChromeClientImpl::StopDeferringCommits(
-    cc::PaintHoldingCommitTrigger trigger) {
-  web_view_->StopDeferringCommits(trigger);
 }
 
 cc::EventListenerProperties ChromeClientImpl::EventListenerProperties(
@@ -1045,25 +1017,54 @@ cc::EventListenerProperties ChromeClientImpl::EventListenerProperties(
 
   WebFrameWidgetBase* widget =
       WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
-
-  if (!widget || !widget->GetLayerTreeView())
+  if (!widget)
     return cc::EventListenerProperties::kNone;
-  return widget->GetLayerTreeView()->EventListenerProperties(event_class);
+  WebWidgetClient* client = widget->Client();
+  return client->EventListenerProperties(event_class);
+}
+
+void ChromeClientImpl::BeginLifecycleUpdates(LocalFrame& main_frame) {
+  DCHECK(main_frame.IsMainFrame());
+  web_view_->StopDeferringMainFrameUpdate();
+}
+
+void ChromeClientImpl::StartDeferringCommits(LocalFrame& main_frame,
+                                             base::TimeDelta timeout) {
+  DCHECK(main_frame.IsMainFrame());
+  // WebWidgetClient can be null when not compositing, and deferring commits
+  // only applies with a compositor.
+  if (!web_view_->does_composite())
+    return;
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(main_frame)->FrameWidgetImpl()->Client();
+  client->StartDeferringCommits(timeout);
+}
+
+void ChromeClientImpl::StopDeferringCommits(
+    LocalFrame& main_frame,
+    cc::PaintHoldingCommitTrigger trigger) {
+  DCHECK(main_frame.IsMainFrame());
+  // WebWidgetClient can be null when not compositing, and deferring commits
+  // only applies with a compositor.
+  if (!web_view_->does_composite())
+    return;
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(main_frame)->FrameWidgetImpl()->Client();
+  client->StopDeferringCommits(trigger);
 }
 
 void ChromeClientImpl::SetHasScrollEventHandlers(LocalFrame* frame,
                                                  bool has_event_handlers) {
-  // |frame| might be null if called via TreeScopeAdopter::
-  // moveNodeToNewDocument() and the new document has no frame attached.
-  // Since a document without a frame cannot attach one later, it is safe to
-  // exit early.
+  // |frame| might be null if called via
+  // TreeScopeAdopter::MoveNodeToNewDocument() and the new document has no frame
+  // attached. Since a document without a frame cannot attach one later, it is
+  // safe to exit early.
   if (!frame)
     return;
 
-  WebFrameWidgetBase* widget =
-      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
-  if (widget && widget->GetLayerTreeView())
-    widget->GetLayerTreeView()->SetHaveScrollEventHandlers(has_event_handlers);
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget()->Client();
+  client->SetHaveScrollEventHandlers(has_event_handlers);
 }
 
 void ChromeClientImpl::SetNeedsLowLatencyInput(LocalFrame* frame,
@@ -1117,7 +1118,7 @@ bool ChromeClientImpl::RequestPointerLock(LocalFrame* frame) {
   return WebLocalFrameImpl::FromFrame(frame)
       ->LocalRootFrameWidget()
       ->Client()
-      ->RequestPointerLock();
+      ->RequestPointerLock(WebLocalFrameImpl::FromFrame(frame));
 }
 
 void ChromeClientImpl::RequestPointerUnlock(LocalFrame* frame) {
@@ -1261,6 +1262,11 @@ WebAutofillClient* ChromeClientImpl::AutofillClientFromFrame(
   }
 
   return WebLocalFrameImpl::FromFrame(frame)->AutofillClient();
+}
+
+void ChromeClientImpl::DidUpdateTextAutosizerPageInfo(
+    const WebTextAutosizerPageInfo& page_info) {
+  web_view_->Client()->DidUpdateTextAutosizerPageInfo(page_info);
 }
 
 }  // namespace blink

@@ -11,7 +11,7 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/service_manager_connection.h"
+#include "ios/web/public/service/service_manager_connection.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -28,9 +28,11 @@ namespace {
 // invoked.
 void OnGotPrimaryAccountInfo(
     bool* get_primary_account_info_callback_called_flag,
-    const base::Optional<CoreAccountInfo>& account_info,
+    const base::Optional<CoreAccountId>& account_id,
+    const base::Optional<std::string>& gaia,
+    const base::Optional<std::string>& email,
     const identity::AccountState& account_state) {
-  GREYAssert(!account_info, @"AccountInfo has unexpected value");
+  GREYAssert(!account_id, @"AccountId has unexpected value");
   *get_primary_account_info_callback_called_flag = true;
 }
 

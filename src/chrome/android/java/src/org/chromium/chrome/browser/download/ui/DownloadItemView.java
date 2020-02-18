@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils.ViewAction;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
@@ -184,8 +183,8 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     @Override
     public boolean getThumbnail(Callback<Bitmap> callback) {
         if (!mItem.isOfflinePage()) return false;
-        OfflineContentAggregatorFactory.forProfile(Profile.getLastUsedProfile())
-                .getVisualsForItem(((OfflineItem) mItem.getItem()).id, (id, visuals) -> {
+        OfflineContentAggregatorFactory.get().getVisualsForItem(
+                ((OfflineItem) mItem.getItem()).id, (id, visuals) -> {
                     if (visuals == null) {
                         callback.onResult(null);
                     } else {
@@ -234,7 +233,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             // TODO(dfalcantara): Get thumbnails for audio and video files when possible.
         }
 
-        if (mThumbnailBitmap == null) updateView();
+        if (mThumbnailBitmap == null) updateView(false);
 
         Context context = mDescriptionCompletedView.getContext();
         mFilenameCompletedView.setText(item.getDisplayFileName());
@@ -303,7 +302,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
     private void setThumbnailBitmap(Bitmap thumbnail) {
         mThumbnailBitmap = thumbnail;
-        updateView();
+        updateView(false);
     }
 
     @Override
@@ -326,14 +325,14 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     }
 
     @Override
-    protected void updateView() {
+    protected void updateView(boolean animate) {
         if (isChecked()) {
             mIconView.setBackgroundResource(mIconBackgroundResId);
             mIconView.getBackground().setLevel(
                     getResources().getInteger(R.integer.list_item_level_selected));
             mIconView.setImageDrawable(mCheckDrawable);
             ApiCompatibilityUtils.setImageTintList(mIconView, mCheckedIconForegroundColorList);
-            mCheckDrawable.start();
+            if (animate) mCheckDrawable.start();
         } else if (mThumbnailBitmap != null) {
             assert !mThumbnailBitmap.isRecycled();
             mIconView.setBackground(null);

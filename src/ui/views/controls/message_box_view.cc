@@ -72,9 +72,6 @@ namespace views {
 ///////////////////////////////////////////////////////////////////////////////
 // MessageBoxView, public:
 
-// static
-const char MessageBoxView::kViewClassName[] = "MessageBoxView";
-
 MessageBoxView::InitParams::InitParams(const base::string16& message)
     : options(NO_OPTIONS),
       message(message),
@@ -85,7 +82,8 @@ MessageBoxView::InitParams::InitParams(const base::string16& message)
 MessageBoxView::InitParams::~InitParams() = default;
 
 MessageBoxView::MessageBoxView(const InitParams& params)
-    : message_width_(params.message_width) {
+    : inter_row_vertical_spacing_(params.inter_row_vertical_spacing),
+      message_width_(params.message_width) {
   Init(params);
 }
 
@@ -168,18 +166,16 @@ bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
   // Don't intercept Ctrl-C if we only use a single message label supporting
   // text selection.
-  if (message_labels_.size() == 1u && message_labels_[0]->selectable())
+  if (message_labels_.size() == 1u && message_labels_[0]->GetSelectable())
     return false;
 
-  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
-  scw.WriteText(std::accumulate(
-      message_labels_.cbegin(), message_labels_.cend(), base::string16(),
-      [](base::string16& left, Label* right) { return left + right->text(); }));
+  ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
+  scw.WriteText(std::accumulate(message_labels_.cbegin(),
+                                message_labels_.cend(), base::string16(),
+                                [](base::string16& left, Label* right) {
+                                  return left + right->GetText();
+                                }));
   return true;
-}
-
-const char* MessageBoxView::GetClassName() const {
-  return kViewClassName;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -192,8 +188,8 @@ void MessageBoxView::Init(const InitParams& params) {
   // We explicitly set insets on the message contents instead of the scroll view
   // so that the scroll view borders are not capped by dialog insets.
   message_contents->SetBorder(CreateEmptyBorder(GetHorizontalInsets(provider)));
-  message_contents->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  message_contents->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   auto add_label = [&message_contents, this](
                        const base::string16& text, bool multi_line,
                        gfx::HorizontalAlignment alignment) {
@@ -232,15 +228,12 @@ void MessageBoxView::Init(const InitParams& params) {
     prompt_field_ = AddChildView(std::move(prompt_field));
   }
 
-  inter_row_vertical_spacing_ = params.inter_row_vertical_spacing;
-
   ResetLayoutManager();
 }
 
 void MessageBoxView::ResetLayoutManager() {
   // Initialize the Grid Layout Manager used for this dialog box.
-  GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+  GridLayout* layout = SetLayoutManager(std::make_unique<views::GridLayout>());
 
   // Add the column set for the message displayed at the top of the dialog box.
   constexpr int kMessageViewColumnSetId = 0;
@@ -262,27 +255,27 @@ void MessageBoxView::ResetLayoutManager() {
   }
 
   layout->StartRow(0, kMessageViewColumnSetId);
-  layout->AddView(scroll_view_);
+  layout->AddExistingView(scroll_view_);
 
   views::DialogContentType trailing_content_type = views::TEXT;
   if (prompt_field_) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
     layout->StartRow(0, kExtraViewColumnSetId);
-    layout->AddView(prompt_field_);
+    layout->AddExistingView(prompt_field_);
     trailing_content_type = views::CONTROL;
   }
 
   if (checkbox_) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
     layout->StartRow(0, kExtraViewColumnSetId);
-    layout->AddView(checkbox_);
+    layout->AddExistingView(checkbox_);
     trailing_content_type = views::TEXT;
   }
 
   if (link_) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
     layout->StartRow(0, kExtraViewColumnSetId);
-    layout->AddView(link_);
+    layout->AddExistingView(link_);
     trailing_content_type = views::TEXT;
   }
 
@@ -302,5 +295,9 @@ gfx::Insets MessageBoxView::GetHorizontalInsets(
                         horizontal_insets.right());
   return horizontal_insets;
 }
+
+BEGIN_METADATA(MessageBoxView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

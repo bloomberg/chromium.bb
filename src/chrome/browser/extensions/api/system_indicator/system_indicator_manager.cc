@@ -159,7 +159,7 @@ void SystemIndicatorManager::SetSystemIndicatorDynamicIcon(
     const Extension& extension,
     gfx::Image icon) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(base::ContainsKey(system_indicators_, extension.id()));
+  DCHECK(base::Contains(system_indicators_, extension.id()));
   auto& indicator = system_indicators_[extension.id()];
   indicator.dynamic_icon = icon;
   if (indicator.system_tray_indicator)
@@ -170,7 +170,7 @@ void SystemIndicatorManager::SetSystemIndicatorEnabled(
     const Extension& extension,
     bool is_enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(base::ContainsKey(system_indicators_, extension.id()));
+  DCHECK(base::Contains(system_indicators_, extension.id()));
   auto& indicator = system_indicators_[extension.id()];
   bool is_already_enabled = !!indicator.system_tray_indicator;
   if (is_already_enabled == is_enabled)
@@ -192,7 +192,7 @@ void SystemIndicatorManager::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!base::ContainsKey(system_indicators_, extension->id()));
+  DCHECK(!base::Contains(system_indicators_, extension->id()));
   const ExtensionIconSet* indicator_icon =
       SystemIndicatorHandler::GetSystemIndicatorIcon(*extension);
   if (!indicator_icon)

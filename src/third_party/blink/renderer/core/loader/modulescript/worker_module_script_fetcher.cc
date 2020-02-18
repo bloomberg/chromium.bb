@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/worker_module_script_fetcher.h"
 
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -20,7 +20,7 @@ WorkerModuleScriptFetcher::WorkerModuleScriptFetcher(
     WorkerGlobalScope* global_scope)
     : global_scope_(global_scope) {}
 
-// https://html.spec.whatwg.org/C/#worker-processing-model
+// <specdef href="https://html.spec.whatwg.org/C/#run-a-worker">
 void WorkerModuleScriptFetcher::Fetch(
     FetchParameters& fetch_params,
     ResourceFetcher* fetch_client_settings_object_fetcher,
@@ -31,14 +31,16 @@ void WorkerModuleScriptFetcher::Fetch(
   client_ = client;
   level_ = level;
 
-  // Step 12. "In both cases, to perform the fetch given request, perform the
-  // following steps if the is top-level flag is set:" [spec text]
-  // Step 12.1. "Set request's reserved client to inside settings." [spec text]
+  // <spec step="12">In both cases, to perform the fetch given request, perform
+  // the following steps if the is top-level flag is set:</spec>
+  //
+  // <spec step="12.1">Set request's reserved client to inside settings.</spec>
+  //
   // This is implemented in the browser process.
 
-  // Step 12.2. "Fetch request, and asynchronously wait to run the remaining
-  // steps as part of fetch's process response for the response response." [spec
-  // text]
+  // <spec step="12.2">Fetch request, and asynchronously wait to run the
+  // remaining steps as part of fetch's process response for the response
+  // response.</spec>
   ScriptResource::Fetch(fetch_params, fetch_client_settings_object_fetcher,
                         this, ScriptResource::kNoStreaming);
 }
@@ -128,10 +130,10 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
   ModuleScriptCreationParams params(
       script_resource->GetResponse().CurrentRequestUrl(),
       script_resource->SourceText(), script_resource->CacheHandler(),
-      script_resource->GetResourceRequest().GetFetchCredentialsMode());
+      script_resource->GetResourceRequest().GetCredentialsMode());
 
-  // Step 12.7. "Asynchronously complete the perform the fetch steps with
-  // response." [spec text]
+  // <spec step="12.7">Asynchronously complete the perform the fetch steps with
+  // response.</spec>
   client_->NotifyFetchFinished(params, error_messages);
 }
 

@@ -27,9 +27,6 @@ class WebContents;
 // ShortcutHelper in Java.
 class ShortcutHelper {
  public:
-  using WebApkInfoCallback =
-      base::Callback<void(const std::vector<WebApkInfo>&)>;
-
   // Creates a ShortcutInfo struct suitable for adding a shortcut to the home
   // screen.
   static std::unique_ptr<ShortcutInfo> CreateShortcutInfo(
@@ -100,9 +97,9 @@ class ShortcutHelper {
                                 const GURL& start_url,
                                 const GURL& manifest_url);
 
-  // Fetches information on all the WebAPKs installed on the device and returns
-  // the info to the |callback|.
-  static void RetrieveWebApks(const WebApkInfoCallback& callback);
+  // Sets a flag to force an update for the WebAPK corresponding to |id| on next
+  // launch.
+  static void SetForceWebApkUpdate(const std::string& id);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ShortcutHelper);

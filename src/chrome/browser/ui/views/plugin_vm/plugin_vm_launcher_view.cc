@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -38,12 +39,11 @@ constexpr gfx::Insets kButtonRowInsets(0, 64, 32, 64);
 constexpr int kWindowWidth = 768;
 constexpr int kWindowHeight = 636;
 
-base::Optional<double> GetFractionComplete(int64_t bytes_processed,
-                                           int64_t bytes_to_be_processed) {
-  if (bytes_to_be_processed == -1 || bytes_to_be_processed == 0)
+base::Optional<double> GetFractionComplete(double units_processed,
+                                           double total_units) {
+  if (total_units <= 0)
     return base::nullopt;
-  double fraction_complete =
-      static_cast<double>(bytes_processed) / bytes_to_be_processed;
+  double fraction_complete = units_processed / total_units;
   if (fraction_complete < 0.0 || fraction_complete > 1.0)
     return base::nullopt;
   return base::make_optional(fraction_complete);
@@ -92,17 +92,17 @@ PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
 
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, kDialogInsets));
+          views::BoxLayout::Orientation::kVertical, kDialogInsets));
 
   views::View* upper_container_view = new views::View();
   upper_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets()));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets()));
   AddChildView(upper_container_view);
 
   views::View* lower_container_view = new views::View();
   views::BoxLayout* lower_container_layout =
       lower_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, kLowerContainerInsets));
+          views::BoxLayout::Orientation::kVertical, kLowerContainerInsets));
   AddChildView(lower_container_view);
 
   views::ImageView* logo_image = new views::ImageView();
@@ -115,8 +115,7 @@ PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
 
   big_message_label_ = new views::Label(GetBigMessage(), {kTitleFont});
   big_message_label_->SetProperty(
-      views::kMarginsKey,
-      new gfx::Insets(kTitleHeight - kTitleFontSize, 0, 0, 0));
+      views::kMarginsKey, gfx::Insets(kTitleHeight - kTitleFontSize, 0, 0, 0));
   big_message_label_->SetMultiLine(false);
   big_message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   upper_container_view->AddChildView(big_message_label_);
@@ -125,7 +124,7 @@ PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
   views::BoxLayout* message_container_layout =
       message_container_view->SetLayoutManager(
           std::make_unique<views::BoxLayout>(
-              views::BoxLayout::kHorizontal,
+              views::BoxLayout::Orientation::kHorizontal,
               gfx::Insets(kMessageHeight - kMessageFontSize, 0, 0, 0)));
   upper_container_view->AddChildView(message_container_view);
 
@@ -144,16 +143,16 @@ PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
   progress_bar_ = new views::ProgressBar(kProgressBarHeight);
   progress_bar_->SetProperty(
       views::kMarginsKey,
-      new gfx::Insets(kProgressBarTopMargin - kProgressBarHeight, 0, 0, 0));
+      gfx::Insets(kProgressBarTopMargin - kProgressBarHeight, 0, 0, 0));
   upper_container_view->AddChildView(progress_bar_);
 
   download_progress_message_label_ =
       new views::Label(base::string16(), {kDownloadProgressMessageFont});
   download_progress_message_label_->SetEnabledColor(gfx::kGoogleGrey700);
   download_progress_message_label_->SetProperty(
-      views::kMarginsKey, new gfx::Insets(kDownloadProgressMessageHeight -
-                                              kDownloadProgressMessageFontSize,
-                                          0, 0, 0));
+      views::kMarginsKey, gfx::Insets(kDownloadProgressMessageHeight -
+                                          kDownloadProgressMessageFontSize,
+                                      0, 0, 0));
   download_progress_message_label_->SetMultiLine(false);
   download_progress_message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   upper_container_view->AddChildView(download_progress_message_label_);
@@ -218,7 +217,7 @@ bool PluginVmLauncherView::ShouldShowWindowTitle() const {
 bool PluginVmLauncherView::Accept() {
   if (state_ == State::FINISHED) {
     // Launch button has been clicked.
-    // TODO(https://crbug.com/904852): Launch PluginVm.
+    plugin_vm::PluginVmManager::GetForProfile(profile_)->LaunchPluginVm();
     return true;
   }
   DCHECK_EQ(state_, State::ERROR);
@@ -259,24 +258,13 @@ void PluginVmLauncherView::OnDownloadStarted() {
 void PluginVmLauncherView::OnDownloadProgressUpdated(
     uint64_t bytes_downloaded,
     int64_t content_length,
-    int64_t download_bytes_per_sec) {
+    base::TimeDelta elapsed_time) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::DOWNLOADING);
 
-  base::Optional<double> fraction_complete =
-      GetFractionComplete(bytes_downloaded, content_length);
-  if (fraction_complete.has_value())
-    progress_bar_->SetValue(fraction_complete.value());
-  else
-    progress_bar_->SetValue(-1);
-
   download_progress_message_label_->SetText(
       GetDownloadProgressMessage(bytes_downloaded, content_length));
-
-  base::string16 time_left_message = GetTimeLeftMessage(
-      bytes_downloaded, content_length, download_bytes_per_sec);
-  time_left_message_label_->SetVisible(!time_left_message.empty());
-  time_left_message_label_->SetText(time_left_message);
+  UpdateOperationProgress(bytes_downloaded, content_length, elapsed_time);
 }
 
 void PluginVmLauncherView::OnDownloadCompleted() {
@@ -303,22 +291,12 @@ void PluginVmLauncherView::OnDownloadFailed() {
 }
 
 void PluginVmLauncherView::OnImportProgressUpdated(
-    uint64_t percent_completed,
-    int64_t import_percent_per_second) {
+    int percent_completed,
+    base::TimeDelta elapsed_time) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::IMPORTING);
 
-  base::Optional<double> fraction_complete =
-      GetFractionComplete(percent_completed, 100.0);
-  if (fraction_complete.has_value())
-    progress_bar_->SetValue(fraction_complete.value());
-  else
-    progress_bar_->SetValue(-1);
-
-  base::string16 time_left_message =
-      GetTimeLeftMessage(percent_completed, 100.0, import_percent_per_second);
-  time_left_message_label_->SetVisible(!time_left_message.empty());
-  time_left_message_label_->SetText(time_left_message);
+  UpdateOperationProgress(percent_completed, 100.0, elapsed_time);
 }
 
 void PluginVmLauncherView::OnImportCancelled() {
@@ -344,6 +322,8 @@ void PluginVmLauncherView::OnImported() {
 
   plugin_vm::RecordPluginVmSetupResultHistogram(
       plugin_vm::PluginVmSetupResult::kSuccess);
+  plugin_vm::RecordPluginVmSetupTimeHistogram(base::TimeTicks::Now() -
+                                              setup_start_tick_);
 }
 
 base::string16 PluginVmLauncherView::GetBigMessage() const {
@@ -356,8 +336,10 @@ base::string16 PluginVmLauncherView::GetBigMessage() const {
     case State::FINISHED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE);
     case State::ERROR:
-    case State::NOT_ALLOWED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE);
+    case State::NOT_ALLOWED:
+      return l10n_util::GetStringUTF16(
+          IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_TITLE);
   }
 }
 
@@ -415,9 +397,8 @@ void PluginVmLauncherView::OnStateUpdated() {
   // Values outside the range [0,1] display an infinite loading animation.
   progress_bar_->SetValue(-1);
 
-  const bool time_left_message_label_visible =
-      state_ == State::DOWNLOADING || state_ == State::IMPORTING;
-  time_left_message_label_->SetVisible(time_left_message_label_visible);
+  // This will be shown once we receive download/import progress messages.
+  time_left_message_label_->SetVisible(false);
 
   const bool download_progress_message_label_visible =
       state_ == State::DOWNLOADING;
@@ -452,24 +433,32 @@ base::string16 PluginVmLauncherView::GetDownloadProgressMessage(
   }
 }
 
-base::string16 PluginVmLauncherView::GetTimeLeftMessage(
-    int64_t processed_bytes,
-    int64_t bytes_to_be_processed,
-    int64_t bytes_per_sec) const {
+void PluginVmLauncherView::UpdateOperationProgress(
+    double units_processed,
+    double total_units,
+    base::TimeDelta elapsed_time) const {
   DCHECK(state_ == State::DOWNLOADING || state_ == State::IMPORTING);
 
-  base::Optional<double> fraction_complete =
-      GetFractionComplete(processed_bytes, bytes_to_be_processed);
+  base::Optional<double> maybe_fraction_complete =
+      GetFractionComplete(units_processed, total_units);
 
-  if (!fraction_complete.has_value())
-    return base::string16();
-  if (bytes_per_sec == 0)
-    return base::string16();
+  if (!maybe_fraction_complete || units_processed == 0 ||
+      elapsed_time.is_zero()) {
+    progress_bar_->SetValue(-1);
+    time_left_message_label_->SetVisible(false);
+    return;
+  }
 
-  base::TimeDelta remaining = base::TimeDelta::FromSeconds(
-      (bytes_to_be_processed - processed_bytes) / bytes_per_sec);
-  return ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
-                                ui::TimeFormat::LENGTH_SHORT, remaining);
+  const double fraction_complete = *maybe_fraction_complete;
+  const double fraction_remaining = 1 - fraction_complete;
+
+  progress_bar_->SetValue(fraction_complete);
+  time_left_message_label_->SetVisible(true);
+  base::TimeDelta remaining =
+      fraction_remaining / fraction_complete * elapsed_time;
+  time_left_message_label_->SetText(
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
+                             ui::TimeFormat::LENGTH_SHORT, remaining));
 }
 
 void PluginVmLauncherView::SetBigMessageLabel() {
@@ -495,6 +484,10 @@ void PluginVmLauncherView::SetBigImage() {
 }
 
 void PluginVmLauncherView::StartPluginVmImageDownload() {
+  // In each case setup starts from this function (when dialog is opened or
+  // retry button is clicked).
+  setup_start_tick_ = base::TimeTicks::Now();
+
   state_ = State::START_DOWNLOADING;
   OnStateUpdated();
 

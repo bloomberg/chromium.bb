@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/power_monitor/power_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/login/auth/user_context.h"
@@ -25,7 +26,8 @@ namespace chromeos {
 // Enforces a limit on the length of time for which a user authenticated via
 // SAML can use offline authentication against a cached password before being
 // forced to go through online authentication against GAIA again.
-class SAMLOfflineSigninLimiter : public KeyedService {
+class SAMLOfflineSigninLimiter : public KeyedService,
+                                 public base::PowerObserver {
  public:
   // Called when the user successfully authenticates. |auth_flow| indicates
   // the type of authentication flow that the user went through.
@@ -36,6 +38,9 @@ class SAMLOfflineSigninLimiter : public KeyedService {
 
   // KeyedService:
   void Shutdown() override;
+
+  // base::PowerObserver:
+  void OnResume() override;
 
  private:
   friend class SAMLOfflineSigninLimiterFactory;

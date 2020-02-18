@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "printing/printer_query_result_chromeos.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace base {
@@ -79,7 +80,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   // Everywhere driver should be attempted. If |success| is false, the values of
   // |make|, |model|, |make_and_model|, and |ipp_everywhere| are not specified.
   void OnAutoconfQueried(const std::string& callback_id,
-                         bool success,
+                         printing::PrinterQueryResult result,
                          const std::string& make,
                          const std::string& model,
                          const std::string& make_and_model,
@@ -88,8 +89,9 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   // Handles the callback for HandleGetPrinterInfo for a discovered printer.
   void OnAutoconfQueriedDiscovered(
+      const std::string& callback_id,
       Printer printer,
-      bool success,
+      printing::PrinterQueryResult result,
       const std::string& make,
       const std::string& model,
       const std::string& make_and_model,
@@ -112,13 +114,15 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   // Handles the result of adding a printer which the user specified the
   // location of (i.e. a printer that was not 'discovered' automatically).
-  void OnAddedOrEditedSpecifiedPrinter(const Printer& printer,
+  void OnAddedOrEditedSpecifiedPrinter(const std::string& callback_id,
+                                       const Printer& printer,
                                        bool is_printer_edit,
                                        PrinterSetupResult result);
 
   // Handles the result of failure to add a printer. |result_code| is used to
   // determine the reason for the failure.
-  void OnAddOrEditPrinterError(PrinterSetupResult result_code);
+  void OnAddOrEditPrinterError(const std::string& callback_id,
+                               PrinterSetupResult result_code);
 
   // Get a list of all manufacturers for which we have at least one model of
   // printer supported.  Takes one argument, the callback id for the result.
@@ -135,11 +139,11 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void HandleSelectPPDFile(const base::ListValue* args);
 
   // PpdProvider callback handlers.
-  void ResolveManufacturersDone(const std::string& js_callback,
+  void ResolveManufacturersDone(const std::string& callback_id,
                                 PpdProvider::CallbackResultCode result_code,
                                 const std::vector<std::string>& available);
   void ResolvePrintersDone(const std::string& manufacturer,
-                           const std::string& js_callback,
+                           const std::string& callback_id,
                            PpdProvider::CallbackResultCode result_code,
                            const PpdProvider::ResolvedPrintersList& printers);
 
@@ -164,7 +168,8 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void HandleAddDiscoveredPrinter(const base::ListValue* args);
 
   // Post printer setup callback.
-  void OnAddedDiscoveredPrinter(const Printer& printer,
+  void OnAddedDiscoveredPrinter(const std::string& callback_id,
+                                const Printer& printer,
                                 PrinterSetupResult result_code);
 
   // Code common between the discovered and manual add printer code paths.
@@ -195,7 +200,9 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   // parameters.  See https://crbug.com/835476
   void FireManuallyAddDiscoveredPrinter(const Printer& printer);
 
-  void OnIpResolved(const Printer& printer, const net::IPEndPoint& endpoint);
+  void OnIpResolved(const std::string& callback_id,
+                    const Printer& printer,
+                    const net::IPEndPoint& endpoint);
 
   Profile* profile_;
 

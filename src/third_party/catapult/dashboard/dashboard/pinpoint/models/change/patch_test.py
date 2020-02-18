@@ -7,11 +7,12 @@ from __future__ import division
 from __future__ import absolute_import
 
 from dashboard.pinpoint.models.change import patch
+from dashboard.pinpoint.models import errors
 from dashboard.pinpoint import test
 
 
-def Patch(revision='abc123'):
-  return patch.GerritPatch('https://codereview.com', 'repo~branch~id', revision)
+def Patch(revision='abc123', server='https://codereview.com'):
+  return patch.GerritPatch(server, 'repo~branch~id', revision)
 
 
 _GERRIT_CHANGE_INFO = {
@@ -44,6 +45,19 @@ _GERRIT_CHANGE_INFO = {
                     'ref': 'refs/changes/77/658277/4',
                 },
             },
+        },
+        'yet another revision': {
+            '_number': 3,
+            'created': '2018-02-01 23:46:56.000000000',
+            'uploader': {'email': 'author@example.org'},
+            'fetch': {
+                'http': {
+                    'url': 'https://googlesource.com/chromium/src',
+                    'ref': 'refs/changes/77/658277/3',
+                },
+            },
+            'commit_with_footers': 'Subject\n\nCommit message.\n'
+                                   'Change-Id: I0123456789abcdef\n',
         },
     },
 }
@@ -106,6 +120,15 @@ class GerritPatchTest(test.TestCase):
     p = patch.GerritPatch.FromUrl('https://codereview.com/c/repo/+/658277/4')
     self.assertEqual(p, Patch('other revision'))
 
+  def testFromUrlAlternateFormat(self):
+    p = patch.GerritPatch.FromUrl(
+        'https://chromium-review.googlesource.com/c/658277')
+    self.assertEqual(
+        p,
+        Patch(
+            'current revision',
+            server='https://chromium-review.googlesource.com'))
+
   def testFromGitClIssueUrl(self):
     p = patch.GerritPatch.FromUrl('https://codereview.com/658277/')
     self.assertEqual(p, Patch('current revision'))
@@ -115,7 +138,7 @@ class GerritPatchTest(test.TestCase):
     self.assertEqual(p, Patch('current revision'))
 
   def testFromUrlBadUrl(self):
-    with self.assertRaises(ValueError):
+    with self.assertRaises(errors.BuildGerritURLInvalid):
       patch.GerritPatch.FromUrl('https://example.com/not/a/gerrit/url')
 
   def testFromDict(self):

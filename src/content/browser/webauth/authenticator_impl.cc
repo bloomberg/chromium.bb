@@ -9,7 +9,6 @@
 
 #include "base/timer/timer.h"
 #include "content/browser/webauth/authenticator_common.h"
-#include "content/browser/webauth/authenticator_type_converters.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -29,9 +28,7 @@ AuthenticatorImpl::AuthenticatorImpl(
     std::unique_ptr<AuthenticatorCommon> authenticator_common)
     : WebContentsObserver(WebContents::FromRenderFrameHost(render_frame_host)),
       render_frame_host_(render_frame_host),
-      authenticator_common_(std::move(authenticator_common)),
-      binding_(this),
-      weak_factory_(this) {
+      authenticator_common_(std::move(authenticator_common)) {
   DCHECK(render_frame_host_);
   DCHECK(authenticator_common_);
 }
@@ -42,15 +39,16 @@ AuthenticatorImpl::~AuthenticatorImpl() {
   render_frame_host_->GetRoutingID();
 }
 
-void AuthenticatorImpl::Bind(blink::mojom::AuthenticatorRequest request) {
+void AuthenticatorImpl::Bind(
+    mojo::PendingReceiver<blink::mojom::Authenticator> receiver) {
   // If |render_frame_host_| is being unloaded then binding requests are
   // rejected.
   if (!render_frame_host_->IsCurrent()) {
     return;
   }
 
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request));
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(receiver));
 }
 
 // mojom::Authenticator
@@ -94,7 +92,7 @@ void AuthenticatorImpl::DidFinishNavigation(
     return;
   }
 
-  binding_.Close();
+  receiver_.reset();
   authenticator_common_->Cleanup();
 }
 

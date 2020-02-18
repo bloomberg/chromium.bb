@@ -12,6 +12,7 @@
 #include <tuple>
 #include <utility>
 
+#include "core/fpdfapi/edit/cpdf_contentstream_write_utils.h"
 #include "core/fpdfapi/edit/cpdf_pagecontentmanager.h"
 #include "core/fpdfapi/edit/cpdf_stringarchivestream.h"
 #include "core/fpdfapi/font/cpdf_truetypefont.h"
@@ -33,28 +34,11 @@
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
+#include "core/fxge/render_defines.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
-#include "third_party/skia_shared/SkFloatToDecimal.h"
 
 namespace {
-
-std::ostream& WriteFloat(std::ostream& stream, float value) {
-  char buffer[pdfium::skia::kMaximumSkFloatToDecimalLength];
-  unsigned size = pdfium::skia::SkFloatToDecimal(value, buffer);
-  stream.write(buffer, size);
-  return stream;
-}
-
-std::ostream& operator<<(std::ostream& ar, const CFX_Matrix& matrix) {
-  WriteFloat(ar, matrix.a) << " ";
-  WriteFloat(ar, matrix.b) << " ";
-  WriteFloat(ar, matrix.c) << " ";
-  WriteFloat(ar, matrix.d) << " ";
-  WriteFloat(ar, matrix.e) << " ";
-  WriteFloat(ar, matrix.f);
-  return ar;
-}
 
 bool GetColor(const CPDF_Color* pColor, float* rgb) {
   int intRGB[3];
@@ -101,8 +85,7 @@ CPDF_PageContentGenerator::GenerateModifiedStreams() {
     if (pPageObj->IsDirty())
       all_dirty_streams.insert(pPageObj->GetContentStream());
   }
-  const std::set<int32_t>& marked_dirty_streams =
-      m_pObjHolder->GetDirtyStreams();
+  std::set<int32_t> marked_dirty_streams = m_pObjHolder->TakeDirtyStreams();
   all_dirty_streams.insert(marked_dirty_streams.begin(),
                            marked_dirty_streams.end());
 
@@ -157,9 +140,6 @@ CPDF_PageContentGenerator::GenerateModifiedStreams() {
     }
   }
 
-  // Clear dirty streams in m_pObjHolder
-  m_pObjHolder->ClearDirtyStreams();
-
   return streams;
 }
 
@@ -189,7 +169,7 @@ void CPDF_PageContentGenerator::UpdateContentStreams(
     if (buf->tellp() <= 0)
       page_content_manager.ScheduleRemoveStreamByIndex(stream_index);
     else
-      old_stream->SetDataFromStringstream(buf);
+      old_stream->SetDataFromStringstreamAndRemoveFilter(buf);
   }
 
   page_content_manager.ExecuteScheduledRemovals();
@@ -344,9 +324,10 @@ void CPDF_PageContentGenerator::ProcessImage(std::ostringstream* buf,
     pImage->ConvertStreamToIndirectObject();
 
   ByteString name = RealizeResource(pStream, "XObject");
-  if (bWasInline)
-    pImageObj->SetImage(
-        m_pDocument->GetPageData()->GetImage(pStream->GetObjNum()));
+  if (bWasInline) {
+    auto* pPageData = CPDF_DocPageData::FromDocument(m_pDocument.Get());
+    pImageObj->SetImage(pPageData->GetImage(pStream->GetObjNum()));
+  }
 
   *buf << "/" << PDF_NameEncode(name) << " Do Q\n";
 }
@@ -371,17 +352,13 @@ void CPDF_PageContentGenerator::ProcessPath(std::ostringstream* buf,
   const auto& pPoints = pPathObj->path().GetPoints();
   if (pPathObj->path().IsRect()) {
     CFX_PointF diff = pPoints[2].m_Point - pPoints[0].m_Point;
-    WriteFloat(*buf, pPoints[0].m_Point.x) << " ";
-    WriteFloat(*buf, pPoints[0].m_Point.y) << " ";
-    WriteFloat(*buf, diff.x) << " ";
-    WriteFloat(*buf, diff.y) << " re";
+    *buf << pPoints[0].m_Point << " " << diff << " re";
   } else {
     for (size_t i = 0; i < pPoints.size(); i++) {
       if (i > 0)
         *buf << " ";
 
-      WriteFloat(*buf, pPoints[i].m_Point.x) << " ";
-      WriteFloat(*buf, pPoints[i].m_Point.y);
+      *buf << pPoints[i].m_Point;
 
       FXPT_TYPE pointType = pPoints[i].m_Type;
       if (pointType == FXPT_TYPE::MoveTo) {
@@ -398,10 +375,8 @@ void CPDF_PageContentGenerator::ProcessPath(std::ostringstream* buf,
           break;
         }
         *buf << " ";
-        WriteFloat(*buf, pPoints[i + 1].m_Point.x) << " ";
-        WriteFloat(*buf, pPoints[i + 1].m_Point.y) << " ";
-        WriteFloat(*buf, pPoints[i + 2].m_Point.x) << " ";
-        WriteFloat(*buf, pPoints[i + 2].m_Point.y) << " c";
+        *buf << pPoints[i + 1].m_Point << " ";
+        *buf << pPoints[i + 2].m_Point << " c";
         i += 2;
       }
       if (pPoints[i].m_CloseFigure)
@@ -473,7 +448,7 @@ void CPDF_PageContentGenerator::ProcessGraphics(std::ostringstream* buf,
       gsDict->SetNewFor<CPDF_Name>("BM",
                                    pPageObj->m_GeneralState.GetBlendMode());
     }
-    CPDF_Object* pDict = m_pDocument->AddIndirectObject(std::move(gsDict));
+    CPDF_Object* pDict = m_pDocument->AddIndirectObject(gsDict);
     name = RealizeResource(pDict, "ExtGState");
     m_pObjHolder->m_GraphicsMap[graphD] = name;
   }
@@ -505,7 +480,7 @@ ByteString CPDF_PageContentGenerator::GetOrCreateDefaultGraphics() const {
   gsDict->SetNewFor<CPDF_Number>("ca", defaultGraphics.fillAlpha);
   gsDict->SetNewFor<CPDF_Number>("CA", defaultGraphics.strokeAlpha);
   gsDict->SetNewFor<CPDF_Name>("BM", "Normal");
-  CPDF_Object* pDict = m_pDocument->AddIndirectObject(std::move(gsDict));
+  CPDF_Object* pDict = m_pDocument->AddIndirectObject(gsDict);
   ByteString name = RealizeResource(pDict, "ExtGState");
   m_pObjHolder->m_GraphicsMap[defaultGraphics] = name;
   return name;
@@ -553,7 +528,7 @@ void CPDF_PageContentGenerator::ProcessText(std::ostringstream* buf,
         pFontDict->SetFor("Encoding",
                           pEncoding->Realize(m_pDocument->GetByteStringPool()));
       }
-      pIndirectFont = m_pDocument->AddIndirectObject(std::move(pFontDict));
+      pIndirectFont = m_pDocument->AddIndirectObject(pFontDict);
     }
     dictName = RealizeResource(pIndirectFont, "Font");
     m_pObjHolder->m_FontsMap[data] = dictName;

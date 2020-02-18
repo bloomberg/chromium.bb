@@ -207,18 +207,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIExpiredCertBrowserTest,
 
   content::RenderFrameHost* interstitial_frame_host;
 
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
-    interstitial_frame_host = active_web_contents->GetMainFrame();
-  } else {
-    WaitForInterstitialAttach(active_web_contents);
-    EXPECT_TRUE(active_web_contents->ShowingInterstitialPage());
-
-    // Here we check the device scale factor in use via the interstitial's
-    // RenderFrameHost; doing the check directly via the 'active web contents'
-    // does not give us the device scale factor for the interstitial.
-    interstitial_frame_host =
-        active_web_contents->GetInterstitialPage()->GetMainFrame();
-  }
+  interstitial_frame_host = active_web_contents->GetMainFrame();
 
   EXPECT_EQ(SitePerProcessHighDPIExpiredCertBrowserTest::kDeviceScaleFactor,
             GetFrameDeviceScaleFactor(interstitial_frame_host));
@@ -637,7 +626,8 @@ class MailtoExternalProtocolHandlerDelegate
 // This test is not run on ChromeOS because it registers a custom handler (see
 // ProtocolHandlerRegistry::InstallDefaultsForChromeOS), and handles mailto:
 // navigations before getting to external protocol code.
-#if defined(OS_CHROMEOS)
+// Flaky on Windows. See https://crbug.com/980446
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_LaunchExternalProtocolFromSubframe \
   DISABLED_LaunchExternalProtocolFromSubframe
 #else
@@ -938,7 +928,7 @@ class MockSpellCheckHost : spellcheck::mojom::SpellCheckHost {
   void RequestDictionary() override {}
   void NotifyChecked(const base::string16& word, bool misspelled) override {}
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   void CallSpellingService(const base::string16& text,
                            CallSpellingServiceCallback callback) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

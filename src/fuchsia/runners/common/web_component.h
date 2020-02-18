@@ -5,6 +5,7 @@
 #ifndef FUCHSIA_RUNNERS_COMMON_WEB_COMPONENT_H_
 #define FUCHSIA_RUNNERS_COMMON_WEB_COMPONENT_H_
 
+#include <fuchsia/modular/cpp/fidl.h>
 #include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/ui/app/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
@@ -44,8 +45,9 @@ class WebComponent : public fuchsia::sys::ComponentController,
 
   ~WebComponent() override;
 
-  // Navigates this component's Frame to |url|.
-  void LoadUrl(const GURL& url);
+  // Navigates this component's Frame to |url| and passes |extra_headers|.
+  void LoadUrl(const GURL& url,
+               std::vector<fuchsia::net::http::Header> extra_headers);
 
   fuchsia::web::Frame* frame() const { return frame_.get(); }
 
@@ -81,6 +83,9 @@ class WebComponent : public fuchsia::sys::ComponentController,
   // Bindings used to manage the lifetime of this component instance.
   fidl::Binding<fuchsia::sys::ComponentController> controller_binding_;
   std::unique_ptr<cr_fuchsia::LifecycleImpl> lifecycle_;
+
+  // If running as a Mod then these are used to e.g. RemoveSelfFromStory().
+  fuchsia::modular::ModuleContextPtr module_context_;
 
   // Incoming services provided at component creation.
   std::unique_ptr<base::fuchsia::ServiceDirectoryClient> additional_services_;

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
@@ -33,7 +34,6 @@
 #import "ios/public/provider/chrome/browser/ui/logo_vendor.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -138,7 +138,7 @@ class NTPHomeMediatorTest : public PlatformTest {
   FakeWebStateListDelegate web_state_list_delegate_;
   TestUrlLoadingService* url_loader_;
   AuthenticationServiceFake* auth_service_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
  private:
   std::unique_ptr<web::TestWebState> test_web_state_;

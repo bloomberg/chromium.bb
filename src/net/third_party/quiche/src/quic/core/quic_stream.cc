@@ -173,16 +173,16 @@ void PendingStream::MarkConsumed(size_t num_bytes) {
   sequencer_.MarkConsumed(num_bytes);
 }
 
-QuicStream::QuicStream(PendingStream pending, StreamType type, bool is_static)
-    : QuicStream(pending.id_,
-                 pending.session_,
-                 std::move(pending.sequencer_),
+QuicStream::QuicStream(PendingStream* pending, StreamType type, bool is_static)
+    : QuicStream(pending->id_,
+                 pending->session_,
+                 std::move(pending->sequencer_),
                  is_static,
                  type,
-                 pending.stream_bytes_read_,
-                 pending.fin_received_,
-                 std::move(pending.flow_controller_),
-                 pending.connection_flow_controller_) {
+                 pending->stream_bytes_read_,
+                 pending->fin_received_,
+                 std::move(pending->flow_controller_),
+                 pending->connection_flow_controller_) {
   sequencer_.set_stream(this);
 }
 
@@ -260,7 +260,8 @@ QuicStream::QuicStream(QuicStreamId id,
       buffered_data_threshold_(GetQuicFlag(FLAGS_quic_buffered_data_threshold)),
       is_static_(is_static),
       deadline_(QuicTime::Zero()),
-      type_(session->connection()->transport_version() == QUIC_VERSION_99 &&
+      type_(VersionHasIetfQuicFrames(
+                session->connection()->transport_version()) &&
                     type != CRYPTO
                 ? QuicUtils::GetStreamType(id_,
                                            perspective_,
@@ -387,7 +388,7 @@ void QuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
   stream_error_ = frame.error_code;
   // Google QUIC closes both sides of the stream in response to a
   // RESET_STREAM, IETF QUIC closes only the read side.
-  if (transport_version() != QUIC_VERSION_99) {
+  if (!VersionHasIetfQuicFrames(transport_version())) {
     CloseWriteSide();
   }
   CloseReadSide();
@@ -608,7 +609,7 @@ QuicConsumedData QuicStream::WriteMemSlices(QuicMemSliceSpan span, bool fin) {
 
   if (write_side_closed_) {
     QUIC_DLOG(ERROR) << ENDPOINT << "Stream " << id()
-                     << "attempting to write when the write side is closed";
+                     << " attempting to write when the write side is closed";
     if (type_ == READ_UNIDIRECTIONAL) {
       CloseConnectionWithDetails(
           QUIC_TRY_TO_WRITE_DATA_ON_READ_UNIDIRECTIONAL_STREAM,
@@ -654,16 +655,6 @@ bool QuicStream::IsStreamFrameOutstanding(QuicStreamOffset offset,
                                           bool fin) const {
   return send_buffer_.IsStreamDataOutstanding(offset, data_length) ||
          (fin && fin_outstanding_);
-}
-
-QuicConsumedData QuicStream::WritevDataInner(size_t write_length,
-                                             QuicStreamOffset offset,
-                                             bool fin) {
-  StreamSendingState state = fin ? FIN : NO_FIN;
-  if (fin && add_random_padding_after_fin_) {
-    state = FIN_AND_PADDING;
-  }
-  return session()->WritevData(this, id(), write_length, offset, state);
 }
 
 void QuicStream::CloseReadSide() {
@@ -746,6 +737,15 @@ void QuicStream::OnClose() {
 }
 
 void QuicStream::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
+  if (GetQuicReloadableFlag(quic_no_window_update_on_read_only_stream) &&
+      type_ == READ_UNIDIRECTIONAL) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_no_window_update_on_read_only_stream);
+    CloseConnectionWithDetails(
+        QUIC_WINDOW_UPDATE_RECEIVED_ON_READ_UNIDIRECTIONAL_STREAM,
+        "WindowUpdateFrame received on READ_UNIDIRECTIONAL stream.");
+    return;
+  }
+
   if (flow_controller_->UpdateSendWindowOffset(frame.byte_offset)) {
     // Let session unblock this stream.
     session_->MarkConnectionLevelWriteBlocked(id_);
@@ -809,7 +809,7 @@ void QuicStream::AddRandomPaddingAfterFin() {
 bool QuicStream::OnStreamFrameAcked(QuicStreamOffset offset,
                                     QuicByteCount data_length,
                                     bool fin_acked,
-                                    QuicTime::Delta ack_delay_time,
+                                    QuicTime::Delta /*ack_delay_time*/,
                                     QuicByteCount* newly_acked_length) {
   QUIC_DVLOG(1) << ENDPOINT << "stream " << id_ << " Acking "
                 << "[" << offset << ", " << offset + data_length << "]"
@@ -973,8 +973,13 @@ void QuicStream::WriteBufferedData() {
   if (session_->session_decides_what_to_write()) {
     session_->SetTransmissionType(NOT_RETRANSMISSION);
   }
-  QuicConsumedData consumed_data =
-      WritevDataInner(write_length, stream_bytes_written(), fin);
+
+  StreamSendingState state = fin ? FIN : NO_FIN;
+  if (fin && add_random_padding_after_fin_) {
+    state = FIN_AND_PADDING;
+  }
+  QuicConsumedData consumed_data = session_->WritevData(
+      this, id(), write_length, stream_bytes_written(), state);
 
   OnStreamDataConsumed(consumed_data.bytes_consumed);
 
@@ -1010,6 +1015,10 @@ void QuicStream::WriteBufferedData() {
   }
   if (consumed_data.bytes_consumed > 0 || consumed_data.fin_consumed) {
     busy_counter_ = 0;
+  }
+
+  if (IsWaitingForAcks()) {
+    session_->OnStreamWaitingForAcks(id_);
   }
 }
 
@@ -1115,7 +1124,7 @@ void QuicStream::OnDeadlinePassed() {
 }
 
 void QuicStream::SendStopSending(uint16_t code) {
-  if (transport_version() != QUIC_VERSION_99) {
+  if (!VersionHasIetfQuicFrames(transport_version())) {
     // If the connection is not version 99, do nothing.
     // Do not QUIC_BUG or anything; the application really does not need to know
     // what version the connection is in.
@@ -1124,6 +1133,6 @@ void QuicStream::SendStopSending(uint16_t code) {
   session_->SendStopSending(code, id_);
 }
 
-void QuicStream::OnStopSending(uint16_t code) {}
+void QuicStream::OnStopSending(uint16_t /*code*/) {}
 
 }  // namespace quic

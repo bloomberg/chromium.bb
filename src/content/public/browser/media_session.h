@@ -67,7 +67,8 @@ class MediaSession : public media_session::mojom::MediaSession {
 
   // Adds an observer to listen to events related to this MediaSession.
   void AddObserver(
-      media_session::mojom::MediaSessionObserverPtr observer) override = 0;
+      mojo::PendingRemote<media_session::mojom::MediaSessionObserver> observer)
+      override = 0;
 
   // Skip to the previous track. If there is no previous track then this will be
   // a no-op.
@@ -80,9 +81,11 @@ class MediaSession : public media_session::mojom::MediaSession {
   // Skip ad.
   void SkipAd() override = 0;
 
-  // Seek the media session. If the media cannot seek then this will be a no-op.
-  // The |seek_time| is the time delta that the media will seek by and supports
-  // both positive and negative values.
+  // Seek the media session from the current position. If the media cannot
+  // seek then this will be a no-op. The |seek_time| is the time delta that
+  // the media will seek by and supports both positive and negative values.
+  // This value cannot be zero. The |kDefaultSeekTimeSeconds| provides a
+  // default value for seeking by a few seconds.
   void Seek(base::TimeDelta seek_time) override = 0;
 
   // Stop the media session.
@@ -96,6 +99,17 @@ class MediaSession : public media_session::mojom::MediaSession {
                            int minimum_size_px,
                            int desired_size_px,
                            GetMediaImageBitmapCallback callback) override = 0;
+
+  // Seek the media session to a non-negative |seek_time| from the beginning of
+  // the current playing media. If the media cannot seek then this will be a
+  // no-op.
+  void SeekTo(base::TimeDelta seek_time) override = 0;
+
+  // Scrub ("fast seek") the media session to a non-negative |seek_time| from
+  // the beginning of the current playing media. If the media cannot scrub then
+  // this will be a no-op. The client should call |SeekTo| to finish the
+  // scrubbing operation.
+  void ScrubTo(base::TimeDelta seek_time) override = 0;
 
  protected:
   MediaSession() = default;

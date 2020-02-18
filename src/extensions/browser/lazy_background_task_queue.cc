@@ -233,7 +233,7 @@ void LazyBackgroundTaskQueue::CreateLazyBackgroundHostOnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
   PendingTasksKey key(browser_context, extension->id());
-  if (!base::ContainsKey(pending_tasks_, key))
+  if (!base::Contains(pending_tasks_, key))
     return;
 
   ProcessManager* pm = ProcessManager::Get(browser_context);

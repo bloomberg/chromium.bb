@@ -146,7 +146,7 @@ void SVGSVGElement::UpdateUserTransform() {
 }
 
 bool SVGSVGElement::ZoomAndPanEnabled() const {
-  SVGZoomAndPanType zoom_and_pan = this->zoomAndPan();
+  SVGZoomAndPanType zoom_and_pan = zoomAndPan();
   if (view_spec_ && view_spec_->ZoomAndPan() != kSVGZoomAndPanUnknown)
     zoom_and_pan = view_spec_->ZoomAndPan();
   return zoom_and_pan == kSVGZoomAndPanMagnify;
@@ -249,7 +249,7 @@ void SVGSVGElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     // height attributes can affect the replaced size so we need
     // to mark it for updating.
     if (width_or_height_changed) {
-      LayoutObject* layout_object = this->GetLayoutObject();
+      LayoutObject* layout_object = GetLayoutObject();
       // If the element is not attached, we cannot be sure if it is (going to
       // be) an outermost root, so always mark presentation attributes dirty in
       // that case.
@@ -323,7 +323,7 @@ bool SVGSVGElement::CheckIntersectionOrEnclosure(
     return false;
 
   AffineTransform ctm =
-      ToSVGGraphicsElement(element).ComputeCTM(kAncestorScope, this);
+      To<SVGGraphicsElement>(element).ComputeCTM(kAncestorScope, this);
   FloatRect mapped_repaint_rect =
       ctm.MapRect(layout_object->VisualRectInLocalSVGCoordinates());
 
@@ -451,7 +451,7 @@ AffineTransform SVGSVGElement::LocalCoordinateSpaceTransform(
     transform.Translate(x_->CurrentValue()->Value(length_context),
                         y_->CurrentValue()->Value(length_context));
   } else if (mode == kScreenScope) {
-    if (LayoutObject* layout_object = this->GetLayoutObject()) {
+    if (LayoutObject* layout_object = GetLayoutObject()) {
       TransformationMatrix matrix;
       // Adjust for the zoom level factored into CSS coordinates (WK bug
       // #96361).
@@ -629,18 +629,21 @@ FloatSize SVGSVGElement::CurrentViewportSize() const {
 }
 
 bool SVGSVGElement::HasIntrinsicWidth() const {
-  return width()->CurrentValue()->TypeWithCalcResolved() !=
-         CSSPrimitiveValue::UnitType::kPercentage;
+  // TODO(crbug.com/979895): This is the result of a refactoring, which might
+  // have revealed an existing bug that we are not handling math functions
+  // involving percentages correctly. Fix it if necessary.
+  return !width()->CurrentValue()->IsPercentage();
 }
 
 bool SVGSVGElement::HasIntrinsicHeight() const {
-  return height()->CurrentValue()->TypeWithCalcResolved() !=
-         CSSPrimitiveValue::UnitType::kPercentage;
+  // TODO(crbug.com/979895): This is the result of a refactoring, which might
+  // have revealed an existing bug that we are not handling math functions
+  // involving percentages correctly. Fix it if necessary.
+  return !height()->CurrentValue()->IsPercentage();
 }
 
 float SVGSVGElement::IntrinsicWidth() const {
-  if (width()->CurrentValue()->TypeWithCalcResolved() ==
-      CSSPrimitiveValue::UnitType::kPercentage)
+  if (!HasIntrinsicWidth())
     return 0;
 
   SVGLengthContext length_context(this);
@@ -648,8 +651,7 @@ float SVGSVGElement::IntrinsicWidth() const {
 }
 
 float SVGSVGElement::IntrinsicHeight() const {
-  if (height()->CurrentValue()->TypeWithCalcResolved() ==
-      CSSPrimitiveValue::UnitType::kPercentage)
+  if (!HasIntrinsicHeight())
     return 0;
 
   SVGLengthContext length_context(this);

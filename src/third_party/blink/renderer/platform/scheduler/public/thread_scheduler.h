@@ -65,6 +65,12 @@ class PLATFORM_EXPORT ThreadScheduler {
   // Takes ownership of |IdleTask|. Can be called from any thread.
   virtual void PostIdleTask(const base::Location&, Thread::IdleTask) = 0;
 
+  // As above, except that the task is guaranteed to not run before |delay|.
+  // Takes ownership of |IdleTask|. Can be called from any thread.
+  virtual void PostDelayedIdleTask(const base::Location&,
+                                   base::TimeDelta delay,
+                                   Thread::IdleTask) = 0;
+
   // Like postIdleTask but guarantees that the posted task will not run
   // nested within an already-running task. Posting an idle task as
   // non-nestable may not affect when the task gets run, or it could
@@ -127,7 +133,8 @@ class PLATFORM_EXPORT ThreadScheduler {
   // Associates |isolate| to the scheduler.
   virtual void SetV8Isolate(v8::Isolate* isolate) = 0;
 
-  virtual void SetHasSafepoint() {}
+  virtual void OnSafepointEntered() {}
+  virtual void OnSafepointExited() {}
 
   // Test helpers.
 

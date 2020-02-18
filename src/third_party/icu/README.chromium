@@ -265,3 +265,17 @@ D. Local Modifications
     https://unicode-org.atlassian.net/browse/ICU-20595
   - upstream PR:
     https://github.com/unicode-org/icu/pull/649
+
+10. Bidi UBSan breakage patch
+  - patches/bidiunshift.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20641
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/663
+
+11. Fix RelativeTimeFormat for "this hour" and "this minute"
+  - patches/this_hour_minute.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20654
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/674

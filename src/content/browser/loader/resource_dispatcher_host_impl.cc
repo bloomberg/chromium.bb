@@ -26,6 +26,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -53,13 +54,9 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/loader/sec_fetch_site_resource_handler.h"
-#include "content/browser/loader/stream_resource_handler.h"
 #include "content/browser/loader/throttling_resource_handler.h"
 #include "content/browser/loader/upload_data_stream_builder.h"
 #include "content/browser/resource_context_impl.h"
-#include "content/browser/streams/stream.h"
-#include "content/browser/streams/stream_context.h"
-#include "content/browser/streams/stream_registry.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/net/url_request_service_worker_data.h"
@@ -75,7 +72,6 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/site_isolation_policy.h"
-#include "content/public/browser/stream_info.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -106,7 +102,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
-#include "services/network/resource_scheduler.h"
+#include "services/network/resource_scheduler/resource_scheduler.h"
 #include "services/network/throttling/scoped_throttling_token.h"
 #include "services/network/url_loader_factory.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -233,7 +229,7 @@ void LogBackForwardNavigationFlagsHistogram(int load_flags) {
 class LoginDelegateProxy : public LoginDelegate {
  public:
   explicit LoginDelegateProxy(LoginAuthRequiredCallback callback)
-      : callback_(std::move(callback)), weak_factory_(this) {
+      : callback_(std::move(callback)) {
     delegate_ui_.reset(new DelegateOwnerUI(weak_factory_.GetWeakPtr()));
   }
 
@@ -314,7 +310,7 @@ class LoginDelegateProxy : public LoginDelegate {
   std::unique_ptr<DelegateOwnerUI, BrowserThread::DeleteOnUIThread>
       delegate_ui_;
   LoginAuthRequiredCallback callback_;
-  base::WeakPtrFactory<LoginDelegateProxy> weak_factory_;
+  base::WeakPtrFactory<LoginDelegateProxy> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(LoginDelegateProxy);
 };
 
@@ -363,11 +359,10 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
     CreateDownloadHandlerIntercept download_handler_intercept,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner,
     bool enable_resource_scheduler)
-    : request_id_(-1),
-      is_shutdown_(false),
+    : is_shutdown_(false),
       enable_resource_scheduler_(enable_resource_scheduler),
       num_in_flight_requests_(0),
-      max_num_in_flight_requests_(base::SharedMemory::GetHandleLimit()),
+      max_num_in_flight_requests_(base::GetHandleLimit()),
       max_num_in_flight_requests_per_process_(static_cast<int>(
           max_num_in_flight_requests_ * kMaxRequestsPerProcessRatio)),
       max_outstanding_requests_cost_per_process_(
@@ -376,8 +371,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
       loader_delegate_(nullptr),
       create_download_handler_intercept_(download_handler_intercept),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      io_thread_task_runner_(io_thread_runner),
-      weak_factory_on_io_(this) {
+      io_thread_task_runner_(io_thread_runner) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(!g_resource_dispatcher_host);
   g_resource_dispatcher_host = this;
@@ -473,14 +467,13 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
 #ifndef NDEBUG
   for (const auto& loader : loaders_to_cancel) {
     // There is no strict requirement that this be the case, but currently
-    // downloads, streams, detachable requests, transferred requests, and
+    // downloads, detachable requests, transferred requests, and
     // browser-owned requests are the only requests that aren't cancelled when
     // the associated processes go away. It may be OK for this invariant to
     // change in the future, but if this assertion fires without the invariant
     // changing, then it's indicative of a leak.
     DCHECK(
         loader->GetRequestInfo()->IsDownload() ||
-        loader->GetRequestInfo()->is_stream() ||
         (loader->GetRequestInfo()->detachable_handler() &&
          loader->GetRequestInfo()->detachable_handler()->is_detached()) ||
         loader->GetRequestInfo()->requester_info()->IsBrowserSideNavigation() ||
@@ -540,44 +533,6 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
   return handler;
 }
 
-std::unique_ptr<ResourceHandler>
-ResourceDispatcherHostImpl::MaybeInterceptAsStream(
-    net::URLRequest* request,
-    network::ResourceResponse* response,
-    std::string* payload) {
-  payload->clear();
-  const std::string& mime_type = response->head.mime_type;
-
-  GURL origin;
-  if (!delegate_ || !delegate_->ShouldInterceptResourceAsStream(
-                        request, mime_type, &origin, payload)) {
-    return nullptr;
-  }
-
-  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
-  StreamContext* stream_context =
-      GetStreamContextForResourceContext(info->GetContext());
-
-  auto handler = std::make_unique<StreamResourceHandler>(
-      request, stream_context->registry(), origin, false);
-
-  info->set_is_stream(true);
-  auto stream_info = std::make_unique<StreamInfo>();
-  stream_info->handle = handler->stream()->CreateHandle();
-  stream_info->original_url = request->url();
-  stream_info->mime_type = mime_type;
-  // Make a copy of the response headers so it is safe to pass across threads;
-  // the old handler (AsyncResourceHandler) may modify it in parallel via the
-  // ResourceDispatcherHostDelegate.
-  if (response->head.headers.get()) {
-    stream_info->response_headers =
-        base::MakeRefCounted<net::HttpResponseHeaders>(
-            response->head.headers->raw_headers());
-  }
-  delegate_->OnStreamCreated(request, std::move(stream_info));
-  return std::move(handler);
-}
-
 std::unique_ptr<LoginDelegate> ResourceDispatcherHostImpl::CreateLoginDelegate(
     ResourceLoader* loader,
     const net::AuthChallengeInfo& auth_info) {
@@ -623,12 +578,10 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
   if (!url.is_valid() || job_factory->IsHandledProtocol(url.scheme()))
     return false;
 
-  network::mojom::URLLoaderFactory* dummy = nullptr;
-
   return GetContentClient()->browser()->HandleExternalProtocol(
       url, info->GetWebContentsGetterForRequest(), info->GetChildID(),
       info->GetNavigationUIData(), info->IsMainFrame(),
-      info->GetPageTransition(), info->HasUserGesture(), nullptr, dummy);
+      info->GetPageTransition(), info->HasUserGesture(), nullptr);
 }
 
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {
@@ -1014,7 +967,6 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       static_cast<ResourceType>(request_data.resource_type),
       static_cast<ui::PageTransition>(request_data.transition_type),
       false,  // is download
-      false,  // is stream
       ResourceInterceptPolicy::kAllowNone, request_data.has_user_gesture,
       request_data.enable_load_timing, request_data.enable_upload_progress,
       request_data.do_not_prompt_for_login, request_data.keepalive,
@@ -1090,7 +1042,7 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
 
   return AddStandardHandlers(
       request, static_cast<ResourceType>(request_data.resource_type),
-      resource_context, request_data.fetch_request_mode,
+      resource_context, request_data.mode,
       static_cast<blink::mojom::RequestContextType>(
           request_data.fetch_request_context_type),
       url_loader_options, requester_info->appcache_service(), child_id,
@@ -1102,7 +1054,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
     net::URLRequest* request,
     ResourceType resource_type,
     ResourceContext* resource_context,
-    network::mojom::FetchRequestMode fetch_request_mode,
+    network::mojom::RequestMode request_mode,
     blink::mojom::RequestContextType fetch_request_context_type,
     uint32_t url_loader_options,
     AppCacheService* appcache_service,
@@ -1164,8 +1116,8 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
 
   if (!IsResourceTypeFrame(resource_type)) {
     // Add a handler to block cross-site documents from the renderer process.
-    handler.reset(new CrossSiteDocumentResourceHandler(
-        std::move(handler), request, fetch_request_mode));
+    handler.reset(new CrossSiteDocumentResourceHandler(std::move(handler),
+                                                       request, request_mode));
   }
 
   // Insert a buffered event handler to sniff the mime type.
@@ -1202,7 +1154,6 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       {},     // fetch_window_id
       ResourceType::kSubResource, ui::PAGE_TRANSITION_LINK,
       download,  // is_download
-      false,     // is_stream
       download ? ResourceInterceptPolicy::kAllowAll
                : ResourceInterceptPolicy::kAllowNone,
       false,  // has_user_gesture
@@ -1283,7 +1234,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(
         // deliberately, so we don't cancel it here.
       } else if (info->detachable_handler()) {
         info->detachable_handler()->Detach();
-      } else if (!info->IsDownload() && !info->is_stream()) {
+      } else if (!info->IsDownload()) {
         matching_requests.push_back(id);
       }
     }
@@ -1487,7 +1438,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   new_request->set_method(info.common_params.method);
   new_request->set_site_for_cookies(info.site_for_cookies);
-  new_request->set_top_frame_origin(info.top_frame_origin);
+  new_request->set_network_isolation_key(info.network_isolation_key);
   new_request->set_initiator(info.common_params.initiator_origin);
   new_request->set_upgrade_if_insecure(info.upgrade_if_insecure);
   if (info.is_main_frame) {
@@ -1542,7 +1493,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       info.is_main_frame, {},  // fetch_window_id
       resource_type, info.common_params.transition,
       false,  // is download
-      false,  // is stream
       info.common_params.download_policy.GetResourceInterceptPolicy(),
       info.common_params.has_user_gesture,
       true,   // enable_load_timing
@@ -1592,7 +1542,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // by the ResourceScheduler. currently it's a no-op.
   handler = AddStandardHandlers(
       new_request.get(), resource_type, resource_context,
-      network::mojom::FetchRequestMode::kNoCors,
+      network::mojom::RequestMode::kNoCors,
       info.begin_params->request_context_type, url_loader_options,
       appcache_handle_core ? appcache_handle_core->GetAppCacheService()
                            : nullptr,
@@ -1815,7 +1765,6 @@ void ResourceDispatcherHostImpl::BeginURLRequest(
 }
 
 int ResourceDispatcherHostImpl::MakeRequestID() {
-  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   return --request_id_;
 }
 

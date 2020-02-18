@@ -106,7 +106,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   static RenderFrameProxy* CreateProxyForPortal(
       RenderFrameImpl* parent,
       int proxy_routing_id,
-      const base::UnguessableToken& devtools_frame_token);
+      const base::UnguessableToken& devtools_frame_token,
+      const blink::WebElement& portal_element);
 
   // Returns the RenderFrameProxy for the given routing ID.
   static RenderFrameProxy* FromRoutingID(int routing_id);
@@ -122,10 +123,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& msg) override;
-
-  // Out-of-process child frames receive a signal from blink::LayerTreeView
-  // when a compositor frame will begin.
-  void WillBeginCompositorFrame();
 
   // Out-of-process child frames receive a signal from RenderWidget when the
   // ScreenInfo has changed.

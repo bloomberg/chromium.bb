@@ -6,6 +6,7 @@
 
 #include <d3d11_4.h>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -24,25 +25,13 @@
 #include "media/gpu/windows/d3d11_picture_buffer.h"
 #include "media/gpu/windows/d3d11_video_context_wrapper.h"
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
+#include "media/gpu/windows/supported_profile_helpers.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_switches.h"
 
 namespace media {
 
 namespace {
-
-#define INRANGE(_profile, codecname) \
-  (_profile >= codecname##PROFILE_MIN && _profile <= codecname##PROFILE_MAX)
-
-bool IsVP9(const VideoDecoderConfig& config) {
-  return INRANGE(config.profile(), VP9);
-}
-
-bool IsH264(const VideoDecoderConfig& config) {
-  return INRANGE(config.profile(), H264);
-}
-
-#undef INRANGE
 
 // Holder class, so that we don't keep creating CommandBufferHelpers every time
 // somebody calls a callback.  We can't actually create it until we're on the
@@ -78,80 +67,6 @@ scoped_refptr<CommandBufferHelper> CreateCommandBufferHelper(
 }
 
 }  // namespace
-
-D3D11_VIDEO_DECODER_DESC TextureSelector::DecoderDescriptor(gfx::Size size) {
-  D3D11_VIDEO_DECODER_DESC desc = {};
-  desc.Guid = decoder_guid;
-  desc.SampleWidth = size.width();
-  desc.SampleHeight = size.height();
-  desc.OutputFormat = dxgi_format;
-  return desc;
-}
-
-D3D11_TEXTURE2D_DESC TextureSelector::TextureDescriptor(gfx::Size size) {
-  D3D11_TEXTURE2D_DESC texture_desc = {};
-  texture_desc.Width = size.width();
-  texture_desc.Height = size.height();
-  texture_desc.MipLevels = 1;
-  texture_desc.ArraySize = TextureSelector::BUFFER_COUNT;
-  texture_desc.Format = dxgi_format;
-  texture_desc.SampleDesc.Count = 1;
-  texture_desc.Usage = D3D11_USAGE_DEFAULT;
-  texture_desc.BindFlags = D3D11_BIND_DECODER | D3D11_BIND_SHADER_RESOURCE;
-
-  // Decode swap chains do not support shared resources.
-  // TODO(sunnyps): Find a workaround for when the decoder moves to its own
-  // thread and D3D device.  See https://crbug.com/911847
-  texture_desc.MiscFlags =
-      supports_swap_chain_ ? 0 : D3D11_RESOURCE_MISC_SHARED;
-
-  if (is_encrypted_)
-    texture_desc.MiscFlags |= D3D11_RESOURCE_MISC_HW_PROTECTED;
-
-  return texture_desc;
-}
-
-bool TextureSelector::SupportsDevice(
-    Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device) {
-  for (UINT i = video_device->GetVideoDecoderProfileCount(); i--;) {
-    GUID profile = {};
-    if (SUCCEEDED(video_device->GetVideoDecoderProfile(i, &profile))) {
-      if (profile == decoder_guid)
-        return true;
-    }
-  }
-  return false;
-}
-
-// static
-std::unique_ptr<TextureSelector> TextureSelector::Create(
-    const VideoDecoderConfig& config) {
-  if (config.profile() == VP9PROFILE_PROFILE2) {
-    return std::make_unique<TextureSelector>(
-        PIXEL_FORMAT_YUV420P10, DXGI_FORMAT_P010,
-        D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2, config.is_encrypted(),
-        false);
-  }
-
-  bool supports_nv12_decode_swap_chain = base::FeatureList::IsEnabled(
-      features::kDirectCompositionUseNV12DecodeSwapChain);
-
-  if (config.profile() == VP9PROFILE_PROFILE0) {
-    return std::make_unique<TextureSelector>(
-        PIXEL_FORMAT_NV12, DXGI_FORMAT_NV12,
-        D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0, config.is_encrypted(),
-        supports_nv12_decode_swap_chain);
-  }
-
-  if (IsH264(config)) {
-    return std::make_unique<TextureSelector>(
-        PIXEL_FORMAT_NV12, DXGI_FORMAT_NV12,
-        D3D11_DECODER_PROFILE_H264_VLD_NOFGT, config.is_encrypted(),
-        supports_nv12_decode_swap_chain);
-  }
-
-  return nullptr;
-}
 
 std::unique_ptr<VideoDecoder> D3D11VideoDecoder::Create(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
@@ -227,7 +142,7 @@ std::string D3D11VideoDecoder::GetDisplayName() const {
 HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
     const VideoDecoderConfig& config,
     CdmProxyContext* proxy_context,
-    Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder) {
+    ComD3D11VideoDecoder video_decoder) {
   // If we got an 11.1 D3D11 Device, we can use a |ID3D11VideoContext1|,
   // otherwise we have to make sure we only use a |ID3D11VideoContext|.
   HRESULT hr;
@@ -240,7 +155,7 @@ HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
   if (!SUCCEEDED(hr))
     return hr;
 
-  if (IsVP9(config)) {
+  if (config.codec() == kCodecVP9) {
     accelerated_video_decoder_ = std::make_unique<VP9Decoder>(
         std::make_unique<D3D11VP9Accelerator>(
             this, media_log_.get(), proxy_context, video_decoder, video_device_,
@@ -249,7 +164,7 @@ HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
     return hr;
   }
 
-  if (IsH264(config)) {
+  if (config.codec() == kCodecH264) {
     accelerated_video_decoder_ = std::make_unique<H264Decoder>(
         std::make_unique<D3D11H264Accelerator>(
             this, media_log_.get(), proxy_context, video_decoder, video_device_,
@@ -330,7 +245,8 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  texture_selector_ = TextureSelector::Create(config);
+  texture_selector_ =
+      TextureSelector::Create(gpu_preferences_, gpu_workarounds_, config);
   if (!texture_selector_) {
     NotifyError("D3DD11: Config provided unsupported profile");
     return;
@@ -342,7 +258,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   // TODO(liberato): dxva does this.  don't know if we need to.
-  Microsoft::WRL::ComPtr<ID3D11Multithread> multi_threaded;
+  ComD3D11Multithread multi_threaded;
   hr = device_->QueryInterface(IID_PPV_ARGS(&multi_threaded));
   if (!SUCCEEDED(hr)) {
     NotifyError("Failed to query ID3D11Multithread");
@@ -353,10 +269,9 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (multi_threaded)
     multi_threaded->SetMultithreadProtected(TRUE);
 
-  D3D11_VIDEO_DECODER_DESC desc =
-      texture_selector_->DecoderDescriptor(config.coded_size());
   UINT config_count = 0;
-  hr = video_device_->GetVideoDecoderConfigCount(&desc, &config_count);
+  hr = video_device_->GetVideoDecoderConfigCount(
+      texture_selector_->DecoderDescriptor(), &config_count);
   if (FAILED(hr) || config_count == 0) {
     NotifyError("Failed to get video decoder config count");
     return;
@@ -364,8 +279,10 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   D3D11_VIDEO_DECODER_CONFIG dec_config = {};
   bool found = false;
+
   for (UINT i = 0; i < config_count; i++) {
-    hr = video_device_->GetVideoDecoderConfig(&desc, i, &dec_config);
+    hr = video_device_->GetVideoDecoderConfig(
+        texture_selector_->DecoderDescriptor(), i, &dec_config);
     if (FAILED(hr)) {
       NotifyError("Failed to get decoder config");
       return;
@@ -377,13 +294,13 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
       continue;
     }
 
-    if (IsVP9(config) && dec_config.ConfigBitstreamRaw == 1) {
+    if (config.codec() == kCodecVP9 && dec_config.ConfigBitstreamRaw == 1) {
       // DXVA VP9 specification mentions ConfigBitstreamRaw "shall be 1".
       found = true;
       break;
     }
 
-    if (IsH264(config) && dec_config.ConfigBitstreamRaw == 2) {
+    if (config.codec() == kCodecH264 && dec_config.ConfigBitstreamRaw == 2) {
       // ConfigBitstreamRaw == 2 means the decoder uses DXVA_Slice_H264_Short.
       found = true;
       break;
@@ -395,8 +312,8 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
-  hr = video_device_->CreateVideoDecoder(
-      &desc, &dec_config, video_decoder.ReleaseAndGetAddressOf());
+  hr = video_device_->CreateVideoDecoder(texture_selector_->DecoderDescriptor(),
+                                         &dec_config, &video_decoder);
   if (!video_decoder.Get()) {
     NotifyError("Failed to create a video decoder");
     return;
@@ -549,9 +466,7 @@ void D3D11VideoDecoder::DoDecode() {
     // EOS buffer.
     current_timestamp_ = current_buffer_->timestamp();
 
-    accelerated_video_decoder_->SetStream(-1, current_buffer_->data(),
-                                          current_buffer_->data_size(),
-                                          current_buffer_->decrypt_config());
+    accelerated_video_decoder_->SetStream(-1, *current_buffer_);
   }
 
   while (true) {
@@ -652,13 +567,10 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
   DCHECK(texture_selector_);
   gfx::Size size = accelerated_video_decoder_->GetPicSize();
 
-  D3D11_TEXTURE2D_DESC texture_desc =
-      texture_selector_->TextureDescriptor(size);
-
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> out_texture;
-  HRESULT hr = device_->CreateTexture2D(&texture_desc, nullptr,
-                                        out_texture.ReleaseAndGetAddressOf());
-  if (!SUCCEEDED(hr)) {
+  // Create an input texture array.
+  ComD3D11Texture2D in_texture =
+      texture_selector_->CreateOutputTexture(device_, size);
+  if (!in_texture) {
     NotifyError("Failed to create a Texture2D for PictureBuffers");
     return;
   }
@@ -668,14 +580,16 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
     DCHECK(!buffer->in_picture_use());
   picture_buffers_.clear();
 
-  // Create each picture buffer.
+  // Create each picture buffer.1
   const int textures_per_picture = 2;  // From the VDA
   for (size_t i = 0; i < TextureSelector::BUFFER_COUNT; i++) {
-    auto processor = std::make_unique<DefaultTexture2DWrapper>(out_texture);
+    auto tex_wrapper = texture_selector_->CreateTextureWrapper(
+        device_, video_device_, device_context_, in_texture, size);
+
     picture_buffers_.push_back(new D3D11PictureBuffer(
-        GL_TEXTURE_EXTERNAL_OES, std::move(processor), size, i));
+        GL_TEXTURE_EXTERNAL_OES, std::move(tex_wrapper), size, i));
     if (!picture_buffers_[i]->Init(get_helper_cb_, video_device_,
-                                   texture_selector_->decoder_guid,
+                                   texture_selector_->DecoderGuid(),
                                    textures_per_picture, media_log_->Clone())) {
       NotifyError("Unable to allocate PictureBuffer");
       return;
@@ -713,8 +627,15 @@ void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   double pixel_aspect_ratio = config_.GetPixelAspectRatio();
 
   base::TimeDelta timestamp = picture_buffer->timestamp_;
+
+  MailboxHolderArray mailbox_holders;
+  if (!picture_buffer->ProcessTexture(&mailbox_holders)) {
+    NotifyError("Unable to process texture");
+    return;
+  }
+
   scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
-      texture_selector_->pixel_format, picture_buffer->ProcessTexture(),
+      texture_selector_->PixelFormat(), mailbox_holders,
       VideoFrame::ReleaseMailboxCB(), picture_buffer->size(), visible_rect,
       GetNaturalSize(visible_rect, pixel_aspect_ratio), timestamp);
 
@@ -793,16 +714,16 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
     GetD3D11DeviceCB get_d3d11_device_cb) {
   const std::string uma_name("Media.D3D11.WasVideoSupported");
 
-  // Must allow zero-copy of nv12 textures.
-  if (!gpu_preferences.enable_zero_copy_dxgi_video) {
-    UMA_HISTOGRAM_ENUMERATION(uma_name,
-                              NotSupportedReason::kZeroCopyNv12Required);
-    return {};
-  }
-
   // This workaround accounts for almost half of all startup results, and it's
   // unclear that it's relevant here.
   if (!base::FeatureList::IsEnabled(kD3D11VideoDecoderIgnoreWorkarounds)) {
+    // Must allow zero-copy of nv12 textures.
+    if (!gpu_preferences.enable_zero_copy_dxgi_video) {
+      UMA_HISTOGRAM_ENUMERATION(uma_name,
+                                NotSupportedReason::kZeroCopyNv12Required);
+      return {};
+    }
+
     if (gpu_workarounds.disable_dxgi_zero_copy_video) {
       UMA_HISTOGRAM_ENUMERATION(uma_name,
                                 NotSupportedReason::kZeroCopyVideoRequired);
@@ -832,40 +753,74 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
       base::FeatureList::IsEnabled(kHardwareSecureDecryption);
 
   std::vector<SupportedVideoDecoderConfig> configs;
-
-  // Now check specific configs.
-  // For now, just return something that matches everything, since that's
-  // effectively what the workaround in mojo_video_decoder does.  Eventually, we
-  // should check resolutions and guids from the device we just created for both
-  // portrait and landscape orientations.
+  // VP9 has no default resolutions since it may not even be supported.
+  ResolutionPair max_h264_resolutions(gfx::Size(1920, 1088), gfx::Size());
+  ResolutionPair max_vp9_profile0_resolutions;
+  ResolutionPair max_vp9_profile2_resolutions;
   const gfx::Size min_resolution(64, 64);
-  const gfx::Size max_resolution(8192, 8192);  // Profile or landscape 8k
 
-  // Push H264 configs, except HIGH10.
-  configs.push_back(SupportedVideoDecoderConfig(
-      H264PROFILE_MIN,  // profile_min
-      static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE -
-                                     1),  // profile_max
-      min_resolution,                     // coded_size_min
-      max_resolution,                     // coded_size_max
-      allow_encrypted,                    // allow_encrypted
-      false));                            // require_encrypted
-  configs.push_back(SupportedVideoDecoderConfig(
-      static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE +
-                                     1),  // profile_min
-      H264PROFILE_MAX,                    // profile_max
-      min_resolution,                     // coded_size_min
-      max_resolution,                     // coded_size_max
-      allow_encrypted,                    // allow_encrypted
-      false));                            // require_encrypted
+  GetResolutionsForDecoders(
+      {D3D11_DECODER_PROFILE_H264_VLD_NOFGT}, d3d11_device, gpu_workarounds,
+      &max_h264_resolutions, &max_vp9_profile0_resolutions,
+      &max_vp9_profile2_resolutions);
 
-  configs.push_back(
-      SupportedVideoDecoderConfig(VP9PROFILE_PROFILE0,  // profile_min
-                                  VP9PROFILE_PROFILE0,  // profile_max
-                                  min_resolution,       // coded_size_min
-                                  max_resolution,       // coded_size_max
-                                  allow_encrypted,      // allow_encrypted
-                                  false));              // require_encrypted
+  if (max_h264_resolutions.first.width() > 0) {
+    // Push H264 configs, except HIGH10.
+    // landscape
+    configs.push_back(SupportedVideoDecoderConfig(
+        H264PROFILE_MIN,  // profile_min
+        static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE -
+                                       1),  // profile_max
+        min_resolution,                     // coded_size_min
+        max_h264_resolutions.first,         // coded_size_max
+        allow_encrypted,                    // allow_encrypted
+        false));                            // require_encrypted
+    configs.push_back(SupportedVideoDecoderConfig(
+        static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE +
+                                       1),  // profile_min
+        H264PROFILE_MAX,                    // profile_max
+        min_resolution,                     // coded_size_min
+        max_h264_resolutions.first,         // coded_size_max
+        allow_encrypted,                    // allow_encrypted
+        false));                            // require_encrypted
+
+    // portrait
+    configs.push_back(SupportedVideoDecoderConfig(
+        H264PROFILE_MIN,  // profile_min
+        static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE -
+                                       1),  // profile_max
+        min_resolution,                     // coded_size_min
+        max_h264_resolutions.second,        // coded_size_max
+        allow_encrypted,                    // allow_encrypted
+        false));                            // require_encrypted
+    configs.push_back(SupportedVideoDecoderConfig(
+        static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE +
+                                       1),  // profile_min
+        H264PROFILE_MAX,                    // profile_max
+        min_resolution,                     // coded_size_min
+        max_h264_resolutions.second,        // coded_size_max
+        allow_encrypted,                    // allow_encrypted
+        false));                            // require_encrypted
+  }
+
+  if (max_vp9_profile0_resolutions.first.width()) {
+    // landscape
+    configs.push_back(SupportedVideoDecoderConfig(
+        VP9PROFILE_PROFILE0,                 // profile_min
+        VP9PROFILE_PROFILE0,                 // profile_max
+        min_resolution,                      // coded_size_min
+        max_vp9_profile0_resolutions.first,  // coded_size_max
+        allow_encrypted,                     // allow_encrypted
+        false));                             // require_encrypted
+    // portrait
+    configs.push_back(SupportedVideoDecoderConfig(
+        VP9PROFILE_PROFILE0,                  // profile_min
+        VP9PROFILE_PROFILE0,                  // profile_max
+        min_resolution,                       // coded_size_min
+        max_vp9_profile0_resolutions.second,  // coded_size_max
+        allow_encrypted,                      // allow_encrypted
+        false));                              // require_encrypted
+  }
 
   // TODO(liberato): Should we separate out h264, vp9, and encrypted?
   UMA_HISTOGRAM_ENUMERATION(uma_name, NotSupportedReason::kVideoIsSupported);

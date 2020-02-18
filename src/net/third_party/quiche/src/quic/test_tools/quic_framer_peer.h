@@ -25,6 +25,9 @@ class QuicFramerPeer {
   static void SetLastSerializedServerConnectionId(
       QuicFramer* framer,
       QuicConnectionId server_connection_id);
+  static void SetLastSerializedClientConnectionId(
+      QuicFramer* framer,
+      QuicConnectionId client_connection_id);
   static void SetLargestPacketNumber(QuicFramer* framer,
                                      QuicPacketNumber packet_number);
   static void SetPerspective(QuicFramer* framer, Perspective perspective);
@@ -166,6 +169,16 @@ class QuicFramerPeer {
   static QuicPacketNumber GetLargestDecryptedPacketNumber(
       QuicFramer* framer,
       PacketNumberSpace packet_number_space);
+
+  static bool ProcessAndValidateIetfConnectionIdLength(
+      QuicDataReader* reader,
+      ParsedQuicVersion version,
+      Perspective perspective,
+      bool should_update_expected_server_connection_id_length,
+      uint8_t* expected_server_connection_id_length,
+      uint8_t* destination_connection_id_length,
+      uint8_t* source_connection_id_length,
+      std::string* detailed_error);
 };
 
 }  // namespace test

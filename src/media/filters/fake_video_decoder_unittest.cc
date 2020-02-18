@@ -6,8 +6,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
@@ -221,7 +221,7 @@ class FakeVideoDecoderTest
     DCHECK(!is_reset_pending_);
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   VideoDecoderConfig current_config_;
 
   std::unique_ptr<FakeVideoDecoder> decoder_;

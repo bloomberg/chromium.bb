@@ -50,6 +50,12 @@ class CONTENT_EXPORT PassthroughTouchEventQueueClient {
 // model of the renderer it is possible that an ack for a touchend can
 // be sent before the corresponding ack for the touchstart. This class
 // corrects that state.
+//
+// This class also performs filtering over the sequence of touch-events to, for
+// example, avoid sending events to the renderer that would have no effect. By
+// default, we always forward touchstart and touchend but, if there are no
+// handlers, touchmoves are filtered out of the sequence. The filtering logic
+// is implemented in |FilterBeforeForwarding|.
 class CONTENT_EXPORT PassthroughTouchEventQueue {
  public:
   struct CONTENT_EXPORT Config {
@@ -129,13 +135,13 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchScrollStartedUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
-                           TouchStartWithoutPageHandlersFiltered);
+                           TouchStartWithoutPageHandlersUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchStartWithPageHandlersUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchMoveFilteredAfterTimeout);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
-                           TouchMoveWithoutPageHandlersFiltered);
+                           TouchMoveWithoutPageHandlersUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            StationaryTouchMoveFiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
@@ -145,7 +151,7 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchMoveWithNonTouchMoveUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
-                           TouchMoveWithoutSequenceHandlerFiltered);
+                           TouchMoveWithoutSequenceHandlerUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchMoveWithoutPageHandlersUnfilteredWithSkipFlag);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,

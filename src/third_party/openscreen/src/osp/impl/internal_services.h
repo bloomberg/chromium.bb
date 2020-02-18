@@ -17,12 +17,12 @@
 #include "osp/public/mdns_service_publisher_factory.h"
 #include "osp/public/protocol_connection_client.h"
 #include "osp/public/protocol_connection_server.h"
-#include "osp_base/ip_address.h"
-#include "osp_base/macros.h"
 #include "platform/api/event_waiter.h"
 #include "platform/api/network_interface.h"
-#include "platform/api/socket.h"
-#include "platform/base/event_loop.h"
+#include "platform/api/udp_socket.h"
+#include "platform/base/ip_address.h"
+#include "platform/base/macros.h"
+#include "platform/impl/event_loop.h"
 
 namespace openscreen {
 

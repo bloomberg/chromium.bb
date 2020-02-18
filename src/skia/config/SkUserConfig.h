@@ -132,6 +132,7 @@
 /*  Define this to provide font subsetter for font subsetting when generating
     PDF documents.
  */
+#define SK_PDF_USE_HARFBUZZ_SUBSET
 #define SK_PDF_USE_SFNTLY
 
 // Chromium does not use these fonts.  This define causes type1 fonts to be
@@ -202,11 +203,6 @@ SK_API void SkDebugf_FileLine(const char* file,
 // (https://codereview.chromium.org/1643143002)
 #ifndef SK_USE_LEGACY_DISTANCE_FIELDS
 #define SK_USE_LEGACY_DISTANCE_FIELDS
-#endif
-
-// skbug.com/4783
-#ifndef SK_SUPPORT_LEGACY_DRAWLOOPER
-#define SK_SUPPORT_LEGACY_DRAWLOOPER
 #endif
 
 // For now, Chrome should only attempt to reduce opList splitting when recording

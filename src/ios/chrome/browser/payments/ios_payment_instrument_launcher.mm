@@ -13,11 +13,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/payments/core/native_error_strings.h"
 #include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_instrument.h"
 #import "ios/chrome/browser/payments/payment_request_constants.h"
-#include "ios/web/public/navigation_item.h"
-#include "ios/web/public/navigation_manager.h"
+#include "ios/web/public/navigation/navigation_item.h"
+#include "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "net/base/mac/url_conversions.h"
@@ -239,10 +240,14 @@ base::Value IOSPaymentInstrumentLauncher::SerializeModifiers(
 void IOSPaymentInstrumentLauncher::CompleteLaunchRequest(
     const std::string& method_name,
     const std::string& details) {
-  if (!method_name.empty() && !details.empty())
+  if (method_name.empty()) {
+    delegate_->OnInstrumentDetailsError(
+        errors::kMissingMethodNameFromPaymentApp);
+  } else if (details.empty()) {
+    delegate_->OnInstrumentDetailsError(errors::kMissingDetailsFromPaymentApp);
+  } else {
     delegate_->OnInstrumentDetailsReady(method_name, details);
-  else
-    delegate_->OnInstrumentDetailsError();
+  }
   delegate_ = nullptr;
   payment_request_id_ = "";
 }

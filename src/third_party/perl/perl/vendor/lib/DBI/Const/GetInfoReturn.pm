@@ -1,4 +1,4 @@
-# $Id: GetInfoReturn.pm 8696 2007-01-24 23:12:38Z timbo $
+# $Id: GetInfoReturn.pm 8696 2007-01-24 23:12:38Z Tim $
 #
 # Copyright (c) 2002  Tim Bunce  Ireland
 #
@@ -19,8 +19,7 @@ use vars qw(@ISA @EXPORT @EXPORT_OK %GetInfoReturnTypes %GetInfoReturnValues);
 @EXPORT = qw(%GetInfoReturnTypes %GetInfoReturnValues);
 
 my
-$VERSION = sprintf("2.%06d", q$Revision: 8696 $ =~ /(\d+)/o);
-
+$VERSION = "2.008697";
 
 =head1 NAME
 

@@ -255,7 +255,7 @@ def CreateEmail(subject, recipients, message='', attachment=None,
   extra_fields = extra_fields or {}
   sender = socket.getfqdn()
   msg = MIMEMultipart()
-  for key, val in extra_fields.iteritems():
+  for key, val in extra_fields.items():
     msg[key] = val
   msg['From'] = sender
   msg['Subject'] = subject

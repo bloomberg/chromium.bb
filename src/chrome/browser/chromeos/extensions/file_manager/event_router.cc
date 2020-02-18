@@ -294,14 +294,23 @@ bool ShouldShowNotificationForVolume(
     return false;
   }
 
-  // We suppress notifications about HP Elite USB-C Dock's internal storage.
-  // chrome-os-partner:58309.
-  // TODO(fukino): Remove this workaround when the root cause is fixed.
   if (volume.type() == VOLUME_TYPE_REMOVABLE_DISK_PARTITION) {
     const Disk* disk = DiskMountManager::GetInstance()->FindDiskBySourcePath(
         volume.source_path().AsUTF8Unsafe());
-    if (disk && disk->vendor_id() == "0ea0" && disk->product_id() == "2272")
-      return false;
+    if (disk) {
+      // We suppress notifications about HP Elite USB-C Dock's internal storage.
+      // chrome-os-partner:58309.
+      // TODO(fukino): Remove this workaround when the root cause is fixed.
+      if (disk->vendor_id() == "0ea0" && disk->product_id() == "2272") {
+        return false;
+      }
+      // Suppress notifications for this disk if it has been mounted before.
+      // This is to avoid duplicate notifications for operations that require a
+      // remount of the disk (e.g. format or rename).
+      if (!disk->is_first_mount()) {
+        return false;
+      }
+    }
   }
 
   return true;
@@ -430,7 +439,7 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
         DriveIntegrationServiceFactory::FindForProfile(profile_)
             ->GetMountPointPath();
     return base::FilePath("/").AppendRelativePath(path, &absolute_path) &&
-           base::ContainsKey(*file_watchers_, absolute_path);
+           base::Contains(*file_watchers_, absolute_path);
   }
 
   void DispatchEventToExtension(
@@ -588,10 +597,10 @@ void EventRouter::ObserveEvents() {
   if (intent_helper)
     intent_helper->AddObserver(this);
 
-  auto* crostini_share_path =
-      crostini::CrostiniSharePath::GetForProfile(profile_);
-  if (crostini_share_path)
-    crostini_share_path->AddObserver(this);
+  auto* guest_os_share_path =
+      guest_os::GuestOsSharePath::GetForProfile(profile_);
+  if (guest_os_share_path)
+    guest_os_share_path->AddObserver(this);
 }
 
 // File watch setup routines.

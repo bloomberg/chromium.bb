@@ -28,6 +28,7 @@
 #include "third_party/crashpad/crashpad/client/annotation.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
+#include "third_party/crashpad/crashpad/client/crashpad_info.h"
 #include "third_party/crashpad/crashpad/handler/handler_main.h"
 #include "third_party/crashpad/crashpad/snapshot/minidump/process_snapshot_minidump.h"
 #include "third_party/crashpad/crashpad/tools/tool_support.h"
@@ -76,6 +77,13 @@ MULTIPROCESS_TEST_MAIN(CrashpadHandler) {
 
 // Child process that launches the crashpad handler and then crashes.
 MULTIPROCESS_TEST_MAIN(CrashingProcess) {
+#if defined(OS_MACOSX)
+  // Disable the system crash reporter from inspecting this crash (it is slow
+  // and causes test timeouts.)
+  crashpad::CrashpadInfo::GetCrashpadInfo()
+      ->set_system_crash_reporter_forwarding(crashpad::TriState::kDisabled);
+#endif
+
   base::NoDestructor<GuardedPageAllocator> gpa;
   gpa->Init(AllocatorState::kMaxMetadata, AllocatorState::kMaxMetadata,
             kTotalPages, base::DoNothing(), false);
@@ -216,8 +224,8 @@ class CrashHandlerTest : public base::MultiProcessTest,
         base::SpawnMultiProcessTestChild("CrashingProcess", cmd_line, options);
 
     int exit_code = -1;
-    EXPECT_TRUE(process.WaitForExitWithTimeout(
-        TestTimeouts::action_max_timeout(), &exit_code));
+    EXPECT_TRUE(WaitForMultiprocessTestChildExit(
+        process, TestTimeouts::action_max_timeout(), &exit_code));
     EXPECT_NE(exit_code, kSuccess);
 
     return (exit_code != kSuccess);

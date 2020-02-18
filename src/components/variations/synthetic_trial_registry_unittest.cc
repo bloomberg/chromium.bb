@@ -175,11 +175,11 @@ TEST_F(SyntheticTrialRegistryTest, GetSyntheticFieldTrialActiveGroups) {
 
   std::string trial1_hash =
       base::StringPrintf("%x-%x", trial1.id.name, trial1.id.group);
-  EXPECT_TRUE(base::ContainsValue(output, trial1_hash));
+  EXPECT_TRUE(base::Contains(output, trial1_hash));
 
   std::string trial2_hash =
       base::StringPrintf("%x-%x", trial2.id.name, trial2.id.group);
-  EXPECT_TRUE(base::ContainsValue(output, trial2_hash));
+  EXPECT_TRUE(base::Contains(output, trial2_hash));
 }
 
 }  // namespace variations

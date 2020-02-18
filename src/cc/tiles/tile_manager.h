@@ -294,9 +294,6 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
   void set_active_url(const GURL& url) { active_url_ = url; }
 
-  void SetPaintWorkletLayerPainter(
-      std::unique_ptr<PaintWorkletLayerPainter> painter);
-
  protected:
   friend class Tile;
   // Must be called by tile during destruction.
@@ -473,9 +470,10 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   // different. The |task_set_finished_weak_ptr_factory_| is invalidated any
   // time new tasks are scheduled, preventing a race when the callback has
   // been scheduled but not yet executed.
-  base::WeakPtrFactory<TileManager> task_set_finished_weak_ptr_factory_;
+  base::WeakPtrFactory<TileManager> task_set_finished_weak_ptr_factory_{this};
   // The |ready_to_draw_callback_weak_ptr_factory_| is never invalidated.
-  base::WeakPtrFactory<TileManager> ready_to_draw_callback_weak_ptr_factory_;
+  base::WeakPtrFactory<TileManager> ready_to_draw_callback_weak_ptr_factory_{
+      this};
 };
 
 }  // namespace cc

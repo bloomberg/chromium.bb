@@ -42,13 +42,14 @@ Polymer({
     title_: String,
   },
 
-  /** @private {?settings.SecurityKeysBrowserProxy} */
+  /** @private {?settings.SecurityKeysResetBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   attached: function() {
     this.title_ = this.i18n('securityKeysResetTitle');
-    this.browserProxy_ = settings.SecurityKeysBrowserProxyImpl.getInstance();
+    this.browserProxy_ =
+        settings.SecurityKeysResetBrowserProxyImpl.getInstance();
     this.$.dialog.showModal();
 
     this.browserProxy_.reset().then(code => {
@@ -93,6 +94,16 @@ Polymer({
     }
     this.complete_ = true;
     this.browserProxy_.close();
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onIronSelect_: function(e) {
+    // Prevent this event from bubbling since it is unnecessarily triggering the
+    // listener within settings-animated-pages.
+    e.stopPropagation();
   },
 
   /**

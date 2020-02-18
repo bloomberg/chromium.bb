@@ -28,8 +28,7 @@ extern const char kWidgetNativeViewHostKey[];
 // the platform-specific work of manipulating the underlying OS widget type.
 class VIEWS_EXPORT NativeViewHost : public View {
  public:
-  // The NativeViewHost's class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(NativeViewHost);
 
   NativeViewHost();
   ~NativeViewHost() override;
@@ -104,7 +103,6 @@ class VIEWS_EXPORT NativeViewHost : public View {
   void OnVisibleBoundsChanged() override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  const char* GetClassName() const override;
 
  private:
   friend class test::NativeViewHostTestBase;

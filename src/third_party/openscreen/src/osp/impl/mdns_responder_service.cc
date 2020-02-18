@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "osp/impl/internal_services.h"
-#include "osp_base/error.h"
 #include "platform/api/logging.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 namespace {
@@ -56,13 +56,13 @@ void MdnsResponderService::SetServiceConfig(
 }
 
 void MdnsResponderService::HandleNewEvents(
-    const std::vector<platform::ReceivedData>& data) {
+    const std::vector<platform::UdpPacket>& packets) {
   if (!mdns_responder_)
     return;
-  for (auto& packet : data) {
-    mdns_responder_->OnDataReceived(packet.source, packet.original_destination,
-                                    packet.bytes.data(), packet.length,
-                                    packet.socket);
+  for (auto& packet : packets) {
+    mdns_responder_->OnDataReceived(packet.source(), packet.destination(),
+                                    packet.data(), packet.size(),
+                                    packet.socket());
   }
   mdns_responder_->RunTasks();
 
@@ -216,7 +216,7 @@ void MdnsResponderService::HandleMdnsEvents() {
     }
 
     // TODO(btolsch): Verify UTF-8 here.
-    std::string friendly_name = instance_name.GetLabels()[0];
+    std::string friendly_name(instance_name.GetLabels()[0]);
 
     if (receiver_info_entry == receiver_info_.end()) {
       ServiceInfo receiver_info{

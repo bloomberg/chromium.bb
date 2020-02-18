@@ -5,6 +5,7 @@
 #include "chromeos/services/network_config/cros_network_config.h"
 
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -15,6 +16,7 @@
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config_mojom_traits.h"
 #include "components/device_event_log/device_event_log.h"
+#include "components/onc/onc_constants.h"
 #include "net/base/ip_address.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -23,7 +25,7 @@ namespace network_config {
 
 namespace {
 
-std::string ShillToONC(const std::string& shill_string,
+std::string ShillToOnc(const std::string& shill_string,
                        const onc::StringTranslationEntry table[]) {
   std::string onc_string;
   if (!shill_string.empty())
@@ -121,6 +123,26 @@ mojom::DeviceStateType GetMojoDeviceStateType(
   return mojom::DeviceStateType::kUnavailable;
 }
 
+mojom::OncSource GetMojoOncSource(const NetworkState* network) {
+  ::onc::ONCSource source = network->onc_source();
+  switch (source) {
+    case ::onc::ONC_SOURCE_UNKNOWN:
+    case ::onc::ONC_SOURCE_NONE:
+      if (!network->IsInProfile())
+        return mojom::OncSource::kNone;
+      return network->IsPrivate() ? mojom::OncSource::kUser
+                                  : mojom::OncSource::kDevice;
+    case ::onc::ONC_SOURCE_USER_IMPORT:
+      return mojom::OncSource::kUser;
+    case ::onc::ONC_SOURCE_DEVICE_POLICY:
+      return mojom::OncSource::kDevicePolicy;
+    case ::onc::ONC_SOURCE_USER_POLICY:
+      return mojom::OncSource::kUserPolicy;
+  }
+  NOTREACHED();
+  return mojom::OncSource::kNone;
+}
+
 mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
                                                     bool technology_enabled) {
   mojom::NetworkType type = ShillTypeToMojo(network->type());
@@ -145,7 +167,7 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
   result->name = network->name();
   result->priority = network->priority();
   result->prohibited_by_policy = network->blocked_by_policy();
-  result->source = mojom::ONCSource(network->onc_source());
+  result->source = GetMojoOncSource(network);
 
   // NetworkHandler and UIProxyConfigService may not exist in tests.
   UIProxyConfigService* ui_proxy_config_service =
@@ -171,7 +193,7 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
     case mojom::NetworkType::kCellular: {
       auto cellular = mojom::CellularStateProperties::New();
       cellular->activation_state = network->GetMojoActivationState();
-      cellular->network_technology = ShillToONC(network->network_technology(),
+      cellular->network_technology = ShillToOnc(network->network_technology(),
                                                 onc::kNetworkTechnologyTable);
       cellular->roaming = network->IndicateRoaming();
       cellular->signal_strength = network->signal_strength();
@@ -249,17 +271,17 @@ mojom::DeviceStatePropertiesPtr DeviceStateToMojo(
   net::IPAddress ipv4_address;
   if (ipv4_address.AssignFromIPLiteral(
           device->GetIpAddressByType(shill::kTypeIPv4))) {
-    result->ipv4_address = ipv4_address.CopyBytesToVector();
+    result->ipv4_address = ipv4_address;
   }
   net::IPAddress ipv6_address;
   if (ipv6_address.AssignFromIPLiteral(
           device->GetIpAddressByType(shill::kTypeIPv6))) {
-    result->ipv6_address = ipv6_address.CopyBytesToVector();
+    result->ipv6_address = ipv6_address;
   }
   result->mac_address =
       network_util::FormattedMacAddress(device->mac_address());
   result->scanning = device->scanning();
-  result->state = technology_state;
+  result->device_state = technology_state;
   result->managed_network_available =
       !device->available_managed_network_path().empty();
   result->sim_absent = device->IsSimAbsent();
@@ -293,8 +315,11 @@ bool NetworkTypeCanBeDisabled(mojom::NetworkType type) {
 
 }  // namespace
 
-CrosNetworkConfig::CrosNetworkConfig(NetworkStateHandler* network_state_handler)
-    : network_state_handler_(network_state_handler) {
+CrosNetworkConfig::CrosNetworkConfig(
+    NetworkStateHandler* network_state_handler,
+    NetworkDeviceHandler* network_device_handler)
+    : network_state_handler_(network_state_handler),
+      network_device_handler_(network_device_handler) {
   CHECK(network_state_handler);
 }
 
@@ -321,6 +346,11 @@ void CrosNetworkConfig::GetNetworkState(const std::string& guid,
       network_state_handler_->GetNetworkStateFromGuid(guid);
   if (!network) {
     NET_LOG(ERROR) << "Network not found: " << guid;
+    std::move(callback).Run(nullptr);
+    return;
+  }
+  if (network->type() == shill::kTypeEthernetEap) {
+    NET_LOG(ERROR) << "EthernetEap not supported for GetNetworkState";
     std::move(callback).Run(nullptr);
     return;
   }
@@ -357,6 +387,11 @@ void CrosNetworkConfig::GetNetworkStateList(
   }
   std::vector<mojom::NetworkStatePropertiesPtr> result;
   for (const NetworkState* network : networks) {
+    if (network->type() == shill::kTypeEthernetEap) {
+      // EthernetEap is used by Shill to store EAP properties and does not
+      // represent a separate network service.
+      continue;
+    }
     mojom::NetworkStatePropertiesPtr mojo_network =
         GetMojoNetworkState(network);
     if (mojo_network)
@@ -410,6 +445,97 @@ void CrosNetworkConfig::SetNetworkTypeEnabledState(
   network_state_handler_->SetTechnologyEnabled(
       pattern, enabled, chromeos::network_handler::ErrorCallback());
   std::move(callback).Run(true);
+}
+
+void CrosNetworkConfig::SetCellularSimState(
+    mojom::CellularSimStatePtr sim_state,
+    SetCellularSimStateCallback callback) {
+  const DeviceState* device_state =
+      network_state_handler_->GetDeviceStateByType(
+          NetworkTypePattern::Cellular());
+  if (!device_state || device_state->IsSimAbsent()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  const std::string& lock_type = device_state->sim_lock_type();
+
+  // When unblocking a PUK locked SIM, a new PIN must be provided.
+  if (lock_type == shill::kSIMLockPuk && !sim_state->new_pin) {
+    NET_LOG(ERROR) << "SetCellularSimState: PUK locked and no pin provided.";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  int callback_id = set_cellular_sim_state_callback_id_++;
+  set_cellular_sim_state_callbacks_[callback_id] = std::move(callback);
+
+  if (lock_type == shill::kSIMLockPuk) {
+    // Unblock a PUK locked SIM.
+    network_device_handler_->UnblockPin(
+        device_state->path(), sim_state->current_pin_or_puk,
+        *sim_state->new_pin,
+        base::Bind(&CrosNetworkConfig::SetCellularSimStateSuccess,
+                   weak_factory_.GetWeakPtr(), callback_id),
+        base::Bind(&CrosNetworkConfig::SetCellularSimStateFailure,
+                   weak_factory_.GetWeakPtr(), callback_id));
+    return;
+  }
+
+  if (lock_type == shill::kSIMLockPin) {
+    // Unlock locked SIM.
+    network_device_handler_->EnterPin(
+        device_state->path(), sim_state->current_pin_or_puk,
+        base::Bind(&CrosNetworkConfig::SetCellularSimStateSuccess,
+                   weak_factory_.GetWeakPtr(), callback_id),
+        base::Bind(&CrosNetworkConfig::SetCellularSimStateFailure,
+                   weak_factory_.GetWeakPtr(), callback_id));
+    return;
+  }
+
+  if (sim_state->new_pin) {
+    // Change the SIM PIN.
+    network_device_handler_->ChangePin(
+        device_state->path(), sim_state->current_pin_or_puk,
+        *sim_state->new_pin,
+        base::Bind(&CrosNetworkConfig::SetCellularSimStateSuccess,
+                   weak_factory_.GetWeakPtr(), callback_id),
+        base::Bind(&CrosNetworkConfig::SetCellularSimStateFailure,
+                   weak_factory_.GetWeakPtr(), callback_id));
+    return;
+  }
+
+  // Enable or disable SIM locking.
+  network_device_handler_->RequirePin(
+      device_state->path(), sim_state->require_pin,
+      sim_state->current_pin_or_puk,
+      base::Bind(&CrosNetworkConfig::SetCellularSimStateSuccess,
+                 weak_factory_.GetWeakPtr(), callback_id),
+      base::Bind(&CrosNetworkConfig::SetCellularSimStateFailure,
+                 weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void CrosNetworkConfig::SetCellularSimStateSuccess(int callback_id) {
+  auto iter = set_cellular_sim_state_callbacks_.find(callback_id);
+  if (iter == set_cellular_sim_state_callbacks_.end()) {
+    LOG(ERROR) << "Unexpected callback id not found (success): " << callback_id;
+    return;
+  }
+  std::move(iter->second).Run(true);
+  set_cellular_sim_state_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::SetCellularSimStateFailure(
+    int callback_id,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  auto iter = set_cellular_sim_state_callbacks_.find(callback_id);
+  if (iter == set_cellular_sim_state_callbacks_.end()) {
+    LOG(ERROR) << "Unexpected callback id not found (failure): " << callback_id;
+    return;
+  }
+  std::move(iter->second).Run(false);
+  set_cellular_sim_state_callbacks_.erase(iter);
 }
 
 void CrosNetworkConfig::RequestNetworkScan(mojom::NetworkType type) {

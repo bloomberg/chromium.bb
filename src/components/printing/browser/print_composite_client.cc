@@ -8,14 +8,13 @@
 
 #include "base/bind.h"
 #include "base/memory/read_only_shared_memory_region.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/printing/common/print_messages.h"
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "printing/printing_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -146,14 +145,14 @@ void PrintCompositeClient::PrintCrossProcessSubframe(
 
   auto subframe_iter = printed_subframes_.find(document_cookie);
   if (subframe_iter != printed_subframes_.end() &&
-      base::ContainsKey(subframe_iter->second, frame_guid)) {
+      base::Contains(subframe_iter->second, frame_guid)) {
     // If this frame is already printed, no need to print again.
     return;
   }
 
   auto cookie_iter = pending_subframe_cookies_.find(frame_guid);
   if (cookie_iter != pending_subframe_cookies_.end() &&
-      base::ContainsKey(cookie_iter->second, document_cookie)) {
+      base::Contains(cookie_iter->second, document_cookie)) {
     // If this frame is being printed, no need to print again.
     return;
   }
@@ -206,12 +205,6 @@ void PrintCompositeClient::OnDidCompositePageToPdf(
     mojom::PdfCompositor::CompositePageToPdfCallback callback,
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
-  // Due to https://crbug.com/742517, we can not add and use COUNT for enums in
-  // mojo.
-  UMA_HISTOGRAM_ENUMERATION(
-      "CompositePageToPdf.Status", status,
-      static_cast<int32_t>(mojom::PdfCompositor::Status::COMPOSTING_FAILURE) +
-          1);
   std::move(callback).Run(status, std::move(region));
 }
 
@@ -224,12 +217,6 @@ void PrintCompositeClient::OnDidCompositeDocumentToPdf(
   // Clear all stored printed subframes.
   printed_subframes_.erase(document_cookie);
 
-  // Due to https://crbug.com/742517, we can not add and use COUNT for enums in
-  // mojo.
-  UMA_HISTOGRAM_ENUMERATION(
-      "CompositeDocToPdf.Status", status,
-      static_cast<int32_t>(mojom::PdfCompositor::Status::COMPOSTING_FAILURE) +
-          1);
   std::move(callback).Run(status, std::move(region));
 }
 
@@ -250,13 +237,8 @@ void PrintCompositeClient::RemoveCompositeRequest(int cookie) {
 }
 
 mojom::PdfCompositorPtr PrintCompositeClient::CreateCompositeRequest() {
-  if (!connector_) {
-    service_manager::mojom::ConnectorRequest connector_request;
-    connector_ = service_manager::Connector::Create(&connector_request);
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindConnectorRequest(std::move(connector_request));
-  }
+  if (!connector_)
+    connector_ = content::GetSystemConnector()->Clone();
   mojom::PdfCompositorPtr compositor;
   connector_->BindInterface(mojom::kServiceName, &compositor);
   compositor->SetWebContentsURL(web_contents()->GetLastCommittedURL());

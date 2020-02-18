@@ -114,8 +114,12 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   void OnStatsCleared(base::OnceClosure clear_done_cb, bool success);
 
   // Return true if:
-  //     "now" - stats_proto.last_write_date > GeMaxDaysToKeepStats()
-  bool AreStatsExpired(const DecodeStatsProto* const stats_proto);
+  //    values aren't corrupted nonsense (e.g. way more frames dropped than
+  //    decoded, or number of frames_decoded < frames_power_efficient)
+  // &&
+  //    stats aren't expired.
+  //       ("now" - stats_proto.last_write_date > GeMaxDaysToKeepStats())
+  bool AreStatsUsable(const DecodeStatsProto* const stats_proto);
 
   void set_wall_clock_for_test(const base::Clock* tick_clock) {
     wall_clock_ = tick_clock;
@@ -145,7 +149,7 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   // callbacks to this happen on the checked sequence.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<VideoDecodeStatsDBImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoDecodeStatsDBImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecodeStatsDBImpl);
 };

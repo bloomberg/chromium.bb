@@ -162,10 +162,22 @@ void FakeConciergeClient::GetVmInfo(
       FROM_HERE, base::BindOnce(std::move(callback), get_vm_info_response_));
 }
 
+void FakeConciergeClient::GetVmEnterpriseReportingInfo(
+    const vm_tools::concierge::GetVmEnterpriseReportingInfoRequest& request,
+    DBusMethodCallback<
+        vm_tools::concierge::GetVmEnterpriseReportingInfoResponse> callback) {
+  get_vm_enterprise_reporting_info_called_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                get_vm_enterprise_reporting_info_response_));
+}
+
 void FakeConciergeClient::WaitForServiceToBeAvailable(
     dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
+  wait_for_service_to_be_available_called_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                wait_for_service_to_be_available_response_));
 }
 
 void FakeConciergeClient::GetContainerSshKeys(
@@ -207,6 +219,14 @@ void FakeConciergeClient::ListUsbDevices(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), list_usb_devices_response_));
+}
+
+void FakeConciergeClient::StartArcVm(
+    const vm_tools::concierge::StartArcVmRequest& request,
+    DBusMethodCallback<vm_tools::concierge::StartVmResponse> callback) {
+  start_arc_vm_called_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), start_vm_response_));
 }
 
 void FakeConciergeClient::InitializeProtoResponses() {

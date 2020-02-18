@@ -50,7 +50,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionListEmbedder;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -73,8 +74,6 @@ import java.util.List;
 public class LocationBarLayout extends FrameLayout
         implements OnClickListener, LocationBar, AutocompleteDelegate, FakeboxDelegate,
                    LocationBarVoiceRecognitionHandler.Delegate {
-    private static final String TAG = "cr_LocationBar";
-
     protected ImageButton mDeleteButton;
     protected ImageButton mMicButton;
     protected View mUrlBar;
@@ -86,27 +85,27 @@ public class LocationBarLayout extends FrameLayout
     protected ToolbarDataProvider mToolbarDataProvider;
     private ObserverList<UrlFocusChangeListener> mUrlFocusChangeListeners = new ObserverList<>();
 
-    protected boolean mNativeInitialized;
-
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
 
     protected StatusViewCoordinator mStatusViewCoordinator;
 
-    private String mOriginalUrl = "";
-
     private WindowAndroid mWindowAndroid;
     private WindowDelegate mWindowDelegate;
 
-    private boolean mUrlHasFocus;
+    protected String mSearchEngineUrl = "";
+    private String mOriginalUrl = "";
+
     protected boolean mUrlFocusChangeInProgress;
+    protected boolean mNativeInitialized;
+    protected boolean mShouldShowSearchEngineLogo;
+    protected boolean mIsSearchEngineGoogle;
+    private boolean mUrlHasFocus;
     private boolean mUrlFocusedFromFakebox;
     private boolean mUrlFocusedWithoutAnimations;
-
     private boolean mVoiceSearchEnabled;
 
     private OmniboxPrerender mOmniboxPrerender;
 
-    private boolean mOmniboxVoiceSearchAlwaysVisible;
     protected float mUrlFocusChangePercent;
     protected LinearLayout mUrlActionContainer;
 
@@ -142,6 +141,7 @@ public class LocationBarLayout extends FrameLayout
             return false;
         }
     }
+
     public LocationBarLayout(Context context, AttributeSet attrs) {
         this(context, attrs, R.layout.location_bar);
     }
@@ -285,6 +285,11 @@ public class LocationBarLayout extends FrameLayout
         return mAutocompleteCoordinator;
     }
 
+    @Override
+    public void onDeferredStartup() {
+        mAutocompleteCoordinator.prefetchZeroSuggestResults();
+    }
+
     /**
      * Handles native dependent initialization for this class.
      */
@@ -403,9 +408,7 @@ public class LocationBarLayout extends FrameLayout
         mUrlFocusChangeInProgress = inProgress;
         if (!inProgress) {
             updateButtonVisibility();
-        }
 
-        if (!inProgress) {
             // The accessibility bounding box is not properly updated when focusing the Omnibox
             // from the NTP fakebox.  Clearing/re-requesting focus triggers the bounding box to
             // be recalculated.
@@ -481,13 +484,13 @@ public class LocationBarLayout extends FrameLayout
 
         if (hasFocus && mToolbarDataProvider.hasTab() && !mToolbarDataProvider.isIncognito()) {
             if (mNativeInitialized
-                    && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()) {
+                    && TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()) {
                 GeolocationHeader.primeLocationForGeoHeader();
             } else {
                 mDeferredNativeRunnables.add(new Runnable() {
                     @Override
                     public void run() {
-                        if (TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()) {
+                        if (TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()) {
                             GeolocationHeader.primeLocationForGeoHeader();
                         }
                     }
@@ -752,7 +755,7 @@ public class LocationBarLayout extends FrameLayout
     public void performSearchQueryForTest(String query) {
         if (TextUtils.isEmpty(query)) return;
 
-        String queryUrl = TemplateUrlService.getInstance().getUrlForSearchQuery(query);
+        String queryUrl = TemplateUrlServiceFactory.get().getUrlForSearchQuery(query);
 
         if (!TextUtils.isEmpty(queryUrl)) {
             loadUrl(queryUrl, PageTransition.GENERATED, 0);
@@ -818,7 +821,7 @@ public class LocationBarLayout extends FrameLayout
 
     @Override
     public boolean shouldForceLTR() {
-        return !mToolbarDataProvider.shouldDisplaySearchTerms();
+        return mToolbarDataProvider.getDisplaySearchTerms() == null;
     }
 
     @Override
@@ -826,7 +829,7 @@ public class LocationBarLayout extends FrameLayout
         // When cutting/copying text in the URL bar, it will try to copy some version of the actual
         // URL to the clipboard, not the currently displayed URL bar contents. We want to avoid this
         // when displaying search terms.
-        return mToolbarDataProvider.shouldDisplaySearchTerms();
+        return mToolbarDataProvider.getDisplaySearchTerms() != null;
     }
 
     /**
@@ -862,7 +865,7 @@ public class LocationBarLayout extends FrameLayout
 
         mOriginalUrl = currentUrl;
         @ScrollType
-        int scrollType = mToolbarDataProvider.shouldDisplaySearchTerms()
+        int scrollType = mToolbarDataProvider.getDisplaySearchTerms() != null
                 ? UrlBar.ScrollType.SCROLL_TO_BEGINNING
                 : UrlBar.ScrollType.SCROLL_TO_TLD;
         setUrlBarText(mToolbarDataProvider.getUrlBarData(), scrollType, SelectionState.SELECT_ALL);
@@ -984,6 +987,19 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public void setUnfocusedWidth(int unfocusedWidth) {
         mStatusViewCoordinator.setUnfocusedLocationBarWidth(unfocusedWidth);
+    }
+
+    @Override
+    public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+            boolean isSearchEngineGoogle, String searchEngineUrl) {
+        mSearchEngineUrl = searchEngineUrl;
+        mIsSearchEngineGoogle = isSearchEngineGoogle;
+        mShouldShowSearchEngineLogo = shouldShowSearchEngineLogo;
+
+        mStatusViewCoordinator.updateSearchEngineStatusIcon(
+                mShouldShowSearchEngineLogo, mIsSearchEngineGoogle, mSearchEngineUrl);
+        mToolbarDataProvider.updateSearchEngineStatusIcon(
+                mShouldShowSearchEngineLogo, mIsSearchEngineGoogle, mSearchEngineUrl);
     }
 
     @Override

@@ -8,8 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "media/base/media_switches.h"
 #include "media/gpu/android/image_reader_gl_owner.h"
@@ -79,7 +79,7 @@ class ImageReaderGLOwnerTest : public testing::Test {
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gl::GLSurface> surface_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(ImageReaderGLOwnerTest, ImageReaderObjectCreation) {

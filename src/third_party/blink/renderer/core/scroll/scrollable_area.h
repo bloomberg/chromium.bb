@@ -27,9 +27,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLABLE_AREA_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
@@ -47,18 +47,17 @@ class AnimationHost;
 }
 
 namespace blink {
+class ChromeClient;
 class CompositorAnimationTimeline;
 class GraphicsLayer;
 class LayoutBox;
 class LayoutObject;
 class PaintLayer;
-class ChromeClient;
 class ProgrammaticScrollAnimator;
 class ScrollAnchor;
 class ScrollAnimatorBase;
 struct SerializedAnchor;
 class SmoothScrollSequencer;
-class CompositorAnimationTimeline;
 struct WebScrollIntoViewParams;
 
 enum IncludeScrollbarsInRect {
@@ -68,8 +67,11 @@ enum IncludeScrollbarsInRect {
 
 class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   DISALLOW_COPY_AND_ASSIGN(ScrollableArea);
+  USING_PRE_FINALIZER(ScrollableArea, Dispose);
 
  public:
+  using ScrollCallback = base::OnceClosure;
+
   static int PixelsPerLineStep(ChromeClient*);
   static float MinFractionToStepWhenPaging();
   int MaxOverlapBetweenPages() const;
@@ -86,9 +88,10 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return nullptr;
   }
 
-  virtual ScrollResult UserScroll(ScrollGranularity, const ScrollOffset&);
+  virtual ScrollResult UserScroll(ScrollGranularity,
+                                  const ScrollOffset&,
+                                  ScrollCallback on_finish);
 
-  using ScrollCallback = base::OnceClosure;
   virtual void SetScrollOffset(const ScrollOffset&,
                                ScrollType,
                                ScrollBehavior,
@@ -107,10 +110,15 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // Scrolls the area so that the given rect, given in absolute coordinates,
   // such that it's visible in the area. Returns the new location of the input
   // rect in absolute coordinates.
-  virtual LayoutRect ScrollIntoView(const LayoutRect&,
-                                    const WebScrollIntoViewParams&);
+  virtual PhysicalRect ScrollIntoView(const PhysicalRect&,
+                                      const WebScrollIntoViewParams&);
 
   static bool ScrollBehaviorFromString(const String&, ScrollBehavior&);
+
+  // Register a callback that will be invoked when the next scroll completes -
+  // this includes the scroll animation time.
+  void RegisterScrollCompleteCallback(ScrollCallback callback);
+  void RunScrollCompleteCallbacks();
 
   void ContentAreaWillPaint() const;
   void MouseEnteredContentArea() const;
@@ -261,9 +269,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // container for the scroll snap areas when calculating snap positions. It's
   // the box's scrollport contracted by its scroll-padding.
   // https://drafts.csswg.org/css-scroll-snap-1/#scroll-padding
-  virtual LayoutRect VisibleScrollSnapportRect(
+  virtual PhysicalRect VisibleScrollSnapportRect(
       IncludeScrollbarsInRect scrollbar_inclusion = kExcludeScrollbars) const {
-    return LayoutRect(VisibleContentRect(scrollbar_inclusion));
+    return PhysicalRect(VisibleContentRect(scrollbar_inclusion));
   }
 
   virtual IntPoint LastKnownMousePosition() const { return IntPoint(); }
@@ -342,6 +350,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual ~ScrollableArea();
 
+  void Dispose();
+  virtual void DisposeImpl() {}
+
   // Called when any of horizontal scrollbar, vertical scrollbar and scroll
   // corner is setNeedsPaintInvalidation.
   virtual void ScrollControlWasSetNeedsPaintInvalidation() = 0;
@@ -382,8 +393,6 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // for layout movements (bit.ly/scroll-anchoring).
   virtual bool ShouldPerformScrollAnchoring() const { return false; }
 
-  // Need to promptly let go of owned animator objects.
-  EAGERLY_FINALIZE();
   void Trace(blink::Visitor*) override;
 
   virtual void ClearScrollableArea();
@@ -456,7 +465,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // then reset to alpha, causing spurrious "visibilityChanged" calls.
   virtual void ScrollbarVisibilityChanged() {}
 
-  virtual bool HasBeenDisposed() const { return false; }
+  bool HasBeenDisposed() const { return has_been_disposed_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,
@@ -485,6 +494,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   std::unique_ptr<TaskRunnerTimer<ScrollableArea>>
       fade_overlay_scrollbars_timer_;
 
+  Vector<ScrollCallback> pending_scroll_complete_callbacks_;
+
   unsigned scrollbar_overlay_color_theme_ : 2;
 
   unsigned horizontal_scrollbar_needs_paint_invalidation_ : 1;
@@ -493,6 +504,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   unsigned scrollbars_hidden_if_overlay_ : 1;
   unsigned scrollbar_captured_ : 1;
   unsigned mouse_over_scrollbar_ : 1;
+  unsigned has_been_disposed_ : 1;
 
   // Indicates that the next compositing update needs to call
   // cc::Layer::ShowScrollbars() on our scroll layer. Ignored if not composited.

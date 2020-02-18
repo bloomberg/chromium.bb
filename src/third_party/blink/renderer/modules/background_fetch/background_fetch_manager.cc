@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_bridge.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_icon_loader.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_options.h"
@@ -29,6 +28,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
@@ -59,11 +59,12 @@ ScriptPromise RejectWithTypeError(ScriptState* script_state,
                             "' because " + reason + "."));
 }
 
+// Returns whether the |request_url| should be blocked by the CSP. Must be
+// called synchronously from the background fetch call.
 bool ShouldBlockDueToCSP(ExecutionContext* execution_context,
                          const KURL& request_url) {
-  return !ContentSecurityPolicy::ShouldBypassMainWorld(execution_context) &&
-         !execution_context->GetContentSecurityPolicy()->AllowConnectToSource(
-             request_url);
+  return !execution_context->GetContentSecurityPolicyForWorld()
+              ->AllowConnectToSource(request_url);
 }
 
 bool ShouldBlockPort(const KURL& request_url) {
@@ -206,7 +207,7 @@ ScriptPromise BackgroundFetchManager::fetch(
     // https://wicg.github.io/background-fetch/#dom-backgroundfetchmanager-fetch
     // ""If |internalRequest|’s mode is "no-cors", then return a promise
     //   rejected with a TypeError.""
-    if (request->mode == network::mojom::FetchRequestMode::kNoCors) {
+    if (request->mode == network::mojom::RequestMode::kNoCors) {
       return RejectWithTypeError(script_state, request_url,
                                  "the request mode must not be no-cors");
     }

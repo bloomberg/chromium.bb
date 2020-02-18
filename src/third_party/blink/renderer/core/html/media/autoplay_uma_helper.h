@@ -12,8 +12,6 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
-#include <set>
-
 namespace blink {
 
 // These values are used for histograms. Do not reorder.
@@ -70,7 +68,7 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
 
   bool IsVisible() const { return is_visible_; }
 
-  bool HasSource() const { return !sources_.empty(); }
+  bool HasSource() const { return !sources_.IsEmpty(); }
 
   void Invoke(ExecutionContext*, Event*) override;
 
@@ -103,7 +101,7 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
   bool ShouldListenToContextDestroyed() const;
 
   // The autoplay sources.
-  std::set<AutoplaySource> sources_;
+  HashSet<AutoplaySource> sources_;
 
   // The media element this UMA helper is attached to. |element| owns |this|.
   Member<HTMLMediaElement> element_;
@@ -120,10 +118,10 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
   // The recording stops whenever the playback pauses or the page is unloaded.
 
   // The starting time of autoplaying muted video.
-  TimeTicks muted_video_autoplay_offscreen_start_time_;
+  base::TimeTicks muted_video_autoplay_offscreen_start_time_;
 
   // The duration an autoplaying muted video has been in offscreen.
-  TimeDelta muted_video_autoplay_offscreen_duration_;
+  base::TimeDelta muted_video_autoplay_offscreen_duration_;
 
   // Whether an autoplaying muted video is visible.
   bool is_visible_;
@@ -133,8 +131,6 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
   // for recording as long as this observer is non-null.
   Member<IntersectionObserver>
       muted_video_offscreen_duration_intersection_observer_;
-
-  TimeTicks load_start_time_;
 };
 
 }  // namespace blink

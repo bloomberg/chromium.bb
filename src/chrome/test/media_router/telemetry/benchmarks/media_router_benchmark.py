@@ -3,15 +3,11 @@
 # found in the LICENSE file.
 
 import os
-from telemetry import benchmark
 from core import perf_benchmark
 from core import path_util
-from telemetry.timeline import chrome_trace_category_filter
-from telemetry.web_perf import timeline_based_measurement
 
 from benchmarks.pagesets import media_router_perf_pages
 from benchmarks import media_router_measurements
-from benchmarks import media_router_timeline_metric
 
 
 class _BaseCastBenchmark(perf_benchmark.PerfBenchmark):
@@ -37,45 +33,6 @@ class _BaseCastBenchmark(perf_benchmark.PerfBenchmark):
         '--media-router=1',
         '--enable-stats-collection-bindings'
     ])
-
-
-class TraceEventCastBenckmark(_BaseCastBenchmark):
-  """Benchmark for dialog latency from trace event."""
-
-  def CreateCoreTimelineBasedMeasurementOptions(self):
-    media_router_category = 'media_router'
-    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
-        media_router_category)
-    category_filter.AddIncludedCategory('blink.console')
-    options = timeline_based_measurement.Options(category_filter)
-    options.SetLegacyTimelineBasedMetrics([
-        media_router_timeline_metric.MediaRouterMetric()])
-    return options
-
-  @classmethod
-  def Name(cls):
-    return 'media_router.dialog.latency.tracing'
-
-  @classmethod
-  def ShouldAddValue(cls, _, from_first_story_run):
-    """Only drops the first result."""
-    return not from_first_story_run
-
-
-class HistogramCastBenckmark(_BaseCastBenchmark):
-  """Benchmark for dialog latency from histograms."""
-
-  def CreatePageTest(self, options):
-    return media_router_measurements.MediaRouterDialogTest()
-
-  @classmethod
-  def Name(cls):
-    return 'media_router.dialog.latency.histogram'
-
-  @classmethod
-  def ShouldAddValue(cls, _, from_first_story_run):
-    """Only drops the first result."""
-    return not from_first_story_run
 
 
 class CPUMemoryCastBenckmark(_BaseCastBenchmark):

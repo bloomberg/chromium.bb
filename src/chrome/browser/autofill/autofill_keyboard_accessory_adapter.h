@@ -61,6 +61,7 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
   void OnSelectedRowChanged(base::Optional<int> previous_row_selection,
                             base::Optional<int> current_row_selection) override;
   void OnSuggestionsChanged() override;
+  base::Optional<int32_t> GetAxUniqueId() override;
 
   // AutofillPopupController implementation.
   // Hidden: void OnSuggestionsChanged() override;
@@ -73,7 +74,6 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
                                   base::string16* title,
                                   base::string16* body) override;
   bool RemoveSuggestion(int index) override;
-  ui::NativeTheme::ColorId GetBackgroundColorIDForRow(int index) const override;
   void SetSelectedLine(base::Optional<int> selected_line) override;
   base::Optional<int> selected_line() const override;
   const AutofillPopupLayoutModel& layout_model() const override;
@@ -100,6 +100,9 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
 
   AutofillPopupController* controller_;  // weak.
   std::unique_ptr<AutofillKeyboardAccessoryAdapter::AccessoryView> view_;
+
+  // The labels to be used for the input chips.
+  std::vector<base::string16> labels_;
 
   // If 0, don't animate suggestion view.
   const unsigned int animation_duration_millis_;

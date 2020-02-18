@@ -20,6 +20,7 @@
 #include "api/array_view.h"
 #include "api/call/transport.h"
 #include "api/fec_controller.h"
+#include "api/fec_controller_override.h"
 #include "api/video_codecs/video_encoder.h"
 #include "call/rtp_config.h"
 #include "call/rtp_payload_params.h"
@@ -118,6 +119,9 @@ class RtpVideoSender : public RtpVideoSenderInterface,
                         uint32_t* sent_nack_rate_bps,
                         uint32_t* sent_fec_rate_bps) override;
 
+  // Implements FecControllerOverride.
+  void SetFecAllowed(bool fec_allowed) override;
+
   // Implements EncodedImageCallback.
   // Returns 0 if the packet was routed / sent, -1 otherwise.
   EncodedImageCallback::Result OnEncodedImage(
@@ -174,7 +178,10 @@ class RtpVideoSender : public RtpVideoSenderInterface,
   std::map<uint32_t, RtpState> suspended_ssrcs_;
 
   std::unique_ptr<FlexfecSender> flexfec_sender_;
+
   const std::unique_ptr<FecController> fec_controller_;
+  bool fec_allowed_ RTC_GUARDED_BY(crit_);
+
   // Rtp modules are assumed to be sorted in simulcast index order.
   const std::vector<webrtc_internal_rtp_video_sender::RtpStreamSender>
       rtp_streams_;

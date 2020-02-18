@@ -100,8 +100,8 @@ cr.define('extension_kiosk_mode_tests', function() {
             expectTrue(items[0].querySelector('span').hidden);
             expectFalse(items[1].querySelector('span').hidden);
             // No permission to edit auto-launch so buttons should be hidden.
-            expectTrue(items[0].querySelector('paper-button').hidden);
-            expectTrue(items[1].querySelector('paper-button').hidden);
+            expectTrue(items[0].querySelector('cr-button').hidden);
+            expectTrue(items[1].querySelector('cr-button').hidden);
             // Bailout checkbox should be hidden when auto-launch editing
             // disabled.
             expectTrue(dialog.$$('cr-checkbox').hidden);
@@ -125,7 +125,7 @@ cr.define('extension_kiosk_mode_tests', function() {
       return initPage()
           .then(() => {
             buttons =
-                dialog.shadowRoot.querySelectorAll('.list-item paper-button');
+                dialog.shadowRoot.querySelectorAll('.list-item cr-button');
             // Has permission to edit auto-launch so buttons should be seen.
             expectFalse(buttons[0].hidden);
             expectFalse(buttons[1].hidden);

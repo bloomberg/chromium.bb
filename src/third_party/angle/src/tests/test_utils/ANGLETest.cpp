@@ -55,7 +55,11 @@ void TestPlatform_logError(PlatformMethods *platform, const char *errorMessage)
     if (testPlatformContext->ignoreMessages)
         return;
 
-    FAIL() << errorMessage;
+    GTEST_NONFATAL_FAILURE_(errorMessage);
+
+    // Print the stack and stop any crash handling to prevent duplicate reports.
+    PrintStackBacktrace();
+    TerminateCrashHandler();
 }
 
 void TestPlatform_logWarning(PlatformMethods *platform, const char *warningMessage)
@@ -74,30 +78,23 @@ void TestPlatform_logWarning(PlatformMethods *platform, const char *warningMessa
     }
 }
 
-void TestPlatform_logInfo(PlatformMethods *platform, const char *infoMessage)
-{
-    auto *testPlatformContext = static_cast<TestPlatformContext *>(platform->context);
-    if (testPlatformContext->ignoreMessages)
-        return;
+void TestPlatform_logInfo(PlatformMethods *platform, const char *infoMessage) {}
 
-    WriteDebugMessage("%s\n", infoMessage);
-}
-
-void TestPlatform_overrideWorkaroundsD3D(PlatformMethods *platform, WorkaroundsD3D *workaroundsD3D)
+void TestPlatform_overrideWorkaroundsD3D(PlatformMethods *platform, FeaturesD3D *featuresD3D)
 {
     auto *testPlatformContext = static_cast<TestPlatformContext *>(platform->context);
     if (testPlatformContext->currentTest)
     {
-        testPlatformContext->currentTest->overrideWorkaroundsD3D(workaroundsD3D);
+        testPlatformContext->currentTest->overrideWorkaroundsD3D(featuresD3D);
     }
 }
 
-void TestPlatform_overrideFeaturesVk(PlatformMethods *platform, FeaturesVk *workaroundsVulkan)
+void TestPlatform_overrideFeaturesVk(PlatformMethods *platform, FeaturesVk *featuresVulkan)
 {
     auto *testPlatformContext = static_cast<TestPlatformContext *>(platform->context);
     if (testPlatformContext->currentTest)
     {
-        testPlatformContext->currentTest->overrideFeaturesVk(workaroundsVulkan);
+        testPlatformContext->currentTest->overrideFeaturesVk(featuresVulkan);
     }
 }
 
@@ -491,6 +488,8 @@ void ANGLETestBase::ANGLETestSetUp()
 {
     mSetUpCalled = true;
 
+    InitCrashHandler();
+
     gDefaultPlatformMethods.overrideWorkaroundsD3D = TestPlatform_overrideWorkaroundsD3D;
     gDefaultPlatformMethods.overrideFeaturesVk     = TestPlatform_overrideFeaturesVk;
     gDefaultPlatformMethods.logError               = TestPlatform_logError;
@@ -615,6 +614,8 @@ void ANGLETestBase::ANGLETestTearDown()
         mFixture->eglWindow->destroyContext();
         mFixture->eglWindow->destroySurface();
     }
+
+    TerminateCrashHandler();
 
     // Check for quit message
     Event myEvent;
@@ -1049,6 +1050,9 @@ void ANGLETestBase::checkD3D11SDKLayersMessages()
                     free(pMessage);
                 }
             }
+            // Clear the queue, so that previous failures are not reported
+            // for subsequent, otherwise passing, tests
+            infoQueue->ClearStoredMessages();
 
             FAIL() << numStoredD3DDebugMessages
                    << " D3D11 SDK Layers message(s) detected! Test Failed.\n";
@@ -1216,30 +1220,10 @@ void ANGLETestBase::setWindowVisible(bool isVisible)
     mFixture->osWindow->setVisible(isVisible);
 }
 
-bool IsIntel()
-{
-    std::string rendererString(reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
-    return (rendererString.find("Intel") != std::string::npos);
-}
-
 bool IsAdreno()
 {
     std::string rendererString(reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
     return (rendererString.find("Adreno") != std::string::npos);
-}
-
-bool IsAMD()
-{
-    std::string rendererString(reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
-    return (rendererString.find("AMD") != std::string::npos) ||
-           (rendererString.find("ATI") != std::string::npos) ||
-           (rendererString.find("Radeon") != std::string::npos);
-}
-
-bool IsNVIDIA()
-{
-    std::string rendererString(reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
-    return (rendererString.find("NVIDIA") != std::string::npos);
 }
 
 bool IsD3D11()
@@ -1359,7 +1343,7 @@ Library *ANGLETestEnvironment::GetEGLLibrary()
 #if defined(ANGLE_USE_UTIL_LOADER)
     if (!gEGLLibrary)
     {
-        gEGLLibrary.reset(OpenSharedLibrary(ANGLE_EGL_LIBRARY_NAME));
+        gEGLLibrary.reset(OpenSharedLibrary(ANGLE_EGL_LIBRARY_NAME, SearchType::ApplicationDir));
     }
 #endif  // defined(ANGLE_USE_UTIL_LOADER)
     return gEGLLibrary.get();
@@ -1370,7 +1354,7 @@ Library *ANGLETestEnvironment::GetWGLLibrary()
 #if defined(ANGLE_USE_UTIL_LOADER) && defined(ANGLE_PLATFORM_WINDOWS)
     if (!gWGLLibrary)
     {
-        gWGLLibrary.reset(OpenSharedLibrary("opengl32"));
+        gWGLLibrary.reset(OpenSharedLibrary("opengl32", SearchType::SystemDir));
     }
 #endif  // defined(ANGLE_USE_UTIL_LOADER) && defined(ANGLE_PLATFORM_WINDOWS)
     return gWGLLibrary.get();

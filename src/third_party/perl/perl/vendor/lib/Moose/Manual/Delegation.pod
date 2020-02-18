@@ -1,10 +1,11 @@
-package Moose::Manual::Delegation;
-
+# PODNAME: Moose::Manual::Delegation
 # ABSTRACT: Attribute delegation
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Manual::Delegation - Attribute delegation
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 WHAT IS DELEGATION?
 
@@ -51,9 +52,12 @@ The simplest form is to simply specify a list of methods:
       handles => [qw( host path )],
   );
 
+Using an arrayref tells Moose to create methods in your class that match the
+method names in the delegated class.
+
 With this definition, we can call C<< $website->host >> and it "just
 works". Under the hood, Moose will call C<< $website->uri->host >> for
-you. Note that C<$website> is not automatically passed to the C<host>
+you. Note that C<$website> is I<not> automatically passed to the C<host>
 method; the invocant is C<< $website->uri >>.
 
 We can also define a mapping as a hash reference. This allows you to
@@ -72,8 +76,12 @@ rename methods as part of the mapping:
       },
   );
 
+Using a hash tells Moose to create method names (specified on the left) which
+invoke the delegated class methods (specified on the right).
+
 In this example, we've created a C<< $website->hostname >> method,
-rather than using C<URI.pm>'s name, C<host>.
+rather than simply using C<URI.pm>'s name, C<host> in the Website
+class.
 
 These two mapping forms are the ones you will use most often. The
 remaining methods are a bit more complex.
@@ -99,11 +107,11 @@ You can use a role name as the value of C<handles>:
   );
 
 Moose will introspect the role to determine what methods it provides
-and create a mapping for each of those methods.
+and create a name-for-name mapping for each of those methods.
 
-Finally, you can also provide a sub reference to I<generate> a
-mapping. You probably won't need this version often (if ever). See the
-L<Moose> docs for more details on exactly how this works.
+Finally, you can provide a sub reference to I<generate> a mapping that behaves
+like the hash example above. You probably won't need this version often (if
+ever). See the L<Moose> docs for more details on exactly how this works.
 
 =head1 NATIVE DELEGATION
 
@@ -135,23 +143,86 @@ something like
       push @{ $self->queue }, @items;
   }
 
-Moose includes the following traits for native delegation:
+For example, you might use Array helpers to add C<add_task> and
+C<add_appointment> methods to a Calendar class:
+
+  has 'tasks' => (
+      traits => ['Array'],
+      isa => 'ArrayRef[Task]',
+      default => sub { [ ] },
+      handles => {
+          add_task  => 'push',
+          next_task => 'shift',
+      },
+  );
+
+  has 'appointments' => (
+      traits  => ['Array'],
+      isa => 'ArrayRef[Appointment]',
+      default => sub { [ ] },
+      handles => {
+          add_appointment  => 'push',
+          next_appointment => 'shift',
+      },
+  );
+
+Which you would call as:
+
+  $calendar->add_task( $task_obj );
+  $calendar->add_appointment( $appointment_obj );
+
+As mentioned above, each trait provides a number of methods which are
+summarized below. For more information about each of these provided methods
+see the documentation for that specific trait.
+
+Moose includes the following traits for native delegation.
 
 =over 4
 
 =item * L<Array|Moose::Meta::Attribute::Native::Trait::Array>
 
+The following methods are provided by the native Array trait:
+
+count, is_empty, elements, get, pop, push, shift, unshift, splice, first,
+first_index, grep, map, reduce, sort, sort_in_place, shuffle, uniq, join, set,
+delete, insert, clear, accessor, natatime, shallow_clone
+
 =item * L<Bool|Moose::Meta::Attribute::Native::Trait::Bool>
+
+The following methods are provided by the native Bool trait:
+
+set, unset, toggle, not
 
 =item * L<Code|Moose::Meta::Attribute::Native::Trait::Code>
 
+The following methods are provided by the native Code trait:
+
+execute, execute_method
+
 =item * L<Counter|Moose::Meta::Attribute::Native::Trait::Counter>
+
+The following methods are provided by the native Counter trait:
+
+set, inc, dec, reset
 
 =item * L<Hash|Moose::Meta::Attribute::Native::Trait::Hash>
 
+The following methods are provided by the native Hash trait:
+
+get, set, delete, keys, exists, defined, values, kv, elements, clear, count,
+is_empty, accessor, shallow_clone
+
 =item * L<Number|Moose::Meta::Attribute::Native::Trait::Number>
 
+The following methods are provided by the native Number trait:
+
+add, sub, mul, div, mod, abs
+
 =item * L<String|Moose::Meta::Attribute::Native::Trait::String>
+
+The following methods are provided by the native String trait:
+
+inc, append, prepend, replace, match, chop, chomp, clear, length, substr
 
 =back
 
@@ -186,19 +257,57 @@ required or can be undefined. When a delegated method is called, Moose
 will throw a runtime error if the attribute does not contain an
 object.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

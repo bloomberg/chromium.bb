@@ -35,7 +35,7 @@ std::vector<T> toVector(T const (&array)[N]) {
 
 void AddKeyToList(const char* key, base::Value::ListStorage& list) {
   base::Value key_value(key);
-  if (!base::ContainsValue(list, key_value))
+  if (!base::Contains(list, key_value))
     list.push_back(std::move(key_value));
 }
 
@@ -49,7 +49,7 @@ bool FieldIsRecommended(const base::DictionaryValue& object,
   const base::Value* recommended =
       object.FindKeyOfType(::onc::kRecommended, base::Value::Type::LIST);
   return recommended &&
-         base::ContainsValue(recommended->GetList(), base::Value(field_name));
+         base::Contains(recommended->GetList(), base::Value(field_name));
 }
 
 bool FieldIsSetToValueOrRecommended(const base::DictionaryValue& object,

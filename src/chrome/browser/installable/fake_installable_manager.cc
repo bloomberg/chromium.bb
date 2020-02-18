@@ -21,8 +21,9 @@ FakeInstallableManager::~FakeInstallableManager() {}
 void FakeInstallableManager::GetData(const InstallableParams& params,
                                      InstallableCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeInstallableManager::RunCallback,
-                                base::Unretained(this), std::move(callback)));
+      FROM_HERE,
+      base::BindOnce(&FakeInstallableManager::RunCallback,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void FakeInstallableManager::RunCallback(InstallableCallback callback) {

@@ -12,6 +12,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 
@@ -61,7 +62,10 @@ IN_PROC_BROWSER_TEST_F(ChildProcessLauncherBrowserTest, ChildSpawnFail) {
                         window->web_contents()->GetMainFrame()->GetProcess())
                         ->child_process_launcher_->ReplaceClientForTest(client);
   client->simulate_failure_ = true;
-  nav_observer1.Wait();
+  {
+    ScopedAllowRendererCrashes allow_renderer_crashes(shell());
+    nav_observer1.Wait();
+  }
   delete client;
   NavigationEntry* last_entry =
       shell()->web_contents()->GetController().GetLastCommittedEntry();

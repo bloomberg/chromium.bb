@@ -25,8 +25,8 @@
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/perfetto/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
 #include "third_party/perfetto/protos/perfetto/config/trace_config.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
@@ -70,6 +70,17 @@ class ThreadedPerfettoService : public mojom::TracingSessionClient {
       base::RunLoop wait_for_destruction;
       task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
                                      wait_for_destruction.QuitClosure());
+      wait_for_destruction.Run();
+    }
+
+    {
+      base::RunLoop wait_for_destruction;
+      task_runner_->PostTaskAndReply(
+          FROM_HERE,
+          base::BindOnce(
+              [](std::unique_ptr<PerfettoService> service) { service.reset(); },
+              std::move(perfetto_service_)),
+          wait_for_destruction.QuitClosure());
       wait_for_destruction.Run();
     }
 
@@ -286,6 +297,7 @@ class TracingConsumerTest : public testing::Test,
  public:
   void SetUp() override {
     PerfettoTracedProcess::ResetTaskRunnerForTesting();
+    PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
     threaded_service_ = std::make_unique<ThreadedPerfettoService>();
 
     matching_packet_count_ = 0;
@@ -650,7 +662,7 @@ TEST_F(TracingConsumerTest, PrivacyFilterConfigInJson) {
 
 class MockConsumerHost : public mojom::TracingSessionClient {
  public:
-  MockConsumerHost(PerfettoService* service)
+  explicit MockConsumerHost(PerfettoService* service)
       : consumer_host_(std::make_unique<ConsumerHost>(service)) {}
 
   void EnableTracing(const perfetto::TraceConfig& config,

@@ -54,8 +54,8 @@ class PinboardToolTests(unittest.TestCase):
     self.assertEqual(state, [{
         'revision': '2a66bac4',
         'timestamp': '2019-03-17T23:50:16-07:00',
-        'jobs': [{'id': '14b4c451f40000', 'status': 'running'},
-                 {'id': '11fae481f40000', 'status': 'running'}]}])
+        'jobs': [{'id': '14b4c451f40000', 'status': 'queued'},
+                 {'id': '11fae481f40000', 'status': 'queued'}]}])
 
   def testCollectPinpointResults(self):
     state = [
@@ -168,7 +168,10 @@ class PinboardToolTests(unittest.TestCase):
     with open(filename, 'w') as f:
       f.writelines(csv)
 
-    df = pinboard.GetRevisionResults(item)
+    with mock.patch('cli_tools.pinboard.pinboard.ACTIVE_STORIES',
+                    new=['story1', 'story2']):
+      df = pinboard.GetRevisionResults(item)
+
     self.assertEqual(len(df.index), 2)  # Only two rows of output.
     self.assertTrue((df['revision'] == '2a66ba').all())
     self.assertTrue((df['benchmark'] == 'loading').all())

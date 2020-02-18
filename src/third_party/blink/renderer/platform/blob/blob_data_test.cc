@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/platform/blob/blob_bytes_provider.h"
 #include "third_party/blink/renderer/platform/blob/testing/fake_blob_registry.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
-#include "third_party/blink/renderer/platform/uuid.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
 
@@ -59,7 +59,7 @@ struct ExpectedElement {
   static ExpectedElement File(const String& path,
                               uint64_t offset,
                               uint64_t length,
-                              WTF::Time time) {
+                              base::Time time) {
     return ExpectedElement{DataElement::NewFile(
         DataElementFile::New(WebStringToFilePath(path), offset, length, time))};
   }
@@ -67,7 +67,7 @@ struct ExpectedElement {
   static ExpectedElement FileFilesystem(const KURL& url,
                                         uint64_t offset,
                                         uint64_t length,
-                                        WTF::Time time) {
+                                        base::Time time) {
     return ExpectedElement{DataElement::NewFileFilesystem(
         DataElementFilesystemURL::New(url, offset, length, time))};
   }
@@ -264,7 +264,7 @@ TEST_F(BlobDataHandleTest, CreateFromEmptyData) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromUUID) {
-  String kUuid = CreateCanonicalUUIDString();
+  String kUuid = WTF::CreateCanonicalUUIDString();
   String kType = "content/type";
   uint64_t kSize = 1234;
 
@@ -360,7 +360,7 @@ TEST_F(BlobDataHandleTest, CreateFromMergedSmallAndLargeBytes) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromFileAndFileSystemURL) {
-  double timestamp1 = CurrentTime();
+  double timestamp1 = base::Time::Now().ToDoubleT();
   double timestamp2 = timestamp1 + 1;
   KURL url(NullURL(), "http://example.com/");
   auto data = std::make_unique<BlobData>();
@@ -368,10 +368,10 @@ TEST_F(BlobDataHandleTest, CreateFromFileAndFileSystemURL) {
   data->AppendFileSystemURL(url, 15, 876, timestamp2);
 
   Vector<ExpectedElement> expected_elements;
-  expected_elements.push_back(
-      ExpectedElement::File("path", 4, 32, WTF::Time::FromDoubleT(timestamp1)));
+  expected_elements.push_back(ExpectedElement::File(
+      "path", 4, 32, base::Time::FromDoubleT(timestamp1)));
   expected_elements.push_back(ExpectedElement::FileFilesystem(
-      url, 15, 876, WTF::Time::FromDoubleT(timestamp2)));
+      url, 15, 876, base::Time::FromDoubleT(timestamp2)));
 
   TestCreateBlob(std::move(data), std::move(expected_elements));
 }
@@ -379,18 +379,18 @@ TEST_F(BlobDataHandleTest, CreateFromFileAndFileSystemURL) {
 TEST_F(BlobDataHandleTest, CreateFromFileWithUnknownSize) {
   Vector<ExpectedElement> expected_elements;
   expected_elements.push_back(
-      ExpectedElement::File("path", 0, uint64_t(-1), WTF::Time()));
+      ExpectedElement::File("path", 0, uint64_t(-1), base::Time()));
 
   TestCreateBlob(BlobData::CreateForFileWithUnknownSize("path"),
                  std::move(expected_elements));
 }
 
 TEST_F(BlobDataHandleTest, CreateFromFilesystemFileWithUnknownSize) {
-  double timestamp = CurrentTime();
+  double timestamp = base::Time::Now().ToDoubleT();
   KURL url(NullURL(), "http://example.com/");
   Vector<ExpectedElement> expected_elements;
   expected_elements.push_back(ExpectedElement::FileFilesystem(
-      url, 0, uint64_t(-1), WTF::Time::FromDoubleT(timestamp)));
+      url, 0, uint64_t(-1), base::Time::FromDoubleT(timestamp)));
 
   TestCreateBlob(
       BlobData::CreateForFileSystemURLWithUnknownSize(url, timestamp),

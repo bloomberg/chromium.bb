@@ -16,6 +16,10 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
   return method == request.method && url == request.url &&
          site_for_cookies == request.site_for_cookies &&
          top_frame_origin == request.top_frame_origin &&
+         trusted_network_isolation_key ==
+             request.trusted_network_isolation_key &&
+         update_network_isolation_key_on_redirect ==
+             request.update_network_isolation_key_on_redirect &&
          attach_same_site_cookies == request.attach_same_site_cookies &&
          update_first_party_url_on_redirect ==
              request.update_first_party_url_on_redirect &&
@@ -39,10 +43,9 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
              request.originated_from_service_worker &&
          skip_service_worker == request.skip_service_worker &&
          corb_detachable == request.corb_detachable &&
-         corb_excluded == request.corb_excluded &&
-         fetch_request_mode == request.fetch_request_mode &&
-         fetch_credentials_mode == request.fetch_credentials_mode &&
-         fetch_redirect_mode == request.fetch_redirect_mode &&
+         corb_excluded == request.corb_excluded && mode == request.mode &&
+         credentials_mode == request.credentials_mode &&
+         redirect_mode == request.redirect_mode &&
          fetch_integrity == request.fetch_integrity &&
          fetch_request_context_type == request.fetch_request_context_type &&
          request_body == request.request_body &&
@@ -70,7 +73,9 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          custom_proxy_use_alternate_proxy_list ==
              request.custom_proxy_use_alternate_proxy_list &&
          fetch_window_id == request.fetch_window_id &&
-         devtools_request_id == request.devtools_request_id;
+         devtools_request_id == request.devtools_request_id &&
+         is_signed_exchange_prefetch_cache_enabled ==
+             request.is_signed_exchange_prefetch_cache_enabled;
 }
 
 bool ResourceRequest::SendsCookies() const {

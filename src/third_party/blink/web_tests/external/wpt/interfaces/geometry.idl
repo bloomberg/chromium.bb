@@ -15,7 +15,7 @@ interface DOMPointReadOnly {
     readonly attribute unrestricted double z;
     readonly attribute unrestricted double w;
 
-    DOMPoint matrixTransform(optional DOMMatrixInit matrix);
+    [NewObject] DOMPoint matrixTransform(optional DOMMatrixInit matrix);
 
     [Default] object toJSON();
 };
@@ -81,6 +81,7 @@ dictionary DOMRectInit {
     unrestricted double height = 0;
 };
 
+[Exposed=Window]
 interface DOMRectList {
     readonly attribute unsigned long length;
     getter DOMRect? item(unsigned long index);

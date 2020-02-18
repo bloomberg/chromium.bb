@@ -29,77 +29,38 @@ use strict;
 use PPI::Token::QuoteLike          ();
 use PPI::Token::_QuoteEngine::Full ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = qw{
-		PPI::Token::_QuoteEngine::Full
-		PPI::Token::QuoteLike
-	};
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = qw{
+	PPI::Token::_QuoteEngine::Full
+	PPI::Token::QuoteLike
+};
 
 =pod
 
 =head2 literal
 
-Returns the words contained.  Note that this method does not check the
+Returns the words contained as a list.  Note that this method does not check the
 context that the token is in; it always returns the list and not merely
 the last element if the token is in scalar context.
-
-=begin testing literal 12
-
-my $empty_list_document = PPI::Document->new(\<<'END_PERL');
-qw//
-qw/    /
-END_PERL
-
-isa_ok( $empty_list_document, 'PPI::Document' );
-my $empty_list_tokens =
-	$empty_list_document->find('PPI::Token::QuoteLike::Words');
-is( scalar @{$empty_list_tokens}, 2, 'Found expected empty word lists.' );
-foreach my $token ( @{$empty_list_tokens} ) {
-	my @literal = $token->literal;
-	is( scalar @literal, 0, qq<No elements for "$token"> );
-}
-
-my $non_empty_list_document = PPI::Document->new(\<<'END_PERL');
-qw/foo bar baz/
-qw/  foo bar baz  /
-qw {foo bar baz}
-END_PERL
-my @expected = qw/ foo bar baz /;
-
-isa_ok( $non_empty_list_document, 'PPI::Document' );
-my $non_empty_list_tokens =
-	$non_empty_list_document->find('PPI::Token::QuoteLike::Words');
-is(
-	scalar(@$non_empty_list_tokens),
-	3,
-	'Found expected non-empty word lists.',
-);
-foreach my $token ( @$non_empty_list_tokens ) {
-	my $literal = $token->literal;
-	is(
-		$literal,
-		scalar @expected,
-		qq<Scalar context literal() returns the list for "$token">,
-	);
-	my @literal = $token->literal;
-	is_deeply( [ $token->literal ], \@expected, '->literal matches expected' );
-}
-
-=end testing
 
 =cut
 
 sub literal {
-	my $self    = shift;
-	my $section = $self->{sections}->[0];
-	return split ' ', substr(
-		$self->{content},
-		$section->{position},
-		$section->{size},
-	);
+	my ( $self ) = @_;
+
+	my $content = $self->_section_content(0);
+	return if !defined $content;
+
+	# Undo backslash escaping of '\', the left delimiter,
+	# and the right delimiter.  The right delimiter will
+	# only exist with paired delimiters: qw() qw[] qw<> qw{}.
+	my ( $left, $right ) = ( $self->_delimiters, '', '' );
+	$content =~ s/\\([\Q$left$right\\\E])/$1/g;
+
+	my @words = split ' ', $content;
+
+	return @words;
 }
 
 1;

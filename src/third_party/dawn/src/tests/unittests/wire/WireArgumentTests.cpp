@@ -16,6 +16,8 @@
 
 #include "common/Constants.h"
 
+#include <array>
+
 using namespace testing;
 using namespace dawn_wire;
 
@@ -28,15 +30,15 @@ class WireArgumentTests : public WireTest {
 
 // Test that the wire is able to send numerical values
 TEST_F(WireArgumentTests, ValueArgument) {
-    DawnCommandEncoder encoder = dawnDeviceCreateCommandEncoder(device);
-    DawnComputePassEncoder pass = dawnCommandEncoderBeginComputePass(encoder);
+    DawnCommandEncoder encoder = dawnDeviceCreateCommandEncoder(device, nullptr);
+    DawnComputePassEncoder pass = dawnCommandEncoderBeginComputePass(encoder, nullptr);
     dawnComputePassEncoderDispatch(pass, 1, 2, 3);
 
     DawnCommandEncoder apiEncoder = api.GetNewCommandEncoder();
-    EXPECT_CALL(api, DeviceCreateCommandEncoder(apiDevice)).WillOnce(Return(apiEncoder));
+    EXPECT_CALL(api, DeviceCreateCommandEncoder(apiDevice, nullptr)).WillOnce(Return(apiEncoder));
 
     DawnComputePassEncoder apiPass = api.GetNewComputePassEncoder();
-    EXPECT_CALL(api, CommandEncoderBeginComputePass(apiEncoder)).WillOnce(Return(apiPass));
+    EXPECT_CALL(api, CommandEncoderBeginComputePass(apiEncoder, nullptr)).WillOnce(Return(apiPass));
 
     EXPECT_CALL(api, ComputePassEncoderDispatch(apiPass, 1, 2, 3)).Times(1);
 
@@ -44,32 +46,50 @@ TEST_F(WireArgumentTests, ValueArgument) {
 }
 
 // Test that the wire is able to send arrays of numerical values
-static constexpr uint32_t testPushConstantValues[4] = {0, 42, 0xDEADBEEFu, 0xFFFFFFFFu};
-
-bool CheckPushConstantValues(const uint32_t* values) {
-    for (int i = 0; i < 4; ++i) {
-        if (values[i] != testPushConstantValues[i]) {
-            return false;
-        }
-    }
-    return true;
-}
-
 TEST_F(WireArgumentTests, ValueArrayArgument) {
-    DawnCommandEncoder encoder = dawnDeviceCreateCommandEncoder(device);
-    DawnComputePassEncoder pass = dawnCommandEncoderBeginComputePass(encoder);
-    dawnComputePassEncoderSetPushConstants(pass, DAWN_SHADER_STAGE_BIT_VERTEX, 0, 4,
-                                           testPushConstantValues);
+    // Create a bindgroup.
+    DawnBindGroupLayoutDescriptor bglDescriptor;
+    bglDescriptor.nextInChain = nullptr;
+    bglDescriptor.bindingCount = 0;
+    bglDescriptor.bindings = nullptr;
+
+    DawnBindGroupLayout bgl = dawnDeviceCreateBindGroupLayout(device, &bglDescriptor);
+    DawnBindGroupLayout apiBgl = api.GetNewBindGroupLayout();
+    EXPECT_CALL(api, DeviceCreateBindGroupLayout(apiDevice, _)).WillOnce(Return(apiBgl));
+
+    DawnBindGroupDescriptor bindGroupDescriptor;
+    bindGroupDescriptor.nextInChain = nullptr;
+    bindGroupDescriptor.layout = bgl;
+    bindGroupDescriptor.bindingCount = 0;
+    bindGroupDescriptor.bindings = nullptr;
+
+    DawnBindGroup bindGroup = dawnDeviceCreateBindGroup(device, &bindGroupDescriptor);
+    DawnBindGroup apiBindGroup = api.GetNewBindGroup();
+    EXPECT_CALL(api, DeviceCreateBindGroup(apiDevice, _)).WillOnce(Return(apiBindGroup));
+
+    // Use the bindgroup in SetBindGroup that takes an array of value offsets.
+    DawnCommandEncoder encoder = dawnDeviceCreateCommandEncoder(device, nullptr);
+    DawnComputePassEncoder pass = dawnCommandEncoderBeginComputePass(encoder, nullptr);
+
+    std::array<uint64_t, 4> testOffsets = {0, 42, 0xDEAD'BEEF'DEAD'BEEFu, 0xFFFF'FFFF'FFFF'FFFFu};
+    dawnComputePassEncoderSetBindGroup(pass, 0, bindGroup, testOffsets.size(), testOffsets.data());
 
     DawnCommandEncoder apiEncoder = api.GetNewCommandEncoder();
-    EXPECT_CALL(api, DeviceCreateCommandEncoder(apiDevice)).WillOnce(Return(apiEncoder));
+    EXPECT_CALL(api, DeviceCreateCommandEncoder(apiDevice, nullptr)).WillOnce(Return(apiEncoder));
 
     DawnComputePassEncoder apiPass = api.GetNewComputePassEncoder();
-    EXPECT_CALL(api, CommandEncoderBeginComputePass(apiEncoder)).WillOnce(Return(apiPass));
+    EXPECT_CALL(api, CommandEncoderBeginComputePass(apiEncoder, nullptr)).WillOnce(Return(apiPass));
 
-    EXPECT_CALL(api,
-                ComputePassEncoderSetPushConstants(apiPass, DAWN_SHADER_STAGE_BIT_VERTEX, 0, 4,
-                                                   ResultOf(CheckPushConstantValues, Eq(true))));
+    EXPECT_CALL(api, ComputePassEncoderSetBindGroup(
+                         apiPass, 0, apiBindGroup, testOffsets.size(),
+                         MatchesLambda([testOffsets](const uint64_t* offsets) -> bool {
+                             for (size_t i = 0; i < testOffsets.size(); i++) {
+                                 if (offsets[i] != testOffsets[i]) {
+                                     return false;
+                                 }
+                             }
+                             return true;
+                         })));
 
     FlushClient();
 }
@@ -91,7 +111,7 @@ TEST_F(WireArgumentTests, CStringArgument) {
     blendDescriptor.dstFactor = DAWN_BLEND_FACTOR_ONE;
     DawnColorStateDescriptor colorStateDescriptor;
     colorStateDescriptor.nextInChain = nullptr;
-    colorStateDescriptor.format = DAWN_TEXTURE_FORMAT_R8_G8_B8_A8_UNORM;
+    colorStateDescriptor.format = DAWN_TEXTURE_FORMAT_RGBA8_UNORM;
     colorStateDescriptor.alphaBlend = blendDescriptor;
     colorStateDescriptor.colorBlend = blendDescriptor;
     colorStateDescriptor.writeMask = DAWN_COLOR_WRITE_MASK_ALL;
@@ -100,10 +120,8 @@ TEST_F(WireArgumentTests, CStringArgument) {
     DawnVertexInputDescriptor vertexInput;
     vertexInput.nextInChain = nullptr;
     vertexInput.indexFormat = DAWN_INDEX_FORMAT_UINT32;
-    vertexInput.numBuffers = 0;
+    vertexInput.bufferCount = 0;
     vertexInput.buffers = nullptr;
-    vertexInput.numAttributes = 0;
-    vertexInput.attributes = nullptr;
 
     // Create the rasterization state
     DawnRasterizationStateDescriptor rasterizationState;
@@ -123,7 +141,7 @@ TEST_F(WireArgumentTests, CStringArgument) {
 
     DawnDepthStencilStateDescriptor depthStencilState;
     depthStencilState.nextInChain = nullptr;
-    depthStencilState.format = DAWN_TEXTURE_FORMAT_D32_FLOAT_S8_UINT;
+    depthStencilState.format = DAWN_TEXTURE_FORMAT_DEPTH24_PLUS_STENCIL8;
     depthStencilState.depthWriteEnabled = false;
     depthStencilState.depthCompare = DAWN_COMPARE_FUNCTION_ALWAYS;
     depthStencilState.stencilBack = stencilFace;
@@ -161,6 +179,8 @@ TEST_F(WireArgumentTests, CStringArgument) {
     pipelineDescriptor.colorStates = colorStatesPtr;
 
     pipelineDescriptor.sampleCount = 1;
+    pipelineDescriptor.sampleMask = 0xFFFFFFFF;
+    pipelineDescriptor.alphaToCoverageEnabled = false;
     pipelineDescriptor.layout = layout;
     pipelineDescriptor.vertexInput = &vertexInput;
     pipelineDescriptor.primitiveTopology = DAWN_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -183,15 +203,15 @@ TEST_F(WireArgumentTests, CStringArgument) {
 
 // Test that the wire is able to send objects as value arguments
 TEST_F(WireArgumentTests, ObjectAsValueArgument) {
-    DawnCommandEncoder cmdBufEncoder = dawnDeviceCreateCommandEncoder(device);
+    DawnCommandEncoder cmdBufEncoder = dawnDeviceCreateCommandEncoder(device, nullptr);
     DawnCommandEncoder apiEncoder = api.GetNewCommandEncoder();
-    EXPECT_CALL(api, DeviceCreateCommandEncoder(apiDevice)).WillOnce(Return(apiEncoder));
+    EXPECT_CALL(api, DeviceCreateCommandEncoder(apiDevice, nullptr)).WillOnce(Return(apiEncoder));
 
     DawnBufferDescriptor descriptor;
     descriptor.nextInChain = nullptr;
     descriptor.size = 8;
-    descriptor.usage = static_cast<DawnBufferUsageBit>(DAWN_BUFFER_USAGE_BIT_TRANSFER_SRC |
-                                                       DAWN_BUFFER_USAGE_BIT_TRANSFER_DST);
+    descriptor.usage = static_cast<DawnBufferUsageBit>(DAWN_BUFFER_USAGE_BIT_COPY_SRC |
+                                                       DAWN_BUFFER_USAGE_BIT_COPY_DST);
 
     DawnBuffer buffer = dawnDeviceCreateBuffer(device, &descriptor);
     DawnBuffer apiBuffer = api.GetNewBuffer();
@@ -214,16 +234,16 @@ TEST_F(WireArgumentTests, ObjectsAsPointerArgument) {
     // CreateCommandEncoder might be swapped since they are equivalent in term of matchers
     Sequence s;
     for (int i = 0; i < 2; ++i) {
-        DawnCommandEncoder cmdBufEncoder = dawnDeviceCreateCommandEncoder(device);
-        cmdBufs[i] = dawnCommandEncoderFinish(cmdBufEncoder);
+        DawnCommandEncoder cmdBufEncoder = dawnDeviceCreateCommandEncoder(device, nullptr);
+        cmdBufs[i] = dawnCommandEncoderFinish(cmdBufEncoder, nullptr);
 
         DawnCommandEncoder apiCmdBufEncoder = api.GetNewCommandEncoder();
-        EXPECT_CALL(api, DeviceCreateCommandEncoder(apiDevice))
+        EXPECT_CALL(api, DeviceCreateCommandEncoder(apiDevice, nullptr))
             .InSequence(s)
             .WillOnce(Return(apiCmdBufEncoder));
 
         apiCmdBufs[i] = api.GetNewCommandBuffer();
-        EXPECT_CALL(api, CommandEncoderFinish(apiCmdBufEncoder))
+        EXPECT_CALL(api, CommandEncoderFinish(apiCmdBufEncoder, nullptr))
             .WillOnce(Return(apiCmdBufs[i]));
     }
 
@@ -252,10 +272,10 @@ TEST_F(WireArgumentTests, StructureOfValuesArgument) {
     descriptor.mipmapFilter = DAWN_FILTER_MODE_LINEAR;
     descriptor.addressModeU = DAWN_ADDRESS_MODE_CLAMP_TO_EDGE;
     descriptor.addressModeV = DAWN_ADDRESS_MODE_REPEAT;
-    descriptor.addressModeW = DAWN_ADDRESS_MODE_MIRRORED_REPEAT;
+    descriptor.addressModeW = DAWN_ADDRESS_MODE_MIRROR_REPEAT;
     descriptor.lodMinClamp = kLodMin;
     descriptor.lodMaxClamp = kLodMax;
-    descriptor.compareFunction = DAWN_COMPARE_FUNCTION_NEVER;
+    descriptor.compare = DAWN_COMPARE_FUNCTION_NEVER;
 
     dawnDeviceCreateSampler(device, &descriptor);
 
@@ -268,8 +288,8 @@ TEST_F(WireArgumentTests, StructureOfValuesArgument) {
                                     desc->mipmapFilter == DAWN_FILTER_MODE_LINEAR &&
                                     desc->addressModeU == DAWN_ADDRESS_MODE_CLAMP_TO_EDGE &&
                                     desc->addressModeV == DAWN_ADDRESS_MODE_REPEAT &&
-                                    desc->addressModeW == DAWN_ADDRESS_MODE_MIRRORED_REPEAT &&
-                                    desc->compareFunction == DAWN_COMPARE_FUNCTION_NEVER &&
+                                    desc->addressModeW == DAWN_ADDRESS_MODE_MIRROR_REPEAT &&
+                                    desc->compare == DAWN_COMPARE_FUNCTION_NEVER &&
                                     desc->lodMinClamp == kLodMin && desc->lodMaxClamp == kLodMax;
                          })))
         .WillOnce(Return(apiDummySampler));
@@ -280,6 +300,7 @@ TEST_F(WireArgumentTests, StructureOfValuesArgument) {
 // Test that the wire is able to send structures that contain objects
 TEST_F(WireArgumentTests, StructureOfObjectArrayArgument) {
     DawnBindGroupLayoutDescriptor bglDescriptor;
+    bglDescriptor.nextInChain = nullptr;
     bglDescriptor.bindingCount = 0;
     bglDescriptor.bindings = nullptr;
 
@@ -311,12 +332,12 @@ TEST_F(WireArgumentTests, StructureOfObjectArrayArgument) {
 TEST_F(WireArgumentTests, StructureOfStructureArrayArgument) {
     static constexpr int NUM_BINDINGS = 3;
     DawnBindGroupLayoutBinding bindings[NUM_BINDINGS]{
-        {0, DAWN_SHADER_STAGE_BIT_VERTEX, DAWN_BINDING_TYPE_SAMPLER},
-        {1, DAWN_SHADER_STAGE_BIT_VERTEX, DAWN_BINDING_TYPE_SAMPLED_TEXTURE},
+        {0, DAWN_SHADER_STAGE_BIT_VERTEX, DAWN_BINDING_TYPE_SAMPLER, false, false},
+        {1, DAWN_SHADER_STAGE_BIT_VERTEX, DAWN_BINDING_TYPE_SAMPLED_TEXTURE, false, false},
         {2,
          static_cast<DawnShaderStageBit>(DAWN_SHADER_STAGE_BIT_VERTEX |
                                          DAWN_SHADER_STAGE_BIT_FRAGMENT),
-         DAWN_BINDING_TYPE_UNIFORM_BUFFER},
+         DAWN_BINDING_TYPE_UNIFORM_BUFFER, false, false},
     };
     DawnBindGroupLayoutDescriptor bglDescriptor;
     bglDescriptor.bindingCount = NUM_BINDINGS;

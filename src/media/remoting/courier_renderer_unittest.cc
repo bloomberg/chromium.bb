@@ -49,6 +49,8 @@ PipelineStatistics DefaultStats() {
   stats.audio_memory_usage = 5678;
   stats.video_memory_usage = 6789;
   stats.video_keyframe_distance_average = base::TimeDelta::Max();
+  stats.audio_decoder_info = {false, false, "Default"};
+  stats.video_decoder_info = {false, false, "Default"};
   return stats;
 }
 
@@ -61,7 +63,7 @@ class RendererClientImpl final : public RendererClient {
     ON_CALL(*this, OnPipelineStatus(_))
         .WillByDefault(
             Invoke(this, &RendererClientImpl::DelegateOnPipelineStatus));
-    ON_CALL(*this, OnBufferingStateChange(_))
+    ON_CALL(*this, OnBufferingStateChange(_, _))
         .WillByDefault(
             Invoke(this, &RendererClientImpl::DelegateOnBufferingStateChange));
     ON_CALL(*this, OnAudioConfigChange(_))
@@ -83,7 +85,8 @@ class RendererClientImpl final : public RendererClient {
   void OnError(PipelineStatus status) override {}
   void OnEnded() override {}
   MOCK_METHOD1(OnStatisticsUpdate, void(const PipelineStatistics& stats));
-  MOCK_METHOD1(OnBufferingStateChange, void(BufferingState state));
+  MOCK_METHOD2(OnBufferingStateChange,
+               void(BufferingState state, BufferingStateChangeReason reason));
   MOCK_METHOD1(OnAudioConfigChange, void(const AudioDecoderConfig& config));
   MOCK_METHOD1(OnVideoConfigChange, void(const VideoDecoderConfig& config));
   void OnWaiting(WaitingReason reason) override {}
@@ -94,7 +97,10 @@ class RendererClientImpl final : public RendererClient {
   void DelegateOnStatisticsUpdate(const PipelineStatistics& stats) {
     stats_ = stats;
   }
-  void DelegateOnBufferingStateChange(BufferingState state) { state_ = state; }
+  void DelegateOnBufferingStateChange(BufferingState state,
+                                      BufferingStateChangeReason reason) {
+    state_ = state;
+  }
   void DelegateOnAudioConfigChange(const AudioDecoderConfig& config) {
     audio_decoder_config_ = config;
   }
@@ -350,6 +356,18 @@ class CourierRendererTest : public testing::Test {
     message->set_video_frames_dropped(stats.video_frames_dropped);
     message->set_audio_memory_usage(stats.audio_memory_usage);
     message->set_video_memory_usage(stats.video_memory_usage);
+    message->mutable_audio_decoder_info()->set_is_platform_decoder(
+        stats.audio_decoder_info.is_platform_decoder);
+    message->mutable_audio_decoder_info()->set_is_decrypting_demuxer_stream(
+        stats.audio_decoder_info.is_decrypting_demuxer_stream);
+    message->mutable_audio_decoder_info()->set_decoder_name(
+        stats.audio_decoder_info.decoder_name);
+    message->mutable_video_decoder_info()->set_is_platform_decoder(
+        stats.video_decoder_info.is_platform_decoder);
+    message->mutable_video_decoder_info()->set_is_decrypting_demuxer_stream(
+        stats.video_decoder_info.is_decrypting_demuxer_stream);
+    message->mutable_video_decoder_info()->set_decoder_name(
+        stats.video_decoder_info.decoder_name);
     OnReceivedRpc(std::move(rpc));
     RunPendingTasks();
   }
@@ -532,7 +550,8 @@ TEST_F(CourierRendererTest, OnTimeUpdate) {
 
 TEST_F(CourierRendererTest, OnBufferingStateChange) {
   InitializeRenderer();
-  EXPECT_CALL(*render_client_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
+  EXPECT_CALL(*render_client_,
+              OnBufferingStateChange(BUFFERING_HAVE_NOTHING, _))
       .Times(1);
   IssuesBufferingStateRpc(BufferingState::BUFFERING_HAVE_NOTHING);
 }
@@ -652,7 +671,7 @@ TEST_F(CourierRendererTest, OnPacingTooSlowly) {
   // There should be no error reported with this playback rate.
   renderer_->SetPlaybackRate(0.8);
   RunPendingTasks();
-  EXPECT_CALL(*render_client_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
+  EXPECT_CALL(*render_client_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _))
       .Times(1);
   IssuesBufferingStateRpc(BufferingState::BUFFERING_HAVE_ENOUGH);
   clock_.Advance(base::TimeDelta::FromSeconds(3));

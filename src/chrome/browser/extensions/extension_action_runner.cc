@@ -71,8 +71,7 @@ ExtensionActionRunner::ExtensionActionRunner(content::WebContents* web_contents)
       was_used_on_page_(false),
       ignore_active_tab_granted_(false),
       test_observer_(nullptr),
-      extension_registry_observer_(this),
-      weak_factory_(this) {
+      extension_registry_observer_(this) {
   CHECK(web_contents);
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
@@ -373,18 +372,18 @@ void ExtensionActionRunner::ShowBlockedActionBubble(
     const base::Callback<void(ToolbarActionsBarBubbleDelegate::CloseAction)>&
         callback) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  ToolbarActionsBar* toolbar_actions_bar =
-      browser ? browser->window()->GetToolbarActionsBar() : nullptr;
-  if (toolbar_actions_bar) {
-    if (default_bubble_close_action_for_testing_) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(callback, *default_bubble_close_action_for_testing_));
-    } else {
-      toolbar_actions_bar->ShowToolbarActionBubble(
-          std::make_unique<BlockedActionBubbleDelegate>(callback,
-                                                        extension->id()));
-    }
+  ExtensionsContainer* const extensions_container =
+      browser ? browser->window()->GetExtensionsContainer() : nullptr;
+  if (!extensions_container)
+    return;
+  if (default_bubble_close_action_for_testing_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(callback, *default_bubble_close_action_for_testing_));
+  } else {
+    extensions_container->ShowToolbarActionBubble(
+        std::make_unique<BlockedActionBubbleDelegate>(callback,
+                                                      extension->id()));
   }
 }
 
@@ -470,7 +469,7 @@ void ExtensionActionRunner::UpdatePageAccessSettings(const Extension* extension,
 }
 
 void ExtensionActionRunner::RunBlockedActions(const Extension* extension) {
-  DCHECK(base::ContainsKey(pending_scripts_, extension->id()) ||
+  DCHECK(base::Contains(pending_scripts_, extension->id()) ||
          web_request_blocked_.count(extension->id()) != 0);
 
   // Clicking to run the extension counts as granting it permission to run on

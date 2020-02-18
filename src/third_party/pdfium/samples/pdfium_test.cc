@@ -99,9 +99,13 @@ struct Options {
   bool show_config = false;
   bool show_metadata = false;
   bool send_events = false;
+  bool use_load_mem_document = false;
   bool render_oneshot = false;
   bool save_attachments = false;
   bool save_images = false;
+  bool save_thumbnails = false;
+  bool save_thumbnails_decoded = false;
+  bool save_thumbnails_raw = false;
 #ifdef PDF_ENABLE_V8
   bool disable_javascript = false;
 #ifdef PDF_ENABLE_XFA
@@ -340,12 +344,20 @@ bool ParseCommandLine(const std::vector<std::string>& args,
       options->show_metadata = true;
     } else if (cur_arg == "--send-events") {
       options->send_events = true;
+    } else if (cur_arg == "--mem-document") {
+      options->use_load_mem_document = true;
     } else if (cur_arg == "--render-oneshot") {
       options->render_oneshot = true;
     } else if (cur_arg == "--save-attachments") {
       options->save_attachments = true;
     } else if (cur_arg == "--save-images") {
       options->save_images = true;
+    } else if (cur_arg == "--save-thumbs") {
+      options->save_thumbnails = true;
+    } else if (cur_arg == "--save-thumbs-dec") {
+      options->save_thumbnails_decoded = true;
+    } else if (cur_arg == "--save-thumbs-raw") {
+      options->save_thumbnails_raw = true;
 #ifdef PDF_ENABLE_V8
     } else if (cur_arg == "--disable-javascript") {
       options->disable_javascript = true;
@@ -550,7 +562,6 @@ void PrintLastError() {
       fprintf(stderr, "Unknown error %ld", err);
   }
   fprintf(stderr, ".\n");
-  return;
 }
 
 FPDF_BOOL Is_Data_Avail(FX_FILEAVAIL* avail, size_t offset, size_t size) {
@@ -604,7 +615,12 @@ bool RenderPage(const std::string& name,
     SendPageEvents(form, page, events);
   if (options.save_images)
     WriteImages(page, name.c_str(), page_index);
-
+  if (options.save_thumbnails)
+    WriteThumbnail(page, name.c_str(), page_index);
+  if (options.save_thumbnails_decoded)
+    WriteDecodedThumbnailStream(page, name.c_str(), page_index);
+  if (options.save_thumbnails_raw)
+    WriteRawThumbnailStream(page, name.c_str(), page_index);
   if (options.output_format == OUTPUT_PAGEINFO) {
     DumpPageInfo(page, page_index);
     return true;
@@ -716,11 +732,11 @@ bool RenderPage(const std::string& name,
 }
 
 void RenderPdf(const std::string& name,
-               const char* pBuf,
+               const char* buf,
                size_t len,
                const Options& options,
                const std::string& events) {
-  TestLoader loader({pBuf, len});
+  TestLoader loader({buf, len});
 
   FPDF_FILEACCESS file_access = {};
   file_access.m_FileLen = static_cast<unsigned long>(len);
@@ -735,35 +751,40 @@ void RenderPdf(const std::string& name,
   hints.version = 1;
   hints.AddSegment = Add_Segment;
 
-  // The pdf_avail must outlive doc.
+  // |pdf_avail| must outlive |doc|.
   ScopedFPDFAvail pdf_avail(FPDFAvail_Create(&file_avail, &file_access));
 
-  // The document must outlive |form_callbacks.loaded_pages|.
+  // |doc| must outlive |form_callbacks.loaded_pages|.
   ScopedFPDFDocument doc;
 
-  int nRet = PDF_DATA_NOTAVAIL;
-  bool bIsLinearized = false;
-  if (FPDFAvail_IsLinearized(pdf_avail.get()) == PDF_LINEARIZED) {
-    doc.reset(FPDFAvail_GetDocument(pdf_avail.get(), nullptr));
-    if (doc) {
-      while (nRet == PDF_DATA_NOTAVAIL)
-        nRet = FPDFAvail_IsDocAvail(pdf_avail.get(), &hints);
-
-      if (nRet == PDF_DATA_ERROR) {
-        fprintf(stderr, "Unknown error in checking if doc was available.\n");
-        return;
-      }
-      nRet = FPDFAvail_IsFormAvail(pdf_avail.get(), &hints);
-      if (nRet == PDF_FORM_ERROR || nRet == PDF_FORM_NOTAVAIL) {
-        fprintf(stderr,
-                "Error %d was returned in checking if form was available.\n",
-                nRet);
-        return;
-      }
-      bIsLinearized = true;
-    }
+  bool is_linearized = false;
+  if (options.use_load_mem_document) {
+    doc.reset(FPDF_LoadMemDocument(buf, len, nullptr));
   } else {
-    doc.reset(FPDF_LoadCustomDocument(&file_access, nullptr));
+    if (FPDFAvail_IsLinearized(pdf_avail.get()) == PDF_LINEARIZED) {
+      int avail_status = PDF_DATA_NOTAVAIL;
+      doc.reset(FPDFAvail_GetDocument(pdf_avail.get(), nullptr));
+      if (doc) {
+        while (avail_status == PDF_DATA_NOTAVAIL)
+          avail_status = FPDFAvail_IsDocAvail(pdf_avail.get(), &hints);
+
+        if (avail_status == PDF_DATA_ERROR) {
+          fprintf(stderr, "Unknown error in checking if doc was available.\n");
+          return;
+        }
+        avail_status = FPDFAvail_IsFormAvail(pdf_avail.get(), &hints);
+        if (avail_status == PDF_FORM_ERROR ||
+            avail_status == PDF_FORM_NOTAVAIL) {
+          fprintf(stderr,
+                  "Error %d was returned in checking if form was available.\n",
+                  avail_status);
+          return;
+        }
+        is_linearized = true;
+      }
+    } else {
+      doc.reset(FPDF_LoadCustomDocument(&file_access, nullptr));
+    }
   }
 
   if (!doc) {
@@ -841,12 +862,12 @@ void RenderPdf(const std::string& name,
   int first_page = options.pages ? options.first_page : 0;
   int last_page = options.pages ? options.last_page + 1 : page_count;
   for (int i = first_page; i < last_page; ++i) {
-    if (bIsLinearized) {
-      nRet = PDF_DATA_NOTAVAIL;
-      while (nRet == PDF_DATA_NOTAVAIL)
-        nRet = FPDFAvail_IsPageAvail(pdf_avail.get(), i, &hints);
+    if (is_linearized) {
+      int avail_status = PDF_DATA_NOTAVAIL;
+      while (avail_status == PDF_DATA_NOTAVAIL)
+        avail_status = FPDFAvail_IsPageAvail(pdf_avail.get(), i, &hints);
 
-      if (nRet == PDF_DATA_ERROR) {
+      if (avail_status == PDF_DATA_ERROR) {
         fprintf(stderr, "Unknown error in checking if page %d is available.\n",
                 i);
         return;
@@ -899,11 +920,18 @@ constexpr char kUsageString[] =
     "  --show-pageinfo      - print information about pages\n"
     "  --show-structure     - print the structure elements from the document\n"
     "  --send-events        - send input described by .evt file\n"
+    "  --mem-document       - load document with FPDF_LoadMemDocument()\n"
     "  --render-oneshot     - render image without using progressive renderer\n"
     "  --save-attachments   - write embedded attachments "
     "<pdf-name>.attachment.<attachment-name>\n"
     "  --save-images        - write embedded images "
     "<pdf-name>.<page-number>.<object-number>.png\n"
+    "  --save-thumbs        - write page thumbnails "
+    "<pdf-name>.thumbnail.<page-number>.png\n"
+    "  --save-thumbs-dec    - write page thumbnails' decoded stream data"
+    "<pdf-name>.thumbnail.decoded.<page-number>.png\n"
+    "  --save-thumbs-raw    - write page thumbnails' raw stream data"
+    "<pdf-name>.thumbnail.raw.<page-number>.png\n"
 #ifdef PDF_ENABLE_V8
     "  --disable-javascript - do not execute JS in PDF files\n"
 #ifdef PDF_ENABLE_XFA

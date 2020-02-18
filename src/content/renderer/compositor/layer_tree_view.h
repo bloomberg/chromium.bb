@@ -40,7 +40,6 @@ class LayerTreeSettings;
 class RenderFrameMetadataObserver;
 class TaskGraphRunner;
 class UkmRecorderFactory;
-class ScopedDeferMainFrameUpdate;
 }  // namespace cc
 
 namespace gfx {
@@ -110,7 +109,6 @@ class CONTENT_EXPORT LayerTreeView
   void SetExternalPageScaleFactor(float page_scale_factor,
                                   bool is_external_pinch_gesture_active);
   void ClearCachesOnNextCommit();
-  void SetContentSourceId(uint32_t source_id);
   void SetViewportSizeAndScale(
       const gfx::Size& device_viewport_size,
       float device_scale_factor,
@@ -129,18 +127,6 @@ class CONTENT_EXPORT LayerTreeView
   // blink::WebLayerTreeView implementation.
   viz::FrameSinkId GetFrameSinkId() override;
   void SetNonBlinkManagedRootLayer(scoped_refptr<cc::Layer> layer);
-  std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate()
-      override;
-  void StartDeferringCommits(base::TimeDelta timeout) override;
-  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
-  void ForceRecalculateRasterScales() override;
-  void SetEventListenerProperties(
-      cc::EventListenerClass eventClass,
-      cc::EventListenerProperties properties) override;
-  cc::EventListenerProperties EventListenerProperties(
-      cc::EventListenerClass eventClass) const override;
-  void SetHaveScrollEventHandlers(bool) override;
-  bool HaveScrollEventHandlers() const override;
   int LayerTreeId() const override;
 
   void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
@@ -161,8 +147,7 @@ class CONTENT_EXPORT LayerTreeView
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;
   void UpdateLayerTreeHost() override;
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override;
-  void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
-                                         bool has_scrolled_by_touch) override;
+  void RecordManipulationTypeCounts(cc::ManipulationInfo info) override;
   void SendOverscrollEventFromImplSide(
       const gfx::Vector2dF& overscroll_delta,
       cc::ElementId scroll_latched_element_id) override;
@@ -199,6 +184,9 @@ class CONTENT_EXPORT LayerTreeView
       base::OnceCallback<void(base::TimeTicks)> callback);
 
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
+  const cc::LayerTreeHost* layer_tree_host() const {
+    return layer_tree_host_.get();
+  }
 
  protected:
   friend class RenderViewImplScaleFactorTest;
@@ -223,7 +211,7 @@ class CONTENT_EXPORT LayerTreeView
                 std::vector<base::OnceCallback<void(base::TimeTicks)>>>>
       presentation_callbacks_;
 
-  base::WeakPtrFactory<LayerTreeView> weak_factory_;
+  base::WeakPtrFactory<LayerTreeView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeView);
 };

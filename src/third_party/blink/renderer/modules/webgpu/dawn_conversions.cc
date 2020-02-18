@@ -67,32 +67,152 @@ DawnCompareFunction AsDawnEnum<DawnCompareFunction>(
 template <>
 DawnTextureFormat AsDawnEnum<DawnTextureFormat>(
     const WTF::String& webgpu_enum) {
-  if (webgpu_enum == "rgba8unorm") {
-    return DAWN_TEXTURE_FORMAT_R8_G8_B8_A8_UNORM;
-  }
-  if (webgpu_enum == "rg8unorm") {
-    return DAWN_TEXTURE_FORMAT_R8_G8_UNORM;
-  }
+  // Normal 8 bit formats
   if (webgpu_enum == "r8unorm") {
     return DAWN_TEXTURE_FORMAT_R8_UNORM;
   }
-  if (webgpu_enum == "rgba8uint") {
-    return DAWN_TEXTURE_FORMAT_R8_G8_B8_A8_UINT;
-  }
-  if (webgpu_enum == "r8g8uint") {
-    return DAWN_TEXTURE_FORMAT_R8_G8_UINT;
+  if (webgpu_enum == "r8snorm") {
+    return DAWN_TEXTURE_FORMAT_R8_SNORM;
   }
   if (webgpu_enum == "r8uint") {
     return DAWN_TEXTURE_FORMAT_R8_UINT;
   }
+  if (webgpu_enum == "r8sint") {
+    return DAWN_TEXTURE_FORMAT_R8_SINT;
+  }
+
+  // Normal 16 bit formats
+  if (webgpu_enum == "r16unorm") {
+    return DAWN_TEXTURE_FORMAT_R16_UNORM;
+  }
+  if (webgpu_enum == "r16snorm") {
+    return DAWN_TEXTURE_FORMAT_R16_SNORM;
+  }
+  if (webgpu_enum == "r16uint") {
+    return DAWN_TEXTURE_FORMAT_R16_UINT;
+  }
+  if (webgpu_enum == "r16sint") {
+    return DAWN_TEXTURE_FORMAT_R16_SINT;
+  }
+  if (webgpu_enum == "r16float") {
+    return DAWN_TEXTURE_FORMAT_R16_FLOAT;
+  }
+  if (webgpu_enum == "rg8unorm") {
+    return DAWN_TEXTURE_FORMAT_RG8_UNORM;
+  }
+  if (webgpu_enum == "rg8snorm") {
+    return DAWN_TEXTURE_FORMAT_RG8_SNORM;
+  }
+  if (webgpu_enum == "rg8uint") {
+    return DAWN_TEXTURE_FORMAT_RG8_UINT;
+  }
+  if (webgpu_enum == "rg8sint") {
+    return DAWN_TEXTURE_FORMAT_RG8_SINT;
+  }
+
+  // Normal 32 bit formats
+  if (webgpu_enum == "r32uint") {
+    return DAWN_TEXTURE_FORMAT_R32_UINT;
+  }
+  if (webgpu_enum == "r32sint") {
+    return DAWN_TEXTURE_FORMAT_R32_SINT;
+  }
+  if (webgpu_enum == "r32float") {
+    return DAWN_TEXTURE_FORMAT_R32_FLOAT;
+  }
+  if (webgpu_enum == "rg16unorm") {
+    return DAWN_TEXTURE_FORMAT_RG16_UNORM;
+  }
+  if (webgpu_enum == "rg16snorm") {
+    return DAWN_TEXTURE_FORMAT_RG16_SNORM;
+  }
+  if (webgpu_enum == "rg16uint") {
+    return DAWN_TEXTURE_FORMAT_RG16_UINT;
+  }
+  if (webgpu_enum == "rg16sint") {
+    return DAWN_TEXTURE_FORMAT_RG16_SINT;
+  }
+  if (webgpu_enum == "rg16float") {
+    return DAWN_TEXTURE_FORMAT_RG16_FLOAT;
+  }
+  if (webgpu_enum == "rgba8unorm") {
+    return DAWN_TEXTURE_FORMAT_RGBA8_UNORM;
+  }
+  if (webgpu_enum == "rgba8unorm-srgb") {
+    return DAWN_TEXTURE_FORMAT_RGBA8_UNORM_SRGB;
+  }
+  if (webgpu_enum == "rgba8snorm") {
+    return DAWN_TEXTURE_FORMAT_RGBA8_SNORM;
+  }
+  if (webgpu_enum == "rgba8uint") {
+    return DAWN_TEXTURE_FORMAT_RGBA8_UINT;
+  }
+  if (webgpu_enum == "rgba8sint") {
+    return DAWN_TEXTURE_FORMAT_RGBA8_SINT;
+  }
   if (webgpu_enum == "bgra8unorm") {
-    return DAWN_TEXTURE_FORMAT_B8_G8_R8_A8_UNORM;
+    return DAWN_TEXTURE_FORMAT_BGRA8_UNORM;
   }
-  if (webgpu_enum == "depth32float-stencil8") {
-    return DAWN_TEXTURE_FORMAT_D32_FLOAT_S8_UINT;
+  if (webgpu_enum == "bgra8unorm-srgb") {
+    return DAWN_TEXTURE_FORMAT_BGRA8_UNORM_SRGB;
   }
-  // TODO(crbug.com/dawn/128): Implement the remaining texture formats.
-  NOTREACHED();
+
+  // Packed 32 bit formats
+  if (webgpu_enum == "rgb10a2unorm") {
+    return DAWN_TEXTURE_FORMAT_RGB10_A2_UNORM;
+  }
+  if (webgpu_enum == "rg11b10float") {
+    return DAWN_TEXTURE_FORMAT_RG11_B10_FLOAT;
+  }
+
+  // Normal 64 bit formats
+  if (webgpu_enum == "rg32uint") {
+    return DAWN_TEXTURE_FORMAT_RG32_UINT;
+  }
+  if (webgpu_enum == "rg32sint") {
+    return DAWN_TEXTURE_FORMAT_RG32_SINT;
+  }
+  if (webgpu_enum == "rg32float") {
+    return DAWN_TEXTURE_FORMAT_RG32_FLOAT;
+  }
+  if (webgpu_enum == "rgba16unorm") {
+    return DAWN_TEXTURE_FORMAT_RGBA16_UNORM;
+  }
+  if (webgpu_enum == "rgba16snorm") {
+    return DAWN_TEXTURE_FORMAT_RGBA16_SNORM;
+  }
+  if (webgpu_enum == "rgba16uint") {
+    return DAWN_TEXTURE_FORMAT_RGBA16_UINT;
+  }
+  if (webgpu_enum == "rgba16sint") {
+    return DAWN_TEXTURE_FORMAT_RGBA16_SINT;
+  }
+  if (webgpu_enum == "rgba16float") {
+    return DAWN_TEXTURE_FORMAT_RGBA16_FLOAT;
+  }
+
+  // Normal 128 bit formats
+  if (webgpu_enum == "rgba32uint") {
+    return DAWN_TEXTURE_FORMAT_RGBA32_UINT;
+  }
+  if (webgpu_enum == "rgba32sint") {
+    return DAWN_TEXTURE_FORMAT_RGBA32_SINT;
+  }
+  if (webgpu_enum == "rgba32float") {
+    return DAWN_TEXTURE_FORMAT_RGBA32_FLOAT;
+  }
+
+  // Depth / Stencil formats
+  if (webgpu_enum == "depth32float") {
+    return DAWN_TEXTURE_FORMAT_DEPTH32_FLOAT;
+  }
+  if (webgpu_enum == "depth24plus") {
+    return DAWN_TEXTURE_FORMAT_DEPTH24_PLUS;
+  }
+  if (webgpu_enum == "depth24plus-stencil8") {
+    return DAWN_TEXTURE_FORMAT_DEPTH24_PLUS_STENCIL8;
+  }
+
   return DAWN_TEXTURE_FORMAT_FORCE32;
 }
 
@@ -169,9 +289,6 @@ DawnStoreOp AsDawnEnum<DawnStoreOp>(const WTF::String& webgpu_enum) {
 
 template <>
 DawnLoadOp AsDawnEnum<DawnLoadOp>(const WTF::String& webgpu_enum) {
-  if (webgpu_enum == "clear") {
-    return DAWN_LOAD_OP_CLEAR;
-  }
   if (webgpu_enum == "load") {
     return DAWN_LOAD_OP_LOAD;
   }
@@ -495,7 +612,7 @@ DawnAddressMode AsDawnEnum<DawnAddressMode>(const WTF::String& webgpu_enum) {
     return DAWN_ADDRESS_MODE_REPEAT;
   }
   if (webgpu_enum == "mirror-repeat") {
-    return DAWN_ADDRESS_MODE_MIRRORED_REPEAT;
+    return DAWN_ADDRESS_MODE_MIRROR_REPEAT;
   }
   NOTREACHED();
   return DAWN_ADDRESS_MODE_FORCE32;
@@ -543,7 +660,7 @@ DawnFrontFace AsDawnEnum<DawnFrontFace>(const WTF::String& webgpu_enum) {
 DawnColor AsDawnType(const GPUColor* webgpu_color) {
   DCHECK(webgpu_color);
 
-  DawnColor dawn_color;
+  DawnColor dawn_color = {};
   dawn_color.r = webgpu_color->r();
   dawn_color.g = webgpu_color->g();
   dawn_color.b = webgpu_color->b();
@@ -555,7 +672,7 @@ DawnColor AsDawnType(const GPUColor* webgpu_color) {
 DawnExtent3D AsDawnType(const GPUExtent3D* webgpu_extent) {
   DCHECK(webgpu_extent);
 
-  DawnExtent3D dawn_extent;
+  DawnExtent3D dawn_extent = {};
   dawn_extent.width = webgpu_extent->width();
   dawn_extent.height = webgpu_extent->height();
   dawn_extent.depth = webgpu_extent->depth();
@@ -566,7 +683,7 @@ DawnExtent3D AsDawnType(const GPUExtent3D* webgpu_extent) {
 DawnOrigin3D AsDawnType(const GPUOrigin3D* webgpu_origin) {
   DCHECK(webgpu_origin);
 
-  DawnOrigin3D dawn_origin;
+  DawnOrigin3D dawn_origin = {};
   dawn_origin.x = webgpu_origin->x();
   dawn_origin.y = webgpu_origin->y();
   dawn_origin.z = webgpu_origin->z();
@@ -574,19 +691,24 @@ DawnOrigin3D AsDawnType(const GPUOrigin3D* webgpu_origin) {
   return dawn_origin;
 }
 
-std::tuple<DawnPipelineStageDescriptor, CString> AsDawnType(
+OwnedPipelineStageDescriptor AsDawnType(
     const GPUPipelineStageDescriptor* webgpu_stage) {
   DCHECK(webgpu_stage);
 
-  CString entry_point_string = webgpu_stage->entryPoint().Ascii();
+  std::string entry_point = webgpu_stage->entryPoint().Ascii();
+  // length() is in bytes (not utf-8 characters or something), so this is ok.
+  size_t byte_size = entry_point.length() + 1;
 
-  DawnPipelineStageDescriptor dawn_stage;
+  std::unique_ptr<char[]> entry_point_keepalive =
+      std::make_unique<char[]>(byte_size);
+  char* entry_point_ptr = entry_point_keepalive.get();
+  memcpy(entry_point_ptr, entry_point.c_str(), byte_size);
+
+  DawnPipelineStageDescriptor dawn_stage = {};
   dawn_stage.module = webgpu_stage->module()->GetHandle();
-  dawn_stage.entryPoint = entry_point_string.data();
+  dawn_stage.entryPoint = entry_point_ptr;
 
-  // CString holds a scoped_refptr to the string data so it is valid to move
-  // it into the return value without invalidating the entryPoint.
-  return std::make_tuple(dawn_stage, std::move(entry_point_string));
+  return std::make_tuple(dawn_stage, std::move(entry_point_keepalive));
 }
 
 }  // namespace blink

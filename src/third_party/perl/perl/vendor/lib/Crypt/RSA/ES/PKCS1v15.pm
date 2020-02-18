@@ -1,22 +1,18 @@
-#!/usr/bin/perl -sw
-##
+package Crypt::RSA::ES::PKCS1v15;
+use strict;
+use warnings;
+
 ## Crypt::RSA::ES::PKCS1v15
 ##
 ## Copyright (c) 2001, Vipul Ved Prakash.  All rights reserved.
 ## This code is free software; you can redistribute it and/or modify
 ## it under the same terms as Perl itself.
-##
-## $Id: PKCS1v15.pm,v 1.10 2001/06/22 23:27:37 vipul Exp $
 
-package Crypt::RSA::ES::PKCS1v15;
-use strict;
 use base 'Crypt::RSA::Errorhandler';
-use Crypt::Random          qw(makerandom_octet);
+use Math::Prime::Util qw/random_bytes/;
 use Crypt::RSA::DataFormat qw(bitsize octet_len os2ip i2osp);
 use Crypt::RSA::Primitives;
 use Crypt::RSA::Debug      qw(debug);
-use Math::Pari             qw(floor);
-use Sort::Versions         qw(versioncmp);
 use Carp;
 
 $Crypt::RSA::ES::PKCS1v15::VERSION = '1.99';
@@ -78,10 +74,14 @@ sub encode {
     my ($self, $M, $emlen) = @_; 
     $M = $M || ""; my $mlen = length($M);
     return $self->error ("Message too long.", \$M) if $mlen > $emlen-10;
-    my ($PS, $pslen) = ("", 0);
 
-    $pslen = $emlen-$mlen-2;
-    $PS = makerandom_octet (Length => $pslen, Skip => chr(0));
+    my $pslen = $emlen-$mlen-2;
+    # my $PS = join('', map { chr( 1+urandomm(255) ) } 1 .. $pslen);
+    my $PS = '';
+    while (length($PS) < $pslen) {
+      $PS .= random_bytes( $pslen - length($PS) );
+      $PS =~ s/\x00//g;
+    }
     my $em = chr(2).$PS.chr(0).$M;
     return $em;
 }

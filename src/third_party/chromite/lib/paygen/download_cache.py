@@ -14,7 +14,6 @@ import md5
 import os
 import shutil
 import stat
-import tempfile
 import time
 
 from chromite.lib import locking
@@ -56,10 +55,6 @@ class DownloadCache(object):
 
     # file is copied into file, blocking for download if needed.
     cache.GetFileCopy('gs://bucket/foo', '/tmp/foo')
-
-    # file is loaded into cache, but not locked.
-    tempfile = cache.GetFileInTempFile('gs://bucket/foo')
-    tempfile.close()
   """
 
   # Name of the purge management lock over the entire cache.
@@ -313,7 +308,7 @@ class DownloadCache(object):
     cache_file = self._UriToCacheFile(uri)
 
     # We keep trying until we succeed, or throw an exception.
-    for _ in xrange(FETCH_RETRY_COUNT):
+    for _ in range(FETCH_RETRY_COUNT):
       with self._PurgeLock(shared=True, blocking=True):
         # Attempt to download the file, if needed.
         self._FetchIntoCache(uri, cache_file, fetch_func)
@@ -363,29 +358,6 @@ class DownloadCache(object):
     with self.GetFileObject(uri) as src:
       with open(filepath, 'w+b') as dest:
         shutil.copyfileobj(src, dest)
-
-  def GetFileInTempFile(self, uri):
-    """Copy a cache file into a tempfile (downloading as needed).
-
-    The cache file is copied into a tempfile.NamedTemporaryFile.
-
-    This file is owned strictly by the caller and can be modified/deleted as
-    needed. Closing the NamedTemporaryFile will delete it.
-
-    Args:
-      uri: The uri of the file to access.
-
-    Returns:
-      tempfile.NamedTemporaryFile containing the requested file.
-      NamedTemporaryFile.name will contain the file's name.
-
-    Raises:
-      Exceptions from a failed download are passed through 'as is' from
-      the underlying download mechanism.
-    """
-    temp = tempfile.NamedTemporaryFile()
-    self.GetFileCopy(uri, temp.name)
-    return temp
 
   # Cache objects can be used with "with" statements.
   def __enter__(self):

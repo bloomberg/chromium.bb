@@ -13,10 +13,10 @@
 #include "base/strings/string16.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/public/android/content_jni_headers/NavigationControllerImpl_jni.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/common/resource_request_body_android.h"
-#include "jni/NavigationControllerImpl_jni.h"
 #include "net/base/data_url.h"
 #include "ui/gfx/android/java_bitmap.h"
 
@@ -346,7 +346,7 @@ void NavigationControllerAndroid::ClearSslPreferences(
 bool NavigationControllerAndroid::GetUseDesktopUserAgent(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  NavigationEntry* entry = navigation_controller_->GetVisibleEntry();
+  NavigationEntry* entry = navigation_controller_->GetLastCommittedEntry();
   return entry && entry->GetIsOverridingUserAgent();
 }
 
@@ -359,7 +359,7 @@ void NavigationControllerAndroid::SetUseDesktopUserAgent(
     return;
 
   // Make sure the navigation entry actually exists.
-  NavigationEntry* entry = navigation_controller_->GetVisibleEntry();
+  NavigationEntry* entry = navigation_controller_->GetLastCommittedEntry();
   if (!entry)
     return;
 

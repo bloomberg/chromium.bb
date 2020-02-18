@@ -53,6 +53,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
           computed_styles) override;
   protocol::Response captureSnapshot(
       std::unique_ptr<protocol::Array<String>> computed_styles,
+      protocol::Maybe<bool> include_dom_rects,
       std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>*
           documents,
       std::unique_ptr<protocol::Array<String>>* strings) override;
@@ -156,6 +157,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   // Maps a style string vector to an index in |computed_styles_|. Used to avoid
   // duplicate entries in |computed_styles_|.
   std::unique_ptr<ComputedStylesMap> computed_styles_map_;
+  bool include_snapshot_dom_rects_ = false;
   std::unique_ptr<CSSPropertyFilter> css_property_filter_;
   // Maps a PaintLayer to its paint order index.
   std::unique_ptr<PaintOrderMap> paint_order_map_;

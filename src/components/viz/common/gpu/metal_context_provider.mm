@@ -20,11 +20,7 @@ struct API_AVAILABLE(macos(10.11)) MetalContextProviderImpl
   explicit MetalContextProviderImpl(id<MTLDevice> device) {
     device_.reset([[MTLDeviceProxy alloc] initWithDevice:device]);
     command_queue_.reset([device_ newCommandQueue]);
-    // GrContext::MakeMetal will take ownership of the objects passed in. Retain
-    // the objects before passing them to MakeMetal so that the objects in
-    // |this| are also valid.
-    gr_context_ =
-        GrContext::MakeMetal([device_ retain], [command_queue_ retain]);
+    gr_context_ = GrContext::MakeMetal(device_, command_queue_);
     DCHECK(gr_context_);
   }
   ~MetalContextProviderImpl() override {

@@ -29,7 +29,7 @@ static constexpr const char* kDiscoveryOnlyModelNames[3] = {
 // |model_name|: device model name.
 bool IsDiscoveryOnly(const std::string& model_name) {
   std::string lower_model_name = base::ToLowerASCII(model_name);
-  return base::ContainsValue(kDiscoveryOnlyModelNames, lower_model_name);
+  return base::Contains(kDiscoveryOnlyModelNames, lower_model_name);
 }
 
 SinkAppStatus GetSinkAppStatusFromResponse(const DialAppInfoResult& result) {
@@ -145,7 +145,7 @@ void DialMediaSinkServiceImpl::OnDiscoveryComplete() {
   std::vector<MediaSinkInternal> sinks_to_update;
   std::vector<MediaSinkInternal> sinks_to_remove;
   for (const auto& sink : GetSinks()) {
-    if (!base::ContainsKey(latest_sinks_, sink.first))
+    if (!base::Contains(latest_sinks_, sink.first))
       sinks_to_remove.push_back(sink.second);
   }
 
@@ -195,7 +195,7 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
     const DialDeviceData& device_data,
     const ParsedDialDeviceDescription& description_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!base::ContainsValue(current_devices_, device_data)) {
+  if (!base::Contains(current_devices_, device_data)) {
     DVLOG(2) << "Device data not found in current device data list...";
     return;
   }

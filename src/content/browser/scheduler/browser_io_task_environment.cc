@@ -17,7 +17,7 @@ using ::base::sequence_manager::TaskQueue;
 BrowserIOTaskEnvironment::BrowserIOTaskEnvironment()
     : sequence_manager_(CreateUnboundSequenceManager(
           SequenceManager::Settings::Builder()
-              .SetMessagePumpType(base::MessageLoop::TYPE_IO)
+              .SetMessagePumpType(base::MessagePump::Type::IO)
               .Build())) {
   Init(sequence_manager_.get());
 }
@@ -33,9 +33,7 @@ void BrowserIOTaskEnvironment::Init(
   task_queues_ = std::make_unique<BrowserTaskQueues>(
       BrowserThread::IO, sequence_manager,
       sequence_manager->GetRealTimeDomain());
-  default_task_queue_ = sequence_manager->CreateTaskQueue(
-      TaskQueue::Spec("browser_io_task_environment_default_tq"));
-  default_task_runner_ = default_task_queue_->task_runner();
+  default_task_runner_ = task_queues_->GetHandle()->GetDefaultTaskRunner();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

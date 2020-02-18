@@ -19,6 +19,7 @@
 #include "net/third_party/quiche/src/quic/core/http/http_encoder.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_header_list.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_stream_body_buffer.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_decoded_headers_accumulator.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream_sequencer.h"
@@ -34,11 +35,12 @@ class QuicSpdyStreamPeer;
 class QuicStreamPeer;
 }  // namespace test
 
-class QpackDecodedHeadersAccumulator;
 class QuicSpdySession;
 
 // A QUIC stream that can send and receive HTTP2 (SPDY) headers.
-class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
+class QUIC_EXPORT_PRIVATE QuicSpdyStream
+    : public QuicStream,
+      public QpackDecodedHeadersAccumulator::Visitor {
  public:
   // Visitor receives callbacks from the stream.
   class QUIC_EXPORT_PRIVATE Visitor {
@@ -51,8 +53,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
     virtual void OnClose(QuicSpdyStream* stream) = 0;
 
     // Allows subclasses to override and do work.
-    virtual void OnPromiseHeadersComplete(QuicStreamId promised_id,
-                                          size_t frame_len) {}
+    virtual void OnPromiseHeadersComplete(QuicStreamId /*promised_id*/,
+                                          size_t /*frame_len*/) {}
 
    protected:
     virtual ~Visitor() {}
@@ -61,7 +63,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   QuicSpdyStream(QuicStreamId id,
                  QuicSpdySession* spdy_session,
                  StreamType type);
-  QuicSpdyStream(PendingStream pending,
+  QuicSpdyStream(PendingStream* pending,
                  QuicSpdySession* spdy_session,
                  StreamType type);
   QuicSpdyStream(const QuicSpdyStream&) = delete;
@@ -147,7 +149,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
 
   // Marks the trailers as consumed. This applies to the case where this object
   // receives headers and trailers as QuicHeaderLists via calls to
-  // OnStreamHeaderList().
+  // OnStreamHeaderList(). Trailer data will be consumed from the sequencer only
+  // once all body data has been consumed.
   void MarkTrailersConsumed();
 
   // Clears |header_list_|.
@@ -164,10 +167,11 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
 
   // Returns true if header contains a valid 3-digit status and parse the status
   // code to |status_code|.
-  bool ParseHeaderStatusCode(const spdy::SpdyHeaderBlock& header,
-                             int* status_code) const;
+  static bool ParseHeaderStatusCode(const spdy::SpdyHeaderBlock& header,
+                                    int* status_code);
 
-  // Returns true when all data has been read from the peer, including the fin.
+  // Returns true when all data from the peer has been read and consumed,
+  // including the fin.
   bool IsDoneReading() const;
   bool HasBytesToRead() const;
 
@@ -190,8 +194,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   // Returns true if headers have been fully read and consumed.
   bool FinishedReadingHeaders() const;
 
-  // Returns true if trailers have been fully read and consumed, or FIN has
-  // been received and there are no trailers.
+  // Returns true if FIN has been received and either trailers have been fully
+  // read and consumed or there are no trailers.
   bool FinishedReadingTrailers() const;
 
   // Called when owning session is getting deleted to avoid subsequent
@@ -204,15 +208,11 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
 
   using QuicStream::CloseWriteSide;
 
- protected:
-  // HTTP/3
-  void OnDataFrameStart(Http3FrameLengths frame_lengths);
-  void OnDataFramePayload(QuicStringPiece payload);
-  void OnDataFrameEnd();
-  void OnHeadersFrameStart(Http3FrameLengths frame_length);
-  void OnHeadersFramePayload(QuicStringPiece payload);
-  void OnHeadersFrameEnd();
+  // QpackDecodedHeadersAccumulator::Visitor implementation.
+  void OnHeadersDecoded(QuicHeaderList headers) override;
+  void OnHeaderDecodingError() override;
 
+ protected:
   // Called when the received headers are too large. By default this will
   // reset the stream.
   virtual void OnHeadersTooLarge();
@@ -238,11 +238,29 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
     ack_listener_ = std::move(ack_listener);
   }
 
+  // Fills in |frame| with appropriate fields.
+  virtual void PopulatePriorityFrame(PriorityFrame* frame);
+
  private:
   friend class test::QuicSpdyStreamPeer;
   friend class test::QuicStreamPeer;
   friend class QuicStreamUtils;
   class HttpDecoderVisitor;
+
+  // Called by HttpDecoderVisitor.
+  bool OnDataFrameStart(Http3FrameLengths frame_lengths);
+  bool OnDataFramePayload(QuicStringPiece payload);
+  bool OnDataFrameEnd();
+  bool OnHeadersFrameStart(Http3FrameLengths frame_length);
+  bool OnHeadersFramePayload(QuicStringPiece payload);
+  bool OnHeadersFrameEnd();
+
+  // Called internally when headers are decoded.
+  void ProcessDecodedHeaders(const QuicHeaderList& headers);
+
+  // Call QuicStreamSequencer::MarkConsumed() with
+  // |headers_bytes_to_be_marked_consumed_| if appropriate.
+  void MaybeMarkHeadersBytesConsumed();
 
   // Given the interval marked by [|offset|, |offset| + |data_length|), return
   // the number of frame header bytes contained in it.
@@ -254,34 +272,55 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   bool on_body_available_called_because_sequencer_is_closed_;
 
   Visitor* visitor_;
+
+  // True if read side processing is blocked while waiting for callback from
+  // QPACK decoder.
+  bool blocked_on_decoding_headers_;
   // True if the headers have been completely decompressed.
   bool headers_decompressed_;
   // Contains a copy of the decompressed header (name, value) pairs until they
   // are consumed via Readv.
   QuicHeaderList header_list_;
-  // Length of HEADERS frame, including frame header and payload.
-  Http3FrameLengths headers_length_;
-  // Length of TRAILERS frame, including frame header and payload.
-  Http3FrameLengths trailers_length_;
+  // Length of HEADERS frame payload.
+  QuicByteCount headers_payload_length_;
+  // Length of TRAILERS frame payload.
+  QuicByteCount trailers_payload_length_;
 
   // True if the trailers have been completely decompressed.
   bool trailers_decompressed_;
   // True if the trailers have been consumed.
   bool trailers_consumed_;
+
+  // True if the stream has already sent an priority frame.
+  bool priority_sent_;
+
+  // Number of bytes consumed while decoding HEADERS frames that cannot be
+  // marked consumed in QuicStreamSequencer until later.
+  QuicByteCount headers_bytes_to_be_marked_consumed_;
   // The parsed trailers received from the peer.
   spdy::SpdyHeaderBlock received_trailers_;
 
   // Http encoder for writing streams.
   HttpEncoder encoder_;
-  // Http decoder for processing raw incoming stream frames.
-  HttpDecoder decoder_;
   // Headers accumulator for decoding HEADERS frame payload.
   std::unique_ptr<QpackDecodedHeadersAccumulator>
       qpack_decoded_headers_accumulator_;
   // Visitor of the HttpDecoder.
   std::unique_ptr<HttpDecoderVisitor> http_decoder_visitor_;
+  // HttpDecoder for processing raw incoming stream frames.
+  HttpDecoder decoder_;
   // Buffer that contains decoded data of the stream.
   QuicSpdyStreamBodyBuffer body_buffer_;
+
+  // Sequencer offset keeping track of how much data HttpDecoder has processed.
+  // Initial value is zero for fresh streams, or sequencer()->NumBytesConsumed()
+  // at time of construction if a PendingStream is converted to account for the
+  // length of the unidirectional stream type at the beginning of the stream.
+  QuicStreamOffset sequencer_offset_;
+
+  // True when inside an HttpDecoder::ProcessInput() call.
+  // Used for detecting reentrancy.
+  bool is_decoder_processing_input_;
 
   // Ack listener of this stream, and it is notified when any of written bytes
   // are acked or retransmitted.

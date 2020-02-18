@@ -202,7 +202,7 @@ class DownloadCacheTest(cros_test_lib.TempDirTestCase):
 
     # Touch some unexpected files.
     for touch_file in ['bogus', 'foo/bogus']:
-      file(os.path.join(self.cache_dir, touch_file), 'w').close()
+      osutils.Touch(os.path.join(self.cache_dir, touch_file))
 
     # Create a cache, and see
     cache = download_cache.DownloadCache(self.cache_dir)
@@ -216,13 +216,15 @@ class DownloadCacheTest(cros_test_lib.TempDirTestCase):
 
     # Fetch a file
     with cache.GetFileObject(self.uri_a) as f:
-      self.assertIsInstance(f, file)
+      # Use the .read() member as a proxy for is a file-like object.
+      self.assertTrue(hasattr(f, 'read'))
     self._verifyFileContents(cache, self.uri_a)
     self._validateCacheContents(cache, (self.hash_a,))
 
     # Fetch a different file
     with cache.GetFileObject(self.uri_b) as f:
-      self.assertIsInstance(f, file)
+      # Use the .read() member as a proxy for is a file-like object.
+      self.assertTrue(hasattr(f, 'read'))
     self._verifyFileContents(cache, self.uri_b)
     self._validateCacheContents(cache, (self.hash_a, self.hash_b))
 
@@ -273,24 +275,6 @@ class DownloadCacheTest(cros_test_lib.TempDirTestCase):
       contents_b = f.read()
 
     self.assertEqual(contents_a, contents_b)
-
-  @cros_test_lib.NetworkTest()
-  def testGetFileInTempFile(self):
-    """Just create a download cache, and GetFileInTempFile on it."""
-
-    cache = download_cache.DownloadCache(self.cache_dir)
-
-    # Fetch a file
-    file_t = cache.GetFileInTempFile(self.uri_a)
-
-    with cache.GetFileObject(self.uri_a) as f:
-      contents_a = f.read()
-
-    with file_t as f:
-      contents_t = f.read()
-
-    self.assertEqual(contents_t, contents_a)
-    self.assertEqual(contents_t, self.ctx.Cat(self.uri_a))
 
   @cros_test_lib.NetworkTest()
   def testPurgeLogic(self):

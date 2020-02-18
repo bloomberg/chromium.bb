@@ -1,6 +1,6 @@
 package DBI::Gofer::Execute;
 
-#   $Id: Execute.pm 14282 2010-07-26 00:12:54Z theory $
+#   $Id: Execute.pm 14282 2010-07-26 00:12:54Z David $
 #
 #   Copyright (c) 2007, Tim Bunce, Ireland
 #
@@ -18,7 +18,7 @@ use DBI::Gofer::Response;
 
 use base qw(DBI::Util::_accessor);
 
-our $VERSION = sprintf("0.%06d", q$Revision: 14282 $ =~ /(\d+)/o);
+our $VERSION = "0.014283";
 
 our @all_dbh_methods = sort map { keys %$_ } $DBI::DBI_methods{db}, $DBI::DBI_methods{common};
 our %all_dbh_methods = map { $_ => (DBD::_::db->can($_)||undef) } @all_dbh_methods;
@@ -213,7 +213,7 @@ sub _connect {
     $dbh->{ShowErrorStatement} = 1 if $local_log;
 
     # XXX should probably just be a Callbacks => arg to connect_cached
-    # with a cache of pre-built callback hooks (memoized, without $self) 
+    # with a cache of pre-built callback hooks (memoized, without $self)
     if (my $random = $self->{forced_gofer_random} || $ENV{DBI_GOFER_RANDOM}) {
         $self->_install_rand_callbacks($dbh, $random);
     }
@@ -373,10 +373,10 @@ sub gather_dbh_attributes {
 
     # XXX piggyback installed_methods onto dbh_attributes for now
     $dbh_attr_values{dbi_installed_methods} = { DBI->installed_methods };
-    
+
     # XXX piggyback default_methods onto dbh_attributes for now
     $dbh_attr_values{dbi_default_methods} = _get_default_methods($dbh);
-    
+
     return \%dbh_attr_values;
 }
 
@@ -499,7 +499,7 @@ sub gather_sth_resultsets {
         my $sth_attr = {};
         $sth_attr->{$_} = 1 for @$attr_names;
 
-        # let the client add/remove sth atributes
+        # let the client add/remove sth attributes
         if (my $sth_result_attr = $request->sth_result_attr) {
             $sth_attr->{$_} = $sth_result_attr->{$_}
                 for keys %$sth_result_attr;
@@ -613,7 +613,7 @@ sub _install_rand_callbacks {
             next;
         }
         unless (defined $fail_percent or defined $delay_percent) {
-            warn "Ignored DBI_GOFER_RANDOM item '$spec' because not preceeded by 'fail=N' and/or 'delayN=N'";
+            warn "Ignored DBI_GOFER_RANDOM item '$spec' because not preceded by 'fail=N' and/or 'delayN=N'";
             next;
         }
 

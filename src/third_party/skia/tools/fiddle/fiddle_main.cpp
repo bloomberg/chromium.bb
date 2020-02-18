@@ -127,12 +127,10 @@ static bool setup_backend_objects(GrContext* context,
     auto resourceProvider = context->priv().resourceProvider();
 
     GrSurfaceDesc backingDesc;
-    backingDesc.fFlags = kNone_GrSurfaceFlags;
     backingDesc.fWidth = bm.width();
     backingDesc.fHeight = bm.height();
     // This config must match the SkColorType used in draw.cpp in the SkImage and Surface factories
     backingDesc.fConfig = kRGBA_8888_GrPixelConfig;
-    backingDesc.fSampleCnt = 1;
 
     if (!bm.empty()) {
         SkPixmap originalPixmap;
@@ -164,8 +162,9 @@ static bool setup_backend_objects(GrContext* context,
             texels[i].fRowBytes = 0;
         }
 
-        backingTexture = resourceProvider->createTexture(backingDesc, SkBudgeted::kNo, texels.get(),
-                                                         mipLevelCount);
+        backingTexture =
+                resourceProvider->createTexture(backingDesc, GrRenderable::kNo, 1, SkBudgeted::kNo,
+                                                GrProtected::kNo, texels.get(), mipLevelCount);
         if (!backingTexture) {
             return false;
         }
@@ -176,10 +175,8 @@ static bool setup_backend_objects(GrContext* context,
         }
     }
 
-    backingDesc.fFlags = kRenderTarget_GrSurfaceFlag;
     backingDesc.fWidth = options.fOffScreenWidth;
     backingDesc.fHeight = options.fOffScreenHeight;
-    backingDesc.fSampleCnt = options.fOffScreenSampleCount;
 
     SkAutoTMalloc<uint32_t> data(backingDesc.fWidth * backingDesc.fHeight);
     sk_memset32(data.get(), 0, backingDesc.fWidth * backingDesc.fHeight);
@@ -191,8 +188,9 @@ static bool setup_backend_objects(GrContext* context,
         // We use this fact to initialize it with data but don't allow mipmaps
         GrMipLevel level0 = { data.get(), backingDesc.fWidth*sizeof(uint32_t) };
 
-        sk_sp<GrTexture> tmp = resourceProvider->createTexture(backingDesc, SkBudgeted::kNo,
-                                                               &level0, 1);
+        sk_sp<GrTexture> tmp = resourceProvider->createTexture(
+                backingDesc, GrRenderable::kYes, options.fOffScreenSampleCount, SkBudgeted::kNo,
+                GrProtected::kNo, &level0, 1);
         if (!tmp || !tmp->asRenderTarget()) {
             return false;
         }
@@ -219,8 +217,10 @@ static bool setup_backend_objects(GrContext* context,
             texels[i].fRowBytes = 0;
         }
 
-        backingTextureRenderTarget = resourceProvider->createTexture(backingDesc, SkBudgeted::kNo,
-                                                                     texels.get(), mipLevelCount);
+        backingTextureRenderTarget =
+                resourceProvider->createTexture(backingDesc, GrRenderable::kYes,
+                        options.fOffScreenSampleCount, SkBudgeted::kNo, GrProtected::kNo,
+                        texels.get(), mipLevelCount);
         if (!backingTextureRenderTarget || !backingTextureRenderTarget->asRenderTarget()) {
             return false;
         }

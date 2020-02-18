@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Претражи</translation>
 <translation id="1398853756734560583">Увећај</translation>
 <translation id="1409544243779336081">Препорука за апликацију</translation>
+<translation id="1498028757988366001">Ово сте већ тражили раније. Ако избришете „<ph name="QUERY" />“ из историје, трајно ћете га уклонити са налога на свим уређајима.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минут и }one{# минут и }few{# минута и }other{# минута и }}</translation>
 <translation id="1643823602425662293">Обавештење</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -45,13 +46,16 @@
 <translation id="2289052229480071835">Додирните циљна поља за додир на екрану.</translation>
 <translation id="2295140143284145483">Анкета</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">Желите ли да позовете овај број са телефона?</translation>
 <translation id="24452542372838207">Прошири обавештење</translation>
 <translation id="2445449901874883781">Користи високу густину</translation>
+<translation id="2451871130406122810">Послато на уређај</translation>
 <translation id="2482878487686419369">Обавештења</translation>
 <translation id="2497284189126895209">Све датотеке</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Калибрација је довршена</translation>
 <translation id="252373100621549798">Непознати приказ</translation>
+<translation id="2545651323591713692">Одложите</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{за 1 ч}one{за # ч}few{за # ч}other{за # ч}}</translation>
 <translation id="2583543531130364912">Калибрација додирног екрана</translation>
 <translation id="2666092431469916601">Врх</translation>
@@ -70,6 +74,7 @@
 <translation id="3183922693828471536">Помери се овде</translation>
 <translation id="3234408098842461169">Стрелица надоле</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 дан}one{# дан}few{# дана}other{# дана}}</translation>
+<translation id="3295886253693811851">Позовите са уређаја</translation>
 <translation id="335581015389089642">Говор</translation>
 <translation id="3443810440409579745">Картица је примљена.</translation>
 <translation id="3479552764303398839">Не сада</translation>
@@ -95,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Пре месец дана}one{Пре # месец}few{Пре # месеца}other{Пре # месеци}}</translation>
 <translation id="4289300219472526559">Почните да говорите</translation>
 <translation id="4316910396681052118">СВЕ АПЛИКАЦИЈЕ</translation>
+<translation id="4467014365953759647">Слање броја није успело</translation>
 <translation id="4588090240171750605">Помери надесно</translation>
 <translation id="4690510401873698237">Полица у дну</translation>
 <translation id="4724120544754982507">Центар за обавештења, непрочитаних обавештења: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -111,6 +117,7 @@
 <translation id="5266161281976477809">Троугао за откривање</translation>
 <translation id="5278860589123563674">Слање није успело</translation>
 <translation id="528468243742722775">Заврши</translation>
+<translation id="5327567770033251652">укључите синхронизацију</translation>
 <translation id="5329858601952122676">&amp;Избриши</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> преко апликације <ph name="IN_PLACE_APP" />, отпустите да бисте направили директоријум.</translation>
 <translation id="5463830097259460683">Емоџи и симболи</translation>
@@ -150,6 +157,7 @@
 <translation id="6620110761915583480">Чување датотеке</translation>
 <translation id="6699343763173986273">Следећа песма медија</translation>
 <translation id="673773751041746814">Брисање</translation>
+<translation id="6779314412797872738">Да бисте послали број са овог уређаја на Android телефон, <ph name="TROUBLESHOOT_LINK" /> за оба уређаја у подешавањима.</translation>
 <translation id="6786750046913594791">Затворите директоријум</translation>
 <translation id="6808150112686056157">Заустављање медија</translation>
 <translation id="6845383723252244143">Избор директоријума</translation>
@@ -168,7 +176,9 @@
 <translation id="7319740667687257810">Покретач, делимичан приказ</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Пре 1 мин}one{Пре # мин}few{Пре # мин}other{Пре # мин}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Проверите везу телефона и пробајте поново</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Још 1 минут}one{Још # минут}few{Још # минута}other{Још # минута}}</translation>
+<translation id="7430878839542012341">Желите ли да избришете ову претрагу из историје?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Емоџи</translation>
 <translation id="7658239707568436148">Откажи</translation>
@@ -186,7 +196,6 @@
 <translation id="8144660977431427332">Претраге омогућава Google помоћник. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, аутоматско довршавање</translation>
 <translation id="815598010540052116">Помери надоле</translation>
-<translation id="8170087467028567933">Уклањањем овог предлога сакрићете га за свој налог на свим уређајима.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Страница надоле</translation>
 <translation id="8245914219290430011">Табулатор</translation>
@@ -197,7 +206,6 @@
 <translation id="838869780401515933">изабери</translation>
 <translation id="8393700583063109961">Пошаљите поруку</translation>
 <translation id="8394908167088220973">Пуштање/паузирање медија</translation>
-<translation id="8420205633584771378">Желите ли да уклоните овај предлог?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 г}one{# г}few{# г}other{# г}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> датотека (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Полица се увек приказује</translation>

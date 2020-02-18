@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 #include "url/gurl.h"
@@ -25,8 +25,6 @@ class PushMessagingService;
 enum class PushRegistrationStatus;
 enum class PushUnregistrationStatus;
 }  // namespace mojom
-
-struct WebPushSubscriptionOptions;
 }  // namespace blink
 
 namespace content {
@@ -40,14 +38,23 @@ extern const char kPushRegistrationIdServiceWorkerKey[];
 class PushMessagingManager : public blink::mojom::PushMessaging {
  public:
   PushMessagingManager(int render_process_id,
+                       int render_frame_id,
                        ServiceWorkerContextWrapper* service_worker_context);
 
+  void AddPushMessagingReceiver(
+      mojo::PendingReceiver<blink::mojom::PushMessaging> receiver);
+
+  // Temporary method while RenderProcessHostImpl does not migrate from using
+  // service_manager::BinderRegistry to using service_manager::BinderMap.
   void BindRequest(blink::mojom::PushMessagingRequest request);
 
+  base::WeakPtr<PushMessagingManager> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
   // blink::mojom::PushMessaging impl, run on IO thread.
-  void Subscribe(int32_t render_frame_id,
-                 int64_t service_worker_registration_id,
-                 const blink::WebPushSubscriptionOptions& options,
+  void Subscribe(int64_t service_worker_registration_id,
+                 blink::mojom::PushSubscriptionOptionsPtr options,
                  bool user_gesture,
                  SubscribeCallback callback) override;
   void Unsubscribe(int64_t service_worker_registration_id,
@@ -78,13 +85,14 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
   // Called via PostTask from UI thread.
   void PersistRegistrationOnIO(RegisterData data,
                                const std::string& push_subscription_id,
+                               const GURL& endpoint,
                                const std::vector<uint8_t>& p256dh,
                                const std::vector<uint8_t>& auth,
                                blink::mojom::PushRegistrationStatus status);
 
   void DidPersistRegistrationOnIO(
       RegisterData data,
-      const std::string& push_subscription_id,
+      const GURL& endpoint,
       const std::vector<uint8_t>& p256dh,
       const std::vector<uint8_t>& auth,
       blink::mojom::PushRegistrationStatus push_registration_status,
@@ -96,7 +104,7 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
   // Called both from IO thread, and via PostTask from UI thread.
   void SendSubscriptionSuccess(RegisterData data,
                                blink::mojom::PushRegistrationStatus status,
-                               const std::string& push_subscription_id,
+                               const GURL& endpoint,
                                const std::vector<uint8_t>& p256dh,
                                const std::vector<uint8_t>& auth);
 
@@ -120,11 +128,6 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
 
   // Helper methods on either thread -------------------------------------------
 
-  // Creates an endpoint for |subscription_id| with either the default protocol,
-  // or the standardized Web Push Protocol, depending on |standard_protocol|.
-  GURL CreateEndpoint(bool standard_protocol,
-                      const std::string& subscription_id) const;
-
   // Inner core of this message filter which lives on the UI thread.
   std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;
 
@@ -137,12 +140,12 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
   // Whether the PushMessagingService was available when constructed.
   bool service_available_;
 
-  GURL default_endpoint_;
-  GURL web_push_protocol_endpoint_;
+  // Will be ChildProcessHost::kInvalidUniqueID in requests from Service Worker.
+  int render_frame_id_;
 
-  mojo::BindingSet<blink::mojom::PushMessaging> bindings_;
+  mojo::ReceiverSet<blink::mojom::PushMessaging> receivers_;
 
-  base::WeakPtrFactory<PushMessagingManager> weak_factory_io_to_io_;
+  base::WeakPtrFactory<PushMessagingManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingManager);
 };

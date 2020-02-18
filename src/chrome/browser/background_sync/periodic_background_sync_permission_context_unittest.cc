@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -16,7 +16,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,13 +29,26 @@ class TestPeriodicBackgroundSyncPermissionContext
 
   void InstallPwa(const GURL& url) { installed_pwas_.insert(url); }
 
+#if defined(OS_ANDROID)
+  void InstallTwa(const GURL& url) { installed_twas_.insert(url); }
+#endif
+
   // PeriodicBackgroundSyncPermissionContext overrides:
   bool IsPwaInstalled(const GURL& url) const override {
     return installed_pwas_.find(url) != installed_pwas_.end();
   }
 
+#if defined(OS_ANDROID)
+  bool IsTwaInstalled(const GURL& url) const override {
+    return installed_twas_.find(url) != installed_twas_.end();
+  }
+#endif
+
  private:
   std::set<GURL> installed_pwas_;
+#if defined(OS_ANDROID)
+  std::set<GURL> installed_twas_;
+#endif
 };
 
 class PeriodicBackgroundSyncPermissionContextTest
@@ -84,6 +96,9 @@ class PeriodicBackgroundSyncPermissionContextTest
   }
 
   void InstallPwa(const GURL& url) { permission_context_->InstallPwa(url); }
+#if defined(OS_ANDROID)
+  void InstallTwa(const GURL& url) { permission_context_->InstallTwa(url); }
+#endif
 
   void SetUpPwaAndContentSettings(const GURL& url) {
     InstallPwa(url);
@@ -102,8 +117,6 @@ TEST_F(PeriodicBackgroundSyncPermissionContextTest, DenyWhenFeatureDisabled) {
 }
 
 TEST_F(PeriodicBackgroundSyncPermissionContextTest, DenyForInsecureOrigin) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPeriodicBackgroundSync);
   GURL url("http://example.com");
   SetBackgroundSyncContentSetting(url, CONTENT_SETTING_ALLOW);
   EXPECT_EQ(GetPermissionStatus(url, /* with_frame= */ false),
@@ -111,8 +124,6 @@ TEST_F(PeriodicBackgroundSyncPermissionContextTest, DenyForInsecureOrigin) {
 }
 
 TEST_F(PeriodicBackgroundSyncPermissionContextTest, AllowWithFrame) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPeriodicBackgroundSync);
   GURL url("https://example.com");
   SetUpPwaAndContentSettings(url);
   SetBackgroundSyncContentSetting(url, CONTENT_SETTING_ALLOW);
@@ -122,8 +133,6 @@ TEST_F(PeriodicBackgroundSyncPermissionContextTest, AllowWithFrame) {
 }
 
 TEST_F(PeriodicBackgroundSyncPermissionContextTest, AllowWithoutFrame) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPeriodicBackgroundSync);
   GURL url("https://example.com");
   SetUpPwaAndContentSettings(url);
 
@@ -131,9 +140,7 @@ TEST_F(PeriodicBackgroundSyncPermissionContextTest, AllowWithoutFrame) {
             CONTENT_SETTING_ALLOW);
 }
 
-TEST_F(PeriodicBackgroundSyncPermissionContextTest, DesktopPWA) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPeriodicBackgroundSync);
+TEST_F(PeriodicBackgroundSyncPermissionContextTest, DesktopPwa) {
   GURL url("https://example.com");
   SetUpPwaAndContentSettings(url);
 
@@ -143,5 +150,17 @@ TEST_F(PeriodicBackgroundSyncPermissionContextTest, DesktopPWA) {
   SetBackgroundSyncContentSetting(url, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(GetPermissionStatus(url), CONTENT_SETTING_BLOCK);
 }
+
+#if defined(OS_ANDROID)
+TEST_F(PeriodicBackgroundSyncPermissionContextTest, Twa) {
+  GURL url("https://example.com");
+
+  // No TWA or PWA installed.
+  EXPECT_EQ(GetPermissionStatus(url), CONTENT_SETTING_BLOCK);
+
+  InstallTwa(url);
+  EXPECT_EQ(GetPermissionStatus(url), CONTENT_SETTING_ALLOW);
+}
+#endif
 
 }  // namespace

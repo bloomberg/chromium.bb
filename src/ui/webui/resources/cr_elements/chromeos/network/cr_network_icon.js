@@ -15,14 +15,14 @@ Polymer({
      * If set, the ONC properties will be used to display the icon. This may
      * either be the complete set of NetworkProperties or the subset of
      * NetworkStateProperties.
-     * @type {!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties|undefined}
+     * @type {!OncMojo.NetworkStateProperties|undefined}
      */
     networkState: Object,
 
     /**
      * If set, the device state for the network type. Otherwise it defaults to
      * null rather than undefined so that it does not block computed bindings.
-     * @type {?CrOnc.DeviceStateProperties}
+     * @type {?OncMojo.DeviceStateProperties}
      */
     deviceState: {
       type: Object,
@@ -63,38 +63,36 @@ Polymer({
     if (!this.networkState) {
       return '';
     }
-    const type = this.networkState.Type;
-    if (type == CrOnc.Type.ETHERNET) {
+    const mojom = chromeos.networkConfig.mojom;
+    const type = this.networkState.type;
+    if (type == mojom.NetworkType.kEthernet) {
       return 'ethernet';
     }
-    if (type == CrOnc.Type.VPN) {
+    if (type == mojom.NetworkType.kVPN) {
       return 'vpn';
     }
 
-    const prefix = (type == CrOnc.Type.CELLULAR || type == CrOnc.Type.TETHER) ?
-        'cellular-' :
-        'wifi-';
-    if (!this.isListItem && !this.networkState.GUID) {
-      const deviceState = this.deviceState;
-      if (!deviceState || deviceState.State == 'Enabled' ||
-          deviceState.State == 'Enabling') {
+    const prefix = OncMojo.networkTypeIsMobile(type) ? 'cellular-' : 'wifi-';
+    if (!this.isListItem && !this.networkState.guid) {
+      const device = this.deviceState;
+      if (!device || device.deviceState == mojom.DeviceStateType.kEnabled ||
+          device.deviceState == mojom.DeviceStateType.kEnabling) {
         return prefix + 'no-network';
       }
       return prefix + 'off';
     }
 
-    const connectionState = this.networkState.ConnectionState;
-    if (connectionState == CrOnc.ConnectionState.CONNECTING) {
+    const connectionState = this.networkState.connectionState;
+    if (connectionState == mojom.ConnectionStateType.kConnecting) {
       return prefix + 'connecting';
     }
 
     if (!this.isListItem &&
-        (!connectionState ||
-         connectionState == CrOnc.ConnectionState.NOT_CONNECTED)) {
+        connectionState == mojom.ConnectionStateType.kNotConnected) {
       return prefix + 'not-connected';
     }
 
-    const strength = CrOnc.getSignalStrength(this.networkState);
+    const strength = OncMojo.getSignalStrength(this.networkState);
     return prefix + this.strengthToIndex_(strength).toString(10);
   },
 
@@ -131,17 +129,18 @@ Polymer({
    * @private
    */
   getTechnology_: function() {
-    const networkState = this.networkState;
-    if (!networkState) {
+    if (!this.networkState) {
       return '';
     }
-    const type = networkState.Type;
-    if (type == CrOnc.Type.WI_MAX) {
+    const mojom = chromeos.networkConfig.mojom;
+    const type = this.networkState.type;
+    if (type == mojom.NetworkType.kWiMAX) {
       return 'network:4g';
     }
-    if (type == CrOnc.Type.CELLULAR && networkState.Cellular) {
+    if (type == mojom.NetworkType.kCellular) {
+      assert(this.networkState.cellular);
       const technology =
-          this.getTechnologyId_(networkState.Cellular.NetworkTechnology);
+          this.getTechnologyId_(this.networkState.cellular.networkTechnology);
       if (technology != '') {
         return 'network:' + technology;
       }
@@ -184,18 +183,16 @@ Polymer({
    * @private
    */
   showSecure_: function() {
-    const networkState = this.networkState;
     if (!this.networkState) {
       return false;
     }
-    if (networkState.Type != CrOnc.Type.WI_FI || !networkState.WiFi) {
-      return false;
-    }
+    const mojom = chromeos.networkConfig.mojom;
     if (!this.isListItem &&
-        networkState.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED) {
+        this.networkState.connectionState ==
+            mojom.ConnectionStateType.kNotConnected) {
       return false;
     }
-    const security = CrOnc.getStateOrActiveString(networkState.WiFi.Security);
-    return !!security && security != 'None';
+    return this.networkState.type == mojom.NetworkType.kWiFi &&
+        this.networkState.wifi.security != mojom.SecurityType.kNone;
   },
 });

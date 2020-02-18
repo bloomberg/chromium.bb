@@ -70,7 +70,7 @@ class WebServiceWorkerNetworkProvider {
 
   // For service worker clients.
   virtual blink::mojom::ControllerServiceWorkerMode
-  IsControlledByServiceWorker() = 0;
+  GetControllerServiceWorkerMode() = 0;
 
   // For service worker clients. Returns an identifier of the controller service
   // worker associated with the loading context.

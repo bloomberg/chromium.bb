@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "content/public/test/test_utils.h"
 
 namespace {
 
@@ -42,10 +43,8 @@ IN_PROC_BROWSER_TEST_F(LocationIconViewTest, MAYBE_HideOnSecondClick) {
   scoped_refptr<content::MessageLoopRunner> runner1 =
       new content::MessageLoopRunner;
   ui_test_utils::MoveMouseToCenterAndPress(
-      location_icon_view,
-      ui_controls::LEFT,
-      ui_controls::DOWN | ui_controls::UP,
-      runner1->QuitClosure());
+      location_icon_view, ui_controls::LEFT,
+      ui_controls::DOWN | ui_controls::UP, runner1->QuitClosure());
   runner1->Run();
 
   EXPECT_EQ(PageInfoBubbleView::BUBBLE_PAGE_INFO,
@@ -55,10 +54,8 @@ IN_PROC_BROWSER_TEST_F(LocationIconViewTest, MAYBE_HideOnSecondClick) {
   scoped_refptr<content::MessageLoopRunner> runner2 =
       new content::MessageLoopRunner;
   ui_test_utils::MoveMouseToCenterAndPress(
-      location_icon_view,
-      ui_controls::LEFT,
-      ui_controls::DOWN | ui_controls::UP,
-      runner2->QuitClosure());
+      location_icon_view, ui_controls::LEFT,
+      ui_controls::DOWN | ui_controls::UP, runner2->QuitClosure());
   runner2->Run();
 
   EXPECT_EQ(PageInfoBubbleView::BUBBLE_NONE,

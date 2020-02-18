@@ -118,7 +118,7 @@ void LayerTreeFrameSinkHolder::ReclaimResources(
   for (auto& resource : resources) {
     // Skip resources that are also in last frame. This can happen if
     // the frame sink id changed.
-    if (base::ContainsValue(last_frame_resources_, resource.id)) {
+    if (base::Contains(last_frame_resources_, resource.id)) {
       continue;
     }
     resource_manager_.ReclaimResource(resource);

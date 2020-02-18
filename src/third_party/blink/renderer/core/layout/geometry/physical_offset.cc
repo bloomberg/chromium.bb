@@ -42,8 +42,8 @@ LogicalOffset PhysicalOffset::ConvertToLogical(WritingMode mode,
 }
 
 String PhysicalOffset::ToString() const {
-  return String::Format("%s,%s", left.ToString().Ascii().data(),
-                        top.ToString().Ascii().data());
+  return String::Format("%s,%s", left.ToString().Ascii().c_str(),
+                        top.ToString().Ascii().c_str());
 }
 
 std::ostream& operator<<(std::ostream& os, const PhysicalOffset& value) {

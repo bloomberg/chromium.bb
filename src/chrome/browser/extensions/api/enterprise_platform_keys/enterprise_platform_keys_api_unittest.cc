@@ -33,9 +33,9 @@
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "extensions/common/extension_builder.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -172,9 +172,9 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
   }
 
   // Derived classes can override this method to set the required authenticated
-  // user in the SigninManager class.
+  // user in the IdentityManager class.
   virtual void SetAuthenticatedUser() {
-    identity::MakePrimaryAccountAvailable(
+    signin::MakePrimaryAccountAvailable(
         IdentityManagerFactory::GetForProfile(browser()->profile()),
         kUserEmail);
   }
@@ -588,7 +588,7 @@ class EPKChallengeMachineKeyUnmanagedUserTest
     : public EPKChallengeMachineKeyTest {
  protected:
   void SetAuthenticatedUser() override {
-    identity::MakePrimaryAccountAvailable(
+    signin::MakePrimaryAccountAvailable(
         IdentityManagerFactory::GetForProfile(browser()->profile()),
         account_id_.GetUserEmail());
   }
@@ -601,7 +601,7 @@ class EPKChallengeMachineKeyUnmanagedUserTest
   const std::string email = "test@chromium.com";
   const AccountId account_id_ =
       AccountId::FromUserEmailGaiaId(email,
-                                     identity::GetTestGaiaIdForEmail(email));
+                                     signin::GetTestGaiaIdForEmail(email));
 };
 
 TEST_F(EPKChallengeMachineKeyUnmanagedUserTest, UserNotManaged) {
@@ -612,7 +612,7 @@ TEST_F(EPKChallengeMachineKeyUnmanagedUserTest, UserNotManaged) {
 class EPKChallengeUserKeyUnmanagedUserTest : public EPKChallengeUserKeyTest {
  protected:
   void SetAuthenticatedUser() override {
-    identity::MakePrimaryAccountAvailable(
+    signin::MakePrimaryAccountAvailable(
         IdentityManagerFactory::GetForProfile(browser()->profile()),
         account_id_.GetUserEmail());
   }
@@ -625,7 +625,7 @@ class EPKChallengeUserKeyUnmanagedUserTest : public EPKChallengeUserKeyTest {
   const std::string email = "test@chromium.com";
   const AccountId account_id_ =
       AccountId::FromUserEmailGaiaId(email,
-                                     identity::GetTestGaiaIdForEmail(email));
+                                     signin::GetTestGaiaIdForEmail(email));
 };
 
 TEST_F(EPKChallengeUserKeyUnmanagedUserTest, UserNotManaged) {

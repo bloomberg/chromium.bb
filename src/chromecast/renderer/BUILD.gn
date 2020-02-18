@@ -34,6 +34,8 @@ cast_source_set("renderer") {
     "cast_url_loader_throttle_provider.h",
     "native_bindings_helper.cc",
     "native_bindings_helper.h",
+    "on_load_script_injector.cc",
+    "on_load_script_injector.h",
     "queryable_data_bindings.cc",
     "queryable_data_bindings.h",
     "queryable_data_store.cc",
@@ -91,7 +93,7 @@ cast_source_set("renderer") {
   if (enable_chromecast_extensions) {
     sources += [
       "cast_extensions_dispatcher_delegate.cc",
-      "cast_extensions_dispatcher_delegate.g",
+      "cast_extensions_dispatcher_delegate.h",
       "cast_extensions_renderer_client.cc",
       "cast_extensions_renderer_client.h",
       "extensions/extension_hooks_delegate.cc",

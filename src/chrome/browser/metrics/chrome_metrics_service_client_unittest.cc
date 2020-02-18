@@ -156,7 +156,7 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
   size_t expected_providers = 3;
 
   // This is the number of metrics providers that are outside any #if macros.
-  expected_providers += 17;
+  expected_providers += 18;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   expected_providers++;  // ExtensionsMetricsProvider.
@@ -189,7 +189,8 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
 
 #if !defined(OS_CHROMEOS)
   // ChromeSigninStatusMetricsProvider (for non ChromeOS).
-  expected_providers++;
+  // AccessibilityMetricsProvider
+  expected_providers += 2;
 #endif  // !defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -199,6 +200,12 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
 #if defined(OS_MACOSX)
   expected_providers++;  // PowerMetricsProvider
 #endif                   // defined(OS_MACOSX)
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  expected_providers++;  // DesktopPlatformFeaturesMetricsProvider
+#endif                   //  defined(OS_WIN) || defined(OS_MACOSX) || \
+                         // (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 
   std::unique_ptr<ChromeMetricsServiceClient> chrome_metrics_service_client =
       ChromeMetricsServiceClient::Create(metrics_state_manager_.get());

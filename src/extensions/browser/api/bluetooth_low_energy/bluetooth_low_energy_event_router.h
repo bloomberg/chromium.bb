@@ -24,7 +24,7 @@
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/api/bluetooth_low_energy.h"
@@ -587,7 +587,7 @@ class BluetoothLowEnergyEventRouter
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothLowEnergyEventRouter> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothLowEnergyEventRouter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyEventRouter);
 };

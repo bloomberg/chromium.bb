@@ -16,7 +16,7 @@
 #include "components/arc/arc_features.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/usb/usb_host_ui_delegate.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -211,11 +211,12 @@ void ArcUsbHostBridge::GetDeviceInfo(const std::string& guid,
 }
 
 void ArcUsbHostBridge::OnConnectionReady() {
+  if (delegate_)
+    delegate_->AttachDevicesToArcVm();
+
   // Request UsbDeviceManagerPtr from DeviceService.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&usb_manager_));
+  content::GetSystemConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&usb_manager_));
   usb_manager_.set_connection_error_handler(
       base::BindOnce(&ArcUsbHostBridge::Disconnect, base::Unretained(this)));
 
@@ -241,6 +242,10 @@ void ArcUsbHostBridge::Shutdown() {
 
 void ArcUsbHostBridge::SetUiDelegate(ArcUsbHostUiDelegate* ui_delegate) {
   ui_delegate_ = ui_delegate;
+}
+
+void ArcUsbHostBridge::SetDelegate(std::unique_ptr<Delegate> delegate) {
+  delegate_ = std::move(delegate);
 }
 
 void ArcUsbHostBridge::InitDeviceList(
@@ -332,7 +337,7 @@ void ArcUsbHostBridge::OnDeviceAdded(
   DCHECK(device_info);
 
   // Update the device list.
-  DCHECK(!base::ContainsKey(devices_, device_info->guid));
+  DCHECK(!base::Contains(devices_, device_info->guid));
   std::string guid = device_info->guid;
   devices_.insert(std::make_pair(guid, std::move(device_info)));
 

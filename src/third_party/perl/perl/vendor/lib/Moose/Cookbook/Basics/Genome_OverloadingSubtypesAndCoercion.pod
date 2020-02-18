@@ -1,10 +1,11 @@
-package Moose::Cookbook::Basics::Genome_OverloadingSubtypesAndCoercion;
-
+# PODNAME: Moose::Cookbook::Basics::Genome_OverloadingSubtypesAndCoercion
 # ABSTRACT: Operator overloading, subtypes, and coercion
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Cookbook::Basics::Genome_OverloadingSubtypesAndCoercion - Operator overlo
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -209,7 +210,7 @@ returns a new C<Human::EyeColor> object.
 Our original C<Human> class requires just a few changes to incorporate
 our new C<Human::EyeColor> class.
 
-  use List::MoreUtils qw( zip );
+  use List::SomeUtils qw( zip );
 
   coerce 'Human::EyeColor'
       => from 'ArrayRef'
@@ -242,7 +243,7 @@ If you'd like to learn more about overloading, please read the
 documentation for the L<overload> pragma.
 
 To see all the code we created together, take a look at
-F<t/recipes/basics_recipe9.t>.
+F<t/recipes/basics_genome_overloadingsubtypesandcoercion.t>.
 
 =head1 NEXT STEPS
 
@@ -262,27 +263,56 @@ Had this been a real project we'd probably want:
 
 =back
 
-=head1 LICENSE
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
 
 This work is licensed under a Creative Commons Attribution 3.0 Unported License.
 
 License details are at: L<http://creativecommons.org/licenses/by/3.0/>
 
-=head1 AUTHOR
-
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
-
-=head1 COPYRIGHT AND LICENSE
-
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
-
 =cut
-
-
-__END__
-
-
-

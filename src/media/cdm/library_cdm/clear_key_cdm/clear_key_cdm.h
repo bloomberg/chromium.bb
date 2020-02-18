@@ -32,28 +32,12 @@ class FileIOTestRunner;
 const int64_t kInitialTimerDelayMs = 200;
 
 // Clear key implementation of the cdm::ContentDecryptionModule interfaces.
-class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
-                    public cdm::ContentDecryptionModule_10,
+class ClearKeyCdm : public cdm::ContentDecryptionModule_10,
                     public cdm::ContentDecryptionModule_11 {
  public:
   template <typename HostInterface>
   ClearKeyCdm(HostInterface* host, const std::string& key_system);
   ~ClearKeyCdm() override;
-
-  // cdm::ContentDecryptionModule_9 implementation.
-  void Initialize(bool allow_distinctive_identifier,
-                  bool allow_persistent_state) override;
-  cdm::Status InitializeAudioDecoder(
-      const cdm::AudioDecoderConfig_1& audio_decoder_config) override;
-  cdm::Status InitializeVideoDecoder(
-      const cdm::VideoDecoderConfig_1& video_decoder_config) override;
-  cdm::Status Decrypt(const cdm::InputBuffer_1& encrypted_buffer,
-                      cdm::DecryptedBlock* decrypted_block) override;
-  cdm::Status DecryptAndDecodeFrame(const cdm::InputBuffer_1& encrypted_buffer,
-                                    cdm::VideoFrame* video_frame) override;
-  cdm::Status DecryptAndDecodeSamples(
-      const cdm::InputBuffer_1& encrypted_buffer,
-      cdm::AudioFrames* audio_frames) override;
 
   // cdm::ContentDecryptionModule_10 implementation.
   cdm::Status InitializeVideoDecoder(

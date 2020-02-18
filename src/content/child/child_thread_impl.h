@@ -16,12 +16,11 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
-#include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "components/tracing/common/background_tracing_agent.mojom.h"
 #include "components/variations/child_process_field_trial_syncer.h"
 #include "content/common/associated_interfaces.mojom.h"
-#include "content/common/child_control.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/child/child_thread.h"
 #include "ipc/ipc.mojom.h"
@@ -30,6 +29,8 @@
 #include "ipc/message_router.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 
 #if defined(OS_WIN)
@@ -49,6 +50,10 @@ class ScopedIPCSupport;
 }  // namespace core
 }  // namespace mojo
 
+namespace tracing {
+class BackgroundTracingAgentProviderImpl;
+}  // namespace tracing
+
 namespace content {
 class InProcessChildThreadParams;
 class ThreadSafeSender;
@@ -59,8 +64,7 @@ class CONTENT_EXPORT ChildThreadImpl
       virtual public ChildThread,
       private base::FieldTrialList::Observer,
       public mojom::RouteProvider,
-      public blink::mojom::AssociatedInterfaceProvider,
-      public mojom::ChildControl {
+      public blink::mojom::AssociatedInterfaceProvider {
  public:
   struct CONTENT_EXPORT Options;
 
@@ -128,6 +132,13 @@ class CONTENT_EXPORT ChildThreadImpl
   // Returns the one child thread. Can only be called on the main thread.
   static ChildThreadImpl* current();
 
+  void GetBackgroundTracingAgentProvider(
+      mojo::PendingReceiver<tracing::mojom::BackgroundTracingAgentProvider>
+          receiver);
+  virtual void RunService(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
+
  protected:
   friend class ChildProcess;
 
@@ -139,17 +150,6 @@ class CONTENT_EXPORT ChildThreadImpl
   // ChildThreadImpl::Options::auto_start_service_manager_connection was set to
   // |false| on ChildThreadImpl construction.
   void StartServiceManagerConnection();
-
-  // mojom::ChildControl
-  void ProcessShutdown() override;
-#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
-  void SetIPCLoggingEnabled(bool enable) override;
-#endif
-  void RunService(
-      const std::string& service_name,
-      mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;
-
-  void OnChildControlRequest(mojom::ChildControlRequest);
 
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
   // IPC::Listener implementation:
@@ -179,9 +179,6 @@ class CONTENT_EXPORT ChildThreadImpl
 
   void Init(const Options& options);
 
-  // Initializes tracing if necessary.
-  void InitTracing();
-
   // We create the channel first without connecting it so we can add filters
   // prior to any messages being received, then connect it afterwards.
   void ConnectChannel();
@@ -207,7 +204,6 @@ class CONTENT_EXPORT ChildThreadImpl
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
 
-  mojo::BindingSet<mojom::ChildControl> child_control_bindings_;
   mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
   mojo::AssociatedBindingSet<blink::mojom::AssociatedInterfaceProvider, int32_t>
       associated_interface_provider_bindings_;
@@ -237,7 +233,8 @@ class CONTENT_EXPORT ChildThreadImpl
   // Used to quit the main thread.
   base::RepeatingClosure quit_closure_;
 
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
+  std::unique_ptr<tracing::BackgroundTracingAgentProviderImpl>
+      background_tracing_agent_provider_;
 
   scoped_refptr<base::SingleThreadTaskRunner> browser_process_io_runner_;
 
@@ -248,7 +245,7 @@ class CONTENT_EXPORT ChildThreadImpl
 
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
 
-  base::WeakPtrFactory<ChildThreadImpl> weak_factory_;
+  base::WeakPtrFactory<ChildThreadImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChildThreadImpl);
 };
@@ -267,6 +264,10 @@ struct ChildThreadImpl::Options {
   std::string in_process_service_request_token;
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner;
 
+  using ServiceBinder =
+      base::RepeatingCallback<void(mojo::GenericPendingReceiver)>;
+  ServiceBinder service_binder;
+
  private:
   Options();
 };
@@ -281,6 +282,7 @@ class ChildThreadImpl::Options::Builder {
   Builder& AddStartupFilter(IPC::MessageFilter* filter);
   Builder& IPCTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
+  Builder& ServiceBinder(ServiceBinder binder);
 
   Options Build();
 

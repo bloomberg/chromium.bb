@@ -29,10 +29,6 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-namespace net {
-class URLRequest;
-}  // namespace net
-
 namespace task_manager {
 
 // Defines the interface for any implementation of the task manager.
@@ -49,16 +45,6 @@ class TaskManagerInterface {
   // Gets the existing instance of the task manager if any, otherwise it will
   // create it first. Must be called on the UI thread.
   static TaskManagerInterface* GetTaskManager();
-
-  // This notification will be received on the IO thread from
-  // ChromeNetworkDelegate to update the task manager with read network usage.
-  static void OnRawBytesRead(const net::URLRequest& request,
-                             int64_t bytes_read);
-
-  // This notification will be received on the IO thread from
-  // ChromeNetworkDelegate to update the task manager with sent network usage.
-  static void OnRawBytesSent(const net::URLRequest& request,
-                             int64_t bytes_sent);
 
   void AddObserver(TaskManagerObserver* observer);
   void RemoveObserver(TaskManagerObserver* observer);

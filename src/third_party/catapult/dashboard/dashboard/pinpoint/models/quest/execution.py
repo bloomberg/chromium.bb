@@ -13,17 +13,6 @@ from oauth2client import client
 from dashboard.pinpoint.models import errors
 
 
-class FatalError(Exception):
-  """Base class for all execution errors.
-
-  These errors propagate further for debugging.
-  """
-
-
-class InformationalError(Exception):
-  """Errors that are non-fatal and logged."""
-
-
 class Execution(object):
   """Object tracking the execution of a Quest.
 
@@ -87,12 +76,31 @@ class Execution(object):
     """
     return self._result_arguments
 
+  # TODO(simonhatch): After migrating all Pinpoint entities, this can be
+  # removed.
+  # crbug.com/971370
+  def __setstate__(self, state):
+    self.__dict__ = state  # pylint: disable=attribute-defined-outside-init
+    if isinstance(self._exception, basestring):
+      self._exception = {
+          'message': self._exception.splitlines()[-1],
+          'traceback': self._exception
+      }
+
+
   def AsDict(self):
     d = {
         'completed': self._completed,
         'exception': self._exception,
         'details': self._AsDict(),
     }
+
+    if isinstance(self._exception, basestring):
+      d['exception'] = {
+          'message': self._exception.splitlines()[-1],
+          'traceback': self._exception
+      }
+
     return d
 
   def _AsDict(self):
@@ -114,15 +122,21 @@ class Execution(object):
       self._Poll()
     except client.AccessTokenRefreshError:
       raise errors.RecoverableError()
-    except (FatalError, RuntimeError):
+    except (errors.FatalError, RuntimeError):
       # Some built-in exceptions are derived from RuntimeError which we'd like
       # to treat as errors.
       raise
-    except Exception:  # pylint: disable=broad-except
+    except Exception as e:  # pylint: disable=broad-except
       # We allow broad exception handling here, because we log the exception and
       # display it in the UI.
       self._completed = True
-      self._exception = traceback.format_exc()
+      tb = traceback.format_exc()
+      if hasattr(e, 'task_output'):
+        tb += '\n%s' % getattr(e, 'task_output')
+      self._exception = {
+          'message': e.message,
+          'traceback': tb
+      }
     except:
       # All other exceptions must be propagated.
       raise

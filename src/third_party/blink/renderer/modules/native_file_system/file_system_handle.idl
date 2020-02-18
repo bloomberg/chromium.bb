@@ -4,6 +4,8 @@
 
 // https://wicg.github.io/native-file-system/#filesystemhandle
 [
+    Exposed=(Window,Worker),
+    SecureContext,
     RuntimeEnabled=NativeFileSystem,
     ImplementedAs=NativeFileSystemHandle
 ] interface FileSystemHandle {
@@ -15,9 +17,8 @@
 
     readonly attribute USVString name;
 
-    [CallWith=ScriptState] Promise<FileSystemHandle> moveTo(
-        FileSystemDirectoryHandle parent, optional USVString name);
-    [CallWith=ScriptState] Promise<FileSystemHandle> copyTo(
-        FileSystemDirectoryHandle parent, optional USVString name);
-    [CallWith=ScriptState] Promise<void> remove();
+    [CallWith = ScriptState] Promise<PermissionState> queryPermission(
+        optional FileSystemHandlePermissionDescriptor descriptor);
+    [CallWith = ScriptState] Promise<PermissionState> requestPermission(
+        optional FileSystemHandlePermissionDescriptor descriptor);
 };

@@ -17,43 +17,24 @@
 syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
+import "perfetto/trace/profiling/profile_common.proto";
+
 package perfetto.protos;
 
 message ProfilePacket {
+  // The following interning tables are only used in Android version Q.
+  // In newer versions, these tables are in InternedData
+  // (see protos/perfetto/trace/interned_data) and are shared across
+  // multiple ProfilePackets.
+  // For backwards compatibility, consumers need to first look up interned
+  // data in the tables within the ProfilePacket, and then, if they are empty,
+  // look up in the InternedData instead.
   repeated InternedString strings = 1;
-  message InternedString {
-    optional uint64 id = 1;
-    optional bytes str = 2;
-  }
-
   repeated Mapping mappings = 4;
-  message Mapping {
-    optional uint64 id = 1;        // Interning key.
-    optional uint64 build_id = 2;  // Interning key.
-    optional uint64 offset = 3;
-    optional uint64 start = 4;
-    optional uint64 end = 5;
-    optional uint64 load_bias = 6;
-    // E.g. ["system", "lib64", "libc.so"]
-    repeated uint64 path_string_ids = 7;  // id of string.
-  }
-
   repeated Frame frames = 2;
-  message Frame {
-    optional uint64 id = 1;  // Interning key
-    // E.g. "fopen"
-    optional uint64 function_name_id = 2;  // id of string.
-    optional uint64 mapping_id = 3;
-    optional uint64 rel_pc = 4;
-  }
-
   repeated Callstack callstacks = 3;
-  message Callstack {
-    optional uint64 id = 1;
-    // Frames of this callstack. Bottom frame first.
-    repeated uint64 frame_ids = 2;
-  }
 
+  // Next ID: 9
   message HeapSample {
     optional uint64 callstack_id = 1;
     // bytes allocated at this callstack.
@@ -61,10 +42,15 @@ message ProfilePacket {
     // bytes allocated at this callstack that have been freed.
     optional uint64 self_freed = 3;
     // bytes allocated at this callstack but not used since the last
-    // clear_refs.
+    // dump.
     // See documentation of idle_allocations in HeapprofdConfig for more
     // details.
     optional uint64 self_idle = 7;
+    // Bytes allocated by this callstack but not freed at the time the malloc
+    // heap usage of this process was maximal. This is only set if dump_at_max
+    // is true in HeapprofdConfig. In that case, self_allocated, self_freed and
+    // self_idle will not be set.
+    optional uint64 self_max = 8;
     optional uint64 timestamp = 4;  // timestamp [opt]
     // Number of allocations that were sampled at this callstack.
     optional uint64 alloc_count = 5;
@@ -141,4 +127,11 @@ message ProfilePacket {
 
   optional bool continued = 6;
   optional uint64 index = 7;
+}
+
+// Message used to represent individual stack samples sampled at discrete
+// points in time, rather than aggregated over an interval.
+message StreamingProfilePacket {
+  repeated uint64 callstack_iid = 1;  // Index into InternedData.callstacks
+  repeated int64 timestamp_delta_us = 2;
 }

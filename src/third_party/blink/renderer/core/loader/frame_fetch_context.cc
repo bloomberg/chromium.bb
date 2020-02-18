@@ -38,7 +38,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
@@ -46,7 +46,6 @@
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
-#include "third_party/blink/public/web/web_application_cache_host.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -64,7 +63,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -89,12 +87,12 @@
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
-#include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/detachable_use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
@@ -240,9 +238,9 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForCommittedDocument(
                                               properties),
       frame.GetTaskRunner(TaskType::kNetworking),
       MakeGarbageCollected<LoaderFactoryForFrame>(frame_or_imported_document));
-  auto* console_logger =
+  init.use_counter = MakeGarbageCollected<DetachableUseCounter>(&document);
+  init.console_logger =
       MakeGarbageCollected<DetachableConsoleLogger>(&document);
-  init.console_logger = console_logger;
   // Frame loading should normally start with |kTight| throttling, as the
   // frame will be in layout-blocking state until the <body> tag is inserted
   init.initial_throttling_policy =
@@ -276,9 +274,8 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
                                               properties),
       document->GetTaskRunner(blink::TaskType::kNetworking),
       MakeGarbageCollected<LoaderFactoryForFrame>(frame_or_imported_document));
-  auto* console_logger =
-      MakeGarbageCollected<DetachableConsoleLogger>(document);
-  init.console_logger = console_logger;
+  init.use_counter = MakeGarbageCollected<DetachableUseCounter>(document);
+  init.console_logger = MakeGarbageCollected<DetachableConsoleLogger>(document);
   init.frame_scheduler = frame.GetFrameScheduler();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(init);
   fetcher->SetResourceLoadObserver(
@@ -326,6 +323,10 @@ FrameFetchContext::GetPreviewsResourceLoadingHints() const {
   return document_loader->GetPreviewsResourceLoadingHints();
 }
 
+WebURLRequest::PreviewsState FrameFetchContext::previews_state() const {
+  return GetLocalFrameClient()->GetPreviewsStateForFrame();
+}
+
 LocalFrame* FrameFetchContext::GetFrame() const {
   return &frame_or_imported_document_->GetFrame();
 }
@@ -348,30 +349,6 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
 
   if (save_data_enabled_)
     request.SetHttpHeaderField(http_names::kSaveData, "on");
-
-  if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
-      WebURLRequest::kNoScriptOn) {
-    request.AddHttpHeaderField(
-        "Intervention",
-        "<https://www.chromestatus.com/features/4775088607985664>; "
-        "level=\"warning\"");
-  }
-
-  if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
-      WebURLRequest::kResourceLoadingHintsOn) {
-    request.AddHttpHeaderField(
-        "Intervention",
-        "<https://www.chromestatus.com/features/4510564810227712>; "
-        "level=\"warning\"");
-  }
-
-  if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
-      WebURLRequest::kClientLoFiOn) {
-    request.AddHttpHeaderField(
-        "Intervention",
-        "<https://www.chromestatus.com/features/6072546726248448>; "
-        "level=\"warning\"");
-  }
 }
 
 // TODO(toyoshim, arthursonzogni): PlzNavigate doesn't use this function to set
@@ -466,29 +443,6 @@ void FrameFetchContext::PrepareRequest(
   }
 }
 
-void FrameFetchContext::RecordLoadingActivity(
-    const ResourceRequest& request,
-    ResourceType type,
-    const AtomicString& fetch_initiator_name) {
-  if (GetResourceFetcherProperties().IsDetached() || !GetDocumentLoader() ||
-      GetDocumentLoader()->Archive() || !request.Url().IsValid())
-    return;
-  V8DOMActivityLogger* activity_logger = nullptr;
-  if (fetch_initiator_name == fetch_initiator_type_names::kXmlhttprequest) {
-    activity_logger = V8DOMActivityLogger::CurrentActivityLogger();
-  } else {
-    activity_logger =
-        V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld();
-  }
-
-  if (activity_logger) {
-    Vector<String> argv;
-    argv.push_back(Resource::ResourceTypeToString(type, fetch_initiator_name));
-    argv.push_back(request.Url());
-    activity_logger->LogEvent("blinkRequestResource", argv.size(), argv.data());
-  }
-}
-
 void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
   // Normally, |document_| is cleared on Document shutdown. However, Documents
   // for HTML imports will also not have a LocalFrame set: in that case, also
@@ -570,8 +524,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (RuntimeEnabledFeatures::UserAgentClientHintEnabled()) {
     StringBuilder result;
     result.Append(ua.brand.data());
-    const std::string& version =
-        use_full_ua ? ua.full_version : ua.major_version;
+    const auto& version = use_full_ua ? ua.full_version : ua.major_version;
     if (!version.empty()) {
       result.Append(' ');
       result.Append(version.data());
@@ -675,7 +628,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
             mojom::FeaturePolicyFeature::kClientHintRTT, resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kRtt, hints_preferences,
                            enabled_hints)) {
-    base::Optional<TimeDelta> http_rtt =
+    base::Optional<base::TimeDelta> http_rtt =
         GetNetworkStateNotifier().GetWebHoldbackHttpRtt();
     if (!http_rtt) {
       http_rtt = GetNetworkStateNotifier().HttpRtt();

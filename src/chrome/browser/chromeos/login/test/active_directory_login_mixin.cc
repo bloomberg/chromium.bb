@@ -6,8 +6,8 @@
 
 #include <initializer_list>
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/strings/string_piece.h"
-#include "chrome/browser/chromeos/login/login_shelf_test_helper.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -106,7 +106,13 @@ void ActiveDirectoryLoginMixin::TestLoginVisible() {
   test::OobeJS().ExpectHiddenPath({kGaiaSigninId, kGaiaSigninDialogId});
 
   // Checks if Active Directory signin is visible.
-  test::OobeJS().ExpectVisiblePath({kGaiaSigninId, kAdOfflineAuthId});
+  std::initializer_list<base::StringPiece> ad_screen{kGaiaSigninId,
+                                                     kAdOfflineAuthId};
+  test::OobeJS().ExpectVisiblePath(ad_screen);
+  test::OobeJS().ExpectNE(test::GetOobeElementPath(ad_screen) + ".clientWidth",
+                          0);
+  test::OobeJS().ExpectNE(test::GetOobeElementPath(ad_screen) + ".clientHeight",
+                          0);
   test::OobeJS().ExpectHiddenPath(
       {kGaiaSigninId, kAdOfflineAuthId, kAdMachineInput});
   test::OobeJS().ExpectHiddenPath(
@@ -121,7 +127,7 @@ void ActiveDirectoryLoginMixin::TestLoginVisible() {
           ".innerText.trim()",
       autocomplete_realm_);
 
-  EXPECT_TRUE(LoginShelfTestHelper().IsLoginShelfShown());
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsLoginShelfShown());
 }
 
 // Checks if Active Directory password change screen is shown.
@@ -222,7 +228,7 @@ void ActiveDirectoryLoginMixin::SubmitActiveDirectoryCredentials(
                               {kGaiaSigninId, kAdOfflineAuthId, kAdUserInput});
   test::OobeJS().TypeIntoPath(
       password, {kGaiaSigninId, kAdOfflineAuthId, kAdPasswordInput});
-  test::OobeJS().TapOnPath({kGaiaSigninId, kAdOfflineAuthId, kAdCredsButton});
+  test::OobeJS().ClickOnPath({kGaiaSigninId, kAdOfflineAuthId, kAdCredsButton});
 }
 
 // Sets username and password for the Active Directory login and submits it.
@@ -236,7 +242,7 @@ void ActiveDirectoryLoginMixin::SubmitActiveDirectoryPasswordChangeCredentials(
                               {kPasswordChangeId, kAdNewPassword1Input});
   test::OobeJS().TypeIntoPath(new_password2,
                               {kPasswordChangeId, kAdNewPassword2Input});
-  test::OobeJS().TapOnPath(
+  test::OobeJS().ClickOnPath(
       {kPasswordChangeId, kPasswordChangeFormId, kFormButtonId});
 }
 

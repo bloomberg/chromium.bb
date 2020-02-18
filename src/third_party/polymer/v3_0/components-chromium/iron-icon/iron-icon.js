@@ -11,10 +11,10 @@ found at http://polymer.github.io/PATENTS.txt
 import '../iron-flex-layout/iron-flex-layout.js';
 
 import {IronMeta} from '../iron-meta/iron-meta.js';
-import {Polymer} from '../polymer/lib/legacy/polymer-fn.js';
-import {dom} from '../polymer/lib/legacy/polymer.dom.js';
-import {html} from '../polymer/lib/utils/html-tag.js';
-import {Base} from '../polymer/polymer-legacy.js';
+import {Polymer} from '../polymer/polymer_bundled.min.js';
+import {dom} from '../polymer/polymer_bundled.min.js';
+import {html} from '../polymer/polymer_bundled.min.js';
+import {Base} from '../polymer/polymer_bundled.min.js';
 
 /**
 

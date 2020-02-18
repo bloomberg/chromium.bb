@@ -304,7 +304,7 @@ TEST_F(IntersectionObserverTest, HitTestAfterMutation) {
   GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 300),
                                                           kProgrammaticScroll);
 
-  HitTestLocation location(LayoutPoint(0, 0));
+  HitTestLocation location{PhysicalOffset()};
   HitTestResult result(
       HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive |
                      HitTestRequest::kAllowChildFrameContent),

@@ -215,7 +215,7 @@ class LoginUserView::UserLabel : public NonAccessibleView {
                                        gfx::ElideBehavior::ELIDE_TAIL));
   }
 
-  const base::string16& displayed_name() const { return user_name_->text(); }
+  const base::string16& displayed_name() const { return user_name_->GetText(); }
 
  private:
   views::Label* user_name_ = nullptr;
@@ -253,8 +253,8 @@ class LoginUserView::TapButton : public views::Button {
 class LoginUserView::UserDomainInfoView : public NonAccessibleView {
  public:
   UserDomainInfoView() : NonAccessibleView(kLoginUserDomainClassName) {
-    auto layout =
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
+    auto layout = std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal);
     layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kCenter);
     SetLayoutManager(std::move(layout));
@@ -651,7 +651,7 @@ void LoginUserView::SetLargeLayout() {
   // Use views::GridLayout instead of views::BoxLayout because views::BoxLayout
   // lays out children according to the view->children order.
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
 
   constexpr int kImageColumnId = 0;
   constexpr int kLabelDropdownColumnId = 1;
@@ -703,26 +703,26 @@ void LoginUserView::SetLargeLayout() {
   // Add views in rendering order.
   // Image
   layout->StartRow(0 /*vertical_resize*/, kImageColumnId);
-  layout->AddView(user_image_);
+  layout->AddExistingView(user_image_);
 
   add_padding(kVerticalSpacingBetweenEntriesDp);
 
   // Label/dropdown.
   layout->StartRow(0 /*vertical_resize*/, kLabelDropdownColumnId);
-  layout->AddView(user_label_);
+  layout->AddExistingView(user_label_);
   if (dropdown_)
-    layout->AddView(dropdown_);
+    layout->AddExistingView(dropdown_);
 
   if (user_domain_) {
     add_padding(kVerticalSpacingBetweenUserNameAndDomainDp);
     layout->StartRow(0 /*vertical_resize*/, kLabelDomainColumnId);
-    layout->AddView(user_domain_);
+    layout->AddExistingView(user_domain_);
   }
 }
 
 void LoginUserView::SetSmallishLayout() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       kSmallManyDistanceFromUserIconToUserLabelDp));
 
   AddChildView(user_image_);

@@ -31,14 +31,6 @@ const char kSessionMismatch[] = "XRSpace and XRFrame sessions do not match.";
 XRFrame::XRFrame(XRSession* session, XRWorldInformation* world_information)
     : world_information_(world_information), session_(session) {}
 
-std::unique_ptr<TransformationMatrix> XRFrame::CloneBasePoseMatrix() const {
-  if (!base_pose_matrix_) {
-    return nullptr;
-  }
-
-  return std::make_unique<TransformationMatrix>(*base_pose_matrix_);
-}
-
 XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
                                      ExceptionState& exception_state) const {
   if (!is_active_) {
@@ -67,12 +59,12 @@ XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
   session_->LogGetPose();
 
   std::unique_ptr<TransformationMatrix> pose =
-      reference_space->GetViewerPoseMatrix(CloneBasePoseMatrix());
+      reference_space->GetViewerPoseMatrix(base_pose_matrix_.get());
   if (!pose) {
     return nullptr;
   }
 
-  return MakeGarbageCollected<XRViewerPose>(session(), std::move(pose));
+  return MakeGarbageCollected<XRViewerPose>(session(), *pose);
 }
 
 // Return an XRPose that has a transform mapping to space A from space B, while
@@ -103,7 +95,7 @@ XRPose* XRFrame::getPose(XRSpace* space_A,
     return nullptr;
   }
 
-  return space_A->getPose(space_B, CloneBasePoseMatrix());
+  return space_A->getPose(space_B, base_pose_matrix_.get());
 }
 
 void XRFrame::SetBasePoseMatrix(const TransformationMatrix& base_pose_matrix) {

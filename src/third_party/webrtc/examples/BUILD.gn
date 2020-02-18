@@ -92,6 +92,8 @@ if (is_android) {
     testonly = true
     apk_name = "AppRTCMobile"
     android_manifest = "androidapp/AndroidManifest.xml"
+    min_sdk_version = 16
+    target_sdk_version = 29
 
     deps = [
       ":AppRTCMobile_javalib",
@@ -164,6 +166,8 @@ if (is_android) {
   rtc_instrumentation_test_apk("AppRTCMobile_test_apk") {
     apk_name = "AppRTCMobileTest"
     android_manifest = "androidtests/AndroidManifest.xml"
+    min_sdk_version = 16
+    target_sdk_version = 21
 
     java_files = [
       "androidtests/src/org/appspot/apprtc/test/PeerConnectionClientTest.java",
@@ -460,8 +464,8 @@ if (is_ios || (is_mac && target_cpu != "x86")) {
         "../api:scoped_refptr",
         "../api/audio_codecs:builtin_audio_decoder_factory",
         "../api/audio_codecs:builtin_audio_encoder_factory",
+        "../api/rtc_event_log:rtc_event_log_factory",
         "../api/task_queue:default_task_queue_factory",
-        "../logging:rtc_event_log_impl_base",
         "../media:rtc_audio_video",
         "../modules/audio_processing",
         "../modules/audio_processing:api",
@@ -646,6 +650,7 @@ if (is_linux || is_win) {
       "../api/audio:audio_mixer_api",
       "../api/audio_codecs:audio_codecs_api",
       "../api/video:video_frame_i420",
+      "../api/video:video_rtp_headers",
       "../api/video_codecs:video_codecs_api",
       "../media:rtc_media_base",
       "../p2p:rtc_p2p",
@@ -688,6 +693,7 @@ if (is_linux || is_win) {
       "../api/audio_codecs:builtin_audio_decoder_factory",
       "../api/audio_codecs:builtin_audio_encoder_factory",
       "../api/video:video_frame",
+      "../api/video:video_rtp_headers",
       "../api/video_codecs:builtin_video_decoder_factory",
       "../api/video_codecs:builtin_video_encoder_factory",
       "../media:rtc_audio_video",
@@ -701,6 +707,8 @@ if (is_linux || is_win) {
       "../rtc_base:rtc_base_approved",
       "../rtc_base:rtc_json",
       "../test:video_test_common",
+      "//third_party/abseil-cpp/absl/flags:flag",
+      "//third_party/abseil-cpp/absl/flags:parse",
       "//third_party/libyuv",
     ]
   }
@@ -718,9 +726,11 @@ if (is_linux || is_win) {
     ]
     deps = [
       "../rtc_base:rtc_base_approved",
-      "../rtc_tools:command_line_parser",
       "../system_wrappers:field_trial",
       "../test:field_trial",
+      "//third_party/abseil-cpp/absl/flags:flag",
+      "//third_party/abseil-cpp/absl/flags:parse",
+      "//third_party/abseil-cpp/absl/flags:usage",
     ]
   }
   rtc_executable("relayserver") {
@@ -795,6 +805,7 @@ if (is_win || is_android) {
       "../api/audio_codecs:builtin_audio_decoder_factory",
       "../api/audio_codecs:builtin_audio_encoder_factory",
       "../api/video:video_frame",
+      "../api/video:video_rtp_headers",
       "../media:rtc_audio_video",
       "../media:rtc_internal_video_codecs",
       "../media:rtc_media",
@@ -862,6 +873,8 @@ if (!build_with_chromium) {
       "../rtc_base",
       "../rtc_base:checks",
       "../rtc_base:rtc_base_approved",
+      "//third_party/abseil-cpp/absl/flags:flag",
+      "//third_party/abseil-cpp/absl/flags:parse",
     ]
   }
 }

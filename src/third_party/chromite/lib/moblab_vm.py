@@ -75,14 +75,16 @@ class MoblabVm(object):
   See cli/cros/cros_moblabvm.py for details about the setup.
   """
 
-  def __init__(self, workspace_dir):
+  def __init__(self, workspace_dir, chroot_dir=None):
     """Initialize us.
 
     Args:
       workspace_dir: An existing directory to be used for to drop files
           necessary for the setup.
+      chroot_dir: Specific chroot to pass to all cros_vm commands.
     """
     self.workspace = workspace_dir
+    self.chroot = chroot_dir
     self._config_path = os.path.join(self.workspace, _CONFIG_FILE_NAME)
     self._config = self._LoadConfig()
 
@@ -214,10 +216,10 @@ class MoblabVm(object):
     # Moreover, it should be able to cleanup after Start fails after partial
     # setup.
     if self._config[_CONFIG_DUT_SSH_PORT]:
-      _StopVM(self._config[_CONFIG_DUT_SSH_PORT])
+      _StopVM(self._config[_CONFIG_DUT_SSH_PORT], chroot_path=self.chroot)
       del self._config[_CONFIG_DUT_SSH_PORT]
     if self._config[_CONFIG_MOBLAB_SSH_PORT]:
-      _StopVM(self._config[_CONFIG_MOBLAB_SSH_PORT])
+      _StopVM(self._config[_CONFIG_MOBLAB_SSH_PORT], chroot_path=self.chroot)
       del self._config[_CONFIG_MOBLAB_SSH_PORT]
     if self._config[_CONFIG_DUT_TAP_DEV]:
       _RemoveTapDeviceIgnoringErrors(self._config[_CONFIG_DUT_TAP_DEV])
@@ -239,6 +241,15 @@ class MoblabVm(object):
     osutils.EmptyDir(self.workspace, ignore_missing=True, sudo=True)
     self._config = collections.defaultdict(str)
     # Don't self._Persist since the workspace is now clean.
+
+  @contextlib.contextmanager
+  def RunVmsContext(self):
+    """A context manager to start the VM and guarantee it is stopped."""
+    try:
+      self.Start()
+      yield
+    finally:
+      self.Destroy()
 
   @contextlib.contextmanager
   def MountedMoblabDiskContext(self):
@@ -294,7 +305,7 @@ class MoblabVm(object):
 
   def _ConfigRelativePathsToAbsolute(self, config_data, workspace_dir):
     """Converts all the relative paths loaded from config to absolute paths."""
-    for key, relpath in config_data.iteritems():
+    for key, relpath in config_data.items():
       if key not in _CONFIG_RELATIVE_PATH_KEYS:
         continue
       config_data[key] = os.path.realpath(os.path.join(workspace_dir, relpath))
@@ -302,7 +313,7 @@ class MoblabVm(object):
   def _ConfigAbsolutePathsToRelative(self, config_data, workspace_dir):
     """Converts all absolute paths to relative paths for persisting on disk."""
     workspace_dir = os.path.realpath(workspace_dir)
-    for key, abspath in config_data.iteritems():
+    for key, abspath in config_data.items():
       if key not in _CONFIG_RELATIVE_PATH_KEYS:
         continue
       abspath = os.path.realpath(abspath)
@@ -315,7 +326,7 @@ class MoblabVm(object):
     # resources. We attempt to create a bridge device a few times. Once we get a
     # hold of that, we base all other system global constants off of that to not
     # step our other moblabvms' toes.
-    for _ in xrange(5):
+    for _ in range(5):
       try:
         port, bridge_name = _TryCreateBridgeDevice()
         break
@@ -371,6 +382,7 @@ class MoblabVm(object):
         tap_mac_addr,
         is_moblab=True,
         disk_path=self._config[_CONFIG_MOBLAB_DISK],
+        chroot_path=self.chroot,
     )
     # Update config _after_ we've successfully launched the VM so that we don't
     # _Persist incorrect information.
@@ -393,6 +405,7 @@ class MoblabVm(object):
         self._config[_CONFIG_DUT_TAP_DEV],
         tap_mac_addr,
         is_moblab=False,
+        chroot_path=self.chroot,
     )
     # Update config _after_ we've successfully launched the VM so that we don't
     # _Persist incorrect information.
@@ -524,7 +537,7 @@ def _DeviceUp(device):
 
 
 def _StartVM(image_path, ssh_port, max_port, tap_dev, tap_mac_addr, is_moblab,
-             disk_path=None):
+             disk_path=None, chroot_path=None):
   """Starts a VM instance.
 
   Args:
@@ -535,6 +548,7 @@ def _StartVM(image_path, ssh_port, max_port, tap_dev, tap_mac_addr, is_moblab,
     tap_mac_addr: The MAC address of the secondary network device.
     is_moblab: Whether we're starting a moblab VM.
     disk_path: Moblab disk.
+    chroot_path: Location of chroot on disk to pass to cros_vm.
   """
   cmd = [
       './cros_vm', '--start', '--image-path=%s' % image_path,
@@ -542,6 +556,8 @@ def _StartVM(image_path, ssh_port, max_port, tap_dev, tap_mac_addr, is_moblab,
       '--qemu-args', '-net nic,macaddr=%s' % tap_mac_addr,
       '--qemu-args', '-net tap,ifname=%s' % tap_dev
   ]
+  if chroot_path:
+    cmd.extend(['--chroot-path', chroot_path])
   if is_moblab:
     moblab_monitoring_port = ssh_port + 1
     afe_port = ssh_port + 2
@@ -575,15 +591,21 @@ def _RemoveTapDeviceIgnoringErrors(name):
   _RunIgnoringErrors(['ip', 'tuntap', 'del', 'mode', 'tap', name])
 
 
-def _StopVM(ssh_port):
+def _StopVM(ssh_port, chroot_path=None):
   """Stops a running VM instance.
 
   Args:
     ssh_port: (int) port to use for ssh.
+    chroot_path: Location of chroot on  disk to pass to cros_vm.
   """
   logging.notice('Stopping the VM. This may take a minute.')
-  _RunIgnoringErrors(['%s/cros_vm' % constants.CHROMITE_BIN_DIR,
-                      '--stop', '--ssh-port=%d' % ssh_port])
+  cmd = [
+      '%s/cros_vm' % constants.CHROMITE_BIN_DIR,
+      '--stop', '--ssh-port=%d' % ssh_port,
+  ]
+  if chroot_path:
+    cmd.extend(['--chroot-path', chroot_path])
+  _RunIgnoringErrors(cmd)
 
 
 def _RunIgnoringErrors(cmd):

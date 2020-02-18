@@ -56,7 +56,7 @@ bool ClipboardFormatType::Equals(const ClipboardFormatType& other) const {
   return data_.cfFormat == other.data_.cfFormat;
 }
 
-// Various predefined ClipboardFormatTypes.
+// Predefined ClipboardFormatTypes.
 
 // static
 ClipboardFormatType ClipboardFormatType::GetType(
@@ -164,8 +164,8 @@ const ClipboardFormatType& ClipboardFormatType::GetCFHDropType() {
 }
 
 // Nothing prevents the drag source app from using the CFSTR_FILEDESCRIPTORA
-// ANSI format (e.g., it could be that it doesn't support UNICODE). So need to
-// register both the ANSI and UNICODE file group descriptors.
+// ANSI format (e.g., it could be that it doesn't support Unicode). So need to
+// register both the ANSI and Unicode file group descriptors.
 // static
 const ClipboardFormatType& ClipboardFormatType::GetFileDescriptorType() {
   CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
@@ -207,9 +207,6 @@ const ClipboardFormatType& ClipboardFormatType::GetFileContentAtIndexType(
     LONG index) {
   auto& index_to_type_map = GetFileContentTypeMap();
 
-  // Use base::WrapUnique instead of std::make_unique here since
-  // ClipboardFormatType constructor is private. See
-  // https://chromium.googlesource.com/chromium/src/+/HEAD/styleguide/c++/c++-dos-and-donts.md.
   auto insert_or_assign_result = index_to_type_map.insert(
       {index,
        ClipboardFormatType(::RegisterClipboardFormat(CFSTR_FILECONTENTS), index,

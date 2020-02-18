@@ -15,7 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/rand_util.h"
@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -148,7 +149,7 @@ class MockServiceIPCServer : public ServiceIPCServer {
 
   MockServiceIPCServer(
       ServiceIPCServer::Client* client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       base::WaitableEvent* shutdown_event)
       : ServiceIPCServer(client, io_task_runner, shutdown_event) {}
 
@@ -176,15 +177,15 @@ void MockServiceIPCServer::SetServiceEnabledExpectations() {
           WithoutArgs(Invoke(g_service_process, &::ServiceProcess::Shutdown))));
 }
 
-typedef base::Callback<void(MockServiceIPCServer* server)>
-    SetExpectationsCallback;
+using SetExpectationsCallback =
+    base::OnceCallback<void(MockServiceIPCServer* server)>;
 
 // The return value from this routine is used as the exit code for the mock
 // service process. Any non-zero return value will be printed out and can help
 // determine the failure.
 int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   base::PlatformThread::SetName("Main Thread");
-  base::MessageLoopForUI main_message_loop;
+  base::SingleThreadTaskExecutor executor(base::MessagePump::Type::UI);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   content::RegisterPathProvider();
 
@@ -200,8 +201,8 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   base::FilePath executable_path =
       command_line->GetSwitchValuePath(kTestExecutablePath);
   EXPECT_FALSE(executable_path.empty());
-  MockLaunchd mock_launchd(executable_path, main_message_loop.task_runner(),
-                           run_loop.QuitClosure(), true, true);
+  MockLaunchd mock_launchd(executable_path, executor.task_runner(),
+                           run_loop.QuitClosure(), true);
   Launchd::ScopedInstance use_mock(&mock_launchd);
 #endif
 
@@ -228,11 +229,11 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   MockServiceIPCServer server(&service_process,
                               service_process.io_task_runner(),
                               service_process.GetShutdownEventForTesting());
-  server.binder_registry().AddInterface(base::Bind(
+  server.binder_registry().AddInterface(base::BindRepeating(
       &cloud_print::CloudPrintMessageHandler::Create, &service_process));
 
   // Here is where the expectations/mock responses need to be set up.
-  set_expectations.Run(&server);
+  std::move(set_expectations).Run(&server);
 
   EXPECT_TRUE(server.Init());
   EXPECT_TRUE(state->SignalReady(service_process.io_task_runner().get(),
@@ -273,7 +274,7 @@ void SetServiceEnabledExpectations(MockServiceIPCServer* server) {
 
 MULTIPROCESS_TEST_MAIN(CloudPrintMockService_StartEnabledWaitForQuit) {
   return CloudPrintMockService_Main(
-      base::Bind(&SetServiceEnabledExpectations));
+      base::BindOnce(&SetServiceEnabledExpectations));
 }
 
 class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
@@ -394,7 +395,7 @@ void CloudPrintProxyPolicyStartupTest::SetUp() {
                                        &executable_path_));
   mock_launchd_.reset(new MockLaunchd(executable_path_,
                                       base::ThreadTaskRunnerHandle::Get(),
-                                      base::DoNothing(), true, false));
+                                      base::DoNothing(), false));
   scoped_launchd_instance_.reset(
       new Launchd::ScopedInstance(mock_launchd_.get()));
 #endif

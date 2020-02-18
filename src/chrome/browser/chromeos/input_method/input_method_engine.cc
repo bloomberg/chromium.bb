@@ -254,7 +254,7 @@ bool InputMethodEngine::UpdateMenuItems(
 void InputMethodEngine::HideInputView() {
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();
   if (keyboard_client->is_keyboard_enabled())
-    keyboard_client->HideKeyboard(ash::mojom::HideReason::kUser);
+    keyboard_client->HideKeyboard(ash::HideReason::kUser);
 }
 
 void InputMethodEngine::UpdateComposition(
@@ -328,6 +328,15 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
     return true;
   }
   return false;
+}
+
+void InputMethodEngine::ConfirmCompositionText() {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (input_context) {
+    input_context->ConfirmCompositionText();
+    composition_text_.reset(new ui::CompositionText());
+  }
 }
 
 void InputMethodEngine::EnableInputView() {

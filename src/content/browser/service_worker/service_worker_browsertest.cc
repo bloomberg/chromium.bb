@@ -36,6 +36,7 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -47,7 +48,6 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -3032,13 +3032,17 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerVersionBrowserTest, RendererCrash) {
   StartWorker(blink::ServiceWorkerStatusCode::kOk);
 
   // Crash the renderer process. The version should stop.
+  RenderProcessHost* process =
+      shell()->web_contents()->GetMainFrame()->GetProcess();
+  RenderProcessHostWatcher process_watcher(
+      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   base::RunLoop run_loop;
   StopObserver observer(run_loop.QuitClosure());
   RunOnIOThread(base::BindOnce(&ServiceWorkerVersion::AddObserver,
                                base::Unretained(version_.get()), &observer));
-  shell()->web_contents()->GetMainFrame()->GetProcess()->Shutdown(
-      content::RESULT_CODE_KILLED);
+  process->Shutdown(content::RESULT_CODE_KILLED);
   run_loop.Run();
+  process_watcher.Wait();
 
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
   RunOnIOThread(base::BindOnce(&ServiceWorkerVersion::RemoveObserver,
@@ -3263,7 +3267,7 @@ class CacheStorageSideDataSizeChecker
 
   void OpenCacheOnIOThread(int* result, base::OnceClosure continuation) {
     CacheStorageHandle cache_storage =
-        cache_storage_context_->cache_manager()->OpenCacheStorage(
+        cache_storage_context_->CacheManager()->OpenCacheStorage(
             url::Origin::Create(origin_), CacheStorageOwner::kCacheAPI);
     cache_storage.value()->OpenCache(
         cache_name_, /* trace_id = */ 0,
@@ -3724,9 +3728,20 @@ class ThrottlingContentBrowserClient : public TestContentBrowserClient {
   ~ThrottlingContentBrowserClient() override {}
 
   // ContentBrowserClient overrides:
-  std::vector<std::unique_ptr<URLLoaderThrottle>> CreateURLLoaderThrottles(
+  std::vector<std::unique_ptr<URLLoaderThrottle>> CreateURLLoaderThrottlesOnIO(
       const network::ResourceRequest& request,
       ResourceContext* resource_context,
+      const base::RepeatingCallback<WebContents*()>& wc_getter,
+      NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id) override {
+    return CreateURLLoaderThrottles(request, /*browser_context=*/nullptr,
+                                    wc_getter, navigation_ui_data,
+                                    frame_tree_node_id);
+  }
+
+  std::vector<std::unique_ptr<URLLoaderThrottle>> CreateURLLoaderThrottles(
+      const network::ResourceRequest& request,
+      BrowserContext* browser_context,
       const base::RepeatingCallback<WebContents*()>& wc_getter,
       NavigationUIData* navigation_ui_data,
       int frame_tree_node_id) override {
@@ -3801,6 +3816,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerURLLoaderThrottleTest,
   EXPECT_TRUE(CheckHeader(*dict, "accept",
                           std::string(network::kFrameAcceptHeader) +
                               std::string(kAcceptHeaderSignedExchangeSuffix)));
+
   // Injected headers are present.
   EXPECT_TRUE(CheckHeader(*dict, "x-injected", "injected value"));
 

@@ -8,6 +8,8 @@ import("../../../testing/test.gni")
 
 jumbo_source_set("edit") {
   sources = [
+    "cpdf_contentstream_write_utils.cpp",
+    "cpdf_contentstream_write_utils.h",
     "cpdf_creator.cpp",
     "cpdf_creator.h",
     "cpdf_pagecontentgenerator.cpp",
@@ -22,6 +24,7 @@ jumbo_source_set("edit") {
     "../../../constants",
     "../../../third_party:skia_shared",
     "../../fxcrt",
+    "../../fxge",
     "../font",
     "../page",
     "../parser",
@@ -36,9 +39,11 @@ pdfium_unittest_source_set("unittests") {
   deps = [
     ":edit",
     "../",
+    "../../fxge",
     "../font",
     "../page",
     "../parser",
+    "../render",
   ]
   pdfium_root_dir = "../../../"
 }

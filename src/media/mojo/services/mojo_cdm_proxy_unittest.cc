@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/test_message_loop.h"
-#include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/cdm/cdm_proxy_context.h"
 #include "media/mojo/interfaces/cdm_proxy.mojom.h"
@@ -44,7 +44,7 @@ class MockCdmProxyContext : public CdmProxyContext {};
 
 class MockCdmProxy : public media::CdmProxy, public media::CdmContext {
  public:
-  MockCdmProxy() : weak_factory_(this) {}
+  MockCdmProxy() {}
   ~MockCdmProxy() override = default;
 
   // media::CdmProxy implementation.
@@ -84,7 +84,7 @@ class MockCdmProxy : public media::CdmProxy, public media::CdmContext {
 
  private:
   MockCdmProxyContext mock_cdm_proxy_context_;
-  base::WeakPtrFactory<MockCdmProxy> weak_factory_;
+  base::WeakPtrFactory<MockCdmProxy> weak_factory_{this};
 };
 
 class MockCdmProxyClient : public cdm::CdmProxyClient {

@@ -1,12 +1,4 @@
-# Pod::Text::Overstrike -- Convert POD data to formatted overstrike text
-#
-# Created by Joe Smith <Joe.Smith@inwap.com> 30-Nov-2000
-#   (based on Pod::Text::Color by Russ Allbery <rra@stanford.edu>)
-# Copyright 2000 Joe Smith <Joe.Smith@inwap.com>.
-# Copyright 2001, 2004, 2008 Russ Allbery <rra@stanford.edu>.
-#
-# This program is free software; you may redistribute it and/or modify it
-# under the same terms as Perl itself.
+# Convert POD data to formatted overstrike text
 #
 # This was written because the output from:
 #
@@ -18,6 +10,8 @@
 #
 # and because both Pod::Text::Color and Pod::Text::Termcap are not device
 # independent.
+#
+# SPDX-License-Identifier: GPL-1.0-or-later OR Artistic-1.0-Perl
 
 ##############################################################################
 # Modules and declarations
@@ -25,22 +19,23 @@
 
 package Pod::Text::Overstrike;
 
-require 5.004;
+use 5.006;
+use strict;
+use warnings;
+
+use vars qw(@ISA $VERSION);
 
 use Pod::Text ();
 
-use strict;
-use vars qw(@ISA $VERSION);
-
 @ISA = qw(Pod::Text);
 
-$VERSION = '2.04';
+$VERSION = '4.11';
 
 ##############################################################################
 # Overrides
 ##############################################################################
 
-# Make level one headings bold, overridding any existing formatting.
+# Make level one headings bold, overriding any existing formatting.
 sub cmd_head1 {
     my ($self, $attrs, $text) = @_;
     $text =~ s/\s+$//;
@@ -140,15 +135,12 @@ sub wrap {
 1;
 __END__
 
+=for stopwords
+overstrike overstruck Overstruck Allbery terminal's
+
 =head1 NAME
 
-=for stopwords
-overstrike
-
 Pod::Text::Overstrike - Convert POD data to formatted overstrike text
-
-=for stopwords
-overstruck Overstruck Allbery terminal's
 
 =head1 SYNOPSIS
 
@@ -184,25 +176,30 @@ Currently, the outermost formatting instruction wins, so for example
 underlined text inside a region of bold text is displayed as simply bold.
 There may be some better approach possible.
 
+=head1 AUTHOR
+
+Originally written by Joe Smith <Joe.Smith@inwap.com>, using the framework
+created by Russ Allbery <rra@cpan.org>.  Subsequently updated by Russ Allbery.
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2000 by Joe Smith <Joe.Smith@inwap.com>
+
+Copyright 2001, 2004, 2008, 2014, 2018 by Russ Allbery <rra@cpan.org>
+
+This program is free software; you may redistribute it and/or modify it
+under the same terms as Perl itself.
+
 =head1 SEE ALSO
 
 L<Pod::Text>, L<Pod::Simple>
 
 The current version of this module is always available from its web site at
-L<http://www.eyrie.org/~eagle/software/podlators/>.  It is also part of the
+L<https://www.eyrie.org/~eagle/software/podlators/>.  It is also part of the
 Perl core distribution as of 5.6.0.
 
-=head1 AUTHOR
-
-Joe Smith <Joe.Smith@inwap.com>, using the framework created by Russ Allbery
-<rra@stanford.edu>.
-
-=head1 COPYRIGHT AND LICENSE
-
-Copyright 2000 by Joe Smith <Joe.Smith@inwap.com>.
-Copyright 2001, 2004, 2008 by Russ Allbery <rra@stanford.edu>.
-
-This program is free software; you may redistribute it and/or modify it
-under the same terms as Perl itself.
-
 =cut
+
+# Local Variables:
+# copyright-at-end-flag: t
+# End:

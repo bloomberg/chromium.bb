@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -15,10 +14,10 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/crypto.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
@@ -40,8 +39,7 @@ String GetSha256String(const String& content) {
     return "sha256-...";
   }
 
-  return "sha256-" + Base64Encode(reinterpret_cast<char*>(digest.data()),
-                                  digest.size(), kBase64DoNotInsertLFs);
+  return "sha256-" + Base64Encode(digest);
 }
 
 ContentSecurityPolicyHashAlgorithm ConvertHashAlgorithmToCSPHashAlgorithm(
@@ -162,6 +160,11 @@ CSPDirectiveList* CSPDirectiveList::Create(
             ->GetText() +
         "\".\n";
     directives->SetEvalDisabledErrorMessage(message);
+  } else if (directives->trusted_types_) {
+    String message =
+        "Refused to evaluate a string as JavaScript because this document "
+        "requires 'Trusted Type' assignment.";
+    directives->SetEvalDisabledErrorMessage(message);
   }
 
   if (directives->IsReportOnly() &&
@@ -180,7 +183,8 @@ void CSPDirectiveList::ReportViolation(
     const String& console_message,
     const KURL& blocked_url,
     ResourceRequest::RedirectStatus redirect_status,
-    ContentSecurityPolicy::ViolationType violation_type) const {
+    ContentSecurityPolicy::ViolationType violation_type,
+    const String& sample) const {
   String message =
       IsReportOnly() ? "[Report Only] " + console_message : console_message;
   policy_->LogToConsole(
@@ -191,7 +195,9 @@ void CSPDirectiveList::ReportViolation(
                            header_type_, violation_type,
                            std::unique_ptr<SourceLocation>(),
                            nullptr,  // localFrame
-                           redirect_status);
+                           redirect_status,
+                           nullptr,  // Element*
+                           sample);
 }
 
 void CSPDirectiveList::ReportViolationWithFrame(
@@ -324,7 +330,8 @@ void CSPDirectiveList::ReportMixedContent(
 }
 
 bool CSPDirectiveList::AllowTrustedTypeAssignmentFailure(
-    const String& message) const {
+    const String& message,
+    const String& sample) const {
   if (!trusted_types_)
     return true;
 
@@ -332,7 +339,7 @@ bool CSPDirectiveList::AllowTrustedTypeAssignmentFailure(
                       ContentSecurityPolicy::DirectiveType::kTrustedTypes),
                   ContentSecurityPolicy::DirectiveType::kTrustedTypes, message,
                   KURL(), RedirectStatus::kFollowedRedirect,
-                  ContentSecurityPolicy::kTrustedTypesViolation);
+                  ContentSecurityPolicy::kTrustedTypesViolation, sample);
   return IsReportOnly();
 }
 
@@ -773,6 +780,16 @@ bool CSPDirectiveList::AllowWasmEval(
              ContentSecurityPolicy::DirectiveType::kScriptSrc));
 }
 
+bool CSPDirectiveList::ShouldDisableEvalBecauseScriptSrc() const {
+  return !AllowEval(
+      nullptr, SecurityViolationReportingPolicy::kSuppressReporting,
+      ContentSecurityPolicy::kWillNotThrowException, g_empty_string);
+}
+
+bool CSPDirectiveList::ShouldDisableEvalBecauseTrustedTypes() const {
+  return trusted_types_;
+}
+
 bool CSPDirectiveList::AllowPluginType(
     const String& type,
     const String& type_attribute,
@@ -859,8 +876,8 @@ bool CSPDirectiveList::AllowTrustedTypePolicy(const String& policy_name) const {
           "Refused to create a TrustedTypePolicy named '%s' because "
           "it violates the following Content Security Policy directive: "
           "\"%s\".",
-          policy_name.Utf8().data(),
-          trusted_types_.Get()->GetText().Utf8().data()),
+          policy_name.Utf8().c_str(),
+          trusted_types_.Get()->GetText().Utf8().c_str()),
       KURL(), RedirectStatus::kNoRedirect);
 
   return DenyIfEnforcingPolicy();
@@ -1576,30 +1593,25 @@ WebContentSecurityPolicy CSPDirectiveList::ExposeForNavigationalChecks() const {
   policy.disposition =
       static_cast<mojom::ContentSecurityPolicyType>(header_type_);
   policy.source = static_cast<WebContentSecurityPolicySource>(header_source_);
-  std::vector<WebContentSecurityPolicyDirective> directives;
   for (const auto& directive :
        {child_src_, default_src_, form_action_, frame_src_, navigate_to_}) {
     if (directive) {
-      directives.push_back(WebContentSecurityPolicyDirective{
+      policy.directives.emplace_back(WebContentSecurityPolicyDirective{
           directive->DirectiveName(),
           directive->ExposeForNavigationalChecks()});
     }
   }
   if (upgrade_insecure_requests_) {
-    directives.push_back(WebContentSecurityPolicyDirective{
+    policy.directives.emplace_back(WebContentSecurityPolicyDirective{
         blink::WebString("upgrade-insecure-requests"),
         WebContentSecurityPolicySourceList()});
   }
-  policy.directives = directives;
 
-  std::vector<WebString> report_endpoints;
   for (const auto& report_endpoint : ReportEndpoints()) {
-    report_endpoints.push_back(report_endpoint);
+    policy.report_endpoints.emplace_back(report_endpoint);
   }
 
   policy.use_reporting_api = use_reporting_api_;
-
-  policy.report_endpoints = report_endpoints;
 
   policy.header = Header();
 

@@ -75,8 +75,7 @@ TiclInvalidationService::TiclInvalidationService(
       gcm_driver_(gcm_driver),
       network_task_runner_(network_task_runner),
       url_loader_factory_(std::move(url_loader_factory)),
-      network_connection_tracker_(network_connection_tracker),
-      weak_ptr_factory_(this) {
+      network_connection_tracker_(network_connection_tracker) {
   if (get_socket_factory_callback) {  // sometimes null in unit tests
     get_socket_factory_callback_ = base::BindRepeating(
         get_socket_factory_callback, weak_ptr_factory_.GetWeakPtr());
@@ -199,7 +198,7 @@ void TiclInvalidationService::RequestAccessToken() {
   if (access_token_fetcher_ != nullptr)
     return;
   request_access_token_retry_timer_.Stop();
-  OAuth2TokenService::ScopeSet oauth2_scopes;
+  OAuth2AccessTokenManager::ScopeSet oauth2_scopes;
   for (size_t i = 0; i < base::size(kOAuth2Scopes); i++)
     oauth2_scopes.insert(kOAuth2Scopes[i]);
   // Invalidate previous token, otherwise the identity provider will return the

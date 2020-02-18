@@ -142,6 +142,7 @@ GLenum InternalFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::P010:
       NOTREACHED() << gfx::BufferFormatToString(format);
       return 0;
   }
@@ -175,6 +176,7 @@ uint32_t BufferFormatToFourCC(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::UYVY_422:
+    case gfx::BufferFormat::P010:
       return libyuv::FOURCC_ANY;
   }
   NOTREACHED();
@@ -202,7 +204,7 @@ TEST_P(GpuMemoryBufferTest, MapUnmap) {
   constexpr uint8_t color_rgba[] = {127u, 0u, 0u, 255u};
   constexpr uint8_t color_bgra[] = {0u, 0u, 127u, 255u};
 
-  const size_t num_planes = NumberOfPlanesForBufferFormat(buffer_format);
+  const size_t num_planes = NumberOfPlanesForLinearBufferFormat(buffer_format);
   for (size_t plane = 0; plane < num_planes; ++plane) {
     gl::GLImageTestSupport::SetBufferDataToColor(
         kImageWidth, kImageHeight, buffer->stride(plane), plane, buffer_format,
@@ -298,7 +300,7 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
   ASSERT_NE(0, buffer->stride(0));
   constexpr uint8_t pixel[] = {255u, 0u, 0u, 255u};
 
-  const size_t num_planes = NumberOfPlanesForBufferFormat(buffer_format);
+  const size_t num_planes = NumberOfPlanesForLinearBufferFormat(buffer_format);
   for (size_t plane = 0; plane < num_planes; ++plane) {
     gl::GLImageTestSupport::SetBufferDataToColor(
         kImageWidth, kImageHeight, buffer->stride(plane), plane, buffer_format,

@@ -23,7 +23,6 @@
 
 namespace views {
 
-const char Link::kViewClassName[] = "Link";
 constexpr int Link::kFocusBorderPadding;
 
 Link::Link(const base::string16& title, int text_context, int text_style)
@@ -61,14 +60,10 @@ gfx::Insets Link::GetInsets() const {
   gfx::Insets insets = Label::GetInsets();
   if (GetFocusStyle() == FocusStyle::RING &&
       GetFocusBehavior() != FocusBehavior::NEVER) {
-    DCHECK(!text().empty());
+    DCHECK(!GetText().empty());
     insets += gfx::Insets(kFocusBorderPadding);
   }
   return insets;
-}
-
-const char* Link::GetClassName() const {
-  return kViewClassName;
 }
 
 gfx::NativeCursor Link::GetCursor(const ui::MouseEvent& event) {
@@ -253,7 +248,7 @@ void Link::RecalculateFont() {
 
 void Link::ConfigureFocus() {
   // Disable focusability for empty links.
-  if (text().empty()) {
+  if (GetText().empty()) {
     SetFocusBehavior(FocusBehavior::NEVER);
   } else {
 #if defined(OS_MACOSX)
@@ -278,5 +273,9 @@ SkColor Link::GetColor() {
       pressed_ ? ui::NativeTheme::kColorId_LinkPressed
                : ui::NativeTheme::kColorId_LinkEnabled);
 }
+
+BEGIN_METADATA(Link)
+METADATA_PARENT_CLASS(Label)
+END_METADATA()
 
 }  // namespace views

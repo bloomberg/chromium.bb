@@ -35,6 +35,7 @@
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/test_engine_components_factory.h"
 #include "components/sync/engine_impl/cycle/sync_cycle.h"
+#include "components/sync/engine_impl/sync_encryption_handler_impl.h"
 #include "components/sync/engine_impl/sync_scheduler.h"
 #include "components/sync/engine_impl/test_entry_factory.h"
 #include "components/sync/js/js_event_handler.h"
@@ -879,11 +880,10 @@ class TestHttpPostProviderFactory : public HttpPostProviderFactory {
 class SyncManagerObserverMock : public SyncManager::Observer {
  public:
   MOCK_METHOD1(OnSyncCycleCompleted, void(const SyncCycleSnapshot&));  // NOLINT
-  MOCK_METHOD4(OnInitializationComplete,
+  MOCK_METHOD3(OnInitializationComplete,
                void(const WeakHandle<JsBackend>&,
                     const WeakHandle<DataTypeDebugInfoListener>&,
-                    bool,
-                    ModelTypeSet));                                 // NOLINT
+                    bool));                                         // NOLINT
   MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus));   // NOLINT
   MOCK_METHOD1(OnUpdatedToken, void(const std::string&));           // NOLINT
   MOCK_METHOD1(OnActionableError, void(const SyncProtocolError&));  // NOLINT
@@ -934,7 +934,7 @@ class SyncManagerTest : public testing::Test,
     extensions_activity_ = new ExtensionsActivity();
 
     sync_manager_.AddObserver(&manager_observer_);
-    EXPECT_CALL(manager_observer_, OnInitializationComplete(_, _, _, _))
+    EXPECT_CALL(manager_observer_, OnInitializationComplete(_, _, _))
         .WillOnce(DoAll(SaveArg<0>(&js_backend_),
                         SaveArg<2>(&initialization_succeeded_)));
 
@@ -952,6 +952,11 @@ class SyncManagerTest : public testing::Test,
         std::make_unique<StrictMock<SyncEncryptionHandlerObserverMock>>();
     encryption_observer_ = encryption_observer.get();
 
+    encryption_handler_ = std::make_unique<SyncEncryptionHandlerImpl>(
+        &user_share_, &encryptor_, /*restored_key_for_bootstrapping=*/"",
+        /*restored_keystore_key_for_bootstrapping=*/"",
+        base::BindRepeating(&Nigori::GenerateScryptSalt));
+
     SyncManager::InitArgs args;
     args.database_location = temp_dir_.GetPath();
     args.service_url = GURL("https://example.com/");
@@ -967,7 +972,8 @@ class SyncManagerTest : public testing::Test,
     args.enable_local_sync_backend = enable_local_sync_backend;
     args.local_sync_backend_folder = temp_dir_.GetPath();
     args.engine_components_factory.reset(GetFactory());
-    args.encryptor = &encryptor_;
+    args.user_share = &user_share_;
+    args.encryption_handler = encryption_handler_.get();
     args.unrecoverable_error_handler =
         MakeWeakHandle(mock_unrecoverable_error_handler_.GetWeakPtr());
     args.cancelation_signal = &cancelation_signal_;
@@ -1163,6 +1169,8 @@ class SyncManagerTest : public testing::Test,
 
  protected:
   FakeEncryptor encryptor_;
+  UserShare user_share_;
+  std::unique_ptr<SyncEncryptionHandler> encryption_handler_;
   SyncManagerImpl sync_manager_;
   CancelationSignal cancelation_signal_;
   WeakHandle<JsBackend> js_backend_;
@@ -1338,15 +1346,15 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 // and re-encrypt everything.
 // (case 2 in SyncManager::SyncInternal::SetEncryptionPassphrase)
 TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
-  Cryptographer verifier(&encryptor_);
+  Cryptographer verifier;
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     // Store the default (soon to be old) key.
     Cryptographer* cryptographer = trans.GetCryptographer();
     std::string bootstrap_token;
-    cryptographer->GetBootstrapToken(&bootstrap_token);
-    verifier.Bootstrap(bootstrap_token);
+    cryptographer->GetBootstrapToken(encryptor_, &bootstrap_token);
+    verifier.Bootstrap(encryptor_, bootstrap_token);
 
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
@@ -1388,13 +1396,13 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
 // (case 7 in SyncManager::SyncInternal::SetDecryptionPassphrase)
 TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
-  Cryptographer other_cryptographer(&encryptor_);
+  Cryptographer other_cryptographer;
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
     std::string bootstrap_token;
-    cryptographer->GetBootstrapToken(&bootstrap_token);
-    other_cryptographer.Bootstrap(bootstrap_token);
+    cryptographer->GetBootstrapToken(encryptor_, &bootstrap_token);
+    other_cryptographer.Bootstrap(encryptor_, bootstrap_token);
 
     // Now update the nigori to reflect the new keys, and update the
     // cryptographer to have pending keys.
@@ -1431,13 +1439,13 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
 // (case 9 in SyncManager::SyncInternal::SetDecryptionPassphrase)
 TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
-  Cryptographer other_cryptographer(&encryptor_);
+  Cryptographer other_cryptographer;
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
     std::string bootstrap_token;
-    cryptographer->GetBootstrapToken(&bootstrap_token);
-    other_cryptographer.Bootstrap(bootstrap_token);
+    cryptographer->GetBootstrapToken(encryptor_, &bootstrap_token);
+    other_cryptographer.Bootstrap(encryptor_, bootstrap_token);
 
     // Now update the nigori to reflect the new keys, and update the
     // cryptographer to have pending keys.
@@ -2044,7 +2052,7 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorPasswords) {
     // Create a synced bookmark with undecryptable data.
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
 
-    Cryptographer other_cryptographer(&encryptor_);
+    Cryptographer other_cryptographer;
     KeyParams fake_params = {KeyDerivationParams::CreateForPbkdf2(),
                              "fake_key"};
     other_cryptographer.AddKey(fake_params);
@@ -2087,7 +2095,7 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorBookmarks) {
     // Create a synced bookmark with undecryptable data.
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
 
-    Cryptographer other_cryptographer(&encryptor_);
+    Cryptographer other_cryptographer;
     KeyParams fake_params = {KeyDerivationParams::CreateForPbkdf2(),
                              "fake_key"};
     other_cryptographer.AddKey(fake_params);

@@ -56,6 +56,8 @@ class CORE_EXPORT ImageResourceContent final
   // Creates ImageResourceContent from an already loaded image.
   static ImageResourceContent* CreateLoaded(scoped_refptr<blink::Image>);
 
+  static ImageResourceContent* CreateLazyImagePlaceholder();
+
   static ImageResourceContent* Fetch(FetchParameters&, ResourceFetcher*);
 
   explicit ImageResourceContent(scoped_refptr<blink::Image> = nullptr);
@@ -109,7 +111,7 @@ class CORE_EXPORT ImageResourceContent final
 
   // Redirecting methods to Resource.
   const KURL& Url() const;
-  TimeTicks LoadResponseEnd() const;
+  base::TimeTicks LoadResponseEnd() const;
   bool IsAccessAllowed();
   const ResourceResponse& GetResponse() const;
   base::Optional<ResourceError> GetResourceError() const;

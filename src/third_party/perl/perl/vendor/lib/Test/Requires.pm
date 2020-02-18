@@ -1,9 +1,9 @@
 package Test::Requires;
 use strict;
 use warnings;
-our $VERSION = '0.06';
+our $VERSION = '0.10';
 use base 'Test::Builder::Module';
-use 5.006000;
+use 5.006;
 
 sub import {
     my $class = shift;
@@ -58,11 +58,17 @@ sub test_requires {
                 exit 0;
             }
         };
+        
+        my $msg = "$e";
         if ( $e =~ /^Can't locate/ ) {
-            $skip_all->("Test requires module '$mod' but it's not found");
+            $msg = "Test requires module '$mod' but it's not found";
+        }
+        
+        if ($ENV{RELEASE_TESTING}) {
+            __PACKAGE__->builder->BAIL_OUT($msg);
         }
         else {
-            $skip_all->("$e");
+            $skip_all->($msg);
         }
     }
 }
@@ -106,6 +112,13 @@ Test::Requires checks to see if the module can be loaded.
 
 If this fails rather than failing tests this B<skips all tests>.
 
+Test::Requires can also be used to require a minimum version of Perl:
+
+    use Test::Requires "5.010";  # quoting is necessary!!
+    
+    # or
+    use Test::Requires "v5.10";
+
 =head1 AUTHOR
 
 Tokuhiro Matsuno E<lt>tokuhirom @*(#RJKLFHFSDLJF gmail.comE<gt>
@@ -115,6 +128,12 @@ Tokuhiro Matsuno E<lt>tokuhirom @*(#RJKLFHFSDLJF gmail.comE<gt>
     kazuho++ # some tricky stuff
     miyagawa++ # original code from t/TestPlagger.pm
     tomyhero++ # reported issue related older test::builder
+    tobyink++ # documented that Test::Requires "5.010" works
+
+=head1 ENVIRONMENT
+
+If the C<< RELEASE_TESTING >> environment variable is true, then instead
+of skipping tests, Test::Requires bails out.
 
 =head1 SEE ALSO
 

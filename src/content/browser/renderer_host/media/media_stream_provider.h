@@ -37,16 +37,16 @@ enum { kInvalidMediaCaptureSessionId = 0xFFFFFFFF };
 class CONTENT_EXPORT MediaStreamProviderListener {
  public:
   // Called by a MediaStreamProvider when a stream has been opened.
-  virtual void Opened(blink::MediaStreamType stream_type,
+  virtual void Opened(blink::mojom::MediaStreamType stream_type,
                       int capture_session_id) = 0;
 
   // Called by a MediaStreamProvider when a stream has been closed.
-  virtual void Closed(blink::MediaStreamType stream_type,
+  virtual void Closed(blink::mojom::MediaStreamType stream_type,
                       int capture_session_id) = 0;
 
   // Called by a MediaStreamProvider when the device has been aborted due to
   // device error.
-  virtual void Aborted(blink::MediaStreamType stream_type,
+  virtual void Aborted(blink::mojom::MediaStreamType stream_type,
                        int capture_session_id) = 0;
 
  protected:

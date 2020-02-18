@@ -38,7 +38,7 @@
 #include "third_party/blink/public/platform/web_isolated_world_ids.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "v8/include/v8.h"
@@ -76,7 +76,6 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
     kIsolated,
     kInspectorIsolated,
     kRegExp,
-    kTesting,
     kForV8ContextSnapshotNonMain,
     kWorker,
   };

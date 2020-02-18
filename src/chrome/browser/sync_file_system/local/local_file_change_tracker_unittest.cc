@@ -177,14 +177,14 @@ TEST_F(LocalFileChangeTrackerTest, GetChanges) {
   file_system_.GetChangedURLsInTracker(&urls);
 
   EXPECT_EQ(5U, urls.size());
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath1)));
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath2)));
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath3)));
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath4)));
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath5)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath1)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath2)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath3)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath4)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath5)));
 
   // Changes for kPath0 must have been offset and removed.
-  EXPECT_FALSE(base::ContainsKey(urls, URL(kPath0)));
+  EXPECT_FALSE(base::Contains(urls, URL(kPath0)));
 
   // GetNextChangedURLs only returns up to max_urls (i.e. 3) urls.
   base::circular_deque<FileSystemURL> urls_to_process;
@@ -668,8 +668,8 @@ TEST_F(LocalFileChangeTrackerTest, NextChangedURLsWithRecursiveRemove) {
   ASSERT_EQ(2U, urls.size());
 
   // The exact order of recursive removal cannot be determined.
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath1)));
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath2)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath1)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath2)));
 }
 
 TEST_F(LocalFileChangeTrackerTest, ResetForFileSystem) {
@@ -692,10 +692,10 @@ TEST_F(LocalFileChangeTrackerTest, ResetForFileSystem) {
   FileSystemURLSet urls;
   GetAllChangedURLs(&urls);
   EXPECT_EQ(4u, urls.size());
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath0)));
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath1)));
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath2)));
-  EXPECT_TRUE(base::ContainsKey(urls, URL(kPath3)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath0)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath1)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath2)));
+  EXPECT_TRUE(base::Contains(urls, URL(kPath3)));
 
   // Reset all changes for the file system.
   change_tracker()->ResetForFileSystem(

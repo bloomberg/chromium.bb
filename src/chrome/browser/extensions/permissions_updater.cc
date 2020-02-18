@@ -41,7 +41,6 @@
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "services/network/public/cpp/features.h"
 
 using content::RenderProcessHost;
 using extensions::permissions_api_helpers::PackPermissionSet;
@@ -154,7 +153,7 @@ class PermissionsUpdater::NetworkPermissionsUpdateHelper {
   base::OnceClosure dispatch_event_;
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       shutdown_subscription_;
-  base::WeakPtrFactory<NetworkPermissionsUpdateHelper> weak_factory_;
+  base::WeakPtrFactory<NetworkPermissionsUpdateHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPermissionsUpdateHelper);
 };
@@ -181,10 +180,6 @@ void PermissionsUpdater::NetworkPermissionsUpdateHelper::UpdatePermissions(
       CreateCorsOriginAccessAllowList(
           *extension,
           PermissionsData::EffectiveHostPermissionsMode::kOmitTabSpecific);
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    ExtensionsClient::Get()->AddOriginAccessPermissions(*extension, true,
-                                                        &allow_list);
-  }
 
   NetworkPermissionsUpdateHelper* helper = new NetworkPermissionsUpdateHelper(
       browser_context,
@@ -226,10 +221,6 @@ void PermissionsUpdater::NetworkPermissionsUpdateHelper::
         CreateCorsOriginAccessAllowList(
             *extension,
             PermissionsData::EffectiveHostPermissionsMode::kOmitTabSpecific);
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      ExtensionsClient::Get()->AddOriginAccessPermissions(*extension, true,
-                                                          &allow_list);
-    }
     browser_context->SetCorsOriginAccessListForOrigin(
         url::Origin::Create(extension->url()), std::move(allow_list),
         CreateCorsOriginAccessBlockList(*extension), barrier_closure);
@@ -245,8 +236,7 @@ PermissionsUpdater::NetworkPermissionsUpdateHelper::
               ->Get(browser_context)
               ->Subscribe(
                   base::Bind(&NetworkPermissionsUpdateHelper::OnShutdown,
-                             base::Unretained(this)))),
-      weak_factory_(this) {}
+                             base::Unretained(this)))) {}
 
 PermissionsUpdater::NetworkPermissionsUpdateHelper::
     ~NetworkPermissionsUpdateHelper() {}

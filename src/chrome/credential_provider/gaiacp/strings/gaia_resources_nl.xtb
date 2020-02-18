@@ -8,8 +8,11 @@
 <translation id="2469311484561825731">Inloggen op je werkaccount is mislukt. Zorg dat de computer verbinding heeft met internet en probeer het daarna opnieuw.</translation>
 <translation id="2595469428674600431">Je Windows-wachtwoord kan niet worden geverifieerd. Probeer het opnieuw.</translation>
 <translation id="3306357053520292004">Er is al een gebruiker op deze computer toegevoegd met dit account. Log in met een ander account.</translation>
+<translation id="3643125608647220913">Kan het Google-inlogscherm niet laden. Neem contact op met je beheerder.</translation>
 <translation id="369030246015333661">Je account is vergrendeld. Neem contact op met een systeembeheerder.</translation>
+<translation id="3968372833844047539">Alleen G Suite Enterprise-gebruikers mogen inloggen.</translation>
 <translation id="4057329986137569701">Er is een interne fout opgetreden.</translation>
+<translation id="4267670563222825190">Er kan geen domeingebruiker worden gevonden voor je account. Neem contact op met je beheerder.</translation>
 <translation id="4300229033992784001">Het wachtwoord van je account is gewijzigd. Geef je huidige Windows-wachtwoord op om je Windows-account te synchroniseren met je werkaccount.</translation>
 <translation id="4706454071748629324">Nieuwe gebruiker toevoegen is mislukt. Op deze computer kan slechts één gebruiker worden gemaakt met een werkaccount.</translation>
 <translation id="6292766200512304540">Gebruiker gemaakt via een werkaccount</translation>
@@ -21,6 +24,7 @@
 <translation id="7385169832667457493">Windows-wachtwoord</translation>
 <translation id="7536769223115622137">Werkaccount toevoegen</translation>
 <translation id="7856245195110636219">Kan niet doorgaan voordat je het huidige Windows-wachtwoord hebt ingevoerd. Neem contact op met een systeembeheerder.</translation>
+<translation id="7996763357529480810">Log in met je werkaccount van G Suite.</translation>
 <translation id="8474372283141585908">Google-inlogprovider</translation>
 <translation id="8639729688781680518">Windows-wachtwoord vergeten</translation>
 <translation id="866458870819756755">Gebruiker kan niet worden gemaakt.</translation>

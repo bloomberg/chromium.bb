@@ -7,6 +7,8 @@
 namespace base {
 namespace sequence_manager {
 
+NativeWorkHandle::~NativeWorkHandle() = default;
+
 SequenceManager::MetricRecordingSettings::MetricRecordingSettings(
     double task_thread_time_sampling_rate)
     : task_sampling_rate_for_recording_cpu_time(
@@ -45,6 +47,14 @@ SequenceManager::Settings::Builder&
 SequenceManager::Settings::Builder::SetAddQueueTimeToTasks(
     bool add_queue_time_to_tasks_val) {
   settings_.add_queue_time_to_tasks = add_queue_time_to_tasks_val;
+  return *this;
+}
+
+SequenceManager::Settings::Builder&
+SequenceManager::Settings::Builder::SetAntiStarvationLogicForPrioritiesDisabled(
+    bool anti_starvation_logic_for_priorities_disabled_val) {
+  settings_.anti_starvation_logic_for_priorities_disabled =
+      anti_starvation_logic_for_priorities_disabled_val;
   return *this;
 }
 

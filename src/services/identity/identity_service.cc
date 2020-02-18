@@ -7,12 +7,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "services/identity/identity_accessor_impl.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace identity {
 
-IdentityService::IdentityService(IdentityManager* identity_manager,
+IdentityService::IdentityService(signin::IdentityManager* identity_manager,
                                  service_manager::mojom::ServiceRequest request)
     : service_binding_(this, std::move(request)),
       identity_manager_(identity_manager) {

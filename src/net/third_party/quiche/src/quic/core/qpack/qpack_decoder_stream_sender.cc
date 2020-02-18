@@ -13,49 +13,38 @@
 
 namespace quic {
 
-QpackDecoderStreamSender::QpackDecoderStreamSender(Delegate* delegate)
+QpackDecoderStreamSender::QpackDecoderStreamSender(
+    QpackStreamSenderDelegate* delegate)
     : delegate_(delegate) {
   DCHECK(delegate_);
 }
 
 void QpackDecoderStreamSender::SendInsertCountIncrement(uint64_t increment) {
-  instruction_encoder_.set_varint(increment);
-
-  instruction_encoder_.Encode(InsertCountIncrementInstruction());
+  values_.varint = increment;
 
   std::string output;
-
-  instruction_encoder_.Next(std::numeric_limits<size_t>::max(), &output);
-  DCHECK(!instruction_encoder_.HasNext());
-
-  delegate_->WriteDecoderStreamData(output);
+  instruction_encoder_.Encode(InsertCountIncrementInstruction(), values_,
+                              &output);
+  delegate_->WriteStreamData(output);
 }
 
 void QpackDecoderStreamSender::SendHeaderAcknowledgement(
     QuicStreamId stream_id) {
-  instruction_encoder_.set_varint(stream_id);
-
-  instruction_encoder_.Encode(HeaderAcknowledgementInstruction());
+  values_.varint = stream_id;
 
   std::string output;
-
-  instruction_encoder_.Next(std::numeric_limits<size_t>::max(), &output);
-  DCHECK(!instruction_encoder_.HasNext());
-
-  delegate_->WriteDecoderStreamData(output);
+  instruction_encoder_.Encode(HeaderAcknowledgementInstruction(), values_,
+                              &output);
+  delegate_->WriteStreamData(output);
 }
 
 void QpackDecoderStreamSender::SendStreamCancellation(QuicStreamId stream_id) {
-  instruction_encoder_.set_varint(stream_id);
-
-  instruction_encoder_.Encode(StreamCancellationInstruction());
+  values_.varint = stream_id;
 
   std::string output;
-
-  instruction_encoder_.Next(std::numeric_limits<size_t>::max(), &output);
-  DCHECK(!instruction_encoder_.HasNext());
-
-  delegate_->WriteDecoderStreamData(output);
+  instruction_encoder_.Encode(StreamCancellationInstruction(), values_,
+                              &output);
+  delegate_->WriteStreamData(output);
 }
 
 }  // namespace quic

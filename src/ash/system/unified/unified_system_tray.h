@@ -24,7 +24,7 @@ class TimeTrayItemView;
 
 class CurrentLocaleView;
 class ImeModeView;
-class ManagedDeviceView;
+class ManagedDeviceTrayItemView;
 class NotificationCounterView;
 class QuietModeView;
 class UnifiedSliderBubbleController;
@@ -105,6 +105,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  const char* GetClassName() const override;
 
   UnifiedSystemTrayModel* model() { return model_.get(); }
 
@@ -139,7 +140,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
 
   CurrentLocaleView* const current_locale_view_;
   ImeModeView* const ime_mode_view_;
-  ManagedDeviceView* const managed_device_view_;
+  ManagedDeviceTrayItemView* const managed_device_view_;
   NotificationCounterView* const notification_counter_item_;
   QuietModeView* const quiet_mode_view_;
   tray::TimeTrayItemView* const time_view_;

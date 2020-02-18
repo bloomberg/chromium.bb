@@ -31,7 +31,7 @@ class TestNode final : public CXFA_Node {
 class CXFANodeTest : public testing::Test {
  public:
   void SetUp() override {
-    doc_ = pdfium::MakeUnique<CXFA_Document>(nullptr);
+    doc_ = pdfium::MakeUnique<CXFA_Document>(nullptr, nullptr);
     node_ = pdfium::MakeUnique<TestNode>(doc_.get());
   }
 
@@ -376,5 +376,6 @@ TEST_F(CXFANodeTest, RemoveChildAnotherParent) {
       GetDoc()->CreateNode(XFA_PacketType::Form, XFA_Element::Ui);
   child0->InsertChildAndNotify(-1, child1);
 
-  EXPECT_DEATH_IF_SUPPORTED(GetNode()->RemoveChildAndNotify(child1, false), "");
+  GetNode()->RemoveChildAndNotify(child1, false);
+  EXPECT_EQ(child0, child1->GetParent());
 }

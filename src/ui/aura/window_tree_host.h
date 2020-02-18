@@ -172,9 +172,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void SetSharedInputMethod(ui::InputMethod* input_method);
 
   // Overridden from ui::internal::InputMethodDelegate:
-  ui::EventDispatchDetails DispatchKeyEventPostIME(
-      ui::KeyEvent* event,
-      DispatchKeyEventPostIMECallback callback) final;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* event) final;
 
   // Overridden from ui::EventSource:
   ui::EventSink* GetEventSink() override;
@@ -238,6 +236,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Remembers the current occlusion state, and if it has changed, notifies
   // observers of the change.
   virtual void SetNativeWindowOcclusionState(Window::OcclusionState state);
+
+  Window::OcclusionState GetNativeWindowOcclusionState() {
+    return occlusion_state_;
+  }
 
   bool holding_pointer_moves() const { return holding_pointer_moves_; }
 
@@ -375,7 +377,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Set to true if this WindowTreeHost is currently holding pointer moves.
   bool holding_pointer_moves_ = false;
 
-  base::WeakPtrFactory<WindowTreeHost> weak_factory_;
+  base::WeakPtrFactory<WindowTreeHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHost);
 };

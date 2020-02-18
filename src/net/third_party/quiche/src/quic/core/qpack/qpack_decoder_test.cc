@@ -14,6 +14,7 @@
 #include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 
 using ::testing::Eq;
+using ::testing::Mock;
 using ::testing::Sequence;
 using ::testing::StrictMock;
 using ::testing::Values;
@@ -40,26 +41,46 @@ class QpackDecoderTest : public QuicTestWithParam<FragmentMode> {
     qpack_decoder_.DecodeEncoderStreamData(data);
   }
 
-  void DecodeHeaderBlock(QuicStringPiece data) {
+  // Set up |progressive_decoder_|.
+  void StartDecoding() {
+    progressive_decoder_ =
+        qpack_decoder_.CreateProgressiveDecoder(/* stream_id = */ 1, &handler_);
+  }
+
+  // Pass header block data to QpackProgressiveDecoder::Decode()
+  // in fragments dictated by |fragment_mode_|.
+  void DecodeData(QuicStringPiece data) {
     auto fragment_size_generator =
         FragmentModeToFragmentSizeGenerator(fragment_mode_);
-    auto progressive_decoder =
-        qpack_decoder_.DecodeHeaderBlock(/* stream_id = */ 1, &handler_);
     while (!data.empty()) {
       size_t fragment_size = std::min(fragment_size_generator(), data.size());
-      progressive_decoder->Decode(data.substr(0, fragment_size));
+      progressive_decoder_->Decode(data.substr(0, fragment_size));
       data = data.substr(fragment_size);
     }
-    progressive_decoder->EndHeaderBlock();
+  }
+
+  // Signal end of header block to QpackProgressiveDecoder.
+  void EndDecoding() {
+    progressive_decoder_->EndHeaderBlock();
+    // |progressive_decoder_| is kept alive so that it can
+    // handle callbacks later in case of blocked decoding.
+  }
+
+  // Decode an entire header block.
+  void DecodeHeaderBlock(QuicStringPiece data) {
+    StartDecoding();
+    DecodeData(data);
+    EndDecoding();
   }
 
   StrictMock<MockEncoderStreamErrorDelegate> encoder_stream_error_delegate_;
-  StrictMock<MockDecoderStreamSenderDelegate> decoder_stream_sender_delegate_;
+  StrictMock<MockQpackStreamSenderDelegate> decoder_stream_sender_delegate_;
   StrictMock<MockHeadersHandler> handler_;
 
  private:
   QpackDecoder qpack_decoder_;
   const FragmentMode fragment_mode_;
+  std::unique_ptr<QpackProgressiveDecoder> progressive_decoder_;
 };
 
 INSTANTIATE_TEST_SUITE_P(,
@@ -78,7 +99,7 @@ TEST_P(QpackDecoderTest, NoPrefix) {
 TEST_P(QpackDecoderTest, EmptyHeaderBlock) {
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteDecoderStreamData(Eq(kHeaderAcknowledgement)));
+              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("0000"));
 }
@@ -87,7 +108,7 @@ TEST_P(QpackDecoderTest, LiteralEntryEmptyName) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq(""), Eq("foo")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteDecoderStreamData(Eq(kHeaderAcknowledgement)));
+              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("00002003666f6f"));
 }
@@ -96,7 +117,7 @@ TEST_P(QpackDecoderTest, LiteralEntryEmptyValue) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteDecoderStreamData(Eq(kHeaderAcknowledgement)));
+              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("000023666f6f00"));
 }
@@ -105,7 +126,7 @@ TEST_P(QpackDecoderTest, LiteralEntryEmptyNameAndValue) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq(""), Eq("")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteDecoderStreamData(Eq(kHeaderAcknowledgement)));
+              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("00002000"));
 }
@@ -114,7 +135,7 @@ TEST_P(QpackDecoderTest, SimpleLiteralEntry) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("bar")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteDecoderStreamData(Eq(kHeaderAcknowledgement)));
+              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("000023666f6f03626172"));
 }
@@ -125,7 +146,7 @@ TEST_P(QpackDecoderTest, MultipleLiteralEntries) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foobaar"), QuicStringPiece(str)));
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteDecoderStreamData(Eq(kHeaderAcknowledgement)));
+              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode(
       "0000"                // prefix
@@ -184,7 +205,7 @@ TEST_P(QpackDecoderTest, HuffmanSimple) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("custom-key"), Eq("custom-value")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteDecoderStreamData(Eq(kHeaderAcknowledgement)));
+              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(
       QuicTextUtils::HexDecode("00002f0125a849e95ba97d7f8925a849e95bb8e8b4bf"));
@@ -195,7 +216,7 @@ TEST_P(QpackDecoderTest, AlternatingHuffmanNonHuffman) {
       .Times(4);
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteDecoderStreamData(Eq(kHeaderAcknowledgement)));
+              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode(
       "0000"                        // Prefix.
@@ -269,7 +290,7 @@ TEST_P(QpackDecoderTest, StaticTable) {
 
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteDecoderStreamData(Eq(kHeaderAcknowledgement)));
+              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode(
       "0000d1dfccd45f108621e9aec2a11f5c8294e75f000554524143455f1000"));
@@ -312,7 +333,7 @@ TEST_P(QpackDecoderTest, DynamicTable) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("ZZZ"))).InSequence(s);
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq(":method"), Eq("ZZ"))).InSequence(s);
   EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteDecoderStreamData(Eq(kHeaderAcknowledgement)))
+              WriteStreamData(Eq(kHeaderAcknowledgement)))
       .InSequence(s);
   EXPECT_CALL(handler_, OnDecodingCompleted()).InSequence(s);
 
@@ -333,7 +354,7 @@ TEST_P(QpackDecoderTest, DynamicTable) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("ZZZ"))).InSequence(s);
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq(":method"), Eq("ZZ"))).InSequence(s);
   EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteDecoderStreamData(Eq(kHeaderAcknowledgement)))
+              WriteStreamData(Eq(kHeaderAcknowledgement)))
       .InSequence(s);
   EXPECT_CALL(handler_, OnDecodingCompleted()).InSequence(s);
 
@@ -354,7 +375,7 @@ TEST_P(QpackDecoderTest, DynamicTable) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("ZZZ"))).InSequence(s);
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq(":method"), Eq("ZZ"))).InSequence(s);
   EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteDecoderStreamData(Eq(kHeaderAcknowledgement)))
+              WriteStreamData(Eq(kHeaderAcknowledgement)))
       .InSequence(s);
   EXPECT_CALL(handler_, OnDecodingCompleted()).InSequence(s);
 
@@ -376,7 +397,7 @@ TEST_P(QpackDecoderTest, DecreasingDynamicTableCapacityEvictsEntries) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("bar")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteDecoderStreamData(Eq(kHeaderAcknowledgement)));
+              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode(
       "0200"   // Required Insert Count 1 and Delta Base 0.
@@ -387,8 +408,8 @@ TEST_P(QpackDecoderTest, DecreasingDynamicTableCapacityEvictsEntries) {
   // This must cause the entry to be evicted.
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("3f01"));
 
-  EXPECT_CALL(handler_,
-              OnDecodingErrorDetected(Eq("Dynamic table entry not found.")));
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(
+                            Eq("Dynamic table entry already evicted.")));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode(
       "0200"   // Required Insert Count 1 and Delta Base 0.
@@ -446,6 +467,9 @@ TEST_P(QpackDecoderTest, EncoderStreamErrorTooLargeInteger) {
 TEST_P(QpackDecoderTest, InvalidDynamicEntryWhenBaseIsZero) {
   EXPECT_CALL(handler_, OnDecodingErrorDetected(Eq("Invalid relative index.")));
 
+  // Add literal entry with name "foo" and value "bar".
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
+
   DecodeHeaderBlock(QuicTextUtils::HexDecode(
       "0280"   // Required Insert Count is 1.  Base 1 - 1 - 0 = 0 is explicitly
                // permitted by the spec.
@@ -465,8 +489,36 @@ TEST_P(QpackDecoderTest, InvalidDynamicEntryByRelativeIndex) {
   // Add literal entry with name "foo" and value "bar".
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
 
-  EXPECT_CALL(handler_,
-              OnDecodingErrorDetected(Eq("Dynamic table entry not found.")));
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(Eq("Invalid relative index.")));
+
+  DecodeHeaderBlock(QuicTextUtils::HexDecode(
+      "0200"   // Required Insert Count 1 and Delta Base 0.
+               // Base is 1 + 0 = 1.
+      "81"));  // Indexed Header Field instruction addressing relative index 1.
+               // This is absolute index -1, which is invalid.
+
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(Eq("Invalid relative index.")));
+
+  DecodeHeaderBlock(QuicTextUtils::HexDecode(
+      "0200"     // Required Insert Count 1 and Delta Base 0.
+                 // Base is 1 + 0 = 1.
+      "4100"));  // Literal Header Field with Name Reference instruction
+                 // addressing relative index 1.  This is absolute index -1,
+                 // which is invalid.
+}
+
+TEST_P(QpackDecoderTest, EvictedDynamicTableEntry) {
+  // Update dynamic table capacity to 128.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("3f61"));
+
+  // Add literal entry with name "foo" and value "bar", size 32 + 3 + 3 = 38.
+  // This fits in the table three times.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
+  // Duplicate entry four times.  This evicts the first two instances.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("00000000"));
+
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(
+                            Eq("Dynamic table entry already evicted.")));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode(
       "0500"   // Required Insert Count 4 and Delta Base 0.
@@ -474,16 +526,8 @@ TEST_P(QpackDecoderTest, InvalidDynamicEntryByRelativeIndex) {
       "82"));  // Indexed Header Field instruction addressing relative index 2.
                // This is absolute index 1. Such entry does not exist.
 
-  EXPECT_CALL(handler_, OnDecodingErrorDetected(Eq("Invalid relative index.")));
-
-  DecodeHeaderBlock(QuicTextUtils::HexDecode(
-      "0500"   // Required Insert Count 4 and Delta Base 0.
-               // Base is 4 + 0 = 4.
-      "84"));  // Indexed Header Field instruction addressing relative index 4.
-               // This is absolute index -1, which is invalid.
-
-  EXPECT_CALL(handler_,
-              OnDecodingErrorDetected(Eq("Dynamic table entry not found.")));
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(
+                            Eq("Dynamic table entry already evicted.")));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode(
       "0500"     // Required Insert Count 4 and Delta Base 0.
@@ -492,22 +536,8 @@ TEST_P(QpackDecoderTest, InvalidDynamicEntryByRelativeIndex) {
                  // addressing relative index 2.  This is absolute index 1. Such
                  // entry does not exist.
 
-  EXPECT_CALL(handler_, OnDecodingErrorDetected(Eq("Invalid relative index.")));
-
-  DecodeHeaderBlock(QuicTextUtils::HexDecode(
-      "0500"     // Required Insert Count 4 and Delta Base 0.
-                 // Base is 4 + 0 = 4.
-      "4400"));  // Literal Header Field with Name Reference instruction
-                 // addressing relative index 4.  This is absolute index -1,
-                 // which is invalid.
-}
-
-TEST_P(QpackDecoderTest, InvalidDynamicEntryByPostBaseIndex) {
-  // Add literal entry with name "foo" and value "bar".
-  DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
-
-  EXPECT_CALL(handler_,
-              OnDecodingErrorDetected(Eq("Dynamic table entry not found.")));
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(
+                            Eq("Dynamic table entry already evicted.")));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode(
       "0380"   // Required Insert Count 2 and Delta Base 0 with sign bit set.
@@ -516,8 +546,8 @@ TEST_P(QpackDecoderTest, InvalidDynamicEntryByPostBaseIndex) {
                // entry with post-base index 0, absolute index 1.  Such entry
                // does not exist.
 
-  EXPECT_CALL(handler_,
-              OnDecodingErrorDetected(Eq("Dynamic table entry not found.")));
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(
+                            Eq("Dynamic table entry already evicted.")));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode(
       "0380"     // Required Insert Count 2 and Delta Base 0 with sign bit set.
@@ -551,6 +581,15 @@ TEST_P(QpackDecoderTest, InvalidEncodedRequiredInsertCount) {
   DecodeHeaderBlock(QuicTextUtils::HexDecode("4100"));
 }
 
+// Regression test for https://crbug.com/970218:  Decoder must stop processing
+// after a Header Block Prefix with an invalid Encoded Required Insert Count.
+TEST_P(QpackDecoderTest, DataAfterInvalidEncodedRequiredInsertCount) {
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(
+                            Eq("Error decoding Required Insert Count.")));
+  // Header Block Prefix followed by some extra data.
+  DecodeHeaderBlock(QuicTextUtils::HexDecode("410000"));
+}
+
 TEST_P(QpackDecoderTest, WrappedRequiredInsertCount) {
   // Maximum dynamic table capacity is 1024.
   // MaxEntries is 1024 / 32 = 32.
@@ -571,7 +610,7 @@ TEST_P(QpackDecoderTest, WrappedRequiredInsertCount) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq(header_value)));
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteDecoderStreamData(Eq(kHeaderAcknowledgement)));
+              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   // Send header block with Required Insert Count = 201.
   DecodeHeaderBlock(QuicTextUtils::HexDecode(
@@ -581,6 +620,9 @@ TEST_P(QpackDecoderTest, WrappedRequiredInsertCount) {
 }
 
 TEST_P(QpackDecoderTest, NonZeroRequiredInsertCountButNoDynamicEntries) {
+  // Add literal entry with name "foo" and value "bar".
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
+
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq(":method"), Eq("GET")));
   EXPECT_CALL(handler_,
               OnDecodingErrorDetected(Eq("Required Insert Count too large.")));
@@ -591,6 +633,9 @@ TEST_P(QpackDecoderTest, NonZeroRequiredInsertCountButNoDynamicEntries) {
 }
 
 TEST_P(QpackDecoderTest, AddressEntryNotAllowedByRequiredInsertCount) {
+  // Add literal entry with name "foo" and value "bar".
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
+
   EXPECT_CALL(
       handler_,
       OnDecodingErrorDetected(
@@ -646,7 +691,9 @@ TEST_P(QpackDecoderTest, AddressEntryNotAllowedByRequiredInsertCount) {
 TEST_P(QpackDecoderTest, PromisedRequiredInsertCountLargerThanActual) {
   // Add literal entry with name "foo" and value "bar".
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
-  // Duplicate entry.
+  // Duplicate entry twice so that decoding of header blocks with Required
+  // Insert Count not exceeding 3 is not blocked.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("00"));
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("00"));
 
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("bar")));
@@ -696,6 +743,86 @@ TEST_P(QpackDecoderTest, PromisedRequiredInsertCountLargerThanActual) {
                  // instruction addressing dynamic table entry with post-base
                  // index 0, absolute index 1.  Header block requires insert
                  // count of 2, even though Required Insert Count is 3.
+}
+
+TEST_P(QpackDecoderTest, BlockedDecoding) {
+  DecodeHeaderBlock(QuicTextUtils::HexDecode(
+      "0200"   // Required Insert Count 1 and Delta Base 0.
+               // Base is 1 + 0 = 1.
+      "80"));  // Indexed Header Field instruction addressing dynamic table
+               // entry with relative index 0, absolute index 0.
+
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("bar")));
+  EXPECT_CALL(handler_, OnDecodingCompleted());
+  EXPECT_CALL(decoder_stream_sender_delegate_,
+              WriteStreamData(Eq(kHeaderAcknowledgement)));
+
+  // Add literal entry with name "foo" and value "bar".
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
+}
+
+TEST_P(QpackDecoderTest, BlockedDecodingUnblockedBeforeEndOfHeaderBlock) {
+  StartDecoding();
+  DecodeData(QuicTextUtils::HexDecode(
+      "0200"   // Required Insert Count 1 and Delta Base 0.
+               // Base is 1 + 0 = 1.
+      "80"     // Indexed Header Field instruction addressing dynamic table
+               // entry with relative index 0, absolute index 0.
+      "d1"));  // Static table entry with index 17.
+
+  // Add literal entry with name "foo" and value "bar".  Decoding is now
+  // unblocked because dynamic table Insert Count reached the Required Insert
+  // Count of the header block.  |handler_| methods are called immediately for
+  // the already consumed part of the header block.
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("bar")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq(":method"), Eq("GET")));
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
+  Mock::VerifyAndClearExpectations(&handler_);
+
+  // Rest of header block is processed by QpackProgressiveDecoder
+  // in the unblocked state.
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("bar")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq(":scheme"), Eq("https")));
+  DecodeData(QuicTextUtils::HexDecode(
+      "80"     // Indexed Header Field instruction addressing dynamic table
+               // entry with relative index 0, absolute index 0.
+      "d7"));  // Static table entry with index 23.
+  Mock::VerifyAndClearExpectations(&handler_);
+
+  EXPECT_CALL(handler_, OnDecodingCompleted());
+  EXPECT_CALL(decoder_stream_sender_delegate_,
+              WriteStreamData(Eq(kHeaderAcknowledgement)));
+  EndDecoding();
+}
+
+// Make sure that Required Insert Count is compared to Insert Count,
+// not size of dynamic table.
+TEST_P(QpackDecoderTest, BlockedDecodingAndEvictedEntries) {
+  // Update dynamic table capacity to 128.
+  // At most three non-empty entries fit in the dynamic table.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("3f61"));
+
+  StartDecoding();
+  DecodeHeaderBlock(QuicTextUtils::HexDecode(
+      "0700"   // Required Insert Count 6 and Delta Base 0.
+               // Base is 6 + 0 = 6.
+      "80"));  // Indexed Header Field instruction addressing dynamic table
+               // entry with relative index 0, absolute index 5.
+
+  // Add literal entry with name "foo" and value "bar".
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
+
+  // Duplicate entry four times.  This evicts the first two instances.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("00000000"));
+
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("baz")));
+  EXPECT_CALL(handler_, OnDecodingCompleted());
+  EXPECT_CALL(decoder_stream_sender_delegate_,
+              WriteStreamData(Eq(kHeaderAcknowledgement)));
+
+  // Add literal entry with name "foo" and value "bar".
+  // Insert Count is now 6, reaching Required Insert Count of the header block.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e70362617a"));
 }
 
 }  // namespace

@@ -113,6 +113,7 @@
 <translation id="2500374554657206846">പാസ്‌വേഡ് സംരക്ഷിക്കാനുള്ള ഓപ്‌ഷനുകൾ</translation>
 <translation id="2523363575747517183">മറ്റൊരു ആപ്പ് തുറക്കാൻ ഈ വെബ്‌സൈറ്റ് ആവർത്തിച്ച് ശ്രമിക്കുന്നു.</translation>
 <translation id="2529021024822217800">എല്ലാം തുറക്കുക</translation>
+<translation id="2562041823070056534"><ph name="DEVICE_NAME" /> എന്നതിലേക്ക് അയയ്‌ക്കുന്നു...</translation>
 <translation id="2570206273416014374">നിങ്ങളുടെ ഡിഫോൾട്ട് തിരയൽ എഞ്ചിനിലേക്ക് വിലാസ ബാറിൽ നിന്നും സെർച്ച് ബോക്‌സിൽ നിന്നും കുറച്ച് കുക്കികളും തിരയലുകളും അയയ്‌ക്കുന്നു.</translation>
 <translation id="2572712655377361602">ഒരു ഉപകരണ നയം, നിങ്ങളുടെ ഫോട്ടോകളിലേക്കുള്ള ആക്‌സസ് ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="2578571896248130439">വെബ്‌പേജ് അയയ്‌ക്കുക</translation>
@@ -150,6 +151,7 @@
 <translation id="2933759065870693102">ടോർച്ച്</translation>
 <translation id="2958718410589002129">പാസ്‌വേഡുകൾ</translation>
 <translation id="2969979262385602596">സൈൻ ഇൻ ചെയ്യുന്നത് പരാജയപ്പെട്ടു. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
+<translation id="298306318844797842">പേയ്‌മെന്റ് രീതി ചേർക്കുക...</translation>
 <translation id="2989805286512600854">പുതിയ ടാബില്‍ തുറക്കുക</translation>
 <translation id="3037605927509011580">കഷ്ടം!</translation>
 <translation id="3112556859945124369">അടയാളപ്പെടുത്തുക…</translation>
@@ -313,6 +315,7 @@
 <translation id="5556459405103347317">വീണ്ടും ലോഡുചെയ്യുക</translation>
 <translation id="5614553682702429503">പാസ്‌വേഡ് സംരക്ഷിക്കണോ?</translation>
 <translation id="5626245204502895507">ഫയൽ ഇപ്പോൾ ഡൗൺലോഡുചെയ്യാൻ കഴിയില്ല.</translation>
+<translation id="5631164295104953411">പേയ്‌മെന്‍റ് രീതി ചേർക്കുക</translation>
 <translation id="5659593005791499971">ഇമെയില്‍</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">പതിപ്പ് <ph name="PRODUCT_VERSION" /></translation>
@@ -464,6 +467,7 @@
 <translation id="7772032839648071052">പാസ്ഫ്രേസ് സ്ഥിരീകരിക്കുക</translation>
 <translation id="7781829728241885113">ഇന്നലെ</translation>
 <translation id="778855399387580014">പുതിയ Chrome ടാബിൽ തിരയൽ ആരംഭിക്കുക.</translation>
+<translation id="7791543448312431591">ചേര്‍ക്കൂ</translation>
 <translation id="780301667611848630">വേണ്ട നന്ദി</translation>
 <translation id="7840771868269352570">നിങ്ങൾ തിരഞ്ഞെടുത്ത ഇനങ്ങൾ നീക്കം ചെയ്യപ്പെടും.</translation>
 <translation id="7856733331829174190">ഡൗൺലോഡ് ചെയ്യാനായില്ല</translation>
@@ -477,6 +481,7 @@
 <translation id="7961015016161918242">ഒരിക്കലും</translation>
 <translation id="7971521879845308059">പോപ്പ്-അപ്പുകൾ തടയുക</translation>
 <translation id="7982789257301363584">നെറ്റ്‌വർക്ക്</translation>
+<translation id="8007420562015504427">അദൃശ്യ തിരയൽ</translation>
 <translation id="8019783059653722575">ഇത് ഫോട്ടോകൾ സംരക്ഷിച്ച്, അപ്‌ലോഡ് ചെയ്യാൻ നിങ്ങളെ അനുവദിക്കുന്നു.</translation>
 <translation id="802154636333426148">ഡൗൺലോഡ് പരാജയപ്പെട്ടു</translation>
 <translation id="8023878949384262191">വിഭാഗത്തെ വിപുലീകരിക്കുന്നു.</translation>
@@ -491,6 +496,7 @@
 <translation id="8225985093977202398">കാഷെ ചെയ്‌ത ചിത്രങ്ങളും ഫയലുകളും</translation>
 <translation id="8261506727792406068">ഇല്ലാതാക്കുക</translation>
 <translation id="8281781826761538115">ഡിഫോൾട്ട് - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8319076807703933069">പുതിയ തിരയൽ</translation>
 <translation id="8328777765163860529">എല്ലാം അടയ്‌ക്കുക</translation>
 <translation id="8381750437846184350">തിരയലും പരസ്യങ്ങളും മറ്റ് Google സേവനങ്ങളും വ്യക്തിപരമാക്കാൻ, Google നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം ഉപയോഗിക്കുന്ന രീതി നിയന്ത്രിക്കുക</translation>
 <translation id="8407669440184693619">ഈ സൈറ്റിനുള്ള പാസ്‍വേഡുകളൊന്നും കണ്ടെത്തിയില്ല</translation>
@@ -507,7 +513,6 @@
 <translation id="8532105204136943229">കാലഹരണപ്പെടുന്ന വർഷം</translation>
 <translation id="8534481786647257214">Google+ പങ്കിടൽ പൂർത്തിയായി.</translation>
 <translation id="8548878600947630424">പേജിൽ കണ്ടെത്തുക...</translation>
-<translation id="8583866649835978847">നിങ്ങളുടെ ഉപകരണങ്ങളിൽ ഒന്നിലേക്ക് <ph name="TITLE" /> അയയ്ക്കുക.</translation>
 <translation id="8605219856220328675">ടാബ് അടയ്‌ക്കുക.</translation>
 <translation id="8620640915598389714">എഡിറ്റുചെയ്യുക</translation>
 <translation id="8636825310635137004">നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളിൽ നിന്നുള്ള ടാബുകൾ ലഭിക്കാൻ, സമന്വയിപ്പിക്കൽ ഓണാക്കുക.</translation>
@@ -530,7 +535,6 @@
 <translation id="8976382372951310360">സഹായം</translation>
 <translation id="8981454092730389528">Google പ്രവർത്തന നിയന്ത്രണങ്ങൾ</translation>
 <translation id="8985320356172329008">ഇനിപ്പറയുന്ന പേരിൽ Google-ലേക്ക് സൈൻ ഇൻ ചെയ്‌തിരിക്കുന്നു</translation>
-<translation id="9016406938567631235">അയയ്ക്കുന്നു...</translation>
 <translation id="902659348151742535">തിരയലും പരസ്യങ്ങളും മറ്റ് Google സേവനങ്ങളും വ്യക്തിപരമാക്കാൻ Google നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം ഉപയോഗിച്ചേക്കാം.</translation>
 <translation id="9034759925968272072">നിങ്ങൾ Google അക്കൗണ്ടിൽ നിന്ന് സൈൻ ഔട്ട് ആകില്ല. Google അക്കൗണ്ടിന് <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> എന്നതിൽ മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രമുണ്ടായിരിക്കാം.</translation>
 <translation id="9039373489628511875">ബാൻഡ്‌വിഡ്‌ത്ത്</translation>

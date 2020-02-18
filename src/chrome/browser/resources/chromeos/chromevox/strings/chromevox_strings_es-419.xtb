@@ -69,6 +69,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1385214448885562192">Presiona Enter para aceptar, Escape para cancelar, la tecla de flecha hacia abajo para ver el siguiente resultado y la tecla de flecha hacia arriba para ver el resultado anterior.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Anunciar los atributos de texto enriquecido</translation>
 <translation id="1405567553485452995">Verde claro</translation>
 <translation id="1417889266572670458">Azul marino</translation>
 <translation id="1431911867058218151">Ciruela</translation>
@@ -319,11 +320,11 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3232388865800379423">Un botón con ventana emergente</translation>
 <translation id="3241052487511142956">Vínculo visitado anterior</translation>
 <translation id="3241638166094654466">Celdas en cada línea:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">vertical</translation>
 <translation id="3286390186030710347">Control deslizante</translation>
 <translation id="3299925995433437805">No hay ningún vínculo visitado posterior.</translation>
 <translation id="3300348286427369683">Compatibilidad con el texto enriquecido. ChromeVox ahora es compatible con campos de texto enriquecido, lo que incluye comandos de navegación, movimientos del cursor para braille, selección y mucho más.</translation>
-<translation id="3304756947457041303">Personalizar la indicación de texto enriquecido</translation>
 <translation id="3307886118343381874">Ir al final de la tabla</translation>
 <translation id="3311969765485641742">Presiona Alt+Mayúscula+A para revisar las alertas.</translation>
 <translation id="3312997241656799641">Siguiente vínculo visitado</translation>
@@ -444,7 +445,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4161104397932142764">{COUNT,plural, =1{segundo}other{segundos}}</translation>
 <translation id="4161663686871496107">Los comentarios por voz de ChromeVox están listos.</translation>
 <translation id="4173994908659439270">No hay ningún campo de texto editable posterior.</translation>
-<translation id="4176463684765177261">Deshabilitado</translation>
+<translation id="4176463684765177261">Inhabilitada</translation>
 <translation id="4187322598335821254">Desliza hacia arriba o abajo para desplazarte entre las líneas</translation>
 <translation id="4188530942454211480">Frase anterior</translation>
 <translation id="4191918948604314587">Un botón</translation>

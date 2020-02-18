@@ -70,7 +70,7 @@ constexpr int kTopSpacingForLabelInRegularViewDp = 65;
 constexpr int kSpacingBetweenLabelsDp = 17;
 constexpr int kSpacingBetweenSelectionMenusDp = 15;
 constexpr int kSpacingBetweenSelectionTitleAndButtonDp = 3;
-constexpr int kSpacingBetweenLanguageMenuAndAdvancedViewButtonDp = 34;
+constexpr int kSpacingBetweenLanguageMenuAndAdvancedViewButtonDp = 4;
 constexpr int kSpacingBetweenAdvancedViewButtonAndLabelDp = 32;
 constexpr int kTopSpacingForUserViewDp = 62;
 
@@ -145,8 +145,9 @@ class SelectionButtonView : public LoginButton {
     };
 
     auto* label_container = new NonAccessibleView();
-    views::BoxLayout* label_layout = label_container->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    views::BoxLayout* label_layout =
+        label_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kHorizontal));
     label_layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kStart);
     AddChildView(label_container);
@@ -156,8 +157,9 @@ class SelectionButtonView : public LoginButton {
     label_container->AddChildView(label_);
 
     auto* icon_container = new NonAccessibleView();
-    views::BoxLayout* icon_layout = icon_container->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    views::BoxLayout* icon_layout =
+        icon_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kHorizontal));
     icon_layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kEnd);
     AddChildView(icon_container);
@@ -218,9 +220,11 @@ class SelectionButtonView : public LoginButton {
 // Container for the device monitoring warning.
 class MonitoringWarningView : public NonAccessibleView {
  public:
-  MonitoringWarningView() : NonAccessibleView(kMonitoringWarningClassName) {
+  MonitoringWarningView()
+      : NonAccessibleView(kMonitoringWarningClassName),
+        warning_type_(WarningType::kNone) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, gfx::Insets(),
+        views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
         kSpacingBetweenMonitoringWarningIconAndLabelDp));
 
     image_ = new views::ImageView();
@@ -239,27 +243,46 @@ class MonitoringWarningView : public NonAccessibleView {
     AddChildView(label_);
   }
 
-  enum class WarningType { kSoftWarning, kFullWarning };
+  enum class WarningType { kNone, kSoftWarning, kFullWarning };
+
+  void UpdateForUser(const LoginUserInfo& user) {
+    enterprise_domain_ = user.public_account_info->enterprise_domain;
+    UpdateLabel();
+  }
 
   void SetWarningType(WarningType warning_type) {
-    base::string16 label_text;
-    if (warning_type == WarningType::kFullWarning) {
-      label_text = l10n_util::GetStringUTF16(
-          IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING);
-      image_->SetVisible(true);
-    } else if (warning_type == WarningType::kSoftWarning) {
-      label_text = l10n_util::GetStringUTF16(
-          IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_SOFT_WARNING);
-      image_->SetVisible(false);
-    }
-    label_->SetText(label_text);
+    warning_type_ = warning_type;
+    UpdateLabel();
   }
 
   ~MonitoringWarningView() override = default;
 
  private:
+  void UpdateLabel() {
+    // Call sequence of UpdateForUser() and SetWarningType() is not clear.
+    // In case SetWarningType is called first there is a need to wait for
+    // enterprise_domain_ is set.
+    if (warning_type_ == WarningType::kNone || !enterprise_domain_.has_value())
+      return;
+    base::string16 label_text;
+    if (warning_type_ == WarningType::kFullWarning) {
+      label_text = l10n_util::GetStringFUTF16(
+          IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING,
+          base::UTF8ToUTF16(enterprise_domain_.value()));
+      image_->SetVisible(true);
+    } else {
+      label_text = l10n_util::GetStringFUTF16(
+          IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_SOFT_WARNING,
+          base::UTF8ToUTF16(enterprise_domain_.value()));
+      image_->SetVisible(false);
+    }
+    label_->SetText(label_text);
+  }
+
   friend class LoginExpandedPublicAccountView::TestApi;
 
+  WarningType warning_type_;
+  base::Optional<std::string> enterprise_domain_;
   views::ImageView* image_;
   views::Label* label_;
 
@@ -280,7 +303,8 @@ class RightPaneView : public NonAccessibleView,
     // Create labels view.
     labels_view_ = new NonAccessibleView();
     labels_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical, gfx::Insets(), kSpacingBetweenLabelsDp));
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+        kSpacingBetweenLabelsDp));
     AddChildView(labels_view_);
 
     monitoring_warning_view_ = new MonitoringWarningView();
@@ -303,7 +327,7 @@ class RightPaneView : public NonAccessibleView,
     link_style.override_color = kPublicSessionBlueColor;
     learn_more_label_->AddStyleRange(gfx::Range(offset, offset + link.length()),
                                      link_style);
-    learn_more_label_->set_auto_color_readability_enabled(false);
+    learn_more_label_->SetAutoColorReadabilityEnabled(false);
 
     labels_view_->AddChildView(learn_more_label_);
 
@@ -321,8 +345,8 @@ class RightPaneView : public NonAccessibleView,
 
     // Create advanced view.
     advanced_view_ = new NonAccessibleView();
-    advanced_view_->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    advanced_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
     AddChildView(advanced_view_);
 
     // Creates button to open the menu.
@@ -455,6 +479,7 @@ class RightPaneView : public NonAccessibleView,
   void UpdateForUser(const LoginUserInfo& user) {
     DCHECK_EQ(user.basic_user_info.type,
               user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+    monitoring_warning_view_->UpdateForUser(user);
     current_user_ = user;
     if (!language_changed_by_user_)
       selected_language_item_.value = user.public_account_info->default_locale;
@@ -663,14 +688,23 @@ LoginExpandedPublicAccountView::TestApi::monitoring_warning_icon() {
   return view_->right_pane_->monitoring_warning_view_->image_;
 }
 
+views::Label*
+LoginExpandedPublicAccountView::TestApi::monitoring_warning_label() {
+  return view_->right_pane_->monitoring_warning_view_->label_;
+}
+
+void LoginExpandedPublicAccountView::TestApi::ResetUserForTest() {
+  view_->right_pane_->monitoring_warning_view_->enterprise_domain_.reset();
+}
+
 LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
     const OnPublicSessionViewDismissed& on_dismissed)
     : NonAccessibleView(kLoginExpandedPublicAccountViewClassName),
       on_dismissed_(on_dismissed),
       event_handler_(
           std::make_unique<LoginExpandedPublicAccountEventHandler>(this)) {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
   SetPreferredSize(gfx::Size(kExpandedViewWidthDp, kExpandedViewHeightDp));
 
   user_view_ = new LoginUserView(
@@ -681,8 +715,8 @@ LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
 
   auto* left_pane = new NonAccessibleView();
   AddChildView(left_pane);
-  left_pane->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  left_pane->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   left_pane->SetPreferredSize(
       gfx::Size(kExpandedViewWidthDp / 2, kExpandedViewHeightDp));
 

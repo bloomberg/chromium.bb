@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "osp/impl/discovery/mdns/mdns_responder_adapter_impl.h"
-#include "osp_base/error.h"
 #include "platform/api/logging.h"
+#include "platform/base/error.h"
 
 // This file contains a demo of our mDNSResponder wrapper code.  It can both
 // listen for mDNS services and advertise an mDNS service.  The command-line
@@ -210,9 +210,9 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
     }
   }
   for (const auto& a_event : mdns_adapter->TakeAResponses()) {
-    // TODO: If multiple SRV records specify the same domain, the A will only
-    // update the first.  I didn't think this would happen but I noticed this
-    // happens for cast groups.
+    // TODO(btolsch): If multiple SRV records specify the same domain, the A
+    // will only update the first.  I didn't think this would happen but I
+    // noticed this happens for cast groups.
     auto it =
         std::find_if(g_services->begin(), g_services->end(),
                      [&a_event](const std::pair<mdns::DomainName, Service>& s) {
@@ -312,9 +312,9 @@ void BrowseDemo(const std::string& service_name,
     mdns_adapter->RunTasks();
     auto data = platform::OnePlatformLoopIteration(waiter);
     for (auto& packet : data) {
-      mdns_adapter->OnDataReceived(packet.source, packet.original_destination,
-                                   packet.bytes.data(), packet.length,
-                                   packet.socket);
+      mdns_adapter->OnDataReceived(packet.source(), packet.destination(),
+                                   packet.data(), packet.size(),
+                                   packet.socket());
     }
   }
   OSP_LOG << "num services: " << g_services->size();

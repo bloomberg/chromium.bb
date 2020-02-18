@@ -107,7 +107,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   void ApplyVirtualTimePolicy(const PendingVirtualTimePolicy& new_policy);
 
   Member<WebLocalFrameImpl> web_local_frame_;
-  WTF::TimeTicks virtual_time_base_ticks_;
+  base::TimeTicks virtual_time_base_ticks_;
 
   std::unique_ptr<TimeZoneController::TimeZoneOverride> timezone_override_;
 
@@ -116,7 +116,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   base::Optional<PendingVirtualTimePolicy> pending_virtual_time_policy_;
   bool enabled_ = false;
 
-  InspectorAgentState::String default_background_color_override_rgba_;
+  InspectorAgentState::Bytes default_background_color_override_rgba_;
   InspectorAgentState::Boolean script_execution_disabled_;
   InspectorAgentState::Boolean scrollbars_hidden_;
   InspectorAgentState::Boolean document_cookie_disabled_;

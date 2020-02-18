@@ -46,6 +46,8 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdevProxy {
   void GetTouchDeviceStatus(InputController::GetTouchDeviceStatusReply reply);
   void GetTouchEventLog(const base::FilePath& out_dir,
                         InputController::GetTouchEventLogReply reply);
+  void GetGesturePropertiesService(
+      ozone::mojom::GesturePropertiesServiceRequest request);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

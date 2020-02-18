@@ -65,7 +65,8 @@ void GestureManager::Trace(blink::Visitor* visitor) {
 
 HitTestRequest::HitTestRequestType GestureManager::GetHitTypeForGestureType(
     WebInputEvent::Type type) {
-  HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kTouchEvent;
+  HitTestRequest::HitTestRequestType hit_type =
+      HitTestRequest::kTouchEvent | HitTestRequest::kRetargetForInert;
   switch (type) {
     case WebInputEvent::kGestureShowPress:
     case WebInputEvent::kGestureTapUnconfirmed:
@@ -188,8 +189,6 @@ WebInputEventResult GestureManager::HandleGestureTap(
   // note that the position of the frame may have changed, so we need to
   // recompute the content co-ordinates (updating layout/style as
   // hitTestResultAtPoint normally would).
-  // FIXME: Use a hit-test cache to avoid unnecessary hit tests.
-  // http://crbug.com/398920
   if (current_hit_test.InnerNode()) {
     LocalFrame& main_frame = frame_->LocalFrameRoot();
     if (!main_frame.View() ||
@@ -253,8 +252,6 @@ WebInputEventResult GestureManager::HandleGestureTap(
     frame_->GetChromeClient().OnMouseDown(*result.InnerNode());
   }
 
-  // FIXME: Use a hit-test cache to avoid unnecessary hit tests.
-  // http://crbug.com/398920
   if (current_hit_test.InnerNode()) {
     LocalFrame& main_frame = frame_->LocalFrameRoot();
     if (main_frame.View()) {
@@ -292,9 +289,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
       tapped_element->UpdateDistributionForFlatTreeTraversal();
       Node* click_target_node = current_hit_test.InnerNode()->CommonAncestor(
           *tapped_element, event_handling_util::ParentForClickEvent);
-      Element* click_target_element = nullptr;
-      if (click_target_node && click_target_node->IsElementNode())
-        click_target_element = ToElement(click_target_node);
+      auto* click_target_element = DynamicTo<Element>(click_target_node);
 
       click_event_result =
           mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
@@ -427,8 +422,8 @@ WebInputEventResult GestureManager::SendContextMenuEventForGesture(
 
   if (!suppress_mouse_events_from_gestures_ && frame_->View()) {
     HitTestRequest request(HitTestRequest::kActive);
-    LayoutPoint document_point = frame_->View()->ConvertFromRootFrame(
-        FlooredIntPoint(targeted_event.Event().PositionInRootFrame()));
+    PhysicalOffset document_point(frame_->View()->ConvertFromRootFrame(
+        FlooredIntPoint(targeted_event.Event().PositionInRootFrame())));
     MouseEventWithHitTestResults mev =
         frame_->GetDocument()->PerformMouseEventHitTest(request, document_point,
                                                         mouse_event);

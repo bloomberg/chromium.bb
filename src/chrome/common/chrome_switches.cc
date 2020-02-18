@@ -227,6 +227,11 @@ const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 const char kDisableSearchGeolocationDisclosure[] =
     "disable-search-geolocation-disclosure";
 
+// Disables prompting the user for consent before fulfilling WebXR's
+// requestSession(). Use only when absolutely necessary, such as for perf tests.
+const char kDisableXrDeviceConsentPromptForTesting[] =
+    "disable-xr-device-consent-prompt-for-testing";
+
 // Some tests seem to require the application to close when the last
 // browser window is closed. Thus, we need a switch to force this behavior
 // for ChromeOS Aura, disable "zero window mode".
@@ -390,12 +395,20 @@ const char kLoadMediaRouterComponentExtension[] =
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 
-// Forces the maximum disk space to be used by the media cache, in bytes.
-const char kMediaCacheSize[]                = "media-cache-size";
-
 // Allows setting a different destination ID for connection-monitoring GCM
 // messages. Useful when running against a non-prod management server.
 const char kMonitoringDestinationID[]       = "monitoring-destination-id";
+
+// Requests a native messaging connection be established between the native
+// messaging host named by this switch and the extension with ID specified by
+// kNativeMessagingConnectExtension.
+const char kNativeMessagingConnectHost[] = "native-messaging-connect-host";
+
+// Requests a native messaging connection be established between the extension
+// with ID specified by this switch and the native messaging host named by the
+// kNativeMessagingConnectHost switch.
+const char kNativeMessagingConnectExtension[] =
+    "native-messaging-connect-extension";
 
 // Disables the default browser check. Useful for UI/browser tests where we
 // want to avoid having the default browser info-bar displayed.
@@ -654,12 +667,6 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 // resulted in a browser startup.
 const char kWinJumplistAction[]             = "win-jumplist-action";
 
-#if !defined(GOOGLE_CHROME_BUILD)
-// Enables a live-reload for local NTP resources. This only works when Chrome
-// is running from a Chrome source directory.
-const char kLocalNtpReload[]                = "local-ntp-reload";
-#endif
-
 #if defined(OS_ANDROID)
 // Android authentication account type for SPNEGO authentication
 const char kAuthAndroidNegotiateAccountType[] = "auth-spnego-account-type";
@@ -855,6 +862,9 @@ const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
+
+// Causes the browser to launch directly in guest mode.
+const char kGuest[] = "guest";
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && \

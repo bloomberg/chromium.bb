@@ -390,13 +390,14 @@ ANDROID_PI_BUILD_TARGETS = {
     # We put it in two buckets because we have separate ACLs for arm and x86.
     # http://b/128405786
     'ARM': ('linux-cheets_arm-user', r'(\.zip|/XkbToKcmConverter)$'),
+    'ARM64': ('linux-cheets_arm64-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86': ('linux-cheets_x86-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86_64': ('linux-cheets_x86_64-user', r'\.zip$'),
     'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
+    'ARM64_USERDEBUG': ('linux-cheets_arm64-userdebug', r'\.zip$'),
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
-    'SDK_GOOGLE_X86_USERDEBUG': ('linux-sdk_cheets_x86-userdebug',
-                                 r'\.zip$'),
+    'SDK_GOOGLE_X86_USERDEBUG': ('linux-sdk_cheets_x86-userdebug', r'\.zip$'),
     'SDK_GOOGLE_X86_64_USERDEBUG': ('linux-sdk_cheets_x86_64-userdebug',
                                     r'\.zip$'),
 }
@@ -435,8 +436,8 @@ ARC_BUCKET_ACLS = {
 }
 ANDROID_SYMBOLS_URL_TEMPLATE = (
     ARC_BUCKET_URL +
-    '/%(branch)s-linux-cheets_%(arch)s-user/%(version)s'
-    '/cheets_%(arch)s-symbols-%(version)s.zip')
+    '/%(branch)s-linux-%(target)s_%(arch)s-%(variant)s/%(version)s'
+    '/%(target)s_%(arch)s%(suffix)s-symbols-%(version)s.zip')
 ANDROID_SYMBOLS_FILE = 'android-symbols.zip'
 # x86-user, x86-userdebug and x86-eng builders create build artifacts with the
 # same name, e.g. cheets_x86-target_files-${VERSION}.zip. Chrome OS builders
@@ -648,8 +649,10 @@ VALID_BUILD_TYPES = (
 # The default list of pre-cq configs to use.
 PRE_CQ_DEFAULT_CONFIGS = [
     # Betty is the designated board to run vmtest on N.
-    'betty-arcnext-pre-cq',           # vm board    arcnext
-    'betty-pre-cq',                   # vm board    vmtest
+    # betty-arcnext is disabled pending https://crbug.com/977232
+    # 'betty-arcnext-pre-cq',           # vm board    arcnext
+    # betty is disabled due to https://crbug.com/984316
+    # 'betty-pre-cq',                   # vm board    vmtest
     'eve-no-vmtest-pre-cq',           # kabylake    cheets_64 vulkan(Intel)
     'fizz-no-vmtest-pre-cq',          # kabylake
     'grunt-no-vmtest-pre-cq',         # stoneyridge vulkan(AMD)
@@ -1150,7 +1153,7 @@ IMAGE_TYPE_TO_NAME = {
     IMAGE_TYPE_RECOVERY: RECOVERY_IMAGE_BIN,
     IMAGE_TYPE_TEST: TEST_IMAGE_BIN,
 }
-IMAGE_NAME_TO_TYPE = dict((v, k) for k, v in IMAGE_TYPE_TO_NAME.iteritems())
+IMAGE_NAME_TO_TYPE = dict((v, k) for k, v in IMAGE_TYPE_TO_NAME.items())
 
 METADATA_JSON = 'metadata.json'
 PARTIAL_METADATA_JSON = 'partial-metadata.json'
@@ -1278,12 +1281,18 @@ MOCK_BUILD_ID = 31337
 
 # Topology dictionary copied from CIDB.
 TOPOLOGY_DICT = {
-    '/buildbucket/host':'cr-buildbucket.appspot.com',
-    '/chrome_swarming_proxy/host':'chromeos-swarming.appspot.com',
-    '/datastore/creds_file':('/creds/service_accounts/service-account-chromeos'
-                             '-datastore-writer-prod.json'),
-    '/sheriffomatic/host':'sheriff-o-matic.appspot.com',
-    '/statsd/es_host':'104.154.79.237',
-    '/statsd/host':'104.154.79.237',
-    '/swarming_proxy/host':'chromeos-proxy.appspot.com',
+    '/buildbucket/host':
+        'cr-buildbucket.appspot.com',
+    '/chrome_swarming_proxy/host':
+        'chromeos-swarming.appspot.com',
+    '/datastore/creds_file': ('/creds/service_accounts/service-account-chromeos'
+                              '-datastore-writer-prod.json'),
+    '/sheriffomatic/host':
+        'sheriff-o-matic.appspot.com',
+    '/statsd/es_host':
+        '104.154.79.237',
+    '/statsd/host':
+        '104.154.79.237',
+    '/swarming_proxy/host':
+        'chromeos-proxy.appspot.com',
 }

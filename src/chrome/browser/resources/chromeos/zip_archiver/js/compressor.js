@@ -219,7 +219,7 @@ unpacker.Compressor.prototype.getArchiveFile_ = function() {
               });
         })
         .catch((error) => {
-          console.error('failed to create a ZIP file', error);
+          console.error('failed to create a ZIP file: ' + error.code);
           this.onErrorInternal_();
         });
   };

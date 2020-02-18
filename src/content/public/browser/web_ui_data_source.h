@@ -119,7 +119,7 @@ class WebUIDataSource {
   virtual void DisableDenyXFrameOptions() = 0;
 
   // The |source_name| this WebUIDataSource was created with.
-  virtual std::string GetSource() const = 0;
+  virtual std::string GetSource() = 0;
 };
 
 }  // namespace content

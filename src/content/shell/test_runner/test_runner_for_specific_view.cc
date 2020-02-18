@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
+#include "content/public/common/isolated_world_ids.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/shell/test_runner/layout_dump.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
@@ -36,6 +37,7 @@
 #include "gin/wrappable.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_isolated_world_ids.h"
 #include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -67,7 +69,7 @@ namespace test_runner {
 
 TestRunnerForSpecificView::TestRunnerForSpecificView(
     WebViewTestProxy* web_view_test_proxy)
-    : web_view_test_proxy_(web_view_test_proxy), weak_factory_(this) {
+    : web_view_test_proxy_(web_view_test_proxy) {
   Reset();
 }
 
@@ -625,6 +627,11 @@ void TestRunnerForSpecificView::SetIsolatedWorldInfo(
     int world_id,
     v8::Local<v8::Value> security_origin,
     v8::Local<v8::Value> content_security_policy) {
+  if (world_id <= content::ISOLATED_WORLD_ID_GLOBAL ||
+      world_id >= blink::IsolatedWorldId::kEmbedderWorldIdLimit) {
+    return;
+  }
+
   if (!security_origin->IsString() && !security_origin->IsNull())
     return;
 

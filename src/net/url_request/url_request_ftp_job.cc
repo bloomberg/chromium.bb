@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -15,6 +16,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/ftp/ftp_auth_cache.h"
+#include "net/ftp/ftp_network_transaction.h"
 #include "net/ftp/ftp_response_info.h"
 #include "net/ftp/ftp_transaction_factory.h"
 #include "net/http/http_response_headers.h"
@@ -48,8 +50,7 @@ URLRequestFtpJob::URLRequestFtpJob(
           request_->context()->proxy_resolution_service()),
       read_in_progress_(false),
       ftp_transaction_factory_(ftp_transaction_factory),
-      ftp_auth_cache_(ftp_auth_cache),
-      weak_factory_(this) {
+      ftp_auth_cache_(ftp_auth_cache) {
   DCHECK(proxy_resolution_service_);
   DCHECK(ftp_transaction_factory);
   DCHECK(ftp_auth_cache);
@@ -65,6 +66,13 @@ bool URLRequestFtpJob::IsSafeRedirect(const GURL& location) {
 }
 
 bool URLRequestFtpJob::GetMimeType(std::string* mime_type) const {
+  // When auth has been cancelled, return a blank text/plain page instead of
+  // triggering a download.
+  if (auth_data_ && auth_data_->state == AUTH_STATE_CANCELED) {
+    *mime_type = "text/plain";
+    return true;
+  }
+
   if (ftp_transaction_->GetResponseInfo()->is_directory_listing) {
     *mime_type = "text/vnd.chromium.ftp-dir";
     return true;
@@ -112,6 +120,17 @@ void URLRequestFtpJob::Kill() {
     ftp_transaction_.reset();
   URLRequestJob::Kill();
   weak_factory_.InvalidateWeakPtrs();
+}
+
+void URLRequestFtpJob::GetResponseInfo(HttpResponseInfo* info) {
+  // Don't expose the challenge if it has already been successfully
+  // authenticated.
+  if (!auth_data_ || auth_data_->state == AUTH_STATE_HAVE_AUTH)
+    return;
+
+  std::unique_ptr<AuthChallengeInfo> challenge = GetAuthChallengeInfo();
+  if (challenge)
+    info->auth_challenge = *challenge;
 }
 
 void URLRequestFtpJob::OnResolveProxyComplete(int result) {
@@ -164,11 +183,18 @@ void URLRequestFtpJob::OnStartCompleted(int result) {
     set_expected_content_size(
         ftp_transaction_->GetResponseInfo()->expected_content_size);
 
+    if (auth_data_ && auth_data_->state == AUTH_STATE_HAVE_AUTH) {
+      LogFtpStartResult(FTPStartResult::kSuccessAuth);
+    } else {
+      LogFtpStartResult(FTPStartResult::kSuccessNoAuth);
+    }
+
     NotifyHeadersComplete();
   } else if (ftp_transaction_ /* May be null if creation fails. */ &&
              ftp_transaction_->GetResponseInfo()->needs_auth) {
     HandleAuthNeededResponse();
   } else {
+    LogFtpStartResult(FTPStartResult::kFailed);
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
   }
 }
@@ -208,8 +234,6 @@ bool URLRequestFtpJob::NeedsAuth() {
 }
 
 std::unique_ptr<AuthChallengeInfo> URLRequestFtpJob::GetAuthChallengeInfo() {
-  DCHECK(NeedsAuth());
-
   std::unique_ptr<AuthChallengeInfo> result =
       std::make_unique<AuthChallengeInfo>();
   result->is_proxy = false;
@@ -240,15 +264,16 @@ void URLRequestFtpJob::CancelAuth() {
 
   auth_data_->state = AUTH_STATE_CANCELED;
 
-  // Once the auth is cancelled, we proceed with the request as though
-  // there were no auth.  Schedule this for later so that we don't cause
-  // any recursing into the caller as a result of this call.
-  OnStartCompletedAsync(OK);
+  ftp_transaction_.reset();
+  NotifyHeadersComplete();
 }
 
 int URLRequestFtpJob::ReadRawData(IOBuffer* buf, int buf_size) {
   DCHECK_NE(buf_size, 0);
   DCHECK(!read_in_progress_);
+
+  if (!ftp_transaction_)
+    return 0;
 
   int rv =
       ftp_transaction_->Read(buf, buf_size,
@@ -269,8 +294,12 @@ void URLRequestFtpJob::HandleAuthNeededResponse() {
       return;
     }
 
-    if (ftp_transaction_ && auth_data_->state == AUTH_STATE_HAVE_AUTH)
+    if (ftp_transaction_ && auth_data_->state == AUTH_STATE_HAVE_AUTH) {
       ftp_auth_cache_->Remove(origin, auth_data_->credentials);
+
+      // The user entered invalid auth
+      LogFtpStartResult(FTPStartResult::kFailed);
+    }
   } else {
     auth_data_ = std::make_unique<AuthData>();
   }
@@ -286,6 +315,10 @@ void URLRequestFtpJob::HandleAuthNeededResponse() {
     // Prompt for a username/password.
     NotifyHeadersComplete();
   }
+}
+
+void URLRequestFtpJob::LogFtpStartResult(FTPStartResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Net.FTP.StartResult", result);
 }
 
 }  // namespace net

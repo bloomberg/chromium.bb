@@ -36,8 +36,8 @@ BookmarkNodeData::Element::Element(const BookmarkNode* node)
       id_(node->id()) {
   if (node->GetMetaInfoMap())
     meta_info_map = *node->GetMetaInfoMap();
-  for (int i = 0; i < node->child_count(); ++i)
-    children.push_back(Element(node->GetChild(i)));
+  for (const auto& child : node->children())
+    children.push_back(Element(child.get()));
 }
 
 BookmarkNodeData::Element::Element(const Element& other) = default;
@@ -139,7 +139,7 @@ BookmarkNodeData::~BookmarkNodeData() {
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
       ui::ClipboardFormatType::GetType(kClipboardFormatString),
-      ui::CLIPBOARD_TYPE_COPY_PASTE);
+      ui::ClipboardType::kCopyPaste);
 }
 #endif
 
@@ -175,7 +175,7 @@ bool BookmarkNodeData::ReadFromTuple(const GURL& url,
 
 #if !defined(OS_MACOSX)
 void BookmarkNodeData::WriteToClipboard() {
-  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
 
 #if defined(OS_WIN)
   const base::string16 kEOL(L"\r\n");
@@ -217,7 +217,7 @@ void BookmarkNodeData::WriteToClipboard() {
 }
 
 bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
-  DCHECK_EQ(type, ui::CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ui::ClipboardType::kCopyPaste);
   std::string data;
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   clipboard->ReadData(ui::ClipboardFormatType::GetType(kClipboardFormatString),

@@ -12,10 +12,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//pdf/features.gni")
 import("//rlz/buildflags/buildflags.gni")
 
-if (is_chromeos) {
-  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
-}
-
 assert(enable_extensions)
 
 jumbo_static_library("extensions") {
@@ -426,16 +422,10 @@ jumbo_static_library("extensions") {
     "blacklist_factory.h",
     "blacklist_state_fetcher.cc",
     "blacklist_state_fetcher.h",
-    "bookmark_app_experimental_navigation_throttle.cc",
-    "bookmark_app_experimental_navigation_throttle.h",
     "bookmark_app_extension_util.cc",
     "bookmark_app_extension_util.h",
     "bookmark_app_helper.cc",
     "bookmark_app_helper.h",
-    "bookmark_app_navigation_throttle.cc",
-    "bookmark_app_navigation_throttle.h",
-    "bookmark_app_navigation_throttle_utils.cc",
-    "bookmark_app_navigation_throttle_utils.h",
     "browser_context_keyed_service_factories.cc",
     "browser_context_keyed_service_factories.h",
     "browser_extension_window_controller.cc",
@@ -462,6 +452,10 @@ jumbo_static_library("extensions") {
     "chrome_extension_browser_constants.cc",
     "chrome_extension_browser_constants.h",
     "chrome_extension_chooser_dialog.h",
+    "chrome_extension_cookies.cc",
+    "chrome_extension_cookies.h",
+    "chrome_extension_cookies_factory.cc",
+    "chrome_extension_cookies_factory.h",
     "chrome_extension_function.cc",
     "chrome_extension_function.h",
     "chrome_extension_function_details.cc",
@@ -525,12 +519,12 @@ jumbo_static_library("extensions") {
     "extension_assets_manager.h",
     "extension_assets_manager_chromeos.cc",
     "extension_assets_manager_chromeos.h",
+    "extension_browser_window_helper.cc",
+    "extension_browser_window_helper.h",
     "extension_commands_global_registry.cc",
     "extension_commands_global_registry.h",
     "extension_context_menu_model.cc",
     "extension_context_menu_model.h",
-    "extension_cookie_notifier.cc",
-    "extension_cookie_notifier.h",
     "extension_disabled_ui.cc",
     "extension_disabled_ui.h",
     "extension_error_controller.cc",
@@ -691,6 +685,7 @@ jumbo_static_library("extensions") {
     "suspicious_extension_bubble_delegate.h",
     "sync_bundle.cc",
     "sync_bundle.h",
+    "system_display/display_info_provider.h",
     "system_display/display_info_provider_chromeos.cc",
     "system_display/display_info_provider_chromeos.h",
     "system_display/display_info_provider_mac.cc",
@@ -766,13 +761,16 @@ jumbo_static_library("extensions") {
   # browser, then we can clean up these dependencies.
   public_deps = [
     "//chrome/browser/extensions/api:api_registration",
+    "//chrome/common",
     "//chrome/common/extensions/api",
     "//components/safe_browsing:csd_proto",
     "//components/safe_browsing/db:util",
+    "//components/signin/core/browser",
     "//content/public/browser",
   ]
   deps = [
     "//apps",
+    "//build:branding_buildflags",
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",
@@ -790,7 +788,6 @@ jumbo_static_library("extensions") {
     "//chrome/browser/safe_browsing",
     "//chrome/browser/web_applications/components",
     "//chrome/browser/web_applications/extensions",
-    "//chrome/common",
     "//chrome/common/extensions/api:extensions_features",
     "//chrome/common/safe_browsing:proto",
     "//chrome/services/removable_storage_writer/public/mojom",
@@ -802,6 +799,7 @@ jumbo_static_library("extensions") {
     "//components/browsing_data/core",
     "//components/bubble",
     "//components/content_settings/core/browser",
+    "//components/cookie_config:cookie_config",
     "//components/crx_file",
     "//components/data_reduction_proxy/core/browser",
     "//components/dom_distiller/core",
@@ -823,6 +821,7 @@ jumbo_static_library("extensions") {
     "//components/omnibox/browser",
     "//components/onc",
     "//components/password_manager/core/browser",
+    "//components/password_manager/core/browser:affiliation",
     "//components/payments/core",
     "//components/pdf/browser",
     "//components/policy:generated",
@@ -838,14 +837,14 @@ jumbo_static_library("extensions") {
     "//components/search_engines",
     "//components/services/unzip/public/cpp",
     "//components/sessions",
-    "//components/signin/core/browser",
+    "//components/signin/public/identity_manager",
     "//components/spellcheck/browser",
     "//components/storage_monitor",
     "//components/strings",
     "//components/sync",
     "//components/sync_preferences",
     "//components/sync_sessions",
-    "//components/translate/core/browser",
+    "//components/translate/content/browser",
     "//components/undo",
     "//components/unified_consent",
     "//components/update_client",
@@ -876,7 +875,7 @@ jumbo_static_library("extensions") {
     "//services/audio/public/cpp",
     "//services/data_decoder/public/cpp",
     "//services/device/public/mojom",
-    "//services/identity/public/cpp",
+    "//services/identity/public/cpp:cpp_types",
     "//services/identity/public/mojom",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
@@ -982,8 +981,10 @@ jumbo_static_library("extensions") {
       "//chromeos/dbus/cryptohome",
       "//chromeos/dbus/power",
       "//chromeos/disks",
+      "//chromeos/login/auth",
       "//chromeos/login/login_state",
       "//chromeos/network",
+      "//chromeos/services/assistant/public/cpp:prefs",
       "//chromeos/services/ime/public/mojom",
       "//chromeos/services/machine_learning/public/cpp",
       "//chromeos/services/machine_learning/public/mojom",
@@ -1008,13 +1009,6 @@ jumbo_static_library("extensions") {
       "//ui/ozone",
       "//ui/views",
     ]
-    if (enable_kiosk_next) {
-      defines += [ "KIOSK_NEXT" ]
-      deps += [ "//chrome/browser/chromeos/kiosk_next_home/mojom" ]
-      if (is_chrome_branded) {
-        deps += [ "//chrome/browser/resources:kiosk_next_internal_resources" ]
-      }
-    }
     if (enable_nacl) {
       deps += [ "//chrome/browser/resources/chromeos/zip_archiver" ]
     }
@@ -1030,6 +1024,8 @@ jumbo_static_library("extensions") {
       "api/image_writer_private/removable_storage_provider_linux.cc",
       "api/messaging/native_message_process_host.cc",
       "api/messaging/native_message_process_host.h",
+      "api/messaging/native_messaging_launch_from_native.cc",
+      "api/messaging/native_messaging_launch_from_native.h",
       "api/messaging/native_process_launcher.cc",
       "api/messaging/native_process_launcher.h",
       "api/messaging/native_process_launcher_win.cc",

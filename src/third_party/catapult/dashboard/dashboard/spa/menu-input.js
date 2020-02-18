@@ -4,15 +4,17 @@
 */
 'use strict';
 
-import './cp-input.js';
-import OptionGroup from './option-group.js';
+import './cp-flex.js';
+import './cp-icon.js';
+import '@chopsui/chops-input';
+import {OptionGroup} from './option-group.js';
 import {ElementBase, STORE} from './element-base.js';
 import {UPDATE} from './simple-redux.js';
-import {get} from '@polymer/polymer/lib/utils/path.js';
-import {html} from '@polymer/polymer/polymer-element.js';
-import {isElementChildOf, setImmutable} from './utils.js';
+import {html, css} from 'lit-element';
+import {isElementChildOf} from './utils.js';
+import {get, set} from 'dot-prop-immutable';
 
-export default class MenuInput extends ElementBase {
+export class MenuInput extends ElementBase {
   static get is() { return 'menu-input'; }
 
   static get properties() {
@@ -40,83 +42,75 @@ export default class MenuInput extends ElementBase {
     };
   }
 
-  static get template() {
-    return html`
-      <style>
-        :host {
-          display: block;
-          padding-top: 12px;
-        }
+  static get styles() {
+    return css`
+      :host {
+        display: block;
+        padding-top: 12px;
+      }
 
-        #clear {
-          color: var(--neutral-color-dark, grey);
-          cursor: pointer;
-          flex-shrink: 0;
-          height: var(--icon-size, 1em);
-          width: var(--icon-size, 1em);
-        }
+      #clear {
+        color: var(--neutral-color-dark, grey);
+        cursor: pointer;
+        flex-shrink: 0;
+      }
 
-        #menu {
-          background-color: var(--background-color, white);
-          box-shadow: var(--elevation-2);
-          max-height: 600px;
-          outline: none;
-          overflow: auto;
-          padding-right: 8px;
-          position: absolute;
-          z-index: var(--layer-menu, 100);
-        }
-
-        #bottom {
-          display: flex;
-        }
-      </style>
-
-      <cp-input
-          id="input"
-          autofocus="[[isFocused]]"
-          error$="[[!isValid_(selectedOptions, alwaysEnabled, options)]]"
-          disabled="[[isDisabled_(alwaysEnabled, options)]]"
-          label="[[label]]"
-          value="[[getInputValue_(isFocused, query, selectedOptions)]]"
-          on-blur="onBlur_"
-          on-focus="onFocus_"
-          on-keyup="onKeyup_">
-        <iron-icon
-            id="clear"
-            hidden$="[[isEmpty_(selectedOptions)]]"
-            icon="cp:cancel"
-            title="clear"
-            alt="clear"
-            on-click="onClear_">
-        </iron-icon>
-      </cp-input>
-
-      <div id="menu" tabindex="0">
-        <iron-collapse opened="[[isFocused]]">
-          <slot name="top"></slot>
-          <div id="bottom">
-            <slot name="left"></slot>
-            <option-group
-                state-path="[[statePath]]"
-                root-state-path="[[statePath]]">
-            </option-group>
-          </div>
-        </iron-collapse>
-      </div>
+      #menu {
+        background-color: var(--background-color, white);
+        box-shadow: var(--elevation-2);
+        max-height: 600px;
+        outline: none;
+        overflow: auto;
+        padding-right: 8px;
+        position: absolute;
+        z-index: var(--layer-menu, 100);
+      }
     `;
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.observeIsFocused_();
+  render() {
+    return html`
+      <chops-input
+          id="input"
+          ?autofocus="${this.isFocused}"
+          .error="${!this.isValid_()}"
+          ?disabled="${this.isDisabled_()}"
+          .label="${this.label}"
+          value="${MenuInput.inputValue(
+      this.isFocused, this.query, this.selectedOptions)}"
+          @blur="${this.onBlur_}"
+          @focus="${this.onFocus_}"
+          @keydown="${this.onKeyDown_}"
+          @keyup="${this.onKeyUp_}">
+        <cp-icon
+            id="clear"
+            ?hidden="${!this.selectedOptions || !this.selectedOptions.length}"
+            icon="cancel"
+            title="clear"
+            alt="clear"
+            @click="${this.onClear_}">
+        </cp-icon>
+      </chops-input>
+
+      <div id="menu" tabindex="0" ?hidden="${!this.isFocused}">
+        <slot name="top"></slot>
+        <cp-flex>
+          <slot name="left"></slot>
+          <option-group
+              .statePath="${this.statePath}"
+              .rootStatePath="${this.statePath}">
+          </option-group>
+        </cp-flex>
+      </div>
+    `;
   }
 
   stateChanged(rootState) {
     if (!this.statePath) return;
     this.largeDom = rootState.largeDom;
     this.rootFocusTimestamp = rootState.focusTimestamp;
-    this.setProperties(get(rootState, this.statePath));
+    Object.assign(this, get(rootState, this.statePath));
+
     const isFocused = (this.focusTimestamp || false) &&
       (rootState.focusTimestamp === this.focusTimestamp);
     const focusChanged = (isFocused !== this.isFocused);
@@ -124,28 +118,32 @@ export default class MenuInput extends ElementBase {
     if (focusChanged) this.observeIsFocused_();
   }
 
+  firstUpdated() {
+    this.nativeInput = this.shadowRoot.querySelector('chops-input');
+    this.observeIsFocused_();
+  }
+
   async observeIsFocused_() {
+    if (!this.nativeInput) return;
     if (this.isFocused) {
-      this.$.input.focus();
+      this.nativeInput.focus();
     } else {
-      this.$.input.blur();
+      this.nativeInput.blur();
     }
   }
 
-  isDisabled_(alwaysEnabled, options) {
-    return !alwaysEnabled && options && (options.length === 0);
+  isDisabled_() {
+    return !this.alwaysEnabled && this.options && (this.options.length === 0);
   }
 
-  isValid_(selectedOptions, alwaysEnabled, options) {
-    if (this.isDisabled_(alwaysEnabled, options)) return true;
+  isValid_() {
+    if (this.isDisabled_(this.alwaysEnabled, this.options)) return true;
     if (!this.required) return true;
-    if (!this.requireSingle && !this.isEmpty_(selectedOptions)) return true;
-    if (this.requireSingle && (selectedOptions.length === 1)) return true;
+    if (!this.requireSingle && this.selectedOptions.length) {
+      return true;
+    }
+    if (this.requireSingle && (this.selectedOptions.length === 1)) return true;
     return false;
-  }
-
-  getInputValue_(isFocused, query, selectedOptions) {
-    return MenuInput.inputValue(isFocused, query, selectedOptions);
   }
 
   async onFocus_(event) {
@@ -155,7 +153,7 @@ export default class MenuInput extends ElementBase {
 
   async onBlur_(event) {
     if (isElementChildOf(event.relatedTarget, this)) {
-      this.$.input.focus();
+      this.nativeInput.focus();
       return;
     }
     STORE.dispatch(UPDATE(this.statePath, {
@@ -164,9 +162,38 @@ export default class MenuInput extends ElementBase {
     }));
   }
 
-  async onKeyup_(event) {
+  async onKeyDown_(event) {
     if (event.key === 'Escape') {
-      this.$.input.blur();
+      this.nativeInput.blur();
+      return;
+    }
+
+    if (event.key.startsWith('Arrow')) {
+      STORE.dispatch({
+        type: MenuInput.reducers.arrowCursor.name,
+        statePath: this.statePath,
+        key: event.key,
+      });
+      return;
+    }
+
+    if (event.key === 'Enter' && this.cursor) {
+      STORE.dispatch({
+        type: MenuInput.reducers.select.name,
+        statePath: this.statePath,
+      });
+      this.dispatchEvent(new CustomEvent('option-select', {
+        bubbles: true,
+        composed: true,
+      }));
+    }
+  }
+
+  async onKeyUp_(event) {
+    if (event.key.startsWith('Arrow') ||
+        event.key === 'Escape' ||
+        event.key === 'Enter') {
+      // These are handled by onKeyDown_.
       return;
     }
     STORE.dispatch(UPDATE(this.statePath, {query: event.target.value}));
@@ -209,14 +236,166 @@ MenuInput.inputValue = (isFocused, query, selectedOptions) => {
   return `[${selectedOptions.length} selected]`;
 };
 
+function optionStatePath(indices) {
+  return indices.join('.options.');
+}
+
+const ARROW_HANDLERS = {
+  // These four methods handle arrow key presses.
+  // They may modify `indices` in place. They may NOT modify options in place.
+  // They may return options modified via set().
+  // `indices` is an array of integer indexes, denoting a path through the
+  // option tree. This path is stored in the Redux STORE as a statePath string.
+  // MenuInput.reducers.arrowCursor transforms the cursor statePath to `indices`
+  // to make it easier for these handlers to modify, then transformed back to a
+  // statePath string.
+  // `options` is an array of objects that was produced by
+  // OptionGroup.groupValues().
+
+  ArrowUp(indices, options, query) {
+    if (!indices.length) {
+      indices.push(options.length - 1);
+      return options;
+    }
+
+    const lastIndex = indices[indices.length - 1];
+    if (lastIndex === 0) {
+      if (indices.length === 1) {
+        indices.splice(0, 1, options.length - 1);
+      } else {
+        indices.pop();
+      }
+      return options;
+    }
+
+    indices[indices.length - 1] -= 1;
+
+    let prevOption = get(options, optionStatePath(indices));
+    let isExpanded = prevOption && prevOption.options &&
+        prevOption.options.length && (query || prevOption.isExpanded);
+    while (isExpanded) {
+      indices.push(prevOption.options.length - 1);
+      prevOption = prevOption.options[prevOption.options.length - 1];
+      isExpanded = prevOption && prevOption.options &&
+          prevOption.options.length && (query || prevOption.isExpanded);
+    }
+    return options;
+  },
+
+  ArrowDown(indices, options, query) {
+    if (!indices.length) {
+      indices.push(0);
+      return options;
+    }
+
+    const cursorOption = get(options, optionStatePath(indices));
+    if (cursorOption && cursorOption.options && cursorOption.options.length &&
+        (query || cursorOption.isExpanded)) {
+      indices.push(0);
+      return options;
+    }
+
+    if (indices.length === 1) {
+      if (indices[0] === options.length - 1) {
+        indices.splice(0, 1, 0);
+        return options;
+      }
+      indices[0] += 1;
+      return options;
+    }
+
+    let parentPath = optionStatePath(indices.slice(0, indices.length - 1));
+    let parentOption = get(options, parentPath);
+    while ((indices.length > 1) &&
+        (indices[indices.length - 1] === (parentOption.options.length - 1))) {
+      indices.pop();
+      parentPath = optionStatePath(indices.slice(0, indices.length - 1));
+      parentOption = get(options, parentPath);
+    }
+
+    indices[indices.length - 1] += 1;
+    return options;
+  },
+
+  ArrowLeft(indices, options, query) {
+    if (!indices.length) return options;
+
+    let cursorRelPath = optionStatePath(indices);
+    let cursorOption = get(options, cursorRelPath);
+    if (!cursorOption) return options;
+
+    if ((indices.length > 1) && !cursorOption.isExpanded) {
+      indices.pop();
+      cursorRelPath = optionStatePath(indices);
+      cursorOption = get(options, cursorRelPath);
+    }
+
+    options = set(options, cursorRelPath + '.isExpanded', false);
+
+    return options;
+  },
+
+  ArrowRight(indices, options, query) {
+    const cursorRelPath = optionStatePath(indices);
+    const cursorOption = get(options, cursorRelPath);
+    // If the option at cursor has children, expand it.
+    if (cursorOption && cursorOption.options && cursorOption.options.length &&
+        !cursorOption.isExpanded) {
+      options = set(options, cursorRelPath + '.isExpanded', true);
+    }
+    return options;
+  },
+};
+
 MenuInput.reducers = {
   focus: (rootState, {inputStatePath}, rootStateAgain) => {
     const focusTimestamp = window.performance.now();
     rootState = {...rootState, focusTimestamp};
     if (!inputStatePath) return rootState; // Blur all menu-inputs
-    return setImmutable(rootState, inputStatePath, inputState => {
+    return set(rootState, inputStatePath, inputState => {
       return {...inputState, focusTimestamp, hasBeenOpened: true};
     });
+  },
+
+  arrowCursor: (state, {key, statePath}, rootState) => {
+    if (!ARROW_HANDLERS[key]) return state;
+
+    const indices = [];
+    if (state.cursor) {
+      const cursorRelPath = state.cursor.substr(
+          (statePath + '.options.').length);
+      indices.push(...cursorRelPath.split('.options.').map(i => parseInt(i)));
+    }
+
+    let options = ARROW_HANDLERS[key](indices, state.options, state.query);
+
+    if (state.query && (key === 'ArrowUp' || key === 'ArrowDown')) {
+      const originalIndices = [...indices].join();
+      let cursorOption = get(state.options, optionStatePath(indices));
+      const queryParts = state.query.toLocaleLowerCase().split(' ');
+      while (!OptionGroup.matches(cursorOption, queryParts)) {
+        options = ARROW_HANDLERS[key](indices, state.options, state.query);
+        cursorOption = get(state.options, optionStatePath(indices));
+
+        if (indices.join() === originalIndices) {
+          // No options match the query.
+          return {...state, cursor: undefined};
+        }
+      }
+    }
+
+    // Translate indices back to a statePath string.
+    indices.unshift(statePath);
+    const cursor = optionStatePath(indices);
+
+    return {...state, options, cursor};
+  },
+
+  select: (state, {statePath}, rootState) => {
+    if (!state.cursor) return state;
+    const option = get(rootState, state.cursor);
+    if (!option) return state;
+    return OptionGroup.reducers.select(state, {option}, rootState);
   },
 };
 

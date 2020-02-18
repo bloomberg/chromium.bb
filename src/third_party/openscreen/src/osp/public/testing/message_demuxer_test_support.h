@@ -5,9 +5,9 @@
 #ifndef OSP_PUBLIC_TESTING_MESSAGE_DEMUXER_TEST_SUPPORT_H_
 #define OSP_PUBLIC_TESTING_MESSAGE_DEMUXER_TEST_SUPPORT_H_
 
+#include "gmock/gmock.h"
 #include "osp/public/message_demuxer.h"
 #include "platform/api/time.h"
-#include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
 
 namespace openscreen {
 

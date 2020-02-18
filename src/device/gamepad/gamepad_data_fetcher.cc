@@ -64,28 +64,17 @@ void GamepadDataFetcher::UpdateGamepadStrings(const std::string& name,
                                               uint16_t product_id,
                                               bool has_standard_mapping,
                                               Gamepad& pad) {
-  // Set the ID string. The ID contains the device name, vendor and product IDs,
+  // The ID contains the device name, vendor and product IDs,
   // and an indication of whether the standard mapping is in use.
   std::string id = base::StringPrintf(
       "%s (%sVendor: %04x Product: %04x)", name.c_str(),
       has_standard_mapping ? "STANDARD GAMEPAD " : "", vendor_id, product_id);
-  base::TruncateUTF8ToByteSize(id, Gamepad::kIdLengthCap - 1, &id);
-  base::string16 tmp16 = base::UTF8ToUTF16(id);
-  memset(pad.id, 0, sizeof(pad.id));
-  tmp16.copy(pad.id, base::size(pad.id) - 1);
+  pad.SetID(base::UTF8ToUTF16(id));
 
-  // Set the mapper string to "standard" if the gamepad has a standard mapping,
-  // or the empty string otherwise.
-  if (has_standard_mapping) {
-    std::string mapping = "standard";
-    base::TruncateUTF8ToByteSize(mapping, Gamepad::kMappingLengthCap - 1,
-                                 &mapping);
-    tmp16 = base::UTF8ToUTF16(mapping);
-    memset(pad.mapping, 0, sizeof(pad.mapping));
-    tmp16.copy(pad.mapping, base::size(pad.mapping) - 1);
-  } else {
-    pad.mapping[0] = 0;
-  }
+  // Set GamepadMapping::kStandard if the gamepad has a standard mapping, or
+  // GamepadMapping::kNone otherwise.
+  pad.mapping =
+      has_standard_mapping ? GamepadMapping::kStandard : GamepadMapping::kNone;
 }
 
 // static

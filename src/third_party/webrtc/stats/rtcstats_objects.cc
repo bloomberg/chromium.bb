@@ -12,9 +12,8 @@
 
 #include <utility>
 
-#include "rtc_base/checks.h"
-
 #include "api/stats/rtc_stats.h"
+#include "rtc_base/checks.h"
 
 namespace webrtc {
 
@@ -392,7 +391,10 @@ WEBRTC_RTCSTATS_IMPL(RTCMediaStreamTrackStats, RTCStats, "track",
                      &total_samples_received,
                      &total_samples_duration,
                      &concealed_samples,
+                     &silent_concealed_samples,
                      &concealment_events,
+                     &inserted_samples_for_deceleration,
+                     &removed_samples_for_acceleration,
                      &jitter_buffer_flushes,
                      &delayed_packet_outage_samples,
                      &relative_packet_arrival_delay,
@@ -602,7 +604,6 @@ WEBRTC_RTCSTATS_IMPL(
     &packets_lost,
     &last_packet_received_timestamp,
     &jitter,
-    &fraction_lost,
     &round_trip_time,
     &packets_discarded,
     &packets_repaired,
@@ -615,6 +616,8 @@ WEBRTC_RTCSTATS_IMPL(
     &gap_loss_rate,
     &gap_discard_rate,
     &frames_decoded,
+    &key_frames_decoded,
+    &total_decode_time,
     &content_type)
 // clang-format on
 
@@ -632,7 +635,6 @@ RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(std::string&& id,
       packets_lost("packetsLost"),
       last_packet_received_timestamp("lastPacketReceivedTimestamp"),
       jitter("jitter"),
-      fraction_lost("fractionLost"),
       round_trip_time("roundTripTime"),
       packets_discarded("packetsDiscarded"),
       packets_repaired("packetsRepaired"),
@@ -645,6 +647,8 @@ RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(std::string&& id,
       gap_loss_rate("gapLossRate"),
       gap_discard_rate("gapDiscardRate"),
       frames_decoded("framesDecoded"),
+      key_frames_decoded("keyFramesDecoded"),
+      total_decode_time("totalDecodeTime"),
       content_type("contentType") {}
 
 RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(
@@ -657,7 +661,6 @@ RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(
       packets_lost(other.packets_lost),
       last_packet_received_timestamp(other.last_packet_received_timestamp),
       jitter(other.jitter),
-      fraction_lost(other.fraction_lost),
       round_trip_time(other.round_trip_time),
       packets_discarded(other.packets_discarded),
       packets_repaired(other.packets_repaired),
@@ -670,6 +673,8 @@ RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(
       gap_loss_rate(other.gap_loss_rate),
       gap_discard_rate(other.gap_discard_rate),
       frames_decoded(other.frames_decoded),
+      key_frames_decoded(other.key_frames_decoded),
+      total_decode_time(other.total_decode_time),
       content_type(other.content_type) {}
 
 RTCInboundRTPStreamStats::~RTCInboundRTPStreamStats() {}
@@ -684,6 +689,7 @@ WEBRTC_RTCSTATS_IMPL(
     &retransmitted_bytes_sent,
     &target_bitrate,
     &frames_encoded,
+    &key_frames_encoded,
     &total_encode_time,
     &total_encoded_bytes_target,
     &total_packet_send_delay,
@@ -705,6 +711,7 @@ RTCOutboundRTPStreamStats::RTCOutboundRTPStreamStats(std::string&& id,
       retransmitted_bytes_sent("retransmittedBytesSent"),
       target_bitrate("targetBitrate"),
       frames_encoded("framesEncoded"),
+      key_frames_encoded("keyFramesEncoded"),
       total_encode_time("totalEncodeTime"),
       total_encoded_bytes_target("totalEncodedBytesTarget"),
       total_packet_send_delay("totalPacketSendDelay"),
@@ -721,6 +728,7 @@ RTCOutboundRTPStreamStats::RTCOutboundRTPStreamStats(
       retransmitted_bytes_sent(other.retransmitted_bytes_sent),
       target_bitrate(other.target_bitrate),
       frames_encoded(other.frames_encoded),
+      key_frames_encoded(other.key_frames_encoded),
       total_encode_time(other.total_encode_time),
       total_encoded_bytes_target(other.total_encoded_bytes_target),
       total_packet_send_delay(other.total_packet_send_delay),
@@ -797,8 +805,10 @@ RTCMediaSourceStats::RTCMediaSourceStats(const RTCMediaSourceStats& other)
 RTCMediaSourceStats::~RTCMediaSourceStats() {}
 
 // clang-format off
-WEBRTC_RTCSTATS_IMPL_NO_MEMBERS(
-    RTCAudioSourceStats, RTCMediaSourceStats, "media-source")
+WEBRTC_RTCSTATS_IMPL(RTCAudioSourceStats, RTCMediaSourceStats, "media-source",
+    &audio_level,
+    &total_audio_energy,
+    &total_samples_duration)
 // clang-format on
 
 RTCAudioSourceStats::RTCAudioSourceStats(const std::string& id,
@@ -806,10 +816,16 @@ RTCAudioSourceStats::RTCAudioSourceStats(const std::string& id,
     : RTCAudioSourceStats(std::string(id), timestamp_us) {}
 
 RTCAudioSourceStats::RTCAudioSourceStats(std::string&& id, int64_t timestamp_us)
-    : RTCMediaSourceStats(std::move(id), timestamp_us) {}
+    : RTCMediaSourceStats(std::move(id), timestamp_us),
+      audio_level("audioLevel"),
+      total_audio_energy("totalAudioEnergy"),
+      total_samples_duration("totalSamplesDuration") {}
 
 RTCAudioSourceStats::RTCAudioSourceStats(const RTCAudioSourceStats& other)
-    : RTCMediaSourceStats(other) {}
+    : RTCMediaSourceStats(other),
+      audio_level(other.audio_level),
+      total_audio_energy(other.total_audio_energy),
+      total_samples_duration(other.total_samples_duration) {}
 
 RTCAudioSourceStats::~RTCAudioSourceStats() {}
 

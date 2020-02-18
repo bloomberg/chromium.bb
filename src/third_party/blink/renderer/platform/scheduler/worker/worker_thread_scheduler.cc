@@ -17,7 +17,7 @@
 #include "base/trace_event/traced_value.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/process_state.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
@@ -33,10 +33,6 @@ namespace scheduler {
 using base::sequence_manager::TaskQueue;
 
 namespace {
-// Workers could be short-lived, set a shorter interval than
-// the renderer thread.
-constexpr base::TimeDelta kUnspecifiedWorkerThreadLoadTrackerReportingInterval =
-    base::TimeDelta::FromSeconds(1);
 
 // Worker throttling trial
 const char kWorkerThrottlingTrial[] = "BlinkSchedulerDedicatedWorkerThrottling";
@@ -48,14 +44,6 @@ constexpr base::TimeDelta kDefaultMaxBudget = base::TimeDelta::FromSeconds(1);
 constexpr double kDefaultRecoveryRate = 0.01;
 constexpr base::TimeDelta kDefaultMaxThrottlingDelay =
     base::TimeDelta::FromSeconds(60);
-
-void ReportWorkerTaskLoad(base::TimeTicks time, double load) {
-  int load_percentage = static_cast<int>(load * 100);
-  DCHECK_LE(load_percentage, 100);
-  // TODO(kinuko): Maybe we also want to separately log when the associated
-  // tab is in foreground and when not.
-  UMA_HISTOGRAM_PERCENTAGE("WorkerScheduler.WorkerThreadLoad", load_percentage);
-}
 
 base::Optional<base::TimeDelta> GetMaxBudgetLevel() {
   int max_budget_level_ms;
@@ -108,9 +96,6 @@ WorkerThreadScheduler::WorkerThreadScheduler(
                    "WorkerSchedulerIdlePeriod",
                    base::TimeDelta::FromMilliseconds(300),
                    helper()->NewTaskQueue(TaskQueue::Spec("worker_idle_tq"))),
-      load_tracker_(helper()->NowTicks(),
-                    base::BindRepeating(&ReportWorkerTaskLoad),
-                    kUnspecifiedWorkerThreadLoadTrackerReportingInterval),
       lifecycle_state_(proxy ? proxy->lifecycle_state()
                              : SchedulingLifecycleState::kNotThrottled),
       worker_metrics_helper_(thread_type, helper()->HasCPUTimingForEachTask()),
@@ -121,9 +106,6 @@ WorkerThreadScheduler::WorkerThreadScheduler(
   if (connector_) {
     ukm_recorder_ = ukm::MojoUkmRecorder::Create(connector_.get());
   }
-  thread_start_time_ = helper()->NowTicks();
-  load_tracker_.Resume(thread_start_time_);
-  helper()->AddTaskTimeObserver(this);
 
   if (proxy && proxy->parent_frame_type())
     worker_metrics_helper_.SetParentFrameType(*proxy->parent_frame_type());
@@ -141,9 +123,7 @@ WorkerThreadScheduler::~WorkerThreadScheduler() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"), "WorkerScheduler", this);
 
-  helper()->RemoveTaskTimeObserver(this);
-
-  DCHECK(worker_schedulers_.empty());
+  DCHECK(worker_schedulers_.IsEmpty());
 }
 
 scoped_refptr<SingleThreadIdleTaskRunner>
@@ -194,19 +174,8 @@ void WorkerThreadScheduler::RemoveTaskObserver(
 
 void WorkerThreadScheduler::Shutdown() {
   DCHECK(initialized_);
-  load_tracker_.RecordIdle(helper()->NowTicks());
-  base::TimeTicks end_time = helper()->NowTicks();
-  base::TimeDelta delta = end_time - thread_start_time_;
-
-  // The lifetime could be radically different for different workers,
-  // some workers could be short-lived (but last at least 1 sec in
-  // Service Workers case) or could be around as long as the tab is open.
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      "WorkerThread.Runtime", delta, base::TimeDelta::FromSeconds(1),
-      base::TimeDelta::FromDays(1), 50 /* bucket count */);
   task_queue_throttler_.reset();
   idle_helper_.Shutdown();
-  helper()->RemoveTaskTimeObserver(this);
   helper()->Shutdown();
 }
 
@@ -256,13 +225,6 @@ bool WorkerThreadScheduler::CanEnterLongIdlePeriod(base::TimeTicks,
 base::TimeTicks WorkerThreadScheduler::CurrentIdleTaskDeadlineForTesting()
     const {
   return idle_helper_.CurrentIdleTaskDeadline();
-}
-
-void WorkerThreadScheduler::WillProcessTask(base::TimeTicks start_time) {}
-
-void WorkerThreadScheduler::DidProcessTask(base::TimeTicks start_time,
-                                           base::TimeTicks end_time) {
-  load_tracker_.RecordTaskTime(start_time, end_time);
 }
 
 void WorkerThreadScheduler::OnLifecycleStateChanged(
@@ -346,7 +308,7 @@ void WorkerThreadScheduler::SetCPUTimeBudgetPoolForTesting(
   cpu_time_budget_pool_ = cpu_time_budget_pool;
 }
 
-std::unordered_set<WorkerScheduler*>&
+HashSet<WorkerScheduler*>&
 WorkerThreadScheduler::GetWorkerSchedulersForTesting() {
   return worker_schedulers_;
 }

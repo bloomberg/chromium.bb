@@ -104,7 +104,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
 
   // Callback called on IO thread with the session_id referencing the closed
   // device.
-  void ClosedOnIOThread(blink::MediaStreamType type, int session_id);
+  void ClosedOnIOThread(blink::mojom::MediaStreamType type, int session_id);
 
   // Helper to return iterator to the device referenced by |session_id|. If no
   // device is found, it will return devices_.end().

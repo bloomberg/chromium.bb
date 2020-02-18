@@ -111,7 +111,6 @@ generate_jni("ui_android_jni_headers") {
     "java/src/org/chromium/ui/resources/ResourceFactory.java",
     "java/src/org/chromium/ui/resources/ResourceManager.java",
   ]
-  jni_package = "ui_android"
 }
 
 java_cpp_enum("java_enums_srcjar") {
@@ -342,7 +341,7 @@ android_library("ui_full_java") {
   ]
   srcjar_deps = [
     ":java_enums_srcjar",
-    "//third_party/blink/public:blink_cursor_type_java_enums_srcjar",
+    "//ui/base:ui_base_cursor_type_java_enums_srcjar",
   ]
 }
 
@@ -380,6 +379,7 @@ junit_binary("ui_junit_tests") {
     "junit/src/org/chromium/ui/modaldialog/ModalDialogManagerTest.java",
     "junit/src/org/chromium/ui/modelutil/LazyConstructionPropertyMcpTest.java",
     "junit/src/org/chromium/ui/modelutil/ListModelBaseTest.java",
+    "junit/src/org/chromium/ui/modelutil/ModelListAdapterTest.java",
     "junit/src/org/chromium/ui/modelutil/PropertyListModelTest.java",
     "junit/src/org/chromium/ui/modelutil/PropertyModelTest.java",
     "junit/src/org/chromium/ui/modelutil/SimpleListObservableTest.java",
@@ -405,7 +405,6 @@ junit_binary("ui_junit_tests") {
 
 test("ui_android_unittests") {
   sources = [
-    "delegated_frame_host_android_unittest.cc",
     "overscroll_refresh_unittest.cc",
     "resources/resource_manager_impl_unittest.cc",
     "run_all_unittests.cc",

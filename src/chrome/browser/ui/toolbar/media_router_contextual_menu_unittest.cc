@@ -22,7 +22,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -102,7 +102,7 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
   }
 
  protected:
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     DCHECK(identity_test_env_adaptor_);
     return identity_test_env_adaptor_->identity_test_env();
   }

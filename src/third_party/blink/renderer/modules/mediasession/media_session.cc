@@ -13,10 +13,13 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata_sanitizer.h"
+#include "third_party/blink/renderer/modules/mediasession/media_session_action_details.h"
+#include "third_party/blink/renderer/modules/mediasession/media_session_seek_to_action_details.h"
+#include "third_party/blink/renderer/modules/mediasession/type_converters.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -37,6 +40,8 @@ const AtomicString& MojomActionToActionName(MediaSessionAction action) {
   DEFINE_STATIC_LOCAL(const AtomicString, seek_forward_action_name,
                       ("seekforward"));
   DEFINE_STATIC_LOCAL(const AtomicString, skip_ad_action_name, ("skipad"));
+  DEFINE_STATIC_LOCAL(const AtomicString, stop_action_name, ("stop"));
+  DEFINE_STATIC_LOCAL(const AtomicString, seek_to_action_name, ("seekto"));
 
   switch (action) {
     case MediaSessionAction::kPlay:
@@ -53,6 +58,10 @@ const AtomicString& MojomActionToActionName(MediaSessionAction action) {
       return seek_forward_action_name;
     case MediaSessionAction::kSkipAd:
       return skip_ad_action_name;
+    case MediaSessionAction::kStop:
+      return stop_action_name;
+    case MediaSessionAction::kSeekTo:
+      return seek_to_action_name;
     default:
       NOTREACHED();
   }
@@ -75,6 +84,10 @@ base::Optional<MediaSessionAction> ActionNameToMojomAction(
     return MediaSessionAction::kSeekForward;
   if ("skipad" == action_name)
     return MediaSessionAction::kSkipAd;
+  if ("stop" == action_name)
+    return MediaSessionAction::kStop;
+  if ("seekto" == action_name)
+    return MediaSessionAction::kSeekTo;
 
   NOTREACHED();
   return base::nullopt;
@@ -166,6 +179,13 @@ void MediaSession::setActionHandler(const String& action,
     }
 
     UseCounter::Count(GetExecutionContext(), WebFeature::kMediaSessionSkipAd);
+  } else if (action == "seekto" &&
+             !RuntimeEnabledFeatures::MediaSessionSeekingEnabled(
+                 GetExecutionContext())) {
+    exception_state.ThrowTypeError(
+        "The provided value 'seekto' is not a valid enum "
+        "value of type MediaSessionAction.");
+    return;
   }
 
   if (handler) {
@@ -233,17 +253,25 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
 }
 
 void MediaSession::DidReceiveAction(
-    media_session::mojom::blink::MediaSessionAction action) {
+    media_session::mojom::blink::MediaSessionAction action,
+    mojom::blink::MediaSessionActionDetailsPtr details) {
   Document* document = To<Document>(GetExecutionContext());
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
       LocalFrame::NotifyUserActivation(document ? document->GetFrame()
                                                 : nullptr);
 
-  auto iter = action_handlers_.find(MojomActionToActionName(action));
+  auto& name = MojomActionToActionName(action);
+
+  auto iter = action_handlers_.find(name);
   if (iter == action_handlers_.end())
     return;
 
-  iter->value->InvokeAndReportException(this);
+  const auto* blink_details =
+      mojo::TypeConverter<const blink::MediaSessionActionDetails*,
+                          blink::mojom::blink::MediaSessionActionDetailsPtr>::
+          ConvertWithActionName(details, name);
+
+  iter->value->InvokeAndReportException(this, blink_details);
 }
 
 void MediaSession::Trace(blink::Visitor* visitor) {

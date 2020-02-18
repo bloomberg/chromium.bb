@@ -8,11 +8,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_time_logger.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/test/mojo_test_base.h"
@@ -130,7 +130,7 @@ class MojoE2EPerftest : public core::test::MojoTestBase {
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
   void RunTests(MojoHandle client_mp, const std::string& test_name) {
@@ -175,8 +175,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(PingService, MojoE2EPerftest, mp) {
       base::BindOnce(
           &CreateAndRunService, std::move(receiver),
           base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
-                         message_loop_.task_runner(), FROM_HERE,
-                         run_loop.QuitClosure())));
+                         scoped_task_environment_.GetMainThreadTaskRunner(),
+                         FROM_HERE, run_loop.QuitClosure())));
   run_loop.Run();
 }
 
@@ -185,8 +185,9 @@ TEST_F(MojoE2EPerftest, MultiProcessEchoMainThread) {
     MojoHandle client_mp, service_mp;
     CreateMessagePipe(&client_mp, &service_mp);
     WriteMessageWithHandles(mp, "hello", &service_mp, 1);
-    RunTestOnTaskRunner(message_loop_.task_runner().get(), client_mp,
-                        "MultiProcessEchoMainThread");
+    RunTestOnTaskRunner(
+        scoped_task_environment_.GetMainThreadTaskRunner().get(), client_mp,
+        "MultiProcessEchoMainThread");
   });
 }
 

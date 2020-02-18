@@ -20,7 +20,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
-#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -53,7 +52,6 @@
 #include "net/base/proxy_server.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_list.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -205,7 +203,6 @@ void DataReductionProxyChromeSettings::Shutdown() {
 void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
     data_reduction_proxy::DataReductionProxyIOData* io_data,
     PrefService* profile_prefs,
-    net::URLRequestContextGetter* request_context_getter,
     Profile* profile,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<data_reduction_proxy::DataStore> store,
@@ -230,8 +227,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   }
   std::unique_ptr<data_reduction_proxy::DataReductionProxyService> service =
       std::make_unique<data_reduction_proxy::DataReductionProxyService>(
-          this, profile_prefs, request_context_getter, url_loader_factory,
-          std::move(store),
+          this, profile_prefs, url_loader_factory, std::move(store),
           std::make_unique<
               data_reduction_proxy::DataReductionProxyPingbackClientImpl>(
               url_loader_factory, ui_task_runner,
@@ -270,17 +266,9 @@ std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
 DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
     content::NavigationHandle* handle,
     const net::HttpResponseHeaders* headers) {
-  ChromeNavigationData* chrome_navigation_data =
-      static_cast<ChromeNavigationData*>(handle->GetNavigationData());
-  if (chrome_navigation_data) {
-    if (chrome_navigation_data->GetDataReductionProxyData())
-      return chrome_navigation_data->GetDataReductionProxyData()->DeepCopy();
-    return nullptr;
-  }
-
   // Some unit tests don't have data_reduction_proxy_service() set.
   if (!data_reduction_proxy_service())
-    return nullptr;
+    return test_data_ ? std::move(test_data_) : nullptr;
 
   // TODO(721403): Need to fill in:
   //  - request_info_
@@ -310,12 +298,6 @@ DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
     case data_reduction_proxy::TRANSFORM_LITE_PAGE:
       data->set_lite_page_received(true);
       break;
-    case data_reduction_proxy::TRANSFORM_PAGE_POLICIES_EMPTY_IMAGE:
-      data->set_lofi_policy_received(true);
-      break;
-    case data_reduction_proxy::TRANSFORM_EMPTY_IMAGE:
-      data->set_lofi_received(true);
-      break;
     case data_reduction_proxy::TRANSFORM_IDENTITY:
     case data_reduction_proxy::TRANSFORM_COMPRESSED_VIDEO:
     case data_reduction_proxy::TRANSFORM_NONE:
@@ -340,6 +322,11 @@ DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
       data->set_session_key(session_key.value());
   }
   return data;
+}
+
+void DataReductionProxyChromeSettings::SetDataForNextCommitForTesting(
+    std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data) {
+  test_data_ = std::move(data);
 }
 
 // static

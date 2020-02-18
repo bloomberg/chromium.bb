@@ -1,15 +1,15 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __SMTPGUID_H__
 #define __SMTPGUID_H__
 
 #ifdef SMTPINITGUID
-#define DECLARE_EVENTGUID_STRING(Name,Value) CONST WCHAR Name##[] = L##Value
+#define DECLARE_EVENTGUID_STRING(Name,Value) CONST WCHAR Name[] = L##Value
 #else
-#define DECLARE_EVENTGUID_STRING(Name,Value) extern CONST WCHAR Name##[]
+#define DECLARE_EVENTGUID_STRING(Name,Value) extern CONST WCHAR Name[]
 #endif
 
 DECLARE_EVENTGUID_STRING(g_szGuidSmtpSourceType,"{fb65c4dc-e468-11d1-aa67-00c04fa345f6}");

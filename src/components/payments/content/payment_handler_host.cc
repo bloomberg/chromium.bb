@@ -8,12 +8,13 @@
 
 #include "base/callback.h"
 #include "components/payments/core/error_strings.h"
+#include "components/payments/core/native_error_strings.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace payments {
 
 PaymentHandlerHost::PaymentHandlerHost(Delegate* delegate)
-    : binding_(this), delegate_(delegate), weak_ptr_factory_(this) {
+    : binding_(this), delegate_(delegate) {
   DCHECK(delegate_);
 }
 
@@ -49,6 +50,10 @@ void PaymentHandlerHost::NoUpdatedPaymentDetails() {
 
 void PaymentHandlerHost::Disconnect() {
   binding_.Close();
+}
+
+base::WeakPtr<PaymentHandlerHost> PaymentHandlerHost::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void PaymentHandlerHost::ChangePaymentMethod(

@@ -3,7 +3,10 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <resources>
+    <!-- The color of the ripple effect on clickable elements. -->
     <attr name="rippleColor" format="color"/>
+    <!-- The top or bottom inset of a drawable. -->
+    <attr name="verticalInset" format="reference|dimension"/>
 
     <declare-styleable name="DualControlLayout">
         <attr name="stackedMargin" format="reference"/>
@@ -17,9 +20,13 @@
     </declare-styleable>
 
     <declare-styleable name="ButtonCompat">
+        <!-- The color of the button background. -->
         <attr name="buttonColor" format="color"/>
         <attr name="rippleColor"/>
+        <!-- Whether the button is elevated. -->
         <attr name="buttonRaised" format="boolean"/>
+        <!-- The vertical inset of the button background drawable. -->
+        <attr name="verticalInset"/>
     </declare-styleable>
 
     <declare-styleable name="ChipView">
@@ -31,6 +38,7 @@
         <attr name="primaryTextAppearance" format="reference"/>
         <attr name="secondaryTextAppearance" format="reference"/>
         <attr name="rippleColor"/>
+        <attr name="verticalInset"/>
     </declare-styleable>
 
     <declare-styleable name="TextViewWithLeading">

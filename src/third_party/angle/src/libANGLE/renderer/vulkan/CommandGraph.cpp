@@ -17,7 +17,7 @@
 #include "libANGLE/renderer/vulkan/vk_format_utils.h"
 #include "libANGLE/renderer/vulkan/vk_helpers.h"
 
-#include "third_party/trace_event/trace_event.h"
+#include "libANGLE/trace.h"
 
 namespace rx
 {
@@ -88,6 +88,19 @@ const char *GetResourceTypeName(CommandGraphResourceType resourceType,
                     UNREACHABLE();
                     return "Query";
             }
+        case CommandGraphResourceType::Dispatcher:
+            return "Dispatcher";
+        case CommandGraphResourceType::EmulatedQuery:
+            switch (function)
+            {
+                case CommandGraphNodeFunction::BeginTransformFeedbackQuery:
+                    return "BeginTransformFeedbackQuery";
+                case CommandGraphNodeFunction::EndTransformFeedbackQuery:
+                    return "EndTransformFeedbackQuery";
+                default:
+                    UNREACHABLE();
+                    return "EmulatedQuery";
+            }
         case CommandGraphResourceType::FenceSync:
             switch (function)
             {
@@ -99,6 +112,8 @@ const char *GetResourceTypeName(CommandGraphResourceType resourceType,
                     UNREACHABLE();
                     return "FenceSync";
             }
+        case CommandGraphResourceType::GraphBarrier:
+            return "GraphBarrier";
         case CommandGraphResourceType::DebugMarker:
             switch (function)
             {
@@ -112,9 +127,42 @@ const char *GetResourceTypeName(CommandGraphResourceType resourceType,
                     UNREACHABLE();
                     return "DebugMarker";
             }
+        case CommandGraphResourceType::HostAvailabilityOperation:
+            switch (function)
+            {
+                case CommandGraphNodeFunction::HostAvailabilityOperation:
+                    return "HostAvailabilityOperation";
+                default:
+                    UNREACHABLE();
+                    return "HostAvailabilityOperation";
+            }
         default:
             UNREACHABLE();
             return "";
+    }
+}
+
+const char *GetLoadOpShorthand(uint32_t loadOp)
+{
+    switch (loadOp)
+    {
+        case VK_ATTACHMENT_LOAD_OP_CLEAR:
+            return "C";
+        case VK_ATTACHMENT_LOAD_OP_LOAD:
+            return "L";
+        default:
+            return "D";
+    }
+}
+
+const char *GetStoreOpShorthand(uint32_t storeOp)
+{
+    switch (storeOp)
+    {
+        case VK_ATTACHMENT_STORE_OP_STORE:
+            return "S";
+        default:
+            return "D";
     }
 }
 
@@ -233,7 +281,7 @@ angle::Result CommandGraphResource::beginRenderPass(
     mCurrentWritingNode->storeRenderPassInfo(framebuffer, renderArea, renderPassDesc,
                                              renderPassAttachmentOps, clearValues);
 
-    mCurrentWritingNode->setCommandBufferOwner(contextVk);
+    mCurrentWritingNode->setRenderPassOwner(contextVk);
 
     return mCurrentWritingNode->beginInsideRenderPassRecording(contextVk, commandBufferOut);
 }
@@ -309,7 +357,8 @@ CommandGraphNode::CommandGraphNode(CommandGraphNodeFunction function,
       mVisitedState(VisitedState::Unvisited),
       mGlobalMemoryBarrierSrcAccess(0),
       mGlobalMemoryBarrierDstAccess(0),
-      mCommandBufferOwner(nullptr)
+      mGlobalMemoryBarrierStages(0),
+      mRenderPassOwner(nullptr)
 {}
 
 CommandGraphNode::~CommandGraphNode()
@@ -420,7 +469,9 @@ void CommandGraphNode::setQueryPool(const QueryPool *queryPool, uint32_t queryIn
 {
     ASSERT(mFunction == CommandGraphNodeFunction::BeginQuery ||
            mFunction == CommandGraphNodeFunction::EndQuery ||
-           mFunction == CommandGraphNodeFunction::WriteTimestamp);
+           mFunction == CommandGraphNodeFunction::WriteTimestamp ||
+           mFunction == CommandGraphNodeFunction::BeginTransformFeedbackQuery ||
+           mFunction == CommandGraphNodeFunction::EndTransformFeedbackQuery);
     mQueryPool  = queryPool->getHandle();
     mQueryIndex = queryIndex;
 }
@@ -481,25 +532,23 @@ angle::Result CommandGraphNode::visitAndExecute(vk::Context *context,
                                                 RenderPassCache *renderPassCache,
                                                 PrimaryCommandBuffer *primaryCommandBuffer)
 {
+    // Record the deferred pipeline barrier if necessary.
+    ASSERT((mGlobalMemoryBarrierDstAccess == 0) == (mGlobalMemoryBarrierSrcAccess == 0));
+    if (mGlobalMemoryBarrierSrcAccess)
+    {
+        VkMemoryBarrier memoryBarrier = {};
+        memoryBarrier.sType           = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+        memoryBarrier.srcAccessMask   = mGlobalMemoryBarrierSrcAccess;
+        memoryBarrier.dstAccessMask   = mGlobalMemoryBarrierDstAccess;
+
+        primaryCommandBuffer->memoryBarrier(mGlobalMemoryBarrierStages, mGlobalMemoryBarrierStages,
+                                            &memoryBarrier);
+    }
+
     switch (mFunction)
     {
         case CommandGraphNodeFunction::Generic:
             ASSERT(mQueryPool == VK_NULL_HANDLE && mFenceSyncEvent == VK_NULL_HANDLE);
-
-            // Record the deferred pipeline barrier if necessary.
-            ASSERT((mGlobalMemoryBarrierDstAccess == 0) == (mGlobalMemoryBarrierSrcAccess == 0));
-            if (mGlobalMemoryBarrierSrcAccess)
-            {
-                VkMemoryBarrier memoryBarrier = {};
-                memoryBarrier.sType           = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                memoryBarrier.srcAccessMask   = mGlobalMemoryBarrierSrcAccess;
-                memoryBarrier.dstAccessMask   = mGlobalMemoryBarrierDstAccess;
-
-                // Use the all pipe stage to keep the state management simple.
-                primaryCommandBuffer->pipelineBarrier(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                                                      VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1,
-                                                      &memoryBarrier, 0, nullptr, 0, nullptr);
-            }
 
             if (mOutsideRenderPassCommands.valid())
             {
@@ -563,6 +612,15 @@ angle::Result CommandGraphNode::visitAndExecute(vk::Context *context,
 
             break;
 
+        case CommandGraphNodeFunction::BeginTransformFeedbackQuery:
+            // Unless using VK_EXT_transform_feedback (not implemented currently), there's nothing
+            // to do.
+            break;
+
+        case CommandGraphNodeFunction::EndTransformFeedbackQuery:
+            // Same as BeginTransformFeedbackQuery.
+            break;
+
         case CommandGraphNodeFunction::SetFenceSync:
             ASSERT(!mOutsideRenderPassCommands.valid() && !mInsideRenderPassCommands.valid());
             ASSERT(mFenceSyncEvent != VK_NULL_HANDLE);
@@ -580,6 +638,11 @@ angle::Result CommandGraphNode::visitAndExecute(vk::Context *context,
                 1, &mFenceSyncEvent, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
                 VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, nullptr, 0, nullptr, 0, nullptr);
 
+            break;
+
+        case CommandGraphNodeFunction::GraphBarrier:
+            // Nothing to do.  The memory barrier, if any, is already handled above through global
+            // memory barrier flags.
             break;
 
         case CommandGraphNodeFunction::InsertDebugMarker:
@@ -615,6 +678,21 @@ angle::Result CommandGraphNode::visitAndExecute(vk::Context *context,
             }
             break;
 
+        case CommandGraphNodeFunction::HostAvailabilityOperation:
+            // Make sure all writes to host-visible buffers are flushed.  We have no way of knowing
+            // whether any buffer will be mapped for readback in the future, and we can't afford to
+            // flush and wait on a one-pipeline-barrier command buffer on every map().
+            {
+                VkMemoryBarrier memoryBarrier = {};
+                memoryBarrier.sType           = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier.srcAccessMask   = VK_ACCESS_MEMORY_WRITE_BIT;
+                memoryBarrier.dstAccessMask   = VK_ACCESS_HOST_READ_BIT;
+
+                primaryCommandBuffer->memoryBarrier(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                                                    VK_PIPELINE_STAGE_HOST_BIT, &memoryBarrier);
+            }
+            break;
+
         default:
             UNREACHABLE();
     }
@@ -635,9 +713,25 @@ void CommandGraphNode::setDiagnosticInfo(CommandGraphResourceType resourceType,
     mResourceID   = resourceID;
 }
 
+bool CommandGraphNode::hasDiagnosticID() const
+{
+    // All nodes have diagnostic IDs to differentiate them except the following select few.
+    return mResourceType != CommandGraphResourceType::HostAvailabilityOperation &&
+           mResourceType != CommandGraphResourceType::GraphBarrier;
+}
+
 std::string CommandGraphNode::dumpCommandsForDiagnostics(const char *separator) const
 {
     std::string result;
+    if (mGlobalMemoryBarrierSrcAccess != 0 || mGlobalMemoryBarrierDstAccess != 0)
+    {
+        result += separator;
+
+        std::ostringstream out;
+        out << "Memory Barrier Src: 0x" << std::hex << mGlobalMemoryBarrierSrcAccess
+            << " &rarr; Dst: 0x" << std::hex << mGlobalMemoryBarrierDstAccess;
+        result += out.str();
+    }
     if (mOutsideRenderPassCommands.valid())
     {
         result += separator;
@@ -648,6 +742,47 @@ std::string CommandGraphNode::dumpCommandsForDiagnostics(const char *separator) 
     {
         result += separator;
         result += "Inside RP:";
+
+        size_t attachmentCount             = mRenderPassDesc.attachmentCount();
+        size_t depthStencilAttachmentCount = mRenderPassDesc.hasDepthStencilAttachment();
+        size_t colorAttachmentCount        = attachmentCount - depthStencilAttachmentCount;
+
+        std::string loadOps, storeOps;
+
+        if (colorAttachmentCount > 0)
+        {
+            loadOps += " Color: ";
+            storeOps += " Color: ";
+
+            for (size_t i = 0; i < colorAttachmentCount; ++i)
+            {
+                loadOps += GetLoadOpShorthand(mRenderPassAttachmentOps[i].loadOp);
+                storeOps += GetStoreOpShorthand(mRenderPassAttachmentOps[i].storeOp);
+            }
+        }
+
+        if (depthStencilAttachmentCount > 0)
+        {
+            ASSERT(depthStencilAttachmentCount == 1);
+
+            loadOps += " Depth/Stencil: ";
+            storeOps += " Depth/Stencil: ";
+            size_t dsIndex = colorAttachmentCount;
+
+            loadOps += GetLoadOpShorthand(mRenderPassAttachmentOps[dsIndex].loadOp);
+            loadOps += GetLoadOpShorthand(mRenderPassAttachmentOps[dsIndex].stencilLoadOp);
+
+            storeOps += GetStoreOpShorthand(mRenderPassAttachmentOps[dsIndex].storeOp);
+            storeOps += GetStoreOpShorthand(mRenderPassAttachmentOps[dsIndex].stencilStoreOp);
+        }
+
+        if (attachmentCount > 0)
+        {
+            result += " LoadOp: " + loadOps;
+            result += separator;
+            result += "------------ StoreOp: " + storeOps;
+        }
+
         result += DumpCommands(mInsideRenderPassCommands, separator);
     }
     return result;
@@ -839,6 +974,18 @@ void CommandGraph::writeTimestamp(const QueryPool *queryPool, uint32_t queryInde
     newNode->setQueryPool(queryPool, queryIndex);
 }
 
+void CommandGraph::beginTransformFeedbackEmulatedQuery()
+{
+    allocateBarrierNode(CommandGraphNodeFunction::BeginTransformFeedbackQuery,
+                        CommandGraphResourceType::EmulatedQuery, 0);
+}
+
+void CommandGraph::endTransformFeedbackEmulatedQuery()
+{
+    allocateBarrierNode(CommandGraphNodeFunction::EndTransformFeedbackQuery,
+                        CommandGraphResourceType::EmulatedQuery, 0);
+}
+
 void CommandGraph::setFenceSync(const vk::Event &event)
 {
     CommandGraphNode *newNode = allocateBarrierNode(CommandGraphNodeFunction::SetFenceSync,
@@ -853,6 +1000,13 @@ void CommandGraph::waitFenceSync(const vk::Event &event)
                                                     CommandGraphResourceType::FenceSync,
                                                     reinterpret_cast<uintptr_t>(&event));
     newNode->setFenceSync(event);
+}
+
+void CommandGraph::memoryBarrier(VkFlags srcAccess, VkFlags dstAccess, VkPipelineStageFlags stages)
+{
+    CommandGraphNode *newNode = allocateBarrierNode(CommandGraphNodeFunction::GraphBarrier,
+                                                    CommandGraphResourceType::GraphBarrier, 0);
+    newNode->addGlobalMemoryBarrier(srcAccess, dstAccess, stages);
 }
 
 void CommandGraph::insertDebugMarker(GLenum source, std::string &&marker)
@@ -875,6 +1029,12 @@ void CommandGraph::popDebugMarker()
                         CommandGraphResourceType::DebugMarker, 0);
 }
 
+void CommandGraph::makeHostVisibleBufferWriteAvailable()
+{
+    allocateBarrierNode(CommandGraphNodeFunction::HostAvailabilityOperation,
+                        CommandGraphResourceType::HostAvailabilityOperation, 0);
+}
+
 // Dumps the command graph into a dot file that works with graphviz.
 void CommandGraph::dumpGraphDotFile(std::ostream &out) const
 {
@@ -894,7 +1054,9 @@ void CommandGraph::dumpGraphDotFile(std::ostream &out) const
     int framebufferIDCounter = 1;
     int imageIDCounter       = 1;
     int queryIDCounter       = 1;
+    int dispatcherIDCounter  = 1;
     int fenceIDCounter       = 1;
+    int xfbIDCounter         = 1;
 
     out << "digraph {" << std::endl;
 
@@ -936,6 +1098,10 @@ void CommandGraph::dumpGraphDotFile(std::ostream &out) const
                 strstr << id;
             }
         }
+        else if (!node->hasDiagnosticID())
+        {
+            // Nothing to append for these special nodes.  The name is sufficient.
+        }
         else
         {
             strstr << " ";
@@ -963,8 +1129,14 @@ void CommandGraph::dumpGraphDotFile(std::ostream &out) const
                     case CommandGraphResourceType::Image:
                         id = imageIDCounter++;
                         break;
+                    case CommandGraphResourceType::Dispatcher:
+                        id = dispatcherIDCounter++;
+                        break;
                     case CommandGraphResourceType::FenceSync:
                         id = fenceIDCounter++;
+                        break;
+                    case CommandGraphResourceType::EmulatedQuery:
+                        id = xfbIDCounter++;
                         break;
                     default:
                         UNREACHABLE();

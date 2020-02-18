@@ -9,11 +9,11 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/run_loop.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/power_monitor_test_base.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_suite.h"
 #include "media/base/cdm_context.h"
@@ -190,8 +190,6 @@ void CreateFrameAndMemsetPlane(VideoFrameFactory* const video_frame_factory) {
 
 class TestPowerSource : public base::PowerMonitorSource {
  public:
-  void Shutdown() override {}
-
   void GenerateSuspendEvent() {
     ProcessPowerEvent(SUSPEND_EVENT);
     base::RunLoop().RunUntilIdle();
@@ -213,12 +211,13 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
     clock_.Advance(base::TimeTicks::Now() - base::TimeTicks());
 
     power_source_ = new TestPowerSource();
-    power_monitor_.reset(new base::PowerMonitor(
-        std::unique_ptr<TestPowerSource>(power_source_)));
+    base::PowerMonitor::Initialize(
+        std::unique_ptr<TestPowerSource>(power_source_));
 
     cast_environment_ = new CastEnvironment(
-        &clock_, message_loop_.task_runner(), message_loop_.task_runner(),
-        message_loop_.task_runner());
+        &clock_, scoped_task_environment_.GetMainThreadTaskRunner(),
+        scoped_task_environment_.GetMainThreadTaskRunner(),
+        scoped_task_environment_.GetMainThreadTaskRunner());
     encoder_.reset(new H264VideoToolboxEncoder(
         cast_environment_, video_sender_config_,
         base::Bind(&SaveOperationalStatus, &operational_status_)));
@@ -229,7 +228,7 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
   void TearDown() final {
     encoder_.reset();
     base::RunLoop().RunUntilIdle();
-    power_monitor_.reset();
+    base::PowerMonitor::ShutdownForTesting();
   }
 
   void AdvanceClockAndVideoFrameTimestamp() {
@@ -254,12 +253,11 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
   static FrameSenderConfig video_sender_config_;
 
   base::SimpleTestTickClock clock_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<CastEnvironment> cast_environment_;
   std::unique_ptr<VideoEncoder> encoder_;
   OperationalStatus operational_status_;
   TestPowerSource* power_source_;  // Owned by the power monitor.
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(H264VideoToolboxEncoderTest);
@@ -301,8 +299,11 @@ TEST_F(H264VideoToolboxEncoderTest, DISABLED_CheckFrameMetadataSequence) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 // Failed on mac-rel trybot. http://crbug.com/627260
 TEST_F(H264VideoToolboxEncoderTest, DISABLED_CheckFramesAreDecodable) {
+  const auto alpha_mode = IsOpaque(frame_->format())
+                              ? VideoDecoderConfig::AlphaMode::kIsOpaque
+                              : VideoDecoderConfig::AlphaMode::kHasAlpha;
   VideoDecoderConfig config(
-      kCodecH264, H264PROFILE_MAIN, frame_->format(), VideoColorSpace(),
+      kCodecH264, H264PROFILE_MAIN, alpha_mode, VideoColorSpace(),
       kNoTransformation, frame_->coded_size(), frame_->visible_rect(),
       frame_->natural_size(), EmptyExtraData(), Unencrypted());
   scoped_refptr<EndToEndFrameChecker> checker(new EndToEndFrameChecker(config));

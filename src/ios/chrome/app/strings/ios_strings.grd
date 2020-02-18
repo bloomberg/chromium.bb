@@ -891,6 +891,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_MANAGED_SWITCH_TITLE" desc="The title of the Switch from a managed account dialog. [40em]">
         Sign out of managed account
       </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_ADD_PAYMENT_METHOD" desc="The title for the button in the manual fallback UI that takes the user to the add new credit card screen through settings. In this screen, the user can input their card details and save them.">
+        Add Payment Method...
+      </message>
       <message name="IDS_IOS_MANUAL_FALLBACK_MANAGE_PASSWORDS" desc="The title for the button in the manual fallback UI that takes the user to the passwords settings. In this screen they see all the passwords and can erase them. Note it is different from IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD_WITH_DOTS [30em]">
         Manage Passwords...
       </message>
@@ -1502,11 +1505,8 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SHARE_MENU_SEND_TAB_TO_SELF_ACTION" desc="Text label to the Send Tab To Self action in the extension menu that sends the current tab to the user's other devices. [iOS only]">
         Send To Your Devices
       </message>
-      <message name="IDS_IOS_SHARE_MENU_SEND_TAB_TO_SELF_DEVICE_ACTION" desc="Text label for the Send Tab To Self action sheet that chooses the device to which the current tab will be sent. [iOS only]">
-        Send <ph name="Title">$1<ex>Webpage Title</ex></ph> to one of your devices.
-      </message>
       <message name="IDS_IOS_SEND_TAB_TO_SELF_SNACKBAR_MESSAGE" desc="Message briefly displayed at the bottom of the screen to the user to inform that the tab is being sent to the target device. [Length: 35em]" meaning="The is being sent to the target device. [Length: 35em]">
-        Sending...
+        Sending to <ph name="DEVICE_NAME">$1<ex>IPhone</ex></ph>...
       </message>
       <message name="IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ACTION" desc="Button label for the Send Tab To Self modal dialog that sends the current tab to a user's other device. [iOS only]">
         Send To Your Device
@@ -1883,9 +1883,15 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TOOLS_MENU_HISTORY" desc="The Tools menu item for opening the navigation history menu">
         History
       </message>
+<message name="IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_SEARCH" desc="The iOS menu item for opening a new incognito tab and doing a new search in that tab." meaning="Do a new search in a new incognito tab">
+Incognito Search
+</message>
       <message name="IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB" desc="The iOS menu item for opening a new incognito tab [iOS only]" meaning="Tools menu entry to create a new Incognito tab. [Length: Unlimited]">
         New Incognito Tab
       </message>
+<message name="IDS_IOS_TOOLS_MENU_NEW_SEARCH" desc="The iOS menu item for opening a new tab and doing a new search in that tab." meaning="Do a new search in a new tab">
+New Search
+</message>
       <message name="IDS_IOS_TOOLS_MENU_NEW_TAB" desc="The iOS menu item for opening a new tab [iOS only]" meaning="Tools menu entry to create a new tab. [Length: Unlimited]">
         New Tab
       </message>
@@ -2062,6 +2068,12 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_PASTE_AND_GO" desc="Text in the editing menu shown when long-pressing the omnibox. Enables pasting the current contents of the clipboard and searching the text or navigating to the url. [iOS only]">
           Paste and Go
+      </message>
+      <message name="IDS_IOS_NAVIGATION_BAR_ADD_BUTTON" desc="Label of the button allowing the user to add a new credit card to the list of their saved credit cards.">
+          Add
+      </message>
+      <message name="IDS_IOS_CREDIT_CARD_SETTINGS_ADD_PAYMENT_METHOD_TITLE" desc="Title of the View Controller in which the user can enter the details for a new credit card to add it to the list of their saved credit cards. [iOS only]">
+          Add Payment Method
       </message>
     </messages>
   </release>

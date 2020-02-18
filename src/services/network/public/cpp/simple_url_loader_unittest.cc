@@ -1691,7 +1691,7 @@ enum class TestLoaderEvent {
   kClientPipeClosed,
   kBodyBufferClosed,
   // Advances time by 1 second. Only callable when the test environment is
-  // configured to be MainThreadType::MOCK_TIME.
+  // configured to be TimeSource::MOCK_TIME.
   kAdvanceOneSecond,
 };
 
@@ -1709,8 +1709,7 @@ class MockURLLoader : public network::mojom::URLLoader {
       : scoped_task_environment_(scoped_task_environment),
         binding_(this, std::move(url_loader_request)),
         client_(std::move(client)),
-        test_events_(std::move(test_events)),
-        weak_factory_for_data_pipe_callbacks_(this) {
+        test_events_(std::move(test_events)) {
     if (request_body && request_body->elements()->size() == 1 &&
         (*request_body->elements())[0].type() ==
             network::mojom::DataElementType::kDataPipe) {
@@ -1955,7 +1954,8 @@ class MockURLLoader : public network::mojom::URLLoader {
 
   std::unique_ptr<base::RunLoop> read_run_loop_;
 
-  base::WeakPtrFactory<MockURLLoader> weak_factory_for_data_pipe_callbacks_;
+  base::WeakPtrFactory<MockURLLoader> weak_factory_for_data_pipe_callbacks_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(MockURLLoader);
 };
@@ -2973,12 +2973,12 @@ TEST_F(SimpleURLLoaderStreamTest, OnRetryDestruction) {
 }
 
 // Don't inherit from SimpleURLLoaderTestBase so that we can initialize our
-// |scoped_task_environment_| different namely with MainThreadType::MOCK_TIME.
+// |scoped_task_environment_| different namely with TimeSource::MOCK_TIME.
 class SimpleURLLoaderMockTimeTest : public testing::Test {
  public:
   SimpleURLLoaderMockTimeTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         disallow_blocking_(std::make_unique<base::ScopedDisallowBlocking>()) {
     SimpleURLLoader::SetTimeoutTickClockForTest(
         scoped_task_environment_.GetMockTickClock());

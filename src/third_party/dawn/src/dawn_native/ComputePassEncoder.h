@@ -27,19 +27,29 @@ namespace dawn_native {
     class ComputePassEncoderBase : public ProgrammablePassEncoder {
       public:
         ComputePassEncoderBase(DeviceBase* device,
-                               CommandEncoderBase* topLevelEncoder,
-                               CommandAllocator* allocator);
+                               CommandEncoderBase* commandEncoder,
+                               EncodingContext* encodingContext);
 
         static ComputePassEncoderBase* MakeError(DeviceBase* device,
-                                                 CommandEncoderBase* topLevelEncoder);
+                                                 CommandEncoderBase* commandEncoder,
+                                                 EncodingContext* encodingContext);
+
+        void EndPass();
 
         void Dispatch(uint32_t x, uint32_t y, uint32_t z);
+        void DispatchIndirect(BufferBase* indirectBuffer, uint64_t indirectOffset);
         void SetPipeline(ComputePipelineBase* pipeline);
 
       protected:
         ComputePassEncoderBase(DeviceBase* device,
-                               CommandEncoderBase* topLevelEncoder,
+                               CommandEncoderBase* commandEncoder,
+                               EncodingContext* encodingContext,
                                ErrorTag errorTag);
+
+      private:
+        // For render and compute passes, the encoding context is borrowed from the command encoder.
+        // Keep a reference to the encoder to make sure the context isn't freed.
+        Ref<CommandEncoderBase> mCommandEncoder;
     };
 
 }  // namespace dawn_native

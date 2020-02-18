@@ -59,17 +59,6 @@ SKIPPED_CATEGORIES = [
     'virtual',
 ]
 
-SKIPPED_PACKAGES = [
-    # Fix these packages by adding a real license in the code.
-    # You should not skip packages just because the license scraping doesn't
-    # work. Stick those special cases into PACKAGE_LICENSES.
-    # Packages should only be here because they are sub/split packages already
-    # covered by the license of the main package.
-
-    # These are Chrome-OS-specific packages, copyright BSD-Google
-    'sys-kernel/chromeos-kernel',  # already manually credit Linux
-]
-
 SKIPPED_LICENSES = [
     # Some of our packages contain binary blobs for which we have special
     # negotiated licenses, and no need to display anything publicly. Strongly
@@ -560,10 +549,6 @@ being scraped currently).""",
       logging.info('%s in SKIPPED_CATEGORIES, skip package', self.fullname)
       self.skip = True
 
-    if self.fullname in SKIPPED_PACKAGES:
-      logging.info('%s in SKIPPED_PACKAGES, skip package', self.fullname)
-      self.skip = True
-
     # TODO(dgarrett): There are additional reasons that should be handled here.
 
     return self.skip
@@ -664,13 +649,6 @@ being scraped currently).""",
         license_name = 'BSD-Google'
         logging.warning(
             'Fixed BSD->BSD-Google for %s because it\'s in chromeos-base. '
-            'Please fix the LICENSE field in the ebuild', self.fullnamerev)
-      # TODO: temp workaround for http;//crbug.com/348749 , remove when the bug
-      # is fixed.
-      if license_name == 'Proprietary':
-        license_name = 'Google-TOS'
-        logging.warning(
-            'Fixed Proprietary -> Google-TOS for %s. '
             'Please fix the LICENSE field in the ebuild', self.fullnamerev)
       new_license_names.append(license_name)
     ebuild_license_names = new_license_names
@@ -904,6 +882,21 @@ class Licensing(object):
       license_names: list of license name strings.
       license_texts: custom license text to use, mostly for attribution.
     """
+    # TODO(crbug.com/401332): Remove this entirely.
+    # We allow a few packages for now so new packages will stop showing up.
+    if 'Proprietary-Binary' in license_names:
+      # Note: DO NOT ADD ANY MORE PACKAGES HERE.
+      LEGACY_PKGS = (
+          'chromeos-base/infineon-firmware',
+          'chromeos-base/pepper-flash',
+          'sys-boot/coreboot-private-files-',
+          'sys-boot/exynos-pre-boot',
+          'sys-boot/nhlt-blobs',
+          'sys-boot/mma-blobs',
+      )
+      if not any(fullnamerev.startswith(x) for x in LEGACY_PKGS):
+        raise AssertionError('Proprietary-Binary is not a valid license.')
+
     pkg = PackageInfo(self.board, fullnamerev)
     pkg.homepages = homepages
     pkg.license_names = license_names
@@ -992,7 +985,7 @@ after fixing the license.""" % (license_name, '\n'.join(set(stock + custom))))
   def EvaluateTemplate(template, env):
     """Expand a template with vars like {{foo}} using a dict of expansions."""
     # TODO switch to stock python templates.
-    for key, val in env.iteritems():
+    for key, val in env.items():
       template = template.replace('{{%s}}' % key, val)
     return template
 

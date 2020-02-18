@@ -18,9 +18,6 @@
 
     "BadECDSA-*": "Fuzzer mode always accepts a signature.",
     "*-InvalidSignature-*": "Fuzzer mode always accepts a signature.",
-    "*Auth-Verify-RSA-PKCS1-*-TLS13*": "Fuzzer mode always accepts a signature.",
-    "*Auth-Verify-ECDSA-SHA1-TLS13*": "Fuzzer mode always accepts a signature.",
-    "*Auth-Verify-ECDSA-P224-*-TLS13*": "Fuzzer mode always accepts a signature.",
     "Verify-*Auth-SignatureType*": "Fuzzer mode always accepts a signature.",
     "ECDSACurveMismatch-Verify-TLS13*": "Fuzzer mode always accepts a signature.",
     "InvalidChannelIDSignature-*": "Fuzzer mode always accepts a signature.",

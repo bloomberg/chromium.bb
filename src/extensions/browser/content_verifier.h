@@ -32,7 +32,6 @@ class BrowserContext;
 namespace extensions {
 
 class Extension;
-class ManagementPolicy;
 
 // Used for managing overall content verification - both fetching content
 // hashes as needed, and supplying job objects to verify file contents as they
@@ -45,11 +44,6 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
     virtual void OnFetchComplete(const std::string& extension_id,
                                  bool success) = 0;
   };
-  // Returns true if content verifier should repair the extension (|id|) if it
-  // became courrpted.
-  // Note that this method doesn't check whether |id| is corrupted or not.
-  static bool ShouldRepairIfCorrupted(const ManagementPolicy* management_policy,
-                                      const Extension* id);
 
   static void SetObserverForTests(TestObserver* observer);
 
@@ -58,16 +52,13 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   void Start();
   void Shutdown();
 
-  // Call this before reading a file within an extension. The caller owns the
-  // returned job.
-  ContentVerifyJob* CreateJobFor(const std::string& extension_id,
-                                 const base::FilePath& extension_root,
-                                 const base::FilePath& relative_path);
-
-  // Called (typically by a verification job) to indicate that verification
-  // failed while reading some file in |extension_id|.
-  void VerifyFailed(const ExtensionId& extension_id,
-                    ContentVerifyJob::FailureReason reason);
+  // Call this before reading a file within an extension. Returns and starts a
+  // content verify job if the specified resource requires content verification,
+  // otherwise returns nullptr.
+  scoped_refptr<ContentVerifyJob> CreateAndStartJobFor(
+      const std::string& extension_id,
+      const base::FilePath& extension_root,
+      const base::FilePath& relative_path);
 
   // ExtensionRegistryObserver interface
   void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -98,9 +89,20 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   GURL GetSignatureFetchUrlForTest(const ExtensionId& extension_id,
                                    const base::Version& extension_version);
 
+  // Exposes VerifyFailed for tests.
+  void VerifyFailedForTest(const ExtensionId& extension_id,
+                           ContentVerifyJob::FailureReason reason);
+
   // Test helper to recompute |io_data_| for |extension| without having to
   // call |OnExtensionLoaded|.
   void ResetIODataForTesting(const Extension* extension);
+
+  // Test helper to clear all cached ContentHash entries from |cache_|.
+  void ClearCacheForTesting();
+
+  // Test helper to normalize relative path of file.
+  static base::FilePath NormalizeRelativePathForTesting(
+      const base::FilePath& path);
 
  private:
   friend class ContentVerifierTest;
@@ -145,6 +147,11 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
       const base::FilePath& extension_root,
       const std::set<base::FilePath>& relative_unix_paths);
 
+  // Called (typically by a verification job) to indicate that verification
+  // failed while reading some file in |extension_id|.
+  void VerifyFailed(const ExtensionId& extension_id,
+                    ContentVerifyJob::FailureReason reason);
+
   // Returns the HashHelper instance, making sure we create it at most once.
   // Must *not* be called after |shutdown_on_io_| is set to true.
   HashHelper* GetOrCreateHashHelper();
@@ -175,7 +182,7 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
 
   // Data that should only be used on the IO thread.
-  scoped_refptr<ContentVerifierIOData> io_data_;
+  ContentVerifierIOData io_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentVerifier);
 };

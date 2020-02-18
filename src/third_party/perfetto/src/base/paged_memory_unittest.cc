@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-#include "perfetto/base/paged_memory.h"
+#include "perfetto/ext/base/paged_memory.h"
 
 #include <stdint.h>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "perfetto/base/build_config.h"
 #include "src/base/test/vm_test_utils.h"
 

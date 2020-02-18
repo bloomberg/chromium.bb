@@ -10,15 +10,15 @@ from __future__ import print_function
 import copy
 import itertools
 import json
+import numbers
 import os
 import re
 
 from chromite.lib import constants
-from chromite.lib import memoize
 from chromite.lib import osutils
+from chromite.utils import memoize
 
-
-GS_PATH_DEFAULT = 'default' # Means gs://chromeos-image-archive/ + bot_id
+GS_PATH_DEFAULT = 'default'  # Means gs://chromeos-image-archive/ + bot_id
 
 # Contains the valid build config suffixes.
 CONFIG_TYPE_PRECQ = 'pre-cq'
@@ -90,6 +90,7 @@ LUCI_BUILDER_FULL = 'Full'
 LUCI_BUILDER_INCREMENTAL = 'Incremental'
 LUCI_BUILDER_INFORMATIONAL = 'Informational'
 LUCI_BUILDER_INFRA = 'Infra'
+LUCI_BUILDER_INFRA_TESTING = 'InfraTesting'
 LUCI_BUILDER_LEGACY_POSTSUBMIT = 'LegacyPostsubmit'
 LUCI_BUILDER_LEGACY_RELEASE = 'LegacyRelease'
 LUCI_BUILDER_PFQ = 'PFQ'
@@ -108,6 +109,7 @@ ALL_LUCI_BUILDER = {
     LUCI_BUILDER_INCREMENTAL,
     LUCI_BUILDER_INFORMATIONAL,
     LUCI_BUILDER_INFRA,
+    LUCI_BUILDER_INFRA_TESTING,
     LUCI_BUILDER_LEGACY_POSTSUBMIT,
     LUCI_BUILDER_LEGACY_RELEASE,
     LUCI_BUILDER_PFQ,
@@ -159,6 +161,7 @@ CONFIG_X86_EXTERNAL = 'X86_EXTERNAL'
 CONFIG_ARM_INTERNAL = 'ARM_INTERNAL'
 CONFIG_ARM_EXTERNAL = 'ARM_EXTERNAL'
 
+
 def IsPFQType(b_type):
   """Returns True if this build type is a PFQ."""
   return b_type in (constants.PFQ_TYPE, constants.PALADIN_TYPE,
@@ -209,15 +212,16 @@ def GetHWTestEnv(builder_run_config, model_config=None, suite_config=None):
   # arc-*ts-qual suites use a different logic because they use a separate pool
   # on the release builder.
   if suite_config and suite_config.suite in [
-      constants.HWTEST_CTS_QUAL_SUITE, constants.HWTEST_GTS_QUAL_SUITE]:
+      constants.HWTEST_CTS_QUAL_SUITE, constants.HWTEST_GTS_QUAL_SUITE
+  ]:
     if builder_run_config.enable_skylab_cts_hw_tests:
       return constants.ENV_SKYLAB
     return constants.ENV_AUTOTEST
 
   enable_suite = True if suite_config is None else suite_config.enable_skylab
   enable_model = True if model_config is None else model_config.enable_skylab
-  if (builder_run_config.enable_skylab_hw_tests
-      and enable_suite and enable_model):
+  if (builder_run_config.enable_skylab_hw_tests and enable_suite and
+      enable_model):
     return constants.ENV_SKYLAB
 
   return constants.ENV_AUTOTEST
@@ -255,6 +259,7 @@ class AttrDict(dict):
   This is identical to a dictionary, except that string keys can be addressed as
   read-only attributes.
   """
+
   def __getattr__(self, name):
     """Support attribute-like access to each dict entry."""
     if name in self:
@@ -272,6 +277,7 @@ class BuildConfig(AttrDict):
   See DefaultSettings for details on known configurations, and their
   documentation.
   """
+
   def deepcopy(self):
     """Create a deep copy of this object.
 
@@ -284,13 +290,12 @@ class BuildConfig(AttrDict):
     result = BuildConfig(self)
 
     # Here is where we handle all values that need deepcopy instead of shallow.
-    for k, v in result.iteritems():
+    for k, v in result.items():
       if v is not None:
         if k == 'child_configs':
           result[k] = [x.deepcopy() for x in v]
-        elif k in ('vm_tests', 'vm_tests_override',
-                   'hw_tests', 'hw_tests_override',
-                   'tast_vm_tests'):
+        elif k in ('vm_tests', 'vm_tests_override', 'hw_tests',
+                   'hw_tests_override', 'tast_vm_tests'):
           result[k] = [copy.copy(x) for x in v]
         # type(v) is faster than isinstance.
         elif type(v) is list:  # pylint: disable=unidiomatic-typecheck
@@ -315,7 +320,7 @@ class BuildConfig(AttrDict):
     inherits.append(kwargs)
 
     for update_config in inherits:
-      for name, value in update_config.iteritems():
+      for name, value in update_config.items():
         if callable(value):
           # If we are applying to a fixed value, we resolve to a fixed value.
           # Otherwise, we save off a callable to apply later, perhaps with
@@ -406,10 +411,14 @@ class VMTestConfig(object):
   """
   DEFAULT_TEST_TIMEOUT = 90 * 60
 
-  def __init__(self, test_type, test_suite=None,
-               timeout=DEFAULT_TEST_TIMEOUT, retry=False,
+  def __init__(self,
+               test_type,
+               test_suite=None,
+               timeout=DEFAULT_TEST_TIMEOUT,
+               retry=False,
                max_retries=constants.VM_TEST_MAX_RETRIES,
-               warn_only=False, use_ctest=True):
+               warn_only=False,
+               use_ctest=True):
     """Constructor -- see members above."""
     self.test_type = test_type
     self.test_suite = test_suite
@@ -418,7 +427,6 @@ class VMTestConfig(object):
     self.max_retries = max_retries
     self.warn_only = warn_only
     self.use_ctest = use_ctest
-
 
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
@@ -436,8 +444,11 @@ class GCETestConfig(object):
   """
   DEFAULT_TEST_TIMEOUT = 60 * 60
 
-  def __init__(self, test_type, test_suite=None,
-               timeout=DEFAULT_TEST_TIMEOUT, use_ctest=True):
+  def __init__(self,
+               test_type,
+               test_suite=None,
+               timeout=DEFAULT_TEST_TIMEOUT,
+               use_ctest=True):
     """Constructor -- see members above."""
     self.test_type = test_type
     self.test_suite = test_suite
@@ -502,6 +513,7 @@ class ModelTestConfig(object):
     lab_board_name: The name of the board in the lab (matches board label)
     test_suites: List of hardware test suites that will be executed.
   """
+
   def __init__(self, name, lab_board_name, test_suites=None,
                enable_skylab=True):
     """Constructor -- see members above."""
@@ -574,7 +586,8 @@ class HWTestConfig(object):
   # there's a better fix, we'll allow these phases hours to fail.
   ASYNC_HW_TEST_TIMEOUT = int(250.0 * _MINUTE)
 
-  def __init__(self, suite,
+  def __init__(self,
+               suite,
                pool=constants.HWTEST_MACH_POOL,
                timeout=SHARED_HW_TEST_TIMEOUT,
                async=False,
@@ -629,9 +642,8 @@ class HWTestConfig(object):
     """Set suite values for branched builds for skylab."""
     self._SetCommonBranchedValues()
 
-    if (constants.SKYLAB_HWTEST_PRIORITIES_MAP[self.priority] <
-        constants.SKYLAB_HWTEST_PRIORITIES_MAP[
-            constants.HWTEST_DEFAULT_PRIORITY]):
+    if (constants.SKYLAB_HWTEST_PRIORITIES_MAP[self.priority] < constants
+        .SKYLAB_HWTEST_PRIORITIES_MAP[constants.HWTEST_DEFAULT_PRIORITY]):
       self.priority = constants.HWTEST_DEFAULT_PRIORITY
 
   def SetBranchedValues(self):
@@ -639,9 +651,9 @@ class HWTestConfig(object):
     self._SetCommonBranchedValues()
 
     # Only reduce priority if it's lower.
-    new_priority = constants.HWTEST_PRIORITIES_MAP[
-        constants.HWTEST_DEFAULT_PRIORITY]
-    if isinstance(self.priority, (int, long)):
+    new_priority = constants.HWTEST_PRIORITIES_MAP[constants
+                                                   .HWTEST_DEFAULT_PRIORITY]
+    if isinstance(self.priority, numbers.Integral):
       self.priority = min(self.priority, new_priority)
     elif constants.HWTEST_PRIORITIES_MAP[self.priority] > new_priority:
       self.priority = new_priority
@@ -850,6 +862,11 @@ def DefaultSettings():
       # generate an orderfile for uploading as a result.
       orderfile_generate=False,
 
+      # Verify unvetted Chrome orderfile. Will use the most recent unvetted
+      # orderfile and build Chrome. Upload the orderfile to vetted bucket
+      # as a result.
+      orderfile_verify=False,
+
       # Generates AFDO data, builds the minimum amount of artifacts and
       # assumes a non-distributed builder (i.e.: the whole process in a single
       # builder).
@@ -863,8 +880,10 @@ def DefaultSettings():
       afdo_use=False,
 
       # A list of VMTestConfig objects to run by default.
-      vm_tests=[VMTestConfig(constants.VM_SUITE_TEST_TYPE, test_suite='smoke'),
-                VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
+      vm_tests=[
+          VMTestConfig(constants.VM_SUITE_TEST_TYPE, test_suite='smoke'),
+          VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)
+      ],
 
       # A list of all VMTestConfig objects to use if VM Tests are forced on
       # (--vmtest command line or trybot). None means no override.
@@ -910,6 +929,11 @@ def DefaultSettings():
       # data that is used for bugs reporting (see go/why-cpeexport). Only
       # release builders should run this stage.
       run_cpeexport=False,
+
+      # Whether to run BuildConfigsExport stage. This stage generates build
+      # configs (see crbug.com/974795 project). Only release builders should
+      # run this stage.
+      run_build_configs_export=False,
 
       # A list of TastVMTestConfig objects describing Tast-based test suites
       # that should be run in a VM.
@@ -1038,10 +1062,6 @@ def DefaultSettings():
       # Use SDK as opposed to building the chroot from source.
       use_sdk=True,
 
-      # Bootstrap from previous SDK instead of Gentoo stage3 when building
-      # chroot from source (only applicable with use_sdk=False).
-      self_bootstrap=False,
-
       # The description string to print out for config when user runs --list.
       description=None,
 
@@ -1155,8 +1175,10 @@ def DefaultSettings():
 
 
 def GerritInstanceParameters(name, instance):
-  param_names = ['_GOB_INSTANCE', '_GERRIT_INSTANCE', '_GOB_HOST',
-                 '_GERRIT_HOST', '_GOB_URL', '_GERRIT_URL']
+  param_names = [
+      '_GOB_INSTANCE', '_GERRIT_INSTANCE', '_GOB_HOST', '_GERRIT_HOST',
+      '_GOB_URL', '_GERRIT_URL'
+  ]
 
   gob_instance = instance
   gerrit_instance = '%s-review' % instance
@@ -1165,8 +1187,9 @@ def GerritInstanceParameters(name, instance):
   gob_url = 'https://%s' % gob_host
   gerrit_url = 'https://%s' % gerrit_host
 
-  params = [gob_instance, gerrit_instance, gob_host, gerrit_host,
-            gob_url, gerrit_url]
+  params = [
+      gob_instance, gerrit_instance, gob_host, gerrit_host, gob_url, gerrit_url
+  ]
 
   return dict([('%s%s' % (name, pn), p) for pn, p in zip(param_names, params)])
 
@@ -1183,17 +1206,18 @@ def DefaultSiteParameters():
   chromium_remote = 'chromium'
   chrome_remote = 'chrome'
   aosp_remote = 'aosp'
+  weave_remote = 'weave'
 
   internal_change_prefix = 'chrome-internal:'
   external_change_prefix = 'chromium:'
 
   # Gerrit instance site parameters.
-  default_site_params.update(
-      GerritInstanceParameters('EXTERNAL', 'chromium'))
+  default_site_params.update(GerritInstanceParameters('EXTERNAL', 'chromium'))
   default_site_params.update(
       GerritInstanceParameters('INTERNAL', 'chrome-internal'))
+  default_site_params.update(GerritInstanceParameters('AOSP', 'android'))
   default_site_params.update(
-      GerritInstanceParameters('AOSP', 'android'))
+      GerritInstanceParameters('WEAVE', 'weave'))
 
   default_site_params.update(
       # Parameters to define which manifests to use.
@@ -1215,6 +1239,7 @@ def DefaultSiteParameters():
       CHROMIUM_REMOTE=chromium_remote,
       CHROME_REMOTE=chrome_remote,
       AOSP_REMOTE=aosp_remote,
+      WEAVE_REMOTE=weave_remote,
 
       # Only remotes listed in CROS_REMOTES are considered branchable.
       # CROS_REMOTES and BRANCHABLE_PROJECTS must be kept in sync.
@@ -1222,11 +1247,13 @@ def DefaultSiteParameters():
           external_remote: default_site_params['EXTERNAL_GERRIT_HOST'],
           internal_remote: default_site_params['INTERNAL_GERRIT_HOST'],
           aosp_remote: default_site_params['AOSP_GERRIT_HOST'],
+          weave_remote: default_site_params['WEAVE_GERRIT_HOST'],
       },
       CROS_REMOTES={
           external_remote: default_site_params['EXTERNAL_GOB_URL'],
           internal_remote: default_site_params['INTERNAL_GOB_URL'],
           aosp_remote: default_site_params['AOSP_GOB_URL'],
+          weave_remote: default_site_params['WEAVE_GOB_URL'],
       },
       GIT_REMOTES={
           chromium_remote: default_site_params['EXTERNAL_GOB_URL'],
@@ -1234,6 +1261,7 @@ def DefaultSiteParameters():
           external_remote: default_site_params['EXTERNAL_GOB_URL'],
           internal_remote: default_site_params['INTERNAL_GOB_URL'],
           aosp_remote: default_site_params['AOSP_GOB_URL'],
+          weave_remote: default_site_params['WEAVE_GOB_URL'],
       },
 
       # Prefix to distinguish internal and external changes. This is used
@@ -1248,7 +1276,9 @@ def DefaultSiteParameters():
       },
 
       # List of remotes that are okay to include in the external manifest.
-      EXTERNAL_REMOTES=(external_remote, chromium_remote, aosp_remote),
+      EXTERNAL_REMOTES=(
+          external_remote, chromium_remote, aosp_remote, weave_remote,
+      ),
 
       # Mapping 'remote name' -> regexp that matches names of repositories on
       # that remote that can be branched when creating CrOS branch.
@@ -1327,8 +1357,9 @@ class SiteConfig(dict):
   #
   def GetBoards(self):
     """Return an iterable of all boards in the SiteConfig."""
-    return set(itertools.chain.from_iterable(
-        x.boards for x in self.itervalues() if x.boards))
+    return set(
+        itertools.chain.from_iterable(
+            x.boards for x in self.values() if x.boards))
 
   def FindFullConfigsForBoard(self, board=None):
     """Returns full builder configs for a board.
@@ -1343,13 +1374,11 @@ class SiteConfig(dict):
     ext_cfgs = []
     int_cfgs = []
 
-    for name, c in self.iteritems():
+    for name, c in self.items():
       if c['boards'] and (board is None or board in c['boards']):
-        if (name.endswith('-%s' % CONFIG_TYPE_RELEASE) and
-            c['internal']):
+        if name.endswith('-%s' % CONFIG_TYPE_RELEASE) and c['internal']:
           int_cfgs.append(c.deepcopy())
-        elif (name.endswith('-%s' % CONFIG_TYPE_FULL) and
-              not c['internal']):
+        elif name.endswith('-%s' % CONFIG_TYPE_FULL) and not c['internal']:
           ext_cfgs.append(c.deepcopy())
 
     return ext_cfgs, int_cfgs
@@ -1365,7 +1394,9 @@ class SiteConfig(dict):
       raise ValueError('Invalid board specified: %s.' % board)
     return both[0]
 
-  def GetSlaveConfigMapForMaster(self, master_config, options=None,
+  def GetSlaveConfigMapForMaster(self,
+                                 master_config,
+                                 options=None,
                                  important_only=True):
     """Gets the slave builds triggered by a master config.
 
@@ -1401,7 +1432,7 @@ class SiteConfig(dict):
     if important_only:
       # Remove unimportant configs from the result.
       slave_name_config_map = {
-          k: v for k, v in slave_name_config_map.iteritems() if v.important
+          k: v for k, v in slave_name_config_map.items() if v.important
       }
 
     return slave_name_config_map
@@ -1510,8 +1541,13 @@ class SiteConfig(dict):
     child_configs = [x.deepcopy().apply(grouped=True) for x in args]
     return self.Add(name, args[0], child_configs=child_configs, **kwargs)
 
-  def AddForBoards(self, suffix, boards, per_board=None,
-                   template=None, *args, **kwargs):
+  def AddForBoards(self,
+                   suffix,
+                   boards,
+                   per_board=None,
+                   template=None,
+                   *args,
+                   **kwargs):
     """Create configs for all boards in |boards|.
 
     Args:
@@ -1536,8 +1572,7 @@ class SiteConfig(dict):
         mixins = mixins + (per_board[board],)
 
       # Create the new config for this board.
-      result.append(
-          self.Add(config_name, template, *mixins, **kwargs))
+      result.append(self.Add(config_name, template, *mixins, **kwargs))
 
     return result
 
@@ -1604,11 +1639,12 @@ class SiteConfig(dict):
       defaults['_template'] = None
 
     result = {}
-    for k, v in config.iteritems():
+    for k, v in config.items():
       if defaults.get(k) != v:
         if k == 'child_configs':
-          result['child_configs'] = [self._MarshalBuildConfig(name, child)
-                                     for child in v]
+          result['child_configs'] = [
+              self._MarshalBuildConfig(name, child) for child in v
+          ]
         else:
           result[k] = v
 
@@ -1627,7 +1663,7 @@ class SiteConfig(dict):
 
     # All templates used. We ignore child configs since they
     # should exist at top level.
-    used = set(c.get('_template', None) for c in self.itervalues())
+    used = set(c.get('_template', None) for c in self.values())
     used.discard(None)
 
     result = {}
@@ -1638,7 +1674,7 @@ class SiteConfig(dict):
       # Recover the '_template' value which is filtered out by derive.
       expanded['_template'] = name
       # Hide anything that matches the default.
-      save = {k: v for k, v in expanded.iteritems() if defaults.get(k) != v}
+      save = {k: v for k, v in expanded.items() if defaults.get(k) != v}
       result[name] = save
 
     return result
@@ -1650,7 +1686,7 @@ class SiteConfig(dict):
     config_dict = {}
     config_dict['_default'] = default
     config_dict['_templates'] = self._MarshalTemplates()
-    for k, v in self.iteritems():
+    for k, v in self.items():
       config_dict[k] = self._MarshalBuildConfig(k, v)
 
     return PrettyJsonDict(config_dict)
@@ -1736,6 +1772,7 @@ class SiteConfig(dict):
 # Functions related to working with GE Data.
 #
 
+
 def LoadGEBuildConfigFromFile(
     build_settings_file=constants.GE_BUILD_CONFIG_FILE):
   """Load template config dict from a Json encoded file."""
@@ -1784,8 +1821,8 @@ class BoardGroup(object):
     self.follower_boards.append(board)
 
   def __str__(self):
-    return ('Leader_boards: %s Follower_boards: %s' %
-            (self.leader_boards, self.follower_boards))
+    return ('Leader_boards: %s Follower_boards: %s' % (self.leader_boards,
+                                                       self.follower_boards))
 
 
 def GroupBoardsByBuilderAndBoardGroup(board_list):
@@ -1840,6 +1877,7 @@ def GroupBoardsByBuilder(board_list):
 
   return builder_to_boards_dict
 
+
 def GetNonUniBuildLabBoardName(board):
   """Return the board name labeled in the lab for non-unibuild."""
   # Those special string represent special configuration used in the image,
@@ -1849,6 +1887,7 @@ def GetNonUniBuildLabBoardName(board):
   for suffix in SPECIAL_SUFFIX:
     board = re.sub(suffix, '', board)
   return board
+
 
 def GetArchBoardDict(ge_build_config):
   """Get a dict mapping arch types to board names.
@@ -1876,11 +1915,13 @@ def GetArchBoardDict(ge_build_config):
 
   return arch_board_dict
 
+
 #
 # Functions related to loading/saving Json.
 #
 class ObjectJSONEncoder(json.JSONEncoder):
   """Json Encoder that encodes objects as their dictionaries."""
+
   # pylint: disable=method-hidden
   def default(self, obj):
     return self.encode(obj.__dict__)
@@ -1888,8 +1929,12 @@ class ObjectJSONEncoder(json.JSONEncoder):
 
 def PrettyJsonDict(dictionary):
   """Returns a pretty-ified json dump of a dictionary."""
-  return json.dumps(dictionary, cls=ObjectJSONEncoder,
-                    sort_keys=True, indent=4, separators=(',', ': ')) + '\n'
+  return json.dumps(
+      dictionary,
+      cls=ObjectJSONEncoder,
+      sort_keys=True,
+      indent=4,
+      separators=(',', ': ')) + '\n'
 
 
 def LoadConfigFromFile(config_file=constants.CHROMEOS_CONFIG_FILE):
@@ -1908,13 +1953,15 @@ def LoadConfigFromString(json_string):
   _DeserializeTestConfigs(defaults)
 
   templates = config_dict.pop('_templates', {})
-  for t in templates.itervalues():
+  for t in templates.values():
     _DeserializeTestConfigs(t)
 
   defaultBuildConfig = BuildConfig(**defaults)
 
-  builds = {n: _CreateBuildConfig(n, defaultBuildConfig, v, templates)
-            for n, v in config_dict.iteritems()}
+  builds = {
+      n: _CreateBuildConfig(n, defaultBuildConfig, v, templates)
+      for n, v in config_dict.items()
+  }
 
   # config is the struct that holds the complete cbuildbot config.
   result = SiteConfig(defaults=defaults, templates=templates)
@@ -1923,7 +1970,9 @@ def LoadConfigFromString(json_string):
   return result
 
 
-def _DeserializeTestConfig(build_dict, config_key, test_class,
+def _DeserializeTestConfig(build_dict,
+                           config_key,
+                           test_class,
                            preserve_none=False):
   """Deserialize test config of given type inside build_dict.
 
@@ -1962,12 +2011,12 @@ def _DeserializeTestConfigs(build_dict):
     build_dict: The config dictionary to update (in place).
   """
   _DeserializeTestConfig(build_dict, 'vm_tests', VMTestConfig)
-  _DeserializeTestConfig(build_dict, 'vm_tests_override', VMTestConfig,
-                         preserve_none=True)
+  _DeserializeTestConfig(
+      build_dict, 'vm_tests_override', VMTestConfig, preserve_none=True)
   _DeserializeTestConfig(build_dict, 'models', ModelTestConfig)
   _DeserializeTestConfig(build_dict, 'hw_tests', HWTestConfig)
-  _DeserializeTestConfig(build_dict, 'hw_tests_override', HWTestConfig,
-                         preserve_none=True)
+  _DeserializeTestConfig(
+      build_dict, 'hw_tests_override', HWTestConfig, preserve_none=True)
   _DeserializeTestConfig(build_dict, 'gce_tests', GCETestConfig)
   _DeserializeTestConfig(build_dict, 'tast_vm_tests', TastVMTestConfig)
   _DeserializeTestConfig(build_dict, 'moblab_vm_tests', MoblabVMTestConfig)
@@ -2037,10 +2086,12 @@ def append_useflags(useflags):
     useflags: List of string useflags to append.
   """
   assert isinstance(useflags, (list, set))
-  shadowed_useflags = {'-' + flag for flag in useflags
-                       if not flag.startswith('-')}
-  shadowed_useflags.update({flag[1:] for flag in useflags
-                            if flag.startswith('-')})
+  shadowed_useflags = {
+      '-' + flag for flag in useflags if not flag.startswith('-')
+  }
+  shadowed_useflags.update(
+      {flag[1:] for flag in useflags if flag.startswith('-')})
+
   def handler(old_useflags):
     new_useflags = set(old_useflags or [])
     new_useflags.update(useflags)

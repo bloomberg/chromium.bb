@@ -27,7 +27,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -211,6 +211,17 @@ bool ScriptCustomElementDefinition::RunConstructor(Element& element) {
   // catch it. The side effect is to report the error.
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
+
+  if (RuntimeEnabledFeatures::ElementInternalsEnabled() && DisableShadow() &&
+      element.GetShadowRoot()) {
+    v8::Local<v8::Value> exception = V8ThrowDOMException::CreateOrEmpty(
+        script_state_->GetIsolate(), DOMExceptionCode::kNotSupportedError,
+        "The element already has a ShadowRoot though it is disabled by "
+        "disabledFeatures static field.");
+    if (!exception.IsEmpty())
+      V8ScriptRunner::ReportException(isolate, exception);
+    return false;
+  }
 
   Element* result = CallConstructor();
 

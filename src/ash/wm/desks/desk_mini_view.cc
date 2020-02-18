@@ -13,6 +13,7 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
@@ -21,8 +22,6 @@ namespace {
 constexpr int kLabelPreviewSpacing = 8;
 
 constexpr int kCloseButtonMargin = 4;
-
-constexpr gfx::Size kCloseButtonSize{24, 24};
 
 constexpr SkColor kActiveColor = SkColorSetARGB(0xEE, 0xFF, 0xFF, 0xFF);
 
@@ -85,8 +84,7 @@ DeskMiniView::DeskMiniView(DesksBarView* owner_bar,
   SetInkDropMode(InkDropMode::OFF);
 
   UpdateBorderColor();
-
-  SchedulePaint();
+  SetAccessibleName(title);
 }
 
 DeskMiniView::~DeskMiniView() {
@@ -98,6 +96,7 @@ DeskMiniView::~DeskMiniView() {
 
 void DeskMiniView::SetTitle(const base::string16& title) {
   label_->SetText(title);
+  SetAccessibleName(title);
 }
 
 aura::Window* DeskMiniView::GetDeskContainer() const {
@@ -106,13 +105,26 @@ aura::Window* DeskMiniView::GetDeskContainer() const {
 }
 
 void DeskMiniView::OnHoverStateMayHaveChanged() {
-  // TODO(afakhry): In tablet mode, discuss showing the close button on long
-  // press.
   // Don't show the close button when hovered while the dragged window is on
   // the DesksBarView.
-  close_desk_button_->SetVisible(DesksController::Get()->CanRemoveDesks() &&
-                                 !owner_bar_->dragged_item_over_bar() &&
-                                 IsMouseHovered());
+  close_desk_button_->SetVisible(
+      DesksController::Get()->CanRemoveDesks() &&
+      !owner_bar_->dragged_item_over_bar() &&
+      (IsMouseHovered() || force_show_close_button_));
+}
+
+void DeskMiniView::OnWidgetGestureTap(const gfx::Rect& screen_rect,
+                                      bool is_long_gesture) {
+  const bool old_force_show_close_button = force_show_close_button_;
+  // Note that we don't want to hide the close button if it's a single tap
+  // within the bounds of an already visible button, which will later be handled
+  // as a press event on that close button that will result in closing the desk.
+  force_show_close_button_ =
+      (is_long_gesture && IsPointOnMiniView(screen_rect.CenterPoint())) ||
+      (!is_long_gesture && close_desk_button_->GetVisible() &&
+       close_desk_button_->DoesIntersectScreenRect(screen_rect));
+  if (old_force_show_close_button != force_show_close_button_)
+    OnHoverStateMayHaveChanged();
 }
 
 void DeskMiniView::UpdateBorderColor() {
@@ -145,12 +157,12 @@ void DeskMiniView::Layout() {
   label_->SetBoundsRect(label_bounds);
 
   close_desk_button_->SetBounds(
-      preview_bounds.right() - kCloseButtonSize.width() - kCloseButtonMargin,
-      kCloseButtonMargin, kCloseButtonSize.width(), kCloseButtonSize.height());
+      preview_bounds.right() - CloseDeskButton::kCloseButtonSize -
+          kCloseButtonMargin,
+      kCloseButtonMargin, CloseDeskButton::kCloseButtonSize,
+      CloseDeskButton::kCloseButtonSize);
 
   Button::Layout();
-
-  SchedulePaint();
 }
 
 gfx::Size DeskMiniView::CalculatePreferredSize() const {
@@ -171,15 +183,7 @@ void DeskMiniView::ButtonPressed(views::Button* sender,
   if (sender != close_desk_button_)
     return;
 
-  // Hide the close button so it can no longer be pressed.
-  close_desk_button_->SetVisible(false);
-
-  // This mini_view can no longer be pressed.
-  listener_ = nullptr;
-
-  auto* controller = DesksController::Get();
-  DCHECK(controller->CanRemoveDesks());
-  controller->RemoveDesk(desk_);
+  OnCloseButtonPressed();
 }
 
 void DeskMiniView::OnContentChanged() {
@@ -206,10 +210,43 @@ void DeskMiniView::OnDeskDestroyed(const Desk* desk) {
   // No need to remove `this` as an observer; it's done automatically.
 }
 
+views::View* DeskMiniView::GetView() {
+  return this;
+}
+
+gfx::Rect DeskMiniView::GetHighlightBoundsInScreen() {
+  gfx::Rect bounds_in_screen = bounds();
+  views::View::ConvertRectToScreen(this->parent(), &bounds_in_screen);
+  return bounds_in_screen;
+}
+
+void DeskMiniView::MaybeActivateHighlightedView() {
+  DesksController::Get()->ActivateDesk(desk(),
+                                       DesksSwitchSource::kMiniViewButton);
+}
+
+void DeskMiniView::MaybeCloseHighlightedView() {
+  OnCloseButtonPressed();
+}
+
 bool DeskMiniView::IsPointOnMiniView(const gfx::Point& screen_location) const {
   gfx::Point point_in_view = screen_location;
   ConvertPointFromScreen(this, &point_in_view);
   return HitTestPoint(point_in_view);
+}
+
+void DeskMiniView::OnCloseButtonPressed() {
+  auto* controller = DesksController::Get();
+  if (!controller->CanRemoveDesks())
+    return;
+
+  // Hide the close button so it can no longer be pressed.
+  close_desk_button_->SetVisible(false);
+
+  // This mini_view can no longer be pressed.
+  listener_ = nullptr;
+
+  controller->RemoveDesk(desk_, DesksCreationRemovalSource::kButton);
 }
 
 }  // namespace ash

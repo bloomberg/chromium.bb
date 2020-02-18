@@ -17,9 +17,7 @@ namespace syncer {
 MockModelTypeWorker::MockModelTypeWorker(
     const sync_pb::ModelTypeState& model_type_state,
     ModelTypeProcessor* processor)
-    : model_type_state_(model_type_state),
-      processor_(processor),
-      weak_ptr_factory_(this) {
+    : model_type_state_(model_type_state), processor_(processor) {
   model_type_state_.set_initial_sync_done(true);
 }
 
@@ -175,9 +173,9 @@ MockModelTypeWorker::GenerateUpdateData(
   data->creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
   data->modification_time =
       data->creation_time + base::TimeDelta::FromSeconds(version);
-  data->non_unique_name = data->specifics.has_encrypted()
-                              ? "encrypted"
-                              : data->specifics.preference().name();
+  data->name = data->specifics.has_encrypted()
+                   ? "encrypted"
+                   : data->specifics.preference().name();
 
   auto response_data = std::make_unique<syncer::UpdateResponseData>();
   response_data->entity = std::move(data);
@@ -227,7 +225,7 @@ void MockModelTypeWorker::TombstoneFromServer(const std::string& tag_hash) {
   data->creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
   data->modification_time =
       data->creation_time + base::TimeDelta::FromSeconds(version);
-  data->non_unique_name = "Name Non Unique";
+  data->name = "Name Non Unique";
 
   auto response_data = std::make_unique<UpdateResponseData>();
   response_data->entity = std::move(data);

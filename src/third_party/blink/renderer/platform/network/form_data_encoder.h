@@ -23,7 +23,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_FORM_DATA_ENCODER_H_
 
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace WTF {
@@ -49,10 +49,10 @@ class PLATFORM_EXPORT FormDataEncoder {
   // Helper functions used by HTMLFormElement for multi-part form data
   static Vector<char> GenerateUniqueBoundaryString();
   static void BeginMultiPartHeader(Vector<char>&,
-                                   const CString& boundary,
-                                   const CString& name);
+                                   const std::string& boundary,
+                                   const std::string& name);
   static void AddBoundaryToMultiPartHeader(Vector<char>&,
-                                           const CString& boundary,
+                                           const std::string& boundary,
                                            bool is_last_boundary = false);
   static void AddFilenameToMultiPartHeader(Vector<char>&,
                                            const WTF::TextEncoding&,
@@ -65,11 +65,11 @@ class PLATFORM_EXPORT FormDataEncoder {
   // argument is not used for TextPlain type.
   static void AddKeyValuePairAsFormData(
       Vector<char>&,
-      const CString& key,
-      const CString& value,
+      const std::string& key,
+      const std::string& value,
       EncodedFormData::EncodingType = EncodedFormData::kFormURLEncoded,
       Mode = kNormalizeCRLF);
-  static void EncodeStringAsFormData(Vector<char>&, const CString&, Mode);
+  static void EncodeStringAsFormData(Vector<char>&, const std::string&, Mode);
 };
 
 }  // namespace blink

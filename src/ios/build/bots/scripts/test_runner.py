@@ -279,7 +279,7 @@ def install_xcode(xcode_build_version, mac_toolchain_cmd, xcode_app_path):
   Args:
     xcode_build_version: (string) Xcode build version to install.
     mac_toolchain_cmd: (string) Path to mac_toolchain command to install Xcode.
-      See https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/cmd/mac_toolchain/
+    See https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/cmd/mac_toolchain/
     xcode_app_path: (string) Path to install the contents of Xcode.app.
 
   Returns:
@@ -334,6 +334,23 @@ def get_current_xcode_info():
   }
 
 
+def get_test_names(app_path):
+  """Gets list of tests from test app.
+
+  Args:
+     app_path: A path to test target bundle.
+
+  Returns:
+     List of tests.
+  """
+  cmd = ['otool', '-ov', app_path]
+  test_pattern = re.compile(
+      'imp (?:0[xX][0-9a-fA-F]+ )?-\['
+      '(?P<testSuite>[A-Za-z_][A-Za-z0-9_]*Test(?:Case)?)\s'
+      '(?P<testMethod>test[A-Za-z0-9_]*)\]')
+  return test_pattern.findall(subprocess.check_output(cmd))
+
+
 def shard_xctest(object_path, shards, test_cases=None):
   """Gets EarlGrey test methods inside a test target and splits them into shards
 
@@ -345,12 +362,7 @@ def shard_xctest(object_path, shards, test_cases=None):
   Returns:
     A list of test shards.
   """
-  cmd = ['otool', '-ov', object_path]
-  test_pattern = re.compile(
-    'imp -\[(?P<testSuite>[A-Za-z_][A-Za-z0-9_]*Test[Case]*) '
-    '(?P<testMethod>test[A-Za-z0-9_]*)\]')
-  test_names = test_pattern.findall(subprocess.check_output(cmd))
-
+  test_names = get_test_names(object_path)
   # If test_cases are passed in, only shard the intersection of them and the
   # listed tests.  Format of passed-in test_cases can be either 'testSuite' or
   # 'testSuite/testMethod'.  The listed tests are tuples of ('testSuite',
@@ -1005,6 +1017,7 @@ class SimulatorTestRunner(TestRunner):
       test_filter: List of test cases to filter.
       invert: Whether to invert the filter or not. Inverted, the filter will
         match everything except the given test cases.
+      test_shard: How many shards the tests should be divided into.
 
     Returns:
       A list of strings forming the command to launch the test.
@@ -1505,9 +1518,6 @@ class DeviceTestRunner(TestRunner):
     if len(self.udid.splitlines()) != 1:
       raise DeviceDetectionError(self.udid)
     if xctest:
-      xcode_info = get_current_xcode_info()
-      xcode_version = float(xcode_info['version'])
-      inject_path = 'usr/lib/libXCTestBundleInject.dylib'
       self.xctestrun_file = tempfile.mkstemp()[1]
       self.xctestrun_data = {
         'TestTargetName': {
@@ -1516,7 +1526,8 @@ class DeviceTestRunner(TestRunner):
           'TestHostPath': '%s' % self.app_path,
           'TestingEnvironmentVariables': {
             'DYLD_INSERT_LIBRARIES':
-              '__PLATFORMS__/iPhoneOS.platform/Developer/%s' % inject_path,
+              '__PLATFORMS__/iPhoneOS.platform/Developer/usr/lib/'
+              'libXCTestBundleInject.dylib',
             'DYLD_LIBRARY_PATH':
               '__PLATFORMS__/iPhoneOS.platform/Developer/Library',
             'DYLD_FRAMEWORK_PATH':

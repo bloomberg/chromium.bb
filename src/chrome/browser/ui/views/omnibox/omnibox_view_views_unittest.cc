@@ -28,13 +28,15 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/test_location_bar_model.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/rect.h"
@@ -171,6 +173,8 @@ class TestingOmniboxEditController : public ChromeOmniboxEditController {
       : ChromeOmniboxEditController(command_updater),
         location_bar_model_(location_bar_model) {}
 
+  void set_omnibox_view(OmniboxViewViews* view) { omnibox_view_ = view; }
+
  private:
   // ChromeOmniboxEditController:
   LocationBarModel* GetLocationBarModel() override {
@@ -179,8 +183,15 @@ class TestingOmniboxEditController : public ChromeOmniboxEditController {
   const LocationBarModel* GetLocationBarModel() const override {
     return location_bar_model_;
   }
+  void UpdateWithoutTabRestore() override {
+    // This is a minimal amount of what LocationBarView does. Not all tests
+    // set |omnibox_view_|.
+    if (omnibox_view_)
+      omnibox_view_->Update();
+  }
 
   LocationBarModel* location_bar_model_;
+  OmniboxViewViews* omnibox_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxEditController);
 };
@@ -230,6 +241,11 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
   }
 
  protected:
+  Profile* profile() { return profile_.get(); }
+  TestingOmniboxEditController* omnibox_edit_controller() {
+    return &omnibox_edit_controller_;
+  }
+
   // testing::Test:
   void SetUp() override;
   void TearDown() override;
@@ -560,17 +576,33 @@ TEST_F(OmniboxViewViewsTest, BackspaceExitsKeywordMode) {
   EXPECT_TRUE(omnibox_view()->model()->keyword().empty());
 }
 
+TEST_F(OmniboxViewViewsTest, BlurNeverExitsKeywordMode) {
+  location_bar_model()->set_url(GURL());
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+
+  // Enter keyword mode, but with no user text.
+  omnibox_view()->model()->EnterKeywordModeForDefaultSearchProvider(
+      OmniboxEventProto::KEYBOARD_SHORTCUT);
+  EXPECT_TRUE(omnibox_view()->text().empty());
+  EXPECT_FALSE(omnibox_view()->model()->keyword().empty());
+
+  // Expect that on blur, stay in keyword mode.
+  omnibox_textfield()->OnBlur();
+  EXPECT_TRUE(omnibox_view()->text().empty());
+  EXPECT_FALSE(omnibox_view()->model()->keyword().empty());
+}
+
 TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::ClipboardType clipboard_type = ui::CLIPBOARD_TYPE_COPY_PASTE;
+  ui::ClipboardType clipboard_type = ui::ClipboardType::kCopyPaste;
   command_updater()->UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, true);
 
   // Test command is disabled for an empty clipboard.
   clipboard->Clear(clipboard_type);
   EXPECT_FALSE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
 
-  // Test command is enabled and the correct label text is returned with a URL
-  // on the clipboard.
+  // Test input that's a valid URL.
   base::string16 expected_text =
 #if defined(OS_MACOSX)
       base::ASCIIToUTF16("Pa&ste and Go to https://test.com");
@@ -584,8 +616,20 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
   EXPECT_TRUE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
   EXPECT_EQ(expected_text, returned_text);
 
-  // Test command is enabled and the correct label text is returned with a
-  // search on the clipboard.
+  // Test input that's URL-like. (crbug.com/980002).
+  expected_text =
+#if defined(OS_MACOSX)
+      base::ASCIIToUTF16("Pa&ste and Go to test.com");
+#else
+      base::ASCIIToUTF16("Pa&ste and go to test.com");
+#endif
+  ui::ScopedClipboardWriter(clipboard_type)
+      .WriteText(base::ASCIIToUTF16("test.com"));
+  returned_text = omnibox_view()->GetLabelForCommandId(IDC_PASTE_AND_GO);
+  EXPECT_TRUE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
+  EXPECT_EQ(expected_text, returned_text);
+
+  // Test input that's search-like.
   expected_text =
 #if defined(OS_MACOSX)
       base::WideToUTF16(
@@ -599,6 +643,52 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
   returned_text = omnibox_view()->GetLabelForCommandId(IDC_PASTE_AND_GO);
   EXPECT_TRUE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
   EXPECT_EQ(expected_text, returned_text);
+}
+
+// Verifies |OmniboxEditModel::State::needs_revert_and_select_all|, and verifies
+// a recent regression in this logic (see https://crbug.com/923290).
+TEST_F(OmniboxViewViewsTest, SelectAllOnReactivateTabAfterDeleteAll) {
+  omnibox_edit_controller()->set_omnibox_view(omnibox_view());
+
+  content::RenderViewHostTestEnabler rvh_test_enabler;
+  auto web_contents1 =
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+
+  // Simulate a new tab with "about:blank".
+  const GURL url_1("about:blank/");
+  location_bar_model()->set_url(url_1);
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+  omnibox_view()->SaveStateToTab(web_contents1.get());
+
+  // Simulate creating another tab at "chrome://history". The second url should
+  // be longer than the first (to trigger the bug).
+  auto web_contents2 =
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+  const GURL url_2("chrome://history/");
+  EXPECT_GT(url_2.spec().size(), url_1.spec().size());
+  // Notice the url is set before ResetDisplayTexts(), this matches what
+  // actually happens in code.
+  location_bar_model()->set_url(url_2);
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+
+  // Delete all the text.
+  omnibox_view()->SetUserText(base::string16());
+  EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
+
+  // Switch back to the first url.
+  location_bar_model()->set_url(url_1);
+  omnibox_view()->SaveStateToTab(web_contents2.get());
+  omnibox_view()->OnTabChanged(web_contents1.get());
+
+  // Switch back to the second url. Even though the text was deleted earlier,
+  // the previous text (|url_2|) should be restored *and* all the text selected.
+  location_bar_model()->set_url(url_2);
+  omnibox_view()->SaveStateToTab(web_contents1.get());
+  omnibox_view()->OnTabChanged(web_contents2.get());
+  EXPECT_EQ(url_2, GURL(base::UTF16ToUTF8(omnibox_view()->GetText())));
+  EXPECT_TRUE(omnibox_view()->IsSelectAll());
 }
 
 class OmniboxViewViewsClipboardTest
@@ -619,7 +709,7 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutURL) {
   ASSERT_TRUE(omnibox_view()->IsSelectAll());
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::ClipboardType clipboard_type = ui::CLIPBOARD_TYPE_COPY_PASTE;
+  ui::ClipboardType clipboard_type = ui::ClipboardType::kCopyPaste;
 
   clipboard->Clear(clipboard_type);
   ui::TextEditCommand clipboard_command = GetParam();
@@ -655,7 +745,7 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutUserText) {
   ASSERT_TRUE(omnibox_view()->IsSelectAll());
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::ClipboardType clipboard_type = ui::CLIPBOARD_TYPE_COPY_PASTE;
+  ui::ClipboardType clipboard_type = ui::ClipboardType::kCopyPaste;
 
   clipboard->Clear(clipboard_type);
   ui::TextEditCommand clipboard_command = GetParam();
@@ -698,13 +788,6 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
   const GURL kFullUrl = GURL("https://www.example.com/");
 
   void SetUp() override {
-#if defined(OS_CHROMEOS)
-    // This is necessary in Mash because the touch handles which get created
-    // during GestureTaps require a MusClient.
-    if (features::IsUsingWindowService())
-      set_native_widget_type(NativeWidgetType::kDesktop);
-#endif
-
     OmniboxViewViewsTest::SetUp();
 
     // Advance 5 seconds from epoch so the time is not considered null.

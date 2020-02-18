@@ -76,6 +76,14 @@ PhysicalGroup<2> CSSDirectionAwareResolver::MinSizeGroup() {
   return PhysicalGroup<2>(kProperties);
 }
 
+PhysicalGroup<2> CSSDirectionAwareResolver::OverflowGroup() {
+  return PhysicalGroup<2>(overflowShorthand());
+}
+
+PhysicalGroup<2> CSSDirectionAwareResolver::OverscrollBehaviorGroup() {
+  return PhysicalGroup<2>(overscrollBehaviorShorthand());
+}
+
 PhysicalGroup<4> CSSDirectionAwareResolver::PaddingGroup() {
   return PhysicalGroup<4>(paddingShorthand());
 }
@@ -92,6 +100,15 @@ PhysicalGroup<2> CSSDirectionAwareResolver::SizeGroup() {
   static const CSSProperty* kProperties[] = {&GetCSSPropertyWidth(),
                                              &GetCSSPropertyHeight()};
   return PhysicalGroup<2>(kProperties);
+}
+
+PhysicalGroup<4> CSSDirectionAwareResolver::VisitedBorderColorGroup() {
+  static const CSSProperty* kProperties[] = {
+      &GetCSSPropertyInternalVisitedBorderTopColor(),
+      &GetCSSPropertyInternalVisitedBorderRightColor(),
+      &GetCSSPropertyInternalVisitedBorderBottomColor(),
+      &GetCSSPropertyInternalVisitedBorderLeftColor()};
+  return PhysicalGroup<4>(kProperties);
 }
 
 const CSSProperty& CSSDirectionAwareResolver::ResolveInlineStart(

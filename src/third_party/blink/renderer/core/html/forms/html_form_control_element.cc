@@ -29,13 +29,13 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/validity_state.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -400,6 +400,13 @@ void HTMLFormControlElement::CloneNonAttributePropertiesFrom(
 
 void HTMLFormControlElement::AssociateWith(HTMLFormElement* form) {
   AssociateByParser(form);
+}
+
+int32_t HTMLFormControlElement::GetAxId() const {
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+    return cache->GetAXID(const_cast<HTMLFormControlElement*>(this));
+
+  return 0;
 }
 
 }  // namespace blink

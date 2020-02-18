@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/core/css/css_font_face_source.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -73,10 +73,9 @@ class LocalFontFaceSource final : public CSSFontFaceSource,
   Member<CSSFontFace> face_;
   Member<FontSelector> font_selector_;
 
-  bool was_resolved_ = false;
   AtomicString font_name_;
   LocalFontHistograms histograms_;
-  base::WeakPtrFactory<LocalFontFaceSource> weak_factory_;
+  base::WeakPtrFactory<LocalFontFaceSource> weak_factory_{this};
 };
 
 }  // namespace blink

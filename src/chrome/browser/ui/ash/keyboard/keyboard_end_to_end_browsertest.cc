@@ -327,8 +327,7 @@ class KeyboardEndToEndOverscrollTest : public KeyboardEndToEndTest {
 
   void HideKeyboard() {
     auto* controller = ChromeKeyboardControllerClient::Get();
-    controller->HideKeyboard(ash::mojom::HideReason::kUser);
-    controller->FlushForTesting();
+    controller->HideKeyboard(ash::HideReason::kUser);
   }
 
  protected:

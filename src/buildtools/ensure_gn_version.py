@@ -18,6 +18,7 @@ TODO(crbug.com/944667): remove this script when it is no longer needed.
 from __future__ import print_function
 
 import argparse
+import errno
 import io
 import os
 import re
@@ -36,6 +37,12 @@ import zipfile
 BUILDTOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
 SRC_DIR = os.path.dirname(BUILDTOOLS_DIR)
 
+def ChmodGnFile(path_to_exe):
+  """Makes the gn binary executable for all and writable for the user."""
+  os.chmod(path_to_exe,
+           stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |  # This is 0o755.
+           stat.S_IRGRP | stat.S_IXGRP |
+           stat.S_IROTH | stat.S_IXOTH)
 
 def main():
   parser = argparse.ArgumentParser()
@@ -67,14 +74,21 @@ def main():
   except subprocess.CalledProcessError as e:
     print('`%s` returned %d:\n%s' % (cmd_str, e.returncode, e.output))
     return 1
-  except Exception as e:
-    print('`%s` failed:\n%s' % (cmd_str, e.message))
-    return 1
+  except OSError as e:
+    if e.errno != errno.ENOENT:
+      print('`%s` failed:\n%s' % (cmd_str, e.strerror))
+      return 1
 
-  current_revision = re.findall(r'\((.*)\)', out)[0]
-  if desired_revision.startswith(current_revision):
-    # We're on the right version, so we're done.
-    return 0
+    # The tool doesn't exist, so redownload it.
+    out = ''
+
+  if out:
+    current_revision_match = re.findall(r'\((.*)\)', out)
+    if current_revision_match:
+      current_revision = current_revision_match[0]
+      if desired_revision.startswith(current_revision):
+        # We're on the right version, so we're done.
+        return 0
 
   print("`%s` returned '%s', which wasn't what we were expecting."
           % (cmd_str, out.strip()))
@@ -88,25 +102,29 @@ def main():
     print('Failed to download the package from %s: %d %s' % (
         url, e.code, e.reason))
     return 1
-  except Exception as e:
-    print('Failed to download the package from %s:\n%s' % (url, e.message))
-    return 1
+
+  try:
+    # Make the existing file writable so that we can overwrite it.
+    ChmodGnFile(path_to_exe)
+  except OSError as e:
+    if e.errno != errno.ENOENT:
+      print('Failed to make %s writable:\n%s\n' % (path_to_exe, e.strerror))
+      return 1
 
   try:
     zf = zipfile.ZipFile(io.BytesIO(zipdata))
     zf.extract(member, os.path.join(BUILDTOOLS_DIR, dest_dir))
-  except Exception as e:
-    print('Failed to extract the binary:\n%s\n' % e.msg)
+  except OSError as e:
+    print('Failed to extract the binary:\n%s\n' % e.strerror)
+    return 1
+  except (zipfile.LargeZipFile, zipfile.BadZipfile) as e:
+    print('Zip containing gn was corrupt:\n%s\n' % e)
     return 1
 
   try:
-    os.chmod(path_to_exe,
-             stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |  # This is 0o755.
-             stat.S_IRGRP | stat.S_IXGRP |
-             stat.S_IROTH | stat.S_IXOTH)
-  except Exception as e:
-    print('Failed to make the binary executable:\n%s\n' %
-            e.message)
+    ChmodGnFile(path_to_exe)
+  except OSError as e:
+    print('Failed to make %s executable:\n%s\n' % (path_to_exe, e.strerror))
     return 1
 
   return 0

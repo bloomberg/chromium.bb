@@ -12,9 +12,9 @@
 #include "samplecode/Sample.h"
 #include "src/core/SkStrike.h"
 #include "src/core/SkStrikeCache.h"
+#include "src/core/SkStrikeSpec.h"
 #include "src/core/SkTaskGroup.h"
 #include "tools/ToolUtils.h"
-#include "tools/timer/AnimTimer.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Static text from paths.
@@ -33,7 +33,8 @@ public:
 
     void onOnceBeforeDraw() final {
         SkFont defaultFont;
-        auto cache = SkStrikeCache::FindOrCreateStrikeWithNoDeviceExclusive(defaultFont);
+        SkStrikeSpec strikeSpec = SkStrikeSpec::MakeWithNoDevice(defaultFont);
+        auto cache = strikeSpec.findOrCreateExclusiveStrike();
         SkPath glyphPaths[52];
         for (int i = 0; i < 52; ++i) {
             // I and l are rects on OS X ...
@@ -52,19 +53,14 @@ public:
     }
     void onSizeChange() final { this->INHERITED::onSizeChange(); this->reset(); }
 
-    bool onQuery(Sample::Event* evt) final {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, this->getName());
-            return true;
-        }
-        SkUnichar unichar;
-        if (Sample::CharQ(*evt, &unichar)) {
+    SkString name() override { return SkString(this->getName()); }
+
+    bool onChar(SkUnichar unichar) override {
             if (unichar == 'X') {
                 fDoClip = !fDoClip;
                 return true;
             }
-        }
-        return this->INHERITED::onQuery(evt);
+            return false;
     }
 
     void onDrawContent(SkCanvas* canvas) override {
@@ -167,15 +163,15 @@ public:
         fLastTick = 0;
     }
 
-    bool onAnimate(const AnimTimer& timer) final {
+    bool onAnimate(double nanos) final {
         fBackgroundAnimationTask.wait();
         this->swapAnimationBuffers();
 
-        const double tsec = timer.secs();
-        const double dt = fLastTick ? (timer.secs() - fLastTick) : 0;
+        const double tsec = 1e-9 * nanos;
+        const double dt = fLastTick ? (1e-9 * nanos - fLastTick) : 0;
         fBackgroundAnimationTask.add(std::bind(&MovingPathText::runAnimationTask, this, tsec,
                                                dt, this->width(), this->height()));
-        fLastTick = timer.secs();
+        fLastTick = 1e-9 * nanos;
         return true;
     }
 

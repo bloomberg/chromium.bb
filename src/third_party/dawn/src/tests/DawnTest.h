@@ -23,7 +23,7 @@
 
 // Getting data back from Dawn is done in an async manners so all expectations are "deferred"
 // until the end of the test. Also expectations use a copy to a MapRead buffer to get the data
-// so resources should have the TransferSrc allowed usage bit if you want to add expectations on
+// so resources should have the CopySrc allowed usage bit if you want to add expectations on
 // them.
 #define EXPECT_BUFFER_U32_EQ(expected, buffer, offset)                         \
     AddBufferExpectation(__FILE__, __LINE__, buffer, offset, sizeof(uint32_t), \
@@ -70,6 +70,7 @@ struct DawnTestParam {
     dawn_native::BackendType backendType;
 
     std::vector<const char*> forceEnabledWorkarounds;
+    std::vector<const char*> forceDisabledWorkarounds;
 };
 
 // Shorthands for backend types used in the DAWN_INSTANTIATE_TEST
@@ -79,7 +80,8 @@ extern const DawnTestParam OpenGLBackend;
 extern const DawnTestParam VulkanBackend;
 
 DawnTestParam ForceWorkarounds(const DawnTestParam& originParam,
-                               std::initializer_list<const char*> forceEnabledWorkarounds);
+                               std::initializer_list<const char*> forceEnabledWorkarounds,
+                               std::initializer_list<const char*> forceDisabledWorkarounds = {});
 
 struct GLFWwindow;
 
@@ -107,14 +109,20 @@ class DawnTestEnvironment : public testing::Environment {
     void SetUp() override;
 
     bool UsesWire() const;
+    bool IsBackendValidationEnabled() const;
     dawn_native::Instance* GetInstance() const;
     GLFWwindow* GetWindowForBackend(dawn_native::BackendType type) const;
+    bool HasVendorIdFilter() const;
+    uint32_t GetVendorIdFilter() const;
 
   private:
     void CreateBackendWindow(dawn_native::BackendType type);
 
     bool mUseWire = false;
     bool mEnableBackendValidation = false;
+    bool mBeginCaptureOnStartup = false;
+    bool mHasVendorIdFilter = false;
+    uint32_t mVendorIdFilter = 0;
     std::unique_ptr<dawn_native::Instance> mInstance;
 
     // Windows don't usually like to be bound to one API than the other, for example switching
@@ -148,9 +156,13 @@ class DawnTest : public ::testing::TestWithParam<DawnTestParam> {
     bool IsMacOS() const;
 
     bool UsesWire() const;
+    bool IsBackendValidationEnabled() const;
 
     void StartExpectDeviceError();
     bool EndExpectDeviceError();
+
+    bool HasVendorIdFilter() const;
+    uint32_t GetVendorIdFilter() const;
 
   protected:
     dawn::Device device;
@@ -192,7 +204,7 @@ class DawnTest : public ::testing::TestWithParam<DawnTestParam> {
     std::unique_ptr<utils::TerribleCommandBuffer> mS2cBuf;
 
     // Tracking for validation errors
-    static void OnDeviceError(const char* message, DawnCallbackUserdata userdata);
+    static void OnDeviceError(const char* message, void* userdata);
     bool mExpectError = false;
     bool mError = false;
 
@@ -209,7 +221,7 @@ class DawnTest : public ::testing::TestWithParam<DawnTestParam> {
     static void SlotMapReadCallback(DawnBufferMapAsyncStatus status,
                                     const void* data,
                                     uint64_t dataLength,
-                                    DawnCallbackUserdata userdata);
+                                    void* userdata);
     size_t mNumPendingMapOperations = 0;
 
     // Reserve space where the data for an expectation can be copied

@@ -37,28 +37,40 @@
 #include "third_party/blink/renderer/core/style/data_equivalency.h"
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 
 class EffectTiming;
+class ComputedEffectTiming;
+
+static inline bool IsNull(double value) {
+  return std::isnan(value);
+}
+
+static inline double NullValue() {
+  return std::numeric_limits<double>::quiet_NaN();
+}
 
 struct CORE_EXPORT Timing {
   USING_FAST_MALLOC(Timing);
 
  public:
+  // Note that logic in CSSAnimations depends on the order of these values.
+  enum Phase {
+    kPhaseBefore,
+    kPhaseActive,
+    kPhaseAfter,
+    kPhaseNone,
+  };
+
   using FillMode = CompositorKeyframeModel::FillMode;
   using PlaybackDirection = CompositorKeyframeModel::Direction;
 
   static String FillModeString(FillMode);
   static FillMode StringToFillMode(const String&);
   static String PlaybackDirectionString(PlaybackDirection);
-
-  static const Timing& Defaults() {
-    DEFINE_STATIC_LOCAL(Timing, timing, ());
-    return timing;
-  }
 
   Timing()
       : start_delay(0),
@@ -81,6 +93,14 @@ struct CORE_EXPORT Timing {
     DCHECK(timing_function);
   }
 
+  // https://drafts.csswg.org/web-animations-1/#iteration-duration
+  AnimationTimeDelta IterationDuration() const;
+
+  // https://drafts.csswg.org/web-animations-1/#active-duration
+  double ActiveDuration() const;
+  double EndTimeInternal() const;
+
+  Timing::FillMode ResolvedFillMode(bool is_animation) const;
   EffectTiming* ConvertToEffectTiming() const;
 
   bool operator==(const Timing& other) const {
@@ -105,6 +125,23 @@ struct CORE_EXPORT Timing {
 
   PlaybackDirection direction;
   scoped_refptr<TimingFunction> timing_function;
+
+  struct CalculatedTiming {
+    DISALLOW_NEW();
+    Phase phase;
+    double current_iteration;
+    base::Optional<double> progress;
+    bool is_current;
+    bool is_in_effect;
+    bool is_in_play;
+    double local_time = NullValue();
+    double time_to_forwards_effect_change;
+    double time_to_reverse_effect_change;
+  };
+
+  ComputedEffectTiming* getComputedTiming(
+      const Timing::CalculatedTiming& calculated_timing,
+      bool is_keyframe_effect) const;
 };
 
 }  // namespace blink

@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "components/device_event_log/device_event_log.h"
-#include "jni/ChromeUsbService_jni.h"
+#include "services/device/usb/jni_headers/ChromeUsbService_jni.h"
 #include "services/device/usb/usb_device_android.h"
 
 using base::android::AttachCurrentThread;
@@ -94,8 +94,8 @@ void UsbServiceAndroid::RequestDevicePermission(
 }
 
 void UsbServiceAndroid::AddDevice(scoped_refptr<UsbDeviceAndroid> device) {
-  DCHECK(!ContainsKey(devices_by_id_, device->device_id()));
-  DCHECK(!ContainsKey(devices(), device->guid()));
+  DCHECK(!base::Contains(devices_by_id_, device->device_id()));
+  DCHECK(!base::Contains(devices(), device->guid()));
   devices_by_id_[device->device_id()] = device;
   devices()[device->guid()] = device;
 

@@ -18,6 +18,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -30,7 +31,6 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -91,11 +91,9 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
  public:
   using WorkerId = std::pair<int, int>;
   explicit DelegatingURLLoaderClient(network::mojom::URLLoaderClientPtr client,
-                                     base::OnceClosure on_response,
                                      const network::ResourceRequest& request)
       : binding_(this),
         client_(std::move(client)),
-        on_response_(std::move(on_response)),
         url_(request.url),
         devtools_enabled_(request.report_raw_headers) {
     if (!devtools_enabled_)
@@ -136,8 +134,6 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
   }
   void OnReceiveResponse(const network::ResourceResponseHead& head) override {
     client_->OnReceiveResponse(head);
-    DCHECK(on_response_);
-    std::move(on_response_).Run();
     if (!devtools_enabled_)
       return;
     // Make a deep copy of ResourceResponseHead before passing it cross-thread.
@@ -206,7 +202,6 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
 
   mojo::Binding<network::mojom::URLLoaderClient> binding_;
   network::mojom::URLLoaderClientPtr client_;
-  base::OnceClosure on_response_;
   bool completed_ = false;
   const GURL url_;
   const bool devtools_enabled_;
@@ -297,15 +292,16 @@ void GrantFileAccessToProcess(int process_id,
 
 // Creates the network URLLoaderFactory for the navigation preload request.
 void CreateNetworkFactoryForNavigationPreloadOnUI(
-    const ServiceWorkerFetchDispatcher::WebContentsGetter& web_contents_getter,
+    int frame_tree_node_id,
     scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
 
-  WebContents* web_contents = web_contents_getter.Run();
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   StoragePartitionImpl* partition = context_wrapper->storage_partition();
-  if (!web_contents || !partition) {
+  if (!frame_tree_node || !partition) {
     // The navigation was cancelled or we are in shutdown. Just drop the
     // request. Otherwise, we might go to network without consulting the
     // embedder first, which would break guarantees.
@@ -319,7 +315,7 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
   // origin instead.
   url::Origin initiator = url::Origin();
 
-  // We ignore the value of |bypass_redirect_checks_unused| since a redirects is
+  // We ignore the value of |bypass_redirect_checks_unused| since a redirect is
   // just relayed to the service worker where preloadResponse is resolved as
   // redirect.
   bool bypass_redirect_checks_unused;
@@ -327,14 +323,14 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
   // Consult the embedder.
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client;
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
-      web_contents->GetBrowserContext(), web_contents->GetMainFrame(),
-      web_contents->GetMainFrame()->GetProcess()->GetID(),
-      true /* is_navigation */, false /* is_download */, initiator, &request,
+      partition->browser_context(), frame_tree_node->current_frame_host(),
+      frame_tree_node->current_frame_host()->GetProcess()->GetID(),
+      /*is_navigation=*/true, /*is_download=*/false, initiator, &receiver,
       &header_client, &bypass_redirect_checks_unused);
 
   // Make the network factory.
   NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
-      std::move(header_client), std::move(request), partition);
+      std::move(header_client), std::move(receiver), partition);
 }
 
 }  // namespace
@@ -470,8 +466,7 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
       resource_type_(resource_type),
       prepare_callback_(std::move(prepare_callback)),
       fetch_callback_(std::move(fetch_callback)),
-      did_complete_(false),
-      weak_factory_(this) {
+      did_complete_(false) {
   DCHECK(!request_->blob);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
       "ServiceWorker", "ServiceWorkerFetchDispatcher::DispatchFetchEvent", this,
@@ -593,7 +588,7 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   // unretained raw pointer of |version_| to OnFetchEventFinished callback.
   // Pass |url_loader_assets_| to the callback to keep the URL loader related
   // assets alive while the FetchEvent is ongoing in the service worker.
-  version_->endpoint()->DispatchFetchEvent(
+  version_->endpoint()->DispatchFetchEventForMainResource(
       std::move(params), std::move(response_callback_ptr),
       base::BindOnce(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
                      base::Unretained(version_.get()), event_finish_id,
@@ -650,8 +645,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     const network::ResourceRequest& original_request,
     URLLoaderFactoryGetter* url_loader_factory_getter,
     scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
-    const WebContentsGetter& web_contents_getter,
-    base::OnceClosure on_response) {
+    int frame_tree_node_id) {
   if (resource_type_ != ResourceType::kMainFrame &&
       resource_type_ != ResourceType::kSubFrame) {
     return false;
@@ -663,8 +657,15 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     return false;
 
   network::ResourceRequest resource_request(original_request);
-  resource_request.resource_type =
-      static_cast<int>(ResourceType::kNavigationPreload);
+  if (resource_type_ == ResourceType::kMainFrame) {
+    resource_request.resource_type =
+        static_cast<int>(ResourceType::kNavigationPreloadMainFrame);
+  } else {
+    DCHECK_EQ(ResourceType::kSubFrame, resource_type_);
+    resource_request.resource_type =
+        static_cast<int>(ResourceType::kNavigationPreloadSubFrame);
+  }
+
   resource_request.skip_service_worker = true;
   resource_request.do_not_prompt_for_login = true;
 
@@ -686,7 +687,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&CreateNetworkFactoryForNavigationPreloadOnUI,
-                       web_contents_getter, std::move(context_wrapper),
+                       frame_tree_node_id, std::move(context_wrapper),
                        mojo::MakeRequest(&network_factory)));
     factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
         std::move(network_factory));
@@ -706,8 +707,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   preload_handle_->url_loader_client_request =
       mojo::MakeRequest(&inner_url_loader_client);
   auto url_loader_client = std::make_unique<DelegatingURLLoaderClient>(
-      std::move(inner_url_loader_client), std::move(on_response),
-      resource_request);
+      std::move(inner_url_loader_client), resource_request);
 
   // Use NavigationURLLoaderImpl to get a unique request id across
   // browser-initiated navigations and navigation preloads.

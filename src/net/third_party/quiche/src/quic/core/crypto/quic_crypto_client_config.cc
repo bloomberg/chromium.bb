@@ -21,6 +21,7 @@
 #include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
+#include "net/third_party/quiche/src/quic/core/crypto/tls_client_connection.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
@@ -59,9 +60,9 @@ void RecordDiskCacheServerConfigState(
 }  // namespace
 
 QuicCryptoClientConfig::QuicCryptoClientConfig(
-    std::unique_ptr<ProofVerifier> proof_verifier,
-    bssl::UniquePtr<SSL_CTX> ssl_ctx)
-    : proof_verifier_(std::move(proof_verifier)), ssl_ctx_(std::move(ssl_ctx)) {
+    std::unique_ptr<ProofVerifier> proof_verifier)
+    : proof_verifier_(std::move(proof_verifier)),
+      ssl_ctx_(TlsClientConnection::CreateSslCtx()) {
   DCHECK(proof_verifier_.get());
   SetDefaults();
 }
@@ -575,24 +576,6 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   out->SetVector(kAEAD, QuicTagVector{out_params->aead});
   out->SetVector(kKEXS, QuicTagVector{out_params->key_exchange});
 
-  if (!tb_key_params.empty() && !server_id.privacy_mode_enabled()) {
-    QuicTagVector their_tbkps;
-    switch (scfg->GetTaglist(kTBKP, &their_tbkps)) {
-      case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
-        break;
-      case QUIC_NO_ERROR:
-        if (FindMutualQuicTag(tb_key_params, their_tbkps,
-                              &out_params->token_binding_key_param, nullptr)) {
-          out->SetVector(kTBKP,
-                         QuicTagVector{out_params->token_binding_key_param});
-        }
-        break;
-      default:
-        *error_details = "Invalid TBKP";
-        return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
-    }
-  }
-
   QuicStringPiece public_value;
   if (scfg->GetNthValue24(kPUBS, key_exchange_index, &public_value) !=
       QUIC_NO_ERROR) {
@@ -682,7 +665,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
 QuicErrorCode QuicCryptoClientConfig::CacheNewServerConfig(
     const CryptoHandshakeMessage& message,
     QuicWallTime now,
-    QuicTransportVersion version,
+    QuicTransportVersion /*version*/,
     QuicStringPiece chlo_hash,
     const std::vector<std::string>& cached_certs,
     CachedState* cached,
@@ -783,8 +766,8 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
 
 QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
     const CryptoHandshakeMessage& server_hello,
-    QuicConnectionId connection_id,
-    ParsedQuicVersion version,
+    QuicConnectionId /*connection_id*/,
+    ParsedQuicVersion /*version*/,
     const ParsedQuicVersionVector& negotiated_versions,
     CachedState* cached,
     QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,

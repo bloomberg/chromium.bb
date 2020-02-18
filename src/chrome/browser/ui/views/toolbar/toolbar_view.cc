@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
@@ -63,7 +65,9 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
+#include "media/base/media_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -122,7 +126,8 @@ const char ToolbarView::kViewClassName[] = "ToolbarView";
 // ToolbarView, public:
 
 ToolbarView::ToolbarView(Browser* browser, BrowserView* browser_view)
-    : browser_(browser),
+    : AnimationDelegateViews(this),
+      browser_(browser),
       browser_view_(browser_view),
       app_menu_icon_controller_(browser->profile(), this),
       display_mode_(GetDisplayMode(browser)) {
@@ -235,6 +240,12 @@ void ToolbarView::Init() {
   if (media_router::MediaRouterEnabled(browser_->profile()))
     cast = media_router::CastToolbarButton::Create(browser_);
 
+  std::unique_ptr<MediaToolbarButtonView> media_button;
+  if (base::FeatureList::IsEnabled(media::kGlobalMediaControls)) {
+    media_button =
+        std::make_unique<MediaToolbarButtonView>(content::GetSystemConnector());
+  }
+
   std::unique_ptr<ToolbarPageActionIconContainerView>
       toolbar_page_action_container;
   bool show_avatar_toolbar_button = true;
@@ -279,6 +290,9 @@ void ToolbarView::Init() {
 
   if (cast)
     cast_ = AddChildView(std::move(cast));
+
+  if (media_button)
+    media_button_ = AddChildView(std::move(media_button));
 
   if (toolbar_page_action_container)
     toolbar_page_action_container_ =
@@ -387,8 +401,8 @@ bool ToolbarView::IsAppMenuFocused() {
 
 void ToolbarView::ShowIntentPickerBubble(
     std::vector<IntentPickerBubbleView::AppInfo> app_info,
-    bool show_stay_in_chrome,
-    bool show_remember_selection,
+    bool enable_stay_in_chrome,
+    bool show_persistence_options,
     IntentPickerResponse callback) {
   PageActionIconView* intent_picker_view =
       location_bar()
@@ -399,7 +413,7 @@ void ToolbarView::ShowIntentPickerBubble(
       IntentPickerTabHelper::SetShouldShowIcon(GetWebContents(), true);
     IntentPickerBubbleView::ShowBubble(
         intent_picker_view, GetWebContents(), std::move(app_info),
-        show_stay_in_chrome, show_remember_selection, std::move(callback));
+        enable_stay_in_chrome, show_persistence_options, std::move(callback));
   }
 }
 
@@ -673,12 +687,13 @@ void ToolbarView::OnTouchUiChanged() {
     // code cleaner.
     const int default_margin = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
     const int location_bar_margin = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
-    layout_manager_->SetDefaultChildMargins(gfx::Insets(0, default_margin));
-    *location_bar_->GetProperty(views::kMarginsKey) =
-        gfx::Insets(0, location_bar_margin);
+    layout_manager_->SetDefault(views::kMarginsKey,
+                                gfx::Insets(0, default_margin));
+    location_bar_->SetProperty(views::kMarginsKey,
+                               gfx::Insets(0, location_bar_margin));
     if (browser_actions_) {
-      *browser_actions_->GetProperty(views::kInternalPaddingKey) =
-          gfx::Insets(0, location_bar_margin);
+      browser_actions_->SetProperty(views::kInternalPaddingKey,
+                                    gfx::Insets(0, location_bar_margin));
     }
 
     LoadImages();
@@ -708,18 +723,18 @@ void ToolbarView::InitLayout() {
   layout_manager_->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCollapseMargins(true)
-      .SetDefaultChildMargins(gfx::Insets(0, default_margin));
+      .SetDefault(views::kMarginsKey, gfx::Insets(0, default_margin));
 
-  layout_manager_->SetFlexForView(location_bar_, location_bar_flex_rule);
+  location_bar_->SetProperty(views::kFlexBehaviorKey, location_bar_flex_rule);
   location_bar_->SetProperty(views::kMarginsKey,
-                             new gfx::Insets(0, location_bar_margin));
+                             gfx::Insets(0, location_bar_margin));
 
   if (browser_actions_) {
-    layout_manager_->SetFlexForView(browser_actions_,
-                                    browser_actions_flex_rule);
-    browser_actions_->SetProperty(views::kMarginsKey, new gfx::Insets(0, 0));
+    browser_actions_->SetProperty(views::kFlexBehaviorKey,
+                                  browser_actions_flex_rule);
+    browser_actions_->SetProperty(views::kMarginsKey, gfx::Insets());
     browser_actions_->SetProperty(views::kInternalPaddingKey,
-                                  new gfx::Insets(0, location_bar_margin));
+                                  gfx::Insets(0, location_bar_margin));
   }
 
   LayoutCommon();
@@ -854,6 +869,9 @@ void ToolbarView::LoadImages() {
 
   if (cast_)
     cast_->UpdateIcon();
+
+  if (media_button_)
+    media_button_->UpdateIcon();
 
   if (avatar_)
     avatar_->UpdateIcon();

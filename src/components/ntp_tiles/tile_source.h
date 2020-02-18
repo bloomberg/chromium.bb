@@ -10,7 +10,7 @@ namespace ntp_tiles {
 // The source of an NTP tile. Please update webui/ntp-tiles-internals* as well
 // when modifying these values.
 // A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.suggestions
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.suggestions.tile
 enum class TileSource {
   // Tile comes from the personal top sites list, based on local history.
   TOP_SITES,
@@ -28,10 +28,8 @@ enum class TileSource {
   HOMEPAGE,
   // Tile comes from explore sites list.
   EXPLORE,
-  // Tile containing the Google Search page.
-  SEARCH_PAGE,
 
-  LAST = SEARCH_PAGE
+  LAST = EXPLORE
 };
 
 }  // namespace ntp_tiles

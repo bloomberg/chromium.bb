@@ -79,8 +79,8 @@ bool SetUserInputMethodImpl(
       users_last_input_methods->SetKey(username, base::Value(""));
     return false;
   }
-  if (!base::ContainsValue(ime_state->GetActiveInputMethodIds(),
-                           user_input_method)) {
+  if (!base::Contains(ime_state->GetActiveInputMethodIds(),
+                      user_input_method)) {
     if (!ime_state->EnableInputMethod(user_input_method)) {
       DLOG(ERROR) << "SetUserInputMethod: user input method '"
                   << user_input_method

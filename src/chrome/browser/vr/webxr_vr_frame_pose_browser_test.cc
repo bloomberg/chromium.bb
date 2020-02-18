@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
+#include "chrome/browser/vr/test/multi_class_browser_test.h"
 #include "chrome/browser/vr/test/ui_utils.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 
@@ -158,16 +159,16 @@ std::string GetPoseAsString(const Frame& frame) {
 
 }  // namespace
 
-// Pixel test for WebVR/WebXR - start presentation, submit frames, get data back
-// out. Validates that submitted frames used expected pose.
-void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
-                               std::string filename) {
+// Pixel test for WebXR - start presentation, submit frames, get data back out.
+// Validates that submitted frames used expected pose.
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestPresentationPoses) {
   // Disable frame-timeout UI to test what WebXR renders.
   UiUtils::DisableFrameTimeoutForTesting();
   MyXRMock my_mock;
 
   // Load the test page, and enter presentation.
-  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("test_webxr_poses"));
   t->EnterSessionWithUserGestureOrFail();
 
   // Wait for JavaScript to submit at least one frame.
@@ -230,12 +231,6 @@ void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
   // Tell JavaScript that it is done with the test.
   t->ExecuteStepAndWait("finishTest()");
   t->EndTest();
-}
-
-// TODO(https://crbug.com/926048): Port to WMR as well. Submitted frame data
-// is not yet provided back to the test when using WMR.
-IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestPresentationPoses) {
-  TestPresentationPosesImpl(this, "test_webxr_poses");
 }
 
 }  // namespace vr

@@ -19,14 +19,14 @@
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_tile_item_list_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/view_shadow.h"
 #include "base/memory/ptr_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/shadow_value.h"
 #include "ui/views/background.h"
-#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -47,6 +47,12 @@ constexpr int kSeparatorThickness = 1;
 
 // The height of the search box in this page.
 constexpr int kSearchBoxHeight = 56;
+
+// The spacing between search box bottom and separator line.
+// Add 1 pixel spacing so that the search bbox bottom will not paint over
+// the separator line drawn by SearchResultPageBackground in some scale factors
+// due to the round up.
+constexpr int kSearchBoxBottomSpacing = 1;
 
 constexpr SkColor kSeparatorColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
 
@@ -87,34 +93,23 @@ class ZeroWidthVerticalScrollBar : public views::OverlayScrollBar {
 
 class SearchResultPageBackground : public views::Background {
  public:
-  SearchResultPageBackground(SkColor color,
-                             int corner_radius,
-                             int shadow_inset_top)
-      : color_(color),
-        corner_radius_(corner_radius),
-        shadow_inset_top_(shadow_inset_top) {}
-  ~SearchResultPageBackground() override {}
+  explicit SearchResultPageBackground(SkColor color) {
+    SetNativeControlColor(color);
+  }
+  ~SearchResultPageBackground() override = default;
 
  private:
   // views::Background overrides:
   void Paint(gfx::Canvas* canvas, views::View* view) const override {
+    canvas->DrawColor(get_color());
     gfx::Rect bounds = view->GetContentsBounds();
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setColor(color_);
-    canvas->DrawRoundRect(bounds, corner_radius_, flags);
-
     if (bounds.height() <= kSearchBoxHeight)
       return;
     // Draw a separator between SearchBoxView and SearchResultPageView.
-    bounds.set_y(kSearchBoxHeight + shadow_inset_top_);
+    bounds.set_y(kSearchBoxHeight + kSearchBoxBottomSpacing);
     bounds.set_height(kSeparatorThickness);
     canvas->FillRect(bounds, kSeparatorColor);
   }
-
-  const SkColor color_;
-  const int corner_radius_;
-  const int shadow_inset_top_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageBackground);
 };
@@ -155,33 +150,29 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate)
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   contents_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), 0));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
 
   if (view_delegate_->ShouldShowAssistantPrivacyInfo()) {
     assistant_privacy_info_view_ = new PrivacyInfoView(view_delegate_, this);
     contents_view_->AddChildView(assistant_privacy_info_view_);
   }
 
-  // Create and set a shadow to be displayed as a border for this view.
-  auto shadow_border = std::make_unique<views::BubbleBorder>(
-      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
-      SK_ColorWHITE);
-  shadow_border->SetCornerRadius(
+  view_shadow_ = std::make_unique<ash::ViewShadow>(
+      this, kSearchBoxSearchResultShadowElevation);
+  view_shadow_->SetRoundedCornerRadius(
       search_box::kSearchBoxBorderCornerRadiusSearchResult);
-  shadow_border->set_md_shadow_elevation(kSearchBoxSearchResultShadowElevation);
-  SetBorder(std::move(shadow_border));
 
   // Hides this view behind the search box by using the same color and
   // background border corner radius. All child views' background should be
   // set transparent so that the rounded corner is not overwritten.
   SetBackground(std::make_unique<SearchResultPageBackground>(
-      AppListConfig::instance().card_background_color(),
-      search_box::kSearchBoxBorderCornerRadius, border()->GetInsets().top()));
+      AppListConfig::instance().card_background_color()));
   views::ScrollView* const scroller = new views::ScrollView;
   // Leaves a placeholder area for the search box and the separator below it.
-  scroller->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(kSearchBoxHeight + kSeparatorThickness, 0, 0, 0)));
-  scroller->set_draw_overflow_indicator(false);
+  scroller->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+      kSearchBoxHeight + kSearchBoxBottomSpacing + kSeparatorThickness, 0, 0,
+      0)));
+  scroller->SetDrawOverflowIndicator(false);
   scroller->SetContents(base::WrapUnique(contents_view_));
   // Setting clip height is necessary to make ScrollView take into account its
   // contents' size. Using zeroes doesn't prevent it from scrolling and sizing
@@ -192,6 +183,9 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate)
   AddChildView(scroller);
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
+
+  result_selection_controller_ =
+      std::make_unique<ResultSelectionController>(&result_container_views_);
 }
 
 SearchResultPageView::~SearchResultPageView() = default;
@@ -224,7 +218,7 @@ bool SearchResultPageView::IsFirstResultTile() const {
 
 bool SearchResultPageView::IsFirstResultHighlighted() const {
   DCHECK(first_result_view_);
-  return first_result_view_->background_highlighted();
+  return first_result_view_->selected();
 }
 
 bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -310,6 +304,13 @@ void SearchResultPageView::ReorderSearchResultContainers() {
   Layout();
 }
 
+void SearchResultPageView::OnSearchResultContainerResultsChanging() {
+  // Block any result selection changes while result updates are in flight.
+  // The selection will be reset once the results are all updated.
+  if (app_list_features::IsSearchBoxSelectionEnabled())
+    result_selection_controller_->set_block_selection_changes(true);
+}
+
 void SearchResultPageView::OnSearchResultContainerResultsChanged() {
   DCHECK(!result_container_views_.empty());
   DCHECK(result_container_views_.size() == separators_.size() + 1);
@@ -322,31 +323,41 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
   ReorderSearchResultContainers();
 
-  views::View* focused_view = GetFocusManager()->GetFocusedView();
+  if (!app_list_features::IsSearchBoxSelectionEnabled()) {
+    views::View* focused_view = GetFocusManager()->GetFocusedView();
 
-  // Clear the first search result view's background highlight.
-  if (first_result_view_ && first_result_view_ != focused_view)
-    first_result_view_->SetBackgroundHighlighted(false);
+    // Clear the first search result view's background highlight.
+    if (first_result_view_ && first_result_view_ != focused_view)
+      first_result_view_->SetSelected(false, base::nullopt);
+  }
 
   first_result_view_ = result_container_views_[0]->GetFirstResultView();
-
-  // Update SearchBoxView search box autocomplete as necessary based on new
-  // first result view.
-  if (first_result_view_)
-    AppListPage::contents_view()->GetSearchBoxView()->ProcessAutocomplete();
-
-  // If one of the search result is focused, do not highlight the first search
-  // result.
-  if (Contains(focused_view))
-    return;
-
   if (!first_result_view_)
     return;
 
-  // Highlight the first result after search results are updated. Note that the
-  // focus is not set on the first result to prevent frequent focus switch
-  // between the search box and the first result when the user is typing query.
-  first_result_view_->SetBackgroundHighlighted(true);
+  if (!app_list_features::IsSearchBoxSelectionEnabled()) {
+    views::View* focused_view = GetFocusManager()->GetFocusedView();
+    // If one of the search result is focused, do not highlight the first search
+    // result.
+    if (Contains(focused_view))
+      return;
+  }
+
+  // Update SearchBoxView search box autocomplete as necessary based on new
+  // first result view.
+  AppListPage::contents_view()->GetSearchBoxView()->ProcessAutocomplete();
+
+  if (app_list_features::IsSearchBoxSelectionEnabled()) {
+    // Reset selection to first when things change.
+    result_selection_controller_->set_block_selection_changes(false);
+    result_selection_controller_->ResetSelection();
+  } else {
+    // Highlight the first result after search results are updated. Note that
+    // the focus is not set on the first result to prevent frequent focus switch
+    // between the search box and the first result when the user is typing
+    // query.
+    first_result_view_->SetSelected(true, base::nullopt);
+  }
 }
 
 void SearchResultPageView::OnSearchResultContainerResultFocused(
@@ -388,20 +399,14 @@ void SearchResultPageView::OnShown() {
 
 gfx::Rect SearchResultPageView::GetPageBoundsForState(
     ash::AppListState state) const {
-  gfx::Rect onscreen_bounds;
-
   if (state != ash::AppListState::kStateSearchResults) {
     // Hides this view behind the search box by using the same bounds.
-    onscreen_bounds =
-        AppListPage::contents_view()->GetSearchBoxBoundsForState(state);
-  } else {
-    onscreen_bounds = AppListPage::GetSearchBoxBounds();
-    onscreen_bounds.Offset((onscreen_bounds.width() - kWidth) / 2, 0);
-    onscreen_bounds.set_size(GetPreferredSize());
+    return AppListPage::contents_view()->GetSearchBoxBoundsForState(state);
   }
 
-  onscreen_bounds = AddShadowBorderToBounds(onscreen_bounds);
-
+  gfx::Rect onscreen_bounds = AppListPage::GetSearchBoxBounds();
+  onscreen_bounds.Offset((onscreen_bounds.width() - kWidth) / 2, 0);
+  onscreen_bounds.set_size(GetPreferredSize());
   return onscreen_bounds;
 }
 
@@ -420,13 +425,14 @@ void SearchResultPageView::OnAnimationUpdated(double progress,
 
   // Grows this view in the same pace as the search box to make them look
   // like a single view.
-  SetBackground(std::make_unique<SearchResultPageBackground>(
-      color,
-      gfx::Tween::LinearIntValueBetween(
-          progress,
-          search_box->GetSearchBoxBorderCornerRadiusForState(from_state),
-          search_box->GetSearchBoxBorderCornerRadiusForState(to_state)),
-      border()->GetInsets().top()));
+  const int corner_radius = gfx::Tween::LinearIntValueBetween(
+      progress, search_box->GetSearchBoxBorderCornerRadiusForState(from_state),
+      search_box->GetSearchBoxBorderCornerRadiusForState(to_state));
+  view_shadow_->SetRoundedCornerRadius(corner_radius);
+  if (color != background()->get_color()) {
+    background()->SetNativeControlColor(color);
+    SchedulePaint();
+  }
 
   gfx::Rect onscreen_bounds(
       GetPageBoundsForState(ash::AppListState::kStateSearchResults));
@@ -453,13 +459,6 @@ views::View* SearchResultPageView::GetFirstFocusableView() {
 views::View* SearchResultPageView::GetLastFocusableView() {
   return GetFocusManager()->GetNextFocusableView(
       this, GetWidget(), true /* reverse */, false /* dont_loop */);
-}
-
-gfx::Rect SearchResultPageView::AddShadowBorderToBounds(
-    const gfx::Rect& bounds) const {
-  gfx::Rect new_bounds(bounds);
-  new_bounds.Inset(-border()->GetInsets());
-  return new_bounds;
 }
 
 }  // namespace app_list

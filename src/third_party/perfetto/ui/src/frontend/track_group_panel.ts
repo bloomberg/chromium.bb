@@ -69,8 +69,7 @@ export class TrackGroupPanel extends Panel<Attrs> {
             {
               title: name,
             },
-            name,
-            m.trust('&#x200E;')),
+            name + '\u200E'),
           m('.fold-button',
             {
               onclick: (e: MouseEvent) => {
@@ -119,7 +118,7 @@ export class TrackGroupPanel extends Panel<Attrs> {
     ctx.restore();
 
     const localState = globals.frontendLocalState;
-    // Draw vertical line when hovering on the the notes panel.
+    // Draw vertical line when hovering on the notes panel.
     if (localState.showNotePreview) {
       drawVerticalLineAtTime(ctx,
                             localState.timeScale,
@@ -145,12 +144,13 @@ export class TrackGroupPanel extends Panel<Attrs> {
                                note.color);
       }
       if (globals.state.currentSelection.kind === 'TIMESPAN') {
-        drawVerticalSelection(ctx,
-                              localState.timeScale,
-                              globals.state.currentSelection.startTs,
-                              globals.state.currentSelection.endTs,
-                              size.height,
-                              `rgba(52,69,150,0.3)`);
+        drawVerticalSelection(
+            ctx,
+            localState.timeScale,
+            globals.state.currentSelection.startTs,
+            globals.state.currentSelection.endTs,
+            size.height,
+            `rgba(0,0,0,0.5)`);
       }
       if (globals.state.currentSelection.kind === 'SLICE' &&
           globals.sliceDetails.wakeupTs !== undefined) {

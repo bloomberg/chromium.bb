@@ -9,10 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
-#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chromeos/assistant/internal/action/cros_action_module.h"
@@ -29,6 +26,7 @@
 #include "libassistant/shared/public/media_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -78,7 +76,7 @@ enum class AssistantQueryResponseType {
 };
 
 // Implementation of AssistantManagerService based on LibAssistant.
-// This is the main class that ineracts with LibAssistant.
+// This is the main class that interacts with LibAssistant.
 // Since LibAssistant is a standalone library, all callbacks come from it
 // running on threads not owned by Chrome. Thus we need to post the callbacks
 // onto the main thread.
@@ -98,7 +96,6 @@ class AssistantManagerServiceImpl
       service_manager::Connector* connector,
       device::mojom::BatteryMonitorPtr battery_monitor,
       Service* service,
-      network::NetworkConnectionTracker* network_connection_tracker,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info);
 
@@ -147,7 +144,7 @@ class AssistantManagerServiceImpl
   void OnShowSuggestions(
       const std::vector<action::Suggestion>& suggestions) override;
   void OnShowText(const std::string& text) override;
-  void OnOpenUrl(const std::string& url) override;
+  void OnOpenUrl(const std::string& url, bool in_background) override;
   void OnPlaybackStateChange(
       const assistant_client::MediaStatus& status) override;
   void OnShowNotification(const action::Notification& notification) override;
@@ -208,7 +205,9 @@ class AssistantManagerServiceImpl
       const std::vector<media_session::mojom::MediaSessionAction>& action)
       override {}
   void MediaSessionChanged(
-      const base::Optional<base::UnguessableToken>& request_id) override {}
+      const base::Optional<base::UnguessableToken>& request_id) override;
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override {}
 
   void UpdateInternalMediaPlayerStatus(
       media_session::mojom::MediaSessionAction action);
@@ -239,7 +238,7 @@ class AssistantManagerServiceImpl
   void OnShowSuggestionsOnMainThread(
       const std::vector<mojom::AssistantSuggestionPtr>& suggestions);
   void OnShowTextOnMainThread(const std::string& text);
-  void OnOpenUrlOnMainThread(const std::string& url);
+  void OnOpenUrlOnMainThread(const std::string& url, bool in_background);
   void OnShowNotificationOnMainThread(
       const mojom::AssistantNotificationPtr& notification);
   void OnNotificationRemovedOnMainThread(const std::string& grouping_id);
@@ -309,7 +308,6 @@ class AssistantManagerServiceImpl
       nullptr;
   mojo::InterfacePtrSet<mojom::AssistantInteractionSubscriber>
       interaction_subscribers_;
-  ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller_;
   media_session::mojom::MediaControllerPtr media_controller_;
 
   Service* service_;  // unowned.
@@ -331,14 +329,17 @@ class AssistantManagerServiceImpl
 
   bool is_first_client_discourse_context_query_ = true;
 
-  mojo::Binding<media_session::mojom::MediaControllerObserver>
-      media_controller_observer_binding_;
+  mojo::Receiver<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_receiver_{this};
 
   // Info associated to the active media session.
   media_session::mojom::MediaSessionInfoPtr media_session_info_ptr_;
   // The metadata for the active media session. It can be null to be reset, e.g.
   // the media that was being played has been stopped.
   base::Optional<media_session::MediaMetadata> media_metadata_ = base::nullopt;
+
+  base::UnguessableToken media_session_audio_focus_id_ =
+      base::UnguessableToken::Null();
 
   bool start_finished_ = false;
 

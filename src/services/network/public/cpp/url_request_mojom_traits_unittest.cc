@@ -48,7 +48,13 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.method = "POST";
   original.url = GURL("https://example.com/resources/dummy.xml");
   original.site_for_cookies = GURL("https://example.com/index.html");
-  original.top_frame_origin = url::Origin::Create(original.url);
+  url::Origin origin = url::Origin::Create(original.url);
+  ;
+  original.top_frame_origin = origin;
+  original.trusted_network_isolation_key =
+      net::NetworkIsolationKey(origin, origin);
+  original.update_network_isolation_key_on_redirect = network::mojom::
+      UpdateNetworkIsolationKeyOnRedirect::kUpdateTopFrameAndFrameOrigin;
   original.attach_same_site_cookies = true;
   original.update_first_party_url_on_redirect = false;
   original.request_initiator = url::Origin::Create(original.url);
@@ -70,9 +76,9 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
       mojom::CorsPreflightPolicy::kConsiderPreflight;
   original.originated_from_service_worker = false;
   original.skip_service_worker = false;
-  original.fetch_request_mode = mojom::FetchRequestMode::kNoCors;
-  original.fetch_credentials_mode = mojom::FetchCredentialsMode::kInclude;
-  original.fetch_redirect_mode = mojom::FetchRedirectMode::kFollow;
+  original.mode = mojom::RequestMode::kNoCors;
+  original.credentials_mode = mojom::CredentialsMode::kInclude;
+  original.redirect_mode = mojom::RedirectMode::kFollow;
   original.fetch_integrity = "dummy_fetch_integrity";
   original.fetch_request_context_type = 0;
   original.keepalive = true;

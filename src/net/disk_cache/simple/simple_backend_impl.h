@@ -41,15 +41,17 @@ namespace disk_cache {
 
 // SimpleBackendImpl is a new cache backend that stores entries in individual
 // files.
-// See http://www.chromium.org/developers/design-documents/network-stack/disk-cache/very-simple-backend
+// See
+// http://www.chromium.org/developers/design-documents/network-stack/disk-cache/very-simple-backend
 //
 // The SimpleBackendImpl provides safe iteration; mutating entries during
 // iteration cannot cause a crash. It is undefined whether entries created or
 // destroyed during the iteration will be included in any pre-existing
 // iterations.
 //
-// The non-static functions below must be called on the IO thread unless
-// otherwise stated.
+// The non-static functions below must be called on the source creation sequence
+// unless otherwise stated.  Historically the source creation sequence has been
+// the IO thread, but the simple backend may now be used from other sequences.
 
 class BackendCleanupTracker;
 class SimpleEntryImpl;
@@ -204,8 +206,8 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                                            Int64CompletionOnceCallback callback,
                                            int result);
 
-  // Try to create the directory if it doesn't exist. This must run on the IO
-  // thread.
+  // Try to create the directory if it doesn't exist. This must run on the
+  // source creation sequence.
   static DiskStatResult InitCacheStructureOnDisk(const base::FilePath& path,
                                                  uint64_t suggested_max_size,
                                                  net::CacheType cache_type);

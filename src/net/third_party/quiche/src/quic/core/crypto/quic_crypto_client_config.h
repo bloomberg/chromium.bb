@@ -203,8 +203,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     virtual bool Matches(const QuicServerId& server_id) const = 0;
   };
 
-  QuicCryptoClientConfig(std::unique_ptr<ProofVerifier> proof_verifier,
-                         bssl::UniquePtr<SSL_CTX> ssl_ctx);
+  explicit QuicCryptoClientConfig(
+      std::unique_ptr<ProofVerifier> proof_verifier);
   QuicCryptoClientConfig(const QuicCryptoClientConfig&) = delete;
   QuicCryptoClientConfig& operator=(const QuicCryptoClientConfig&) = delete;
   ~QuicCryptoClientConfig();

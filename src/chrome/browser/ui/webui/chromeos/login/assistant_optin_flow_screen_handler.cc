@@ -15,9 +15,9 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
@@ -141,8 +141,6 @@ void AssistantOptInFlowScreenHandler::RegisterMessages() {
               &AssistantOptInFlowScreenHandler::HandleGetMoreScreenShown);
   AddCallback("login.AssistantOptInFlowScreen.LoadingScreen.timeout",
               &AssistantOptInFlowScreenHandler::HandleLoadingTimeout);
-  AddCallback("login.AssistantOptInFlowScreen.hotwordResult",
-              &AssistantOptInFlowScreenHandler::HandleHotwordResult);
   AddCallback("login.AssistantOptInFlowScreen.flowFinished",
               &AssistantOptInFlowScreenHandler::HandleFlowFinished);
   AddCallback("login.AssistantOptInFlowScreen.initialized",
@@ -203,12 +201,19 @@ void AssistantOptInFlowScreenHandler::OnSpeakerIdEnrollmentFailure() {
   RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_ERROR);
   CallJS("login.AssistantOptInFlowScreen.onVoiceMatchUpdate",
          base::Value("failure"));
-  LOG(ERROR) << "Speaker ID enrollmend failure.";
+  LOG(ERROR) << "Speaker ID enrollment failure.";
 }
 
 void AssistantOptInFlowScreenHandler::SetupAssistantConnection() {
-  // Make sure enable Assistant service since we need it during the flow.
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+
+  // If Assistant is disabled by domain admin, end the flow.
+  if (prefs->GetBoolean(assistant::prefs::kAssistantDisabledByPolicy)) {
+    HandleFlowFinished();
+    return;
+  }
+
+  // Make sure enable Assistant service since we need it during the flow.
   prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
 
   if (arc::VoiceInteractionControllerClient::Get()->voice_interaction_state() ==
@@ -236,8 +241,8 @@ void AssistantOptInFlowScreenHandler::OnActivityControlOptInResult(
             weak_factory_.GetWeakPtr()));
   } else {
     RecordAssistantOptInStatus(ACTIVITY_CONTROL_SKIPPED);
-    ::assistant::prefs::SetConsentStatus(profile->GetPrefs(),
-                                         ash::mojom::ConsentStatus::kUnknown);
+    profile->GetPrefs()->SetInteger(assistant::prefs::kAssistantConsentStatus,
+                                    assistant::prefs::ConsentStatus::kUnknown);
     HandleFlowFinished();
   }
 }
@@ -329,10 +334,19 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
 
   if (settings_ui.has_gaia_user_context_ui()) {
     auto gaia_user_context_ui = settings_ui.gaia_user_context_ui();
-    if (gaia_user_context_ui.waa_disabled_by_dasher_domain() ||
-        gaia_user_context_ui.assistant_disabled_by_dasher_domain()) {
-      DVLOG(1) << "Assistant/web & app activity is disabled by dasher domain. "
-                  "Skip Assistant opt-in flow.";
+    if (gaia_user_context_ui.assistant_disabled_by_dasher_domain()) {
+      DVLOG(1) << "Assistant is disabled by domain policy. Skip Assistant "
+                  "opt-in flow.";
+      PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+      prefs->SetBoolean(assistant::prefs::kAssistantDisabledByPolicy, true);
+      prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, false);
+      HandleFlowFinished();
+      return;
+    }
+
+    if (gaia_user_context_ui.waa_disabled_by_dasher_domain()) {
+      DVLOG(1) << "Web & app activity is disabled by domain policy. Skip "
+                  "Assistant opt-in flow.";
       HandleFlowFinished();
       return;
     }
@@ -361,9 +375,10 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
         settings_ui.consent_flow_ui().consent_status() ==
             assistant::ConsentFlowUi_ConsentStatus_ASK_FOR_CONSENT;
 
-    ::assistant::prefs::SetConsentStatus(
-        prefs, consented ? ash::mojom::ConsentStatus::kActivityControlAccepted
-                         : ash::mojom::ConsentStatus::kUnknown);
+    prefs->SetInteger(
+        assistant::prefs::kAssistantConsentStatus,
+        consented ? assistant::prefs::ConsentStatus::kActivityControlAccepted
+                  : assistant::prefs::ConsentStatus::kUnknown);
   } else {
     AddSettingZippy("settings",
                     CreateZippyData(activity_control_ui.setting_zippy()));
@@ -402,9 +417,9 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
 
   // Pass string constants dictionary.
   auto dictionary = GetSettingsUiStrings(settings_ui, activity_control_needed_);
-  const bool voice_match_enabled =
-      IsVoiceMatchEnabled(ProfileManager::GetActiveUserProfile()->GetPrefs());
-  dictionary.SetKey("voiceMatchEnabled", base::Value(voice_match_enabled));
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  dictionary.SetKey("voiceMatchEnforcedOff",
+                    base::Value(IsVoiceMatchEnforcedOff(prefs)));
   ReloadContent(dictionary);
 
   // Now that screen's content has been reloaded, skip screens that can be
@@ -422,7 +437,7 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
 
   // If voice match is enabled, the screen that follows third party disclosure
   // is the "voice match" screen, not "get more" screen.
-  if (skip_get_more && !voice_match_enabled)
+  if (skip_get_more && IsVoiceMatchEnforcedOff(prefs))
     ShowNextScreen();
 }
 
@@ -439,8 +454,9 @@ void AssistantOptInFlowScreenHandler::OnUpdateSettingsResponse(
     } else if (activity_control_needed_) {
       activity_control_needed_ = false;
       PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-      ::assistant::prefs::SetConsentStatus(
-          prefs, ash::mojom::ConsentStatus::kActivityControlAccepted);
+      prefs->SetInteger(
+          assistant::prefs::kAssistantConsentStatus,
+          assistant::prefs::ConsentStatus::kActivityControlAccepted);
     }
   }
 
@@ -450,12 +466,6 @@ void AssistantOptInFlowScreenHandler::OnUpdateSettingsResponse(
       // TODO(updowndta): Handle email optin update failure.
       LOG(ERROR) << "Email OptIn udpate error.";
     }
-    // Update hotword will cause Assistant restart. In order to make sure email
-    // optin request is successfully sent to server, update the hotword after
-    // email optin result has been received.
-    PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-    prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled,
-                      enable_hotword_);
     HandleFlowFinished();
     return;
   }
@@ -489,9 +499,6 @@ void AssistantOptInFlowScreenHandler::HandleThirdPartyScreenUserAction(
 void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
     const std::string& action) {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-
-  if (!IsVoiceMatchEnabled(prefs))
-    return;
 
   if (action == kVoiceMatchDone) {
     RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_DONE);
@@ -547,26 +554,15 @@ void AssistantOptInFlowScreenHandler::HandleLoadingTimeout() {
   ++loading_timeout_counter_;
 }
 
-void AssistantOptInFlowScreenHandler::HandleHotwordResult(bool enable_hotword) {
-  enable_hotword_ = enable_hotword;
-
-  if (!email_optin_needed_) {
-    // No need to send email optin result. Safe to update hotword pref and
-    // restart Assistant here.
-    PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-    prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled,
-                      enable_hotword);
-  }
-}
-
 void AssistantOptInFlowScreenHandler::HandleFlowFinished() {
   auto* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  if (!prefs->GetUserPrefValue(::assistant::prefs::kAssistantConsentStatus)) {
+  if (!prefs->GetUserPrefValue(assistant::prefs::kAssistantConsentStatus)) {
     // Set consent status to unknown if user consent is needed but not provided.
-    ::assistant::prefs::SetConsentStatus(
-        prefs, activity_control_needed_
-                   ? ash::mojom::ConsentStatus::kUnknown
-                   : ash::mojom::ConsentStatus::kActivityControlAccepted);
+    prefs->SetInteger(
+        assistant::prefs::kAssistantConsentStatus,
+        activity_control_needed_
+            ? assistant::prefs::ConsentStatus::kUnknown
+            : assistant::prefs::ConsentStatus::kActivityControlAccepted);
   }
 
   UMA_HISTOGRAM_EXACT_LINEAR("Assistant.OptInFlow.LoadingTimeoutCount",
@@ -579,6 +575,12 @@ void AssistantOptInFlowScreenHandler::HandleFlowFinished() {
 
 void AssistantOptInFlowScreenHandler::HandleFlowInitialized(
     const int flow_type) {
+  auto* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  if (!prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled)) {
+    HandleFlowFinished();
+    return;
+  }
+
   initialized_ = true;
 
   if (on_initialized_)

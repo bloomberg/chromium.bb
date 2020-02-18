@@ -36,7 +36,7 @@
 #include "chromeos/services/secure_channel/fake_timer_factory.h"
 #include "chromeos/services/secure_channel/secure_channel.h"
 #include "chromeos/services/secure_channel/secure_channel_disconnector_impl.h"
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -218,7 +218,7 @@ class FakeWeaveClientConnectionFactory
       multidevice::RemoteDeviceRef remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
-      device::BluetoothDevice* bluetooth_device,
+      const std::string& device_address,
       bool should_set_low_connection_latency) override {
     EXPECT_EQ(expected_mock_adapter_, adapter);
     EXPECT_EQ(device::BluetoothUUID(kGattServerUuid), remote_service_uuid);

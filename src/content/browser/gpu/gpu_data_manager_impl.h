@@ -25,6 +25,7 @@
 #include "content/public/common/three_d_api_types.h"
 #include "gpu/config/gpu_control_list.h"
 #include "gpu/config/gpu_domain_guilt.h"
+#include "gpu/config/gpu_extra_info.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_mode.h"
@@ -46,12 +47,12 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
 
   // GpuDataManager implementation.
   void BlacklistWebGLForTesting() override;
-  gpu::GPUInfo GetGPUInfo() const override;
-  bool GpuAccessAllowed(std::string* reason) const override;
+  gpu::GPUInfo GetGPUInfo() override;
+  bool GpuAccessAllowed(std::string* reason) override;
   void RequestCompleteGpuInfoIfNeeded() override;
-  bool IsEssentialGpuInfoAvailable() const override;
+  bool IsEssentialGpuInfoAvailable() override;
   void RequestVideoMemoryUsageStatsUpdate(
-      VideoMemoryUsageStatsCallback callback) const override;
+      VideoMemoryUsageStatsCallback callback) override;
   // TODO(kbr): the threading model for the GpuDataManagerObservers is
   // not well defined, and it's impossible for callers to correctly
   // delete observers from anywhere except in one of the observer's
@@ -60,9 +61,9 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void AddObserver(GpuDataManagerObserver* observer) override;
   void RemoveObserver(GpuDataManagerObserver* observer) override;
   void DisableHardwareAcceleration() override;
-  bool HardwareAccelerationEnabled() const override;
+  bool HardwareAccelerationEnabled() override;
   void AppendGpuCommandLine(base::CommandLine* command_line,
-                            GpuProcessKind kind) const override;
+                            GpuProcessKind kind) override;
 
   void RequestGpuSupportedRuntimeVersion() const;
   bool GpuProcessStartAllowed() const;
@@ -83,11 +84,14 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info,
                             const base::Optional<gpu::GpuFeatureInfo>&
                                 gpu_feature_info_for_hardware_gpu);
+  void UpdateGpuExtraInfo(const gpu::GpuExtraInfo& gpu_extra_info);
 
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
 
   gpu::GPUInfo GetGPUInfoForHardwareGpu() const;
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
+
+  gpu::GpuExtraInfo GetGpuExtraInfo() const;
 
   // Update GpuPreferences based on blacklisting decisions.
   void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences,

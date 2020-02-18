@@ -11,7 +11,9 @@
 
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_system.h"
-#include "core/fxge/cfx_renderdevice.h"
+#include "core/fxcrt/retain_ptr.h"
+
+enum class FXPT_TYPE : uint8_t { LineTo, BezierTo, MoveTo };
 
 class FX_PATHPOINT {
  public:
@@ -63,7 +65,7 @@ class CFX_PathData {
   void AppendRect(const CFX_FloatRect& rect);
   void AppendRect(float left, float bottom, float right, float top);
   void AppendLine(const CFX_PointF& pt1, const CFX_PointF& pt2);
-  void AppendPoint(const CFX_PointF& pos, FXPT_TYPE type, bool closeFigure);
+  void AppendPoint(const CFX_PointF& point, FXPT_TYPE type, bool closeFigure);
   void ClosePath();
 
  private:
@@ -74,6 +76,8 @@ class CFX_RetainablePathData final : public Retainable, public CFX_PathData {
  public:
   template <typename T, typename... Args>
   friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
+
+  RetainPtr<CFX_RetainablePathData> Clone() const;
 
  private:
   CFX_RetainablePathData();

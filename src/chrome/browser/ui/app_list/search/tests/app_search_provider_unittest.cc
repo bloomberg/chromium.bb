@@ -20,7 +20,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_impl.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
@@ -105,7 +106,10 @@ bool MoreRelevant(const ChromeSearchResult* result1,
 
 class AppSearchProviderTest : public AppListTestBase {
  public:
-  AppSearchProviderTest() {}
+  AppSearchProviderTest() {
+    // Disable System Web Apps so the Settings Internal App is still installed.
+    scoped_feature_list_.InitAndDisableFeature(features::kSystemWebApps);
+  }
   ~AppSearchProviderTest() override {}
 
   // AppListTestBase overrides:
@@ -154,6 +158,39 @@ class AppSearchProviderTest : public AppListTestBase {
         result_str += ',';
 
       result_str += base::UTF16ToUTF8(sorted_results[i]->title());
+    }
+    return result_str;
+  }
+
+  // Used for testing Continue Reading. Because the result is placed in the
+  // container based on index flags instead of relevance, use this methodology
+  // to generate list of test results.
+  std::string RunQueryNotSortingByRelevance(const std::string& query) {
+    app_search_->Start(base::UTF8ToUTF16(query));
+
+    std::vector<ChromeSearchResult*> non_relevance_results;
+    std::vector<ChromeSearchResult*> priority_results;
+    for (const auto& result : app_search_->results()) {
+      if (result->display_index() == ash::kFirstIndex &&
+          result->display_location() == ash::kSuggestionChipContainer) {
+        priority_results.emplace_back(result.get());
+      } else {
+        non_relevance_results.emplace_back(result.get());
+      }
+    }
+
+    if (priority_results.size() != 0) {
+      non_relevance_results.insert(non_relevance_results.begin(),
+                                   priority_results.begin(),
+                                   priority_results.end());
+    }
+
+    std::string result_str;
+    for (auto* result : non_relevance_results) {
+      if (!result_str.empty())
+        result_str += ',';
+
+      result_str += base::UTF16ToUTF8(result->title());
     }
     return result_str;
   }
@@ -227,6 +264,7 @@ class AppSearchProviderTest : public AppListTestBase {
  private:
   base::SimpleTestClock clock_;
   base::ScopedTempDir temp_dir_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<AppSearchProvider> app_search_;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;
@@ -462,7 +500,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
         sync_pb::SyncEnums::TYPE_PHONE;
 
     EXPECT_EQ("title2,Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-              RunQuery(""));
+              RunQueryNotSortingByRelevance(""));
   }
 
   // Case 2: test that ContinueReading is not recommended for local session.
@@ -487,7 +525,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
         sync_pb::SyncEnums::TYPE_PHONE;
 
     EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-              RunQuery(""));
+              RunQueryNotSortingByRelevance(""));
   }
 
   // Case 3: test that ContinueReading is not recommended for foreign tab more
@@ -513,7 +551,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
         sync_pb::SyncEnums::TYPE_PHONE;
 
     EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-              RunQuery(""));
+              RunQueryNotSortingByRelevance(""));
   }
 
   // Case 4: test that ContinueReading is recommended for foreign tab with
@@ -539,7 +577,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
         sync_pb::SyncEnums::TYPE_TABLET;
 
     EXPECT_EQ("title1,Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-              RunQuery(""));
+              RunQueryNotSortingByRelevance(""));
   }
 
   // Case 5: test that ContinueReading is not recommended for foreign tab with
@@ -565,7 +603,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
         sync_pb::SyncEnums::TYPE_CROS;
 
     EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-              RunQuery(""));
+              RunQueryNotSortingByRelevance(""));
   }
 
   // Case 6: test that ContinueReading is not recommended for foreign tab which
@@ -591,7 +629,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
         sync_pb::SyncEnums::TYPE_CROS;
 
     EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-              RunQuery(""));
+              RunQueryNotSortingByRelevance(""));
   }
 
   // Case 7: test that ContinueReading is not recommended when searching.
@@ -614,7 +652,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
         kTimestamp1;
     session_tracker()->GetSession(kForeignSessionTag1)->device_type =
         sync_pb::SyncEnums::TYPE_PHONE;
-    EXPECT_EQ("Settings", RunQuery("ti"));
+    EXPECT_EQ("Settings", RunQueryNotSortingByRelevance("ti"));
   }
 }
 
@@ -742,6 +780,7 @@ TEST_F(AppSearchProviderTest, CrostiniTerminal) {
 
   // This both allows Crostini UI and enables Crostini.
   crostini::CrostiniTestHelper crostini_test_helper(profile());
+  crostini_test_helper.ReInitializeAppServiceIntegration();
   CreateSearch();
   EXPECT_EQ("Terminal,Hosted App", RunQuery("te"));
   EXPECT_EQ("Terminal", RunQuery("ter"));
@@ -768,6 +807,7 @@ TEST_F(AppSearchProviderTest, CrostiniTerminal) {
 TEST_F(AppSearchProviderTest, CrostiniApp) {
   // This both allows Crostini UI and enables Crostini.
   crostini::CrostiniTestHelper crostini_test_helper(profile());
+  crostini_test_helper.ReInitializeAppServiceIntegration();
   CreateSearch();
 
   // Search based on keywords and name
@@ -777,6 +817,10 @@ TEST_F(AppSearchProviderTest, CrostiniApp) {
   crostini_test_helper.UpdateAppKeywords(testApp, keywords);
   testApp.set_executable_file_name("executable");
   crostini_test_helper.AddApp(testApp);
+
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ("goodApp", RunQuery("wow"));
   EXPECT_EQ("goodApp", RunQuery("amazing"));
   EXPECT_EQ("goodApp", RunQuery("excellent app"));
@@ -792,8 +836,8 @@ TEST_F(AppSearchProviderTest, AppServiceIconCache) {
     return;
   }
 
-  apps::AppServiceProxyImpl* proxy =
-      apps::AppServiceProxyImpl::GetImplForTesting(profile());
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile());
   ASSERT_NE(proxy, nullptr);
 
   apps::StubIconLoader stub_icon_loader;

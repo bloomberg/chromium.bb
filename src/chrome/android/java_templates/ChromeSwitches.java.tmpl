@@ -15,6 +15,12 @@ public abstract class ChromeSwitches {{
     /** Whether fullscreen support is disabled (auto hiding controls, etc...). */
     public static final String DISABLE_FULLSCREEN = "disable-fullscreen";
 
+    /**
+     * When fullscreen support is enabled, this will disable the timer which
+     * ensures the browser controls are visible for a minium period of time.
+     */
+    public static final String DISABLE_MINIMUM_SHOW_DURATION = "disable-minimum-show-duration";
+
     /** Whether instant is disabled. */
     public static final String DISABLE_INSTANT = "disable-instant";
 
@@ -57,11 +63,6 @@ public abstract class ChromeSwitches {{
      * Disable bottom infobar-like Reader Mode panel.
      */
     public static final String DISABLE_READER_MODE_BOTTOM_BAR = "disable-reader-mode-bottom-bar";
-
-    /**
-     * Disable Lo-Fi snackbar.
-     */
-    public static final String DISABLE_LOFI_SNACKBAR = "disable-lo-fi-snackbar";
 
     /**
      * Forces the update state to be set to the given state if the value is {{@link

@@ -56,6 +56,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_context_menu_observer.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -146,7 +148,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/strings/grit/ui_strings.h"
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 #include "chrome/browser/renderer_context_menu/spelling_options_submenu_observer.h"
 #endif
 
@@ -350,13 +352,15 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_LINK_SEND_TAB_TO_SELF, 103},
        {IDC_SEND_TAB_TO_SELF_SINGLE_TARGET, 104},
        {IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET, 105},
+       {IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE, 106},
+       {IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES, 107},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 106}});
+       {0, 108}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -562,12 +566,6 @@ bool DoesInputFieldTypeSupportEmoji(
 // static
 bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
   return url.SchemeIs(content::kChromeDevToolsScheme);
-}
-
-// static
-bool RenderViewContextMenu::IsInternalResourcesURL(const GURL& url) {
-  return url.SchemeIs(content::kChromeUIScheme) &&
-         url.host_piece() == chrome::kChromeUISyncResourcesHost;
 }
 
 // static
@@ -796,7 +794,7 @@ void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
   if (url.is_empty() || !url.is_valid())
     return;
 
-  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
   scw.WriteText(FormatURLForClipboard(url));
 }
 
@@ -985,6 +983,12 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
     } else if (doc_url == GURL(chrome::kChromeUIDownloadsURL)) {
       base::RecordAction(base::UserMetricsAction(
           "Downloads_OpenUrlOfDownloadedItemFromContextMenu"));
+    } else if (doc_url == GURL(chrome::kChromeSearchLocalNtpUrl)) {
+      base::RecordAction(
+          base::UserMetricsAction("NTP_LinkOpenedFromContextMenu"));
+    } else if (doc_url.GetOrigin() == chrome::kChromeSearchMostVisitedUrl) {
+      base::RecordAction(
+          base::UserMetricsAction("MostVisited_ClickedFromContextMenu"));
     }
   }
 
@@ -1143,6 +1147,8 @@ void RenderViewContextMenu::AppendLinkItems() {
   if (!params_.link_url.is_empty()) {
     const Browser* browser = GetBrowser();
     const bool in_app = browser && browser->is_app();
+    WebContents* active_web_contents =
+        browser ? browser->tab_strip_model()->GetActiveWebContents() : nullptr;
 
     menu_model_.AddItemWithStringId(
         IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
@@ -1244,26 +1250,24 @@ void RenderViewContextMenu::AppendLinkItems() {
     }
 #endif  // !defined(OS_CHROMEOS)
     if (browser && send_tab_to_self::ShouldOfferFeatureForLink(
-                       browser->tab_strip_model()->GetActiveWebContents(),
-                       params_.link_url)) {
+                       active_web_contents, params_.link_url)) {
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kShowItem);
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
       if (send_tab_to_self::GetValidDeviceCount(GetBrowser()->profile()) == 1) {
 #if defined(OS_MACOSX)
-        menu_model_.AddItem(
-            IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET,
-            l10n_util::GetStringFUTF16(
-                IDS_LINK_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-                base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
-                    GetBrowser()->profile()))));
+        menu_model_.AddItem(IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET,
+                            l10n_util::GetStringFUTF16(
+                                IDS_LINK_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
+                                send_tab_to_self::GetSingleTargetDeviceName(
+                                    GetBrowser()->profile())));
 #else
         menu_model_.AddItemWithIcon(
             IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET,
             l10n_util::GetStringFUTF16(
                 IDS_LINK_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-                base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
-                    GetBrowser()->profile()))),
+                send_tab_to_self::GetSingleTargetDeviceName(
+                    GetBrowser()->profile())),
             *send_tab_to_self::GetImageSkia());
 #endif
         send_tab_to_self::RecordSendTabToSelfClickResult(
@@ -1274,7 +1278,7 @@ void RenderViewContextMenu::AppendLinkItems() {
       } else {
         send_tab_to_self_sub_menu_model_ =
             std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-                browser->tab_strip_model()->GetActiveWebContents(),
+                active_web_contents,
                 send_tab_to_self::SendTabToSelfMenuType::kLink,
                 params_.link_url);
 #if defined(OS_MACOSX)
@@ -1288,6 +1292,18 @@ void RenderViewContextMenu::AppendLinkItems() {
             *send_tab_to_self::GetImageSkia());
 #endif
       }
+    }
+
+    // Context menu item for click to call.
+    if (active_web_contents &&
+        ShouldOfferClickToCall(active_web_contents->GetBrowserContext(),
+                               params_.link_url)) {
+      if (!click_to_call_context_menu_observer_) {
+        click_to_call_context_menu_observer_ =
+            std::make_unique<ClickToCallContextMenuObserver>(this);
+        observers_.AddObserver(click_to_call_context_menu_observer_.get());
+      }
+      click_to_call_context_menu_observer_->InitMenu(params_);
     }
 
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
@@ -1356,28 +1372,14 @@ void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
 }
 
 void RenderViewContextMenu::AppendImageItems() {
-  std::map<std::string, std::string>::const_iterator it =
-      params_.properties.find(
-          data_reduction_proxy::chrome_proxy_content_transform_header());
-  if ((it != params_.properties.end() &&
-       it->second == data_reduction_proxy::empty_image_directive()) ||
-      (!params_.has_image_contents &&
-       base::FeatureList::IsEnabled(
-           features::kLoadBrokenImagesFromContextMenu))) {
+  if (!params_.has_image_contents &&
+      base::FeatureList::IsEnabled(
+          features::kLoadBrokenImagesFromContextMenu)) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_LOAD_IMAGE,
                                     IDS_CONTENT_CONTEXT_LOAD_IMAGE);
   }
-  DataReductionProxyChromeSettings* settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          browser_context_);
-  if (settings && settings->CanUseDataReductionProxy(params_.src_url)) {
-    menu_model_.AddItemWithStringId(
-        IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB,
-        IDS_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB);
-  } else {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB,
-                                    IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
-  }
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB,
+                                  IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEIMAGEAS,
                                   IDS_CONTENT_CONTEXT_SAVEIMAGEAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGE,
@@ -1488,19 +1490,18 @@ void RenderViewContextMenu::AppendPageItems() {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     if (send_tab_to_self::GetValidDeviceCount(GetBrowser()->profile()) == 1) {
 #if defined(OS_MACOSX)
-      menu_model_.AddItem(
-          IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
-          l10n_util::GetStringFUTF16(
-              IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-              base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
-                  GetBrowser()->profile()))));
+      menu_model_.AddItem(IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
+                          l10n_util::GetStringFUTF16(
+                              IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
+                              send_tab_to_self::GetSingleTargetDeviceName(
+                                  GetBrowser()->profile())));
 #else
       menu_model_.AddItemWithIcon(
           IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
           l10n_util::GetStringFUTF16(
               IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-              base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
-                  GetBrowser()->profile()))),
+              send_tab_to_self::GetSingleTargetDeviceName(
+                  GetBrowser()->profile())),
           *send_tab_to_self::GetImageSkia());
 #endif
       send_tab_to_self::RecordSendTabToSelfClickResult(
@@ -2547,7 +2548,7 @@ bool RenderViewContextMenu::IsPasteEnabled() const {
   std::vector<base::string16> types;
   bool ignore;
   ui::Clipboard::GetForCurrentThread()->ReadAvailableTypes(
-      ui::CLIPBOARD_TYPE_COPY_PASTE, &types, &ignore);
+      ui::ClipboardType::kCopyPaste, &types, &ignore);
   return !types.empty();
 }
 
@@ -2557,7 +2558,7 @@ bool RenderViewContextMenu::IsPasteAndMatchStyleEnabled() const {
 
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
       ui::ClipboardFormatType::GetPlainTextType(),
-      ui::CLIPBOARD_TYPE_COPY_PASTE);
+      ui::ClipboardType::kCopyPaste);
 }
 
 bool RenderViewContextMenu::IsPrintPreviewEnabled() const {
@@ -2613,8 +2614,10 @@ void RenderViewContextMenu::ExecOpenBookmarkApp() {
     return;
 
   AppLaunchParams launch_params(
-      GetProfile(), pwa, extensions::LAUNCH_CONTAINER_WINDOW,
-      WindowOpenDisposition::CURRENT_TAB, extensions::SOURCE_CONTEXT_MENU);
+      GetProfile(), pwa->id(),
+      extensions::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::CURRENT_TAB,
+      extensions::AppLaunchSource::kSourceContextMenu);
   launch_params.override_url = params_.link_url;
   OpenApplication(launch_params);
 }
@@ -2765,7 +2768,7 @@ void RenderViewContextMenu::ExecExitFullscreen() {
 }
 
 void RenderViewContextMenu::ExecCopyLinkText() {
-  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
   scw.WriteText(params_.link_text);
 }
 

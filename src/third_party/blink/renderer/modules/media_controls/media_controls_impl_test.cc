@@ -159,12 +159,6 @@ enum DownloadActionMetrics {
 
 }  // namespace
 
-static const char* kTimeToActionHistogramName =
-    "Media.Controls.Overflow.TimeToAction";
-
-static const char* kTimeToDismissHistogramName =
-    "Media.Controls.Overflow.TimeToDismiss";
-
 class MediaControlsImplTest : public PageTestBase,
                               private ScopedMediaCastOverlayButtonForTest {
  public:
@@ -245,6 +239,9 @@ class MediaControlsImplTest : public PageTestBase,
   }
   MediaControlOverflowMenuButtonElement* OverflowMenuButtonElement() const {
     return media_controls_->overflow_menu_;
+  }
+  MediaControlOverflowMenuListElement* OverflowMenuListElement() const {
+    return media_controls_->overflow_list_;
   }
 
   MockWebMediaPlayerForImpl* WebMediaPlayer() {
@@ -680,31 +677,6 @@ TEST_F(MediaControlsImplTest, TimeIndicatorsUpdatedOnSeeking) {
   // is fired.
   EXPECT_EQ(duration / 4, current_time_display->CurrentValue());
   EXPECT_EQ(duration / 4, timeline->valueAsNumber());
-}
-
-TEST_F(MediaControlsImplTest, TimelineMetricsWidth) {
-  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
-  test::RunPendingTasks();
-  SetReady();
-  EnsureSizing();
-  test::RunPendingTasks();
-
-  MediaControlTimelineElement* timeline = TimelineElement();
-  ASSERT_TRUE(IsElementVisible(*timeline));
-  ASSERT_LT(0, timeline->getBoundingClientRect()->width());
-
-  MediaControls().MediaElement().Play();
-  test::RunPendingTasks();
-
-  GetHistogramTester().ExpectUniqueSample(
-      "Media.Timeline.Width.InlineLandscape",
-      timeline->getBoundingClientRect()->width(), 1);
-  GetHistogramTester().ExpectTotalCount("Media.Timeline.Width.InlinePortrait",
-                                        0);
-  GetHistogramTester().ExpectTotalCount(
-      "Media.Timeline.Width.FullscreenLandscape", 0);
-  GetHistogramTester().ExpectTotalCount(
-      "Media.Timeline.Width.FullscreenPortrait", 0);
 }
 
 TEST_F(MediaControlsImplTest, TimelineMetricsClick) {
@@ -1216,77 +1188,6 @@ TEST_F(MediaControlsImplTest, InfinityDurationChangeHidesDurationField) {
 }
 
 TEST_F(MediaControlsImplTestWithMockScheduler,
-       OverflowMenuMetricsTimeToAction) {
-  GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 0);
-  GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 0);
-
-  // Test with the menu open for 42 seconds.
-  ToggleOverflowMenu();
-  platform()->RunForPeriodSeconds(42);
-  ClickOverflowButton();
-  GetHistogramTester().ExpectBucketCount(kTimeToActionHistogramName, 42, 1);
-  GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 1);
-
-  // Test with the menu open for 90 seconds.
-  ToggleOverflowMenu();
-  platform()->RunForPeriodSeconds(90);
-  ClickOverflowButton();
-
-  GetHistogramTester().ExpectBucketCount(kTimeToActionHistogramName, 90, 1);
-  GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 2);
-
-  // Test with the menu open for 42 seconds.
-  ToggleOverflowMenu();
-  platform()->RunForPeriodSeconds(42);
-  ClickOverflowButton();
-  GetHistogramTester().ExpectBucketCount(kTimeToActionHistogramName, 42, 2);
-  GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 3);
-
-  // Test with the menu open for 1000 seconds.
-  ToggleOverflowMenu();
-  platform()->RunForPeriodSeconds(1000);
-  ClickOverflowButton();
-  GetHistogramTester().ExpectBucketCount(kTimeToActionHistogramName, 100, 1);
-  GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 4);
-  GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 0);
-}
-
-TEST_F(MediaControlsImplTestWithMockScheduler,
-       OverflowMenuMetricsTimeToDismiss) {
-  GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 0);
-  GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 0);
-
-  // Test with the menu open for 42 seconds.
-  ToggleOverflowMenu();
-  platform()->RunForPeriodSeconds(42);
-  ToggleOverflowMenu();
-  GetHistogramTester().ExpectBucketCount(kTimeToDismissHistogramName, 42, 1);
-  GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 1);
-
-  // Test with the menu open for 90 seconds.
-  ToggleOverflowMenu();
-  platform()->RunForPeriodSeconds(90);
-  ToggleOverflowMenu();
-  GetHistogramTester().ExpectBucketCount(kTimeToDismissHistogramName, 90, 1);
-  GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 2);
-
-  // Test with the menu open for 42 seconds.
-  ToggleOverflowMenu();
-  platform()->RunForPeriodSeconds(42);
-  ToggleOverflowMenu();
-  GetHistogramTester().ExpectBucketCount(kTimeToDismissHistogramName, 42, 2);
-  GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 3);
-
-  // Test with the menu open for 1000 seconds.
-  ToggleOverflowMenu();
-  platform()->RunForPeriodSeconds(1000);
-  ToggleOverflowMenu();
-  GetHistogramTester().ExpectBucketCount(kTimeToDismissHistogramName, 100, 1);
-  GetHistogramTester().ExpectTotalCount(kTimeToDismissHistogramName, 4);
-  GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 0);
-}
-
-TEST_F(MediaControlsImplTestWithMockScheduler,
        ShowVolumeSliderAfterHoverTimerFired) {
   const double kTimeToShowVolumeSlider = 0.2;
 
@@ -1472,7 +1373,7 @@ TEST_F(MediaControlsImplTest, MediaControlsDisabledWithNoSource) {
   MediaControls().MediaElement().removeAttribute(html_names::kPreloadAttr);
   SimulateLoadedMetadata();
 
-  EXPECT_EQ(MediaControls().State(), MediaControlsImpl::kLoadingMetadata);
+  EXPECT_EQ(MediaControls().State(), MediaControlsImpl::kLoadingMetadataPaused);
 
   EXPECT_FALSE(PlayButtonElement()->hasAttribute(html_names::kDisabledAttr));
   EXPECT_FALSE(

@@ -28,9 +28,9 @@ FakeDemuxerStream::FakeDemuxerStream(bool is_audio) {
     gfx::Size size(640, 480);
     gfx::Rect rect(0, 0, 640, 480);
     video_config_.Initialize(kCodecH264, H264PROFILE_BASELINE,
-                             PIXEL_FORMAT_I420, VideoColorSpace::REC601(),
-                             kNoTransformation, size, rect, size,
-                             std::vector<uint8_t>(), Unencrypted());
+                             VideoDecoderConfig::AlphaMode::kIsOpaque,
+                             VideoColorSpace::REC601(), kNoTransformation, size,
+                             rect, size, std::vector<uint8_t>(), Unencrypted());
   }
   ON_CALL(*this, Read(_))
       .WillByDefault(Invoke(this, &FakeDemuxerStream::FakeRead));
@@ -47,6 +47,10 @@ void FakeDemuxerStream::FakeRead(const ReadCB& read_cb) {
   scoped_refptr<DecoderBuffer> buffer = buffer_queue_.front();
   buffer_queue_.pop_front();
   read_cb.Run(kOk, buffer);
+}
+
+bool FakeDemuxerStream::IsReadPending() const {
+  return !pending_read_cb_.is_null();
 }
 
 AudioDecoderConfig FakeDemuxerStream::audio_decoder_config() {

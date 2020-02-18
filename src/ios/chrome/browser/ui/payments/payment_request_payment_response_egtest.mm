@@ -16,8 +16,8 @@
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,15 +62,14 @@ const char kRequestEmailPage[] =
 - (void)testPaymentResponseNoShipping {
   // Create a billing address and a card that uses it.
   autofill::AutofillProfile billingAddress = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:billingAddress]);
+  [self addAutofillProfile:billingAddress];
   autofill::CreditCard card = autofill::test::GetCreditCard();  // visa
   card.set_billing_address_id(billingAddress.guid());
-  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
+  [self addCreditCard:card];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Tap the buy button.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -124,21 +123,20 @@ const char kRequestEmailPage[] =
 - (void)testPaymentResponseFreeShipping {
   // Create a billing address and a card that uses it.
   autofill::AutofillProfile billingAddress = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:billingAddress]);
+  [self addAutofillProfile:billingAddress];
   autofill::CreditCard card = autofill::test::GetCreditCard();  // visa
   card.set_billing_address_id(billingAddress.guid());
-  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
+  [self addCreditCard:card];
 
   // Create a shipping address with a higher frecency score, so that it is
   // selected as the default shipping address.
   autofill::AutofillProfile shippingAddress = autofill::test::GetFullProfile2();
   shippingAddress.set_use_count(2000);
-  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:shippingAddress]);
+  [self addAutofillProfile:shippingAddress];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kFreeShippingPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kFreeShippingPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Tap the buy button.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -184,16 +182,15 @@ const char kRequestEmailPage[] =
 - (void)testPaymentResponseAllContactDetails {
   // Create a billing address and a card that uses it.
   autofill::AutofillProfile billingAddress = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:billingAddress]);
+  [self addAutofillProfile:billingAddress];
 
   autofill::CreditCard card = autofill::test::GetCreditCard();  // visa
   card.set_billing_address_id(billingAddress.guid());
-  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
+  [self addCreditCard:card];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kContactDetailsPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kContactDetailsPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Tap the buy button.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -221,16 +218,15 @@ const char kRequestEmailPage[] =
 - (void)testPaymentResponseOneContactDetail {
   // Create a billing address and a card that uses it.
   autofill::AutofillProfile billingAddress = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:billingAddress]);
+  [self addAutofillProfile:billingAddress];
 
   autofill::CreditCard card = autofill::test::GetCreditCard();  // visa
   card.set_billing_address_id(billingAddress.guid());
-  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
+  [self addCreditCard:card];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kRequestEmailPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kRequestEmailPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Tap the buy button.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(

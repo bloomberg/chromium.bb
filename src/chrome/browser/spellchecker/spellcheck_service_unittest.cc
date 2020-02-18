@@ -45,7 +45,7 @@ struct TestCase {
     for (const auto& language : languages) {
       dictionary.language = language;
       dictionary.used_for_spellcheck =
-          base::ContainsValue(used_for_spellcheck, language);
+          base::Contains(used_for_spellcheck, language);
       expected_dictionaries.push_back(dictionary);
     }
   }

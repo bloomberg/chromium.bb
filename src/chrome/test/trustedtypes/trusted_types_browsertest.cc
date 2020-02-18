@@ -145,7 +145,12 @@ class TrustedTypesBrowserTest : public InProcessBrowserTest {
                                     kOriginTrialTestPublicKey);
   }
 
-  void SetUp() override { InProcessBrowserTest::SetUp(); }
+  void SetUp() override {
+    // We need to explicitly disable the feature, so that our test cases can
+    // verify whether enabling it actually works.
+    feature_list_.InitAndDisableFeature(features::kTrustedDOMTypes);
+    InProcessBrowserTest::SetUp();
+  }
 
  private:
   std::unique_ptr<net::test_server::EmbeddedTestServer> server_;

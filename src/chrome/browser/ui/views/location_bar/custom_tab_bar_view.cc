@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
@@ -27,6 +28,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -46,7 +48,7 @@
 
 namespace {
 
-constexpr SkColor kCustomTabBarViewBackgroundColor = SK_ColorWHITE;
+constexpr SkColor kDefaultCustomTabBarBackgroundColor = SK_ColorWHITE;
 
 // The frame color is different on ChromeOS and other platforms because Ash
 // specifies its own default frame color, which is not exposed through
@@ -95,36 +97,37 @@ bool ShouldDisplayUrl(content::WebContents* contents) {
 class CustomTabBarTitleOriginView : public views::View {
  public:
   explicit CustomTabBarTitleOriginView(SkColor background_color) {
-    title_label_ = new views::Label(base::string16(), CONTEXT_BODY_TEXT_LARGE,
-                                    views::style::TextStyle::STYLE_PRIMARY);
-    location_label_ = new views::Label(
+    auto title_label = std::make_unique<views::Label>(
+        base::string16(), CONTEXT_BODY_TEXT_LARGE,
+        views::style::TextStyle::STYLE_PRIMARY);
+    auto location_label = std::make_unique<views::Label>(
         base::string16(), CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY,
         gfx::DirectionalityMode::DIRECTIONALITY_AS_URL);
 
-    title_label_->SetBackgroundColor(background_color);
-    title_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
-    title_label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+    title_label->SetBackgroundColor(background_color);
+    title_label->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
+    title_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+    title_label->SetProperty(views::kFlexBehaviorKey,
+                             views::FlexSpecification::ForSizeRule(
+                                 views::MinimumFlexSizeRule::kScaleToMinimum,
+                                 views::MaximumFlexSizeRule::kPreferred));
 
-    location_label_->SetBackgroundColor(background_color);
-    location_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_HEAD);
-    location_label_->SetHorizontalAlignment(
+    location_label->SetBackgroundColor(background_color);
+    location_label->SetElideBehavior(gfx::ElideBehavior::ELIDE_HEAD);
+    location_label->SetHorizontalAlignment(
         gfx::HorizontalAlignment::ALIGN_LEFT);
+    location_label->SetProperty(views::kFlexBehaviorKey,
+                                views::FlexSpecification::ForSizeRule(
+                                    views::MinimumFlexSizeRule::kScaleToMinimum,
+                                    views::MaximumFlexSizeRule::kPreferred));
 
-    AddChildView(title_label_);
-    AddChildView(location_label_);
+    title_label_ = AddChildView(std::move(title_label));
+    location_label_ = AddChildView(std::move(location_label));
 
     auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
     layout->SetOrientation(views::LayoutOrientation::kVertical)
         .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
-        .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
-        .SetFlexForView(title_label_,
-                        views::FlexSpecification::ForSizeRule(
-                            views::MinimumFlexSizeRule::kScaleToMinimum,
-                            views::MaximumFlexSizeRule::kPreferred))
-        .SetFlexForView(location_label_,
-                        views::FlexSpecification::ForSizeRule(
-                            views::MinimumFlexSizeRule::kScaleToMinimum,
-                            views::MaximumFlexSizeRule::kPreferred));
+        .SetCrossAxisAlignment(views::LayoutAlignment::kStart);
   }
 
   void Update(base::string16 title, base::string16 location) {
@@ -183,32 +186,39 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   // If we have a theme color, use that, otherwise fall back to the default
   // frame color.
   title_bar_color_ = optional_theme_color.value_or(GetDefaultFrameColor());
-  SetBackground(views::CreateSolidBackground(kCustomTabBarViewBackgroundColor));
+
+  // In dark mode, match the default frame color.
+  background_color_ =
+      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
+          ? GetDefaultFrameColor()
+          : kDefaultCustomTabBarBackgroundColor;
+
+  SetBackground(views::CreateSolidBackground(background_color_));
 
   const SkColor foreground_color =
-      color_utils::GetColorWithMaxContrast(kCustomTabBarViewBackgroundColor);
+      color_utils::GetColorWithMaxContrast(background_color_);
 
   const gfx::FontList& font_list = views::style::GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
 
   close_button_ = AddChildView(CreateCloseButton(this, foreground_color));
 
-  location_icon_view_ = new LocationIconView(font_list, this);
-  AddChildView(location_icon_view_);
+  location_icon_view_ =
+      AddChildView(std::make_unique<LocationIconView>(font_list, this));
 
-  title_origin_view_ =
-      new CustomTabBarTitleOriginView(kCustomTabBarViewBackgroundColor);
-  AddChildView(title_origin_view_);
+  auto title_origin_view =
+      std::make_unique<CustomTabBarTitleOriginView>(background_color_);
+  title_origin_view->SetProperty(
+      views::kFlexBehaviorKey, views::FlexSpecification::ForSizeRule(
+                                   views::MinimumFlexSizeRule::kScaleToMinimum,
+                                   views::MaximumFlexSizeRule::kPreferred));
+  title_origin_view_ = AddChildView(std::move(title_origin_view));
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout_manager_->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetMainAxisAlignment(views::LayoutAlignment::kStart)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
-      .SetInteriorMargin(GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN))
-      .SetFlexForView(title_origin_view_,
-                      views::FlexSpecification::ForSizeRule(
-                          views::MinimumFlexSizeRule::kScaleToMinimum,
-                          views::MaximumFlexSizeRule::kPreferred));
+      .SetInteriorMargin(GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN));
 
   tab_strip_model_observer_.Add(browser->tab_strip_model());
 }
@@ -224,6 +234,12 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
                                     int index,
                                     TabChangeType change_type) {
   if (!contents)
+    return;
+
+  // If the toolbar should not be shown don't update the UI, as the toolbar may
+  // be animating out and it looks messy.
+  Browser* browser = chrome::FindBrowserWithWebContents(contents);
+  if (!browser->app_controller()->ShouldShowToolbar())
     return;
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
@@ -246,13 +262,19 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
   last_title_ = title;
   last_location_ = location;
 
-  // Only show the close button if the current URL is not in the application
-  // scope (it doesn't make sense to show a 'back-to-scope' button in scope).
-  close_button_->SetVisible(!extensions::IsSameScope(
-      chrome::FindBrowserWithWebContents(contents)
-          ->app_controller()
-          ->GetAppLaunchURL(),
-      contents->GetVisibleURL(), contents->GetBrowserContext()));
+  web_app::AppBrowserController* app_controller =
+      chrome::FindBrowserWithWebContents(contents)->app_controller();
+  const bool started_in_scope =
+      app_controller->IsUrlInAppScope(app_controller->initial_url());
+
+  // Only show the 'X' button if:
+  // a) The current url is not in scope (no point showing a back to app button
+  // while in scope).
+  // And b), if the window started in scope (this is
+  // important for popup windows, which may be opened outside the app).
+  close_button_->SetVisible(
+      started_in_scope &&
+      !app_controller->IsUrlInAppScope(contents->GetLastCommittedURL()));
 
   Layout();
 }
@@ -271,7 +293,8 @@ gfx::Size CustomTabBarView::CalculatePreferredSize() const {
 void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
   views::View::OnPaintBackground(canvas);
 
-  constexpr SkColor kSeparatorColor = SK_ColorBLACK;
+  SkColor separator_color =
+      color_utils::IsDark(background_color_) ? SK_ColorWHITE : SK_ColorBLACK;
   constexpr float kSeparatorOpacity = 0.15f;
 
   gfx::Rect bounds = GetLocalBounds();
@@ -282,23 +305,21 @@ void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
   bounds.Inset(0, 0, 0, 1);
 
   // Custom tab/content separator (bottom border).
-  canvas->FillRect(
-      gfx::Rect(bounds.bottom_left(), separator_size),
-      color_utils::AlphaBlend(kSeparatorColor, kCustomTabBarViewBackgroundColor,
-                              kSeparatorOpacity));
+  canvas->FillRect(gfx::Rect(bounds.bottom_left(), separator_size),
+                   color_utils::AlphaBlend(separator_color, background_color_,
+                                           kSeparatorOpacity));
 
   // Don't render the separator if there is already sufficient contrast between
   // the custom tab bar and the title bar.
   constexpr float kMaxContrastForSeparator = 1.1f;
-  if (color_utils::GetContrastRatio(kCustomTabBarViewBackgroundColor,
-                                    title_bar_color_) >
+  if (color_utils::GetContrastRatio(background_color_, title_bar_color_) >
       kMaxContrastForSeparator) {
     return;
   }
 
   // Frame/Custom tab separator (top border).
   canvas->FillRect(gfx::Rect(bounds.origin(), separator_size),
-                   color_utils::AlphaBlend(kSeparatorColor, title_bar_color_,
+                   color_utils::AlphaBlend(separator_color, title_bar_color_,
                                            kSeparatorOpacity));
 }
 
@@ -329,7 +350,10 @@ bool CustomTabBarView::ShowPageInfoDialog() {
 
 SkColor CustomTabBarView::GetSecurityChipColor(
     security_state::SecurityLevel security_level) const {
-  return GetOmniboxSecurityChipColor(OmniboxTint::LIGHT, security_level);
+  OmniboxTint tint = color_utils::IsDark(background_color_)
+                         ? OmniboxTint::DARK
+                         : OmniboxTint::LIGHT;
+  return GetOmniboxSecurityChipColor(tint, security_level);
 }
 
 gfx::ImageSkia CustomTabBarView::GetLocationIcon(
@@ -360,24 +384,24 @@ void CustomTabBarView::GoBackToAppForTesting() {
 
 void CustomTabBarView::GoBackToApp() {
   content::WebContents* web_contents = GetWebContents();
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  GURL launch_url = browser->app_controller()->GetAppLaunchURL();
+  web_app::AppBrowserController* app_controller =
+      chrome::FindBrowserWithWebContents(web_contents)->app_controller();
   content::NavigationController& controller = web_contents->GetController();
-  content::BrowserContext* context = web_contents->GetBrowserContext();
 
   content::NavigationEntry* entry = nullptr;
   int offset = 0;
 
-  // Go back until we find an in scope url, or run out of urls.
+  // Go back until we find an in scope url or run out of urls.
   while ((entry = controller.GetEntryAtOffset(offset)) &&
-         !extensions::IsSameScope(launch_url, entry->GetURL(), context)) {
+         !app_controller->IsUrlInAppScope(entry->GetURL())) {
     offset--;
   }
 
   // If there are no in scope urls, push the app's launch url and clear
   // the history.
   if (!entry) {
-    content::NavigationController::LoadURLParams load(launch_url);
+    content::NavigationController::LoadURLParams load(
+        app_controller->GetAppLaunchURL());
     load.should_clear_history_list = true;
     controller.LoadURLWithParams(load);
     return;

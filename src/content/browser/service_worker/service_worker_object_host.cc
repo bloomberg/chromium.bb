@@ -11,7 +11,6 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_type_converters.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -69,6 +68,13 @@ void StartWorkerToDispatchExtendableMessageEvent(
   // bother starting the worker and sending the event.
   if (timeout && *timeout < base::TimeDelta::FromMilliseconds(100)) {
     std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorTimeout);
+    return;
+  }
+
+  // Abort if redundant. This is not strictly needed since RunAfterStartWorker
+  // does the same, but avoids logging UMA about failed startups.
+  if (worker->is_redundant()) {
+    std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorRedundant);
     return;
   }
 
@@ -192,8 +198,7 @@ ServiceWorkerObjectHost::ServiceWorkerObjectHost(
     : context_(context),
       provider_host_(provider_host),
       provider_origin_(url::Origin::Create(provider_host->url())),
-      version_(std::move(version)),
-      weak_ptr_factory_(this) {
+      version_(std::move(version)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(context_ && provider_host_ && version_);
   DCHECK(context_->GetLiveRegistration(version_->registration_id()));
@@ -301,8 +306,9 @@ void ServiceWorkerObjectHost::DispatchExtendableMessageEvent(
                          provider_host_->AsWeakPtr()));
       return;
     }
+    case blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker:
     case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
-    // Shared workers don't yet have access to ServiceWorker objects, so they
+    // Web workers don't yet have access to ServiceWorker objects, so they
     // can't postMessage to one (https://crbug.com/371690).
     case blink::mojom::ServiceWorkerProviderType::kUnknown:
       break;

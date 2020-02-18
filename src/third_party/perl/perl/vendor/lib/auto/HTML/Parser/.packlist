@@ -5,5 +5,4 @@ C:\strawberry\perl\vendor\lib\HTML\LinkExtor.pm
 C:\strawberry\perl\vendor\lib\HTML\Parser.pm
 C:\strawberry\perl\vendor\lib\HTML\PullParser.pm
 C:\strawberry\perl\vendor\lib\HTML\TokeParser.pm
-C:\strawberry\perl\vendor\lib\auto\HTML\Parser\Parser.bs
-C:\strawberry\perl\vendor\lib\auto\HTML\Parser\Parser.dll
+C:\strawberry\perl\vendor\lib\auto\HTML\Parser\Parser.xs.dll

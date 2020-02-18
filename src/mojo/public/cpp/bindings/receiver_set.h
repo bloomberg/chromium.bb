@@ -94,7 +94,7 @@ class ReceiverSetBase {
   using Context = typename ContextTraits::Type;
   using PreDispatchCallback = base::RepeatingCallback<void(const Context&)>;
 
-  ReceiverSetBase() : weak_ptr_factory_(this) {}
+  ReceiverSetBase() = default;
 
   // Sets a callback to be invoked any time a receiver in the set is
   // disconnected. The callback is invoked *after* the receiver in question
@@ -230,6 +230,13 @@ class ReceiverSetBase {
         current_receiver());
   }
 
+  void FlushForTesting() {
+    for (const auto& it : receivers_) {
+      if (it.second)
+        it.second->FlushForTesting();
+    }
+  }
+
  private:
   friend class Entry;
 
@@ -251,6 +258,8 @@ class ReceiverSetBase {
       receiver_.set_disconnect_with_reason_handler(
           base::BindOnce(&Entry::OnDisconnect, base::Unretained(this)));
     }
+
+    void FlushForTesting() { receiver_.FlushForTesting(); }
 
    private:
     class DispatchFilter : public MessageReceiver {
@@ -329,7 +338,7 @@ class ReceiverSetBase {
   std::map<ReceiverId, std::unique_ptr<Entry>> receivers_;
   const Context* current_context_ = nullptr;
   ReceiverId current_receiver_;
-  base::WeakPtrFactory<ReceiverSetBase> weak_ptr_factory_;
+  base::WeakPtrFactory<ReceiverSetBase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ReceiverSetBase);
 };
@@ -337,14 +346,6 @@ class ReceiverSetBase {
 // Common helper for a set of Receivers which do not own their implementation.
 template <typename Interface, typename ContextType = void>
 using ReceiverSet = ReceiverSetBase<Receiver<Interface>, ContextType>;
-
-// Helper for a set of Receivers where each bound Receiver is tied to an owned
-// implementation. The |Add()| method takes a std::unique_ptr<Interface> for
-// each bound implementation.
-template <typename Interface, typename ContextType = void>
-using OwnedReceiverSet =
-    ReceiverSetBase<Receiver<Interface, UniquePtrImplRefTraits<Interface>>,
-                    ContextType>;
 
 }  // namespace mojo
 

@@ -10,12 +10,12 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/feature.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace sync_ui_util {
@@ -75,8 +75,6 @@ void GetStatusForAuthError(const GoogleServiceAuthError& auth_error,
       break;
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::SERVICE_ERROR:
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
     default:
       if (status_label) {
         *status_label = l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_ERROR);
@@ -131,8 +129,7 @@ MessageType GetStatusLabelsImpl(
   }
 
   // Then check for an auth error.
-  if (auth_error.state() != GoogleServiceAuthError::NONE &&
-      auth_error.state() != GoogleServiceAuthError::TWO_FACTOR) {
+  if (auth_error.state() != GoogleServiceAuthError::NONE) {
     GetStatusForAuthError(auth_error, status_label, link_label, action_type);
     return SYNC_ERROR;
   }
@@ -142,7 +139,7 @@ MessageType GetStatusLabelsImpl(
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
     if (status_label) {
       *status_label =
-          l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED);
+          l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED_BY_POLICY);
     }
     // TODO(crbug.com/911153): Is SYNCED correct for this case?
     return SYNCED;
@@ -152,8 +149,8 @@ MessageType GetStatusLabelsImpl(
   // set up once again.
   if (!service->GetUserSettings()->IsSyncRequested()) {
     if (status_label) {
-      *status_label =
-          l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
+      *status_label = l10n_util::GetStringUTF16(
+          IDS_SIGNED_IN_WITH_SYNC_STOPPED_VIA_DASHBOARD);
     }
     // Note: The pre-UnifiedConsent UI handles this case differently and does
     // *not* treat it as an error. If we wanted to treat it as an error, we'd
@@ -197,7 +194,7 @@ MessageType GetStatusLabelsImpl(
   // If first setup is in progress, show an "in progress" message.
   if (service->IsSetupInProgress()) {
     if (status_label) {
-      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_SETUP_IN_PROGRESS);
     }
     return PRE_SYNCED;
   }
@@ -220,25 +217,34 @@ MessageType GetStatusLabelsImpl(
 
 }  // namespace
 
+MessageType GetStatusLabels(syncer::SyncService* sync_service,
+                            signin::IdentityManager* identity_manager,
+                            bool is_user_signout_allowed,
+                            base::string16* status_label,
+                            base::string16* link_label,
+                            ActionType* action_type) {
+  if (!sync_service) {
+    // This can happen if Sync is disabled via the command line.
+    return PRE_SYNCED;
+  }
+  DCHECK(identity_manager);
+  CoreAccountInfo account_info = sync_service->GetAuthenticatedAccountInfo();
+  GoogleServiceAuthError auth_error =
+      identity_manager->GetErrorStateOfRefreshTokenForAccount(
+          account_info.account_id);
+  return GetStatusLabelsImpl(sync_service, is_user_signout_allowed, auth_error,
+                             status_label, link_label, action_type);
+}
+
 MessageType GetStatusLabels(Profile* profile,
                             base::string16* status_label,
                             base::string16* link_label,
                             ActionType* action_type) {
   DCHECK(profile);
-  syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  if (!service) {
-    // This can happen if Sync is disabled via the command line.
-    return PRE_SYNCED;
-  }
-  const bool is_user_signout_allowed =
-      signin_util::IsUserSignoutAllowedForProfile(profile);
-  CoreAccountInfo account_info = service->GetAuthenticatedAccountInfo();
-  GoogleServiceAuthError auth_error =
-      IdentityManagerFactory::GetForProfile(profile)
-          ->GetErrorStateOfRefreshTokenForAccount(account_info.account_id);
-  return GetStatusLabelsImpl(service, is_user_signout_allowed, auth_error,
-                             status_label, link_label, action_type);
+  return GetStatusLabels(ProfileSyncServiceFactory::GetForProfile(profile),
+                         IdentityManagerFactory::GetForProfile(profile),
+                         signin_util::IsUserSignoutAllowedForProfile(profile),
+                         status_label, link_label, action_type);
 }
 
 MessageType GetStatus(Profile* profile) {
@@ -254,12 +260,16 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
   const syncer::SyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
+  // If there is no SyncService (probably because sync is disabled from the
+  // command line), then there's no error to show.
+  if (!service)
+    return NO_SYNC_ERROR;
+
   // The order or priority is going to be: 1. Unrecoverable errors.
   // 2. Auth errors. 3. Outdated client errors. 4. Passphrase errors.
   // Note that an unrecoverable error is sometimes caused by the Chrome client
   // being outdated; that case is handled separately below.
-  if (service && service->HasUnrecoverableError() &&
-      !service->RequiresClientUpgrade()) {
+  if (service->HasUnrecoverableError() && !service->RequiresClientUpgrade()) {
     // Display different messages and buttons for managed accounts.
     if (!signin_util::IsUserSignoutAllowedForProfile(profile)) {
       // For a managed user, the user is directed to the signout
@@ -288,28 +298,25 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
     return AUTH_ERROR;
   }
 
-  // Check for sync errors if the sync service is enabled.
-  if (service) {
-    // Check if the Chrome client needs to be updated.
-    if (service->RequiresClientUpgrade()) {
-      *content_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_MESSAGE;
-      *button_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_BUTTON;
-      return UPGRADE_CLIENT_ERROR;
-    }
+  // Check if the Chrome client needs to be updated.
+  if (service->RequiresClientUpgrade()) {
+    *content_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_MESSAGE;
+    *button_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_BUTTON;
+    return UPGRADE_CLIENT_ERROR;
+  }
 
-    // Check for a sync passphrase error.
-    if (ShouldShowPassphraseError(service)) {
-      *content_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_MESSAGE;
-      *button_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_BUTTON;
-      return PASSPHRASE_ERROR;
-    }
+  // Check for a sync passphrase error.
+  if (ShouldShowPassphraseError(service)) {
+    *content_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_MESSAGE;
+    *button_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_BUTTON;
+    return PASSPHRASE_ERROR;
+  }
 
-    // Check for a sync confirmation error.
-    if (ShouldRequestSyncConfirmation(service)) {
-      *content_string_id = IDS_SYNC_SETTINGS_NOT_CONFIRMED;
-      *button_string_id = IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON;
-      return SETTINGS_UNCONFIRMED_ERROR;
-    }
+  // Check for a sync confirmation error.
+  if (ShouldRequestSyncConfirmation(service)) {
+    *content_string_id = IDS_SYNC_SETTINGS_NOT_CONFIRMED;
+    *button_string_id = IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON;
+    return SETTINGS_UNCONFIRMED_ERROR;
   }
 
   // There is no error.

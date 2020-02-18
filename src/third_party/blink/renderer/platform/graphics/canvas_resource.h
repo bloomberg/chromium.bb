@@ -45,11 +45,13 @@ gpu::mojom::blink::MailboxPtr SharedBitmapIdToGpuMailboxPtr(
 
 // Generic resource interface, used for locking (RAII) and recycling pixel
 // buffers of any type.
+// Note that this object may be accessed across multiple threads but not
+// concurrently. The caller is responsible to call Transfer on the object before
+// using it on a different thread.
 class PLATFORM_EXPORT CanvasResource
     : public WTF::ThreadSafeRefCounted<CanvasResource> {
  public:
   virtual ~CanvasResource();
-  virtual void Abandon() { TearDown(); }
   virtual bool IsRecycleable() const = 0;
   virtual bool IsAccelerated() const = 0;
   virtual bool SupportsAcceleratedCompositing() const = 0;
@@ -86,21 +88,37 @@ class PLATFORM_EXPORT CanvasResource
     return 0;
   }
 
-  virtual GLuint GetTextureIdForBackendTexture() {
-    // Only used for CanvasResourceSharedImage.
+  virtual GLenum TextureTarget() const {
     NOTREACHED();
     return 0;
   }
 
-  virtual GLenum TextureTarget() const {
-    NOTREACHED();
-    return 0;
+  // Called when the resource is marked lost. Losing a resource does not mean
+  // that the backing memory has been destroyed, since the resource itself keeps
+  // a ref on that memory.
+  // It means that the consumer (commonly the compositor) can not provide a sync
+  // token for the resource to be safely recycled and its the GL state may be
+  // inconsistent with when the resource was given to the compositor. So it
+  // should not be recycled for writing again but can be safely read from.
+  virtual void NotifyResourceLost() {
+    // TODO(khushalsagar): Some implementations respect the don't write again
+    // policy but some don't. Fix that once shared images replace all
+    // accelerated use-cases.
+    Abandon();
   }
 
  protected:
   CanvasResource(base::WeakPtr<CanvasResourceProvider>,
                  SkFilterQuality,
                  const CanvasColorParams&);
+
+  // Called during resource destruction if the resource is destroyed on a thread
+  // other than where it was created. This implies that no context associated
+  // cleanup can be done and any resources tied to the context may be leaked. As
+  // such, a resource must be deleted on the owning thread and this should only
+  // be called when the owning thread and its associated context was torn down
+  // before this resource could be deleted.
+  virtual void Abandon() { TearDown(); }
 
   virtual bool IsOverlayCandidate() const { return false; }
   virtual bool HasGpuMailbox() const = 0;
@@ -325,6 +343,7 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   bool IsValid() const final;
   IntSize Size() const final { return size_; }
   scoped_refptr<StaticBitmapImage> Bitmap() final;
+  void Transfer() final;
 
   bool OriginClean() const final { return is_origin_clean_; }
   void SetOriginClean(bool value) final { is_origin_clean_ = value; }
@@ -338,17 +357,44 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
     return nullptr;
   }
   void TakeSkImage(sk_sp<SkImage> image) final { NOTREACHED(); }
-  GLuint GetTextureIdForBackendTexture() override;
+  void NotifyResourceLost() final;
+
+  GLuint GetTextureIdForBackendTexture() const {
+    return owning_thread_data().texture_id;
+  }
   void WillDraw();
+  bool is_cross_thread() const {
+    return base::PlatformThread::CurrentId() != owning_thread_id_;
+  }
+  bool has_read_access() const {
+    return owning_thread_data().bitmap_image_read_refs > 0u;
+  }
+  bool is_lost() const { return owning_thread_data().is_lost; }
 
  private:
+  // These members are either only accessed on the owning thread, or are only
+  // updated on the owning thread and then are read on a different thread.
+  // We ensure to correctly update their state in Transfer, which is called
+  // before a resource is used on a different thread.
+  struct OwningThreadData {
+    bool mailbox_needs_new_sync_token = true;
+    gpu::Mailbox shared_image_mailbox;
+    gpu::SyncToken sync_token;
+    bool needs_gl_filter_reset = true;
+    size_t bitmap_image_read_refs = 0u;
+    GLuint texture_id = 0u;
+    MailboxSyncMode mailbox_sync_mode = kVerifiedSyncToken;
+    bool is_lost = false;
+  };
+
   static void OnBitmapImageDestroyed(
       scoped_refptr<CanvasResourceSharedImage> resource,
-      scoped_refptr<base::SingleThreadTaskRunner> original_task_runner,
+      bool has_read_ref_on_texture,
       const gpu::SyncToken& sync_token,
       bool is_lost);
 
   void TearDown() override;
+  void Abandon() override;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
       const override;
   const gpu::Mailbox& GetOrCreateGpuMailbox(MailboxSyncMode) override;
@@ -364,18 +410,45 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
                             const CanvasColorParams&,
                             bool is_overlay_candidate,
                             bool is_origin_top_left);
+  void SetGLFilterIfNeeded();
 
+  OwningThreadData& owning_thread_data() {
+    DCHECK_EQ(base::PlatformThread::CurrentId(), owning_thread_id_);
+    return owning_thread_data_;
+  }
+  const OwningThreadData& owning_thread_data() const {
+    DCHECK_EQ(base::PlatformThread::CurrentId(), owning_thread_id_);
+    return owning_thread_data_;
+  }
+
+  // Can be read on any thread but updated only on the owning thread.
+  const gpu::Mailbox& mailbox() const {
+    return owning_thread_data_.shared_image_mailbox;
+  }
+  bool mailbox_needs_new_sync_token() const {
+    return owning_thread_data_.mailbox_needs_new_sync_token;
+  }
+  const gpu::SyncToken& sync_token() const {
+    return owning_thread_data_.sync_token;
+  }
+
+  // This should only be de-referenced on the owning thread but may be copied
+  // on a different thread.
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
-  gpu::Mailbox shared_image_mailbox_;
-  bool mailbox_needs_new_sync_token_ = true;
-  gpu::SyncToken sync_token_;
-  MailboxSyncMode mailbox_sync_mode_ = kVerifiedSyncToken;
-  GLuint texture_id_ = 0u;
-  bool is_overlay_candidate_ = false;
-  IntSize size_;
-  bool is_origin_top_left_ = false;
 
+  // This can be accessed on any thread, irrespective of whether there are
+  // active readers or not.
   bool is_origin_clean_ = true;
+
+  // Accessed on any thread.
+  const bool is_overlay_candidate_;
+  const IntSize size_;
+  const bool is_origin_top_left_;
+  const GLenum texture_target_;
+  const base::PlatformThreadId owning_thread_id_;
+  const scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner_;
+
+  OwningThreadData owning_thread_data_;
 };
 
 // Resource type for a given opaque external resource described on construction

@@ -109,13 +109,6 @@ download::DownloadService* DownloadServiceFactory::GetForKey(
       GetInstance()->GetServiceForKey(key, true));
 }
 
-// static
-download::DownloadService* DownloadServiceFactory::GetForBrowserContext(
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return GetForKey(profile->GetProfileKey());
-}
-
 DownloadServiceFactory::DownloadServiceFactory()
     : SimpleKeyedServiceFactory("download::DownloadService",
                                 SimpleDependencyManager::GetInstance()) {

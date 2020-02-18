@@ -63,8 +63,7 @@ FrameData::FrameData(FrameTreeNodeId frame_tree_node_id)
       user_activation_status_(UserActivationStatus::kNoActivation),
       is_display_none_(false),
       visibility_(FrameVisibility::kVisible),
-      frame_size_(gfx::Size()),
-      size_intervention_status_(FrameSizeInterventionStatus::kNone) {}
+      frame_size_(gfx::Size()) {}
 
 FrameData::~FrameData() = default;
 
@@ -96,6 +95,10 @@ void FrameData::ProcessResourceLoadInFrame(
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource,
     int process_id,
     const page_load_metrics::ResourceTracker& resource_tracker) {
+  // TODO(968141): Update these metrics to include resources loaded by the
+  // memory cache.
+  if (resource->cache_type == page_load_metrics::mojom::CacheType::kMemory)
+    return;
   bool is_same_origin = origin_.IsSameOriginWith(resource->origin);
   bytes_ += resource->delta_bytes;
   network_bytes_ += resource->delta_bytes;
@@ -107,22 +110,19 @@ void FrameData::ProcessResourceLoadInFrame(
     num_resources_++;
 
   // Report cached resource body bytes to overall frame bytes.
-  if (resource->is_complete && resource->was_fetched_via_cache) {
+  if (resource->is_complete &&
+      resource->cache_type != page_load_metrics::mojom::CacheType::kNotCached) {
     bytes_ += resource->encoded_body_length;
     if (is_same_origin)
       same_origin_bytes_ += resource->encoded_body_length;
-  }
-
-  if (bytes_ > kFrameSizeInterventionByteThreshold &&
-      user_activation_status_ == UserActivationStatus::kNoActivation) {
-    size_intervention_status_ = FrameSizeInterventionStatus::kTriggered;
   }
 
   if (resource->reported_as_ad_resource) {
     ad_network_bytes_ += resource->delta_bytes;
     ad_bytes_ += resource->delta_bytes;
     // Report cached resource body bytes to overall frame bytes.
-    if (resource->is_complete && resource->was_fetched_via_cache)
+    if (resource->is_complete &&
+        resource->cache_type != page_load_metrics::mojom::CacheType::kNotCached)
       ad_bytes_ += resource->encoded_body_length;
 
     ResourceMimeType mime_type = GetResourceMimeType(resource);
@@ -247,6 +247,8 @@ void FrameData::RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const {
     builder.SetTiming_PreActivationForegroundDuration(
         pre_activation_foreground_duration().InMilliseconds());
   }
+
+  builder.SetCpuTime_PeakWindowedPercent(peak_windowed_cpu_percent_);
 
   builder
       .SetVisibility_FrameWidth(

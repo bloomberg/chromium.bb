@@ -1,6 +1,7 @@
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "content/browser/tracing/tracing_controller_impl.h"
 
 #include <memory>
@@ -29,10 +30,10 @@
 #include "content/browser/tracing/tracing_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/tracing_delegate.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/service_manager_connection.h"
 #include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/network_change_notifier.h"
@@ -55,10 +56,12 @@
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #endif
 
 #if defined(OS_ANDROID)
+#include <sys/time.h>
 #include "base/debug/elf_reader.h"
 #include "content/browser/android/tracing_controller_android.h"
 
@@ -115,29 +118,35 @@ std::string GetClockString() {
   return std::string();
 }
 
-#if defined(OS_WIN)
-// The following code detect whether the current session is a remote session.
-// See:
-// https://docs.microsoft.com/en-us/windows/desktop/TermServ/detecting-the-terminal-services-environment
-bool IsCurrentSessionRemote() {
-  static const wchar_t kRdpSettingsKeyName[] =
-      L"SYSTEM\\CurrentControlSet\\Control\\Terminal Server";
-  static const wchar_t kGlassSessionIdValueName[] = L"GlassSessionId";
-
-  if (::GetSystemMetrics(SM_REMOTESESSION))
-    return true;
-
-  DWORD glass_session_id = 0;
-  DWORD current_session_id = 0;
-  base::win::RegKey key(HKEY_LOCAL_MACHINE, kRdpSettingsKeyName, KEY_READ);
-  if (!::ProcessIdToSessionId(::GetCurrentProcessId(), &current_session_id) ||
-      !key.Valid() ||
-      key.ReadValueDW(kGlassSessionIdValueName, &glass_session_id) !=
-          ERROR_SUCCESS) {
-    return false;
+#if defined(OS_ANDROID)
+int64_t ConvertTimespecToMicros(const struct timespec& ts) {
+  // On 32-bit systems, the calculation cannot overflow int64_t.
+  // 2**32 * 1000000 + 2**64 / 1000 < 2**63
+  if (sizeof(ts.tv_sec) <= 4 && sizeof(ts.tv_nsec) <= 8) {
+    int64_t result = ts.tv_sec;
+    result *= base::Time::kMicrosecondsPerSecond;
+    result += (ts.tv_nsec / base::Time::kNanosecondsPerMicrosecond);
+    return result;
   }
+  base::CheckedNumeric<int64_t> result(ts.tv_sec);
+  result *= base::Time::kMicrosecondsPerSecond;
+  result += (ts.tv_nsec / base::Time::kNanosecondsPerMicrosecond);
+  return result.ValueOrDie();
+}
 
-  return current_session_id != glass_session_id;
+// This returns the offset between the monotonic clock and the realtime clock.
+// We could read btime from /proc/status files; however, btime can be off by
+// around 1s, which is too much. The following method should give us a better
+// approximation of the offset.
+std::string GetClockOffsetSinceEpoch() {
+  struct timespec realtime_before, monotonic, realtime_after;
+  clock_gettime(CLOCK_REALTIME, &realtime_before);
+  clock_gettime(CLOCK_MONOTONIC, &monotonic);
+  clock_gettime(CLOCK_REALTIME, &realtime_after);
+  return base::StringPrintf("%" PRId64,
+                            ConvertTimespecToMicros(realtime_before) / 2 +
+                                ConvertTimespecToMicros(realtime_after) / 2 -
+                                ConvertTimespecToMicros(monotonic));
 }
 #endif
 
@@ -195,8 +204,8 @@ void TracingControllerImpl::AddAgents() {
 
 void TracingControllerImpl::ConnectToServiceIfNeeded() {
   if (!coordinator_) {
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        tracing::mojom::kServiceName, &coordinator_);
+    GetSystemConnector()->BindInterface(tracing::mojom::kServiceName,
+                                        &coordinator_);
     coordinator_.set_connection_error_handler(base::BindOnce(
         [](TracingControllerImpl* controller) {
           controller->coordinator_.reset();
@@ -241,6 +250,8 @@ TracingControllerImpl::GenerateMetadataDict() {
       base::debug::ReadElfLibraryName(&__ehdr_start);
   if (soname)
     metadata_dict->SetString("chrome-library-name", *soname);
+  metadata_dict->SetString("clock-offset-since-epoch",
+                           GetClockOffsetSinceEpoch());
 #endif  // defined(OS_ANDROID)
   metadata_dict->SetInteger("chrome-bitness", 8 * sizeof(uintptr_t));
 
@@ -263,8 +274,8 @@ TracingControllerImpl::GenerateMetadataDict() {
     }
   }
 
-  metadata_dict->SetString("os-session",
-                           IsCurrentSessionRemote() ? "remote" : "local");
+  metadata_dict->SetString(
+      "os-session", base::win::IsCurrentSessionRemote() ? "remote" : "local");
 #endif
 
   metadata_dict->SetString("os-arch",
@@ -470,6 +481,10 @@ void TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
   // complete. See also crbug.com/944107.
   // TODO(eseckler): Avoid the nestedRunLoop here somehow.
   base::RunLoop run_loop;
+  // We may not have completed startup yet when we attempt to write the trace,
+  // and thus tasks with BEST_EFFORT may not be run. Choose a non-background
+  // priority to avoid blocking forever.
+  const base::TaskPriority kWritePriority = base::TaskPriority::USER_VISIBLE;
   bool success = StopTracing(CreateFileEndpoint(
       startup_trace_file.value(),
       base::BindRepeating(
@@ -477,7 +492,8 @@ void TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
             OnStoppedStartupTracing(trace_file);
             std::move(quit_closure).Run();
           },
-          startup_trace_file.value(), run_loop.QuitClosure())));
+          startup_trace_file.value(), run_loop.QuitClosure()),
+      kWritePriority));
   if (!success)
     return;
   run_loop.Run();

@@ -11,14 +11,14 @@
 #include "base/strings/string_split.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/feed/feed_feature_list.h"
-#include "components/variations/variations_params_manager.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -78,7 +78,7 @@ class FeedNetworkingHostTest : public testing::Test {
 
   FeedNetworkingHost* service() { return net_service_.get(); }
 
-  identity::IdentityTestEnvironment* identity_env() {
+  signin::IdentityTestEnvironment* identity_env() {
     return &identity_test_env_;
   }
 
@@ -137,10 +137,10 @@ class FeedNetworkingHostTest : public testing::Test {
   network::TestURLLoaderFactory* test_factory() { return &test_factory_; }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<FeedNetworkingHost> net_service_;
   network::TestURLLoaderFactory test_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
@@ -374,10 +374,9 @@ TEST_F(FeedNetworkingHostTest, TestDefaultTimeout) {
 }
 
 TEST_F(FeedNetworkingHostTest, TestParamTimeout) {
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{kTimeoutDurationSeconds.name, "2"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions, {{kTimeoutDurationSeconds.name, "2"}});
   MockResponseDoneCallback done_callback;
   GURL url = GURL("http://foobar.com/feed");
   std::vector<uint8_t> request_body;

@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "osp_base/macros.h"
-#include "osp_base/time.h"
+#include "osp/public/timestamp.h"
 #include "platform/api/network_interface.h"
+#include "platform/base/macros.h"
 
 namespace openscreen {
 

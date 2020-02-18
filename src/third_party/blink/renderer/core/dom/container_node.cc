@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 #include "third_party/blink/renderer/core/events/mutation_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/radio_node_list.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -59,6 +58,7 @@
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -976,16 +976,30 @@ void ContainerNode::RemovedFrom(ContainerNode& insertion_point) {
 
 DISABLE_CFI_PERF
 void ContainerNode::AttachLayoutTree(AttachContext& context) {
+  auto* element = DynamicTo<Element>(this);
+  if (element &&
+      element->StyleRecalcBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+    // Since we block style recalc on descendants of this node due to display
+    // locking, none of its descendants should have the NeedsReattachLayoutTree
+    // bit set.
+    DCHECK(!ChildNeedsReattachLayoutTree());
+    // If an element is locked we shouldn't attach the layout tree for its
+    // descendants. We should notify that we blocked a reattach so that we will
+    // correctly attach the descendants when allowed.
+    element->GetDisplayLockContext()->NotifyReattachLayoutTreeWasBlocked();
+    Node::AttachLayoutTree(context);
+    return;
+  }
   for (Node* child = firstChild(); child; child = child->nextSibling())
     child->AttachLayoutTree(context);
   Node::AttachLayoutTree(context);
   ClearChildNeedsReattachLayoutTree();
 }
 
-void ContainerNode::DetachLayoutTree(const AttachContext& context) {
+void ContainerNode::DetachLayoutTree(bool performing_reattach) {
   for (Node* child = firstChild(); child; child = child->nextSibling())
-    child->DetachLayoutTree(context);
-  Node::DetachLayoutTree(context);
+    child->DetachLayoutTree(performing_reattach);
+  Node::DetachLayoutTree(performing_reattach);
 }
 
 void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
@@ -1019,12 +1033,10 @@ void ContainerNode::CloneChildNodesFrom(const ContainerNode& node) {
     AppendChild(child.Clone(GetDocument(), CloneChildrenFlag::kClone));
 }
 
-LayoutRect ContainerNode::BoundingBox() const {
+PhysicalRect ContainerNode::BoundingBox() const {
   if (!GetLayoutObject())
-    return LayoutRect();
-  return GetLayoutObject()
-      ->AbsoluteBoundingBoxRectHandlingEmptyInline()
-      .ToLayoutRect();
+    return PhysicalRect();
+  return GetLayoutObject()->AbsoluteBoundingBoxRectHandlingEmptyInline();
 }
 
 // This is used by FrameSelection to denote when the active-state of the page
@@ -1156,42 +1168,6 @@ void ContainerNode::SetHasFocusWithinUpToAncestor(bool flag, Node* ancestor) {
   }
 }
 
-void ContainerNode::SetActive(bool down) {
-  if (down == IsActive())
-    return;
-
-  Node::SetActive(down);
-
-  if (!GetLayoutObject()) {
-    auto* this_element = DynamicTo<Element>(this);
-    if (this_element && this_element->ChildrenOrSiblingsAffectedByActive()) {
-      this_element->PseudoStateChanged(CSSSelector::kPseudoActive);
-    } else {
-      SetNeedsStyleRecalc(kLocalStyleChange,
-                          StyleChangeReasonForTracing::CreateWithExtraData(
-                              style_change_reason::kPseudoClass,
-                              style_change_extra_data::g_active));
-    }
-    return;
-  }
-
-  if (GetComputedStyle()->AffectedByActive()) {
-    StyleChangeType change_type =
-        GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
-            ? kSubtreeStyleChange
-            : kLocalStyleChange;
-    SetNeedsStyleRecalc(change_type,
-                        StyleChangeReasonForTracing::CreateWithExtraData(
-                            style_change_reason::kPseudoClass,
-                            style_change_extra_data::g_active));
-  }
-  auto* this_element = DynamicTo<Element>(this);
-  if (this_element && this_element->ChildrenOrSiblingsAffectedByActive())
-    this_element->PseudoStateChanged(CSSSelector::kPseudoActive);
-
-  GetLayoutObject()->InvalidateIfControlStateChanged(kPressedControlState);
-}
-
 void ContainerNode::SetDragged(bool new_value) {
   if (new_value == IsDragged())
     return;
@@ -1229,30 +1205,6 @@ void ContainerNode::SetDragged(bool new_value) {
   auto* this_element = DynamicTo<Element>(this);
   if (this_element && this_element->ChildrenOrSiblingsAffectedByDrag())
     this_element->PseudoStateChanged(CSSSelector::kPseudoDrag);
-}
-
-void ContainerNode::SetHovered(bool over) {
-  if (over == IsHovered())
-    return;
-
-  Node::SetHovered(over);
-
-  const ComputedStyle* style = GetComputedStyle();
-  if (!style || style->AffectedByHover()) {
-    StyleChangeType change_type = kLocalStyleChange;
-    if (style && style->HasPseudoStyle(kPseudoIdFirstLetter))
-      change_type = kSubtreeStyleChange;
-    SetNeedsStyleRecalc(change_type,
-                        StyleChangeReasonForTracing::CreateWithExtraData(
-                            style_change_reason::kPseudoClass,
-                            style_change_extra_data::g_hover));
-  }
-  auto* this_element = DynamicTo<Element>(this);
-  if (this_element && this_element->ChildrenOrSiblingsAffectedByHover())
-    this_element->PseudoStateChanged(CSSSelector::kPseudoHover);
-
-  if (LayoutObject* o = GetLayoutObject())
-    o->InvalidateIfControlStateChanged(kHoverControlState);
 }
 
 HTMLCollection* ContainerNode::Children() {
@@ -1434,24 +1386,6 @@ void ContainerNode::RebuildLayoutTreeForChild(
     whitespace_attacher.DidVisitElement(element);
 }
 
-void ContainerNode::RebuildNonDistributedChildren() {
-  // Non-distributed children are:
-  // 1. Children of shadow hosts which are not slotted (v1) or distributed to an
-  //    insertion point (v0).
-  // 2. Children of <slot> (v1) and <content> (v0) elements which are not used
-  //    as fallback content when no nodes are slotted/distributed.
-  //
-  // These children will not take part in the flat tree, but we need to walk
-  // them in order to clear dirtiness flags during layout tree rebuild. We
-  // need to use a separate WhitespaceAttacher so that DidVisitText does not
-  // mess up the WhitespaceAttacher for the layout tree rebuild of the nodes
-  // which take part in the flat tree.
-  WhitespaceAttacher whitespace_attacher;
-  for (Node* child = lastChild(); child; child = child->previousSibling())
-    RebuildLayoutTreeForChild(child, whitespace_attacher);
-  ClearChildNeedsReattachLayoutTree();
-}
-
 void ContainerNode::RebuildChildrenLayoutTrees(
     WhitespaceAttacher& whitespace_attacher) {
   DCHECK(!NeedsReattachLayoutTree());
@@ -1463,7 +1397,6 @@ void ContainerNode::RebuildChildrenLayoutTrees(
       To<V0InsertionPoint>(this)->RebuildDistributedChildrenLayoutTrees(
           whitespace_attacher);
     }
-    RebuildNonDistributedChildren();
     return;
   }
 

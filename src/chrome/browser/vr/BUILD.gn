@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
-import("//chrome/android/features/dynamic_feature_modules.gni")
+import("//chrome/android/modules/buildflags.gni")
 import("//chrome/browser/vr/features.gni")
 import("//chrome/common/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
@@ -267,6 +267,13 @@ component("vr_common") {
     "platform_controller_for_testing.h",
   ]
 
+  if (enable_arcore) {
+    sources += [
+      "service/arcore_consent_prompt_interface.cc",
+      "service/arcore_consent_prompt_interface.h",
+    ]
+  }
+
   public_deps = [
     ":vr_base",
   ]
@@ -295,10 +302,6 @@ component("vr_common") {
 
   if (is_win) {
     sources += [
-      "service/isolated_device_provider.cc",
-      "service/isolated_device_provider.h",
-      "service/vr_ui_host.cc",
-      "service/vr_ui_host.h",
       "win/graphics_delegate_win.cc",
       "win/graphics_delegate_win.h",
       "win/input_delegate_win.cc",
@@ -309,10 +312,19 @@ component("vr_common") {
       "win/vr_browser_renderer_thread_win.h",
     ]
 
-    deps += [ "//services/ws/public/cpp/gpu" ]
+    deps += [ "//services/viz/public/cpp/gpu" ]
 
     # Windows doesn't have app bundles, so include the UI directly.
     deps += [ ":vr_ui" ]
+  }
+
+  if (!is_android) {
+    sources += [
+      "service/isolated_device_provider.cc",
+      "service/isolated_device_provider.h",
+      "service/vr_ui_host.cc",
+      "service/vr_ui_host.h",
+    ]
   }
 
   defines = [ "VR_IMPLEMENTATION" ]

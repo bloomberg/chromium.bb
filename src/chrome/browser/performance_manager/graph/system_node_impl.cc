@@ -12,13 +12,11 @@
 #include "base/process/process_handle.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 
 namespace performance_manager {
-
-SystemNodeImplObserver::SystemNodeImplObserver() = default;
-SystemNodeImplObserver::~SystemNodeImplObserver() = default;
 
 ProcessResourceMeasurement::ProcessResourceMeasurement() = default;
 ProcessResourceMeasurementBatch::ProcessResourceMeasurementBatch() = default;
@@ -68,7 +66,7 @@ void SystemNodeImpl::DistributeMeasurementBatch(
 
       // Distribute the CPU delta to the pages that own the frames in this
       // process.
-      base::flat_set<FrameNodeImpl*> frames = process->GetFrameNodes();
+      const auto& frames = process->frame_nodes();
       if (!frames.empty()) {
         // To make sure we don't systemically truncate the remainder of the
         // delta, simply subtract the remainder and "hold it back" from the
@@ -117,7 +115,7 @@ void SystemNodeImpl::DistributeMeasurementBatch(
   }
 
   // Grab all the processes to see if there were any we didn't get data for.
-  std::vector<ProcessNodeImpl*> processes = graph_->GetAllProcessNodes();
+  std::vector<ProcessNodeImpl*> processes = graph_->GetAllProcessNodeImpls();
 
   if (found_processes.size() != processes.size()) {
     // We didn't find them all, compute the difference and clear the data for
@@ -140,12 +138,12 @@ void SystemNodeImpl::DistributeMeasurementBatch(
   // Iterate through the pages involved to distribute the memory to them.
   for (PageNodeImpl* page : pages) {
     uint64_t private_footprint_kb_sum = 0;
-    const auto& frames = page->GetFrameNodes();
+    auto frames = GraphImplOperations::GetFrameNodes(page);
     for (FrameNodeImpl* frame : frames) {
       ProcessNodeImpl* process = frame->process_node();
       if (process) {
         private_footprint_kb_sum +=
-            process->private_footprint_kb() / process->GetFrameNodes().size();
+            process->private_footprint_kb() / process->frame_nodes().size();
       }
     }
 
@@ -156,9 +154,8 @@ void SystemNodeImpl::DistributeMeasurementBatch(
 
   for (auto& observer : observers())
     observer.OnProcessCPUUsageReady(this);
+  for (auto* observer : GetObservers())
+    observer->OnProcessCPUUsageReady(this);
 }
-
-SystemNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
-SystemNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

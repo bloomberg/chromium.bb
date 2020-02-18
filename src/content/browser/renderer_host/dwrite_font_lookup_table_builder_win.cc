@@ -6,7 +6,6 @@
 
 #include <dwrite.h>
 #include <dwrite_2.h>
-#include <algorithm>
 #include <set>
 #include <utility>
 
@@ -34,6 +33,8 @@
 #include "content/browser/renderer_host/dwrite_font_uma_logging_win.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_features.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/font_table_matcher.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/font_table_persistence.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/icu_fold_case_util.h"
 #include "ui/gfx/win/direct_write.h"
 
@@ -228,16 +229,6 @@ void DWriteFontLookupTableBuilder::OverrideDWriteVersionChecksForTesting() {
   factory3_.Reset();
 }
 
-bool DWriteFontLookupTableBuilder::EnsureFontUniqueNameTableForTesting() {
-  TRACE_EVENT0("dwrite,fonts",
-               "DWriteFontLookupTableBuilder::EnsureFontUniqueNameTable");
-  DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
-  DCHECK(!HasDWriteUniqueFontLookups());
-  base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
-  font_table_built_.Wait();
-  return IsFontUniqueNameTableValid();
-}
-
 base::TimeDelta DWriteFontLookupTableBuilder::IndexingTimeout() {
   return font_indexing_timeout_;
 }
@@ -262,64 +253,17 @@ bool DWriteFontLookupTableBuilder::PersistToFile() {
 
   if (!IsFontUniqueNameTableValid())
     return false;
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::MAY_BLOCK);
-  base::FilePath table_cache_file_path = TableCacheFilePath();
-  if (table_cache_file_path.empty())
-    return false;
-  base::File table_cache_file(
-      table_cache_file_path,
-      base::File::FLAG_CREATE_ALWAYS | base::File::Flags::FLAG_WRITE);
-  if (!table_cache_file.IsValid())
-    return false;
-  if (table_cache_file.Write(
-          0, static_cast<char*>(font_table_memory_.mapping.memory()),
-          font_table_memory_.mapping.size()) == -1) {
-    table_cache_file.SetLength(0);
-    return false;
-  }
-  return true;
+
+  return blink::font_table_persistence::PersistToFile(font_table_memory_,
+                                                      TableCacheFilePath());
 }
 
 bool DWriteFontLookupTableBuilder::LoadFromFile() {
   DCHECK(caching_enabled_);
   DCHECK(!IsFontUniqueNameTableValid());
-  base::File table_cache_file;
-  {
-    base::ScopedBlockingCall scoped_blocking_call(
-        FROM_HERE, base::BlockingType::MAY_BLOCK);
-    base::FilePath table_cache_file_path = TableCacheFilePath();
-    if (table_cache_file_path.empty())
-      return false;
-    table_cache_file =
-        base::File(table_cache_file_path,
-                   base::File::FLAG_OPEN | base::File::Flags::FLAG_READ);
-    if (!table_cache_file.IsValid())
-      return false;
-  }
-  font_table_memory_ =
-      base::ReadOnlySharedMemoryRegion::Create(table_cache_file.GetLength());
-  if (!IsFontUniqueNameTableValid())
-    return false;
-  int read_result = table_cache_file.Read(
-      0, static_cast<char*>(font_table_memory_.mapping.memory()),
-      table_cache_file.GetLength());
-  // If no bytes were read or Read() returned -1 we are not able to reconstruct
-  // a font table from the cached file.
-  if (read_result <= 0) {
-    font_table_memory_ = base::MappedReadOnlyRegion();
-    return false;
-  }
 
-  blink::FontUniqueNameTable font_table;
-  if (!font_table.ParseFromArray(font_table_memory_.mapping.memory(),
-                                 font_table_memory_.mapping.size())) {
-    // TODO(https://crbug.com/941434): Track failure to parse cache in UMA data.
-    font_table_memory_ = base::MappedReadOnlyRegion();
-    return false;
-  }
-
-  return true;
+  return blink::font_table_persistence::LoadFromFile(TableCacheFilePath(),
+                                                     &font_table_memory_);
 }
 
 DWriteFontLookupTableBuilder::CallbackOnTaskRunner::CallbackOnTaskRunner(
@@ -345,8 +289,12 @@ void DWriteFontLookupTableBuilder::QueueShareMemoryRegionWhenReady(
   TRACE_EVENT0("dwrite,fonts",
                "DWriteFontLookupTableBuilder::QueueShareMemoryRegionWhenReady");
   DCHECK(!HasDWriteUniqueFontLookups());
-  DCHECK(!font_table_built_.IsSignaled());
   pending_callbacks_.emplace_back(std::move(task_runner), std::move(callback));
+  // Cover for the condition in which the font table becomes ready briefly after
+  // a renderer asking for GetUniqueNameLookupTableIfAvailable(), receiving the
+  // information that it wasn't ready.
+  if (font_table_built_.IsSignaled())
+    PostCallbacks();
 }
 
 bool DWriteFontLookupTableBuilder::FontUniqueNameTableReady() {
@@ -638,13 +586,8 @@ void DWriteFontLookupTableBuilder::FinalizeFontTable() {
 
   unsigned num_font_files = font_unique_name_table->fonts_size();
 
-  // Sort names for using binary search on this proto in FontTableMatcher.
-  std::sort(font_unique_name_table->mutable_name_map()->begin(),
-            font_unique_name_table->mutable_name_map()->end(),
-            [](const blink::FontUniqueNameTable_UniqueNameToFontMapping& a,
-               const blink::FontUniqueNameTable_UniqueNameToFontMapping& b) {
-              return a.font_name() < b.font_name();
-            });
+  blink::FontTableMatcher::SortUniqueNameTableForSearch(
+      font_unique_name_table.get());
 
   font_table_memory_ = base::ReadOnlySharedMemoryRegion::Create(
       font_unique_name_table->ByteSizeLong());

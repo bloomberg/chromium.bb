@@ -160,6 +160,9 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   void* MapRegion();
   void UnmapRegion();
 
+  // Provide a hint for MapRegion() on where to place the GWP-ASan region.
+  void* MapRegionHint() const;
+
   // Returns the size of the virtual memory region used to store allocations.
   size_t RegionSize() const;
 

@@ -49,17 +49,6 @@ const base::Feature kViewsTaskManager{"ViewsTaskManager",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
-#if !defined(OS_ANDROID)
-const base::Feature kAppBanners {
-  "AppBanners",
-#if defined(OS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT,
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT,
-#endif  // defined(OS_CHROMEOS)
-};
-#endif  // !defined(OS_ANDROID)
-
 #if defined(OS_ANDROID)
 // Enables messaging in site permissions UI informing user when notifications
 // are disabled for the entire app.
@@ -134,6 +123,10 @@ const base::Feature kBrowserHangFixesExperiment{
 const base::Feature kBundledConnectionHelpFeature{
     "BundledConnectionHelp", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the UI to configure caption settings.
+const base::Feature kCaptionSettings{"CaptionSettings",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if !defined(OS_ANDROID)
 // Enables logging UKMs for background tab activity by TabActivityWatcher.
 const base::Feature kTabMetricsLogging{"TabMetricsLogging",
@@ -189,18 +182,23 @@ const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};
 // Enable additional Crostini session status reporting for
 // managed devices only, i.e. reports of installed apps and kernel version.
 const base::Feature kCrostiniAdditionalEnterpriseReporting{
-    "CrostiniAdditionalEnterpriseReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CrostiniAdditionalEnterpriseReporting", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables not installed apps/packages to be searched for and installed in the
-// App launcher.
-const base::Feature kCrostiniAppSearch{"CrostiniAppSearch",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+// Enable advanced access controls for Crostini-related features
+// (e.g. restricting VM CLI tools access, restricting Crostini root access).
+const base::Feature kCrostiniAdvancedAccessControls{
+    "CrostiniAdvancedAccessControls", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables an uninstall option in the right-click menu of Crostini (Linux)
 // applications.
 // TODO(crbug.com/955797): Remove this flag entirely.
 const base::Feature kCrostiniAppUninstallGui{"CrostiniAppUninstallGui",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables infrastructure for applying Ansible playbook to default Crostini
+// container.
+const base::Feature kCrostiniAnsibleInfrastructure{
+    "CrostiniAnsibleInfrastructure", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the UI overhaul for Cups Printers in settings page.
 const base::Feature kCupsPrintersUiOverhaul{"CupsPrintersUiOverhaul",
@@ -217,25 +215,48 @@ const base::Feature kUsageTimeLimitPolicy{"UsageTimeLimitPolicy",
 // More info about the project may be found here:
 // https://docs.google.com/document/d/18Ijj8YlC8Q3EWRzLspIi2dGxg4vIBVe5sJgMPt9SWYo
 const base::Feature kWilcoDtc{"WilcoDtc", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable uploading of a zip archive of system logs instead of individual files.
+const base::Feature kUploadZippedSystemLogs{"UploadZippedSystemLogs",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Enables or disables Desktop PWAs capturing links.
-const base::Feature kDesktopPWAsLinkCapturing{
-    "DesktopPWAsLinkCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+// Enable chrome://terminal in Chrome OS or Linux.
+const base::Feature kTerminalSystemApp{"TerminalSystemApp",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
-// Determines whether in scope requests are always opened in the same window.
-const base::Feature kDesktopPWAsStayInWindow{"DesktopPWAsStayInWindow",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+// Enable using tab sharing infobars for desktop capture.
+const base::Feature kDesktopCaptureTabSharingInfobar{
+    "DesktopCaptureTabSharingInfobar", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables new Desktop PWAs implementation that does not use
 // extensions.
 const base::Feature kDesktopPWAsWithoutExtensions{
     "DesktopPWAsWithoutExtensions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables local PWA installs to update their app manifest data if the site
+// changes its manifest.
+const base::Feature kDesktopPWAsLocalUpdating{"DesktopPWAsLocalUpdating",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables or disables new Desktop PWAs unified |InstallManager| that does not
 // use extensions.
 const base::Feature kDesktopPWAsUnifiedInstall{
-    "DesktopPWAsUnifiedInstall", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DesktopPWAsUnifiedInstall", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables or disables unconditional use of new Desktop PWAs launch manager
+// for all bookmark apps (including extensions-based bookmark apps).
+// Only relevant if kDesktopPWAsWithoutExtensions is disabled.
+const base::Feature kDesktopPWAsUnifiedLaunch{
+    "DesktopPWAsUnifiedLaunch", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables new Desktop PWAs Unified Sync and Storage (USS)
+// implementation that does not use extensions. Requires
+// kDesktopPWAsWithoutExtensions to be enabled.
+const base::Feature kDesktopPWAsUSS{"DesktopPWAsUSS",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the ability to install PWAs from the omnibox.
 const base::Feature kDesktopPWAsOmniboxInstall{
@@ -255,6 +276,24 @@ const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
 // If enabled, Drive will use FCM for its invalidations.
 const base::Feature kDriveFcmInvalidations{"DriveFCMInvalidations",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, policies will use FCM (Firebase Cloud Messaging) for its
+// invalidations.
+const base::Feature kPolicyFcmInvalidations{"PolicyFCMInvalidations",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables ambient authentication in incognito mode.
+// TODO(https://crbug.com/458508): Change to disabled by default after proper
+// notice to use the policy to activate when required, M79-M80.
+const base::Feature kEnableAmbientAuthenticationInIncognito{
+    "EnableAmbientAuthenticationInIncognito", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables ambient authentication in guest sessions.
+// TODO(https://crbug.com/458508): Change to disabled by default after proper
+// notice to use the policy to activate when required, M79-M80.
+const base::Feature kEnableAmbientAuthenticationInGuestSession{
+    "EnableAmbientAuthenticationInGuestSession",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Show the number of open incognito windows besides incognito icon on the
 // toolbar.
@@ -300,6 +339,11 @@ const base::Feature kWindowsMixedReality{"WindowsMixedReality",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // ENABLE_WINDOWS_MR
 
+#if BUILDFLAG(ENABLE_OPENXR)
+// Controls OpenXR support.
+const base::Feature kOpenXR{"OpenXR", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // ENABLE_OPENXR
+
 #endif  // BUILDFLAG(ENABLE_VR)
 
 #if defined(OS_WIN)
@@ -339,18 +383,11 @@ const base::Feature kHappinessTrackingSurveysForDesktop{
 const base::Feature kHTTPAuthCommittedInterstitials{
     "HTTPAuthCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if !defined(OS_ANDROID)
-// Replaces the WebUI Cast dialog with a Views toolkit one.
-const base::Feature kViewsCastDialog{"ViewsCastDialog",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // !defined(OS_ANDROID)
-
 // Enables navigation suggestions UI for lookalike URLs (e.g. internationalized
 // domain names that are visually similar to popular domains or to domains with
-// engagement score, such as googlé.com). This is prefixed with V2 because the
-// client logic handling the feature was changed.
+// engagement score, such as googlé.com).
 const base::Feature kLookalikeUrlNavigationSuggestionsUI{
-    "LookalikeUrlNavigationSuggestionsUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LookalikeUrlNavigationSuggestionsUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 // A feature that controls whether Chrome warns about incompatible applications.
@@ -360,6 +397,19 @@ const base::Feature kIncompatibleApplicationsWarning{
     "IncompatibleApplicationsWarning", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_CHROMEOS)
+// Enables scraping of password-expiry information during SAML login flow, which
+// can lead to an in-session flow for changing SAML password if it has expired.
+// This is safe to enable by default since it does not cause the password-expiry
+// information to be stored, or any user-visible change - in order for anything
+// to happen, the domain administrator has to intentionally send this extra
+// info in the SAML response, and enable the InSessionPasswordChange policy.
+// So, this feature is just for disabling the scraping code if it causes
+// any unforeseen issues.
+const base::Feature kInSessionPasswordChange{"InSessionPasswordChange",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_ANDROID)
 // Enables or disables the installable ambient badge infobar.
 const base::Feature kInstallableAmbientBadgeInfoBar{
@@ -368,15 +418,14 @@ const base::Feature kInstallableAmbientBadgeInfoBar{
 
 #if !defined(OS_ANDROID)
 // Enables or disables intent picker.
-const base::Feature kIntentPicker {
-  "IntentPicker",
-#if defined(OS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif  //  defined(OS_CHROMEOS)
-};
+const base::Feature kIntentPicker{"IntentPicker",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS)
+const base::Feature kKernelnextVMs{"KernelnextVMs",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Uses KidsManagement UrlClassification instead of SafeSearch for supervised
 // accounts.
@@ -423,6 +472,11 @@ const base::Feature kManagedGuestSessionNotification{
     "ManagedGuestSessionNotification", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if !defined(OS_ANDROID)
+const base::Feature kOnConnectNative{"OnConnectNative",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables or disables modal permission prompts.
 // TODO(https://crbug.com/935900): Remove this.
 const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
@@ -445,7 +499,7 @@ const base::Feature kNewNetErrorPageUI{"NewNetErrorPageUI",
 
 #if !defined(OS_ANDROID)
 const base::Feature kNewTabLoadingAnimation{"NewTabLoadingAnimation",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !OS_ANDROID
 
 #if defined(OS_POSIX)
@@ -471,6 +525,9 @@ const base::Feature kUseNewAcceptLanguageHeader{
 // user device.
 const base::Feature kParentAccessCode{"ParentAccessCode",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kParentAccessCodeForTimeChange{
+    "ParentAccessCodeForTimeChange", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Delegate permissions to cross-origin iframes when the feature has been
@@ -488,7 +545,7 @@ const base::Feature kDisablePostScriptPrinting{
 // Allows prediction operations (e.g., prefetching) on all connection types.
 const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes{
     "PredictivePrefetchingAllowedOnAllConnectionTypes",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allows Chrome to do preconnect when prerender fails.
 const base::Feature kPrerenderFallbackToPreconnect{
@@ -530,14 +587,13 @@ const base::Feature kRemoveSupervisedUsersOnStartup{
 const base::Feature kLoadBrokenImagesFromContextMenu{
     "LoadBrokenImagesFromContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to show Safety Tip warnings on low-reputation sites.
+const base::Feature kSafetyTipUI{"SafetyTip",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the user is prompted when sites request attestation.
 const base::Feature kSecurityKeyAttestationPrompt{
     "SecurityKeyAttestationPrompt", base::FEATURE_ENABLED_BY_DEFAULT};
-
-#if !defined(OS_ANDROID)
-const base::Feature kShowManagedUi{"ShowManagedUi",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 #if defined(OS_ANDROID)
 const base::Feature kShowTrustedPublisherURL{"ShowTrustedPublisherURL",
@@ -583,15 +639,6 @@ const base::Feature kSitePerProcessOnlyForHighMemoryClients{
 const char kSitePerProcessOnlyForHighMemoryClientsParamName[] =
     "site-per-process-low-memory-cutoff-mb";
 
-// The site settings all sites list page in the Chrome settings UI.
-const base::Feature kSiteSettings{"SiteSettings",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables committed error pages instead of transient navigation entries for
-// SSL interstitial error pages (i.e. certificate errors).
-const base::Feature kSSLCommittedInterstitials{
-    "SSLCommittedInterstitials", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 // Enables or disables automatic setup of USB printers.
 const base::Feature kStreamlinedUsbPrinterSetup{
@@ -606,11 +653,6 @@ const base::Feature kNativeSmb{"NativeSmb", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSoundContentSetting{"SoundContentSetting",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disabled committed interstitials for Supervised User
-// interstitials.
-const base::Feature kSupervisedUserCommittedInterstitials{
-    "SupervisedUserCommittedInterstitials", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 // Enables or disables chrome://sys-internals.
 const base::Feature kSysInternals{"SysInternals",
@@ -619,7 +661,7 @@ const base::Feature kSysInternals{"SysInternals",
 
 // Enables or disables the System Web App manager.
 const base::Feature kSystemWebApps{"SystemWebApps",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the App Management UI.
 const base::Feature kAppManagement{"AppManagement",
@@ -761,6 +803,17 @@ const base::Feature kWebRtcRemoteEventLogGzipped{
     "WebRtcRemoteEventLogGzipped", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// Whether to enable "dark mode" enhancements in Mac Mojave or Windows 10 for
+// UIs implemented with web technologies.
+const base::Feature kWebUIDarkMode {
+  "WebUIDarkMode",
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
+};
+
 #if defined(OS_WIN)
 // Enables the accelerated default browser flow for Windows 10.
 const base::Feature kWin10AcceleratedDefaultBrowserFlow{
@@ -772,10 +825,4 @@ const base::Feature kWin10AcceleratedDefaultBrowserFlow{
 const base::Feature kWriteBasicSystemProfileToPersistentHistogramsFile{
     "WriteBasicSystemProfileToPersistentHistogramsFile",
     base::FEATURE_ENABLED_BY_DEFAULT};
-
-#if defined(OS_ANDROID)
-// Enables showing alternative incognito strings.
-const base::Feature kIncognitoStrings{"IncognitoStrings",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_ANDROID)
 }  // namespace features

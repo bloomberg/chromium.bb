@@ -284,6 +284,7 @@ class EntryList {
     this.isDirectory = true;
     this.isFile = false;
     this.type_name = 'EntryList';
+    this.fullPath = '/';
   }
 
   /**
@@ -473,6 +474,9 @@ class VolumeEntry {
       });
     }
     this.type_name = 'VolumeEntry';
+
+    // TODO(lucmult): consider deriving this from volumeInfo.
+    this.rootType = null;
   }
 
   /**
@@ -484,11 +488,11 @@ class VolumeEntry {
   }
 
   /**
-   * @return {!FileSystem} FileSystem for this volume.
+   * @return {?FileSystem} FileSystem for this volume.
    * This method is defined on Entry.
    */
   get filesystem() {
-    return this.rootEntry_.filesystem;
+    return this.rootEntry_ ? this.rootEntry_.filesystem : null;
   }
 
   /**
@@ -507,13 +511,16 @@ class VolumeEntry {
    * @override.
    */
   get fullPath() {
-    return this.rootEntry_.fullPath;
+    return this.rootEntry_ ? this.rootEntry_.fullPath : '';
   }
   get isDirectory() {
-    return this.rootEntry_.isDirectory;
+    // Defaults to true if root entry isn't resolved yet, because a VolumeEntry
+    // is like a directory.
+    return this.rootEntry_ ? this.rootEntry_.isDirectory : true;
   }
   get isFile() {
-    return this.rootEntry_.isFile;
+    // Defaults to false if root entry isn't resolved yet.
+    return this.rootEntry_ ? this.rootEntry_.isFile : false;
   }
 
   /**
@@ -560,7 +567,7 @@ class VolumeEntry {
    * @override
    */
   toURL() {
-    return this.rootEntry_.toURL();
+    return this.rootEntry_ ? this.rootEntry_.toURL() : '';
   }
 
   /**
@@ -749,6 +756,8 @@ class FakeEntry {
      * page can't be checked with "instanceof".
      */
     this.type_name = 'FakeEntry';
+
+    this.fullPath = '/';
   }
 
   /**

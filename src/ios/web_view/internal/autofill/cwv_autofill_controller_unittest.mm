@@ -22,18 +22,18 @@
 #import "ios/web/public/deprecated/crw_test_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/test/fakes/fake_web_frame.h"
+#import "ios/web/public/test/fakes/fake_web_frames_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
+#include "ios/web_view/test/test_with_locale_and_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
-#include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -53,19 +53,15 @@ NSString* const kTestFieldValue = @"FieldValue";
 
 }  // namespace
 
-class CWVAutofillControllerTest : public PlatformTest {
+class CWVAutofillControllerTest : public TestWithLocaleAndResources {
  protected:
-  CWVAutofillControllerTest()
-      : browser_state_(
-            // Using comma-operator to perform required initialization before
-            // creating browser_state.
-            (InitializeLocaleAndResources(), /*off_the_record=*/false)) {
+  CWVAutofillControllerTest() : browser_state_(/*off_the_record=*/false) {
     web::SetWebClient(&web_client_);
 
-    web_state_.SetBrowserState(&browser_state_);
+    test_web_state_.SetBrowserState(&browser_state_);
     CRWTestJSInjectionReceiver* injectionReceiver =
         [[CRWTestJSInjectionReceiver alloc] init];
-    web_state_.SetJSInjectionReceiver(injectionReceiver);
+    test_web_state_.SetJSInjectionReceiver(injectionReceiver);
 
     js_autofill_manager_ =
         [[FakeJSAutofillManager alloc] initWithReceiver:injectionReceiver];
@@ -73,33 +69,32 @@ class CWVAutofillControllerTest : public PlatformTest {
 
     autofill_agent_ =
         [[FakeAutofillAgent alloc] initWithPrefService:browser_state_.GetPrefs()
-                                              webState:&web_state_];
+                                              webState:&test_web_state_];
 
-    web_state_.CreateWebFramesManager();
+    auto frames_manager = std::make_unique<web::FakeWebFramesManager>();
+    fake_web_frames_manager_ = frames_manager.get();
+    test_web_state_.SetWebFramesManager(std::move(frames_manager));
+
     autofill_controller_ =
-        [[CWVAutofillController alloc] initWithWebState:&web_state_
+        [[CWVAutofillController alloc] initWithWebState:&test_web_state_
                                           autofillAgent:autofill_agent_
                                       JSAutofillManager:js_autofill_manager_
                                     JSSuggestionManager:js_suggestion_manager_];
     test_form_activity_tab_helper_ =
-        std::make_unique<autofill::TestFormActivityTabHelper>(&web_state_);
+        std::make_unique<autofill::TestFormActivityTabHelper>(&test_web_state_);
   }
 
-  ~CWVAutofillControllerTest() override {
-    ui::ResourceBundle::CleanupSharedInstance();
-  }
-
-  static void InitializeLocaleAndResources() {
-    l10n_util::OverrideLocaleWithCocoaLocale();
-    ui::ResourceBundle::InitSharedInstanceWithLocale(
-        l10n_util::GetLocaleOverride(), /*delegate=*/nullptr,
-        ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+  void AddWebFrame(std::unique_ptr<web::WebFrame> frame) {
+    web::WebFrame* frame_ptr = frame.get();
+    fake_web_frames_manager_->AddWebFrame(std::move(frame));
+    test_web_state_.OnWebFrameDidBecomeAvailable(frame_ptr);
   }
 
   web::WebClient web_client_;
   web::TestWebThreadBundle web_thread_bundle_;
   ios_web_view::WebViewBrowserState browser_state_;
-  web::TestWebState web_state_;
+  web::TestWebState test_web_state_;
+  web::FakeWebFramesManager* fake_web_frames_manager_;
   CWVAutofillController* autofill_controller_;
   FakeAutofillAgent* autofill_agent_;
   FakeJSAutofillManager* js_autofill_manager_;
@@ -174,7 +169,7 @@ TEST_F(CWVAutofillControllerTest, FillSuggestion) {
 TEST_F(CWVAutofillControllerTest, ClearForm) {
   auto frame = std::make_unique<web::FakeWebFrame>(
       base::SysNSStringToUTF8(kTestFrameId), true, GURL::EmptyGURL());
-  web_state_.AddWebFrame(std::move(frame));
+  AddWebFrame(std::move(frame));
   __block BOOL clear_form_completion_was_called = NO;
   [autofill_controller_ clearFormWithName:kTestFormName
                           fieldIdentifier:kTestFieldIdentifier

@@ -38,10 +38,6 @@ CPDF_ShadingPattern::CPDF_ShadingPattern(CPDF_Document* pDoc,
 
 CPDF_ShadingPattern::~CPDF_ShadingPattern() = default;
 
-CPDF_TilingPattern* CPDF_ShadingPattern::AsTilingPattern() {
-  return nullptr;
-}
-
 CPDF_ShadingPattern* CPDF_ShadingPattern::AsShadingPattern() {
   return this;
 }
@@ -71,7 +67,7 @@ bool CPDF_ShadingPattern::Load() {
   if (!pCSObj)
     return false;
 
-  CPDF_DocPageData* pDocPageData = document()->GetPageData();
+  auto* pDocPageData = CPDF_DocPageData::FromDocument(document());
   m_pCS = pDocPageData->GetColorSpace(pCSObj, nullptr);
 
   // The color space is required and cannot be a Pattern space, according to the

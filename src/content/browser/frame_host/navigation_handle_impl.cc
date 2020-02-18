@@ -5,8 +5,13 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 
 #include "base/bind.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
+#include "base/system/sys_info.h"
+#include "build/build_config.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -17,14 +22,17 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/network_service_instance_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/navigation_ui_data.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/net_errors.h"
@@ -44,80 +52,43 @@ constexpr base::TimeDelta kDefaultCommitTimeout =
 // Overrideable via SetCommitTimeoutForTesting.
 base::TimeDelta g_commit_timeout = kDefaultCommitTimeout;
 
-// Use this to get a new unique ID for a NavigationHandle during construction.
-// The returned ID is guaranteed to be nonzero (zero is the "no ID" indicator).
-int64_t CreateUniqueHandleID() {
-  static int64_t unique_id_counter = 0;
-  return ++unique_id_counter;
-}
-
-// LOG_NAVIGATION_TIMING_HISTOGRAM logs |value| for "Navigation.<histogram>" UMA
-// as well as supplementary UMAs (depending on |transition| and |is_background|)
-// for BackForward/Reload/NewNavigation variants.
+// Corresponds to the "NavigationURLScheme" histogram enumeration type in
+// src/tools/metrics/histograms/enums.xml.
 //
-// kMaxTime and kBuckets constants are consistent with
-// UMA_HISTOGRAM_MEDIUM_TIMES, but a custom kMinTime is used for high fidelity
-// near the low end of measured values.
-//
-// TODO(zetamoo): This is duplicated in navigation_request. Never update one
-// without the other. And remove this one.
-//
-// TODO(csharrison,nasko): This macro is incorrect for subframe navigations,
-// which will only have subframe-specific transition types. This means that all
-// subframes currently are tagged as NewNavigations.
-#define LOG_NAVIGATION_TIMING_HISTOGRAM(histogram, transition, is_background, \
-                                        duration)                             \
-  do {                                                                        \
-    const base::TimeDelta kMinTime = base::TimeDelta::FromMilliseconds(1);    \
-    const base::TimeDelta kMaxTime = base::TimeDelta::FromMinutes(3);         \
-    const int kBuckets = 50;                                                  \
-    UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram, duration, kMinTime,   \
-                               kMaxTime, kBuckets);                           \
-    if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {                      \
-      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".BackForward",      \
-                                 duration, kMinTime, kMaxTime, kBuckets);     \
-    } else if (ui::PageTransitionCoreTypeIs(transition,                       \
-                                            ui::PAGE_TRANSITION_RELOAD)) {    \
-      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".Reload", duration, \
-                                 kMinTime, kMaxTime, kBuckets);               \
-    } else if (ui::PageTransitionIsNewNavigation(transition)) {               \
-      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".NewNavigation",    \
-                                 duration, kMinTime, kMaxTime, kBuckets);     \
-    } else {                                                                  \
-      NOTREACHED() << "Invalid page transition: " << transition;              \
-    }                                                                         \
-    if (is_background.has_value()) {                                          \
-      if (is_background.value()) {                                            \
-        UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram                    \
-                                   ".BackgroundProcessPriority",              \
-                                   duration, kMinTime, kMaxTime, kBuckets);   \
-      } else {                                                                \
-        UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram                    \
-                                   ".ForegroundProcessPriority",              \
-                                   duration, kMinTime, kMaxTime, kBuckets);   \
-      }                                                                       \
-    }                                                                         \
-  } while (0)
+// DO NOT REORDER OR CHANGE THE MEANING OF THESE VALUES.
+enum class NavigationURLScheme {
+  UNKNOWN = 0,
+  ABOUT = 1,
+  BLOB = 2,
+  CONTENT = 3,
+  CONTENT_ID = 4,
+  DATA = 5,
+  FILE = 6,
+  FILE_SYSTEM = 7,
+  FTP = 8,
+  HTTP = 9,
+  HTTPS = 10,
+  kMaxValue = HTTPS
+};
 
-void LogIsSameProcess(ui::PageTransition transition, bool is_same_process) {
-  // Log overall value, then log specific value per type of navigation.
-  UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess", is_same_process);
-
-  if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {
-    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.BackForward",
-                          is_same_process);
-    return;
-  }
-  if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD)) {
-    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.Reload", is_same_process);
-    return;
-  }
-  if (ui::PageTransitionIsNewNavigation(transition)) {
-    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.NewNavigation",
-                          is_same_process);
-    return;
-  }
-  NOTREACHED() << "Invalid page transition: " << transition;
+NavigationURLScheme GetScheme(const GURL& url) {
+  static const base::NoDestructor<std::map<std::string, NavigationURLScheme>>
+      kSchemeMap({
+          {url::kAboutScheme, NavigationURLScheme::ABOUT},
+          {url::kBlobScheme, NavigationURLScheme::BLOB},
+          {url::kContentScheme, NavigationURLScheme::CONTENT},
+          {url::kContentIDScheme, NavigationURLScheme::CONTENT_ID},
+          {url::kDataScheme, NavigationURLScheme::DATA},
+          {url::kFileScheme, NavigationURLScheme::FILE},
+          {url::kFileSystemScheme, NavigationURLScheme::FILE_SYSTEM},
+          {url::kFtpScheme, NavigationURLScheme::FTP},
+          {url::kHttpScheme, NavigationURLScheme::HTTP},
+          {url::kHttpsScheme, NavigationURLScheme::HTTPS},
+      });
+  auto it = kSchemeMap->find(url.scheme());
+  if (it != kSchemeMap->end())
+    return it->second;
+  return NavigationURLScheme::UNKNOWN;
 }
 
 }  // namespace
@@ -127,14 +98,10 @@ NavigationHandleImpl::NavigationHandleImpl(
     int pending_nav_entry_id,
     net::HttpRequestHeaders request_headers)
     : navigation_request_(navigation_request),
-      net_error_code_(net::OK),
       request_headers_(std::move(request_headers)),
       pending_nav_entry_id_(pending_nav_entry_id),
-      navigation_id_(CreateUniqueHandleID()),
       reload_type_(ReloadType::NONE),
-      restore_type_(RestoreType::NONE),
-      is_same_process_(true),
-      weak_factory_(this) {
+      restore_type_(RestoreType::NONE) {
   const GURL& url = navigation_request_->common_params().url;
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle", this,
                            "frame_tree_node",
@@ -187,7 +154,7 @@ NavigationHandleImpl::~NavigationHandleImpl() {
     TRACE_EVENT_ASYNC_END2("navigation", "Navigation StartToCommit", this,
                            "URL",
                            navigation_request_->common_params().url.spec(),
-                           "Net Error Code", net_error_code_);
+                           "Net Error Code", GetNetErrorCode());
   }
   TRACE_EVENT_ASYNC_END0("navigation", "NavigationHandle", this);
 }
@@ -197,7 +164,7 @@ NavigatorDelegate* NavigationHandleImpl::GetDelegate() const {
 }
 
 int64_t NavigationHandleImpl::GetNavigationId() {
-  return navigation_id_;
+  return navigation_request_->navigation_handle_id();
 }
 
 const GURL& NavigationHandleImpl::GetURL() {
@@ -280,7 +247,7 @@ bool NavigationHandleImpl::IsExternalProtocol() {
 }
 
 net::Error NavigationHandleImpl::GetNetErrorCode() {
-  return net_error_code_;
+  return navigation_request_->net_error();
 }
 
 RenderFrameHostImpl* NavigationHandleImpl::GetRenderFrameHost() {
@@ -326,12 +293,13 @@ NavigationHandleImpl::GetConnectionInfo() {
              : net::HttpResponseInfo::ConnectionInfo();
 }
 
-const base::Optional<net::SSLInfo> NavigationHandleImpl::GetSSLInfo() {
+const base::Optional<net::SSLInfo>& NavigationHandleImpl::GetSSLInfo() {
   return navigation_request_->ssl_info();
 }
 
-bool NavigationHandleImpl::IsWaitingToCommit() {
-  return state() == NavigationRequest::READY_TO_COMMIT;
+const base::Optional<net::AuthChallengeInfo>&
+NavigationHandleImpl::GetAuthChallengeInfo() {
+  return navigation_request_->auth_challenge_info();
 }
 
 bool NavigationHandleImpl::HasCommitted() {
@@ -403,10 +371,6 @@ const GURL& NavigationHandleImpl::GetBaseURLForDataURL() {
   return navigation_request_->common_params().base_url_for_data_url;
 }
 
-NavigationData* NavigationHandleImpl::GetNavigationData() {
-  return navigation_data_.get();
-}
-
 void NavigationHandleImpl::RegisterSubresourceOverride(
     mojom::TransferrableURLLoaderPtr transferrable_loader) {
   if (!transferrable_loader)
@@ -446,13 +410,15 @@ const base::Optional<url::Origin>& NavigationHandleImpl::GetInitiatorOrigin() {
 }
 
 bool NavigationHandleImpl::IsSameProcess() {
-  DCHECK(state() == NavigationRequest::DID_COMMIT ||
-         state() == NavigationRequest::DID_COMMIT_ERROR_PAGE);
-  return is_same_process_;
+  return navigation_request_->is_same_process();
 }
 
 int NavigationHandleImpl::GetNavigationEntryOffset() {
   return navigation_request_->navigation_entry_offset();
+}
+
+bool NavigationHandleImpl::FromDownloadCrossOriginRedirect() {
+  return navigation_request_->from_download_cross_origin_redirect();
 }
 
 bool NavigationHandleImpl::IsSignedExchangeInnerResponse() {
@@ -462,6 +428,11 @@ bool NavigationHandleImpl::IsSignedExchangeInnerResponse() {
              : false;
 }
 
+bool NavigationHandleImpl::HasPrefetchedAlternativeSubresourceSignedExchange() {
+  return !navigation_request_->commit_params()
+              .prefetched_signed_exchanges.empty();
+}
+
 bool NavigationHandleImpl::WasResponseCached() {
   return navigation_request_->response()
              ? navigation_request_->response()->head.was_fetched_via_cache
@@ -469,7 +440,7 @@ bool NavigationHandleImpl::WasResponseCached() {
 }
 
 const net::ProxyServer& NavigationHandleImpl::GetProxyServer() {
-  return proxy_server_;
+  return navigation_request_->proxy_server();
 }
 
 void NavigationHandleImpl::InitServiceWorkerHandle(
@@ -478,93 +449,8 @@ void NavigationHandleImpl::InitServiceWorkerHandle(
       new ServiceWorkerNavigationHandle(service_worker_context));
 }
 
-void NavigationHandleImpl::InitAppCacheHandle(
-    ChromeAppCacheService* appcache_service) {
-  // The final process id won't be available until
-  // NavigationHandleImpl::ReadyToCommitNavigation.
-  appcache_handle_.reset(new AppCacheNavigationHandle(
-      appcache_service, ChildProcessHost::kInvalidUniqueID));
-}
-
-std::unique_ptr<AppCacheNavigationHandle>
-NavigationHandleImpl::TakeAppCacheHandle() {
-  return std::move(appcache_handle_);
-}
-
-void NavigationHandleImpl::ReadyToCommitNavigation(bool is_error) {
-  TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                               "ReadyToCommitNavigation");
-
-  navigation_request_->set_handle_state(NavigationRequest::READY_TO_COMMIT);
-  ready_to_commit_time_ = base::TimeTicks::Now();
-  RestartCommitTimeout();
-
-  if (appcache_handle_)
-    appcache_handle_->SetProcessId(GetRenderFrameHost()->GetProcess()->GetID());
-
-  // Record metrics for the time it takes to get to this state from the
-  // beginning of the navigation.
-  if (!IsSameDocument() && !is_error) {
-    is_same_process_ =
-        GetRenderFrameHost()->GetProcess()->GetID() ==
-        frame_tree_node()->current_frame_host()->GetProcess()->GetID();
-    LogIsSameProcess(GetPageTransition(), is_same_process_);
-
-    // Don't log process-priority-specific UMAs for TimeToReadyToCommit2 metric
-    // (which shouldn't be influenced by renderer priority).
-    constexpr base::Optional<bool> kIsBackground = base::nullopt;
-
-    base::TimeDelta delta =
-        ready_to_commit_time_ -
-        navigation_request_->common_params().navigation_start;
-    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2", GetPageTransition(),
-                                    kIsBackground, delta);
-
-    if (IsInMainFrame()) {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.MainFrame",
-                                      GetPageTransition(), kIsBackground,
-                                      delta);
-    } else {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.Subframe",
-                                      GetPageTransition(), kIsBackground,
-                                      delta);
-    }
-
-    if (is_same_process_) {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.SameProcess",
-                                      GetPageTransition(), kIsBackground,
-                                      delta);
-    } else {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.CrossProcess",
-                                      GetPageTransition(), kIsBackground,
-                                      delta);
-    }
-  }
-
-  navigation_request_->SetExpectedProcess(GetRenderFrameHost()->GetProcess());
-
-  if (!IsSameDocument())
-    GetDelegate()->ReadyToCommitNavigation(this);
-}
-
-void NavigationHandleImpl::RunCompleteCallback(
-    NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK(result.action() != NavigationThrottle::DEFER);
-
-  ThrottleChecksFinishedCallback callback = std::move(complete_callback_);
-  complete_callback_.Reset();
-
-  if (!complete_callback_for_testing_.is_null())
-    std::move(complete_callback_for_testing_).Run(result);
-
-  if (!callback.is_null())
-    std::move(callback).Run(result);
-
-  // No code after running the callback, as it might have resulted in our
-  // destruction.
-}
-
 void NavigationHandleImpl::RenderProcessBlockedStateChanged(bool blocked) {
+  AddNetworkServiceDebugEvent(std::string("B") + (blocked ? "1" : "0"));
   if (blocked)
     StopCommitTimeout();
   else
@@ -599,6 +485,70 @@ void NavigationHandleImpl::RestartCommitTimeout() {
 
 void NavigationHandleImpl::OnCommitTimeout() {
   DCHECK_EQ(NavigationRequest::READY_TO_COMMIT, state());
+  AddNetworkServiceDebugEvent("T");
+#if defined(OS_ANDROID)
+  // Rate limit the number of stack dumps so we don't overwhelm our crash
+  // reports.
+  // TODO(http://crbug.com/934317): Remove this once done debugging renderer
+  // hangs.
+  if (base::RandDouble() < 0.1) {
+    static base::debug::CrashKeyString* url_key =
+        base::debug::AllocateCrashKeyString("commit_timeout_url",
+                                            base::debug::CrashKeySize::Size256);
+    base::debug::ScopedCrashKeyString scoped_url(
+        url_key, GetURL().possibly_invalid_spec());
+
+    static base::debug::CrashKeyString* last_crash_key =
+        base::debug::AllocateCrashKeyString("ns_last_crash_ms",
+                                            base::debug::CrashKeySize::Size32);
+    base::debug::ScopedCrashKeyString scoped_last_crash(
+        last_crash_key,
+        base::NumberToString(
+            GetTimeSinceLastNetworkServiceCrash().InMilliseconds()));
+
+    static base::debug::CrashKeyString* memory_key =
+        base::debug::AllocateCrashKeyString("physical_memory_mb",
+                                            base::debug::CrashKeySize::Size32);
+    base::debug::ScopedCrashKeyString scoped_memory(
+        memory_key,
+        base::NumberToString(base::SysInfo::AmountOfPhysicalMemoryMB()));
+
+    static base::debug::CrashKeyString* debug_string_key =
+        base::debug::AllocateCrashKeyString("ns_debug_events",
+                                            base::debug::CrashKeySize::Size256);
+    base::debug::ScopedCrashKeyString scoped_debug_string(
+        debug_string_key, GetNetworkServiceDebugEventsString());
+    base::debug::DumpWithoutCrashing();
+
+    if (IsOutOfProcessNetworkService())
+      GetNetworkService()->DumpWithoutCrashing(base::Time::Now());
+  }
+#endif
+
+  PingNetworkService(base::BindOnce(
+      [](base::Time start_time) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Navigation.CommitTimeout.NetworkServicePingTime",
+            base::Time::Now() - start_time);
+      },
+      base::Time::Now()));
+  UMA_HISTOGRAM_ENUMERATION(
+      "Navigation.CommitTimeout.NetworkServiceAvailability",
+      GetNetworkServiceAvailability());
+  base::TimeDelta last_crash_time = GetTimeSinceLastNetworkServiceCrash();
+  if (!last_crash_time.is_zero()) {
+    UMA_HISTOGRAM_LONG_TIMES(
+        "Navigation.CommitTimeout.NetworkServiceLastCrashTime",
+        last_crash_time);
+  }
+  UMA_HISTOGRAM_BOOLEAN("Navigation.CommitTimeout.IsRendererProcessReady",
+                        GetRenderFrameHost()->GetProcess()->IsReady());
+  UMA_HISTOGRAM_ENUMERATION("Navigation.CommitTimeout.Scheme",
+                            GetScheme(GetURL()));
+  UMA_HISTOGRAM_BOOLEAN("Navigation.CommitTimeout.IsMainFrame",
+                        frame_tree_node()->IsMainFrame());
+  base::UmaHistogramSparse("Navigation.CommitTimeout.ErrorCode",
+                           -GetNetErrorCode());
   render_process_blocked_state_changed_subscription_.reset();
   GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsUnresponsive(
       base::BindRepeating(&NavigationHandleImpl::RestartCommitTimeout,

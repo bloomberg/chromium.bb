@@ -131,13 +131,13 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void OnError(PipelineStatus error) final;
   void OnEnded() final;
   void OnStatisticsUpdate(const PipelineStatistics& stats) final;
-  void OnBufferingStateChange(BufferingState state) final;
+  void OnBufferingStateChange(BufferingState state,
+                              BufferingStateChangeReason reason) final;
   void OnWaiting(WaitingReason reason) final;
   void OnAudioConfigChange(const AudioDecoderConfig& config) final;
   void OnVideoConfigChange(const VideoDecoderConfig& config) final;
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
   void OnVideoOpacityChange(bool opaque) final;
-  void OnRemotePlayStateChange(MediaStatus::State state) final;
 
   // Common handlers for notifications from renderers and demuxer.
   void OnPipelineError(PipelineStatus error);
@@ -191,7 +191,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   // Called from non-media threads when an error occurs.
   PipelineStatusCB error_cb_;
 
-  base::WeakPtrFactory<RendererWrapper> weak_factory_;
+  base::WeakPtrFactory<RendererWrapper> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(RendererWrapper);
 };
 
@@ -209,9 +209,7 @@ PipelineImpl::RendererWrapper::RendererWrapper(
       state_(kCreated),
       status_(PIPELINE_OK),
       renderer_ended_(false),
-      text_renderer_ended_(false),
-      weak_factory_(this) {
-}
+      text_renderer_ended_(false) {}
 
 PipelineImpl::RendererWrapper::~RendererWrapper() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
@@ -506,10 +504,6 @@ void PipelineImpl::RendererWrapper::SetDuration(base::TimeDelta duration) {
   // implementations call DemuxerHost on the media thread.
   media_log_->AddEvent(media_log_->CreateTimeEvent(MediaLogEvent::DURATION_SET,
                                                    "duration", duration));
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      "Media.Duration2", duration, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromDays(1), 50 /* bucket_count */);
-
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PipelineImpl::OnDurationChange, weak_pipeline_,
                                 duration));
@@ -673,19 +667,22 @@ void PipelineImpl::RendererWrapper::OnStatisticsUpdate(
   shared_state_.statistics.audio_memory_usage += stats.audio_memory_usage;
   shared_state_.statistics.video_memory_usage += stats.video_memory_usage;
 
-  if (!stats.audio_decoder_name.empty() &&
-      shared_state_.statistics.audio_decoder_name != stats.audio_decoder_name) {
-    shared_state_.statistics.audio_decoder_name = stats.audio_decoder_name;
+  if (!stats.audio_decoder_info.decoder_name.empty() &&
+      stats.audio_decoder_info != shared_state_.statistics.audio_decoder_info) {
+    shared_state_.statistics.audio_decoder_info.decoder_name =
+        stats.audio_decoder_info.decoder_name;
     main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&PipelineImpl::OnAudioDecoderChange,
-                                  weak_pipeline_, stats.audio_decoder_name));
+                                  weak_pipeline_, stats.audio_decoder_info));
   }
-  if (!stats.video_decoder_name.empty() &&
-      shared_state_.statistics.video_decoder_name != stats.video_decoder_name) {
-    shared_state_.statistics.video_decoder_name = stats.video_decoder_name;
+
+  if (!stats.video_decoder_info.decoder_name.empty() &&
+      stats.video_decoder_info != shared_state_.statistics.video_decoder_info) {
+    shared_state_.statistics.video_decoder_info.decoder_name =
+        stats.video_decoder_info.decoder_name;
     main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&PipelineImpl::OnVideoDecoderChange,
-                                  weak_pipeline_, stats.video_decoder_name));
+                                  weak_pipeline_, stats.video_decoder_info));
   }
 
   if (stats.video_frame_duration_average != kNoTimestamp) {
@@ -710,13 +707,14 @@ void PipelineImpl::RendererWrapper::OnStatisticsUpdate(
 }
 
 void PipelineImpl::RendererWrapper::OnBufferingStateChange(
-    BufferingState state) {
+    BufferingState state,
+    BufferingStateChangeReason reason) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DVLOG(2) << __func__ << "(" << state << ") ";
+  DVLOG(2) << __func__ << "(" << state << ", " << reason << ") ";
 
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PipelineImpl::OnBufferingStateChange,
-                                weak_pipeline_, state));
+                                weak_pipeline_, state, reason));
 }
 
 void PipelineImpl::RendererWrapper::OnWaiting(WaitingReason reason) {
@@ -762,15 +760,6 @@ void PipelineImpl::RendererWrapper::OnVideoConfigChange(
                                              weak_pipeline_, config));
 }
 
-void PipelineImpl::RendererWrapper::OnRemotePlayStateChange(
-    MediaStatus::State state) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-
-  main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&PipelineImpl::OnRemotePlayStateChange,
-                                weak_pipeline_, state));
-}
-
 void PipelineImpl::RendererWrapper::OnPipelineError(PipelineStatus error) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(PIPELINE_OK, error) << "PIPELINE_OK isn't an error!";
@@ -812,7 +801,10 @@ void PipelineImpl::RendererWrapper::CheckPlaybackEnded() {
   if (shared_state_.renderer && !renderer_ended_)
     return;
 
-  DCHECK_EQ(status_, PIPELINE_OK);
+  // Don't fire an ended event if we're already in an error state.
+  if (status_ != PIPELINE_OK)
+    return;
+
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PipelineImpl::OnEnded, weak_pipeline_));
 }
@@ -1004,8 +996,7 @@ PipelineImpl::PipelineImpl(
       client_(nullptr),
       playback_rate_(kDefaultPlaybackRate),
       volume_(kDefaultVolume),
-      is_suspended_(false),
-      weak_factory_(this) {
+      is_suspended_(false) {
   DVLOG(2) << __func__;
   renderer_wrapper_.reset(new RendererWrapper(
       media_task_runner_, std::move(main_task_runner), media_log_));
@@ -1172,7 +1163,7 @@ void PipelineImpl::SetVolume(float volume) {
   DVLOG(2) << __func__ << "(" << volume << ")";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (volume < 0.0f || volume > 1.0f)
+  if (volume < 0.0f)
     return;
 
   volume_ = volume;
@@ -1310,13 +1301,13 @@ void PipelineImpl::OnMetadata(const PipelineMetadata& metadata) {
   client_->OnMetadata(metadata);
 }
 
-void PipelineImpl::OnBufferingStateChange(BufferingState state) {
-  DVLOG(2) << __func__ << "(" << state << ")";
+void PipelineImpl::OnBufferingStateChange(BufferingState state,
+                                          BufferingStateChangeReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
 
   DCHECK(client_);
-  client_->OnBufferingStateChange(state);
+  client_->OnBufferingStateChange(state, reason);
 }
 
 void PipelineImpl::OnDurationChange(base::TimeDelta duration) {
@@ -1384,31 +1375,22 @@ void PipelineImpl::OnVideoAverageKeyframeDistanceUpdate() {
   client_->OnVideoAverageKeyframeDistanceUpdate();
 }
 
-void PipelineImpl::OnAudioDecoderChange(const std::string& name) {
+void PipelineImpl::OnAudioDecoderChange(const PipelineDecoderInfo& info) {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
 
   DCHECK(client_);
-  client_->OnAudioDecoderChange(name);
+  client_->OnAudioDecoderChange(info);
 }
 
-void PipelineImpl::OnVideoDecoderChange(const std::string& name) {
+void PipelineImpl::OnVideoDecoderChange(const PipelineDecoderInfo& info) {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
 
   DCHECK(client_);
-  client_->OnVideoDecoderChange(name);
-}
-
-void PipelineImpl::OnRemotePlayStateChange(MediaStatus::State state) {
-  DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(IsRunning());
-
-  DCHECK(client_);
-  client_->OnRemotePlayStateChange(state);
+  client_->OnVideoDecoderChange(info);
 }
 
 void PipelineImpl::OnSeekDone(bool is_suspended) {

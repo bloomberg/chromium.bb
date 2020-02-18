@@ -15,14 +15,15 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
 namespace {
 const int kFindingTimeoutMS = 100;
-constexpr TimeDelta kFindTaskTestTimeout = TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kFindTaskTestTimeout =
+    base::TimeDelta::FromSeconds(10);
 }  // namespace
 
 class FindTaskController::IdleFindTask
@@ -55,7 +56,7 @@ class FindTaskController::IdleFindTask
 
   void ForceInvocationForTesting() {
     invoke(MakeGarbageCollected<IdleDeadline>(
-        CurrentTimeTicks() + kFindTaskTestTimeout,
+        base::TimeTicks::Now() + kFindTaskTestTimeout,
         IdleDeadline::CallbackType::kCalledWhenIdle));
   }
 
@@ -72,10 +73,6 @@ class FindTaskController::IdleFindTask
                                  true /* finished_whole_request */,
                                  PositionInFlatTree(), 0 /* match_count */);
     }
-
-    const TimeDelta time_available =
-        TimeDelta::FromMillisecondsD(deadline->timeRemaining());
-    const TimeTicks start_time = CurrentTimeTicks();
 
     Document& document = *controller_->GetLocalFrame()->GetDocument();
     PositionInFlatTree search_start =
@@ -146,10 +143,6 @@ class FindTaskController::IdleFindTask
       if (deadline->timeRemaining() <= 0)
         break;
     }
-
-    const TimeDelta time_spent = CurrentTimeTicks() - start_time;
-    UMA_HISTOGRAM_TIMES("WebCore.FindInPage.ScopingTime",
-                        time_spent - time_available);
 
     controller_->DidFinishTask(identifier_, search_text_, *options_,
                                full_range_searched, next_task_start_position,

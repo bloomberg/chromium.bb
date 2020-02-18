@@ -10,8 +10,9 @@
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 
-CPDF_TextState::CPDF_TextState() {}
-CPDF_TextState::~CPDF_TextState() {}
+CPDF_TextState::CPDF_TextState() = default;
+
+CPDF_TextState::~CPDF_TextState() = default;
 
 void CPDF_TextState::Emplace() {
   m_Ref.Emplace();
@@ -115,12 +116,18 @@ CPDF_TextState::TextData::TextData(const TextData& that)
   for (int i = 0; i < 4; ++i)
     m_CTM[i] = that.m_CTM[i];
 
-  if (m_pDocument && m_pFont)
-    m_pFont = m_pDocument->GetPageData()->GetFont(m_pFont->GetFontDict());
+  if (m_pDocument && m_pFont) {
+    auto* pPageData = CPDF_DocPageData::FromDocument(m_pDocument.Get());
+    m_pFont = pPageData->GetFont(m_pFont->GetFontDict());
+  }
 }
 
 CPDF_TextState::TextData::~TextData() {
   ReleaseFont();
+}
+
+RetainPtr<CPDF_TextState::TextData> CPDF_TextState::TextData::Clone() const {
+  return pdfium::MakeRetain<CPDF_TextState::TextData>(*this);
 }
 
 void CPDF_TextState::TextData::SetFont(CPDF_Font* pFont) {
@@ -149,7 +156,7 @@ void CPDF_TextState::TextData::ReleaseFont() {
   if (!m_pDocument || !m_pFont)
     return;
 
-  CPDF_DocPageData* pPageData = m_pDocument->GetPageData();
+  auto* pPageData = CPDF_DocPageData::FromDocument(m_pDocument.Get());
   if (pPageData && !pPageData->IsForceClear())
     pPageData->ReleaseFont(m_pFont->GetFontDict());
 }

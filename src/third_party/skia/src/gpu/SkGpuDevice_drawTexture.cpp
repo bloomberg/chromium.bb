@@ -16,7 +16,6 @@
 #include "src/gpu/GrColorSpaceXform.h"
 #include "src/gpu/GrImageTextureMaker.h"
 #include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrShape.h"
 #include "src/gpu/GrStyle.h"
 #include "src/gpu/GrTextureAdjuster.h"
 #include "src/gpu/GrTextureMaker.h"
@@ -24,6 +23,7 @@
 #include "src/gpu/effects/GrBicubicEffect.h"
 #include "src/gpu/effects/GrTextureDomain.h"
 #include "src/gpu/effects/generated/GrSimpleTextureEffect.h"
+#include "src/gpu/geometry/GrShape.h"
 #include "src/image/SkImage_Base.h"
 
 namespace {
@@ -51,12 +51,12 @@ static bool has_aligned_samples(const SkRect& srcRect, const SkRect& transformed
 static bool may_color_bleed(const SkRect& srcRect,
                             const SkRect& transformedRect,
                             const SkMatrix& m,
-                            GrFSAAType fsaaType) {
+                            int numSamples) {
     // Only gets called if has_aligned_samples returned false.
     // So we can assume that sampling is axis aligned but not texel aligned.
     SkASSERT(!has_aligned_samples(srcRect, transformedRect));
     SkRect innerSrcRect(srcRect), innerTransformedRect, outerTransformedRect(transformedRect);
-    if (GrFSAAType::kUnifiedMSAA == fsaaType) {
+    if (numSamples > 1) {
         innerSrcRect.inset(SK_Scalar1, SK_Scalar1);
     } else {
         innerSrcRect.inset(SK_ScalarHalf, SK_ScalarHalf);
@@ -80,14 +80,14 @@ static bool may_color_bleed(const SkRect& srcRect,
 static bool can_ignore_bilerp_constraint(const GrTextureProducer& producer,
                                          const SkRect& srcRect,
                                          const SkMatrix& srcRectToDeviceSpace,
-                                         GrFSAAType fsaaType) {
+                                         int numSamples) {
     if (srcRectToDeviceSpace.rectStaysRect()) {
         // sampling is axis-aligned
         SkRect transformedRect;
         srcRectToDeviceSpace.mapRect(&transformedRect, srcRect);
 
         if (has_aligned_samples(srcRect, transformedRect) ||
-            !may_color_bleed(srcRect, transformedRect, srcRectToDeviceSpace, fsaaType)) {
+            !may_color_bleed(srcRect, transformedRect, srcRectToDeviceSpace, numSamples)) {
             return true;
         }
     }
@@ -288,7 +288,7 @@ static void draw_texture_producer(GrContext* context, GrRenderTargetContext* rtc
         !producer->hasMixedResolutions()) {
         SkMatrix combinedMatrix;
         combinedMatrix.setConcat(ctm, srcToDst);
-        if (can_ignore_bilerp_constraint(*producer, src, combinedMatrix, rtc->fsaaType())) {
+        if (can_ignore_bilerp_constraint(*producer, src, combinedMatrix, rtc->numSamples())) {
             constraintMode = GrTextureAdjuster::kNo_FilterConstraint;
         }
     }
@@ -410,9 +410,9 @@ void SkGpuDevice::drawImageQuad(const SkImage* image, const SkRect* srcRect, con
                          dstClip, aa, aaFlags, constraint, std::move(proxy), alphaType, colorSpace);
             return;
         }
-
-        GrTextureAdjuster adjuster(fContext.get(), std::move(proxy), alphaType, pinnedUniqueID,
-                                   colorSpace, useDecal);
+        auto colorType = SkColorTypeToGrColorType(image->colorType());
+        GrTextureAdjuster adjuster(fContext.get(), std::move(proxy), colorType, alphaType,
+                                   pinnedUniqueID, colorSpace, useDecal);
         draw_texture_producer(fContext.get(), fRenderTargetContext.get(), this->clip(), ctm,
                               paint, &adjuster, src, dst, dstClip, srcToDst, aa, aaFlags,
                               constraint, /* attempt draw_texture */ false);

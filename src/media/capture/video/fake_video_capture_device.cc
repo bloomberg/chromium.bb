@@ -136,7 +136,6 @@ gfx::ColorSpace GetDefaultColorSpace(VideoPixelFormat format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_RGB24:
-    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_ABGR:
     case PIXEL_FORMAT_XBGR:
@@ -460,8 +459,7 @@ FakeVideoCaptureDevice::FakeVideoCaptureDevice(
     : supported_formats_(supported_formats),
       frame_deliverer_factory_(std::move(frame_deliverer_factory)),
       photo_device_(std::move(photo_device)),
-      device_state_(std::move(device_state)),
-      weak_factory_(this) {}
+      device_state_(std::move(device_state)) {}
 
 FakeVideoCaptureDevice::~FakeVideoCaptureDevice() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -633,7 +631,8 @@ void OwnBufferFrameDeliverer::PaintAndDeliverNextFrame(
   client()->OnIncomingCapturedData(
       buffer_.get(), frame_size, device_state()->format,
       GetDefaultColorSpace(device_state()->format.pixel_format),
-      0 /* rotation */, now, CalculateTimeSinceFirstInvocation(now));
+      0 /* rotation */, false /* flip_y */, now,
+      CalculateTimeSinceFirstInvocation(now));
 }
 
 ClientBufferFrameDeliverer::ClientBufferFrameDeliverer(
@@ -706,7 +705,7 @@ void JpegEncodingFrameDeliverer::PaintAndDeliverNextFrame(
   base::TimeTicks now = base::TimeTicks::Now();
   client()->OnIncomingCapturedData(
       &jpeg_buffer_[0], frame_size, device_state()->format,
-      gfx::ColorSpace::CreateJpeg(), 0 /* rotation */, now,
+      gfx::ColorSpace::CreateJpeg(), 0 /* rotation */, false /* flip_y */, now,
       CalculateTimeSinceFirstInvocation(now));
 }
 

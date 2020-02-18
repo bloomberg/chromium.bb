@@ -163,7 +163,7 @@ void AddCpuInfoToFingerprint(Fingerprint::MachineCharacteristics* machine) {
 
 // Writes info about the machine's GPU into the |machine|.
 void AddGpuInfoToFingerprint(Fingerprint::MachineCharacteristics* machine,
-                             const content::GpuDataManager& gpu_data_manager) {
+                             content::GpuDataManager& gpu_data_manager) {
   if (!gpu_data_manager.IsEssentialGpuInfoAvailable())
     return;
 
@@ -253,7 +253,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
 
   // For invalidating asynchronous callbacks that might arrive after |this|
   // instance is destroyed.
-  base::WeakPtrFactory<FingerprintDataLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<FingerprintDataLoader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintDataLoader);
 };
@@ -285,8 +285,7 @@ FingerprintDataLoader::FingerprintDataLoader(
       user_agent_(user_agent),
       install_time_(install_time),
       waiting_on_plugins_(true),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {
+      callback_(std::move(callback)) {
   DCHECK(!install_time_.is_null());
 
   timeout_timer_.Start(

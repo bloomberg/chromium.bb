@@ -43,9 +43,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // Get the closest containing HWND.
   HWND GetParentHWND();
 
-  // AXEventGenerator methods
-  void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
-
   // BrowserAccessibilityManager methods
   void UserIsReloading() override;
   BrowserAccessibility* GetFocus() const override;
@@ -58,8 +55,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                           BrowserAccessibility* node) override;
 
-  void OnFocusLost(BrowserAccessibility* node) override;
-
   void FireWinAccessibilityEvent(LONG win_event, BrowserAccessibility* node);
   void FireUiaAccessibilityEvent(LONG uia_event, BrowserAccessibility* node);
   void FireUiaPropertyChangedEvent(LONG uia_property,
@@ -67,6 +62,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void FireUiaStructureChangedEvent(StructureChangeType change_type,
                                     BrowserAccessibility* node);
   void FireUiaTextContainerEvent(LONG uia_event, BrowserAccessibility* node);
+
+  // Do event pre-processing
+  void BeforeAccessibilityEvents() override;
 
   // Do event post-processing
   void FinalizeAccessibilityEvents() override;
@@ -81,6 +79,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
  protected:
   // AXTreeObserver methods.
+  void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
       bool root_changed,
@@ -105,6 +104,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // unordered set here to keep track of the unique nodes that had aria property
   // changes, so we only fire the event once for every node.
   std::unordered_set<BrowserAccessibility*> aria_properties_events_;
+
+  // When the ignored state changes for a node, we only want to fire the
+  // events relevant to the ignored state change (e.g. show / hide).
+  // This set keeps track of what nodes should suppress superfluous events.
+  std::set<BrowserAccessibility*> ignored_changed_nodes_;
 
   // Keep track of selection changes so we can optimize UIA event firing.
   // Pointers are only stored for the duration of |OnAccessibilityEvents|, and

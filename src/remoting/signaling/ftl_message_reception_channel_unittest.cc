@@ -59,12 +59,6 @@ std::unique_ptr<FakeScopedGrpcServerStream> CreateFakeServerStream() {
   return std::make_unique<FakeScopedGrpcServerStream>();
 }
 
-ftl::ReceiveMessagesResponse CreateStartOfBatchResponse() {
-  ftl::ReceiveMessagesResponse response;
-  response.mutable_start_of_batch();
-  return response;
-}
-
 // Creates a gmock EXPECT_CALL action that:
 //   1. Creates a fake server stream and returns it as the start stream result
 //   2. Posts a task to call |on_stream_opened| at the end of current sequence
@@ -73,8 +67,9 @@ ftl::ReceiveMessagesResponse CreateStartOfBatchResponse() {
 template <typename OnStreamOpenedLambda>
 decltype(auto) StartStream(
     OnStreamOpenedLambda on_stream_opened,
-    base::WeakPtr<FakeScopedGrpcServerStream>* optional_out_stream) {
-  return [=](const ReceiveMessagesResponseCallback& on_incoming_msg,
+    base::WeakPtr<FakeScopedGrpcServerStream>* optional_out_stream = nullptr) {
+  return [=](base::OnceClosure on_channel_ready,
+             const ReceiveMessagesResponseCallback& on_incoming_msg,
              StatusCallback on_channel_closed) {
     auto fake_stream = CreateFakeServerStream();
     if (optional_out_stream) {
@@ -82,15 +77,11 @@ decltype(auto) StartStream(
     }
     auto on_stream_opened_cb = base::BindLambdaForTesting(on_stream_opened);
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(on_stream_opened_cb, on_incoming_msg,
-                                  std::move(on_channel_closed)));
+        FROM_HERE,
+        base::BindOnce(on_stream_opened_cb, std::move(on_channel_ready),
+                       on_incoming_msg, std::move(on_channel_closed)));
     return fake_stream;
   };
-}
-
-template <typename OnStreamOpenedLambda>
-decltype(auto) StartStream(OnStreamOpenedLambda on_stream_opened) {
-  return StartStream(on_stream_opened, nullptr);
 }
 
 base::OnceClosure NotReachedClosure() {
@@ -117,8 +108,7 @@ class FtlMessageReceptionChannelTest : public testing::Test {
   int GetRetryFailureCount() const;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
   std::unique_ptr<FtlMessageReceptionChannel> channel_;
   base::MockCallback<FtlMessageReceptionChannel::StreamOpener>
       mock_stream_opener_;
@@ -149,9 +139,10 @@ TEST_F(FtlMessageReceptionChannelTest,
        TestStartReceivingMessages_StoppedImmediately) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
       .WillOnce(StartStream(
-          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
             channel_->StopReceivingMessages();
           }));
@@ -168,9 +159,10 @@ TEST_F(FtlMessageReceptionChannelTest,
        TestStartReceivingMessages_NotAuthenticated) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
       .WillOnce(StartStream(
-          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
             std::move(on_channel_closed)
                 .Run(grpc::Status(grpc::StatusCode::UNAUTHENTICATED, ""));
@@ -188,11 +180,12 @@ TEST_F(FtlMessageReceptionChannelTest,
        TestStartReceivingMessages_StreamStarted) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
       .WillOnce(StartStream(
-          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
-            on_incoming_msg.Run(CreateStartOfBatchResponse());
+            std::move(on_channel_ready).Run();
           }));
 
   channel_->StartReceivingMessages(run_loop.QuitClosure(),
@@ -206,9 +199,10 @@ TEST_F(FtlMessageReceptionChannelTest,
   base::RunLoop run_loop;
 
   base::WeakPtr<FakeScopedGrpcServerStream> old_stream;
-  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
       .WillOnce(StartStream(
-          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
             // The first open stream attempt fails with UNAVAILABLE error.
             ASSERT_EQ(0, GetRetryFailureCount());
@@ -225,15 +219,15 @@ TEST_F(FtlMessageReceptionChannelTest,
           },
           &old_stream))
       .WillOnce(StartStream(
-          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
             // Second open stream attempt succeeds.
 
             // Assert old stream closed.
             ASSERT_FALSE(old_stream);
 
-            // Send a StartOfBatch and verify it resets the failure counter.
-            on_incoming_msg.Run(CreateStartOfBatchResponse());
+            std::move(on_channel_ready).Run();
 
             ASSERT_EQ(0, GetRetryFailureCount());
           }));
@@ -256,11 +250,12 @@ TEST_F(FtlMessageReceptionChannelTest,
       .WillOnce(Return())
       .WillOnce([&]() { run_loop.Quit(); });
 
-  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
       .WillOnce(StartStream(
-          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
-            on_incoming_msg.Run(CreateStartOfBatchResponse());
+            std::move(on_channel_ready).Run();
           }));
 
   channel_->StartReceivingMessages(stream_ready_callback.Get(),
@@ -291,11 +286,12 @@ TEST_F(FtlMessageReceptionChannelTest, StreamsTwoMessages) {
               Run(Property(&ftl::InboxMessage::message_id, kMessage2Id)))
       .WillOnce(Invoke([&](const ftl::InboxMessage&) { run_loop.Quit(); }));
 
-  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
       .WillOnce(StartStream(
-          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
-            on_incoming_msg.Run(CreateStartOfBatchResponse());
+            std::move(on_channel_ready).Run();
 
             ftl::ReceiveMessagesResponse response;
             *response.mutable_inbox_message() = message_1;
@@ -321,11 +317,12 @@ TEST_F(FtlMessageReceptionChannelTest, NoPongWithinTimeout_ResetsStream) {
   base::RunLoop run_loop;
 
   base::WeakPtr<FakeScopedGrpcServerStream> old_stream;
-  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
       .WillOnce(StartStream(
-          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
-            on_incoming_msg.Run(CreateStartOfBatchResponse());
+            std::move(on_channel_ready).Run();
             scoped_task_environment_.FastForwardBy(
                 FtlMessageReceptionChannel::kPongTimeout);
 
@@ -338,16 +335,15 @@ TEST_F(FtlMessageReceptionChannelTest, NoPongWithinTimeout_ResetsStream) {
           },
           &old_stream))
       .WillOnce(StartStream(
-          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
             // Stream is reopened.
 
             // Assert old stream closed.
             ASSERT_FALSE(old_stream);
 
-            // Sends a StartOfBatch and verify that it resets the failure
-            // counter.
-            on_incoming_msg.Run(CreateStartOfBatchResponse());
+            std::move(on_channel_ready).Run();
             ASSERT_EQ(0, GetRetryFailureCount());
             run_loop.Quit();
           }));
@@ -362,25 +358,25 @@ TEST_F(FtlMessageReceptionChannelTest, ServerClosesStream_ResetsStream) {
   base::RunLoop run_loop;
 
   base::WeakPtr<FakeScopedGrpcServerStream> old_stream;
-  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
       .WillOnce(StartStream(
-          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
             auto fake_server_stream = CreateFakeServerStream();
-            on_incoming_msg.Run(CreateStartOfBatchResponse());
+            std::move(on_channel_ready).Run();
 
             // Close the stream with OK.
             std::move(on_channel_closed).Run(grpc::Status::OK);
           },
           &old_stream))
       .WillOnce(StartStream(
-          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
             ASSERT_FALSE(old_stream);
 
-            // The stream is reopened. Send StartOfBatch and verify that it
-            // resets the failure counter.
-            on_incoming_msg.Run(CreateStartOfBatchResponse());
+            std::move(on_channel_ready).Run();
             ASSERT_EQ(0, GetRetryFailureCount());
             run_loop.Quit();
           }));
@@ -396,13 +392,14 @@ TEST_F(FtlMessageReceptionChannelTest, TimeoutIncreasesToMaximum) {
 
   int failure_count = 0;
   int hitting_max_delay_count = 0;
-  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
       .WillRepeatedly(StartStream(
-          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
             // Quit if delay is ~kBackoffMaxDelay three times.
             if (hitting_max_delay_count == 3) {
-              on_incoming_msg.Run(CreateStartOfBatchResponse());
+              std::move(on_channel_ready).Run();
               ASSERT_EQ(0, GetRetryFailureCount());
               run_loop.Quit();
               return;
@@ -443,9 +440,10 @@ TEST_F(FtlMessageReceptionChannelTest,
   base::RunLoop run_loop;
 
   base::WeakPtr<FakeScopedGrpcServerStream> old_stream;
-  EXPECT_CALL(mock_stream_opener_, Run(_, _))
+  EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
       .WillOnce(StartStream(
-          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
             // The first open stream attempt fails with UNAUTHENTICATED error.
             ASSERT_EQ(0, GetRetryFailureCount());
@@ -459,7 +457,8 @@ TEST_F(FtlMessageReceptionChannelTest,
           },
           &old_stream))
       .WillOnce(StartStream(
-          [&](const ReceiveMessagesResponseCallback& on_incoming_msg,
+          [&](base::OnceClosure on_channel_ready,
+              const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
             // Second open stream attempt succeeds.
 
@@ -468,8 +467,7 @@ TEST_F(FtlMessageReceptionChannelTest,
 
             ASSERT_EQ(1, GetRetryFailureCount());
 
-            // Send a StartOfBatch and verify it resets the failure counter.
-            on_incoming_msg.Run(CreateStartOfBatchResponse());
+            std::move(on_channel_ready).Run();
 
             ASSERT_EQ(0, GetRetryFailureCount());
           }));

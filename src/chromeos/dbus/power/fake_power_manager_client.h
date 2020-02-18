@@ -5,7 +5,6 @@
 #ifndef CHROMEOS_DBUS_POWER_FAKE_POWER_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_POWER_FAKE_POWER_MANAGER_CLIENT_H_
 
-#include <map>
 #include <memory>
 #include <queue>
 #include <string>
@@ -15,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/containers/circular_deque.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -26,6 +26,10 @@
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
+
+namespace base {
+class OneShotTimer;
+}
 
 namespace chromeos {
 
@@ -48,7 +52,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   int num_set_is_projecting_calls() const {
     return num_set_is_projecting_calls_;
   }
-  int num_defer_screen_dim_calls() const { return num_defer_screen_dim_calls_; }
   int num_wake_notification_calls() const {
     return num_wake_notification_calls_;
   }
@@ -124,7 +127,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
                      VoidDBusMethodCallback callback) override;
   void DeleteArcTimers(const std::string& tag,
                        VoidDBusMethodCallback callback) override;
-  void DeferScreenDim() override;
 
   // Pops the first report from |video_activity_reports_|, returning whether the
   // activity was fullscreen or not. There must be at least one report.
@@ -148,9 +150,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
 
   // Notifies observers that the power button has been pressed or released.
   void SendPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
-
-  // Notifies observers that the screen is about to be dimmed.
-  void SendScreenDimImminent();
 
   // Sets |lid_state_| or |tablet_mode_| and notifies |observers_| about the
   // change.
@@ -195,6 +194,10 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
     tick_clock_ = tick_clock;
   }
 
+  void simulate_start_arc_timer_failure(bool simulate) {
+    simulate_start_arc_timer_failure_ = simulate;
+  }
+
  private:
   // Notifies |observers_| that |props_| has been updated.
   void NotifyObservers();
@@ -216,7 +219,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   int num_set_policy_calls_ = 0;
   int num_set_is_projecting_calls_ = 0;
   int num_set_backlights_forced_off_calls_ = 0;
-  int num_defer_screen_dim_calls_ = 0;
   int num_wake_notification_calls_ = 0;
 
   // Number of pending suspend readiness callbacks.
@@ -267,13 +269,15 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   // Monotonically increasing timer id assigned to created timers.
   TimerId next_timer_id_ = 1;
 
-  // Represents the timer expiration fd associated with a timer id stored as
-  // the key. The fd is written to when the timer associated with the clock
-  // expires.
-  std::map<TimerId, base::ScopedFD> timer_expiration_fds_;
+  // Represents the timer and the timer expiration fd associated with a timer id
+  // stored as the key. The fd is written to when the timer associated with the
+  // clock expires.
+  base::flat_map<TimerId,
+                 std::pair<std::unique_ptr<base::OneShotTimer>, base::ScopedFD>>
+      arc_timers_;
 
   // Maps a client's tag to its list of timer ids.
-  std::map<std::string, std::vector<TimerId>> client_timer_ids_;
+  base::flat_map<std::string, std::vector<TimerId>> client_timer_ids_;
 
   // Video activity reports that we were requested to send, in the order they
   // were requested. True if fullscreen.
@@ -290,6 +294,9 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
 
   // Clock to use to calculate time ticks. Used for ArcTimer related APIs.
   const base::TickClock* tick_clock_;
+
+  // If set then |StartArcTimer| returns failure.
+  bool simulate_start_arc_timer_failure_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

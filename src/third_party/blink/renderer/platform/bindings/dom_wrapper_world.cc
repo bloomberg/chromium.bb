@@ -81,7 +81,6 @@ DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
     case WorldType::kIsolated:
     case WorldType::kInspectorIsolated:
     case WorldType::kRegExp:
-    case WorldType::kTesting:
     case WorldType::kForV8ContextSnapshotNonMain:
     case WorldType::kWorker: {
       WorldMap& map = GetWorldMap();
@@ -113,7 +112,6 @@ void DOMWrapperWorld::AllWorldsInCurrentThread(
 void DOMWrapperWorld::Trace(const ScriptWrappable* script_wrappable,
                             Visitor* visitor) {
   // Marking for worlds other than the main world.
-  DCHECK(ThreadState::Current()->GetIsolate());
   for (DOMWrapperWorld* world : GetWorldMap().Values()) {
     DOMDataStore& data_store = world->DomDataStore();
     if (data_store.ContainsWrapper(script_wrappable))
@@ -229,7 +227,6 @@ int DOMWrapperWorld::GenerateWorldIdForType(WorldType world_type) {
       return next_devtools_isolated_world_id++;
     }
     case WorldType::kRegExp:
-    case WorldType::kTesting:
     case WorldType::kForV8ContextSnapshotNonMain:
     case WorldType::kWorker:
       int world_id = *next_world_id;

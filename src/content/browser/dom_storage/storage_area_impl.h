@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -344,7 +344,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
   bool has_committed_data_ = false;
   std::unique_ptr<CommitBatch> commit_batch_;
 
-  base::WeakPtrFactory<StorageAreaImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<StorageAreaImpl> weak_ptr_factory_{this};
 
   static bool s_aggressive_flushing_enabled_;
 

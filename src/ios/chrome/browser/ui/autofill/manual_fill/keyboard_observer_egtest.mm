@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 #import <EarlGrey/EarlGrey.h>
+#import <EarlGrey/GREYKeyboard.h>
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
@@ -75,6 +76,9 @@ void TapOnWebElementWithID(const std::string& elementID) {
 // Observer to be tested.
 @property(nonatomic, strong) KeyboardObserverHelper* keyboardObserver;
 
+// Token to register a NSNotificationCenter observer.
+@property(nonatomic, strong) id<NSObject> notificationToken;
+
 // Delegate mock to confirm the observer callbacks.
 @property(nonatomic, strong)
     OCMockObject<KeyboardObserverHelperConsumer>* keyboardObserverDelegateMock;
@@ -93,9 +97,8 @@ void TapOnWebElementWithID(const std::string& elementID) {
   web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/multi_field_form.html");
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"hello!"]);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:"hello!"];
 
   // Opening the keyboard from a webview blocks EarlGrey's synchronization.
   [[GREYConfiguration sharedInstance]
@@ -104,6 +107,7 @@ void TapOnWebElementWithID(const std::string& elementID) {
 }
 
 - (void)tearDown {
+  self.notificationToken = nil;
   self.keyboardObserverDelegateMock = nil;
   self.keyboardObserver = nil;
 
@@ -119,29 +123,41 @@ void TapOnWebElementWithID(const std::string& elementID) {
   // Brings up the keyboard by tapping on one of the form's field.
   TapOnWebElementWithID(kFormElementID1);
 
+  // Wait for keyboard to finish animating.
+  __block BOOL keyboardDidAppear = NO;
+  self.notificationToken = [[NSNotificationCenter defaultCenter]
+      addObserverForName:UIKeyboardDidShowNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification* note) {
+                keyboardDidAppear = YES;
+              }];
+  ConditionBlock condition = ^{
+    return keyboardDidAppear;
+  };
+  using base::test::ios::WaitUntilConditionOrTimeout;
+  using base::test::ios::kWaitForUIElementTimeout;
+  GREYAssert(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition),
+             @"Wait for keyboard did show notification");
+
   // Verifies that the taped element is focused.
   AssertElementIsFocused(kFormElementID1);
 
-  // Create the callback expectation.
+  // Create a new callback expectation.
   OCMExpect([self.keyboardObserverDelegateMock keyboardDidStayOnScreen]);
+
+  // Reset our keyboard boolean.
+  keyboardDidAppear = NO;
 
   // Tap the second field.
   TapOnWebElementWithID(kFormElementID2);
 
+  // Wait for keyboard to finish animating.
+  GREYAssert(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition),
+             @"Wait for keyboard did show notification");
+
   // Verifies that the taped element is focused.
   AssertElementIsFocused(kFormElementID2);
-
-  // Verify the delegate call was made.
-  [self.keyboardObserverDelegateMock verify];
-
-  // Add another callback expectation.
-  OCMExpect([self.keyboardObserverDelegateMock keyboardDidStayOnScreen]);
-
-  // Tap the first field.
-  TapOnWebElementWithID(kFormElementID1);
-
-  // Verifies that the taped element is focused.
-  AssertElementIsFocused(kFormElementID1);
 
   // Verify the delegate call was made.
   [self.keyboardObserverDelegateMock verify];
@@ -157,7 +173,9 @@ void TapOnWebElementWithID(const std::string& elementID) {
   AssertElementIsFocused(kFormElementID1);
 
   // Create the callback expectation.
-  OCMExpect([self.keyboardObserverDelegateMock keyboardDidHide]);
+  KeyboardState keyboardState = {NO, NO, NO, NO, NO};
+  OCMExpect([self.keyboardObserverDelegateMock
+      keyboardWillChangeToState:keyboardState]);
 
   // Tap the "Submit" button, and let the run loop spin.
   TapOnWebElementWithID(kFormElementSubmit);

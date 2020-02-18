@@ -10,9 +10,6 @@ import android.util.AttributeSet;
 
 import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
 import org.chromium.chrome.browser.explore_sites.MostLikelyVariation;
-import org.chromium.chrome.browser.suggestions.SuggestionsTileView;
-import org.chromium.chrome.browser.suggestions.Tile;
-import org.chromium.chrome.browser.suggestions.TileVisualType;
 
 /**
  * The view for a top sites tile. Displays the title of the site beneath a large icon.

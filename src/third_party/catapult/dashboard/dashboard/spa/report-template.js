@@ -4,18 +4,18 @@
 */
 'use strict';
 
-import './cp-input.js';
-import './raised-button.js';
-import '@polymer/polymer/lib/elements/dom-if.js';
-import '@polymer/polymer/lib/elements/dom-repeat.js';
-import ReportTemplateRequest from './report-template-request.js';
-import TimeseriesDescriptor from './timeseries-descriptor.js';
+import './cp-flex.js';
+import './cp-icon.js';
+import '@chopsui/chops-button';
+import '@chopsui/chops-input';
+import {ReportTemplateRequest} from './report-template-request.js';
+import {TimeseriesDescriptor} from './timeseries-descriptor.js';
 import {ElementBase, STORE} from './element-base.js';
 import {TOGGLE, UPDATE} from './simple-redux.js';
-import {get} from '@polymer/polymer/lib/utils/path.js';
-import {html} from '@polymer/polymer/polymer-element.js';
+import {get} from 'dot-prop-immutable';
+import {html, css} from 'lit-element';
 
-export default class ReportTemplate extends ElementBase {
+export class ReportTemplate extends ElementBase {
   static get is() { return 'report-template'; }
 
   static get properties() {
@@ -41,174 +41,163 @@ export default class ReportTemplate extends ElementBase {
     };
   }
 
-  static get template() {
+  static get styles() {
+    return css`
+      :host {
+        padding: 16px;
+      }
+      table {
+        border-collapse: collapse;
+        margin-top: 16px;
+      }
+
+      table[placeholder] {
+        color: var(--neutral-color-dark, grey);
+      }
+
+      h2 {
+        text-align: center;
+        margin: 0;
+      }
+
+      .name_column {
+        text-align: left;
+      }
+
+      td, th {
+        padding: 4px;
+        vertical-align: top;
+      }
+
+      .edit_form_controls {
+        justify-content: space-evenly;
+      }
+
+      .edit_form_controls chops-input {
+        width: 250px;
+      }
+
+      .edit_form_controls menu-input:not(:last-child),
+      .edit_form_controls chops-input:not(:last-child) {
+        margin-right: 8px;
+      }
+
+      chops-input {
+        margin-top: 12px;
+      }
+
+      .row_button {
+        vertical-align: middle;
+      }
+
+      .row_button cp-icon {
+        cursor: pointer;
+      }
+
+      .error {
+        color: var(--error-color, red);
+      }
+    `;
+  }
+
+  render() {
     return html`
-      <style>
-        :host {
-          padding: 16px;
-        }
-        table {
-          border-collapse: collapse;
-          margin-top: 16px;
-        }
-
-        table[placeholder] {
-          color: var(--neutral-color-dark, grey);
-        }
-
-        h2 {
-          text-align: center;
-          margin: 0;
-        }
-
-        .name_column {
-          text-align: left;
-        }
-
-        td, th {
-          padding: 4px;
-          vertical-align: top;
-        }
-
-        .edit_form_controls {
-          display: flex;
-          justify-content: space-evenly;
-        }
-
-        .edit_form_controls cp-input {
-          width: 250px;
-        }
-
-        .edit_form_controls menu-input:not(:last-child),
-        .edit_form_controls cp-input:not(:last-child) {
-          margin-right: 8px;
-        }
-
-        cp-input {
-          margin-top: 12px;
-        }
-
-        #cancel,
-        #save {
-          flex-grow: 1;
-        }
-
-        .row_button {
-          vertical-align: middle;
-        }
-
-        .row_button iron-icon {
-          cursor: pointer;
-          height: var(--icon-size, 1em);
-          width: var(--icon-size, 1em);
-        }
-
-        .error {
-          color: var(--error-color, red);
-        }
-      </style>
-
-      <div class="edit_form_controls">
+      <cp-flex class="edit_form_controls">
         <div>
-          <cp-input
+          <chops-input
               id="name"
-              error$="[[isEmpty_(name)]]"
+              error="${!this.name}"
               label="Report Name"
-              value="[[name]]"
-              on-keyup="onTemplateNameKeyUp_">
-          </cp-input>
-          <span class="error" hidden$="[[!isEmpty_(name)]]">
+              value="${this.name}"
+              @keyup="${this.onTemplateNameKeyUp_}">
+          </chops-input>
+          <span class="error" ?hidden="${!!this.name}">
             required
           </span>
         </div>
 
         <div>
-          <cp-input
-              error$="[[isEmpty_(owners)]]"
+          <chops-input
+              error="${!this.owners}"
               label="Owners"
-              value="[[owners]]"
-              on-keyup="onTemplateOwnersKeyUp_">
-          </cp-input>
-          <span class="error" hidden$="[[!isEmpty_(owners)]]">
+              value="${this.owners}"
+              @keyup="${this.onTemplateOwnersKeyUp_}">
+          </chops-input>
+          <span class="error" ?hidden="${!!this.owners}">
               comma-separate list of complete email addresses
           </span>
         </div>
 
-        <menu-input state-path="[[statePath]].statistic">
+        <menu-input .statePath="${this.statePath}.statistic">
         </menu-input>
 
         <div>
-          <cp-input
+          <chops-input
               label="Documentation"
-              value="[[url]]"
-              on-keyup="onTemplateUrlKeyUp_">
-          </cp-input>
+              value="${this.url}"
+              @keyup="${this.onTemplateUrlKeyUp_}">
+          </chops-input>
         </div>
-      </div>
+      </cp-flex>
 
       <table>
         <tbody>
-          <template is="dom-repeat" items="[[rows]]" as="row"
-                                    index-as="rowIndex">
+          ${this.rows.map((row, rowIndex) => html`
             <tr>
               <td>
-                <cp-input
+                <chops-input
                     label="Label"
-                    error$="[[isEmpty_(row.label)]]"
-                    value="[[row.label]]"
-                    on-keyup="onTemplateRowLabelKeyUp_">
-                </cp-input>
-                <span class="error" hidden$="[[!isEmpty_(row.label)]]">
+                    error="${!row.label}"
+                    value="${row.label}"
+                    @keyup="${event =>
+    this.onTemplateRowLabelKeyUp_(event, rowIndex)}">
+                </chops-input>
+                <span class="error" ?hidden="${!!row.label}">
                   required
                 </span>
               </td>
               <td>
                 <timeseries-descriptor
-                    state-path="[[statePath]].rows.[[rowIndex]]">
+                    .statePath="${this.statePath}.rows.${rowIndex}">
                 </timeseries-descriptor>
               </td>
               <td class="row_button">
-                <iron-icon
-                    icon="cp:add"
-                    on-click="onTemplateAddRow_">
-                </iron-icon>
+                <cp-icon
+                    icon="add"
+                    @click="${event => this.onTemplateAddRow_(rowIndex)}">
+                </cp-icon>
               </td>
               <td class="row_button">
-                <template is="dom-if" if="[[isMultiple_(rows)]]">
-                  <iron-icon
-                      icon="cp:remove"
-                      on-click="onTemplateRemoveRow_">
-                  </iron-icon>
-                </template>
+                ${(this.rows.length === 1) ? '' : html`
+                  <cp-icon
+                      icon="remove"
+                      @click="${event => this.onTemplateRemoveRow_(rowIndex)}">
+                  </cp-icon>
+                `}
               </td>
             </tr>
-          </template>
+          `)}
         </tbody>
       </table>
 
-      <div class="edit_form_controls">
-        <raised-button
+      <cp-flex grows class="edit_form_controls">
+        <chops-button
             id="cancel"
-            on-click="onCancel_">
-          <iron-icon icon="cp:cancel">
-          </iron-icon>
+            @click="${this.onCancel_}">
+          <cp-icon icon="cancel"></cp-icon>
           Cancel
-        </raised-button>
+        </chops-button>
 
-        <raised-button
+        <chops-button
             id="save"
-            disabled$="[[!canSave_(name, owners, statistic, rows)]]"
-            on-click="onTemplateSave_">
-          <iron-icon icon="cp:save">
-          </iron-icon>
+            ?disabled="${!ReportTemplate.canSave(
+      this.name, this.owners, this.statistic, this.rows)}"
+            @click="${this.onTemplateSave_}">
+          <cp-icon icon="save"></cp-icon>
           Save
-        </raised-button>
-      </div>
+        </chops-button>
+      </cp-flex>
     `;
-  }
-
-  canSave_(name, owners, statistic, rows) {
-    return ReportTemplate.canSave(name, owners, statistic, rows);
   }
 
   async onCancel_(event) {
@@ -233,25 +222,25 @@ export default class ReportTemplate extends ElementBase {
     }));
   }
 
-  async onTemplateRowLabelKeyUp_(event) {
+  async onTemplateRowLabelKeyUp_(event, rowIndex) {
     await STORE.dispatch(UPDATE(
-        this.statePath + '.rows.' + event.model.rowIndex,
+        this.statePath + '.rows.' + rowIndex,
         {label: event.target.value}));
   }
 
-  async onTemplateRemoveRow_(event) {
+  async onTemplateRemoveRow_(rowIndex) {
     await STORE.dispatch({
       type: ReportTemplate.reducers.removeRow.name,
       statePath: this.statePath,
-      rowIndex: event.model.rowIndex,
+      rowIndex,
     });
   }
 
-  async onTemplateAddRow_(event) {
+  async onTemplateAddRow_(rowIndex) {
     await STORE.dispatch({
       type: ReportTemplate.reducers.addRow.name,
       statePath: this.statePath,
-      rowIndex: event.model.rowIndex,
+      rowIndex,
     });
   }
 

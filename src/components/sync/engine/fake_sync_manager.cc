@@ -83,9 +83,8 @@ void FakeSyncManager::Init(InitArgs* args) {
   }
 
   for (auto& observer : observers_) {
-    observer.OnInitializationComplete(WeakHandle<JsBackend>(),
-                                      WeakHandle<DataTypeDebugInfoListener>(),
-                                      true, initial_sync_ended_types_);
+    observer.OnInitializationComplete(
+        WeakHandle<JsBackend>(), WeakHandle<DataTypeDebugInfoListener>(), true);
   }
 }
 
@@ -196,6 +195,10 @@ void FakeSyncManager::ShutdownOnSyncThread() {
 
 UserShare* FakeSyncManager::GetUserShare() {
   return test_user_share_.user_share();
+}
+
+ModelTypeConnector* FakeSyncManager::GetModelTypeConnector() {
+  return &fake_model_type_connector_;
 }
 
 std::unique_ptr<ModelTypeConnector>

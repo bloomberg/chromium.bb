@@ -9,9 +9,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/config/gpu_preferences.h"
-#include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/service/image_transport_surface_delegate.h"
 
 class GrContext;
 
@@ -19,6 +21,10 @@ namespace gl {
 class GLContext;
 class GLSurface;
 }  // namespace gl
+
+namespace gfx {
+class GpuFence;
+}  // namespace gfx
 
 namespace gpu {
 namespace gles2 {
@@ -28,10 +34,11 @@ class FeatureInfo;
 
 namespace viz {
 
-class SkiaOutputDeviceGL final : public SkiaOutputDevice {
+class SkiaOutputDeviceGL final : public SkiaOutputDevice,
+                                 public gpu::ImageTransportSurfaceDelegate {
  public:
   SkiaOutputDeviceGL(
-      gpu::SurfaceHandle surface_handle,
+      scoped_refptr<gl::GLSurface> gl_surface,
       scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceGL() override;
@@ -47,24 +54,50 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha) override;
-  gfx::SwapResponse SwapBuffers(const GrBackendSemaphore& semaphore,
-                                BufferPresentedCallback feedback) override;
-  gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
-                                  const GrBackendSemaphore& semaphore,
-                                  BufferPresentedCallback feedback) override;
+               bool has_alpha,
+               gfx::OverlayTransform transform) override;
+  void SwapBuffers(BufferPresentedCallback feedback,
+                   std::vector<ui::LatencyInfo> latency_info) override;
+  void PostSubBuffer(const gfx::Rect& rect,
+                     BufferPresentedCallback feedback,
+                     std::vector<ui::LatencyInfo> latency_info) override;
+  void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
+  SkSurface* BeginPaint() override;
+  void EndPaint(const GrBackendSemaphore& semaphore) override;
+
+  // gpu::ImageTransportSurfaceDelegate implementation:
+#if defined(OS_WIN)
+  void DidCreateAcceleratedSurfaceChildWindow(
+      gpu::SurfaceHandle parent_window,
+      gpu::SurfaceHandle child_window) override;
+#endif
+  const gpu::gles2::FeatureInfo* GetFeatureInfo() const override;
+  const gpu::GpuPreferences& GetGpuPreferences() const override;
+  void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params) override;
+  void BufferPresented(const gfx::PresentationFeedback& feedback) override;
+  GpuVSyncCallback GetGpuVSyncCallback() override;
 
  private:
-  const gpu::SurfaceHandle surface_handle_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
   gpu::GpuPreferences gpu_preferences_;
 
-  GrContext* gr_context_ = nullptr;
   scoped_refptr<gl::GLSurface> gl_surface_;
+  GrContext* gr_context_ = nullptr;
+
+  sk_sp<SkSurface> sk_surface_;
 
   bool supports_alpha_ = false;
+
+  base::WeakPtrFactory<SkiaOutputDeviceGL> weak_ptr_factory_{this};
+
+  // Used as callback for SwapBuffersAsync and PostSubBufferAsync to finish
+  // operation
+  void DoFinishSwapBuffers(const gfx::Size& size,
+                           std::vector<ui::LatencyInfo> latency_info,
+                           gfx::SwapResult result,
+                           std::unique_ptr<gfx::GpuFence>);
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceGL);
 };

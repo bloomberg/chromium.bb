@@ -10,25 +10,10 @@
 #include "core/fpdfapi/cmaps/GB1/cmaps_gb1.h"
 #include "core/fpdfapi/cmaps/Japan1/cmaps_japan1.h"
 #include "core/fpdfapi/cmaps/Korea1/cmaps_korea1.h"
+#include "core/fpdfapi/font/cpdf_fontglobals.h"
 #include "core/fpdfapi/page/cpdf_pagemodule.h"
 #include "core/fxcodec/fx_codec.h"
 #include "third_party/base/ptr_util.h"
-
-#ifdef PDF_ENABLE_XFA_BMP
-#include "core/fxcodec/codec/ccodec_bmpmodule.h"
-#endif
-
-#ifdef PDF_ENABLE_XFA_GIF
-#include "core/fxcodec/codec/ccodec_gifmodule.h"
-#endif
-
-#ifdef PDF_ENABLE_XFA_PNG
-#include "core/fxcodec/codec/ccodec_pngmodule.h"
-#endif
-
-#ifdef PDF_ENABLE_XFA_TIFF
-#include "core/fxcodec/codec/ccodec_tiffmodule.h"
-#endif
 
 namespace {
 
@@ -37,62 +22,32 @@ CPDF_ModuleMgr* g_pDefaultMgr = nullptr;
 }  // namespace
 
 // static
-CPDF_ModuleMgr* CPDF_ModuleMgr::Get() {
-  if (!g_pDefaultMgr)
-    g_pDefaultMgr = new CPDF_ModuleMgr;
-  return g_pDefaultMgr;
+void CPDF_ModuleMgr::Create() {
+  ASSERT(!g_pDefaultMgr);
+  g_pDefaultMgr = new CPDF_ModuleMgr;
+  fxcodec::ModuleMgr::Create();
+  CPDF_PageModule::Create();
+  g_pDefaultMgr->LoadEmbeddedMaps();
 }
 
 // static
 void CPDF_ModuleMgr::Destroy() {
+  ASSERT(g_pDefaultMgr);
+  CPDF_PageModule::Destroy();
+  fxcodec::ModuleMgr::Destroy();
   delete g_pDefaultMgr;
   g_pDefaultMgr = nullptr;
 }
 
-CPDF_ModuleMgr::CPDF_ModuleMgr() {}
-
-CPDF_ModuleMgr::~CPDF_ModuleMgr() {}
-
-void CPDF_ModuleMgr::Init() {
-  InitCodecModule();
-  InitPageModule();
-  LoadEmbeddedMaps();
-  LoadCodecModules();
+// static
+CPDF_ModuleMgr* CPDF_ModuleMgr::Get() {
+  ASSERT(g_pDefaultMgr);
+  return g_pDefaultMgr;
 }
 
-CCodec_JpegModule* CPDF_ModuleMgr::GetJpegModule() {
-  return m_pCodecModule->GetJpegModule();
-}
+CPDF_ModuleMgr::CPDF_ModuleMgr() = default;
 
-CCodec_Jbig2Module* CPDF_ModuleMgr::GetJbig2Module() {
-  return m_pCodecModule->GetJbig2Module();
-}
-
-void CPDF_ModuleMgr::InitPageModule() {
-  m_pPageModule = pdfium::MakeUnique<CPDF_PageModule>();
-}
-
-void CPDF_ModuleMgr::InitCodecModule() {
-  m_pCodecModule = pdfium::MakeUnique<CCodec_ModuleMgr>();
-}
-
-void CPDF_ModuleMgr::LoadCodecModules() {
-#ifdef PDF_ENABLE_XFA_BMP
-  m_pCodecModule->SetBmpModule(pdfium::MakeUnique<CCodec_BmpModule>());
-#endif
-
-#ifdef PDF_ENABLE_XFA_GIF
-  m_pCodecModule->SetGifModule(pdfium::MakeUnique<CCodec_GifModule>());
-#endif
-
-#ifdef PDF_ENABLE_XFA_PNG
-  m_pCodecModule->SetPngModule(pdfium::MakeUnique<CCodec_PngModule>());
-#endif
-
-#ifdef PDF_ENABLE_XFA_TIFF
-  m_pCodecModule->SetTiffModule(pdfium::MakeUnique<CCodec_TiffModule>());
-#endif
-}
+CPDF_ModuleMgr::~CPDF_ModuleMgr() = default;
 
 void CPDF_ModuleMgr::LoadEmbeddedMaps() {
   LoadEmbeddedGB1CMaps();
@@ -102,8 +57,7 @@ void CPDF_ModuleMgr::LoadEmbeddedMaps() {
 }
 
 void CPDF_ModuleMgr::LoadEmbeddedGB1CMaps() {
-  CPDF_FontGlobals* pFontGlobals =
-      CPDF_ModuleMgr::Get()->GetPageModule()->GetFontGlobals();
+  auto* pFontGlobals = CPDF_FontGlobals::GetInstance();
   pFontGlobals->SetEmbeddedCharset(
       CIDSET_GB1,
       pdfium::make_span(g_FXCMAP_GB1_cmaps, g_FXCMAP_GB1_cmaps_size));
@@ -111,8 +65,7 @@ void CPDF_ModuleMgr::LoadEmbeddedGB1CMaps() {
 }
 
 void CPDF_ModuleMgr::LoadEmbeddedCNS1CMaps() {
-  CPDF_FontGlobals* pFontGlobals =
-      CPDF_ModuleMgr::Get()->GetPageModule()->GetFontGlobals();
+  auto* pFontGlobals = CPDF_FontGlobals::GetInstance();
   pFontGlobals->SetEmbeddedCharset(
       CIDSET_CNS1,
       pdfium::make_span(g_FXCMAP_CNS1_cmaps, g_FXCMAP_CNS1_cmaps_size));
@@ -120,8 +73,7 @@ void CPDF_ModuleMgr::LoadEmbeddedCNS1CMaps() {
 }
 
 void CPDF_ModuleMgr::LoadEmbeddedJapan1CMaps() {
-  CPDF_FontGlobals* pFontGlobals =
-      CPDF_ModuleMgr::Get()->GetPageModule()->GetFontGlobals();
+  auto* pFontGlobals = CPDF_FontGlobals::GetInstance();
   pFontGlobals->SetEmbeddedCharset(
       CIDSET_JAPAN1,
       pdfium::make_span(g_FXCMAP_Japan1_cmaps, g_FXCMAP_Japan1_cmaps_size));
@@ -130,8 +82,7 @@ void CPDF_ModuleMgr::LoadEmbeddedJapan1CMaps() {
 }
 
 void CPDF_ModuleMgr::LoadEmbeddedKorea1CMaps() {
-  CPDF_FontGlobals* pFontGlobals =
-      CPDF_ModuleMgr::Get()->GetPageModule()->GetFontGlobals();
+  auto* pFontGlobals = CPDF_FontGlobals::GetInstance();
   pFontGlobals->SetEmbeddedCharset(
       CIDSET_KOREA1,
       pdfium::make_span(g_FXCMAP_Korea1_cmaps, g_FXCMAP_Korea1_cmaps_size));

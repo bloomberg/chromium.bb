@@ -271,8 +271,13 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
     var updateDailyRefreshStates = key => {
       if (!changes[key])
         return;
-      var oldDailyRefreshInfo = JSON.parse(changes[key].oldValue);
+
+      // If the user did not change Daily Refresh in this sync update,
+      // changes[key].oldValue will be empty
+      var oldDailyRefreshInfo =
+          changes[key].oldValue ? JSON.parse(changes[key].oldValue) : '';
       var newDailyRefreshInfo = JSON.parse(changes[key].newValue);
+
       // The resume token is expected to change after a new daily refresh
       // wallpaper is set. Ignore it if it's the only change.
       if (oldDailyRefreshInfo.enabled === newDailyRefreshInfo.enabled &&

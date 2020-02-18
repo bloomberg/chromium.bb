@@ -30,7 +30,11 @@
 
 #include "third_party/blink/renderer/modules/notifications/notification.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/unguessable_token.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
@@ -44,7 +48,6 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/notifications/notification_action.h"
 #include "third_party/blink/renderer/modules/notifications/notification_data.h"
@@ -55,6 +58,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -165,8 +169,7 @@ Notification::Notification(ExecutionContext* context,
       data_(std::move(data)),
       prepare_show_timer_(context->GetTaskRunner(TaskType::kMiscPlatformAPI),
                           this,
-                          &Notification::PrepareShow),
-      listener_binding_(this) {
+                          &Notification::PrepareShow) {
   if (data_->show_trigger_timestamp.has_value()) {
     show_trigger_ = TimestampTrigger::Create(static_cast<DOMTimeStamp>(
         data_->show_trigger_timestamp.value().ToJsTime()));
@@ -178,7 +181,7 @@ Notification::~Notification() = default;
 void Notification::SchedulePrepareShow() {
   DCHECK_EQ(state_, State::kLoading);
 
-  prepare_show_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  prepare_show_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void Notification::PrepareShow(TimerBase*) {
@@ -202,12 +205,13 @@ void Notification::PrepareShow(TimerBase*) {
 void Notification::DidLoadResources(NotificationResourcesLoader* loader) {
   DCHECK_EQ(loader, loader_.Get());
 
-  mojom::blink::NonPersistentNotificationListenerPtr event_listener;
+  mojo::PendingRemote<mojom::blink::NonPersistentNotificationListener>
+      event_listener;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       GetExecutionContext()->GetTaskRunner(blink::TaskType::kInternalDefault);
-  listener_binding_.Bind(mojo::MakeRequest(&event_listener, task_runner),
-                         task_runner);
+  listener_receiver_.Bind(event_listener.InitWithNewPipeAndPassReceiver(),
+                          task_runner);
 
   NotificationManager::From(GetExecutionContext())
       ->DisplayNonPersistentNotification(token_, data_->Clone(),
@@ -478,7 +482,7 @@ const AtomicString& Notification::InterfaceName() const {
 }
 
 void Notification::ContextDestroyed(ExecutionContext* context) {
-  listener_binding_.Close();
+  listener_receiver_.reset();
 
   state_ = State::kClosed;
 

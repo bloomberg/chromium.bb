@@ -46,13 +46,14 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
     : views::LabelButton(listener, base::string16(), CONTEXT_TOOLBAR_BUTTON),
       model_(std::move(model)),
       tab_strip_model_(tab_strip_model),
-      trigger_menu_on_long_press_(trigger_menu_on_long_press),
-      show_menu_factory_(this) {
+      trigger_menu_on_long_press_(trigger_menu_on_long_press) {
   set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);
 
-  if (base::FeatureList::IsEnabled(views::kInstallableInkDropFeature))
-    installable_ink_drop_ = std::make_unique<views::InstallableInkDrop>();
+  if (base::FeatureList::IsEnabled(views::kInstallableInkDropFeature)) {
+    installable_ink_drop_ = std::make_unique<views::InstallableInkDrop>(this);
+    installable_ink_drop_->SetConfig(GetToolbarInstallableInkDropConfig(this));
+  }
 
   SetInkDropMode(InkDropMode::ON);
 
@@ -69,7 +70,7 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
   // Because we're using the internal padding to keep track of the changes we
   // make to the leading margin to handle Fitts' Law, it's easier to just
   // allocate the property once and modify the value.
-  SetProperty(views::kInternalPaddingKey, new gfx::Insets());
+  SetProperty(views::kInternalPaddingKey, gfx::Insets());
 
   UpdateHighlightBackgroundAndInsets();
 }
@@ -159,6 +160,12 @@ void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
   UpdateHighlightBackgroundAndInsets();
   LabelButton::OnBoundsChanged(previous_bounds);
+}
+
+void ToolbarButton::OnThemeChanged() {
+  LabelButton::OnThemeChanged();
+  if (installable_ink_drop_)
+    installable_ink_drop_->SetConfig(GetToolbarInstallableInkDropConfig(this));
 }
 
 gfx::Rect ToolbarButton::GetAnchorBoundsInScreen() const {

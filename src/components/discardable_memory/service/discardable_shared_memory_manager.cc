@@ -206,6 +206,8 @@ const int kEnforceMemoryPolicyDelayMs = 1000;
 // Global atomic to generate unique discardable shared memory IDs.
 base::AtomicSequenceNumber g_next_discardable_shared_memory_id;
 
+DiscardableSharedMemoryManager* g_instance = nullptr;
+
 }  // namespace
 
 DiscardableSharedMemoryManager::MemorySegment::MemorySegment(
@@ -225,9 +227,10 @@ DiscardableSharedMemoryManager::DiscardableSharedMemoryManager()
       // Current thread might not have a task runner in tests.
       enforce_memory_policy_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       enforce_memory_policy_pending_(false),
-      mojo_thread_message_loop_(base::MessageLoopCurrent::GetNull()),
-      weak_ptr_factory_(this),
-      mojo_thread_weak_ptr_factory_(this) {
+      mojo_thread_message_loop_(base::MessageLoopCurrent::GetNull()) {
+  DCHECK(!g_instance)
+      << "A DiscardableSharedMemoryManager already exists in this process.";
+  g_instance = this;
   DCHECK_NE(memory_limit_, 0u);
   enforce_memory_policy_callback_ =
       base::Bind(&DiscardableSharedMemoryManager::EnforceMemoryPolicy,
@@ -242,9 +245,12 @@ DiscardableSharedMemoryManager::~DiscardableSharedMemoryManager() {
       this);
 
   if (mojo_thread_message_loop_) {
+    // TODO(etiennep): Get rid of mojo_thread_message_loop_ entirely.
+    DCHECK(mojo_thread_task_runner_);
     if (mojo_thread_message_loop_ == base::MessageLoopCurrent::Get()) {
       mojo_thread_message_loop_->RemoveDestructionObserver(this);
       mojo_thread_message_loop_ = base::MessageLoopCurrent::GetNull();
+      mojo_thread_task_runner_ = nullptr;
     } else {
       // If mojom::DiscardableSharedMemoryManager implementation is running in
       // another thread, we need invalidate all related weak ptrs on that
@@ -252,7 +258,7 @@ DiscardableSharedMemoryManager::~DiscardableSharedMemoryManager() {
       base::WaitableEvent event(
           base::WaitableEvent::ResetPolicy::MANUAL,
           base::WaitableEvent::InitialState::NOT_SIGNALED);
-      bool result = mojo_thread_message_loop_->task_runner()->PostTask(
+      bool result = mojo_thread_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(
               &DiscardableSharedMemoryManager::InvalidateMojoThreadWeakPtrs,
@@ -262,6 +268,14 @@ DiscardableSharedMemoryManager::~DiscardableSharedMemoryManager() {
         event.Wait();
     }
   }
+
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
+
+// static
+DiscardableSharedMemoryManager* DiscardableSharedMemoryManager::Get() {
+  return g_instance;
 }
 
 void DiscardableSharedMemoryManager::Bind(
@@ -269,9 +283,11 @@ void DiscardableSharedMemoryManager::Bind(
     const service_manager::BindSourceInfo& source_info) {
   DCHECK(!mojo_thread_message_loop_ ||
          mojo_thread_message_loop_ == base::MessageLoopCurrent::Get());
-  if (!mojo_thread_message_loop_) {
+  if (!mojo_thread_task_runner_) {
+    DCHECK(!mojo_thread_message_loop_);
     mojo_thread_message_loop_ = base::MessageLoopCurrent::Get();
     mojo_thread_message_loop_->AddDestructionObserver(this);
+    mojo_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
   mojo::MakeStrongBinding(
@@ -406,8 +422,7 @@ size_t DiscardableSharedMemoryManager::GetBytesAllocated() {
 void DiscardableSharedMemoryManager::WillDestroyCurrentMessageLoop() {
   // The mojo thead is going to be destroyed. We should invalidate all related
   // weak ptrs and remove the destrunction observer.
-  DCHECK(
-      mojo_thread_message_loop_->task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(mojo_thread_task_runner_->RunsTasksInCurrentSequence());
   DLOG_IF(WARNING, mojo_thread_weak_ptr_factory_.HasWeakPtrs())
       << "Some MojoDiscardableSharedMemoryManagerImpls are still alive. They "
          "will be leaked.";
@@ -617,8 +632,7 @@ void DiscardableSharedMemoryManager::ScheduleEnforceMemoryPolicy() {
 
 void DiscardableSharedMemoryManager::InvalidateMojoThreadWeakPtrs(
     base::WaitableEvent* event) {
-  DCHECK(
-      mojo_thread_message_loop_->task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(mojo_thread_task_runner_->RunsTasksInCurrentSequence());
   mojo_thread_weak_ptr_factory_.InvalidateWeakPtrs();
   mojo_thread_message_loop_->RemoveDestructionObserver(this);
   mojo_thread_message_loop_ = base::MessageLoopCurrent::GetNull();

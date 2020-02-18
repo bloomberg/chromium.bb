@@ -73,7 +73,7 @@ ResetRequestOriginFromString(const std::string& request_origin) {
 const char ResetSettingsHandler::kCctResetSettingsHash[] = "cct";
 
 ResetSettingsHandler::ResetSettingsHandler(Profile* profile)
-    : profile_(profile), callback_weak_ptr_factory_(this) {
+    : profile_(profile) {
   google_brand::GetBrand(&brandcode_);
 }
 
@@ -268,7 +268,6 @@ void ResetSettingsHandler::ResetProfile(
                  callback_weak_ptr_factory_.GetWeakPtr(), callback_id,
                  send_settings, request_origin));
   base::RecordAction(base::UserMetricsAction("ResetProfile"));
-  UMA_HISTOGRAM_BOOLEAN("ProfileReset.SendFeedback", send_settings);
   UMA_HISTOGRAM_ENUMERATION(
       "ProfileReset.ResetRequestOrigin", request_origin,
       reset_report::ChromeResetReport::ResetRequestOrigin_MAX + 1);

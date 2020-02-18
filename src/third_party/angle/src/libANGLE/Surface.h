@@ -227,7 +227,7 @@ class Surface : public LabeledObject, public gl::FramebufferAttachmentObject
   private:
     Error destroyImpl(const Display *display);
 
-    void postSwap(const gl::Context *context);
+    void postSwap(const Display *display);
     Error releaseRef(const Display *display);
 
     gl::InitState mInitState;

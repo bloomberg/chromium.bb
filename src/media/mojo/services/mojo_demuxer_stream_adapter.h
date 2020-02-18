@@ -38,6 +38,7 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
 
   // DemuxerStream implementation.
   void Read(const ReadCB& read_cb) override;
+  bool IsReadPending() const override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   Type type() const override;
@@ -81,7 +82,7 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
 
   std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 
-  base::WeakPtrFactory<MojoDemuxerStreamAdapter> weak_factory_;
+  base::WeakPtrFactory<MojoDemuxerStreamAdapter> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(MojoDemuxerStreamAdapter);
 };
 

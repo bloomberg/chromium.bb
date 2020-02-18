@@ -34,12 +34,12 @@ class CookiesViewHandler : public SettingsPageUIHandler,
   // CookiesTreeModel::Observer:
   void TreeNodesAdded(ui::TreeModel* model,
                       ui::TreeModelNode* parent,
-                      int start,
-                      int count) override;
+                      size_t start,
+                      size_t count) override;
   void TreeNodesRemoved(ui::TreeModel* model,
                         ui::TreeModelNode* parent,
-                        int start,
-                        int count) override;
+                        size_t start,
+                        size_t count) override;
   void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) override {
   }
   void TreeModelBeginBatch(CookiesTreeModel* model) override;
@@ -106,7 +106,7 @@ class CookiesViewHandler : public SettingsPageUIHandler,
   Request request_;
 
   // Sorted index list, by site. Indexes refer to |model->GetRoot()| children.
-  typedef std::pair<base::string16, int> LabelAndIndex;
+  typedef std::pair<base::string16, size_t> LabelAndIndex;
   std::vector<LabelAndIndex> sorted_sites_;
 
   std::unique_ptr<CookiesTreeModelUtil> model_util_;

@@ -5,6 +5,8 @@
 
 '''Unit tests for node_io.FileNode'''
 
+from __future__ import print_function
+
 import StringIO
 import os
 import sys
@@ -20,31 +22,38 @@ from grit import grd_reader
 from grit import util
 
 
+def _GetAllCliques(root_node):
+  """Return all cliques in the |root_node| tree."""
+  ret = []
+  for node in root_node:
+    ret.extend(node.GetCliques())
+  return ret
+
+
 class FileNodeUnittest(unittest.TestCase):
   def testGetPath(self):
     root = misc.GritNode()
     root.StartParsing(u'grit', None)
     root.HandleAttribute(u'latest_public_release', u'0')
     root.HandleAttribute(u'current_release', u'1')
-    root.HandleAttribute(u'base_dir', ur'..\resource')
+    root.HandleAttribute(u'base_dir', r'..\resource')
     translations = empty.TranslationsNode()
     translations.StartParsing(u'translations', root)
     root.AddChild(translations)
     file_node = node_io.FileNode()
     file_node.StartParsing(u'file', translations)
-    file_node.HandleAttribute(u'path', ur'flugel\kugel.pdf')
+    file_node.HandleAttribute(u'path', r'flugel\kugel.pdf')
     translations.AddChild(file_node)
     root.EndParsing()
 
     self.failUnless(root.ToRealPath(file_node.GetInputPath()) ==
                     util.normpath(
-                      os.path.join(ur'../resource', ur'flugel/kugel.pdf')))
+                      os.path.join(r'../resource', r'flugel/kugel.pdf')))
 
   def VerifyCliquesContainEnglishAndFrenchAndNothingElse(self, cliques):
+    self.assertEqual(2, len(cliques))
     for clique in cliques:
-      self.failUnlessEquals(len(clique[0].clique), 2)
-      self.failUnless('en' in cliques[i][0].clique)
-      self.failUnless('fr' in cliques[i][0].clique)
+      self.assertEqual({'en', 'fr'}, set(clique.clique.keys()))
 
   def testLoadTranslations(self):
     xml = '''<?xml version="1.0" encoding="UTF-8"?>
@@ -63,7 +72,7 @@ class FileNodeUnittest(unittest.TestCase):
                            util.PathFromRoot('grit/testdata'))
     grd.SetOutputLanguage('en')
     grd.RunGatherers()
-    self.VerifyCliquesContainEnglishAndFrenchAndNothingElse(grd.GetCliques())
+    self.VerifyCliquesContainEnglishAndFrenchAndNothingElse(_GetAllCliques(grd))
 
   def testIffyness(self):
     grd = grd_reader.Parse(StringIO.StringIO('''<?xml version="1.0" encoding="UTF-8"?>
@@ -82,9 +91,14 @@ class FileNodeUnittest(unittest.TestCase):
       </grit>'''), util.PathFromRoot('grit/testdata'))
     grd.SetOutputLanguage('en')
     grd.RunGatherers()
+    cliques = _GetAllCliques(grd)
+    self.assertEqual(2, len(cliques))
+    for clique in cliques:
+      self.assertEqual({'en'}, set(clique.clique.keys()))
 
     grd.SetOutputLanguage('fr')
     grd.RunGatherers()
+    self.VerifyCliquesContainEnglishAndFrenchAndNothingElse(_GetAllCliques(grd))
 
   def testConditionalLoadTranslations(self):
     xml = '''<?xml version="1.0" encoding="UTF-8"?>
@@ -110,7 +124,7 @@ class FileNodeUnittest(unittest.TestCase):
                            util.PathFromRoot('grit/testdata'))
     grd.SetOutputLanguage('en')
     grd.RunGatherers()
-    self.VerifyCliquesContainEnglishAndFrenchAndNothingElse(grd.GetCliques())
+    self.VerifyCliquesContainEnglishAndFrenchAndNothingElse(_GetAllCliques(grd))
 
   def testConditionalOutput(self):
     xml = '''<?xml version="1.0" encoding="UTF-8"?>
@@ -160,6 +174,7 @@ class FileNodeUnittest(unittest.TestCase):
       </grit>'''), util.PathFromRoot('grit/testdata'))
     grd.SetOutputLanguage('en')
     grd.RunGatherers()
+    self.assertEqual([], _GetAllCliques(grd))
 
 
 if __name__ == '__main__':

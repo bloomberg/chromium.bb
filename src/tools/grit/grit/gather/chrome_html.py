@@ -14,6 +14,8 @@ factors are also removed from existing image sets to support explicitly
 referencing all available images.
 """
 
+from __future__ import print_function
+
 import os
 import re
 
@@ -339,6 +341,10 @@ class ChromeHtml(interface.GathererBase):
     """Parses and inlines the represented file."""
 
     filename = self.GetInputPath()
+    # If there is a grd_node, prefer its GetInputPath(), as that may do more
+    # processing to make the call to ToRealPath() below work correctly.
+    if self.grd_node:
+      filename = self.grd_node.GetInputPath()
     if self.filename_expansion_function:
       filename = self.filename_expansion_function(filename)
     # Hack: some unit tests supply an absolute path and no root node.

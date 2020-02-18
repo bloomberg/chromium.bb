@@ -45,7 +45,8 @@ enum class ImportContainerResult {
   kFailedVmStopped = 2,
   kFailedVmStarted = 3,
   kFailedArchitecture = 4,
-  kMaxValue = kFailedArchitecture,
+  kFailedSpace = 5,
+  kMaxValue = kFailedSpace,
 };
 
 // CrostiniExportImport is a keyed profile service to manage exporting and
@@ -81,19 +82,19 @@ class CrostiniExportImport : public KeyedService,
                        base::FilePath path,
                        CrostiniManager::CrostiniResultCallback callback);
 
-  // Called by the notification when it is closed so it can be destroyed.
-  void NotificationCompleted(CrostiniExportImportNotification* notification);
-
   CrostiniExportImportNotification* GetNotificationForTesting(
       ContainerId container_id);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest,
+                           TestDeprecatedExportSuccess);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestExportSuccess);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestExportFail);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportSuccess);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportFail);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest,
                            TestImportFailArchitecture);
+  FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportFailSpace);
 
   // ui::SelectFileDialog::Listener implementation.
   void FileSelected(const base::FilePath& path,
@@ -101,29 +102,35 @@ class CrostiniExportImport : public KeyedService,
                     void* params) override;
 
   void Start(ExportImportType type,
-             const ContainerId& container_id,
+             ContainerId container_id,
              base::FilePath path,
              CrostiniManager::CrostiniResultCallback callback);
 
-  // crostini::ExportContainerProgressObserver implementation.
+  // DEPRECATED crostini::ExportContainerProgressObserver implementation.
+  // TODO(juwa): delete this once the new version of tremplin has shipped.
   void OnExportContainerProgress(const std::string& vm_name,
                                  const std::string& container_name,
                                  crostini::ExportContainerProgressStatus status,
                                  int progress_percent,
                                  uint64_t progress_speed) override;
 
+  // crostini::ExportContainerProgressObserver implementation.
+  void OnExportContainerProgress(const std::string& vm_name,
+                                 const std::string& container_name,
+                                 const StreamingExportStatus& status) override;
+
   // crostini::ImportContainerProgressObserver implementation.
-  void OnImportContainerProgress(
-      const std::string& vm_name,
-      const std::string& container_name,
-      crostini::ImportContainerProgressStatus status,
-      int progress_percent,
-      uint64_t progress_speed,
-      const std::string& architecture_device,
-      const std::string& architecture_container) override;
+  void OnImportContainerProgress(const std::string& vm_name,
+                                 const std::string& container_name,
+                                 crostini::ImportContainerProgressStatus status,
+                                 int progress_percent,
+                                 uint64_t progress_speed,
+                                 const std::string& architecture_device,
+                                 const std::string& architecture_container,
+                                 uint64_t available_space,
+                                 uint64_t minimum_required_space) override;
 
   void ExportAfterSharing(const ContainerId& container_id,
-                          const base::FilePath& filename,
                           CrostiniManager::CrostiniResultCallback callback,
                           const base::FilePath& container_path,
                           bool result,
@@ -148,10 +155,12 @@ class CrostiniExportImport : public KeyedService,
 
   std::string GetUniqueNotificationId();
 
+  CrostiniExportImportNotification& RemoveNotification(
+      std::map<ContainerId, CrostiniExportImportNotification*>::iterator it);
+
   Profile* profile_;
   scoped_refptr<ui::SelectFileDialog> select_folder_dialog_;
-  std::map<ContainerId, std::unique_ptr<CrostiniExportImportNotification>>
-      notifications_;
+  std::map<ContainerId, CrostiniExportImportNotification*> notifications_;
   // Notifications must have unique-per-profile identifiers.
   // A non-static member on a profile-keyed-service will suffice.
   int next_notification_id_;

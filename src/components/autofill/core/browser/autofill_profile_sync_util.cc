@@ -41,7 +41,7 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillProfile(
   DCHECK(base::IsValidGUID(entry.guid()));
 
   auto entity_data = std::make_unique<EntityData>();
-  entity_data->non_unique_name = entry.guid();
+  entity_data->name = entry.guid();
   AutofillProfileSpecifics* specifics =
       entity_data->specifics.mutable_autofill_profile();
 
@@ -192,30 +192,6 @@ std::string GetStorageKeyFromAutofillProfileSpecifics(
     return std::string();
   }
   return specifics.guid();
-}
-
-bool IsLocalProfileEqualToServerProfile(
-    const std::vector<std::unique_ptr<AutofillProfile>>& server_profiles,
-    const AutofillProfile& local_profile,
-    const std::string& app_locale) {
-  AutofillProfileComparator comparator(app_locale);
-  for (const auto& server_profile : server_profiles) {
-    // The same logic as when deciding whether to convert into a new profile in
-    // PersonalDataManager::MergeServerAddressesIntoProfiles.
-    if (comparator.AreMergeable(*server_profile, local_profile) &&
-        (!local_profile.IsVerified() || !server_profile->IsVerified())) {
-      return true;
-    }
-  }
-  return false;
-}
-
-void ReportAutofillProfileAddOrUpdateOrigin(
-    AutofillProfileSyncChangeOrigin origin) {
-  UMA_HISTOGRAM_ENUMERATION("Sync.AutofillProfile.AddOrUpdateOrigin", origin);
-}
-void ReportAutofillProfileDeleteOrigin(AutofillProfileSyncChangeOrigin origin) {
-  UMA_HISTOGRAM_ENUMERATION("Sync.AutofillProfile.DeleteOrigin", origin);
 }
 
 }  // namespace autofill

@@ -20,6 +20,7 @@
 #include <direct.h>
 #include <tchar.h>
 #include <windows.h>
+
 #include <algorithm>
 #include <codecvt>
 #include <locale>
@@ -42,15 +43,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
 #include <memory>
 #include <type_traits>
 #include <utility>
 
 #if defined(WEBRTC_IOS)
 #include "test/testsupport/ios_file_utils.h"
-#endif
-
-#if defined(WEBRTC_MAC)
+#elif defined(WEBRTC_MAC)
 #include "test/testsupport/mac_file_utils.h"
 #endif
 

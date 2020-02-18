@@ -314,42 +314,59 @@ class DeviceUtilsIsOnlineTest(DeviceUtilsTest):
 class DeviceUtilsHasRootTest(DeviceUtilsTest):
 
   def testHasRoot_true(self):
-    with self.patch_call(self.call.device.product_name,
-                          return_value='notasailfish'), (
+    with self.patch_call(self.call.device.build_type,
+                          return_value='userdebug'), (
+        self.patch_call(self.call.device.product_name,
+                        return_value='notasailfish')), (
         self.assertCall(self.call.adb.Shell('ls /root'), 'foo\n')):
       self.assertTrue(self.device.HasRoot())
 
   def testhasRootSpecial_true(self):
-    with self.patch_call(self.call.device.product_name,
-                         return_value='sailfish'), (
+    with self.patch_call(self.call.device.build_type,
+                         return_value='userdebug'), (
+        self.patch_call(self.call.device.product_name,
+                        return_value='sailfish')), (
         self.assertCall(self.call.adb.Shell('getprop service.adb.root'),
                         '1\n')):
       self.assertTrue(self.device.HasRoot())
 
   def testhasRootSpecialAosp_true(self):
-    with self.patch_call(self.call.device.product_name,
-                         return_value='aosp_sailfish'), (
+    with self.patch_call(self.call.device.build_type,
+                         return_value='userdebug'), (
+        self.patch_call(self.call.device.product_name,
+                        return_value='aosp_sailfish')), (
         self.assertCall(self.call.adb.Shell('getprop service.adb.root'),
                         '1\n')):
       self.assertTrue(self.device.HasRoot())
 
+  def testhasRootEngBuild_true(self):
+    with self.patch_call(self.call.device.build_type,
+                         return_value='eng'):
+      self.assertTrue(self.device.HasRoot())
+
   def testHasRoot_false(self):
-    with self.patch_call(self.call.device.product_name,
-                         return_value='notasailfish'), (
+    with self.patch_call(self.call.device.build_type,
+                         return_value='userdebug'), (
+        self.patch_call(self.call.device.product_name,
+                        return_value='notasailfish')), (
         self.assertCall(self.call.adb.Shell('ls /root'),
                         self.ShellError())):
       self.assertFalse(self.device.HasRoot())
 
   def testHasRootSpecial_false(self):
-    with self.patch_call(self.call.device.product_name,
-                         return_value='sailfish'), (
+    with self.patch_call(self.call.device.build_type,
+                         return_value='userdebug'), (
+        self.patch_call(self.call.device.product_name,
+                        return_value='sailfish')), (
         self.assertCall(self.call.adb.Shell('getprop service.adb.root'),
                         '\n')):
       self.assertFalse(self.device.HasRoot())
 
   def testHasRootSpecialAosp_false(self):
-    with self.patch_call(self.call.device.product_name,
-                         return_value='aosp_sailfish'), (
+    with self.patch_call(self.call.device.build_type,
+                         return_value='userdebug'), (
+        self.patch_call(self.call.device.product_name,
+                        return_value='aosp_sailfish')), (
         self.assertCall(self.call.adb.Shell('getprop service.adb.root'),
                         '\n')):
       self.assertFalse(self.device.HasRoot())
@@ -360,7 +377,7 @@ class DeviceUtilsEnableRootTest(DeviceUtilsTest):
     with self.assertCalls(
         self.call.adb.Root(),
         self.call.adb.WaitForDevice(),
-        (self.call.device.GetProp('service.adb.root', cache=False), '1')):
+        (self.call.device.HasRoot(), True)):
       self.device.EnableRoot()
 
   def testEnableRoot_userBuild(self):
@@ -376,6 +393,16 @@ class DeviceUtilsEnableRootTest(DeviceUtilsTest):
         (self.call.device.IsUserBuild(), False)):
       with self.assertRaises(device_errors.AdbCommandFailedError):
         self.device.EnableRoot()
+
+  def testEnableRoot_timeoutInWaitForDevice(self):
+    with self.assertCalls(
+        (self.call.adb.Root(),
+         self.AdbCommandError(
+             output='timeout expired while waiting for device')),
+        (self.call.device.IsUserBuild(), False),
+        self.call.adb.WaitForDevice(),
+        (self.call.device.HasRoot(), True)):
+      self.device.EnableRoot()
 
 
 class DeviceUtilsIsUserBuildTest(DeviceUtilsTest):
@@ -755,6 +782,18 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
       self.device.Install(DeviceUtilsInstallTest.mock_apk, retries=0,
                           permissions=['p1', 'p2'])
 
+  def testInstall_identicalPriorInstall(self):
+    with self.assertCalls(
+        (mock.call.os.path.exists('/fake/test/app.apk'), True),
+        (self.call.device._GetApplicationPathsInternal('test.package'),
+         ['/fake/data/app/test.package.apk']),
+        (self.call.device._ComputeStaleApks('test.package',
+            ['/fake/test/app.apk']),
+         ([], None)),
+        (self.call.device.ForceStop('test.package'))):
+      self.device.Install(DeviceUtilsInstallTest.mock_apk, retries=0,
+                          permissions=[])
+
   def testInstall_differentPriorInstall(self):
     with self.assertCalls(
         (mock.call.os.path.exists('/fake/test/app.apk'), True),
@@ -763,6 +802,18 @@ class DeviceUtilsInstallTest(DeviceUtilsTest):
         (self.call.device._ComputeStaleApks('test.package',
             ['/fake/test/app.apk']),
          (['/fake/test/app.apk'], None)),
+        self.call.device.Uninstall('test.package'),
+        self.call.adb.Install('/fake/test/app.apk', reinstall=False,
+                              allow_downgrade=False)):
+      self.device.Install(DeviceUtilsInstallTest.mock_apk, retries=0,
+                          permissions=[])
+
+  def testInstall_differentPriorInstallSplitApk(self):
+    with self.assertCalls(
+        (mock.call.os.path.exists('/fake/test/app.apk'), True),
+        (self.call.device._GetApplicationPathsInternal('test.package'),
+         ['/fake/data/app/test.package.apk',
+          '/fake/data/app/test.package2.apk']),
         self.call.device.Uninstall('test.package'),
         self.call.adb.Install('/fake/test/app.apk', reinstall=False,
                               allow_downgrade=False)):
@@ -909,6 +960,25 @@ class DeviceUtilsInstallSplitApkTest(DeviceUtilsTest):
         self.device.InstallSplitApk(DeviceUtilsInstallSplitApkTest.mock_apk,
             ['split1.apk', 'split2.apk', 'split3.apk'], permissions=[],
             retries=0)
+
+  def testInstallSplitApk_previouslyNonSplit(self):
+    with self.assertCalls(
+        (self.call.device._CheckSdkLevel(21)),
+        (mock.call.devil.android.sdk.split_select.SelectSplits(
+            self.device, 'base.apk',
+            ['split1.apk', 'split2.apk', 'split3.apk'],
+            allow_cached_props=False),
+         ['split2.apk']),
+        (mock.call.os.path.exists('base.apk'), True),
+        (mock.call.os.path.exists('split2.apk'), True),
+        (self.call.device._GetApplicationPathsInternal(
+            'test.package'), ['/fake/data/app/test.package.apk']),
+        self.call.device.Uninstall('test.package'),
+        (self.call.adb.InstallMultiple(
+            ['base.apk', 'split2.apk'], partial=None, reinstall=False,
+            allow_downgrade=False))):
+      self.device.InstallSplitApk(DeviceUtilsInstallSplitApkTest.mock_apk,
+          ['split1.apk', 'split2.apk', 'split3.apk'], permissions=[], retries=0)
 
 
 class DeviceUtilsInstallBundleTest(DeviceUtilsTest):
@@ -2874,9 +2944,18 @@ class DeviceUtilsSetWebViewFallbackLogicTest(DeviceUtilsTest):
         with self.assertRaises(device_errors.CommandFailedError):
           self.device.SetWebViewFallbackLogic(False)
 
-  def testSetWebViewFallbackLogic_noop(self):
+  def testSetWebViewFallbackLogic_beforeNougat(self):
     with self.patch_call(self.call.device.build_version_sdk,
                          return_value=version_codes.MARSHMALLOW):
+      with self.assertCalls():
+        self.device.SetWebViewFallbackLogic(False)
+
+  def testSetWebViewFallbackLogic_afterPie(self):
+    # TODO(ntfschr): replace this with the Q constant when the SDK is public and
+    # the codename is finalized.
+    q_version_code = version_codes.PIE + 1
+    with self.patch_call(self.call.device.build_version_sdk,
+                         return_value=q_version_code):
       with self.assertCalls():
         self.device.SetWebViewFallbackLogic(False)
 
@@ -2955,7 +3034,7 @@ class DeviceUtilsClientCache(DeviceUtilsTest):
     self.assertEqual(self.device._cache['test'], 0)
     self.assertEqual(client_cache_one, {'test': 1})
     self.assertEqual(client_cache_two, {'test': 2})
-    self.device._ClearCache()
+    self.device.ClearCache()
     self.assertTrue('test' not in self.device._cache)
     self.assertEqual(client_cache_one, {})
     self.assertEqual(client_cache_two, {})
@@ -2966,7 +3045,7 @@ class DeviceUtilsClientCache(DeviceUtilsTest):
     client_cache_two = self.device.GetClientCache('ClientOne')
     self.assertEqual(client_cache_one, {'test': 1})
     self.assertEqual(client_cache_two, {'test': 1})
-    self.device._ClearCache()
+    self.device.ClearCache()
     self.assertEqual(client_cache_one, {})
     self.assertEqual(client_cache_two, {})
 

@@ -53,6 +53,21 @@ alerts within groups, you can expand the group by clicking the expand button
 relevant triaged alerts, you can expand them by clicking the expand button (down
 arrow with number) in the 'Triaged' column.
 
+### Autotriage
+
+The box below the sources and above the triage controls uses
+[heuristics](https://cs.chromium.org/chromium/src/third_party/catapult/dashboard/dashboard/spa/autotriage.js)
+to automatically suggest triage actions for selected alerts, and explains its
+suggestions.
+
+Full automatic mode is currently disabled until sheriffs are comfortable with
+the heuristics.  After full automatic mode is deemed safe and enabled, when
+activated, then the autotriage button would change to a START/STOP button.
+The START button automatically takes the suggested action, then waits a few
+seconds between displaying a suggestion for the next group and taking the action
+in order to allow you to click STOP to review the suggested action, dig into the
+timeseries, and possibly take a different action.
+
 ### Triaging
 
 The four buttons at the top of the alerts table allow triaging alerts.
@@ -72,6 +87,35 @@ The four buttons at the top of the alerts table allow triaging alerts.
  * 'Unassign' is only active when triaged alerts are selected. It does not open
    a dialog. It immediately unassigns selected alerts so that they may be
    assigned to a different bug.
+
+### Hotkeys
+
+When an alerts-section is in the middle of the screen, it responds to the
+following hotkeys.
+
+| ? | Toggle the hotkey help dialog |
+| j | Move the cursor down through the alerts table |
+| k | Move the cursor up through the alerts table|
+| x | Toggle selection of the alert at the cursor|
+| g | Toggle expansion of the alert group at the cursor|
+| t | Toggle expansion of the triaged alerts at the cursor|
+| a | Accept autotriage suggestion for selected alerts|
+| e | Assign selected alerts to an existing bug|
+| n | File a new bug for selected alerts|
+| i | Ignore selected alerts|
+| u | Unassign selected alerts|
+| / | Focus the Sheriff menu|
+| sc | Sort the alerts table by Count|
+| st | Sort the alerts table by Triaged|
+| su | Sort the alerts table by Bug|
+| sr | Sort the alerts table by Revision|
+| ss | Sort the alerts table by Suite|
+| sm | Sort the alerts table by Measurement|
+| sa | Sort the alerts table by Master|
+| sb | Sort the alerts table by Bot|
+| se | Sort the alerts table by Case|
+| sd | Sort the alerts table by Delta|
+| sp | Sort the alerts table by Percent Delta|
 
 ### Timeseries Charts
 
@@ -184,3 +228,15 @@ chart.
 Click a tile in order to open a new Chart section to explore that data.
 
 Sparklines are not yet available for the chart-compound in Alerts sections.
+
+## How to Start a Bisect
+
+1. If not already signed in, click the red account icon in the top right corner
+   to sign in with Google.
+2. If not already looking at a chart, click the New Chart button in the drawer
+   on the left and select the Suite, Measurement, Bot, and optionally Case and
+   Statistic.
+3. If the Details Table is not already displayed below the chart, click in the
+   chart to select a data point at the desired revision range.
+4. Click the BISECT button at the bottom of the Details Table below the chart.
+5. Review the options in the Bisect dialog and click START.

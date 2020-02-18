@@ -69,6 +69,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1385214448885562192">Pulsa Intro para aceptar, Esc para cancelar, la tecla de flecha hacia abajo para ver el siguiente resultado y la tecla de flecha hacia arriba para ver el resultado anterior.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Anunciar atributos de texto enriquecido</translation>
 <translation id="1405567553485452995">Verde claro</translation>
 <translation id="1417889266572670458">Azul marino</translation>
 <translation id="1431911867058218151">Ciruela</translation>
@@ -319,11 +320,11 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="3232388865800379423">Un botón emergente</translation>
 <translation id="3241052487511142956">Anterior enlace visitado</translation>
 <translation id="3241638166094654466">Celdas en cada línea:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">vertical</translation>
 <translation id="3286390186030710347">Control deslizante</translation>
 <translation id="3299925995433437805">No hay ningún enlace siguiente visitado.</translation>
 <translation id="3300348286427369683">Compatible con el texto enriquecido. ChromeVox admite campos de texto enriquecido como, por ejemplo, comandos de salto, movimientos del cursor en dispositivos braille y selección de elementos.</translation>
-<translation id="3304756947457041303">Personalizar el indicador de texto enriquecido</translation>
 <translation id="3307886118343381874">Accede al final de la tabla</translation>
 <translation id="3311969765485641742">Pulsa Alt+Mayús+A para revisar las alertas</translation>
 <translation id="3312997241656799641">Siguiente enlace visitado</translation>

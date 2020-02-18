@@ -77,11 +77,13 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   PasswordStoreChangeList AddBlacklistedLoginForTesting(
       const autofill::PasswordForm& form) WARN_UNUSED_RESULT;
 
-  // Updates existing password form. Returns the list of applied changes
-  // ({}, {UPDATE}). The password is looked up by the tuple {origin,
-  // username_element, username_value, password_element, signon_realm}.
-  // These columns stay intact.
-  PasswordStoreChangeList UpdateLogin(const autofill::PasswordForm& form)
+  // Updates existing password form. Returns the list of applied changes ({},
+  // {UPDATE}). The password is looked up by the tuple {origin,
+  // username_element, username_value, password_element, signon_realm}. These
+  // columns stay intact. In case of error, it sets |error| if |error| isn't
+  // null.
+  PasswordStoreChangeList UpdateLogin(const autofill::PasswordForm& form,
+                                      UpdateLoginError* error = nullptr)
       WARN_UNUSED_RESULT;
 
   // Removes |form| from the list of remembered password forms. Returns true if
@@ -104,14 +106,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   bool RemoveLoginsCreatedBetween(base::Time delete_begin,
                                   base::Time delete_end,
                                   PasswordStoreChangeList* changes);
-
-  // Removes all logins synced from |delete_begin| onwards (inclusive) and
-  // before |delete_end|. You may use a null Time value to do an unbounded
-  // delete in either direction. If |changes| is not be null, it will be used to
-  // populate the change list of the removed forms if any.
-  bool RemoveLoginsSyncedBetween(base::Time delete_begin,
-                                 base::Time delete_end,
-                                 PasswordStoreChangeList* changes);
 
   // Sets the 'skip_zero_click' flag on all forms on |origin| to 'true'.
   bool DisableAutoSignInForOrigin(const GURL& origin);
@@ -148,8 +142,8 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
                               forms) WARN_UNUSED_RESULT;
 
   // Gets the list of auto-sign-inable credentials.
-  bool GetAutoSignInLogins(std::vector<std::unique_ptr<autofill::PasswordForm>>*
-                               forms) WARN_UNUSED_RESULT;
+  bool GetAutoSignInLogins(PrimaryKeyToFormMap* key_to_form_map)
+      WARN_UNUSED_RESULT;
 
   // Deletes the login database file on disk, and creates a new, empty database.
   // This can be used after migrating passwords to some other store, to ensure
@@ -157,6 +151,8 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // Returns true on success; otherwise, whether the file was deleted and
   // whether further use of this login database will succeed is unspecified.
   bool DeleteAndRecreateDatabaseFile();
+
+  bool IsEmpty();
 
   // On MacOS, it deletes all logins from the database that cannot be decrypted
   // when encryption key from Keychain is available. If the Keychain is locked,
@@ -268,15 +264,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
       bool blacklisted,
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms);
 
-  // Gets all logins synced from |begin| onwards (inclusive) and before |end|.
-  // You may use a null Time value to do an unbounded search in either
-  // direction. |key_to_form_map| must not be null and will be used to return
-  // the results. The key of the map is the DB primary key.
-  bool GetLoginsSyncedBetween(base::Time begin,
-                              base::Time end,
-                              PrimaryKeyToFormMap* key_to_form_map)
-      WARN_UNUSED_RESULT;
-
   // Returns the DB primary key for the specified |form|.  Returns -1 if the row
   // for this |form| is not found.
   int GetPrimaryKey(const autofill::PasswordForm& form) const;
@@ -326,7 +313,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   std::string get_statement_federated_;
   std::string get_statement_psl_federated_;
   std::string created_statement_;
-  std::string synced_statement_;
   std::string blacklisted_statement_;
   std::string encrypted_statement_;
   std::string encrypted_password_statement_by_id_;

@@ -45,7 +45,7 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   bool DoesOriginMatchMask(
       int origin_type_mask,
       const url::Origin& origin,
-      storage::SpecialStoragePolicy* special_storage_policy) const override;
+      storage::SpecialStoragePolicy* special_storage_policy) override;
   void Remove(const base::Time& delete_begin,
               const base::Time& delete_end,
               int remove_mask,
@@ -228,7 +228,7 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   // We do not own this.
   StoragePartition* storage_partition_for_testing_;
 
-  base::WeakPtrFactory<BrowsingDataRemoverImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<BrowsingDataRemoverImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverImpl);
 };

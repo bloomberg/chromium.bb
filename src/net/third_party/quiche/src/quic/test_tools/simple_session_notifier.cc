@@ -135,7 +135,8 @@ void SimpleSessionNotifier::NeuterUnencryptedData() {
     QuicStreamFrame stream_frame(
         QuicUtils::GetCryptoStreamId(connection_->transport_version()), false,
         interval.min(), interval.max() - interval.min());
-    OnFrameAcked(QuicFrame(stream_frame), QuicTime::Delta::Zero());
+    OnFrameAcked(QuicFrame(stream_frame), QuicTime::Delta::Zero(),
+                 QuicTime::Zero());
   }
 }
 
@@ -202,7 +203,8 @@ QuicByteCount SimpleSessionNotifier::StreamBytesToSend() const {
 }
 
 bool SimpleSessionNotifier::OnFrameAcked(const QuicFrame& frame,
-                                         QuicTime::Delta /*ack_delay_time*/) {
+                                         QuicTime::Delta /*ack_delay_time*/,
+                                         QuicTime /*receive_timestamp*/) {
   QUIC_DVLOG(1) << "Acking " << frame;
   if (frame.type == CRYPTO_FRAME) {
     StreamState* state = &crypto_state_[frame.crypto_frame->level];
@@ -281,8 +283,7 @@ void SimpleSessionNotifier::OnFrameLost(const QuicFrame& frame) {
 
 void SimpleSessionNotifier::RetransmitFrames(const QuicFrames& frames,
                                              TransmissionType type) {
-  QuicConnection::ScopedPacketFlusher retransmission_flusher(
-      connection_, QuicConnection::SEND_ACK_IF_QUEUED);
+  QuicConnection::ScopedPacketFlusher retransmission_flusher(connection_);
   connection_->SetTransmissionType(type);
   for (const QuicFrame& frame : frames) {
     if (frame.type == CRYPTO_FRAME) {
@@ -430,6 +431,14 @@ bool SimpleSessionNotifier::HasUnackedCryptoData() const {
   QuicIntervalSet<QuicStreamOffset> bytes_to_ack(0, state.bytes_total);
   bytes_to_ack.Difference(state.bytes_acked);
   return !bytes_to_ack.Empty();
+}
+
+bool SimpleSessionNotifier::HasUnackedStreamData() const {
+  for (auto it : stream_map_) {
+    if (StreamIsWaitingForAcks(it.first))
+      return true;
+  }
+  return false;
 }
 
 bool SimpleSessionNotifier::OnControlFrameAcked(const QuicFrame& frame) {

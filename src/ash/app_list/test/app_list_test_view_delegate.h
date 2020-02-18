@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/app_list_view_delegate.h"
@@ -86,17 +87,25 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                     ash::AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
                            GetContextMenuModelCallback callback) override;
+  ui::ImplicitAnimationObserver* GetAnimationObserver(
+      ash::AppListViewState target_state) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
   bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
                                   const gfx::Point& screen_location) override;
   bool CanProcessEventsOnApplistViews() override;
+  bool ShouldDismissImmediately() override;
   void GetNavigableContentsFactory(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
       override;
+  int GetTargetYForAppListHide(aura::Window* root_window) override;
   ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
+  void NotifySearchResultsForLogging(
+      const base::string16& raw_query,
+      const ash::SearchResultIdWithPositionIndices& results,
+      int position_index) override;
   bool IsAssistantAllowedAndEnabled() const override;
   bool ShouldShowAssistantPrivacyInfo() const override;
   void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
@@ -105,6 +114,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
       ash::AppListViewState state) override;
   void GetAppLaunchedMetricParams(
       app_list::AppLaunchedMetricParams* metric_params) override;
+  gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

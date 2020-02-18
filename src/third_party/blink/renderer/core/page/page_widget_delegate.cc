@@ -36,10 +36,11 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
-#include "third_party/blink/renderer/core/layout/jank_tracker.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -49,10 +50,15 @@ void PageWidgetDelegate::Animate(Page& page,
                                  base::TimeTicks monotonic_frame_begin_time) {
   page.GetAutoscrollController().Animate();
   page.Animator().ServiceScriptedAnimations(monotonic_frame_begin_time);
+  // The ValidationMessage overlay manages its own internal Page that isn't
+  // hooked up the normal BeginMainFrame flow, so we manually tick its
+  // animations here.
+  page.GetValidationMessageClient().ServiceScriptedAnimations(
+      monotonic_frame_begin_time);
 }
 
 void PageWidgetDelegate::PostAnimate(Page& page) {
-  page.Animator().RunPostAnimationFrameCallbacks();
+  page.Animator().PostAnimate();
 }
 
 void PageWidgetDelegate::UpdateLifecycle(
@@ -86,7 +92,7 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     Document* document = root->GetDocument();
     DCHECK(document);
     if (LocalFrameView* view = document->View())
-      view->GetJankTracker().NotifyInput(event);
+      view->GetLayoutShiftTracker().NotifyInput(event);
   }
 
   if (event.GetModifiers() & WebInputEvent::kIsTouchAccessibility &&
@@ -210,8 +216,8 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
 void PageWidgetEventHandler::HandleMouseMove(
     LocalFrame& main_frame,
     const WebMouseEvent& event,
-    const std::vector<const WebInputEvent*>& coalesced_events,
-    const std::vector<const WebInputEvent*>& predicted_events) {
+    const WebVector<const WebInputEvent*>& coalesced_events,
+    const WebVector<const WebInputEvent*>& predicted_events) {
   WebMouseEvent transformed_event =
       TransformWebMouseEvent(main_frame.View(), event);
   main_frame.GetEventHandler().HandleMouseMoveEvent(
@@ -252,8 +258,8 @@ WebInputEventResult PageWidgetEventHandler::HandleMouseWheel(
 WebInputEventResult PageWidgetEventHandler::HandlePointerEvent(
     LocalFrame& main_frame,
     const WebPointerEvent& event,
-    const std::vector<const WebInputEvent*>& coalesced_events,
-    const std::vector<const WebInputEvent*>& predicted_events) {
+    const WebVector<const WebInputEvent*>& coalesced_events,
+    const WebVector<const WebInputEvent*>& predicted_events) {
   WebPointerEvent transformed_event =
       TransformWebPointerEvent(main_frame.View(), event);
   return main_frame.GetEventHandler().HandlePointerEvent(

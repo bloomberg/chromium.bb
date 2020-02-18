@@ -25,16 +25,16 @@
 
 namespace sw
 {
-	Blitter::Blitter()
+	Blitter::Blitter() :
+		blitMutex(),
+		blitCache(1024),
+		cornerUpdateMutex(),
+		cornerUpdateCache(64) // We only need one of these per format
 	{
-		blitCache = new RoutineCache<State>(1024);
-		cornerUpdateCache = new RoutineCache<State>(64); // We only need one of these per format
 	}
 
 	Blitter::~Blitter()
 	{
-		delete blitCache;
-		delete cornerUpdateCache;
 	}
 
 	void Blitter::clear(void *pixel, vk::Format format, vk::Image *dest, const vk::Format& viewFormat, const VkImageSubresourceRange& subresourceRange, const VkRect2D* renderArea)
@@ -52,7 +52,7 @@ namespace sw
 		}
 
 		State state(format, dstFormat, 1, dest->getSampleCountFlagBits(), { 0xF });
-		Routine *blitRoutine = getRoutine(state);
+		Routine *blitRoutine = getBlitRoutine(state);
 		if(!blitRoutine)
 		{
 			return;
@@ -231,7 +231,7 @@ namespace sw
 							for(uint32_t i = 0; i < area.extent.height; i++)
 							{
 								ASSERT(d < dest->end());
-								sw::clear((uint16_t*)d, packed, area.extent.width);
+								sw::clear((uint16_t*)d, static_cast<uint16_t>(packed), area.extent.width);
 								d += rowPitchBytes;
 							}
 							break;
@@ -275,6 +275,7 @@ namespace sw
 			break;
 		case VK_FORMAT_R8_UNORM:
 		case VK_FORMAT_R8_UINT:
+		case VK_FORMAT_R8_SRGB:
 			c.x = Float(Int(*Pointer<Byte>(element)));
 			c.w = float(0xFF);
 			break;
@@ -333,6 +334,7 @@ namespace sw
 			break;
 		case VK_FORMAT_R8G8_UNORM:
 		case VK_FORMAT_R8G8_UINT:
+		case VK_FORMAT_R8G8_SRGB:
 			c.x = Float(Int(*Pointer<Byte>(element + 0)));
 			c.y = Float(Int(*Pointer<Byte>(element + 1)));
 			c.w = float(0xFF);
@@ -617,30 +619,30 @@ namespace sw
 		case VK_FORMAT_R8G8B8_SINT:
 		case VK_FORMAT_R8G8B8_SNORM:
 		case VK_FORMAT_R8G8B8_SSCALED:
-		case VK_FORMAT_R8G8B8_SRGB:
 			if(writeB) { *Pointer<SByte>(element + 2) = SByte(RoundInt(Float(c.z))); }
 		case VK_FORMAT_R8G8_SINT:
 		case VK_FORMAT_R8G8_SNORM:
 		case VK_FORMAT_R8G8_SSCALED:
-		case VK_FORMAT_R8G8_SRGB:
 			if(writeG) { *Pointer<SByte>(element + 1) = SByte(RoundInt(Float(c.y))); }
 		case VK_FORMAT_R8_SINT:
 		case VK_FORMAT_R8_SNORM:
 		case VK_FORMAT_R8_SSCALED:
-		case VK_FORMAT_R8_SRGB:
 			if(writeR) { *Pointer<SByte>(element) = SByte(RoundInt(Float(c.x))); }
 			break;
 		case VK_FORMAT_R8G8B8_UINT:
 		case VK_FORMAT_R8G8B8_UNORM:
 		case VK_FORMAT_R8G8B8_USCALED:
+		case VK_FORMAT_R8G8B8_SRGB:
 			if(writeB) { *Pointer<Byte>(element + 2) = Byte(RoundInt(Float(c.z))); }
 		case VK_FORMAT_R8G8_UINT:
 		case VK_FORMAT_R8G8_UNORM:
 		case VK_FORMAT_R8G8_USCALED:
+		case VK_FORMAT_R8G8_SRGB:
 			if(writeG) { *Pointer<Byte>(element + 1) = Byte(RoundInt(Float(c.y))); }
 		case VK_FORMAT_R8_UINT:
 		case VK_FORMAT_R8_UNORM:
 		case VK_FORMAT_R8_USCALED:
+		case VK_FORMAT_R8_SRGB:
 			if(writeR) { *Pointer<Byte>(element) = Byte(RoundInt(Float(c.x))); }
 			break;
 		case VK_FORMAT_R16G16B16A16_SINT:
@@ -1042,7 +1044,6 @@ namespace sw
 		case VK_FORMAT_B8G8R8A8_SSCALED:
 			if(writeA) { *Pointer<SByte>(element + 3) = SByte(Extract(c, 3)); }
 		case VK_FORMAT_B8G8R8_SINT:
-		case VK_FORMAT_B8G8R8_SRGB:
 		case VK_FORMAT_B8G8R8_SSCALED:
 			if(writeB) { *Pointer<SByte>(element) = SByte(Extract(c, 2)); }
 			if(writeG) { *Pointer<SByte>(element + 1) = SByte(Extract(c, 1)); }
@@ -1108,6 +1109,7 @@ namespace sw
 			if(writeA) { *Pointer<Byte>(element + 3) = Byte(Extract(c, 3)); }
 		case VK_FORMAT_B8G8R8_UINT:
 		case VK_FORMAT_B8G8R8_USCALED:
+		case VK_FORMAT_B8G8R8_SRGB:
 			if(writeB) { *Pointer<Byte>(element) = Byte(Extract(c, 2)); }
 			if(writeG) { *Pointer<Byte>(element + 1) = Byte(Extract(c, 1)); }
 			if(writeR) { *Pointer<Byte>(element + 2) = Byte(Extract(c, 0)); }
@@ -1441,8 +1443,13 @@ namespace sw
 
 							if(state.srcSamples > 1) // Resolve multisampled source
 							{
+								if(state.convertSRGB && state.sourceFormat.isSRGBformat()) // sRGB -> RGB
+								{
+									if(!ApplyScaleAndClamp(color, state)) return nullptr;
+									preScaled = true;
+								}
 								Float4 accum = color;
-								for(int i = 1; i < state.srcSamples; i++)
+								for(int sample = 1; sample < state.srcSamples; sample++)
 								{
 									s += *Pointer<Int>(blit + OFFSET(BlitData, sSliceB));
 									if(!read(color, s, state))
@@ -1531,10 +1538,10 @@ namespace sw
 		return function("BlitRoutine");
 	}
 
-	Routine *Blitter::getRoutine(const State &state)
+	Routine *Blitter::getBlitRoutine(const State &state)
 	{
-		criticalSection.lock();
-		Routine *blitRoutine = blitCache->query(state);
+		std::unique_lock<std::mutex> lock(blitMutex);
+		Routine *blitRoutine = blitCache.query(state);
 
 		if(!blitRoutine)
 		{
@@ -1542,17 +1549,35 @@ namespace sw
 
 			if(!blitRoutine)
 			{
-				criticalSection.unlock();
 				UNIMPLEMENTED("blitRoutine");
 				return nullptr;
 			}
 
-			blitCache->add(state, blitRoutine);
+			blitCache.add(state, blitRoutine);
 		}
 
-		criticalSection.unlock();
-
 		return blitRoutine;
+	}
+
+	Routine *Blitter::getCornerUpdateRoutine(const State &state)
+	{
+		std::unique_lock<std::mutex> lock(cornerUpdateMutex);
+		Routine *cornerUpdateRoutine = cornerUpdateCache.query(state);
+
+		if(!cornerUpdateRoutine)
+		{
+			cornerUpdateRoutine = generateCornerUpdate(state);
+
+			if(!cornerUpdateRoutine)
+			{
+				UNIMPLEMENTED("cornerUpdateRoutine");
+				return nullptr;
+			}
+
+			cornerUpdateCache.add(state, cornerUpdateRoutine);
+		}
+
+		return cornerUpdateRoutine;
 	}
 
 	void Blitter::blitToBuffer(const vk::Image *src, VkImageSubresourceLayers subresource, VkOffset3D offset, VkExtent3D extent, uint8_t *dst, int bufferRowPitch, int bufferSlicePitch)
@@ -1562,7 +1587,7 @@ namespace sw
 		State state(format, format.getNonQuadLayoutFormat(), VK_SAMPLE_COUNT_1_BIT, VK_SAMPLE_COUNT_1_BIT,
 					{false, false});
 
-		Routine *blitRoutine = getRoutine(state);
+		Routine *blitRoutine = getBlitRoutine(state);
 		if(!blitRoutine)
 		{
 			return;
@@ -1628,7 +1653,7 @@ namespace sw
 		State state(format.getNonQuadLayoutFormat(), format, VK_SAMPLE_COUNT_1_BIT, VK_SAMPLE_COUNT_1_BIT,
 					{false, false});
 
-		Routine *blitRoutine = getRoutine(state);
+		Routine *blitRoutine = getBlitRoutine(state);
 		if(!blitRoutine)
 		{
 			return;
@@ -1735,7 +1760,7 @@ namespace sw
 		                    (static_cast<uint32_t>(region.srcOffsets[1].y) > srcExtent.height) ||
 		                    (doFilter && ((x0 < 0.5f) || (y0 < 0.5f)));
 
-		Routine *blitRoutine = getRoutine(state);
+		Routine *blitRoutine = getBlitRoutine(state);
 		if(!blitRoutine)
 		{
 			return;
@@ -1855,7 +1880,7 @@ namespace sw
 			// Low Border, Low Pixel, High Border, High Pixel
 			Int LB(-1), LP(0), HB(dim), HP(dim-1);
 
-			for(int i = 0; i < 6; ++i)
+			for(int face = 0; face < 6; face++)
 			{
 				computeCubeCorner(layers, LB, LP, LB, LP, pitchB, state);
 				computeCubeCorner(layers, LB, LP, HB, HP, pitchB, state);
@@ -1933,24 +1958,11 @@ namespace sw
 			UNIMPLEMENTED("Multi-sampled cube: %d samples", static_cast<int>(samples));
 		}
 
-		criticalSection.lock();
-		Routine *cornerUpdateRoutine = cornerUpdateCache->query(state);
-
+		Routine *cornerUpdateRoutine = getCornerUpdateRoutine(state);
 		if(!cornerUpdateRoutine)
 		{
-			cornerUpdateRoutine = generateCornerUpdate(state);
-
-			if(!cornerUpdateRoutine)
-			{
-				criticalSection.unlock();
-				UNIMPLEMENTED("cornerUpdateRoutine");
-				return;
-			}
-
-			cornerUpdateCache->add(state, cornerUpdateRoutine);
+			return;
 		}
-
-		criticalSection.unlock();
 
 		void(*cornerUpdateFunction)(const CubeBorderData *data) = (void(*)(const CubeBorderData*))cornerUpdateRoutine->getEntry();
 

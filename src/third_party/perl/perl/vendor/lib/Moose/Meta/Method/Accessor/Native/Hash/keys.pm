@@ -1,20 +1,12 @@
 package Moose::Meta::Method::Accessor::Native::Hash::keys;
-BEGIN {
-  $Moose::Meta::Method::Accessor::Native::Hash::keys::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Method::Accessor::Native::Hash::keys::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use Scalar::Util qw( looks_like_number );
-
 use Moose::Role;
 
-with 'Moose::Meta::Method::Accessor::Native::Reader' =>
-    { -excludes => ['_maximum_arguments'] };
+with 'Moose::Meta::Method::Accessor::Native::Reader';
 
 sub _maximum_arguments { 0 }
 

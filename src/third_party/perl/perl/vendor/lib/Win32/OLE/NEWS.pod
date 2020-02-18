@@ -237,7 +237,7 @@ function returned "Member not found" (0x80020003) you can write:
 =head2 OLE Event support
 
 This version of Win32::OLE contains B<ALPHA> level support for OLE events. The
-userinterface is still subject to change. There are ActiveX objects / controls
+user interface is still subject to change. There are ActiveX objects / controls
 that don't fire events under the current implementation.
 
 Events are enabled for a specific object with the Win32::OLE->WithEvents()
@@ -267,7 +267,7 @@ This will try to create the object on the remote MACHINE.
 =head2 Enumerate all Win32::OLE objects
 
 This class method returns the number Win32::OLE objects currently in
-existance. It will call the optional CALLBACK function for each of
+existence. It will call the optional CALLBACK function for each of
 these objects:
 
   $Count = Win32::OLE->EnumAllObjects(sub {

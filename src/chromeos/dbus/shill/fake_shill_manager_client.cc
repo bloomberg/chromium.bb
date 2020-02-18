@@ -357,26 +357,26 @@ void FakeShillManagerClient::ConfigureService(
     return;
   }
 
-  // For the purposes of this stub, we're going to assume that the GUID property
-  // is set to the service path because we don't want to re-implement Shill's
-  // property matching magic here.
-  std::string service_path = guid;
-
   std::string ipconfig_path;
   properties.GetString(shill::kIPConfigProperty, &ipconfig_path);
 
-  // Merge the new properties with existing properties, if any.
-  const base::DictionaryValue* existing_properties =
-      service_client->GetServiceProperties(service_path);
-  if (!existing_properties) {
-    // Add a new service to the service client stub because none exists, yet.
-    // This calls AddManagerService.
+  std::string service_path = service_client->FindServiceMatchingGUID(guid);
+  if (service_path.empty())
+    service_path = service_client->FindSimilarService(properties);
+  if (service_path.empty()) {
+    // In the stub, service paths don't have to be DBus paths, so build
+    // something out of the GUID as service path.
+    // Don't use the GUID itself, so tests are forced to distinguish between
+    // service paths and GUIDs instead of assuming that service path == GUID.
+    service_path = "service_path_for_" + guid;
     service_client->AddServiceWithIPConfig(
         service_path, guid /* guid */, guid /* name */, type, shill::kStateIdle,
         ipconfig_path, true /* visible */);
-    existing_properties = service_client->GetServiceProperties(service_path);
   }
 
+  // Merge the new properties with existing properties.
+  const base::DictionaryValue* existing_properties =
+      service_client->GetServiceProperties(service_path);
   std::unique_ptr<base::DictionaryValue> merged_properties(
       existing_properties->DeepCopy());
   merged_properties->MergeDictionary(&properties);
@@ -601,6 +601,9 @@ void FakeShillManagerClient::SortManagerServices(bool notify) {
     properties_copy.SetKey(kPathKey, base::Value(service_path));
     complete_dict_list.emplace_back(std::move(properties_copy));
   }
+
+  if (complete_dict_list.empty())
+    return;
 
   // Sort the service list using the same logic as Shill's Service::Compare.
   std::sort(complete_dict_list.begin(), complete_dict_list.end(),

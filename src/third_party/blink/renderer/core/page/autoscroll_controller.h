@@ -28,9 +28,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
-#include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -81,12 +81,14 @@ class CORE_EXPORT AutoscrollController final
   void UpdateAutoscrollLayoutObject();
   void UpdateDragAndDrop(Node* target_node,
                          const FloatPoint& event_position,
-                         TimeTicks event_time);
+                         base::TimeTicks event_time);
 
   // Middle-click autoscroll.
   void StartMiddleClickAutoscroll(LocalFrame*,
                                   const FloatPoint& position,
-                                  const FloatPoint& position_global);
+                                  const FloatPoint& position_global,
+                                  bool scroll_vert,
+                                  bool scroll_horiz);
   void HandleMouseMoveForMiddleClickAutoscroll(
       LocalFrame*,
       const FloatPoint& position_global,
@@ -107,13 +109,15 @@ class CORE_EXPORT AutoscrollController final
   void ScheduleMainThreadAnimation();
   LayoutBox* autoscroll_layout_object_ = nullptr;
   LayoutBox* pressed_layout_object_ = nullptr;
-  LayoutPoint drag_and_drop_autoscroll_reference_position_;
-  TimeTicks drag_and_drop_autoscroll_start_time_;
+  PhysicalOffset drag_and_drop_autoscroll_reference_position_;
+  base::TimeTicks drag_and_drop_autoscroll_start_time_;
 
   // Middle-click autoscroll.
   FloatPoint middle_click_autoscroll_start_pos_global_;
   FloatSize last_velocity_;
   MiddleClickMode middle_click_mode_ = kMiddleClickInitial;
+  bool can_scroll_vertically_ = false;
+  bool can_scroll_horizontally_ = false;
 
   FRIEND_TEST_ALL_PREFIXES(AutoscrollControllerTest,
                            CrashWhenLayoutStopAnimationBeforeScheduleAnimation);

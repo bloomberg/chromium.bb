@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1398853756734560583">Развернуть</translation>
 <translation id="1409544243779336081">Рекомендуемое приложение</translation>
+<translation id="1498028757988366001">Вы уже искали эту информацию. Если вы удалите запрос "<ph name="QUERY" />" из истории, он будет навсегда скрыт на всех ваших устройствах, где выполнен вход в аккаунт.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минута }one{# минута }few{# минуты }many{# минут }other{# минуты }}</translation>
 <translation id="1643823602425662293">Уведомление</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -45,13 +46,16 @@
 <translation id="2289052229480071835">Коснитесь интерактивных элементов на экране.</translation>
 <translation id="2295140143284145483">Опрос</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ТБ/с</translation>
+<translation id="2388990488038464401">Позвонить на этот номер со своего телефона?</translation>
 <translation id="24452542372838207">Развернуть уведомление</translation>
 <translation id="2445449901874883781">Показывать больше окон</translation>
+<translation id="2451871130406122810">Отправлено на устройство</translation>
 <translation id="2482878487686419369">Уведомления</translation>
 <translation id="2497284189126895209">Все файлы</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Калибровка завершена</translation>
 <translation id="252373100621549798">Неизвестный дисплей</translation>
+<translation id="2545651323591713692">Отложить</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{через 1 ч.}one{через # ч.}few{через # ч.}many{через # ч.}other{через # ч.}}</translation>
 <translation id="2583543531130364912">Откалибруйте сенсорный экран</translation>
 <translation id="2666092431469916601">Наверх</translation>
@@ -70,7 +74,8 @@
 <translation id="3183922693828471536">Прокрутить до этого места</translation>
 <translation id="3234408098842461169">Стрелка вниз</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 день}one{# день}few{# дня}many{# дней}other{# дня}}</translation>
-<translation id="335581015389089642">Озвучить</translation>
+<translation id="3295886253693811851">Позвонить:</translation>
+<translation id="335581015389089642">Озвучивание</translation>
 <translation id="3443810440409579745">Вкладка получена.</translation>
 <translation id="3479552764303398839">Не сейчас</translation>
 <translation id="348799646910989694">Временное хранилище автоматически скрыто</translation>
@@ -95,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{месяц назад}one{# месяц назад}few{# месяца назад}many{# месяцев назад}other{# месяца назад}}</translation>
 <translation id="4289300219472526559">Начать голосовой ввод</translation>
 <translation id="4316910396681052118">ВСЕ ПРИЛОЖЕНИЯ</translation>
+<translation id="4467014365953759647">Не удается отправить номер</translation>
 <translation id="4588090240171750605">Прокрутка вправо</translation>
 <translation id="4690510401873698237">Временное хранилище размещено в нижней части экрана</translation>
 <translation id="4724120544754982507">Центр уведомлений. Непрочитанных: <ph name="UNREAD_NOTIFICATION_COUNT" />.</translation>
@@ -111,6 +117,7 @@
 <translation id="5266161281976477809">Треугольник развертывания</translation>
 <translation id="5278860589123563674">Не удалось поделиться вкладкой</translation>
 <translation id="528468243742722775">Завершить</translation>
+<translation id="5327567770033251652">включите синхронизацию</translation>
 <translation id="5329858601952122676">&amp;Удалить</translation>
 <translation id="5395308026110844773">Вы поместили ярлык приложения "<ph name="DRAGGED_APP_NAME" />" над ярлыком приложения "<ph name="IN_PLACE_APP" />". Чтобы создать папку, отпустите палец.</translation>
 <translation id="5463830097259460683">Эмодзи и символы</translation>
@@ -150,6 +157,7 @@
 <translation id="6620110761915583480">Сохранить файл</translation>
 <translation id="6699343763173986273">Следующий трек</translation>
 <translation id="673773751041746814">Удаление</translation>
+<translation id="6779314412797872738">Чтобы отправить номер на телефон Android, <ph name="TROUBLESHOOT_LINK" /> в настройках обоих устройств.</translation>
 <translation id="6786750046913594791">Закрыть папку.</translation>
 <translation id="6808150112686056157">Остановить</translation>
 <translation id="6845383723252244143">Выбор папки</translation>
@@ -168,7 +176,9 @@
 <translation id="7319740667687257810">Панель запуска, частичный список приложений</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 мин. назад}one{# мин. назад}few{# мин. назад}many{# мин. назад}other{# мин. назад}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Проверьте подключение к мобильной сети и повторите попытку.</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Осталась 1 минута}one{Осталась # минута}few{Осталось # минуты}many{Осталось # минут}other{Осталось # минуты}}</translation>
+<translation id="7430878839542012341">Удалить этот запрос из истории поиска?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
 <translation id="7507604095951736240">Эмодзи</translation>
 <translation id="7658239707568436148">Отмена</translation>
@@ -186,7 +196,6 @@
 <translation id="8144660977431427332">Ваши поисковые запросы обрабатывает Google Ассистент. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, автозаполнение</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>
-<translation id="8170087467028567933">Если вы удалите эту подсказку, она будет скрыта на всех ваших устройствах, где выполнен вход в аккаунт.</translation>
 <translation id="8179976553408161302">ВВОД</translation>
 <translation id="8210608804940886430">Прокрутка вниз</translation>
 <translation id="8245914219290430011">Tab</translation>
@@ -197,7 +206,6 @@
 <translation id="838869780401515933">поставить галочку</translation>
 <translation id="8393700583063109961">Отправить сообщение</translation>
 <translation id="8394908167088220973">Воспроизведение/пауза</translation>
-<translation id="8420205633584771378">Удалить эту подсказку?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 г.}one{# г.}few{# г.}many{# л.}other{# г.}}</translation>
 <translation id="8602707065186045623">Файл <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Временное хранилище будет всегда отображаться</translation>

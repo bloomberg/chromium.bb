@@ -36,7 +36,16 @@ void ReportErrorAndTraceEvent(
     devtools_proxy->ReportError(error_message, std::move(error_field));
 }
 
-bool IsSignedExchangeHandlingEnabled(ResourceContext* context) {
+bool IsSignedExchangeHandlingEnabledOnIO(ResourceContext* context) {
+  if (!GetContentClient()->browser()->AllowSignedExchangeOnIO(context))
+    return false;
+
+  return base::FeatureList::IsEnabled(features::kSignedHTTPExchange) ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableExperimentalWebPlatformFeatures);
+}
+
+bool IsSignedExchangeHandlingEnabled(BrowserContext* context) {
   if (!GetContentClient()->browser()->AllowSignedExchange(context))
     return false;
 
@@ -223,16 +232,12 @@ network::ResourceResponseHead CreateRedirectResponseHead(
   std::string buf;
   std::string link_header;
   if (!is_fallback_redirect &&
-      base::FeatureList::IsEnabled(
-          features::kSignedExchangeSubresourcePrefetch) &&
       outer_response.headers) {
     outer_response.headers->GetNormalizedHeader("link", &link_header);
   }
   if (link_header.empty()) {
     buf = base::StringPrintf("HTTP/1.1 %d %s\r\n", 303, "See Other");
   } else {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kSignedExchangeSubresourcePrefetch));
     buf = base::StringPrintf(
         "HTTP/1.1 %d %s\r\n"
         "link: %s\r\n",

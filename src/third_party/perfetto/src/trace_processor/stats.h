@@ -49,6 +49,10 @@ namespace stats {
   F(ftrace_cpu_overrun_end,                   kIndexed, kDataLoss, kTrace),    \
   F(ftrace_cpu_read_events_begin,             kIndexed, kInfo,     kTrace),    \
   F(ftrace_cpu_read_events_end,               kIndexed, kInfo,     kTrace),    \
+  F(fuchsia_non_numeric_counters,             kSingle,  kError,    kAnalysis), \
+  F(fuchsia_timestamp_overflow,               kSingle,  kError,    kAnalysis), \
+  F(gpu_counters_invalid_spec,                kSingle,  kError,    kAnalysis), \
+  F(gpu_counters_missing_spec,                kSingle,  kError,    kAnalysis), \
   F(guess_trace_type_duration_ns,             kSingle,  kInfo,     kAnalysis), \
   F(interned_data_tokenizer_errors,           kSingle,  kInfo,     kAnalysis), \
   F(invalid_clock_snapshots,                  kSingle,  kError,    kAnalysis), \
@@ -102,7 +106,10 @@ namespace stats {
   F(heapprofd_invalid_string_id,              kSingle,  kError,    kTrace),    \
   F(heapprofd_invalid_mapping_id,             kSingle,  kError,    kTrace),    \
   F(heapprofd_invalid_frame_id,               kSingle,  kError,    kTrace),    \
-  F(heapprofd_invalid_callstack_id,           kSingle,  kError,    kTrace)
+  F(heapprofd_invalid_callstack_id,           kSingle,  kError,    kTrace),    \
+  F(metatrace_overruns,                       kSingle,  kError,    kTrace),    \
+  F(packages_list_has_parse_errors,           kSingle,  kError,    kTrace),    \
+  F(packages_list_has_read_errors,            kSingle,  kError,    kTrace)
 // clang-format on
 
 enum Type {

@@ -229,7 +229,7 @@ void QuicEndpoint::OnStreamFrame(const QuicStreamFrame& frame) {
   DCHECK_LE(offsets_received_.Size(), 1000u);
 }
 
-void QuicEndpoint::OnCryptoFrame(const QuicCryptoFrame& frame) {}
+void QuicEndpoint::OnCryptoFrame(const QuicCryptoFrame& /*frame*/) {}
 
 void QuicEndpoint::OnCanWrite() {
   if (notifier_ != nullptr) {
@@ -265,9 +265,10 @@ bool QuicEndpoint::AllowSelfAddressChange() const {
 }
 
 bool QuicEndpoint::OnFrameAcked(const QuicFrame& frame,
-                                QuicTime::Delta ack_delay_time) {
+                                QuicTime::Delta ack_delay_time,
+                                QuicTime receive_timestamp) {
   if (notifier_ != nullptr) {
-    return notifier_->OnFrameAcked(frame, ack_delay_time);
+    return notifier_->OnFrameAcked(frame, ack_delay_time, receive_timestamp);
   }
   return false;
 }
@@ -292,6 +293,13 @@ bool QuicEndpoint::HasUnackedCryptoData() const {
   return false;
 }
 
+bool QuicEndpoint::HasUnackedStreamData() const {
+  if (notifier_ != nullptr) {
+    return notifier_->HasUnackedStreamData();
+  }
+  return false;
+}
+
 QuicEndpoint::Writer::Writer(QuicEndpoint* endpoint)
     : endpoint_(endpoint), is_blocked_(false) {}
 
@@ -300,8 +308,8 @@ QuicEndpoint::Writer::~Writer() {}
 WriteResult QuicEndpoint::Writer::WritePacket(
     const char* buffer,
     size_t buf_len,
-    const QuicIpAddress& self_address,
-    const QuicSocketAddress& peer_address,
+    const QuicIpAddress& /*self_address*/,
+    const QuicSocketAddress& /*peer_address*/,
     PerPacketOptions* options) {
   DCHECK(!IsWriteBlocked());
   DCHECK(options == nullptr);
@@ -350,8 +358,8 @@ bool QuicEndpoint::Writer::IsBatchMode() const {
 }
 
 char* QuicEndpoint::Writer::GetNextWriteLocation(
-    const QuicIpAddress& self_address,
-    const QuicSocketAddress& peer_address) {
+    const QuicIpAddress& /*self_address*/,
+    const QuicSocketAddress& /*peer_address*/) {
   return nullptr;
 }
 
@@ -360,26 +368,25 @@ WriteResult QuicEndpoint::Writer::Flush() {
 }
 
 WriteStreamDataResult QuicEndpoint::DataProducer::WriteStreamData(
-    QuicStreamId id,
-    QuicStreamOffset offset,
+    QuicStreamId /*id*/,
+    QuicStreamOffset /*offset*/,
     QuicByteCount data_length,
     QuicDataWriter* writer) {
   writer->WriteRepeatedByte(kStreamDataContents, data_length);
   return WRITE_SUCCESS;
 }
 
-bool QuicEndpoint::DataProducer::WriteCryptoData(EncryptionLevel leve,
-                                                 QuicStreamOffset offset,
-                                                 QuicByteCount data_length,
-                                                 QuicDataWriter* writer) {
+bool QuicEndpoint::DataProducer::WriteCryptoData(EncryptionLevel /*level*/,
+                                                 QuicStreamOffset /*offset*/,
+                                                 QuicByteCount /*data_length*/,
+                                                 QuicDataWriter* /*writer*/) {
   QUIC_BUG << "QuicEndpoint::DataProducer::WriteCryptoData is unimplemented";
   return false;
 }
 
 void QuicEndpoint::WriteStreamData() {
   // Instantiate a flusher which would normally be here due to QuicSession.
-  QuicConnection::ScopedPacketFlusher flusher(
-      &connection_, QuicConnection::SEND_ACK_IF_QUEUED);
+  QuicConnection::ScopedPacketFlusher flusher(&connection_);
 
   while (bytes_to_transfer_ > 0) {
     // Transfer data in chunks of size at most |kWriteChunkSize|.
@@ -400,7 +407,7 @@ void QuicEndpoint::WriteStreamData() {
 
 QuicEndpointMultiplexer::QuicEndpointMultiplexer(
     std::string name,
-    std::initializer_list<QuicEndpoint*> endpoints)
+    const std::vector<QuicEndpoint*>& endpoints)
     : Endpoint((*endpoints.begin())->simulator(), name) {
   for (QuicEndpoint* endpoint : endpoints) {
     mapping_.insert(std::make_pair(endpoint->name(), endpoint));

@@ -475,7 +475,7 @@ void MenuController::Run(Widget* parent,
 
 #if defined(OS_MACOSX)
   menu_cocoa_watcher_ = std::make_unique<MenuCocoaWatcherMac>(base::BindOnce(
-      &MenuController::Cancel, base::Unretained(this), ExitType::kAll));
+      &MenuController::Cancel, this->AsWeakPtr(), ExitType::kAll));
 #endif
 
   // Reset current state.
@@ -982,7 +982,7 @@ int MenuController::OnDragUpdated(SubmenuView* source,
     if (menu_item)
       over_empty_menu = true;
   }
-  MenuDelegate::DropPosition drop_position = MenuDelegate::DROP_NONE;
+  MenuDelegate::DropPosition drop_position = MenuDelegate::DropPosition::kNone;
   int drop_operation = ui::DragDropTypes::DRAG_NONE;
   if (menu_item) {
     gfx::Point menu_item_loc(event.location());
@@ -993,16 +993,16 @@ int MenuController::OnDragUpdated(SubmenuView* source,
       if (menu_item->HasSubmenu() &&
           (menu_item_loc.y() > kDropBetweenPixels &&
            menu_item_loc.y() < (menu_item_height - kDropBetweenPixels))) {
-        drop_position = MenuDelegate::DROP_ON;
+        drop_position = MenuDelegate::DropPosition::kOn;
       } else {
         drop_position = (menu_item_loc.y() < menu_item_height / 2)
-                            ? MenuDelegate::DROP_BEFORE
-                            : MenuDelegate::DROP_AFTER;
+                            ? MenuDelegate::DropPosition::kBefore
+                            : MenuDelegate::DropPosition::kAfter;
       }
       query_menu_item = menu_item;
     } else {
       query_menu_item = menu_item->GetParentMenuItem();
-      drop_position = MenuDelegate::DROP_ON;
+      drop_position = MenuDelegate::DropPosition::kOn;
     }
     drop_operation = menu_item->GetDelegate()->GetDropOperation(
         query_menu_item, event, &drop_position);
@@ -1011,7 +1011,7 @@ int MenuController::OnDragUpdated(SubmenuView* source,
     SetSelection(menu_item, menu_item->HasSubmenu() ? SELECTION_OPEN_SUBMENU
                                                     : SELECTION_DEFAULT);
 
-    if (drop_position == MenuDelegate::DROP_NONE ||
+    if (drop_position == MenuDelegate::DropPosition::kNone ||
         drop_operation == ui::DragDropTypes::DRAG_NONE)
       menu_item = nullptr;
   } else {
@@ -1027,7 +1027,7 @@ void MenuController::OnDragExited(SubmenuView* source) {
 
   if (drop_target_) {
     StopShowTimer();
-    SetDropMenuItem(nullptr, MenuDelegate::DROP_NONE);
+    SetDropMenuItem(nullptr, MenuDelegate::DropPosition::kNone);
   }
 }
 
@@ -1075,14 +1075,14 @@ void MenuController::OnDragEnteredScrollButton(SubmenuView* source,
   UpdateScrolling(part);
 
   // Do this to force the selection to hide.
-  SetDropMenuItem(source->GetMenuItemAt(0), MenuDelegate::DROP_NONE);
+  SetDropMenuItem(source->GetMenuItemAt(0), MenuDelegate::DropPosition::kNone);
 
   StopCancelAllTimer();
 }
 
 void MenuController::OnDragExitedScrollButton(SubmenuView* source) {
   StartCancelAllTimer();
-  SetDropMenuItem(nullptr, MenuDelegate::DROP_NONE);
+  SetDropMenuItem(nullptr, MenuDelegate::DropPosition::kNone);
   StopScrolling();
 }
 
@@ -1138,30 +1138,35 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
 
   base::WeakPtr<MenuController> this_ref = AsWeakPtr();
   if (event->type() == ui::ET_KEY_PRESSED) {
+    bool key_handled = false;
 #if defined(OS_MACOSX)
     // Special handling for Option-Up and Option-Down, which should behave like
     // Home and End respectively in menus.
     if ((event->flags() & ui::EF_ALT_DOWN)) {
       if (event->key_code() == ui::VKEY_UP) {
-        OnKeyDown(ui::VKEY_HOME);
+        key_handled = OnKeyPressed(ui::VKEY_HOME);
       } else if (event->key_code() == ui::VKEY_DOWN) {
-        OnKeyDown(ui::VKEY_END);
+        key_handled = OnKeyPressed(ui::VKEY_END);
       } else {
-        OnKeyDown(event->key_code());
+        key_handled = OnKeyPressed(event->key_code());
       }
     } else {
-      OnKeyDown(event->key_code());
+      key_handled = OnKeyPressed(event->key_code());
     }
 #else
-    OnKeyDown(event->key_code());
+    key_handled = OnKeyPressed(event->key_code());
 #endif
+
+    if (key_handled)
+      event->StopPropagation();
+
     // Key events can lead to this being deleted.
     if (!this_ref) {
       event->StopPropagation();
       return ui::POST_DISPATCH_NONE;
     }
 
-    if (!IsEditableCombobox()) {
+    if (!IsEditableCombobox() && !event->stopped_propagation()) {
       // Do not check mnemonics if the Alt or Ctrl modifiers are pressed. For
       // example Ctrl+<T> is an accelerator, but <T> only is a mnemonic.
       const int kKeyFlagsMask = ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN;
@@ -1402,16 +1407,17 @@ void MenuController::StartDrag(SubmenuView* source,
   item->PaintButton(&canvas, MenuItemView::PB_FOR_DRAG);
   gfx::ImageSkia image(gfx::ImageSkiaRep(canvas.GetBitmap(), raster_scale));
 
-  OSExchangeData data;
-  item->GetDelegate()->WriteDragData(item, &data);
-  data.provider().SetDragImage(image, press_loc.OffsetFromOrigin());
+  std::unique_ptr<OSExchangeData> data(std::make_unique<OSExchangeData>());
+  item->GetDelegate()->WriteDragData(item, data.get());
+  data->provider().SetDragImage(image, press_loc.OffsetFromOrigin());
 
   StopScrolling();
   int drag_ops = item->GetDelegate()->GetDragOperations(item);
   did_initiate_drag_ = true;
   base::WeakPtr<MenuController> this_ref = AsWeakPtr();
   // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
-  item->GetWidget()->RunShellDrag(nullptr, data, widget_loc, drag_ops,
+  item->GetWidget()->RunShellDrag(nullptr, std::move(data), widget_loc,
+                                  drag_ops,
                                   ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   // MenuController may have been deleted so check before accessing member
   // variables.
@@ -1419,10 +1425,12 @@ void MenuController::StartDrag(SubmenuView* source,
     did_initiate_drag_ = false;
 }
 
-void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
+bool MenuController::OnKeyPressed(ui::KeyboardCode key_code) {
   // Do not process while performing drag-and-drop
   if (for_drop_)
-    return;
+    return false;
+
+  bool handled_key_code = false;
 
   switch (key_code) {
     case ui::VKEY_HOME:
@@ -1499,6 +1507,7 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
           else
             OpenSubmenuChangeSelectionIfCan();
         } else {
+          handled_key_code = true;
           if (!SendAcceleratorToHotTrackedView() &&
               pending_state_.item->GetEnabled()) {
             Accept(pending_state_.item, 0);
@@ -1555,6 +1564,7 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
     default:
       break;
   }
+  return handled_key_code;
 }
 
 MenuController::MenuController(bool for_drop,
@@ -2747,7 +2757,7 @@ void MenuController::SetDropMenuItem(MenuItemView* new_target,
 
   if (drop_target_) {
     drop_target_->GetParentMenuItem()->GetSubmenu()->SetDropMenuItem(
-        nullptr, MenuDelegate::DROP_NONE);
+        nullptr, MenuDelegate::DropPosition::kNone);
   }
   drop_target_ = new_target;
   drop_position_ = new_position;

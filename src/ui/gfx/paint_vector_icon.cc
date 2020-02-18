@@ -468,7 +468,8 @@ void PaintPath(Canvas* canvas,
     canvas->sk_canvas()->scale(scale, scale);
   }
 
-  ScopedRTLFlipCanvas scoped_rtl_flip_canvas(canvas, canvas_size, flips_in_rtl);
+  if (flips_in_rtl)
+    scoped_canvas.FlipIfRTL(canvas_size);
 
   if (!clip_rect.isEmpty())
     canvas->sk_canvas()->clipRect(clip_rect);
@@ -481,11 +482,10 @@ void PaintPath(Canvas* canvas,
 class VectorIconSource : public CanvasImageSource {
  public:
   explicit VectorIconSource(const IconDescription& data)
-      : CanvasImageSource(Size(data.dip_size, data.dip_size), false),
-        data_(data) {}
+      : CanvasImageSource(Size(data.dip_size, data.dip_size)), data_(data) {}
 
   VectorIconSource(const std::string& definition, int dip_size, SkColor color)
-      : CanvasImageSource(Size(dip_size, dip_size), false),
+      : CanvasImageSource(Size(dip_size, dip_size)),
         data_(kNoneIcon, dip_size, color, base::TimeDelta(), kNoneIcon),
         path_(PathFromSource(definition)) {}
 

@@ -20,10 +20,10 @@
 
 namespace dawn_native {
 
-    MaybeError ValidatePipelineStageDescriptor(DeviceBase* device,
+    MaybeError ValidatePipelineStageDescriptor(const DeviceBase* device,
                                                const PipelineStageDescriptor* descriptor,
                                                const PipelineLayoutBase* layout,
-                                               dawn::ShaderStage stage) {
+                                               ShaderStage stage) {
         DAWN_TRY(device->ValidateObject(descriptor->module));
 
         if (descriptor->entryPoint != std::string("main")) {
@@ -48,33 +48,6 @@ namespace dawn_native {
 
     PipelineBase::PipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag)
         : ObjectBase(device, tag) {
-    }
-
-    void PipelineBase::ExtractModuleData(dawn::ShaderStage stage, ShaderModuleBase* module) {
-        ASSERT(!IsError());
-
-        PushConstantInfo* info = &mPushConstants[stage];
-
-        const auto& moduleInfo = module->GetPushConstants();
-        info->mask = moduleInfo.mask;
-
-        for (uint32_t i = 0; i < moduleInfo.names.size(); i++) {
-            uint32_t size = moduleInfo.sizes[i];
-            if (size == 0) {
-                continue;
-            }
-
-            for (uint32_t offset = 0; offset < size; offset++) {
-                info->types[i + offset] = moduleInfo.types[i];
-            }
-            i += size - 1;
-        }
-    }
-
-    const PipelineBase::PushConstantInfo& PipelineBase::GetPushConstants(
-        dawn::ShaderStage stage) const {
-        ASSERT(!IsError());
-        return mPushConstants[stage];
     }
 
     dawn::ShaderStageBit PipelineBase::GetStageMask() const {

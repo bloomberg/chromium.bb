@@ -54,7 +54,6 @@ generate_jni("native_jni") {
     "java/src/org/chromium/android_webview/AwProxyController.java",
     "java/src/org/chromium/android_webview/AwQuotaManagerBridge.java",
     "java/src/org/chromium/android_webview/AwRenderProcess.java",
-    "java/src/org/chromium/android_webview/AwResource.java",
     "java/src/org/chromium/android_webview/AwSettings.java",
     "java/src/org/chromium/android_webview/AwTracingController.java",
     "java/src/org/chromium/android_webview/AwVariationsSeedBridge.java",
@@ -68,7 +67,6 @@ generate_jni("native_jni") {
     "java/src/org/chromium/android_webview/gfx/JavaBrowserViewRendererHelper.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
   ]
-  jni_package = "android_webview"
 
   deps = [
     ":cancellation_signal_android_jar_jni_headers",
@@ -77,7 +75,6 @@ generate_jni("native_jni") {
 
 generate_jar_jni("cancellation_signal_android_jar_jni_headers") {
   classes = [ "android/os/CancellationSignal.class" ]
-  jni_package = "android_webview"
 }
 
 java_cpp_enum("aw_permission_request_resource") {
@@ -297,16 +294,14 @@ grit("generate_components_resources") {
   inputs = [
     _whitelist,
   ]
-  _about_credits_file_bro =
-      get_label_info("//components/resources", "target_gen_dir") +
-      "/about_credits.bro"
+  _about_credits_file = get_label_info("//components/resources",
+                                       "target_gen_dir") + "/about_credits.html"
 
   grit_flags = [
     "-w",
     rebase_path(_whitelist, root_build_dir),
     "-E",
-    "about_credits_file=" +
-        rebase_path(_about_credits_file_bro, root_build_dir),
+    "about_credits_file=" + rebase_path(_about_credits_file, root_build_dir),
   ]
   outputs = [
     "grit/components_resources.h",
@@ -314,7 +309,7 @@ grit("generate_components_resources") {
   ]
 
   deps = [
-    "//components/resources:compressed_about_credits",
+    "//components/resources:about_credits",
   ]
 }
 
@@ -449,21 +444,16 @@ if (defined(android_secondary_abi_toolchain)) {
 
   # Note here that on a given system, the webview-only library needs the same
   # library name as the browser library, since the system webview factory will
-  # differentiate only by ABI. Each library has an app-bundle ("_base")
-  # variant.
+  # differentiate only by ABI.
   if (current_toolchain == android_secondary_abi_toolchain) {
-    # These targets are the 32-bit WebView libraries that pair with a 64-bit
-    # browser. They are suffixed with _64 because their names must mach the
-    # 64-bit browser library.
+    # This target is the 32-bit WebView library that pairs with a 64-bit
+    # browser. It is suffixed with _64 because its name must match the 64-bit
+    # browser library.
     webview_library("monochrome_64") {
     }
-    webview_library("monochrome_64_base") {
-    }
   } else {
-    # Inverse of the others above, for the original 32-bit case.
+    # Inverse of above, for the original 32-bit case.
     webview_library("monochrome") {
-    }
-    webview_library("monochrome_base") {
     }
   }
 }
@@ -494,6 +484,8 @@ source_set("common") {
     "browser/aw_browser_permission_request_delegate.h",
     "browser/aw_browser_policy_connector.cc",
     "browser/aw_browser_policy_connector.h",
+    "browser/aw_browser_process.cc",
+    "browser/aw_browser_process.h",
     "browser/aw_browser_terminator.cc",
     "browser/aw_browser_terminator.h",
     "browser/aw_content_browser_client.cc",
@@ -580,6 +572,12 @@ source_set("common") {
     "browser/icon_helper.h",
     "browser/input_stream.cc",
     "browser/input_stream.h",
+    "browser/js_java_interaction/js_api_handler.cc",
+    "browser/js_java_interaction/js_api_handler.h",
+    "browser/js_java_interaction/js_api_handler_factory.cc",
+    "browser/js_java_interaction/js_api_handler_factory.h",
+    "browser/js_java_interaction/js_java_configurator_host.cc",
+    "browser/js_java_interaction/js_java_configurator_host.h",
     "browser/net/android_stream_reader_url_request_job.cc",
     "browser/net/android_stream_reader_url_request_job.h",
     "browser/net/aw_cookie_change_dispatcher_wrapper.cc",
@@ -612,6 +610,8 @@ source_set("common") {
     "browser/net/input_stream_reader.h",
     "browser/network_service/android_stream_reader_url_loader.cc",
     "browser/network_service/android_stream_reader_url_loader.h",
+    "browser/network_service/aw_proxying_restricted_cookie_manager.cc",
+    "browser/network_service/aw_proxying_restricted_cookie_manager.h",
     "browser/network_service/aw_proxying_url_loader_factory.cc",
     "browser/network_service/aw_proxying_url_loader_factory.h",
     "browser/network_service/aw_url_loader_throttle.cc",
@@ -658,32 +658,6 @@ source_set("common") {
     "browser/tracing/aw_tracing_controller.h",
     "browser/tracing/aw_tracing_delegate.cc",
     "browser/tracing/aw_tracing_delegate.h",
-    "common/android_webview_message_generator.cc",
-    "common/android_webview_message_generator.h",
-    "common/aw_content_client.cc",
-    "common/aw_content_client.h",
-    "common/aw_descriptors.h",
-    "common/aw_hit_test_data.cc",
-    "common/aw_hit_test_data.h",
-    "common/aw_media_drm_bridge_client.cc",
-    "common/aw_media_drm_bridge_client.h",
-    "common/aw_paths.cc",
-    "common/aw_paths.h",
-    "common/aw_resource.cc",
-    "common/aw_resource.h",
-    "common/aw_resource_bundle.cc",
-    "common/aw_resource_bundle.h",
-    "common/aw_switches.cc",
-    "common/aw_switches.h",
-    "common/crash_reporter/aw_crash_reporter_client.cc",
-    "common/crash_reporter/aw_crash_reporter_client.h",
-    "common/crash_reporter/crash_keys.cc",
-    "common/crash_reporter/crash_keys.h",
-    "common/devtools_instrumentation.h",
-    "common/render_view_messages.cc",
-    "common/render_view_messages.h",
-    "common/url_constants.cc",
-    "common/url_constants.h",
     "gpu/aw_content_gpu_client.cc",
     "gpu/aw_content_gpu_client.h",
     "lib/aw_main_delegate.cc",
@@ -711,8 +685,16 @@ source_set("common") {
     "renderer/aw_url_loader_throttle_provider.h",
     "renderer/aw_websocket_handshake_throttle_provider.cc",
     "renderer/aw_websocket_handshake_throttle_provider.h",
+    "renderer/js_java_interaction/js_binding.cc",
+    "renderer/js_java_interaction/js_binding.h",
+    "renderer/js_java_interaction/js_java_configurator.cc",
+    "renderer/js_java_interaction/js_java_configurator.h",
     "renderer/print_render_frame_observer.cc",
     "renderer/print_render_frame_observer.h",
+  ]
+
+  public_deps = [
+    "//base",
   ]
 
   deps = [
@@ -721,12 +703,13 @@ source_set("common") {
     ":generate_components_strings",
     ":native_jni",
     "//android_webview/browser/gfx:gfx",
-    "//base",
+    "//android_webview/common",
+    "//android_webview/common:common_mojom",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//components/about_ui",
     "//components/autofill/android:provider",
     "//components/autofill/content/browser",
-    "//components/autofill/content/common:mojo_interfaces",
+    "//components/autofill/content/common/mojom",
     "//components/autofill/content/renderer",
     "//components/cdm/browser",
     "//components/cdm/renderer",
@@ -770,8 +753,6 @@ source_set("common") {
     "//components/services/heap_profiling/public/mojom",
     "//components/spellcheck:buildflags",
     "//components/spellcheck/common:interfaces",
-    "//components/supervised_user_error_page",
-    "//components/supervised_user_error_page:gin",
     "//components/url_matcher",
     "//components/variations/service",
     "//components/version_info:channel",
@@ -779,8 +760,6 @@ source_set("common") {
     "//components/visitedlink/browser",
     "//components/visitedlink/renderer",
     "//components/viz/service",
-    "//components/web_restrictions:browser",
-    "//components/web_restrictions:interfaces",
     "//content",
     "//content/public/app:both",
     "//content/public/browser",
@@ -791,6 +770,7 @@ source_set("common") {
     "//gin",
     "//media",
     "//media/midi",
+    "//media/mojo:buildflags",
     "//net",
     "//net:extras",
     "//printing",
@@ -860,7 +840,6 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/AwQuotaManagerBridge.java",
     "java/src/org/chromium/android_webview/AwRenderProcess.java",
     "java/src/org/chromium/android_webview/AwRenderProcessGoneDetail.java",
-    "java/src/org/chromium/android_webview/AwResource.java",
     "java/src/org/chromium/android_webview/AwSafeBrowsingConfigHelper.java",
     "java/src/org/chromium/android_webview/AwSafeBrowsingConversionHelper.java",
     "java/src/org/chromium/android_webview/AwSafeBrowsingResponse.java",
@@ -900,6 +879,7 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/SslUtil.java",
     "java/src/org/chromium/android_webview/VariationsSeedLoader.java",
     "java/src/org/chromium/android_webview/ViewPositionObserver.java",
+    "java/src/org/chromium/android_webview/WebMessageListener.java",
     "java/src/org/chromium/android_webview/WebViewChromiumRunQueue.java",
     "java/src/org/chromium/android_webview/gfx/AwDrawFnImpl.java",
     "java/src/org/chromium/android_webview/gfx/AwFunctor.java",
@@ -909,15 +889,22 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
     "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
+    "java/src/org/chromium/android_webview/ui/util/UploadedCrashesInfoLoader.java",
   ]
   deps = [
     ":android_webview_commandline_java",
+    ":android_webview_crash_info_java",
     ":android_webview_platform_services_java",
     ":android_webview_services_java",
     ":android_webview_variations_utils_java",
     ":resources",
     ":strings_grd",
     ":system_webview_manifest",
+
+    # This includes AwResource, which may be called via JNI. We're including it
+    # here because there's currently no good way to enforce that it gets included
+    # when it's depended on via JNI.
+    "//android_webview/common:common_java",
     "//base:base_java",
     "//components/autofill/android:autofill_java",
     "//components/autofill/android:provider_java",
@@ -933,9 +920,10 @@ android_library("android_webview_java") {
     "//components/variations:load_seed_result_enum_java",
     "//components/variations/android:variations_java",
     "//components/version_info/android:version_constants_java",
-    "//components/web_restrictions:client_java",
     "//content/public/android:content_java",
     "//device/gamepad:java",
+    "//mojo/public/java:system_java",
+    "//mojo/public/java/system:system_impl_java",
     "//net/android:net_java",
     "//services/network/public/mojom:mojom_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",
@@ -957,6 +945,7 @@ android_library("android_webview_java") {
   ]
 
   android_manifest_for_lint = system_webview_android_manifest
+  min_sdk_version = 21
 }
 
 android_library("android_webview_variations_utils_java") {
@@ -1057,6 +1046,15 @@ android_library("platform_service_bridge_upstream_implementation_java") {
   ]
 }
 
+android_library("android_webview_crash_info_java") {
+  java_files =
+      [ "java/src/org/chromium/android_webview/ui/util/CrashInfoLoader.java" ]
+
+  deps = [
+    "//base:base_java",
+  ]
+}
+
 android_library("android_webview_commandline_java") {
   java_files = [
     "java/src/org/chromium/android_webview/command_line/CommandLineUtil.java",
@@ -1075,15 +1073,16 @@ android_library("android_webview_services_java") {
     "java/src/org/chromium/android_webview/services/AwMinidumpUploaderDelegate.java",
     "java/src/org/chromium/android_webview/services/AwVariationsSeedFetcher.java",
     "java/src/org/chromium/android_webview/services/CrashReceiverService.java",
-    "java/src/org/chromium/android_webview/services/ServiceInit.java",
     "java/src/org/chromium/android_webview/services/VariationsSeedHolder.java",
     "java/src/org/chromium/android_webview/services/VariationsSeedServer.java",
   ]
   deps = [
     ":android_webview_commandline_java",
+    ":android_webview_crash_info_java",
     ":android_webview_platform_services_java",
     ":android_webview_variations_utils_java",
     ":system_webview_manifest",
+    "//android_webview/apk:apk_java",
     "//base:base_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/minidump_uploader:minidump_uploader_java",
@@ -1095,6 +1094,23 @@ android_library("android_webview_services_java") {
     ":aw_variations_seed_server_aidl",
   ]
   android_manifest_for_lint = system_webview_android_manifest
+  min_sdk_version = 21
+}
+
+# Generate LocaleConfig.java so that android_webview_locale_config_java's
+# compile step works.
+generate_locale_config_srcjar("webview_locale_config") {
+  java_package = webview_locale_config_java_package
+}
+
+# LocaleConfig.java is excluded from the generated .jar
+# (via. jar_excluded_patterns) and the final version is inserted at the APK
+# level - with the list of pak locales populated by looking at the assets that
+# are listed in the final APK's .build_config.
+android_library("android_webview_locale_config_java") {
+  java_files = [ "java/src/org/chromium/android_webview/AwLocaleConfig.java" ]
+  srcjar_deps = [ ":webview_locale_config" ]
+  jar_excluded_patterns = [ "*/LocaleConfig.class" ]
 }
 
 android_aidl("crash_receiver_aidl") {
@@ -1117,6 +1133,7 @@ if (public_android_sdk) {
     android_manifest_dep = ":system_webview_manifest"
     deps = upstream_only_webview_deps
     apk_name = "SystemWebView"
+    min_sdk_version = 21
   }
 
   android_resource_sizes_test("resource_sizes_system_webview_apk") {
@@ -1129,6 +1146,10 @@ if (public_android_sdk) {
   system_webview_apk_tmpl("trichrome_webview_apk") {
     android_manifest = trichrome_webview_android_manifest
     android_manifest_dep = ":trichrome_webview_manifest"
+
+    # TODO(torne): make minsdk=Q once we no longer build hacky P version
+    min_sdk_version = android_sdk_version
+
     deps = upstream_only_webview_deps
     apk_name = "TrichromeWebView"
     use_trichrome_library = true
@@ -1143,6 +1164,10 @@ if (public_android_sdk) {
   system_webview_apk_tmpl("trichrome_webview_for_bundle_apk") {
     android_manifest = trichrome_webview_android_manifest
     android_manifest_dep = ":trichrome_webview_manifest"
+
+    # TODO(torne): make minsdk=Q once we no longer build hacky P version
+    min_sdk_version = android_sdk_version
+
     deps = upstream_only_webview_deps
     apk_name = "TrichromeWebViewForBundle"
     use_trichrome_library = true

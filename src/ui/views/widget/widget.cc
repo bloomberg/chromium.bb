@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/default_style.h"
 #include "ui/base/default_theme_provider.h"
@@ -150,7 +149,6 @@ Widget::InitParams::InitParams(Type type)
       opacity(INFER_OPACITY),
       accept_events(true),
       activatable(ACTIVATABLE_DEFAULT),
-      keep_on_top(type == TYPE_MENU || type == TYPE_DRAG),
       visible_on_all_workspaces(false),
       ownership(NATIVE_WIDGET_OWNS_WIDGET),
       mirror_origin_in_rtl(false),
@@ -176,6 +174,22 @@ bool Widget::InitParams::CanActivate() const {
   return type != InitParams::TYPE_CONTROL && type != InitParams::TYPE_POPUP &&
          type != InitParams::TYPE_MENU && type != InitParams::TYPE_TOOLTIP &&
          type != InitParams::TYPE_DRAG;
+}
+
+ui::ZOrderLevel Widget::InitParams::EffectiveZOrderLevel() const {
+  if (z_order.has_value())
+    return z_order.value();
+
+  switch (type) {
+    case TYPE_MENU:
+      return ui::ZOrderLevel::kFloatingWindow;
+      break;
+    case TYPE_DRAG:
+      return ui::ZOrderLevel::kFloatingUIElement;
+      break;
+    default:
+      return ui::ZOrderLevel::kNormal;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -629,6 +643,8 @@ void Widget::Show() {
   const ui::Layer* layer = GetLayer();
   TRACE_EVENT1("views", "Widget::Show", "layer",
                layer ? layer->name() : "none");
+  ui::WindowShowState preferred_show_state =
+      CanActivate() ? ui::SHOW_STATE_NORMAL : ui::SHOW_STATE_INACTIVE;
   if (non_client_view_) {
     // While initializing, the kiosk mode will go to full screen before the
     // widget gets shown. In that case we stay in full screen mode, regardless
@@ -645,11 +661,9 @@ void Widget::Show() {
     // |saved_show_state_| only applies the first time the window is shown.
     // If we don't reset the value the window may be shown maximized every time
     // it is subsequently shown after being hidden.
-    saved_show_state_ = ui::SHOW_STATE_NORMAL;
+    saved_show_state_ = preferred_show_state;
   } else {
-    native_widget_->Show(
-        CanActivate() ? ui::SHOW_STATE_NORMAL : ui::SHOW_STATE_INACTIVE,
-        gfx::Rect());
+    native_widget_->Show(preferred_show_state, gfx::Rect());
   }
 }
 
@@ -683,12 +697,12 @@ bool Widget::IsActive() const {
   return native_widget_->IsActive();
 }
 
-void Widget::SetAlwaysOnTop(bool on_top) {
-  native_widget_->SetAlwaysOnTop(on_top);
+void Widget::SetZOrderLevel(ui::ZOrderLevel order) {
+  native_widget_->SetZOrderLevel(order);
 }
 
-bool Widget::IsAlwaysOnTop() const {
-  return native_widget_->IsAlwaysOnTop();
+ui::ZOrderLevel Widget::GetZOrderLevel() const {
+  return native_widget_->GetZOrderLevel();
 }
 
 void Widget::SetVisibleOnAllWorkspaces(bool always_visible) {
@@ -808,7 +822,7 @@ ui::InputMethod* Widget::GetInputMethod() {
 }
 
 void Widget::RunShellDrag(View* view,
-                          const ui::OSExchangeData& data,
+                          std::unique_ptr<ui::OSExchangeData> data,
                           const gfx::Point& location,
                           int operation,
                           ui::DragDropTypes::DragEventSource source) {
@@ -819,7 +833,8 @@ void Widget::RunShellDrag(View* view,
     observer.OnWidgetDragWillStart(this);
 
   WidgetDeletionObserver widget_deletion_observer(this);
-  native_widget_->RunShellDrag(view, data, location, operation, source);
+  native_widget_->RunShellDrag(view, std::move(data), location, operation,
+                               source);
 
   // The widget may be destroyed during the drag operation.
   if (!widget_deletion_observer.IsWidgetAlive())
@@ -1043,11 +1058,6 @@ void Widget::OnSizeConstraintsChanged() {
 }
 
 void Widget::OnOwnerClosing() {}
-
-void Widget::OnCanActivateChanged() {
-  if (native_widget_)
-    native_widget_->OnCanActivateChanged();
-}
 
 std::string Widget::GetName() const {
   return native_widget_->GetName();
@@ -1515,6 +1525,10 @@ void Widget::DestroyRootView() {
     focus_manager_->SetFocusedView(nullptr);
   NotifyWillRemoveView(root_view_.get());
   non_client_view_ = nullptr;
+  // Remove all children before the unique_ptr reset so that
+  // GetWidget()->GetRootView() doesn't return nullptr while the views hierarchy
+  // is being torn down.
+  root_view_->RemoveAllChildViews(true);
   root_view_.reset();
 }
 
@@ -1638,8 +1652,8 @@ void Widget::UnlockPaintAsActive() {
 }
 
 void Widget::UpdatePaintAsActiveState(bool paint_as_active) {
-  if (non_client_view())
-    non_client_view()->frame_view()->PaintAsActiveChanged(paint_as_active);
+  if (non_client_view_)
+    non_client_view_->frame_view()->PaintAsActiveChanged(paint_as_active);
   if (widget_delegate())
     widget_delegate()->OnPaintAsActiveChanged(paint_as_active);
 }

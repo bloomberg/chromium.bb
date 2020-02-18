@@ -86,10 +86,14 @@ class SharedState(object):
     """
     raise NotImplementedError()
 
-  def DumpStateUponFailure(self, story, results):
-    """ Dump the state upon failure.
-    This method tries to dump as much information about the application under
-    test as possible (output, log, screenshot, etc.) to simplify triaging the
-    failure.
+  def DumpStateUponStoryRunFailure(self, results):
+    """ Dump state of the current story run in case of failure.
+
+    This would usually mean recording additional artifacts (e.g. logs,
+    screenshots) to help debugging the failure.
+
+    Args:
+      results: A PageTestResults object which implementations can use to record
+          artifacts.
     """
     raise NotImplementedError()

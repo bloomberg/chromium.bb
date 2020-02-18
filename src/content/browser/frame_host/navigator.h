@@ -84,11 +84,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // process looks up the corresponding FrameNavigationEntry for the new frame
   // navigates it in the correct process. Returns false if the
   // FrameNavigationEntry can't be found or the navigation fails.
-  // TODO(creis): Remove |default_url| once we have collected UMA stats on the
-  // cases that we use a different URL from history than the frame's src.
   virtual bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
-      const GURL& default_url,
       mojom::NavigationClientAssociatedPtrInfo* navigation_client);
 
   // Navigation requests -------------------------------------------------------
@@ -135,7 +132,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
       const std::string& extra_headers,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {}
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      bool has_user_gesture) {}
 
   // Called after receiving a BeforeUnloadACK IPC from the renderer. If
   // |frame_tree_node| has a NavigationRequest waiting for the renderer

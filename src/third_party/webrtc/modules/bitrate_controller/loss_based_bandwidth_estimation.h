@@ -13,10 +13,10 @@
 
 #include <vector>
 
+#include "api/transport/network_types.h"
 #include "api/units/data_rate.h"
 #include "api/units/time_delta.h"
 #include "api/units/timestamp.h"
-#include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "rtc_base/experiments/field_trial_parser.h"
 
 namespace webrtc {
@@ -60,7 +60,11 @@ class LossBasedBandwidthEstimation {
   DataRate GetEstimate() const { return loss_based_bitrate_; }
 
  private:
+  friend class GoogCcStatePrinter;
   void Reset(DataRate bitrate);
+  double loss_increase_threshold() const;
+  double loss_decrease_threshold() const;
+  DataRate decreased_bitrate() const;
 
   LossBasedControlConfig config_;
   double average_loss_;

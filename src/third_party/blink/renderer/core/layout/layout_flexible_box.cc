@@ -32,7 +32,6 @@
 
 #include <limits>
 #include "base/auto_reset.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
 #include "third_party/blink/renderer/core/layout/layout_state.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -45,6 +44,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -283,30 +283,28 @@ void LayoutFlexibleBox::RemoveChild(LayoutObject* child) {
 
 bool LayoutFlexibleBox::HitTestChildren(
     HitTestResult& result,
-    const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset,
+    const HitTestLocation& hit_test_location,
+    const PhysicalOffset& accumulated_offset,
     HitTestAction hit_test_action) {
   if (hit_test_action != kHitTestForeground)
     return false;
 
-  LayoutPoint scrolled_offset(HasOverflowClip()
-                                  ? accumulated_offset - ScrolledContentOffset()
-                                  : accumulated_offset);
+  PhysicalOffset scrolled_offset = accumulated_offset;
+  if (HasOverflowClip())
+    scrolled_offset -= PhysicalOffset(ScrolledContentOffset());
 
   for (LayoutBox* child = LastChildBox(); child;
        child = child->PreviousSiblingBox()) {
     if (child->HasSelfPaintingLayer())
       continue;
 
-    LayoutPoint child_point =
-        FlipForWritingModeForChild(child, scrolled_offset);
-
-    bool child_hit =
-        child->HitTestAllPhases(result, location_in_container, child_point);
+    PhysicalOffset child_accumulated_offset =
+        scrolled_offset + child->PhysicalLocation(this);
+    bool child_hit = child->HitTestAllPhases(result, hit_test_location,
+                                             child_accumulated_offset);
     if (child_hit) {
-      UpdateHitTestResult(
-          result, DeprecatedFlipForWritingMode(ToLayoutPoint(
-                      location_in_container.Point() - accumulated_offset)));
+      UpdateHitTestResult(result,
+                          hit_test_location.Point() - accumulated_offset);
       return true;
     }
   }

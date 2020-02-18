@@ -22,17 +22,17 @@
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/stream_handle.h"
-#include "content/public/browser/stream_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/find_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_renderer_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
@@ -150,34 +150,19 @@ class ChromeMimeHandlerViewTestBase : public extensions::ExtensionApiTest {
       const GURL& url,
       std::string* view_id) {
     *view_id = base::GenerateGUID();
-    auto stream_info = std::make_unique<content::StreamInfo>();
-    stream_info->handle = std::make_unique<FakeStreamHandle>(url);
-    stream_info->original_url = url;
-    stream_info->mime_type = "application/pdf";
-    stream_info->response_headers =
+    auto transferrable_loader = content::mojom::TransferrableURLLoader::New();
+    transferrable_loader->url = url;
+    transferrable_loader->head.mime_type = "application/pdf";
+    transferrable_loader->head.headers =
         base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/2 200 OK");
     return std::make_unique<extensions::StreamContainer>(
-        std::move(stream_info), 0 /* tab_id */, false /* embedded */,
+        0 /* tab_id */, false /* embedded */,
         GURL(std::string(extensions::kExtensionScheme) +
              kTestExtensionId) /* handler_url */,
-        kTestExtensionId, nullptr /* transferrable_loader */, url);
+        kTestExtensionId, std::move(transferrable_loader), url);
   }
 
  private:
-  class FakeStreamHandle : public content::StreamHandle {
-   public:
-    explicit FakeStreamHandle(const GURL& url) : url_(url) {}
-    ~FakeStreamHandle() override {}
-
-    const GURL& GetURL() override { return url_; }
-    void AddCloseListener(const base::RepeatingClosure& callback) override {}
-
-   private:
-    const GURL url_;
-
-    DISALLOW_COPY_AND_ASSIGN(FakeStreamHandle);
-  };
-
   TestGuestViewManagerFactory factory_;
   content::WebContents* guest_web_contents_;
   content::WebContents* embedder_web_contents_;
@@ -657,6 +642,61 @@ IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   histogram_tester.ExpectBucketCount(
       "PDF.LoadStatus", PDFLoadStatus::kLoadedEmbeddedPdfWithPdfium, 1);
+}
+
+namespace {
+
+// A DevToolsAgentHostClient implementation doing nothing.
+class StubDevToolsAgentHostClient : public content::DevToolsAgentHostClient {
+ public:
+  StubDevToolsAgentHostClient() {}
+  ~StubDevToolsAgentHostClient() override {}
+  void AgentHostClosed(content::DevToolsAgentHost* agent_host) override {}
+  void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
+                               const std::string& message) override {}
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
+                       GuestDevToolsReloadsEmbedder) {
+  GURL data_url("data:application/pdf,foo");
+  ui_test_utils::NavigateToURL(browser(), data_url);
+  auto* embedder_web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  EXPECT_NE(embedder_web_contents, guest_web_contents);
+  while (guest_web_contents->IsLoading()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+
+  // Load DevTools.
+  scoped_refptr<content::DevToolsAgentHost> devtools_agent_host =
+      content::DevToolsAgentHost::GetOrCreateFor(guest_web_contents);
+  StubDevToolsAgentHostClient devtools_agent_host_client;
+  devtools_agent_host->AttachClient(&devtools_agent_host_client);
+
+  // Reload via guest's DevTools, embedder should reload.
+  content::TestNavigationObserver reload_observer(embedder_web_contents);
+  devtools_agent_host->DispatchProtocolMessage(
+      &devtools_agent_host_client, R"({"id":1,"method": "Page.reload"})");
+  reload_observer.Wait();
+  devtools_agent_host->DetachClient(&devtools_agent_host_client);
+}
+
+// This test verifies that a display:none frame loading a MimeHandlerView type
+// will end up creating a MimeHandlerview. NOTE: this is an exception to support
+// printing in Google docs (see https://crbug.com/978240).
+IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
+                       MimeHandlerViewInDisplayNoneFrameForGoogleApps) {
+  GURL data_url(
+      "data:text/html, <iframe src='data:application/pdf,foo' "
+      "style='display:none'></iframe>,foo");
+  ui_test_utils::NavigateToURL(browser(), data_url);
+  ASSERT_TRUE(GetGuestViewManager()->WaitForSingleGuestCreated());
 }
 
 INSTANTIATE_TEST_SUITE_P(,

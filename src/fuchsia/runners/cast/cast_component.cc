@@ -57,8 +57,6 @@ CastComponent::CastComponent(
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
 
   frame()->SetEnableInput(false);
-  InitializeCastPlatformBindings();
-
   frame()->SetNavigationEventListener(
       navigation_listener_binding_.NewBinding());
   api_bindings_client_->AttachToFrame(
@@ -66,6 +64,8 @@ CastComponent::CastComponent(
       base::BindOnce(&CastComponent::DestroyComponent, base::Unretained(this),
                      kBindingsFailureExitCode,
                      fuchsia::sys::TerminationReason::INTERNAL_ERROR));
+
+  InitializeCastPlatformBindings();
 }
 
 CastComponent::~CastComponent() = default;
@@ -100,15 +100,6 @@ void CastComponent::InitializeCastPlatformBindings() {
         CHECK(result.is_response()) << "Couldn't inject stub bindings.";
       });
 
-  cast_channel_ = std::make_unique<CastChannelBindings>(
-      frame(), &connector_,
-      agent_manager_->ConnectToAgentService<chromium::cast::CastChannel>(
-          CastRunner::kAgentComponentUrl));
-
-  queryable_data_ = std::make_unique<QueryableDataBindings>(
-      frame(),
-      agent_manager_->ConnectToAgentService<chromium::cast::QueryableData>(
-          CastRunner::kAgentComponentUrl));
   touch_input_ = std::make_unique<TouchInputBindings>(touch_input_policy_,
                                                       frame(), &connector_);
 }

@@ -127,7 +127,7 @@ class ProfileTest(cros_test_lib.TempDirTestCase):
         p2_parent: 'profile2 parent contents',
     }
 
-    for filepath, contents in path_contents.iteritems():
+    for filepath, contents in path_contents.items():
       osutils.WriteFile(self._TempdirPath(filepath), contents)
 
     # Mapping between profile argument and the expected parent contents.
@@ -169,7 +169,7 @@ class ProfileTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(self.profile_expected_parent['profile1'],
                      osutils.ReadFile(b1_parent_path))
 
-    for profile_name, parent in self.profile_expected_parent.iteritems():
+    for profile_name, parent in self.profile_expected_parent.items():
       # Call ChooseProfile for the given profile and check contents as specified
       # by self.profile_expected_parent (built in setUp).
 

@@ -13,7 +13,9 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/gcm_driver/crypto/gcm_decryption_result.h"
+#include "components/gcm_driver/crypto/gcm_encryption_result.h"
 #include "components/gcm_driver/gcm_app_handler.h"
+#include "components/gcm_driver/web_push_metrics.h"
 
 namespace gcm {
 
@@ -28,9 +30,10 @@ void InstanceIDHandler::DeleteAllTokensForApp(const std::string& app_id,
 
 GCMDriver::GCMDriver(
     const base::FilePath& store_path,
-    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
-    : weak_ptr_factory_(this) {
-  // The |blocking_task_runner| can be NULL for tests that do not need the
+    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : web_push_sender_(std::move(url_loader_factory)) {
+  // The |blocking_task_runner| can be nullptr for tests that do not need the
   // encryption capabilities of the GCMDriver class.
   if (blocking_task_runner)
     encryption_provider_.Init(store_path, blocking_task_runner);
@@ -149,11 +152,10 @@ void GCMDriver::Send(const std::string& app_id,
   SendImpl(app_id, receiver_id, message);
 }
 
-void GCMDriver::GetEncryptionInfo(
-    const std::string& app_id,
-    const GetEncryptionInfoCallback& callback) {
+void GCMDriver::GetEncryptionInfo(const std::string& app_id,
+                                  GetEncryptionInfoCallback callback) {
   encryption_provider_.GetEncryptionInfo(app_id, "" /* authorized_entity */,
-                                         callback);
+                                         std::move(callback));
 }
 
 void GCMDriver::UnregisterWithSenderIdImpl(const std::string& app_id,
@@ -323,6 +325,52 @@ void GCMDriver::RegisterAfterUnregister(
   // Trigger the pending registration.
   DCHECK(register_callbacks_.find(app_id) != register_callbacks_.end());
   RegisterImpl(app_id, normalized_sender_ids);
+}
+
+void GCMDriver::SendWebPushMessage(const std::string& app_id,
+                                   const std::string& authorized_entity,
+                                   const std::string& p256dh,
+                                   const std::string& auth_secret,
+                                   const std::string& fcm_token,
+                                   crypto::ECPrivateKey* vapid_key,
+                                   WebPushMessage message,
+                                   SendWebPushMessageCallback callback) {
+  std::string payload_copy = message.payload;
+  encryption_provider_.EncryptMessage(
+      app_id, authorized_entity, p256dh, auth_secret, payload_copy,
+      base::BindOnce(&GCMDriver::OnMessageEncrypted,
+                     weak_ptr_factory_.GetWeakPtr(), fcm_token, vapid_key,
+                     std::move(message), std::move(callback)));
+}
+
+void GCMDriver::OnMessageEncrypted(const std::string& fcm_token,
+                                   crypto::ECPrivateKey* vapid_key,
+                                   WebPushMessage message,
+                                   SendWebPushMessageCallback callback,
+                                   GCMEncryptionResult result,
+                                   std::string payload) {
+  UMA_HISTOGRAM_ENUMERATION("GCM.Crypto.EncryptMessageResult", result,
+                            GCMEncryptionResult::ENUM_SIZE);
+
+  switch (result) {
+    case GCMEncryptionResult::ENCRYPTED_DRAFT_08: {
+      message.payload = std::move(payload);
+      web_push_sender_.SendMessage(fcm_token, vapid_key, message,
+                                   std::move(callback));
+      return;
+    }
+    case GCMEncryptionResult::NO_KEYS:
+    case GCMEncryptionResult::INVALID_SHARED_SECRET:
+    case GCMEncryptionResult::ENCRYPTION_FAILED: {
+      LogSendWebPushMessageResult(SendWebPushMessageResult::kEncryptionFailed);
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    case GCMEncryptionResult::ENUM_SIZE:
+      break;  // deliberate fall-through
+  }
+
+  NOTREACHED();
 }
 
 }  // namespace gcm

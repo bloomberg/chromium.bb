@@ -2048,15 +2048,31 @@ static int calculate_section_intra_ratio(const FIRSTPASS_STATS *begin,
 // Calculate the total bits to allocate in this GF/ARF group.
 static int64_t calculate_total_gf_group_bits(VP9_COMP *cpi,
                                              double gf_group_err) {
+  VP9_COMMON *const cm = &cpi->common;
   const RATE_CONTROL *const rc = &cpi->rc;
   const TWO_PASS *const twopass = &cpi->twopass;
   const int max_bits = frame_max_bits(rc, &cpi->oxcf);
   int64_t total_group_bits;
+  const int is_key_frame = frame_is_intra_only(cm);
+  const int arf_active_or_kf = is_key_frame || rc->source_alt_ref_active;
+  int gop_frames =
+      rc->baseline_gf_interval + rc->source_alt_ref_pending - arf_active_or_kf;
 
   // Calculate the bits to be allocated to the group as a whole.
   if ((twopass->kf_group_bits > 0) && (twopass->kf_group_error_left > 0.0)) {
+    int key_frame_interval = rc->frames_since_key + rc->frames_to_key;
+    int distance_from_next_key_frame =
+        rc->frames_to_key -
+        (rc->baseline_gf_interval + rc->source_alt_ref_pending);
+    int max_gf_bits_bias = rc->avg_frame_bandwidth;
+    double gf_interval_bias_bits_normalize_factor =
+        (double)rc->baseline_gf_interval / 16;
     total_group_bits = (int64_t)(twopass->kf_group_bits *
                                  (gf_group_err / twopass->kf_group_error_left));
+    // TODO(ravi): Experiment with different values of max_gf_bits_bias
+    total_group_bits +=
+        (int64_t)((double)distance_from_next_key_frame / key_frame_interval *
+                  max_gf_bits_bias * gf_interval_bias_bits_normalize_factor);
   } else {
     total_group_bits = 0;
   }
@@ -2069,8 +2085,8 @@ static int64_t calculate_total_gf_group_bits(VP9_COMP *cpi,
                                : total_group_bits;
 
   // Clip based on user supplied data rate variability limit.
-  if (total_group_bits > (int64_t)max_bits * rc->baseline_gf_interval)
-    total_group_bits = (int64_t)max_bits * rc->baseline_gf_interval;
+  if (total_group_bits > (int64_t)max_bits * gop_frames)
+    total_group_bits = (int64_t)max_bits * gop_frames;
 
   return total_group_bits;
 }
@@ -2290,7 +2306,7 @@ static void allocate_gf_group_bits(VP9_COMP *cpi, int64_t gf_group_bits,
   // Define middle frame
   mid_frame_idx = frame_index + (rc->baseline_gf_interval >> 1) - 1;
 
-  normal_frames = (rc->baseline_gf_interval - rc->source_alt_ref_pending);
+  normal_frames = (rc->baseline_gf_interval - 1);
   if (normal_frames > 1)
     normal_frame_bits = (int)(total_group_bits / normal_frames);
   else
@@ -2450,8 +2466,10 @@ static void define_gf_group(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   int gf_arf_bits;
   const int is_key_frame = frame_is_intra_only(cm);
   const int arf_active_or_kf = is_key_frame || rc->source_alt_ref_active;
+  int is_alt_ref_flash = 0;
 
   double gop_intra_factor = 1.0;
+  int gop_frames;
 
   // Reset the GF group data structures unless this is a key
   // frame in which case it will already have been done.
@@ -2644,13 +2662,27 @@ static void define_gf_group(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 
 #define LAST_ALR_ACTIVE_BEST_QUALITY_ADJUSTMENT_FACTOR 0.2
   rc->arf_active_best_quality_adjustment_factor = 1.0;
-  if (rc->source_alt_ref_pending && !is_lossless_requested(&cpi->oxcf) &&
-      rc->frames_to_key <= rc->arf_active_best_quality_adjustment_window) {
-    rc->arf_active_best_quality_adjustment_factor =
-        LAST_ALR_ACTIVE_BEST_QUALITY_ADJUSTMENT_FACTOR +
-        (1.0 - LAST_ALR_ACTIVE_BEST_QUALITY_ADJUSTMENT_FACTOR) *
-            (rc->frames_to_key - i) /
-            VPXMAX(1, (rc->arf_active_best_quality_adjustment_window - i));
+  rc->arf_increase_active_best_quality = 0;
+
+  if (!is_lossless_requested(&cpi->oxcf)) {
+    if (rc->frames_since_key >= rc->frames_to_key) {
+      // Increase the active best quality in the second half of key frame
+      // interval.
+      rc->arf_active_best_quality_adjustment_factor =
+          LAST_ALR_ACTIVE_BEST_QUALITY_ADJUSTMENT_FACTOR +
+          (1.0 - LAST_ALR_ACTIVE_BEST_QUALITY_ADJUSTMENT_FACTOR) *
+              (rc->frames_to_key - i) /
+              (VPXMAX(1, ((rc->frames_to_key + rc->frames_since_key) / 2 - i)));
+      rc->arf_increase_active_best_quality = 1;
+    } else if ((rc->frames_to_key - i) > 0) {
+      // Reduce the active best quality in the first half of key frame interval.
+      rc->arf_active_best_quality_adjustment_factor =
+          LAST_ALR_ACTIVE_BEST_QUALITY_ADJUSTMENT_FACTOR +
+          (1.0 - LAST_ALR_ACTIVE_BEST_QUALITY_ADJUSTMENT_FACTOR) *
+              (rc->frames_since_key + i) /
+              (VPXMAX(1, (rc->frames_to_key + rc->frames_since_key) / 2 + i));
+      rc->arf_increase_active_best_quality = -1;
+    }
   }
 
 #ifdef AGGRESSIVE_VBR
@@ -2672,12 +2704,22 @@ static void define_gf_group(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // Reset the file position.
   reset_fpf_position(twopass, start_pos);
 
+  if (rc->source_alt_ref_pending)
+    is_alt_ref_flash = detect_flash(twopass, rc->baseline_gf_interval);
+
   // Calculate the bits to be allocated to the gf/arf group as a whole
   gf_group_bits = calculate_total_gf_group_bits(cpi, gf_group_err);
 
+  gop_frames =
+      rc->baseline_gf_interval + rc->source_alt_ref_pending - arf_active_or_kf;
+
   // Store the average moise level measured for the group
-  twopass->gf_group.group_noise_energy =
-      (int)(gf_group_noise / rc->baseline_gf_interval);
+  // TODO(any): Experiment with removal of else condition (gop_frames = 0) so
+  // that consumption of group noise energy is based on previous gf group
+  if (gop_frames > 0)
+    twopass->gf_group.group_noise_energy = (int)(gf_group_noise / gop_frames);
+  else
+    twopass->gf_group.group_noise_energy = 0;
 
   // Calculate an estimate of the maxq needed for the group.
   // We are more aggressive about correcting for sections
@@ -2685,15 +2727,12 @@ static void define_gf_group(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // sections where we do not wish to risk creating an overshoot
   // of the allocated bit budget.
   if ((cpi->oxcf.rc_mode != VPX_Q) && (rc->baseline_gf_interval > 1)) {
-    const int vbr_group_bits_per_frame =
-        (int)(gf_group_bits / rc->baseline_gf_interval);
-    const double group_av_err = gf_group_raw_error / rc->baseline_gf_interval;
-    const double group_av_noise = gf_group_noise / rc->baseline_gf_interval;
-    const double group_av_skip_pct =
-        gf_group_skip_pct / rc->baseline_gf_interval;
-    const double group_av_inactive_zone =
-        ((gf_group_inactive_zone_rows * 2) /
-         (rc->baseline_gf_interval * (double)cm->mb_rows));
+    const int vbr_group_bits_per_frame = (int)(gf_group_bits / gop_frames);
+    const double group_av_err = gf_group_raw_error / gop_frames;
+    const double group_av_noise = gf_group_noise / gop_frames;
+    const double group_av_skip_pct = gf_group_skip_pct / gop_frames;
+    const double group_av_inactive_zone = ((gf_group_inactive_zone_rows * 2) /
+                                           (gop_frames * (double)cm->mb_rows));
     int tmp_q = get_twopass_worst_quality(
         cpi, group_av_err, (group_av_skip_pct + group_av_inactive_zone),
         group_av_noise, vbr_group_bits_per_frame);
@@ -2709,9 +2748,9 @@ static void define_gf_group(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 
   // Context Adjustment of ARNR filter strength
   if (rc->baseline_gf_interval > 1) {
-    adjust_group_arnr_filter(cpi, (gf_group_noise / rc->baseline_gf_interval),
-                             (gf_group_inter / rc->baseline_gf_interval),
-                             (gf_group_motion / rc->baseline_gf_interval));
+    adjust_group_arnr_filter(cpi, (gf_group_noise / gop_frames),
+                             (gf_group_inter / gop_frames),
+                             (gf_group_motion / gop_frames));
   } else {
     twopass->arnr_strength_adjustment = 0;
   }
@@ -2745,6 +2784,12 @@ static void define_gf_group(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   twopass->rolling_arf_group_target_bits = 0;
   twopass->rolling_arf_group_actual_bits = 0;
 #endif
+  rc->preserve_arf_as_gld = rc->preserve_next_arf_as_gld;
+  rc->preserve_next_arf_as_gld = 0;
+  // If alt ref frame is flash do not set preserve_arf_as_gld
+  if (!is_lossless_requested(&cpi->oxcf) && !cpi->use_svc &&
+      cpi->oxcf.aq_mode == NO_AQ && cpi->multi_layer_arf && !is_alt_ref_flash)
+    rc->preserve_next_arf_as_gld = 1;
 }
 
 // Intra / Inter threshold very low
@@ -2929,6 +2974,7 @@ static void find_next_key_frame(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   FIRSTPASS_STATS next_frame;
   FIRSTPASS_STATS last_frame;
   int kf_bits = 0;
+  int64_t max_kf_bits;
   double decay_accumulator = 1.0;
   double zero_motion_accumulator = 1.0;
   double zero_motion_sum = 0.0;
@@ -3179,6 +3225,13 @@ static void find_next_key_frame(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // Work out how many bits to allocate for the key frame itself.
   kf_bits = calculate_boost_bits((rc->frames_to_key - 1), rc->kf_boost,
                                  twopass->kf_group_bits);
+  // Based on the spatial complexity, increase the bits allocated to key frame.
+  kf_bits +=
+      (int)((twopass->kf_group_bits - kf_bits) * (kf_mod_err / kf_group_err));
+  max_kf_bits =
+      twopass->kf_group_bits - (rc->frames_to_key - 1) * FRAME_OVERHEAD_BITS;
+  max_kf_bits = lclamp(max_kf_bits, 0, INT_MAX);
+  kf_bits = VPXMIN(kf_bits, (int)max_kf_bits);
 
   twopass->kf_group_bits -= kf_bits;
 
@@ -3186,6 +3239,7 @@ static void find_next_key_frame(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   gf_group->bit_allocation[0] = kf_bits;
   gf_group->update_type[0] = KF_UPDATE;
   gf_group->rf_level[0] = KF_STD;
+  gf_group->layer_depth[0] = 0;
 
   // Note the total error score of the kf group minus the key frame itself.
   twopass->kf_group_error_left = (kf_group_err - kf_mod_err);
@@ -3199,11 +3253,6 @@ static void find_next_key_frame(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     // Default to normal-sized frame on keyframes.
     cpi->rc.next_frame_size_selector = UNSCALED;
   }
-#define ARF_ACTIVE_BEST_QUALITY_ADJUSTMENT_WINDOW_SIZE 64
-  // TODO(ravi.chaudhary@ittiam.com): Experiment without the below min
-  // condition. This might be helpful for small key frame intervals.
-  rc->arf_active_best_quality_adjustment_window =
-      VPXMIN(ARF_ACTIVE_BEST_QUALITY_ADJUSTMENT_WINDOW_SIZE, rc->frames_to_key);
 }
 
 static int is_skippable_frame(const VP9_COMP *cpi) {

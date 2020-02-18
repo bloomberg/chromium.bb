@@ -60,7 +60,7 @@ ShaderImpl *ContextGL::createShader(const gl::ShaderState &data)
 
 ProgramImpl *ContextGL::createProgram(const gl::ProgramState &data)
 {
-    return new ProgramGL(data, getFunctions(), getWorkaroundsGL(), getStateManager(),
+    return new ProgramGL(data, getFunctions(), getFeaturesGL(), getStateManager(),
                          getExtensions().pathRendering, mRenderer);
 }
 
@@ -88,7 +88,7 @@ TextureImpl *ContextGL::createTexture(const gl::TextureState &state)
 
 RenderbufferImpl *ContextGL::createRenderbuffer(const gl::RenderbufferState &state)
 {
-    return new RenderbufferGL(state, getFunctions(), getWorkaroundsGL(), getStateManager(),
+    return new RenderbufferGL(state, getFunctions(), getFeaturesGL(), getStateManager(),
                               mRenderer->getBlitter(), getNativeTextureCaps());
 }
 
@@ -188,30 +188,6 @@ angle::Result ContextGL::flush(const gl::Context *context)
 angle::Result ContextGL::finish(const gl::Context *context)
 {
     return mRenderer->finish();
-}
-
-angle::Result ContextGL::waitSemaphore(const gl::Context *context,
-                                       const gl::Semaphore *semaphore,
-                                       GLuint numBufferBarriers,
-                                       const GLuint *buffers,
-                                       GLuint numTextureBarriers,
-                                       const GLuint *textures,
-                                       const GLenum *srcLayouts)
-{
-    ANGLE_GL_UNREACHABLE(this);
-    return angle::Result::Stop;
-}
-
-angle::Result ContextGL::signalSemaphore(const gl::Context *context,
-                                         const gl::Semaphore *semaphore,
-                                         GLuint numBufferBarriers,
-                                         const GLuint *buffers,
-                                         GLuint numTextureBarriers,
-                                         const GLuint *textures,
-                                         const GLenum *dstLayouts)
-{
-    ANGLE_GL_UNREACHABLE(this);
-    return angle::Result::Stop;
 }
 
 ANGLE_INLINE angle::Result ContextGL::setDrawArraysState(const gl::Context *context,
@@ -571,19 +547,14 @@ const gl::Limitations &ContextGL::getNativeLimitations() const
     return mRenderer->getNativeLimitations();
 }
 
-void ContextGL::applyNativeWorkarounds(gl::Workarounds *workarounds) const
-{
-    return mRenderer->applyNativeWorkarounds(workarounds);
-}
-
 StateManagerGL *ContextGL::getStateManager()
 {
     return mRenderer->getStateManager();
 }
 
-const WorkaroundsGL &ContextGL::getWorkaroundsGL() const
+const angle::FeaturesGL &ContextGL::getFeaturesGL() const
 {
-    return mRenderer->getWorkarounds();
+    return mRenderer->getFeatures();
 }
 
 BlitGL *ContextGL::getBlitter() const
@@ -621,6 +592,11 @@ angle::Result ContextGL::memoryBarrierByRegion(const gl::Context *context, GLbit
 void ContextGL::setMaxShaderCompilerThreads(GLuint count)
 {
     mRenderer->setMaxShaderCompilerThreads(count);
+}
+
+void ContextGL::invalidateTexture(gl::TextureType target)
+{
+    mRenderer->getStateManager()->invalidateTexture(target);
 }
 
 }  // namespace rx

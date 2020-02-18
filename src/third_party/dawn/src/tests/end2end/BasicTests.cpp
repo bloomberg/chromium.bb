@@ -24,11 +24,11 @@ class BasicTests : public DawnTest {
 TEST_P(BasicTests, BufferSetSubData) {
     dawn::BufferDescriptor descriptor;
     descriptor.size = 4;
-    descriptor.usage = dawn::BufferUsageBit::TransferSrc | dawn::BufferUsageBit::TransferDst;
+    descriptor.usage = dawn::BufferUsageBit::CopySrc | dawn::BufferUsageBit::CopyDst;
     dawn::Buffer buffer = device.CreateBuffer(&descriptor);
 
     uint32_t value = 0x01020304;
-    buffer.SetSubData(0, sizeof(value), reinterpret_cast<uint8_t*>(&value));
+    buffer.SetSubData(0, sizeof(value), &value);
 
     EXPECT_BUFFER_U32_EQ(value, buffer, 0);
 }
@@ -38,7 +38,7 @@ TEST_P(BasicTests, BufferSetSubData) {
 TEST_P(BasicTests, BufferSetSubDataError) {
     dawn::BufferDescriptor descriptor;
     descriptor.size = 4;
-    descriptor.usage = dawn::BufferUsageBit::TransferSrc | dawn::BufferUsageBit::TransferDst;
+    descriptor.usage = dawn::BufferUsageBit::CopySrc | dawn::BufferUsageBit::CopyDst;
     dawn::Buffer buffer = device.CreateBuffer(&descriptor);
 
     uint8_t value = 187;

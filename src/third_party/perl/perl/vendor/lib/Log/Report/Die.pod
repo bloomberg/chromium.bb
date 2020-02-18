@@ -1,0 +1,91 @@
+=encoding utf8
+
+=head1 NAME
+
+Log::Report::Die - compatibility routines with Perl's die/croak/confess
+
+=head1 INHERITANCE
+
+ Log::Report::Die
+   is a Exporter
+
+=head1 SYNOPSIS
+
+ # use internally only
+
+=head1 DESCRIPTION
+
+This module is used internally, to translate output of 'die' and Carp
+functions into L<Log::Report::Message|Log::Report::Message> objects.  Also, it tries to
+convert other kinds of exception frameworks into our message object.
+
+=head1 FUNCTIONS
+
+=over 4
+
+=item B<die_decode>(STRING, %options)
+
+The STRING is the content of C<$@> after an eval() caught a die().
+croak(), or confess().  This routine tries to convert this into
+parameters for L<Log::Report::report()|Log::Report/"Report Production and Configuration">.  This is done in a very
+smart way, even trying to find the stringifications of C<$!>.
+
+Return are four elements: the error string which is used to trigger
+a C<Log::Report> compatible C<die()>, and the options, reason, and
+text message.  The options is a HASH which, amongst other things,
+may contain a stack trace and location.
+
+Translated components will have exception classes C<perl>, and C<die> or
+C<confess>.  On the moment, the C<croak> cannot be distiguished from the
+C<confess> (when used in package main) or C<die> (otherwise).
+
+The returned reason depends on whether the translation of the current
+C<$!> is found in the STRING, and the presence of a stack trace.  The
+following table is used:
+
+  errstr  stack  =>  reason
+    no      no       ERROR   (die) application internal problem
+    yes     no       FAULT   (die) external problem, think open()
+    no      yes      PANIC   (confess) implementation error
+    yes     yes      ALERT   (confess) external problem, caught
+
+ -Option--Default
+  on_die  'ERROR'
+
+=over 2
+
+=item on_die => REASON
+
+=back
+
+=item B<exception_decode>($exception, %options)
+
+[1.23] This function attempts to translate object of other exception frameworks
+into information to create a L<Log::Report::Exception|Log::Report::Exception>.  It returns the
+same list of parameters as L<die_decode()|Log::Report::Die/"FUNCTIONS"> does.
+
+Currently supported:
+
+=over 4
+
+=item * DBIx::Class::Exception
+
+=item * XML::LibXML::Error
+
+=back
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of Log-Report distribution version 1.28,
+built on May 14, 2019. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2007-2019 by [Mark Overmeer <markov@cpan.org>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

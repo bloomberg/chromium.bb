@@ -34,6 +34,7 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   bool ShouldHideResponseHeader(const GURL& url,
                                 const std::string& header_name) const override;
   bool ShouldHideBrowserNetworkRequest(
+      content::BrowserContext* context,
       const WebRequestInfo& request) const override;
   void NotifyWebRequestWithheld(int render_process_id,
                                 int render_frame_id,
@@ -59,6 +60,8 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   std::unique_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate(
       content::BrowserContext* browser_context) const override;
   ManagementAPIDelegate* CreateManagementAPIDelegate() const override;
+  std::unique_ptr<DisplayInfoProvider> CreateDisplayInfoProvider()
+      const override;
   MetricsPrivateDelegate* GetMetricsPrivateDelegate() override;
   NetworkingCastPrivateDelegate* GetNetworkingCastPrivateDelegate() override;
   FileSystemDelegate* GetFileSystemDelegate() override;
@@ -78,6 +81,7 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
 #endif
 
   AutomationInternalApiDelegate* GetAutomationInternalApiDelegate() override;
+  std::vector<KeyedServiceBaseFactory*> GetFactoryDependencies() override;
 
  private:
   std::unique_ptr<ChromeMetricsPrivateDelegate> metrics_private_delegate_;

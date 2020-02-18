@@ -10,7 +10,7 @@ use Carp;
 require DynaLoader;
 
 @ISA = qw(DynaLoader);
-$VERSION = "2.41";
+$VERSION = "2.44";
 
 $have_File_Spec = $INC{'File/Spec.pm'} || do 'File/Spec.pm';
 
@@ -455,6 +455,10 @@ sub parse {
         no strict 'refs';
         $ioref = *{$arg}{IO} if defined *{$arg};
       };
+      if (ref($ioref) eq 'FileHandle') {
+        #for perl 5.10.x and possibly earlier, see t/file_open_scalar.t
+        require FileHandle;
+      }
     }
   }
   
@@ -922,7 +926,7 @@ including any internal or external DTD declarations.
 
 =item * XMLDecl           (Parser, Version, Encoding, Standalone)
 
-This handler is called for XML declarations. Version is a string containg
+This handler is called for XML declarations. Version is a string containing
 the version. Encoding is either undefined or contains an encoding string.
 Standalone is either undefined, or true or false. Undefined indicates
 that no standalone parameter was given in the XML declaration. True or
@@ -954,7 +958,7 @@ a prefix.
 =item new_ns_prefixes
 
 When called from a start tag handler, returns namespace prefixes declared
-with this start tag. If called elsewere (or if there were no namespace
+with this start tag. If called elsewhere (or if there were no namespace
 prefixes declared), it returns an empty list. Setting of the default
 namespace is indicated with '#default' as a prefix.
 
@@ -974,7 +978,7 @@ currently bound, '#default' appears in the list.
 
 Returns the string from the document that was recognized in order to call
 the current handler. For instance, when called from a start handler, it
-will give us the the start-tag string. The string is encoded in UTF-8.
+will give us the start-tag string. The string is encoded in UTF-8.
 This method doesn't return a meaningful string inside declaration handlers.
 
 =item original_string

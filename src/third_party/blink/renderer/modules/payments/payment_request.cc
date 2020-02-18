@@ -11,7 +11,7 @@
 #include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -56,12 +55,13 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace {
 
@@ -416,11 +416,6 @@ void StringifyAndParseMethodSpecificData(ExecutionContext& execution_context,
 
   if (supported_method == "basic-card") {
     SetBasicCardMethodData(input, output, exception_state);
-    if (exception_state.HadException()) {
-      UseCounter::Count(&execution_context,
-                        WebFeature::kInvalidBasicCardMethodData);
-      exception_state.ClearException();
-    }
   }
 }
 
@@ -713,7 +708,7 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
   if (is_waiting_for_show_promise_to_resolve_) {
     // If the website does not calculate the final shopping cart contents within
     // 10 seconds, abort payment.
-    update_payment_details_timer_.StartOneShot(TimeDelta::FromSeconds(10),
+    update_payment_details_timer_.StartOneShot(base::TimeDelta::FromSeconds(10),
                                                FROM_HERE);
     details_promise.Then(
         UpdatePaymentDetailsFunction::CreateFunction(
@@ -1045,6 +1040,12 @@ void PaymentRequest::OnUpdatePaymentDetailsTimeoutForTesting() {
   OnUpdatePaymentDetailsTimeout(nullptr);
 }
 
+void PaymentRequest::OnConnectionError() {
+  OnError(PaymentErrorReason::UNKNOWN,
+          "Renderer process could not establish or lost IPC connection to the "
+          "PaymentRequest service in the browser process.");
+}
+
 PaymentRequest::PaymentRequest(
     ExecutionContext* execution_context,
     const HeapVector<Member<PaymentMethodData>>& method_data,
@@ -1081,7 +1082,7 @@ PaymentRequest::PaymentRequest(
   PaymentDetailsPtr validated_details =
       payments::mojom::blink::PaymentDetails::New();
   validated_details->id = id_ =
-      details->hasId() ? details->id() : CreateCanonicalUUIDString();
+      details->hasId() ? details->id() : WTF::CreateCanonicalUUIDString();
 
   Vector<payments::mojom::blink::PaymentMethodDataPtr> validated_method_data;
   ValidateAndConvertPaymentMethodData(method_data, validated_method_data,
@@ -1110,8 +1111,7 @@ PaymentRequest::PaymentRequest(
   GetFrame()->GetInterfaceProvider().GetInterface(
       mojo::MakeRequest(&payment_provider_, task_runner));
   payment_provider_.set_connection_error_handler(
-      WTF::Bind(&PaymentRequest::OnError, WrapWeakPersistent(this),
-                PaymentErrorReason::UNKNOWN));
+      WTF::Bind(&PaymentRequest::OnConnectionError, WrapWeakPersistent(this)));
 
   UseCounter::Count(execution_context, WebFeature::kPaymentRequestInitialized);
   payments::mojom::blink::PaymentRequestClientPtr client;
@@ -1266,7 +1266,7 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
 
   // If the website does not call complete() 60 seconds after show() has been
   // resolved, then behave as if the website called complete("fail").
-  complete_timer_.StartOneShot(TimeDelta::FromSeconds(60), FROM_HERE);
+  complete_timer_.StartOneShot(base::TimeDelta::FromSeconds(60), FROM_HERE);
 
   if (retry_resolver_) {
     DCHECK(payment_response_);
@@ -1291,55 +1291,27 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
   }
 }
 
-void PaymentRequest::OnError(PaymentErrorReason error) {
+void PaymentRequest::OnError(PaymentErrorReason error,
+                             const String& error_message) {
+  DCHECK(!error_message.IsEmpty());
   DOMExceptionCode exception_code = DOMExceptionCode::kUnknownError;
-  String message;
 
   switch (error) {
-    case PaymentErrorReason::USER_CANCEL: {
+    case PaymentErrorReason::USER_CANCEL:
       exception_code = DOMExceptionCode::kAbortError;
-      message = "Request cancelled";
       break;
-    }
 
-    case PaymentErrorReason::NOT_SUPPORTED: {
+    case PaymentErrorReason::NOT_SUPPORTED:
       exception_code = DOMExceptionCode::kNotSupportedError;
-      DCHECK_LE(1U, method_names_.size());
-      auto it = method_names_.begin();
-      if (method_names_.size() == 1U) {
-        message = "The payment method \"" + *it + "\" is not supported";
-      } else {
-        StringBuilder sb;
-        sb.Append("The payment methods \"");
-        sb.Append(*it);
-        sb.Append("\"");
-        while (++it != method_names_.end()) {
-          sb.Append(", \"");
-          sb.Append(*it);
-          sb.Append("\"");
-        }
-        sb.Append(" are not supported");
-        message = sb.ToString();
-      }
       break;
-    }
 
-    case PaymentErrorReason::ALREADY_SHOWING: {
+    case PaymentErrorReason::ALREADY_SHOWING:
       exception_code = DOMExceptionCode::kAbortError;
-      message =
-          "Another PaymentRequest UI is already showing in a different tab or "
-          "window";
       break;
-    }
 
-    case PaymentErrorReason::UNKNOWN: {
-      exception_code = DOMExceptionCode::kUnknownError;
-      message = "Request failed";
+    case PaymentErrorReason::UNKNOWN:
       break;
-    }
   }
-
-  DCHECK(!message.IsEmpty());
 
   // If the user closes PaymentRequest UI after PaymentResponse.complete() has
   // been called, the PaymentResponse.complete() promise should be resolved with
@@ -1353,22 +1325,22 @@ void PaymentRequest::OnError(PaymentErrorReason error) {
   ScriptPromiseResolver* resolver = GetPendingAcceptPromiseResolver();
   if (resolver) {
     resolver->Reject(
-        MakeGarbageCollected<DOMException>(exception_code, message));
+        MakeGarbageCollected<DOMException>(exception_code, error_message));
   }
 
   if (abort_resolver_) {
     abort_resolver_->Reject(
-        MakeGarbageCollected<DOMException>(exception_code, message));
+        MakeGarbageCollected<DOMException>(exception_code, error_message));
   }
 
   if (can_make_payment_resolver_) {
     can_make_payment_resolver_->Reject(
-        MakeGarbageCollected<DOMException>(exception_code, message));
+        MakeGarbageCollected<DOMException>(exception_code, error_message));
   }
 
   if (has_enrolled_instrument_resolver_) {
     has_enrolled_instrument_resolver_->Reject(
-        MakeGarbageCollected<DOMException>(exception_code, message));
+        MakeGarbageCollected<DOMException>(exception_code, error_message));
   }
 
   ClearResolversAndCloseMojoConnection();
@@ -1512,7 +1484,7 @@ void PaymentRequest::DispatchPaymentRequestUpdateEvent(
 
   // If the website does not calculate the updated shopping cart contents
   // within 60 seconds, abort payment.
-  update_payment_details_timer_.StartOneShot(TimeDelta::FromSeconds(60),
+  update_payment_details_timer_.StartOneShot(base::TimeDelta::FromSeconds(60),
                                              FROM_HERE);
 
   event_target->DispatchEvent(*event);
@@ -1524,7 +1496,7 @@ void PaymentRequest::DispatchPaymentRequestUpdateEvent(
     const String& message = String::Format(
         "No updateWith() call in '%s' event handler. User may see outdated "
         "line items and total.",
-        event->type().Ascii().data());
+        event->type().Ascii().c_str());
     GetExecutionContext()->AddConsoleMessage(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
                                mojom::ConsoleMessageLevel::kWarning, message));

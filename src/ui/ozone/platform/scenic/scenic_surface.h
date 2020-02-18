@@ -41,8 +41,9 @@ class ScenicSurface : public ui::PlatformWindowSurface {
   // Sets the texture of the surface to an image resource.
   void SetTextureToImage(const scenic::Image& image);
 
-  // Creates token to links the surface to the window in the browser process.
-  mojo::ScopedHandle CreateParentExportToken();
+  // Returns an export token used to associated this surface with a window in
+  // the browser process.
+  mojo::ScopedHandle CreateExportToken();
 
   void AssertBelongsToCurrentThread() {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

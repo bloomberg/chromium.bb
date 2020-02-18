@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/file_system_get_directory_options.h"
 #include "third_party/blink/renderer/modules/native_file_system/file_system_get_file_options.h"
+#include "third_party/blink/renderer/modules/native_file_system/file_system_remove_options.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -26,7 +27,8 @@ using mojom::blink::NativeFileSystemErrorPtr;
 
 NativeFileSystemDirectoryHandle::NativeFileSystemDirectoryHandle(
     const String& name,
-    mojom::blink::NativeFileSystemDirectoryHandlePtr mojo_ptr)
+    RevocableInterfacePtr<mojom::blink::NativeFileSystemDirectoryHandle>
+        mojo_ptr)
     : NativeFileSystemHandle(name), mojo_ptr_(std::move(mojo_ptr)) {
   DCHECK(mojo_ptr_);
 }
@@ -44,10 +46,18 @@ ScriptPromise NativeFileSystemDirectoryHandle::getFile(
           [](ScriptPromiseResolver* resolver, const String& name,
              NativeFileSystemErrorPtr result,
              mojom::blink::NativeFileSystemFileHandlePtr handle) {
+            ExecutionContext* context = resolver->GetExecutionContext();
+            if (!context)
+              return;
             if (result->error_code == base::File::FILE_OK) {
               resolver->Resolve(
                   MakeGarbageCollected<NativeFileSystemFileHandle>(
-                      name, std::move(handle)));
+                      name,
+                      RevocableInterfacePtr<
+                          mojom::blink::NativeFileSystemFileHandle>(
+                          handle.PassInterface(),
+                          context->GetInterfaceInvalidator(),
+                          context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
             } else {
               resolver->Reject(
                   file_error::CreateDOMException(result->error_code));
@@ -71,10 +81,18 @@ ScriptPromise NativeFileSystemDirectoryHandle::getDirectory(
           [](ScriptPromiseResolver* resolver, const String& name,
              NativeFileSystemErrorPtr result,
              mojom::blink::NativeFileSystemDirectoryHandlePtr handle) {
+            ExecutionContext* context = resolver->GetExecutionContext();
+            if (!context)
+              return;
             if (result->error_code == base::File::FILE_OK) {
               resolver->Resolve(
                   MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
-                      name, std::move(handle)));
+                      name,
+                      RevocableInterfacePtr<
+                          mojom::blink::NativeFileSystemDirectoryHandle>(
+                          handle.PassInterface(),
+                          context->GetInterfaceInvalidator(),
+                          context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
             } else {
               resolver->Reject(
                   file_error::CreateDOMException(result->error_code));
@@ -95,8 +113,8 @@ void ReturnDataFunction(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 ScriptValue NativeFileSystemDirectoryHandle::getEntries(
     ScriptState* script_state) {
-  auto* iterator =
-      MakeGarbageCollected<NativeFileSystemDirectoryIterator>(this);
+  auto* iterator = MakeGarbageCollected<NativeFileSystemDirectoryIterator>(
+      this, ExecutionContext::From(script_state));
   auto* isolate = script_state->GetIsolate();
   auto context = script_state->GetContext();
   v8::Local<v8::Object> result = v8::Object::New(isolate);
@@ -111,13 +129,15 @@ ScriptValue NativeFileSystemDirectoryHandle::getEntries(
   return ScriptValue(script_state, result);
 }
 
-ScriptPromise NativeFileSystemDirectoryHandle::removeRecursively(
-    ScriptState* script_state) {
+ScriptPromise NativeFileSystemDirectoryHandle::removeEntry(
+    ScriptState* script_state,
+    const String& name,
+    const FileSystemRemoveOptions* options) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
-  mojo_ptr_->Remove(
-      true,
+  mojo_ptr_->RemoveEntry(
+      name, options->recursive(),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, NativeFileSystemErrorPtr result) {
             if (result->error_code == base::File::FILE_OK) {
@@ -157,10 +177,18 @@ ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
          mojom::blink::NativeFileSystemManagerPtr,
          NativeFileSystemErrorPtr result,
          mojom::blink::NativeFileSystemDirectoryHandlePtr handle) {
+        ExecutionContext* context = resolver->GetExecutionContext();
+        if (!context)
+          return;
         if (result->error_code == base::File::FILE_OK) {
           resolver->Resolve(
               MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
-                  kSandboxRootDirectoryName, std::move(handle)));
+                  kSandboxRootDirectoryName,
+                  RevocableInterfacePtr<
+                      mojom::blink::NativeFileSystemDirectoryHandle>(
+                      handle.PassInterface(),
+                      context->GetInterfaceInvalidator(),
+                      context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
         } else {
           resolver->Reject(file_error::CreateDOMException(result->error_code));
         }
@@ -177,9 +205,16 @@ NativeFileSystemDirectoryHandle::Transfer() {
   return result;
 }
 
-void NativeFileSystemDirectoryHandle::RemoveImpl(
-    base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr)> callback) {
-  mojo_ptr_->Remove(/*recursive=*/false, std::move(callback));
+void NativeFileSystemDirectoryHandle::QueryPermissionImpl(
+    bool writable,
+    base::OnceCallback<void(mojom::blink::PermissionStatus)> callback) {
+  mojo_ptr_->GetPermissionStatus(writable, std::move(callback));
+}
+
+void NativeFileSystemDirectoryHandle::RequestPermissionImpl(
+    bool writable,
+    base::OnceCallback<void(mojom::blink::PermissionStatus)> callback) {
+  mojo_ptr_->RequestPermission(writable, std::move(callback));
 }
 
 }  // namespace blink

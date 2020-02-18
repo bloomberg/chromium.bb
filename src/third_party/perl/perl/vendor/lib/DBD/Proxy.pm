@@ -229,10 +229,8 @@ $DBD::Proxy::db::imp_data_size = 0;
 # in a way that might not be visible on the client, ie begin_work -> AutoCommit.
 
 sub commit;
-sub connected;
 sub rollback;
 sub ping;
-
 
 use vars qw(%ATTR $AUTOLOAD);
 
@@ -294,6 +292,9 @@ sub DESTROY {
     local $@ if $@;	# protect $@
     $dbh->disconnect if $dbh->SUPER::FETCH('Active');
 }
+
+
+sub connected { } # client-side not server-side, RT#75868
 
 sub disconnect ($) {
     my ($dbh) = @_;
@@ -758,7 +759,6 @@ proxying the connect_cached method. The proxy server will hold the
 database connections open in a cache. The CGI script then trades the
 database connect/disconnect overhead for the DBD::Proxy
 connect/disconnect overhead which is typically much less.
-I<Note that the connect_cached method is new and still experimental.>
 
 
 =head1 CONNECTING TO THE DATABASE
@@ -845,7 +845,7 @@ less secure than the usercipher/userkey secret and readable by anyone.
 The usercipher/userkey secret is B<your> private secret.
 
 Of course encryption requires an appropriately configured server. See
-<DBD::ProxyServer/CONFIGURATION FILE>.
+L<DBD::ProxyServer/CONFIGURATION FILE>.
 
 =item debug
 
@@ -884,7 +884,7 @@ persistent connections.
 
 However, if you set the I<proxy_no_finish> attribute to a TRUE value,
 either in the database handle or in the statement handle, then finish()
-calls will be supressed. This is what you want, for example, in small
+calls will be suppressed. This is what you want, for example, in small
 and fast CGI applications.
 
 =item proxy_quote
@@ -971,6 +971,13 @@ The workaround is storing the modified local copy back to the server:
   $tables = $dbh->{"csv_tables"};
   $tables->{"passwd"} = { "sep_char" => ":", "eol" => "\n";
   $dbh->{"csv_tables"} = $tables;
+
+
+=head1 SECURITY WARNING
+
+L<RPC::PlClient> used underneath is not secure due to serializing and
+deserializing data with L<Storable> module. Use the proxy driver only in
+trusted environment.
 
 
 =head1 AUTHOR AND COPYRIGHT

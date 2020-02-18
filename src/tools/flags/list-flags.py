@@ -24,19 +24,6 @@ def load_metadata():
   return json5.load(open(flags_path))
 
 
-def keep_unowned(flags):
-  """Filter flags to contain only flags with no owners entry.
-
-  >>> keep_unowned([{'name': 'foo'}])
-  [{'name': 'foo'}]
-  >>> keep_unowned([{'name': 'bar', 'owners': ['f']}])
-  []
-  >>> keep_unowned([{'name': 'foo'}, {'name': 'bar', 'owners': ['f']}])
-  [{'name': 'foo'}]
-  """
-  return [f for f in flags if not f.get('owners')]
-
-
 def keep_expired_by(flags, mstone):
   """Filter flags to contain only flags that expire by mstone.
 
@@ -69,7 +56,7 @@ def print_flags(flags, verbose):
   prints just the name.
 
   >>> f1 = {'name': 'foo', 'expiry_milestone': 73, 'owners': ['bar', 'baz']}
-  >>> f2 = {'name': 'bar', 'expiry_milestone': 74}
+  >>> f2 = {'name': 'bar', 'expiry_milestone': 74, 'owners': ['//quxx/OWNERS']}
   >>> print_flags([f1], False)
   foo
   >>> print_flags([f1], True)
@@ -77,12 +64,12 @@ def print_flags(flags, verbose):
   >>> print_flags([f2], False)
   bar
   >>> print_flags([f2], True)
-  bar expires 74 owners (none)
+  bar expires 74 owners //quxx/OWNERS
   """
   for f in flags:
     if verbose:
       print '%s expires %d owners %s' % (f['name'], f['expiry_milestone'],
-        ', '.join(f.get('owners', ['(none)'])))
+        ', '.join(f['owners']))
     else:
       print f['name']
 
@@ -92,7 +79,6 @@ def main():
   doctest.testmod()
 
   parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument('-u', '--unowned', action='store_true')
   group = parser.add_mutually_exclusive_group()
   group.add_argument('-n', '--never-expires', action='store_true')
   group.add_argument('-e', '--expired-by', type=int)
@@ -100,8 +86,6 @@ def main():
   args = parser.parse_args()
 
   flags = load_metadata()
-  if args.unowned:
-    flags = keep_unowned(flags)
   if args.expired_by:
     flags = keep_expired_by(flags, args.expired_by)
   if args.never_expires:

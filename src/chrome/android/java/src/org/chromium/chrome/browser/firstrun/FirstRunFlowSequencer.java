@@ -19,15 +19,16 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChildAccountStatus;
@@ -99,7 +100,7 @@ public abstract class FirstRunFlowSequencer  {
 
     @VisibleForTesting
     protected boolean isSyncAllowed() {
-        SigninManager signinManager = SigninManager.get();
+        SigninManager signinManager = IdentityServicesProvider.getSigninManager();
         return FeatureUtilities.canAllowSync() && !signinManager.isSigninDisabledByPolicy()
                 && signinManager.isSigninSupported();
     }
@@ -171,7 +172,7 @@ public abstract class FirstRunFlowSequencer  {
         // In the full FRE we always show the Welcome page, except on EDU devices.
         boolean showWelcomePage = !mForceEduSignIn;
         freProperties.putBoolean(FirstRunActivity.SHOW_WELCOME_PAGE, showWelcomePage);
-        freProperties.putInt(AccountFirstRunFragment.CHILD_ACCOUNT_STATUS, mChildAccountStatus);
+        freProperties.putInt(SigninFirstRunFragment.CHILD_ACCOUNT_STATUS, mChildAccountStatus);
 
         // Initialize usage and crash reporting according to the default value.
         // The user can explicitly enable or disable the reporting on the Welcome page.
@@ -201,7 +202,7 @@ public abstract class FirstRunFlowSequencer  {
             // If the device is an Android EDU device or has a child account, there should be
             // exactly account on the device. Force sign-in in to that account.
             freProperties.putString(
-                    AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO, mGoogleAccounts.get(0).name);
+                    SigninFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO, mGoogleAccounts.get(0).name);
         }
 
         freProperties.putBoolean(

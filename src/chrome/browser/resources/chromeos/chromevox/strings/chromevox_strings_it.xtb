@@ -69,6 +69,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1385214448885562192">Premi Invio per accettare o Esc per annullare, freccia Giù per passare al prossimo e freccia Su per passare al precedente.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Annuncia gli attributi RTF</translation>
 <translation id="1405567553485452995">Verde chiaro</translation>
 <translation id="1417889266572670458">Blu navy</translation>
 <translation id="1431911867058218151">Prugna</translation>
@@ -318,11 +319,11 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="3232388865800379423">Un pulsante popup</translation>
 <translation id="3241052487511142956">Link visitato precedente</translation>
 <translation id="3241638166094654466">Celle in ogni riga:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">verticale</translation>
 <translation id="3286390186030710347">Dispositivo di scorrimento</translation>
 <translation id="3299925995433437805">Nessun link visitato successivo.</translation>
 <translation id="3300348286427369683">Supporto per RTF. Adesso ChromeVox supporta campi in formato Rich text (RTF), inclusi i comandi di spostamento, lo spostamento del puntatore nel display braille, la selezione e altro ancora.</translation>
-<translation id="3304756947457041303">Personalizza indicazione RTF</translation>
 <translation id="3307886118343381874">Vai alla fine della tabella</translation>
 <translation id="3311969765485641742">Premi Alt+Maiusc+A per esaminare gli avvisi</translation>
 <translation id="3312997241656799641">Link visitato successivo</translation>
@@ -443,7 +444,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4161104397932142764">{COUNT,plural, =1{secondo}other{secondi}}</translation>
 <translation id="4161663686871496107">La lettura vocale di ChromeVox è pronta</translation>
 <translation id="4173994908659439270">Nessun campo di testo modificabile successivo.</translation>
-<translation id="4176463684765177261">Disabilitato</translation>
+<translation id="4176463684765177261">Disattivate</translation>
 <translation id="4187322598335821254">Scorri verso l'alto o verso il basso per spostarti da una riga all'altra</translation>
 <translation id="4188530942454211480">Frase precedente</translation>
 <translation id="4191918948604314587">Un pulsante</translation>

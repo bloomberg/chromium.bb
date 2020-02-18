@@ -387,9 +387,9 @@ def Cbuildbot(buildroot, depot_tools_path, argv):
 
   # Fixup buildroot parameter.
   argv = argv[:]
-  for i in xrange(len(argv)):
-    if argv[i] in ('-r', '--buildroot'):
-      argv[i+1] = buildroot
+  for i, arg in enumerate(argv):
+    if arg in ('-r', '--buildroot'):
+      argv[i + 1] = buildroot
 
   # This filters out command line arguments not supported by older versions
   # of cbuildbot.

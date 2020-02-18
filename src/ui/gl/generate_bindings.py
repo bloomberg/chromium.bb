@@ -1266,6 +1266,10 @@ GL_FUNCTIONS = [
   'arguments':
       'GLenum target, GLsizei numAttachments, const GLenum* attachments, '
       'GLint x, GLint y, GLint width, GLint height', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glInvalidateTextureANGLE',
+                 'extensions': ['GL_ANGLE_texture_external_update'] } ],
+  'arguments': 'GLenum target', },
 { 'return_type': 'GLboolean',
   'names': ['glIsBuffer'],
   'arguments': 'GLuint buffer', },
@@ -1882,6 +1886,12 @@ GL_FUNCTIONS = [
       'GLsizei height, GLint border, GLenum format, GLenum type, '
       'const void* pixels', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glTexImage2DExternalANGLE',
+                 'extensions': ['GL_ANGLE_texture_external_update'] } ],
+  'arguments': 'GLenum target, GLint level, GLint internalformat, '
+               'GLsizei width, GLsizei height, GLint border, GLenum format, '
+               'GLenum type', },
+{ 'return_type': 'void',
   'versions': [{'name': 'glTexImage2DRobustANGLE',
                 'extensions': ['GL_ANGLE_robust_client_memory']}],
   'arguments':
@@ -2370,11 +2380,9 @@ EGL_FUNCTIONS = [
                  ] }],
   'arguments': 'EGLDisplay dpy, EGLSurface surface, EGLuint64KHR* frameId', },
 { 'return_type': 'EGLDisplay',
-  'known_as': 'eglGetPlatformDisplayEXT',
-  'versions': [{ 'name': 'eglGetPlatformDisplayEXT',
-                 'client_extensions': ['EGL_EXT_platform_base'], }],
+  'names': ['eglGetPlatformDisplay'],
   'arguments': 'EGLenum platform, void* native_display, '
-               'const EGLint* attrib_list', },
+               'const EGLAttrib* attrib_list', },
 { 'return_type': '__eglMustCastToProperFunctionPointerType',
   'names': ['eglGetProcAddress'],
   'arguments': 'const char* procname',
@@ -2430,6 +2438,10 @@ EGL_FUNCTIONS = [
                  'client_extensions': ['EGL_KHR_debug'], }],
   'arguments': 'EGLint attribute, EGLAttrib* value', },
 { 'return_type': 'EGLBoolean',
+  'versions': [{ 'name': 'eglQueryDisplayAttribANGLE',
+                 'client_extensions': ['EGL_ANGLE_feature_control'] }],
+  'arguments': 'EGLDisplay dpy, EGLint attribute, EGLAttrib* value' },
+{ 'return_type': 'EGLBoolean',
   'versions': [{ 'name': 'eglQueryStreamKHR',
                  'extensions': ['EGL_KHR_stream'] }],
   'arguments':
@@ -2444,6 +2456,10 @@ EGL_FUNCTIONS = [
 { 'return_type': 'const char*',
   'names': ['eglQueryString'],
   'arguments': 'EGLDisplay dpy, EGLint name', },
+{ 'return_type': 'const char *',
+  'versions': [{ 'name': 'eglQueryStringiANGLE',
+                 'client_extensions': ['EGL_ANGLE_feature_control'] }],
+  'arguments': 'EGLDisplay dpy, EGLint name, EGLint index' },
 { 'return_type': 'EGLBoolean',
   'names': ['eglQuerySurface'],
   'arguments':

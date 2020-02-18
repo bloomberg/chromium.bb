@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_CREDENTIAL_MANAGER_PROXY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_CREDENTIAL_MANAGER_PROXY_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -54,8 +55,8 @@ class MODULES_EXPORT CredentialManagerProxy
   static CredentialManagerProxy* From(Document&);
 
  private:
-  mojom::blink::AuthenticatorPtr authenticator_;
-  mojom::blink::CredentialManagerPtr credential_manager_;
+  mojo::Remote<mojom::blink::Authenticator> authenticator_;
+  mojo::Remote<mojom::blink::CredentialManager> credential_manager_;
 };
 
 }  // namespace blink

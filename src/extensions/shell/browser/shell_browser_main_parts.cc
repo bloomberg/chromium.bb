@@ -9,6 +9,7 @@
 #include "apps/browser_context_keyed_service_factories.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -21,22 +22,21 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/updater/update_service.h"
 #include "extensions/common/constants.h"
+#include "extensions/shell/browser/desktop_controller.h"
 #include "extensions/shell/browser/shell_browser_context.h"
 #include "extensions/shell/browser/shell_browser_context_keyed_service_factories.h"
 #include "extensions/shell/browser/shell_browser_main_delegate.h"
-#include "extensions/shell/browser/shell_desktop_controller_aura.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 #include "extensions/shell/browser/shell_extensions_browser_client.h"
-#include "extensions/shell/browser/shell_oauth2_token_service.h"
 #include "extensions/shell/browser/shell_prefs.h"
 #include "extensions/shell/browser/shell_update_query_params_delegate.h"
 #include "extensions/shell/common/shell_extensions_client.h"
@@ -185,7 +185,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   shell::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 
   // Initialize our "profile" equivalent.
-  browser_context_ = std::make_unique<ShellBrowserContext>(this);
+  browser_context_ = std::make_unique<ShellBrowserContext>();
 
   // app_shell only supports a single user, so all preferences live in the user
   // data directory, including the device-wide local state.
@@ -198,8 +198,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
 #if defined(OS_CHROMEOS)
   chromeos::CrasAudioHandler::Initialize(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      new chromeos::AudioDevicesPrefHandlerImpl(local_state_.get()));
+      content::GetSystemConnector(),
+      base::MakeRefCounted<chromeos::AudioDevicesPrefHandlerImpl>(
+          local_state_.get()));
   audio_controller_.reset(new ShellAudioController());
 #endif
 
@@ -215,9 +216,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 #endif
 
   storage_monitor::StorageMonitor::Create(
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->Clone());
+      content::GetSystemConnector()->Clone());
 
   desktop_controller_.reset(
       browser_main_delegate_->CreateDesktopController(browser_context_.get()));
@@ -229,12 +228,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       update_query_params_delegate_.get());
 
   InitExtensionSystem();
-
-  // Initialize OAuth2 support from command line.
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  oauth2_token_service_.reset(new ShellOAuth2TokenService(
-      cmd->GetSwitchValueASCII(switches::kAppShellUser),
-      cmd->GetSwitchValueASCII(switches::kAppShellRefreshToken)));
 
 #if BUILDFLAG(ENABLE_NACL)
   nacl::NaClBrowser::SetDelegate(
@@ -249,7 +242,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   content::ShellDevToolsManagerDelegate::StartHttpHandler(
       browser_context_.get());
 
-  if (cmd->HasSwitch(::switches::kBrowserCrashTest))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kBrowserCrashTest))
     CrashForTest();
 
   if (parameters_.ui_task) {
@@ -282,7 +276,6 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   task_tracker_.TryCancelAll();
 #endif
 
-  oauth2_token_service_.reset();
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       browser_context_.get());
   extension_system_ = NULL;

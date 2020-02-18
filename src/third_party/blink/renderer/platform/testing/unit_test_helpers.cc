@@ -66,12 +66,11 @@ void RunPendingTasks() {
 
   // We forbid GC in the tasks. Otherwise the registered GCTaskObserver tries
   // to run GC with NoHeapPointerOnStack.
-  ThreadState::Current()->EnterGCForbiddenScope();
+  ThreadState::GCForbiddenScope gc_forbidden(ThreadState::Current());
   EnterRunLoop();
-  ThreadState::Current()->LeaveGCForbiddenScope();
 }
 
-void RunDelayedTasks(TimeDelta delay) {
+void RunDelayedTasks(base::TimeDelta delay) {
   Thread::Current()->GetTaskRunner()->PostDelayedTask(
       FROM_HERE, WTF::Bind(&ExitRunLoop), delay);
   EnterRunLoop();

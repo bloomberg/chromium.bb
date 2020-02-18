@@ -123,7 +123,7 @@ void ParseHostPermissions(Extension* extension,
 
   // Users should be able to enable file access for extensions with activeTab.
   if (!can_execute_script_everywhere &&
-      base::ContainsKey(api_permissions, APIPermission::kActiveTab)) {
+      base::Contains(api_permissions, APIPermission::kActiveTab)) {
     extension->set_wants_file_access(true);
   }
 

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -19,6 +20,8 @@
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
+#include "gpu/config/gpu_finch_features.h"
+#include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "ui/gfx/switches.h"
@@ -30,33 +33,39 @@
 #include "components/ui_devtools/viz/overlay_agent_viz.h"
 #endif
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#endif
-
 namespace viz {
 namespace {
 
 const char kThreadName[] = "VizCompositorThread";
 
-std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
+std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread(
+    base::MessageLoop::Type message_loop_type) {
+  const base::ThreadPriority thread_priority =
+      base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority)
+          ? base::ThreadPriority::DISPLAY
+          : base::ThreadPriority::NORMAL;
 #if defined(OS_ANDROID)
   auto thread = std::make_unique<base::android::JavaHandlerThread>(
-      kThreadName, base::ThreadPriority::DISPLAY);
+      kThreadName, thread_priority);
   thread->Start();
   return thread;
 #else  // !defined(OS_ANDROID)
   auto thread = std::make_unique<base::Thread>(kThreadName);
 
   base::Thread::Options thread_options;
-#if defined(USE_OZONE)
-  // We may need a non-default message loop type for the platform surface.
-  thread_options.message_loop_type =
-      ui::OzonePlatform::GetInstance()->GetMessageLoopTypeForGpu();
-#endif
-#if defined(OS_CHROMEOS) || defined(USE_OZONE)
-  thread_options.priority = base::ThreadPriority::DISPLAY;
-#endif
+  thread_options.message_loop_type = message_loop_type;
+
+#if defined(OS_MACOSX)
+  // Increase the thread priority to get more reliable values in performance
+  // test of macOS.
+  thread_options.priority =
+      (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseHighGPUThreadPriorityForPerfTests))
+          ? base::ThreadPriority::REALTIME_AUDIO
+          : thread_priority;
+#else
+  thread_options.priority = thread_priority;
+#endif  // !defined(OS_MACOSX)
 
   CHECK(thread->StartWithOptions(thread_options));
   return thread;
@@ -65,8 +74,9 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
 
 }  // namespace
 
-VizCompositorThreadRunner::VizCompositorThreadRunner()
-    : thread_(CreateAndStartCompositorThread()),
+VizCompositorThreadRunner::VizCompositorThreadRunner(
+    base::MessageLoop::Type message_loop_type)
+    : thread_(CreateAndStartCompositorThread(message_loop_type)),
       task_runner_(thread_->task_runner()) {}
 
 VizCompositorThreadRunner::~VizCompositorThreadRunner() {

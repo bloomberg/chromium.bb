@@ -315,17 +315,16 @@ SandboxFileSystemBackendDelegate::CreateFileSystemOperationContext(
   return operation_context;
 }
 
-std::unique_ptr<storage::FileStreamReader>
+std::unique_ptr<FileStreamReader>
 SandboxFileSystemBackendDelegate::CreateFileStreamReader(
     const FileSystemURL& url,
     int64_t offset,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
   if (!IsAccessValid(url))
-    return std::unique_ptr<storage::FileStreamReader>();
-  return std::unique_ptr<storage::FileStreamReader>(
-      storage::FileStreamReader::CreateForFileSystemFile(
-          context, url, offset, expected_modification_time));
+    return nullptr;
+  return FileStreamReader::CreateForFileSystemFile(context, url, offset,
+                                                   expected_modification_time);
 }
 
 std::unique_ptr<FileStreamWriter>
@@ -417,8 +416,7 @@ int64_t SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(
 
   // Don't use usage cache and return recalculated usage for sticky invalidated
   // origins.
-  if (base::ContainsKey(sticky_dirty_origins_,
-                        std::make_pair(origin_url, type)))
+  if (base::Contains(sticky_dirty_origins_, std::make_pair(origin_url, type)))
     return RecalculateUsage(file_system_context, origin_url, type);
 
   base::FilePath base_path =

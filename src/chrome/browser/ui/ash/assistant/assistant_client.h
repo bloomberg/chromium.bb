@@ -10,8 +10,9 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/assistant/device_actions.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "components/session_manager/core/session_manager_observer.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 class Profile;
 class AssistantImageDownloader;
@@ -19,7 +20,8 @@ class AssistantSetup;
 
 // Class to handle all assistant in-browser-process functionalities.
 class AssistantClient : chromeos::assistant::mojom::Client,
-                        public identity::IdentityManager::Observer {
+                        public signin::IdentityManager::Observer,
+                        public session_manager::SessionManagerObserver {
  public:
   static AssistantClient* Get();
 
@@ -35,13 +37,17 @@ class AssistantClient : chromeos::assistant::mojom::Client,
       RequestAssistantStructureCallback callback) override;
 
  private:
-  // identity::IdentityManager::Observer:
+  // signin::IdentityManager::Observer:
   // Retry to initiate Assistant service when account info has been updated.
   // This is necessary if previous calls of MaybeInit() failed due to Assistant
   // disallowed by account type. This can happen when the chromeos sign-in
   // finished before account info fetching is finished (|hosted_domain| field
   // will be empty under this case).
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
+
+  // session_manager::SessionManagerObserver:
+  void OnUserProfileLoaded(const AccountId& account_id) override;
+  void OnPrimaryUserSessionStarted() override;
 
   mojo::Binding<chromeos::assistant::mojom::Client> client_binding_;
   chromeos::assistant::mojom::AssistantPlatformPtr assistant_connection_;
@@ -55,7 +61,7 @@ class AssistantClient : chromeos::assistant::mojom::Client,
 
   // Non-owning pointers.
   Profile* profile_ = nullptr;
-  identity::IdentityManager* identity_manager_ = nullptr;
+  signin::IdentityManager* identity_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantClient);
 };

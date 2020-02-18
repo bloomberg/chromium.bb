@@ -146,6 +146,8 @@ used when committed.
 *   [WebUI Explainer](webui_explainer.md) - An explanation of C++ and JavaScript
     infrastructural code for Chrome UIs implemented with web technologies (i.e.
     chrome:// URLs).
+*   [Watchlists](infra/watchlists.md) - Use watchlists to get notified of CLs
+    you are interested in.
 
 ### Testing
 *   [Running and Debugging Web Tests](testing/web_tests.md)
@@ -170,6 +172,9 @@ used when committed.
 *   [IPC Fuzzer](testing/ipc_fuzzer.md) - Fuzz testing of Chromium IPC interfaces.
 *   [Running Chrome tests with AddressSanitizer (asan) and LeakSanitizer (lsan)](testing/linux_running_asan_tests.md) -
     Run Chrome tests with ASAN and LSAN builds to detect addressability issues and memory leaks.
+*   [Code Coverage](testing/code_coverage.md) - Code coverage for Chromium.
+*   [Code Coverage in Gerrit](testing/code_coverage_in_gerrit.md) - Per-CL code
+    coverage in Gerrit to assist code reviews.
 
 ### GPU-related docs
 *   [GPU Pixel Wrangling](gpu/pixel_wrangling.md) - Instructions for GPU
@@ -190,8 +195,6 @@ used when committed.
 *   [Tips for Debugging on Linux](linux_debugging.md)
 *   [Linux GTK Theme Integration](linux_gtk_theme_integration.md) - Having
     Chrome match the GTK+ theme.
-*   [Gtk vs ViewsGtk](gtk_vs_views_gtk.md) - Notes on when to use Gtk vs
-    ViewsGtk
 *   [Browser Plugins on Linux](linux_plugins.md) - A collection of links to
     information on how browser plugins work on Linux
 *   [Linux Crash Dumping](linux_crash_dumping.md) - How Breakpad uploads crash

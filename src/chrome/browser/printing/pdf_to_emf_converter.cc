@@ -28,7 +28,7 @@
 #include "chrome/services/printing/public/mojom/pdf_to_emf_converter.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "printing/emf_win.h"
 #include "printing/pdf_render_settings.h"
@@ -146,7 +146,7 @@ class PdfConverterImpl : public PdfConverter {
 
     int page_number() const { return page_number_; }
 
-    const PdfConverter::GetPageCallback& callback() const { return callback_; }
+    PdfConverter::GetPageCallback callback() const { return callback_; }
 
    private:
     int page_number_;
@@ -159,7 +159,7 @@ class PdfConverterImpl : public PdfConverter {
   void Initialize(scoped_refptr<base::RefCountedMemory> data);
 
   void GetPage(int page_number,
-               const PdfConverter::GetPageCallback& get_page_callback) override;
+               PdfConverter::GetPageCallback get_page_callback) override;
 
   void Stop();
 
@@ -272,10 +272,9 @@ void PdfConverterImpl::Initialize(scoped_refptr<base::RefCountedMemory> data) {
 
   memcpy(memory.mapping.memory(), data->front(), data->size());
 
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(printing::mojom::kChromePrintingServiceName,
-                      &pdf_to_emf_converter_factory_);
+  content::GetSystemConnector()->BindInterface(
+      printing::mojom::kChromePrintingServiceName,
+      &pdf_to_emf_converter_factory_);
   pdf_to_emf_converter_factory_.set_connection_error_handler(base::BindOnce(
       &PdfConverterImpl::OnFailed, weak_ptr_factory_.GetWeakPtr(),
       std::string("Connection to PdfToEmfConverterFactory error.")));
@@ -306,7 +305,7 @@ void PdfConverterImpl::OnPageCount(mojom::PdfToEmfConverterPtr converter,
 
 void PdfConverterImpl::GetPage(
     int page_number,
-    const PdfConverter::GetPageCallback& get_page_callback) {
+    PdfConverter::GetPageCallback get_page_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(pdf_to_emf_converter_.is_bound());
 

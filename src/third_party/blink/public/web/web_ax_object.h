@@ -61,6 +61,8 @@ class BLINK_EXPORT WebAXSparseAttributeClient {
   virtual ~WebAXSparseAttributeClient() = default;
 
   virtual void AddBoolAttribute(WebAXBoolAttribute, bool) = 0;
+  virtual void AddIntAttribute(WebAXIntAttribute, int32_t) = 0;
+  virtual void AddUIntAttribute(WebAXUIntAttribute, uint32_t) = 0;
   virtual void AddStringAttribute(WebAXStringAttribute, const WebString&) = 0;
   virtual void AddObjectAttribute(WebAXObjectAttribute, const WebAXObject&) = 0;
   virtual void AddObjectVectorAttribute(WebAXObjectVectorAttribute,
@@ -133,6 +135,7 @@ class WebAXObject {
   BLINK_EXPORT bool IsFocused() const;
   BLINK_EXPORT WebAXGrabbedState IsGrabbed() const;
   BLINK_EXPORT bool IsHovered() const;
+  BLINK_EXPORT bool IsLineBreakingObject() const;
   BLINK_EXPORT bool IsLinked() const;
   BLINK_EXPORT bool IsLoaded() const;
   BLINK_EXPORT bool IsModal() const;
@@ -178,6 +181,8 @@ class WebAXObject {
   BLINK_EXPORT int HeadingLevel() const;
   BLINK_EXPORT int HierarchicalLevel() const;
   BLINK_EXPORT WebAXObject HitTest(const WebPoint&) const;
+  // Get the WebAXObject's bounds in frame-relative coordinates as a WebRect.
+  BLINK_EXPORT WebRect GetBoundsInFrameCoordinates() const;
   BLINK_EXPORT WebString KeyboardShortcut() const;
   BLINK_EXPORT WebString Language() const;
   BLINK_EXPORT WebAXObject InPageLinkTarget() const;
@@ -194,6 +199,7 @@ class WebAXObject {
       ax::mojom::TextDecorationStyle* text_strikethrough_style,
       ax::mojom::TextDecorationStyle* text_underline_style) const;
   BLINK_EXPORT WebURL Url() const;
+  BLINK_EXPORT WebAXObject ChooserPopup() const;
 
   // Retrieves the accessible name of the object, an enum indicating where the
   // name was derived from, and a list of related objects that were used to
@@ -265,6 +271,7 @@ class WebAXObject {
   BLINK_EXPORT bool HasComputedStyle() const;
   BLINK_EXPORT WebString ComputedStyleDisplay() const;
   BLINK_EXPORT bool AccessibilityIsIgnored() const;
+  BLINK_EXPORT bool AccessibilityIsIncludedInTree() const;
   BLINK_EXPORT void Markers(WebVector<ax::mojom::MarkerType>& types,
                             WebVector<int>& starts,
                             WebVector<int>& ends) const;
@@ -289,8 +296,14 @@ class WebAXObject {
   // needed.
   BLINK_EXPORT bool ScrollToMakeVisible() const;
   // Same, but if the whole object can't be made visible, try for this subrect,
-  // in local coordinates.
-  BLINK_EXPORT bool ScrollToMakeVisibleWithSubFocus(const WebRect&) const;
+  // in local coordinates. We also allow passing horizontal and vertical scroll
+  // alignments. These specify where in the content area to scroll the object.
+  BLINK_EXPORT bool ScrollToMakeVisibleWithSubFocus(
+      const WebRect&,
+      ax::mojom::ScrollAlignment horizontal_scroll_alignment =
+          ax::mojom::ScrollAlignment::kScrollAlignmentCenter,
+      ax::mojom::ScrollAlignment vertical_scroll_alignment =
+          ax::mojom::ScrollAlignment::kScrollAlignmentCenter) const;
   // Scroll this object to a given point in global coordinates of the top-level
   // window.
   BLINK_EXPORT bool ScrollToGlobalPoint(const WebPoint&) const;
@@ -368,6 +381,9 @@ class WebAXObject {
   // Returns a brief description of the object, suitable for debugging. E.g. its
   // role and name.
   BLINK_EXPORT WebString ToString() const;
+
+  BLINK_EXPORT void HandleAutofillStateChanged(
+      bool suggestions_available) const;
 
 #if INSIDE_BLINK
   BLINK_EXPORT WebAXObject(AXObject*);

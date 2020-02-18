@@ -58,9 +58,12 @@ bool QuartcSession::SendOrQueueMessage(QuicMemSliceSpan message,
 
   // There may be other messages in send queue, so we have to add message
   // to the queue and call queue processing helper.
-  message.ConsumeAll([this, datagram_id](QuicMemSlice slice) {
-    send_message_queue_.emplace_back(std::move(slice), datagram_id);
+  QueuedMessage queued_message;
+  queued_message.datagram_id = datagram_id;
+  message.ConsumeAll([&queued_message](QuicMemSlice slice) {
+    queued_message.message.Append(std::move(slice));
   });
+  send_message_queue_.push_back(std::move(queued_message));
 
   ProcessSendMessageQueue();
 
@@ -68,23 +71,30 @@ bool QuartcSession::SendOrQueueMessage(QuicMemSliceSpan message,
 }
 
 void QuartcSession::ProcessSendMessageQueue() {
-  QuicConnection::ScopedPacketFlusher flusher(
-      connection(), QuicConnection::AckBundling::NO_ACK);
+  QuicConnection::ScopedPacketFlusher flusher(connection());
   while (!send_message_queue_.empty()) {
     QueuedMessage& it = send_message_queue_.front();
-    const size_t message_size = it.message.length();
-    MessageResult result = SendMessage(QuicMemSliceSpan(&it.message));
+    QuicMemSliceSpan span = it.message.ToSpan();
+    const size_t message_size = span.total_length();
+    MessageResult result = SendMessage(span);
 
     // Handle errors.
     switch (result.status) {
-      case MESSAGE_STATUS_SUCCESS:
+      case MESSAGE_STATUS_SUCCESS: {
         QUIC_VLOG(1) << "Quartc message sent, message_id=" << result.message_id
                      << ", message_size=" << message_size;
 
+        auto element = message_to_datagram_id_.find(result.message_id);
+
+        DCHECK(element == message_to_datagram_id_.end())
+            << "Mapped message_id already exists, message_id="
+            << result.message_id << ", datagram_id=" << element->second;
+
+        message_to_datagram_id_[result.message_id] = it.datagram_id;
+
         // Notify that datagram was sent.
         session_delegate_->OnMessageSent(it.datagram_id);
-
-        break;
+      } break;
 
       // If connection is congestion controlled or not writable yet, stop
       // send loop and we'll retry again when we get OnCanWrite notification.
@@ -178,7 +188,7 @@ void QuartcSession::ResetStream(QuicStreamId stream_id,
   }
 }
 
-void QuartcSession::OnCongestionWindowChange(QuicTime now) {
+void QuartcSession::OnCongestionWindowChange(QuicTime /*now*/) {
   DCHECK(session_delegate_);
   const RttStats* rtt_stats = connection_->sent_packet_manager().GetRttStats();
 
@@ -200,12 +210,11 @@ bool QuartcSession::ShouldKeepConnectionAlive() const {
   return GetNumOpenDynamicStreams() > 0;
 }
 
-void QuartcSession::OnConnectionClosed(QuicErrorCode error,
-                                       const std::string& error_details,
+void QuartcSession::OnConnectionClosed(const QuicConnectionCloseFrame& frame,
                                        ConnectionCloseSource source) {
-  QuicSession::OnConnectionClosed(error, error_details, source);
+  QuicSession::OnConnectionClosed(frame, source);
   DCHECK(session_delegate_);
-  session_delegate_->OnConnectionClosed(error, error_details, source);
+  session_delegate_->OnConnectionClosed(frame, source);
 }
 
 void QuartcSession::CloseConnection(const std::string& details) {
@@ -239,13 +248,40 @@ void QuartcSession::OnMessageReceived(QuicStringPiece message) {
   session_delegate_->OnMessageReceived(message);
 }
 
+void QuartcSession::OnMessageAcked(QuicMessageId message_id,
+                                   QuicTime receive_timestamp) {
+  auto element = message_to_datagram_id_.find(message_id);
+
+  if (element == message_to_datagram_id_.end()) {
+    return;
+  }
+
+  session_delegate_->OnMessageAcked(/*datagram_id=*/element->second,
+                                    receive_timestamp);
+
+  // Free up space -- we should never see message_id again.
+  message_to_datagram_id_.erase(element);
+}
+
+void QuartcSession::OnMessageLost(QuicMessageId message_id) {
+  auto it = message_to_datagram_id_.find(message_id);
+  if (it == message_to_datagram_id_.end()) {
+    return;
+  }
+
+  session_delegate_->OnMessageLost(/*datagram_id=*/it->second);
+
+  // Free up space.
+  message_to_datagram_id_.erase(it);
+}
+
 QuicStream* QuartcSession::CreateIncomingStream(QuicStreamId id) {
   return ActivateDataStream(CreateDataStream(id, QuicStream::kDefaultPriority));
 }
 
-QuicStream* QuartcSession::CreateIncomingStream(PendingStream pending) {
-  return ActivateDataStream(
-      CreateDataStream(std::move(pending), QuicStream::kDefaultPriority));
+QuicStream* QuartcSession::CreateIncomingStream(PendingStream* /*pending*/) {
+  QUIC_NOTREACHED();
+  return nullptr;
 }
 
 std::unique_ptr<QuartcStream> QuartcSession::CreateDataStream(
@@ -257,13 +293,6 @@ std::unique_ptr<QuartcStream> QuartcSession::CreateDataStream(
     return nullptr;
   }
   return InitializeDataStream(QuicMakeUnique<QuartcStream>(id, this), priority);
-}
-
-std::unique_ptr<QuartcStream> QuartcSession::CreateDataStream(
-    PendingStream pending,
-    spdy::SpdyPriority priority) {
-  return InitializeDataStream(QuicMakeUnique<QuartcStream>(std::move(pending)),
-                              priority);
 }
 
 std::unique_ptr<QuartcStream> QuartcSession::InitializeDataStream(
@@ -369,12 +398,12 @@ void QuartcClientSession::StartCryptoHandshake() {
 }
 
 void QuartcClientSession::OnProofValid(
-    const QuicCryptoClientConfig::CachedState& cached) {
+    const QuicCryptoClientConfig::CachedState& /*cached*/) {
   // TODO(zhihuang): Handle the proof verification.
 }
 
 void QuartcClientSession::OnProofVerifyDetailsAvailable(
-    const ProofVerifyDetails& verify_details) {
+    const ProofVerifyDetails& /*verify_details*/) {
   // TODO(zhihuang): Handle the proof verification.
 }
 

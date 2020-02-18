@@ -11,63 +11,69 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
-// autofill::SubmissionIndicatorEvent
+// Events observed by the Password Manager that indicate either that a form is
+// potentially being submitted, or that a form has already been successfully
+// submitted. Recorded into a UMA histogram, so order of enumerators should
+// not be changed.
 enum SubmissionIndicatorEvent {
-    NONE,
-    HTML_FORM_SUBMISSION,
-    SAME_DOCUMENT_NAVIGATION,
-    XHR_SUCCEEDED,
-    FRAME_DETACHED,
-    DOM_MUTATION_AFTER_XHR,
-    PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD,
-    PROBABLE_FORM_SUBMISSION,
-    SUBMISSION_INDICATOR_EVENT_COUNT
+    NONE = 0,
+    HTML_FORM_SUBMISSION = 1,
+    SAME_DOCUMENT_NAVIGATION = 2,
+    XHR_SUCCEEDED = 3,
+    FRAME_DETACHED = 4,
+    // DEPRECATED_MANUAL_SAVE,
+    DOM_MUTATION_AFTER_XHR = 6,
+    PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD = 7,
+    // DEPRECATED_FILLED_FORM_ON_START_PROVISIONAL_LOAD,
+    // DEPRECATED_FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD,
+    PROBABLE_FORM_SUBMISSION = 10,
 };
 
-// autofill::PasswordFormFieldPredictionType
+// This enum lists form field types as understood by the password manager,
+// essentially a digest of |autofill::ServerFieldType|. Note that we cannot
+// simply reuse |autofill::ServerFieldType| as it is defined in the browser,
+// while this enum will be used by both the browser and renderer.
 enum PasswordFormFieldPredictionType {
-  PREDICTION_USERNAME,
-  PREDICTION_CURRENT_PASSWORD,
-  PREDICTION_NEW_PASSWORD,
-  PREDICTION_NOT_PASSWORD
+  kUsername,
+  kCurrentPassword,
+  kNewPassword,
+  kNotPassword,
 };
 
-// autofill::SubmissionSource
 enum SubmissionSource {
-  NONE,
-  SAME_DOCUMENT_NAVIGATION,
-  XHR_SUCCEEDED,
-  FRAME_DETACHED,
-  DOM_MUTATION_AFTER_XHR,
-  PROBABLY_FORM_SUBMITTED,
-  FORM_SUBMISSION,
+  NONE,                      // No submission signal was detected.
+  SAME_DOCUMENT_NAVIGATION,  // The form was removed in same document
+                             // navigation.
+  XHR_SUCCEEDED,             // The form was removed whem XHR succeeded.
+  FRAME_DETACHED,            // The subframe which has form was detached.
+  DOM_MUTATION_AFTER_XHR,    // The form was removed after XHR.
+  PROBABLY_FORM_SUBMITTED,   // The form was probably submitted since new page
+                             // is loaded.
+  FORM_SUBMISSION,           // Normal form submission.
 };
 
 enum FocusedFieldType {
   kUnknown,
   kUnfillableElement,
-  kFillableTextField,
+  kFillableTextArea,
+  kFillableSearchField,
+  kFillableNonSearchField,
   kFillableUsernameField,
   kFillablePasswordField,
 };
 
-// autofill::FillingStatus
-enum FillingStatus {
-  SUCCESS,
-  ERROR_NO_VALID_FIELD,
-  ERROR_NOT_ALLOWED,
-};
-
-// autofill::ButtonTitleType
+// Describes how a form button is implemented in HTML source. Should be
+// synced with |ButtonTitleType| in
+// components/autofill/core/browser/proto/server.proto.
 enum ButtonTitleType {
-  NONE,
-  BUTTON_ELEMENT_SUBMIT_TYPE,
-  BUTTON_ELEMENT_BUTTON_TYPE,
-  INPUT_ELEMENT_SUBMIT_TYPE,
-  INPUT_ELEMENT_BUTTON_TYPE,
-  HYPERLINK,
-  DIV,
-  SPAN
+  NONE = 0,
+  BUTTON_ELEMENT_SUBMIT_TYPE = 1,  // <button type='submit'>
+  BUTTON_ELEMENT_BUTTON_TYPE = 2,  // <button type='button'>
+  INPUT_ELEMENT_SUBMIT_TYPE = 3,   // <input type='submit'>
+  INPUT_ELEMENT_BUTTON_TYPE = 4,   // <input type='button'>
+  HYPERLINK = 5,                   // e.g. <a class='button'>
+  DIV = 6,                         // e.g. <div id='submit'>
+  SPAN = 7                         // e.g. <span name='btn'>
 };
 
 // autofill::FormFieldData
@@ -114,6 +120,7 @@ struct FormFieldData {
   mojo_base.mojom.String16 aria_description;
   uint32 unique_renderer_id;
   uint32 properties_mask;
+  int32 form_control_ax_id;
 
   uint64 max_length;
   bool is_autofilled;
@@ -153,6 +160,7 @@ struct FormData {
   SubmissionIndicatorEvent submission_event;
   array<FormFieldData> fields;
   array<uint32> username_predictions;
+  bool is_gaia_with_skip_save_password_form;
 };
 
 // autofill::FormFieldDataPredictions
@@ -195,14 +203,6 @@ struct PasswordFormFillData {
 
 // autofill::PasswordFormGenerationData
 struct PasswordFormGenerationData {
-  uint64 form_signature;
-  uint32 field_signature;
-  bool has_confirmation_field;
-  uint32 confirmation_field_signature;
-};
-
-// autofill::NewPasswordFormGenerationData
-struct NewPasswordFormGenerationData {
    uint32 new_password_renderer_id;
    uint32 confirmation_password_renderer_id;
 };
@@ -212,6 +212,7 @@ struct PasswordGenerationUIData {
   gfx.mojom.RectF bounds;
   int32 max_length;
   mojo_base.mojom.String16 generation_element;
+  uint32 generation_element_id;
   mojo_base.mojom.TextDirection text_direction;
   PasswordForm password_form;
 };
@@ -266,7 +267,7 @@ struct PasswordForm {
   mojo_base.mojom.String16 username_element;
   bool username_marked_by_site;
   mojo_base.mojom.String16 username_value;
-  array<ValueElementPair> other_possible_usernames;
+  array<ValueElementPair> all_possible_usernames;
   array<ValueElementPair> all_possible_passwords;
   bool form_has_autofilled_value;
   mojo_base.mojom.String16 password_element;
@@ -292,20 +293,17 @@ struct PasswordForm {
   bool is_affiliation_based_match;
   SubmissionIndicatorEvent submission_event;
   bool only_for_fallback;
-  bool is_gaia_with_skip_save_password_form;
 };
 
-// TODO(leonhsl): Use map directly after http://crbug.com/628104 solved.
-// autofill::PasswordFormFieldPredictionMap
-// --> std::map<FormFieldData, PasswordFormFieldPredictionType>
+// Note: Even though https://crbug.com/628104 is solved, we still can not use a
+// map directly as long as https://crbug.com/914074 is not fixed.
 struct PasswordFormFieldPredictionMap {
   array<FormFieldData> keys;
   array<PasswordFormFieldPredictionType> values;
 };
 
-// TODO(leonhsl): Use map directly after http://crbug.com/628104 solved.
-// autofill::FormsPredictionsMap
-// --> std::map<FormData, PasswordFormFieldPredictionMap>
+// Note: Even though https://crbug.com/628104 is solved, we still can not use a
+// map directly as long as https://crbug.com/914074 is not fixed.
 struct FormsPredictionsMap {
   array<FormData> keys;
   array<PasswordFormFieldPredictionMap> values;

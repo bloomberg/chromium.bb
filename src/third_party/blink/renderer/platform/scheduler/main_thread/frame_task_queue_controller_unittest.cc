@@ -7,7 +7,6 @@
 #include <memory>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
@@ -36,7 +35,7 @@ class FrameTaskQueueControllerTest : public testing::Test,
  public:
   FrameTaskQueueControllerTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         task_queue_created_count_(0) {}
 
@@ -124,23 +123,29 @@ TEST_F(FrameTaskQueueControllerTest, CreateAllTaskQueues) {
                                        .SetCanBeThrottled(true)
                                        .SetCanBeDeferred(true)
                                        .SetCanBeFrozen(true)
-                                       .SetCanBePaused(true));
+                                       .SetCanBePaused(true)
+                                       .SetShouldUseVirtualTime(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
-  task_queue = NonLoadingTaskQueue(
-      QueueTraits().SetCanBeDeferred(true).SetCanBePaused(true));
+  task_queue = NonLoadingTaskQueue(QueueTraits()
+                                        .SetCanBeDeferred(true)
+                                        .SetCanBePaused(true)
+                                        .SetShouldUseVirtualTime(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
-  task_queue = NonLoadingTaskQueue(QueueTraits().SetCanBePaused(true));
+  task_queue = NonLoadingTaskQueue(QueueTraits()
+                                        .SetCanBePaused(true)
+                                        .SetShouldUseVirtualTime(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
-  task_queue = NonLoadingTaskQueue(QueueTraits());
+  task_queue = NonLoadingTaskQueue(QueueTraits()
+                                        .SetShouldUseVirtualTime(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
@@ -152,6 +157,12 @@ TEST_F(FrameTaskQueueControllerTest, CreateAllTaskQueues) {
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
   task_queue = NewResourceLoadingTaskQueue();
+  EXPECT_FALSE(all_task_queues.Contains(task_queue));
+  all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
+  EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
+
+  // Add best effort task queue.
+  task_queue = frame_task_queue_controller_->BestEffortTaskQueue();
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());

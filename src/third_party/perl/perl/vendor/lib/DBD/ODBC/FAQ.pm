@@ -1,3 +1,7 @@
+use strict;
+
+=encoding utf8
+
 =head1 NAME
 
 DBD::ODBC::FAQ - Frequently Asked Questions for DBD::ODBC
@@ -8,7 +12,7 @@ DBD::ODBC::FAQ - Frequently Asked Questions for DBD::ODBC
 
 =head1 VERSION
 
-($Revision: 15235 $)
+($Revision$)
 
 =head1 QUESTIONS
 
@@ -192,7 +196,7 @@ or Openlink.
 
 There are basically three choices:
 
-* a commericial MS Access ODBC Driver like the one from Easysoft.
+* a commercial MS Access ODBC Driver like the one from Easysoft.
 
 * a commercial ODBC Bridge like the ones from Easysoft or OpenLink.
 
@@ -346,6 +350,9 @@ from Control Panel, Administrative Tools, Data Sources is the 64bit
 one and data sources created here will not be visible or useable from
 32bit applications. The ODBC administrator you need to use for 32bit
 applications can be found at X:\windows\syswow64\odbcad32.exe.
+
+You can find more about this than you'd probably care to know
+at http://www.easysoft.com/developer/interfaces/odbc/64-bit.html
 
 =head2 How do I use DBD::ODBC with web servers under Win32.
 
@@ -617,12 +624,12 @@ During connection if you get a HY009 "invalid length or pointer" error
 it is a bug in SQLSetConnectAttr in SQLite and you will need a version
 at least 0.85pre1.
 
-=head2 Where do I get the lastest MDAC Development Kit?
+=head2 Where do I get the latest MDAC Development Kit?
 
 MS keep moving this around. If you want to build DBD::ODBC yourself
 from source you'll need the latest Microsoft Data Access Components
 (MDAC) Software Development Kit. You can get it as part of the Platform
-Development Kit, with some of the Visual Studio versions and occassionally
+Development Kit, with some of the Visual Studio versions and occasionally
 from:
 
 http://msdn.microsoft.com/en-us/data/aa937730.aspx
@@ -635,7 +642,7 @@ where in April 2010 it listed the "Microsoft Data Access Componetns (MDAC)
 This happens because Microsoft changed their headers to add SQLLEN/SQLULEN
 types and your C headers are probably out of date. As DBD::ODBC needs
 to use these types you'll need an updated MDAC Development Kit. See
-" Where do I get the lastest MDAC Development Kit?".
+" Where do I get the latest MDAC Development Kit?".
 
 =head2 Why do I get errors with bound parameters and MS SQL Server?
 
@@ -1032,7 +1039,7 @@ In this example (also from the DBIx::Class test code) the SQL was like:
 
   SELECT DATEADD(hour, ?, me.date_created) FROM mytable me where me.id = ?
 
-The second argument to datadd needs to be an integer. There are 2 ways
+The second argument to dateadd needs to be an integer. There are 2 ways
 around this:
 
 =over
@@ -1078,24 +1085,24 @@ and date columns:
     use strict;
     use warnings;
     my $h = DBI->connect();
-    
+
     eval{ $h->do(q/DROP TABLE odbctest/) };
-    
+
     $h->do(q/CREATE TABLE odbctest (
        id integer NOT NULL IDENTITY (1,1),
        name nvarchar(50) NULL,
        adate date NULL )/);
-    
+
     my $s = $h->prepare(q/
     set identity_insert odbctest on;
     insert into odbctest
        (id, name, adate)
        values (?,?,?);
-    
+
     set identity_insert odbctest off;
     select scope_identity();
     /);
-    
+
     my $bug
        = undef;        # fails
        #= '2011-03-21'; # works
@@ -1108,7 +1115,7 @@ and date columns:
     my $i = 1; my $tuple_status;
     $s->bind_param_array($i++, $_) for @values;
     $s->execute_array({ArrayTupleStatus => $tuple_status});
-    
+
     $s = $h->prepare(q/select * from odbctest where id = ?/);
     foreach (1000, 2000) {
         $s->execute($_);
@@ -1116,7 +1123,7 @@ and date columns:
     }
 
 When I first ran this with SQL Server native client (pre native client 10)
-on Windows I got 
+on Windows I got
 
     DBD::ODBC::st execute_array failed: [Microsoft][SQL Native Client]Syntax error,  permission violation, or other nonspecific error (SQL-42000) [err was 1 now 2000
 
@@ -1138,7 +1145,7 @@ If you use native client 10 and change the insert code to:
     );
     my @types = (
     	SQL_VARCHAR, SQL_VARCHAR, SQL_DATE);
-    
+
     my $i = 1; my $tuple_status;
     $s->bind_param_array($i++, $_, {TYPE => $types[$i-2]}) for @values;
     $s->execute_array({ArrayTupleStatus => $tuple_status});
@@ -1203,7 +1210,7 @@ can use to set application name and the workstation name:
 B<APP> specifies the application name recorded in the program_name
 column in master.dbo.sysprocesses.
 
-B<WSID> sets thw workstation name recorded in the hostname column in
+B<WSID> sets the workstation name recorded in the hostname column in
 master.dbo.sysprocesses.
 
 To set these add these attributes to the call to DBIs connect like this:
@@ -1258,6 +1265,81 @@ freeTDS will return 1 row affected for each batch hence returns 2
 instead of 15.
 
 See rt 75687.
+
+=head2 Why are my pound signs (£), dashes and quotes (and other characters) returned garbled
+
+The first question in response is why do you think what you got back was incorrect? Did you print the data to a terminal and it looks wrong, or perhaps sent it to a browser in a piece of CGI or even wrote it to a file? The mantra you need to stick to is decode all input to Perl and encode all output but DBD::ODBC does the decoding of data retrieved from the database for you.
+
+The classic case I keep seeing I've repeated here because it illustrates the most common problem. Database is MS SQL Server, data is viewed in the management console and looks good but when retrieved via DBD::ODBC it looks wrong. The most common cause of this is the data you've retrieved is stored as unicode in Perl and you output it to somewhere without encoding it first with an encoding appropriate for the output e.g., you printed it from a windows terminal without setting the STDOUT encoding to cp1252 (or whatever your codepage in your terminal is). The first thing I'd suggest is to print the data with Data::Dumper and if any of the output contains \x{NNNN} your data is unicode (there are other ways like using DBI's data_string_desc utility method or Encode's is_utf8).
+
+Bear in mind that in a unicode build of DBD::ODBC (the default on Windows) all string data is retrieved as unicode. When you output your unicode data anywhere you need to encode it with Encode::encode e.g.,
+
+binmode(STDOUT, ":encoding(cp1252)");
+
+Just because you think you are working in a single codepage does not mean the data you retrieve will be returned as single byte characters in that codepage. DBD::ODBC (in a unicode build) retrieves all string data as wide (unicode) characters and most ODBC drivers will convert the codepage data returned by the database to unicode. For example, your column is windows-1252 codepage and contains a euro symbol which is character 0xA3. When retrieved by DBD::ODBC, the ODBC driver will convert this to unicode character 0x20ac. If you output this without encoding you'll likely see rubbish.
+
+If you are absolutely sure you are using a single code page and don't want to be bothered with unicode, look up the odbc_old_unicode attribute but better still, rebuild DBD::ODBC without unicode support using:
+
+perl Makefile.PL -nou
+
+=head2 Does DBD::ODBC support the new table valued parameters?
+
+Not yet. Patches welcome.
+
+=head2 Why do I get "COUNT field incorrect or syntax error (SQL-07002)"?
+
+In general this error is telling you the number of parameters bound or
+passed to execute does not match the number of parameter markers in
+your SQL. However, this can also happen if you attempt to use too many
+parameters.
+
+For instance, for MS SQL Server
+(http://msdn.microsoft.com/en-us/library/ms143432.aspx) the maximum is
+2100.
+
+=head2 Why are my column names truncated to 30 characters when using freeTDS?
+
+You should note this is only an observed answer. The person who
+reported this to me was using MS SQL Server 2008. If he set TDS
+protocol 6.0, 9.0 or 10.0 his column names were truncated to 30
+charatcers. If he specified TDS protocol 7.0 or 8.0 his column names
+were not truncated. We guessed his server did not support protocols
+9.0 or 10.0 and fall back to 6.0 where column names are restricted to
+30 characters.
+
+=head2 Why are my doubles truncated from MS Access DB?
+
+If you have a double column in your MS Access DB and the retrieved
+values are truncated you have probably hit a known (and fixed) bug in
+the MS Access ODBC driver. Typical truncation lookes like this:
+
+  8.93601020357839E-06 returned as E-6
+
+If you have the Microsoft Access 2010 accdb ODBC driver (v14) or older
+then try upgrading to the 2013 (v15) driver as my experiments showed
+that fixed the issue. Search for "Microsoft Access 2013
+redistributable engine" and download the appropriate version for your
+operating system.
+
+=head2 Why is my (long)binary data inserted into MS Access incorrect?
+
+A typical example of this is trying to insert binary data into a
+MS Access table using parameters and the data ends up full of null bytes.
+
+The MS Access ODBC driver does not support the ODBC API SQLDescribeParam
+so DBD::ODBC has no idea what parameter type to use when binding placeholders.
+By default, DBD::ODBC defaults in this situations to SQL_CHAR type. However,
+when you bind binary data as SQL_CHAR with the MS Access ODBC Driver the data
+stored in your DB will no longer be the data you expect as the driver translates
+your data bound as a string to binary. The way around this is to bind the parameter
+specifying the binary type e.g.,
+
+  $sth->bind_param(1, undef, SQL_LONGVARBINARY)
+
+or one of the other binary types. Note, that you don't actually have to pass the
+parameter into bind_param as parameter types are sticky so (as in this example) you
+can tell DBD::ODBC to use a different type in the bind_param call but still go on to
+pass the paramter into the execute method.
 
 =head1 AUTHOR
 

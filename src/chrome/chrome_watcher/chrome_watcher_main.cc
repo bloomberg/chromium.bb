@@ -415,7 +415,7 @@ extern "C" int WatcherMain(const base::char16* registry_path,
   base::win::RegisterInvalidParamHandler();
   base::win::SetupCRT(cmd_line);
 
-  // Run a UI message loop on the main thread.
+  // Run a UI task executor on the main thread.
   base::PlatformThread::SetName("WatcherMainThread");
   base::SingleThreadTaskExecutor main_thread_task_executor(
       base::MessagePump::Type::UI);

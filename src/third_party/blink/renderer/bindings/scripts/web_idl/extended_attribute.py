@@ -73,6 +73,13 @@ class ExtendedAttribute(object):
         # Should not reach here.
         assert False, 'Unknown format: {}'.format(self._format)
 
+    def make_copy(self):
+        return ExtendedAttribute(
+            key=self._key,
+            values=self._values,
+            arguments=self._arguments,
+            name=self._name)
+
     @property
     def key(self):
         """
@@ -155,6 +162,9 @@ class ExtendedAttributes(object):
             for k, v in groupby(attributes, key=lambda x: x.key)
         }
 
+    def __bool__(self):
+        return bool(self._attributes)
+
     def __contains__(self, key):
         """
         Returns True if this has an extended attribute with the |key|.
@@ -162,6 +172,27 @@ class ExtendedAttributes(object):
         @return bool
         """
         return key in self._attributes
+
+    def __iter__(self):
+        """
+        Yields all ExtendedAttribute instances.
+        """
+        for attrs in self._attributes.values():
+            for attr in attrs:
+                yield attr
+
+    def __len__(self):
+        return len(list(self.__iter__()))
+
+    def __str__(self):
+        attrs = [str(attr) for attr in self]
+        return '[{}]'.format(', '.join(attrs))
+
+    def make_copy(self):
+        return ExtendedAttributes(map(ExtendedAttribute.make_copy, self))
+
+    def keys(self):
+        return self._attributes.keys()
 
     def get(self, key):
         """

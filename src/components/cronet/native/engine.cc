@@ -289,10 +289,23 @@ void Cronet_EngineImpl::RemoveRequestFinishedListener(
   }
 }
 
-using RequestInfo = base::RefCountedData<Cronet_RequestFinishedInfo>;
+namespace {
+
+using RequestFinishedInfo = base::RefCountedData<Cronet_RequestFinishedInfo>;
+using UrlResponseInfo = base::RefCountedData<Cronet_UrlResponseInfo>;
+using CronetError = base::RefCountedData<Cronet_Error>;
+
+template <typename T>
+T* GetData(scoped_refptr<base::RefCountedData<T>> ptr) {
+  return ptr == nullptr ? nullptr : &ptr->data;
+}
+
+}  // namespace
 
 void Cronet_EngineImpl::ReportRequestFinished(
-    scoped_refptr<RequestInfo> request_info) {
+    scoped_refptr<RequestFinishedInfo> request_info,
+    scoped_refptr<UrlResponseInfo> url_response_info,
+    scoped_refptr<CronetError> error) {
   base::flat_map<Cronet_RequestFinishedInfoListenerPtr, Cronet_ExecutorPtr>
       registrations;
   {
@@ -309,15 +322,16 @@ void Cronet_EngineImpl::ReportRequestFinished(
 
     request_finished_executor->Execute(
         new cronet::OnceClosureRunnable(base::BindOnce(
-            [](scoped_refptr<RequestInfo> request_info,
-               Cronet_RequestFinishedInfoListenerPtr
-                   request_finished_listener) {
-              // TODO(crbug.com/879208): Pass-though UrlResponseInfo and Error
-              // too.
-              request_finished_listener->OnRequestFinished(&request_info->data,
-                                                           nullptr, nullptr);
+            [](Cronet_RequestFinishedInfoListenerPtr request_finished_listener,
+               scoped_refptr<RequestFinishedInfo> request_info,
+               scoped_refptr<UrlResponseInfo> url_response_info,
+               scoped_refptr<CronetError> error) {
+              request_finished_listener->OnRequestFinished(
+                  GetData(request_info), GetData(url_response_info),
+                  GetData(error));
             },
-            request_info, request_finished_listener)));
+            request_finished_listener, request_info, url_response_info,
+            error)));
   }
 }
 

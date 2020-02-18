@@ -1,3 +1,4 @@
+#!/usr/bin/env vpython
 # Copyright (c) 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -10,10 +11,17 @@ and safer, and avoids errors that can cause slow goma builds or swap-storms
 on non-goma builds.
 """
 
+# [VPYTHON:BEGIN]
+# wheel: <
+#   name: "infra/python/wheels/psutil/${vpython_platform}"
+#   version: "version:5.6.2"
+# >
+# [VPYTHON:END]
+
 from __future__ import print_function
 
-import multiprocessing
 import os
+import psutil
 import re
 import sys
 
@@ -50,6 +58,7 @@ for index, arg in enumerate(input_args[1:]):
     output_dir = arg[2:]
 
 use_goma = False
+use_jumbo_build = False
 try:
   # If GOMA_DISABLED is set (to anything) then gomacc will use the local
   # compiler instead of doing a goma compile. This is convenient if you want
@@ -58,13 +67,18 @@ try:
   # doing a "normal" non-goma build because an extra process is created for each
   # compile step. Checking this environment variable ensures that autoninja uses
   # an appropriate -j value in this situation.
-  if 'GOMA_DISABLED' not in os.environ:
-    with open(os.path.join(output_dir, 'args.gn')) as file_handle:
-      for line in file_handle:
-        # This regex pattern copied from create_installer_archive.py
-        m = re.match(r'^\s*use_goma\s*=\s*true(\s*$|\s*#.*$)', line)
-        if m:
-          use_goma = True
+  with open(os.path.join(output_dir, 'args.gn')) as file_handle:
+    for line in file_handle:
+      # This regex pattern copied from create_installer_archive.py
+      match_use_goma = re.match(r'^\s*use_goma\s*=\s*true(\s*$|\s*#.*$)', line)
+      if match_use_goma and 'GOMA_DISABLED' not in os.environ:
+        use_goma = True
+        continue
+      match_use_jumbo_build = re.match(
+          r'^\s*use_jumbo_build\s*=\s*true(\s*$|\s*#.*$)', line)
+      if match_use_jumbo_build:
+        use_jumbo_build = True
+        continue
 except IOError:
   pass
 
@@ -77,11 +91,11 @@ ninja_exe_path = os.path.join(SCRIPT_DIR, ninja_exe)
 # or fail to execute ninja if depot_tools is not in PATH.
 args = [ninja_exe_path] + input_args[1:]
 
-num_cores = multiprocessing.cpu_count()
+num_cores = psutil.cpu_count()
 if not j_specified and not t_specified:
   if use_goma:
     args.append('-j')
-    core_multiplier = int(os.environ.get("NINJA_CORE_MULTIPLIER", "40"))
+    core_multiplier = int(os.environ.get('NINJA_CORE_MULTIPLIER', '40'))
     j_value = num_cores * core_multiplier
 
     if sys.platform.startswith('win'):
@@ -94,11 +108,18 @@ if not j_specified and not t_specified:
 
     args.append('%d' % j_value)
   else:
-    core_addition = os.environ.get("NINJA_CORE_ADDITION")
-    if core_addition:
-      core_addition = int(core_addition)
-      args.append('-j')
-      args.append('%d' % (num_cores + core_addition))
+    j_value = num_cores
+    # Ninja defaults to |num_cores + 2|
+    j_value += int(os.environ.get('NINJA_CORE_ADDITION', '2'))
+    if use_jumbo_build:
+      # Compiling a jumbo .o can easily use 1-2GB of memory. Leaving 2GB per
+      # process avoids memory swap/compression storms when also considering
+      # already in-use memory.
+      physical_ram = psutil.virtual_memory().total
+      GB = 1024 * 1024 * 1024
+      j_value = min(j_value, physical_ram / (2 * GB))
+    args.append('-j')
+    args.append('%d' % j_value)
 
 # On Windows, fully quote the path so that the command processor doesn't think
 # the whole output is the command.

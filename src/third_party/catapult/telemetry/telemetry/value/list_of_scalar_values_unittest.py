@@ -6,7 +6,6 @@ import unittest
 
 from telemetry import story
 from telemetry import page as page_module
-from telemetry import value
 from telemetry.value import improvement_direction
 from telemetry.value import list_of_scalar_values
 from telemetry.value import none_values
@@ -78,13 +77,11 @@ class ValueTest(TestBase):
     page = self.pages[0]
     v = list_of_scalar_values.ListOfScalarValues(
         page, 'x', 'unit', [10, 9, 9, 7], important=True, description='desc',
-        tir_label='my_ir', std=42,
-        improvement_direction=improvement_direction.DOWN)
+        std=42, improvement_direction=improvement_direction.DOWN)
 
     expected = ('ListOfScalarValues(http://www.bar.com/, x, unit, '
                 '[10, 9, 9, 7], important=True, description=desc, '
-                'tir_label=my_ir, std=42, '
-                'improvement_direction=down, grouping_keys={})')
+                'std=42, improvement_direction=down)')
 
     self.assertEquals(expected, str(v))
 
@@ -152,8 +149,8 @@ class ValueTest(TestBase):
     expected_none_value_reason = (
         'Merging values containing a None value results in a None value. '
         'None values: [ListOfScalarValues(http://www.bar.com/, x, unit, None, '
-        'important=True, description=None, tir_label=None, std=None,'
-        ' improvement_direction=up, grouping_keys={})]')
+        'important=True, description=None, std=None,'
+        ' improvement_direction=up)]')
     self.assertEquals(expected_none_value_reason, vM.none_value_reason)
     self.assertEquals(improvement_direction.UP, vM.improvement_direction)
 
@@ -198,7 +195,6 @@ class ValueTest(TestBase):
     # Values from the same page use regular standard deviation.
     self.assertAlmostEqual(d['std'], 156.88849, places=4)
 
-
   def testNoneValueAsDict(self):
     v = list_of_scalar_values.ListOfScalarValues(
         None, 'x', 'unit', None,
@@ -209,65 +205,3 @@ class ValueTest(TestBase):
     self.assertIsNone(d['values'])
     self.assertEquals(d['none_value_reason'], 'n')
     self.assertIsNone(d['std'])
-
-  def testFromDictInts(self):
-    d = {
-        'type': 'list_of_scalar_values',
-        'name': 'x',
-        'units': 'unit',
-        'values': [1, 2],
-        'std': 0.7071,
-        'improvement_direction': improvement_direction.DOWN
-    }
-    v = value.Value.FromDict(d, {})
-
-    self.assertTrue(isinstance(v, list_of_scalar_values.ListOfScalarValues))
-    self.assertEquals(v.values, [1, 2])
-    self.assertEquals(v.mean, 1.5)
-    self.assertEquals(v.std, 0.7071)
-    self.assertEquals(improvement_direction.DOWN, v.improvement_direction)
-
-  def testFromDictFloats(self):
-    d = {
-        'type': 'list_of_scalar_values',
-        'name': 'x',
-        'units': 'unit',
-        'values': [1.3, 2.7, 4.5, 2.1, 3.4],
-        'std': 0.901,
-        'improvement_direction': improvement_direction.UP
-    }
-    v = value.Value.FromDict(d, {})
-
-    self.assertTrue(isinstance(v, list_of_scalar_values.ListOfScalarValues))
-    self.assertEquals(v.values, [1.3, 2.7, 4.5, 2.1, 3.4])
-    self.assertEquals(v.mean, 2.8)
-    self.assertEquals(v.std, 0.901)
-
-  def testFromDictWithoutImprovementDirection(self):
-    d = {
-        'type': 'list_of_scalar_values',
-        'name': 'x',
-        'units': 'unit',
-        'values': [1, 2],
-        'std': 0.7071,
-    }
-    v = value.Value.FromDict(d, {})
-
-    self.assertTrue(isinstance(v, list_of_scalar_values.ListOfScalarValues))
-    self.assertIsNone(v.improvement_direction)
-
-  def testFromDictNoneValue(self):
-    d = {
-        'type': 'list_of_scalar_values',
-        'name': 'x',
-        'units': 'unit',
-        'values': None,
-        'std': None,
-        'none_value_reason': 'n',
-        'improvement_direction': improvement_direction.DOWN
-    }
-    v = value.Value.FromDict(d, {})
-
-    self.assertTrue(isinstance(v, list_of_scalar_values.ListOfScalarValues))
-    self.assertEquals(v.values, None)
-    self.assertEquals(v.none_value_reason, 'n')

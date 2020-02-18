@@ -328,7 +328,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     // In principle, order of items is not defined.
     for (const auto& app : apps) {
       const std::string id = ArcAppTest::GetAppId(app);
-      EXPECT_TRUE(base::ContainsValue(ids, id));
+      EXPECT_TRUE(base::Contains(ids, id));
       std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
       ASSERT_NE(nullptr, app_info.get());
       EXPECT_EQ(app.name, app_info->name);
@@ -342,7 +342,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
 
     for (auto& shortcut : shortcuts) {
       const std::string id = ArcAppTest::GetAppId(shortcut);
-      EXPECT_TRUE(base::ContainsValue(ids, id));
+      EXPECT_TRUE(base::Contains(ids, id));
       std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
       ASSERT_NE(nullptr, app_info.get());
       EXPECT_EQ(shortcut.name, app_info->name);
@@ -372,7 +372,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
                 package_info->last_backup_android_id);
       EXPECT_EQ(package->last_backup_time, package_info->last_backup_time);
       EXPECT_EQ(package->sync, package_info->should_sync);
-      EXPECT_EQ(package->permissions, package_info->permissions);
+      EXPECT_EQ(package->permission_states, package_info->permissions);
     }
   }
 
@@ -466,13 +466,19 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   arc::mojom::ArcPackageInfoPtr CreatePackageWithVersion(
       const std::string& package_name,
       int package_version) {
-    base::flat_map<arc::mojom::AppPermission, bool> permissions;
-    permissions.insert(std::make_pair(arc::mojom::AppPermission::CAMERA, 0));
-    permissions.insert(std::make_pair(arc::mojom::AppPermission::LOCATION, 1));
+    base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
+        permissions;
+    permissions.emplace(arc::mojom::AppPermission::CAMERA,
+                        arc::mojom::PermissionState::New(false /* granted */,
+                                                         false /* managed */));
+    permissions.emplace(arc::mojom::AppPermission::LOCATION,
+                        arc::mojom::PermissionState::New(true /* granted */,
+                                                         false /* managed */));
     return arc::mojom::ArcPackageInfo::New(
         package_name, package_version, 1 /* last_backup_android_id */,
         1 /* last_backup_time */, true /* sync */, false /* system */,
-        false /* vpn_provider */, nullptr /* web_app_info */, permissions);
+        false /* vpn_provider */, nullptr /* web_app_info */, base::nullopt,
+        std::move(permissions) /* permission states */);
   }
 
   void AddPackage(const arc::mojom::ArcPackageInfoPtr& package) {

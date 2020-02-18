@@ -1272,6 +1272,9 @@ void GL_APIENTRY GLES2DispatchCompute(GLuint num_groups_x,
   gles2::GetGLContext()->DispatchCompute(num_groups_x, num_groups_y,
                                          num_groups_z);
 }
+void GL_APIENTRY GLES2DispatchComputeIndirect(GLintptr offset) {
+  gles2::GetGLContext()->DispatchComputeIndirect(offset);
+}
 void GL_APIENTRY GLES2GetProgramInterfaceiv(GLuint program,
                                             GLenum program_interface,
                                             GLenum pname,
@@ -1574,10 +1577,12 @@ void GL_APIENTRY
 GLES2ScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
                                         GLboolean is_clipped,
                                         const GLfloat* clip_rect,
+                                        const GLfloat* rounded_corner_bounds,
                                         GLint sorting_context_id,
                                         const GLfloat* transform) {
   gles2::GetGLContext()->ScheduleCALayerSharedStateCHROMIUM(
-      opacity, is_clipped, clip_rect, sorting_context_id, transform);
+      opacity, is_clipped, clip_rect, rounded_corner_bounds, sorting_context_id,
+      transform);
 }
 void GL_APIENTRY GLES2ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                               const GLfloat* contents_rect,
@@ -2965,6 +2970,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glDispatchCompute",
         reinterpret_cast<GLES2FunctionPointer>(glDispatchCompute),
+    },
+    {
+        "glDispatchComputeIndirect",
+        reinterpret_cast<GLES2FunctionPointer>(glDispatchComputeIndirect),
     },
     {
         "glGetProgramInterfaceiv",

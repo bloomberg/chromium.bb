@@ -38,7 +38,7 @@ class ASH_EXPORT DesksBarView : public views::View,
       aura::Window* root,
       const gfx::Rect& bounds);
 
-  views::View* backgroud_view() const { return backgroud_view_; }
+  views::View* background_view() const { return background_view_; }
 
   NewDeskButton* new_desk_button() const { return new_desk_button_; }
 
@@ -58,8 +58,10 @@ class ASH_EXPORT DesksBarView : public views::View,
   // layout.
   void Init();
 
-  // Updates the visibility state of the close buttons on all the mini_views.
+  // Updates the visibility state of the close buttons on all the mini_views as
+  // a result of mouse and gesture events.
   void OnHoverStateMayHaveChanged();
+  void OnGestureTap(const gfx::Rect& screen_rect, bool is_long_gesture);
 
   // Called when an item is being dragged in overview mode to update whether it
   // is currently intersecting with this view, and the |screen_location| of the
@@ -87,10 +89,6 @@ class ASH_EXPORT DesksBarView : public views::View,
   // animated to their final positions.
   void UpdateNewMiniViews(bool animate);
 
-  // Updates the enabled state of the new desk button when the ability to create
-  // new desk may have changed.
-  void UpdateNewDeskButtonState();
-
   // Returns the mini_view associated with |desk| or nullptr if no mini_view
   // has been created for it yet.
   DeskMiniView* FindMiniViewForDesk(const Desk* desk) const;
@@ -107,7 +105,7 @@ class ASH_EXPORT DesksBarView : public views::View,
 
   // A view that shows a dark gary transparent background that can be animated
   // when the very first mini_views are created.
-  views::View* backgroud_view_;
+  views::View* background_view_;
 
   NewDeskButton* new_desk_button_;
 

@@ -83,9 +83,8 @@ class HTMLImportLoader final
   bool ShouldBlockScriptExecution() const;
 
   // Tells the loader that all of the import's stylesheets finished
-  // loading.
-  // Called by Document::didRemoveAllPendingStylesheet.
-  void DidRemoveAllPendingStylesheet();
+  // loading. Called by Document::DidRemoveAllPendingStylesheets.
+  void DidRemoveAllPendingStylesheets();
 
   V0CustomElementSyncMicrotaskQueue* MicrotaskQueue() const;
 

@@ -60,7 +60,7 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   CrossSiteDocumentResourceHandler(
       std::unique_ptr<ResourceHandler> next_handler,
       net::URLRequest* request,
-      network::mojom::FetchRequestMode fetch_request_mode);
+      network::mojom::RequestMode request_mode);
   ~CrossSiteDocumentResourceHandler() override;
 
   // LayeredResourceHandler overrides:
@@ -106,17 +106,6 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // |next_handler_| in response to OnWillRead.
   void StopLocalBuffering(bool copy_data_to_next_handler);
 
-  // Helpers for UMA and UKM logging.
-  static void LogBlockedResponseOnUIThread(
-      ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      bool needed_sniffing,
-      network::CrossOriginReadBlocking::MimeType canonical_mime_type,
-      ResourceType resource_type,
-      int http_response_code,
-      int64_t content_length);
-  void LogBlockedResponse(ResourceRequestInfoImpl* resource_request_info,
-                          int http_response_code);
-
   // WeakPtrFactory for |next_handler_|.
   base::WeakPtrFactory<ResourceHandler> weak_next_handler_;
 
@@ -144,7 +133,7 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   std::unique_ptr<network::CrossOriginReadBlocking::ResponseAnalyzer> analyzer_;
 
   // Fetch request mode (e.g. 'no-cors' VS 'cors' VS 'same-origin', etc.).
-  network::mojom::FetchRequestMode fetch_request_mode_;
+  network::mojom::RequestMode request_mode_;
 
   // Tracks whether OnResponseStarted has been called, to ensure that it happens
   // before OnWillRead and OnReadCompleted.
@@ -169,16 +158,12 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // ContentBrowserClient::GetInitatorSchemeBypassingDocumentBlocking
   bool is_initiator_scheme_excluded_ = false;
 
-  // Whether |is_initiator_scheme_excluded_| actually prevented blocking from
-  // happening.
-  bool initiator_scheme_prevented_blocking_ = false;
-
   // Whether the response is being blocked because of the presence of
   // Cross-Origin-Resource-Policy header in 'no-cors' mode (in this case the
   // response should fail with net::ERR_BLOCKED_BY_RESPONSE error code).
   bool blocked_by_cross_origin_resource_policy_ = false;
 
-  base::WeakPtrFactory<CrossSiteDocumentResourceHandler> weak_this_;
+  base::WeakPtrFactory<CrossSiteDocumentResourceHandler> weak_this_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentResourceHandler);
 };

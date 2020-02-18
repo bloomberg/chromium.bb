@@ -9,6 +9,8 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,120 +28,52 @@
   return self;
 }
 
-- (UIBlurEffect*)blurEffect {
-  if (UIAccessibilityIsReduceTransparencyEnabled())
-    return nil;
-
-  switch (self.style) {
-    case NORMAL:
-      return [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
-    case INCOGNITO:
-      return [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-  }
-}
-
-- (UIColor*)blurBackgroundColor {
-  if (UIAccessibilityIsReduceTransparencyEnabled()) {
-    switch (self.style) {
-      case NORMAL:
-        return
-            [UIColor colorWithWhite:kBlurBackgroundGrayscaleComponent alpha:1];
-      case INCOGNITO:
-        return UIColorFromRGB(kIncognitoToolbarBackgroundColor);
-    }
-  }
-  return [UIColor colorWithWhite:kBlurBackgroundGrayscaleComponent
-                           alpha:kBlurBackgroundAlpha];
-}
-
 - (UIColor*)NTPBackgroundColor {
-  switch (self.style) {
-    case NORMAL:
-      return ntp_home::kNTPBackgroundColor();
-    case INCOGNITO:
-      return [UIColor colorWithWhite:kNTPBackgroundColorBrightnessIncognito
-                               alpha:1.0];
-  }
+  return color::IncognitoDynamicColor(
+      self.style == INCOGNITO, ntp_home::kNTPBackgroundColor(),
+      [UIColor colorNamed:kBackgroundDarkColor]);
 }
 
 - (UIColor*)backgroundColor {
-  switch (self.style) {
-    case NORMAL:
-      return [UIColor colorWithWhite:kBlurBackgroundGrayscaleComponent alpha:1];
-    case INCOGNITO:
-      return UIColorFromRGB(kIncognitoToolbarBackgroundColor);
-    }
+  return color::IncognitoDynamicColor(
+      self.style == INCOGNITO, [UIColor colorNamed:kBackgroundColor],
+      [UIColor colorNamed:kBackgroundDarkColor]);
 }
 
 - (UIColor*)buttonsTintColor {
-  switch (self.style) {
-    case NORMAL:
-      return [UIColor colorWithWhite:0 alpha:kToolbarButtonTintColorAlpha];
-    case INCOGNITO:
-      return [UIColor whiteColor];
-  }
+  return color::IncognitoDynamicColor(
+      self.style == INCOGNITO, [UIColor colorNamed:@"tab_toolbar_button_color"],
+      [UIColor colorNamed:@"tab_toolbar_button_color_incognito"]);
 }
 
 - (UIColor*)buttonsTintColorHighlighted {
-  switch (self.style) {
-    case NORMAL:
-      return [UIColor colorWithWhite:0
-                               alpha:kToolbarButtonTintColorAlphaHighlighted];
-      break;
-    case INCOGNITO:
-      return [UIColor
-          colorWithWhite:1
-                   alpha:kIncognitoToolbarButtonTintColorAlphaHighlighted];
-      break;
-  }
+  return color::IncognitoDynamicColor(
+      self.style == INCOGNITO,
+      [UIColor colorNamed:@"tab_toolbar_button_color_highlighted"],
+      [UIColor colorNamed:@"tab_toolbar_button_color_highlighted_incognito"]);
 }
 
 - (UIColor*)buttonsSpotlightColor {
-  switch (self.style) {
-    case NORMAL:
-      return [UIColor colorWithWhite:0 alpha:kToolbarSpotlightAlpha];
-      break;
-    case INCOGNITO:
-      return [UIColor colorWithWhite:1 alpha:kToolbarSpotlightAlpha];
-      break;
-  }
+  return color::IncognitoDynamicColor(
+      self.style == INCOGNITO,
+      [UIColor colorNamed:@"tab_toolbar_button_halo_color"],
+      [UIColor colorNamed:@"tab_toolbar_button_halo_color_incognito"]);
 }
 
 - (UIColor*)dimmedButtonsSpotlightColor {
-  switch (self.style) {
-    case NORMAL:
-      return [UIColor colorWithWhite:0 alpha:kDimmedToolbarSpotlightAlpha];
-      break;
-    case INCOGNITO:
-      return [UIColor colorWithWhite:1 alpha:kDimmedToolbarSpotlightAlpha];
-      break;
-  }
+  return color::IncognitoDynamicColor(
+      self.style == INCOGNITO,
+      [UIColor colorNamed:@"tab_toolbar_button_halo_color"],
+      [UIColor colorNamed:@"tab_toolbar_button_halo_color_incognito"]);
 }
 
 - (UIColor*)locationBarBackgroundColorWithVisibility:(CGFloat)visibilityFactor {
-  switch (self.style) {
-    case NORMAL:
-      return [UIColor colorWithWhite:0
-                               alpha:kAdaptiveLocationBarBackgroundAlpha *
-                                     visibilityFactor];
-    case INCOGNITO:
-      return
-          [UIColor colorWithWhite:1
-                            alpha:kAdaptiveLocationBarBackgroundAlphaIncognito *
-                                  visibilityFactor];
-  }
-}
-
-- (UIVisualEffect*)vibrancyEffectForBlurEffect:(UIBlurEffect*)blurEffect {
-  if (!blurEffect)
-    return nil;
-
-  switch (self.style) {
-    case NORMAL:
-      return [UIVibrancyEffect effectForBlurEffect:blurEffect];
-    case INCOGNITO:
-      return nil;
-  }
+  return color::IncognitoDynamicColor(
+      self.style == INCOGNITO,
+      [[UIColor colorNamed:kTextfieldBackgroundColor]
+          colorWithAlphaComponent:visibilityFactor],
+      [[UIColor colorNamed:kTextfieldBackgroundDarkColor]
+          colorWithAlphaComponent:visibilityFactor]);
 }
 
 @end

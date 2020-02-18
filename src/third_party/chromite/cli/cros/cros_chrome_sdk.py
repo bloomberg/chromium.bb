@@ -23,10 +23,10 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
-from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import retry_util
+from chromite.utils import memoize
 from gn_helpers import gn_helpers
 
 
@@ -397,7 +397,7 @@ class SDKFetcher(object):
     version_base = int(version.split('.')[0])
     version_base_min = version_base - self.VERSIONS_TO_CONSIDER
 
-    for v in xrange(version_base - 1, version_base_min, -1):
+    for v in range(version_base - 1, version_base_min, -1):
       version_file = '%s/LATEST-%d.0.0' % (self.gs_base, v)
       logging.info('Trying: %s', version_file)
       full_version = self._GetFullVersionFromStorage(version_file)
@@ -594,7 +594,7 @@ class SDKFetcher(object):
     version_base = self._GetVersionGSBase(version)
     fetch_urls.update((t, os.path.join(version_base, t)) for t in components)
     try:
-      for key, url in fetch_urls.iteritems():
+      for key, url in fetch_urls.items():
         cache_key = self._GetCacheKeyForComponent(version, key)
         ref = self.tarball_cache.Lookup(cache_key)
         key_map[key] = ref
@@ -622,7 +622,7 @@ class SDKFetcher(object):
       yield self.SDKContext(ctx_version, target_tc, key_map)
     finally:
       # TODO(rcui): Move to using cros_build_lib.ContextManagerStack()
-      cros_build_lib.SafeRun([ref.Release for ref in key_map.itervalues()])
+      cros_build_lib.SafeRun(ref.Release for ref in key_map.values())
 
 
 class GomaError(Exception):
@@ -1246,7 +1246,7 @@ class ChromeSDKCommand(command.CliCommand):
           '[[ -e ~/.bashrc && $- == *i* ]] && . ~/.bashrc\n',
       ]
 
-      for key, value in env.iteritems():
+      for key, value in env.items():
         contents.append("export %s='%s'\n" % (key, value))
       contents.append('. "%s"\n' % user_rc)
 

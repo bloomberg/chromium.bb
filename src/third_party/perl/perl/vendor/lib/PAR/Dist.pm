@@ -4,7 +4,7 @@ use strict;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK $DEBUG/;
 
-$VERSION    = '0.48'; # Change version in POD, too!
+$VERSION    = '0.49'; # Change version in POD, too!
 @ISA        = 'Exporter';
 @EXPORT     = qw/
   blib_to_par
@@ -1168,7 +1168,7 @@ sub parse_dist_name {
 
     while (@elem) {
         my $e = shift @elem;
-        if ($e =~ /^$version|any_version$/) {
+        if ($e =~ /^(?:$version|any_version)$/) {
             $pv = $e;
             last;
         }

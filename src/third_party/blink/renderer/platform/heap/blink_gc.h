@@ -8,7 +8,7 @@
 // BlinkGC.h is a file that defines common things used by Blink GC.
 
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 #define PRINT_HEAP_STATS 0  // Enable this macro to print heap stats to stderr.
 
@@ -79,9 +79,10 @@ class PLATFORM_EXPORT BlinkGC final {
   };
 
   enum SweepingType {
-    // The sweeping task is split into chunks and scheduled lazily.
-    kLazySweeping,
-    // The sweeping task executs synchronously right after marking.
+    // The sweeping task is split into chunks and scheduled lazily and
+    // concurrently.
+    kConcurrentAndLazySweeping,
+    // The sweeping task executes synchronously right after marking.
     kEagerSweeping,
   };
 
@@ -105,8 +106,7 @@ class PLATFORM_EXPORT BlinkGC final {
   };
 
   enum ArenaIndices {
-    kEagerSweepArenaIndex = 0,
-    kNormalPage1ArenaIndex,
+    kNormalPage1ArenaIndex = 0,
     kNormalPage2ArenaIndex,
     kNormalPage3ArenaIndex,
     kNormalPage4ArenaIndex,

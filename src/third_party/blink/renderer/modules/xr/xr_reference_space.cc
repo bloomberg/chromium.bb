@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_reference_space_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_utils.h"
 
 namespace blink {
 
@@ -47,17 +48,17 @@ XRReferenceSpace::~XRReferenceSpace() = default;
 
 XRPose* XRReferenceSpace::getPose(
     XRSpace* other_space,
-    std::unique_ptr<TransformationMatrix> base_pose_matrix) {
+    const TransformationMatrix* base_pose_matrix) {
   if (type_ == Type::kTypeViewer) {
     std::unique_ptr<TransformationMatrix> viewer_pose_matrix =
-        other_space->GetViewerPoseMatrix(std::move(base_pose_matrix));
+        other_space->GetViewerPoseMatrix(base_pose_matrix);
     if (!viewer_pose_matrix) {
       return nullptr;
     }
-    return MakeGarbageCollected<XRPose>(std::move(viewer_pose_matrix),
+    return MakeGarbageCollected<XRPose>(*viewer_pose_matrix,
                                         session()->EmulatedPosition());
   } else {
-    return XRSpace::getPose(other_space, std::move(base_pose_matrix));
+    return XRSpace::getPose(other_space, base_pose_matrix);
   }
 }
 
@@ -65,13 +66,10 @@ void XRReferenceSpace::UpdateFloorLevelTransform() {
   const device::mojom::blink::VRDisplayInfoPtr& display_info =
       session()->GetVRDisplayInfo();
 
-  if (display_info && display_info->stageParameters) {
-    // Use the transform given by xrDisplayInfo's stageParameters if available.
-    const WTF::Vector<float>& m =
-        display_info->stageParameters->standingTransform;
+  if (display_info && display_info->stage_parameters) {
+    // Use the transform given by xrDisplayInfo's stage_parameters if available.
     floor_level_transform_ = std::make_unique<TransformationMatrix>(
-        m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
-        m[11], m[12], m[13], m[14], m[15]);
+        display_info->stage_parameters->standing_transform.matrix());
   } else {
     // Otherwise, create a transform based on the default emulated height.
     floor_level_transform_ = std::make_unique<TransformationMatrix>();
@@ -138,16 +136,7 @@ std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBasePose(
 std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBaseInputPose(
     const TransformationMatrix& base_input_pose,
     const TransformationMatrix& base_pose) {
-  switch (type_) {
-    case Type::kTypeViewer:
-    case Type::kTypeLocal:
-    case Type::kTypeLocalFloor:
-    case Type::kTypeUnbounded:
-      return TransformBasePose(base_input_pose);
-    case Type::kTypeBoundedFloor:
-      break;
-  }
-  return nullptr;
+  return TransformBasePose(base_input_pose);
 }
 
 std::unique_ptr<TransformationMatrix>

@@ -21,6 +21,8 @@ declare_args() {
     } else {
       cast_product_type = 4  # CAST_PRODUCT_TYPE_ANDROID_TV
     }
+  } else if (is_fuchsia) {
+    cast_product_type = 8  # CAST_PRODUCT_TYPE_FUCHSIA_OS
   } else {
     cast_product_type = 0  # CAST_PRODUCT_TYPE_UNKNOWN
   }
@@ -31,7 +33,7 @@ if (is_android_arc) {
 } else if (is_android) {
   assert(cast_product_type == 4 || cast_product_type == 6)
 } else {
-  assert(cast_product_type >= 0 && cast_product_type <= 7 &&
+  assert(cast_product_type >= 0 && cast_product_type <= 8 &&
          cast_product_type != 4 && cast_product_type != 6 &&
          cast_product_type != 7)
 }
@@ -40,6 +42,8 @@ cast_source_set("base") {
   sources = [
     "alarm_manager.cc",
     "alarm_manager.h",
+    "android/cast_settings_manager.cc",
+    "android/cast_settings_manager.h",
     "android/dumpstate_writer.cc",
     "android/dumpstate_writer.h",
     "android/system_time_change_notifier_android.cc",
@@ -186,13 +190,6 @@ test("cast_base_unittests") {
   ]
 }
 
-if (build_for_android_things_n) {
-  config("absence-no-function-error") {
-    # for n build doesn't use all functions
-    cflags = [ "-Wno-unused-function" ]
-  }
-}
-
 # Declares CreateSysInfo() without defining the implementation (see below).
 cast_source_set("cast_sys_info_util") {
   public = [
@@ -248,9 +245,6 @@ if (is_android) {
         "cast_sys_info_android_things.cc",
         "cast_sys_info_android_things.h",
       ]
-      if (build_for_android_things_n) {
-        configs += [ ":absence-no-function-error" ]
-      }
     }
   }
 } else {  # !is_android
@@ -348,11 +342,10 @@ process_version("cast_version") {
 if (is_android) {
   generate_jni("jni_headers") {
     sources = [
+      "java/src/org/chromium/chromecast/base/CastSettingsManager.java",
       "java/src/org/chromium/chromecast/base/DumpstateWriter.java",
       "java/src/org/chromium/chromecast/base/SystemTimeChangeNotifierAndroid.java",
     ]
-
-    jni_package = "chromecast"
   }
 
   android_library("base_java") {
@@ -407,6 +400,7 @@ if (is_android) {
     java_test_dir = "//chromecast/base/java/test"
     java_files = [
       "$java_test_dir/org/chromium/chromecast/base/BothTest.java",
+      "$java_test_dir/org/chromium/chromecast/base/CastSettingsManagerTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ControllerTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ItertoolsTest.java",
       "$java_test_dir/org/chromium/chromecast/base/ObservableAndTest.java",
@@ -423,6 +417,7 @@ if (is_android) {
     deps = [
       ":base_java",
       ":cast_base_test_utils_java",
+      "//base:base_junit_test_support",
       "//third_party/hamcrest:hamcrest_java",
     ]
   }

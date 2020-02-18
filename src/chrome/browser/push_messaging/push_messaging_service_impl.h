@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/push_messaging_service.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 
 class GURL;
 class Profile;
@@ -42,8 +43,6 @@ namespace mojom {
 enum class PushDeliveryStatus;
 enum class PushRegistrationStatus;
 }  // namespace mojom
-
-struct WebPushSubscriptionOptions;
 }  // namespace blink
 
 namespace content {
@@ -91,17 +90,16 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   bool CanHandle(const std::string& app_id) const override;
 
   // content::PushMessagingService implementation:
-  GURL GetEndpoint(bool standard_protocol) const override;
   void SubscribeFromDocument(const GURL& requesting_origin,
                              int64_t service_worker_registration_id,
                              int renderer_id,
                              int render_frame_id,
-                             const blink::WebPushSubscriptionOptions& options,
+                             blink::mojom::PushSubscriptionOptionsPtr options,
                              bool user_gesture,
                              RegisterCallback callback) override;
   void SubscribeFromWorker(const GURL& requesting_origin,
                            int64_t service_worker_registration_id,
-                           const blink::WebPushSubscriptionOptions& options,
+                           blink::mojom::PushSubscriptionOptionsPtr options,
                            RegisterCallback callback) override;
   void GetSubscriptionInfo(const GURL& origin,
                            int64_t service_worker_registration_id,
@@ -168,12 +166,13 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // Subscribe methods ---------------------------------------------------------
 
   void DoSubscribe(const PushMessagingAppIdentifier& app_identifier,
-                   const blink::WebPushSubscriptionOptions& options,
+                   blink::mojom::PushSubscriptionOptionsPtr options,
                    RegisterCallback callback,
                    ContentSetting permission_status);
 
   void SubscribeEnd(RegisterCallback callback,
                     const std::string& subscription_id,
+                    const GURL& endpoint,
                     const std::vector<uint8_t>& p256dh,
                     const std::vector<uint8_t>& auth,
                     blink::mojom::PushRegistrationStatus status);
@@ -191,19 +190,22 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const PushMessagingAppIdentifier& app_identifier,
       RegisterCallback callback,
       const std::string& subscription_id,
-      const std::string& p256dh,
-      const std::string& auth_secret);
+      const GURL& endpoint,
+      std::string p256dh,
+      std::string auth_secret);
 
   // GetSubscriptionInfo methods -----------------------------------------------
 
   void DidValidateSubscription(const std::string& app_id,
                                const std::string& sender_id,
+                               const GURL& endpoint,
                                const SubscriptionInfoCallback& callback,
                                bool is_valid);
 
-  void DidGetEncryptionInfo(const SubscriptionInfoCallback& callback,
-                            const std::string& p256dh,
-                            const std::string& auth_secret) const;
+  void DidGetEncryptionInfo(const GURL& endpoint,
+                            const SubscriptionInfoCallback& callback,
+                            std::string p256dh,
+                            std::string auth_secret) const;
 
   // Unsubscribe methods -------------------------------------------------------
 
@@ -254,6 +256,10 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const std::string& app_id,
       const std::string& sender_id,
       gcm::GCMEncryptionProvider::EncryptionInfoCallback callback);
+
+  // Returns the URL used to send push messages to the subscription identified
+  // by |subscription_id|.
+  GURL CreateEndpoint(const std::string& subscription_id) const;
 
   gcm::GCMDriver* GetGCMDriver() const;
 
@@ -308,7 +314,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // messages when this is true.
   bool shutdown_started_ = false;
 
-  base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_;
+  base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingServiceImpl);
 };

@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -186,8 +186,7 @@ class FormSuggestionControllerTest : public PlatformTest {
     };
     [[[mock_consumer_ stub] andDo:mockShow]
         showAccessorySuggestions:[OCMArg any]
-                suggestionClient:[OCMArg any]
-              isHardwareKeyboard:NO];
+                suggestionClient:[OCMArg any]];
 
     // Mock restore keyboard to verify cleanup.
     void (^mockRestore)(NSInvocation*) = ^(NSInvocation* invocation) {
@@ -197,6 +196,7 @@ class FormSuggestionControllerTest : public PlatformTest {
 
     accessory_mediator_ =
         [[FormInputAccessoryMediator alloc] initWithConsumer:mock_consumer_
+                                                    delegate:nil
                                                 webStateList:NULL
                                          personalDataManager:NULL
                                                passwordStore:NULL];

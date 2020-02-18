@@ -21,7 +21,7 @@ class ExtensionModelTypeController
   ExtensionModelTypeController(
       syncer::ModelType type,
       syncer::OnceModelTypeStoreFactory store_factory,
-      SyncableServiceProvider syncable_service_provider,
+      base::WeakPtr<syncer::SyncableService> syncable_service,
       const base::RepeatingClosure& dump_stack,
       Profile* profile);
   ~ExtensionModelTypeController() override;

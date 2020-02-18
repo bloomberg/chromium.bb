@@ -14,8 +14,11 @@
 #include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/state.h"
+#include "components/autofill_assistant/browser/user_action.h"
+#include "components/autofill_assistant/browser/viewport_mode.h"
 
 namespace autofill_assistant {
+class ControllerObserver;
 
 // UI delegate called for script executions.
 class UiDelegate {
@@ -50,6 +53,9 @@ class UiDelegate {
   // Returns the current status message.
   virtual std::string GetStatusMessage() const = 0;
 
+  // Returns the current bubble / tooltip message.
+  virtual std::string GetBubbleMessage() const = 0;
+
   // Returns the current contextual information. May be null if empty.
   virtual const Details* GetDetails() const = 0;
 
@@ -62,18 +68,27 @@ class UiDelegate {
   // Returns whether the progress bar is visible.
   virtual bool GetProgressVisible() const = 0;
 
-  // Returns the current set of suggestions.
-  virtual const std::vector<Chip>& GetSuggestions() const = 0;
+  // Returns the current set of user actions.
+  virtual const std::vector<UserAction>& GetUserActions() const = 0;
 
-  // Selects a suggestion, from the set of suggestions returned by
-  // GetSuggestions().
-  virtual void SelectSuggestion(int suggestion) = 0;
+  // Performs an action, from the set of actions returned by GetUserAction().
+  //
+  // If non-empty, |context| is added to the global trigger context when
+  // executing scripts. Ignored if no scripts are executed by the action.
+  //
+  // Returns true if the action was triggered, false if the index did not
+  // correspond to any enabled actions.
+  virtual bool PerformUserActionWithContext(
+      int index,
+      std::unique_ptr<TriggerContext> context) = 0;
 
-  // Returns the current set of actions.
-  virtual const std::vector<Chip>& GetActions() const = 0;
-
-  // Selects an action, from the set of actions returned by GetActions().
-  virtual void SelectAction(int action) = 0;
+  // Performs an action with no additional trigger context set.
+  //
+  // Returns true if the action was triggered, false if the index did not
+  // correspond to any enabled actions.
+  bool PerformUserAction(int index) {
+    return PerformUserActionWithContext(index, TriggerContext::CreateEmpty());
+  }
 
   // If the controller is waiting for payment request information, this
   // field contains a non-null options describing the request.
@@ -104,6 +119,9 @@ class UiDelegate {
   virtual void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) = 0;
 
+  // Called when the user clicks a link on the terms & conditions message.
+  virtual void OnTermsAndConditionsLinkClicked(int link) = 0;
+
   // Adds the rectangles that correspond to the current touchable area to the
   // given vector.
   //
@@ -113,6 +131,7 @@ class UiDelegate {
   //
   // Note that the vector is not cleared before rectangles are added.
   virtual void GetTouchableArea(std::vector<RectF>* rectangles) const = 0;
+  virtual void GetRestrictedArea(std::vector<RectF>* rectangles) const = 0;
 
   // Returns the current size of the visual viewport. May be empty if unknown.
   //
@@ -124,7 +143,7 @@ class UiDelegate {
                             Metrics::DropOutReason reason) = 0;
 
   // Returns whether the viewport should be resized.
-  virtual bool GetResizeViewport() = 0;
+  virtual ViewportMode GetViewportMode() = 0;
 
   virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
 
@@ -143,6 +162,12 @@ class UiDelegate {
   virtual void SetChoiceSelected(int input_index,
                                  int choice_index,
                                  bool selected) = 0;
+
+  // Register an observer. Observers get told about changes to the controller.
+  virtual void AddObserver(ControllerObserver* observer) = 0;
+
+  // Remove a previously registered observer.
+  virtual void RemoveObserver(const ControllerObserver* observer) = 0;
 
  protected:
   UiDelegate() = default;

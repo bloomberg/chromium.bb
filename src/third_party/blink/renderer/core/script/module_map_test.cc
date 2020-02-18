@@ -30,7 +30,7 @@ class TestSingleModuleClient final : public SingleModuleClient {
   TestSingleModuleClient() = default;
   ~TestSingleModuleClient() override {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(module_script_);
     SingleModuleClient::Trace(visitor);
   }
@@ -64,7 +64,8 @@ class TestModuleRecordResolver final : public ModuleRecordResolver {
     FAIL() << "UnregisterModuleScript shouldn't be called in ModuleMapTest";
   }
 
-  const ModuleScript* GetHostDefined(const ModuleRecord&) const override {
+  const ModuleScript* GetModuleScriptFromModuleRecord(
+      const ModuleRecord&) const override {
     NOTREACHED();
     return nullptr;
   }
@@ -87,7 +88,7 @@ class ModuleMapTestModulator final : public DummyModulator {
   explicit ModuleMapTestModulator(ScriptState*);
   ~ModuleMapTestModulator() override {}
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   TestModuleRecordResolver* GetTestModuleRecordResolver() {
     return resolver_.Get();
@@ -117,12 +118,12 @@ class ModuleMapTestModulator final : public DummyModulator {
       TestRequest* test_request = MakeGarbageCollected<TestRequest>(
           ModuleScriptCreationParams(
               request.Url(), ParkableString(String("").ReleaseImpl()), nullptr,
-              request.GetResourceRequest().GetFetchCredentialsMode()),
+              request.GetResourceRequest().GetCredentialsMode()),
           client);
       modulator_->test_requests_.push_back(test_request);
     }
     String DebugName() const override { return "TestModuleScriptFetcher"; }
-    void Trace(blink::Visitor* visitor) override {
+    void Trace(Visitor* visitor) override {
       ModuleScriptFetcher::Trace(visitor);
       visitor->Trace(modulator_);
     }
@@ -152,7 +153,7 @@ class ModuleMapTestModulator final : public DummyModulator {
       client_->NotifyFetchFinished(*params_,
                                    HeapVector<Member<ConsoleMessage>>());
     }
-    void Trace(blink::Visitor* visitor) { visitor->Trace(client_); }
+    void Trace(Visitor* visitor) { visitor->Trace(client_); }
 
    private:
     base::Optional<ModuleScriptCreationParams> params_;
@@ -168,7 +169,7 @@ ModuleMapTestModulator::ModuleMapTestModulator(ScriptState* script_state)
     : script_state_(script_state),
       resolver_(MakeGarbageCollected<TestModuleRecordResolver>()) {}
 
-void ModuleMapTestModulator::Trace(blink::Visitor* visitor) {
+void ModuleMapTestModulator::Trace(Visitor* visitor) {
   visitor->Trace(test_requests_);
   visitor->Trace(script_state_);
   visitor->Trace(resolver_);
@@ -198,8 +199,7 @@ class ModuleMapTest : public PageTestBase {
 
 void ModuleMapTest::SetUp() {
   PageTestBase::SetUp(IntSize(500, 500));
-  GetDocument().SetURL(KURL("https://example.com"));
-  GetDocument().SetSecurityOrigin(SecurityOrigin::Create(GetDocument().Url()));
+  NavigateTo(KURL("https://example.com"));
   modulator_ = MakeGarbageCollected<ModuleMapTestModulator>(
       ToScriptStateForMainWorld(&GetFrame()));
   map_ = MakeGarbageCollected<ModuleMap>(modulator_);

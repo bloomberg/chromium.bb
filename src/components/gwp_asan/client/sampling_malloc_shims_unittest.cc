@@ -41,8 +41,6 @@ static size_t GetAllocatedSize(void* mem) {
 static size_t GetAllocatedSize(void* mem) {
   return malloc_usable_size(mem);
 }
-#else
-#error "Needs to be implemented for platform."
 #endif
 
 namespace gwp_asan {
@@ -76,8 +74,8 @@ class SamplingMallocShimsTest : public base::MultiProcessTest {
   void runTest(const char* name) {
     base::Process process = SpawnChild(name);
     int exit_code = -1;
-    ASSERT_TRUE(process.WaitForExitWithTimeout(
-        TestTimeouts::action_max_timeout(), &exit_code));
+    ASSERT_TRUE(WaitForMultiprocessTestChildExit(
+        process, TestTimeouts::action_max_timeout(), &exit_code));
     EXPECT_EQ(exit_code, kSuccess);
   }
 };
@@ -243,6 +241,8 @@ TEST_F(SamplingMallocShimsTest, CrashKey) {
 }
 #endif  // !defined(COMPONENT_BUILD)
 
+// malloc_usable_size() is not currently used/shimmed on Android.
+#if !defined(OS_ANDROID)
 MULTIPROCESS_TEST_MAIN_WITH_SETUP(
     GetSizeEstimate,
     SamplingMallocShimsTest::multiprocessTestSetup) {
@@ -264,6 +264,7 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
 TEST_F(SamplingMallocShimsTest, GetSizeEstimate) {
   runTest("GetSizeEstimate");
 }
+#endif
 
 #if defined(OS_WIN)
 MULTIPROCESS_TEST_MAIN_WITH_SETUP(

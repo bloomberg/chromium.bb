@@ -15,6 +15,8 @@
 #include "components/sync_sessions/synced_tab_delegate.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
+class IOSTaskTabHelper;
+
 class IOSChromeSyncedTabDelegate
     : public sync_sessions::SyncedTabDelegate,
       public web::WebStateUserData<IOSChromeSyncedTabDelegate> {
@@ -33,6 +35,7 @@ class IOSChromeSyncedTabDelegate
   GURL GetVirtualURLAtIndex(int i) const override;
   GURL GetFaviconURLAtIndex(int i) const override;
   ui::PageTransition GetTransitionAtIndex(int i) const override;
+  std::string GetPageLanguageAtIndex(int i) const override;
   void GetSerializedNavigationAtIndex(
       int i,
       sessions::SerializedNavigationEntry* serialized_entry) const override;
@@ -47,6 +50,7 @@ class IOSChromeSyncedTabDelegate
 
  private:
   explicit IOSChromeSyncedTabDelegate(web::WebState* web_state);
+  const IOSTaskTabHelper* ios_task_tab_helper() const;
   friend class web::WebStateUserData<IOSChromeSyncedTabDelegate>;
 
   web::WebState* web_state_;

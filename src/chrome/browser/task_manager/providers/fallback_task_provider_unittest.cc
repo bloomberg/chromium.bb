@@ -90,12 +90,12 @@ class FallbackTaskProviderTest : public testing::Test,
 
   // task_manager::TaskProviderObserver:
   void TaskAdded(Task* task) override {
-    EXPECT_FALSE(base::ContainsValue(seen_tasks_, task));
+    EXPECT_FALSE(base::Contains(seen_tasks_, task));
     seen_tasks_.emplace_back(task);
   }
 
   void TaskRemoved(Task* task) override {
-    EXPECT_TRUE(base::ContainsValue(seen_tasks_, task));
+    EXPECT_TRUE(base::Contains(seen_tasks_, task));
     base::Erase(seen_tasks_, task);
   }
 

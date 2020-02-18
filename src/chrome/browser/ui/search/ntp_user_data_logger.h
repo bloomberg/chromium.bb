@@ -92,6 +92,13 @@ class NTPUserDataLogger
   // Returns whether a custom background is configured. Virtual for testing.
   virtual bool CustomBackgroundIsConfigured() const;
 
+  // Returns whether the user has customized their shortcuts. Will always be
+  // false if Most Visited shortcuts are enabled. Virtual for testing.
+  virtual bool AreShortcutsCustomized() const;
+
+  // Returns the current user shortcut settings. Virtual for testing.
+  virtual std::pair<bool, bool> GetCurrentShortcutSettings() const;
+
   // Logs a number of statistics regarding the NTP. Called when an NTP tab is
   // about to be deactivated (be it by switching tabs, losing focus or closing
   // the tab/shutting down Chrome), or when the user navigates to a URL.
@@ -100,6 +107,9 @@ class NTPUserDataLogger
   void RecordDoodleImpression(base::TimeDelta time,
                               bool is_cta,
                               bool from_cache);
+
+  // Logs the user |action| via base::RecordAction.
+  void RecordAction(const char* action);
 
   // Records whether we have yet logged an impression for the tile at a given
   // index and if so the corresponding details. A typical NTP will log 9
@@ -114,9 +124,6 @@ class NTPUserDataLogger
   std::array<base::Optional<ntp_tiles::NTPTileImpression>,
              ntp_tiles::kMaxNumTiles>
       logged_impressions_;
-
-  // The time we received the NTP_ALL_TILES_RECEIVED event.
-  base::TimeDelta tiles_received_time_;
 
   // Whether we have already emitted NTP stats for this web contents.
   bool has_emitted_;

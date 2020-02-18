@@ -5,8 +5,9 @@
 #include "base/no_destructor.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/api/automation/automation_internal_custom_bindings.h"
-#include "ui/accessibility/ax_language_info.h"
+#include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_node_position.h"
 
 namespace extensions {
 
@@ -33,6 +34,8 @@ api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
       return api::automation::EVENT_TYPE_CHILDRENCHANGED;
     case ax::mojom::Event::kClicked:
       return api::automation::EVENT_TYPE_CLICKED;
+    case ax::mojom::Event::kControlsChanged:
+      return api::automation::EVENT_TYPE_CONTROLSCHANGED;
     case ax::mojom::Event::kDocumentSelectionChanged:
       return api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED;
     case ax::mojom::Event::kDocumentTitleChanged:
@@ -124,6 +127,8 @@ api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
       return api::automation::EVENT_TYPE_WINDOWACTIVATED;
     case ax::mojom::Event::kWindowDeactivated:
       return api::automation::EVENT_TYPE_WINDOWDEACTIVATED;
+    case ax::mojom::Event::kWindowVisibilityChanged:
+      return api::automation::EVENT_TYPE_WINDOWVISIBILITYCHANGED;
     case ax::mojom::Event::kTreeChanged:
       return api::automation::EVENT_TYPE_TREECHANGED;
     case ax::mojom::Event::kValueChanged:
@@ -196,11 +201,13 @@ api::automation::EventType ToAutomationEvent(
     case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
     case ui::AXEventGenerator::Event::DROPEFFECT_CHANGED:
     case ui::AXEventGenerator::Event::ENABLED_CHANGED:
+    case ui::AXEventGenerator::Event::FOCUS_CHANGED:
     case ui::AXEventGenerator::Event::FLOW_FROM_CHANGED:
     case ui::AXEventGenerator::Event::FLOW_TO_CHANGED:
     case ui::AXEventGenerator::Event::GRABBED_CHANGED:
     case ui::AXEventGenerator::Event::HASPOPUP_CHANGED:
     case ui::AXEventGenerator::Event::HIERARCHICAL_LEVEL_CHANGED:
+    case ui::AXEventGenerator::Event::IGNORED_CHANGED:
     case ui::AXEventGenerator::Event::KEY_SHORTCUTS_CHANGED:
     case ui::AXEventGenerator::Event::LABELED_BY_CHANGED:
     case ui::AXEventGenerator::Event::LANGUAGE_CHANGED:
@@ -295,7 +302,7 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
 
   // Refresh child tree id  mappings.
   for (const ui::AXTreeID& tree_id : tree_.GetAllChildTreeIds()) {
-    DCHECK(!base::ContainsKey(child_tree_id_reverse_map, tree_id));
+    DCHECK(!base::Contains(child_tree_id_reverse_map, tree_id));
     child_tree_id_reverse_map.insert(std::make_pair(tree_id, this));
   }
 
@@ -316,10 +323,8 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   for (const auto& targeted_event : event_generator_) {
     if (targeted_event.event_params.event ==
         ui::AXEventGenerator::Event::LOAD_COMPLETE) {
-      DetectLanguageForSubtree(tree_.root(), &tree_);
-      if (!LabelLanguageForSubtree(tree_.root(), &tree_))
-        LOG(FATAL) << "Language detection failed at step: Label";
-
+      tree_.language_detection_manager->DetectLanguageForSubtree(tree_.root());
+      tree_.language_detection_manager->LabelLanguageForSubtree(tree_.root());
       break;
     }
   }
@@ -406,6 +411,19 @@ bool AutomationAXTreeWrapper::IsInFocusChain(int32_t node_id) {
   return true;
 }
 
+ui::AXTree::Selection AutomationAXTreeWrapper::GetUnignoredSelection() {
+  // As there is no Tree Manager, this is necessary for AXPositions to work.
+  ui::AXNodePosition::SetTree(tree());
+  ui::AXTree::Selection unignored_selection = tree()->GetUnignoredSelection();
+  ui::AXNodePosition::SetTree(nullptr);
+  return unignored_selection;
+}
+
+ui::AXNode* AutomationAXTreeWrapper::GetUnignoredNodeFromId(int32_t id) {
+  ui::AXNode* node = tree_.GetFromId(id);
+  return (node && !node->IsIgnored()) ? node : nullptr;
+}
+
 // static
 std::map<ui::AXTreeID, AutomationAXTreeWrapper*>&
 AutomationAXTreeWrapper::GetChildTreeIDReverseMap() {
@@ -414,7 +432,7 @@ AutomationAXTreeWrapper::GetChildTreeIDReverseMap() {
   return *child_tree_id_reverse_map;
 }
 
-void AutomationAXTreeWrapper::OnNodeDataWillChange(
+void AutomationAXTreeWrapper::OnNodeDataChanged(
     ui::AXTree* tree,
     const ui::AXNodeData& old_node_data,
     const ui::AXNodeData& new_node_data) {
@@ -525,11 +543,13 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_SCROLLEDTOANCHOR:
     case api::automation::EVENT_TYPE_WINDOWACTIVATED:
     case api::automation::EVENT_TYPE_WINDOWDEACTIVATED:
+    case api::automation::EVENT_TYPE_WINDOWVISIBILITYCHANGED:
       return false;
 
     // These events might need to be migrated to AXEventGenerator.
     case api::automation::EVENT_TYPE_ALERT:
     case api::automation::EVENT_TYPE_BLUR:
+    case api::automation::EVENT_TYPE_CONTROLSCHANGED:
     case api::automation::EVENT_TYPE_FOCUS:
     case api::automation::EVENT_TYPE_IMAGEFRAMEUPDATED:
     case api::automation::EVENT_TYPE_LOCATIONCHANGED:

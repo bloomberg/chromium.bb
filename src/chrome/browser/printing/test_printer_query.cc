@@ -17,12 +17,11 @@
 
 namespace printing {
 
-scoped_refptr<PrinterQuery> TestPrintQueriesQueue::CreatePrinterQuery(
+std::unique_ptr<PrinterQuery> TestPrintQueriesQueue::CreatePrinterQuery(
     int render_process_id,
     int render_frame_id) {
-  scoped_refptr<TestPrinterQuery> test_query =
-      base::MakeRefCounted<TestPrinterQuery>(render_process_id,
-                                             render_frame_id);
+  auto test_query =
+      std::make_unique<TestPrinterQuery>(render_process_id, render_frame_id);
 #if defined(OS_WIN)
   test_query->SetPrinterType(printer_type_);
 #endif
@@ -53,7 +52,6 @@ void TestPrinterQuery::SetSettings(base::Value new_settings,
 #if defined(OS_WIN)
   DCHECK(printer_type_);
 #endif
-  set_callback(std::move(callback));
   PrintSettings settings;
   PrintingContext::Result result =
       PrintSettingsFromJobSettings(new_settings, &settings)
@@ -74,7 +72,7 @@ void TestPrinterQuery::SetSettings(base::Value new_settings,
   settings.set_printer_type(*printer_type_);
 #endif
 
-  GetSettingsDone(settings, result);
+  GetSettingsDone(std::move(callback), settings, result);
 }
 
 #if defined(OS_WIN)

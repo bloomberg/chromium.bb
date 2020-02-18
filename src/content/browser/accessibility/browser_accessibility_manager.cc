@@ -16,7 +16,7 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/accessibility_messages.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
-#include "ui/accessibility/ax_language_info.h"
+#include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
@@ -152,7 +152,9 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::FromID(
 BrowserAccessibilityManager::BrowserAccessibilityManager(
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : delegate_(delegate),
+    : WebContentsObserver(delegate ? delegate->AccessibilityWebContents()
+                                   : nullptr),
+      delegate_(delegate),
       factory_(factory),
       tree_(new ui::AXSerializableTree()),
       user_is_navigating_away_(false),
@@ -168,7 +170,9 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
     const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : delegate_(delegate),
+    : WebContentsObserver(delegate ? delegate->AccessibilityWebContents()
+                                   : nullptr),
+      delegate_(delegate),
       factory_(factory),
       tree_(new ui::AXSerializableTree()),
       user_is_navigating_away_(false),
@@ -223,9 +227,10 @@ base::Optional<ui::AXTreeID>
 // static
 ui::AXTreeUpdate BrowserAccessibilityManager::GetEmptyDocument() {
   ui::AXNodeData empty_document;
-  empty_document.id = 0;
+  empty_document.id = 1;
   empty_document.role = ax::mojom::Role::kRootWebArea;
   ui::AXTreeUpdate update;
+  update.root_id = empty_document.id;
   update.nodes.push_back(empty_document);
   return update;
 }
@@ -258,20 +263,19 @@ void BrowserAccessibilityManager::FireFocusEventsIfNeeded() {
   // Don't allow the top document to be focused if it has no children and hasn't
   // finished loading yet. Wait for at least a tiny bit of content, or for the
   // document to actually finish loading.
+  // Even after the document has loaded, we shouldn't fire a focus event if the
+  // document is completely empty, otherwise the user will be placed inside an
+  // empty container. This would result in user confusion, since none of the
+  // screen reader commands will read anything.
   if (focus == focus->manager()->GetRoot() &&
-      focus->PlatformChildCount() == 0 &&
-      !focus->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy) &&
-      !focus->manager()->GetTreeData().loaded) {
+      (focus->PlatformChildCount() == 0 ||
+       !focus->manager()->GetTreeData().loaded)) {
     return;
   }
 
   BrowserAccessibility* last_focused_node = GetLastFocusedNode();
-  if (focus != last_focused_node) {
-    if (last_focused_node)
-      OnFocusLost(last_focused_node);
-    if (focus)
-      FireFocusEvent(focus);
-  }
+  if (focus != last_focused_node)
+    FireFocusEvent(focus);
   SetLastFocusedNode(focus);
 }
 
@@ -396,6 +400,9 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     return true;
   }
 
+  // Allow derived classes to do event pre-processing.
+  BeforeAccessibilityEvents();
+
   // If the root's parent is in another accessibility tree but it wasn't
   // previously connected, post the proper notifications on the parent.
   BrowserAccessibility* parent = GetParentNodeFromParentTree();
@@ -414,22 +421,26 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   // Screen readers might not do the right thing if they're not aware of what
   // has focus, so always try that first. Nothing will be fired if the window
   // itself isn't focused or if focus hasn't changed.
-  FireFocusEventsIfNeeded();
+  //
+  // We need to fire focus events specifically from the root manager, since we
+  // need the top document's delegate to check if its view has focus.
+  //
+  // If this manager is disconnected from the top document, then root_manager
+  // will be a null pointer and FireFocusEventsIfNeeded won't be able to
+  // retrieve the global focus (not firing an event anyway).
+  if (root_manager)
+    root_manager->FireFocusEventsIfNeeded();
 
+  bool received_load_complete_event = false;
   // Fire any events related to changes to the tree.
-  for (auto targeted_event : event_generator_) {
+  for (const auto& targeted_event : event_generator_) {
     BrowserAccessibility* event_target = GetFromAXNode(targeted_event.node);
     if (!event_target || !event_target->CanFireEvents())
       continue;
 
-    // Perform initial run of language detection if we have seen a LOAD_COMPLETE
-    // event.
-    // TODO(chrishall): we will want to run this more often for dynamic pages.
     if (targeted_event.event_params.event ==
         ui::AXEventGenerator::Event::LOAD_COMPLETE) {
-      DetectLanguageForSubtree(tree_->root(), tree_.get());
-      if (!LabelLanguageForSubtree(tree_->root(), tree_.get()))
-        LOG(FATAL) << "Language detection failed at step: Label";
+      received_load_complete_event = true;
     }
 
     FireGeneratedEvent(targeted_event.event_params.event, event_target);
@@ -451,10 +462,24 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     FireBlinkEvent(event.event_type, event_target);
   }
 
+  if (received_load_complete_event) {
+    // Fire a focus event after the document has finished loading, but after all
+    // the platform independent events have already fired, e.g. kLayoutComplete.
+    // Some screen readers need a focus event in order to work properly.
+    FireFocusEventsIfNeeded();
+
+    // Also, perform the initial run of language detection.
+    // TODO(chrishall): we will want to run this more often for dynamic pages.
+    tree_->language_detection_manager->DetectLanguageForSubtree(tree_->root());
+    tree_->language_detection_manager->LabelLanguageForSubtree(tree_->root());
+  }
+
   // Allow derived classes to do event post-processing.
   FinalizeAccessibilityEvents();
   return true;
 }
+
+void BrowserAccessibilityManager::BeforeAccessibilityEvents() {}
 
 void BrowserAccessibilityManager::FinalizeAccessibilityEvents() {}
 
@@ -528,7 +553,7 @@ BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendant(
   }
 
   if (focus->GetRole() == ax::mojom::Role::kPopUpButton) {
-    BrowserAccessibility* child = focus->InternalGetChild(0);
+    BrowserAccessibility* child = focus->InternalGetFirstChild();
     if (child && child->GetRole() == ax::mojom::Role::kMenuListPopup &&
         !child->GetData().HasState(ax::mojom::State::kInvisible)) {
       // The active descendant is found on the menu list popup, i.e. on the
@@ -715,7 +740,9 @@ void BrowserAccessibilityManager::SignalEndOfTest() {
 
 void BrowserAccessibilityManager::ScrollToMakeVisible(
     const BrowserAccessibility& node,
-    gfx::Rect subfocus) {
+    gfx::Rect subfocus,
+    ax::mojom::ScrollAlignment horizontal_scroll_alignment,
+    ax::mojom::ScrollAlignment vertical_scroll_alignment) {
   if (!delegate_)
     return;
 
@@ -723,6 +750,8 @@ void BrowserAccessibilityManager::ScrollToMakeVisible(
   action_data.target_node_id = node.GetId();
   action_data.action = ax::mojom::Action::kScrollToMakeVisible;
   action_data.target_rect = subfocus;
+  action_data.horizontal_scroll_alignment = horizontal_scroll_alignment;
+  action_data.vertical_scroll_alignment = vertical_scroll_alignment;
   delegate_->AccessibilityPerformAction(action_data);
 }
 
@@ -844,10 +873,10 @@ BrowserAccessibility* BrowserAccessibilityManager::NextInTreeOrder(
     return nullptr;
 
   if (object->PlatformChildCount())
-    return object->PlatformGetChild(0);
+    return object->PlatformGetFirstChild();
 
   while (object) {
-    BrowserAccessibility* sibling = object->GetNextSibling();
+    BrowserAccessibility* sibling = object->PlatformGetNextSibling();
     if (sibling)
       return sibling;
 
@@ -873,7 +902,7 @@ BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
     return object->PlatformDeepestLastChild();
   }
 
-  BrowserAccessibility* sibling = object->GetPreviousSibling();
+  BrowserAccessibility* sibling = object->PlatformGetPreviousSibling();
   if (!sibling)
     return object->PlatformGetParent();
 
@@ -993,9 +1022,8 @@ BrowserAccessibilityManager::FindTextOnlyObjectsInRange(
     // to find the text-only objects.
     if (!start_object.InternalChildCount())
       return text_only_objects;
-    start_text_object = start_object.InternalGetChild(0);
-    end_text_object =
-        start_object.InternalGetChild(start_object.InternalChildCount() - 1);
+    start_text_object = start_object.InternalGetFirstChild();
+    end_text_object = start_object.InternalGetLastChild();
   } else if (child_index1 <= child_index2 ||
              end_object.IsDescendantOf(&start_object)) {
     start_text_object = &start_object;
@@ -1185,11 +1213,7 @@ void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
 }
 
 void BrowserAccessibilityManager::OnSubtreeWillBeDeleted(ui::AXTree* tree,
-                                                         ui::AXNode* node) {
-  DCHECK(node);
-  if (BrowserAccessibility* wrapper = GetFromAXNode(node))
-    wrapper->OnSubtreeWillBeDeleted();
-}
+                                                         ui::AXNode* node) {}
 
 void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
                                                 ui::AXNode* node) {
@@ -1197,7 +1221,6 @@ void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
   BrowserAccessibility* wrapper = factory_->Create();
   id_wrapper_map_[node->id()] = wrapper;
   wrapper->Init(this, node);
-  wrapper->OnDataChanged();
 }
 
 void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
@@ -1209,14 +1232,6 @@ void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
     id_wrapper_map_[node->id()] = wrapper;
   }
   wrapper->Init(this, node);
-  wrapper->OnDataChanged();
-}
-
-void BrowserAccessibilityManager::OnNodeChanged(ui::AXTree* tree,
-                                                ui::AXNode* node) {
-  DCHECK(node);
-  if (BrowserAccessibility* wrapper = GetFromAXNode(node))
-    wrapper->OnDataChanged();
 }
 
 void BrowserAccessibilityManager::OnAtomicUpdateFinished(
@@ -1243,22 +1258,12 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     ui::AXTreeManagerMap::GetInstance().AddTreeManager(ax_tree_id_, this);
   }
 
-  // Calls OnDataChanged on newly created or reparented nodes.
+  // Calls OnDataChanged on newly created, reparented or changed nodes.
   for (const auto change : changes) {
     ui::AXNode* node = change.node;
     BrowserAccessibility* wrapper = GetFromAXNode(node);
     if (wrapper) {
-      switch (change.type) {
-        case NODE_CREATED:
-        case NODE_REPARENTED:
-          wrapper->OnDataChanged();
-          break;
-          // Unhandled.
-        case NODE_CHANGED:
-        case SUBTREE_CREATED:
-        case SUBTREE_REPARENTED:
-          break;
-      }
+      wrapper->OnDataChanged();
     }
   }
 }

@@ -123,12 +123,13 @@ class PointerEventFactoryTest : public testing::Test {
             pointer_event->pointerId(),
             WebPointerProperties(1, WebPointerProperties::PointerType::kUnknown,
                                  WebPointerProperties::Button::kNoButton,
-                                 WebFloatPoint(50, 50), WebFloatPoint(20, 20))),
+                                 WebFloatPoint(50, 50), WebFloatPoint(20, 20)),
+            type),
         FloatPoint(100, 100));
     return pointer_event;
   }
   void CreateAndCheckPointerTransitionEvent(PointerEvent*, const AtomicString&);
-  void CheckNonHoveringPointers(const std::set<int>& expected);
+  void CheckNonHoveringPointers(const HashSet<int>& expected);
 
   PointerEventFactory pointer_event_factory_;
   int expected_mouse_id_;
@@ -177,7 +178,7 @@ void PointerEventFactoryTest::CreateAndCheckPointerTransitionEvent(
 }
 
 void PointerEventFactoryTest::CheckNonHoveringPointers(
-    const std::set<int>& expected_pointers) {
+    const HashSet<int>& expected_pointers) {
   Vector<int> pointers =
       pointer_event_factory_.GetPointerIdsOfNonHoveringPointers();
   EXPECT_EQ(pointers.size(), expected_pointers.size());
@@ -589,7 +590,8 @@ TEST_F(PointerEventFactoryTest, LastPointerPosition) {
           expected_mouse_id_,
           WebPointerProperties(1, WebPointerProperties::PointerType::kUnknown,
                                WebPointerProperties::Button::kNoButton,
-                               WebFloatPoint(50, 50), WebFloatPoint(20, 20))),
+                               WebFloatPoint(50, 50), WebFloatPoint(20, 20)),
+          WebInputEvent::kPointerMove),
       FloatPoint(20, 20));
 }
 

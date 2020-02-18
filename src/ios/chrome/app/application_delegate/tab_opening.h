@@ -6,14 +6,16 @@
 #define IOS_CHROME_APP_APPLICATION_DELEGATE_TAB_OPENING_H_
 
 #include "base/ios/block_types.h"
+#import "ios/chrome/app/app_startup_parameters.h"
 #include "ios/chrome/app/application_mode.h"
-#import "ios/chrome/browser/app_startup_parameters.h"
 #include "ui/base/page_transition_types.h"
 
 @class AppState;
 @class TabModel;
 @protocol StartupInformation;
 struct UrlLoadParams;
+
+enum class ApplicationModeForTabOpening { NORMAL, INCOGNITO, CURRENT };
 
 // Protocol for object that can open new tabs during application launch.
 @protocol TabOpening<NSObject>
@@ -22,7 +24,8 @@ struct UrlLoadParams;
 // then opens either a normal or incognito tab with |url|. After opening |url|,
 // run completion |handler| if it is not nil. After Tab is opened the virtual
 // URL is set to the pending navigation item.
-- (void)dismissModalsAndOpenSelectedTabInMode:(ApplicationMode)targetMode
+- (void)dismissModalsAndOpenSelectedTabInMode:
+            (ApplicationModeForTabOpening)targetMode
                             withUrlLoadParams:
                                 (const UrlLoadParams&)urlLoadParams
                                dismissOmnibox:(BOOL)dismissOmnibox

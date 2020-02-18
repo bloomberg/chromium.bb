@@ -8,7 +8,6 @@
 #include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
@@ -29,13 +28,11 @@ QuicClientBase::QuicClientBase(
       initialized_(false),
       local_port_(0),
       config_(config),
-      crypto_config_(std::move(proof_verifier),
-                     TlsClientHandshaker::CreateSslCtx()),
+      crypto_config_(std::move(proof_verifier)),
       helper_(helper),
       alarm_factory_(alarm_factory),
       supported_versions_(supported_versions),
       initial_max_packet_length_(0),
-      num_stateless_rejects_received_(0),
       num_sent_client_hellos_(0),
       connection_error_(QUIC_NO_ERROR),
       connected_or_attempting_connect_(false),
@@ -45,7 +42,6 @@ QuicClientBase::~QuicClientBase() = default;
 
 bool QuicClientBase::Initialize() {
   num_sent_client_hellos_ = 0;
-  num_stateless_rejects_received_ = 0;
   connection_error_ = QUIC_NO_ERROR;
   connected_or_attempting_connect_ = false;
 
@@ -83,20 +79,11 @@ bool QuicClientBase::Connect() {
     }
     ParsedQuicVersion version = UnsupportedQuicVersion();
     if (session() != nullptr &&
-        session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT &&
         !CanReconnectWithDifferentVersion(&version)) {
-      // We've successfully created a session but we're not connected, and there
-      // is no stateless reject to recover from and cannot try to reconnect with
-      // different version.  Give up trying.
+      // We've successfully created a session but we're not connected, and we
+      // cannot reconnect with a different version.  Give up trying.
       break;
     }
-  }
-  if (!connected() &&
-      GetNumSentClientHellos() > QuicCryptoClientStream::kMaxClientHellos &&
-      session() != nullptr &&
-      session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-    // The overall connection failed due too many stateless rejects.
-    set_connection_error(QUIC_CRYPTO_TOO_MANY_REJECTS);
   }
   return session()->connection()->connected();
 }
@@ -109,12 +96,9 @@ void QuicClientBase::StartConnect() {
   const bool can_reconnect_with_different_version =
       CanReconnectWithDifferentVersion(&mutual_version);
   if (connected_or_attempting_connect()) {
-    // If the last error was not a stateless reject, then the queued up data
-    // does not need to be resent.
-    // Keep queued up data if client can try to connect with a different
+    // Clear queued up data if client can not try to connect with a different
     // version.
-    if (session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT &&
-        !can_reconnect_with_different_version) {
+    if (!can_reconnect_with_different_version) {
       ClearDataToResend();
     }
     // Before we destroy the last session and create a new one, gather its stats
@@ -130,6 +114,7 @@ void QuicClientBase::StartConnect() {
                          can_reconnect_with_different_version
                              ? ParsedQuicVersionVector{mutual_version}
                              : supported_versions()));
+  session()->connection()->set_client_connection_id(GetClientConnectionId());
   if (initial_max_packet_length_ != 0) {
     session()->connection()->SetMaxPacketLength(initial_max_packet_length_);
   }
@@ -175,11 +160,7 @@ bool QuicClientBase::WaitForEvents() {
 
   DCHECK(session() != nullptr);
   ParsedQuicVersion version = UnsupportedQuicVersion();
-  if (!connected() &&
-
-      CanReconnectWithDifferentVersion(&version)) {
-    DCHECK_NE(session()->error(), QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT);
-
+  if (!connected() && CanReconnectWithDifferentVersion(&version)) {
     QUIC_DLOG(INFO) << "Can reconnect with version: " << version
                     << ", attempting to reconnect.";
 
@@ -275,17 +256,11 @@ int QuicClientBase::GetNumSentClientHellos() {
 
 void QuicClientBase::UpdateStats() {
   num_sent_client_hellos_ += GetNumSentClientHellosFromSession();
-  if (session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-    ++num_stateless_rejects_received_;
-  }
 }
 
 int QuicClientBase::GetNumReceivedServerConfigUpdates() {
   // If we are not actively attempting to connect, the session object
   // corresponds to the previous connection and should not be used.
-  // We do not need to take stateless rejects into account, since we
-  // don't expect any scup messages to be sent during a
-  // statelessly-rejected connection.
   return !connected_or_attempting_connect_
              ? 0
              : GetNumReceivedServerConfigUpdatesFromSession();
@@ -323,6 +298,10 @@ QuicConnectionId QuicClientBase::GetNextServerDesignatedConnectionId() {
 
 QuicConnectionId QuicClientBase::GenerateNewConnectionId() {
   return QuicUtils::CreateRandomConnectionId();
+}
+
+QuicConnectionId QuicClientBase::GetClientConnectionId() {
+  return EmptyQuicConnectionId();
 }
 
 bool QuicClientBase::CanReconnectWithDifferentVersion(

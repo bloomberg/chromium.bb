@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "constants/stream_dict_common.h"
-#include "core/fpdfapi/cpdf_modulemgr.h"
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_boolean.h"
@@ -27,9 +26,9 @@
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
-#include "core/fxcodec/codec/ccodec_jpegmodule.h"
-#include "core/fxcodec/codec/ccodec_scanlinedecoder.h"
 #include "core/fxcodec/fx_codec.h"
+#include "core/fxcodec/jpeg/jpegmodule.h"
+#include "core/fxcodec/scanlinedecoder.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "third_party/base/ptr_util.h"
@@ -43,7 +42,7 @@ const char kTrue[] = "true";
 const char kFalse[] = "false";
 const char kNull[] = "null";
 
-uint32_t DecodeAllScanlines(std::unique_ptr<CCodec_ScanlineDecoder> pDecoder) {
+uint32_t DecodeAllScanlines(std::unique_ptr<ScanlineDecoder> pDecoder) {
   if (!pDecoder)
     return FX_INVALID_OFFSET;
 
@@ -54,7 +53,7 @@ uint32_t DecodeAllScanlines(std::unique_ptr<CCodec_ScanlineDecoder> pDecoder) {
   if (width <= 0 || height <= 0)
     return FX_INVALID_OFFSET;
 
-  FX_SAFE_UINT32 size = CalculatePitch8(bpc, ncomps, width);
+  FX_SAFE_UINT32 size = fxcodec::CalculatePitch8(bpc, ncomps, width);
   size *= height;
   if (size.ValueOrDefault(0) == 0)
     return FX_INVALID_OFFSET;
@@ -92,14 +91,14 @@ uint32_t DecodeInlineStream(pdfium::span<const uint8_t> src_span,
                             &ignored_size);
   }
   if (decoder == "DCTDecode") {
-    std::unique_ptr<CCodec_ScanlineDecoder> pDecoder =
-        CPDF_ModuleMgr::Get()->GetJpegModule()->CreateDecoder(
+    std::unique_ptr<ScanlineDecoder> pDecoder =
+        fxcodec::ModuleMgr::GetInstance()->GetJpegModule()->CreateDecoder(
             src_span, width, height, 0,
             !pParam || pParam->GetIntegerFor("ColorTransform", 1));
     return DecodeAllScanlines(std::move(pDecoder));
   }
   if (decoder == "CCITTFaxDecode") {
-    std::unique_ptr<CCodec_ScanlineDecoder> pDecoder =
+    std::unique_ptr<ScanlineDecoder> pDecoder =
         CreateFaxDecoder(src_span, width, height, pParam);
     return DecodeAllScanlines(std::move(pDecoder));
   }
@@ -156,11 +155,12 @@ RetainPtr<CPDF_Stream> CPDF_StreamParser::ReadInlineStream(
   uint32_t bpc = 1;
   uint32_t nComponents = 1;
   if (pCSObj) {
-    RetainPtr<CPDF_ColorSpace> pCS = pDoc->LoadColorSpace(pCSObj, nullptr);
+    RetainPtr<CPDF_ColorSpace> pCS =
+        CPDF_DocPageData::FromDocument(pDoc)->GetColorSpace(pCSObj, nullptr);
     nComponents = pCS ? pCS->CountComponents() : 3;
     bpc = pDict->GetIntegerFor("BitsPerComponent");
   }
-  FX_SAFE_UINT32 size = CalculatePitch8(bpc, nComponents, width);
+  FX_SAFE_UINT32 size = fxcodec::CalculatePitch8(bpc, nComponents, width);
   size *= height;
   if (!size.IsValid())
     return nullptr;
@@ -339,7 +339,7 @@ RetainPtr<CPDF_Object> CPDF_StreamParser::ReadNextObject(
       if (!key.IsEmpty())
         pDict->SetFor(key, std::move(pObj));
     }
-    return std::move(pDict);
+    return pDict;
   }
 
   if (first_char == '[') {
@@ -357,7 +357,7 @@ RetainPtr<CPDF_Object> CPDF_StreamParser::ReadNextObject(
       if (!m_WordSize || m_WordBuffer[0] == ']')
         break;
     }
-    return std::move(pArray);
+    return pArray;
   }
 
   if (WordBufferMatches(kFalse))

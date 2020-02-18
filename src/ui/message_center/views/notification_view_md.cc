@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/i18n/case_conversion.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "components/url_formatter/elide_url.h"
 #include "ui/base/class_property.h"
@@ -175,13 +176,13 @@ class ClickActivator : public ui::EventHandler {
 std::unique_ptr<views::View> CreateItemView(const NotificationItem& item) {
   auto view = std::make_unique<views::View>();
   view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), 0));
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0));
 
   const gfx::FontList font_list = GetTextFontList();
 
   auto* title = new views::Label(item.title);
   title->SetFontList(font_list);
-  title->set_collapse_when_hidden(true);
+  title->SetCollapseWhenHidden(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetEnabledColor(kRegularTextColorMD);
   title->SetAutoColorReadabilityEnabled(false);
@@ -190,12 +191,27 @@ std::unique_ptr<views::View> CreateItemView(const NotificationItem& item) {
   views::Label* message = new views::Label(l10n_util::GetStringFUTF16(
       IDS_MESSAGE_CENTER_LIST_NOTIFICATION_MESSAGE_WITH_DIVIDER, item.message));
   message->SetFontList(font_list);
-  message->set_collapse_when_hidden(true);
+  message->SetCollapseWhenHidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetEnabledColor(kDimTextColorMD);
   message->SetAutoColorReadabilityEnabled(false);
   view->AddChildView(message);
   return view;
+}
+
+// Enum used to record click actions on the notification header.
+// Do not re-order or delete these entries; they are used in a UMA histogram.
+// Please edit NotificationHeaderClickAction in enums.xml if a value is added.
+enum class HeaderClickAction {
+  kNone = 0,
+  kExpanded = 1,
+  kCollapsed = 2,
+  kMaxValue = kCollapsed,
+};
+
+// static
+void RecordHeaderClickAction(HeaderClickAction action) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.HeaderClick", action);
 }
 
 }  // anonymous namespace
@@ -335,6 +351,7 @@ NotificationButtonMD::NotificationButtonMD(
   set_ink_drop_base_color(SK_ColorBLACK);
   set_ink_drop_visible_opacity(kActionButtonInkDropRippleVisibleOpacity);
   SetEnabledTextColors(kActionButtonTextColor);
+  SetElideBehavior(gfx::NO_ELIDE);
   SetBorder(views::CreateEmptyBorder(kActionButtonPadding));
   SetMinSize(kActionButtonMinSize);
   SetFocusForPlatform();
@@ -367,7 +384,7 @@ NotificationInputContainerMD::NotificationInputContainerMD(
       textfield_(new views::Textfield()),
       button_(new views::ImageButton(this)) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), 0));
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0));
   SetBackground(views::CreateSolidBackground(kActionsRowBackgroundColor));
 
   SetInkDropMode(InkDropMode::ON);
@@ -517,7 +534,7 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
     : MessageView(notification),
       ink_drop_container_(new views::InkDropContainerView()) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), 0));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
 
   set_ink_drop_visible_opacity(1);
 
@@ -538,7 +555,7 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   content_row_ = new views::View();
   auto* content_row_layout =
       content_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, kContentRowPadding, 0));
+          views::BoxLayout::Orientation::kHorizontal, kContentRowPadding, 0));
   content_row_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
   AddChildView(content_row_);
@@ -546,7 +563,7 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   // |left_content_| contains most contents like title, message, etc...
   left_content_ = new views::View();
   left_content_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), 0));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
   left_content_->SetBorder(views::CreateEmptyBorder(kLeftContentPadding));
   content_row_->AddChildView(left_content_);
   content_row_layout->SetFlexForView(left_content_, 1);
@@ -565,7 +582,7 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   // |action_buttons_row_| contains inline action buttons.
   action_buttons_row_ = new views::View();
   action_buttons_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, kActionsRowPadding,
+      views::BoxLayout::Orientation::kHorizontal, kActionsRowPadding,
       kActionsRowHorizontalSpacing));
   action_buttons_row_->SetVisible(false);
   actions_row_->AddChildView(action_buttons_row_);
@@ -621,6 +638,7 @@ void NotificationViewMD::Layout() {
   }
 
   // The animation is needed to run inside of the border.
+  ink_drop_container_->SetBoundsRect(GetLocalBounds());
   if (ink_drop_layer_)
     ink_drop_layer_->SetBounds(GetContentsBounds());
   if (ink_drop_mask_)
@@ -720,6 +738,8 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   // |expand_button| can be focused by TAB.
   if (sender == header_row_) {
     if (IsExpandable() && content_row_->GetVisible()) {
+      RecordHeaderClickAction(IsExpanded() ? HeaderClickAction::kCollapsed
+                                           : HeaderClickAction::kExpanded);
       SetManuallyExpandedOrCollapsed(true);
       auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
       ToggleExpanded();
@@ -729,6 +749,8 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
         return;
       Layout();
       SchedulePaint();
+    } else {
+      RecordHeaderClickAction(HeaderClickAction::kNone);
     }
     return;
   }
@@ -781,16 +803,20 @@ void NotificationViewMD::CreateOrUpdateContextTitleView(
   header_row_->SetTimestamp(notification.timestamp());
   header_row_->SetAppNameElideBehavior(gfx::ELIDE_TAIL);
 
-  base::string16 app_name = notification.display_source();
-  if (notification.origin_url().is_valid() &&
-      notification.origin_url().SchemeIsHTTPOrHTTPS()) {
+  base::string16 app_name;
+  if (notification.UseOriginAsContextMessage()) {
     app_name = url_formatter::FormatUrlForSecurityDisplay(
         notification.origin_url(),
         url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
     header_row_->SetAppNameElideBehavior(gfx::ELIDE_HEAD);
-  } else if (app_name.empty() && notification.notifier_id().type ==
-                                     NotifierType::SYSTEM_COMPONENT) {
+  } else if (notification.display_source().empty() &&
+             notification.notifier_id().type ==
+                 NotifierType::SYSTEM_COMPONENT) {
     app_name = MessageCenter::Get()->GetSystemNotificationAppName();
+  } else if (!notification.context_message().empty()) {
+    app_name = notification.context_message();
+  } else {
+    app_name = notification.display_source();
   }
   header_row_->SetAppName(app_name);
 }
@@ -1111,7 +1137,7 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
   // |settings_row_| contains inline settings.
   settings_row_ = new views::View();
   settings_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, kSettingsRowPadding, 0));
+      views::BoxLayout::Orientation::kVertical, kSettingsRowPadding, 0));
 
   int block_notifications_message_id = 0;
   switch (notification.notifier_id().type) {
@@ -1154,7 +1180,7 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
 
   auto* settings_button_row = new views::View;
   auto settings_button_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, kSettingsButtonRowPadding, 0);
+      views::BoxLayout::Orientation::kHorizontal, kSettingsButtonRowPadding, 0);
   settings_button_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kEnd);
   settings_button_row->SetLayoutManager(std::move(settings_button_layout));
@@ -1255,7 +1281,7 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
 
   settings_row_->SetVisible(inline_settings_visible);
   content_row_->SetVisible(!inline_settings_visible);
-  header_row_->SetTimestampVisible(!inline_settings_visible);
+  header_row_->SetDetailViewsVisible(!inline_settings_visible);
 
   // Always check "Don't block" when inline settings is shown.
   // If it's already blocked, users should not see inline settings.

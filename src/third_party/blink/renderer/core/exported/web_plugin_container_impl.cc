@@ -566,10 +566,9 @@ bool WebPluginContainerImpl::IsRectTopmost(const WebRect& rect) {
   if (!frame)
     return false;
 
-  IntPoint frame_location = Location();
-  HitTestLocation location(LayoutRect(frame_location.X() + rect.x,
-                                      frame_location.Y() + rect.y, rect.width,
-                                      rect.height));
+  IntRect frame_rect = rect;
+  frame_rect.MoveBy(Location());
+  HitTestLocation location((PhysicalRect(frame_rect)));
   HitTestResult result = frame->GetEventHandler().HitTestResultAtLocation(
       location, HitTestRequest::kReadOnly | HitTestRequest::kActive |
                     HitTestRequest::kListBased);
@@ -967,8 +966,7 @@ WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
 WebCoalescedInputEvent WebPluginContainerImpl::TransformCoalescedTouchEvent(
     const WebCoalescedInputEvent& coalesced_event) {
   WebCoalescedInputEvent transformed_event(
-      TransformTouchEvent(coalesced_event.Event()),
-      std::vector<const WebInputEvent*>(), std::vector<const WebInputEvent*>());
+      TransformTouchEvent(coalesced_event.Event()), {}, {});
   for (size_t i = 0; i < coalesced_event.CoalescedEventSize(); ++i) {
     transformed_event.AddCoalescedEvent(
         TransformTouchEvent(coalesced_event.CoalescedEvent(i)));

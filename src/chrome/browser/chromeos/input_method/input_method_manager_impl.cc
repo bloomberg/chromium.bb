@@ -12,7 +12,7 @@
 #include <sstream>
 #include <utility>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -44,12 +44,12 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/fake_ime_keyboard.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/ime_keyboard_mus.h"
+#include "ui/base/ime/chromeos/ime_keyboard_impl.h"
 #include "ui/base/ime/chromeos/input_method_delegate.h"
 #include "ui/base/ime/ime_bridge.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 namespace chromeos {
 namespace input_method {
@@ -276,7 +276,7 @@ void InputMethodManagerImpl::StateImpl::EnableLoginLayouts(
     const std::string& candidate = candidates[i];
     // Not efficient, but should be fine, as the two vectors are very
     // short (2-5 items).
-    if (!base::ContainsValue(layouts, candidate) &&
+    if (!base::Contains(layouts, candidate) &&
         manager_->IsLoginKeyboard(candidate) &&
         IsInputMethodAllowed(candidate)) {
       layouts.push_back(candidate);
@@ -354,7 +354,7 @@ bool InputMethodManagerImpl::StateImpl::EnableInputMethodImpl(
     return false;
   }
 
-  if (!base::ContainsValue(*new_active_input_method_ids, input_method_id))
+  if (!base::Contains(*new_active_input_method_ids, input_method_id))
     new_active_input_method_ids->push_back(input_method_id);
 
   return true;
@@ -471,11 +471,10 @@ bool InputMethodManagerImpl::StateImpl::IsInputMethodAllowed(
     return true;
   }
 
-  return base::ContainsValue(allowed_keyboard_layout_input_method_ids,
-                             input_method_id) ||
-         base::ContainsValue(
-             allowed_keyboard_layout_input_method_ids,
-             manager_->util_.MigrateInputMethod(input_method_id));
+  return base::Contains(allowed_keyboard_layout_input_method_ids,
+                        input_method_id) ||
+         base::Contains(allowed_keyboard_layout_input_method_ids,
+                        manager_->util_.MigrateInputMethod(input_method_id));
 }
 
 std::string
@@ -580,8 +579,8 @@ void InputMethodManagerImpl::StateImpl::AddInputMethodExtension(
     const InputMethodDescriptor& descriptor = descriptors[i];
     const std::string& id = descriptor.id();
     extra_input_methods[id] = descriptor;
-    if (base::ContainsValue(enabled_extension_imes, id)) {
-      if (!base::ContainsValue(active_input_method_ids, id)) {
+    if (base::Contains(enabled_extension_imes, id)) {
+      if (!base::Contains(active_input_method_ids, id)) {
         active_input_method_ids.push_back(id);
       } else {
         DVLOG(1) << "AddInputMethodExtension: already added: " << id << ", "
@@ -674,7 +673,7 @@ void InputMethodManagerImpl::StateImpl::SetEnabledExtensionImes(
                   active_input_method_ids.end(), entry.first);
 
     bool active = active_iter != active_input_method_ids.end();
-    bool enabled = base::ContainsValue(enabled_extension_imes, entry.first);
+    bool enabled = base::Contains(enabled_extension_imes, entry.first);
 
     if (active && !enabled)
       active_input_method_ids.erase(active_iter);
@@ -840,7 +839,7 @@ InputMethodDescriptor InputMethodManagerImpl::StateImpl::GetCurrentInputMethod()
 
 bool InputMethodManagerImpl::StateImpl::InputMethodIsActivated(
     const std::string& input_method_id) const {
-  return base::ContainsValue(active_input_method_ids, input_method_id);
+  return base::Contains(active_input_method_ids, input_method_id);
 }
 
 void InputMethodManagerImpl::StateImpl::EnableInputView() {
@@ -853,6 +852,14 @@ void InputMethodManagerImpl::StateImpl::DisableInputView() {
 
 const GURL& InputMethodManagerImpl::StateImpl::GetInputViewUrl() const {
   return input_view_url;
+}
+
+void InputMethodManagerImpl::StateImpl::ConnectMojoManager(
+    mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
+  if (!ime_service_connector_) {
+    ime_service_connector_ = std::make_unique<ImeServiceConnector>(profile);
+  }
+  ime_service_connector_->SetupImeService(std::move(receiver));
 }
 
 // ------------------------ InputMethodManagerImpl
@@ -910,19 +917,16 @@ InputMethodManagerImpl::InputMethodManagerImpl(
     bool enable_extension_loading)
     : delegate_(std::move(delegate)),
       ui_session_(STATE_LOGIN_SCREEN),
-      state_(NULL),
       util_(delegate_.get()),
       component_extension_ime_manager_(new ComponentExtensionIMEManager()),
       enable_extension_loading_(enable_extension_loading),
-      is_ime_menu_activated_(false),
       features_enabled_state_(InputMethodManager::FEATURE_ALL) {
   if (IsRunningAsSystemCompositor()) {
-    keyboard_ = std::make_unique<ImeKeyboardMus>(
-        g_browser_process->platform_part()->GetInputDeviceControllerClient());
+    keyboard_ = std::make_unique<ImeKeyboardImpl>(
+        ui::OzonePlatform::GetInstance()->GetInputController());
   } else {
-    keyboard_.reset(new FakeImeKeyboard());
+    keyboard_ = std::make_unique<FakeImeKeyboard>();
   }
-
   // Initializes the system IME list.
   std::unique_ptr<ComponentExtensionIMEManagerDelegate> comp_delegate(
       new ComponentExtensionIMEManagerImpl());
@@ -1157,6 +1161,12 @@ void InputMethodManagerImpl::ActivateInputMethodMenuItem(
   DVLOG(1) << "ActivateInputMethodMenuItem: unknown key: " << key;
 }
 
+void InputMethodManagerImpl::ConnectInputEngineManager(
+    mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
+  DCHECK(state_);
+  state_->ConnectMojoManager(std::move(receiver));
+}
+
 bool InputMethodManagerImpl::IsISOLevel5ShiftUsedByCurrentInputMethod() const {
   return keyboard_->IsISOLevel5ShiftAvailable();
 }
@@ -1364,16 +1374,13 @@ void InputMethodManagerImpl::NotifyObserversImeExtraInputStateChange() {
 
 ui::InputMethodKeyboardController*
 InputMethodManagerImpl::GetInputMethodKeyboardController() {
-  // TODO(stevenjb/shuchen): Fix this for Mash. https://crbug.com/756059
-  if (features::IsMultiProcessMash())
-    return nullptr;
   // Callers expect a nullptr when the keyboard is disabled. See
   // https://crbug.com/850020.
-  if (!keyboard::KeyboardController::HasInstance() ||
-      !keyboard::KeyboardController::Get()->IsEnabled()) {
+  if (!keyboard::KeyboardUIController::HasInstance() ||
+      !keyboard::KeyboardUIController::Get()->IsEnabled()) {
     return nullptr;
   }
-  return keyboard::KeyboardController::Get()
+  return keyboard::KeyboardUIController::Get()
       ->input_method_keyboard_controller();
 }
 

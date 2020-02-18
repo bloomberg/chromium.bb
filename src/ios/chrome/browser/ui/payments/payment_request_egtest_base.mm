@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 
 #import <EarlGrey/EarlGrey.h>
 
@@ -22,7 +21,6 @@
 #include "ios/chrome/browser/payments/ios_payment_request_cache_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/testing/nserror_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -36,6 +34,8 @@ namespace {
 // PersonalDataManager.
 const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
 }
+
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 @interface PaymentRequestEGTestBase () {
   // The PersonalDataManager instance for the current browser state.
@@ -84,35 +84,24 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
 
 #pragma mark - Public methods
 
-- (NSError*)addAutofillProfile:(const autofill::AutofillProfile&)profile {
+- (void)addAutofillProfile:(const autofill::AutofillProfile&)profile {
   _profiles.push_back(profile);
   size_t profile_count = [self personalDataManager]->GetProfiles().size();
   [self personalDataManager]->AddProfile(profile);
-  bool isProfileAdded = base::test::ios::WaitUntilConditionOrTimeout(
-      kPDMMaxDelaySeconds, ^bool() {
-        return profile_count <
-                   [self personalDataManager] -> GetProfiles().size();
-      });
-  if (!isProfileAdded) {
-    return testing::NSErrorWithLocalizedDescription(@"Failed to add profile.");
-  }
-  return nil;
+  bool profileAdded = WaitUntilConditionOrTimeout(kPDMMaxDelaySeconds, ^{
+    return profile_count < [self personalDataManager] -> GetProfiles().size();
+  });
+  GREYAssert(profileAdded, @"Failed to add profile.");
 }
 
-- (NSError*)addCreditCard:(const autofill::CreditCard&)card {
+- (void)addCreditCard:(const autofill::CreditCard&)card {
   _cards.push_back(card);
   size_t card_count = [self personalDataManager]->GetCreditCards().size();
   [self personalDataManager]->AddCreditCard(card);
-  bool isCreditCardAdded = base::test::ios::WaitUntilConditionOrTimeout(
-      kPDMMaxDelaySeconds, ^bool() {
-        return card_count <
-                   [self personalDataManager] -> GetCreditCards().size();
-      });
-  if (!isCreditCardAdded) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Failed to add credit card.");
-  }
-  return nil;
+  bool creditCardAdded = WaitUntilConditionOrTimeout(kPDMMaxDelaySeconds, ^{
+    return card_count < [self personalDataManager] -> GetCreditCards().size();
+  });
+  GREYAssert(creditCardAdded, @"Failed to add credit card.");
 }
 
 - (void)addServerCreditCard:(const autofill::CreditCard&)card {
@@ -130,8 +119,7 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
 
 - (void)waitForWebViewContainingTexts:(const std::vector<std::string>&)texts {
   for (const std::string& text : texts)
-    CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForWebStateContainingText:text]);
+    [ChromeEarlGrey waitForWebStateContainingText:text];
 }
 
 - (autofill::PersonalDataManager*)personalDataManager {
@@ -141,8 +129,11 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
 - (void)loadTestPage:(const std::string&)page {
   std::string fullPath = base::StringPrintf(
       "https://components/test/data/payments/%s", page.c_str());
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(fullPath)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(fullPath)];
+  // TODO(crbug.com/973440): Tests immediately tap on page elements without
+  // waiting for page to render. -drainUntilIdle call is incorrect (but
+  // functional) way to wait for page content.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
 - (void)payWithCreditCardUsingCVC:(NSString*)cvc {

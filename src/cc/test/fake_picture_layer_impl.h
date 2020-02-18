@@ -28,13 +28,6 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   static std::unique_ptr<FakePictureLayerImpl> CreateMask(
       LayerTreeImpl* tree_impl,
       int id) {
-    Layer::LayerMaskType mask_type = Layer::LayerMaskType::MULTI_TEXTURE_MASK;
-    return base::WrapUnique(new FakePictureLayerImpl(tree_impl, id, mask_type));
-  }
-
-  static std::unique_ptr<FakePictureLayerImpl> CreateSingleTextureMask(
-      LayerTreeImpl* tree_impl,
-      int id) {
     Layer::LayerMaskType mask_type = Layer::LayerMaskType::SINGLE_TEXTURE_MASK;
     return base::WrapUnique(new FakePictureLayerImpl(tree_impl, id, mask_type));
   }
@@ -66,16 +59,6 @@ class FakePictureLayerImpl : public PictureLayerImpl {
       LayerTreeImpl* tree_impl,
       int id,
       scoped_refptr<RasterSource> raster_source) {
-    Layer::LayerMaskType mask_type = Layer::LayerMaskType::MULTI_TEXTURE_MASK;
-    return base::WrapUnique(
-        new FakePictureLayerImpl(tree_impl, id, raster_source, mask_type));
-  }
-
-  static std::unique_ptr<FakePictureLayerImpl>
-  CreateSingleTextureMaskWithRasterSource(
-      LayerTreeImpl* tree_impl,
-      int id,
-      scoped_refptr<RasterSource> raster_source) {
     Layer::LayerMaskType mask_type = Layer::LayerMaskType::SINGLE_TEXTURE_MASK;
     return base::WrapUnique(
         new FakePictureLayerImpl(tree_impl, id, raster_source, mask_type));
@@ -85,7 +68,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   void PushPropertiesTo(LayerImpl* layer_impl) override;
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
-  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
+  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) override;
 
   void DidBecomeActive() override;
   size_t did_become_active_call_count() {
@@ -132,6 +115,8 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   RasterSource* raster_source() { return raster_source_.get(); }
   void SetRasterSourceOnPending(scoped_refptr<RasterSource> raster_source,
                                 const Region& invalidation);
+  void SetRasterSourceOnActive(scoped_refptr<RasterSource> raster_source,
+                               const Region& invalidation);
   size_t append_quads_count() { return append_quads_count_; }
 
   const Region& invalidation() const { return invalidation_; }

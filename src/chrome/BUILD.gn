@@ -6,7 +6,6 @@ import("//build/config/chrome_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/compiler/pgo/pgo.gni")
 import("//build/config/features.gni")
-import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/locales.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
@@ -35,6 +34,7 @@ if (is_android) {
 } else if (is_mac) {
   import("//build/compiled_action.gni")
   import("//build/config/mac/base_rules.gni")
+  import("//build/config/mac/mac_sdk.gni")
   import("//build/config/mac/rules.gni")
   import("//build/config/mac/symbols.gni")
   import("//build/mac/tweak_info_plist.gni")
@@ -170,7 +170,7 @@ if (!is_android && !is_mac) {
           "$root_out_dir/locales/en-US.pak",
           "$root_out_dir/locales/fr.pak",
         ]
-        if (enable_hidpi || enable_mus) {
+        if (enable_hidpi) {
           data += [ "$root_out_dir/chrome_200_percent.pak" ]
         }
       }
@@ -260,9 +260,14 @@ if (!is_android && !is_mac) {
           "/DELAYLOAD:wintrust.dll",
         ]
 
-        if (current_cpu == "x64") {
-          # Increase the initial stack size. The default is 1MB, this is 2MB.
-          ldflags += [ "/STACK:2097152" ]
+        if (current_cpu == "x86") {
+          # Increase the initial stack size. The default is 1MB, this is 1.5MB.
+          # To mitigate address space pressure, |CreateThreadInternal| sets the
+          # default back to 1MB for non-main threads.
+          ldflags += [ "/STACK:1572864" ]
+        } else {
+          # Increase the initial stack size. The default is 1MB, this is 8MB.
+          ldflags += [ "/STACK:8388608" ]
         }
       }
 
@@ -279,6 +284,9 @@ if (!is_android && !is_mac) {
           # Chromium functionality directly into the executable.
           ":browser_dependencies",
           ":child_dependencies",
+
+          # For the sampling profiler.
+          "//chrome/common/profiler",
 
           # Needed to use the master_preferences functions
           "//chrome/installer/util:with_no_strings",
@@ -326,6 +334,8 @@ if (!is_android && !is_mac) {
 
       if (is_chromeos) {
         data_deps += [ "//mojo/core:shared_libraries_for_arc" ]
+        configs += [ "//build/config/chromeos:print_orderfile" ]
+        configs += [ "//build/config/compiler:chrome_orderfile_config" ]
       }
 
       # These files are used by the installer so we need a public dep.
@@ -369,20 +379,6 @@ if (!is_android && !is_mac) {
       sources += [ "app/chrome_exe_main_aura.cc" ]
     }
   }
-
-  # TODO(jonross): remove this once telemetry can differentiate between linux
-  # and linux chromiumos.
-  if (enable_mus) {
-    chrome_binary("chrome_test") {
-      # Note that the output name needs to end with "chrome", because that's
-      # what telemetry test-runner expects.
-      output_name = "test_chrome"
-      sources = []
-      if (!is_win && use_aura) {
-        sources += [ "app/chrome_exe_main_aura.cc" ]
-      }
-    }
-  }
 }  # !is_android && !is_mac
 
 if (is_win) {
@@ -420,6 +416,7 @@ if (is_win) {
       "//chrome/app/theme:chrome_unscaled_resources",
       "//chrome/chrome_elf",
       "//chrome/common:buildflags",
+      "//chrome/common/profiler",
       "//chrome/install_static:install_static_util",
       "//chrome/install_static:secondary_module",
       "//components/crash/content/app",
@@ -427,7 +424,6 @@ if (is_win) {
       "//content/app/resources",
       "//content/public/common:service_names",
       "//crypto",
-      "//headless:headless_shell_browser_lib",
       "//net:net_resources",
       "//ppapi/buildflags",
       "//services/service_manager/embedder",
@@ -448,19 +444,16 @@ if (is_win) {
       "/DELAYLOAD:dbghelp.dll",
       "/DELAYLOAD:dhcpcsvc.dll",
       "/DELAYLOAD:dwmapi.dll",
-      "/DELAYLOAD:dwrite.dll",
       "/DELAYLOAD:dxgi.dll",
       "/DELAYLOAD:esent.dll",
       "/DELAYLOAD:gdi32.dll",
       "/DELAYLOAD:hid.dll",
       "/DELAYLOAD:imagehlp.dll",
       "/DELAYLOAD:imm32.dll",
-      "/DELAYLOAD:iphlpapi.dll",
       "/DELAYLOAD:msi.dll",
       "/DELAYLOAD:netapi32.dll",
       "/DELAYLOAD:ole32.dll",
       "/DELAYLOAD:oleacc.dll",
-      "/DELAYLOAD:oleaut32.dll",
       "/DELAYLOAD:ncrypt.dll",
       "/DELAYLOAD:propsys.dll",
       "/DELAYLOAD:psapi.dll",
@@ -477,15 +470,28 @@ if (is_win) {
       "/DELAYLOAD:wevtapi.dll",
       "/DELAYLOAD:winhttp.dll",
       "/DELAYLOAD:wininet.dll",
-      "/DELAYLOAD:winmm.dll",
       "/DELAYLOAD:winspool.drv",
       "/DELAYLOAD:wintrust.dll",
       "/DELAYLOAD:winusb.dll",
-      "/DELAYLOAD:ws2_32.dll",
       "/DELAYLOAD:wsock32.dll",
       "/DELAYLOAD:wtsapi32.dll",
       "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll",
     ]
+
+    if (is_multi_dll_chrome) {
+      ldflags += [
+        "/DELAYLOAD:dwrite.dll",
+        "/DELAYLOAD:iphlpapi.dll",
+        "/DELAYLOAD:oleaut32.dll",
+        "/DELAYLOAD:winmm.dll",
+        "/DELAYLOAD:ws2_32.dll",
+      ]
+    } else {
+      ldflags += [
+        "/DELAYLOAD:dxva2.dll",
+        "/DELAYLOAD:rstrtmgr.dll",
+      ]
+    }
 
     if (!is_component_build) {
       # This is a large module that can't do incremental linking in some
@@ -501,7 +507,10 @@ if (is_win) {
 
     if (is_multi_dll_chrome) {
       defines += [ "CHROME_MULTIPLE_DLL_BROWSER" ]
-      deps += [ "//content/public/app:browser" ]
+      deps += [
+        "//content/public/app:browser",
+        "//headless:headless_shell_browser_lib",
+      ]
       assert_no_deps = [
         # The browser DLL may not depend on blink or v8.
         "//third_party/blink/public:blink",
@@ -515,24 +524,11 @@ if (is_win) {
       deps += [
         ":child_dependencies",
         "//content/public/app:both",
+        "//headless:headless_shell_lib",
       ]
     }
 
-    if (is_clang && is_official_build) {
-      orderfile = "build/chrome.$target_cpu.orderfile"
-      rebased_orderfile = rebase_path(orderfile, root_build_dir)
-      inputs = [
-        orderfile,
-      ]
-      ldflags += [
-        "/order:@$rebased_orderfile",
-
-        # Ignore warnings about missing functions or functions not in their
-        # own section.
-        "/ignore:4037",
-        "/ignore:4065",
-      ]
-    }
+    configs += [ "//build/config/compiler:chrome_orderfile_config" ]
   }
 
   if (is_multi_dll_chrome) {
@@ -560,6 +556,7 @@ if (is_win) {
         "//chrome/browser/policy:path_parser",
         "//chrome/chrome_elf",
         "//chrome/common:buildflags",
+        "//chrome/common/profiler",
         "//chrome/install_static:install_static_util",
         "//chrome/install_static:secondary_module",
         "//components/browser_watcher:browser_watcher_client",
@@ -1241,6 +1238,7 @@ if (is_win) {
       ":child_dependencies",
       "//chrome/app:command_ids",
       "//chrome/common:buildflags",
+      "//chrome/common/profiler",
       "//components/crash/content/app",
       "//components/policy:generated",
       "//content/public/app:both",
@@ -1327,7 +1325,7 @@ if (is_win) {
     if (is_component_build) {
       ldflags += [
         "-rpath",
-        "@loader_path/../../../../../../../..",
+        "@loader_path/../../../../../..",
         "-Wl,-reexport_library,libchrome_dll.dylib",
       ]
 
@@ -1353,16 +1351,10 @@ if (is_win) {
         "--stamp",
         rebase_path(stamp_file, root_out_dir),
       ]
-      if (!use_system_xcode) {
-        args += [
-          "--developer_dir",
-          hermetic_xcode_path,
-        ]
-      }
-
       args += [
         "_ChromeMain",
         rebase_path(_framework_binary_path, root_out_dir),
+        mac_bin_path,
       ]
       outputs = [
         stamp_file,
@@ -1487,7 +1479,7 @@ group("browser_dependencies") {
     "//chrome/common",
     "//components/gwp_asan/buildflags",
     "//components/sync",
-    "//components/tracing",
+    "//services/tracing/public/cpp",
   ]
   if (enable_plugins) {
     public_deps += [ "//ppapi/host" ]
@@ -1500,7 +1492,7 @@ group("browser_dependencies") {
     }
   }
 
-  if (enable_gwp_asan_malloc || enable_gwp_asan_partitionalloc) {
+  if (enable_gwp_asan) {
     public_deps += [ "//components/gwp_asan/client" ]
   }
 
@@ -1535,10 +1527,9 @@ group("child_dependencies") {
     "//chrome/utility",
     "//components/gwp_asan/buildflags",
     "//components/services/heap_profiling",
-    "//components/sync",
-    "//components/tracing",
     "//content/public/child",
     "//pdf",
+    "//services/tracing/public/cpp",
     "//third_party/blink/public:blink_devtools_frontend_resources",
   ]
 
@@ -1546,7 +1537,7 @@ group("child_dependencies") {
     public_deps += [ "//components/nacl/renderer/plugin:nacl_trusted_plugin" ]
   }
 
-  if (enable_gwp_asan_malloc || enable_gwp_asan_partitionalloc) {
+  if (enable_gwp_asan) {
     public_deps += [ "//components/gwp_asan/client" ]
   }
 
@@ -1645,6 +1636,7 @@ group("extra_resources") {
     "//chrome/browser/resources:net_internals_resources",
     "//chrome/browser/resources:quota_internals_resources",
     "//chrome/browser/resources:webapks_ui_resources",
+    "//components/autofill/core/browser:autofill_address_rewriter_resources",
   ]
 
   if (!is_android) {
@@ -1661,6 +1653,7 @@ group("extra_resources") {
       "//chrome/browser/resources:os_settings_resources",
       "//chrome/browser/resources/chromeos:cellular_setup_resources",
       "//chrome/browser/resources/chromeos:multidevice_setup_resources",
+      "//chrome/browser/resources/chromeos/autoclick:build",
       "//chrome/browser/resources/chromeos/chromevox",
       "//chrome/browser/resources/chromeos/select_to_speak:build",
       "//chrome/browser/resources/chromeos/switch_access:build",
@@ -1787,7 +1780,7 @@ if (is_android) {
 
   java_cpp_enum("signin_metrics_enum_javagen") {
     sources = [
-      "../components/signin/core/browser/signin_metrics.h",
+      "../components/signin/public/base/signin_metrics.h",
     ]
   }
 
@@ -1869,19 +1862,22 @@ if (is_android) {
       "jnigraphics",
     ]
 
-    deps = [
+    public_deps = [
       "//chrome/browser",
+      "//chrome/utility",
+    ]
+
+    deps = [
       "//chrome/browser/ui",
       "//chrome/child",
       "//chrome/common",
+      "//chrome/common/profiler",
       "//chrome/gpu",
       "//chrome/renderer",
-      "//chrome/utility",
       "//components/gwp_asan/buildflags",
       "//components/minidump_uploader",
       "//components/safe_browsing/android:safe_browsing_mobile",
       "//components/services/heap_profiling",
-      "//components/tracing",
       "//content/public/app:both",
       "//content/public/common:service_names",
       "//services/service_manager/embedder",
@@ -1901,7 +1897,7 @@ if (is_android) {
       deps += [ "//third_party/gvr-android-sdk:gvr_shim" ]
     }
 
-    if (enable_gwp_asan_malloc || enable_gwp_asan_partitionalloc) {
+    if (enable_gwp_asan) {
       deps += [ "//components/gwp_asan/client" ]
     }
   }

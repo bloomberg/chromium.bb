@@ -223,11 +223,17 @@ FeatureInfo::FeatureInfo(
       gpu::kGpuFeatureStatusEnabled;
 
 #if defined(OS_CHROMEOS)
-  feature_flags_.chromium_image_ycbcr_420v = base::ContainsValue(
+  feature_flags_.chromium_image_ycbcr_420v = base::Contains(
       gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
       gfx::BufferFormat::YUV_420_BIPLANAR);
 #elif defined(OS_MACOSX)
   feature_flags_.chromium_image_ycbcr_420v = true;
+#endif
+
+#if defined(OS_CHROMEOS)
+  feature_flags_.chromium_image_ycbcr_p010 = base::Contains(
+      gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
+      gfx::BufferFormat::P010);
 #endif
 }
 
@@ -1029,11 +1035,9 @@ void FeatureInfo::InitializeFeatures() {
     validators_.g_l_state.AddValue(GL_TEXTURE_BINDING_EXTERNAL_OES);
   }
 
-  // TODO(kainino): If we add a way to query whether ANGLE is exposing
-  // native support for ETC1 textures, require that here. Otherwise, we could
-  // co-opt the native-ETC2-support query discussed below.
-  if (gfx::HasExtension(extensions, "GL_OES_compressed_ETC1_RGB8_texture") &&
-      !gl_version_info_->is_angle) {
+  // ANGLE only exposes this extension when it has native support of the
+  // GL_ETC1_RGB8 format.
+  if (gfx::HasExtension(extensions, "GL_OES_compressed_ETC1_RGB8_texture")) {
     AddExtensionString("GL_OES_compressed_ETC1_RGB8_texture");
     feature_flags_.oes_compressed_etc1_rgb8_texture = true;
     validators_.compressed_texture_format.AddValue(GL_ETC1_RGB8_OES);
@@ -1141,6 +1145,11 @@ void FeatureInfo::InitializeFeatures() {
   if (feature_flags_.chromium_image_xb30) {
     feature_flags_.gpu_memory_buffer_formats.Add(
         gfx::BufferFormat::RGBX_1010102);
+  }
+
+  if (feature_flags_.chromium_image_ycbcr_p010) {
+    AddExtensionString("GL_CHROMIUM_ycbcr_p010_image");
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::P010);
   }
 
   // TODO(gman): Add support for these extensions.
@@ -1492,12 +1501,6 @@ void FeatureInfo::InitializeFeatures() {
       gfx::HasExtension(extensions, "GL_ANGLE_request_extension");
   feature_flags_.ext_debug_marker =
       gfx::HasExtension(extensions, "GL_EXT_debug_marker");
-  feature_flags_.arb_robustness =
-      gfx::HasExtension(extensions, "GL_ARB_robustness");
-  feature_flags_.khr_robustness =
-      gfx::HasExtension(extensions, "GL_KHR_robustness");
-  feature_flags_.ext_robustness =
-      gfx::HasExtension(extensions, "GL_EXT_robustness");
   feature_flags_.ext_pixel_buffer_object =
       gfx::HasExtension(extensions, "GL_ARB_pixel_buffer_object") ||
       gfx::HasExtension(extensions, "GL_NV_pixel_buffer_object");
@@ -1680,8 +1683,9 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
     }
   }
 
-  // Assume all desktop (!gl_version_info_->is_es) supports float blend
-  if (!gl_version_info_->is_es ||
+  // Assume all desktop (!gl_version_info_->is_es) supports float blend.
+  // Floating-point format blending is core of ES 3.2.
+  if (!gl_version_info_->is_es || gl_version_info_->IsAtLeastGLES(3, 2) ||
       gfx::HasExtension(extensions, "GL_EXT_float_blend")) {
     if (!disallowed_features_.ext_float_blend) {
       EnableEXTFloatBlend();

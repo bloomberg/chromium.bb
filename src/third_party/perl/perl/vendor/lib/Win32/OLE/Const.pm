@@ -12,9 +12,9 @@ sub _Typelib {
     # Filenames might have a resource index appended to it.
     $filename = $1 if $filename =~ /^(.*\.(?:dll|exe))(\\\d+)$/i;
     # Ignore if it looks like a file but doesn't exist.
-    # We don't verify existance of monikers or filenames
+    # We don't verify existence of monikers or filenames
     # without a full pathname.
-    return unless -f $filename || $filename !~ /^\w:\\.*\.(exe|dll)$/;
+    return if $filename =~ /^\w:\\.*\.(exe|dll)$/ && !-f $filename;
     push @$Typelibs, \@_;
 }
 unless (__PACKAGE__->_Typelibs("TypeLib")) {
@@ -157,7 +157,7 @@ constant definitions.
 
 The parameters are the same as for the C<use> case.
 
-This method is generally preferrable when the typelib uses a non-english
+This method is generally preferable when the typelib uses a non-english
 language and the constant names contain locale specific characters not
 allowed in Perl variable names.
 

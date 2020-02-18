@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
@@ -136,8 +136,8 @@ extern "C"{
   public:
     virtual HRESULT WINAPI GetCollection(BSTR bstrCollName,IDispatch **ppCatalogCollection) = 0;
     virtual HRESULT WINAPI Connect(BSTR bstrConnectString,IDispatch **ppCatalogCollection) = 0;
-    virtual HRESULT WINAPI get_MajorVersion(long *retval) = 0;
-    virtual HRESULT WINAPI get_MinorVersion(long *retval) = 0;
+    virtual HRESULT WINAPI get_MajorVersion(__LONG32 *retval) = 0;
+    virtual HRESULT WINAPI get_MinorVersion(__LONG32 *retval) = 0;
   };
 #else
   typedef struct ICatalogVtbl {
@@ -151,8 +151,8 @@ extern "C"{
       HRESULT (WINAPI *Invoke)(ICatalog *This,DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,EXCEPINFO *pExcepInfo,UINT *puArgErr);
       HRESULT (WINAPI *GetCollection)(ICatalog *This,BSTR bstrCollName,IDispatch **ppCatalogCollection);
       HRESULT (WINAPI *Connect)(ICatalog *This,BSTR bstrConnectString,IDispatch **ppCatalogCollection);
-      HRESULT (WINAPI *get_MajorVersion)(ICatalog *This,long *retval);
-      HRESULT (WINAPI *get_MinorVersion)(ICatalog *This,long *retval);
+      HRESULT (WINAPI *get_MajorVersion)(ICatalog *This,__LONG32 *retval);
+      HRESULT (WINAPI *get_MinorVersion)(ICatalog *This,__LONG32 *retval);
     END_INTERFACE
   } ICatalogVtbl;
   struct ICatalog {
@@ -176,9 +176,9 @@ extern "C"{
   void __RPC_STUB ICatalog_GetCollection_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
   HRESULT WINAPI ICatalog_Connect_Proxy(ICatalog *This,BSTR bstrConnectString,IDispatch **ppCatalogCollection);
   void __RPC_STUB ICatalog_Connect_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI ICatalog_get_MajorVersion_Proxy(ICatalog *This,long *retval);
+  HRESULT WINAPI ICatalog_get_MajorVersion_Proxy(ICatalog *This,__LONG32 *retval);
   void __RPC_STUB ICatalog_get_MajorVersion_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI ICatalog_get_MinorVersion_Proxy(ICatalog *This,long *retval);
+  HRESULT WINAPI ICatalog_get_MinorVersion_Proxy(ICatalog *This,__LONG32 *retval);
   void __RPC_STUB ICatalog_get_MinorVersion_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
 #endif
 
@@ -242,8 +242,8 @@ extern "C"{
 #if defined(__cplusplus) && !defined(CINTERFACE)
   struct IPackageUtil : public IDispatch {
   public:
-    virtual HRESULT WINAPI InstallPackage(BSTR bstrPackageFile,BSTR bstrInstallPath,long lOptions) = 0;
-    virtual HRESULT WINAPI ExportPackage(BSTR bstrPackageID,BSTR bstrPackageFile,long lOptions) = 0;
+    virtual HRESULT WINAPI InstallPackage(BSTR bstrPackageFile,BSTR bstrInstallPath,__LONG32 lOptions) = 0;
+    virtual HRESULT WINAPI ExportPackage(BSTR bstrPackageID,BSTR bstrPackageFile,__LONG32 lOptions) = 0;
     virtual HRESULT WINAPI ShutdownPackage(BSTR bstrPackageID) = 0;
   };
 #else
@@ -256,8 +256,8 @@ extern "C"{
       HRESULT (WINAPI *GetTypeInfo)(IPackageUtil *This,UINT iTInfo,LCID lcid,ITypeInfo **ppTInfo);
       HRESULT (WINAPI *GetIDsOfNames)(IPackageUtil *This,REFIID riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId);
       HRESULT (WINAPI *Invoke)(IPackageUtil *This,DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,EXCEPINFO *pExcepInfo,UINT *puArgErr);
-      HRESULT (WINAPI *InstallPackage)(IPackageUtil *This,BSTR bstrPackageFile,BSTR bstrInstallPath,long lOptions);
-      HRESULT (WINAPI *ExportPackage)(IPackageUtil *This,BSTR bstrPackageID,BSTR bstrPackageFile,long lOptions);
+      HRESULT (WINAPI *InstallPackage)(IPackageUtil *This,BSTR bstrPackageFile,BSTR bstrInstallPath,__LONG32 lOptions);
+      HRESULT (WINAPI *ExportPackage)(IPackageUtil *This,BSTR bstrPackageID,BSTR bstrPackageFile,__LONG32 lOptions);
       HRESULT (WINAPI *ShutdownPackage)(IPackageUtil *This,BSTR bstrPackageID);
     END_INTERFACE
   } IPackageUtilVtbl;
@@ -277,9 +277,9 @@ extern "C"{
 #define IPackageUtil_ShutdownPackage(This,bstrPackageID) (This)->lpVtbl->ShutdownPackage(This,bstrPackageID)
 #endif
 #endif
-  HRESULT WINAPI IPackageUtil_InstallPackage_Proxy(IPackageUtil *This,BSTR bstrPackageFile,BSTR bstrInstallPath,long lOptions);
+  HRESULT WINAPI IPackageUtil_InstallPackage_Proxy(IPackageUtil *This,BSTR bstrPackageFile,BSTR bstrInstallPath,__LONG32 lOptions);
   void __RPC_STUB IPackageUtil_InstallPackage_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI IPackageUtil_ExportPackage_Proxy(IPackageUtil *This,BSTR bstrPackageID,BSTR bstrPackageFile,long lOptions);
+  HRESULT WINAPI IPackageUtil_ExportPackage_Proxy(IPackageUtil *This,BSTR bstrPackageID,BSTR bstrPackageFile,__LONG32 lOptions);
   void __RPC_STUB IPackageUtil_ExportPackage_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
   HRESULT WINAPI IPackageUtil_ShutdownPackage_Proxy(IPackageUtil *This,BSTR bstrPackageID);
   void __RPC_STUB IPackageUtil_ShutdownPackage_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
@@ -385,25 +385,25 @@ extern "C"{
   } MTSPackageExportOptions;
 
   typedef enum __MIDL___MIDL_itf_mtsadmin_0123_0003 {
-    mtsErrObjectErrors = (HRESULT)0x80110401L,mtsErrObjectInvalid = (HRESULT)0x80110402L,mtsErrKeyMissing = (HRESULT)0x80110403L,
-    mtsErrAlreadyInstalled = (HRESULT)0x80110404L,mtsErrDownloadFailed = 0x80110405,mtsErrPDFWriteFail = (HRESULT)0x80110407L,
-    mtsErrPDFReadFail = (HRESULT)0x80110408L,mtsErrPDFVersion = (HRESULT)0x80110409L,mtsErrBadPath = (HRESULT)0x8011040aL,
-    mtsErrPackageExists = (HRESULT)0x8011040bL,mtsErrRoleExists = (HRESULT)0x8011040cL,mtsErrCantCopyFile = (HRESULT)0x8011040dL,
-    mtsErrNoTypeLib = 0x8011040e,mtsErrNoUser = (HRESULT)0x8011040fL,mtsErrInvalidUserids = (HRESULT)0x80110410L,
-    mtsErrNoRegistryCLSID = (HRESULT)0x80110411L,mtsErrBadRegistryProgID = (HRESULT)0x80110412L,mtsErrAuthenticationLevel = (HRESULT)0x80110413L,
-    mtsErrUserPasswdNotValid = (HRESULT)0x80110414L,mtsErrNoRegistryRead = 0x80110415,mtsErrNoRegistryWrite = 0x80110416,
-    mtsErrNoRegistryRepair = 0x80110417,mtsErrCLSIDOrIIDMismatch = (HRESULT)0x80110418L,mtsErrRemoteInterface = (HRESULT)0x80110419L,
-    mtsErrDllRegisterServer = (HRESULT)0x8011041aL,mtsErrNoServerShare = (HRESULT)0x8011041bL,mtsErrNoAccessToUNC = 0x8011041c,
-    mtsErrDllLoadFailed = (HRESULT)0x8011041dL,mtsErrBadRegistryLibID = (HRESULT)0x8011041eL,mtsErrPackDirNotFound = (HRESULT)0x8011041fL,
-    mtsErrTreatAs = 0x80110420,mtsErrBadForward = 0x80110421,mtsErrBadIID = 0x80110422,mtsErrRegistrarFailed = (HRESULT)0x80110423L,
-    mtsErrCompFileDoesNotExist = (HRESULT)0x80110424L,mtsErrCompFileLoadDLLFail = (HRESULT)0x80110425L,mtsErrCompFileGetClassObj = (HRESULT)0x80110426L,
-    mtsErrCompFileClassNotAvail = (HRESULT)0x80110427L,mtsErrCompFileBadTLB = (HRESULT)0x80110428L,mtsErrCompFileNotInstallable = (HRESULT)0x80110429L,
-    mtsErrNotChangeable = (HRESULT)0x8011042aL,mtsErrNotDeletable = (HRESULT)0x8011042bL,mtsErrSession = (HRESULT)0x8011042cL,
-    mtsErrCompMoveLocked = (HRESULT)0x8011042dL,mtsErrCompMoveBadDest = (HRESULT)0x8011042eL,mtsErrRegisterTLB = (HRESULT)0x80110430L,
-    mtsErrSystemPack = (HRESULT)0x80110433L,mtsErrCompFileNoRegistrar = (HRESULT)0x80110434L,mtsErrCoReqCompInstalled = (HRESULT)0x80110435L,
-    mtsErrPropSaveFailed = (HRESULT)0x80110437L,mtsErrObjectExists = (HRESULT)0x80110438L,mtsErrRegFileCorrupt = (HRESULT)0x8011043bL,
-    mtsErrPropertyOverflow = (HRESULT)0x8011043cL,mtsErrNotInRegistry = (HRESULT)0x8011043eL,mtsErrApplidMatchesClsid = (HRESULT)0x80110446L,
-    mtsErrRoleDoesNotExist = (HRESULT)0x80110447L,mtsErrObjectParentMissing = (HRESULT)0x80110808L,mtsErrObjectDoesNotExist = (HRESULT)0x80110809L,
+    mtsErrObjectErrors = (HRESULT)0x80110401,mtsErrObjectInvalid = (HRESULT)0x80110402,mtsErrKeyMissing = (HRESULT)0x80110403,
+    mtsErrAlreadyInstalled = (HRESULT)0x80110404,mtsErrDownloadFailed = 0x80110405,mtsErrPDFWriteFail = (HRESULT)0x80110407,
+    mtsErrPDFReadFail = (HRESULT)0x80110408,mtsErrPDFVersion = (HRESULT)0x80110409,mtsErrBadPath = (HRESULT)0x8011040a,
+    mtsErrPackageExists = (HRESULT)0x8011040b,mtsErrRoleExists = (HRESULT)0x8011040c,mtsErrCantCopyFile = (HRESULT)0x8011040d,
+    mtsErrNoTypeLib = 0x8011040e,mtsErrNoUser = (HRESULT)0x8011040f,mtsErrInvalidUserids = (HRESULT)0x80110410,
+    mtsErrNoRegistryCLSID = (HRESULT)0x80110411,mtsErrBadRegistryProgID = (HRESULT)0x80110412,mtsErrAuthenticationLevel = (HRESULT)0x80110413,
+    mtsErrUserPasswdNotValid = (HRESULT)0x80110414,mtsErrNoRegistryRead = 0x80110415,mtsErrNoRegistryWrite = 0x80110416,
+    mtsErrNoRegistryRepair = 0x80110417,mtsErrCLSIDOrIIDMismatch = (HRESULT)0x80110418,mtsErrRemoteInterface = (HRESULT)0x80110419,
+    mtsErrDllRegisterServer = (HRESULT)0x8011041a,mtsErrNoServerShare = (HRESULT)0x8011041b,mtsErrNoAccessToUNC = 0x8011041c,
+    mtsErrDllLoadFailed = (HRESULT)0x8011041d,mtsErrBadRegistryLibID = (HRESULT)0x8011041e,mtsErrPackDirNotFound = (HRESULT)0x8011041f,
+    mtsErrTreatAs = 0x80110420,mtsErrBadForward = 0x80110421,mtsErrBadIID = 0x80110422,mtsErrRegistrarFailed = (HRESULT)0x80110423,
+    mtsErrCompFileDoesNotExist = (HRESULT)0x80110424,mtsErrCompFileLoadDLLFail = (HRESULT)0x80110425,mtsErrCompFileGetClassObj = (HRESULT)0x80110426,
+    mtsErrCompFileClassNotAvail = (HRESULT)0x80110427,mtsErrCompFileBadTLB = (HRESULT)0x80110428,mtsErrCompFileNotInstallable = (HRESULT)0x80110429,
+    mtsErrNotChangeable = (HRESULT)0x8011042a,mtsErrNotDeletable = (HRESULT)0x8011042b,mtsErrSession = (HRESULT)0x8011042c,
+    mtsErrCompMoveLocked = (HRESULT)0x8011042d,mtsErrCompMoveBadDest = (HRESULT)0x8011042e,mtsErrRegisterTLB = (HRESULT)0x80110430,
+    mtsErrSystemPack = (HRESULT)0x80110433,mtsErrCompFileNoRegistrar = (HRESULT)0x80110434,mtsErrCoReqCompInstalled = (HRESULT)0x80110435,
+    mtsErrPropSaveFailed = (HRESULT)0x80110437,mtsErrObjectExists = (HRESULT)0x80110438,mtsErrRegFileCorrupt = (HRESULT)0x8011043b,
+    mtsErrPropertyOverflow = (HRESULT)0x8011043c,mtsErrNotInRegistry = (HRESULT)0x8011043e,mtsErrApplidMatchesClsid = (HRESULT)0x80110446,
+    mtsErrRoleDoesNotExist = (HRESULT)0x80110447,mtsErrObjectParentMissing = (HRESULT)0x80110808,mtsErrObjectDoesNotExist = (HRESULT)0x80110809,
     mtsErrCanNotExportAppProxy = 0x8011044a,mtsErrCanNotExportSystemPack = 0x8011044c
   };
 
@@ -499,14 +499,14 @@ extern "C"{
 #endif
 #endif
 
-  unsigned long __RPC_API BSTR_UserSize(unsigned long *,unsigned long,BSTR *);
-  unsigned char *__RPC_API BSTR_UserMarshal(unsigned long *,unsigned char *,BSTR *);
-  unsigned char *__RPC_API BSTR_UserUnmarshal(unsigned long *,unsigned char *,BSTR *);
-  void __RPC_API BSTR_UserFree(unsigned long *,BSTR *);
-  unsigned long __RPC_API LPSAFEARRAY_UserSize(unsigned long *,unsigned long,LPSAFEARRAY *);
-  unsigned char *__RPC_API LPSAFEARRAY_UserMarshal(unsigned long *,unsigned char *,LPSAFEARRAY *);
-  unsigned char *__RPC_API LPSAFEARRAY_UserUnmarshal(unsigned long *,unsigned char *,LPSAFEARRAY *);
-  void __RPC_API LPSAFEARRAY_UserFree(unsigned long *,LPSAFEARRAY *);
+  ULONG __RPC_API BSTR_UserSize(ULONG *,ULONG,BSTR *);
+  unsigned char *__RPC_API BSTR_UserMarshal(ULONG *,unsigned char *,BSTR *);
+  unsigned char *__RPC_API BSTR_UserUnmarshal(ULONG *,unsigned char *,BSTR *);
+  void __RPC_API BSTR_UserFree(ULONG *,BSTR *);
+  ULONG __RPC_API LPSAFEARRAY_UserSize(ULONG *,ULONG,LPSAFEARRAY *);
+  unsigned char *__RPC_API LPSAFEARRAY_UserMarshal(ULONG *,unsigned char *,LPSAFEARRAY *);
+  unsigned char *__RPC_API LPSAFEARRAY_UserUnmarshal(ULONG *,unsigned char *,LPSAFEARRAY *);
+  void __RPC_API LPSAFEARRAY_UserFree(ULONG *,LPSAFEARRAY *);
 
 #ifdef __cplusplus
 }

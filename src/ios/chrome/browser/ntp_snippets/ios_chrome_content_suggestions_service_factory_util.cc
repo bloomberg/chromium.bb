@@ -34,6 +34,7 @@
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service_impl.h"
 #include "components/ntp_snippets/user_classifier.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/version_info/version_info.h"
 #include "google_apis/google_api_keys.h"
 #include "ios/chrome/browser/application_context.h"
@@ -99,7 +100,7 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
       base::DefaultClock::GetInstance());
 
   // Create the ContentSuggestionsService.
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(chrome_browser_state);
   HistoryService* history_service =
       ios::HistoryServiceFactory::GetForBrowserState(
@@ -121,7 +122,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(browser_state);
   PrefService* prefs = chrome_browser_state->GetPrefs();
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(chrome_browser_state);
   scoped_refptr<net::URLRequestContextGetter> request_context =
       browser_state->GetRequestContext();

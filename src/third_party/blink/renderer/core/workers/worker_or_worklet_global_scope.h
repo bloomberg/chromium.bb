@@ -7,7 +7,7 @@
 
 #include <bitset>
 #include "base/single_thread_task_runner.h"
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -46,6 +46,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   WorkerOrWorkletGlobalScope(
       v8::Isolate*,
+      scoped_refptr<SecurityOrigin> origin,
       Agent* agent,
       OffMainThreadWorkerScriptFetchOption,
       const String& name,
@@ -73,9 +74,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   bool IsJSExecutionForbidden() const final;
   void DisableEval(const String& error_message) final;
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
-
-  // SecurityContext
-  void DidUpdateSecurityOrigin() final {}
 
   // Returns true when the WorkerOrWorkletGlobalScope is closing (e.g. via
   // WorkerGlobalScope#close() method). If this returns true, the worker is
@@ -143,6 +141,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
     return off_main_thread_fetch_option_;
   }
 
+  void ApplySandboxFlags(SandboxFlags mask);
+
  protected:
   // Sets outside's CSP used for off-main-thread top-level worker script
   // fetch.
@@ -156,7 +156,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
                          const FetchClientSettingsObjectSnapshot&,
                          WorkerResourceTimingNotifier&,
                          mojom::RequestContextType destination,
-                         network::mojom::FetchCredentialsMode,
+                         network::mojom::CredentialsMode,
                          ModuleScriptCustomFetchType,
                          ModuleTreeClient*);
 

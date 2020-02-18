@@ -24,11 +24,11 @@
 #include <mutex>
 #include <vector>
 
-#include "perfetto/base/weak_ptr.h"
-#include "perfetto/tracing/core/basic_types.h"
-#include "perfetto/tracing/core/shared_memory_abi.h"
-#include "perfetto/tracing/core/shared_memory_arbiter.h"
-#include "perfetto/tracing/core/startup_trace_writer_registry.h"
+#include "perfetto/ext/base/weak_ptr.h"
+#include "perfetto/ext/tracing/core/basic_types.h"
+#include "perfetto/ext/tracing/core/shared_memory_abi.h"
+#include "perfetto/ext/tracing/core/shared_memory_arbiter.h"
+#include "perfetto/ext/tracing/core/startup_trace_writer_registry.h"
 #include "src/tracing/core/id_allocator.h"
 
 namespace perfetto {
@@ -50,26 +50,19 @@ class TaskRunner;
 // current thread-local chunk.
 class SharedMemoryArbiterImpl : public SharedMemoryArbiter {
  public:
-  // Args:
-  // |start|,|size|: boundaries of the shared memory buffer.
-  // |page_size|: a multiple of 4KB that defines the granularity of tracing
-  // pages. See tradeoff considerations in shared_memory_abi.h.
-  // |OnPagesCompleteCallback|: a callback that will be posted on the passed
-  // |TaskRunner| when one or more pages are complete (and hence the Producer
-  // should send a CommitData request to the Service).
-  // |TaskRunner|: Task runner for perfetto's main thread, which executes the
-  // OnPagesCompleteCallback and IPC calls to the |ProducerEndpoint|.
+  // See SharedMemoryArbiter::CreateInstance(). |start|, |size| define the
+  // boundaries of the shared memory buffer.
   SharedMemoryArbiterImpl(void* start,
                           size_t size,
                           size_t page_size,
                           TracingService::ProducerEndpoint*,
                           base::TaskRunner*);
 
-  // Returns a new Chunk to write tracing data. The call always returns a valid
-  // Chunk. TODO(primiano): right now this blocks if there are no free chunks
-  // in the SMB. In the long term the caller should be allowed to pick a policy
-  // and handle the retry itself asynchronously.
+  // Returns a new Chunk to write tracing data. Depending on the provided
+  // BufferExhaustedPolicy, this may return an invalid chunk if no valid free
+  // chunk could be found in the SMB.
   SharedMemoryABI::Chunk GetNewChunk(const SharedMemoryABI::ChunkHeader&,
+                                     BufferExhaustedPolicy,
                                      size_t size_hint = 0);
 
   // Puts back a Chunk that has been completed and sends a request to the
@@ -104,12 +97,21 @@ class SharedMemoryArbiterImpl : public SharedMemoryArbiter {
   // SharedMemoryArbiter implementation.
   // See include/perfetto/tracing/core/shared_memory_arbiter.h for comments.
   std::unique_ptr<TraceWriter> CreateTraceWriter(
-      BufferID target_buffer) override;
+      BufferID target_buffer,
+      BufferExhaustedPolicy = BufferExhaustedPolicy::kDefault) override;
   void BindStartupTraceWriterRegistry(
       std::unique_ptr<StartupTraceWriterRegistry>,
       BufferID target_buffer) override;
 
   void NotifyFlushComplete(FlushRequestID) override;
+
+  base::TaskRunner* task_runner() const { return task_runner_; }
+  size_t page_size() const { return shmem_abi_.page_size(); }
+  size_t num_pages() const { return shmem_abi_.num_pages(); }
+
+  base::WeakPtr<SharedMemoryArbiterImpl> GetWeakPtr() const {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
  private:
   friend class TraceWriterImpl;

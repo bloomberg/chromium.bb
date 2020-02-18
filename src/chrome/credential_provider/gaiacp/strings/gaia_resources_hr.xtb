@@ -8,8 +8,11 @@
 <translation id="2469311484561825731">Prijava na radni račun nije uspjela. Provjerite je li računalo povezano s internetom i pokušajte ponovo.</translation>
 <translation id="2595469428674600431">Žao nam je, nije bilo moguće potvrditi vašu zaporku za Windows. Pokušajte ponovo.</translation>
 <translation id="3306357053520292004">Na ovom je računalu već dodan korisnik pomoću tog. Prijavite se nekim drugim računom.</translation>
+<translation id="3643125608647220913">Nije moguće učitati zaslon Prijave Google računom. Obratite se administratoru.</translation>
 <translation id="369030246015333661">Vaš je račun zaključan. Obratite se administratoru sustava.</translation>
+<translation id="3968372833844047539">Prijava je dopuštena samo poslovnim korisnicima Gsuitea.</translation>
 <translation id="4057329986137569701">Došlo je do interne pogreške.</translation>
+<translation id="4267670563222825190">Za vaš račun nije pronađen nijedan korisnik domene. Obratite se administratoru.</translation>
 <translation id="4300229033992784001">Promijenjena je zaporka vašeg računa. Unesite svoju trenutačnu zaporku za Windows kako biste sinkronizirali svoj Windows račun s radnim računom.</translation>
 <translation id="4706454071748629324">Dodavanje novog korisnika nije uspjelo. Ovo računalo dopušta izradu samo jednog korisnika s radnim računom.</translation>
 <translation id="6292766200512304540">Korisnik izrađen iz radnog računa</translation>
@@ -21,6 +24,7 @@
 <translation id="7385169832667457493">Zaporka za Windows</translation>
 <translation id="7536769223115622137">Dodaj radni račun</translation>
 <translation id="7856245195110636219">Ne možete nastaviti bez unošenja trenutačne zaporke za Windows. Obratite se administratoru sustava.</translation>
+<translation id="7996763357529480810">Prijavite se poslovnim računom za GSuite</translation>
 <translation id="8474372283141585908">Google davatelj vjerodajnica</translation>
 <translation id="8639729688781680518">Zaboravili ste zaporku za Windows</translation>
 <translation id="866458870819756755">Izrada korisnika nije uspjela</translation>

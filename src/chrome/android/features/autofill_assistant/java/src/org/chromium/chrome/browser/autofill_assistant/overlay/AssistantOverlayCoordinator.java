@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.autofill_assistant.overlay;
 import android.graphics.RectF;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
@@ -20,19 +19,19 @@ import java.util.List;
  */
 public class AssistantOverlayCoordinator {
     private final ChromeActivity mActivity;
+    private final AssistantOverlayModel mModel;
     private final AssistantOverlayEventFilter mEventFilter;
     private final AssistantOverlayDrawable mDrawable;
     private final ScrimView mScrim;
     private boolean mScrimEnabled;
 
-    public AssistantOverlayCoordinator(ChromeActivity activity, AssistantOverlayModel model,
-            CompositorViewResizer viewResizer) {
+    public AssistantOverlayCoordinator(ChromeActivity activity, AssistantOverlayModel model) {
         mActivity = activity;
+        mModel = model;
         mScrim = mActivity.getScrim();
         mEventFilter = new AssistantOverlayEventFilter(
                 mActivity, mActivity.getFullscreenManager(), mActivity.getCompositorViewHolder());
-        mDrawable = new AssistantOverlayDrawable(
-                mActivity, mActivity.getFullscreenManager(), viewResizer);
+        mDrawable = new AssistantOverlayDrawable(mActivity, mActivity.getFullscreenManager());
 
         // Listen for changes in the state.
         // TODO(crbug.com/806868): Bind model to view through a ViewBinder instead.
@@ -47,6 +46,10 @@ public class AssistantOverlayCoordinator {
                 List<RectF> area = model.get(AssistantOverlayModel.TOUCHABLE_AREA);
                 mEventFilter.setTouchableArea(area);
                 mDrawable.setTransparentArea(area);
+            } else if (AssistantOverlayModel.RESTRICTED_AREA == propertyKey) {
+                List<RectF> area = model.get(AssistantOverlayModel.RESTRICTED_AREA);
+                mEventFilter.setRestrictedArea(area);
+                mDrawable.setRestrictedArea(area);
             } else if (AssistantOverlayModel.DELEGATE == propertyKey) {
                 AssistantOverlayDelegate delegate = model.get(AssistantOverlayModel.DELEGATE);
                 mEventFilter.setDelegate(delegate);
@@ -58,6 +61,11 @@ public class AssistantOverlayCoordinator {
                         model.get(AssistantOverlayModel.HIGHLIGHT_BORDER_COLOR));
             }
         });
+    }
+
+    /** Return the model observed by this coordinator. */
+    public AssistantOverlayModel getModel() {
+        return mModel;
     }
 
     /**

@@ -4,7 +4,7 @@
 
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 
-#include <memory>
+#include <utility>
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -69,9 +69,6 @@ constexpr int kBorderThickness = 2;
 
 }  // namespace
 
-// static
-const char TabbedPane::kViewClassName[] = "TabbedPane";
-
 // A subclass of Tab that implements the Harmony visual styling.
 class MdTab : public Tab {
  public:
@@ -124,23 +121,23 @@ class MdTabStrip : public TabStrip, public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(MdTabStrip);
 };
 
-// static
-const char Tab::kViewClassName[] = "Tab";
 
 Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
     : tabbed_pane_(tabbed_pane),
-      title_(new Label(title, style::CONTEXT_LABEL, style::STYLE_TAB_ACTIVE)),
       state_(State::kActive),
       contents_(contents) {
   // Calculate the size while the font list is bold.
-  preferred_title_size_ = title_->GetPreferredSize();
+  auto title_label = std::make_unique<Label>(title, style::CONTEXT_LABEL,
+                                             style::STYLE_TAB_ACTIVE);
+  title_ = title_label.get();
+  preferred_title_size_ = title_label->GetPreferredSize();
   const bool is_vertical =
       tabbed_pane_->GetOrientation() == TabbedPane::Orientation::kVertical;
   const bool is_highlight_style =
       tabbed_pane_->GetStyle() == TabbedPane::TabStripStyle::kHighlight;
 
   if (is_vertical)
-    title_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+    title_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 
   if (is_highlight_style && is_vertical) {
     constexpr int kTabVerticalPadding = 8;
@@ -156,8 +153,8 @@ Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
   SetLayoutManager(std::make_unique<FillLayout>());
   SetState(State::kInactive);
   // Calculate the size while the font list is normal and set the max size.
-  preferred_title_size_.SetToMax(title_->GetPreferredSize());
-  AddChildView(title_);
+  preferred_title_size_.SetToMax(title_label->GetPreferredSize());
+  AddChildView(std::move(title_label));
 
   // Use leaf so that name is spoken by screen reader without exposing the
   // children.
@@ -175,6 +172,25 @@ void Tab::SetSelected(bool selected) {
 #else
   SetFocusBehavior(selected ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
 #endif
+}
+
+const base::string16& Tab::GetTitleText() const {
+  return title_->GetText();
+}
+
+void Tab::SetTitleText(const base::string16& text) {
+  title_->SetText(text);
+
+  // Active and inactive states use different font sizes. Find the largest size
+  // and reserve that amount of space.
+  State old_state = state_;
+  SetState(State::kActive);
+  preferred_title_size_ = GetPreferredSize();
+  SetState(State::kInactive);
+  preferred_title_size_.SetToMax(GetPreferredSize());
+  SetState(old_state);
+
+  InvalidateLayout();
 }
 
 void Tab::OnStateChanged() {
@@ -254,10 +270,6 @@ gfx::Size Tab::CalculatePreferredSize() const {
   return size;
 }
 
-const char* Tab::GetClassName() const {
-  return kViewClassName;
-}
-
 void Tab::SetState(State state) {
   if (state == state_)
     return;
@@ -297,7 +309,7 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
 
 void Tab::GetAccessibleNodeData(ui::AXNodeData* data) {
   data->role = ax::mojom::Role::kTab;
-  data->SetName(title()->text());
+  data->SetName(title()->GetText());
   data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, selected());
 }
 
@@ -339,6 +351,10 @@ bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
   return (key == ui::VKEY_UP || key == ui::VKEY_DOWN) &&
          tabbed_pane_->MoveSelectionBy(key == ui::VKEY_DOWN ? 1 : -1);
 }
+
+BEGIN_METADATA(Tab)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 MdTab::MdTab(TabbedPane* tabbed_pane,
              const base::string16& title,
@@ -388,10 +404,8 @@ void MdTab::OnFocus() {
   // Do not draw focus ring in kHighlight mode.
   if (tabbed_pane()->GetStyle() != TabbedPane::TabStripStyle::kHighlight) {
     SetBorder(CreateSolidBorder(
-        GetInsets().top(),
-        SkColorSetA(GetNativeTheme()->GetSystemColor(
-                        ui::NativeTheme::kColorId_FocusedBorderColor),
-                    0x66)));
+        GetInsets().top(), GetNativeTheme()->GetSystemColor(
+                               ui::NativeTheme::kColorId_FocusedBorderColor)));
   }
 
   // When the tab gains focus, send an accessibility event indicating that the
@@ -412,7 +426,6 @@ void MdTab::OnBlur() {
 
 // static
 constexpr size_t TabStrip::kNoSelectedTab;
-const char TabStrip::kViewClassName[] = "TabStrip";
 
 TabStrip::TabStrip(TabbedPane::Orientation orientation,
                    TabbedPane::TabStripStyle style)
@@ -421,14 +434,15 @@ TabStrip::TabStrip(TabbedPane::Orientation orientation,
   if (orientation == TabbedPane::Orientation::kHorizontal) {
     constexpr int kTabStripLeadingEdgePadding = 9;
     layout = std::make_unique<BoxLayout>(
-        BoxLayout::kHorizontal, gfx::Insets(0, kTabStripLeadingEdgePadding));
+        BoxLayout::Orientation::kHorizontal,
+        gfx::Insets(0, kTabStripLeadingEdgePadding));
     layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kEnd);
   } else {
     constexpr int kTabStripEdgePadding = 8;
     constexpr int kTabSpacing = 8;
     layout = std::make_unique<BoxLayout>(
-        BoxLayout::kVertical, gfx::Insets(kTabStripEdgePadding, 0, 0, 0),
-        kTabSpacing);
+        BoxLayout::Orientation::kVertical,
+        gfx::Insets(kTabStripEdgePadding, 0, 0, 0), kTabSpacing);
     layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStart);
   }
   layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kStart);
@@ -441,10 +455,6 @@ TabStrip::TabStrip(TabbedPane::Orientation orientation,
 TabStrip::~TabStrip() = default;
 
 void TabStrip::OnSelectedTabChanged(Tab* from_tab, Tab* to_tab) {}
-
-const char* TabStrip::GetClassName() const {
-  return kViewClassName;
-}
 
 void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
   // Do not draw border line in kHighlight mode.
@@ -541,11 +551,39 @@ Tab* TabStrip::GetTabAtDeltaFromSelected(int delta) const {
                        num_children);
 }
 
+TabbedPane::Orientation TabStrip::GetOrientation() const {
+  return orientation_;
+}
+
+TabbedPane::TabStripStyle TabStrip::GetStyle() const {
+  return style_;
+}
+
+DEFINE_ENUM_CONVERTERS(TabbedPane::Orientation,
+                       {TabbedPane::Orientation::kHorizontal,
+                        base::ASCIIToUTF16("HORIZONTAL")},
+                       {TabbedPane::Orientation::kVertical,
+                        base::ASCIIToUTF16("VERTICAL")})
+
+DEFINE_ENUM_CONVERTERS(TabbedPane::TabStripStyle,
+                       {TabbedPane::TabStripStyle::kBorder,
+                        base::ASCIIToUTF16("BORDER")},
+                       {TabbedPane::TabStripStyle::kHighlight,
+                        base::ASCIIToUTF16("HIGHLIGHT")})
+
+BEGIN_METADATA(TabStrip)
+METADATA_PARENT_CLASS(View)
+ADD_READONLY_PROPERTY_METADATA(TabStrip, int, SelectedTabIndex)
+ADD_READONLY_PROPERTY_METADATA(TabStrip, TabbedPane::Orientation, Orientation)
+ADD_READONLY_PROPERTY_METADATA(TabStrip, TabbedPane::TabStripStyle, Style)
+END_METADATA()
+
 MdTabStrip::MdTabStrip(TabbedPane::Orientation orientation,
                        TabbedPane::TabStripStyle style)
     : TabStrip(orientation, style) {
   if (orientation == TabbedPane::Orientation::kHorizontal) {
-    auto layout = std::make_unique<BoxLayout>(BoxLayout::kHorizontal);
+    auto layout =
+        std::make_unique<BoxLayout>(BoxLayout::Orientation::kHorizontal);
     layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kCenter);
     layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStretch);
     layout->SetDefaultFlex(1);
@@ -568,7 +606,7 @@ void MdTabStrip::OnSelectedTabChanged(Tab* from_tab, Tab* to_tab) {
   DCHECK(!from_tab->selected());
   DCHECK(to_tab->selected());
 
-  if (orientation() == TabbedPane::Orientation::kHorizontal) {
+  if (GetOrientation() == TabbedPane::Orientation::kHorizontal) {
     animating_from_ = gfx::Range(from_tab->GetMirroredX(),
                                  from_tab->GetMirroredX() + from_tab->width());
     animating_to_ = gfx::Range(to_tab->GetMirroredX(),
@@ -586,13 +624,13 @@ void MdTabStrip::OnSelectedTabChanged(Tab* from_tab, Tab* to_tab) {
 
 void MdTabStrip::OnPaintBorder(gfx::Canvas* canvas) {
   // Do not draw border line in kHighlight mode.
-  if (style() == TabbedPane::TabStripStyle::kHighlight)
+  if (GetStyle() == TabbedPane::TabStripStyle::kHighlight)
     return;
 
   constexpr int kUnselectedBorderThickness = 1;
   constexpr int kSelectedBorderThickness = 2;
   const bool is_horizontal =
-      orientation() == TabbedPane::Orientation::kHorizontal;
+      GetOrientation() == TabbedPane::Orientation::kHorizontal;
 
   int max_cross_axis;
 
@@ -673,8 +711,10 @@ void MdTabStrip::OnPaintBorder(gfx::Canvas* canvas) {
     rect = gfx::Rect(max_cross_axis - kSelectedBorderThickness, min_main_axis,
                      kSelectedBorderThickness, max_main_axis - min_main_axis);
   }
-  canvas->FillRect(rect, GetNativeTheme()->GetSystemColor(
-                             ui::NativeTheme::kColorId_FocusedBorderColor));
+  canvas->FillRect(
+      rect, SkColorSetA(GetNativeTheme()->GetSystemColor(
+                            ui::NativeTheme::kColorId_FocusedBorderColor),
+                        SK_AlphaOPAQUE));
 }
 
 void MdTabStrip::AnimationProgressed(const gfx::Animation* animation) {
@@ -687,13 +727,11 @@ void MdTabStrip::AnimationEnded(const gfx::Animation* animation) {
 }
 
 TabbedPane::TabbedPane(TabbedPane::Orientation orientation,
-                       TabbedPane::TabStripStyle style)
-    : contents_(new View()) {
+                       TabbedPane::TabStripStyle style) {
   DCHECK(orientation != TabbedPane::Orientation::kHorizontal ||
          style != TabbedPane::TabStripStyle::kHighlight);
-  tab_strip_ = new MdTabStrip(orientation, style);
-  AddChildView(tab_strip_);
-  AddChildView(contents_);
+  tab_strip_ = AddChildView(std::make_unique<MdTabStrip>(orientation, style));
+  contents_ = AddChildView(std::make_unique<View>());
 }
 
 TabbedPane::~TabbedPane() = default;
@@ -707,19 +745,18 @@ size_t TabbedPane::GetTabCount() {
   return contents_->children().size();
 }
 
-void TabbedPane::AddTab(const base::string16& title, View* contents) {
-  AddTabAtIndex(tab_strip_->children().size(), title, contents);
-}
-
-void TabbedPane::AddTabAtIndex(size_t index,
-                               const base::string16& title,
-                               View* contents) {
+void TabbedPane::AddTabInternal(size_t index,
+                                const base::string16& title,
+                                std::unique_ptr<View> contents) {
   DCHECK_LE(index, GetTabCount());
   contents->SetVisible(false);
+  contents->GetViewAccessibility().OverrideName(title);
+  contents->GetViewAccessibility().OverrideRole(ax::mojom::Role::kTab);
 
-  tab_strip_->AddChildViewAt(new MdTab(this, title, contents),
-                             static_cast<int>(index));
-  contents_->AddChildViewAt(contents, static_cast<int>(index));
+  tab_strip_->AddChildViewAt(
+      std::make_unique<MdTab>(this, title, contents.get()),
+      static_cast<int>(index));
+  contents_->AddChildViewAt(std::move(contents), static_cast<int>(index));
   if (!GetSelectedTab())
     SelectTabAt(index);
 
@@ -770,11 +807,15 @@ gfx::Size TabbedPane::CalculatePreferredSize() const {
 }
 
 TabbedPane::Orientation TabbedPane::GetOrientation() const {
-  return tab_strip_->orientation();
+  return tab_strip_->GetOrientation();
 }
 
 TabbedPane::TabStripStyle TabbedPane::GetStyle() const {
-  return tab_strip_->style();
+  return tab_strip_->GetStyle();
+}
+
+Tab* TabbedPane::GetTabAt(size_t index) {
+  return tab_strip_->GetTabAtIndex(index);
 }
 
 Tab* TabbedPane::GetSelectedTab() {
@@ -823,12 +864,15 @@ bool TabbedPane::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return MoveSelectionBy(accelerator.IsShiftDown() ? -1 : 1);
 }
 
-const char* TabbedPane::GetClassName() const {
-  return kViewClassName;
-}
-
 void TabbedPane::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTabList;
+  const Tab* const selected_tab = GetSelectedTab();
+  if (selected_tab)
+    node_data->SetName(selected_tab->GetTitleText());
 }
+
+BEGIN_METADATA(TabbedPane)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

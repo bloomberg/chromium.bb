@@ -125,8 +125,15 @@ swiftshader_shared_library("swiftshader_libGLESv2") {
   ]
 
   if (is_mac) {
-    ldflags = [ "-Wl,-install_name,@rpath/libswiftshader_libGLESv2.dylib" ]
+    ldflags = [
+      "-Wl,-install_name,@rpath/libswiftshader_libGLESv2.dylib",
+      "-Wl,-exported_symbols_list," +
+          rebase_path("libGLESv2.exports", root_build_dir),
+    ]
   } else if (is_linux) {
+    inputs = [
+      "libGLESv2.lds",
+    ]
     ldflags = [ "-Wl,--version-script=" +
                 rebase_path("libGLESv2.lds", root_build_dir) ]
   }
